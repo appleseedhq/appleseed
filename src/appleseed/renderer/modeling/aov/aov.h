@@ -61,7 +61,7 @@ class APPLESEED_DLLSYMBOL AOV
     AOV(const char* name, const ParamArray& params);
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;

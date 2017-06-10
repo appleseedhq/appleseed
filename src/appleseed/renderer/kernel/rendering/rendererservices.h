@@ -80,7 +80,7 @@ class RendererServices
     void initialize(TextureStore& texture_store);
 
     // Return a pointer to the texture system.
-    virtual OIIO::TextureSystem* texturesys() const APPLESEED_OVERRIDE;
+    virtual OIIO::TextureSystem* texturesys() const override;
 
     // Get the 4x4 matrix that transforms by the specified
     // transformation at the given time.  Return true if ok, false
@@ -89,7 +89,7 @@ class RendererServices
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
         OSL::TransformationPtr      xform,
-        float                       time) APPLESEED_OVERRIDE;
+        float                       time) override;
 
     // Get the 4x4 matrix that transforms by the specified
     // transformation at the given time.  Return true if ok, false on
@@ -100,7 +100,7 @@ class RendererServices
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
         OSL::TransformationPtr      xform,
-        float                       time) APPLESEED_OVERRIDE;
+        float                       time) override;
 
     // Get the 4x4 matrix that transforms by the specified
     // transformation.  Return true if ok, false on error.  Since no
@@ -109,7 +109,7 @@ class RendererServices
     virtual bool get_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
-        OSL::TransformationPtr      xform) APPLESEED_OVERRIDE;
+        OSL::TransformationPtr      xform) override;
 
     // Get the 4x4 matrix that transforms by the specified
     // transformation.  Return true if ok, false on error.  Since no
@@ -120,7 +120,7 @@ class RendererServices
     virtual bool get_inverse_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
-        OSL::TransformationPtr      xform) APPLESEED_OVERRIDE;
+        OSL::TransformationPtr      xform) override;
 
     // Get the 4x4 matrix that transforms points from the named
     // 'from' coordinate system to "common" space at the given time.
@@ -129,7 +129,7 @@ class RendererServices
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
         OIIO::ustring               from,
-        float                       time) APPLESEED_OVERRIDE;
+        float                       time) override;
 
     // Get the 4x4 matrix that transforms points from "common" space to
     // the named 'to' coordinate system to at the given time.  The
@@ -140,7 +140,7 @@ class RendererServices
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
         OSL::ustring                to,
-        float                       time) APPLESEED_OVERRIDE;
+        float                       time) override;
 
     // Get the 4x4 matrix that transforms 'from' to "common" space.
     // Since there is no time value passed, return false if the
@@ -149,7 +149,7 @@ class RendererServices
     virtual bool get_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
-        OIIO::ustring               from) APPLESEED_OVERRIDE;
+        OIIO::ustring               from) override;
 
     // Get the 4x4 matrix that transforms points from "common" space to
     // the named 'to' coordinate system.  Since there is no time value
@@ -161,7 +161,7 @@ class RendererServices
     virtual bool get_inverse_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
-        OSL::ustring                to) APPLESEED_OVERRIDE;
+        OSL::ustring                to) override;
 
     // Transform points Pin[0..npoints-1] in named coordinate system
     // 'from' into 'to' coordinates, storing the result in Pout[] using
@@ -194,7 +194,7 @@ class RendererServices
         const OSL::Vec3*            Pin,
         OSL::Vec3*                  Pout,
         int                         npoints,
-        OSL::TypeDesc::VECSEMANTICS vectype) APPLESEED_OVERRIDE;
+        OSL::TypeDesc::VECSEMANTICS vectype) override;
 
     // Immediately trace a ray from P in the direction R.  Return true
     // if anything hit, otherwise false.
@@ -206,7 +206,7 @@ class RendererServices
         const OSL::Vec3&            dPdy,
         const OSL::Vec3&            R,
         const OSL::Vec3&            dRdx,
-        const OSL::Vec3&            dRdy) APPLESEED_OVERRIDE;
+        const OSL::Vec3&            dRdy) override;
 
     // Get the named message from the renderer and if found then
     // write it into 'val'.  Otherwise, return false.  This is only
@@ -217,7 +217,7 @@ class RendererServices
         OIIO::ustring               name,
         OIIO::TypeDesc              type,
         void*                       val,
-        bool                        derivatives) APPLESEED_OVERRIDE;
+        bool                        derivatives) override;
 
     // Get the named attribute from the renderer and if found then
     // write it into 'val'.  Otherwise, return false.  If no object is
@@ -237,7 +237,7 @@ class RendererServices
         OIIO::ustring               object,
         OIIO::TypeDesc              type,
         OIIO::ustring               name,
-        void*                       val) APPLESEED_OVERRIDE;
+        void*                       val) override;
 
     // Similar to get_attribute();  this method will return the 'index'
     // element of an attribute array.
@@ -248,7 +248,7 @@ class RendererServices
         OIIO::TypeDesc              type,
         OIIO::ustring               name,
         int                         index,
-        void*                       val) APPLESEED_OVERRIDE;
+        void*                       val) override;
 
     // Get the named user-data from the current object and write it into
     // 'val'. If derivatives is true, the derivatives should be written into val
@@ -258,7 +258,7 @@ class RendererServices
         OIIO::ustring               name,
         OIIO::TypeDesc              type,
         OSL::ShaderGlobals*         sg,
-        void*                       val) APPLESEED_OVERRIDE;
+        void*                       val) override;
 
   private:
     // This code is based on OSL's test renderer.

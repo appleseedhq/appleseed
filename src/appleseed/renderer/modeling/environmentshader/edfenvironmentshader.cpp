@@ -80,12 +80,12 @@ namespace
             m_inputs.declare("alpha_value", InputFormatFloat, "1.0");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        virtual const char* get_model() const override
         {
             return Model;
         }
@@ -94,7 +94,7 @@ namespace
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch*           abort_switch) override
         {
             if (!EnvironmentShader::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
@@ -126,7 +126,7 @@ namespace
             const PixelContext&     pixel_context,
             const Vector3d&         direction,
             Spectrum&               value,
-            Alpha&                  alpha) const APPLESEED_OVERRIDE
+            Alpha&                  alpha) const override
         {
             // Evaluate the environment EDF and store the radiance into the shading result.
             m_env_edf->evaluate(shading_context, Vector3f(direction), value);

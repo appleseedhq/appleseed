@@ -79,7 +79,7 @@ class APPLESEED_DLLSYMBOL Frame
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     // Print frame settings to the renderer's global logger.
     void print_settings();

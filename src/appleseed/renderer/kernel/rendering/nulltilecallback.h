@@ -51,16 +51,16 @@ class NullTileCallback
   : public TileCallbackBase
 {
   public:
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 };
 
 class APPLESEED_DLLSYMBOL NullTileCallbackFactory
   : public ITileCallbackFactory
 {
   public:
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
-    virtual ITileCallback* create() APPLESEED_OVERRIDE;
+    virtual ITileCallback* create() override;
 };
 
 }       // namespace renderer

@@ -71,7 +71,7 @@ class MultiModelEntityItem
         ParentEntity&           parent,
         CollectionItem*         collection_item);
 
-    virtual foundation::Dictionary get_values() const APPLESEED_OVERRIDE;
+    virtual foundation::Dictionary get_values() const override;
 
   private:
     typedef EntityItem<Entity, ParentEntity, CollectionItem> Base;
@@ -81,7 +81,7 @@ class MultiModelEntityItem
         typename EntityTraitsType::FactoryRegistrarType
     > MultiModelEntityEditorFormFactoryType;
 
-    virtual void slot_edit(AttributeEditor* attribute_editor) APPLESEED_OVERRIDE;
+    virtual void slot_edit(AttributeEditor* attribute_editor) override;
 };
 
 

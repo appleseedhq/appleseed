@@ -69,12 +69,12 @@ namespace
         {
         }
 
-        virtual GAABB3 compute_local_bbox() const APPLESEED_OVERRIDE
+        virtual GAABB3 compute_local_bbox() const override
         {
             return m_tess->compute_local_bbox();
         }
 
-        virtual Lazy<StaticTriangleTess>& get_static_triangle_tess() const APPLESEED_OVERRIDE
+        virtual Lazy<StaticTriangleTess>& get_static_triangle_tess() const override
         {
             return m_lazy_tess;
         }

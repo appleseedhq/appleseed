@@ -90,12 +90,12 @@ namespace
             m_inputs.declare("shininess_v", InputFormatFloat);
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        virtual const char* get_model() const override
         {
             return Model;
         }
@@ -106,7 +106,7 @@ namespace
             const bool          adjoint,
             const bool          cosine_mult,
             const int           modes,
-            BSDFSample&         sample) const APPLESEED_OVERRIDE
+            BSDFSample&         sample) const override
         {
             // No reflection below the shading surface.
             const float cos_on = dot(sample.m_outgoing.get_value(), sample.m_shading_basis.get_normal());
@@ -259,7 +259,7 @@ namespace
             const Vector3f&     outgoing,
             const Vector3f&     incoming,
             const int           modes,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+            Spectrum&           value) const override
         {
             // No reflection below the shading surface.
             const Vector3f& shading_normal = shading_basis.get_normal();
@@ -340,7 +340,7 @@ namespace
             const Basis3f&      shading_basis,
             const Vector3f&     outgoing,
             const Vector3f&     incoming,
-            const int           modes) const APPLESEED_OVERRIDE
+            const int           modes) const override
         {
             // No reflection below the shading surface.
             const Vector3f& shading_normal = shading_basis.get_normal();

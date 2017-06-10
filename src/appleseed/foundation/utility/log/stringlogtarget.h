@@ -59,7 +59,7 @@ class APPLESEED_DLLSYMBOL StringLogTarget
     ~StringLogTarget();
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     // Write a message.
     virtual void write(
@@ -67,7 +67,7 @@ class APPLESEED_DLLSYMBOL StringLogTarget
         const char*                 file,
         const size_t                line,
         const char*                 header,
-        const char*                 message) APPLESEED_OVERRIDE;
+        const char*                 message) override;
 
     // Retrieve the string so far.
     const char* get_string() const;

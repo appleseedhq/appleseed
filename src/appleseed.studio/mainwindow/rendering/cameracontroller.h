@@ -95,7 +95,7 @@ class CameraController
 
     void configure_controller();
 
-    virtual bool eventFilter(QObject* object, QEvent* event) APPLESEED_OVERRIDE;
+    virtual bool eventFilter(QObject* object, QEvent* event) override;
 
     bool handle_mouse_button_press_event(const QMouseEvent* event);
     bool handle_mouse_button_release_event(const QMouseEvent* event);

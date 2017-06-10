@@ -54,7 +54,7 @@ class APPLESEED_DLLSYMBOL FileLogTarget
 {
   public:
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     // Write a message.
     virtual void write(
@@ -62,7 +62,7 @@ class APPLESEED_DLLSYMBOL FileLogTarget
         const char*                 file,
         const size_t                line,
         const char*                 header,
-        const char*                 message) APPLESEED_OVERRIDE;
+        const char*                 message) override;
 
     bool open(const char* filename);
 

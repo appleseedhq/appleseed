@@ -84,12 +84,12 @@ namespace
             m_inputs.declare("osl_background", InputFormatEntity, "");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        virtual const char* get_model() const override
         {
             return Model;
         }
@@ -98,7 +98,7 @@ namespace
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch*           abort_switch) override
         {
             if (!EnvironmentEDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
@@ -111,7 +111,7 @@ namespace
 
         virtual void on_frame_end(
             const Project&          project,
-            const BaseGroup*        parent) APPLESEED_OVERRIDE
+            const BaseGroup*        parent) override
         {
             m_shader_group = 0;
 
@@ -123,7 +123,7 @@ namespace
             const Vector2f&         s,
             Vector3f&               outgoing,
             Spectrum&               value,
-            float&                  probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
             const Vector3f local_outgoing = sample_sphere_uniform(s);
             probability = RcpFourPi<float>();
@@ -138,7 +138,7 @@ namespace
         virtual void evaluate(
             const ShadingContext&   shading_context,
             const Vector3f&         outgoing,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+            Spectrum&               value) const override
         {
             assert(is_normalized(outgoing));
 
@@ -153,7 +153,7 @@ namespace
             const ShadingContext&   shading_context,
             const Vector3f&         outgoing,
             Spectrum&               value,
-            float&                  probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
             assert(is_normalized(outgoing));
 
@@ -166,7 +166,7 @@ namespace
         }
 
         virtual float evaluate_pdf(
-            const Vector3f&         outgoing) const APPLESEED_OVERRIDE
+            const Vector3f&         outgoing) const override
         {
             assert(is_normalized(outgoing));
             return RcpFourPi<float>();

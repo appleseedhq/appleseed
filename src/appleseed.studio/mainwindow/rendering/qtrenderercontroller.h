@@ -54,25 +54,25 @@ class QtRendererController
     QtRendererController();
 
     // This method is called before rendering begins.
-    virtual void on_rendering_begin() APPLESEED_OVERRIDE;
+    virtual void on_rendering_begin() override;
 
     // This method is called after rendering has succeeded.
-    virtual void on_rendering_success() APPLESEED_OVERRIDE;
+    virtual void on_rendering_success() override;
 
     // This method is called after rendering was aborted.
-    virtual void on_rendering_abort() APPLESEED_OVERRIDE;
+    virtual void on_rendering_abort() override;
 
     // This method is called before rendering a single frame.
-    virtual void on_frame_begin() APPLESEED_OVERRIDE;
+    virtual void on_frame_begin() override;
 
     // This method is called after rendering a single frame.
-    virtual void on_frame_end() APPLESEED_OVERRIDE;
+    virtual void on_frame_end() override;
 
     // Store a new status value.
     void set_status(const Status status);
 
     // Return the current rendering status.
-    virtual Status get_status() const APPLESEED_OVERRIDE;
+    virtual Status get_status() const override;
 
   signals:
     void signal_rendering_begin();

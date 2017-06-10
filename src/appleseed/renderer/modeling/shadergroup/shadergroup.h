@@ -65,7 +65,7 @@ class APPLESEED_DLLSYMBOL ShaderGroup
 {
   public:
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     // Return a string identifying the model of this shader group.
     const char* get_model() const;

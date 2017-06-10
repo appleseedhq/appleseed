@@ -52,7 +52,7 @@ TEST_SUITE(Foundation_Utility_AutoReleasePtr)
         {
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
@@ -68,7 +68,7 @@ TEST_SUITE(Foundation_Utility_AutoReleasePtr)
         {
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             m_release_was_called = true;
             delete this;

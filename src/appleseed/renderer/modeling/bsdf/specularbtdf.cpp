@@ -80,17 +80,17 @@ namespace
             m_inputs.declare("volume_scale", InputFormatFloat, "1.0");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        virtual const char* get_model() const override
         {
             return Model;
         }
 
-        virtual size_t compute_input_data_size() const APPLESEED_OVERRIDE
+        virtual size_t compute_input_data_size() const override
         {
             return sizeof(InputValues);
         }
@@ -98,7 +98,7 @@ namespace
         virtual void prepare_inputs(
             Arena&                  arena,
             const ShadingPoint&     shading_point,
-            void*                   data) const APPLESEED_OVERRIDE
+            void*                   data) const override
         {
             InputValues* values = static_cast<InputValues*>(data);
             new (&values->m_precomputed) InputValues::Precomputed();
@@ -114,7 +114,7 @@ namespace
             const bool              adjoint,
             const bool              cosine_mult,
             const int               modes,
-            BSDFSample&             sample) const APPLESEED_OVERRIDE
+            BSDFSample&             sample) const override
         {
             if (!ScatteringMode::has_specular(modes))
                 return;
@@ -208,7 +208,7 @@ namespace
             const Vector3f&         outgoing,
             const Vector3f&         incoming,
             const int               modes,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+            Spectrum&               value) const override
         {
             return 0.0f;
         }
@@ -219,14 +219,14 @@ namespace
             const Basis3f&          shading_basis,
             const Vector3f&         outgoing,
             const Vector3f&         incoming,
-            const int               modes) const APPLESEED_OVERRIDE
+            const int               modes) const override
         {
             return 0.0f;
         }
 
         virtual float sample_ior(
             SamplingContext&        sampling_context,
-            const void*             data) const APPLESEED_OVERRIDE
+            const void*             data) const override
         {
             return static_cast<const InputValues*>(data)->m_ior;
         }
@@ -234,7 +234,7 @@ namespace
         void compute_absorption(
             const void*             data,
             const float             distance,
-            Spectrum&               absorption) const APPLESEED_OVERRIDE
+            Spectrum&               absorption) const override
         {
             const InputValues* values = static_cast<const InputValues*>(data);
             const float d = values->m_volume_density * values->m_volume_scale * distance;

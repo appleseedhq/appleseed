@@ -52,7 +52,7 @@ class OIIOErrorHandler
   : public OIIO::ErrorHandler
 {
   public:
-    virtual void operator()(int errcode, const std::string& msg) APPLESEED_OVERRIDE;
+    virtual void operator()(int errcode, const std::string& msg) override;
 };
 
 }       // namespace renderer

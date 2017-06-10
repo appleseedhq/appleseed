@@ -80,18 +80,18 @@ class APPLESEED_DLLSYMBOL HenyeyPhaseFunctionFactory
 {
   public:
     // Return a string identifying this phase function model.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    virtual const char* get_model() const override;
 
     // Return metadata for this phase function model.
-    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
+    virtual foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this phase function model.
-    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
+    virtual foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new phase function instance.
     virtual foundation::auto_release_ptr<PhaseFunction> create(
         const char*         name,
-        const ParamArray&   params) const APPLESEED_OVERRIDE;
+        const ParamArray&   params) const override;
 };
 
 }       // namespace renderer

@@ -67,9 +67,9 @@ class DisneyMaterialCustomUI
 
     virtual void create_widgets(
         QVBoxLayout*                    layout,
-        const foundation::Dictionary&   values) APPLESEED_OVERRIDE;
+        const foundation::Dictionary&   values) override;
 
-    virtual foundation::Dictionary get_values() const APPLESEED_OVERRIDE;
+    virtual foundation::Dictionary get_values() const override;
 
   private slots:
     void slot_add_layer();

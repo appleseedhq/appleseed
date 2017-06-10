@@ -58,18 +58,18 @@ class APPLESEED_DLLSYMBOL SphericalCameraFactory
 {
   public:
     // Return a string identifying this camera model.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    virtual const char* get_model() const override;
 
     // Return metadata for this camera model.
-    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
+    virtual foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this camera model.
-    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
+    virtual foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new camera instance.
     virtual foundation::auto_release_ptr<Camera> create(
         const char*         name,
-        const ParamArray&   params) const APPLESEED_OVERRIDE;
+        const ParamArray&   params) const override;
 
     // Static variant of the create() method above.
     static foundation::auto_release_ptr<Camera> static_create(

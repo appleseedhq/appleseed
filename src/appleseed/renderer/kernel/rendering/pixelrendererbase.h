@@ -63,13 +63,13 @@ class PixelRendererBase
     virtual void on_tile_begin(
         const Frame&                frame,
         foundation::Tile&           tile,
-        TileStack&                  aov_tiles) APPLESEED_OVERRIDE;
+        TileStack&                  aov_tiles) override;
 
     // This method is called after a tile has been rendered.
     virtual void on_tile_end(
         const Frame&                frame,
         foundation::Tile&           tile,
-        TileStack&                  aov_tiles) APPLESEED_OVERRIDE;
+        TileStack&                  aov_tiles) override;
 
   protected:
     void on_pixel_begin();

@@ -61,11 +61,11 @@ class UniformPixelRendererFactory
         const ParamArray&           params);
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     // Return a new uniform pixel renderer instance.
     virtual IPixelRenderer* create(
-        const size_t                thread_index) APPLESEED_OVERRIDE;
+        const size_t                thread_index) override;
 
     // Return the metadata of the uniform pixel renderer parameters.
     static foundation::Dictionary get_params_metadata();

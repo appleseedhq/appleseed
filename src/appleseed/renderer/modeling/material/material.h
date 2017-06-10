@@ -131,12 +131,12 @@ class APPLESEED_DLLSYMBOL Material
         const Project&              project,
         const BaseGroup*            parent,
         OnFrameBeginRecorder&       recorder,
-        foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
+        foundation::IAbortSwitch*   abort_switch = 0) override;
 
     // This method is called once after rendering each frame (only if on_frame_begin() was called).
     virtual void on_frame_end(
         const Project&              project,
-        const BaseGroup*            parent) APPLESEED_OVERRIDE;
+        const BaseGroup*            parent) override;
 
     struct RenderData
     {

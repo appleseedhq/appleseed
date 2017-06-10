@@ -96,7 +96,7 @@ class TextureSeExprFunc
 
     virtual bool prep(
         SeExprFuncNode*         node,
-        bool                    /*wantVec*/) APPLESEED_OVERRIDE
+        bool                    /*wantVec*/) override
     {
         if (node->nargs() != 3)
         {
@@ -127,7 +127,7 @@ class TextureSeExprFunc
 
     virtual void eval(
         const SeExprFuncNode*   node,
-        SeVec3d&                result) const APPLESEED_OVERRIDE
+        SeVec3d&                result) const override
     {
         SeVec3d u, v;
         node->child(1)->eval(u);
@@ -198,7 +198,7 @@ class SeAppleseedExpr
     }
 
     // Called during preparation.
-    SeExprVarRef* resolveVar(const std::string& name) const APPLESEED_OVERRIDE
+    SeExprVarRef* resolveVar(const std::string& name) const override
     {
         assert(name.length() >= 1);
 
@@ -210,7 +210,7 @@ class SeAppleseedExpr
     }
 
     // Called during preparation.
-    SeExprFunc* resolveFunc(const std::string& name) const APPLESEED_OVERRIDE
+    SeExprFunc* resolveFunc(const std::string& name) const override
     {
         if (name == "texture")
         {
@@ -258,7 +258,7 @@ class SeAppleseedExpr
         {
         }
 
-        virtual void eval(const SeExprVarNode* /*node*/, SeVec3d& result) APPLESEED_OVERRIDE
+        virtual void eval(const SeExprVarNode* /*node*/, SeVec3d& result) override
         {
             result[0] = m_val;
         }

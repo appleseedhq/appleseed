@@ -104,7 +104,7 @@ namespace
             }
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
@@ -112,7 +112,7 @@ namespace
         virtual void on_tile_begin(
             const Frame&                frame,
             Tile&                       tile,
-            TileStack&                  aov_tiles) APPLESEED_OVERRIDE
+            TileStack&                  aov_tiles) override
         {
             m_scratch_fb_half_width = truncate<int>(ceil(frame.get_filter().get_xradius()));
             m_scratch_fb_half_height = truncate<int>(ceil(frame.get_filter().get_yradius()));
@@ -131,7 +131,7 @@ namespace
         virtual void on_tile_end(
             const Frame&                frame,
             Tile&                       tile,
-            TileStack&                  aov_tiles) APPLESEED_OVERRIDE
+            TileStack&                  aov_tiles) override
         {
             if (m_params.m_diagnostics)
             {
@@ -164,7 +164,7 @@ namespace
             const Vector2i&             pi,
             const Vector2i&             pt,
             SamplingContext::RNGType&   rng,
-            ShadingResultFrameBuffer&   framebuffer) APPLESEED_OVERRIDE
+            ShadingResultFrameBuffer&   framebuffer) override
         {
             const size_t aov_count = frame.aov_images().size();
 
@@ -297,7 +297,7 @@ namespace
             on_pixel_end(pi);
         }
 
-        virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
+        virtual StatisticsVector get_statistics() const override
         {
             return m_sample_renderer->get_statistics();
         }

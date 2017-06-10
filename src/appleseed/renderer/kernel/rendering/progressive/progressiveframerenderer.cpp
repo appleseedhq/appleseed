@@ -209,24 +209,24 @@ namespace
                 (*i)->release();
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual void render() APPLESEED_OVERRIDE
+        virtual void render() override
         {
             start_rendering();
 
             m_job_queue.wait_until_completion();
         }
 
-        virtual bool is_rendering() const APPLESEED_OVERRIDE
+        virtual bool is_rendering() const override
         {
             return m_job_queue.has_scheduled_or_running_jobs();
         }
 
-        virtual void start_rendering() APPLESEED_OVERRIDE
+        virtual void start_rendering() override
         {
             assert(!is_rendering());
             assert(!m_job_queue.has_scheduled_or_running_jobs());
@@ -284,7 +284,7 @@ namespace
             resume_rendering();
         }
 
-        virtual void stop_rendering() APPLESEED_OVERRIDE
+        virtual void stop_rendering() override
         {
             // First, delete scheduled jobs to prevent worker threads from picking them up.
             m_job_queue.clear_scheduled_jobs();
@@ -299,7 +299,7 @@ namespace
             m_statistics_thread->join();
         }
 
-        virtual void pause_rendering() APPLESEED_OVERRIDE
+        virtual void pause_rendering() override
         {
             m_job_manager->pause();
 
@@ -309,7 +309,7 @@ namespace
             m_statistics_func->pause();
         }
 
-        virtual void resume_rendering() APPLESEED_OVERRIDE
+        virtual void resume_rendering() override
         {
             m_statistics_func->resume();
 
@@ -319,7 +319,7 @@ namespace
             m_job_manager->resume();
         }
 
-        virtual void terminate_rendering() APPLESEED_OVERRIDE
+        virtual void terminate_rendering() override
         {
             // Completely stop rendering.
             stop_rendering();

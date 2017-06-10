@@ -69,20 +69,20 @@ namespace
         {
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
         virtual void begin_suite(
-            const TestSuite&        test_suite) APPLESEED_OVERRIDE
+            const TestSuite&        test_suite) override
         {
             m_suite_name_printed = false;
         }
 
         virtual void begin_case(
             const TestSuite&        test_suite,
-            const char*             test_case_name) APPLESEED_OVERRIDE
+            const char*             test_case_name) override
         {
             m_case_name_printed = false;
         }
@@ -92,7 +92,7 @@ namespace
             const char*             test_case_name,
             const TestResult&       test_suite_result,
             const TestResult&       test_case_result,
-            const TestResult&       cumulated_result) APPLESEED_OVERRIDE
+            const TestResult&       cumulated_result) override
         {
             if (m_verbose)
             {
@@ -116,7 +116,7 @@ namespace
             const char*             file,
             const size_t            line,
             const TestMessage::Type message_type,
-            const char*             message) APPLESEED_OVERRIDE
+            const char*             message) override
         {
             if (!m_case_name_printed)
             {

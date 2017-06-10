@@ -68,7 +68,7 @@ class ObjectCollectionItem
         renderer::Assembly&         parent,
         AssemblyItem*               parent_item);
 
-    virtual QMenu* get_single_item_context_menu() const APPLESEED_OVERRIDE;
+    virtual QMenu* get_single_item_context_menu() const override;
 
     void import_objects(const QStringList& filepaths);
 
@@ -79,7 +79,7 @@ class ObjectCollectionItem
     renderer::Assembly&             m_parent;
     AssemblyItem*                   m_parent_item;
 
-    virtual ItemBase* create_item(renderer::Object* object) APPLESEED_OVERRIDE;
+    virtual ItemBase* create_item(renderer::Object* object) override;
 
     void insert_objects(const std::string& path) const;
 };

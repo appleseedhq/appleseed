@@ -59,7 +59,7 @@ class APPLESEED_DLLSYMBOL ShaderConnection
 {
   public:
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     // Return the source layer name.
     const char* get_src_layer() const;

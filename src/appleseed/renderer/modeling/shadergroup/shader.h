@@ -68,7 +68,7 @@ class APPLESEED_DLLSYMBOL Shader
 {
   public:
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     const char* get_type() const;
     const char* get_shader() const;

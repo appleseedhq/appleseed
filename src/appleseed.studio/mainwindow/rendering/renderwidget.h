@@ -114,7 +114,7 @@ class RenderWidget
         const size_t            tile_x,
         const size_t            tile_y);
 
-    virtual void paintEvent(QPaintEvent* event) APPLESEED_OVERRIDE;
+    virtual void paintEvent(QPaintEvent* event) override;
 };
 
 

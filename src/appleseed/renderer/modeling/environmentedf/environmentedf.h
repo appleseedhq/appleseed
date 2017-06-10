@@ -87,7 +87,7 @@ class APPLESEED_DLLSYMBOL EnvironmentEDF
         const Project&              project,
         const BaseGroup*            parent,
         OnFrameBeginRecorder&       recorder,
-        foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
+        foundation::IAbortSwitch*   abort_switch = 0) override;
 
     // Sample the EDF and compute the emission direction, its probability
     // density and the value of the EDF for this direction.

@@ -81,12 +81,12 @@ namespace
         {
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        virtual const char* get_model() const override
         {
             return Model;
         }
@@ -94,7 +94,7 @@ namespace
         virtual void prepare_inputs(
             Arena&                  arena,
             const ShadingPoint&     shading_point,
-            void*                   data) const APPLESEED_OVERRIDE
+            void*                   data) const override
         {
             DipoleBSSRDFInputValues* values =
                 static_cast<DipoleBSSRDFInputValues*>(data);
@@ -108,7 +108,7 @@ namespace
             const Vector3f&         outgoing_dir,
             const ShadingPoint&     incoming_point,
             const Vector3f&         incoming_dir,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+            Spectrum&               value) const override
         {
             const DipoleBSSRDFInputValues* values =
                 static_cast<const DipoleBSSRDFInputValues*>(data);

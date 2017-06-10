@@ -64,21 +64,21 @@ class DisneyLayeredBRDF
   : public BSDF
 {
   public:
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    virtual const char* get_model() const override;
 
     virtual bool on_frame_begin(
         const Project&                  project,
         const BaseGroup*                parent,
         OnFrameBeginRecorder&           recorder,
-        foundation::IAbortSwitch*       abort_switch = 0) APPLESEED_OVERRIDE;
+        foundation::IAbortSwitch*       abort_switch = 0) override;
 
-    virtual size_t compute_input_data_size() const APPLESEED_OVERRIDE;
+    virtual size_t compute_input_data_size() const override;
 
     virtual void* evaluate_inputs(
         const ShadingContext&           shading_context,
-        const ShadingPoint&             shading_point) const APPLESEED_OVERRIDE;
+        const ShadingPoint&             shading_point) const override;
 
     virtual void sample(
         SamplingContext&                sampling_context,
@@ -86,7 +86,7 @@ class DisneyLayeredBRDF
         const bool                      adjoint,
         const bool                      cosine_mult,
         const int                       modes,
-        BSDFSample&                     sample) const APPLESEED_OVERRIDE;
+        BSDFSample&                     sample) const override;
 
     virtual float evaluate(
         const void*                     data,
@@ -97,7 +97,7 @@ class DisneyLayeredBRDF
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
         const int                       modes,
-        Spectrum&                       value) const APPLESEED_OVERRIDE;
+        Spectrum&                       value) const override;
 
     virtual float evaluate_pdf(
         const void*                     data,
@@ -105,7 +105,7 @@ class DisneyLayeredBRDF
         const foundation::Basis3f&      shading_basis,
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
-        const int                       modes) const APPLESEED_OVERRIDE;
+        const int                       modes) const override;
 
   private:
     friend class DisneyMaterial;

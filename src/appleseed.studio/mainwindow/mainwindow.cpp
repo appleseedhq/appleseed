@@ -1470,7 +1470,7 @@ namespace
       public:
         virtual void operator()(
             MasterRenderer& master_renderer,
-            Project&        project) APPLESEED_OVERRIDE
+            Project&        project) override
         {
             master_renderer.get_parameters()
                 .push("shading_engine")
@@ -1489,7 +1489,7 @@ namespace
 
         virtual void operator()(
             MasterRenderer& master_renderer,
-            Project&        project) APPLESEED_OVERRIDE
+            Project&        project) override
         {
             master_renderer.get_parameters()
                 .push("shading_engine")
@@ -1537,7 +1537,7 @@ namespace
         }
 
         virtual void operator()(
-            Project&        project) APPLESEED_OVERRIDE
+            Project&        project) override
         {
             project.get_frame()->reset_crop_window();
 
@@ -1561,7 +1561,7 @@ namespace
         }
 
         virtual void operator()(
-            Project&        project) APPLESEED_OVERRIDE
+            Project&        project) override
         {
             const int w = m_rect.width();
             const int h = m_rect.height();

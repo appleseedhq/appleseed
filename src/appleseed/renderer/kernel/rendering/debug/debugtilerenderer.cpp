@@ -62,7 +62,7 @@ namespace
       : public ITileRenderer
     {
       public:
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
@@ -72,7 +72,7 @@ namespace
             const size_t    tile_x,
             const size_t    tile_y,
             const size_t    pass_hash,
-            IAbortSwitch&   abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch&   abort_switch) override
         {
             Image& image = frame.image();
 
@@ -103,7 +103,7 @@ namespace
             tile.set_pixel(max_x, max_y, Color4f(0.0f, 0.0f, 1.0f, 1.0f));      // bottom right pixel is blue
         }
 
-        virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
+        virtual StatisticsVector get_statistics() const override
         {
             return StatisticsVector();
         }

@@ -110,19 +110,19 @@ namespace
         {
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        virtual const char* get_model() const override
         {
             return Model;
         }
 
         virtual bool on_render_begin(
             const Project&      project,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch*       abort_switch) override
         {
             if (!Camera::on_render_begin(project, abort_switch))
                 return false;
@@ -152,7 +152,7 @@ namespace
         virtual void spawn_ray(
             SamplingContext&    sampling_context,
             const Dual2d&       ndc,
-            ShadingRay&         ray) const APPLESEED_OVERRIDE
+            ShadingRay&         ray) const override
         {
             //
             // We do as if the ray originated on the film plane at Z = m_focal_length
@@ -192,7 +192,7 @@ namespace
             const Vector3d&     point,
             Vector2d&           ndc,
             Vector3d&           outgoing,
-            float&              importance) const APPLESEED_OVERRIDE
+            float&              importance) const override
         {
             // Project the point onto the film plane.
             if (!project_point(time, point, ndc))
@@ -224,7 +224,7 @@ namespace
 
         virtual bool project_camera_space_point(
             const Vector3d&     point,
-            Vector2d&           ndc) const APPLESEED_OVERRIDE
+            Vector2d&           ndc) const override
         {
             // Cannot project the point if it is behind the near plane.
             if (point.z > m_near_z)
@@ -242,7 +242,7 @@ namespace
             const Vector3d&     a,
             const Vector3d&     b,
             Vector2d&           a_ndc,
-            Vector2d&           b_ndc) const APPLESEED_OVERRIDE
+            Vector2d&           b_ndc) const override
         {
             // Retrieve the camera transform.
             Transformd scratch;

@@ -58,7 +58,7 @@ class APPLESEED_DLLSYMBOL GenericMeshFileWriter
     virtual ~GenericMeshFileWriter();
 
     // Write a mesh.
-    virtual void write(const IMeshWalker& walker) APPLESEED_OVERRIDE;
+    virtual void write(const IMeshWalker& walker) override;
 
   private:
     IMeshFileWriter* m_writer;

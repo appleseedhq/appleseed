@@ -74,17 +74,17 @@ namespace
             m_osl_edf = OSLEDFFactory().create();
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        virtual const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool has_emission() const APPLESEED_OVERRIDE
+        virtual bool has_emission() const override
         {
             if (const ShaderGroup* sg = get_uncached_osl_surface())
                 return sg->has_emission();
@@ -96,7 +96,7 @@ namespace
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch = 0) APPLESEED_OVERRIDE
+            IAbortSwitch*           abort_switch = 0) override
         {
             if (!Material::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
@@ -135,7 +135,7 @@ namespace
         auto_release_ptr<BSSRDF>    m_osl_bssrdf;
         auto_release_ptr<EDF>       m_osl_edf;
 
-        virtual const ShaderGroup* get_uncached_osl_surface() const APPLESEED_OVERRIDE
+        virtual const ShaderGroup* get_uncached_osl_surface() const override
         {
             const ShaderGroup* sg =
                 static_cast<const ShaderGroup*>(m_inputs.get_entity("osl_surface"));

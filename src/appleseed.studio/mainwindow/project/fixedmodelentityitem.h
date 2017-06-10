@@ -74,7 +74,7 @@ class FixedModelEntityItem
         ParentEntity&           parent,
         CollectionItem*         collection_item);
 
-    virtual foundation::Dictionary get_values() const APPLESEED_OVERRIDE;
+    virtual foundation::Dictionary get_values() const override;
 
   protected:
     typedef EntityItem<Entity, ParentEntity, CollectionItem> Base;
@@ -85,7 +85,7 @@ class FixedModelEntityItem
     > FixedModelEntityEditorFormFactoryType;
 
   private:
-    virtual void slot_edit(AttributeEditor* attribute_editor) APPLESEED_OVERRIDE;
+    virtual void slot_edit(AttributeEditor* attribute_editor) override;
 };
 
 

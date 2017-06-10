@@ -98,12 +98,12 @@ namespace
             m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        virtual const char* get_model() const override
         {
             return Model;
         }
@@ -112,7 +112,7 @@ namespace
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch*           abort_switch) override
         {
             if (!Light::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
@@ -145,7 +145,7 @@ namespace
             Vector3d&               position,
             Vector3d&               outgoing,
             Spectrum&               value,
-            float&                  probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
             sample_disk(
                 light_transform,
@@ -166,7 +166,7 @@ namespace
             Vector3d&               position,
             Vector3d&               outgoing,
             Spectrum&               value,
-            float&                  probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
             const size_t target_count = targets.size();
 
@@ -207,7 +207,7 @@ namespace
             const Vector3d&         target,
             Vector3d&               position,
             Vector3d&               outgoing,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+            Spectrum&               value) const override
         {
             outgoing = -normalize(light_transform.get_parent_z());
             position = target - m_safe_scene_diameter * outgoing;
@@ -223,7 +223,7 @@ namespace
 
         virtual float compute_distance_attenuation(
             const Vector3d&         target,
-            const Vector3d&         position) const APPLESEED_OVERRIDE
+            const Vector3d&         position) const override
         {
             return 1.0f;
         }

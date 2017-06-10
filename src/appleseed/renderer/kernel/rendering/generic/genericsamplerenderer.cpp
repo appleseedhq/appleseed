@@ -147,7 +147,7 @@ namespace
             m_lighting_engine->release();
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
@@ -156,7 +156,7 @@ namespace
             SamplingContext&        sampling_context,
             const PixelContext&     pixel_context,
             const Vector2d&         image_point,
-            ShadingResult&          shading_result) APPLESEED_OVERRIDE
+            ShadingResult&          shading_result) override
         {
 #ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
 
@@ -296,7 +296,7 @@ namespace
 #endif
         }
 
-        virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
+        virtual StatisticsVector get_statistics() const override
         {
             StatisticsVector stats;
             stats.merge(m_texture_cache.get_statistics());

@@ -52,16 +52,16 @@ class EphemeralShadingResultFrameBufferFactory
 {
   public:
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     virtual ShadingResultFrameBuffer* create(
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y,
-        const foundation::AABB2u&   tile_bbox) APPLESEED_OVERRIDE;
+        const foundation::AABB2u&   tile_bbox) override;
 
     virtual void destroy(
-        ShadingResultFrameBuffer*   framebuffer) APPLESEED_OVERRIDE;
+        ShadingResultFrameBuffer*   framebuffer) override;
 };
 
 }       // namespace renderer

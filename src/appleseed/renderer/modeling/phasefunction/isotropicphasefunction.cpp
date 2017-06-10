@@ -67,12 +67,12 @@ class IsotropicPhaseFunction
         m_inputs.declare("absorption_multiplier", InputFormatFloat, "1.0");
     }
 
-    virtual void release() APPLESEED_OVERRIDE
+    virtual void release() override
     {
         delete this;
     }
 
-    virtual const char* get_model() const APPLESEED_OVERRIDE
+    virtual const char* get_model() const override
     {
         return Model;
     }
@@ -82,7 +82,7 @@ class IsotropicPhaseFunction
         return true;
     }
 
-    virtual size_t compute_input_data_size() const APPLESEED_OVERRIDE
+    virtual size_t compute_input_data_size() const override
     {
         return sizeof(InputValues);
     }
@@ -91,7 +91,7 @@ class IsotropicPhaseFunction
         Arena&                arena,
         const ShadingRay&     volume_ray,
         void*                 data
-        ) const APPLESEED_OVERRIDE
+        ) const override
     {
         InputValues* values = static_cast<InputValues*>(data);
 
@@ -111,7 +111,7 @@ class IsotropicPhaseFunction
         const ShadingRay&      volume_ray,
         const void*            data,
         float&                 distance
-        ) const APPLESEED_OVERRIDE
+        ) const override
     {
         const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -134,7 +134,7 @@ class IsotropicPhaseFunction
         const ShadingRay&    volume_ray,
         const void*          data,
         const float          distance,
-        Vector3f&            incoming) const APPLESEED_OVERRIDE
+        Vector3f&            incoming) const override
     {
         // Sample incoming direction.
         sampling_context.split_in_place(2, 1);
@@ -148,7 +148,7 @@ class IsotropicPhaseFunction
         const ShadingRay&   volume_ray,
         const void*         data,
         const float         distance,
-        const Vector3f&     incoming) const APPLESEED_OVERRIDE
+        const Vector3f&     incoming) const override
     {
         return RcpFourPi<float>();
     }
@@ -157,7 +157,7 @@ class IsotropicPhaseFunction
         const ShadingRay&     volume_ray,
         const void*           data,
         const float           distance,
-        Spectrum&             spectrum) const APPLESEED_OVERRIDE
+        Spectrum&             spectrum) const override
     {
         extinction_coefficient(volume_ray, data, distance, spectrum);
         for (size_t i = 0, e = spectrum.size(); i < e; ++i)
@@ -167,7 +167,7 @@ class IsotropicPhaseFunction
     virtual void evaluate_transmission(
         const ShadingRay&     volume_ray,
         const void*           data,
-        Spectrum&             spectrum) const APPLESEED_OVERRIDE
+        Spectrum&             spectrum) const override
     {
         const float distance = static_cast<float>(
             norm(volume_ray.m_dir) * (volume_ray.m_tmax - volume_ray.m_tmin));
@@ -178,7 +178,7 @@ class IsotropicPhaseFunction
         const ShadingRay&     volume_ray,
         const void*           data,
         const float           distance,
-        Spectrum&             spectrum) const APPLESEED_OVERRIDE
+        Spectrum&             spectrum) const override
     {
         const InputValues* values = static_cast<const InputValues*>(data);
         spectrum = values->m_scattering * values->m_scattering_multiplier;
@@ -188,7 +188,7 @@ class IsotropicPhaseFunction
         const ShadingRay&    volume_ray,
         const void*          data,
         const float          distance,
-        Spectrum&            spectrum) const APPLESEED_OVERRIDE
+        Spectrum&            spectrum) const override
     {
         const InputValues* values = static_cast<const InputValues*>(data);
         spectrum = values->m_absorption * values->m_absorption_multiplier;
@@ -198,7 +198,7 @@ class IsotropicPhaseFunction
         const ShadingRay&    volume_ray,
         const void*          data,
         const float          distance,
-        Spectrum&            spectrum) const APPLESEED_OVERRIDE
+        Spectrum&            spectrum) const override
     {
         const InputValues* values = static_cast<const InputValues*>(data);
         spectrum =

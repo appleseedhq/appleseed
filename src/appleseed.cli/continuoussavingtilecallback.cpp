@@ -91,7 +91,7 @@ namespace
         virtual void do_post_render_tile(
             const Frame*    frame,
             const size_t    tile_x,
-            const size_t    tile_y) APPLESEED_OVERRIDE
+            const size_t    tile_y) override
         {
             boost::mutex::scoped_lock lock(m_mutex);
             ProgressTileCallback::do_post_render_tile(frame, tile_x, tile_y);

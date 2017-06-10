@@ -72,19 +72,19 @@ namespace
             m_diffuse_edf = DiffuseEDFFactory().create("osl_diff_edf", ParamArray());
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        virtual const char* get_model() const override
         {
             return Model;
         }
 
         virtual void* evaluate_inputs(
             const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point) const APPLESEED_OVERRIDE
+            const ShadingPoint&     shading_point) const override
         {
             CompositeEmissionClosure* c =
                 shading_context.get_arena().allocate_noinit<CompositeEmissionClosure>();
@@ -104,7 +104,7 @@ namespace
             const Vector2f&         s,
             Vector3f&               outgoing,
             Spectrum&               value,
-            float&                  probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
             const CompositeEmissionClosure* c =
                 static_cast<const CompositeEmissionClosure*>(data);
@@ -133,7 +133,7 @@ namespace
             const Vector3f&         geometric_normal,
             const Basis3f&          shading_basis,
             const Vector3f&         outgoing,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+            Spectrum&               value) const override
         {
             const CompositeEmissionClosure* c =
                 static_cast<const CompositeEmissionClosure*>(data);
@@ -162,7 +162,7 @@ namespace
             const Basis3f&          shading_basis,
             const Vector3f&         outgoing,
             Spectrum&               value,
-            float&                  probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
             const CompositeEmissionClosure* c =
                 static_cast<const CompositeEmissionClosure*>(data);
@@ -196,7 +196,7 @@ namespace
             const void*             data,
             const Vector3f&         geometric_normal,
             const Basis3f&          shading_basis,
-            const Vector3f&         outgoing) const APPLESEED_OVERRIDE
+            const Vector3f&         outgoing) const override
         {
             const CompositeEmissionClosure* c =
                 static_cast<const CompositeEmissionClosure*>(data);
@@ -220,7 +220,7 @@ namespace
             return probability;
         }
 
-        virtual float get_uncached_max_contribution() const APPLESEED_OVERRIDE
+        virtual float get_uncached_max_contribution() const override
         {
             // We can't know the max contribution of OSL EDFs.
             return numeric_limits<float>::max();

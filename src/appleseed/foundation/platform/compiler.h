@@ -167,24 +167,6 @@ namespace foundation
 
 
 //
-// Define the APPLESEED_OVERRIDE qualifer as a synonym for the 'override' keyword in C++11.
-//
-
-// Visual C++: supported since Visual Studio 2010.
-#if _MSC_VER >= 1600
-    #define APPLESEED_OVERRIDE override
-
-// gcc: supported since gcc 4.7 when C++11 mode is enabled.
-#elif defined __GNUC__ && __cplusplus >= 201103
-    #define APPLESEED_OVERRIDE override
-
-// Other compilers: the APPLESEED_OVERRIDE qualifier has no effect.
-#else
-    #define APPLESEED_OVERRIDE
-#endif
-
-
-//
 // Define the APPLESEED_FINAL qualifier as a synonym for the 'final' keyword in C++11.
 //
 

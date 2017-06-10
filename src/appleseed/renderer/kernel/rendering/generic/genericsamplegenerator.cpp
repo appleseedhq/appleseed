@@ -94,18 +94,18 @@ namespace
         {
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual void reset() APPLESEED_OVERRIDE
+        virtual void reset() override
         {
             SampleGeneratorBase::reset();
             m_rng = SamplingContext::RNGType();
         }
 
-        virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
+        virtual StatisticsVector get_statistics() const override
         {
             Statistics stats;
             stats.insert("max sampling dimension", m_total_sampling_dim);
@@ -147,7 +147,7 @@ namespace
 
         virtual size_t generate_samples(
             const size_t                    sequence_index,
-            SampleVector&                   samples) APPLESEED_OVERRIDE
+            SampleVector&                   samples) override
         {
             // Compute the sample position in NDC.
             const size_t Bases[2] = { 2, 3 };

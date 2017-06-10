@@ -69,7 +69,7 @@ class BSDFWrapper
         const bool                      adjoint,
         const bool                      cosine_mult,
         const int                       modes,
-        BSDFSample&                     sample) const APPLESEED_OVERRIDE;
+        BSDFSample&                     sample) const override;
 
     virtual float evaluate(
         const void*                     data,
@@ -80,7 +80,7 @@ class BSDFWrapper
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
         const int                       modes,
-        Spectrum&                       value) const APPLESEED_OVERRIDE;
+        Spectrum&                       value) const override;
 
     virtual float evaluate_pdf(
         const void*                     data,
@@ -88,7 +88,7 @@ class BSDFWrapper
         const foundation::Basis3f&      shading_basis,
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
-        const int                       modes) const APPLESEED_OVERRIDE;
+        const int                       modes) const override;
 };
 
 

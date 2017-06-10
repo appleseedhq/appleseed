@@ -88,17 +88,17 @@ namespace
             extract_parameters();
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        virtual const char* get_model() const override
         {
             return Model;
         }
 
-        virtual ColorSpace get_color_space() const APPLESEED_OVERRIDE
+        virtual ColorSpace get_color_space() const override
         {
             return m_color_space;
         }
@@ -107,7 +107,7 @@ namespace
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch*           abort_switch) override
         {
             if (!Texture::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
@@ -120,7 +120,7 @@ namespace
             return true;
         }
 
-        virtual const CanvasProperties& properties() APPLESEED_OVERRIDE
+        virtual const CanvasProperties& properties() override
         {
             return
                 m_image.get()
@@ -130,7 +130,7 @@ namespace
 
         virtual Tile* load_tile(
             const size_t            tile_x,
-            const size_t            tile_y) APPLESEED_OVERRIDE
+            const size_t            tile_y) override
         {
             return
                 m_image.get()
@@ -141,7 +141,7 @@ namespace
         virtual void unload_tile(
             const size_t            tile_x,
             const size_t            tile_y,
-            const Tile*             tile) APPLESEED_OVERRIDE
+            const Tile*             tile) override
         {
             // Nothing to do, the tile is owned by the source image.
         }

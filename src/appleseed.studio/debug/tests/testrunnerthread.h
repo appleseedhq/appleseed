@@ -66,7 +66,7 @@ class TestRunnerThread
     TestResultWidgetDecorator*                  m_result_widget;
 
     // The starting point for the thread.
-    virtual void run() APPLESEED_OVERRIDE;
+    virtual void run() override;
 };
 
 }       // namespace studio

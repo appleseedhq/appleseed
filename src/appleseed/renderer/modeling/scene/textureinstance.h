@@ -97,7 +97,7 @@ class APPLESEED_DLLSYMBOL TextureInstance
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     // Compute and return the unique signature of this instance.
     virtual foundation::uint64 compute_signature() const;

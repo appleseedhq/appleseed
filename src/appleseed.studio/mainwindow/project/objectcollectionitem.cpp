@@ -113,7 +113,7 @@ namespace
         }
 
         virtual void operator()(
-            Project&                project) APPLESEED_OVERRIDE
+            Project&                project) override
         {
             m_parent->import_objects(m_filepaths);
         }

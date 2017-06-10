@@ -349,7 +349,7 @@ namespace
         }
 
         virtual void operator()(
-            Project&                    project) APPLESEED_OVERRIDE
+            Project&                    project) override
         {
             m_name.empty()
               ? m_object_instance.unassign_material(m_slot.c_str(), m_side)

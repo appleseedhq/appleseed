@@ -90,19 +90,19 @@ class SPPMPassCallback
         const SPPMParameters&       params);
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     // This method is called at the beginning of a pass.
     virtual void pre_render(
         const Frame&                frame,
         foundation::JobQueue&       job_queue,
-        foundation::IAbortSwitch&   abort_switch) APPLESEED_OVERRIDE;
+        foundation::IAbortSwitch&   abort_switch) override;
 
     // This method is called at the end of a pass.
     virtual void post_render(
         const Frame&                frame,
         foundation::JobQueue&       job_queue,
-        foundation::IAbortSwitch&   abort_switch) APPLESEED_OVERRIDE;
+        foundation::IAbortSwitch&   abort_switch) override;
 
     // Return the i'th photon.
     const SPPMMonoPhoton& get_mono_photon(const size_t i) const;

@@ -101,9 +101,9 @@ class Statistics
             const std::string&          unit,
             const int64                 value);
 
-        virtual std::auto_ptr<Entry> clone() const APPLESEED_OVERRIDE;
-        virtual void merge(const Entry* other) APPLESEED_OVERRIDE;
-        virtual std::string to_string() const APPLESEED_OVERRIDE;
+        virtual std::auto_ptr<Entry> clone() const override;
+        virtual void merge(const Entry* other) override;
+        virtual std::string to_string() const override;
     };
 
     struct UnsignedIntegerEntry
@@ -116,9 +116,9 @@ class Statistics
             const std::string&          unit,
             const uint64                value);
 
-        virtual std::auto_ptr<Entry> clone() const APPLESEED_OVERRIDE;
-        virtual void merge(const Entry* other) APPLESEED_OVERRIDE;
-        virtual std::string to_string() const APPLESEED_OVERRIDE;
+        virtual std::auto_ptr<Entry> clone() const override;
+        virtual void merge(const Entry* other) override;
+        virtual std::string to_string() const override;
     };
 
     struct FloatingPointEntry
@@ -131,9 +131,9 @@ class Statistics
             const std::string&          unit,
             const double                value);
 
-        virtual std::auto_ptr<Entry> clone() const APPLESEED_OVERRIDE;
-        virtual void merge(const Entry* other) APPLESEED_OVERRIDE;
-        virtual std::string to_string() const APPLESEED_OVERRIDE;
+        virtual std::auto_ptr<Entry> clone() const override;
+        virtual void merge(const Entry* other) override;
+        virtual std::string to_string() const override;
     };
 
     struct StringEntry
@@ -146,9 +146,9 @@ class Statistics
             const std::string&          unit,
             const std::string&          value);
 
-        virtual std::auto_ptr<Entry> clone() const APPLESEED_OVERRIDE;
-        virtual void merge(const Entry* other) APPLESEED_OVERRIDE;
-        virtual std::string to_string() const APPLESEED_OVERRIDE;
+        virtual std::auto_ptr<Entry> clone() const override;
+        virtual void merge(const Entry* other) override;
+        virtual std::string to_string() const override;
     };
 
     template <typename T>
@@ -162,9 +162,9 @@ class Statistics
             const std::string&          unit,
             const Population<T>&        value);
 
-        virtual std::auto_ptr<Entry> clone() const APPLESEED_OVERRIDE;
-        virtual void merge(const Entry* other) APPLESEED_OVERRIDE;
-        virtual std::string to_string() const APPLESEED_OVERRIDE;
+        virtual std::auto_ptr<Entry> clone() const override;
+        virtual void merge(const Entry* other) override;
+        virtual std::string to_string() const override;
     };
 
     Statistics();
