@@ -36,11 +36,9 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
-#include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
-#include "renderer/modeling/phasefunction/phasefunction.h"
 #include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
@@ -62,8 +60,8 @@ namespace renderer
 //
 // Call graph:
 //
-//   compute_outgoing_radiance_bsdf_sampling
-//       take_single_bsdf_sample
+//   compute_outgoing_radiance_material_sampling
+//       take_single_material_sample
 //
 //   compute_outgoing_radiance_light_sampling
 //       add_emitting_triangle_sample_contribution
@@ -74,11 +72,11 @@ namespace renderer
 //       add_non_physical_light_sample_contribution
 //
 //   compute_outgoing_radiance_combined_sampling
-//       compute_outgoing_radiance_bsdf_sampling
+//       compute_outgoing_radiance_material_sampling
 //       compute_outgoing_radiance_light_sampling
 //
 //   compute_outgoing_radiance_combined_sampling_low_variance
-//       compute_outgoing_radiance_bsdf_sampling
+//       compute_outgoing_radiance_material_sampling
 //       compute_outgoing_radiance_light_sampling_low_variance
 //
 //   compute_incoming_radiance
@@ -106,7 +104,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
 {
 }
 
-void DirectLightingIntegrator::compute_outgoing_radiance_bsdf_sampling(
+void DirectLightingIntegrator::compute_outgoing_radiance_material_sampling(
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
     const Dual3d&               outgoing,
@@ -120,7 +118,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_bsdf_sampling(
 
     for (size_t i = 0; i < m_material_sample_count; ++i)
     {
-        take_single_bsdf_sample(
+        take_single_material_sample(
             sampling_context,
             mis_heuristic,
             outgoing,
@@ -146,7 +144,8 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling(
     if (!m_light_sampler.has_lights_or_emitting_triangles())
         return;
 
-    // There cannot be any contribution for purely specular BSDFs.
+    // Check if PDF of the sampler is Dirac delta and therefore
+    // cannot contribute to the light sampling.
     if (!m_material_sampler.contributes_to_light_sampling())
         return;
 
@@ -250,7 +249,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling(
     const Dual3d&               outgoing,
     Spectrum&                   radiance) const
 {
-    compute_outgoing_radiance_bsdf_sampling(
+    compute_outgoing_radiance_material_sampling(
         sampling_context,
         MISPower2,
         outgoing,
@@ -272,7 +271,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling_low_v
     const Dual3d&               outgoing,
     Spectrum&                   radiance) const
 {
-    compute_outgoing_radiance_bsdf_sampling(
+    compute_outgoing_radiance_material_sampling(
         sampling_context,
         MISPower2,
         outgoing,
@@ -419,7 +418,7 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
     return true;
 }
 
-void DirectLightingIntegrator::take_single_bsdf_sample(
+void DirectLightingIntegrator::take_single_material_sample(
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
     const Dual3d&               outgoing,
@@ -503,8 +502,8 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     {
         if (mis_heuristic != MISNone && square_distance > 0.0)
         {
-            // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
-            const float bsdf_prob_area = sample_probability * cos_on / static_cast<float>(square_distance);
+            // Transform material_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
+            const float material_prob_area = sample_probability * cos_on / static_cast<float>(square_distance);
 
             // Compute the probability density wrt. surface area mesure of the light sample.
             const float light_prob_area = m_light_sampler.evaluate_pdf(light_shading_point);
@@ -513,7 +512,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
             weight *=
                 mis(
                     mis_heuristic,
-                    m_material_sample_count * bsdf_prob_area,
+                    m_material_sample_count * material_prob_area,
                     m_light_sample_count * light_prob_area);
         }
 
