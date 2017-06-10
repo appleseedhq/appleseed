@@ -49,6 +49,7 @@
 #include "foundation/image/image.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/hash.h"
+#include "foundation/math/population.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
@@ -160,6 +161,9 @@ namespace
                         sample_position,
                         shading_result);
 
+                    // Update sampling statistics.
+                    m_total_sampling_dim.insert(child_sampling_context.get_total_dimension());
+
                     // Merge the sample into the framebuffer.
                     if (shading_result.is_valid_linear_rgb())
                     {
@@ -209,6 +213,9 @@ namespace
                             sample_position,
                             shading_result);
 
+                        // Update sampling statistics.
+                        m_total_sampling_dim.insert(sampling_context.get_total_dimension());
+
                         // Merge the sample into the framebuffer.
                         if (shading_result.is_valid_linear_rgb())
                         {
@@ -227,7 +234,14 @@ namespace
 
         virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
         {
-            return m_sample_renderer->get_statistics();
+            Statistics stats;
+            stats.insert("max sampling dimension", m_total_sampling_dim);
+
+            StatisticsVector vec;
+            vec.insert("generic sample generator statistics", stats);
+            vec.merge(m_sample_renderer->get_statistics());
+
+            return vec;
         }
 
       private:
@@ -252,6 +266,7 @@ namespace
         const size_t                        m_sample_count;
         const int                           m_sqrt_sample_count;
         PixelSampler                        m_pixel_sampler;
+        Population<uint64>                  m_total_sampling_dim;
     };
 }
 

@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,32 +26,44 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "bvh_statistics.h"
+// appleseed.foundation headers.
+#include "foundation/math/hash.h"
+#include "foundation/platform/types.h"
+#include "foundation/utility/benchmark.h"
 
-namespace foundation {
-namespace bvh {
+using namespace foundation;
 
-//
-// TraversalStatistics class implementation.
-//
-
-TraversalStatistics::TraversalStatistics()
-  : m_traversal_count(0)
+BENCHMARK_SUITE(Foundation_Math_Hash)
 {
-}
+    const uint32 N = 1000;
 
-Statistics TraversalStatistics::get_statistics() const
-{
-    Statistics stats;
-    stats.insert("traversals", m_traversal_count);
-    stats.insert("visited nodes", m_visited_nodes);
-    stats.insert("visited leaves", m_visited_leaves);
-    stats.insert("intersected bboxes", m_intersected_bboxes);
-    stats.insert("discarded nodes", m_discarded_nodes);
-    stats.insert("intersected items", m_intersected_items);
-    return stats;
-}
+    struct Fixture
+    {
+        uint32  m_uint_result;
+        float   m_float_result;
 
-}   // namespace bvh
-}   // namespace foundation
+        Fixture()
+          : m_uint_result(0)
+          , m_float_result(0.0f)
+        {
+        }
+    };
+
+    BENCHMARK_CASE_F(HashUInt32, Fixture)
+    {
+        for (uint32 i = 0; i < N; ++i)
+            m_uint_result += hash_uint32(i);
+    }
+
+    BENCHMARK_CASE_F(HashUInt32Pixar, Fixture)
+    {
+        for (uint32 i = 0; i < N; ++i)
+            m_float_result += hash_uint32_pixar(i, 12345678);
+    }
+
+    BENCHMARK_CASE_F(MixUInt32, Fixture)
+    {
+        for (uint32 i = 0; i < N; ++i)
+            m_uint_result += mix_uint32(i, m_uint_result);
+    }
+}

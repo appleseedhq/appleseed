@@ -246,8 +246,6 @@ namespace
                 m_params.m_rr_min_path_length,
                 m_params.m_max_bounces == ~0 ? ~0 : m_params.m_max_bounces + 1,
                 m_params.m_max_diffuse_bounces == ~0 ? ~0 : m_params.m_max_diffuse_bounces + 1,
-                //m_params.m_max_glossy_bounces == 0 ? ~0 : m_params.m_max_glossy_bounces + 1,
-                //m_params.m_max_specular_bounces == 0 ? ~0 : m_params.m_max_specular_bounces + 1,
                 m_params.m_max_glossy_bounces,
                 m_params.m_max_specular_bounces,
                 shading_context.get_max_iterations());

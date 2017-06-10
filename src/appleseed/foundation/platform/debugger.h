@@ -27,32 +27,50 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "bvh_statistics.h"
+#ifndef APPLESEED_FOUNDATION_PLATFORM_DEBUGGER_H
+#define APPLESEED_FOUNDATION_PLATFORM_DEBUGGER_H
 
-namespace foundation {
-namespace bvh {
+// appleseed.foundation headers.
+#ifdef _MSC_VER
+#include "foundation/platform/windows.h"
+#endif
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Standard headers.
+#ifndef _MSC_VER
+#include <csignal>
+#endif
+
+namespace foundation
+{
 
 //
-// TraversalStatistics class implementation.
+// Check whether a debugger is attached to the process.
 //
 
-TraversalStatistics::TraversalStatistics()
-  : m_traversal_count(0)
-{
-}
+APPLESEED_DLLSYMBOL bool is_debugger_attached();
 
-Statistics TraversalStatistics::get_statistics() const
-{
-    Statistics stats;
-    stats.insert("traversals", m_traversal_count);
-    stats.insert("visited nodes", m_visited_nodes);
-    stats.insert("visited leaves", m_visited_leaves);
-    stats.insert("intersected bboxes", m_intersected_bboxes);
-    stats.insert("discarded nodes", m_discarded_nodes);
-    stats.insert("intersected items", m_intersected_items);
-    return stats;
-}
 
-}   // namespace bvh
-}   // namespace foundation
+//
+// Break the execution of the program into the debugger.
+//
+
+// Visual C++.
+#if defined _MSC_VER
+
+    // Reference: http://msdn.microsoft.com/en-us/library/windows/desktop/ms679297(v=vs.85).aspx.
+    #define BREAKPOINT() DebugBreak()
+
+// Other platforms.
+#else
+
+    // Reference: http://stackoverflow.com/questions/4326414/set-breakpoint-in-c-or-c-code-programmatically-for-gdb-on-linux.
+    #define BREAKPOINT() std::raise(SIGINT)
+
+#endif
+
+}       // namespace foundation
+
+#endif  // !APPLESEED_FOUNDATION_PLATFORM_DEBUGGER_H

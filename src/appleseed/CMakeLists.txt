@@ -332,6 +332,7 @@ set (foundation_meta_benchmarks_sources
     foundation/meta/benchmarks/benchmark_distance.cpp
     foundation/meta/benchmarks/benchmark_fastmath.cpp
     foundation/meta/benchmarks/benchmark_filteredtile.cpp
+    foundation/meta/benchmarks/benchmark_hash.cpp
     foundation/meta/benchmarks/benchmark_imageimportancesampler.cpp
     foundation/meta/benchmarks/benchmark_integerdivision.cpp
     foundation/meta/benchmarks/benchmark_intersection.cpp
@@ -393,6 +394,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_fp.cpp
     foundation/meta/tests/test_fresnel.cpp
     foundation/meta/tests/test_genericprogressiveimagefilereader.cpp
+    foundation/meta/tests/test_hash.cpp
     foundation/meta/tests/test_iesparser.cpp
     foundation/meta/tests/test_image.cpp
     foundation/meta/tests/test_imageimportancesampler.cpp
@@ -480,12 +482,13 @@ source_group ("foundation\\platform\\snprintf" FILES
 set (foundation_platform_sources
     foundation/platform/arch.h
     foundation/platform/atomic.h
-    foundation/platform/breakpoint.h
     foundation/platform/compiler.cpp
     foundation/platform/compiler.h
     foundation/platform/console.cpp
     foundation/platform/console.h
     foundation/platform/datetime.h
+    foundation/platform/debugger.cpp
+    foundation/platform/debugger.h
     foundation/platform/defaulttimers.cpp
     foundation/platform/defaulttimers.h
     foundation/platform/exrheaderguards.h

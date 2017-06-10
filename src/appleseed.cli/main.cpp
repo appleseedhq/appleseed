@@ -46,6 +46,8 @@
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/console.h"
+#include "foundation/platform/debugger.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/timers.h"
 #include "foundation/utility/autoreleaseptr.h"
@@ -767,6 +769,9 @@ int main(int argc, const char* argv[])
             success = success && benchmark_render(project_filename);
         else success = success && render(project_filename);
     }
+
+    if (is_debugger_attached())
+        Console::pause();
 
     return success ? 0 : 1;
 }

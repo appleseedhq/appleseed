@@ -39,6 +39,7 @@ namespace renderer
 //
 // This class identifies the pixel currently being rendered throughout the
 // Tile Renderer -> Pixel Renderer -> Sample Renderer -> Surface Shader -> Lighting Engine chain.
+//
 
 class PixelContext
 {
