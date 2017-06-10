@@ -198,7 +198,8 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
     if (!m_light_sampler.has_lights_or_emitting_triangles())
         return;
 
-    // There cannot be any contribution for purely specular BSDFs.
+    // Check if PDF of the sampler is Dirac delta and therefore it
+    // cannot contribute to the light sampling.
     if (!m_material_sampler.contributes_to_light_sampling())
         return;
 
@@ -546,8 +547,6 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     // Compute the incoming direction in world space.
     Vector3d incoming = sample.m_point - m_material_sampler.get_point();
 
-    // Cull light samples behind the shading surface if the BSDF is either reflective or transmissive,
-    // but not both.
     if (m_material_sampler.cull_incoming_direction(incoming))
     {
         return;
@@ -610,7 +609,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     if (transmission == 0.0f)
         return;
 
-    // Evaluate the BSDF.
+    // Evaluate the BSDF (or phase function scattering).
     Spectrum material_value;
     const float material_probability =
         m_material_sampler.evaluate(
@@ -685,8 +684,6 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     // Compute the incoming direction in world space.
     const Vector3d incoming = -emission_direction;
 
-    // Cull light samples behind the shading surface if the BSDF is either reflective or transmissive,
-    // but not both.
     if (m_material_sampler.cull_incoming_direction(incoming))
     {
         return;
@@ -695,21 +692,21 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     // Compute the transmission factor between the light sample and the shading point.
     const float transmission =
         m_material_sampler.trace_between(
-        m_shading_context,
-        emission_position);
+            m_shading_context,
+            emission_position);
 
     // Discard occluded samples.
     if (transmission == 0.0f)
         return;
 
-    // Evaluate the BSDF.
+    // Evaluate the BSDF (or phase function scattering).
     Spectrum material_value;
     const float material_probability =
         m_material_sampler.evaluate(
-        m_light_sampling_modes,
-        Vector3f(outgoing.get_value()),
-        Vector3f(incoming),
-        material_value);
+            m_light_sampling_modes,
+            Vector3f(outgoing.get_value()),
+            Vector3f(incoming),
+            material_value);
     if (material_probability == 0.0f)
         return;
 

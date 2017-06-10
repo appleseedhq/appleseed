@@ -110,10 +110,10 @@ bool BSDFSampler::sample(
 }
 
 float BSDFSampler::evaluate(
-    int light_sampling_modes,
-    Vector3f outgoing,
-    Vector3f incoming,
-    Spectrum& value
+    int              light_sampling_modes,
+    const Vector3f&  outgoing,
+    const Vector3f&  incoming,
+    Spectrum&        value
     ) const
 {
     // Evaluate the BSDF.
@@ -211,10 +211,10 @@ bool PhaseFunctionSampler::sample(
 }
 
 float PhaseFunctionSampler::evaluate(
-    int light_sampling_modes,
-    Vector3f outgoing,
-    Vector3f incoming,
-    Spectrum& value
+    int              light_sampling_modes,
+    const Vector3f&  outgoing,
+    const Vector3f&  incoming,
+    Spectrum&        value
     ) const
 {
     // Evaluate the Phase Function.

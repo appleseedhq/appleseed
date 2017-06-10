@@ -66,7 +66,7 @@ class ShadingContext
 {
   public:
     // Constructor.
-      ShadingContext(
+    ShadingContext(
         const Intersector&          intersector,
         Tracer&                     tracer,
         TextureCache&               texture_cache,
