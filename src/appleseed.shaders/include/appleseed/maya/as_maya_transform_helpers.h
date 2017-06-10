@@ -51,15 +51,17 @@ int outside_place3d_volume(
             }
             else if (blend > 0.0)
             {
-                float min_distance = 1.0e+19;
+                vector xyz = (1.0 - abs((vector) surface_point)) / blend;
+                xyz = min(vector(1), xyz);
 
-                for (int i = 0; i < 3; ++i)
-                {
-                    min_distance = min(min_distance, min(
-                        abs(surface_point[i] - 1),
-                        abs(surface_point[i] + 1)));
-                }
-                blend_factor = min_distance * 0.5; // delta = 2
+                xyz[0] = cos((xyz[0] + 1.0) * M_PI);
+                xyz[1] = cos((xyz[1] + 1.0) * M_PI);
+                xyz[2] = cos((xyz[2] + 1.0) * M_PI);
+
+                xyz += vector(1);
+                xyz *= vector(0.5);
+
+                blend_factor = xyz[0] * xyz[1] * xyz[2];
             }
         }
     }

@@ -166,16 +166,15 @@
     [[                                                                      \
         string as_maya_attribute_name = "ignoreColorSpaceFileRules",        \
         int as_maya_attribute_hidden = 1,                                   \
-        string widget = "checkBox",                                         \
-        string label = "Ignore Color Space File Rules",                     \
-        string page = "File Attributes"                                     \
+        string widget = "null",                                             \
+        string label = "Ignore Color Space File Rules"                      \
     ]],                                                                     \
     string in_colorSpace = ""                                               \
     [[                                                                      \
         string as_maya_attribute_name = "colorSpace",                       \
         int as_maya_attribute_hidden = 1,                                   \
-        string label = "Color Space",                                       \
-        string page = "File Attributes"                                     \
+        string widget = "null",                                             \
+        string label = "Color Space"                                        \
     ]],                                                                     \
     string in_workingSpace = ""                                             \
     [[                                                                      \

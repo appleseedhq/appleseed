@@ -109,4 +109,17 @@ int rand_float(int seed, output float result)
     return x;
 }
 
+float random(float x, float s, float t)
+{
+    vector A = vector(s, t, 0); // s=u, t=v usually
+    vector B = vector(4.213536, 8.34621351, 0);
+
+    return mod(sin(dot(A, B)) * 917853.4917593, 1.0);
+}
+
+float random(float x)
+{
+    return random(x, u, v);
+}
+
 #endif // !AS_MATH_HELPERS_H

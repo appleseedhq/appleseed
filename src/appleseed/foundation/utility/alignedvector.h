@@ -74,9 +74,9 @@ struct VectorElementWrapper
 };
 
 #ifdef _MSC_VER
-#define ALIGNED_VECTOR_BASE std::vector<VectorElementWrapper<T>, AlignedAllocator<VectorElementWrapper<T> > >
+#define ALIGNED_VECTOR_BASE std::vector<VectorElementWrapper<T>, AlignedAllocator<VectorElementWrapper<T>>>
 #else
-#define ALIGNED_VECTOR_BASE std::vector<T, AlignedAllocator<T> >
+#define ALIGNED_VECTOR_BASE std::vector<T, AlignedAllocator<T>>
 #endif
 
 template <typename T>
@@ -135,15 +135,10 @@ class AlignedVector
     {
     }
 
-#if (defined __GNUC__ && defined __GXX_EXPERIMENTAL_CXX0X__) || \
-    (defined _MSC_VER && _MSC_VER >= 1600)
-
     AlignedVector(Base&& rhs)
       : Base(rhs)
     {
     }
-
-#endif
 };
 
 #undef ALIGNED_VECTOR_BASE

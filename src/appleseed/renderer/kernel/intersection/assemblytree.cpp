@@ -425,7 +425,7 @@ void AssemblyTree::create_region_tree(const Assembly& assembly)
 
     if (tree == 0)
     {
-        auto_ptr<ILazyFactory<RegionTree> > region_tree_factory(
+        auto_ptr<ILazyFactory<RegionTree>> region_tree_factory(
             new RegionTreeFactory(
                 RegionTree::Arguments(
                     m_scene,
@@ -455,7 +455,7 @@ void AssemblyTree::create_triangle_tree(const Assembly& assembly)
         RegionInfoVector regions;
         collect_regions(assembly, regions);
 
-        auto_ptr<ILazyFactory<TriangleTree> > triangle_tree_factory(
+        auto_ptr<ILazyFactory<TriangleTree>> triangle_tree_factory(
             new TriangleTreeFactory(
                 TriangleTree::Arguments(
                     m_scene,
@@ -484,7 +484,7 @@ void AssemblyTree::create_curve_tree(const Assembly& assembly)
                 assembly.object_instances().begin(),
                 assembly.object_instances().end());
 
-        auto_ptr<ILazyFactory<CurveTree> > curve_tree_factory(
+        auto_ptr<ILazyFactory<CurveTree>> curve_tree_factory(
             new CurveTreeFactory(
                 CurveTree::Arguments(
                     m_scene,

@@ -86,7 +86,7 @@ class Vector
 
 // Poisoning.
 template <typename T, size_t N>
-class PoisonImpl<Vector<T, N> >
+class PoisonImpl<Vector<T, N>>
 {
   public:
     static void do_poison(Vector<T, N>& v);
@@ -475,7 +475,7 @@ inline const T& Vector<T, N>::operator[](const size_t i) const
 }
 
 template <typename T, size_t N>
-void PoisonImpl<Vector<T, N> >::do_poison(Vector<T, N>& v)
+void PoisonImpl<Vector<T, N>>::do_poison(Vector<T, N>& v)
 {
     for (size_t i = 0; i < N; ++i)
         poison(v[i]);

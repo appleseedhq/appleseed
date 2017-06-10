@@ -228,7 +228,7 @@ class SeAppleseedExpr
         const ShadingPoint&     shading_point,
         OIIO::TextureSystem&    texture_system)
     {
-        for (foundation::each<boost::ptr_vector<TextureSeExprFunc> > i = m_functions_x; i; ++i)
+        for (foundation::each<boost::ptr_vector<TextureSeExprFunc>> i = m_functions_x; i; ++i)
             i->set_texture_system(&texture_system);
 
         const foundation::Vector2f& uv = shading_point.get_uv(0);

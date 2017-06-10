@@ -214,7 +214,7 @@ TEST_SUITE(Foundation_Utility_Memory)
     {
         typedef AlignedAllocator<int> Allocator;
 
-        vector<int, AlignedAllocator<int> > v(Allocator(32));
+        vector<int, AlignedAllocator<int>> v(Allocator(32));
         const size_t default_capacity = v.capacity();
 
         v.resize(1000);

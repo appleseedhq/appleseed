@@ -152,7 +152,7 @@ namespace
         output->clear();
         output->reserve(tokens.size());
 
-        for (each< std::vector<std::string> > token = tokens; token; ++token)
+        for (each< std::vector<std::string>> token = tokens; token; ++token)
         {
             try
             {

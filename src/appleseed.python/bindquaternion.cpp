@@ -107,12 +107,12 @@ namespace
         Quaternion<T>(*rot1)(const Vector<T, 3>&, T) = &Quaternion<T>::make_rotation;
         Quaternion<T>(*rot2)(const Vector<T, 3>&, const Vector<T, 3>&) = &Quaternion<T>::make_rotation;
 
-        bpy::class_<Quaternion<T> >(class_name)
+        bpy::class_<Quaternion<T>>(class_name)
             .def("make_identity", &Quaternion<T>::make_identity).staticmethod("make_identity")
             .def("make_rotation", rot1).def("make_rotation", rot2).staticmethod("make_rotation")
 
             .def(bpy::init<>())
-            .def(bpy::init<T, Vector<T, 3> >())
+            .def(bpy::init<T, Vector<T, 3>>())
 
             .def_readwrite("s", &Quaternion<T>::s)
             .def_readwrite("v", &Quaternion<T>::v)

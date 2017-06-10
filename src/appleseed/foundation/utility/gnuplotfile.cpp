@@ -226,7 +226,7 @@ void GnuplotFile::Plot::write_decl(ofstream& file) const
 
 void GnuplotFile::Plot::write_points(ofstream& file) const
 {
-    for (const_each<vector<Vector2d> > i = m_points; i; ++i)
+    for (const_each<vector<Vector2d>> i = m_points; i; ++i)
     {
         const Vector2d& p = *i;
         file << "    " << p[0] << " " << p[1] << endl;

@@ -157,7 +157,7 @@ class QMCSamplingContext
     template <typename T> struct Tag {};
 
     template <typename T> T next2(Tag<T>);
-    template <typename T, size_t N> Vector<T, N> next2(Tag<Vector<T, N> >);
+    template <typename T, size_t N> Vector<T, N> next2(Tag<Vector<T, N>>);
 };
 
 
@@ -335,12 +335,12 @@ template <typename RNG>
 template <typename T>
 inline T QMCSamplingContext<RNG>::next2(Tag<T>)
 {
-    return next2(Tag<Vector<T, 1> >())[0];
+    return next2(Tag<Vector<T, 1>>())[0];
 }
 
 template <typename RNG>
 template <typename T, size_t N>
-inline Vector<T, N> QMCSamplingContext<RNG>::next2(Tag<Vector<T, N> >)
+inline Vector<T, N> QMCSamplingContext<RNG>::next2(Tag<Vector<T, N>>)
 {
     Vector<T, N> v;
 

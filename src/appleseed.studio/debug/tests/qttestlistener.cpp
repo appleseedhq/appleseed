@@ -153,7 +153,7 @@ namespace
         split(message, "\n", tokens);
 
         // Print the message.
-        for (const_each<vector<string> > i = tokens; i; ++i)
+        for (const_each<vector<string>> i = tokens; i; ++i)
         {
             sstr << "  " << *i << endl;
         }

@@ -1,0 +1,181 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/snow.html
+
+#include "appleseed/math/as_math_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/maya/as_maya_transform_helpers.h"
+
+shader as_maya_snow
+[[
+    string as_maya_node_name = "snow"
+]]
+(
+    color in_snowColor = color(1)
+    [[
+        string as_maya_attribute_name = "snowColor",
+        string as_maya_attribute_short_name = "sn",
+        string label = "Snow Color",
+        string page = "Snow Attributes"
+    ]],
+    color in_surfaceColor = color(0.5, 0.0, 0.0)
+    [[
+        string as_maya_attribute_name = "surfaceColor",
+        string as_maya_attribute_short_name = "su",
+        string label = "Surface Color",
+        string page = "Snow Attributes"
+    ]],
+    float in_threshold = 0.5
+    [[
+        string as_maya_attribute_name = "threshold",
+        string as_maya_attribute_short_name = "th",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Threshold",
+        string page = "Snow Attributes"
+    ]],
+    float in_depthDecay = 5.0
+    [[
+        string as_maya_attribute_name = "depthDecay",
+        string as_maya_attribute_short_name = "dd",
+        float min = 0.0,
+        float softmax = 10.0,
+        string label = "Depth Decay",
+        string page = "Snow Attributes"
+    ]],
+    float in_thickness = 1.0
+    [[
+        string as_maya_attribute_name = "thickness",
+        string as_maya_attribute_short_name = "tn",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Thickness",
+        string page = "Snow Attributes"
+    ]],
+    normal in_normalCamera = N
+    [[
+        string as_maya_attribute_name = "normalCamera",
+        string as_maya_attribute_short_name = "n",
+        string label = "Normal",
+        string widget = "null"
+    ]],
+    point in_refPointCamera = P
+    [[
+        string as_maya_attribute_name = "refPointCamera",
+        string as_maya_attribute_short_name = "rpc",
+        string label = "Surface Point",
+        string widget = "null"
+    ]],
+    matrix in_placementMatrix = matrix(1)
+    [[
+        string as_maya_attribute_name = "placementMatrix",
+        string label = "Placement Matrix",
+        string widget = "null"
+    ]],
+
+    MAYA_COLORBALANCE_PARAMETERS,
+    MAYA_EFFECTS_PARAMETERS,
+    MAYA_EFFECTS_3DTEX_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]]
+)
+{
+    matrix placement = (in_local)
+        ? matrix("common", "object") * in_placementMatrix
+        : in_placementMatrix;
+
+    point Pp = transform(placement, in_refPointCamera);
+
+    float box_blending = 0.0;
+
+    int outside_box = outside_place3d_volume(
+        Pp,
+        in_wrap,
+        in_blend,
+        box_blending);
+
+    if (outside_box)
+    {
+        out_outColor = in_defaultColor;
+        out_outAlpha = maya_luminance(out_outColor);
+
+        return;
+    }
+    else
+    {
+        float up = in_normalCamera[1] - in_threshold;
+
+        if (up < 0.0)
+        {
+            out_outColor = in_surfaceColor;
+            out_outAlpha = 0.0;
+        }
+        else
+        {
+            out_outAlpha = in_thickness * (1.0 - exp(-up * in_depthDecay));
+
+            for (int i = 0; i < 3; ++i)
+            {
+                out_outColor[i] = in_surfaceColor[i] + out_outAlpha *
+                    (in_snowColor[i] - in_surfaceColor[i]);
+            }
+        }
+
+        if (!in_wrap && in_blend)
+        {
+            out_outColor = mix(in_defaultColor, out_outColor, box_blending);
+            out_outAlpha *= box_blending;
+        }
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha
+            );
+    }
+}

@@ -149,6 +149,81 @@ color get_illuminant_XYZ(string illuminant)
     return transform_xyY_to_XYZ(white_xyY);
 }
 
+//
+// Reference:
+//
+//      "Design of Advanced Color Temperature Control Systems for HTDV 
+//      Applications"
+//      Bongsoon Kang, Ohak Moon, Changhee Hong, Honam Lee, Bonghwan Cho,
+//      Youngsun Kim
+//
+//      http://www.jkps.or.kr/journal/download_pdf.php?spage=865&volume=41&number=6
+//
+
+void get_xy_from_CCT_Kang(int CCT, output float xy[2])
+{
+    float x, y;
+
+    if (CCT >= 1667 && CCT <= 4000)
+    {
+        float T2 = sqr(CCT);
+
+        float A = -0.2661239e10 / T2 * CCT;
+        float B = -0.2343589e7 / T2;
+        float C = 0.8776956e4 / CCT;
+
+        x = A + B + C + 0.179910;
+        float x2 = sqr(x);
+
+        if (CCT < 2222)
+        {
+            A = -1.1063814 * x2 * x;
+            B = -1.34811020 * x2;
+            C = 2.18555832 * x;
+
+            y = A + B + C - 0.20219683;
+        }
+        else
+        {
+            A = -0.9549476 * x2 * x;
+            B = -1.37418593 * x2;
+            C = 2.09137015 * x;
+
+            y = A + B + C - 0.16748867;
+        }
+    }
+    else if (CCT > 4000 && CCT <= 25000)
+    {
+        float T2 = sqr(CCT);
+
+        float A = -3.0258469e10 / T2 * CCT;
+        float B = 2.1070379e7 / T2;
+        float C = 0.2226347e4 / CCT;
+
+        x = A + B + C + 0.24039;
+        float x2 = sqr(x);
+
+        A = 3.0817580 * x2 * x;
+        B = -5.8733867 * x2;
+        C = 3.75112997 * x;
+
+        y = A + B + C - 0.37001483;
+    }
+    else
+    {
+        x = y = 0.0;
+#ifdef DEBUG
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+
+        warning("[WARNING]: CCT out of range in %s, %s:%i\n",
+                shadername, __FILE__, __LINE__);
+#endif
+    }
+    xy[0] = x;
+    xy[1] = y;
+}
+
 void get_RGB_to_XYZ_matrix(
     string color_space,
     output vector RGB_to_XYZ[3],
@@ -209,7 +284,7 @@ void get_RGB_to_XYZ_matrix(
         getattribute("shader:shadername", shadername);
 
         warning("[WARNING]:Unsupported/unknown color space %s in %s, %s:%i\n",
-                color_space, shadername, __FILE__, __NAME__);
+                color_space, shadername, __FILE__, __LINE__);
 #endif
         exit(); // no color space nor illuminant, no point in continuing
     }

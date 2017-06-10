@@ -114,7 +114,7 @@ const char* Plugin::get_default_file_extension()
 
 namespace
 {
-    typedef map<string, boost::weak_ptr<SharedLibrary> > PluginCacheType;
+    typedef map<string, boost::weak_ptr<SharedLibrary>> PluginCacheType;
 
     PluginCacheType g_plugin_cache;
     boost::mutex g_plugin_cache_mutex;

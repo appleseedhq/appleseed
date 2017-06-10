@@ -107,7 +107,7 @@ namespace
             collect_object_instances(object_instances, object_uid);
 
         // Remove object instances and their corresponding project items.
-        for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
+        for (const_each<vector<UniqueID>> i = remove_list; i; ++i)
         {
             object_instances.remove(object_instances.get_by_uid(*i));
             delete item_registry.get_item(*i);

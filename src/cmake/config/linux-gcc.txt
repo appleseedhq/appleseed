@@ -95,23 +95,11 @@ if (WARNINGS_AS_ERRORS)
         )
     endif()
 endif ()
-if (USE_CPP11)
-    set (cxx_compiler_flags_common
-        ${cxx_compiler_flags_common}
-        -std=c++11                                      # enable C++11
-        -Wno-deprecated-declarations                    # remove when C++11 support improves.
-    )
-elseif (CMAKE_COMPILER_IS_GNUCC AND (NOT CMAKE_COMPILER_IS_CLANG))
-    if (${GCC_VERSION} VERSION_GREATER 5.0)
-        set (cxx_compiler_flags_common
-            ${cxx_compiler_flags_common}
-            -Wno-deprecated-declarations                # remove when C++11 support improves.
-        )
-
-        add_definitions (-DBOOST_NO_CXX11_SCOPED_ENUMS)
-        add_definitions (-D_GLIBCXX_USE_CXX11_ABI=0)
-    endif()
-endif ()
+set (cxx_compiler_flags_common
+    ${cxx_compiler_flags_common}
+    -std=c++11                                          # enable C++11
+    -Wno-deprecated-declarations                        # remove when C++11 support improves
+)
 if (is_x86)
     if (USE_SSE)
         set (c_compiler_flags_common

@@ -63,14 +63,15 @@ namespace foundation
 
 class IESParser
 {
-public:
+  public:
     // Constructor.
     IESParser();
 
     // Exception that can store erroneous line number.
-    class Exception : public foundation::Exception
+    class Exception
+      : public foundation::Exception
     {
-    public:
+      public:
         Exception(const char* message, const int line);
 
         virtual int line() const throw ()
@@ -78,27 +79,28 @@ public:
             return m_line_number;
         }
 
-    protected:
+      protected:
         int m_line_number;
     };
 
-    // Exception that is thrown when file format violates the IES specifications.
+    // Exception thrown when file format violates the IES specifications.
     class ParsingException : public Exception
     {
-    public:
-        ParsingException(const char* message, int line) :
-            Exception(message, line)
+      public:
+        ParsingException(const char* message, int line)
+          : Exception(message, line)
         {
         }
     };
 
-    // Exception that is thrown when the feature of IES file is not supported by this parser.
+    // Exception thrown when the feature of IES file is not supported by this parser.
     class NotSupportedException : public Exception
     {
-    public:
-        NotSupportedException(const char* message, int line) :
-            Exception(message, line)
-        {}
+      public:
+        NotSupportedException(const char* message, int line)
+          : Exception(message, line)
+        {
+        }
     };
 
     // Dictionary containing IES file keywords and corresponding values.
@@ -117,12 +119,10 @@ public:
     // How TILT information is specified in the file.
     enum TiltSpecification
     {
-        IncludeTilt,  // TILT is included in this IES file
-
-        TiltFromFile, // TILT is specified in the separate file
-
-        NoTilt   // the lamp output does not vary as a function
-                 // of the luminaire tilt angle (and TILT is not specified)
+        IncludeTilt,                    // TILT is included in this IES file
+        TiltFromFile,                   // TILT is specified in the separate file
+        NoTilt                          // the lamp output does not vary as a function
+                                        // of the luminaire tilt angle (and TILT is not specified)
     };
 
     // Lamp-to-luminaire geometry types. 
@@ -148,10 +148,10 @@ public:
     enum SymmetryType
     {
         NoSymmetry,
-        SymmetricHalvesX,   // bilaterally symmetric about the 0-180 degree axis
-        SymmetricHalvesY,   // bilaterally symmetric about the 90-270 degree axis
-        SymmetricQuadrants, // symmetric in each quadrant
-        FullySymmetric      // full rotational symmetry 
+        SymmetricHalvesX,               // bilaterally symmetric about the 0-180 degree axis
+        SymmetricHalvesY,               // bilaterally symmetric about the 90-270 degree axis
+        SymmetricQuadrants,             // symmetric in each quadrant
+        FullySymmetric                  // full rotational symmetry 
     };
 
     // Shape of luminous opening.
@@ -169,7 +169,20 @@ public:
         double      m_height;
     };
 
-    typedef std::vector< std::vector<double> > PhotometricGrid;
+    typedef std::vector<std::vector<double>> PhotometricGrid;
+
+    //
+    // Options.
+    //
+
+    bool m_ignore_allowed_keywords;     // if true, all keywors are allowed not depending on format version
+    bool m_ignore_required_keywords;    // if true, some required keywors can be missing
+    bool m_ignore_empty_lines;          // if true, than the file can contain whitespace lines
+    bool m_ignore_tilt;                 // if true, TILT section is not parsed
+
+    //
+    // Main methods.
+    //
 
     // Parse input stream containing IESNA LM-63 Photometric Data.
     void parse(std::istream& input_stream);
@@ -184,8 +197,9 @@ public:
     static bool is_keyword_allowed_by_iesna91(const std::string& keyword);
 
     //
-    // Getters:
+    // Getters.
     //
+
     Format get_format() const
     {
         return m_format;
@@ -291,13 +305,7 @@ public:
         return m_keywords_dictionary.at(keyword);
     }
 
-    // Options:
-    bool m_ignore_allowed_keywords;  // if true, all keywors are allowed not depending on format version
-    bool m_ignore_required_keywords; // if true, some required keywors can be missing
-    bool m_ignore_empty_lines;       // if true, than the file can contain whitespace lines
-    bool m_ignore_tilt;              // if true, TILT section is not parsed
-
-private:
+  private:
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Iesparser, ParseFormat);
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Iesparser, ReadLine_IgnoreEmptyLines);
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Iesparser, ReadLine_DoNotIgnoreEmptyLines);
@@ -394,7 +402,7 @@ private:
                     format(ErrorMsg, expected_number_of_values).c_str(), m_line_counter);
             }
 
-            for (each< std::vector<std::string> > token = tokens; token; ++token)
+            for (each<std::vector<std::string>> token = tokens; token; ++token)
             {
                 output.push_back(boost::lexical_cast<ValueType>(*token));
             }
@@ -450,6 +458,6 @@ private:
     std::string                     m_line;
 };
 
-} // namespace foundation
+}       // namespace foundation
 
-#endif // APPLESEED_FOUNDATION_UTILITY_IESPARSER_H
+#endif  // !APPLESEED_FOUNDATION_UTILITY_IESPARSER_H

@@ -40,7 +40,7 @@ namespace
     template <typename T>
     void bind_aabb3(const char* class_name)
     {
-        bpy::class_<AABB<T, 3> >(class_name)
+        bpy::class_<AABB<T, 3>>(class_name)
             .def_readwrite("min", &AABB<T, 3>::min)
             .def_readwrite("max", &AABB<T, 3>::max)
 

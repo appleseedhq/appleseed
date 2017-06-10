@@ -444,7 +444,7 @@ RegionTree::RegionTree(const Arguments& arguments)
         const UniqueID triangle_tree_uid = new_guid();
 
         // Create the triangle tree factory.
-        auto_ptr<ILazyFactory<TriangleTree> > triangle_tree_factory(
+        auto_ptr<ILazyFactory<TriangleTree>> triangle_tree_factory(
             new TriangleTreeFactory(
                 TriangleTree::Arguments(
                     arguments.m_scene,

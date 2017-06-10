@@ -80,7 +80,7 @@ class SphericalImportanceSampler
 
     typedef std::map<uint64, size_t> PointCache;
 
-    std::vector<Vector<T, 3> >  m_verts;
+    std::vector<Vector<T, 3>>   m_verts;
     std::vector<Tri>            m_tris;
     CDF<size_t, T>              m_cdf;
 

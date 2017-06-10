@@ -369,7 +369,7 @@ void MainWindow::update_override_shading_menu_item()
         const string shading_mode =
             shading_engine_params.child("override_shading").get_optional<string>("mode", "coverage");
 
-        for (const_each<QList<QAction*> > i = m_ui->menu_diagnostics_override_shading->actions(); i; ++i)
+        for (const_each<QList<QAction*>> i = m_ui->menu_diagnostics_override_shading->actions(); i; ++i)
         {
             QAction* action = *i;
 
@@ -1773,7 +1773,7 @@ void MainWindow::slot_fullscreen()
 
     bool all_minimized = true;
     bool not_minimized = false;
-    for (each<vector<MinimizeButton*> > button = m_minimize_buttons; button; ++button)
+    for (each<vector<MinimizeButton*>> button = m_minimize_buttons; button; ++button)
     {
         all_minimized = all_minimized && (*button)->is_on();
         not_minimized = not_minimized || !(*button)->is_on();
@@ -1787,7 +1787,7 @@ void MainWindow::slot_fullscreen()
     if (not_minimized)
         m_fullscreen = true;
 
-    for (each<vector<MinimizeButton*> > button = m_minimize_buttons; button; ++button)
+    for (each<vector<MinimizeButton*>> button = m_minimize_buttons; button; ++button)
         (*button)->set_fullscreen(m_fullscreen);
 }
 
