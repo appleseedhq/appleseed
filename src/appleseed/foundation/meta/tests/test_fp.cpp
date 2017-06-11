@@ -81,6 +81,14 @@ TEST_SUITE(Foundation_Math_FP_Float)
         EXPECT_TRUE(FP<float>::is_qnan(FP<float>::qnan()));
     }
 
+    TEST_CASE(Copysign)
+    {
+        EXPECT_EQ( 12.0f, FP<float>::copysign( 12.0f,  34.0f));
+        EXPECT_EQ(-12.0f, FP<float>::copysign( 12.0f, -34.0f));
+        EXPECT_EQ( 12.0f, FP<float>::copysign(-12.0f,  34.0f));
+        EXPECT_EQ(-12.0f, FP<float>::copysign(-12.0f, -34.0f));
+    }
+
     TEST_CASE(Shift_GivenZeroAndShiftOfZero_ReturnsZero)
     {
         EXPECT_EQ(+0.0f, shift(+0.0f, 0));
@@ -194,5 +202,13 @@ TEST_SUITE(Foundation_Math_FP_Double)
     TEST_CASE(IsQNan_GivenQNan_ReturnsTrue)
     {
         EXPECT_TRUE(FP<double>::is_qnan(FP<double>::qnan()));
+    }
+
+    TEST_CASE(Copysign)
+    {
+        EXPECT_EQ( 12.0, FP<double>::copysign( 12.0,  34.0));
+        EXPECT_EQ(-12.0, FP<double>::copysign( 12.0, -34.0));
+        EXPECT_EQ( 12.0, FP<double>::copysign(-12.0,  34.0));
+        EXPECT_EQ(-12.0, FP<double>::copysign(-12.0, -34.0));
     }
 }

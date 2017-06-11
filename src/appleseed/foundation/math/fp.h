@@ -135,6 +135,11 @@ struct FP<float>
         const uint32    sign,
         const uint32    exponent,
         const uint32    mantissa);
+
+    // Compose a 32-bit floating point value with the magnitude of x and the sign of y.
+    static float copysign(
+        const float     x,
+        const float     y);
 };
 
 template <>
@@ -215,6 +220,11 @@ struct FP<double>
         const uint64    sign,
         const uint64    exponent,
         const uint64    mantissa);
+
+    // Compose a 64-bit floating point value with the magnitude of x and the sign of y.
+    static double copysign(
+        const double    x,
+        const double    y);
 };
 
 
@@ -364,12 +374,23 @@ inline float FP<float>::construct(
     assert(exponent < (uint32(1) << 8));
     assert(mantissa < (uint32(1) << 23));
 
-    const uint32 value =
-          (sign     << 31)
-        | (exponent << 22)
-        |  mantissa;
+    const uint32 value = (sign << 31) | (exponent << 22) |  mantissa;
 
     return binary_cast<float>(value);
+}
+
+inline float FP<float>::copysign(
+    const float     x,
+    const float     y)
+{
+    const uint32 ix = binary_cast<uint32>(x);
+    const uint32 iy = binary_cast<uint32>(y);
+
+    const uint32 mx = ix & 0x7FFFFFFFL;     // magnitude of x
+    const uint32 sy = iy & 0x80000000L;     // sign of y
+    const uint32 iz = mx | sy;              // combine
+
+    return binary_cast<float>(iz);
 }
 
 
@@ -506,12 +527,23 @@ inline double FP<double>::construct(
     assert(exponent < (uint64(1) << 11));
     assert(mantissa < (uint64(1) << 52));
 
-    const uint64 value =
-          (sign     << 63)
-        | (exponent << 52)
-        |  mantissa;
+    const uint64 value = (sign << 63) | (exponent << 52) |  mantissa;
 
     return binary_cast<double>(value);
+}
+
+inline double FP<double>::copysign(
+    const double    x,
+    const double    y)
+{
+    const uint64 ix = binary_cast<uint64>(x);
+    const uint64 iy = binary_cast<uint64>(y);
+
+    const uint64 mx = ix & 0x7FFFFFFFFFFFFFFFLL;    // magnitude of x
+    const uint64 sy = iy & 0x8000000000000000LL;    // sign of y
+    const uint64 iz = mx | sy;                      // combine
+
+    return binary_cast<double>(iz);
 }
 
 
