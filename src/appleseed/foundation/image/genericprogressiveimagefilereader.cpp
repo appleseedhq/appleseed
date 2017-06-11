@@ -38,11 +38,10 @@
 #include "foundation/image/tile.h"
 
 // OpenImageIO headers.
-#include "foundation/platform/oiioheaderguards.h"
-BEGIN_OIIO_INCLUDES
+#include "foundation/platform/_beginoiioheaders.h"
 #include "OpenImageIO/imageio.h"
 #include "OpenImageIO/typedesc.h"
-END_OIIO_INCLUDES
+#include "foundation/platform/_endoiioheaders.h"
 
 // Standard headers.
 #include <algorithm>

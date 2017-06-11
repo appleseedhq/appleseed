@@ -54,12 +54,11 @@
 #include "foundation/utility/otherwise.h"
 
 // OSL headers.
-#include "foundation/platform/oslheaderguards.h"
-BEGIN_OSL_INCLUDES
+#include "foundation/platform/_beginoslheaders.h"
 #include "OSL/genclosure.h"
 #include "OSL/oslclosure.h"
 #include "OSL/oslversion.h"
-END_OSL_INCLUDES
+#include "foundation/platform/_endoslheaders.h"
 
 // Standard headers.
 #include <algorithm>

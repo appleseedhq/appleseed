@@ -46,10 +46,9 @@
 #include "foundation/utility/makevector.h"
 
 // OpenImageIO headers.
-#include "foundation/platform/oiioheaderguards.h"
-BEGIN_OIIO_INCLUDES
+#include "foundation/platform/_beginoiioheaders.h"
 #include "OpenImageIO/ustring.h"
-END_OIIO_INCLUDES
+#include "foundation/platform/_endoiioheaders.h"
 
 // Standard headers.
 #include <string>

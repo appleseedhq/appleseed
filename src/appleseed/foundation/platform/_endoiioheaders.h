@@ -26,30 +26,10 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_OIIOHEADERGUARDS_H
-#define APPLESEED_FOUNDATION_PLATFORM_OIIOHEADERGUARDS_H
-
 #if defined _MSC_VER
 
-    // C4005: 'copysign': macro redefinition
-    // C4244: conversion from 'double' to 'float', possible loss of data
-    // C4305: truncation from 'double' to 'float', possible loss of data
-    // C4800: 'int': forcing value to bool 'true' or 'false' (performance warning)
-    #define BEGIN_OIIO_INCLUDES             \
-        __pragma(warning(push))             \
-        __pragma(warning(disable: 4005))    \
-        __pragma(warning(disable: 4244))    \
-        __pragma(warning(disable: 4305))    \
-        __pragma(warning(disable: 4800))
+    #pragma warning (pop)
 
-    #define END_OIIO_INCLUDES               \
-        __pragma(warning(pop))
-
-#else
-
-    #define BEGIN_OIIO_INCLUDES
-    #define END_OIIO_INCLUDES
+    #undef copysign
 
 #endif
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_OIIOHEADERGUARDS_H

@@ -40,8 +40,7 @@
 #include "foundation/image/tile.h"
 
 // OpenEXR headers.
-#include "foundation/platform/exrheaderguards.h"
-BEGIN_EXR_INCLUDES
+#include "foundation/platform/_beginexrheaders.h"
 #include "OpenEXR/IexBaseExc.h"
 #include "OpenEXR/ImathBox.h"
 #include "OpenEXR/ImathVec.h"
@@ -51,7 +50,7 @@ BEGIN_EXR_INCLUDES
 #include "OpenEXR/ImfPixelType.h"
 #include "OpenEXR/ImfTileDescription.h"
 #include "OpenEXR/ImfTiledOutputFile.h"
-END_EXR_INCLUDES
+#include "foundation/platform/_endexrheaders.h"
 
 // Standard headers.
 #include <cassert>

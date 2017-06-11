@@ -62,16 +62,14 @@
 #include "foundation/utility/test.h"
 
 // OSL headers.
-#include "foundation/platform/oslheaderguards.h"
-BEGIN_OSL_INCLUDES
+#include "foundation/platform/_beginoslheaders.h"
 #include "OSL/oslexec.h"
-END_OSL_INCLUDES
+#include "foundation/platform/_endoslheaders.h"
 
 // OpenImageIO headers.
-#include "foundation/platform/oiioheaderguards.h"
-BEGIN_OIIO_INCLUDES
+#include "foundation/platform/_beginoiioheaders.h"
 #include "OpenImageIO/texture.h"
-END_OIIO_INCLUDES
+#include "foundation/platform/_endoiioheaders.h"
 
 // Boost headers.
 #include "boost/bind.hpp"

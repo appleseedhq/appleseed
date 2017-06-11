@@ -56,11 +56,10 @@
 #include "foundation/utility/poison.h"
 
 // OSL headers.
-#include "foundation/platform/oslheaderguards.h"
-BEGIN_OSL_INCLUDES
+#include "foundation/platform/_beginoslheaders.h"
 #include "OSL/oslexec.h"
 #include "OSL/shaderglobals.h"
-END_OSL_INCLUDES
+#include "foundation/platform/_endoslheaders.h"
 
 // Standard headers.
 #include <cassert>
