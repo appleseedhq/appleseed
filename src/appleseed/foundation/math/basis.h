@@ -188,7 +188,7 @@ inline void Basis3<T>::build(const VectorType& normal)
 
     m_n = normal;
 
-    const T sign = m_n[2] < T(0.0) ? T(-1.0) : T(1.0);
+    const T sign = copysign(T(1.0), m_n[2]);
 
     const T a = T(-1.0) / (sign + m_n[2]);
     const T b = m_n[0] * m_n[1] * a;
