@@ -35,8 +35,8 @@
 
 // Qt headers.
 #include <QAction>
-#include <QContextMenuEvent>
 #include <QToolBar>
+#include <QVBoxLayout>
 
 namespace appleseed {
 namespace studio {
@@ -46,8 +46,11 @@ namespace studio {
 //
 
 PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
-  : QSplitter(parent)
+  : QWidget(parent)
 {
+    input = new PythonInput(this);
+    input->setStyleSheet("background-color:#303030");
+
     output = new QTextEdit(this);
     output->setUndoRedoEnabled(false);
     output->setLineWrapMode(QTextEdit::WidgetWidth);
@@ -56,19 +59,19 @@ PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
         Qt::TextSelectableByMouse |
         Qt::TextSelectableByKeyboard);
 
-    input = new PythonInput(this);
-
     init_actions();
 
-    QToolBar* toolbar = new QToolBar();
+    QToolBar* toolbar = new QToolBar(this);
     toolbar->addAction(m_action_execute_selection);
     toolbar->addAction(m_action_execute_all);
     toolbar->addAction(m_action_clear_selection);
 
-    insertWidget(0, toolbar);
-    insertWidget(1, output);
-    insertWidget(2, input);
-    setOrientation(Qt::Vertical);
+    QVBoxLayout* layout = new QVBoxLayout();
+    layout->addWidget(toolbar);
+    layout->addWidget(input);
+    layout->addWidget(output);
+
+    setLayout(layout);
 
     PythonInterpreter::instance().redirect_output(OutputRedirector(output));
 }

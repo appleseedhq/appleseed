@@ -34,19 +34,18 @@
 
 // Qt headers.
 #include <QObject>
-#include <QSplitter>
+#include <QWidget>
 
 // Forward declarations.
 class QAction;
 class QString;
-class QWidget;
 class QTextEdit;
 
 namespace appleseed {
 namespace studio {
 
 class PythonConsoleWidget
-  : public QSplitter
+  : public QWidget
 {
   Q_OBJECT
 
