@@ -65,20 +65,20 @@ namespace
         {
         }
 
-        virtual void reset() APPLESEED_OVERRIDE
+        virtual void reset() override
         {
             m_depth = numeric_limits<float>::max();
         }
 
         virtual void write(
             const ShadingPoint&     shading_point,
-            const Camera&           camera) APPLESEED_OVERRIDE
+            const Camera&           camera) override
         {
             if (shading_point.hit())
                 m_depth = static_cast<float>(shading_point.get_distance());
         }
 
-        virtual void flush(ShadingResult& result) APPLESEED_OVERRIDE
+        virtual void flush(ShadingResult& result) override
         {
             result.m_aovs[m_index].m_color.set(m_depth);
             result.m_aovs[m_index].m_alpha.set(1.0f);
@@ -104,33 +104,33 @@ namespace
         {
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        virtual const char* get_model() const override
         {
             return Model;
         }
 
-        virtual size_t get_channel_count() const APPLESEED_OVERRIDE
+        virtual size_t get_channel_count() const override
         {
             return 1;
         }
 
-        virtual const char* get_channel_name(const size_t i) const APPLESEED_OVERRIDE
+        virtual const char* get_channel_name(const size_t i) const override
         {
             return "Z";
         }
 
-        virtual bool has_color_data() const APPLESEED_OVERRIDE
+        virtual bool has_color_data() const override
         {
             return false;
         }
 
         virtual auto_release_ptr<AOVAccumulator> create_accumulator(
-            const size_t index) const APPLESEED_OVERRIDE
+            const size_t index) const override
         {
             return auto_release_ptr<AOVAccumulator>(new DepthAOVAccumulator(index));
         }

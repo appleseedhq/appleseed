@@ -79,12 +79,12 @@ namespace
             m_inputs.declare("exposure", InputFormatFloat, "0.0");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        virtual const char* get_model() const override
         {
             return Model;
         }
@@ -93,7 +93,7 @@ namespace
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch*           abort_switch) override
         {
             if (!EDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
@@ -111,7 +111,7 @@ namespace
             const Vector2f&         s,
             Vector3f&               outgoing,
             Spectrum&               value,
-            float&                  probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
             assert(is_normalized(geometric_normal));
 
@@ -131,7 +131,7 @@ namespace
             const Vector3f&         geometric_normal,
             const Basis3f&          shading_basis,
             const Vector3f&         outgoing,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+            Spectrum&               value) const override
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
@@ -156,7 +156,7 @@ namespace
             const Basis3f&          shading_basis,
             const Vector3f&         outgoing,
             Spectrum&               value,
-            float&                  probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
@@ -182,7 +182,7 @@ namespace
             const void*             data,
             const Vector3f&         geometric_normal,
             const Basis3f&          shading_basis,
-            const Vector3f&         outgoing) const APPLESEED_OVERRIDE
+            const Vector3f&         outgoing) const override
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
@@ -196,7 +196,7 @@ namespace
             return cos_on * RcpPi<float>();
         }
 
-        virtual float get_uncached_max_contribution() const APPLESEED_OVERRIDE
+        virtual float get_uncached_max_contribution() const override
         {
             return get_max_contribution("radiance", "radiance_multiplier", "exposure");
         }

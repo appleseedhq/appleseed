@@ -62,10 +62,10 @@ class ProgressiveFrameRendererFactory
         const ParamArray&           params);
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     // Return a new progressive frame renderer instance.
-    virtual IFrameRenderer* create() APPLESEED_OVERRIDE;
+    virtual IFrameRenderer* create() override;
 
     // Return a new progressive frame renderer instance.
     static IFrameRenderer* create(

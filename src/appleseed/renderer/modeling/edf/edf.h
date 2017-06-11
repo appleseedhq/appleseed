@@ -108,7 +108,7 @@ class APPLESEED_DLLSYMBOL EDF
         const Project&              project,
         const BaseGroup*            parent,
         OnFrameBeginRecorder&       recorder,
-        foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
+        foundation::IAbortSwitch*   abort_switch = 0) override;
 
     // Evaluate the inputs of this EDF.
     virtual void* evaluate_inputs(

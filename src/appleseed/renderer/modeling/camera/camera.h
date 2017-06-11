@@ -107,7 +107,7 @@ class APPLESEED_DLLSYMBOL Camera
         const Project&                  project,
         const BaseGroup*                parent,
         OnFrameBeginRecorder&           recorder,
-        foundation::IAbortSwitch*       abort_switch = 0) APPLESEED_OVERRIDE;
+        foundation::IAbortSwitch*       abort_switch = 0) override;
 
     // Generate a ray directed toward a given point on the film plane,
     // expressed in normalized device coordinates

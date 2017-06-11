@@ -64,20 +64,20 @@ namespace
         {
         }
 
-        virtual void reset() APPLESEED_OVERRIDE
+        virtual void reset() override
         {
             m_normal = Vector3f(0.0f, 0.0f, 0.0f);
         }
 
         virtual void write(
             const ShadingPoint&     shading_point,
-            const Camera&           camera) APPLESEED_OVERRIDE
+            const Camera&           camera) override
         {
             if (shading_point.hit())
                 m_normal = Vector3f(shading_point.get_shading_normal());
         }
 
-        virtual void flush(ShadingResult& result) APPLESEED_OVERRIDE
+        virtual void flush(ShadingResult& result) override
         {
             result.m_aovs[m_index].m_color =
                 Color3f(
@@ -107,34 +107,34 @@ namespace
         {
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        virtual const char* get_model() const override
         {
             return Model;
         }
 
-        virtual size_t get_channel_count() const APPLESEED_OVERRIDE
+        virtual size_t get_channel_count() const override
         {
             return 3;
         }
 
-        virtual const char* get_channel_name(const size_t i) const APPLESEED_OVERRIDE
+        virtual const char* get_channel_name(const size_t i) const override
         {
             static const char* channels[] = {"X", "Y", "Z"};
             return channels[i];
         }
 
-        virtual bool has_color_data() const APPLESEED_OVERRIDE
+        virtual bool has_color_data() const override
         {
             return false;
         }
 
         virtual auto_release_ptr<AOVAccumulator> create_accumulator(
-            const size_t index) const APPLESEED_OVERRIDE
+            const size_t index) const override
         {
             return auto_release_ptr<AOVAccumulator>(new NormalAOVAccumulator(index));
         }

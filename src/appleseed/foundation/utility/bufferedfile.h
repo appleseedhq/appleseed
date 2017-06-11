@@ -246,7 +246,7 @@ class PassthroughWriterAdapter
 
     virtual size_t write(
         const void*         inbuf,
-        const size_t        size) APPLESEED_OVERRIDE;
+        const size_t        size) override;
 
   private:
     BufferedFile&           m_file;
@@ -260,7 +260,7 @@ class PassthroughReaderAdapter
 
     virtual size_t read(
         void*               outbuf,
-        const size_t        size) APPLESEED_OVERRIDE;
+        const size_t        size) override;
 
   private:
     BufferedFile&           m_file;
@@ -283,7 +283,7 @@ class CompressedWriterAdapter
 
     virtual size_t write(
         const void*         inbuf,
-        const size_t        size) APPLESEED_OVERRIDE;
+        const size_t        size) override;
 
   protected:
     BufferedFile&           m_file;
@@ -302,7 +302,7 @@ class CompressedReaderAdapter
 
     virtual size_t read(
         void*               outbuf,
-        const size_t        size) APPLESEED_OVERRIDE;
+        const size_t        size) override;
 
   protected:
     BufferedFile&           m_file;
@@ -333,7 +333,7 @@ class LZ4CompressedWriterAdapter
   private:
     std::vector<uint8>      m_compressed_buffer;
 
-    virtual void flush_buffer() APPLESEED_OVERRIDE;
+    virtual void flush_buffer() override;
 };
 
 class LZ4CompressedReaderAdapter
@@ -345,7 +345,7 @@ class LZ4CompressedReaderAdapter
   private:
     std::vector<uint8>      m_compressed_buffer;
 
-    virtual bool fill_buffer() APPLESEED_OVERRIDE;
+    virtual bool fill_buffer() override;
 };
 
 

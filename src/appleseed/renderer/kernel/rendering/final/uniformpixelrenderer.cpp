@@ -106,7 +106,7 @@ namespace
             }
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
@@ -120,7 +120,7 @@ namespace
             const Vector2i&             pi,
             const Vector2i&             pt,
             SamplingContext::RNGType&   rng,
-            ShadingResultFrameBuffer&   framebuffer) APPLESEED_OVERRIDE
+            ShadingResultFrameBuffer&   framebuffer) override
         {
             const size_t aov_count = frame.aov_images().size();
 
@@ -232,7 +232,7 @@ namespace
             on_pixel_end(pi);
         }
 
-        virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
+        virtual StatisticsVector get_statistics() const override
         {
             Statistics stats;
             stats.insert("max sampling dimension", m_total_sampling_dim);

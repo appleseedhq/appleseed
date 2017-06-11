@@ -35,9 +35,6 @@
 #include "foundation/platform/arch.h"
 #include "foundation/platform/types.h"
 
-// Boost headers.
-#include "boost/static_assert.hpp"
-
 // Standard headers.
 #include <cassert>
 #include <cstddef>
@@ -295,7 +292,7 @@ template <typename T, size_t Base>
 inline T static_radical_inverse(
     size_t              value)
 {
-    BOOST_STATIC_ASSERT(Base >= 2);
+    static_assert(Base >= 2, "foundation::static_radical_inverse() expects Base >= 2");
 
     const T RcpBase = T(1.0) / Base;
 
@@ -1401,7 +1398,7 @@ inline T static_permuted_radical_inverse(
     const size_t        perm[],
     size_t              value)
 {
-    BOOST_STATIC_ASSERT(Base >= 2);
+    static_assert(Base >= 2, "foundation::static_permuted_radical_inverse() expects Base >= 2");
 
     const T RcpBase = T(1.0) / Base;
 

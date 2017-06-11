@@ -86,18 +86,18 @@ class APPLESEED_DLLSYMBOL Image
     virtual ~Image();
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     // Access canvas properties.
-    virtual const CanvasProperties& properties() const APPLESEED_OVERRIDE;
+    virtual const CanvasProperties& properties() const override;
 
     // Direct access to a given tile.
     virtual Tile& tile(
         const size_t        tile_x,
-        const size_t        tile_y) APPLESEED_OVERRIDE;
+        const size_t        tile_y) override;
     virtual const Tile& tile(
         const size_t        tile_x,
-        const size_t        tile_y) const APPLESEED_OVERRIDE;
+        const size_t        tile_y) const override;
 
     // Set a given tile. Ownership of the tile is transfered to the Image class.
     // If a tile already exists at the given coordinates, it gets replaced.

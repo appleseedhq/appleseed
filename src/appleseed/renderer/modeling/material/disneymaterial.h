@@ -77,7 +77,7 @@ class APPLESEED_DLLSYMBOL DisneyMaterialLayer
     ~DisneyMaterialLayer();
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     DisneyMaterialLayer& operator=(const DisneyMaterialLayer& other);
 
@@ -118,14 +118,14 @@ class APPLESEED_DLLSYMBOL DisneyMaterial
 {
   public:
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     // Return a string identifying the model of this material.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    virtual const char* get_model() const override;
 
     // Expose asset file paths referenced by this entity to the outside.
-    virtual void collect_asset_paths(foundation::StringArray& paths) const APPLESEED_OVERRIDE;
-    virtual void update_asset_paths(const foundation::StringDictionary& mappings) APPLESEED_OVERRIDE;
+    virtual void collect_asset_paths(foundation::StringArray& paths) const override;
+    virtual void update_asset_paths(const foundation::StringDictionary& mappings) override;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
@@ -133,12 +133,12 @@ class APPLESEED_DLLSYMBOL DisneyMaterial
         const Project&              project,
         const BaseGroup*            parent,
         OnFrameBeginRecorder&       recorder,
-        foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
+        foundation::IAbortSwitch*   abort_switch = 0) override;
 
     // This method is called once after rendering each frame (only if on_frame_begin() was called).
     virtual void on_frame_end(
         const Project&              project,
-        const BaseGroup*            parent) APPLESEED_OVERRIDE;
+        const BaseGroup*            parent) override;
 
     // Add a new layer with given values to the material.
     // A name and a number will be automatically assigned
@@ -185,18 +185,18 @@ class APPLESEED_DLLSYMBOL DisneyMaterialFactory
 {
   public:
     // Return a string identifying this material model.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    virtual const char* get_model() const override;
 
     // Return metadata for this material model.
-    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
+    virtual foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this material model.
-    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
+    virtual foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new material instance.
     virtual foundation::auto_release_ptr<Material> create(
         const char*         name,
-        const ParamArray&   params) const APPLESEED_OVERRIDE;
+        const ParamArray&   params) const override;
 
     // Static variant of the create() method above.
     static foundation::auto_release_ptr<Material> static_create(

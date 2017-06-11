@@ -68,7 +68,7 @@ namespace
                 Qt::QueuedConnection);
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
@@ -77,7 +77,7 @@ namespace
             const size_t    x,
             const size_t    y,
             const size_t    width,
-            const size_t    height) APPLESEED_OVERRIDE
+            const size_t    height) override
         {
             assert(m_render_widget);
             m_render_widget->highlight_region(x, y, width, height);
@@ -87,7 +87,7 @@ namespace
         virtual void post_render_tile(
             const Frame*    frame,
             const size_t    tile_x,
-            const size_t    tile_y) APPLESEED_OVERRIDE
+            const size_t    tile_y) override
         {
             assert(m_render_widget);
             m_render_widget->blit_tile(*frame, tile_x, tile_y);
@@ -95,7 +95,7 @@ namespace
         }
 
         virtual void post_render(
-            const Frame*    frame) APPLESEED_OVERRIDE
+            const Frame*    frame) override
         {
             assert(m_render_widget);
             m_render_widget->blit_frame(*frame);

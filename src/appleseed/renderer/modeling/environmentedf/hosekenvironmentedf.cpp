@@ -111,12 +111,12 @@ namespace
             m_inputs.declare("horizon_shift", InputFormatFloat, "0.0");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        virtual const char* get_model() const override
         {
             return Model;
         }
@@ -125,7 +125,7 @@ namespace
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch*           abort_switch) override
         {
             if (!EnvironmentEDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
@@ -163,7 +163,7 @@ namespace
             const Vector2f&         s,
             Vector3f&               outgoing,
             Spectrum&               value,
-            float&                  probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
             const Vector3f local_outgoing = sample_hemisphere_cosine(s);
 
@@ -182,7 +182,7 @@ namespace
         virtual void evaluate(
             const ShadingContext&   shading_context,
             const Vector3f&         outgoing,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+            Spectrum&               value) const override
         {
             assert(is_normalized(outgoing));
 
@@ -200,7 +200,7 @@ namespace
             const ShadingContext&   shading_context,
             const Vector3f&         outgoing,
             Spectrum&               value,
-            float&                  probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
             assert(is_normalized(outgoing));
 
@@ -217,7 +217,7 @@ namespace
         }
 
         virtual float evaluate_pdf(
-            const Vector3f&         outgoing) const APPLESEED_OVERRIDE
+            const Vector3f&         outgoing) const override
         {
             assert(is_normalized(outgoing));
 

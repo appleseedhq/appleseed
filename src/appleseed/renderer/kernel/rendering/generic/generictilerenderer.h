@@ -64,11 +64,11 @@ class GenericTileRendererFactory
         const ParamArray&                   params);
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     // Return a new generic tile renderer instance.
     virtual ITileRenderer* create(
-        const size_t                        thread_index) APPLESEED_OVERRIDE;
+        const size_t                        thread_index) override;
 
   private:
     const Frame&                            m_frame;

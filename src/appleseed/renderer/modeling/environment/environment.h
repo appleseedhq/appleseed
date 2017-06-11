@@ -66,7 +66,7 @@ class APPLESEED_DLLSYMBOL Environment
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     // Return a string identifying the model of this environment.
     const char* get_model() const;
@@ -77,12 +77,12 @@ class APPLESEED_DLLSYMBOL Environment
         const Project&              project,
         const BaseGroup*            parent,
         OnFrameBeginRecorder&       recorder,
-        foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
+        foundation::IAbortSwitch*   abort_switch = 0) override;
 
     // This method is called once after rendering each frame (only if on_frame_begin() was called).
     virtual void on_frame_end(
         const Project&              project,
-        const BaseGroup*            parent) APPLESEED_OVERRIDE;
+        const BaseGroup*            parent) override;
 
     //
     // The get_*() methods below retrieve entities that were cached by on_frame_begin().

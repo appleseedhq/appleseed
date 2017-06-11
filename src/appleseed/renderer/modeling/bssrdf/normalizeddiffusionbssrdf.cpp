@@ -86,17 +86,17 @@ namespace
             m_inputs.declare("fresnel_weight", InputFormatFloat, "1.0");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        virtual const char* get_model() const override
         {
             return Model;
         }
 
-        virtual size_t compute_input_data_size() const APPLESEED_OVERRIDE
+        virtual size_t compute_input_data_size() const override
         {
             return sizeof(NormalizedDiffusionBSSRDFInputValues);
         }
@@ -104,7 +104,7 @@ namespace
         virtual void prepare_inputs(
             Arena&                  arena,
             const ShadingPoint&     shading_point,
-            void*                   data) const APPLESEED_OVERRIDE
+            void*                   data) const override
         {
             NormalizedDiffusionBSSRDFInputValues* values =
                 static_cast<NormalizedDiffusionBSSRDFInputValues*>(data);
@@ -160,7 +160,7 @@ namespace
             const ShadingPoint&     outgoing_point,
             const Vector3f&         outgoing_dir,
             BSSRDFSample&           bssrdf_sample,
-            BSDFSample&             bsdf_sample) const APPLESEED_OVERRIDE
+            BSDFSample&             bsdf_sample) const override
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
                 static_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
@@ -179,7 +179,7 @@ namespace
         virtual float sample_profile(
             const void*             data,
             const size_t            channel,
-            const float             u) const APPLESEED_OVERRIDE
+            const float             u) const override
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
                 static_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
@@ -192,7 +192,7 @@ namespace
 
         virtual float evaluate_profile_pdf(
             const void*             data,
-            const float             disk_radius) const APPLESEED_OVERRIDE
+            const float             disk_radius) const override
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
                 static_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
@@ -219,7 +219,7 @@ namespace
             const Vector3f&         outgoing_dir,
             const ShadingPoint&     incoming_point,
             const Vector3f&         incoming_dir,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+            Spectrum&               value) const override
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
                 static_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
@@ -245,7 +245,7 @@ namespace
             const Vector3f&         outgoing_dir,
             const ShadingPoint&     incoming_point,
             const Vector3f&         incoming_dir,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+            Spectrum&               value) const override
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
                 static_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);

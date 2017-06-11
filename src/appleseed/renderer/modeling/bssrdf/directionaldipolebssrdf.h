@@ -56,15 +56,15 @@ class APPLESEED_DLLSYMBOL DirectionalDipoleBSSRDFFactory
 {
   public:
     // Return a string identifying this BSSRDF model.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    virtual const char* get_model() const override;
 
     // Return metadata for this BSSRDF model.
-    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
+    virtual foundation::Dictionary get_model_metadata() const override;
 
     // Create a new BSSRDF instance.
     virtual foundation::auto_release_ptr<BSSRDF> create(
         const char*         name,
-        const ParamArray&   params) const APPLESEED_OVERRIDE;
+        const ParamArray&   params) const override;
 
     // Static variant of the create() method above.
     static foundation::auto_release_ptr<BSSRDF> static_create(

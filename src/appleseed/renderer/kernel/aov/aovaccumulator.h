@@ -99,9 +99,9 @@ class BeautyAOVAccumulator
 
     void apply_multiplier(const float multiplier);
 
-    virtual void reset() APPLESEED_OVERRIDE;
+    virtual void reset() override;
 
-    virtual void flush(ShadingResult& result) APPLESEED_OVERRIDE;
+    virtual void flush(ShadingResult& result) override;
 
   private:
     foundation::ColorSpace  m_color_space;
@@ -125,9 +125,9 @@ class AlphaAOVAccumulator
 
     void apply_multiplier(const Alpha& multiplier);
 
-    virtual void reset() APPLESEED_OVERRIDE;
+    virtual void reset() override;
 
-    virtual void flush(ShadingResult& result) APPLESEED_OVERRIDE;
+    virtual void flush(ShadingResult& result) override;
 
   private:
     Alpha m_alpha;

@@ -92,12 +92,12 @@ namespace
             }
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        virtual const char* get_model() const override
         {
             return Model;
         }
@@ -107,7 +107,7 @@ namespace
             const PixelContext&         pixel_context,
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point,
-            AOVAccumulatorContainer&    aov_accumulators) const APPLESEED_OVERRIDE
+            AOVAccumulatorContainer&    aov_accumulators) const override
         {
             // Evaluate the shader inputs.
             InputValues values;

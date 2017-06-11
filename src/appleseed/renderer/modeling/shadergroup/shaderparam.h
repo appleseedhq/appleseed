@@ -89,7 +89,7 @@ class APPLESEED_DLLSYMBOL ShaderParam
 {
   public:
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     // todo: STL classes cannot be used in DLL-exported classes.
     std::string get_value_as_string() const;

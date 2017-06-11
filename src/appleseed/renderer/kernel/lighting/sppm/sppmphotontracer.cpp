@@ -248,7 +248,7 @@ namespace
             m_shutter_close_time = camera->get_shutter_close_time();
         }
 
-        virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
+        virtual void execute(const size_t thread_index) override
         {
             const ShadingContext shading_context(
                 m_intersector,
@@ -541,7 +541,7 @@ namespace
             m_shutter_close_time = camera->get_shutter_close_time();
         }
 
-        virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
+        virtual void execute(const size_t thread_index) override
         {
             const ShadingContext shading_context(
                 m_intersector,

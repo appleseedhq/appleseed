@@ -64,16 +64,16 @@ class AssemblyCollectionItem
         renderer::BaseGroup&            parent,
         BaseGroupItem*                  parent_item);
 
-    virtual QMenu* get_single_item_context_menu() const APPLESEED_OVERRIDE;
+    virtual QMenu* get_single_item_context_menu() const override;
 
   public slots:
-    virtual void slot_create() APPLESEED_OVERRIDE;
+    virtual void slot_create() override;
 
   private:
     renderer::BaseGroup&    m_parent;
     BaseGroupItem*          m_parent_item;
 
-    virtual ItemBase* create_item(renderer::Assembly* assembly) APPLESEED_OVERRIDE;
+    virtual ItemBase* create_item(renderer::Assembly* assembly) override;
 };
 
 }       // namespace studio

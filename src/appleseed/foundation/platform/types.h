@@ -33,16 +33,9 @@
 // appleseed.foundation headers.
 #include "foundation/platform/arch.h"
 
-// Boost headers.
-#include "boost/static_assert.hpp"
-
-// Make sure that uintptr_t is defined on all platforms.
-#if defined _MSC_VER
+// Standard headers.
 #include <cstddef>
-#endif
-#if defined __GNUC__
-#include <stdint.h>
-#endif
+#include <cstdint>
 
 namespace foundation
 {
@@ -95,14 +88,14 @@ namespace foundation
 
 #endif
 
-BOOST_STATIC_ASSERT(sizeof(int8)   == 1);
-BOOST_STATIC_ASSERT(sizeof(int16)  == 2);
-BOOST_STATIC_ASSERT(sizeof(int32)  == 4);
-BOOST_STATIC_ASSERT(sizeof(int64)  == 8);
-BOOST_STATIC_ASSERT(sizeof(uint8)  == 1);
-BOOST_STATIC_ASSERT(sizeof(uint16) == 2);
-BOOST_STATIC_ASSERT(sizeof(uint32) == 4);
-BOOST_STATIC_ASSERT(sizeof(uint64) == 8);
+static_assert(sizeof(int8)   == 1, "The size of foundation::int8 must be exactly 1 byte");
+static_assert(sizeof(int16)  == 2, "The size of foundation::int16 must be exactly 2 bytes");
+static_assert(sizeof(int32)  == 4, "The size of foundation::int32 must be exactly 4 bytes");
+static_assert(sizeof(int64)  == 8, "The size of foundation::int64 must be exactly 8 bytes");
+static_assert(sizeof(uint8)  == 1, "The size of foundation::uint8 must be exactly 1 byte");
+static_assert(sizeof(uint16) == 2, "The size of foundation::uint16 must be exactly 2 bytes");
+static_assert(sizeof(uint32) == 4, "The size of foundation::uint32 must be exactly 4 bytes");
+static_assert(sizeof(uint64) == 8, "The size of foundation::uint64 must be exactly 8 bytes");
 
 
 //
@@ -117,7 +110,9 @@ BOOST_STATIC_ASSERT(sizeof(uint64) == 8);
     #error Cannot determine machine architecture.
 #endif
 
-BOOST_STATIC_ASSERT(sizeof(isize_t) == sizeof(size_t));
+static_assert(
+    sizeof(isize_t) == sizeof(size_t),
+    "foundation::isize_t must have the same size as std::size_t");
 
 
 //

@@ -54,12 +54,12 @@ class ProgressTileCallback
   public:
     explicit ProgressTileCallback(foundation::Logger& logger);
 
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     virtual void post_render_tile(
         const renderer::Frame*  frame,
         const size_t            tile_x,
-        const size_t            tile_y) APPLESEED_OVERRIDE;
+        const size_t            tile_y) override;
 
   protected:
     foundation::Logger&         m_logger;
@@ -80,9 +80,9 @@ class ProgressTileCallbackFactory
   public:
     explicit ProgressTileCallbackFactory(foundation::Logger& logger);
 
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
-    virtual renderer::ITileCallback* create() APPLESEED_OVERRIDE;
+    virtual renderer::ITileCallback* create() override;
 
   private:
     std::auto_ptr<renderer::ITileCallback> m_callback;

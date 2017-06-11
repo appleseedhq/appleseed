@@ -66,12 +66,12 @@ namespace
             m_inputs.declare("alpha", InputFormatFloat, "1.0");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        virtual const char* get_model() const override
         {
             return Model;
         }
@@ -81,7 +81,7 @@ namespace
             const PixelContext&     pixel_context,
             const Vector3d&         direction,
             Spectrum&               value,
-            Alpha&                  alpha) const APPLESEED_OVERRIDE
+            Alpha&                  alpha) const override
         {
             const Vector2f s(pixel_context.get_sample_position());
 

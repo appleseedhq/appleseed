@@ -198,7 +198,7 @@ namespace
         {
         }
 
-        virtual bool is_aborted() const APPLESEED_OVERRIDE
+        virtual bool is_aborted() const override
         {
             const IRendererController::Status status = m_renderer_controller.get_status();
             return

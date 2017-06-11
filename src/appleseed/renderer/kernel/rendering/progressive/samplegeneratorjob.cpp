@@ -43,9 +43,6 @@
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/utility/stopwatch.h"
 
-// Boost headers.
-#include "boost/static_assert.hpp"
-
 // Standard headers.
 #include <algorithm>
 #include <cmath>
@@ -94,7 +91,9 @@ namespace
     const double CurveExponentInExponentialPhase = 2.0;
 
     // Constraints.
-    BOOST_STATIC_ASSERT(SamplesPerJobInLinearPhase <= SamplesInUninterruptiblePhase);
+    static_assert(
+        SamplesInUninterruptiblePhase >= SamplesPerJobInLinearPhase,
+        "In renderer::SampleGeneratorJob, the uninterruptible phase must have at least as many samples as the linear phase");
 }
 
 uint64 SampleGeneratorJob::samples_to_samples_per_job(const uint64 samples)

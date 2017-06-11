@@ -92,7 +92,7 @@ class OBJMeshFileReader
         const int           options = Default);
 
     // Read a mesh.
-    virtual void read(IMeshBuilder& builder) APPLESEED_OVERRIDE;
+    virtual void read(IMeshBuilder& builder) override;
 
   private:
     struct Impl;

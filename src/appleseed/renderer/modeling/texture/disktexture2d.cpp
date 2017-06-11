@@ -96,41 +96,41 @@ namespace
             else m_color_space = ColorSpaceCIEXYZ;
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        virtual const char* get_model() const override
         {
             return Model;
         }
 
         virtual void on_frame_end(
             const Project&      project,
-            const BaseGroup*    parent) APPLESEED_OVERRIDE
+            const BaseGroup*    parent) override
         {
             if (m_reader.is_open())
                 m_reader.close();
         }
 
-        virtual ColorSpace get_color_space() const APPLESEED_OVERRIDE
+        virtual ColorSpace get_color_space() const override
         {
             return m_color_space;
         }
 
-        virtual void collect_asset_paths(StringArray& paths) const APPLESEED_OVERRIDE
+        virtual void collect_asset_paths(StringArray& paths) const override
         {
             if (m_params.strings().exist("filename"))
                 paths.push_back(m_params.get("filename"));
         }
 
-        virtual void update_asset_paths(const StringDictionary& mappings) APPLESEED_OVERRIDE
+        virtual void update_asset_paths(const StringDictionary& mappings) override
         {
             m_params.set("filename", mappings.get(m_params.get("filename")));
         }
 
-        virtual const CanvasProperties& properties() APPLESEED_OVERRIDE
+        virtual const CanvasProperties& properties() override
         {
             boost::mutex::scoped_lock lock(m_mutex);
             open_image_file();
@@ -139,7 +139,7 @@ namespace
 
         virtual Tile* load_tile(
             const size_t        tile_x,
-            const size_t        tile_y) APPLESEED_OVERRIDE
+            const size_t        tile_y) override
         {
             boost::mutex::scoped_lock lock(m_mutex);
             open_image_file();
@@ -149,7 +149,7 @@ namespace
         virtual void unload_tile(
             const size_t        tile_x,
             const size_t        tile_y,
-            const Tile*         tile) APPLESEED_OVERRIDE
+            const Tile*         tile) override
         {
             delete tile;
         }

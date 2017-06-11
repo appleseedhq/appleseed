@@ -124,7 +124,7 @@ namespace
                 close_pipe(m_fp);
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             // Do nothing.
         }
@@ -132,14 +132,14 @@ namespace
         virtual void post_render_tile(
             const Frame*            frame,
             const size_t            tile_x,
-            const size_t            tile_y) APPLESEED_OVERRIDE
+            const size_t            tile_y) override
         {
             boost::mutex::scoped_lock lock(m_mutex);
             send_header(*frame);
             send_tile(*frame, tile_x, tile_y);
         }
 
-        virtual void post_render(const Frame* frame) APPLESEED_OVERRIDE
+        virtual void post_render(const Frame* frame) override
         {
             boost::mutex::scoped_lock lock(m_mutex);
             send_header(*frame);

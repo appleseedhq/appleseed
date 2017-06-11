@@ -67,12 +67,12 @@ namespace
             m_inputs.declare("phase_function", InputFormatEntity, "");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        virtual const char* get_model() const override
         {
             return Model;
         }
@@ -81,7 +81,7 @@ namespace
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch*           abort_switch) override
         {
             if (!Material::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;

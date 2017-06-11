@@ -131,12 +131,12 @@ namespace
                 create_and_register_bsdf(SheenID, "sheen_brdf");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        virtual const char* get_model() const override
         {
             return "osl_bsdf";
         }
@@ -145,7 +145,7 @@ namespace
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch*           abort_switch) override
         {
             if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
@@ -164,7 +164,7 @@ namespace
 
         virtual void* evaluate_inputs(
             const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point) const APPLESEED_OVERRIDE
+            const ShadingPoint&     shading_point) const override
         {
             Arena& arena = shading_context.get_arena();
 
@@ -194,7 +194,7 @@ namespace
             const bool              adjoint,
             const bool              cosine_mult,
             const int               modes,
-            BSDFSample&             sample) const APPLESEED_OVERRIDE
+            BSDFSample&             sample) const override
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
 
@@ -267,7 +267,7 @@ namespace
             const Vector3f&         outgoing,
             const Vector3f&         incoming,
             const int               modes,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+            Spectrum&               value) const override
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
 
@@ -312,7 +312,7 @@ namespace
             const Basis3f&          shading_basis,
             const Vector3f&         outgoing,
             const Vector3f&         incoming,
-            const int               modes) const APPLESEED_OVERRIDE
+            const int               modes) const override
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
 
@@ -342,7 +342,7 @@ namespace
 
         virtual float sample_ior(
             SamplingContext&        sampling_context,
-            const void*             data) const APPLESEED_OVERRIDE
+            const void*             data) const override
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
             sampling_context.split_in_place(1, 1);
@@ -352,7 +352,7 @@ namespace
         virtual void compute_absorption(
             const void*             data,
             const float             distance,
-            Spectrum&               absorption) const APPLESEED_OVERRIDE
+            Spectrum&               absorption) const override
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
 

@@ -69,7 +69,7 @@ class TestWindow
     // Destructor.
     ~TestWindow();
 
-    virtual void closeEvent(QCloseEvent* event) APPLESEED_OVERRIDE;
+    virtual void closeEvent(QCloseEvent* event) override;
 
   private:
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.

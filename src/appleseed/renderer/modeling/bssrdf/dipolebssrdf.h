@@ -102,18 +102,18 @@ class DipoleBSSRDF
         const Project&              project,
         const BaseGroup*            parent,
         OnFrameBeginRecorder&       recorder,
-        foundation::IAbortSwitch*   abort_switch) APPLESEED_OVERRIDE;
+        foundation::IAbortSwitch*   abort_switch) override;
 
-    virtual size_t compute_input_data_size() const APPLESEED_OVERRIDE;
+    virtual size_t compute_input_data_size() const override;
 
     virtual float sample_profile(
         const void*                 data,
         const size_t                channel,
-        const float                 u) const APPLESEED_OVERRIDE;
+        const float                 u) const override;
 
     virtual float evaluate_profile_pdf(
         const void*                 data,
-        const float                 disk_radius) const APPLESEED_OVERRIDE;
+        const float                 disk_radius) const override;
 
     virtual bool sample(
         const ShadingContext&       shading_context,
@@ -122,7 +122,7 @@ class DipoleBSSRDF
         const ShadingPoint&         outgoing_point,
         const foundation::Vector3f& outgoing_dir,
         BSSRDFSample&               bssrdf_sample,
-        BSDFSample&                 bsdf_sample) const APPLESEED_OVERRIDE;
+        BSDFSample&                 bsdf_sample) const override;
 
     virtual void evaluate(
         const void*                 data,
@@ -130,7 +130,7 @@ class DipoleBSSRDF
         const foundation::Vector3f& outgoing_dir,
         const ShadingPoint&         incoming_point,
         const foundation::Vector3f& incoming_dir,
-        Spectrum&                   value) const APPLESEED_OVERRIDE;
+        Spectrum&                   value) const override;
 
   protected:
     template <typename ComputeRdFun>

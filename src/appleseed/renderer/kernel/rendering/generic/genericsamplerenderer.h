@@ -81,11 +81,11 @@ class GenericSampleRendererFactory
         const ParamArray&       params);
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     // Return a new sample renderer instance.
     virtual ISampleRenderer* create(
-        const size_t            thread_index) APPLESEED_OVERRIDE;
+        const size_t            thread_index) override;
 
   private:
     const Scene&                m_scene;

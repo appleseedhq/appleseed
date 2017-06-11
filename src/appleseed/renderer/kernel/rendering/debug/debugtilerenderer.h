@@ -56,10 +56,10 @@ class DebugTileRendererFactory
 {
   public:
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     // Return a new debug tile renderer instance.
-    virtual ITileRenderer* create(const size_t thread_index) APPLESEED_OVERRIDE;
+    virtual ITileRenderer* create(const size_t thread_index) override;
 };
 
 }       // namespace renderer

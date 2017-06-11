@@ -70,35 +70,35 @@ class TextureSource
     const TextureInstance& get_texture_instance() const;
 
     // Compute a signature unique to this source.
-    virtual foundation::uint64 compute_signature() const APPLESEED_OVERRIDE;
+    virtual foundation::uint64 compute_signature() const override;
 
     // Evaluate the source at a given shading point.
     virtual void evaluate(
         TextureCache&                       texture_cache,
         const foundation::Vector2f&         uv,
-        float&                              scalar) const APPLESEED_OVERRIDE;
+        float&                              scalar) const override;
     virtual void evaluate(
         TextureCache&                       texture_cache,
         const foundation::Vector2f&         uv,
-        foundation::Color3f&                linear_rgb) const APPLESEED_OVERRIDE;
+        foundation::Color3f&                linear_rgb) const override;
     virtual void evaluate(
         TextureCache&                       texture_cache,
         const foundation::Vector2f&         uv,
-        Spectrum&                           spectrum) const APPLESEED_OVERRIDE;
+        Spectrum&                           spectrum) const override;
     virtual void evaluate(
         TextureCache&                       texture_cache,
         const foundation::Vector2f&         uv,
-        Alpha&                              alpha) const APPLESEED_OVERRIDE;
+        Alpha&                              alpha) const override;
     virtual void evaluate(
         TextureCache&                       texture_cache,
         const foundation::Vector2f&         uv,
         foundation::Color3f&                linear_rgb,
-        Alpha&                              alpha) const APPLESEED_OVERRIDE;
+        Alpha&                              alpha) const override;
     virtual void evaluate(
         TextureCache&                       texture_cache,
         const foundation::Vector2f&         uv,
         Spectrum&                           spectrum,
-        Alpha&                              alpha) const APPLESEED_OVERRIDE;
+        Alpha&                              alpha) const override;
 
   private:
     const foundation::UniqueID              m_assembly_uid;

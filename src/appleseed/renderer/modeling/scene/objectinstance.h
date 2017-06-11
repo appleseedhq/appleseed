@@ -89,7 +89,7 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     // Compute and return the unique signature of this instance.
     virtual foundation::uint64 compute_signature() const;
@@ -189,7 +189,7 @@ class APPLESEED_DLLSYMBOL ObjectInstance
         const Project&              project,
         const BaseGroup*            parent,
         OnFrameBeginRecorder&       recorder,
-        foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
+        foundation::IAbortSwitch*   abort_switch = 0) override;
 
   private:
     friend class ObjectInstanceFactory;

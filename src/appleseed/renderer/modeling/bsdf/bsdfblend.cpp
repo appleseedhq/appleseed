@@ -82,12 +82,12 @@ namespace
             m_inputs.declare("weight", InputFormatFloat);
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        virtual void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        virtual const char* get_model() const override
         {
             return Model;
         }
@@ -96,7 +96,7 @@ namespace
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch*           abort_switch) override
         {
             if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
@@ -114,7 +114,7 @@ namespace
 
         virtual void* evaluate_inputs(
             const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point) const APPLESEED_OVERRIDE
+            const ShadingPoint&     shading_point) const override
         {
             assert(m_bsdf[0] && m_bsdf[1]);
 
@@ -136,7 +136,7 @@ namespace
             const bool              adjoint,
             const bool              cosine_mult,
             const int               modes,
-            BSDFSample&             sample) const APPLESEED_OVERRIDE
+            BSDFSample&             sample) const override
         {
             assert(m_bsdf[0] && m_bsdf[1]);
 
@@ -166,7 +166,7 @@ namespace
             const Vector3f&         outgoing,
             const Vector3f&         incoming,
             const int               modes,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+            Spectrum&               value) const override
         {
             assert(m_bsdf[0] && m_bsdf[1]);
 
@@ -223,7 +223,7 @@ namespace
             const Basis3f&          shading_basis,
             const Vector3f&         outgoing,
             const Vector3f&         incoming,
-            const int               modes) const APPLESEED_OVERRIDE
+            const int               modes) const override
         {
             assert(m_bsdf[0] && m_bsdf[1]);
 

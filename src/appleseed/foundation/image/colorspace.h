@@ -45,9 +45,6 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Boost headers.
-#include "boost/static_assert.hpp"
-
 // Standard headers.
 #include <cmath>
 #include <cstddef>
@@ -823,7 +820,9 @@ Color<T, 3> spectrum_to_ciexyz(
     const LightingConditions&   lighting,
     const SpectrumType&         spectrum)
 {
-    BOOST_STATIC_ASSERT(SpectrumType::Samples == 31);
+    static_assert(
+        SpectrumType::Samples == 31,
+        "foundation::spectrum_to_ciexyz() expects 31-channel spectra");
 
     T x = T(0.0);
     T y = T(0.0);

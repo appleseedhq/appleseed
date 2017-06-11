@@ -72,7 +72,7 @@ class APPLESEED_DLLSYMBOL ColorEntity
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    virtual void release() override;
 
     // Return the color values.
     const ColorValueArray& get_values() const;
