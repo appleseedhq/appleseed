@@ -253,8 +253,8 @@ set (mainwindow_sources
     mainwindow/configurationmanagerwindow.cpp
     mainwindow/configurationmanagerwindow.h
     mainwindow/configurationmanagerwindow.ui
-    mainwindow/consolewidget.cpp
-    mainwindow/consolewidget.h
+    mainwindow/pythonconsole/consolewidget.cpp
+    mainwindow/pythonconsole/consolewidget.h
     mainwindow/logwidget.cpp
     mainwindow/logwidget.h
     mainwindow/mainwindow.cpp
@@ -262,12 +262,12 @@ set (mainwindow_sources
     mainwindow/mainwindow.ui
     mainwindow/minimizebutton.cpp
     mainwindow/minimizebutton.h
-    mainwindow/outputredirector.cpp
-    mainwindow/outputredirector.h
-    mainwindow/pythonhighlighter.cpp
-    mainwindow/pythonhighlighter.h
-    mainwindow/pythoninput.cpp
-    mainwindow/pythoninput.h
+    mainwindow/pythonconsole/outputredirector.cpp
+    mainwindow/pythonconsole/outputredirector.h
+    mainwindow/pythonconsole/pythonhighlighter.cpp
+    mainwindow/pythonconsole/pythonhighlighter.h
+    mainwindow/pythonconsole/pythoninput.cpp
+    mainwindow/pythonconsole/pythoninput.h
     mainwindow/qtlogtarget.cpp
     mainwindow/qtlogtarget.h
     mainwindow/renderingsettingswindow.cpp

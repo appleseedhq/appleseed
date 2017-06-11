@@ -35,7 +35,7 @@
 
 // appleseed.studio headers.
 #include "help/about/aboutwindow.h"
-#include "mainwindow/consolewidget.h"
+#include "mainwindow/pythonconsole/consolewidget.h"
 #include "mainwindow/logwidget.h"
 #include "mainwindow/minimizebutton.h"
 #include "mainwindow/project/attributeeditor.h"

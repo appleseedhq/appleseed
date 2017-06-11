@@ -30,7 +30,7 @@
 #include "pythoninterpreter.h"
 
 // appleseed.studio headers.
-#include "mainwindow/outputredirector.h"
+#include "mainwindow/pythonconsole/outputredirector.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/path.h"
