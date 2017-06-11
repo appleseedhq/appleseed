@@ -45,13 +45,13 @@ class QTextEdit;
 namespace appleseed {
 namespace studio {
 
-class ConsoleWidget
+class PythonConsoleWidget
   : public QSplitter
 {
   Q_OBJECT
 
   public:
-    explicit ConsoleWidget(QWidget* parent = 0);
+    explicit PythonConsoleWidget(QWidget* parent = 0);
 
   public slots:
     void slot_execute_selection();

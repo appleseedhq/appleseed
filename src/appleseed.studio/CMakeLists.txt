@@ -253,8 +253,8 @@ set (mainwindow_sources
     mainwindow/configurationmanagerwindow.cpp
     mainwindow/configurationmanagerwindow.h
     mainwindow/configurationmanagerwindow.ui
-    mainwindow/pythonconsole/consolewidget.cpp
-    mainwindow/pythonconsole/consolewidget.h
+    mainwindow/pythonconsole/pythonconsolewidget.cpp
+    mainwindow/pythonconsole/pythonconsolewidget.h
     mainwindow/logwidget.cpp
     mainwindow/logwidget.h
     mainwindow/mainwindow.cpp

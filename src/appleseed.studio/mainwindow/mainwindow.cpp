@@ -35,7 +35,7 @@
 
 // appleseed.studio headers.
 #include "help/about/aboutwindow.h"
-#include "mainwindow/pythonconsole/consolewidget.h"
+#include "mainwindow/pythonconsole/pythonconsolewidget.h"
 #include "mainwindow/logwidget.h"
 #include "mainwindow/minimizebutton.h"
 #include "mainwindow/project/attributeeditor.h"
@@ -515,7 +515,7 @@ void MainWindow::build_log_panel()
 
 void MainWindow::build_python_console_panel()
 {
-    ConsoleWidget* console_widget = new ConsoleWidget(m_ui->python_console_contents);
+    PythonConsoleWidget* console_widget = new PythonConsoleWidget(m_ui->python_console_contents);
     m_ui->python_console_contents->layout()->addWidget(console_widget);
 
     console_widget->setObjectName("textedit_console");

@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "consolewidget.h"
+#include "pythonconsolewidget.h"
 
 // appleseed.studio headers.
 #include "outputredirector.h"
@@ -42,10 +42,10 @@ namespace appleseed {
 namespace studio {
 
 //
-// ConsoleWidget class implementation.
+// PythonConsoleWidget class implementation.
 //
 
-ConsoleWidget::ConsoleWidget(QWidget* parent)
+PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
   : QSplitter(parent)
 {
     output = new QTextEdit(this);
@@ -73,7 +73,7 @@ ConsoleWidget::ConsoleWidget(QWidget* parent)
     PythonInterpreter::instance().redirect_output(OutputRedirector(output));
 }
 
-void ConsoleWidget::init_actions()
+void PythonConsoleWidget::init_actions()
 {
     m_action_execute_selection =
         new QAction(QIcon(":icons/exec_button_icon.png"), "Execute Selection", this);
@@ -106,7 +106,7 @@ void ConsoleWidget::init_actions()
     addAction(m_action_focus_on_input);
 }
 
-void ConsoleWidget::slot_execute_selection()
+void PythonConsoleWidget::slot_execute_selection()
 {
     // QTextCursor returned by textCursor() function uses QChar(8233) instead of newline.
     // It breaks Python indentation rules so it has to be replaced.
@@ -114,17 +114,17 @@ void ConsoleWidget::slot_execute_selection()
     execute(selected);
 }
 
-void ConsoleWidget::slot_execute_all()
+void PythonConsoleWidget::slot_execute_all()
 {
     execute(input->toPlainText());
 }
 
-void ConsoleWidget::slot_clear_output()
+void PythonConsoleWidget::slot_clear_output()
 {
     output->clear();
 }
 
-void ConsoleWidget::execute(const QString& script)
+void PythonConsoleWidget::execute(const QString& script)
 {
     PythonInterpreter::instance().execute_command(script.toStdString().c_str());
 }
