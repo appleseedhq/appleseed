@@ -26,29 +26,10 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_OSLHEADERGUARDS_H
-#define APPLESEED_FOUNDATION_PLATFORM_OSLHEADERGUARDS_H
-
-// appleseed.foundation headers.
-#include "oiioheaderguards.h"
-
 #if defined _MSC_VER
 
-    // C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
-    #define BEGIN_OSL_INCLUDES              \
-        BEGIN_OIIO_INCLUDES                 \
-        __pragma(warning(push))             \
-        __pragma(warning(disable: 4290))
-
-    #define END_OSL_INCLUDES                \
-        __pragma(warning(pop))              \
-        END_OIIO_INCLUDES
-
-#else
-
-    #define BEGIN_OSL_INCLUDES
-    #define END_OSL_INCLUDES
+    #pragma warning (push)
+    #pragma warning (disable: 4244)     // conversion from 'std::streamsize' to 'int', possible loss of data
+    #pragma warning (disable: 4800)     // 'int': forcing value to bool 'true' or 'false' (performance warning)
 
 #endif
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_OSLHEADERGUARDS_H

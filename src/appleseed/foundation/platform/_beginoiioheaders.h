@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,26 +26,12 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_EXRHEADERGUARDS_H
-#define APPLESEED_FOUNDATION_PLATFORM_EXRHEADERGUARDS_H
-
 #if defined _MSC_VER
 
-    // C4244: conversion from 'std::streamsize' to 'int', possible loss of data
-    // C4800: 'int': forcing value to bool 'true' or 'false' (performance warning)
-    #define BEGIN_EXR_INCLUDES              \
-        __pragma(warning(push))             \
-        __pragma(warning(disable: 4244))    \
-        __pragma(warning(disable: 4800))
-
-    #define END_EXR_INCLUDES                \
-        __pragma(warning(pop))
-
-#else
-
-    #define BEGIN_EXR_INCLUDES
-    #define END_EXR_INCLUDES
+    #pragma warning (push)
+    #pragma warning (disable: 4005)     // 'copysign': macro redefinition
+    #pragma warning (disable: 4244)     // conversion from 'double' to 'float', possible loss of data
+    #pragma warning (disable: 4305)     // truncation from 'double' to 'float', possible loss of data
+    #pragma warning (disable: 4800)     // 'int': forcing value to bool 'true' or 'false' (performance warning)
 
 #endif
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_EXRHEADERGUARDS_H
