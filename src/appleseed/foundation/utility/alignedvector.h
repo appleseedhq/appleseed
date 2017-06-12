@@ -120,13 +120,13 @@ class AlignedVector
     {
     }
 
-    template <class Iterator>
+    template <typename Iterator>
     AlignedVector(Iterator first, Iterator last)
       : Base(first, last)
     {
     }
 
-    template <class Iterator>
+    template <typename Iterator>
     AlignedVector(
         Iterator                                first,
         Iterator                                last,
