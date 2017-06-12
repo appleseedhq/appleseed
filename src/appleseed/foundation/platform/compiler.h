@@ -35,11 +35,11 @@
 //
 //   Visual Studio 2015   MSVC++ 14.0   _MSC_VER == 1900
 //   Visual Studio 2013   MSVC++ 12.0   _MSC_VER == 1800
-//   Visual Studio 2012   MSVC++ 11.0   _MSC_VER == 1700
-//   Visual Studio 2010   MSVC++ 10.0   _MSC_VER == 1600
-//   Visual Studio 2008   MSVC++ 9.0    _MSC_VER == 1500
-//   Visual Studio 2005   MSVC++ 8.0    _MSC_VER == 1400
-//   Visual Studio 2003   MSVC++ 7.1    _MSC_VER == 1310
+//   Visual Studio 2012   MSVC++ 11.0   _MSC_VER == 1700 (oldest supported version)
+//   Visual Studio 2010   MSVC++ 10.0   _MSC_VER == 1600 (unsupported)
+//   Visual Studio 2008   MSVC++ 9.0    _MSC_VER == 1500 (unsupported)
+//   Visual Studio 2005   MSVC++ 8.0    _MSC_VER == 1400 (unsupported)
+//   Visual Studio 2003   MSVC++ 7.1    _MSC_VER == 1310 (unsupported)
 //
 
 // appleseed.foundation headers.
@@ -51,8 +51,8 @@
 // Standard headers.
 #include <cstdarg>
 
-// Source code annotations are available starting with Visual Studio 2005.
-#if _MSC_VER >= 1400
+// Platform headers.
+#if defined _MSC_VER
 #include <sal.h>
 #endif
 
@@ -249,13 +249,8 @@ namespace foundation
 //
 
 // Visual C++: Visual Studio 2008+ annotations.
-#if _MSC_VER >= 1500
+#if defined _MSC_VER
     #define APPLESEED_PRINTF_FMT _Printf_format_string_
-    #define APPLESEED_PRINTF_FMT_ATTR(string_index, first_to_check)
-
-// Visual C++: Visual Studio 2005 annotations.
-#elif _MSC_VER >= 1400
-    #define APPLESEED_PRINTF_FMT __format_string
     #define APPLESEED_PRINTF_FMT_ATTR(string_index, first_to_check)
 
 // gcc.
