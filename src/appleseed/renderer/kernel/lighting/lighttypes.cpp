@@ -129,7 +129,7 @@ foundation::AABB3d EmittingTriangleLightSource::get_bbox() const
 
 Spectrum EmittingTriangleLightSource::get_intensity() const
 {
-    DynamicSpectrum31f hard_coded_placeholder(foundation::Color3f(1.0f, 2.0f, 3.0f));
+    Spectrum hard_coded_placeholder(foundation::Color3f(1.0f, 2.0f, 3.0f));
     return hard_coded_placeholder;
 }
 
