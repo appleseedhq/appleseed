@@ -188,7 +188,11 @@ inline void Basis3<T>::build(const VectorType& normal)
 
     m_n = normal;
 
-    const T sign = copysign(T(1.0), m_n[2]);
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    const T sign = std::copysign(T(1.0), m_n[2]);
+#else
+    const T sign = m_n[2] < T(0.0) ? T(-1.0) : T(1.0);
+#endif
 
     const T a = T(-1.0) / (sign + m_n[2]);
     const T b = m_n[0] * m_n[1] * a;
