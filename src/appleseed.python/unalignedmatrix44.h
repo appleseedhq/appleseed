@@ -105,14 +105,14 @@ class UnalignedMatrix44
             m_data[i] = x;
     }
 
-    template <class U>
+    template <typename U>
     explicit UnalignedMatrix44(const Matrix<U, 4, 4>& m)
     {
         for (size_t i = 0; i < 16; ++i)
             m_data[i] = static_cast<T>(m[i]);
     }
 
-    template <class U>
+    template <typename U>
     explicit UnalignedMatrix44(const UnalignedMatrix44<U>& m)
     {
         for (size_t i = 0; i < 16; ++i)
@@ -139,7 +139,7 @@ class UnalignedMatrix44
 
 #endif
 
-    template <class U>
+    template <typename U>
     UnalignedMatrix44<T>& operator=(const UnalignedMatrix44<U>& m)
     {
         for (size_t i = 0; i < 16; ++i)

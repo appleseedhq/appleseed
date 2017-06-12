@@ -61,7 +61,7 @@ namespace
         return dict.dictionaries().get(name);
     }
 
-    template <class Dict>
+    template <typename Dict>
     Dict convert_from_bpy_dict(const bpy::dict& d)
     {
         Dict result;

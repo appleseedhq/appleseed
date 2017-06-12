@@ -53,6 +53,12 @@ add_executable (projecttool
     ${projecttool_sources}
 )
 
+if (USE_RPATH_ORIGIN)
+    set_target_properties (projecttool PROPERTIES
+        INSTALL_RPATH "\$ORIGIN/../lib"
+    )
+endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.
@@ -82,12 +88,6 @@ target_link_libraries (projecttool
     appleseed.shared
     ${Boost_LIBRARIES}
 )
-
-if (USE_RPATH_ORIGIN)
-    set_target_properties (projecttool PROPERTIES
-        INSTALL_RPATH "\$ORIGIN/../lib"
-    )
-endif ()
 
 
 #--------------------------------------------------------------------------------------------------
