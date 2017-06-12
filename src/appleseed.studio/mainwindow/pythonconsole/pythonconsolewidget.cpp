@@ -49,7 +49,6 @@ PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
   : QWidget(parent)
 {
     input = new PythonInput(this);
-    input->setStyleSheet("background-color:#303030");
 
     output = new QPlainTextEdit(this);
     output->setUndoRedoEnabled(false);

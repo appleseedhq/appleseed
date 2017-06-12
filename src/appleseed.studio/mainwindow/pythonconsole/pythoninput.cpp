@@ -54,11 +54,17 @@ PythonInput::PythonInput(QWidget* parent)
         Qt::TextEditable |
         Qt::TextEditorInteraction);
 
+
+    setStyleSheet("background-color:#303030");
+
     QFont font("Monospace");
     font.setStyleHint(QFont::Monospace);
     setFont(font);
 
     new PythonSyntaxHighlighter(this->document());
+
+    connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(slot_highlight_current_line()));
+    slot_highlight_current_line();
 }
 
 void PythonInput::keyPressEvent(QKeyEvent* event)
@@ -111,6 +117,22 @@ void PythonInput::insert_spaces(const size_t count)
 {
     const std::string spaces(count, ' ');
     insertPlainText(spaces.c_str());
+}
+
+void PythonInput::slot_highlight_current_line()
+{
+    QList<QTextEdit::ExtraSelection> current_line;
+    QTextEdit::ExtraSelection selection;
+
+    QColor line_color = QColor(53, 53, 53);
+
+    selection.format.setBackground(line_color);
+    selection.format.setProperty(QTextFormat::FullWidthSelection, true);
+    selection.cursor = textCursor();
+    selection.cursor.clearSelection();
+
+    current_line.append(selection);
+    setExtraSelections(current_line);
 }
 
 }   // namespace studio

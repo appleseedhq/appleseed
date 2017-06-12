@@ -52,6 +52,9 @@ class PythonInput
   protected:
     void keyPressEvent(QKeyEvent* event);
 
+  private slots:
+    void slot_highlight_current_line();
+
   private:
     void indent();
     void indent_like_previous(const std::string& previous);
