@@ -55,6 +55,10 @@ PythonInput::PythonInput(QWidget* parent)
         Qt::TextEditable |
         Qt::TextEditorInteraction);
 
+    QFont font("Monospace");
+    font.setStyleHint(QFont::Monospace);
+    setFont(font);
+
     new PythonSyntaxHighlighter(this->document());
 }
 

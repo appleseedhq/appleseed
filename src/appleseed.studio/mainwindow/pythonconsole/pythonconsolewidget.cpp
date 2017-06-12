@@ -58,6 +58,7 @@ PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
     output->setTextInteractionFlags(
         Qt::TextSelectableByMouse |
         Qt::TextSelectableByKeyboard);
+    output->setFont(input->font());
 
     init_actions();
 
