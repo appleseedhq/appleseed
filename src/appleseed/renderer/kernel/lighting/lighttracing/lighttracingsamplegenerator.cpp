@@ -245,7 +245,7 @@ namespace
         }
 
       private:
-        struct VolumeVisitorEmpty
+        struct VolumeVisitor
         {
             void visit(const ShadingRay& volume_ray) {}
         };
@@ -489,7 +489,7 @@ namespace
             }
         };
 
-        typedef PathTracer<PathVisitor, VolumeVisitorEmpty, true> PathTracerType;   // true = adjoint
+        typedef PathTracer<PathVisitor, VolumeVisitor, true> PathTracerType;   // true = adjoint
 
         const Parameters                m_params;
 
@@ -655,7 +655,7 @@ namespace
                 sampling_context,
                 samples,
                 initial_flux);
-            VolumeVisitorEmpty volume_visitor;
+            VolumeVisitor volume_visitor;
             PathTracerType path_tracer(
                 path_visitor,
                 volume_visitor,
@@ -737,7 +737,7 @@ namespace
                 sampling_context,
                 samples,
                 initial_flux);
-            VolumeVisitorEmpty volume_visitor;
+            VolumeVisitor volume_visitor;
             PathTracerType path_tracer(
                 path_visitor,
                 volume_visitor,
@@ -829,7 +829,7 @@ namespace
                 sampling_context,
                 samples,
                 initial_flux);
-            VolumeVisitorEmpty volume_visitor;
+            VolumeVisitor volume_visitor;
             PathTracerType path_tracer(
                 path_visitor,
                 volume_visitor,

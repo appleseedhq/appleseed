@@ -99,6 +99,8 @@ class PathTracer
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point);
 
+    // This method performs raymarching across the volume.
+    // Returns the number of scattering events occured during the marching.
     size_t march(
         SamplingContext&        sampling_context,
         const ShadingContext&   shading_context,
@@ -116,11 +118,25 @@ class PathTracer
     const size_t                m_max_specular_bounces;
     const size_t                m_max_iterations;
     const double                m_near_start;
+    size_t                      m_diffuse_bounces;
+    size_t                      m_glossy_bounces;
+    size_t                      m_specular_bounces;
+    size_t                      m_iterations;
 
     // Determine whether a ray can pass through a surface with a given alpha value.
     static bool pass_through(
         SamplingContext&        sampling_context,
         const Alpha             alpha);
+
+    // Apply path visitor and sample BSDF in a given path vertex.
+    // If all checks are passed, build a bounced ray that continues in the sampled direction
+    // and return true, otherwise return false.
+    bool process_bounce(
+        SamplingContext&    sampling_context,
+        PathVertex&         vertex,
+        BSDFSample&         sample,
+        ShadingRay&         ray);
+
 };
 
 
@@ -194,10 +210,10 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
     // here to silence a gcc warning.
     foundation::Vector3d medium_start(0.0);
 
-    size_t diffuse_bounces = 0;
-    size_t glossy_bounces = 0;
-    size_t specular_bounces = 0;
-    size_t iterations = 0;
+    m_diffuse_bounces = 0;
+    m_glossy_bounces = 0;
+    m_specular_bounces = 0;
+    m_iterations = 0;
 
     while (true)
     {
@@ -212,7 +228,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 #endif
 
         // Put a hard limit on the number of iterations.
-        if (iterations++ == m_max_iterations)
+        if (m_iterations++ == m_max_iterations)
         {
             RENDERER_LOG_WARNING(
                 "reached hard iteration limit (%s), breaking path tracing loop.",
@@ -468,97 +484,9 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
             break;
 
         ShadingRay next_ray;
-        bool terminate_path = true;
-
-        if (vertex.m_bsdf != 0)
+        bool continue_path;
+        if (vertex.m_bsdf == nullptr)
         {
-            //
-            // New bounce.
-            //
-
-            // Determine which scattering modes are still enabled.
-            if (diffuse_bounces >= m_max_diffuse_bounces)
-                vertex.m_scattering_modes &= ~ScatteringMode::Diffuse;
-            if (glossy_bounces >= m_max_glossy_bounces)
-                vertex.m_scattering_modes &= ~ScatteringMode::Glossy;
-            if (specular_bounces >= m_max_specular_bounces)
-                vertex.m_scattering_modes &= ~ScatteringMode::Specular;
-
-            // Let the path visitor handle the scattering event.
-            m_path_visitor.on_scatter(vertex);
-
-            // Terminate the path if all scattering modes are disabled.
-            if (vertex.m_scattering_modes == ScatteringMode::None)
-                break;
-
-            // Above-surface scattering.
-            if (vertex.m_bssrdf == 0)
-            {
-                vertex.m_bsdf->sample(
-                    sampling_context,
-                    vertex.m_bsdf_data,
-                    Adjoint,
-                    true,       // multiply by |cos(incoming, normal)|
-                    vertex.m_scattering_modes,
-                    bsdf_sample);
-            }
-
-            // Terminate the path if all scattering modes are disabled.
-            if (vertex.m_scattering_modes == ScatteringMode::None)
-                break;
-
-            // Terminate the path if it gets absorbed.
-            if (bsdf_sample.m_mode == ScatteringMode::None)
-                break;
-
-            // Terminate the path if this scattering event is not accepted.
-            if (!m_path_visitor.accept_scattering(vertex.m_prev_mode, bsdf_sample.m_mode))
-                break;
-
-            // Save the scattering properties for MIS at light-emitting vertices.
-            vertex.m_prev_mode = bsdf_sample.m_mode;
-            vertex.m_prev_prob = bsdf_sample.m_probability;
-
-            // Update path throughput.
-            if (bsdf_sample.m_probability != BSDF::DiracDelta)
-                bsdf_sample.m_value /= bsdf_sample.m_probability;
-            vertex.m_throughput *= bsdf_sample.m_value;
-
-            // Update bounce counters.
-            ++vertex.m_path_length;
-            diffuse_bounces += (bsdf_sample.m_mode >> ScatteringMode::DiffuseBitShift) & 1;
-            glossy_bounces += (bsdf_sample.m_mode >> ScatteringMode::GlossyBitShift) & 1;
-            specular_bounces += (bsdf_sample.m_mode >> ScatteringMode::SpecularBitShift) & 1;
-
-            // Construct the scattered ray.
-            const foundation::Vector3d incoming(bsdf_sample.m_incoming.get_value());
-            next_ray = ShadingRay(
-                vertex.m_shading_point->get_biased_point(incoming),
-                incoming,
-                ray.m_time,
-                ScatteringMode::get_vis_flags(bsdf_sample.m_mode),
-                ray.m_depth + 1);
-            next_ray.m_dir = foundation::improve_normalization<2>(next_ray.m_dir);
-
-            // Compute scattered ray differentials.
-            if (bsdf_sample.m_incoming.has_derivatives())
-            {
-                next_ray.m_rx.m_org = next_ray.m_org + vertex.m_shading_point->get_dpdx();
-                next_ray.m_ry.m_org = next_ray.m_org + vertex.m_shading_point->get_dpdy();
-                next_ray.m_rx.m_dir = next_ray.m_dir + foundation::Vector3d(bsdf_sample.m_incoming.get_dx());
-                next_ray.m_ry.m_dir = next_ray.m_dir + foundation::Vector3d(bsdf_sample.m_incoming.get_dy());
-                next_ray.m_has_differentials = true;
-            }
-
-            // Path survived the checks.
-            terminate_path = false;
-        }
-        else
-        {
-            //
-            // No bounce.
-            //
-
             // If there is no BSDF, just continue the current ray without increasing its depth.
             next_ray = ShadingRay(
                 vertex.get_point(),
@@ -566,12 +494,16 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                 ray.m_time,
                 ray.m_flags,
                 ray.m_depth);
-
-            // Path survived the checks.
-            terminate_path = false;
+            continue_path = true;
+        }
+        else
+        {
+            // If there is a BSDF, compute the bounce.
+            continue_path = process_bounce(sampling_context, vertex, bsdf_sample, next_ray);
         }
 
-        if (terminate_path) break;
+        // Terminate the path if there is BSDF, but the scattering event is not accepted.
+        if (!continue_path) break;
 
         // Build the medium list of the scattered ray.
         const foundation::Vector3d& geometric_normal = vertex.get_geometric_normal();
@@ -584,7 +516,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
             // inherit the medium list of the parent ray and add/remove the current medium.
             if (entering)
             {
-                const float ior = !vertex.m_bsdf ? 1.0f :
+                const float ior = (vertex.m_bsdf == nullptr) ? 1.0f :
                     vertex.m_bsdf->sample_ior(
                         sampling_context,
                         vertex.m_bsdf_data);
@@ -630,13 +562,13 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         if (current_medium != 0 && 
             current_medium->m_material->get_render_data().m_phase_function != 0)
         {
-            // This ray is being cast into a participating medium
+            // This ray is being cast into a participating medium:
             march(sampling_context, shading_context,
-                next_ray, vertex, shading_points[shading_point_index]);
+                next_ray, vertex, shading_points[shading_point_index]); 
         }
         else
         {
-            // This ray is being cast into an ordinary medium
+            // This ray is being cast into an ordinary medium:
             shading_context.get_intersector().trace(
                 next_ray,
                 shading_points[shading_point_index],
@@ -649,6 +581,86 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
     }
 
     return vertex.m_path_length;
+}
+
+template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
+bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
+    SamplingContext&    sampling_context,
+    PathVertex&         vertex,
+    BSDFSample&         sample,
+    ShadingRay&         ray)
+{
+    // Determine which scattering modes are still enabled.
+    if (m_diffuse_bounces >= m_max_diffuse_bounces)
+        vertex.m_scattering_modes &= ~ScatteringMode::Diffuse;
+    if (m_glossy_bounces >= m_max_glossy_bounces)
+        vertex.m_scattering_modes &= ~ScatteringMode::Glossy;
+    if (m_specular_bounces >= m_max_specular_bounces)
+        vertex.m_scattering_modes &= ~ScatteringMode::Specular;
+
+    // Let the path visitor handle the scattering event.
+    m_path_visitor.on_scatter(vertex);
+
+    // Terminate the path if all scattering modes are disabled.
+    if (vertex.m_scattering_modes == ScatteringMode::None)
+        return false;
+
+    // Above-surface scattering.
+    if (vertex.m_bssrdf == nullptr)
+    {
+        vertex.m_bsdf->sample(
+            sampling_context,
+            vertex.m_bsdf_data,
+            Adjoint,
+            true,       // multiply by |cos(incoming, normal)|
+            vertex.m_scattering_modes,
+            sample);
+    }
+
+    // Terminate the path if it gets absorbed.
+    if (sample.m_mode == ScatteringMode::None)
+        return false;
+
+    // Terminate the path if this scattering event is not accepted.
+    if (!m_path_visitor.accept_scattering(vertex.m_prev_mode, sample.m_mode))
+        return false;
+
+    // Save the scattering properties for MIS at light-emitting vertices.
+    vertex.m_prev_mode = sample.m_mode;
+    vertex.m_prev_prob = sample.m_probability;
+
+    // Update path throughput.
+    if (sample.m_probability != BSDF::DiracDelta)
+        sample.m_value /= sample.m_probability;
+    vertex.m_throughput *= sample.m_value;
+
+    // Update bounce counters.
+    ++vertex.m_path_length;
+    m_diffuse_bounces +=  (sample.m_mode >> ScatteringMode::DiffuseBitShift)  & 1;
+    m_glossy_bounces +=   (sample.m_mode >> ScatteringMode::GlossyBitShift)   & 1;
+    m_specular_bounces += (sample.m_mode >> ScatteringMode::SpecularBitShift) & 1;
+
+    // Construct the scattered ray.
+    const foundation::Vector3d incoming(sample.m_incoming.get_value());
+    ray = ShadingRay(
+        vertex.m_shading_point->get_biased_point(incoming),
+        incoming,
+        ray.m_time,
+        ScatteringMode::get_vis_flags(sample.m_mode),
+        ray.m_depth + 1);
+    ray.m_dir = foundation::improve_normalization<2>(ray.m_dir);
+
+    // Compute scattered ray differentials.
+    if (sample.m_incoming.has_derivatives())
+    {
+        ray.m_rx.m_org = ray.m_org + vertex.m_shading_point->get_dpdx();
+        ray.m_ry.m_org = ray.m_org + vertex.m_shading_point->get_dpdy();
+        ray.m_rx.m_dir = ray.m_dir + foundation::Vector3d(sample.m_incoming.get_dx());
+        ray.m_ry.m_dir = ray.m_dir + foundation::Vector3d(sample.m_incoming.get_dy());
+        ray.m_has_differentials = true;
+    }
+
+    return true;
 }
 
 template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>

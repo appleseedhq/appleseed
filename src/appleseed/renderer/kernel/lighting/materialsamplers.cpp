@@ -4,7 +4,6 @@
 // Visit http://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
-
 //
 // Copyright (c) 2017 Artem Bishev, The appleseedhq Organization
 //
@@ -70,15 +69,13 @@ bool BSDFSampler::contributes_to_light_sampling() const
 }
 
 float BSDFSampler::trace_between(
-    const ShadingContext& shading_context,
-    const Vector3d& target_position
-    ) const
+    const ShadingContext&   shading_context,
+    const Vector3d&         target_position) const
 {
     return shading_context.get_tracer().trace_between(
         m_shading_point,
         target_position,
-        VisibilityFlags::ShadowRay
-        );
+        VisibilityFlags::ShadowRay);
 }
 
 bool BSDFSampler::sample(
@@ -88,7 +85,6 @@ bool BSDFSampler::sample(
     Spectrum&          value,
     float&             pdf) const
 {
-    // Sample the BSDF.
     BSDFSample sample(&m_shading_point, Dual3f(outgoing));
     m_bsdf.sample(
         sampling_context,
@@ -113,10 +109,8 @@ float BSDFSampler::evaluate(
     int              light_sampling_modes,
     const Vector3f&  outgoing,
     const Vector3f&  incoming,
-    Spectrum&        value
-    ) const
+    Spectrum&        value) const
 {
-    // Evaluate the BSDF.
     return m_bsdf.evaluate(
         m_bsdf_data,
         false,              // not adjoint
@@ -188,7 +182,6 @@ bool PhaseFunctionSampler::sample(
 {
     Vector3f incoming_direction;
 
-    // Sample the Phase Function.
     pdf = m_phasefunction.sample(
         sampling_context,
         m_volume_ray,
@@ -214,10 +207,8 @@ float PhaseFunctionSampler::evaluate(
     int              light_sampling_modes,
     const Vector3f&  outgoing,
     const Vector3f&  incoming,
-    Spectrum&        value
-    ) const
+    Spectrum&        value) const
 {
-    // Evaluate the Phase Function.
     float pdf = m_phasefunction.evaluate(
         m_volume_ray,
         m_phasefunction_data,
@@ -236,9 +227,8 @@ float PhaseFunctionSampler::evaluate(
 }
 
 float PhaseFunctionSampler::trace_between(
-    const ShadingContext& shading_context,
-    const Vector3d& target_position
-    ) const
+    const ShadingContext&   shading_context,
+    const Vector3d&         target_position) const
 {
     return shading_context.get_tracer().trace_between(
         m_point,

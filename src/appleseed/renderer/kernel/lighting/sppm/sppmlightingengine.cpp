@@ -163,9 +163,9 @@ namespace
                 m_answer,
                 radiance);
 
-            VolumeVisitorEmpty volume_visitor;
+            VolumeVisitor volume_visitor;
 
-            PathTracer<PathVisitor, VolumeVisitorEmpty, false> path_tracer(     // false = not adjoint
+            PathTracer<PathVisitor, VolumeVisitor, false> path_tracer(     // false = not adjoint
                 path_visitor,
                 volume_visitor,
                 m_params.m_path_tracing_rr_min_path_length,
@@ -572,7 +572,7 @@ namespace
             }
         };
 
-        struct VolumeVisitorEmpty
+        struct VolumeVisitor
         {
             void visit(const ShadingRay& volume_ray)
             {

@@ -47,9 +47,9 @@ namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }
 
 //
-// This file contains wrappers over samplable functions, such as BSDF and PhaseFunction,
+// This file contains wrappers over samplable functions, such as BSDF and PhaseFunction.
 // These wrappers provide a uniform interface for sampling and evaluating these functions
-// in a certain point, which can be used during lighting integration.
+// at a certain point, which can be used during lighting integration.
 //
 
 namespace renderer
@@ -69,22 +69,20 @@ class IMaterialSampler
 
     virtual float trace_between(
         const ShadingContext&        shading_context,
-        const foundation::Vector3d&  target_position
-        ) const = 0;
+        const foundation::Vector3d&  target_position) const = 0;
 
     virtual bool sample(
         SamplingContext&               sampling_context,
         const foundation::Dual3d&      outgoing,
         foundation::Dual3f&            incoming,
-        Spectrum&          value,
-        float&             pdf) const = 0;
+        Spectrum&                      value,
+        float&                         pdf) const = 0;
 
     virtual float evaluate(
         int                          light_sampling_modes,
         const foundation::Vector3f&  outgoing,
         const foundation::Vector3f&  incoming,
-        Spectrum&                    value
-        ) const = 0;
+        Spectrum&                    value) const = 0;
 
     virtual bool cull_incoming_direction(
         const foundation::Vector3d& incoming) const = 0;
@@ -105,8 +103,7 @@ class BSDFSampler : public IMaterialSampler
 
     virtual float trace_between(
         const ShadingContext&         shading_context,
-        const foundation::Vector3d&   target_position
-        ) const override;
+        const foundation::Vector3d&   target_position) const override;
 
     virtual bool sample(
         SamplingContext&             sampling_context,
@@ -119,8 +116,7 @@ class BSDFSampler : public IMaterialSampler
         int                          light_sampling_modes,
         const foundation::Vector3f&  outgoing,
         const foundation::Vector3f&  incoming,
-        Spectrum&                    value
-        ) const override;
+        Spectrum&                    value) const override;
 
     virtual const ShadingPoint& trace(
         const ShadingContext&          shading_context,
@@ -128,7 +124,7 @@ class BSDFSampler : public IMaterialSampler
         float&                         transmission) const override;
 
     virtual bool cull_incoming_direction(
-        const foundation::Vector3d& incoming) const override;
+        const foundation::Vector3d&  incoming) const override;
 
 private:
     const BSDF&                      m_bsdf;
@@ -163,13 +159,11 @@ class PhaseFunctionSampler : public IMaterialSampler
         int                          light_sampling_modes,
         const foundation::Vector3f&  outgoing,
         const foundation::Vector3f&  incoming,
-        Spectrum&                    value
-        ) const override;
+        Spectrum&                    value) const override;
 
     virtual float trace_between(
         const ShadingContext&        shading_context,
-        const foundation::Vector3d&  target_position
-        ) const override;
+        const foundation::Vector3d&  target_position) const override;
 
     virtual const ShadingPoint& trace(
         const ShadingContext&        shading_context,

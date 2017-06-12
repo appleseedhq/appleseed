@@ -198,7 +198,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
     if (!m_light_sampler.has_lights_or_emitting_triangles())
         return;
 
-    // Check if PDF of the sampler is Dirac delta and therefore it
+    // Check if PDF of the sampler is Dirac delta and therefore
     // cannot contribute to the light sampling.
     if (!m_material_sampler.contributes_to_light_sampling())
         return;
@@ -548,9 +548,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     Vector3d incoming = sample.m_point - m_material_sampler.get_point();
 
     if (m_material_sampler.cull_incoming_direction(incoming))
-    {
         return;
-    }
 
     // No contribution if the shading point is behind the light.
     double cos_on = dot(-incoming, sample.m_shading_normal);
@@ -609,7 +607,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     if (transmission == 0.0f)
         return;
 
-    // Evaluate the BSDF (or phase function scattering).
+    // Evaluate the BSDF (or phase function).
     Spectrum material_value;
     const float material_probability =
         m_material_sampler.evaluate(
@@ -685,9 +683,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     const Vector3d incoming = -emission_direction;
 
     if (m_material_sampler.cull_incoming_direction(incoming))
-    {
         return;
-    }
 
     // Compute the transmission factor between the light sample and the shading point.
     const float transmission =
@@ -699,7 +695,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     if (transmission == 0.0f)
         return;
 
-    // Evaluate the BSDF (or phase function scattering).
+    // Evaluate the BSDF (or phase function).
     Spectrum material_value;
     const float material_probability =
         m_material_sampler.evaluate(
