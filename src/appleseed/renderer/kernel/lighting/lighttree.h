@@ -49,13 +49,40 @@ namespace renderer      { class EmittingTriangle; }
 namespace renderer{
 
 //
+// LightTreeNode implementation
+//
+template<typename AABB> 
+class LightTreeNode
+    : public foundation::bvh::Node<AABB>
+{
+  public:
+    LightTreeNode()
+      : m_node_energy(0)
+    {
+    }
+
+    size_t get_node_energy() const
+    {
+        return m_node_energy;
+    };
+
+    void set_node_energy(size_t energy)
+    {
+        m_node_energy = energy;
+    };
+  
+  private:
+    size_t  m_node_energy;
+};
+
+//
 // Light tree.
 //
 
 class LightTree
   : public foundation::bvh::Tree<
                foundation::AlignedVector<
-                   foundation::bvh::Node<foundation::AABB3d>
+                   LightTreeNode<foundation::AABB3d>
                >
             >
 {
@@ -74,8 +101,7 @@ class LightTree
     void build(
         const std::vector<NonPhysicalLightInfo>     non_physical_lights,
         const std::vector<EmittingTriangle>         emitting_triangles);
-    
-    void update_node_energy();
+
 
   private:
     struct Item
@@ -109,6 +135,8 @@ class LightTree
     ItemVector                 m_items;
 
     void store_items_in_leaves(foundation::Statistics& statistics);
+    
+    void update_nodes_energy();
 };
 
 }

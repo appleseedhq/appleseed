@@ -182,12 +182,15 @@ void LightTree::store_items_in_leaves(foundation::Statistics& statistics)
     RENDERER_LOG_INFO("leaf_count... %zu", leaf_count);
     RENDERER_LOG_INFO("fat_leaf_count... %zu", fat_leaf_count);
     statistics.insert_percent("fat leaves", fat_leaf_count, leaf_count);
+
+    update_nodes_energy();
 }
 
-void LightTree::update_node_energy()
+void LightTree::update_nodes_energy()
 {
     // Make sure the tree was built.
     assert(!tree.m_nodes.empty());
+    
     for (size_t i = 0; i < m_nodes.size(); i++)
     {
         if (m_nodes[i].is_leaf())
