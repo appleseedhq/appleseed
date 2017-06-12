@@ -39,7 +39,7 @@
 // Forward declarations.
 class QAction;
 class QString;
-class QTextEdit;
+class QPlainTextEdit;
 
 namespace appleseed {
 namespace studio {
@@ -58,8 +58,8 @@ class PythonConsoleWidget
     void slot_clear_output();
 
   private:
-    QTextEdit* output;
-    QTextEdit* input;
+    QPlainTextEdit* output;
+    QPlainTextEdit* input;
 
     QAction* m_action_execute_selection;
     QAction* m_action_execute_all;

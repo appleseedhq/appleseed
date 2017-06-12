@@ -30,7 +30,7 @@
 #include "outputredirector.h"
 
 // Qt headers.
-#include <QTextEdit>
+#include <QPlainTextEdit>
 
 namespace appleseed {
 namespace studio {
@@ -39,7 +39,7 @@ namespace studio {
 // OutputRedirector class implementation
 //
 
-OutputRedirector::OutputRedirector(QTextEdit* output)
+OutputRedirector::OutputRedirector(QPlainTextEdit* output)
   : output(output)
 {
 }

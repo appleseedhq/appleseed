@@ -33,7 +33,7 @@
 #include "python/pythoninterpreter.h"
 
 // Qt headers.
-#include <QTextEdit>
+#include <QPlainTextEdit>
 
 // Forward declarations.
 class QWidget;
@@ -42,7 +42,7 @@ namespace appleseed {
 namespace studio {
 
 class PythonInput
-  : public QTextEdit
+  : public QPlainTextEdit
 {
     Q_OBJECT
 

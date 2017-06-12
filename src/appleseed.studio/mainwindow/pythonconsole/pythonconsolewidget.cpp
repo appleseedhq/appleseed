@@ -51,9 +51,9 @@ PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
     input = new PythonInput(this);
     input->setStyleSheet("background-color:#303030");
 
-    output = new QTextEdit(this);
+    output = new QPlainTextEdit(this);
     output->setUndoRedoEnabled(false);
-    output->setLineWrapMode(QTextEdit::WidgetWidth);
+    output->setLineWrapMode(QPlainTextEdit::WidgetWidth);
     output->setReadOnly(true);
     output->setTextInteractionFlags(
         Qt::TextSelectableByMouse |

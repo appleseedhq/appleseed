@@ -46,9 +46,8 @@ namespace studio {
 PythonInput::PythonInput(QWidget* parent)
 {
     setUndoRedoEnabled(true);
-    setLineWrapMode(QTextEdit::WidgetWidth);
+    setLineWrapMode(QPlainTextEdit::WidgetWidth);
     setReadOnly(false);
-    setAcceptRichText(false);
     setTextInteractionFlags(
         Qt::TextSelectableByMouse |
         Qt::TextSelectableByKeyboard |
@@ -68,7 +67,7 @@ void PythonInput::keyPressEvent(QKeyEvent* event)
         insert_spaces(4);
     else
     {
-        QTextEdit::keyPressEvent(event);
+        QPlainTextEdit::keyPressEvent(event);
         if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
             indent();
     }
