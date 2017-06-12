@@ -179,10 +179,7 @@ void LightTree::store_items_in_leaves(foundation::Statistics& statistics)
         }
     }
 
-    RENDERER_LOG_INFO("leaf_count... %zu", leaf_count);
-    RENDERER_LOG_INFO("fat_leaf_count... %zu", fat_leaf_count);
-    statistics.insert_percent("fat leaves", fat_leaf_count, leaf_count);
-
+    // Set total energy for each node of the LightTree
     update_nodes_energy();
 }
 
@@ -190,49 +187,23 @@ void LightTree::update_nodes_energy()
 {
     // Make sure the tree was built.
     assert(!tree.m_nodes.empty());
-    
-    for (size_t i = 0; i < m_nodes.size(); i++)
-    {
-        if (m_nodes[i].is_leaf())
-        {
-            RENDERER_LOG_INFO("------------------");
-            RENDERER_LOG_INFO("Counter index: %zu", i);
-            RENDERER_LOG_INFO("I am a leaf and my item index number is: %zu", m_nodes[i].get_item_index());
-            RENDERER_LOG_INFO("------------------");
-        }
-        else
-        {
-            RENDERER_LOG_INFO("------------------");
-            RENDERER_LOG_INFO("Counter index: %zu", i);
-            RENDERER_LOG_INFO("I am not a leaf");
-            RENDERER_LOG_INFO("Child index: %zu", m_nodes[i].get_child_node_index());
-            RENDERER_LOG_INFO("------------------");
-        }
-    }
 
     // Start energy update with the root node
     float energy = update_energy(m_nodes[0].get_child_node_index()) // left child
                  + update_energy(m_nodes[0].get_child_node_index() + 1);  // right child
     
     m_nodes[0].set_node_energy(energy);
-    RENDERER_LOG_INFO("------------------");
-    RENDERER_LOG_INFO("Root node energy: %f", energy);
-
 }
 
 float LightTree::update_energy(size_t node_index)
 {
     float energy = 0;
-    RENDERER_LOG_INFO("------------------");
-    RENDERER_LOG_INFO("Node index: %zu", node_index);
 
     if (!m_nodes[node_index].is_leaf())
     {
         energy = update_energy(m_nodes[node_index].get_child_node_index()) // left child
                + update_energy(m_nodes[node_index].get_child_node_index() + 1);  // right child    
         m_nodes[node_index].set_node_energy(energy);        
-
-        RENDERER_LOG_INFO("Node energy: %f", energy);
     }
     else
     {
@@ -240,11 +211,8 @@ float LightTree::update_energy(size_t node_index)
         size_t light_source_index = m_items[item_index].m_light_sources_index;
         energy = m_light_sources[light_source_index]->get_intensity()[0];
         m_nodes[node_index].set_node_energy(energy);
-        RENDERER_LOG_INFO("Leaf node energy: %f", energy);
     }
     return energy;
-    
-            
 }
 
 }   // namespace renderer
