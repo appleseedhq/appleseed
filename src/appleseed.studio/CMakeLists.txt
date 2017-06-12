@@ -489,6 +489,7 @@ add_executable (appleseed.studio
 
 if (WIN32)
     set_target_properties (appleseed.studio PROPERTIES
+        # Build a GUI application instead of a console application on Windows.
         WIN32_EXECUTABLE TRUE
     )
 endif ()

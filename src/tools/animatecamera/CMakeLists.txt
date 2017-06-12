@@ -55,6 +55,12 @@ add_executable (animatecamera
     ${animatecamera_sources}
 )
 
+if (USE_RPATH_ORIGIN)
+    set_target_properties (animatecamera PROPERTIES
+        INSTALL_RPATH "\$ORIGIN/../lib"
+    )
+endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.
@@ -84,12 +90,6 @@ target_link_libraries (animatecamera
     appleseed.shared
     ${Boost_LIBRARIES}
 )
-
-if (USE_RPATH_ORIGIN)
-    set_target_properties (animatecamera PROPERTIES
-        INSTALL_RPATH "\$ORIGIN/../lib"
-    )
-endif ()
 
 
 #--------------------------------------------------------------------------------------------------

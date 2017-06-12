@@ -52,6 +52,12 @@ add_executable (dumpmetadata
     ${dumpmetadata_sources}
 )
 
+if (USE_RPATH_ORIGIN)
+    set_target_properties (dumpmetadata PROPERTIES
+        INSTALL_RPATH "\$ORIGIN/../lib"
+    )
+endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.
@@ -81,12 +87,6 @@ target_link_libraries (dumpmetadata
     appleseed.shared
     ${Boost_LIBRARIES}
 )
-
-if (USE_RPATH_ORIGIN)
-    set_target_properties (dumpmetadata PROPERTIES
-        INSTALL_RPATH "\$ORIGIN/../lib"
-    )
-endif ()
 
 
 #--------------------------------------------------------------------------------------------------

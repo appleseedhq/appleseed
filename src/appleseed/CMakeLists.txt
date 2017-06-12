@@ -1858,6 +1858,12 @@ add_library (appleseed SHARED
     ${appleseed_sources}
 )
 
+if (USE_VISIBILITY_MAP)
+    set_target_properties (appleseed PROPERTIES
+        LINK_FLAGS "-Wl,--version-script=${PROJECT_SOURCE_DIR}/src/appleseed/libappleseed.map"
+    )
+endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Preprocessor definitions.
@@ -1869,11 +1875,6 @@ append_custom_preprocessor_definitions (appleseed
     APPLESEED_ENABLE_IMATH_INTEROP
 )
 
-if (USE_VISIBILITY_MAP)
-    set_target_properties (appleseed PROPERTIES
-        LINK_FLAGS "-Wl,--version-script=${PROJECT_SOURCE_DIR}/src/appleseed/libappleseed.map"
-    )
-endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Static libraries.
