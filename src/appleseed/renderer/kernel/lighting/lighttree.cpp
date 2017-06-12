@@ -209,6 +209,42 @@ void LightTree::update_nodes_energy()
             RENDERER_LOG_INFO("------------------");
         }
     }
+
+    // Start energy update with the root node
+    float energy = update_energy(m_nodes[0].get_child_node_index()) // left child
+                 + update_energy(m_nodes[0].get_child_node_index() + 1);  // right child
+    
+    m_nodes[0].set_node_energy(energy);
+    RENDERER_LOG_INFO("------------------");
+    RENDERER_LOG_INFO("Root node energy: %f", energy);
+
+}
+
+float LightTree::update_energy(size_t node_index)
+{
+    float energy = 0;
+    RENDERER_LOG_INFO("------------------");
+    RENDERER_LOG_INFO("Node index: %zu", node_index);
+
+    if (!m_nodes[node_index].is_leaf())
+    {
+        energy = update_energy(m_nodes[node_index].get_child_node_index()) // left child
+               + update_energy(m_nodes[node_index].get_child_node_index() + 1);  // right child    
+        m_nodes[node_index].set_node_energy(energy);        
+
+        RENDERER_LOG_INFO("Node energy: %f", energy);
+    }
+    else
+    {
+        size_t item_index = m_nodes[node_index].get_item_index();
+        size_t light_source_index = m_items[item_index].m_light_sources_index;
+        energy = m_light_sources[light_source_index]->get_intensity()[0];
+        m_nodes[node_index].set_node_energy(energy);
+        RENDERER_LOG_INFO("Leaf node energy: %f", energy);
+    }
+    return energy;
+    
+            
 }
 
 }   // namespace renderer

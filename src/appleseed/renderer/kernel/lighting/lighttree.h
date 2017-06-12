@@ -61,18 +61,18 @@ class LightTreeNode
     {
     }
 
-    size_t get_node_energy() const
+    float get_node_energy() const
     {
         return m_node_energy;
     };
 
-    void set_node_energy(size_t energy)
+    void set_node_energy(float energy)
     {
         m_node_energy = energy;
     };
   
   private:
-    size_t  m_node_energy;
+    float  m_node_energy;
 };
 
 //
@@ -135,8 +135,8 @@ class LightTree
     ItemVector                 m_items;
 
     void store_items_in_leaves(foundation::Statistics& statistics);
-    
     void update_nodes_energy();
+    float update_energy(size_t node_index);
 };
 
 }
