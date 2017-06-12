@@ -74,6 +74,8 @@ class LightTree
     void build(
         const std::vector<NonPhysicalLightInfo>     non_physical_lights,
         const std::vector<EmittingTriangle>         emitting_triangles);
+    
+    void update_node_energy();
 
   private:
     struct Item
@@ -107,8 +109,6 @@ class LightTree
     ItemVector                 m_items;
 
     void store_items_in_leaves(foundation::Statistics& statistics);
-
-    void update_node_energy();
 };
 
 }

@@ -145,6 +145,8 @@ void LightTree::build(
         foundation::StatisticsVector::make(
             "light tree statistics",
             statistics).to_string().c_str());
+
+    RENDERER_LOG_INFO("Number of nodes: %zu", m_nodes.size());
 }
 
 void LightTree::store_items_in_leaves(foundation::Statistics& statistics)
@@ -184,7 +186,26 @@ void LightTree::store_items_in_leaves(foundation::Statistics& statistics)
 
 void LightTree::update_node_energy()
 {
-    
+    // Make sure the tree was built.
+    assert(!tree.m_nodes.empty());
+    for (size_t i = 0; i < m_nodes.size(); i++)
+    {
+        if (m_nodes[i].is_leaf())
+        {
+            RENDERER_LOG_INFO("------------------");
+            RENDERER_LOG_INFO("Counter index: %zu", i);
+            RENDERER_LOG_INFO("I am a leaf and my item index number is: %zu", m_nodes[i].get_item_index());
+            RENDERER_LOG_INFO("------------------");
+        }
+        else
+        {
+            RENDERER_LOG_INFO("------------------");
+            RENDERER_LOG_INFO("Counter index: %zu", i);
+            RENDERER_LOG_INFO("I am not a leaf");
+            RENDERER_LOG_INFO("Child index: %zu", m_nodes[i].get_child_node_index());
+            RENDERER_LOG_INFO("------------------");
+        }
+    }
 }
 
 }   // namespace renderer
