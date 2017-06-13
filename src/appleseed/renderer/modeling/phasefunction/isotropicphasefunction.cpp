@@ -102,7 +102,7 @@ class IsotropicPhaseFunction
 
         // Ensure that extinction spectrum has unit norm, which is neccessary for distance sampling.
         const float extinction_norm = max_value(values->m_precomputed.m_normalized_extinction);
-        if (extinction_norm > +1e-06f)
+        if (extinction_norm > 1.0e-6f)
             values->m_precomputed.m_normalized_extinction /= extinction_norm;
         values->m_precomputed.m_extinction_multiplier = extinction_norm;
     }
