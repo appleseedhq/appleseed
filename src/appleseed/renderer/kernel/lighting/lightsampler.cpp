@@ -121,6 +121,8 @@ LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
         scene.assembly_instances(),
         TransformSequence());
 
+    // Build a BVH tree for the found lights.
+    // Currently uses only non-physical lights.
     m_light_tree.build(
         m_non_physical_lights,
         m_emitting_triangles);
@@ -437,7 +439,8 @@ void LightSampler::sample_non_physical_lights(
 {
     assert(m_non_physical_lights_cdf.valid());
 
-    const EmitterCDF::ItemWeightPair result = m_non_physical_lights_cdf.sample(s[0]);
+    // const EmitterCDF::ItemWeightPair result = m_non_physical_lights_cdf.sample(s[0]);
+    const std::pair<size_t, float> result = m_light_tree.sample(light_sample.m_point);
     const size_t light_index = result.first;
     const float light_prob = result.second;
 

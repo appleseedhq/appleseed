@@ -35,11 +35,10 @@
 #include "renderer/global/globaltypes.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
+#include "foundation/math/distance.h"
 #include "foundation/math/permutation.h"
 #include "foundation/platform/timers.h"
-
-// Standard headers.
+#include "foundation/utility/foreach.h"
 
 namespace renderer
 {
@@ -213,6 +212,44 @@ float LightTree::update_energy(size_t node_index)
         m_nodes[node_index].set_node_energy(energy);
     }
     return energy;
+}
+
+// Return the nearest light and it's probability 
+std::pair<size_t, float> LightTree::sample(foundation::Vector3d sample_point) const
+{
+    size_t light_index = find_nearest_light(sample_point, 0);
+    float hard_coded_placeholder_light_prob = 1.0;
+
+    return std::pair<size_t, float>(light_index, hard_coded_placeholder_light_prob);
+}
+
+size_t LightTree::find_nearest_light(foundation::Vector3d sample_point, size_t node_index) const
+{
+    size_t light_index = 0;
+
+    if (!m_nodes[node_index].is_leaf())
+    {
+        LightTreeNode<foundation::AABB3d> node = m_nodes[node_index];
+
+        foundation::Vector3d bbox_centre_left  = node.get_left_bbox().center();
+        foundation::Vector3d bbox_centre_right = node.get_right_bbox().center();
+
+        float distance_left  = foundation::square_distance(sample_point, bbox_centre_left);
+        float distance_right = foundation::square_distance(sample_point, bbox_centre_right);
+
+        distance_left <= distance_right
+            ? light_index = find_nearest_light(sample_point, node.get_child_node_index())
+            : light_index = find_nearest_light(sample_point, node.get_child_node_index() + 1);
+    }
+    else
+    {
+        size_t item_index = m_nodes[node_index].get_item_index();
+        // NOTE: this will work only for pure NPL scene as the lights in
+        // m_light_sources will be mixed. Rewrite this!
+        light_index = m_items[item_index].m_light_sources_index;
+    }
+
+    return light_index;
 }
 
 }   // namespace renderer

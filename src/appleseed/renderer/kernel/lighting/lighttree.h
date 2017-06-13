@@ -37,6 +37,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
+#include "foundation/math/cdf.h"
 #include "foundation/utility/alignedvector.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/uid.h"
@@ -101,7 +102,8 @@ class LightTree
     void build(
         const std::vector<NonPhysicalLightInfo>     non_physical_lights,
         const std::vector<EmittingTriangle>         emitting_triangles);
-
+    
+    std::pair<size_t, float> sample(foundation::Vector3d sample_point) const;
 
   private:
     struct Item
@@ -130,12 +132,16 @@ class LightTree
     typedef std::vector<NonPhysicalLightInfo>       NonPhysicalLightVector;
     typedef std::vector<LightSource*>               LightSourcePointerVector;
     typedef std::vector<Item>                       ItemVector;
+    typedef foundation::CDF<size_t, float>          EmitterCDF;
 
     LightSourcePointerVector   m_light_sources;
     ItemVector                 m_items;
 
+    size_t find_nearest_light(foundation::Vector3d sample_point, size_t node_index) const;
+
     void store_items_in_leaves(foundation::Statistics& statistics);
     void update_nodes_energy();
+
     float update_energy(size_t node_index);
 };
 
