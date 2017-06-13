@@ -31,7 +31,7 @@
 
 // appleseed.studio headers.
 #include "outputredirector.h"
-#include "pythoninput.h"
+#include "pythoneditor.h"
 
 // Qt headers.
 #include <QAction>
@@ -48,7 +48,7 @@ namespace studio {
 PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
   : QWidget(parent)
 {
-    input = new PythonInput(this);
+    input = new PythonEditor(this);
 
     output = new QPlainTextEdit(this);
     output->setUndoRedoEnabled(false);

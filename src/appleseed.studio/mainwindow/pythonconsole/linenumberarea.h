@@ -36,7 +36,7 @@ namespace appleseed {
 namespace studio {
 
 // Forward declarations.
-class PythonInput;
+class PythonEditor;
 
 class LineNumberArea
   : public QWidget
@@ -44,7 +44,7 @@ class LineNumberArea
     Q_OBJECT
 
   public:
-    explicit LineNumberArea(PythonInput* parent = 0);
+    explicit LineNumberArea(PythonEditor* parent = 0);
 
   protected:
     void paintEvent(QPaintEvent* event);
@@ -54,7 +54,7 @@ class LineNumberArea
     void slot_update_area(const QRect& rect, int dy);
 
   private:
-    PythonInput* editor;
+    PythonEditor* editor;
     int area_width();
 };
 

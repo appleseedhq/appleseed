@@ -42,13 +42,13 @@ class QWidget;
 namespace appleseed {
 namespace studio {
 
-class PythonInput
+class PythonEditor
   : public QPlainTextEdit
 {
     Q_OBJECT
 
   public:
-    explicit PythonInput(QWidget* parent = 0);
+    explicit PythonEditor(QWidget* parent = 0);
 
     // These function exposes protected functions of QPlainTextEdit to use in LineNumberArea class
     void set_left_margin(int left_margin);

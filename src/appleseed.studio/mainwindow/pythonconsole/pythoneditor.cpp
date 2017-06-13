@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "pythoninput.h"
+#include "pythoneditor.h"
 
 // appleseed.studio headers.
 #include "pythonhighlighter.h"
@@ -45,7 +45,7 @@
 namespace appleseed {
 namespace studio {
 
-PythonInput::PythonInput(QWidget* parent)
+PythonEditor::PythonEditor(QWidget* parent)
   : QPlainTextEdit(parent)
 {
     setUndoRedoEnabled(true);
@@ -71,27 +71,27 @@ PythonInput::PythonInput(QWidget* parent)
     slot_highlight_current_line();
 }
 
-void PythonInput::set_left_margin(int left_margin)
+void PythonEditor::set_left_margin(int left_margin)
 {
     setViewportMargins(left_margin, 0, 0, 0);
 }
 
-QTextBlock PythonInput::get_first_visible_block()
+QTextBlock PythonEditor::get_first_visible_block()
 {
     return firstVisibleBlock();
 }
 
-int PythonInput::get_top_of_first_block(QTextBlock block)
+int PythonEditor::get_top_of_first_block(QTextBlock block)
 {
     return (int) blockBoundingGeometry(block).translated(contentOffset()).top();
 }
 
-int PythonInput::get_block_height(QTextBlock block)
+int PythonEditor::get_block_height(QTextBlock block)
 {
     return (int) blockBoundingRect(block).height();
 }
 
-void PythonInput::resizeEvent(QResizeEvent* event)
+void PythonEditor::resizeEvent(QResizeEvent* event)
 {
     QPlainTextEdit::resizeEvent(event);
 
@@ -99,7 +99,7 @@ void PythonInput::resizeEvent(QResizeEvent* event)
     line_number_area->setGeometry(QRect(cr.left(), cr.top(), line_number_area->width(), cr.height()));
 }
 
-void PythonInput::keyPressEvent(QKeyEvent* event)
+void PythonEditor::keyPressEvent(QKeyEvent* event)
 {
     if (event->key() == Qt::Key_Tab)
         insert_spaces(4);
@@ -111,7 +111,7 @@ void PythonInput::keyPressEvent(QKeyEvent* event)
     }
 }
 
-void PythonInput::indent()
+void PythonEditor::indent()
 {
     const QStringList text = toPlainText().split('\n');
     const std::string previous = text[text.size() - 2].toStdString();
@@ -131,7 +131,7 @@ void PythonInput::indent()
     }
 }
 
-void PythonInput::indent_like_previous(const std::string& previous)
+void PythonEditor::indent_like_previous(const std::string& previous)
 {
     size_t indentation = 0;
     for (size_t i = 0; i < previous.size(); ++i)
@@ -145,13 +145,13 @@ void PythonInput::indent_like_previous(const std::string& previous)
     insert_spaces(indentation);
 }
 
-void PythonInput::insert_spaces(const size_t count)
+void PythonEditor::insert_spaces(const size_t count)
 {
     const std::string spaces(count, ' ');
     insertPlainText(spaces.c_str());
 }
 
-void PythonInput::slot_highlight_current_line()
+void PythonEditor::slot_highlight_current_line()
 {
     QList<QTextEdit::ExtraSelection> current_line;
     QTextEdit::ExtraSelection selection;

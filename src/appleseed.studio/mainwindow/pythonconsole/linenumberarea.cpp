@@ -30,7 +30,7 @@
 #include "linenumberarea.h"
 
 // appleseed.studio headers.
-#include "pythoninput.h"
+#include "pythoneditor.h"
 
 // Qt headers.
 #include <QPainter>
@@ -40,7 +40,7 @@
 namespace appleseed {
 namespace studio {
 
-LineNumberArea::LineNumberArea(PythonInput* parent)
+LineNumberArea::LineNumberArea(PythonEditor* parent)
   : QWidget(parent), editor(parent)
 {
     connect(editor, SIGNAL(blockCountChanged(int)), this, SLOT(slot_update_area_width()));
