@@ -57,7 +57,7 @@ void ShadingRay::add_medium(
 {
     assert(m_medium_count == 0);
 
-    const uint8 medium_priority = object_instance->get_medium_priority();
+    const int8 medium_priority = object_instance->get_medium_priority();
     const uint8 n = source.m_medium_count;
     uint8 i = 0, j = 0;
 
@@ -84,10 +84,9 @@ void ShadingRay::remove_medium(
 {
     assert(m_medium_count == 0);
 
-    const uint8 n = source.m_medium_count;
     uint8 j = 0;
 
-    for (uint8 i = 0; i < n; ++i)
+    for (uint8 i = 0, e = source.m_medium_count; i < e; ++i)
     {
         if (source.m_media[i].m_object_instance != object_instance)
             m_media[j++] = source.m_media[i];
