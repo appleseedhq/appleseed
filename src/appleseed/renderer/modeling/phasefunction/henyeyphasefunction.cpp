@@ -111,7 +111,7 @@ class HenyeyPhaseFunction
 
         // Ensure that extinction spectrum has unit norm, which is neccessary for distance sampling.
         const float extinction_norm = max_value(values->m_precomputed.m_normalized_extinction);
-        if (extinction_norm > +1e-06f)
+        if (extinction_norm > 1.0e-6f)
             values->m_precomputed.m_normalized_extinction /= extinction_norm;
         values->m_precomputed.m_extinction_multiplier = extinction_norm;
     }
@@ -153,7 +153,7 @@ class HenyeyPhaseFunction
 
         //
         // x = 1/(2g) * (1 + g^2 - [(1 - g^2) / (1 + g*s)]^2),
-        // where x is cos(phi) and s is a uniform random sample from [-1; 1].
+        // where x is cos(phi) and s is a uniform random sample from [-1, 1).
         //
 
         const float g = values->m_average_cosine;

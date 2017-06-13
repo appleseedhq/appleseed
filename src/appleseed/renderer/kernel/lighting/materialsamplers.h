@@ -38,9 +38,6 @@
 #include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
 
-// Standard headers.
-#include <cstddef>
-
 // Forward declarations.
 namespace renderer  { class BSDF; }
 namespace renderer  { class ShadingContext; }
@@ -63,122 +60,124 @@ class IMaterialSampler
     virtual bool contributes_to_light_sampling() const = 0;
 
     virtual const ShadingPoint& trace(
-        const ShadingContext&        shading_context,
-        const foundation::Vector3f&  direction,
-        float&                       transmission) const = 0;
+        const ShadingContext&           shading_context,
+        const foundation::Vector3f&     direction,
+        float&                          transmission) const = 0;
 
     virtual float trace_between(
-        const ShadingContext&        shading_context,
-        const foundation::Vector3d&  target_position) const = 0;
+        const ShadingContext&           shading_context,
+        const foundation::Vector3d&     target_position) const = 0;
 
     virtual bool sample(
-        SamplingContext&               sampling_context,
-        const foundation::Dual3d&      outgoing,
-        foundation::Dual3f&            incoming,
-        Spectrum&                      value,
-        float&                         pdf) const = 0;
+        SamplingContext&                sampling_context,
+        const foundation::Dual3d&       outgoing,
+        foundation::Dual3f&             incoming,
+        Spectrum&                       value,
+        float&                          pdf) const = 0;
 
     virtual float evaluate(
-        int                          light_sampling_modes,
-        const foundation::Vector3f&  outgoing,
-        const foundation::Vector3f&  incoming,
-        Spectrum&                    value) const = 0;
+        const int                       light_sampling_modes,
+        const foundation::Vector3f&     outgoing,
+        const foundation::Vector3f&     incoming,
+        Spectrum&                       value) const = 0;
 
     virtual bool cull_incoming_direction(
-        const foundation::Vector3d& incoming) const = 0;
+        const foundation::Vector3d&     incoming) const = 0;
 };
 
-class BSDFSampler : public IMaterialSampler
+class BSDFSampler
+  : public IMaterialSampler
 {
   public:
     BSDFSampler(
-        const BSDF&          bsdf,
-        const void*          bsdf_data,
-        const int            bsdf_sampling_modes,
-        const ShadingPoint&  shading_point);
+        const BSDF&                     bsdf,
+        const void*                     bsdf_data,
+        const int                       bsdf_sampling_modes,
+        const ShadingPoint&             shading_point);
 
     virtual const foundation::Vector3d& get_point() const override;
 
     virtual bool contributes_to_light_sampling() const override;
 
     virtual float trace_between(
-        const ShadingContext&         shading_context,
-        const foundation::Vector3d&   target_position) const override;
+        const ShadingContext&           shading_context,
+        const foundation::Vector3d&     target_position) const override;
 
     virtual bool sample(
-        SamplingContext&             sampling_context,
-        const foundation::Dual3d&    outgoing,
-        foundation::Dual3f&          incoming,
-        Spectrum&                    value,
-        float&                       pdf) const override;
+        SamplingContext&                sampling_context,
+        const foundation::Dual3d&       outgoing,
+        foundation::Dual3f&             incoming,
+        Spectrum&                       value,
+        float&                          pdf) const override;
 
     virtual float evaluate(
-        int                          light_sampling_modes,
-        const foundation::Vector3f&  outgoing,
-        const foundation::Vector3f&  incoming,
-        Spectrum&                    value) const override;
+        const int                       light_sampling_modes,
+        const foundation::Vector3f&     outgoing,
+        const foundation::Vector3f&     incoming,
+        Spectrum&                       value) const override;
 
     virtual const ShadingPoint& trace(
-        const ShadingContext&          shading_context,
-        const foundation::Vector3f&    direction,
-        float&                         transmission) const override;
+        const ShadingContext&           shading_context,
+        const foundation::Vector3f&     direction,
+        float&                          transmission) const override;
 
     virtual bool cull_incoming_direction(
         const foundation::Vector3d&  incoming) const override;
 
-private:
-    const BSDF&                      m_bsdf;
-    const void*                      m_bsdf_data;
-    const int                        m_bsdf_sampling_modes;
-    const foundation::Basis3d&       m_shading_basis;
-    const foundation::Vector3d&      m_geometric_normal;
-    const ShadingPoint&              m_shading_point;
+  private:
+    const BSDF&                         m_bsdf;
+    const void*                         m_bsdf_data;
+    const int                           m_bsdf_sampling_modes;
+    const foundation::Basis3d&          m_shading_basis;
+    const foundation::Vector3d&         m_geometric_normal;
+    const ShadingPoint&                 m_shading_point;
 };
 
-class PhaseFunctionSampler : public IMaterialSampler
+class PhaseFunctionSampler
+  : public IMaterialSampler
 {
   public:
     PhaseFunctionSampler(
-        const ShadingRay&        volume_ray,
-        const PhaseFunction&     phasefunction,
-        const void*              phasefunction_data,
-        const float              distance);
+        const ShadingRay&               volume_ray,
+        const PhaseFunction&            phasefunction,
+        const void*                     phasefunction_data,
+        const float                     distance);
 
     virtual const foundation::Vector3d& get_point() const override;
 
     virtual bool contributes_to_light_sampling() const override;
 
     virtual bool sample(
-        SamplingContext&           sampling_context,
-        const foundation::Dual3d&  outgoing,
-        foundation::Dual3f&        incoming,
-        Spectrum&                  value,
-        float&                     pdf) const override;
+        SamplingContext&                sampling_context,
+        const foundation::Dual3d&       outgoing,
+        foundation::Dual3f&             incoming,
+        Spectrum&                       value,
+        float&                          pdf) const override;
 
     virtual float evaluate(
-        int                          light_sampling_modes,
-        const foundation::Vector3f&  outgoing,
-        const foundation::Vector3f&  incoming,
-        Spectrum&                    value) const override;
+        const int                       light_sampling_modes,
+        const foundation::Vector3f&     outgoing,
+        const foundation::Vector3f&     incoming,
+        Spectrum&                       value) const override;
 
     virtual float trace_between(
-        const ShadingContext&        shading_context,
-        const foundation::Vector3d&  target_position) const override;
+        const ShadingContext&           shading_context,
+        const foundation::Vector3d&     target_position) const override;
 
     virtual const ShadingPoint& trace(
-        const ShadingContext&        shading_context,
-        const foundation::Vector3f&  direction,
-        float&                       transmission) const override;
+        const ShadingContext&           shading_context,
+        const foundation::Vector3f&     direction,
+        float&                          transmission) const override;
 
     virtual bool cull_incoming_direction(
-        const foundation::Vector3d&  incoming) const override;
+        const foundation::Vector3d&     incoming) const override;
 
-private:
-    const ShadingRay&          m_volume_ray;
-    const PhaseFunction&       m_phasefunction;
-    const void*                m_phasefunction_data;
-    const float                m_distance;
-    const foundation::Vector3d m_point;
+  private:
+    const ShadingRay&               m_volume_ray;
+    const PhaseFunction&            m_phasefunction;
+    const void*                     m_phasefunction_data;
+    const float                     m_distance;
+    const foundation::Vector3d      m_point;
 };
 
 }       // namespace renderer

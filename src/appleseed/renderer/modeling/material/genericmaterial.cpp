@@ -155,9 +155,6 @@ DictionaryArray GenericMaterialFactory::get_input_metadata() const
             .insert("entity_types", Dictionary().insert("edf", "EDF"))
             .insert("use", "optional"));
 
-    add_alpha_map_metadata(metadata);
-    add_displacement_metadata(metadata);
-
     metadata.push_back(
         Dictionary()
         .insert("name", "phase_function")
@@ -166,6 +163,9 @@ DictionaryArray GenericMaterialFactory::get_input_metadata() const
         .insert("entity_types",
             Dictionary().insert("phase_function", "Phase Function"))
         .insert("use", "optional"));
+
+    add_alpha_map_metadata(metadata);
+    add_displacement_metadata(metadata);
 
     return metadata;
 }

@@ -43,17 +43,21 @@ using namespace std;
 namespace renderer
 {
 
+//
+// BSDFSampler class implementation.
+//
+
 BSDFSampler::BSDFSampler(
-    const BSDF&          bsdf,
-    const void*          bsdf_data,
-    const int            bsdf_sampling_modes,
-    const ShadingPoint&  shading_point)
-    : m_bsdf(bsdf)
-    , m_bsdf_data(bsdf_data)
-    , m_bsdf_sampling_modes(bsdf_sampling_modes)
-    , m_shading_basis(shading_point.get_shading_basis())
-    , m_geometric_normal(shading_point.get_geometric_normal())
-    , m_shading_point(shading_point)
+    const BSDF&             bsdf,
+    const void*             bsdf_data,
+    const int               bsdf_sampling_modes,
+    const ShadingPoint&     shading_point)
+  : m_bsdf(bsdf)
+  , m_bsdf_data(bsdf_data)
+  , m_bsdf_sampling_modes(bsdf_sampling_modes)
+  , m_shading_basis(shading_point.get_shading_basis())
+  , m_geometric_normal(shading_point.get_geometric_normal())
+  , m_shading_point(shading_point)
 {
 }
 
@@ -72,25 +76,26 @@ float BSDFSampler::trace_between(
     const ShadingContext&   shading_context,
     const Vector3d&         target_position) const
 {
-    return shading_context.get_tracer().trace_between(
-        m_shading_point,
-        target_position,
-        VisibilityFlags::ShadowRay);
+    return
+        shading_context.get_tracer().trace_between(
+            m_shading_point,
+            target_position,
+            VisibilityFlags::ShadowRay);
 }
 
 bool BSDFSampler::sample(
-    SamplingContext&   sampling_context,
-    const Dual3d&      outgoing,
-    Dual3f&            incoming,
-    Spectrum&          value,
-    float&             pdf) const
+    SamplingContext&        sampling_context,
+    const Dual3d&           outgoing,
+    Dual3f&                 incoming,
+    Spectrum&               value,
+    float&                  pdf) const
 {
     BSDFSample sample(&m_shading_point, Dual3f(outgoing));
     m_bsdf.sample(
         sampling_context,
         m_bsdf_data,
-        false,                  // not adjoint
-        true,                   // multiply by |cos(incoming, normal)|
+        false,              // not adjoint
+        true,               // multiply by |cos(incoming, normal)|
         m_bsdf_sampling_modes,
         sample);
 
@@ -106,39 +111,41 @@ bool BSDFSampler::sample(
 }
 
 float BSDFSampler::evaluate(
-    int              light_sampling_modes,
-    const Vector3f&  outgoing,
-    const Vector3f&  incoming,
-    Spectrum&        value) const
+    const int               light_sampling_modes,
+    const Vector3f&         outgoing,
+    const Vector3f&         incoming,
+    Spectrum&               value) const
 {
-    return m_bsdf.evaluate(
-        m_bsdf_data,
-        false,              // not adjoint
-        true,               // multiply by |cos(incoming, normal)|
-        Vector3f(m_geometric_normal),
-        Basis3f(m_shading_basis),
-        Vector3f(outgoing),
-        Vector3f(incoming),
-        light_sampling_modes,
-        value);
+    return
+        m_bsdf.evaluate(
+            m_bsdf_data,
+            false,          // not adjoint
+            true,           // multiply by |cos(incoming, normal)|
+            Vector3f(m_geometric_normal),
+            Basis3f(m_shading_basis),
+            Vector3f(outgoing),
+            Vector3f(incoming),
+            light_sampling_modes,
+            value);
 }
 
 const ShadingPoint& BSDFSampler::trace(
-    const ShadingContext&     shading_context,
-    const Vector3f&           direction,
-    float&                    transmission) const
+    const ShadingContext&   shading_context,
+    const Vector3f&         direction,
+    float&                  transmission) const
 {
-    return shading_context.get_tracer().trace(
-        m_shading_point,
-        Vector3d(direction),
-        VisibilityFlags::ShadowRay,
-        transmission);
+    return
+        shading_context.get_tracer().trace(
+            m_shading_point,
+            Vector3d(direction),
+            VisibilityFlags::ShadowRay,
+            transmission);
 }
 
 bool BSDFSampler::cull_incoming_direction(const Vector3d& incoming) const
 {
-    // Cull light samples behind the shading surface if the BSDF is either reflective or transmissive,
-    // but not both.
+    // Cull light samples behind the shading surface if the BSDF
+    // is either reflective or transmissive, but not both.
     if (m_bsdf.get_type() != BSDF::AllBSDFTypes)
     {
         double cos_in = dot(incoming, m_shading_basis.get_normal());
@@ -150,16 +157,21 @@ bool BSDFSampler::cull_incoming_direction(const Vector3d& incoming) const
     return false;
 }
 
+
+//
+// PhaseFunctionSampler class implementation.
+//
+
 PhaseFunctionSampler::PhaseFunctionSampler(
-    const ShadingRay&        volume_ray,
-    const PhaseFunction&     phasefunction,
-    const void*              phasefunction_data,
-    const float              distance)
-    : m_volume_ray(volume_ray)
-    , m_phasefunction(phasefunction)
-    , m_phasefunction_data(phasefunction_data)
-    , m_distance(distance)
-    , m_point(m_volume_ray.point_at(distance))
+    const ShadingRay&       volume_ray,
+    const PhaseFunction&    phasefunction,
+    const void*             phasefunction_data,
+    const float             distance)
+  : m_volume_ray(volume_ray)
+  , m_phasefunction(phasefunction)
+  , m_phasefunction_data(phasefunction_data)
+  , m_distance(distance)
+  , m_point(m_volume_ray.point_at(distance))
 {
 }
 
@@ -174,21 +186,21 @@ bool PhaseFunctionSampler::contributes_to_light_sampling() const
 }
 
 bool PhaseFunctionSampler::sample(
-    SamplingContext&   sampling_context,
-    const Dual3d&      outgoing,
-    Dual3f&            incoming,
-    Spectrum&          value,
-    float&             pdf) const
+    SamplingContext&        sampling_context,
+    const Dual3d&           outgoing,
+    Dual3f&                 incoming,
+    Spectrum&               value,
+    float&                  pdf) const
 {
     Vector3f incoming_direction;
 
-    pdf = m_phasefunction.sample(
-        sampling_context,
-        m_volume_ray,
-        m_phasefunction_data,
-        m_distance,
-        incoming_direction
-        );
+    pdf =
+        m_phasefunction.sample(
+            sampling_context,
+            m_volume_ray,
+            m_phasefunction_data,
+            m_distance,
+            incoming_direction);
 
     incoming = Dual3f(incoming_direction);
 
@@ -204,16 +216,17 @@ bool PhaseFunctionSampler::sample(
 }
 
 float PhaseFunctionSampler::evaluate(
-    int              light_sampling_modes,
-    const Vector3f&  outgoing,
-    const Vector3f&  incoming,
-    Spectrum&        value) const
+    const int               light_sampling_modes,
+    const Vector3f&         outgoing,
+    const Vector3f&         incoming,
+    Spectrum&               value) const
 {
-    float pdf = m_phasefunction.evaluate(
-        m_volume_ray,
-        m_phasefunction_data,
-        m_distance,
-        incoming);
+    const float pdf =
+        m_phasefunction.evaluate(
+            m_volume_ray,
+            m_phasefunction_data,
+            m_distance,
+            incoming);
 
     m_phasefunction.scattering_coefficient(
         m_volume_ray, m_phasefunction_data, m_distance, value);
@@ -230,33 +243,34 @@ float PhaseFunctionSampler::trace_between(
     const ShadingContext&   shading_context,
     const Vector3d&         target_position) const
 {
-    return shading_context.get_tracer().trace_between(
-        m_point,
-        target_position,
-        m_volume_ray.m_time,
-        VisibilityFlags::ShadowRay,
-        m_volume_ray.m_depth + 1
-        );
+    return
+        shading_context.get_tracer().trace_between(
+            m_point,
+            target_position,
+            m_volume_ray.m_time,
+            VisibilityFlags::ShadowRay,
+            m_volume_ray.m_depth + 1);
 }
 
 const ShadingPoint& PhaseFunctionSampler::trace(
-    const ShadingContext&     shading_context,
-    const Vector3f&           direction,
-    float&                    transmission) const
+    const ShadingContext&   shading_context,
+    const Vector3f&         direction,
+    float&                  transmission) const
 {
-    return shading_context.get_tracer().trace(
-        m_point,
-        Vector3d(direction),
-        m_volume_ray.m_time,
-        VisibilityFlags::ShadowRay,
-        m_volume_ray.m_depth + 1,
-        transmission);
+    return
+        shading_context.get_tracer().trace(
+            m_point,
+            Vector3d(direction),
+            m_volume_ray.m_time,
+            VisibilityFlags::ShadowRay,
+            m_volume_ray.m_depth + 1,
+            transmission);
 }
 
 bool PhaseFunctionSampler::cull_incoming_direction(const Vector3d& incoming) const
 {
-    // No culling for phase function
+    // No culling for phase function.
     return false;
 }
 
-}       // namespace renderer
+}   // namespace renderer
