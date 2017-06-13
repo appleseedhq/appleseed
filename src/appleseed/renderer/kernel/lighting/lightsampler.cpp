@@ -439,11 +439,10 @@ void LightSampler::sample_non_physical_lights(
 {
     assert(m_non_physical_lights_cdf.valid());
 
-    const EmitterCDF::ItemWeightPair result = m_non_physical_lights_cdf.sample(s[0]);
-    // const std::pair<size_t, float> result = m_light_tree.sample(light_sample.m_point);
+    // const EmitterCDF::ItemWeightPair result = m_non_physical_lights_cdf.sample(s[0]);
+    const std::pair<size_t, float> result = m_light_tree.sample(light_sample.m_point);
     const size_t light_index = result.first;
     const float light_prob = result.second;
-
 
     light_sample.m_triangle = 0;
     sample_non_physical_light(
