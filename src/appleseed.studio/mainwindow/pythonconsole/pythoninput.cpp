@@ -31,11 +31,13 @@
 
 // appleseed.studio headers.
 #include "pythonhighlighter.h"
+#include "linenumberarea.h"
 
 // Qt headers.
 #include <QKeyEvent>
 #include <QString>
 #include <QStringList>
+#include <QPainter>
 
 // Standard headers.
 #include <string>
@@ -44,6 +46,7 @@ namespace appleseed {
 namespace studio {
 
 PythonInput::PythonInput(QWidget* parent)
+  : QPlainTextEdit(parent)
 {
     setUndoRedoEnabled(true);
     setLineWrapMode(QPlainTextEdit::WidgetWidth);
@@ -54,6 +57,7 @@ PythonInput::PythonInput(QWidget* parent)
         Qt::TextEditable |
         Qt::TextEditorInteraction);
 
+    new PythonSyntaxHighlighter(this->document());
 
     setStyleSheet("background-color:#303030");
 
@@ -61,10 +65,38 @@ PythonInput::PythonInput(QWidget* parent)
     font.setStyleHint(QFont::Monospace);
     setFont(font);
 
-    new PythonSyntaxHighlighter(this->document());
+    line_number_area = new LineNumberArea(this);
 
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(slot_highlight_current_line()));
     slot_highlight_current_line();
+}
+
+void PythonInput::set_left_margin(int left_margin)
+{
+    setViewportMargins(left_margin, 0, 0, 0);
+}
+
+QTextBlock PythonInput::get_first_visible_block()
+{
+    return firstVisibleBlock();
+}
+
+int PythonInput::get_top_of_first_block(QTextBlock block)
+{
+    return (int) blockBoundingGeometry(block).translated(contentOffset()).top();
+}
+
+int PythonInput::get_block_height(QTextBlock block)
+{
+    return (int) blockBoundingRect(block).height();
+}
+
+void PythonInput::resizeEvent(QResizeEvent* event)
+{
+    QPlainTextEdit::resizeEvent(event);
+
+    QRect cr = contentsRect();
+    line_number_area->setGeometry(QRect(cr.left(), cr.top(), line_number_area->width(), cr.height()));
 }
 
 void PythonInput::keyPressEvent(QKeyEvent* event)

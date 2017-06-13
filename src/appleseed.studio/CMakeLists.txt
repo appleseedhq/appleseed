@@ -218,6 +218,8 @@ source_group ("mainwindow\\project" FILES
 )
 
 set (mainwindow_pythonconsole_sources
+    mainwindow/pythonconsole/linenumberarea.cpp
+    mainwindow/pythonconsole/linenumberarea.h
     mainwindow/pythonconsole/pythonconsolewidget.cpp
     mainwindow/pythonconsole/pythonconsolewidget.h
     mainwindow/pythonconsole/outputredirector.cpp
