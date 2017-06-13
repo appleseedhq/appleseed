@@ -187,10 +187,20 @@ void LightTree::update_nodes_energy()
     // Make sure the tree was built.
     assert(!tree.m_nodes.empty());
 
+    // Check if the scene has only one light
+    if(m_nodes[0].is_leaf())
+    {   
+        size_t item_index = m_nodes[0].get_item_index();
+        size_t light_source_index = m_items[item_index].m_light_sources_index;
+        float energy = m_light_sources[light_source_index]->get_intensity()[0]; 
+        m_nodes[0].set_node_energy(energy);
+        return;
+    }
+
     // Start energy update with the root node
     float energy = update_energy(m_nodes[0].get_child_node_index()) // left child
                  + update_energy(m_nodes[0].get_child_node_index() + 1);  // right child
-    
+
     m_nodes[0].set_node_energy(energy);
 }
 
