@@ -157,6 +157,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling(
         m_light_sampler.sample(
             m_time,
             sampling_context.next2<Vector3f>(),
+            m_shading_point,
             sample);
 
         if (sample.m_triangle)

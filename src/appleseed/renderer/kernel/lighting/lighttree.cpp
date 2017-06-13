@@ -35,11 +35,12 @@
 #include "renderer/global/globaltypes.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
+#include "foundation/image/colorspace.h"
+#include "foundation/math/distance.h"
 #include "foundation/math/permutation.h"
 #include "foundation/platform/timers.h"
-
-// Standard headers.
+#include "foundation/utility/foreach.h"
+#include "foundation/utility/vpythonfile.h"
 
 namespace renderer
 {
@@ -91,9 +92,13 @@ void LightTree::build(
         Spectrum spectrum = light_source->get_intensity();
         RENDERER_LOG_INFO("Non physical light intensity: %f", spectrum[0]);
         RENDERER_LOG_INFO("Non physical light bbox center [%f %f %f]",
-                            bbox.center()[0],
-                            bbox.center()[1],
-                            bbox.center()[2]);
+                            bbox.center(0),
+                            bbox.center(1),
+                            bbox.center(2));
+        RENDERER_LOG_INFO("Non physical light bbox size [%f %f %f]",
+                            bbox.extent(0),
+                            bbox.extent(1),
+                            bbox.extent(2));
     }
 
     for (foundation::const_each<EmittingTriangleVector> i = emitting_triangles; i; ++i)
@@ -109,9 +114,6 @@ void LightTree::build(
     }
 
     RENDERER_LOG_INFO("Number of light sources: %zu", m_light_sources.size());
-
-    FILE* f = fopen("sorting_test.txt", "wt"); // in /sandbox/bin/Release/test.txt
-    fclose(f);
 
     // Create the partitioner.
     typedef foundation::bvh::MiddlePartitioner<AABBVector> Partitioner;
@@ -136,10 +138,10 @@ void LightTree::build(
             &ordering[0],
             ordering.size());
 
-        // Store the items in the tree leaves whenever possible.
-        store_items_in_leaves(statistics);
+        // Set total luminance for each node of the LightTree
+        update_luminance(0);
     }
-
+    
     // Print light tree statistics.
     RENDERER_LOG_INFO("%s",
         foundation::StatisticsVector::make(
@@ -147,72 +149,196 @@ void LightTree::build(
             statistics).to_string().c_str());
 
     RENDERER_LOG_INFO("Number of nodes: %zu", m_nodes.size());
-}
-
-void LightTree::store_items_in_leaves(foundation::Statistics& statistics)
-{
-    size_t leaf_count = 0;
-    size_t fat_leaf_count = 0;
-
-    const size_t node_count = m_nodes.size();
-
-    for (size_t i = 0; i < node_count; ++i)
+    
+    // Output the tree structure.
+    // TODO: Add ASCII graphics.
+    for(size_t i = 0; i < m_nodes.size(); i++)
     {
-        NodeType& node = m_nodes[i];
-
-        if (node.is_leaf())
-        {
-            ++leaf_count;
-
-            const size_t item_count = node.get_item_count();
-
-            if (item_count <= NodeType::MaxUserDataSize / sizeof(Item))
-            {
-                ++fat_leaf_count;
-
-                const size_t item_begin = node.get_item_index();
-                Item* user_data = &node.get_user_data<Item>();
-
-                for (size_t j = 0; j < item_count; ++j)
-                    user_data[j] = m_items[item_begin + j];
-            }
-        }
+        RENDERER_LOG_INFO("Index: %zu", i);
+        RENDERER_LOG_INFO("Is leaf: %d", m_nodes[i].is_leaf());
+        RENDERER_LOG_INFO("Left node index: %zu", m_nodes[i].get_child_node_index());
+        RENDERER_LOG_INFO("Right node index: %zu", m_nodes[i].get_child_node_index() + 1);
     }
 
-    // Set total energy for each node of the LightTree
-    update_nodes_energy();
+    // Vpython
+    const char* filename = "light_tree.py";
+    const double Width = 0.1;
+    const char* root_color = "color.yellow";
+
+    foundation::VPythonFile file(filename);
+    file.draw_axes(Width);
+
+    const auto& root_bbox = partitioner.compute_bbox(0, m_items.size());
+    file.draw_aabb(root_bbox, root_color, Width);
+    for(size_t i = 0; i < m_nodes.size(); i++)
+    {
+        if (m_nodes[i].is_leaf())
+            break;
+
+        const char* color =
+            i % 2 == 0 
+            ? "color.green"
+            : "color.red";
+
+        const auto& bbox_left = m_nodes[i].get_left_bbox();
+        const auto& bbox_right = m_nodes[i].get_right_bbox();
+
+        file.draw_aabb(bbox_left, color, Width);
+        file.draw_aabb(bbox_right, color, Width);
+    }
 }
 
-void LightTree::update_nodes_energy()
+float LightTree::update_luminance(size_t node_index)
 {
-    // Make sure the tree was built.
-    assert(!tree.m_nodes.empty());
-
-    // Start energy update with the root node
-    float energy = update_energy(m_nodes[0].get_child_node_index()) // left child
-                 + update_energy(m_nodes[0].get_child_node_index() + 1);  // right child
-    
-    m_nodes[0].set_node_energy(energy);
-}
-
-float LightTree::update_energy(size_t node_index)
-{
-    float energy = 0;
+    float luminance = 0.0f;
 
     if (!m_nodes[node_index].is_leaf())
     {
-        energy = update_energy(m_nodes[node_index].get_child_node_index()) // left child
-               + update_energy(m_nodes[node_index].get_child_node_index() + 1);  // right child    
-        m_nodes[node_index].set_node_energy(energy);        
+        luminance = update_luminance(m_nodes[node_index].get_child_node_index()) // left child
+                  + update_luminance(m_nodes[node_index].get_child_node_index() + 1);  // right child    
     }
     else
     {
         size_t item_index = m_nodes[node_index].get_item_index();
         size_t light_source_index = m_items[item_index].m_light_sources_index;
-        energy = m_light_sources[light_source_index]->get_intensity()[0];
-        m_nodes[node_index].set_node_energy(energy);
+        Spectrum spectrum = m_light_sources[light_source_index]->get_intensity();
+        for(size_t i = 0; i < spectrum.size(); i++)
+        {
+            luminance += spectrum[i];
+        }
+        luminance /= spectrum.size();
     }
-    return energy;
+   
+    m_nodes[node_index].set_node_luminance(luminance);
+
+    return luminance;
+}
+
+void LightTree::output_every_light_probability(
+        size_t                        node_index,
+        const foundation::Vector3d&   surface_point,
+        float                         light_probability,
+        float                         s) const
+{
+    printf("m_nodes index: %zu\n", node_index);
+
+    if(!m_nodes[node_index].is_leaf())
+    {
+        printf("NOT LEAF\n");
+        printf("s: %f\n",s);
+        // LightTreeNodes
+        const auto& node   = m_nodes[node_index];
+        const auto& child1 = m_nodes[node.get_child_node_index()];
+        const auto& child2 = m_nodes[node.get_child_node_index() + 1];
+
+        const auto& bbox_left  = node.get_left_bbox();
+        const auto& bbox_right = node.get_right_bbox();
+
+        const float square_distance_left  = foundation::square_distance(surface_point, bbox_left.center());
+        const float square_distance_right = foundation::square_distance(surface_point, bbox_right.center());
+
+        float p1 = child1.get_probability(square_distance_left, bbox_left.radius());
+        float p2 = child2.get_probability(square_distance_right, bbox_right.radius());
+
+        const float total = p1 + p2;
+
+        if (total <= 0.0f)
+        {
+            p1 = 0.5;
+            p2 = 0.5;
+        }
+        else
+        {
+            p1 = p1 / total;
+            p2 = p2 / total;
+        }
+        printf("p1: %f\n",p1);
+        printf("p2: %f\n",p2);
+
+        printf("calling m_nodes index: %zu\n", node.get_child_node_index());
+        output_every_light_probability(
+            node.get_child_node_index(),
+            surface_point,
+            light_probability * p1,
+            s / p1);
+
+        printf("calling m_nodes index: %zu\n", node.get_child_node_index()+1);
+        output_every_light_probability(
+            node.get_child_node_index() + 1,
+            surface_point,
+            light_probability * p2,
+            (s - p1) / p2);
+    }
+    else
+    {
+        printf("IS LEAF\n");
+        size_t item_index = m_nodes[node_index].get_item_index();
+        // NOTE: this will work only for pure NPL scene as the lights in
+        // m_light_sources will be mixed. Rewrite this!
+        size_t light_index = m_items[item_index].m_light_sources_index;
+    
+        printf("light index: %zu\n", light_index);
+        printf("light_probability: %f\n", light_probability);
+    }
+}
+
+std::pair<size_t, float> LightTree::sample(
+        const foundation::Vector3d    surface_point,
+        float                         s) const
+{
+    float light_probability = 1.0;
+    size_t node_index = 0;
+
+
+    std::pair<size_t, float> nearest_light;
+    while (!m_nodes[node_index].is_leaf())
+    {
+        // LightTreeNodes
+        const auto& node   = m_nodes[node_index];
+        const auto& child1 = m_nodes[node.get_child_node_index()];
+        const auto& child2 = m_nodes[node.get_child_node_index() + 1];
+
+        const auto& bbox_left  = node.get_left_bbox();
+        const auto& bbox_right = node.get_right_bbox();
+        const float square_distance_left  = foundation::square_distance(surface_point, bbox_left.center());
+        const float square_distance_right = foundation::square_distance(surface_point, bbox_right.center());
+
+        float p1 = child1.get_probability(square_distance_left, bbox_left.radius());
+        float p2 = child2.get_probability(square_distance_right, bbox_right.radius());
+
+        float total = p1 + p2;
+
+        if (total <= 0.0f)
+        {
+            p1 = 0.5;
+            p2 = 0.5;
+        }
+        else
+        {
+            p1 = p1 / total;
+            p2 = p2 / total;
+        }
+
+        if (s <= p1)
+        {
+            light_probability *= p1;
+            s /= p1;
+            node_index = node.get_child_node_index();
+        }
+        else
+        {
+            light_probability *= p2;
+            s = (s - p1) / p2;
+            node_index = node.get_child_node_index() + 1;
+        }
+    }
+    light_probability = 1.0;
+    size_t item_index = m_nodes[node_index].get_item_index();
+    // NOTE: this will work only for pure NPL scene as the lights in
+    // m_light_sources will be mixed. Rewrite this!
+    size_t light_index = m_items[item_index].m_light_sources_index;
+
+    return std::pair<size_t, float>(light_index, light_probability);
 }
 
 }   // namespace renderer

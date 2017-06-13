@@ -32,11 +32,13 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/lighting/lighttree_node.h"
 #include "renderer/kernel/lighting/lighttypes.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
+#include "foundation/math/cdf.h"
 #include "foundation/utility/alignedvector.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/uid.h"
@@ -47,33 +49,6 @@ namespace renderer      { class NonPhysicalLightInfo; }
 namespace renderer      { class EmittingTriangle; }
 
 namespace renderer{
-
-//
-// LightTreeNode implementation
-//
-template<typename AABB> 
-class LightTreeNode
-    : public foundation::bvh::Node<AABB>
-{
-  public:
-    LightTreeNode()
-      : m_node_energy(0)
-    {
-    }
-
-    float get_node_energy() const
-    {
-        return m_node_energy;
-    };
-
-    void set_node_energy(float energy)
-    {
-        m_node_energy = energy;
-    };
-  
-  private:
-    float  m_node_energy;
-};
 
 //
 // Light tree.
@@ -101,7 +76,10 @@ class LightTree
     void build(
         const std::vector<NonPhysicalLightInfo>     non_physical_lights,
         const std::vector<EmittingTriangle>         emitting_triangles);
-
+    
+    std::pair<size_t, float> sample(
+        const foundation::Vector3d    surface_point,
+        const float                   s) const;
 
   private:
     struct Item
@@ -113,10 +91,6 @@ class LightTree
 
         // Item contains bbox and source index of each light source
         // source_index represents the light index in m_light_sources vector
-        //
-        // NOTE: Index will be used to retrieve all the needed values like
-        //       position and light energy because otherwise compiling fails with
-        //       > static assertion failed: sizeof(U) <= MAX_USER_DATA_SIZE
         Item(
             foundation::AABB3d      bbox,
             size_t                  source_index) 
@@ -130,13 +104,18 @@ class LightTree
     typedef std::vector<NonPhysicalLightInfo>       NonPhysicalLightVector;
     typedef std::vector<LightSource*>               LightSourcePointerVector;
     typedef std::vector<Item>                       ItemVector;
+    typedef foundation::CDF<size_t, float>          EmitterCDF;
 
     LightSourcePointerVector   m_light_sources;
     ItemVector                 m_items;
 
-    void store_items_in_leaves(foundation::Statistics& statistics);
-    void update_nodes_energy();
-    float update_energy(size_t node_index);
+    void output_every_light_probability(
+        size_t                        node_index,
+        const foundation::Vector3d&   surface_point,
+        float                         light_probability,
+        float                         s) const;
+
+    float update_luminance(size_t node_index);
 };
 
 }

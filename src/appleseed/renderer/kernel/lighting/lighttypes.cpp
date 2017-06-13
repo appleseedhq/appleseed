@@ -78,8 +78,8 @@ foundation::AABB3d NonPhysicalLightSource::get_bbox() const
                                           .extract_translation();
     // Non physical light has no real size - hence we are fixing some small value for the bbox
     return foundation::AABB3d(
-                foundation::Vector3d(position[0] + 0.01, position[1] + 0.01, position[2] + 0.01),
-                foundation::Vector3d(position[0] - 0.01, position[1] - 0.01, position[2] - 0.01));
+                foundation::Vector3d(position[0] - 0.001, position[1] - 0.001, position[2] - 0.001),
+                foundation::Vector3d(position[0] + 0.001, position[1] + 0.001, position[2] + 0.001));
 }
 
 Spectrum NonPhysicalLightSource::get_intensity() const

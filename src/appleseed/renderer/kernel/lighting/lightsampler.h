@@ -163,6 +163,13 @@ class LightSampler
         const foundation::Vector3f&         s,
         LightSample&                        light_sample) const;
 
+    // Sample the set of non-physical lights using a light tree.
+    void sample_non_physical_lights(
+        const ShadingRay::Time&             time,
+        const foundation::Vector3f&         s,
+        const ShadingPoint&                 shading_point,
+        LightSample&                        light_sample) const;
+
     // Sample a single given non-physical light.
     void sample_non_physical_light(
         const ShadingRay::Time&             time,
@@ -179,6 +186,13 @@ class LightSampler
     void sample(
         const ShadingRay::Time&             time,
         const foundation::Vector3f&         s,
+        LightSample&                        light_sample) const;
+
+    // Sample the sets of non-physical lights and emitting triangles using a light tree
+    void sample(
+        const ShadingRay::Time&             time,
+        const foundation::Vector3f&         s,
+        const ShadingPoint&                 shading_point,
         LightSample&                        light_sample) const;
 
     // Compute the probability density in area measure of a given light sample.
