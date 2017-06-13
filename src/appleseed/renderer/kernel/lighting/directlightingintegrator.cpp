@@ -36,7 +36,6 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
-#include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
@@ -61,8 +60,8 @@ namespace renderer
 //
 // Call graph:
 //
-//   compute_outgoing_radiance_bsdf_sampling
-//       take_single_bsdf_sample
+//   compute_outgoing_radiance_material_sampling
+//       take_single_material_sample
 //
 //   compute_outgoing_radiance_light_sampling
 //       add_emitting_triangle_sample_contribution
@@ -73,11 +72,11 @@ namespace renderer
 //       add_non_physical_light_sample_contribution
 //
 //   compute_outgoing_radiance_combined_sampling
-//       compute_outgoing_radiance_bsdf_sampling
+//       compute_outgoing_radiance_material_sampling
 //       compute_outgoing_radiance_light_sampling
 //
 //   compute_outgoing_radiance_combined_sampling_low_variance
-//       compute_outgoing_radiance_bsdf_sampling
+//       compute_outgoing_radiance_material_sampling
 //       compute_outgoing_radiance_light_sampling_low_variance
 //
 //   compute_incoming_radiance
@@ -86,34 +85,26 @@ namespace renderer
 DirectLightingIntegrator::DirectLightingIntegrator(
     const ShadingContext&       shading_context,
     const LightSampler&         light_sampler,
-    const ShadingPoint&         shading_point,
-    const BSDF&                 bsdf,
-    const void*                 bsdf_data,
-    const int                   bsdf_sampling_modes,
+    const IMaterialSampler&     material_sampler,
+    const ShadingRay::Time&     time,
     const int                   light_sampling_modes,
-    const size_t                bsdf_sample_count,
+    const size_t                material_sample_count,
     const size_t                light_sample_count,
     const float                 low_light_threshold,
     const bool                  indirect)
   : m_shading_context(shading_context)
   , m_light_sampler(light_sampler)
-  , m_shading_point(shading_point)
-  , m_point(shading_point.get_point())
-  , m_geometric_normal(shading_point.get_geometric_normal())
-  , m_shading_basis(shading_point.get_shading_basis())
-  , m_time(shading_point.get_time())
-  , m_bsdf(bsdf)
-  , m_bsdf_data(bsdf_data)
-  , m_bsdf_sampling_modes(bsdf_sampling_modes)
+  , m_material_sampler(material_sampler)
+  , m_time(time)
   , m_light_sampling_modes(light_sampling_modes)
-  , m_bsdf_sample_count(bsdf_sample_count)
+  , m_material_sample_count(material_sample_count)
   , m_light_sample_count(light_sample_count)
   , m_low_light_threshold(low_light_threshold)
   , m_indirect(indirect)
 {
 }
 
-void DirectLightingIntegrator::compute_outgoing_radiance_bsdf_sampling(
+void DirectLightingIntegrator::compute_outgoing_radiance_material_sampling(
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
     const Dual3d&               outgoing,
@@ -125,19 +116,19 @@ void DirectLightingIntegrator::compute_outgoing_radiance_bsdf_sampling(
     if (m_light_sampler.get_emitting_triangle_count() == 0)
         return;
 
-    for (size_t i = 0; i < m_bsdf_sample_count; ++i)
+    for (size_t i = 0; i < m_material_sample_count; ++i)
     {
-        take_single_bsdf_sample(
+        take_single_material_sample(
             sampling_context,
             mis_heuristic,
             outgoing,
             radiance);
     }
 
-    if (m_bsdf_sample_count > 1)
+    if (m_material_sample_count > 1)
     {
-        const float rcp_bsdf_sample_count = 1.0f / m_bsdf_sample_count;
-        radiance *= rcp_bsdf_sample_count;
+        const float rcp_material_sample_count = 1.0f / m_material_sample_count;
+        radiance *= rcp_material_sample_count;
     }
 }
 
@@ -153,8 +144,9 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling(
     if (!m_light_sampler.has_lights_or_emitting_triangles())
         return;
 
-    // There cannot be any contribution for purely specular BSDFs.
-    if (m_bsdf.is_purely_specular())
+    // Check if PDF of the sampler is Dirac delta and therefore
+    // cannot contribute to the light sampling.
+    if (!m_material_sampler.contributes_to_light_sampling())
         return;
 
     sampling_context.split_in_place(3, m_light_sample_count);
@@ -206,8 +198,9 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
     if (!m_light_sampler.has_lights_or_emitting_triangles())
         return;
 
-    // There cannot be any contribution for purely specular BSDFs.
-    if (m_bsdf.is_purely_specular())
+    // Check if PDF of the sampler is Dirac delta and therefore
+    // cannot contribute to the light sampling.
+    if (!m_material_sampler.contributes_to_light_sampling())
         return;
 
     // Add contributions from emitting triangles only.
@@ -257,7 +250,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling(
     const Dual3d&               outgoing,
     Spectrum&                   radiance) const
 {
-    compute_outgoing_radiance_bsdf_sampling(
+    compute_outgoing_radiance_material_sampling(
         sampling_context,
         MISPower2,
         outgoing,
@@ -279,7 +272,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling_low_v
     const Dual3d&               outgoing,
     Spectrum&                   radiance) const
 {
-    compute_outgoing_radiance_bsdf_sampling(
+    compute_outgoing_radiance_material_sampling(
         sampling_context,
         MISPower2,
         outgoing,
@@ -328,7 +321,7 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
             return false;
 
         // Compute the incoming direction in world space.
-        incoming = sample.m_point - m_point;
+        incoming = sample.m_point - m_material_sampler.get_point();
 
         // No contribution if the shading point is behind the light.
         double cos_on_light = dot(-incoming, sample.m_shading_normal);
@@ -337,10 +330,9 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
 
         // Compute the transmission factor between the light sample and the shading point.
         const float transmission =
-            m_shading_context.get_tracer().trace_between(
-                m_shading_point,
-                sample.m_point,
-                VisibilityFlags::ShadowRay);
+            m_material_sampler.trace_between(
+                m_shading_context,
+                sample.m_point);
 
         // Discard occluded samples.
         if (transmission == 0.0f)
@@ -399,17 +391,16 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
         light->evaluate(
             m_shading_context,
             sample.m_light_transform,
-            m_point,
+            m_material_sampler.get_point(),
             emission_position,
             emission_direction,
             radiance);
 
         // Compute the transmission factor between the light sample and the shading point.
         const float transmission =
-            m_shading_context.get_tracer().trace_between(
-                m_shading_point,
-                emission_position,
-                VisibilityFlags::ShadowRay);
+            m_material_sampler.trace_between(
+                m_shading_context,
+                emission_position);
 
         // Discard occluded samples.
         if (transmission == 0.0f)
@@ -420,14 +411,15 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
         incoming_prob = BSDF::DiracDelta;
 
         // Compute and return the incoming radiance.
-        const float attenuation = light->compute_distance_attenuation(m_point, emission_position);
+        const float attenuation = light->compute_distance_attenuation(
+            m_material_sampler.get_point(), emission_position);
         radiance *= transmission * attenuation / sample.m_probability;
     }
 
     return true;
 }
 
-void DirectLightingIntegrator::take_single_bsdf_sample(
+void DirectLightingIntegrator::take_single_material_sample(
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
     const Dual3d&               outgoing,
@@ -435,27 +427,25 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
 {
     assert(m_light_sampler.get_emitting_triangle_count() > 0);
 
-    // Sample the BSDF.
-    BSDFSample sample(&m_shading_point, Dual3f(outgoing));
-    m_bsdf.sample(
-        sampling_context,
-        m_bsdf_data,
-        false,                  // not adjoint
-        true,                   // multiply by |cos(incoming, normal)|
-        m_bsdf_sampling_modes,
-        sample);
+    // Sample material.
+    Dual3f incoming;
+    Spectrum sample_value;
+    float sample_probability;
 
-    // Filter scattering modes.
-    if (!(m_bsdf_sampling_modes & sample.m_mode))
+    if (!m_material_sampler.sample(
+        sampling_context,
+        outgoing, incoming,
+        sample_value, sample_probability))
+    {
         return;
+    }
 
     // Trace a ray in the direction of the reflection.
     float weight;
     const ShadingPoint& light_shading_point =
-        m_shading_context.get_tracer().trace(
-            m_shading_point,
-            Vector3d(sample.m_incoming.get_value()),
-            VisibilityFlags::ShadowRay,
+        m_material_sampler.trace(
+            m_shading_context,
+            incoming.get_value(),
             weight);
 
     // todo: wouldn't it be more efficient to look the environment up at this point?
@@ -478,7 +468,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
         return;
 
     // Cull the samples on the back side of the lights' shading surface.
-    const float cos_on = dot(-sample.m_incoming.get_value(), Vector3f(light_shading_point.get_shading_normal()));
+    const float cos_on = dot(-incoming.get_value(), Vector3f(light_shading_point.get_shading_normal()));
     if (cos_on <= 0.0f)
         return;
 
@@ -496,7 +486,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
         edf->evaluate_inputs(m_shading_context, light_shading_point),
         Vector3f(light_shading_point.get_geometric_normal()),
         Basis3f(light_shading_point.get_shading_basis()),
-        -sample.m_incoming.get_value(),
+        -incoming.get_value(),
         edf_value,
         edf_prob);
     if (edf_prob == 0.0f)
@@ -509,12 +499,12 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     if (square_distance < square(edf->get_light_near_start()))
         return;
 
-    if (sample.m_probability != BSDF::DiracDelta)
+    if (sample_probability != BSDF::DiracDelta)
     {
         if (mis_heuristic != MISNone && square_distance > 0.0)
         {
-            // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
-            const float bsdf_prob_area = sample.m_probability * cos_on / static_cast<float>(square_distance);
+            // Transform material_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
+            const float material_prob_area = sample_probability * cos_on / static_cast<float>(square_distance);
 
             // Compute the probability density wrt. surface area mesure of the light sample.
             const float light_prob_area = m_light_sampler.evaluate_pdf(light_shading_point);
@@ -523,11 +513,11 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
             weight *=
                 mis(
                     mis_heuristic,
-                    m_bsdf_sample_count * bsdf_prob_area,
+                    m_material_sample_count * material_prob_area,
                     m_light_sample_count * light_prob_area);
         }
 
-        edf_value *= weight / sample.m_probability;
+        edf_value *= weight / sample_probability;
     }
     else
     {
@@ -535,7 +525,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     }
 
     // Add the contribution of this sample to the illumination.
-    edf_value *= sample.m_value;
+    edf_value *= sample_value;
     radiance += edf_value;
 }
 
@@ -555,18 +545,10 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
         return;
 
     // Compute the incoming direction in world space.
-    Vector3d incoming = sample.m_point - m_point;
+    Vector3d incoming = sample.m_point - m_material_sampler.get_point();
 
-    // Cull light samples behind the shading surface if the BSDF is either reflective or transmissive,
-    // but not both.
-    if (m_bsdf.get_type() != BSDF::AllBSDFTypes)
-    {
-        double cos_in = dot(incoming, m_shading_basis.get_normal());
-        if (m_bsdf.get_type() == BSDF::Transmissive)
-            cos_in = -cos_in;
-        if (cos_in <= 0.0)
-            return;
-    }
+    if (m_material_sampler.cull_incoming_direction(incoming))
+        return;
 
     // No contribution if the shading point is behind the light.
     double cos_on = dot(-incoming, sample.m_shading_normal);
@@ -617,29 +599,23 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
 
     // Compute the transmission factor between the light sample and the shading point.
     const float transmission =
-        m_shading_context.get_tracer().trace_between(
-            m_shading_point,
-            sample.m_point,
-            VisibilityFlags::ShadowRay);
+        m_material_sampler.trace_between(
+            m_shading_context,
+            sample.m_point);
 
     // Discard occluded samples.
     if (transmission == 0.0f)
         return;
 
-    // Evaluate the BSDF.
-    Spectrum bsdf_value;
-    const float bsdf_prob =
-        m_bsdf.evaluate(
-            m_bsdf_data,
-            false,              // not adjoint
-            true,               // multiply by |cos(incoming, normal)|
-            Vector3f(m_geometric_normal),
-            Basis3f(m_shading_basis),
+    // Evaluate the BSDF (or phase function).
+    Spectrum material_value;
+    const float material_probability =
+        m_material_sampler.evaluate(
+            m_light_sampling_modes,
             Vector3f(outgoing.get_value()),
             Vector3f(incoming),
-            m_light_sampling_modes,
-            bsdf_value);
-    if (bsdf_prob == 0.0f)
+            material_value);
+    if (material_probability == 0.0f)
         return;
 
     // Build a shading point on the light source.
@@ -673,11 +649,11 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
         mis(
             mis_heuristic,
             m_light_sample_count * sample.m_probability,
-            m_bsdf_sample_count * bsdf_prob * g);
+            m_material_sample_count * material_probability * g);
 
     // Add the contribution of this sample to the illumination.
     edf_value *= weight;
-    edf_value *= bsdf_value;
+    edf_value *= material_value;
     radiance += edf_value;
 }
 
@@ -698,7 +674,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     light->evaluate(
         m_shading_context,
         sample.m_light_transform,
-        m_point,
+        m_material_sampler.get_point(),
         emission_position,
         emission_direction,
         light_value);
@@ -706,49 +682,36 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     // Compute the incoming direction in world space.
     const Vector3d incoming = -emission_direction;
 
-    // Cull light samples behind the shading surface if the BSDF is either reflective or transmissive,
-    // but not both.
-    if (m_bsdf.get_type() != BSDF::AllBSDFTypes)
-    {
-        double cos_in = dot(incoming, m_shading_basis.get_normal());
-        if (m_bsdf.get_type() == BSDF::Transmissive)
-            cos_in = -cos_in;
-        if (cos_in <= 0.0)
-            return;
-    }
+    if (m_material_sampler.cull_incoming_direction(incoming))
+        return;
 
     // Compute the transmission factor between the light sample and the shading point.
     const float transmission =
-        m_shading_context.get_tracer().trace_between(
-            m_shading_point,
-            emission_position,
-            VisibilityFlags::ShadowRay);
+        m_material_sampler.trace_between(
+            m_shading_context,
+            emission_position);
 
     // Discard occluded samples.
     if (transmission == 0.0f)
         return;
 
-    // Evaluate the BSDF.
-    Spectrum bsdf_value;
-    const float bsdf_prob =
-        m_bsdf.evaluate(
-            m_bsdf_data,
-            false,              // not adjoint
-            true,               // multiply by |cos(incoming, normal)|
-            Vector3f(m_geometric_normal),
-            Basis3f(m_shading_basis),
+    // Evaluate the BSDF (or phase function).
+    Spectrum material_value;
+    const float material_probability =
+        m_material_sampler.evaluate(
+            m_light_sampling_modes,
             Vector3f(outgoing.get_value()),
             Vector3f(incoming),
-            m_light_sampling_modes,
-            bsdf_value);
-    if (bsdf_prob == 0.0f)
+            material_value);
+    if (material_probability == 0.0f)
         return;
 
     // Add the contribution of this sample to the illumination.
-    const float attenuation = light->compute_distance_attenuation(m_point, emission_position);
+    const float attenuation = light->compute_distance_attenuation(
+        m_material_sampler.get_point(), emission_position);
     const float weight = transmission * attenuation / sample.m_probability;
     light_value *= weight;
-    light_value *= bsdf_value;
+    light_value *= material_value;
     radiance += light_value;
 }
 

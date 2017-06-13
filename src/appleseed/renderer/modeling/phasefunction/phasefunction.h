@@ -86,7 +86,7 @@ class APPLESEED_DLLSYMBOL PhaseFunction
     // Precompute data based on already evaluated input values.
     virtual void prepare_inputs(
         foundation::Arena&          arena,
-        const ShadingRay&           shading_point,
+        const ShadingRay&           volume_ray,
         void*                       data) const;
 
     // Sample distance before the ray is extincted. Return corresponding PDF value.

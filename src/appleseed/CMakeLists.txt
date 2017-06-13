@@ -986,6 +986,8 @@ set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/imagebasedlighting.h
     renderer/kernel/lighting/lightsampler.cpp
     renderer/kernel/lighting/lightsampler.h
+    renderer/kernel/lighting/materialsamplers.cpp
+    renderer/kernel/lighting/materialsamplers.h
     renderer/kernel/lighting/pathtracer.h
     renderer/kernel/lighting/pathvertex.cpp
     renderer/kernel/lighting/pathvertex.h

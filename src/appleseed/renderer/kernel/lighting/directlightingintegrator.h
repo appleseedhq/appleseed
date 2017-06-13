@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/lighting/materialsamplers.h"
 #include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
@@ -44,7 +45,6 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class BSDF; }
 namespace renderer  { class LightSample; }
 namespace renderer  { class LightSampler; }
 namespace renderer  { class ShadingContext; }
@@ -58,8 +58,8 @@ namespace renderer
 //
 // Note about the methods ending with *_low_variance():
 //
-//   The sample_lights() and sample_bsdf_and_lights() methods have "low variance" counterparts
-//   respectively called sample_lights_low_variance() and sample_bsdf_and_lights_low_variance().
+//   The sample_lights() and sample_material_and_lights() methods have "low variance" counterparts
+//   respectively called sample_lights_low_variance() and sample_material_and_lights_low_variance().
 //   These methods treat non-physical light sources (such as point lights) and light-emitting
 //   triangles differently: every light source of the scene is sampled individually, while the
 //   set of light-emitting triangles is sampled as a whole.
@@ -73,17 +73,15 @@ class DirectLightingIntegrator
   public:
     // Constructor.
     DirectLightingIntegrator(
-        const ShadingContext&           shading_context,
-        const LightSampler&             light_sampler,
-        const ShadingPoint&             shading_point,              // point at which to integrate direct lighting
-        const BSDF&                     bsdf,                       // BSDF at 'shading_point'
-        const void*                     bsdf_data,                  // input data of the BSDF
-        const int                       bsdf_sampling_modes,        // permitted scattering modes during BSDF sampling
-        const int                       light_sampling_modes,       // permitted scattering modes during environment sampling
-        const size_t                    bsdf_sample_count,          // number of samples in BSDF sampling
-        const size_t                    light_sample_count,         // number of samples in light sampling
-        const float                     low_light_threshold,        // light contribution threshold to disable shadow rays
-        const bool                      indirect);                  // are we computing indirect lighting?
+        const ShadingContext&       shading_context,
+        const LightSampler&         light_sampler,
+        const IMaterialSampler&     material_sampler,
+        const ShadingRay::Time&     time,
+        const int                   light_sampling_modes,
+        const size_t                material_sample_count,        // number of samples in material sampling
+        const size_t                light_sample_count,           // number of samples in light sampling
+        const float                 low_light_threshold,          // light contribution threshold to disable shadow rays 
+        const bool                  indirect);                    // are we computing indirect lighting?
 
     // Compute outgoing radiance due to direct lighting via combined BSDF and light sampling.
     void compute_outgoing_radiance_combined_sampling(
@@ -96,7 +94,7 @@ class DirectLightingIntegrator
         Spectrum&                       radiance) const;
 
     // Compute outgoing radiance due to direct lighting via BSDF sampling only.
-    void compute_outgoing_radiance_bsdf_sampling(
+    void compute_outgoing_radiance_material_sampling(
         SamplingContext&                sampling_context,
         const foundation::MISHeuristic  mis_heuristic,
         const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
@@ -124,21 +122,15 @@ class DirectLightingIntegrator
   private:
     const ShadingContext&               m_shading_context;
     const LightSampler&                 m_light_sampler;
-    const ShadingPoint&                 m_shading_point;
-    const foundation::Vector3d&         m_point;
-    const foundation::Vector3d&         m_geometric_normal;
-    const foundation::Basis3d&          m_shading_basis;
     const ShadingRay::Time&             m_time;
-    const BSDF&                         m_bsdf;
-    const void*                         m_bsdf_data;
-    const int                           m_bsdf_sampling_modes;
+    const IMaterialSampler&             m_material_sampler;
     const int                           m_light_sampling_modes;
     const float                         m_low_light_threshold;
-    const size_t                        m_bsdf_sample_count;
+    const size_t                        m_material_sample_count;
     const size_t                        m_light_sample_count;
     const bool                          m_indirect;
 
-    void take_single_bsdf_sample(
+    void take_single_material_sample(
         SamplingContext&                sampling_context,
         const foundation::MISHeuristic  mis_heuristic,
         const foundation::Dual3d&       outgoing,
