@@ -47,6 +47,7 @@ namespace foundation    { class Dictionary; }
 namespace renderer      { class Project; }
 class QColor;
 class QLineEdit;
+class QSlider;
 class QWidget;
 
 namespace appleseed {
@@ -98,7 +99,34 @@ void show_error_message_box(const std::string& title, const std::string& text);
 
 
 //
-// Updates the value of LineEdit associated with the given DoubleSlider.
+// Binds QLineEdit and QSlider controls together such that updading
+// the value in one control updates the value in the other.
+//
+
+class LineEditSliderAdaptor
+  : public QObject
+{
+    Q_OBJECT
+
+  public:
+    LineEditSliderAdaptor(
+        QLineEdit*      line_edit,
+        QSlider*        slider);
+
+  public slots:
+    void slot_set_line_edit_value(const int value);
+    void slot_set_slider_value(const QString& value);
+    void slot_apply_slider_value();
+
+  private:
+    QLineEdit*      m_line_edit;
+    QSlider*        m_slider;
+};
+
+
+//
+// Binds QLineEdit and DoubleSlider controls together such that updading
+// the value in one control updates the value in the other.
 //
 
 class LineEditDoubleSliderAdaptor
