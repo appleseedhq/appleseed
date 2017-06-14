@@ -564,7 +564,7 @@ void LightSampler::sample(
 
             light_sample.m_probability *= 0.5f;
         }
-        else sample_non_physical_lights(time, s, light_sample);
+        else sample_non_physical_lights(time, s, light_sample, shading_point);
     }
     else sample_emitting_triangles(time, s, light_sample);
 }
