@@ -457,8 +457,8 @@ void LightSampler::sample_non_physical_lights(
 void LightSampler::sample_non_physical_lights(
     const ShadingRay::Time&             time,
     const Vector3f&                     s,
-    LightSample&                        light_sample,
-    const ShadingPoint&                 shading_point) const
+    const ShadingPoint&                 shading_point,
+    LightSample&                        light_sample) const
 {
     assert(m_non_physical_lights_cdf.valid());
 
@@ -537,8 +537,8 @@ void LightSampler::sample(
 void LightSampler::sample(
     const ShadingRay::Time&             time,
     const Vector3f&                     s,
-    LightSample&                        light_sample,
-    const ShadingPoint&                 shading_point) const
+    const ShadingPoint&                 shading_point,
+    LightSample&                        light_sample) const
 {
     assert(m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid());
 
@@ -551,8 +551,8 @@ void LightSampler::sample(
                 sample_non_physical_lights(
                     time,
                     Vector3f(s[0] * 2.0f, s[1], s[2]),
-                    light_sample,
-                    shading_point);
+                    shading_point,
+                    light_sample);
             }
             else
             {
@@ -564,7 +564,7 @@ void LightSampler::sample(
 
             light_sample.m_probability *= 0.5f;
         }
-        else sample_non_physical_lights(time, s, light_sample, shading_point);
+        else sample_non_physical_lights(time, s, shading_point, light_sample);
     }
     else sample_emitting_triangles(time, s, light_sample);
 }

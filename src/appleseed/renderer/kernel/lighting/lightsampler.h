@@ -167,8 +167,8 @@ class LightSampler
     void sample_non_physical_lights(
         const ShadingRay::Time&             time,
         const foundation::Vector3f&         s,
-        LightSample&                        light_sample,
-        const ShadingPoint&                 shading_point) const;
+        const ShadingPoint&                 shading_point,
+        LightSample&                        light_sample) const;
 
     // Sample a single given non-physical light.
     void sample_non_physical_light(
@@ -192,8 +192,8 @@ class LightSampler
     void sample(
         const ShadingRay::Time&             time,
         const foundation::Vector3f&         s,
-        LightSample&                        light_sample,
-        const ShadingPoint&                 shading_point) const;
+        const ShadingPoint&                 shading_point,
+        LightSample&                        light_sample) const;
 
     // Compute the probability density in area measure of a given light sample.
     float evaluate_pdf(const ShadingPoint& shading_point) const;
