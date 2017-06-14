@@ -324,7 +324,10 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dic
     }
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
-    widget_proxy->set(metadata.strings().get<string>("value"));
+
+    // Setting the value via the slider allows to benefit from the string
+    // formatting in LineEditDoubleSliderAdaptor::slot_set_line_edit_value().
+    slider->setValue(metadata.strings().get<double>("value"));
 
     return widget_proxy;
 }

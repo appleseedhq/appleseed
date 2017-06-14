@@ -256,8 +256,12 @@ LineEditDoubleSliderAdaptor::LineEditDoubleSliderAdaptor(
 
 void LineEditDoubleSliderAdaptor::slot_set_line_edit_value(const double value)
 {
+    // Format integer values such as 2 as "2.0" instead of "2".
+    const bool is_integer = floor(value) == value;
+    const QString format_string = is_integer ? "%1.0" : "%1";
+
     // Don't block signals here, for live edit to work we want the line edit to signal changes.
-    m_line_edit->setText(QString("%1").arg(value));
+    m_line_edit->setText(format_string.arg(value));
 }
 
 void LineEditDoubleSliderAdaptor::slot_set_slider_value(const QString& value)
@@ -274,6 +278,7 @@ void LineEditDoubleSliderAdaptor::slot_set_slider_value(const QString& value)
             adjust_slider(new_value);
 
         m_slider->setValue(new_value);
+
         m_slider->blockSignals(were_signals_blocked);
     }
 }
@@ -292,6 +297,10 @@ void LineEditDoubleSliderAdaptor::slot_apply_slider_value()
         adjust_slider(new_value);
 
     m_slider->setValue(new_value);
+
+    // Force reformatting of the value in the QLineEdit if necessary.
+    slot_set_line_edit_value(new_value);
+
     m_slider->blockSignals(were_signals_blocked);
 }
 
