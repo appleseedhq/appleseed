@@ -137,8 +137,11 @@ void LightTree::build(
 
         // Store the items in the tree leaves whenever possible.
         store_items_in_leaves(statistics);
+    
+        // Set total energy for each node of the LightTree
+        update_nodes_energy();
     }
-
+    
     // Print light tree statistics.
     RENDERER_LOG_INFO("%s",
         foundation::StatisticsVector::make(
@@ -177,9 +180,6 @@ void LightTree::store_items_in_leaves(foundation::Statistics& statistics)
             }
         }
     }
-
-    // Set total energy for each node of the LightTree
-    update_nodes_energy();
 }
 
 void LightTree::update_nodes_energy()
