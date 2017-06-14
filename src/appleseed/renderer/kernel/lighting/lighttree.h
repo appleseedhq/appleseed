@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/lighting/lighttree_node.h"
 #include "renderer/kernel/lighting/lighttypes.h"
 
 // appleseed.foundation headers.
@@ -48,33 +49,6 @@ namespace renderer      { class NonPhysicalLightInfo; }
 namespace renderer      { class EmittingTriangle; }
 
 namespace renderer{
-
-//
-// LightTreeNode implementation
-//
-template<typename AABB> 
-class LightTreeNode
-    : public foundation::bvh::Node<AABB>
-{
-  public:
-    LightTreeNode()
-      : m_node_energy(0)
-    {
-    }
-
-    float get_node_energy() const
-    {
-        return m_node_energy;
-    };
-
-    void set_node_energy(float energy)
-    {
-        m_node_energy = energy;
-    };
-  
-  private:
-    float  m_node_energy;
-};
 
 //
 // Light tree.

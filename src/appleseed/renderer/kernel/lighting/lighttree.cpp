@@ -245,9 +245,7 @@ size_t LightTree::find_nearest_light(foundation::Vector3d surface_point, size_t 
         foundation::Vector3d bbox_centre_right = node.get_right_bbox().center();
 
         float distance_left  = foundation::square_distance(surface_point, bbox_centre_left);
-        // RENDERER_LOG_INFO("Distance left: %f", distance_left);
         float distance_right = foundation::square_distance(surface_point, bbox_centre_right);
-        // RENDERER_LOG_INFO("Distance right: %f", distance_right);
 
         distance_left <= distance_right
             ? light_index = find_nearest_light(surface_point, node.get_child_node_index())
