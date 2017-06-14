@@ -55,6 +55,7 @@
 #include <QColorDialog>
 #include <QComboBox>
 #include <QDialogButtonBox>
+#include <QDoubleValidator>
 #include <QFileDialog>
 #include <QFont>
 #include <QFormLayout>
@@ -288,12 +289,14 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_text_input_widgets(const Dictio
 
 auto_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
-    QLineEdit* line_edit = new QLineEdit(m_parent);
-    line_edit->setMaximumWidth(60);
-
-    DoubleSlider* slider = new DoubleSlider(Qt::Horizontal, m_parent);
     const double min_value = metadata.get<double>("min_value");
     const double max_value = metadata.get<double>("max_value");
+
+    QLineEdit* line_edit = new QLineEdit(m_parent);
+    line_edit->setMaximumWidth(60);
+    line_edit->setValidator(new QDoubleValidator(min_value, max_value, 16, line_edit));
+
+    DoubleSlider* slider = new DoubleSlider(Qt::Horizontal, m_parent);
     slider->setRange(min_value, max_value);
     slider->setPageStep((max_value - min_value) / 10.0);
     new MouseWheelFocusEventFilter(slider);
