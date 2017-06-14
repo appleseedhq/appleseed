@@ -439,8 +439,31 @@ void LightSampler::sample_non_physical_lights(
 {
     assert(m_non_physical_lights_cdf.valid());
 
+    const EmitterCDF::ItemWeightPair result = m_non_physical_lights_cdf.sample(s[0]);
+    const size_t light_index = result.first;
+    const float light_prob = result.second;
+
+    light_sample.m_triangle = 0;
+    sample_non_physical_light(
+        time,
+        light_index,
+        light_prob,
+        light_sample);
+
+    assert(light_sample.m_light);
+    assert(light_sample.m_probability > 0.0f);
+}
+
+void LightSampler::sample_non_physical_lights(
+    const ShadingRay::Time&             time,
+    const Vector3f&                     s,
+    LightSample&                        light_sample,
+    const ShadingPoint&                 shading_point) const
+{
+    assert(m_non_physical_lights_cdf.valid());
+
     // const EmitterCDF::ItemWeightPair result = m_non_physical_lights_cdf.sample(s[0]);
-    const std::pair<size_t, float> result = m_light_tree.sample(light_sample.m_point);
+    const std::pair<size_t, float> result = m_light_tree.sample(shading_point.get_point());
     const size_t light_index = result.first;
     const float light_prob = result.second;
 
@@ -495,6 +518,41 @@ void LightSampler::sample(
                     time,
                     Vector3f(s[0] * 2.0f, s[1], s[2]),
                     light_sample);
+            }
+            else
+            {
+                sample_emitting_triangles(
+                    time,
+                    Vector3f((s[0] - 0.5f) * 2.0f, s[1], s[2]),
+                    light_sample);
+            }
+
+            light_sample.m_probability *= 0.5f;
+        }
+        else sample_non_physical_lights(time, s, light_sample);
+    }
+    else sample_emitting_triangles(time, s, light_sample);
+}
+
+void LightSampler::sample(
+    const ShadingRay::Time&             time,
+    const Vector3f&                     s,
+    LightSample&                        light_sample,
+    const ShadingPoint&                 shading_point) const
+{
+    assert(m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid());
+
+    if (m_non_physical_lights_cdf.valid())
+    {
+        if (m_emitting_triangles_cdf.valid())
+        {
+            if (s[0] < 0.5f)
+            {
+                sample_non_physical_lights(
+                    time,
+                    Vector3f(s[0] * 2.0f, s[1], s[2]),
+                    light_sample,
+                    shading_point);
             }
             else
             {

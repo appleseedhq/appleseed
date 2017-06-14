@@ -225,15 +225,15 @@ float LightTree::update_energy(size_t node_index)
 }
 
 // Return the nearest light and it's probability 
-std::pair<size_t, float> LightTree::sample(foundation::Vector3d sample_point) const
+std::pair<size_t, float> LightTree::sample(foundation::Vector3d surface_point) const
 {
-    size_t light_index = find_nearest_light(sample_point, 0);
+    size_t light_index = find_nearest_light(surface_point, 0);
     float hard_coded_placeholder_light_prob = 1.0;
 
     return std::pair<size_t, float>(light_index, hard_coded_placeholder_light_prob);
 }
 
-size_t LightTree::find_nearest_light(foundation::Vector3d sample_point, size_t node_index) const
+size_t LightTree::find_nearest_light(foundation::Vector3d surface_point, size_t node_index) const
 {
     size_t light_index = 0;
 
@@ -244,12 +244,14 @@ size_t LightTree::find_nearest_light(foundation::Vector3d sample_point, size_t n
         foundation::Vector3d bbox_centre_left  = node.get_left_bbox().center();
         foundation::Vector3d bbox_centre_right = node.get_right_bbox().center();
 
-        float distance_left  = foundation::square_distance(sample_point, bbox_centre_left);
-        float distance_right = foundation::square_distance(sample_point, bbox_centre_right);
+        float distance_left  = foundation::square_distance(surface_point, bbox_centre_left);
+        // RENDERER_LOG_INFO("Distance left: %f", distance_left);
+        float distance_right = foundation::square_distance(surface_point, bbox_centre_right);
+        // RENDERER_LOG_INFO("Distance right: %f", distance_right);
 
         distance_left <= distance_right
-            ? light_index = find_nearest_light(sample_point, node.get_child_node_index())
-            : light_index = find_nearest_light(sample_point, node.get_child_node_index() + 1);
+            ? light_index = find_nearest_light(surface_point, node.get_child_node_index())
+            : light_index = find_nearest_light(surface_point, node.get_child_node_index() + 1);
     }
     else
     {

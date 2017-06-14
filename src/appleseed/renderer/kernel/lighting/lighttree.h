@@ -103,7 +103,7 @@ class LightTree
         const std::vector<NonPhysicalLightInfo>     non_physical_lights,
         const std::vector<EmittingTriangle>         emitting_triangles);
     
-    std::pair<size_t, float> sample(foundation::Vector3d sample_point) const;
+    std::pair<size_t, float> sample(foundation::Vector3d    sample_point) const;
 
   private:
     struct Item
