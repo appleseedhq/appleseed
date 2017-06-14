@@ -292,10 +292,12 @@ bool ShaderGroup::is_valid() const
     return impl->m_shader_group_ref.get() != 0;
 }
 
-float ShaderGroup::get_surface_area(const AssemblyInstance* ass, const ObjectInstance* obj) const
+float ShaderGroup::get_surface_area(
+    const AssemblyInstance* assembly_instance,
+    const ObjectInstance*   object_instance) const
 {
     assert(has_emission());
-    return impl->m_surface_areas[Impl::SurfaceAreaKey(ass, obj)];
+    return impl->m_surface_areas[Impl::SurfaceAreaKey(assembly_instance, object_instance)];
 }
 
 OSL::ShaderGroupRef& ShaderGroup::shader_group_ref() const
@@ -483,12 +485,12 @@ void ShaderGroup::report_uses_global(const char* global_name, const Flags flag) 
 }
 
 void ShaderGroup::set_surface_area(
-    const AssemblyInstance* ass,
-    const ObjectInstance*   obj,
+    const AssemblyInstance* assembly_instance,
+    const ObjectInstance*   object_instance,
     const float             area) const
 {
     assert(has_emission());
-    impl->m_surface_areas[Impl::SurfaceAreaKey(ass, obj)] = area;
+    impl->m_surface_areas[Impl::SurfaceAreaKey(assembly_instance, object_instance)] = area;
 }
 
 

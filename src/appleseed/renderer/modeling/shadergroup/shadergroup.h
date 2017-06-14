@@ -86,7 +86,7 @@ class APPLESEED_DLLSYMBOL ShaderGroup
         const char*                 dst_layer,
         const char*                 dst_param);
 
-    // Create OSL shader group.
+    // Create internal OSL shader group.
     bool create_optimized_osl_shader_group(
         OSL::ShadingSystem&         shading_system,
         foundation::IAbortSwitch*   abort_switch = 0);
@@ -126,7 +126,9 @@ class APPLESEED_DLLSYMBOL ShaderGroup
 
     // Return the surface area of an object.
     // Can only be called if the shader group has emission closures.
-    float get_surface_area(const AssemblyInstance* ass, const ObjectInstance* obj) const;
+    float get_surface_area(
+        const AssemblyInstance* assembly_instance,
+        const ObjectInstance*   object_instance) const;
 
     // Return a reference-counted (but opaque) reference to the internal OSL shader group.
     OSL::ShaderGroupRef& shader_group_ref() const;
@@ -178,8 +180,8 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     void report_uses_global(const char* global_name, const Flags flag) const;
 
     void set_surface_area(
-        const AssemblyInstance* ass,
-        const ObjectInstance*   obj,
+        const AssemblyInstance* assembly_instance,
+        const ObjectInstance*   object_instance,
         const float             area) const;
 };
 
