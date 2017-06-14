@@ -742,7 +742,9 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "diaphragm_blades")
             .insert("label", "Diaphragm Blades")
-            .insert("type", "text")
+            .insert("type", "integer")
+            .insert("min_value", "3")
+            .insert("max_value", "256")
             .insert("use", "optional")
             .insert("default", "0"));
 

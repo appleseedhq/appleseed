@@ -144,11 +144,12 @@ class EntityEditor
 
     std::auto_ptr<IInputWidgetProxy> create_text_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
     std::auto_ptr<IInputWidgetProxy> create_numeric_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
-    std::auto_ptr<IInputWidgetProxy> create_colormap_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
+    std::auto_ptr<IInputWidgetProxy> create_integer_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
     std::auto_ptr<IInputWidgetProxy> create_boolean_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
     std::auto_ptr<IInputWidgetProxy> create_enumeration_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
-    std::auto_ptr<IInputWidgetProxy> create_entity_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
     std::auto_ptr<IInputWidgetProxy> create_color_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
+    std::auto_ptr<IInputWidgetProxy> create_colormap_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
+    std::auto_ptr<IInputWidgetProxy> create_entity_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
     std::auto_ptr<IInputWidgetProxy> create_file_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
 
   private slots:

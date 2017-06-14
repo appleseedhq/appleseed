@@ -55,15 +55,18 @@
 #include <QColorDialog>
 #include <QComboBox>
 #include <QDialogButtonBox>
+#include <QDoubleValidator>
 #include <QFileDialog>
 #include <QFont>
 #include <QFormLayout>
 #include <QHBoxLayout>
+#include <QIntValidator>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QShortcut>
 #include <QSignalMapper>
+#include <QSlider>
 #include <QString>
 #include <Qt>
 #include <QToolButton>
@@ -217,11 +220,12 @@ void EntityEditor::create_input_widgets(const Dictionary& metadata, const bool i
     auto_ptr<IInputWidgetProxy> widget_proxy =
         input_type == "text" ? create_text_input_widgets(metadata, input_widget_visible) :
         input_type == "numeric" ? create_numeric_input_widgets(metadata, input_widget_visible) :
-        input_type == "colormap" ? create_colormap_input_widgets(metadata, input_widget_visible) :
+        input_type == "integer" ? create_integer_input_widgets(metadata, input_widget_visible) :
         input_type == "boolean" ? create_boolean_input_widgets(metadata, input_widget_visible) :
         input_type == "enumeration" ? create_enumeration_input_widgets(metadata, input_widget_visible) :
-        input_type == "entity" ? create_entity_input_widgets(metadata, input_widget_visible) :
         input_type == "color" ? create_color_input_widgets(metadata, input_widget_visible) :
+        input_type == "colormap" ? create_colormap_input_widgets(metadata, input_widget_visible) :
+        input_type == "entity" ? create_entity_input_widgets(metadata, input_widget_visible) :
         input_type == "file" ? create_file_input_widgets(metadata, input_widget_visible) :
         auto_ptr<IInputWidgetProxy>(0);
 
@@ -285,12 +289,14 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_text_input_widgets(const Dictio
 
 auto_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
-    QLineEdit* line_edit = new QLineEdit(m_parent);
-    line_edit->setMaximumWidth(60);
-
-    DoubleSlider* slider = new DoubleSlider(Qt::Horizontal, m_parent);
     const double min_value = metadata.get<double>("min_value");
     const double max_value = metadata.get<double>("max_value");
+
+    QLineEdit* line_edit = new QLineEdit(m_parent);
+    line_edit->setMaximumWidth(60);
+    line_edit->setValidator(new QDoubleValidator(min_value, max_value, 16, line_edit));
+
+    DoubleSlider* slider = new DoubleSlider(Qt::Horizontal, m_parent);
     slider->setRange(min_value, max_value);
     slider->setPageStep((max_value - min_value) / 10.0);
     new MouseWheelFocusEventFilter(slider);
@@ -318,28 +324,50 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dic
     }
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
-    widget_proxy->set(metadata.strings().get<string>("value"));
+
+    // Setting the value via the slider allows to benefit from the string
+    // formatting in LineEditDoubleSliderAdaptor::slot_set_line_edit_value().
+    slider->setValue(metadata.strings().get<double>("value"));
 
     return widget_proxy;
 }
 
-auto_ptr<IInputWidgetProxy> EntityEditor::create_colormap_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
+auto_ptr<IInputWidgetProxy> EntityEditor::create_integer_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
-    const string name = metadata.get<string>("name");
+    const int min_value = metadata.get<int>("min_value");
+    const int max_value = metadata.get<int>("max_value");
 
-    ColorMapInputWidget* input_widget = new ColorMapInputWidget(m_parent);
-    input_widget->set_default_value(metadata.strings().exist("default") ? metadata.get<QString>("default") : "");
-    connect(input_widget, SIGNAL(signal_bind_button_clicked()), m_entity_picker_bind_signal_mapper, SLOT(map()));
-    m_entity_picker_bind_signal_mapper->setMapping(input_widget, QString::fromStdString(name));
+    QLineEdit* line_edit = new QLineEdit(m_parent);
+    line_edit->setMaximumWidth(60);
+    line_edit->setValidator(new QIntValidator(min_value, max_value, line_edit));
+
+    QSlider* slider = new QSlider(Qt::Horizontal, m_parent);
+    slider->setRange(min_value, max_value);
+    new MouseWheelFocusEventFilter(slider);
+    new LineEditSliderAdaptor(line_edit, slider);
+    connect(slider, SIGNAL(valueChanged(int)), SLOT(slot_apply()));
 
     if (should_be_focused(metadata))
-        input_widget->set_focus();
+    {
+        line_edit->selectAll();
+        line_edit->setFocus();
+    }
 
     if (input_widget_visible)
-        m_form_layout->addRow(create_label(metadata), input_widget);
-    else input_widget->hide();
+    {
+        QHBoxLayout* layout = new QHBoxLayout();
+        layout->setSpacing(6);
+        layout->addWidget(line_edit);
+        layout->addWidget(slider);
+        m_form_layout->addRow(create_label(metadata), layout);
+    }
+    else
+    {
+        line_edit->hide();
+        slider->hide();
+    }
 
-    auto_ptr<IInputWidgetProxy> widget_proxy(new ColorMapInputProxy(input_widget));
+    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
     widget_proxy->set(metadata.strings().get<string>("value"));
 
     return widget_proxy;
@@ -383,27 +411,6 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_enumeration_input_widgets(const
     else combo_box->hide();
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new ComboBoxProxy(combo_box));
-
-    return widget_proxy;
-}
-
-auto_ptr<IInputWidgetProxy> EntityEditor::create_entity_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
-{
-    const string name = metadata.get<string>("name");
-
-    EntityInputWidget* input_widget = new EntityInputWidget(m_parent);
-    connect(input_widget, SIGNAL(signal_bind_button_clicked()), m_entity_picker_bind_signal_mapper, SLOT(map()));
-    m_entity_picker_bind_signal_mapper->setMapping(input_widget, QString::fromStdString(name));
-
-    if (should_be_focused(metadata))
-        input_widget->set_focus();
-
-    if (input_widget_visible)
-        m_form_layout->addRow(create_label(metadata), input_widget);
-    else input_widget->hide();
-
-    auto_ptr<IInputWidgetProxy> widget_proxy(new EntityInputProxy(input_widget));
-    widget_proxy->set(metadata.strings().get<string>("value"));
 
     return widget_proxy;
 }
@@ -454,6 +461,49 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_color_input_widgets(const Dicti
     else widget_proxy->set("0.0 0.0 0.0");
 
     return auto_ptr<IInputWidgetProxy>(widget_proxy);
+}
+
+auto_ptr<IInputWidgetProxy> EntityEditor::create_colormap_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
+{
+    const string name = metadata.get<string>("name");
+
+    ColorMapInputWidget* input_widget = new ColorMapInputWidget(m_parent);
+    input_widget->set_default_value(metadata.strings().exist("default") ? metadata.get<QString>("default") : "");
+    connect(input_widget, SIGNAL(signal_bind_button_clicked()), m_entity_picker_bind_signal_mapper, SLOT(map()));
+    m_entity_picker_bind_signal_mapper->setMapping(input_widget, QString::fromStdString(name));
+
+    if (should_be_focused(metadata))
+        input_widget->set_focus();
+
+    if (input_widget_visible)
+        m_form_layout->addRow(create_label(metadata), input_widget);
+    else input_widget->hide();
+
+    auto_ptr<IInputWidgetProxy> widget_proxy(new ColorMapInputProxy(input_widget));
+    widget_proxy->set(metadata.strings().get<string>("value"));
+
+    return widget_proxy;
+}
+
+auto_ptr<IInputWidgetProxy> EntityEditor::create_entity_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
+{
+    const string name = metadata.get<string>("name");
+
+    EntityInputWidget* input_widget = new EntityInputWidget(m_parent);
+    connect(input_widget, SIGNAL(signal_bind_button_clicked()), m_entity_picker_bind_signal_mapper, SLOT(map()));
+    m_entity_picker_bind_signal_mapper->setMapping(input_widget, QString::fromStdString(name));
+
+    if (should_be_focused(metadata))
+        input_widget->set_focus();
+
+    if (input_widget_visible)
+        m_form_layout->addRow(create_label(metadata), input_widget);
+    else input_widget->hide();
+
+    auto_ptr<IInputWidgetProxy> widget_proxy(new EntityInputProxy(input_widget));
+    widget_proxy->set(metadata.strings().get<string>("value"));
+
+    return widget_proxy;
 }
 
 auto_ptr<IInputWidgetProxy> EntityEditor::create_file_input_widgets(const Dictionary& metadata, const bool input_widget_visible)

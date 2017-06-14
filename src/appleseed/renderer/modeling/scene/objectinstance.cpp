@@ -144,7 +144,7 @@ ObjectInstance::ObjectInstance(
     m_vis_flags = VisibilityFlags::parse(params.child("visibility"), message_context);
 
     // Retrieve medium priority.
-    m_medium_priority = params.get_optional<uint8>("medium_priority", 0);
+    m_medium_priority = params.get_optional<int8>("medium_priority", 0);
 
     // Retrieve ray bias method.
     const string ray_bias_method =
@@ -492,9 +492,9 @@ DictionaryArray ObjectInstanceFactory::get_input_metadata()
         Dictionary()
             .insert("name", "medium_priority")
             .insert("label", "Medium Priority")
-            .insert("type", "numeric")
-            .insert("min_value", "0")
-            .insert("max_value", "255")
+            .insert("type", "integer")
+            .insert("min_value", "-128")
+            .insert("max_value", "127")
             .insert("use", "optional")
             .insert("default", "0"));
 
