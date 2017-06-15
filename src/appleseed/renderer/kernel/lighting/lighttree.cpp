@@ -242,9 +242,9 @@ std::pair<size_t, float> LightTree::find_nearest_light(foundation::Vector3d surf
 
     if (!m_nodes[node_index].is_leaf())
     {
-        LightTreeNode<foundation::AABB3d> node = m_nodes[node_index];
-        LightTreeNode<foundation::AABB3d> child1 = m_nodes[node.get_child_node_index()];
-        LightTreeNode<foundation::AABB3d> child2 = m_nodes[node.get_child_node_index() + 1];
+        const LightTreeNode<foundation::AABB3d>& node = m_nodes[node_index];
+        const LightTreeNode<foundation::AABB3d>& child1 = m_nodes[node.get_child_node_index()];
+        const LightTreeNode<foundation::AABB3d>& child2 = m_nodes[node.get_child_node_index() + 1];
 
         foundation::AABB3d bbox_left  = node.get_left_bbox();
         foundation::AABB3d bbox_right = node.get_right_bbox();
