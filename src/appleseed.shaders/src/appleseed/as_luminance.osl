@@ -58,7 +58,7 @@ shader as_luminance
     [[
         string as_maya_attribute_name = "inputColorSpace",
         string as_maya_attribute_short_name = "is",
-        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_keyable = 4,
         string widget = "mapper",
         string options = "ACES 2065-1 AP0:0|ACEScg AP1:1|Rec.2020:2|DCI-P3:3|Rec.709/sRGB:4|Chromaticity Coordinates:5",
         string label = "Input Color Space",
