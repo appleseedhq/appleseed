@@ -48,6 +48,7 @@ namespace studio {
 PythonEditor::PythonEditor(QWidget* parent)
   : QPlainTextEdit(parent)
 {
+    setObjectName("python_editor");
     setUndoRedoEnabled(true);
     setLineWrapMode(QPlainTextEdit::WidgetWidth);
     setReadOnly(false);
@@ -58,12 +59,6 @@ PythonEditor::PythonEditor(QWidget* parent)
         Qt::TextEditorInteraction);
 
     new PythonSyntaxHighlighter(this->document());
-
-    setStyleSheet("background-color:#303030");
-
-    QFont font("Monospace");
-    font.setStyleHint(QFont::Monospace);
-    setFont(font);
 
     line_number_area = new LineNumberArea(this);
 

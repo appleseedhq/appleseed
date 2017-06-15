@@ -42,6 +42,7 @@
 #define ACTIVE_BACKGROUND_COLOR             rgb(44, 44, 44)
 #define HOVER_BACKGROUND_COLOR              rgb(190, 140, 50)
 #define SELECTED_BACKGROUND_COLOR           rgb(60, 60, 60)
+#define EDITOR_BACKGROUND_COLOR             rgb(48, 48, 48)
 
 #define DEFAULT_TEXT_COLOR                  rgb(170, 170, 170)
 #define DISABLED_TEXT_COLOR                 rgb(100, 100, 100)
@@ -56,7 +57,7 @@
     #define FIXED_WIDTH_FONT_STYLE          font-family: "Monaco"; font-size: 10px
 #endif
 #ifdef __linux__
-    #define FIXED_WIDTH_FONT_STYLE          font-family: "Courier New"
+    #define FIXED_WIDTH_FONT_STYLE          font-family: "Monospace"
 #endif
 #ifdef __FreeBSD__
     #define FIXED_WIDTH_FONT_STYLE          font-family: "Courier New"
@@ -1151,6 +1152,12 @@ QLabel#a_label
 QWidget#textedit_log
 {
     FIXED_WIDTH_FONT_STYLE;
+}
+
+QWidget#python_editor
+{
+    FIXED_WIDTH_FONT_STYLE;
+    background-color: EDITOR_BACKGROUND_COLOR
 }
 
 QPushButton#bind_entity_button,
