@@ -57,7 +57,7 @@ void LineNumberArea::slot_update_area_width()
 
 void LineNumberArea::slot_update_area(const QRect& rect, int dy)
 {
-    if (dy)
+    if (dy != 0)
         scroll(0, dy);
     else
         update(0, rect.y(), area_width(), rect.height());
@@ -70,7 +70,8 @@ int LineNumberArea::area_width()
 {
     int digits = 1;
     int max = qMax(1, editor->blockCount());
-    while(max >= 10) {
+    while (max >= 10)
+    {
         max /= 10;
         ++digits;
     }

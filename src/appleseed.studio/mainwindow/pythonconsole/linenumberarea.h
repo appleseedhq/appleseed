@@ -30,6 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_LINENUMBERAREA_H
 
 // Qt headers.
+#include <QObject>
 #include <QWidget>
 
 namespace appleseed {

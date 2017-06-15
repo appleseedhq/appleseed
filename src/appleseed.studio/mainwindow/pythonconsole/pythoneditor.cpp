@@ -30,14 +30,14 @@
 #include "pythoneditor.h"
 
 // appleseed.studio headers.
-#include "pythonhighlighter.h"
 #include "linenumberarea.h"
+#include "pythonhighlighter.h"
 
 // Qt headers.
 #include <QKeyEvent>
+#include <QPainter>
 #include <QString>
 #include <QStringList>
-#include <QPainter>
 
 // Standard headers.
 #include <string>
@@ -67,7 +67,7 @@ PythonEditor::PythonEditor(QWidget* parent)
 
     line_number_area = new LineNumberArea(this);
 
-    connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(slot_highlight_current_line()));
+    connect(this, SIGNAL(cursorPositionChanged()), SLOT(slot_highlight_current_line()));
     slot_highlight_current_line();
 }
 
@@ -83,12 +83,12 @@ QTextBlock PythonEditor::get_first_visible_block()
 
 int PythonEditor::get_top_of_first_block(QTextBlock block)
 {
-    return (int) blockBoundingGeometry(block).translated(contentOffset()).top();
+    return static_cast<int>(blockBoundingGeometry(block).translated(contentOffset()).top());
 }
 
 int PythonEditor::get_block_height(QTextBlock block)
 {
-    return (int) blockBoundingRect(block).height();
+    return static_cast<int>(blockBoundingRect(block).height());
 }
 
 void PythonEditor::resizeEvent(QResizeEvent* event)
