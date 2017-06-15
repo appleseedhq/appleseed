@@ -385,12 +385,12 @@ source_group ("src\\maya" FILES
 )
 
 set (src_appleseed_sources
-     src/appleseed/asColorTransform.osl
-     src/appleseed/asDisneyMaterial.osl
-     src/appleseed/asGlass.osl
-     src/appleseed/asLuminance.osl
-     src/appleseed/asVoronoi2D.osl
-     src/appleseed/asVoronoi3D.osl
+     src/appleseed/as_color_transform.osl
+     src/appleseed/as_disney_material.osl
+     src/appleseed/as_glass.osl
+     src/appleseed/as_luminance.osl
+     src/appleseed/as_voronoi2d.osl
+     src/appleseed/as_voronoi3d.osl
 )
 list (APPEND osl_sources
     ${src_appleseed_sources}
