@@ -227,29 +227,52 @@ float LightTree::update_energy(size_t node_index)
 // Return the nearest light and it's probability 
 std::pair<size_t, float> LightTree::sample(foundation::Vector3d surface_point) const
 {
-    size_t light_index = find_nearest_light(surface_point, 0);
+    float light_probability = 1.0;
+    size_t light_index = find_nearest_light(surface_point, 0, light_probability);
     float hard_coded_placeholder_light_prob = 1.0;
 
     return std::pair<size_t, float>(light_index, hard_coded_placeholder_light_prob);
 }
 
-size_t LightTree::find_nearest_light(foundation::Vector3d surface_point, size_t node_index) const
+size_t LightTree::find_nearest_light(foundation::Vector3d surface_point, size_t node_index, float total_probability) const
 {
     size_t light_index = 0;
 
     if (!m_nodes[node_index].is_leaf())
     {
         LightTreeNode<foundation::AABB3d> node = m_nodes[node_index];
+        LightTreeNode<foundation::AABB3d> child1 = m_nodes[node.get_child_node_index()];
+        LightTreeNode<foundation::AABB3d> child2 = m_nodes[node.get_child_node_index() + 1];
 
-        foundation::Vector3d bbox_centre_left  = node.get_left_bbox().center();
-        foundation::Vector3d bbox_centre_right = node.get_right_bbox().center();
+        foundation::AABB3d bbox_left  = node.get_left_bbox();
+        foundation::AABB3d bbox_right = node.get_right_bbox();
 
-        float distance_left  = foundation::square_distance(surface_point, bbox_centre_left);
-        float distance_right = foundation::square_distance(surface_point, bbox_centre_right);
+        const float distance_left  = foundation::square_distance(surface_point, bbox_left.center());
+        const float distance_right = foundation::square_distance(surface_point, bbox_right.center());
+
+        float p1 = child1.get_probability(distance_left);
+        float p2 = child2.get_probability(distance_right);
+        const float total = p1 + p2;
+
+        if (total <= 0.0f)
+        {
+            p1 = 0.5;
+            p2 = 0.5;
+        }
+        else
+        {
+            p1 = p1 / total;
+            p2 = p2 / total;
+        }
+
+        // TODO: Switch with Nathan's n variable
+        p1 >= p2
+            ? total_probability *= p1
+            : total_probability *= p2;
 
         distance_left <= distance_right
-            ? light_index = find_nearest_light(surface_point, node.get_child_node_index())
-            : light_index = find_nearest_light(surface_point, node.get_child_node_index() + 1);
+            ? light_index = find_nearest_light(surface_point, node.get_child_node_index(), total_probability)
+            : light_index = find_nearest_light(surface_point, node.get_child_node_index() + 1, total_probability);
     }
     else
     {

@@ -111,7 +111,7 @@ class LightTree
     LightSourcePointerVector   m_light_sources;
     ItemVector                 m_items;
 
-    size_t find_nearest_light(foundation::Vector3d sample_point, size_t node_index) const;
+    size_t find_nearest_light(foundation::Vector3d sample_point, size_t node_index, float total_probability) const;
 
     void store_items_in_leaves(foundation::Statistics& statistics);
     void update_nodes_energy();
