@@ -30,7 +30,7 @@
 #include "appleseed/color/as_colorimetry.h"
 #include "appleseed/maya/as_maya_helpers.h"
 
-shader asLuminance
+shader as_luminance
 [[
     string as_maya_node_name = "asLuminance",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility:swatch/AppleseedRenderSwatch",

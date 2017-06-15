@@ -29,7 +29,7 @@
 #include "appleseed/color/as_color_transforms.h"
 #include "appleseed/maya/as_maya_helpers.h"
 
-shader asColorTransform
+shader as_color_transform
 [[
     string as_maya_node_name = "asColorTransform",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility:swatch/AppleseedRenderSwatch",
