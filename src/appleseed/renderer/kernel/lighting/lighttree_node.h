@@ -43,11 +43,13 @@ namespace renderer      { class Scene; }
 namespace renderer      { class NonPhysicalLightInfo; }
 namespace renderer      { class EmittingTriangle; }
 
-namespace renderer{
+namespace renderer
+{
 
 //
 // LightTreeNode implementation
 //
+
 template<typename AABB> 
 class LightTreeNode
     : public foundation::bvh::Node<AABB>
@@ -61,12 +63,22 @@ class LightTreeNode
     float get_node_energy() const
     {
         return m_node_energy;
-    };
+    }
 
-    void set_node_energy(float energy)
+    void set_node_energy(const float energy)
     {
         m_node_energy = energy;
-    };
+    }
+
+    float get_probability(const float distance) const
+    {
+        const float distance2 = distance * distance;
+        const float inverse_square_fallof = 1.0f / distance2;
+
+        const float probability = m_node_energy * inverse_square_fallof;
+
+        return probability;
+    }
   
   private:
     float  m_node_energy;
