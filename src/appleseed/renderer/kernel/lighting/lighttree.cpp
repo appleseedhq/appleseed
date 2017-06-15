@@ -228,15 +228,17 @@ float LightTree::update_energy(size_t node_index)
 std::pair<size_t, float> LightTree::sample(foundation::Vector3d surface_point) const
 {
     float light_probability = 1.0;
-    size_t light_index = find_nearest_light(surface_point, 0, light_probability);
-    float hard_coded_placeholder_light_prob = 1.0;
+    std::pair<size_t, float> nearest_light = find_nearest_light(surface_point, 0, light_probability);
 
-    return std::pair<size_t, float>(light_index, hard_coded_placeholder_light_prob);
+    size_t light_index = nearest_light.first;
+    light_probability = nearest_light.second;
+
+    return std::pair<size_t, float>(light_index, light_probability);
 }
 
-size_t LightTree::find_nearest_light(foundation::Vector3d surface_point, size_t node_index, float total_probability) const
+std::pair<size_t, float> LightTree::find_nearest_light(foundation::Vector3d surface_point, size_t node_index, float total_probability) const
 {
-    size_t light_index = 0;
+    std::pair<size_t, float> nearest_light;
 
     if (!m_nodes[node_index].is_leaf())
     {
@@ -271,18 +273,19 @@ size_t LightTree::find_nearest_light(foundation::Vector3d surface_point, size_t 
             : total_probability *= p2;
 
         distance_left <= distance_right
-            ? light_index = find_nearest_light(surface_point, node.get_child_node_index(), total_probability)
-            : light_index = find_nearest_light(surface_point, node.get_child_node_index() + 1, total_probability);
+            ? nearest_light = find_nearest_light(surface_point, node.get_child_node_index(), total_probability)
+            : nearest_light = find_nearest_light(surface_point, node.get_child_node_index() + 1, total_probability);
     }
     else
     {
         size_t item_index = m_nodes[node_index].get_item_index();
         // NOTE: this will work only for pure NPL scene as the lights in
         // m_light_sources will be mixed. Rewrite this!
-        light_index = m_items[item_index].m_light_sources_index;
+        nearest_light.first = m_items[item_index].m_light_sources_index;
+        nearest_light.second = total_probability;
     }
 
-    return light_index;
+    return nearest_light;
 }
 
 }   // namespace renderer
