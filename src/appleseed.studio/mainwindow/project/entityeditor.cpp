@@ -300,7 +300,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dic
     slider->setRange(min_value, max_value);
     slider->setPageStep((max_value - min_value) / 10.0);
     new MouseWheelFocusEventFilter(slider);
-    new LineEditDoubleSliderAdaptor(line_edit, slider);
+    LineEditDoubleSliderAdaptor* adaptor = new LineEditDoubleSliderAdaptor(line_edit, slider);
     connect(slider, SIGNAL(valueChanged(int)), SLOT(slot_apply()));
 
     if (should_be_focused(metadata))
@@ -323,11 +323,10 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dic
         slider->hide();
     }
 
-    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
+    const double value = metadata.strings().get<double>("value");
+    adaptor->slot_set_line_edit_value(value);
 
-    // Setting the value via the slider allows to benefit from the string
-    // formatting in LineEditDoubleSliderAdaptor::slot_set_line_edit_value().
-    slider->setValue(metadata.strings().get<double>("value"));
+    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
 
     return widget_proxy;
 }
