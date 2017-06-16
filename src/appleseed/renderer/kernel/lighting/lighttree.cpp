@@ -256,8 +256,8 @@ std::pair<size_t, float> LightTree::find_nearest_light(
         const LightTreeNode<foundation::AABB3d>& child1 = m_nodes[node.get_child_node_index()];
         const LightTreeNode<foundation::AABB3d>& child2 = m_nodes[node.get_child_node_index() + 1];
 
-        foundation::AABB3d bbox_left  = node.get_left_bbox();
-        foundation::AABB3d bbox_right = node.get_right_bbox();
+        const foundation::AABB3d& bbox_left  = node.get_left_bbox();
+        const foundation::AABB3d& bbox_right = node.get_right_bbox();
 
         const float distance_left  = foundation::square_distance(surface_point, bbox_left.center());
         const float distance_right = foundation::square_distance(surface_point, bbox_right.center());
