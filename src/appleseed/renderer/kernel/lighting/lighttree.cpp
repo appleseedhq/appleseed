@@ -227,32 +227,16 @@ float LightTree::update_energy(size_t node_index)
 // Return the nearest light and it's probability 
 std::pair<size_t, float> LightTree::sample(
         const foundation::Vector3d    surface_point,
-        const float   s) const
+        float                         s) const
 {
     float light_probability = 1.0;
-    std::pair<size_t, float> nearest_light = find_nearest_light(
-                                                surface_point,
-                                                0,
-                                                s,
-                                                light_probability);
+    size_t node_index = 0;
 
-    size_t light_index = nearest_light.first;
-    light_probability = nearest_light.second;
-
-    return std::pair<size_t, float>(light_index, light_probability);
-}
-
-std::pair<size_t, float> LightTree::find_nearest_light(
-        const foundation::Vector3d      surface_point,
-        const size_t                    node_index,
-        float                           s,
-        float                           total_probability) const
-{
     std::pair<size_t, float> nearest_light;
 
-    if (!m_nodes[node_index].is_leaf())
+    while (!m_nodes[node_index].is_leaf())
     {
-        const LightTreeNode<foundation::AABB3d>& node = m_nodes[node_index];
+        const LightTreeNode<foundation::AABB3d>& node   = m_nodes[node_index];
         const LightTreeNode<foundation::AABB3d>& child1 = m_nodes[node.get_child_node_index()];
         const LightTreeNode<foundation::AABB3d>& child2 = m_nodes[node.get_child_node_index() + 1];
 
@@ -279,33 +263,24 @@ std::pair<size_t, float> LightTree::find_nearest_light(
 
         if (s <= p1)
         {
-            total_probability *= p1;
+            light_probability *= p1;
             s /= p1;
-            nearest_light = find_nearest_light(surface_point,
-                                               node.get_child_node_index(),
-                                               s,
-                                               total_probability);
+            node_index = node.get_child_node_index();
         }
         else
         {
-            total_probability *= p2;
+            light_probability *= p2;
             s = (s - 1) / p2;
-            nearest_light = find_nearest_light(surface_point,
-                                               node.get_child_node_index() + 1,
-                                               s,
-                                               total_probability);
+            node_index = node.get_child_node_index() + 1;
         }
     }
-    else
-    {
-        size_t item_index = m_nodes[node_index].get_item_index();
-        // NOTE: this will work only for pure NPL scene as the lights in
-        // m_light_sources will be mixed. Rewrite this!
-        nearest_light.first = m_items[item_index].m_light_sources_index;
-        nearest_light.second = total_probability;
-    }
 
-    return nearest_light;
+    size_t item_index = m_nodes[node_index].get_item_index();
+    // NOTE: this will work only for pure NPL scene as the lights in
+    // m_light_sources will be mixed. Rewrite this!
+    size_t light_index = m_items[item_index].m_light_sources_index;
+
+    return std::pair<size_t, float>(light_index, light_probability);
 }
 
 }   // namespace renderer
