@@ -74,7 +74,7 @@ class LightTreeNode
     {
         const float radius2 = radius * radius;
         const float inverse_surface_area = 1.0f / radius2;
-        
+
         const float probability = m_node_energy * inverse_surface_area;
 
         return probability;

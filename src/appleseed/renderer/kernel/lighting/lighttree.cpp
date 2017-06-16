@@ -289,7 +289,7 @@ std::pair<size_t, float> LightTree::find_nearest_light(
         else
         {
             total_probability *= p2;
-            random_criteria /= p2;
+            random_criteria = (random_criteria - 1) / p2;
             nearest_light = find_nearest_light(surface_point,
                                                node.get_child_node_index() + 1,
                                                random_criteria,
