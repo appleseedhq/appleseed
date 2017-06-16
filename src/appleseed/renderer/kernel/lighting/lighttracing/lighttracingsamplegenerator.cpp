@@ -249,7 +249,7 @@ namespace
       private:
         struct VolumeVisitor
         {
-            void visit(const ShadingRay& volume_ray) {}
+            void visit(const ShadingRay& volume_ray, const void* data) {}
         };
 
         struct PathVisitor

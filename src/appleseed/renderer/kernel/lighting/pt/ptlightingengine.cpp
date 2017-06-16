@@ -241,9 +241,15 @@ namespace
                 shading_point.get_scene(),
                 radiance);
 
-            VolumeVisitor volume_visitor;
+            VolumeVisitorDistanceSampling volume_visitor(
+                m_params,
+                m_light_sampler,
+                sampling_context,
+                shading_context,
+                shading_point.get_scene(),
+                radiance);
 
-            PathTracer<PathVisitor, VolumeVisitor, false> path_tracer(     // false = not adjoint
+            PathTracer<PathVisitor, VolumeVisitorDistanceSampling, false> path_tracer(     // false = not adjoint
                 path_visitor,
                 volume_visitor,
                 m_params.m_rr_min_path_length,
@@ -673,15 +679,19 @@ namespace
                         m_sampling_context,
                         m_params.m_ibl_env_sample_count);
 
+                const BSDFSampler bsdf_sampler(
+                    bsdf,
+                    bsdf_data,
+                    scattering_modes,   // bsdf_sampling_modes (unused)
+                    shading_point);
+
                 // This path will be extended via BSDF sampling: sample the environment only.
                 compute_ibl_environment_sampling(
                     m_sampling_context,
                     m_shading_context,
                     *m_env_edf,
-                    shading_point,
                     outgoing,
-                    bsdf,
-                    bsdf_data,
+                    bsdf_sampler,
                     scattering_modes,
                     1,                  // bsdf_sample_count
                     env_sample_count,
@@ -705,14 +715,118 @@ namespace
         };
 
         //
-        // Volume visitor that does nothing.
+        // Volume visitor that performs distance sampling and light sampling in a decoupled fashion.
         //
 
-        struct VolumeVisitor
+        struct VolumeVisitorDistanceSampling
         {
-            void visit(const ShadingRay& volume_ray)
+            VolumeVisitorDistanceSampling(
+                const Parameters&       params,
+                const LightSampler&     light_sampler,
+                SamplingContext&        sampling_context,
+                const ShadingContext&   shading_context,
+                const Scene&            scene,
+                Spectrum&               path_radiance)
+              : m_params(params)
+              , m_light_sampler(light_sampler)
+              , m_sampling_context(sampling_context)
+              , m_shading_context(shading_context)
+              , m_path_radiance(path_radiance)
+              , m_env_edf(scene.get_environment()->get_environment_edf())
             {
             }
+
+            void visit(const ShadingRay& volume_ray, const void* phase_function_data)
+            {
+                Spectrum dl_radiance(0.0f, Spectrum::Illuminance);
+
+                const ShadingRay::Medium* medium = volume_ray.get_current_medium();
+                const PhaseFunction* phase_function =
+                    medium->m_material->get_render_data().m_phase_function;
+
+                // Sample distance.
+                float distance_sample;
+                const float distance_prob = phase_function->sample_distance(
+                    m_sampling_context,
+                    volume_ray,
+                    phase_function_data,
+                    distance_sample);
+
+                const PhaseFunctionSampler phase_function_sampler(
+                    volume_ray,
+                    *phase_function,
+                    phase_function_data,
+                    distance_sample);
+
+                const size_t light_sample_count =
+                    stochastic_cast<size_t>(
+                        m_sampling_context,
+                        m_params.m_dl_light_sample_count);
+
+                // This path will be extended: sample the lights only.
+                const DirectLightingIntegrator integrator(
+                    m_shading_context,
+                    m_light_sampler,
+                    phase_function_sampler,
+                    volume_ray.m_time,
+                    ScatteringMode::All, // light sampling modes
+                    1,                   // phase function sample count
+                    light_sample_count,
+                    m_params.m_dl_low_light_threshold,
+                    false);
+                integrator.compute_outgoing_radiance_light_sampling_low_variance(
+                    m_sampling_context,
+                    MISPower2,
+                    Dual3d(volume_ray.m_dir),
+                    dl_radiance);
+
+                // Divide by the sample count when this number is less than 1.
+                if (m_params.m_rcp_dl_light_sample_count > 0.0f)
+                    dl_radiance *= m_params.m_rcp_dl_light_sample_count;
+
+                // Add direct lighting contribution.
+                dl_radiance /= distance_prob;
+                dl_radiance *= static_cast<float>(volume_ray.get_length());
+                m_path_radiance += dl_radiance;
+
+                if (m_env_edf != nullptr)
+                {
+                    Spectrum ibl_radiance(Spectrum::Illuminance);
+
+                    const size_t env_sample_count =
+                        stochastic_cast<size_t>(
+                        m_sampling_context,
+                        m_params.m_ibl_env_sample_count);
+
+                    // This path will be extended via BSDF sampling: sample the environment only.
+                    compute_ibl_environment_sampling(
+                        m_sampling_context,
+                        m_shading_context,
+                        *m_env_edf,
+                        Dual3d(volume_ray.m_dir),
+                        phase_function_sampler,
+                        ScatteringMode::All,
+                        1,                  // bsdf_sample_count
+                        env_sample_count,
+                        ibl_radiance);
+
+                    // Divide by the sample count when this number is less than 1.
+                    if (m_params.m_rcp_ibl_env_sample_count > 0.0f)
+                        ibl_radiance *= m_params.m_rcp_ibl_env_sample_count;
+
+                    // Add image-based lighting contribution.
+                    ibl_radiance /= distance_prob;
+                    ibl_radiance *= static_cast<float>(volume_ray.get_length());
+                    m_path_radiance += ibl_radiance;
+                }
+            }
+
+            const Parameters&           m_params;
+            const LightSampler&         m_light_sampler;
+            SamplingContext&            m_sampling_context;
+            const ShadingContext&       m_shading_context;
+            Spectrum&                   m_path_radiance;
+            const EnvironmentEDF*       m_env_edf;
         };
     };
 }

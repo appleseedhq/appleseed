@@ -684,7 +684,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
     void* data = phase_function->evaluate_inputs(shading_context, volume_ray);
     phase_function->prepare_inputs(shading_context.get_arena(), volume_ray, data);
 
-    m_volume_visitor.visit(volume_ray);
+    m_volume_visitor.visit(volume_ray, data);
 
     if (vertex.m_shading_point->hit())
     {
