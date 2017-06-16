@@ -31,6 +31,7 @@
 #define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRAY_H
 
 // appleseed.renderer headers.
+#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/visibilityflags.h"
 
@@ -93,6 +94,12 @@ class ShadingRay
         const ObjectInstance*       m_object_instance;
         const Material*             m_material;
         float                       m_ior;
+
+        const PhaseFunction* get_phase_function() const
+        {
+            if (m_material == nullptr) return nullptr;
+            return m_material->get_render_data().m_phase_function;
+        }
     };
 
     // Public members, in an order that optimizes packing.

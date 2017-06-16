@@ -206,7 +206,7 @@ namespace
 
     struct VolumeVisitor
     {
-        void visit(const ShadingRay& volume_ray, const void* data)
+        void visit(PathVertex& vertex, const ShadingRay& volume_ray)
         {
         }
     };

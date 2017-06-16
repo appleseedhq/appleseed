@@ -48,6 +48,7 @@
 namespace renderer  { class Material;}
 namespace renderer  { class OSLShaderGroupExec; }
 namespace renderer  { class Scene; }
+namespace renderer  { class ShadingContext; }
 namespace renderer  { class TextureCache; }
 
 namespace renderer
@@ -90,6 +91,22 @@ class Tracer
         const foundation::Vector3d&     direction,
         const VisibilityFlags::Type     ray_flags,
         float&                          transmission);
+    // These methods require higher computational effort,
+    // but take participating media into account while computing transmission.
+    const ShadingPoint& trace(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3d&     origin,
+        const foundation::Vector3d&     direction,
+        const VisibilityFlags::Type     ray_flags,
+        const ShadingRay&               parent_ray,
+        Spectrum&                       transmission);
+    const ShadingPoint& trace(
+        const ShadingContext&           shading_context,
+        const ShadingPoint&             origin,
+        const foundation::Vector3d&     direction,
+        const VisibilityFlags::Type     ray_flags,
+        const ShadingRay&               parent_ray,
+        Spectrum&                       transmission);
 
     // Compute the transmission in a given direction. This variant may take
     // advantage of the fact that the intersection with the closest occluder
@@ -135,6 +152,22 @@ class Tracer
         const ShadingPoint&             origin,
         const foundation::Vector3d&     target,
         const VisibilityFlags::Type     ray_flags);
+    // These methods require higher computational effort,
+    // but take participating media into account while computing transmission.
+    const ShadingPoint& trace_between(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3d&     origin,
+        const foundation::Vector3d&     target,
+        const VisibilityFlags::Type     ray_flags,
+        const ShadingRay&               parent_ray,
+        Spectrum&                       transmission);
+    const ShadingPoint& trace_between(
+        const ShadingContext&           shading_context,
+        const ShadingPoint&             origin,
+        const foundation::Vector3d&     target,
+        const VisibilityFlags::Type     ray_flags,
+        const ShadingRay&               parent_ray,
+        Spectrum&                       transmission);
 
   private:
     const Intersector&                  m_intersector;
@@ -161,6 +194,24 @@ class Tracer
         const VisibilityFlags::Type     ray_flags,
         const ShadingRay::DepthType     ray_depth,
         float&                          transmission,
+        const ShadingPoint*             parent_shading_point);
+
+    const ShadingPoint& do_trace(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3d&     origin,
+        const foundation::Vector3d&     direction,
+        const VisibilityFlags::Type     ray_flags,
+        const ShadingRay&               parent_ray,
+        Spectrum&                       transmission,
+        const ShadingPoint*             parent_shading_point);
+
+    const ShadingPoint& do_trace_between(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3d&     origin,
+        const foundation::Vector3d&     target,
+        const VisibilityFlags::Type     ray_flags,
+        const ShadingRay&               parent_ray,
+        Spectrum&                       transmission,
         const ShadingPoint*             parent_shading_point);
 
     void evaluate_alpha(
@@ -278,6 +329,44 @@ inline float Tracer::trace(
     }
 }
 
+inline const ShadingPoint& Tracer::trace(
+    const ShadingContext&           shading_context,
+    const foundation::Vector3d&     origin,
+    const foundation::Vector3d&     direction,
+    const VisibilityFlags::Type     ray_flags,
+    const ShadingRay&               parent_ray,
+    Spectrum&                       transmission)
+{
+    return
+        do_trace(
+        shading_context,
+        origin,
+        direction,
+        ray_flags,
+        parent_ray,
+        transmission,
+        nullptr);
+}
+
+inline const ShadingPoint& Tracer::trace(
+    const ShadingContext&           shading_context,
+    const ShadingPoint&             origin,
+    const foundation::Vector3d&     direction,
+    const VisibilityFlags::Type     ray_flags,
+    const ShadingRay&               parent_ray,
+    Spectrum&                       transmission)
+{
+    return
+        do_trace(
+            shading_context,
+            origin.get_biased_point(direction),
+            direction,
+            ray_flags,
+            parent_ray,
+            transmission,
+            &origin);
+}
+
 inline const ShadingPoint& Tracer::trace_between(
     const foundation::Vector3d&         origin,
     const foundation::Vector3d&         target,
@@ -386,6 +475,44 @@ inline float Tracer::trace_between(
 
         return shading_point.hit() ? 0.0f : transmission;
     }
+}
+
+inline const ShadingPoint& Tracer::trace_between(
+    const ShadingContext&           shading_context,
+    const foundation::Vector3d&     origin,
+    const foundation::Vector3d&     target,
+    const VisibilityFlags::Type     ray_flags,
+    const ShadingRay&               parent_ray,
+    Spectrum&                       transmission)
+{
+    return
+        do_trace_between(
+            shading_context,
+            origin,
+            target,
+            ray_flags,
+            parent_ray,
+            transmission,
+            nullptr);
+}
+
+inline const ShadingPoint& Tracer::trace_between(
+    const ShadingContext&           shading_context,
+    const ShadingPoint&             origin,
+    const foundation::Vector3d&     target,
+    const VisibilityFlags::Type     ray_flags,
+    const ShadingRay&               parent_ray,
+    Spectrum&                       transmission)
+{
+    return
+        do_trace_between(
+            shading_context,
+            origin.get_biased_point(target - origin.get_point()),
+            target,
+            ray_flags,
+            parent_ray,
+            transmission,
+            &origin);
 }
 
 }       // namespace renderer

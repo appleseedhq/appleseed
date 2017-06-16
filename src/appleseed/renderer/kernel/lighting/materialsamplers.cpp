@@ -142,6 +142,36 @@ const ShadingPoint& BSDFSampler::trace(
             transmission);
 }
 
+const ShadingPoint& BSDFSampler::trace(
+    const ShadingContext&     shading_context,
+    const Vector3f&           direction,
+    Spectrum&                 transmission) const
+{
+    return
+        shading_context.get_tracer().trace(
+            shading_context,
+            m_shading_point,
+            Vector3d(direction),
+            VisibilityFlags::ShadowRay,
+            m_shading_point.get_ray(),
+            transmission);
+}
+
+
+void BSDFSampler::trace_between(
+    const ShadingContext&   shading_context,
+    const Vector3d&         target_position,
+    Spectrum&               transmission) const
+{
+    shading_context.get_tracer().trace_between(
+        shading_context,
+        m_shading_point,
+        target_position,
+        VisibilityFlags::ShadowRay,
+        m_shading_point.get_ray(),
+        transmission);
+}
+
 bool BSDFSampler::cull_incoming_direction(const Vector3d& incoming) const
 {
     // Cull light samples behind the shading surface if the BSDF
@@ -266,6 +296,37 @@ const ShadingPoint& PhaseFunctionSampler::trace(
             m_volume_ray.m_depth + 1,
             transmission);
 }
+
+const ShadingPoint& PhaseFunctionSampler::trace(
+    const ShadingContext&     shading_context,
+    const Vector3f&           direction,
+    Spectrum&                 transmission) const
+{
+    return
+        shading_context.get_tracer().trace(
+        shading_context,
+        m_point,
+        Vector3d(direction),
+        VisibilityFlags::ShadowRay,
+        m_volume_ray,
+        transmission);
+}
+
+
+void PhaseFunctionSampler::trace_between(
+    const ShadingContext&   shading_context,
+    const Vector3d&         target_position,
+    Spectrum&               transmission) const
+{
+    shading_context.get_tracer().trace_between(
+        shading_context,
+        m_point,
+        target_position,
+        VisibilityFlags::ShadowRay,
+        m_volume_ray,
+        transmission);
+}
+
 
 bool PhaseFunctionSampler::cull_incoming_direction(const Vector3d& incoming) const
 {

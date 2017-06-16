@@ -73,7 +73,7 @@ class HenyeyPhaseFunction
         m_inputs.declare("absorption_multiplier", InputFormatFloat, "1.0");
         m_inputs.declare("scattering", InputFormatSpectralReflectance);
         m_inputs.declare("scattering_multiplier", InputFormatFloat, "1.0");
-        m_inputs.declare("average_cosine", InputFormatFloat, "1.0");
+        m_inputs.declare("average_cosine", InputFormatFloat, "0.0");
     }
 
     virtual void release() override

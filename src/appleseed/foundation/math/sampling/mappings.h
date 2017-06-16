@@ -547,7 +547,7 @@ inline T sample_exponential_distribution_on_segment(
     assert(s < T(1.0));
 
     const T tail = T(1.0) - std::exp(-(r - l) * a);
-    return l - std::log(T(1.0) - s * tail) / a;
+    return clamp(l - std::log(T(1.0) - s * tail) / a, l, r);
 }
 
 template <typename T>
@@ -557,7 +557,7 @@ inline T exponential_distribution_on_segment_pdf(
     const T l,
     const T r)
 {
-    if (x < l || x > r) return T(0.0);
+    assert (x >= l && x <= r);
     const T left = std::exp(a * (x - l));
     const T right = std::exp(a * (x - r));
     return a / (left - right);

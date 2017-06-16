@@ -736,26 +736,25 @@ namespace
             {
             }
 
-            void visit(const ShadingRay& volume_ray, const void* phase_function_data)
+            void visit(PathVertex& vertex, const ShadingRay& volume_ray)
             {
                 Spectrum dl_radiance(0.0f, Spectrum::Illuminance);
 
                 const ShadingRay::Medium* medium = volume_ray.get_current_medium();
-                const PhaseFunction* phase_function =
-                    medium->m_material->get_render_data().m_phase_function;
+                const PhaseFunction* phase_function = medium->get_phase_function();
 
                 // Sample distance.
                 float distance_sample;
                 const float distance_prob = phase_function->sample_distance(
                     m_sampling_context,
                     volume_ray,
-                    phase_function_data,
+                    vertex.m_phase_function_data,
                     distance_sample);
 
                 const PhaseFunctionSampler phase_function_sampler(
                     volume_ray,
                     *phase_function,
-                    phase_function_data,
+                    vertex.m_phase_function_data,
                     distance_sample);
 
                 const size_t light_sample_count =
@@ -787,6 +786,7 @@ namespace
                 // Add direct lighting contribution.
                 dl_radiance /= distance_prob;
                 dl_radiance *= static_cast<float>(volume_ray.get_length());
+                dl_radiance *= vertex.m_throughput;
                 m_path_radiance += dl_radiance;
 
                 if (m_env_edf != nullptr)
@@ -817,6 +817,7 @@ namespace
                     // Add image-based lighting contribution.
                     ibl_radiance /= distance_prob;
                     ibl_radiance *= static_cast<float>(volume_ray.get_length());
+                    ibl_radiance *= vertex.m_throughput;
                     m_path_radiance += ibl_radiance;
                 }
             }

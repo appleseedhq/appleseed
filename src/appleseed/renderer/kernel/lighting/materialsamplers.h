@@ -68,6 +68,16 @@ class IMaterialSampler
         const ShadingContext&           shading_context,
         const foundation::Vector3d&     target_position) const = 0;
 
+    virtual const ShadingPoint& trace(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3f&     direction,
+        Spectrum&                       transmission) const = 0;
+
+    virtual void trace_between(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3d&     target_position,
+        Spectrum&                       transmission) const = 0;
+
     virtual bool sample(
         SamplingContext&                sampling_context,
         const foundation::Dual3d&       outgoing,
@@ -121,6 +131,16 @@ class BSDFSampler
         const foundation::Vector3f&     direction,
         float&                          transmission) const override;
 
+    virtual const ShadingPoint& trace(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3f&     direction,
+        Spectrum&                       transmission) const override;
+
+    virtual void trace_between(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3d&     target_position,
+        Spectrum&                       transmission) const override;
+
     virtual bool cull_incoming_direction(
         const foundation::Vector3d&  incoming) const override;
 
@@ -168,6 +188,16 @@ class PhaseFunctionSampler
         const ShadingContext&           shading_context,
         const foundation::Vector3f&     direction,
         float&                          transmission) const override;
+
+    virtual const ShadingPoint& trace(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3f&     direction,
+        Spectrum&                       transmission) const override;
+
+    virtual void trace_between(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3d&     target_position,
+        Spectrum&                       transmission) const override;
 
     virtual bool cull_incoming_direction(
         const foundation::Vector3d&     incoming) const override;
