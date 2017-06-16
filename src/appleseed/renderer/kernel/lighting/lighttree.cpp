@@ -236,12 +236,13 @@ std::pair<size_t, float> LightTree::sample(
 
     while (!m_nodes[node_index].is_leaf())
     {
-        const LightTreeNode<foundation::AABB3d>& node   = m_nodes[node_index];
-        const LightTreeNode<foundation::AABB3d>& child1 = m_nodes[node.get_child_node_index()];
-        const LightTreeNode<foundation::AABB3d>& child2 = m_nodes[node.get_child_node_index() + 1];
+        // LightTreeNodes
+        const auto& node   = m_nodes[node_index];
+        const auto& child1 = m_nodes[node.get_child_node_index()];
+        const auto& child2 = m_nodes[node.get_child_node_index() + 1];
 
-        const foundation::AABB3d& bbox_left  = node.get_left_bbox();
-        const foundation::AABB3d& bbox_right = node.get_right_bbox();
+        const auto& bbox_left  = node.get_left_bbox();
+        const auto& bbox_right = node.get_right_bbox();
 
         const float distance_left  = foundation::square_distance(surface_point, bbox_left.center());
         const float distance_right = foundation::square_distance(surface_point, bbox_right.center());
