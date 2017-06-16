@@ -52,7 +52,7 @@ LineNumberArea::LineNumberArea(PythonEditor* parent)
 void LineNumberArea::slot_update_area_width()
 {
     setFixedWidth(area_width());
-    editor->set_left_margin(area_width());
+    editor->setViewportMargins(area_width(), 0, 0, 0);
 }
 
 void LineNumberArea::slot_update_area(const QRect& rect, int dy)
@@ -84,10 +84,11 @@ void LineNumberArea::paintEvent(QPaintEvent* event)
     QPainter painter(this);
     painter.fillRect(event->rect(), QColor(53, 53, 53));
 
-    QTextBlock block = editor->get_first_visible_block();
+    QTextBlock block = editor->firstVisibleBlock();
     int block_number = block.blockNumber();
-    int top = editor->get_top_of_first_block(block);
-    int bottom = top + editor->get_block_height(block);
+    int top = static_cast<int> (editor->blockBoundingGeometry(block).
+                                translated(editor->contentOffset()).top());
+    int bottom = top + static_cast<int> (editor->blockBoundingRect(block).height());
 
     while (block.isValid() && top <= event->rect().bottom())
     {
@@ -101,7 +102,7 @@ void LineNumberArea::paintEvent(QPaintEvent* event)
 
         block = block.next();
         top = bottom;
-        bottom = top + editor->get_block_height(block);
+        bottom = top + static_cast<int> (editor->blockBoundingRect(block).height());
         ++block_number;
     }
 }

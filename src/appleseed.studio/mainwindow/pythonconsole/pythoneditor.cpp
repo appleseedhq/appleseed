@@ -66,26 +66,6 @@ PythonEditor::PythonEditor(QWidget* parent)
     slot_highlight_current_line();
 }
 
-void PythonEditor::set_left_margin(int left_margin)
-{
-    setViewportMargins(left_margin, 0, 0, 0);
-}
-
-QTextBlock PythonEditor::get_first_visible_block()
-{
-    return firstVisibleBlock();
-}
-
-int PythonEditor::get_top_of_first_block(QTextBlock block)
-{
-    return static_cast<int>(blockBoundingGeometry(block).translated(contentOffset()).top());
-}
-
-int PythonEditor::get_block_height(QTextBlock block)
-{
-    return static_cast<int>(blockBoundingRect(block).height());
-}
-
 void PythonEditor::resizeEvent(QResizeEvent* event)
 {
     QPlainTextEdit::resizeEvent(event);

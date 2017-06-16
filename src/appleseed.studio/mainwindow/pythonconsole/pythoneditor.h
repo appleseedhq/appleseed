@@ -47,14 +47,10 @@ class PythonEditor
 {
     Q_OBJECT
 
+  friend LineNumberArea;
+
   public:
     explicit PythonEditor(QWidget* parent = 0);
-
-    // These functions expose protected functions of QPlainTextEdit to use in LineNumberArea class.
-    void set_left_margin(int left_margin);
-    QTextBlock get_first_visible_block();
-    int get_top_of_first_block(QTextBlock block);
-    int get_block_height(QTextBlock block);
 
   protected:
     // Event used to update line number area.
