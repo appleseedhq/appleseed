@@ -245,7 +245,7 @@ std::pair<size_t, float> LightTree::sample(
 std::pair<size_t, float> LightTree::find_nearest_light(
         const foundation::Vector3d      surface_point,
         const size_t                    node_index,
-        float                           random_criteria,
+        float                           s,
         float                           total_probability) const
 {
     std::pair<size_t, float> nearest_light;
@@ -277,22 +277,22 @@ std::pair<size_t, float> LightTree::find_nearest_light(
             p2 = p2 / total;
         }
 
-        if (random_criteria <= p1)
+        if (s <= p1)
         {
             total_probability *= p1;
-            random_criteria /= p1;
+            s /= p1;
             nearest_light = find_nearest_light(surface_point,
                                                node.get_child_node_index(),
-                                               random_criteria,
+                                               s,
                                                total_probability);
         }
         else
         {
             total_probability *= p2;
-            random_criteria = (random_criteria - 1) / p2;
+            s = (s - 1) / p2;
             nearest_light = find_nearest_light(surface_point,
                                                node.get_child_node_index() + 1,
-                                               random_criteria,
+                                               s,
                                                total_probability);
         }
     }

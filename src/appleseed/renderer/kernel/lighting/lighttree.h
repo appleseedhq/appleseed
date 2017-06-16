@@ -116,7 +116,7 @@ class LightTree
     std::pair<size_t, float> find_nearest_light(
         const foundation::Vector3d      surface_point,
         const size_t                    node_index,
-        float                           random_criteria,
+        float                           s,
         float                           total_probability) const;
 
     void store_items_in_leaves(foundation::Statistics& statistics);
