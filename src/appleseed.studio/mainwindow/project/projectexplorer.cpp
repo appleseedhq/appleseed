@@ -136,7 +136,7 @@ namespace
 
 void ProjectExplorer::filter_items(const QString& pattern) const
 {
-    const QRegExp regexp(pattern);
+    const QRegExp regexp(pattern, Qt::CaseInsensitive);
 
     for (int i = 0; i < m_tree_widget->topLevelItemCount(); ++i)
         do_filter_items(m_tree_widget->topLevelItem(i), regexp);
