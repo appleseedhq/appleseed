@@ -79,7 +79,7 @@ class LightTree
     
     std::pair<size_t, float> sample(
         const foundation::Vector3d    surface_point,
-        const foundation::Vector3f&   s) const;
+        const float                   s) const;
 
   private:
     struct Item

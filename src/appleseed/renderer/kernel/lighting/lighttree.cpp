@@ -227,13 +227,13 @@ float LightTree::update_energy(size_t node_index)
 // Return the nearest light and it's probability 
 std::pair<size_t, float> LightTree::sample(
         const foundation::Vector3d    surface_point,
-        const foundation::Vector3f&   s) const
+        const float   s) const
 {
     float light_probability = 1.0;
     std::pair<size_t, float> nearest_light = find_nearest_light(
                                                 surface_point,
                                                 0,
-                                                s[0],
+                                                s,
                                                 light_probability);
 
     size_t light_index = nearest_light.first;
