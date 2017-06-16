@@ -558,9 +558,9 @@ inline T exponential_distribution_on_segment_pdf(
     const T r)
 {
     if (x < l || x > r) return T(0.0);
-    const T left = std::exp(-a * (x - l));
-    const T right = std::exp(-a * (x - r));
-    return a * (left - right);
+    const T left = std::exp(a * (x - l));
+    const T right = std::exp(a * (x - r));
+    return a / (left - right);
 }
 
 template <typename T>
