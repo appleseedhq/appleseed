@@ -109,9 +109,6 @@ void LightTree::build(
 
     RENDERER_LOG_INFO("Number of light sources: %zu", m_light_sources.size());
 
-    FILE* f = fopen("sorting_test.txt", "wt"); // in /sandbox/bin/Release/test.txt
-    fclose(f);
-
     // Create the partitioner.
     typedef foundation::bvh::MiddlePartitioner<AABBVector> Partitioner;
     Partitioner partitioner(light_bboxes);
@@ -149,7 +146,6 @@ void LightTree::build(
             statistics).to_string().c_str());
 
     RENDERER_LOG_INFO("Number of nodes: %zu", m_nodes.size());
-}
 
 void LightTree::store_items_in_leaves(foundation::Statistics& statistics)
 {
@@ -185,7 +181,7 @@ void LightTree::store_items_in_leaves(foundation::Statistics& statistics)
 void LightTree::update_nodes_energy()
 {
     // Make sure the tree was built.
-    assert(!tree.m_nodes.empty());
+    assert(!m_nodes.empty());
 
     // Check if the scene has only one light
     if(m_nodes[0].is_leaf())
@@ -224,7 +220,6 @@ float LightTree::update_energy(size_t node_index)
     return energy;
 }
 
-// Return the nearest light and it's probability 
 std::pair<size_t, float> LightTree::sample(
         const foundation::Vector3d    surface_point,
         float                         s) const
@@ -249,6 +244,7 @@ std::pair<size_t, float> LightTree::sample(
 
         float p1 = child1.get_probability(distance_left, bbox_left.radius());
         float p2 = child2.get_probability(distance_right, bbox_right.radius());
+
         const float total = p1 + p2;
 
         if (total <= 0.0f)
@@ -271,7 +267,7 @@ std::pair<size_t, float> LightTree::sample(
         else
         {
             light_probability *= p2;
-            s = (s - 1) / p2;
+            s = (s - p1) / p2;
             node_index = node.get_child_node_index() + 1;
         }
     }
