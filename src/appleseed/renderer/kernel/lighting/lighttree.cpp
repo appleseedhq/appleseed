@@ -262,8 +262,8 @@ std::pair<size_t, float> LightTree::find_nearest_light(
         const float distance_left  = foundation::square_distance(surface_point, bbox_left.center());
         const float distance_right = foundation::square_distance(surface_point, bbox_right.center());
 
-        float p1 = child1.get_probability(distance_left);
-        float p2 = child2.get_probability(distance_right);
+        float p1 = child1.get_probability(distance_left, bbox_left.radius());
+        float p2 = child2.get_probability(distance_right, bbox_right.radius());
         const float total = p1 + p2;
 
         if (total <= 0.0f)
