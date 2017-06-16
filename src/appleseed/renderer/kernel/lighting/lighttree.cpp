@@ -225,10 +225,16 @@ float LightTree::update_energy(size_t node_index)
 }
 
 // Return the nearest light and it's probability 
-std::pair<size_t, float> LightTree::sample(foundation::Vector3d surface_point) const
+std::pair<size_t, float> LightTree::sample(
+        const foundation::Vector3d    surface_point,
+        const foundation::Vector3f&   s) const
 {
     float light_probability = 1.0;
-    std::pair<size_t, float> nearest_light = find_nearest_light(surface_point, 0, light_probability);
+    std::pair<size_t, float> nearest_light = find_nearest_light(
+                                                surface_point,
+                                                0,
+                                                s[0],
+                                                light_probability);
 
     size_t light_index = nearest_light.first;
     light_probability = nearest_light.second;
@@ -236,7 +242,11 @@ std::pair<size_t, float> LightTree::sample(foundation::Vector3d surface_point) c
     return std::pair<size_t, float>(light_index, light_probability);
 }
 
-std::pair<size_t, float> LightTree::find_nearest_light(foundation::Vector3d surface_point, size_t node_index, float total_probability) const
+std::pair<size_t, float> LightTree::find_nearest_light(
+        const foundation::Vector3d      surface_point,
+        const size_t                    node_index,
+        float                           random_criteria,
+        float                           total_probability) const
 {
     std::pair<size_t, float> nearest_light;
 
@@ -267,14 +277,24 @@ std::pair<size_t, float> LightTree::find_nearest_light(foundation::Vector3d surf
             p2 = p2 / total;
         }
 
-        // TODO: Switch with Nathan's n variable
-        p1 >= p2
-            ? total_probability *= p1
-            : total_probability *= p2;
-
-        distance_left <= distance_right
-            ? nearest_light = find_nearest_light(surface_point, node.get_child_node_index(), total_probability)
-            : nearest_light = find_nearest_light(surface_point, node.get_child_node_index() + 1, total_probability);
+        if (random_criteria <= p1)
+        {
+            total_probability *= p1;
+            random_criteria /= p1;
+            nearest_light = find_nearest_light(surface_point,
+                                               node.get_child_node_index(),
+                                               random_criteria,
+                                               total_probability);
+        }
+        else
+        {
+            total_probability *= p2;
+            random_criteria /= p2;
+            nearest_light = find_nearest_light(surface_point,
+                                               node.get_child_node_index() + 1,
+                                               random_criteria,
+                                               total_probability);
+        }
     }
     else
     {

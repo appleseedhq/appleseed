@@ -77,7 +77,9 @@ class LightTree
         const std::vector<NonPhysicalLightInfo>     non_physical_lights,
         const std::vector<EmittingTriangle>         emitting_triangles);
     
-    std::pair<size_t, float> sample(foundation::Vector3d    sample_point) const;
+    std::pair<size_t, float> sample(
+        const foundation::Vector3d    surface_point,
+        const foundation::Vector3f&   s) const;
 
   private:
     struct Item
@@ -111,7 +113,11 @@ class LightTree
     LightSourcePointerVector   m_light_sources;
     ItemVector                 m_items;
 
-    std::pair<size_t, float> find_nearest_light(foundation::Vector3d sample_point, size_t node_index, float total_probability) const;
+    std::pair<size_t, float> find_nearest_light(
+        const foundation::Vector3d      surface_point,
+        const size_t                    node_index,
+        float                           random_criteria,
+        float                           total_probability) const;
 
     void store_items_in_leaves(foundation::Statistics& statistics);
     void update_nodes_energy();
