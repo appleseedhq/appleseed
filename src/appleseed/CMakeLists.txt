@@ -1170,6 +1170,8 @@ source_group ("renderer\\kernel\\tessellation" FILES
 )
 
 set (renderer_kernel_texturing_sources
+    renderer/kernel/texturing/oiiotexturesystem.cpp
+    renderer/kernel/texturing/oiiotexturesystem.h
     renderer/kernel/texturing/texturecache.h
     renderer/kernel/texturing/texturestore.cpp
     renderer/kernel/texturing/texturestore.h

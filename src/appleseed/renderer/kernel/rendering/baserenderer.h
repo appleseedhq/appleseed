@@ -34,14 +34,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
-
-// OpenImageIO headers.
-#include "foundation/platform/_beginoiioheaders.h"
-#include "OpenImageIO/texture.h"
-#include "foundation/platform/_endoiioheaders.h"
 
 // OSL headers.
 #include "foundation/platform/_beginoslheaders.h"
@@ -51,6 +47,7 @@
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class OIIOErrorHandler; }
+namespace renderer      { class OIIOTextureSystem; }
 namespace renderer      { class Project; }
 namespace renderer      { class RendererServices; }
 namespace renderer      { class TextureStore; }
@@ -81,7 +78,7 @@ class APPLESEED_DLLSYMBOL BaseRenderer
     Project&                        m_project;
     ParamArray                      m_params;
     OIIOErrorHandler*               m_error_handler;
-    OIIO::TextureSystem*            m_texture_system;
+    OIIOTextureSystem*              m_texture_system;
 
     RendererServices*               m_renderer_services;
     OSL::ShadingSystem*             m_shading_system;

@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/bsdf/disneylayeredbrdf.h"
 #include "renderer/modeling/scene/containers.h"
@@ -164,7 +165,7 @@ namespace
 
         Color3f evaluate(
             const ShadingPoint&     shading_point,
-            OIIO::TextureSystem&    texture_system) const
+            OIIOTextureSystem&      texture_system) const
         {
             if (m_is_constant)
                 return m_constant_value;
@@ -330,7 +331,7 @@ bool DisneyMaterialLayer::prepare_expressions() const
 
 void DisneyMaterialLayer::evaluate_expressions(
     const ShadingPoint&     shading_point,
-    OIIO::TextureSystem&    texture_system,
+    OIIOTextureSystem&      texture_system,
     Color3f&                base_color,
     DisneyBRDFInputValues&  values) const
 {

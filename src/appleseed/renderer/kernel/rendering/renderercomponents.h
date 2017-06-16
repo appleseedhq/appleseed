@@ -44,11 +44,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
 
-// OpenImageIO headers.
-#include "foundation/platform/_beginoiioheaders.h"
-#include "OpenImageIO/texture.h"
-#include "foundation/platform/_endoiioheaders.h"
-
 // OSL headers.
 #include "foundation/platform/_beginoslheaders.h"
 #include "OSL/oslexec.h"
@@ -61,6 +56,7 @@
 namespace renderer  { class Frame; }
 namespace renderer  { class IFrameRenderer; }
 namespace renderer  { class ITileCallbackFactory; }
+namespace renderer  { class OIIOTextureSystem; }
 namespace renderer  { class ParamArray; }
 namespace renderer  { class Project; }
 namespace renderer  { class Scene; }
@@ -83,7 +79,7 @@ class RendererComponents
         const ParamArray&       params,
         ITileCallbackFactory*   tile_callback_factory,
         TextureStore&           texture_store,
-        OIIO::TextureSystem&    texture_system,
+        OIIOTextureSystem&      texture_system,
         OSL::ShadingSystem&     shading_system);
 
     bool create();
@@ -102,7 +98,7 @@ class RendererComponents
     LightSampler                m_light_sampler;
     ShadingEngine               m_shading_engine;
     TextureStore&               m_texture_store;
-    OIIO::TextureSystem&        m_texture_system;
+    OIIOTextureSystem&          m_texture_system;
     OSL::ShadingSystem&         m_shading_system;
 
     std::auto_ptr<ILightingEngineFactory>               m_lighting_engine_factory;

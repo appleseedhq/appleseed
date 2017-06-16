@@ -41,11 +41,6 @@
 #include "OSL/oslexec.h"
 #include "foundation/platform/_endoslheaders.h"
 
-// OpenImageIO headers.
-#include "foundation/platform/_beginoiioheaders.h"
-#include "OpenImageIO/texture.h"
-#include "foundation/platform/_endoiioheaders.h"
-
 // Standard headers.
 #include <cstddef>
 
@@ -54,6 +49,7 @@ namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class JobQueue; }
 namespace renderer      { class LightSampler; }
 namespace renderer      { class LightTargetArray; }
+namespace renderer      { class OIIOTextureSystem; }
 namespace renderer      { class Scene; }
 namespace renderer      { class SPPMPhotonVector; }
 namespace renderer      { class TextureStore; }
@@ -71,7 +67,7 @@ class SPPMPhotonTracer
         const LightSampler&         light_sampler,
         const TraceContext&         trace_context,
         TextureStore&               texture_store,
-        OIIO::TextureSystem&        oiio_texture_system,
+        OIIOTextureSystem&          oiio_texture_system,
         OSL::ShadingSystem&         shading_system,
         const SPPMParameters&       params);
 
@@ -89,7 +85,7 @@ class SPPMPhotonTracer
     TextureStore&                   m_texture_store;
     size_t                          m_total_emitted_photon_count;
     size_t                          m_total_stored_photon_count;
-    OIIO::TextureSystem&            m_oiio_texture_system;
+    OIIOTextureSystem&              m_oiio_texture_system;
     OSL::ShadingSystem&             m_shading_system;
 
     void schedule_light_photon_tracing_jobs(

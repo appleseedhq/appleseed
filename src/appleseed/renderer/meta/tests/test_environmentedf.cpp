@@ -34,6 +34,7 @@
 #include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/kernel/shading/oslshadergroupexec.h"
 #include "renderer/kernel/shading/shadingcontext.h"
+#include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/entity/onframebeginrecorder.h"
@@ -191,9 +192,9 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
             TextureStore texture_store(m_scene);
             TextureCache texture_cache(texture_store);
 
-            boost::shared_ptr<OIIO::TextureSystem> texture_system(
-                OIIO::TextureSystem::create(),
-                boost::bind(&OIIO::TextureSystem::destroy, _1));
+            boost::shared_ptr<OIIOTextureSystem> texture_system(
+                OIIOTextureSystemFactory::create(),
+                boost::bind(&OIIOTextureSystem::release, _1));
 
             RendererServices renderer_services(
                 m_project,
