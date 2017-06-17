@@ -502,6 +502,7 @@ void MainWindow::build_log_panel()
     LogWidget* log_widget = new LogWidget(m_ui->log_contents);
     m_ui->log_contents->layout()->addWidget(log_widget);
 
+    log_widget->setObjectName("textedit_log");
     log_widget->setUndoRedoEnabled(false);
     log_widget->setLineWrapMode(QTextEdit::NoWrap);
     log_widget->setReadOnly(true);

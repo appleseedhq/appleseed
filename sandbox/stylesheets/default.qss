@@ -42,7 +42,6 @@
 #define ACTIVE_BACKGROUND_COLOR             rgb(44, 44, 44)
 #define HOVER_BACKGROUND_COLOR              rgb(190, 140, 50)
 #define SELECTED_BACKGROUND_COLOR           rgb(60, 60, 60)
-#define EDITOR_BACKGROUND_COLOR             rgb(48, 48, 48)
 
 #define DEFAULT_TEXT_COLOR                  rgb(170, 170, 170)
 #define DISABLED_TEXT_COLOR                 rgb(100, 100, 100)
@@ -1157,7 +1156,7 @@ QWidget#textedit_log
 QWidget#python_editor
 {
     FIXED_WIDTH_FONT_STYLE;
-    background-color: EDITOR_BACKGROUND_COLOR
+    background-color: rgb(48, 48, 48);
 }
 
 QPushButton#bind_entity_button,
