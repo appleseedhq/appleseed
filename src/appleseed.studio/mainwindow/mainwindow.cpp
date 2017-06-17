@@ -164,6 +164,13 @@ MainWindow::~MainWindow()
     delete m_ui;
 }
 
+void MainWindow::new_project()
+{
+    m_project_manager.create_project();
+
+    on_project_change();
+}
+
 void MainWindow::open_project(const QString& filepath)
 {
     save_state_before_project_open();
@@ -181,16 +188,6 @@ void MainWindow::open_project(const QString& filepath)
     set_rendering_widgets_enabled(false, NotRendering);
 
     m_project_manager.load_project(filepath.toAscii().constData());
-}
-
-void MainWindow::new_project()
-{
-    if (!can_close_project())
-        return;
-
-    m_project_manager.create_project();
-
-    on_project_change();
 }
 
 namespace
@@ -527,8 +524,6 @@ void MainWindow::build_log_panel()
 
 void MainWindow::build_python_console_panel()
 {
-    PythonInterpreter::instance().set_mainwindow(this);
-
     PythonConsoleWidget* console_widget = new PythonConsoleWidget(m_ui->python_console_contents);
     m_ui->python_console_contents->layout()->addWidget(console_widget);
 
@@ -1131,6 +1126,9 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::slot_new_project()
 {
+    if (!can_close_project())
+        return;
+
     new_project();
 }
 

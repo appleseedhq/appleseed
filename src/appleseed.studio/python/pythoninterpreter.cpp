@@ -30,6 +30,7 @@
 #include "pythoninterpreter.h"
 
 // appleseed.studio headers.
+#include "mainwindow/mainwindow.h"
 #include "mainwindow/pythonconsole/outputredirector.h"
 
 // appleseed.foundation headers.
@@ -42,6 +43,7 @@
 namespace bpy = boost::python;
 namespace bf = boost::filesystem;
 
+// Function prototypes.
 extern "C" void init_appleseedstudio();
 
 namespace appleseed {

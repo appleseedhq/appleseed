@@ -30,6 +30,7 @@
 // appleseed.studio headers.
 #include "commandlinehandler.h"
 #include "mainwindow/mainwindow.h"
+#include "python/pythoninterpreter.h"
 #include "utility/miscellaneous.h"
 
 // appleseed.shared headers.
@@ -306,6 +307,7 @@ int main(int argc, char* argv[])
     configure_application(application);
 
     appleseed::studio::MainWindow window;
+    PythonInterpreter::instance().set_mainwindow(&window);
 
     if (!cl.m_filename.values().empty())
     {

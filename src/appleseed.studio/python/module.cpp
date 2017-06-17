@@ -26,22 +26,24 @@
 // THE SOFTWARE.
 //
 
+// appleseed.studio headers.
+#include "mainwindow/mainwindow.h"
+#include "pythoninterpreter.h"
 
+// appleseed.foundation headers.
 #include "foundation/platform/python.h"
 
-#include "pythoninterpreter.h"
-namespace studio = appleseed::studio;
-
 namespace bpy = boost::python;
-
-void open_project(const char* project_path)
-{
-    studio::PythonInterpreter::instance().get_mainwindow()->open_project(project_path);
-}
+using namespace appleseed::studio;
 
 void new_project()
 {
-    studio::PythonInterpreter::instance().get_mainwindow()->new_project();
+    PythonInterpreter::instance().get_mainwindow()->new_project();
+}
+
+void open_project(const char* project_path)
+{
+    PythonInterpreter::instance().get_mainwindow()->open_project(project_path);
 }
 
 BOOST_PYTHON_MODULE(_appleseedstudio)

@@ -32,12 +32,11 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
-#include "mainwindow/mainwindow.h"
-
 namespace appleseed {
 namespace studio {
 
 // Forward declarations.
+class MainWindow;
 class OutputRedirector;
 
 class PythonInterpreter
