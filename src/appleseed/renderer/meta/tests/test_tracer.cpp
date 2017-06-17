@@ -74,11 +74,9 @@
 #include "OpenImageIO/texture.h"
 #include "foundation/platform/_endoiioheaders.h"
 
-// Boost headers.
-#include "boost/shared_ptr.hpp"
-
 // Standard headers.
 #include <cstddef>
+#include <memory>
 #include <string>
 
 using namespace foundation;
@@ -216,11 +214,11 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         TextureStore                            m_texture_store;
         TextureCache                            m_texture_cache;
         Intersector                             m_intersector;
-        boost::shared_ptr<OIIOTextureSystem>    m_texture_system;
-        boost::shared_ptr<RendererServices>     m_renderer_services;
-        boost::shared_ptr<OSLShadingSystem>     m_shading_system;
+        std::shared_ptr<OIIOTextureSystem>      m_texture_system;
+        std::shared_ptr<RendererServices>       m_renderer_services;
+        std::shared_ptr<OSLShadingSystem>       m_shading_system;
         Arena                                   m_arena;
-        boost::shared_ptr<OSLShaderGroupExec>   m_shading_group_exec;
+        std::shared_ptr<OSLShaderGroupExec>     m_shading_group_exec;
         OnFrameBeginRecorder                    m_recorder;
 
         Fixture()

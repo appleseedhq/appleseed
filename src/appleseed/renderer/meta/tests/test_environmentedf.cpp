@@ -73,9 +73,6 @@
 #include "OpenImageIO/texture.h"
 #include "foundation/platform/_endoiioheaders.h"
 
-// Boost headers.
-#include "boost/shared_ptr.hpp"
-
 // Standard headers.
 #include <cassert>
 #include <cstddef>
@@ -192,7 +189,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
             TextureStore texture_store(m_scene);
             TextureCache texture_cache(texture_store);
 
-            boost::shared_ptr<OIIOTextureSystem> texture_system(
+            std::shared_ptr<OIIOTextureSystem> texture_system(
                 OIIOTextureSystemFactory::create(),
                 [](OIIOTextureSystem* object) { object->release(); });
 
@@ -200,7 +197,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
                 m_project,
                 *texture_system);
 
-            boost::shared_ptr<OSLShadingSystem> shading_system(
+            std::shared_ptr<OSLShadingSystem> shading_system(
                 OSLShadingSystemFactory::create(&renderer_services, texture_system.get()),
                 [](OSLShadingSystem* object) { object->release(); });
 
