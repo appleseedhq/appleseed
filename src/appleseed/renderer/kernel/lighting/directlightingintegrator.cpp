@@ -116,7 +116,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_material_sampling(
     if (m_light_sampler.get_emitting_triangle_count() == 0)
         return;
 
-    for (size_t i = 0; i < m_material_sample_count; ++i)
+    for (size_t i = 0, e = m_material_sample_count; i < e; ++i)
     {
         take_single_material_sample(
             sampling_context,
@@ -152,7 +152,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling(
     sampling_context.split_in_place(3, m_light_sample_count);
 
     // Add contributions from both emitting triangles and non-physical light sources.
-    for (size_t i = 0; i < m_light_sample_count; ++i)
+    for (size_t i = 0, e = m_light_sample_count; i < e; ++i)
     {
         // Sample both emitting triangles and non-physical light sources.
         LightSample sample;
@@ -208,7 +208,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
     {
         sampling_context.split_in_place(3, m_light_sample_count);
 
-        for (size_t i = 0; i < m_light_sample_count; ++i)
+        for (size_t i = 0, e = m_light_sample_count; i < e; ++i)
         {
             // Sample emitting triangles only.
             LightSample sample;

@@ -403,12 +403,10 @@ namespace
 
 void TestWindow::slot_filter_text_changed(const QString& pattern) const
 {
-    const QRegExp regexp(pattern);
+    const QRegExp regexp(pattern, Qt::CaseInsensitive);
 
     for (int i = 0; i < m_ui->treewidget_tests->topLevelItemCount(); ++i) 
-    {
         do_filter_items(m_ui->treewidget_tests->topLevelItem(i), regexp);
-    }
 }
 
 void TestWindow::slot_clear_filter_text() const

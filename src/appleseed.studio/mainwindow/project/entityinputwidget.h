@@ -37,6 +37,7 @@
 #include <QStackedWidget>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class DoubleSlider; }}
 class QLineEdit;
 class QPushButton;
 class QString;
@@ -123,6 +124,7 @@ class ColorMapInputWidget
   private:
     QString         m_default_value;
     QLineEdit*      m_line_edit;
+    DoubleSlider*   m_slider;
     QPushButton*    m_entity_button;
 };
 
