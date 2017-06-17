@@ -182,20 +182,6 @@ shader as_glass
         string label = "Matte Opacity",
         string page = "Matte Opacity Parameters"
     ]],
-    int in_maximumRayDepth = 4
-    [[
-        string as_maya_attribute_name = "maximumRayDepth",
-        int as_maya_attribute_connectable = 0,
-        int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1,
-        int min = 0,
-        int max = 32,
-        int softmin = 0,
-        int softmax = 8,
-        string widget = "slider",
-        string label = "Ray Depth",
-        string page = "Advanced Parameters"
-    ]],
 
     output closure color out_outColor = 0
     [[
@@ -215,10 +201,7 @@ shader as_glass
     ]]
 )
 {
-    int ray_depth = 0;
-    int status = getattribute("path:ray_depth", ray_depth);
-
-    if (status && ray_depth <= in_maximumRayDepth)
+    if (!raytype("shadow") && !raytype("transparency"))
     {
         normal Nn = normalize(in_normalCamera);
         vector tangent;

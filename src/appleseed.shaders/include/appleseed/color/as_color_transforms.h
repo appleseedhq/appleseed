@@ -555,6 +555,25 @@ void transform_XYZ_to_uv(color XYZ, output float uv[2])
 }
 
 //
+// CIE L*a*b* and CIE L*u*v* have L in [0,100] range, and a,b and u,v
+// in [-100,100] range. Remap to [0,1].
+//
+
+color remap_CIELab(color Lab)
+{
+    float L = Lab[0] * 0.01;
+    float a = (Lab[1] + 100.0) * 0.005;
+    float b = (Lab[2] + 100.0) * 0.005;
+
+    return color(L, a, b);
+}
+
+color remap_CIELuv(color Luv)
+{
+    return remap_CIELab(Luv);
+}
+
+//
 // Reference:
 //
 //      RGB to XYZ to Lab equations
@@ -575,7 +594,7 @@ color transform_XYZ_to_Lab(color XYZ_color, color reference_white_xyY)
             : (CIE_K * XYZ_f[i] + 16) / 116;
     }
 
-    float L  = 116 * XYZ[1] - 16;
+    float L = 116 * XYZ[1] - 16;
     float a = 500 * (XYZ[0] - XYZ[1]);
     float b = 200 * (XYZ[1] - XYZ[2]);
 
