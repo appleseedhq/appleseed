@@ -26,53 +26,50 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_CONSOLEWIDGET_H
-#define APPLESEED_STUDIO_MAINWINDOW_CONSOLEWIDGET_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONINPUT_H
+#define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONINPUT_H
 
-// appleseed.studio headers.
+// appleseed.studio headers
 #include "python/pythoninterpreter.h"
+#include "linenumberarea.h"
 
 // Qt headers.
-#include <QObject>
-#include <QSplitter>
+#include <QPlainTextEdit>
 
 // Forward declarations.
-class QAction;
-class QString;
 class QWidget;
-class QTextEdit;
 
 namespace appleseed {
 namespace studio {
 
-class ConsoleWidget
-  : public QSplitter
+class PythonEditor
+  : public QPlainTextEdit
 {
-  Q_OBJECT
+    Q_OBJECT
+
+  friend LineNumberArea;
 
   public:
-    explicit ConsoleWidget(QWidget* parent = 0);
+    explicit PythonEditor(QWidget* parent = 0);
 
-  public slots:
-    void slot_execute_selection();
-    void slot_execute_all();
-    void slot_clear_output();
+  protected:
+    // Event used to update line number area.
+    void resizeEvent(QResizeEvent* event);
+    // Event used to autoindent new lines and replace tabs with spaces.
+    void keyPressEvent(QKeyEvent* event);
+
+  private slots:
+    void slot_highlight_current_line();
 
   private:
-    QTextEdit* output;
-    QTextEdit* input;
+    void indent();
+    void indent_like_previous(const std::string& previous);
+    void insert_spaces(const size_t count);
 
-    QAction* m_action_execute_selection;
-    QAction* m_action_execute_all;
-    QAction* m_action_clear_selection;
-    QAction* m_action_focus_on_input;
-
-    void execute(const QString& script);
-
-    void init_actions();
+    LineNumberArea* line_number_area;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_CONSOLEWIDGET_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONINPUT_H

@@ -35,11 +35,11 @@
 
 // appleseed.studio headers.
 #include "help/about/aboutwindow.h"
-#include "mainwindow/consolewidget.h"
 #include "mainwindow/logwidget.h"
 #include "mainwindow/minimizebutton.h"
 #include "mainwindow/project/attributeeditor.h"
 #include "mainwindow/project/projectexplorer.h"
+#include "mainwindow/pythonconsole/pythonconsolewidget.h"
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
@@ -502,7 +502,6 @@ void MainWindow::build_log_panel()
     LogWidget* log_widget = new LogWidget(m_ui->log_contents);
     m_ui->log_contents->layout()->addWidget(log_widget);
 
-    log_widget->setObjectName("textedit_log");
     log_widget->setUndoRedoEnabled(false);
     log_widget->setLineWrapMode(QTextEdit::NoWrap);
     log_widget->setReadOnly(true);
@@ -515,7 +514,7 @@ void MainWindow::build_log_panel()
 
 void MainWindow::build_python_console_panel()
 {
-    ConsoleWidget* console_widget = new ConsoleWidget(m_ui->python_console_contents);
+    PythonConsoleWidget* console_widget = new PythonConsoleWidget(m_ui->python_console_contents);
     m_ui->python_console_contents->layout()->addWidget(console_widget);
 
     console_widget->setObjectName("textedit_console");

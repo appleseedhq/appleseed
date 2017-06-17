@@ -217,6 +217,25 @@ source_group ("mainwindow\\project" FILES
     ${mainwindow_project_sources}
 )
 
+set (mainwindow_pythonconsole_sources
+    mainwindow/pythonconsole/linenumberarea.cpp
+    mainwindow/pythonconsole/linenumberarea.h
+    mainwindow/pythonconsole/outputredirector.cpp
+    mainwindow/pythonconsole/outputredirector.h
+    mainwindow/pythonconsole/pythonconsolewidget.cpp
+    mainwindow/pythonconsole/pythonconsolewidget.h
+    mainwindow/pythonconsole/pythoneditor.cpp
+    mainwindow/pythonconsole/pythoneditor.h
+    mainwindow/pythonconsole/pythonhighlighter.cpp
+    mainwindow/pythonconsole/pythonhighlighter.h
+    )
+list (APPEND appleseed.studio_sources
+    ${mainwindow_pythonconsole_sources}
+    )
+source_group ("mainwindow\\pythonconsole" FILES
+    ${mainwindow_pythonconsole_sources}
+    )
+
 set (mainwindow_rendering_sources
     mainwindow/rendering/cameracontroller.cpp
     mainwindow/rendering/cameracontroller.h
@@ -253,8 +272,6 @@ set (mainwindow_sources
     mainwindow/configurationmanagerwindow.cpp
     mainwindow/configurationmanagerwindow.h
     mainwindow/configurationmanagerwindow.ui
-    mainwindow/consolewidget.cpp
-    mainwindow/consolewidget.h
     mainwindow/logwidget.cpp
     mainwindow/logwidget.h
     mainwindow/mainwindow.cpp
@@ -262,12 +279,6 @@ set (mainwindow_sources
     mainwindow/mainwindow.ui
     mainwindow/minimizebutton.cpp
     mainwindow/minimizebutton.h
-    mainwindow/outputredirector.cpp
-    mainwindow/outputredirector.h
-    mainwindow/pythonhighlighter.cpp
-    mainwindow/pythonhighlighter.h
-    mainwindow/pythoninput.cpp
-    mainwindow/pythoninput.h
     mainwindow/qtlogtarget.cpp
     mainwindow/qtlogtarget.h
     mainwindow/renderingsettingswindow.cpp

@@ -45,8 +45,8 @@ PythonSyntaxHighlighter::PythonSyntaxHighlighter(QTextDocument *parent)
     basicStyles.insert("brace", getTextCharFormat(253, 246, 227));
     basicStyles.insert("defclass", getTextCharFormat(38, 139, 210, "bold"));
     basicStyles.insert("string", getTextCharFormat(8, 125, 125));
-    basicStyles.insert("string2", getTextCharFormat(12, 90, 90));
-    basicStyles.insert("comment", getTextCharFormat(12, 90, 90, "italic"));
+    basicStyles.insert("string2", getTextCharFormat(24, 120, 120));
+    basicStyles.insert("comment", getTextCharFormat(24, 120, 120, "italic"));
     basicStyles.insert("self", getTextCharFormat(95, 95, 175, "italic"));
     basicStyles.insert("numbers", getTextCharFormat(155, 155, 223));
 

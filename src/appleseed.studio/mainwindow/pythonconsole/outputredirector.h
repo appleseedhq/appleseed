@@ -26,11 +26,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_OUTPUTREDIRECTOR_H
-#define APPLESEED_STUDIO_MAINWINDOW_OUTPUTREDIRECTOR_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_OUTPUTREDIRECTOR_H
+#define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_OUTPUTREDIRECTOR_H
 
 // Forward declarations.
-class QTextEdit;
+class QPlainTextEdit;
 
 namespace appleseed {
 namespace studio {
@@ -38,15 +38,15 @@ namespace studio {
 class OutputRedirector
 {
   public:
-    OutputRedirector(QTextEdit* output);
+    OutputRedirector(QPlainTextEdit* output);
 
     void write(const char* str);
 
   private:
-    QTextEdit* output;
+    QPlainTextEdit* output;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_OUTPUTREDIRECTOR_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_OUTPUTREDIRECTOR_H

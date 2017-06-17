@@ -26,39 +26,40 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONINPUT_H
-#define APPLESEED_STUDIO_MAINWINDOW_PYTHONINPUT_H
-
-// appleseed.studio headers
-#include "python/pythoninterpreter.h"
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_LINENUMBERAREA_H
+#define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_LINENUMBERAREA_H
 
 // Qt headers.
-#include <QTextEdit>
-
-// Forward declarations.
-class QWidget;
+#include <QObject>
+#include <QWidget>
 
 namespace appleseed {
 namespace studio {
 
-class PythonInput
-  : public QTextEdit
+// Forward declarations.
+class PythonEditor;
+
+class LineNumberArea
+  : public QWidget
 {
     Q_OBJECT
 
   public:
-    explicit PythonInput(QWidget* parent = 0);
+    explicit LineNumberArea(PythonEditor* parent = 0);
 
   protected:
-    void keyPressEvent(QKeyEvent* event);
+    void paintEvent(QPaintEvent* event);
+
+  private slots:
+    void slot_update_area_width();
+    void slot_update_area(const QRect& rect, int dy);
 
   private:
-    void indent();
-    void indent_like_previous(const std::string& previous);
-    void insert_spaces(const size_t count);
+    PythonEditor* editor;
+    int area_width();
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PYTHONINPUT_H
+#endif // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_LINENUMBERAREA_H

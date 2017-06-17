@@ -285,7 +285,7 @@
   </widget>
   <widget class="QDockWidget" name="python_console">
    <property name="windowTitle">
-    <string>Console</string>
+    <string>Python Console</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>

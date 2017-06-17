@@ -27,53 +27,56 @@
 //
 
 // Interface header.
-#include "consolewidget.h"
+#include "pythonconsolewidget.h"
 
 // appleseed.studio headers.
 #include "outputredirector.h"
-#include "pythoninput.h"
+#include "pythoneditor.h"
 
 // Qt headers.
 #include <QAction>
-#include <QContextMenuEvent>
 #include <QToolBar>
+#include <QVBoxLayout>
 
 namespace appleseed {
 namespace studio {
 
 //
-// ConsoleWidget class implementation.
+// PythonConsoleWidget class implementation.
 //
 
-ConsoleWidget::ConsoleWidget(QWidget* parent)
-  : QSplitter(parent)
+PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
+  : QWidget(parent)
 {
-    output = new QTextEdit(this);
+    input = new PythonEditor(this);
+
+    output = new QPlainTextEdit(this);
     output->setUndoRedoEnabled(false);
-    output->setLineWrapMode(QTextEdit::WidgetWidth);
+    output->setLineWrapMode(QPlainTextEdit::WidgetWidth);
     output->setReadOnly(true);
     output->setTextInteractionFlags(
         Qt::TextSelectableByMouse |
         Qt::TextSelectableByKeyboard);
-
-    input = new PythonInput(this);
+    output->setFont(input->font());
 
     init_actions();
 
-    QToolBar* toolbar = new QToolBar();
+    QToolBar* toolbar = new QToolBar(this);
     toolbar->addAction(m_action_execute_selection);
     toolbar->addAction(m_action_execute_all);
     toolbar->addAction(m_action_clear_selection);
 
-    insertWidget(0, toolbar);
-    insertWidget(1, output);
-    insertWidget(2, input);
-    setOrientation(Qt::Vertical);
+    QVBoxLayout* layout = new QVBoxLayout();
+    layout->addWidget(toolbar);
+    layout->addWidget(input);
+    layout->addWidget(output);
+
+    setLayout(layout);
 
     PythonInterpreter::instance().redirect_output(OutputRedirector(output));
 }
 
-void ConsoleWidget::init_actions()
+void PythonConsoleWidget::init_actions()
 {
     m_action_execute_selection =
         new QAction(QIcon(":icons/exec_button_icon.png"), "Execute Selection", this);
@@ -106,7 +109,7 @@ void ConsoleWidget::init_actions()
     addAction(m_action_focus_on_input);
 }
 
-void ConsoleWidget::slot_execute_selection()
+void PythonConsoleWidget::slot_execute_selection()
 {
     // QTextCursor returned by textCursor() function uses QChar(8233) instead of newline.
     // It breaks Python indentation rules so it has to be replaced.
@@ -114,17 +117,17 @@ void ConsoleWidget::slot_execute_selection()
     execute(selected);
 }
 
-void ConsoleWidget::slot_execute_all()
+void PythonConsoleWidget::slot_execute_all()
 {
     execute(input->toPlainText());
 }
 
-void ConsoleWidget::slot_clear_output()
+void PythonConsoleWidget::slot_clear_output()
 {
     output->clear();
 }
 
-void ConsoleWidget::execute(const QString& script)
+void PythonConsoleWidget::execute(const QString& script)
 {
     PythonInterpreter::instance().execute_command(script.toStdString().c_str());
 }
