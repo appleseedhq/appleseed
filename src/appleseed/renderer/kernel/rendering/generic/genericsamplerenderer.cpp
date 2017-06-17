@@ -40,6 +40,7 @@
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/oslshadergroupexec.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingengine.h"
 #include "renderer/kernel/shading/shadingfragment.h"
@@ -99,7 +100,7 @@ namespace
             ILightingEngineFactory* lighting_engine_factory,
             ShadingEngine&          shading_engine,
             OIIOTextureSystem&      oiio_texture_system,
-            OSL::ShadingSystem&     shading_system,
+            OSLShadingSystem&       shading_system,
             const size_t            thread_index,
             const ParamArray&       params)
           : m_params(params)
@@ -357,7 +358,7 @@ GenericSampleRendererFactory::GenericSampleRendererFactory(
     ILightingEngineFactory* lighting_engine_factory,
     ShadingEngine&          shading_engine,
     OIIOTextureSystem&      oiio_texture_system,
-    OSL::ShadingSystem&     shading_system,
+    OSLShadingSystem&       shading_system,
     const ParamArray&       params)
   : m_scene(scene)
   , m_frame(frame)

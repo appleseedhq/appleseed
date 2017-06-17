@@ -39,15 +39,11 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// OSL headers.
-#include "foundation/platform/_beginoslheaders.h"
-#include "OSL/oslexec.h"
-#include "foundation/platform/_endoslheaders.h"
-
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class OIIOErrorHandler; }
 namespace renderer      { class OIIOTextureSystem; }
+namespace renderer      { class OSLShadingSystem; }
 namespace renderer      { class Project; }
 namespace renderer      { class RendererServices; }
 namespace renderer      { class TextureStore; }
@@ -81,7 +77,7 @@ class APPLESEED_DLLSYMBOL BaseRenderer
     OIIOTextureSystem*              m_texture_system;
 
     RendererServices*               m_renderer_services;
-    OSL::ShadingSystem*             m_shading_system;
+    OSLShadingSystem*               m_shading_system;
 
     // Constructor.
     BaseRenderer(

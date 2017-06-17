@@ -37,15 +37,11 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
-// OSL headers.
-#include "foundation/platform/_beginoslheaders.h"
-#include "OSL/oslexec.h"
-#include "foundation/platform/_endoslheaders.h"
-
 // Forward declarations.
 namespace renderer  { class Frame; }
 namespace renderer  { class ILightingEngineFactory; }
 namespace renderer  { class OIIOTextureSystem; }
+namespace renderer  { class OSLShadingSystem; }
 namespace renderer  { class Scene; }
 namespace renderer  { class ShadingEngine; }
 namespace renderer  { class TextureStore; }
@@ -71,7 +67,7 @@ class GenericSampleRendererFactory
         ILightingEngineFactory* lighting_engine_factory,
         ShadingEngine&          shading_engine,
         OIIOTextureSystem&      oiio_texture_system,
-        OSL::ShadingSystem&     shading_system,
+        OSLShadingSystem&       shading_system,
         const ParamArray&       params);
 
     // Delete this instance.
@@ -89,7 +85,7 @@ class GenericSampleRendererFactory
     ILightingEngineFactory*     m_lighting_engine_factory;
     ShadingEngine&              m_shading_engine;
     OIIOTextureSystem&          m_oiio_texture_system;
-    OSL::ShadingSystem&         m_shading_system;
+    OSLShadingSystem&           m_shading_system;
     const ParamArray            m_params;
 };
 

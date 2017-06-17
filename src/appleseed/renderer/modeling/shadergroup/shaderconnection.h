@@ -38,12 +38,8 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// OSL headers.
-#include "foundation/platform/_beginoslheaders.h"
-#include "OSL/oslexec.h"
-#include "foundation/platform/_endoslheaders.h"
-
 // Forward declarations.
+namespace renderer  { class OSLShadingSystem; }
 namespace renderer  { class ShaderGroup; }
 
 namespace renderer
@@ -89,7 +85,7 @@ class APPLESEED_DLLSYMBOL ShaderConnection
     ~ShaderConnection();
 
     // Add this connection to OSL's shading system.
-    bool add(OSL::ShadingSystem& shading_system);
+    bool add(OSLShadingSystem& shading_system);
 };
 
 }       // namespace renderer

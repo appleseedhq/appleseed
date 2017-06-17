@@ -34,6 +34,7 @@
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/kernel/shading/oslshadergroupexec.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/oiiotexturesystem.h"
@@ -217,7 +218,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Intersector                             m_intersector;
         boost::shared_ptr<OIIOTextureSystem>    m_texture_system;
         boost::shared_ptr<RendererServices>     m_renderer_services;
-        boost::shared_ptr<OSL::ShadingSystem>   m_shading_system;
+        boost::shared_ptr<OSLShadingSystem>     m_shading_system;
         Arena                                   m_arena;
         boost::shared_ptr<OSLShaderGroupExec>   m_shading_group_exec;
         OnFrameBeginRecorder                    m_recorder;
@@ -236,9 +237,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                     *Base::m_project,
                     reinterpret_cast<OIIO::TextureSystem&>(*m_texture_system)));
             m_shading_system.reset(
-                new OSL::ShadingSystem(
-                    m_renderer_services.get(),
-                    m_texture_system.get()));
+                OSLShadingSystemFactory::create(m_renderer_services.get(), m_texture_system.get()),
+                [](OSLShadingSystem* object) { object->release(); });
             m_shading_group_exec.reset(new OSLShaderGroupExec(*m_shading_system, m_arena));
 
             Base::m_scene->on_frame_begin(Base::m_project.ref(), 0, m_recorder);

@@ -43,11 +43,6 @@
 #include "foundation/platform/types.h"
 #include "foundation/utility/stopwatch.h"
 
-// OSL headers.
-#include "foundation/platform/_beginoslheaders.h"
-#include "OSL/oslexec.h"
-#include "foundation/platform/_endoslheaders.h"
-
 // Standard headers.
 #include <cstddef>
 #include <memory>
@@ -58,6 +53,7 @@ namespace foundation    { class JobQueue; }
 namespace renderer      { class Frame; }
 namespace renderer      { class LightSampler; }
 namespace renderer      { class OIIOTextureSystem; }
+namespace renderer      { class OSLShadingSystem; }
 namespace renderer      { class Scene; }
 namespace renderer      { class TextureStore; }
 namespace renderer      { class TraceContext; }
@@ -80,7 +76,7 @@ class SPPMPassCallback
         const TraceContext&         trace_context,
         TextureStore&               texture_store,
         OIIOTextureSystem&          oiio_texture_system,
-        OSL::ShadingSystem&         shading_system,
+        OSLShadingSystem&           shading_system,
         const SPPMParameters&       params);
 
     // Delete this instance.

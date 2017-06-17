@@ -46,6 +46,7 @@
 
 // Forward declarations.
 namespace foundation    { class Arena; }
+namespace renderer      { class OSLShadingSystem; }
 namespace renderer      { class ShaderGroup; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
@@ -59,7 +60,7 @@ class OSLShaderGroupExec
 {
   public:
     OSLShaderGroupExec(
-        OSL::ShadingSystem&             shading_system,
+        OSLShadingSystem&               shading_system,
         foundation::Arena&              arena);
 
     ~OSLShaderGroupExec();
@@ -68,7 +69,7 @@ class OSLShaderGroupExec
     friend class ShadingContext;
     friend class Tracer;
 
-    OSL::ShadingSystem&                 m_osl_shading_system;
+    OSLShadingSystem&                   m_osl_shading_system;
     foundation::Arena&                  m_arena;
 
     OSL::PerThreadInfo*                 m_osl_thread_info;

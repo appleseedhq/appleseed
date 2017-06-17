@@ -44,12 +44,8 @@
 #include <string>
 #include <vector>
 
-// OSL headers.
-#include "foundation/platform/_beginoslheaders.h"
-#include "OSL/oslexec.h"
-#include "foundation/platform/_endoslheaders.h"
-
 // Forward declarations.
+namespace renderer  { class OSLShadingSystem; }
 namespace renderer  { class Shader; }
 
 namespace renderer
@@ -192,7 +188,7 @@ class APPLESEED_DLLSYMBOL ShaderParam
     const void* get_value() const;
 
     // Add this param to OSL's shading system.
-    bool add(OSL::ShadingSystem& shading_system);
+    bool add(OSLShadingSystem& shading_system);
 };
 
 }       // namespace renderer

@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/closures.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 
@@ -74,7 +75,7 @@ OIIOTextureSystem&   ShadingContext::get_oiio_texture_system() const
     return m_oiio_texture_system;
 }
 
-OSL::ShadingSystem& ShadingContext::get_osl_shading_system() const
+OSLShadingSystem& ShadingContext::get_osl_shading_system() const
 {
     return m_shadergroup_exec.m_osl_shading_system;
 }

@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/modeling/bsdf/ashikhminbrdf.h"
 #include "renderer/modeling/bsdf/blinnbrdf.h"
 #include "renderer/modeling/bsdf/diffusebtdf.h"
@@ -151,7 +152,7 @@ namespace
             return ScatteringMode::Diffuse | ScatteringMode::Glossy;
         }
 
-        static void register_closure(OSL::ShadingSystem& shading_system)
+        static void register_closure(OSLShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
             {
@@ -215,7 +216,7 @@ namespace
             return BackgroundID;
         }
 
-        static void register_closure(OSL::ShadingSystem& shading_system)
+        static void register_closure(OSLShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
             {
@@ -250,7 +251,7 @@ namespace
             return ScatteringMode::Glossy;
         }
 
-        static void register_closure(OSL::ShadingSystem& shading_system)
+        static void register_closure(OSLShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
             {
@@ -305,7 +306,7 @@ namespace
             return DebugID;
         }
 
-        static void register_closure(OSL::ShadingSystem& shading_system)
+        static void register_closure(OSLShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
             {
@@ -339,7 +340,7 @@ namespace
             return ScatteringMode::Diffuse;
         }
 
-        static void register_closure(OSL::ShadingSystem& shading_system)
+        static void register_closure(OSLShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
             {
@@ -410,7 +411,7 @@ namespace
             return ScatteringMode::Diffuse | ScatteringMode::Glossy;
         }
 
-        static void register_closure(OSL::ShadingSystem& shading_system)
+        static void register_closure(OSLShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
             {
@@ -484,7 +485,7 @@ namespace
             return EmissionID;
         }
 
-        static void register_closure(OSL::ShadingSystem& shading_system)
+        static void register_closure(OSLShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
             {
@@ -548,7 +549,7 @@ namespace
             return ScatteringMode::Glossy | ScatteringMode::Specular;
         }
 
-        static void register_closure(OSL::ShadingSystem& shading_system)
+        static void register_closure(OSLShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
             {
@@ -653,7 +654,7 @@ namespace
             return ScatteringMode::Glossy | ScatteringMode::Specular;
         }
 
-        static void register_closure(OSL::ShadingSystem& shading_system)
+        static void register_closure(OSLShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
             {
@@ -736,7 +737,7 @@ namespace
             return HoldoutID;
         }
 
-        static void register_closure(OSL::ShadingSystem& shading_system)
+        static void register_closure(OSLShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
             {
@@ -776,7 +777,7 @@ namespace
             return ScatteringMode::Glossy | ScatteringMode::Specular;
         }
 
-        static void register_closure(OSL::ShadingSystem& shading_system)
+        static void register_closure(OSLShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
             {
@@ -867,7 +868,7 @@ namespace
             return ScatteringMode::Diffuse;
         }
 
-        static void register_closure(OSL::ShadingSystem& shading_system)
+        static void register_closure(OSLShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
             {
@@ -928,7 +929,7 @@ namespace
             return ScatteringMode::Glossy;
         }
 
-        static void register_closure(OSL::ShadingSystem& shading_system)
+        static void register_closure(OSLShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
             {
@@ -993,7 +994,7 @@ namespace
             return ScatteringMode::Specular;
         }
 
-        static void register_closure(OSL::ShadingSystem& shading_system)
+        static void register_closure(OSLShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
             {
@@ -1055,7 +1056,7 @@ namespace
             return ScatteringMode::Diffuse;
         }
 
-        static void register_closure(OSL::ShadingSystem& shading_system)
+        static void register_closure(OSLShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
             {
@@ -1123,7 +1124,7 @@ namespace
             params->fresnel_weight = 1.0f;
         }
 
-        static void register_closure(OSL::ShadingSystem& shading_system)
+        static void register_closure(OSLShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
             {
@@ -1254,7 +1255,7 @@ namespace
             return ScatteringMode::Diffuse;
         }
 
-        static void register_closure(OSL::ShadingSystem& shading_system)
+        static void register_closure(OSLShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
             {
@@ -1306,7 +1307,7 @@ namespace
             return TransparentID;
         }
 
-        static void register_closure(OSL::ShadingSystem& shading_system)
+        static void register_closure(OSLShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
             {
@@ -1850,14 +1851,14 @@ Color3f process_background_tree(const OSL::ClosureColor* ci)
 namespace
 {
     template <typename ClosureType>
-    void register_closure(OSL::ShadingSystem& shading_system)
+    void register_closure(OSLShadingSystem& shading_system)
     {
         ClosureType::register_closure(shading_system);
         RENDERER_LOG_DEBUG("registered osl closure %s.", ClosureType::name());
     }
 }
 
-void register_closures(OSL::ShadingSystem& shading_system)
+void register_closures(OSLShadingSystem& shading_system)
 {
     for (size_t i = 0; i < NumClosuresIDs; ++i)
     {

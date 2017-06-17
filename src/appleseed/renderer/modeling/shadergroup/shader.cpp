@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/modeling/shadergroup/shaderparamparser.h"
 #include "renderer/utility/paramarray.h"
 
@@ -261,7 +262,7 @@ const ShaderParamContainer& Shader::shader_params() const
     return impl->m_params;
 }
 
-bool Shader::add(OSL::ShadingSystem& shading_system)
+bool Shader::add(OSLShadingSystem& shading_system)
 {
     for (each<ShaderParamContainer> i = impl->m_params; i; ++i)
     {

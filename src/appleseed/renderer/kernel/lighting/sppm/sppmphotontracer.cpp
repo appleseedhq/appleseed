@@ -41,6 +41,7 @@
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/oslshadergroupexec.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/oiiotexturesystem.h"
@@ -225,7 +226,7 @@ namespace
             const TraceContext&     trace_context,
             TextureStore&           texture_store,
             OIIOTextureSystem&      oiio_texture_system,
-            OSL::ShadingSystem&     shading_system,
+            OSLShadingSystem&       shading_system,
             const SPPMParameters&   params,
             SPPMPhotonVector&       global_photons,
             const size_t            photon_begin,
@@ -516,7 +517,7 @@ namespace
             const TraceContext&     trace_context,
             TextureStore&           texture_store,
             OIIOTextureSystem&      oiio_texture_system,
-            OSL::ShadingSystem&     shading_system,
+            OSLShadingSystem&       shading_system,
             const SPPMParameters&   params,
             SPPMPhotonVector&       global_photons,
             const size_t            photon_begin,
@@ -715,7 +716,7 @@ SPPMPhotonTracer::SPPMPhotonTracer(
     const TraceContext&     trace_context,
     TextureStore&           texture_store,
     OIIOTextureSystem&      oiio_texture_system,
-    OSL::ShadingSystem&     shading_system,
+    OSLShadingSystem&       shading_system,
     const SPPMParameters&   params)
   : m_params(params)
   , m_scene(scene)

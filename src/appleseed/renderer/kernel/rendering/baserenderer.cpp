@@ -34,6 +34,7 @@
 #include "renderer/kernel/rendering/oiioerrorhandler.h"
 #include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/kernel/shading/closures.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
@@ -80,7 +81,7 @@ BaseRenderer::BaseRenderer(
         reinterpret_cast<OIIO::TextureSystem&>(*m_texture_system));
 
     RENDERER_LOG_DEBUG("creating osl shading system...");
-    m_shading_system = new OSL::ShadingSystem(
+    m_shading_system = OSLShadingSystemFactory::create(
         m_renderer_services,
         m_texture_system,
         m_error_handler);
@@ -108,7 +109,7 @@ BaseRenderer::~BaseRenderer()
 {
     RENDERER_LOG_DEBUG("destroying osl shading system...");
     m_project.get_scene()->release_optimized_osl_shader_groups();
-    delete m_shading_system;
+    m_shading_system->release();
     delete m_renderer_services;
 
     const string stats = m_texture_system->getstats();

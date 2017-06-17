@@ -36,11 +36,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
-// OSL headers.
-#include "foundation/platform/_beginoslheaders.h"
-#include "OSL/oslexec.h"
-#include "foundation/platform/_endoslheaders.h"
-
 // Standard headers.
 #include <cstddef>
 
@@ -50,6 +45,7 @@ namespace foundation    { class JobQueue; }
 namespace renderer      { class LightSampler; }
 namespace renderer      { class LightTargetArray; }
 namespace renderer      { class OIIOTextureSystem; }
+namespace renderer      { class OSLShadingSystem; }
 namespace renderer      { class Scene; }
 namespace renderer      { class SPPMPhotonVector; }
 namespace renderer      { class TextureStore; }
@@ -68,7 +64,7 @@ class SPPMPhotonTracer
         const TraceContext&         trace_context,
         TextureStore&               texture_store,
         OIIOTextureSystem&          oiio_texture_system,
-        OSL::ShadingSystem&         shading_system,
+        OSLShadingSystem&           shading_system,
         const SPPMParameters&       params);
 
     void trace_photons(
@@ -86,7 +82,7 @@ class SPPMPhotonTracer
     size_t                          m_total_emitted_photon_count;
     size_t                          m_total_stored_photon_count;
     OIIOTextureSystem&              m_oiio_texture_system;
-    OSL::ShadingSystem&             m_shading_system;
+    OSLShadingSystem&               m_shading_system;
 
     void schedule_light_photon_tracing_jobs(
         const LightTargetArray&     photon_targets,

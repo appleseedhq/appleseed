@@ -43,6 +43,7 @@
 #include "renderer/kernel/rendering/sample.h"
 #include "renderer/kernel/rendering/samplegeneratorbase.h"
 #include "renderer/kernel/shading/oslshadergroupexec.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
@@ -169,7 +170,7 @@ namespace
             const size_t                generator_index,
             const size_t                generator_count,
             OIIOTextureSystem&          oiio_texture_system,
-            OSL::ShadingSystem&         shading_system,
+            OSLShadingSystem&           shading_system,
             const ParamArray&           params)
           : SampleGeneratorBase(generator_index, generator_count)
           , m_params(params)
@@ -870,7 +871,7 @@ LightTracingSampleGeneratorFactory::LightTracingSampleGeneratorFactory(
     TextureStore&           texture_store,
     const LightSampler&     light_sampler,
     OIIOTextureSystem&      oiio_texture_system,
-    OSL::ShadingSystem&     shading_system,
+    OSLShadingSystem&       shading_system,
     const ParamArray&       params)
   : m_project(project)
   , m_frame(frame)

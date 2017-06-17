@@ -45,6 +45,7 @@ namespace foundation    { class Arena; }
 namespace renderer      { class ILightingEngine; }
 namespace renderer      { class Intersector; }
 namespace renderer      { class OIIOTextureSystem; }
+namespace renderer      { class OSLShadingSystem; }
 namespace renderer      { class ShadingPoint; }
 namespace renderer      { class TextureCache; }
 namespace renderer      { class Tracer; }
@@ -94,7 +95,7 @@ class ShadingContext
     // Return the maximum number of iterations in ray/path tracing loops.
     size_t get_max_iterations() const;
 
-    OSL::ShadingSystem& get_osl_shading_system() const;
+    OSLShadingSystem& get_osl_shading_system() const;
     OSL::ShadingContext* get_osl_shading_context() const;
 
     void execute_osl_shading(

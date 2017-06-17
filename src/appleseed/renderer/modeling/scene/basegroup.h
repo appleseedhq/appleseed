@@ -36,16 +36,12 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// OSL headers.
-#include "foundation/platform/_beginoslheaders.h"
-#include "OSL/oslexec.h"
-#include "foundation/platform/_endoslheaders.h"
-
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
 namespace renderer      { class Entity; }
+namespace renderer      { class OSLShadingSystem; }
 
 namespace renderer
 {
@@ -77,7 +73,7 @@ class APPLESEED_DLLSYMBOL BaseGroup
 
     // Create OSL shader groups and optimize them.
     bool create_optimized_osl_shader_groups(
-        OSL::ShadingSystem&         shading_system,
+        OSLShadingSystem&           shading_system,
         foundation::IAbortSwitch*   abort_switch = 0);
 
     // Release internal OSL shader groups.
