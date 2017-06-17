@@ -501,7 +501,7 @@ color transform_XYZ_to_linear_RGB(
 //
 // Reference:
 //
-//      CIE 1960 color space
+//      CIE UCS 1960 color space
 //
 //      https://en.wikipedia.org/wiki/CIE_1960_color_space
 //
@@ -555,8 +555,8 @@ void transform_XYZ_to_uv(color XYZ, output float uv[2])
 }
 
 //
-// CIE L*a*b* and CIE L*u*v* have L in [0,100] range, and a,b and u,v
-// in [-100,100] range. Remap to [0,1].
+// CIE L*a*b* and CIE L*u*v have L in [0,100] range, and a,b and u,v in
+// [-100,100] range. Remap to [0,1]
 //
 
 color remap_CIELab(color Lab)
@@ -571,6 +571,43 @@ color remap_CIELab(color Lab)
 color remap_CIELuv(color Luv)
 {
     return remap_CIELab(Luv);
+}
+
+color inverse_remap_CIELab(color C)
+{
+    float L = C[0] * 100.0;
+    float a = C[1] * 200.0 - 100.0;
+    float b = C[2] * 200.0 - 100.0;
+
+    return color(L, a, b);
+}
+
+color inverse_remap_CIELuv(color C)
+{
+    return inverse_remap_CIELab(C);
+}
+
+//
+// Remap LCh to [0,1], L in [0,100] range, C in [0,100] range and
+// hue in [0,360] degrees range.
+//
+
+color remap_CIELCh(color LCh)
+{
+    float L = LCh[0] * 0.01;
+    float C = LCh[1] * 0.01;
+    float h = LCh[2] / 360;
+
+    return color(L, C, h);
+}
+
+color inverse_remap_CIELCh(color in)
+{
+    float L = in[0] * 100.0;
+    float C = in[1] * 100.0;
+    float h = in[2] * 360;
+
+    return color(L, C, h);
 }
 
 //
@@ -590,13 +627,13 @@ color transform_XYZ_to_Lab(color XYZ_color, color reference_white_xyY)
     for (int i = 0; i < 3; ++i)
     {
         XYZ[i] = (XYZ_f[i] > CIE_E)
-            ? pow(XYZ_f[i], 1 / 3)
-            : (CIE_K * XYZ_f[i] + 16) / 116;
+            ? pow(XYZ_f[i], 1.0 / 3.0)
+            : (CIE_K * XYZ_f[i] + 16.0) / 116.0;
     }
 
-    float L = 116 * XYZ[1] - 16;
-    float a = 500 * (XYZ[0] - XYZ[1]);
-    float b = 200 * (XYZ[1] - XYZ[2]);
+    float L = 116.0 * XYZ[1] - 16.0;
+    float a = 500.0 * (XYZ[0] - XYZ[1]);
+    float b = 200.0 * (XYZ[1] - XYZ[2]);
 
     return color(L, a, b); // L in [0,100]
 }
@@ -625,21 +662,21 @@ color transform_Lab_to_XYZ(color Lab, color reference_white_xyY)
 {
     color XYZ_white = transform_xyY_to_XYZ(reference_white_xyY);
 
-    float f_Y = (Lab[0] + 16) / 116;
-    float f_X = Lab[1] / 500 + f_Y;
-    float f_Z = f_Y - Lab[2] / 200;
+    float f_Y = (Lab[0] + 16.0) / 116.0;
+    float f_X = Lab[1] / 500.0 + f_Y;
+    float f_Z = f_Y - Lab[2] / 200.0;
 
-    float X_r = (pow(f_X, 3) > CIE_E)
-        ? pow(f_X, 3)
-        : (116 * f_X - 16) / CIE_K;
+    float X_r = (pow(f_X, 3.0) > CIE_E)
+        ? pow(f_X, 3.0)
+        : (116.0 * f_X - 16.0) / CIE_K;
 
     float Y_r = (Lab[0] > CIE_K * CIE_E)
-        ? pow((Lab[0] + 16) / 116, 3)
+        ? pow((Lab[0] + 16.0) / 116.0, 3.0)
         : Lab[0] / CIE_K;
 
-    float Z_r = (pow(f_Z, 3) > CIE_E)
-        ? pow(f_Z, 3)
-        : (116 * f_Z - 16) / CIE_K;
+    float Z_r = (pow(f_Z, 3.0) > CIE_E)
+        ? pow(f_Z, 3.0)
+        : (116.0 * f_Z - 16.0) / CIE_K;
 
     return color(X_r, Y_r, Z_r) * XYZ_white;
 }
@@ -763,7 +800,7 @@ color transform_Lab_to_LCh_ab(color Lab)
 {
     float L = Lab[0];
     float C = hypot(Lab[1], Lab[2]);
-    float h = mod(degrees(atan2(Lab[1], Lab[2])), 360);
+    float h = mod(degrees(atan2(Lab[2], Lab[1])), 360);
 
     return color(L, C, h);
 }
@@ -772,9 +809,9 @@ color transform_LCh_ab_to_Lab(color LCh_ab)
 {
     float L = LCh_ab[0], a, b;
 
-    sincos(radians(LCh_ab[2]), a, b);
+    sincos(radians(LCh_ab[2]), b, a);
 
-    return color(L, a, b);
+    return color(L, LCh_ab[1] * a, LCh_ab[1] * b);
 }
 
 color transform_linear_RGB_to_Lab(
@@ -841,7 +878,7 @@ color transform_Luv_to_LCh_uv(color Luv)
 {
     float L = Luv[0];
     float C = hypot(Luv[1], Luv[2]);
-    float h = mod(degrees(atan2(Luv[1], Luv[2])), 360);
+    float h = mod(degrees(atan2(Luv[2], Luv[1])), 360);
 
     return color(L, C, h);
 }
@@ -850,9 +887,9 @@ color transform_LCh_uv_to_Luv(color LCh_uv)
 {
     float L = LCh_uv[0], uu, vv;
 
-    sincos(radians(LCh_uv[2]), uu, vv);
+    sincos(radians(LCh_uv[2]), vv, uu);
 
-    return color(LCh_uv[0], uu, vv);
+    return color(LCh_uv[0], LCh_uv[1] * uu, LCh_uv[1] * vv);
 }
 
 color transform_linear_RGB_to_Luv(
