@@ -109,9 +109,24 @@ class BSDFSampler
 
     virtual bool contributes_to_light_sampling() const override;
 
+    virtual const ShadingPoint& trace(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3f&     direction,
+        float&                          transmission) const override;
+
     virtual float trace_between(
         const ShadingContext&           shading_context,
         const foundation::Vector3d&     target_position) const override;
+
+    virtual const ShadingPoint& trace(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3f&     direction,
+        Spectrum&                       transmission) const override;
+
+    virtual void trace_between(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3d&     target_position,
+        Spectrum&                       transmission) const override;
 
     virtual bool sample(
         SamplingContext&                sampling_context,
@@ -125,21 +140,6 @@ class BSDFSampler
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
         Spectrum&                       value) const override;
-
-    virtual const ShadingPoint& trace(
-        const ShadingContext&           shading_context,
-        const foundation::Vector3f&     direction,
-        float&                          transmission) const override;
-
-    virtual const ShadingPoint& trace(
-        const ShadingContext&           shading_context,
-        const foundation::Vector3f&     direction,
-        Spectrum&                       transmission) const override;
-
-    virtual void trace_between(
-        const ShadingContext&           shading_context,
-        const foundation::Vector3d&     target_position,
-        Spectrum&                       transmission) const override;
 
     virtual bool cull_incoming_direction(
         const foundation::Vector3d&  incoming) const override;
@@ -167,6 +167,25 @@ class PhaseFunctionSampler
 
     virtual bool contributes_to_light_sampling() const override;
 
+    virtual const ShadingPoint& trace(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3f&     direction,
+        float&                          transmission) const override;
+
+    virtual float trace_between(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3d&     target_position) const override;
+
+    virtual const ShadingPoint& trace(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3f&     direction,
+        Spectrum&                       transmission) const override;
+
+    virtual void trace_between(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3d&     target_position,
+        Spectrum&                       transmission) const override;
+
     virtual bool sample(
         SamplingContext&                sampling_context,
         const foundation::Dual3d&       outgoing,
@@ -179,25 +198,6 @@ class PhaseFunctionSampler
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
         Spectrum&                       value) const override;
-
-    virtual float trace_between(
-        const ShadingContext&           shading_context,
-        const foundation::Vector3d&     target_position) const override;
-
-    virtual const ShadingPoint& trace(
-        const ShadingContext&           shading_context,
-        const foundation::Vector3f&     direction,
-        float&                          transmission) const override;
-
-    virtual const ShadingPoint& trace(
-        const ShadingContext&           shading_context,
-        const foundation::Vector3f&     direction,
-        Spectrum&                       transmission) const override;
-
-    virtual void trace_between(
-        const ShadingContext&           shading_context,
-        const foundation::Vector3d&     target_position,
-        Spectrum&                       transmission) const override;
 
     virtual bool cull_incoming_direction(
         const foundation::Vector3d&     incoming) const override;

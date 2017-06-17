@@ -32,6 +32,9 @@
 // Standard headers.
 #include <cstddef>
 
+// appleseed.renderer headers.
+#include "renderer/modeling/material/material.h"
+
 using namespace foundation;
 
 namespace renderer
@@ -93,6 +96,12 @@ void ShadingRay::remove_medium(
     }
 
     m_medium_count = j;
+}
+
+const PhaseFunction* ShadingRay::Medium::get_phase_function() const
+{
+    if (m_material == nullptr) return nullptr;
+    return m_material->get_render_data().m_phase_function;
 }
 
 }   // namespace renderer

@@ -260,6 +260,7 @@ float PhaseFunctionSampler::evaluate(
 
     m_phasefunction.scattering_coefficient(
         m_volume_ray, m_phasefunction_data, m_distance, value);
+    value *= pdf;
 
     Spectrum transmission;
     m_phasefunction.evaluate_transmission(
@@ -312,7 +313,6 @@ const ShadingPoint& PhaseFunctionSampler::trace(
         transmission);
 }
 
-
 void PhaseFunctionSampler::trace_between(
     const ShadingContext&   shading_context,
     const Vector3d&         target_position,
@@ -326,7 +326,6 @@ void PhaseFunctionSampler::trace_between(
         m_volume_ray,
         transmission);
 }
-
 
 bool PhaseFunctionSampler::cull_incoming_direction(const Vector3d& incoming) const
 {

@@ -287,7 +287,7 @@ const ShadingPoint& Tracer::do_trace(
         const PhaseFunction* phase_function =
             (medium == nullptr) ? nullptr : medium->get_phase_function();
 
-        // If the ray escaped the scene filled with volume, thus its transmission is 0
+        // The ray escaped the scene filled with volume, thus its transmission is 0
         if (!shading_point_ptr->hit() && phase_function != nullptr)
             transmission = Spectrum(0.0f);
 
@@ -340,18 +340,18 @@ const ShadingPoint& Tracer::do_trace(
         // Move past this partial occluder.
         point = shading_point_ptr->get_point();
 
-        // Continue the ray in the same direction
+        // Continue the ray in the same direction.
         ray = ShadingRay(
             point,
             direction,
             parent_ray.m_time,
             ray_flags,
-            parent_ray.m_depth + (phase_function == nullptr) ? 0 : 1);
+            parent_ray.m_depth);
 
         // Determine whether the ray is entering or leaving a medium.
         const bool entering = shading_point_ptr->is_entering();
 
-        // Update the medium list
+        // Update the medium list.
         const ObjectInstance& object_instance = shading_point_ptr->get_object_instance();
         if (entering)
         {
@@ -440,7 +440,7 @@ const ShadingPoint& Tracer::do_trace_between(
 
         const Material::RenderData& render_data = material->get_render_data();
 
-        // Compute alpha
+        // Compute alpha.
         float alpha_coef = 0.0f;
         if (render_data.m_bsdf != nullptr)
         {
@@ -483,7 +483,7 @@ const ShadingPoint& Tracer::do_trace_between(
         // Determine whether the ray is entering or leaving a medium.
         const bool entering = shading_point_ptr->is_entering();
 
-        // Update the medium list
+        // Update the medium list.
         const ObjectInstance& object_instance = shading_point_ptr->get_object_instance();
         if (entering)
         {

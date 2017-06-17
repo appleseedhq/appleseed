@@ -762,7 +762,6 @@ namespace
                         m_sampling_context,
                         m_params.m_dl_light_sample_count);
 
-                // This path will be extended: sample the lights only.
                 const DirectLightingIntegrator integrator(
                     m_shading_context,
                     m_light_sampler,
@@ -773,7 +772,7 @@ namespace
                     light_sample_count,
                     m_params.m_dl_low_light_threshold,
                     false);
-                integrator.compute_outgoing_radiance_light_sampling_low_variance(
+                integrator.compute_outgoing_radiance_light_sampling(
                     m_sampling_context,
                     MISPower2,
                     Dual3d(volume_ray.m_dir),
@@ -798,7 +797,6 @@ namespace
                         m_sampling_context,
                         m_params.m_ibl_env_sample_count);
 
-                    // This path will be extended via BSDF sampling: sample the environment only.
                     compute_ibl_environment_sampling(
                         m_sampling_context,
                         m_shading_context,

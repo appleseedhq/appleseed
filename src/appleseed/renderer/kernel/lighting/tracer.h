@@ -339,13 +339,13 @@ inline const ShadingPoint& Tracer::trace(
 {
     return
         do_trace(
-        shading_context,
-        origin,
-        direction,
-        ray_flags,
-        parent_ray,
-        transmission,
-        nullptr);
+            shading_context,
+            origin,
+            direction,
+            ray_flags,
+            parent_ray,
+            transmission,
+            nullptr);
 }
 
 inline const ShadingPoint& Tracer::trace(

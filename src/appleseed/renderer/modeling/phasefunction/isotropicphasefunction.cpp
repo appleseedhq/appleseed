@@ -235,27 +235,6 @@ DictionaryArray IsotropicPhaseFunctionFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "scattering")
-            .insert("label", "Scattering Coefficient")
-            .insert("type", "colormap")
-            .insert("entity_types",
-        Dictionary()
-            .insert("color", "Colors"))
-            .insert("use", "required")
-            .insert("default", "0.5"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "scattering_multiplier")
-            .insert("label", "Scattering Coefficient Multiplier")
-            .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "200.0")
-            .insert("use", "optional")
-            .insert("default", "1.0"));
-
-    metadata.push_back(
-        Dictionary()
             .insert("name", "absorption")
             .insert("label", "Absorption Coefficient")
             .insert("type", "colormap")
@@ -269,6 +248,28 @@ DictionaryArray IsotropicPhaseFunctionFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "absorption_multiplier")
             .insert("label", "Absorption Coefficient Multiplier")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "200.0")
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "scattering")
+            .insert("label", "Scattering Coefficient")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors"))
+                    .insert("use", "required")
+                    .insert("default", "0.5"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "scattering_multiplier")
+            .insert("label", "Scattering Coefficient Multiplier")
             .insert("type", "numeric")
             .insert("min_value", "0.0")
             .insert("max_value", "200.0")
