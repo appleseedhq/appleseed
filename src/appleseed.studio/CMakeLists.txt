@@ -306,6 +306,7 @@ source_group ("meta\\tests" FILES
 )
 
 set (python_sources
+    python/module.cpp
     python/pythoninterpreter.cpp
     python/pythoninterpreter.h
 )

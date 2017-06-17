@@ -98,6 +98,8 @@
 #include <algorithm>
 #include <cassert>
 
+#include "python/pythoninterpreter.h"
+
 using namespace appleseed::shared;
 using namespace foundation;
 using namespace renderer;
@@ -515,6 +517,8 @@ void MainWindow::build_log_panel()
 
 void MainWindow::build_python_console_panel()
 {
+    PythonInterpreter::instance().set_mainwindow(this);
+
     PythonConsoleWidget* console_widget = new PythonConsoleWidget(m_ui->python_console_contents);
     m_ui->python_console_contents->layout()->addWidget(console_widget);
 

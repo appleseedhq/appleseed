@@ -42,6 +42,8 @@
 namespace bpy = boost::python;
 namespace bf = boost::filesystem;
 
+extern "C" void init_appleseedstudio();
+
 namespace appleseed {
 namespace studio {
 
@@ -70,8 +72,19 @@ void PythonInterpreter::redirect_output(OutputRedirector redirector)
     sys_module.attr("stderr") = redirector;
 }
 
+void PythonInterpreter::set_mainwindow(MainWindow* window)
+{
+    mainWindow = window;
+}
+
+MainWindow* PythonInterpreter::get_mainwindow()
+{
+    return mainWindow;
+}
+
 PythonInterpreter::PythonInterpreter()
 {
+    PyImport_AppendInittab("_appleseedstudio", init_appleseedstudio);
     Py_Initialize();
 
     const bf::path bin(foundation::get_executable_directory());
@@ -85,7 +98,9 @@ PythonInterpreter::PythonInterpreter()
     // Imports appleseed module and creates asd alias for it
     // so we can refer to it by both names.
     PyRun_SimpleString("import appleseed\n"
-                       "asr=appleseed");
+                       "asr = appleseed\n"
+                       "import _appleseedstudio\n"
+                       "studio = _appleseedstudio");
 }
 
 PythonInterpreter::~PythonInterpreter()

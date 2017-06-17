@@ -26,39 +26,18 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_PYTHON_PYTHONINTERPRETER_H
-#define APPLESEED_STUDIO_PYTHON_PYTHONINTERPRETER_H
 
-// appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/platform/python.h"
 
-#include "mainwindow/mainwindow.h"
+#include "pythoninterpreter.h"
+namespace studio = appleseed::studio;
 
-namespace appleseed {
-namespace studio {
+namespace bpy = boost::python;
 
-// Forward declarations.
-class OutputRedirector;
+void open_project(const char* project_path) {
+    studio::PythonInterpreter::instance().get_mainwindow()->open_project(project_path);
+}
 
-class PythonInterpreter
-  : public foundation::NonCopyable
-{
-  public:
-    static PythonInterpreter& instance();
-    void execute_command(const char* command);
-
-    void redirect_output(OutputRedirector redirector);
-    void set_mainwindow(MainWindow* mainWindow);
-    MainWindow* get_mainwindow();
-
-  private:
-    PythonInterpreter();
-    ~PythonInterpreter();
-
-    MainWindow* mainWindow;
-};
-
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_PYTHON_PYTHONINTERPRETER_H
+BOOST_PYTHON_MODULE(_appleseedstudio) {
+    bpy::def("open_project", open_project, bpy::args("project_path"));
+}
