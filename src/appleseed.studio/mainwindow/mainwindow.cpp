@@ -183,6 +183,16 @@ void MainWindow::open_project(const QString& filepath)
     m_project_manager.load_project(filepath.toAscii().constData());
 }
 
+void MainWindow::new_project()
+{
+    if (!can_close_project())
+        return;
+
+    m_project_manager.create_project();
+
+    on_project_change();
+}
+
 namespace
 {
     class CustomSignalMapper
@@ -1121,12 +1131,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::slot_new_project()
 {
-    if (!can_close_project())
-        return;
-
-    m_project_manager.create_project();
-
-    on_project_change();
+    new_project();
 }
 
 void MainWindow::slot_open_project()

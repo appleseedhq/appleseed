@@ -34,10 +34,18 @@ namespace studio = appleseed::studio;
 
 namespace bpy = boost::python;
 
-void open_project(const char* project_path) {
+void open_project(const char* project_path)
+{
     studio::PythonInterpreter::instance().get_mainwindow()->open_project(project_path);
 }
 
-BOOST_PYTHON_MODULE(_appleseedstudio) {
+void new_project()
+{
+    studio::PythonInterpreter::instance().get_mainwindow()->new_project();
+}
+
+BOOST_PYTHON_MODULE(_appleseedstudio)
+{
     bpy::def("open_project", open_project, bpy::args("project_path"));
+    bpy::def("new_project", new_project);
 }
