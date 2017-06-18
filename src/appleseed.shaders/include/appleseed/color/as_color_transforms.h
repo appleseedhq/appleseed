@@ -986,10 +986,50 @@ color transform_RGB_to_HSV(color C)
             hue = delta_b - delta_g;
             hue = (g == maximum) ? (1.0 / 3.0) + delta_r - delta_b : hue;
             hue = (b == maximum) ? (2.0 / 3.0) + delta_g - delta_r : hue;
-
             hue = mod(hue, 1.0);
         }
         return color(hue, saturation, value);
+    }
+    else
+    {
+        return color(0);
+    }
+}
+
+color transform_RGB_to_HSL(color C)
+{
+    if (C != color(0))
+    {
+        float r = C[0], g = C[1], b = C[2];
+        float hue, saturation, lightness;
+
+        float maximum = max(r, max(g, b));
+        float minimum = min(r, min(g, b));
+
+        lightness = (maximum + minimum) / 2.0;
+
+        float delta = max(0.0, maximum - minimum);        
+
+        if (delta == 0.0 || lightness == 0.0)
+        {
+            hue = saturation = 0.0;
+        }
+        else
+        {
+            saturation = (lightness < 0.5)
+                ? delta / (maximum + minimum)
+                : delta / (2.0 - maximum - minimum);
+
+            float delta_r = (((maximum - r) / 6.0) + (delta / 2.0)) / delta;
+            float delta_g = (((maximum - g) / 6.0) + (delta / 2.0)) / delta;
+            float delta_b = (((maximum - b) / 6.0) + (delta / 2.0)) / delta;
+
+            hue = delta_b - delta_g;
+            hue = (g == maximum) ? (1.0 / 3.0) + delta_r - delta_b : hue;
+            hue = (b == maximum) ? (2.0 / 3.0) + delta_g - delta_r : hue;
+            hue = mod(hue, 1.0);
+        }
+        return color(hue, saturation, lightness);
     }
     else
     {

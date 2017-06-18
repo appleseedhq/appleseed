@@ -185,7 +185,7 @@ shader as_color_transform
         else if (in_outputSpace == 2)
         {
             color RGB = transform_XYZ_to_linear_RGB(XYZ, space, illuminant);
-            out = transformc("rgb", "hsl", RGB);
+            out = transform_RGB_to_HSL(RGB);
         }
         else if (in_outputSpace == 3)
         {
