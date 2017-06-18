@@ -1145,15 +1145,15 @@ color transform_HSL_to_RGB(color C)
     }
     else
     {
-        float var_2 = (lightness < 0.5)
+        float v2 = (lightness < 0.5)
             ? lightness * (1.0 + saturation)
             : (lightness + saturation) - (saturation * lightness);
 
-        float var_1 = 2.0 * lightness - var_2;
+        float v1 = 2.0 * lightness - v2;
 
-        float r = hue_to_rgb(var_1, var_2, hue + (1.0 / 3.0));
-        float g = hue_to_rgb(var_1, var_2, hue);
-        float b = hue_to_rgb(var_1, var_2, hue - (1.0 / 3.0));
+        float r = hue_to_rgb(v1, v2, hue + (1.0 / 3.0));
+        float g = hue_to_rgb(v1, v2, hue);
+        float b = hue_to_rgb(v1, v2, hue - (1.0 / 3.0));
 
         return color(r, g, b);
     }
