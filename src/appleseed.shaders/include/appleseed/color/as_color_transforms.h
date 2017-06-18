@@ -947,6 +947,59 @@ color transform_LCh_uv_to_linear_RGB(
 //
 // Reference:
 //
+//      http://colour-science.org/
+//      colour/colour/models/rgb/deprecated.py
+//
+//      Handbook of Digital Image Synthesis: Scientific Foundations of
+//      Rendering, Vincent Pegoraro, CRC Press, 2016
+//      ISBN 1315395215, 9781315395210
+//      (chapter 20: color science, page 707)
+//
+
+color transform_RGB_to_HSV(color C)
+{
+    if (C != color(0))
+    {
+        float r = C[0], g = C[1], b = C[2];
+
+        float maximum = max(r, max(g, b));
+        float minimum = min(r, min(g, b));
+
+        float delta = max(0.0, maximum - minimum);
+
+        float value = maximum, hue;
+
+        float saturation = (delta == 0.0 || maximum == 0.0)
+            ? 0.0
+            : delta / maximum;
+
+        if (delta == 0.0 || saturation == 0.0)
+        {
+            hue = 0.0;
+        }
+        else
+        {
+            float delta_r = (((maximum - r) / 6.0) + (delta / 2.0)) / delta;
+            float delta_g = (((maximum - g) / 6.0) + (delta / 2.0)) / delta;
+            float delta_b = (((maximum - b) / 6.0) + (delta / 2.0)) / delta;
+
+            hue = delta_b - delta_g;
+            hue = (g == maximum) ? (1.0 / 3.0) + delta_r - delta_b : hue;
+            hue = (b == maximum) ? (2.0 / 3.0) + delta_g - delta_r : hue;
+
+            hue = mod(hue, 1.0);
+        }
+        return color(hue, saturation, value);
+    }
+    else
+    {
+        return color(0);
+    }
+}
+
+//
+// Reference:
+//
 //      Delta E (CIEDE2000)
 //
 //      https://en.wikipedia.org/wiki/Color_difference

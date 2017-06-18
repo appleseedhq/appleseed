@@ -180,7 +180,7 @@ shader as_color_transform
         else if (in_outputSpace == 1)
         {
             color RGB = transform_XYZ_to_linear_RGB(XYZ, space, illuminant);
-            out = transformc("rgb", "hsv", RGB);
+            out = transform_RGB_to_HSV(RGB);
         }
         else if (in_outputSpace == 2)
         {
