@@ -996,6 +996,71 @@ color transform_RGB_to_HSV(color C)
     }
 }
 
+//
+// Reference:
+//
+//      http://www.easyrgb.com/en/math.php#text21
+//
+
+color transform_HSV_to_RGB(color C)
+{
+    if (C != color(0) || C[2] > 0.0)
+    {
+        float hue = C[0], saturation = C[1], value = C[2], r, g, b;
+
+        hue *= 6.0;
+        if (hue == 6.0) hue = 0.0;
+
+        int i = (int) floor(hue);
+
+        float j = value * (1.0 - saturation);
+        float k = value * (1.0 - saturation * (hue - (float) i));
+        float l = value * (1.0 - saturation * (1.0 - (hue - (float) i)));
+
+        if (i == 0)
+        {
+            r = value;
+            g = l;
+            b = j;
+        }
+        else if (i == 1)
+        {
+            r = k;
+            g = value;
+            b = j;
+        }
+        else if (i == 2)
+        {
+            r = j;
+            g = value;
+            b = l;
+        }
+        else if (i == 3)
+        {
+            r = j;
+            g = k;
+            b = value;
+        }
+        else if (i == 4)
+        {
+            r = l;
+            g = j;
+            b = value;
+        }
+        else
+        {
+            r = value;
+            g = j;
+            b = k;
+        }
+        return color(r, g, b);
+    }
+    else
+    {
+        return color(0);
+    }
+}
+
 color transform_RGB_to_HSL(color C)
 {
     if (C != color(0))
@@ -1034,6 +1099,63 @@ color transform_RGB_to_HSL(color C)
     else
     {
         return color(0);
+    }
+}
+
+//
+// Reference:
+//
+//      http://www.easyrgb.com/en/math.php#text21
+//
+
+color transform_HSL_to_RGB(color C)
+{
+    float hue_to_rgb(float v1, float v2, float vH)
+    {
+        float vh = mod(vH, 1.0), out = 0.0;
+
+        if (vh * 6.0 < 1.0)
+        {
+            out = v1 + (v2 - v1) * 6.0 * vh;
+        }
+        else if (vh * 2.0 < 1.0)
+        {
+            out = v2;
+        }
+        else if (vh * 3.0 < 2.0)
+        {
+            out = v1 + (v2 - v1) * ((2.0 / 3.0) - vh) * 6.0;
+        }
+        else
+        {
+            out = v1;
+        }
+        return out;
+    }
+
+    float hue = C[0], saturation = C[1], lightness = C[2];
+
+    if (C == color(0) || lightness == 0.0)
+    {
+        return color(0);
+    }
+    else if (saturation == 0.0)
+    {
+        return color(lightness);
+    }
+    else
+    {
+        float var_2 = (lightness < 0.5)
+            ? lightness * (1.0 + saturation)
+            : (lightness + saturation) - (saturation * lightness);
+
+        float var_1 = 2.0 * lightness - var_2;
+
+        float r = hue_to_rgb(var_1, var_2, hue + (1.0 / 3.0));
+        float g = hue_to_rgb(var_1, var_2, hue);
+        float b = hue_to_rgb(var_1, var_2, hue - (1.0 / 3.0));
+
+        return color(r, g, b);
     }
 }
 

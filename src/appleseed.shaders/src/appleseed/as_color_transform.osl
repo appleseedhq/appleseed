@@ -116,12 +116,12 @@ shader as_color_transform
         }
         else if (in_inputSpace == 1)
         {
-            color RGB = transformc("hsv", "rgb", in_color);
+            color RGB = transform_HSV_to_RGB(in_color);
             XYZ = transform_linear_RGB_to_XYZ(RGB, space, illuminant);
         }
         else if (in_inputSpace == 2)
         {
-            color RGB = transformc("hsl", "rgb", in_color);
+            color RGB = transform_HSL_to_RGB(in_color);
             XYZ = transform_linear_RGB_to_XYZ(RGB, space, illuminant);
         }
         else if (in_inputSpace == 3)
