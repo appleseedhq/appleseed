@@ -37,8 +37,8 @@
 //      http://www.brucelindbloom.com/index.html?ColorDifferenceCalcHelp.html
 //
 
-#define CIE_E   903.29629629629629
-#define CIE_K   0.0088564516790356
+#define CIE_E   (216.0 / 24389.0)
+#define CIE_K   (24389.0 / 27.0)
 
 //
 // Reference:
