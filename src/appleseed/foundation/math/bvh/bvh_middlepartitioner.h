@@ -105,18 +105,18 @@ inline size_t MiddlePartitioner<AABBVector>::partition(
     const float center = bbox.center(split_dim);
 
     // Find the first bbox with center bigger than half and split at that point
-    size_t split_point = begin - 1;
+    size_t split_point = begin;
     bool smaller = true;
     while(smaller && split_point != end)
     {
-        split_point++;
         smaller = bboxes[indices[split_point]].center(split_dim) < center;
+        split_point++;
     };
 
-    const size_t pivot = split_point;
+    const size_t pivot = split_point - 1;
     assert(pivot < end);
 
-    PartitionerBase<AABBVector>::sort_indices(split_dim, begin, end, pivot);
+    // PartitionerBase<AABBVector>::sort_indices(split_dim, begin, end, pivot);
 
     return pivot;
 }
