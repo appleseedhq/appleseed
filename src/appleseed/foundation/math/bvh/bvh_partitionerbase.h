@@ -68,7 +68,8 @@ class PartitionerBase
         const size_t            end) const;
 
     // Return the items ordering.
-    const std::vector<size_t>& get_item_ordering() const;
+    const std::vector<size_t>& get_item_ordering(
+        size_t  dimension = 0) const;
 
   protected:
     static const size_t Dimension = AABBType::Dimension;
@@ -200,9 +201,11 @@ void PartitionerBase<AABBVector>::sort_indices(
 }
 
 template <typename Tree>
-inline const std::vector<size_t>& PartitionerBase<Tree>::get_item_ordering() const
+inline const std::vector<size_t>& PartitionerBase<Tree>::get_item_ordering(
+    size_t  dimension) const
 {
-    return m_indices[0];
+    assert(dimension < Dimension);
+    return m_indices[dimension];
 }
 
 }       // namespace bvh
