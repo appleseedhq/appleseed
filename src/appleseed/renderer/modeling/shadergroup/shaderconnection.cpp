@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
@@ -110,7 +111,7 @@ const char *ShaderConnection::get_dst_param() const
     return impl->m_dst_param.c_str();
 }
 
-bool ShaderConnection::add(OSL::ShadingSystem& shading_system)
+bool ShaderConnection::add(OSLShadingSystem& shading_system)
 {
     if (!shading_system.ConnectShaders(
             get_src_layer(),

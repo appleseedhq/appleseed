@@ -49,6 +49,8 @@
 #include "renderer/kernel/rendering/generic/generictilerenderer.h"
 #include "renderer/kernel/rendering/permanentshadingresultframebufferfactory.h"
 #include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
+#include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/utility/paramarray.h"
 
@@ -91,8 +93,8 @@ RendererComponents::RendererComponents(
     const ParamArray&       params,
     ITileCallbackFactory*   tile_callback_factory,
     TextureStore&           texture_store,
-    OIIO::TextureSystem&    texture_system,
-    OSL::ShadingSystem&     shading_system)
+    OIIOTextureSystem&      texture_system,
+    OSLShadingSystem&       shading_system)
   : m_project(project)
   , m_params(params)
   , m_tile_callback_factory(tile_callback_factory)

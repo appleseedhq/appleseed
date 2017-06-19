@@ -15,7 +15,6 @@ cd build
 
 cmake --version
 cmake \
-    -D USE_CPP11=$USE_CPP11 \
     -D WITH_CLI=ON \
     -D WITH_STUDIO=OFF \
     -D WITH_TOOLS=OFF \

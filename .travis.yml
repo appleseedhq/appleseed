@@ -29,22 +29,19 @@ install:
 compiler:
   - gcc
 
-env:
-  - GCC_VERSION=4.8 USE_CPP11=OFF
-
 matrix:
     include:
         - os: linux
           compiler: gcc
-          env: GCC_VERSION=4.8 USE_CPP11=ON
+          env: GCC_VERSION=4.8
 
         - os: linux
           compiler: gcc
-          env: GCC_VERSION=5 USE_CPP11=ON
+          env: GCC_VERSION=5
 
         - os: linux
           compiler: gcc
-          env: GCC_VERSION=6 USE_CPP11=ON
+          env: GCC_VERSION=6
 
 script:
   - ./travis/build.sh

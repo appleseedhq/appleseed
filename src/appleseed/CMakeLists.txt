@@ -1138,6 +1138,8 @@ set (renderer_kernel_shading_sources
     renderer/kernel/shading/fastambientocclusion.h
     renderer/kernel/shading/oslshadergroupexec.cpp
     renderer/kernel/shading/oslshadergroupexec.h
+    renderer/kernel/shading/oslshadingsystem.cpp
+    renderer/kernel/shading/oslshadingsystem.h
     renderer/kernel/shading/shadingcontext.cpp
     renderer/kernel/shading/shadingcontext.h
     renderer/kernel/shading/shadingengine.cpp
@@ -1170,6 +1172,8 @@ source_group ("renderer\\kernel\\tessellation" FILES
 )
 
 set (renderer_kernel_texturing_sources
+    renderer/kernel/texturing/oiiotexturesystem.cpp
+    renderer/kernel/texturing/oiiotexturesystem.h
     renderer/kernel/texturing/texturecache.h
     renderer/kernel/texturing/texturestore.cpp
     renderer/kernel/texturing/texturestore.h

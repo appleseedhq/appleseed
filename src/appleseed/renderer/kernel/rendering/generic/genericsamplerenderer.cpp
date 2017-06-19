@@ -40,12 +40,14 @@
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/oslshadergroupexec.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingengine.h"
 #include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/shading/shadingresult.h"
+#include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/frame/frame.h"
@@ -97,8 +99,8 @@ namespace
             TextureStore&           texture_store,
             ILightingEngineFactory* lighting_engine_factory,
             ShadingEngine&          shading_engine,
-            OIIO::TextureSystem&    oiio_texture_system,
-            OSL::ShadingSystem&     shading_system,
+            OIIOTextureSystem&      oiio_texture_system,
+            OSLShadingSystem&       shading_system,
             const size_t            thread_index,
             const ParamArray&       params)
           : m_params(params)
@@ -327,7 +329,7 @@ namespace
         TextureCache                m_texture_cache;
         ILightingEngine*            m_lighting_engine;
         ShadingEngine&              m_shading_engine;
-        OIIO::TextureSystem&        m_oiio_texture_system;
+        OIIOTextureSystem&          m_oiio_texture_system;
         const size_t                m_thread_index;
 
         Arena                       m_arena;
@@ -355,8 +357,8 @@ GenericSampleRendererFactory::GenericSampleRendererFactory(
     TextureStore&           texture_store,
     ILightingEngineFactory* lighting_engine_factory,
     ShadingEngine&          shading_engine,
-    OIIO::TextureSystem&    oiio_texture_system,
-    OSL::ShadingSystem&     shading_system,
+    OIIOTextureSystem&      oiio_texture_system,
+    OSLShadingSystem&       shading_system,
     const ParamArray&       params)
   : m_scene(scene)
   , m_frame(frame)
