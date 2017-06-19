@@ -108,4 +108,28 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
         // Expect to return the end.
         EXPECT_EQ(2, pivot);
     }
+
+    TEST_CASE(TestBBoxesLightsFormingCube)
+    {
+        typedef std::vector<AABB3d> AABB3dVector;
+        
+        AABB3dVector bboxes;
+        
+        bboxes.push_back(AABB3d(Vector3d( -0.51,-0.51,-0.51 ), Vector3d(-0.49,-0.49,-0.49 )));
+        bboxes.push_back(AABB3d(Vector3d( -0.51,-0.51, 0.49 ), Vector3d(-0.49,-0.49, 0.51 )));
+        bboxes.push_back(AABB3d(Vector3d( -0.51, 0.49,-0.51 ), Vector3d(-0.49, 0.51,-0.49 )));
+        bboxes.push_back(AABB3d(Vector3d( -0.51, 0.49, 0.49 ), Vector3d(-0.49, 0.51, 0.51 )));
+        bboxes.push_back(AABB3d(Vector3d(  0.49,-0.51,-0.51 ), Vector3d( 0.51,-0.49,-0.49 )));
+        bboxes.push_back(AABB3d(Vector3d(  0.49,-0.51, 0.49 ), Vector3d( 0.51,-0.49, 0.51 )));
+        bboxes.push_back(AABB3d(Vector3d(  0.49, 0.49,-0.51 ), Vector3d( 0.51, 0.51,-0.49 )));
+        bboxes.push_back(AABB3d(Vector3d(  0.49, 0.49, 0.49 ), Vector3d( 0.51, 0.51, 0.51 )));
+
+        MiddlePartitioner<AABB3dVector> partitioner(bboxes, 1);
+        const AABB3d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
+        
+        size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
+        
+        // Expect to return the end.
+        EXPECT_EQ(4, pivot);
+    }
 }
