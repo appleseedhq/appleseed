@@ -73,4 +73,23 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
         // Expect to return the end.
         EXPECT_EQ(1, pivot);
     }
+
+    TEST_CASE(TestBBoxesUnorderedAlongAllDimensions)
+    {
+        typedef std::vector<AABB3d> AABB3dVector;
+        
+        AABB3dVector bboxes;
+        
+        bboxes.push_back(AABB3d(Vector3d( 3.0,  13.0, -3.0), Vector3d(5.0,  15.0, -1.0)));
+        bboxes.push_back(AABB3d(Vector3d( 1.0, -15.0,  1.0), Vector3d(3.0, -13.0,  2.0)));
+        bboxes.push_back(AABB3d(Vector3d(-7.0,  -1.0, -1.0), Vector3d(1.0,   1.0,  1.0)));
+
+        MiddlePartitioner<AABB3dVector> partitioner(bboxes, 1);
+        const AABB3d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
+
+        size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
+
+        // Expect to return the end.
+        EXPECT_EQ(2, pivot);
+    }
 }
