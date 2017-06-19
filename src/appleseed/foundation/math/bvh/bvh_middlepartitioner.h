@@ -105,13 +105,15 @@ inline size_t MiddlePartitioner<AABBVector>::partition(
     const float center = bbox.center(split_dim);
 
     // Find the first bbox with center bigger than half and split at that point
-    size_t split_point = begin;
-    while(bboxes[indices[split_point]].center(split_dim) < center)
+    size_t pivot = begin;
+    while(bboxes[indices[pivot]].center(split_dim) < center)
     {
-        split_point++;
+        pivot++;
     };
 
-    const size_t pivot = split_point;
+    // In case there are multiple bboxes perfectly overlapping, return the next one.
+    if (pivot == 0)
+        pivot++;
     assert(pivot < end);
 
     PartitionerBase<AABBVector>::sort_indices(split_dim, begin, end, pivot);
