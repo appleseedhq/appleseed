@@ -71,6 +71,6 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
         size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
 
         // Expect to return the end.
-        EXPECT_EQ(0, pivot);
+        EXPECT_EQ(1, pivot);
     }
 }
