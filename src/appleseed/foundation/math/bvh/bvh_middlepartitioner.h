@@ -100,32 +100,17 @@ inline size_t MiddlePartitioner<AABBVector>::partition(
 
     // Split the longest dimension of the bounding box.
     const size_t split_dim = max_index(bbox.extent());
+    const std::vector<size_t>& indices = PartitionerBase<AABBVector>::m_indices[split_dim];
+
     const float center = bbox.center(split_dim);
-    RENDERER_LOG_INFO("Partitioning new bbox");
-    RENDERER_LOG_INFO("bbox center [%f %f %f]",
-                                bbox.center()[0],
-                                bbox.center()[1],
-                                bbox.center()[2]);
-    RENDERER_LOG_INFO("bbox max axis: %zu", split_dim);
-    RENDERER_LOG_INFO("bbox max axis extent: [%f %f %f]",
-                        bbox.extent()[0],
-                        bbox.extent()[1],
-                        bbox.extent()[2]);
-    RENDERER_LOG_INFO("bbox min max along max axis: %f %f",
-                        bbox.min[max_index(bbox.extent())],
-                        bbox.max[max_index(bbox.extent())]);
-    // Find the last bbox with center smaller than half and split at that point
-    size_t split_point = begin;
+
+    // Find the first bbox with center bigger than half and split at that point
+    size_t split_point = begin - 1;
     bool smaller = true;
-    while(smaller)
+    while(smaller && split_point != end)
     {
-        smaller = bboxes[split_point].center(split_dim) < center;
         split_point++;
-        if(split_point >= end)
-        {
-            split_point--;
-            break;
-        }
+        smaller = bboxes[indices[split_point]].center(split_dim) < center;
     };
 
     const size_t pivot = split_point;
