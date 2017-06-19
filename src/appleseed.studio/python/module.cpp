@@ -31,15 +31,23 @@
 #include "pythoninterpreter.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptions/exception.h"
 #include "foundation/platform/python.h"
 
 namespace bpy = boost::python;
 using namespace appleseed::studio;
+using namespace foundation;
 
-void new_project()
+void new_project(bool fail_on_unsaved_project = false)
 {
-    PythonInterpreter::instance().get_mainwindow()->new_project();
+    MainWindow* mainWindow = PythonInterpreter::instance().get_mainwindow();
+
+    if (fail_on_unsaved_project && !mainWindow->can_close_project())
+        throw Exception("Opened project was not saved");
+    else
+        mainWindow->new_project();
 }
+BOOST_PYTHON_FUNCTION_OVERLOADS(new_project_overloads, new_project, 0, 1)
 
 void open_project(const char* project_path)
 {
@@ -48,6 +56,7 @@ void open_project(const char* project_path)
 
 BOOST_PYTHON_MODULE(_appleseedstudio)
 {
+    bpy::def("new_project", new_project, new_project_overloads(
+        bpy::args("fail_on_unsaved_project")));
     bpy::def("open_project", open_project, bpy::args("project_path"));
-    bpy::def("new_project", new_project);
 }

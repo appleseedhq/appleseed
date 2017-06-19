@@ -92,6 +92,8 @@ class MainWindow
     void open_project(const QString& filepath);
     void open_and_render_project(const QString& filepath, const QString& configuration);
 
+    bool can_close_project();
+
   signals:
     void signal_refresh_attribute_editor(const foundation::Dictionary& values) const;
 
@@ -184,7 +186,7 @@ class MainWindow
 
     // Project file handling.
     renderer::ParamArray get_project_params(const char* configuration_name) const;
-    bool can_close_project();
+    bool attempt_close_project();
     void on_project_change();
 
     // Project file monitoring.

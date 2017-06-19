@@ -164,32 +164,6 @@ MainWindow::~MainWindow()
     delete m_ui;
 }
 
-void MainWindow::new_project()
-{
-    m_project_manager.create_project();
-
-    on_project_change();
-}
-
-void MainWindow::open_project(const QString& filepath)
-{
-    save_state_before_project_open();
-
-    if (m_rendering_manager.is_rendering())
-    {
-        m_rendering_manager.abort_rendering();
-        m_rendering_manager.wait_until_rendering_end();
-    }
-
-    remove_render_widgets();
-
-    set_file_widgets_enabled(false, NotRendering);
-    set_project_explorer_enabled(false);
-    set_rendering_widgets_enabled(false, NotRendering);
-
-    m_project_manager.load_project(filepath.toAscii().constData());
-}
-
 namespace
 {
     class CustomSignalMapper
@@ -216,6 +190,31 @@ namespace
       private:
         const QString m_configuration;
     };
+}
+
+void MainWindow::new_project()
+{
+    m_project_manager.create_project();
+    on_project_change();
+}
+
+void MainWindow::open_project(const QString& filepath)
+{
+    save_state_before_project_open();
+
+    if (m_rendering_manager.is_rendering())
+    {
+        m_rendering_manager.abort_rendering();
+        m_rendering_manager.wait_until_rendering_end();
+    }
+
+    remove_render_widgets();
+
+    set_file_widgets_enabled(false, NotRendering);
+    set_project_explorer_enabled(false);
+    set_rendering_widgets_enabled(false, NotRendering);
+
+    m_project_manager.load_project(filepath.toAscii().constData());
 }
 
 void MainWindow::open_and_render_project(const QString& filepath, const QString& configuration)
@@ -880,19 +879,14 @@ namespace
     }
 }
 
-bool MainWindow::can_close_project()
+bool MainWindow::attempt_close_project()
 {
-    // Project being loaded: can't close.
     if (m_project_manager.is_project_loading())
         return false;
 
-    // No project open: no problem.
-    if (!m_project_manager.is_project_open())
+    if (can_close_project())
         return true;
 
-    // Unmodified project: no problem.
-    if (!m_project_manager.is_project_dirty())
-        return true;
 
     // The current project has been modified, ask the user what to do.
     switch (show_modified_project_message_box(this))
@@ -910,6 +904,13 @@ bool MainWindow::can_close_project()
 
     assert(!"Should never be reached.");
     return false;
+}
+
+bool MainWindow::can_close_project()
+{
+    return !m_project_manager.is_project_loading() && // Project is not being loaded: no problem
+        (!m_project_manager.is_project_open() ||      // No project open: no problem
+         !m_project_manager.is_project_dirty());      // Unmodified project: no problem
 }
 
 void MainWindow::on_project_change()
@@ -1095,7 +1096,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
         m_rendering_manager.wait_until_rendering_end();
     }
 
-    if (!can_close_project())
+    if (!attempt_close_project())
     {
         event->ignore();
         return;
@@ -1126,7 +1127,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::slot_new_project()
 {
-    if (!can_close_project())
+    if (!attempt_close_project())
         return;
 
     new_project();
@@ -1134,7 +1135,7 @@ void MainWindow::slot_new_project()
 
 void MainWindow::slot_open_project()
 {
-    if (!can_close_project())
+    if (!attempt_close_project())
         return;
 
     const QString filter_string =
@@ -1163,7 +1164,7 @@ void MainWindow::slot_open_project()
 
 void MainWindow::slot_open_recent()
 {
-    if (!can_close_project())
+    if (!attempt_close_project())
         return;
 
     QAction* action = qobject_cast<QAction*>(sender());
@@ -1185,7 +1186,7 @@ void MainWindow::slot_clear_open_recent_files_menu()
 
 void MainWindow::slot_open_cornellbox_builtin_project()
 {
-    if (!can_close_project())
+    if (!attempt_close_project())
         return;
 
     APPLESEED_UNUSED const bool successful = m_project_manager.load_builtin_project("cornell_box");
@@ -1199,7 +1200,7 @@ void MainWindow::slot_reload_project()
     assert(m_project_manager.is_project_open());
     assert(m_project_manager.get_project()->has_path());
 
-    if (!can_close_project())
+    if (!attempt_close_project())
         return;
 
     open_project(m_project_manager.get_project()->get_path());
