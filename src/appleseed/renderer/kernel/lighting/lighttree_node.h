@@ -73,11 +73,9 @@ class LightTreeNode
     float get_probability(const float distance, const float radius) const
     {
         const float distance2 = distance * distance;
-        const float radius2 = radius * radius;
         const float inverse_distance_falloff = 1.0f / distance2;
-        const float inverse_surface_area = 1.0f / radius2;
 
-        const float probability = m_node_energy * inverse_distance_falloff * inverse_surface_area;
+        const float probability = m_node_energy * inverse_distance_falloff;
 
         return probability;
     }
