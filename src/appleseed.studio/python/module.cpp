@@ -50,37 +50,37 @@ MainWindow* mainwindow()
 Project* new_project()
 {
     mainwindow()->new_project();
-
     return mainwindow()->current_project();
 }
 
-void open_project(const char* project_path)
+Project* open_project(const char* project_path)
 {
     mainwindow()->open_project(project_path);
+    return mainwindow()->current_project();
 }
 
 void save_project(const char* project_path = 0)
 {
     if (project_path == 0)
-    {
         mainwindow()->save_project(mainwindow()->current_project()->get_path());
-    } else
+    else
         mainwindow()->save_project(project_path);
 }
 BOOST_PYTHON_FUNCTION_OVERLOADS(save_project_overloads, save_project, 0, 1)
 
 Project* current_project()
 {
-    mainwindow()->current_project();
+    return mainwindow()->current_project();
 }
 
 BOOST_PYTHON_MODULE(_appleseedstudio)
 {
     bpy::def("new_project", new_project,
              bpy::return_value_policy<bpy::reference_existing_object>());
-    bpy::def("open_project", open_project, bpy::args("project_path"));
-    bpy::def("save_project", save_project, save_project_overloads(
-        bpy::args("project_path")));
+    bpy::def("open_project", open_project, bpy::args("project_path"),
+             bpy::return_value_policy<bpy::reference_existing_object>());
+    bpy::def("save_project", save_project,
+             save_project_overloads(bpy::args("project_path")));
 
     bpy::def("current_project", current_project,
              bpy::return_value_policy<bpy::reference_existing_object>());
