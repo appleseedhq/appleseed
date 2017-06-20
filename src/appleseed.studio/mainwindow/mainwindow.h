@@ -92,9 +92,9 @@ class MainWindow
     void new_project();
     void open_project(const QString& filepath);
     void open_and_render_project(const QString& filepath, const QString& configuration);
-    renderer::Project* current_project();
     void save_project(QString filepath);
 
+    renderer::Project* current_project();
     bool can_close_project();
 
   signals:

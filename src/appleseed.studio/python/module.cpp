@@ -42,16 +42,13 @@ using namespace appleseed::studio;
 using namespace renderer;
 using namespace foundation;
 
-void new_project(bool fail_on_unsaved_project = false)
+Project* new_project()
 {
     MainWindow* mainWindow = PythonInterpreter::instance().get_mainwindow();
+    mainWindow->new_project();
 
-    if (fail_on_unsaved_project && !mainWindow->can_close_project())
-        throw Exception("Opened project was not saved");
-    else
-        mainWindow->new_project();
+    return mainWindow->current_project();
 }
-BOOST_PYTHON_FUNCTION_OVERLOADS(new_project_overloads, new_project, 0, 1)
 
 void open_project(const char* project_path)
 {
@@ -76,8 +73,8 @@ Project* current_project()
 
 BOOST_PYTHON_MODULE(_appleseedstudio)
 {
-    bpy::def("new_project", new_project, new_project_overloads(
-        bpy::args("fail_on_unsaved_project")));
+    bpy::def("new_project", new_project,
+             bpy::return_value_policy<bpy::reference_existing_object>());
     bpy::def("open_project", open_project, bpy::args("project_path"));
     bpy::def("save_project", save_project, save_project_overloads(
         bpy::args("project_path")));
