@@ -204,11 +204,11 @@ void CameraController::configure_controller()
     const bool has_target =
         camera && camera->get_parameters().strings().exist("controller_target");
 
-    // Retrieve the controller target.
+    // Retrieve the controller target from the camera.
     Vector3d controller_target;
     if (has_target)
     {
-        // The scene's camera already has a controller target, use it.
+        // The scene's camera has a controller target, retrieve it.
         controller_target =
             camera->get_parameters().get<Vector3d>("controller_target");
     }
@@ -250,9 +250,12 @@ void CameraController::configure_controller()
             dot(to_target, camera_direction) * camera_direction;
     }
 
-    // Set the controller target and save it into the camera.
+    // Set the controller target.
     m_controller.set_target(controller_target);
-    save_camera_target();
+
+    // If the camera had a controller target, update it.
+    if (has_target)
+        save_camera_target();
 }
 
 Vector2d CameraController::get_mouse_position(const QMouseEvent* event) const
