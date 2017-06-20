@@ -58,19 +58,21 @@ void open_project(const char* project_path)
     PythonInterpreter::instance().get_mainwindow()->open_project(project_path);
 }
 
-Project* opened_project()
-{
-    return PythonInterpreter::instance().get_mainwindow()->opened_project();
-}
-
 void save_project(const char* project_path = 0)
 {
+    MainWindow* mainWindow = PythonInterpreter::instance().get_mainwindow();
     if (project_path == 0)
-        PythonInterpreter::instance().get_mainwindow()->save_project(opened_project()->get_path());
-    else
-        PythonInterpreter::instance().get_mainwindow()->save_project(project_path);
+    {
+        mainWindow->save_project(mainWindow->current_project()->get_path());
+    } else
+        mainWindow->save_project(project_path);
 }
 BOOST_PYTHON_FUNCTION_OVERLOADS(save_project_overloads, save_project, 0, 1)
+
+Project* current_project()
+{
+    return PythonInterpreter::instance().get_mainwindow()->current_project();
+}
 
 BOOST_PYTHON_MODULE(_appleseedstudio)
 {
@@ -79,4 +81,7 @@ BOOST_PYTHON_MODULE(_appleseedstudio)
     bpy::def("open_project", open_project, bpy::args("project_path"));
     bpy::def("save_project", save_project, save_project_overloads(
         bpy::args("project_path")));
+
+    bpy::def("current_project", current_project,
+             bpy::return_value_policy<bpy::reference_existing_object>());
 }

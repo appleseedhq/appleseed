@@ -232,7 +232,7 @@ void MainWindow::open_and_render_project(const QString& filepath, const QString&
     open_project(filepath);
 }
 
-Project* MainWindow::opened_project()
+Project* MainWindow::current_project()
 {
     return m_project_manager.get_project();
 }
@@ -1268,10 +1268,10 @@ void MainWindow::slot_save_project()
 {
     assert(m_project_manager.is_project_open());
 
-    if (!opened_project()->has_path())
+    if (!current_project()->has_path())
         slot_save_project_as();
     else
-        save_project(opened_project()->get_path());
+        save_project(current_project()->get_path());
 }
 
 void MainWindow::slot_save_project_as()
