@@ -232,6 +232,34 @@ void MainWindow::open_and_render_project(const QString& filepath, const QString&
     open_project(filepath);
 }
 
+Project* MainWindow::opened_project()
+{
+    return m_project_manager.get_project();
+}
+
+void MainWindow::save_project(QString filepath)
+{
+    if (!filepath.isEmpty())
+    {
+        const QString Extension = "appleseed";
+
+        if (QFileInfo(filepath).suffix() != Extension)
+            filepath += "." + Extension;
+
+        filepath = QDir::toNativeSeparators(filepath);
+
+        if (m_project_file_watcher)
+            stop_monitoring_project_file();
+
+        m_project_manager.save_project_as(filepath.toAscii().constData());
+
+        if (m_project_file_watcher)
+            start_monitoring_project_file();
+
+        update_workspace();
+    }
+}
+
 void MainWindow::build_menus()
 {
     //
@@ -1240,21 +1268,10 @@ void MainWindow::slot_save_project()
 {
     assert(m_project_manager.is_project_open());
 
-    if (!m_project_manager.get_project()->has_path())
-    {
+    if (!opened_project()->has_path())
         slot_save_project_as();
-        return;
-    }
-
-    if (m_project_file_watcher)
-        stop_monitoring_project_file();
-
-    m_project_manager.save_project();
-
-    if (m_project_file_watcher)
-        start_monitoring_project_file();
-
-    update_workspace();
+    else
+        save_project(opened_project()->get_path());
 }
 
 void MainWindow::slot_save_project_as()
@@ -1269,26 +1286,8 @@ void MainWindow::slot_save_project_as()
             m_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 
-    if (!filepath.isEmpty())
-    {
-        const QString Extension = "appleseed";
-
-        if (QFileInfo(filepath).suffix() != Extension)
-            filepath += "." + Extension;
-
-        filepath = QDir::toNativeSeparators(filepath);
-
-        if (m_project_file_watcher)
-            stop_monitoring_project_file();
-
-        m_project_manager.save_project_as(filepath.toAscii().constData());
-
-        if (m_project_file_watcher)
-            start_monitoring_project_file();
-
-        update_recent_files_menu(filepath);
-        update_workspace();
-    }
+    save_project(filepath);
+    update_recent_files_menu(filepath);
 }
 
 void MainWindow::slot_pack_project_as()

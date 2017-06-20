@@ -78,10 +78,6 @@ class ProjectManager
     bool load_builtin_project(const std::string& name);
 
     // Save the current project to disk.
-    // A project must be open, and it must have its path set.
-    bool save_project();
-
-    // Save the current project to disk.
     // A project must be open.
     bool save_project_as(const std::string& filepath);
 

@@ -57,6 +57,7 @@
 namespace appleseed { namespace studio { class AttributeEditor; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace appleseed { namespace studio { class MinimizeButton; } }
+namespace renderer { class Project; }
 namespace Ui        { class MainWindow; }
 class QAction;
 class QCloseEvent;
@@ -91,6 +92,8 @@ class MainWindow
     void new_project();
     void open_project(const QString& filepath);
     void open_and_render_project(const QString& filepath, const QString& configuration);
+    renderer::Project* opened_project();
+    void save_project(QString filepath);
 
     bool can_close_project();
 
