@@ -35,6 +35,7 @@
 #include "renderer/global/globaltypes.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/colorspace.h"
 #include "foundation/math/distance.h"
 #include "foundation/math/permutation.h"
 #include "foundation/platform/timers.h"
@@ -135,8 +136,8 @@ void LightTree::build(
         // Store the items in the tree leaves whenever possible.
         store_items_in_leaves(statistics);
     
-        // Set total energy for each node of the LightTree
-        update_nodes_energy();
+        // Set total luminance for each node of the LightTree
+        update_nodes_luminance();
     }
     
     // Print light tree statistics.
@@ -189,7 +190,7 @@ void LightTree::store_items_in_leaves(foundation::Statistics& statistics)
     }
 }
 
-void LightTree::update_nodes_energy()
+void LightTree::update_nodes_luminance()
 {
     // Make sure the tree was built.
     assert(!m_nodes.empty());
@@ -199,36 +200,39 @@ void LightTree::update_nodes_energy()
     {   
         size_t item_index = m_nodes[0].get_item_index();
         size_t light_source_index = m_items[item_index].m_light_sources_index;
-        float energy = m_light_sources[light_source_index]->get_intensity()[0]; 
-        m_nodes[0].set_node_energy(energy);
+        float luminance = m_light_sources[light_source_index]->get_intensity()[0]; 
+        m_nodes[0].set_node_luminance(luminance);
         return;
     }
 
-    // Start energy update with the root node
-    float energy = update_energy(m_nodes[0].get_child_node_index()) // left child
-                 + update_energy(m_nodes[0].get_child_node_index() + 1);  // right child
+    // Start luminance update with the root node
+    float luminance = update_luminance(m_nodes[0].get_child_node_index()) // left child
+                    + update_luminance(m_nodes[0].get_child_node_index() + 1);  // right child
 
-    m_nodes[0].set_node_energy(energy);
+    m_nodes[0].set_node_luminance(luminance);
 }
 
-float LightTree::update_energy(size_t node_index)
+float LightTree::update_luminance(size_t node_index)
 {
-    float energy = 0;
+    float luminance = 0;
 
     if (!m_nodes[node_index].is_leaf())
     {
-        energy = update_energy(m_nodes[node_index].get_child_node_index()) // left child
-               + update_energy(m_nodes[node_index].get_child_node_index() + 1);  // right child    
-        m_nodes[node_index].set_node_energy(energy);        
+        luminance = update_luminance(m_nodes[node_index].get_child_node_index()) // left child
+                  + update_luminance(m_nodes[node_index].get_child_node_index() + 1);  // right child    
+        m_nodes[node_index].set_node_luminance(luminance);        
     }
     else
     {
         size_t item_index = m_nodes[node_index].get_item_index();
         size_t light_source_index = m_items[item_index].m_light_sources_index;
-        energy = m_light_sources[light_source_index]->get_intensity()[0];
-        m_nodes[node_index].set_node_energy(energy);
+        Spectrum spectrum = m_light_sources[light_source_index]->get_intensity();
+        luminance = foundation::luminance(
+            foundation::Color3f(spectrum[0], spectrum[1], spectrum[2]));
+        
+        m_nodes[node_index].set_node_luminance(luminance);
     }
-    return energy;
+    return luminance;
 }
 
 std::pair<size_t, float> LightTree::sample(

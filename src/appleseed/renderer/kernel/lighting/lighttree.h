@@ -114,9 +114,9 @@ class LightTree
     ItemVector                 m_items;
 
     void store_items_in_leaves(foundation::Statistics& statistics);
-    void update_nodes_energy();
+    void update_nodes_luminance();
 
-    float update_energy(size_t node_index);
+    float update_luminance(size_t node_index);
 };
 
 }

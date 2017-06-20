@@ -56,18 +56,18 @@ class LightTreeNode
 {
   public:
     LightTreeNode()
-      : m_node_energy(0)
+      : m_node_luminance(0)
     {
     }
 
-    float get_node_energy() const
+    float get_node_luminance() const
     {
-        return m_node_energy;
+        return m_node_luminance;
     }
 
-    void set_node_energy(const float energy)
+    void set_node_luminance(const float luminance)
     {
-        m_node_energy = energy;
+        m_node_luminance = luminance;
     }
 
     float get_probability(const float distance, const float radius) const
@@ -75,13 +75,13 @@ class LightTreeNode
         const float distance2 = distance * distance;
         const float inverse_distance_falloff = 1.0f / distance2;
 
-        const float probability = m_node_energy * inverse_distance_falloff;
+        const float probability = m_node_luminance * inverse_distance_falloff;
 
         return probability;
     }
   
   private:
-    float  m_node_energy;
+    float  m_node_luminance;
 };
 
 }       // namespace renderer
