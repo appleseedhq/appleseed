@@ -227,8 +227,11 @@ float LightTree::update_luminance(size_t node_index)
         size_t item_index = m_nodes[node_index].get_item_index();
         size_t light_source_index = m_items[item_index].m_light_sources_index;
         Spectrum spectrum = m_light_sources[light_source_index]->get_intensity();
-        luminance = foundation::luminance(
-            foundation::Color3f(spectrum[0], spectrum[1], spectrum[2]));
+        for(size_t i = 0; i < spectrum.size(); i++)
+        {
+            luminance += spectrum[i];
+        }
+        luminance /= spectrum.size();
         
         m_nodes[node_index].set_node_luminance(luminance);
     }
