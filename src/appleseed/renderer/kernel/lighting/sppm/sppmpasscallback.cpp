@@ -33,6 +33,8 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
+#include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
@@ -60,8 +62,8 @@ SPPMPassCallback::SPPMPassCallback(
     const LightSampler&     light_sampler,
     const TraceContext&     trace_context,
     TextureStore&           texture_store,
-    OIIO::TextureSystem&    oiio_texture_system,
-    OSL::ShadingSystem&     shading_system,
+    OIIOTextureSystem&      oiio_texture_system,
+    OSLShadingSystem&       shading_system,
     const SPPMParameters&   params)
   : m_params(params)
   , m_photon_tracer(

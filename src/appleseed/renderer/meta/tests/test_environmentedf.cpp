@@ -33,7 +33,9 @@
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/kernel/shading/oslshadergroupexec.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/shading/shadingcontext.h"
+#include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/entity/onframebeginrecorder.h"
@@ -70,10 +72,6 @@
 #include "foundation/platform/_beginoiioheaders.h"
 #include "OpenImageIO/texture.h"
 #include "foundation/platform/_endoiioheaders.h"
-
-// Boost headers.
-#include "boost/bind.hpp"
-#include "boost/shared_ptr.hpp"
 
 // Standard headers.
 #include <cassert>
@@ -191,16 +189,17 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
             TextureStore texture_store(m_scene);
             TextureCache texture_cache(texture_store);
 
-            boost::shared_ptr<OIIO::TextureSystem> texture_system(
-                OIIO::TextureSystem::create(),
-                boost::bind(&OIIO::TextureSystem::destroy, _1));
+            std::shared_ptr<OIIOTextureSystem> texture_system(
+                OIIOTextureSystemFactory::create(),
+                [](OIIOTextureSystem* object) { object->release(); });
 
             RendererServices renderer_services(
                 m_project,
                 *texture_system);
 
-            boost::shared_ptr<OSL::ShadingSystem> shading_system(
-                new OSL::ShadingSystem(&renderer_services, texture_system.get()));
+            std::shared_ptr<OSLShadingSystem> shading_system(
+                OSLShadingSystemFactory::create(&renderer_services, texture_system.get()),
+                [](OSLShadingSystem* object) { object->release(); });
 
             Intersector intersector(
                 m_project.get_trace_context(),

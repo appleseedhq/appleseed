@@ -37,22 +37,14 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
-// OSL headers.
-#include "foundation/platform/_beginoslheaders.h"
-#include "OSL/oslexec.h"
-#include "foundation/platform/_endoslheaders.h"
-
-// OpenImageIO headers.
-#include "foundation/platform/_beginoiioheaders.h"
-#include "OpenImageIO/texture.h"
-#include "foundation/platform/_endoiioheaders.h"
-
 // Standard headers.
 #include <cstddef>
 
 // Forward declarations.
 namespace renderer  { class Frame; }
 namespace renderer  { class LightSampler; }
+namespace renderer  { class OIIOTextureSystem; }
+namespace renderer  { class OSLShadingSystem; }
 namespace renderer  { class Project; }
 namespace renderer  { class SampleAccumulationBuffer; }
 namespace renderer  { class TextureStore; }
@@ -72,8 +64,8 @@ class LightTracingSampleGeneratorFactory
         const TraceContext&     trace_context,
         TextureStore&           texture_store,
         const LightSampler&     light_sampler,
-        OIIO::TextureSystem&    oiio_texture_system,
-        OSL::ShadingSystem&     shading_system,
+        OIIOTextureSystem&      oiio_texture_system,
+        OSLShadingSystem&       shading_system,
         const ParamArray&       params);
 
     // Delete this instance.
@@ -93,8 +85,8 @@ class LightTracingSampleGeneratorFactory
     const TraceContext&         m_trace_context;
     TextureStore&               m_texture_store;
     const LightSampler&         m_light_sampler;
-    OIIO::TextureSystem&        m_oiio_texture_system;
-    OSL::ShadingSystem&         m_shading_system;
+    OIIOTextureSystem&          m_oiio_texture_system;
+    OSLShadingSystem&           m_shading_system;
     const ParamArray            m_params;
 };
 

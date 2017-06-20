@@ -53,6 +53,7 @@
 // Forward declarations.
 namespace foundation    { class Arena; }
 namespace renderer      { class BSDF; }
+namespace renderer      { class OSLShadingSystem; }
 
 namespace renderer
 {
@@ -306,7 +307,7 @@ void process_transparency_tree(const OSL::ClosureColor* ci, Alpha& alpha);
 float process_holdout_tree(const OSL::ClosureColor* ci);
 foundation::Color3f process_background_tree(const OSL::ClosureColor* ci);
 
-void register_closures(OSL::ShadingSystem& shading_system);
+void register_closures(OSLShadingSystem& shading_system);
 
 
 //

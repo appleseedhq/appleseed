@@ -41,8 +41,10 @@
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/oslshadergroupexec.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
+#include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
@@ -223,8 +225,8 @@ namespace
             const LightSampler&     light_sampler,
             const TraceContext&     trace_context,
             TextureStore&           texture_store,
-            OIIO::TextureSystem&    oiio_texture_system,
-            OSL::ShadingSystem&     shading_system,
+            OIIOTextureSystem&      oiio_texture_system,
+            OSLShadingSystem&       shading_system,
             const SPPMParameters&   params,
             SPPMPhotonVector&       global_photons,
             const size_t            photon_begin,
@@ -293,7 +295,7 @@ namespace
         const LightSampler&         m_light_sampler;
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
-        OIIO::TextureSystem&        m_oiio_texture_system;
+        OIIOTextureSystem&          m_oiio_texture_system;
         Arena                       m_arena;
         OSLShaderGroupExec          m_shadergroup_exec;
         const SPPMParameters        m_params;
@@ -514,8 +516,8 @@ namespace
             const LightSampler&     light_sampler,
             const TraceContext&     trace_context,
             TextureStore&           texture_store,
-            OIIO::TextureSystem&    oiio_texture_system,
-            OSL::ShadingSystem&     shading_system,
+            OIIOTextureSystem&      oiio_texture_system,
+            OSLShadingSystem&       shading_system,
             const SPPMParameters&   params,
             SPPMPhotonVector&       global_photons,
             const size_t            photon_begin,
@@ -591,7 +593,7 @@ namespace
         const LightSampler&         m_light_sampler;
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
-        OIIO::TextureSystem&        m_oiio_texture_system;
+        OIIOTextureSystem&          m_oiio_texture_system;
         Arena                       m_arena;
         OSLShaderGroupExec          m_shadergroup_exec;
         const SPPMParameters        m_params;
@@ -713,8 +715,8 @@ SPPMPhotonTracer::SPPMPhotonTracer(
     const LightSampler&     light_sampler,
     const TraceContext&     trace_context,
     TextureStore&           texture_store,
-    OIIO::TextureSystem&    oiio_texture_system,
-    OSL::ShadingSystem&     shading_system,
+    OIIOTextureSystem&      oiio_texture_system,
+    OSLShadingSystem&       shading_system,
     const SPPMParameters&   params)
   : m_params(params)
   , m_scene(scene)

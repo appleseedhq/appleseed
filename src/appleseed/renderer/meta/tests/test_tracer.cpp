@@ -34,8 +34,10 @@
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/kernel/shading/oslshadergroupexec.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
+#include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/camera/pinholecamera.h"
@@ -72,12 +74,9 @@
 #include "OpenImageIO/texture.h"
 #include "foundation/platform/_endoiioheaders.h"
 
-// Boost headers.
-#include "boost/bind.hpp"
-#include "boost/shared_ptr.hpp"
-
 // Standard headers.
 #include <cstddef>
+#include <memory>
 #include <string>
 
 using namespace foundation;
@@ -215,11 +214,11 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         TextureStore                            m_texture_store;
         TextureCache                            m_texture_cache;
         Intersector                             m_intersector;
-        boost::shared_ptr<OIIO::TextureSystem>  m_texture_system;
-        boost::shared_ptr<RendererServices>     m_renderer_services;
-        boost::shared_ptr<OSL::ShadingSystem>   m_shading_system;
+        std::shared_ptr<OIIOTextureSystem>      m_texture_system;
+        std::shared_ptr<RendererServices>       m_renderer_services;
+        std::shared_ptr<OSLShadingSystem>       m_shading_system;
         Arena                                   m_arena;
-        boost::shared_ptr<OSLShaderGroupExec>   m_shading_group_exec;
+        std::shared_ptr<OSLShaderGroupExec>     m_shading_group_exec;
         OnFrameBeginRecorder                    m_recorder;
 
         Fixture()
@@ -229,14 +228,15 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
           , m_intersector(m_trace_context, m_texture_cache)
         {
             m_texture_system.reset(
-                OIIO::TextureSystem::create(),
-                boost::bind(&OIIO::TextureSystem::destroy, _1));
+                OIIOTextureSystemFactory::create(),
+                [](OIIOTextureSystem* object) { object->release(); });
             m_renderer_services.reset(
-                new RendererServices(*Base::m_project, *m_texture_system));
+                new RendererServices(
+                    *Base::m_project,
+                    reinterpret_cast<OIIO::TextureSystem&>(*m_texture_system)));
             m_shading_system.reset(
-                new OSL::ShadingSystem(
-                    m_renderer_services.get(),
-                    m_texture_system.get()));
+                OSLShadingSystemFactory::create(m_renderer_services.get(), m_texture_system.get()),
+                [](OSLShadingSystem* object) { object->release(); });
             m_shading_group_exec.reset(new OSLShaderGroupExec(*m_shading_system, m_arena));
 
             Base::m_scene->on_frame_begin(Base::m_project.ref(), 0, m_recorder);

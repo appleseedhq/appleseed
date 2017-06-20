@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/texturing/oiiotexturesystem.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -48,12 +49,6 @@
 #include "SeExprFunc.h"
 #include "SeExprNode.h"
 #pragma warning (pop)
-
-// OpenImageIO headers.
-#include "foundation/platform/_beginoiioheaders.h"
-#include "OpenImageIO/texture.h"
-#include "OpenImageIO/ustring.h"
-#include "foundation/platform/_endoiioheaders.h"
 
 // Boost headers.
 #include "boost/ptr_container/ptr_vector.hpp"
@@ -88,7 +83,7 @@ class TextureSeExprFunc
         m_texture_options.twrap = OIIO::TextureOpt::WrapPeriodic;
     }
 
-    void set_texture_system(OIIO::TextureSystem* texture_system)
+    void set_texture_system(OIIOTextureSystem* texture_system)
     {
         m_texture_system = texture_system;
     }
@@ -165,7 +160,7 @@ class TextureSeExprFunc
     }
 
   private:
-    OIIO::TextureSystem*        m_texture_system;
+    OIIOTextureSystem*          m_texture_system;
     OIIO::ustring               m_texture_filename;
     mutable OIIO::TextureOpt    m_texture_options;
     bool                        m_texture_is_srgb;
@@ -225,7 +220,7 @@ class SeAppleseedExpr
 
     foundation::Color3d update_and_evaluate(
         const ShadingPoint&     shading_point,
-        OIIO::TextureSystem&    texture_system)
+        OIIOTextureSystem&      texture_system)
     {
         for (foundation::each<boost::ptr_vector<TextureSeExprFunc>> i = m_functions_x; i; ++i)
             i->set_texture_system(&texture_system);

@@ -31,6 +31,7 @@
 #include "basegroup.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
@@ -98,7 +99,7 @@ ShaderGroupContainer& BaseGroup::shader_groups() const
 }
 
 bool BaseGroup::create_optimized_osl_shader_groups(
-    OSL::ShadingSystem& shading_system,
+    OSLShadingSystem&   shading_system,
     IAbortSwitch*       abort_switch)
 {
     bool success = true;

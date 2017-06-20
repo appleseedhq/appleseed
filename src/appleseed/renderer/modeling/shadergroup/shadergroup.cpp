@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/shadergroup/shader.h"
 #include "renderer/modeling/shadergroup/shaderconnection.h"
@@ -80,8 +81,6 @@ struct ShaderGroup::Impl
     ShaderConnectionContainer   m_connections;
     mutable OSL::ShaderGroupRef m_shader_group_ref;
     mutable SurfaceAreaMap      m_surface_areas;
-    const OSL::ShaderSymbol*    m_surface_shader_color_sym;
-    const OSL::ShaderSymbol*    m_surface_shader_alpha_sym;
 };
 
 ShaderGroup::ShaderGroup(const char* name)
@@ -113,8 +112,6 @@ void ShaderGroup::clear()
     impl->m_connections.clear();
     impl->m_shader_group_ref.reset();
     m_flags = 0;
-    impl->m_surface_shader_color_sym = 0;
-    impl->m_surface_shader_alpha_sym = 0;
 }
 
 void ShaderGroup::add_shader(
@@ -159,7 +156,7 @@ void ShaderGroup::add_connection(
 }
 
 bool ShaderGroup::create_optimized_osl_shader_group(
-    OSL::ShadingSystem& shading_system,
+    OSLShadingSystem&   shading_system,
     IAbortSwitch*       abort_switch)
 {
     if (is_valid())
@@ -209,49 +206,6 @@ bool ShaderGroup::create_optimized_osl_shader_group(
 
         impl->m_shader_group_ref = shader_group_ref;
 
-        // Set the shadergroup outputs and get symbols if needed.
-        for (each<ShaderContainer> i = impl->m_shaders; i; ++i)
-        {
-            if (strcmp(i->get_type(), "surface_shader") == 0)
-            {
-                // Renderer outputs.
-                const char* renderer_outputs[] =
-                {
-                    "Cout",
-                    "Aout",
-                };
-
-                if (shading_system.attribute(
-                        impl->m_shader_group_ref.get(),
-                        "renderer_outputs",
-                        OIIO::TypeDesc(OIIO::TypeDesc::STRING, 2),
-                        &renderer_outputs[0]))
-                {
-                    OSL::ShadingContext *ctx = shading_system.get_context();
-                    OSL::ShaderGlobals sg;
-                    memset(&sg, 0, sizeof(OSL::ShaderGlobals));
-
-                    if (shading_system.execute(
-                            ctx,
-                            *impl->m_shader_group_ref,
-                            sg,
-                            false))
-                    {
-                        impl->m_surface_shader_color_sym =
-                            shading_system.find_symbol(
-                                *impl->m_shader_group_ref,
-                                OIIO::ustring("Cout"));
-
-                        impl->m_surface_shader_alpha_sym =
-                            shading_system.find_symbol(
-                                *impl->m_shader_group_ref,
-                                OIIO::ustring("Aout"));
-                    }
-                }
-                break;
-            }
-        }
-
         get_shadergroup_closures_info(shading_system);
         report_has_closure("bsdf", HasBSDFs);
         report_has_closure("emission", HasEmission);
@@ -300,22 +254,12 @@ float ShaderGroup::get_surface_area(
     return impl->m_surface_areas[Impl::SurfaceAreaKey(assembly_instance, object_instance)];
 }
 
-OSL::ShaderGroupRef& ShaderGroup::shader_group_ref() const
+void* ShaderGroup::osl_shader_group() const
 {
-    return impl->m_shader_group_ref;
+    return impl->m_shader_group_ref.get();
 }
 
-const OSL::ShaderSymbol* ShaderGroup::surface_shader_color_symbol() const
-{
-    return impl->m_surface_shader_color_sym;
-}
-
-const OSL::ShaderSymbol* ShaderGroup::surface_shader_alpha_symbol() const
-{
-    return impl->m_surface_shader_alpha_sym;
-}
-
-void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_system)
+void ShaderGroup::get_shadergroup_closures_info(OSLShadingSystem& shading_system)
 {
     // Assume the shader group has all closure types.
     m_flags |= HasAllClosures;
@@ -415,7 +359,7 @@ void ShaderGroup::report_has_closure(const char* closure_name, const Flags flag)
     }
 }
 
-void ShaderGroup::get_shadergroup_globals_info(OSL::ShadingSystem& shading_system)
+void ShaderGroup::get_shadergroup_globals_info(OSLShadingSystem& shading_system)
 {
     // Assume the shader group uses all globals.
     m_flags |= UsesAllGlobals;

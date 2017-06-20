@@ -34,6 +34,8 @@
 #include "renderer/kernel/rendering/oiioerrorhandler.h"
 #include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/kernel/shading/closures.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
+#include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/visibilityflags.h"
@@ -66,7 +68,7 @@ BaseRenderer::BaseRenderer(
 #endif
 
     RENDERER_LOG_DEBUG("creating oiio texture system...");
-    m_texture_system = OIIO::TextureSystem::create(false);
+    m_texture_system = OIIOTextureSystemFactory::create(false);
     m_texture_system->attribute("automip", 0);
     m_texture_system->attribute("accept_untiled", 1);
     m_texture_system->attribute("accept_unmipped", 1);
@@ -74,10 +76,12 @@ BaseRenderer::BaseRenderer(
     m_texture_system->attribute("latlong_up", "y");
     m_texture_system->attribute("flip_t", 1);
 
-    m_renderer_services = new RendererServices(m_project, *m_texture_system);
+    m_renderer_services = new RendererServices(
+        m_project,
+        reinterpret_cast<OIIO::TextureSystem&>(*m_texture_system));
 
     RENDERER_LOG_DEBUG("creating osl shading system...");
-    m_shading_system = new OSL::ShadingSystem(
+    m_shading_system = OSLShadingSystemFactory::create(
         m_renderer_services,
         m_texture_system,
         m_error_handler);
@@ -105,7 +109,7 @@ BaseRenderer::~BaseRenderer()
 {
     RENDERER_LOG_DEBUG("destroying osl shading system...");
     m_project.get_scene()->release_optimized_osl_shader_groups();
-    delete m_shading_system;
+    m_shading_system->release();
     delete m_renderer_services;
 
     const string stats = m_texture_system->getstats();
@@ -113,7 +117,7 @@ BaseRenderer::~BaseRenderer()
     RENDERER_LOG_DEBUG("%s", modified_stats.c_str());
 
     RENDERER_LOG_DEBUG("destroying oiio texture system...");
-    OIIO::TextureSystem::destroy(m_texture_system);
+    m_texture_system->release();
     delete m_error_handler;
 }
 

@@ -37,11 +37,6 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/vector.h"
 
-// OpenImageIO headers.
-#include "foundation/platform/_beginoiioheaders.h"
-#include "OpenImageIO/texture.h"
-#include "foundation/platform/_endoiioheaders.h"
-
 // Standard headers.
 #include <cstddef>
 
@@ -49,6 +44,8 @@
 namespace foundation    { class Arena; }
 namespace renderer      { class ILightingEngine; }
 namespace renderer      { class Intersector; }
+namespace renderer      { class OIIOTextureSystem; }
+namespace renderer      { class OSLShadingSystem; }
 namespace renderer      { class ShadingPoint; }
 namespace renderer      { class TextureCache; }
 namespace renderer      { class Tracer; }
@@ -69,7 +66,7 @@ class ShadingContext
         const Intersector&          intersector,
         Tracer&                     tracer,
         TextureCache&               texture_cache,
-        OIIO::TextureSystem&        oiio_texture_system,
+        OIIOTextureSystem&          oiio_texture_system,
         OSLShaderGroupExec&         osl_shadergroup_exec,
         foundation::Arena&          arena,
         const size_t                thread_index,
@@ -83,7 +80,7 @@ class ShadingContext
 
     TextureCache& get_texture_cache() const;
 
-    OIIO::TextureSystem& get_oiio_texture_system() const;
+    OIIOTextureSystem&   get_oiio_texture_system() const;
 
     ILightingEngine* get_lighting_engine() const;
 
@@ -98,7 +95,7 @@ class ShadingContext
     // Return the maximum number of iterations in ray/path tracing loops.
     size_t get_max_iterations() const;
 
-    OSL::ShadingSystem& get_osl_shading_system() const;
+    OSLShadingSystem& get_osl_shading_system() const;
     OSL::ShadingContext* get_osl_shading_context() const;
 
     void execute_osl_shading(
@@ -140,7 +137,7 @@ class ShadingContext
     const Intersector&              m_intersector;
     Tracer&                         m_tracer;
     TextureCache&                   m_texture_cache;
-    OIIO::TextureSystem&            m_oiio_texture_system;
+    OIIOTextureSystem&              m_oiio_texture_system;
     OSLShaderGroupExec&             m_shadergroup_exec;
     foundation::Arena&              m_arena;
     const size_t                    m_thread_index;

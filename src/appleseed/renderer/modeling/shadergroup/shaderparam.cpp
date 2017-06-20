@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/api/apistring.h"
@@ -347,7 +348,7 @@ auto_release_ptr<ShaderParam> ShaderParam::create_string_param(
     return p;
 }
 
-bool ShaderParam::add(OSL::ShadingSystem& shading_system)
+bool ShaderParam::add(OSLShadingSystem& shading_system)
 {
     if (!shading_system.Parameter(get_name(), impl->m_type_desc, get_value()))
     {

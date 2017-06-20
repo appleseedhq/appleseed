@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/closures.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -48,7 +49,7 @@ namespace renderer
 // OSLShaderGroupExec class implementation.
 //
 
-OSLShaderGroupExec::OSLShaderGroupExec(OSL::ShadingSystem& shading_system, Arena& arena)
+OSLShaderGroupExec::OSLShaderGroupExec(OSLShadingSystem& shading_system, Arena& arena)
   : m_osl_shading_system(shading_system)
   , m_arena(arena)
   , m_osl_thread_info(shading_system.create_thread_info())
@@ -177,7 +178,7 @@ Color3f OSLShaderGroupExec::execute_background(
 
     m_osl_shading_system.execute(
         m_osl_shading_context,
-        *shader_group.shader_group_ref(),
+        *reinterpret_cast<OSL::ShaderGroup*>(shader_group.osl_shader_group()),
         sg);
 
     return process_background_tree(sg.Ci);
@@ -198,7 +199,7 @@ void OSLShaderGroupExec::do_execute(
 
     m_osl_shading_system.execute(
         m_osl_shading_context,
-        *shader_group.shader_group_ref(),
+        *reinterpret_cast<OSL::ShaderGroup*>(shader_group.osl_shader_group()),
         shading_point.get_osl_shader_globals());
 }
 

@@ -36,13 +36,10 @@
 #include "foundation/platform/sharedlibrary.h"
 #include "foundation/platform/thread.h"
 
-// Boost headers.
-#include "boost/shared_ptr.hpp"
-#include "boost/weak_ptr.hpp"
-
 // Standard headers.
 #include <cassert>
 #include <map>
+#include <memory>
 #include <string>
 
 using namespace foundation;
@@ -68,13 +65,13 @@ ExceptionPluginInitializationFailed::ExceptionPluginInitializationFailed()
 
 struct Plugin::Impl
 {
-    explicit Impl(boost::shared_ptr<SharedLibrary> p)
+    explicit Impl(std::shared_ptr<SharedLibrary> p)
       : m_library(p)
     {
         assert(m_library);
     }
 
-    boost::shared_ptr<SharedLibrary> m_library;
+    std::shared_ptr<SharedLibrary> m_library;
 };
 
 Plugin::Plugin(Impl* impl)
@@ -114,7 +111,7 @@ const char* Plugin::get_default_file_extension()
 
 namespace
 {
-    typedef map<string, boost::weak_ptr<SharedLibrary>> PluginCacheType;
+    typedef map<string, std::weak_ptr<SharedLibrary>> PluginCacheType;
 
     PluginCacheType g_plugin_cache;
     boost::mutex g_plugin_cache_mutex;
@@ -145,7 +142,7 @@ auto_release_ptr<Plugin> PluginCache::load(const char* path)
     PluginCacheType::iterator it = g_plugin_cache.find(path);
     if (it != g_plugin_cache.end())
     {
-        if (boost::shared_ptr<SharedLibrary> lib = it->second.lock())
+        if (std::shared_ptr<SharedLibrary> lib = it->second.lock())
         {
             Plugin::Impl* impl = new Plugin::Impl(lib);
             return auto_release_ptr<Plugin>(new Plugin(impl));
@@ -153,7 +150,7 @@ auto_release_ptr<Plugin> PluginCache::load(const char* path)
     }
 
     // If this plugin is not in the cache, load the shared lib.
-    boost::shared_ptr<SharedLibrary> lib(new SharedLibrary(path), PluginDeleter());
+    std::shared_ptr<SharedLibrary> lib(new SharedLibrary(path), PluginDeleter());
 
     // Try to call the initialization function if defined.
     Plugin::InitPluginFnType init_fn =
@@ -166,7 +163,7 @@ auto_release_ptr<Plugin> PluginCache::load(const char* path)
     }
 
     Plugin::Impl* impl = new Plugin::Impl(lib);
-    g_plugin_cache[path] = boost::weak_ptr<SharedLibrary>(lib);
+    g_plugin_cache[path] = std::weak_ptr<SharedLibrary>(lib);
     return auto_release_ptr<Plugin>(new Plugin(impl));
 }
 

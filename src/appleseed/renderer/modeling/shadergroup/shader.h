@@ -40,17 +40,13 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// OSL headers.
-#include "foundation/platform/_beginoslheaders.h"
-#include "OSL/oslexec.h"
-#include "foundation/platform/_endoslheaders.h"
-
 // Standard headers.
 #include <cstddef>
 
 // Forward declarations.
 namespace foundation    { class SearchPaths; }
 namespace renderer      { class Assembly; }
+namespace renderer      { class OSLShadingSystem; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 namespace renderer      { class ShaderGroup; }
@@ -91,7 +87,7 @@ class APPLESEED_DLLSYMBOL Shader
     // Destructor.
     ~Shader();
 
-    bool add(OSL::ShadingSystem& shading_system);
+    bool add(OSLShadingSystem& shading_system);
 };
 
 }       // namespace renderer

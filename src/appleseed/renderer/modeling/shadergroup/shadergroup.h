@@ -41,14 +41,10 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// OSL headers.
-#include "foundation/platform/_beginoslheaders.h"
-#include "OSL/oslexec.h"
-#include "foundation/platform/_endoslheaders.h"
-
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class AssemblyInstance; }
+namespace renderer      { class OSLShadingSystem; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class ObjectInstance; }
 
@@ -88,7 +84,7 @@ class APPLESEED_DLLSYMBOL ShaderGroup
 
     // Create internal OSL shader group.
     bool create_optimized_osl_shader_group(
-        OSL::ShadingSystem&         shading_system,
+        OSLShadingSystem&           shading_system,
         foundation::IAbortSwitch*   abort_switch = 0);
 
     // Release internal OSL shader group.
@@ -130,12 +126,8 @@ class APPLESEED_DLLSYMBOL ShaderGroup
         const AssemblyInstance* assembly_instance,
         const ObjectInstance*   object_instance) const;
 
-    // Return a reference-counted (but opaque) reference to the internal OSL shader group.
-    OSL::ShaderGroupRef& shader_group_ref() const;
-
-    // OSL symbols.
-    const OSL::ShaderSymbol* surface_shader_color_symbol() const;
-    const OSL::ShaderSymbol* surface_shader_alpha_symbol() const;
+    // Return an opaque pointer to the internal OSL shader group.
+    void* osl_shader_group() const;
 
   private:
     friend class LightSampler;
@@ -173,10 +165,10 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Destructor.
     ~ShaderGroup();
 
-    void get_shadergroup_closures_info(OSL::ShadingSystem& shading_system);
+    void get_shadergroup_closures_info(OSLShadingSystem& shading_system);
     void report_has_closure(const char* closure_name, const Flags flag) const;
 
-    void get_shadergroup_globals_info(OSL::ShadingSystem& shading_system);
+    void get_shadergroup_globals_info(OSLShadingSystem& shading_system);
     void report_uses_global(const char* global_name, const Flags flag) const;
 
     void set_surface_area(

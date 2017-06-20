@@ -36,7 +36,9 @@
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/kernel/shading/oslshadergroupexec.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/shading/shadingcontext.h"
+#include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/entity/onframebeginrecorder.h"
@@ -89,16 +91,17 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
             TextureStore texture_store(m_scene);
             TextureCache texture_cache(texture_store);
 
-            std::shared_ptr<OIIO::TextureSystem> texture_system(
-                OIIO::TextureSystem::create(),
-                [](OIIO::TextureSystem* object) { OIIO::TextureSystem::destroy(object); });
+            std::shared_ptr<OIIOTextureSystem> texture_system(
+                OIIOTextureSystemFactory::create(),
+                [](OIIOTextureSystem* object) { object->release(); });
 
             RendererServices renderer_services(
                 m_project,
                 *texture_system);
 
-            std::shared_ptr<OSL::ShadingSystem> shading_system(
-                new OSL::ShadingSystem(&renderer_services, texture_system.get()));
+            std::shared_ptr<OSLShadingSystem> shading_system(
+                OSLShadingSystemFactory::create(&renderer_services, texture_system.get()),
+                [](OSLShadingSystem* object) { object->release(); });
 
             Intersector intersector(
                 m_project.get_trace_context(),
