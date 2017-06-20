@@ -194,27 +194,34 @@ void LightTree::update_nodes_luminance()
 {
     // Make sure the tree was built.
     assert(!m_nodes.empty());
-
+    
+    float luminance = 0.0f;
     // Check if the scene has only one light
     if(m_nodes[0].is_leaf())
     {   
         size_t item_index = m_nodes[0].get_item_index();
         size_t light_source_index = m_items[item_index].m_light_sources_index;
-        float luminance = m_light_sources[light_source_index]->get_intensity()[0]; 
-        m_nodes[0].set_node_luminance(luminance);
-        return;
-    }
+        Spectrum spectrum = m_light_sources[light_source_index]->get_intensity();
 
-    // Start luminance update with the root node
-    float luminance = update_luminance(m_nodes[0].get_child_node_index()) // left child
-                    + update_luminance(m_nodes[0].get_child_node_index() + 1);  // right child
+        for(size_t i = 0; i < spectrum.size(); i++)
+        {
+            luminance += spectrum[i];
+        }
+        luminance /= spectrum.size();
+    }
+    else 
+    {
+        // Start luminance update with the root node
+        luminance = update_luminance(m_nodes[0].get_child_node_index()) // left child
+                        + update_luminance(m_nodes[0].get_child_node_index() + 1);  // right child
+    }
 
     m_nodes[0].set_node_luminance(luminance);
 }
 
 float LightTree::update_luminance(size_t node_index)
 {
-    float luminance = 0;
+    float luminance = 0.0f;
 
     if (!m_nodes[node_index].is_leaf())
     {
