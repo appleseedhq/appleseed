@@ -196,11 +196,11 @@ void CameraController::configure_controller()
         controller_target = m_pivot;
     }
 
-    const Matrix4d m = m_controller.get_transform();
+    const Matrix4d& m = m_controller.get_transform();
 
     const Vector3d camera_position = m.extract_translation();
-    const Vector3d camera_direction(-m[2], -m[6], -m[10]);
-    const Vector3d to_target = normalize(controller_target - camera_position);
+    const Vector3d camera_direction(normalize(Vector3d(-m[2], -m[6], -m[10])));
+    const Vector3d to_target = controller_target - camera_position;
 
     const double target_to_viewing_vector_distance =
         square_distance_point_line(
@@ -209,7 +209,7 @@ void CameraController::configure_controller()
             camera_direction);
 
     // Threshold to determine whether the target is on the viewing vector.
-    const double DistanceThreshold = 0.0000001;
+    const double DistanceThreshold = 1.0e-7;
 
     const bool target_is_behind = dot(to_target, camera_direction) < 0.0;
     const bool target_is_off = target_to_viewing_vector_distance > DistanceThreshold;
@@ -226,9 +226,7 @@ void CameraController::configure_controller()
         // If the target is not behind but it is off, move the target 
         // to the closest point on the viewing vector.
         controller_target =
-            camera_position +
-            dot((controller_target - camera_position), camera_direction) * camera_direction /
-            dot(camera_direction, camera_direction);
+            camera_position + dot(to_target, camera_direction) * camera_direction;
     }
 
     m_controller.set_target(controller_target);
