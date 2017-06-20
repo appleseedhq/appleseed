@@ -36,6 +36,7 @@
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/distance.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
 #include "foundation/utility/iostreamop.h"
@@ -180,18 +181,57 @@ void CameraController::configure_controller()
                 Vector3d(0.0, 1.0, 0.0)));  // up
     }
 
+    Vector3d controller_target;
+
     // Set the controller target.
     if (camera && camera->get_parameters().strings().exist("controller_target"))
     {
         // The scene's camera already has a target position, use it.
-        m_controller.set_target(
-            camera->get_parameters().get<Vector3d>("controller_target"));
+        controller_target = 
+            camera->get_parameters().get<Vector3d>("controller_target");
     }
     else
     {
         // Otherwise use the pivot point.
-        m_controller.set_target(m_pivot);
+        controller_target = m_pivot;
     }
+
+    const Matrix4d m = m_controller.get_transform();
+
+    const Vector3d camera_position = m.extract_translation();
+    const Vector3d camera_direction(-m[2], -m[6], -m[10]);
+    const Vector3d to_target = normalize(controller_target - camera_position);
+
+    const double target_to_viewing_vector_distance =
+        square_distance_point_line(
+            controller_target,
+            camera_position,
+            camera_direction);
+
+    // Threshold to determine whether the target is on the viewing vector.
+    const double DistanceThreshold = 0.0000001;
+
+    const bool target_is_behind = dot(to_target, camera_direction) < 0.0;
+    const bool target_is_off = target_to_viewing_vector_distance > DistanceThreshold;
+    
+    // Adjust the target so that it is always on the  
+    // viewing vector and in front of the camera.
+    if (target_is_behind)
+    {
+        // If the target is behind, choose a new valid target
+        controller_target = camera_position + camera_direction;
+    }
+    else if (target_is_off)
+    {
+        // If the target is not behind but it is off, move the target 
+        // to the closest point on the viewing vector.
+        controller_target =
+            camera_position +
+            dot((controller_target - camera_position), camera_direction) * camera_direction /
+            dot(camera_direction, camera_direction);
+    }
+
+    m_controller.set_target(controller_target);
 }
 
 Vector2d CameraController::get_mouse_position(const QMouseEvent* event) const
