@@ -38,19 +38,19 @@ using namespace std;
 
 TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 {
-    typedef std::vector<AABB3d> AABB3dVector;
+    typedef std::vector<AABB2d> AABB2dVector;
 
     TEST_CASE(TestBBoxesOrderedAlongLongestDimension)
     {
-        AABB3dVector bboxes = 
+        AABB2dVector bboxes = 
             {
-                AABB3d(Vector3d(-7.0, -1.0, -1.0), Vector3d(1.0,  1.0, 1.0)),
-                AABB3d(Vector3d( 1.0, -5.0, -1.0), Vector3d(3.0, -3.0, 1.0)),
-                AABB3d(Vector3d( 3.0,  3.0, -1.0), Vector3d(5.0,  5.0, 1.0))
+                AABB2d(Vector2d(-7.0, -1.0 ), Vector2d( 1.0,  1.0 )),
+                AABB2d(Vector2d( 1.0, -5.0 ), Vector2d( 3.0, -3.0 )),
+                AABB2d(Vector2d( 3.0,  3.0 ), Vector2d( 5.0,  5.0 ))
             };
         
-        MiddlePartitioner<AABB3dVector> partitioner(bboxes, 1);
-        const AABB3d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
+        MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
+        const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
         size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
 
         // Expect to return the end.
@@ -59,15 +59,15 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 
     TEST_CASE(TestBBoxesUnorderedAlongAllDimensions)
     {
-        AABB3dVector bboxes =
+        AABB2dVector bboxes =
             {
-                AABB3d(Vector3d( 3.0,  13.0, -3.0), Vector3d(5.0,  15.0, -1.0)),
-                AABB3d(Vector3d( 1.0, -15.0,  1.0), Vector3d(3.0, -13.0,  2.0)),
-                AABB3d(Vector3d(-7.0,  -1.0, -1.0), Vector3d(1.0,   1.0,  1.0))
+                AABB2d(Vector2d( 3.0,  13.0 ), Vector2d(5.0,  15.0 )),
+                AABB2d(Vector2d( 1.0, -15.0 ), Vector2d(3.0, -13.0 )),
+                AABB2d(Vector2d(-7.0,  -1.0 ), Vector2d(1.0,   1.0 ))
             };
 
-        MiddlePartitioner<AABB3dVector> partitioner(bboxes, 1);
-        const AABB3d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
+        MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
+        const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
 
         size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
         // Expect to return the end.
@@ -76,15 +76,15 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 
     TEST_CASE(TestBBoxes3PointLightsTestScene)
     {
-        AABB3dVector bboxes =
+        AABB2dVector bboxes =
             {
-                AABB3d(Vector3d( -0.01, 0.09, 0.99 ), Vector3d( 0.01, 0.11, 1.01 )),
-                AABB3d(Vector3d( -0.01, 0.09,-0.51 ), Vector3d( 0.01, 0.11,-0.49 )),
-                AABB3d(Vector3d( -0.49, 0.09,-0.01 ), Vector3d( 0.51, 0.11, 0.01 ))
+                AABB2d(Vector2d( -0.01, 0.09 ), Vector2d( 0.01, 0.11 )),
+                AABB2d(Vector2d( -0.01, 0.09 ), Vector2d( 0.01, 0.11 )),
+                AABB2d(Vector2d( -0.49, 0.09 ), Vector2d( 0.51, 0.11 ))
             };
 
-        MiddlePartitioner<AABB3dVector> partitioner(bboxes, 1);
-        const AABB3d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
+        MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
+        const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
 
         size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
         // Expect to return the end.
@@ -93,20 +93,20 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 
     TEST_CASE(TestBBoxesLightsFormingCube)
     {
-        AABB3dVector bboxes =
+        AABB2dVector bboxes =
             {
-                AABB3d(Vector3d( -0.51,-0.51,-0.51 ), Vector3d(-0.49,-0.49,-0.49 )),
-                AABB3d(Vector3d( -0.51,-0.51, 0.49 ), Vector3d(-0.49,-0.49, 0.51 )),
-                AABB3d(Vector3d( -0.51, 0.49,-0.51 ), Vector3d(-0.49, 0.51,-0.49 )),
-                AABB3d(Vector3d( -0.51, 0.49, 0.49 ), Vector3d(-0.49, 0.51, 0.51 )),
-                AABB3d(Vector3d(  0.49,-0.51,-0.51 ), Vector3d( 0.51,-0.49,-0.49 )),
-                AABB3d(Vector3d(  0.49,-0.51, 0.49 ), Vector3d( 0.51,-0.49, 0.51 )),
-                AABB3d(Vector3d(  0.49, 0.49,-0.51 ), Vector3d( 0.51, 0.51,-0.49 )),
-                AABB3d(Vector3d(  0.49, 0.49, 0.49 ), Vector3d( 0.51, 0.51, 0.51 ))
+                AABB2d(Vector2d(-0.51,-0.51 ), Vector2d(-0.49,-0.49 )),
+                AABB2d(Vector2d(-0.51,-0.51 ), Vector2d(-0.49,-0.49 )),
+                AABB2d(Vector2d(-0.51, 0.49 ), Vector2d(-0.49, 0.51 )),
+                AABB2d(Vector2d(-0.51, 0.49 ), Vector2d(-0.49, 0.51 )),
+                AABB2d(Vector2d( 0.49,-0.51 ), Vector2d( 0.51,-0.49 )),
+                AABB2d(Vector2d( 0.49,-0.51 ), Vector2d( 0.51,-0.49 )),
+                AABB2d(Vector2d( 0.49, 0.49 ), Vector2d( 0.51, 0.51 )),
+                AABB2d(Vector2d( 0.49, 0.49 ), Vector2d( 0.51, 0.51 ))
             };
 
-        MiddlePartitioner<AABB3dVector> partitioner(bboxes, 1);
-        const AABB3d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
+        MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
+        const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
         
         size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
         
@@ -116,16 +116,16 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 
     TEST_CASE(TestBBoxesOverlapping)
     {
-        AABB3dVector bboxes =
+        AABB2dVector bboxes =
             {
-                AABB3d(Vector3d( -0.01,-0.01,-0.01 ), Vector3d( 0.01, 0.01, 0.01 )),
-                AABB3d(Vector3d( -0.01,-0.01,-0.01 ), Vector3d( 0.01, 0.01, 0.01 )),
-                AABB3d(Vector3d( -0.01,-0.01,-0.01 ), Vector3d( 0.01, 0.01, 0.01 )),
-                AABB3d(Vector3d( -0.01,-0.01,-0.01 ), Vector3d( 0.01, 0.01, 0.01 ))
+                AABB2d(Vector2d(-0.01,-0.01 ), Vector2d( 0.01, 0.01 )),
+                AABB2d(Vector2d(-0.01,-0.01 ), Vector2d( 0.01, 0.01 )),
+                AABB2d(Vector2d(-0.01,-0.01 ), Vector2d( 0.01, 0.01 )),
+                AABB2d(Vector2d(-0.01,-0.01 ), Vector2d( 0.01, 0.01 ))
             };
         
-        MiddlePartitioner<AABB3dVector> partitioner(bboxes, 1);
-        const AABB3d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
+        MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
+        const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
         
         size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
         
