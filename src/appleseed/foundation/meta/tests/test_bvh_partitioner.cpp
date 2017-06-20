@@ -73,23 +73,6 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
         EXPECT_EQ(1, pivot);
     }
 
-    TEST_CASE(Partition_BBoxes3PointLightsTestScene)
-    {
-        AABB2dVector bboxes =
-            {
-                AABB2d(Vector2d( -0.01, 0.09 ), Vector2d( 0.01, 0.11 )),
-                AABB2d(Vector2d( -0.01, 0.09 ), Vector2d( 0.01, 0.11 )),
-                AABB2d(Vector2d( -0.49, 0.09 ), Vector2d( 0.51, 0.11 ))
-            };
-
-        MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
-        const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
-
-        size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
-
-        EXPECT_EQ(2, pivot);
-    }
-
     TEST_CASE(Partition_BBoxesFormingRectangle_ReturnsFirstElementAfterCenter)
     {
         AABB2dVector bboxes =
