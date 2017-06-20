@@ -38,23 +38,6 @@ using namespace std;
 
 TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 {
-    TEST_CASE(TestSingleBBoxPartition)
-    {
-        typedef std::vector<AABB3d> AABB3dVector;
-        
-        const AABB3d bbox(Vector3d(1.0, 2.0, 3.0), Vector3d(4.0, 5.0, 6.0));
-        
-        AABB3dVector bboxes;
-        bboxes.push_back(bbox);
-
-        MiddlePartitioner<AABB3dVector> partitioner(bboxes, 1);
-
-        size_t pivot = partitioner.partition(0, 1, bbox);
-
-        // Expect to return the end.
-        EXPECT_EQ(1, pivot);
-    }
-
     TEST_CASE(TestBBoxesOrderedAlongLongestDimension)
     {
         typedef std::vector<AABB3d> AABB3dVector;
