@@ -40,13 +40,22 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 {
     typedef std::vector<AABB2d> AABB2dVector;
 
+    //                 .         |
+    //                 .     __  |
+    //                 .    |  | | 
+    //  --10-9---------4----2--1---1--2-----
+    //    |__|         .         | |__|
+    //                 .         |
+    //                 .         |
+    //     [0]               [1]    [2]
+
     TEST_CASE(Partition_BBoxesOrderedAlongLongestDimension_ReturnsFirstElementAfterCenter)
     {
         AABB2dVector bboxes = 
             {
-                AABB2d(Vector2d(-7.0, -1.0 ), Vector2d( 1.0,  1.0 )),
-                AABB2d(Vector2d( 1.0, -5.0 ), Vector2d( 3.0, -3.0 )),
-                AABB2d(Vector2d( 3.0,  3.0 ), Vector2d( 5.0,  5.0 ))
+                AABB2d(Vector2d(-10.0, -1.0 ), Vector2d( -9.0,  0.0 )),
+                AABB2d(Vector2d( -2.0,  0.0 ), Vector2d( -1.0,  1.0 )),
+                AABB2d(Vector2d(  1.0, -1.0 ), Vector2d(  2.0,  0.0 ))
             };
         MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
         const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
@@ -55,14 +64,23 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 
         EXPECT_EQ(1, pivot);
     }
+
+    //                 .         |  __
+    //                 .     __  | |__|
+    //                 .    |  | | 
+    //  --10-9---------4----2--1---1--2-----
+    //    |__|         .         | 
+    //                 .         |
+    //                 .         |
+    //     [1]               [0]    [2]
 
     TEST_CASE(Partition_BBoxesUnorderedAlongAllDimensions_ReturnsFirstElementAfterCenter)
     {
         AABB2dVector bboxes =
             {
-                AABB2d(Vector2d( 3.0,  13.0 ), Vector2d(5.0,  15.0 )),
-                AABB2d(Vector2d( 1.0, -15.0 ), Vector2d(3.0, -13.0 )),
-                AABB2d(Vector2d(-7.0,  -1.0 ), Vector2d(1.0,   1.0 ))
+                AABB2d(Vector2d( -2.0,  0.0 ), Vector2d( -1.0,  1.0 )),
+                AABB2d(Vector2d(-10.0, -1.0 ), Vector2d( -9.0,  0.0 )),
+                AABB2d(Vector2d(  1.0,  1.0 ), Vector2d(  2.0,  2.0 ))
             };
 
         MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
@@ -73,14 +91,24 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
         EXPECT_EQ(1, pivot);
     }
 
+    //      [0]    [2]
+    //      __  |  __ 
+    //     |__| | |__|
+    //          | 
+    //  ---2--1---1--2---
+    //      __  |  __ 
+    //     |__| | |__|
+    //          |
+    //      [1]    [3]
+
     TEST_CASE(Partition_BBoxesFormingRectangle_ReturnsFirstElementAfterCenter)
     {
         AABB2dVector bboxes =
             {
-                AABB2d(Vector2d(-0.51,-0.51 ), Vector2d(-0.49,-0.49 )),
-                AABB2d(Vector2d(-0.51, 0.49 ), Vector2d(-0.49, 0.51 )),
-                AABB2d(Vector2d( 0.49,-0.51 ), Vector2d( 0.51,-0.49 )),
-                AABB2d(Vector2d( 0.49, 0.49 ), Vector2d( 0.51, 0.51 ))
+                AABB2d(Vector2d(-2.0, 1.0 ), Vector2d(-1.0, 2.0 )),
+                AABB2d(Vector2d(-2.0,-2.0 ), Vector2d(-1.0,-1.0 )),
+                AABB2d(Vector2d( 1.0, 1.0 ), Vector2d( 2.0, 2.0 )),
+                AABB2d(Vector2d( 1.0,-2.0 ), Vector2d( 2.0,-1.0 ))
             };
 
         MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
@@ -95,10 +123,10 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
     {
         AABB2dVector bboxes =
             {
-                AABB2d(Vector2d(-0.01,-0.01 ), Vector2d( 0.01, 0.01 )),
-                AABB2d(Vector2d(-0.01,-0.01 ), Vector2d( 0.01, 0.01 )),
-                AABB2d(Vector2d(-0.01,-0.01 ), Vector2d( 0.01, 0.01 )),
-                AABB2d(Vector2d(-0.01,-0.01 ), Vector2d( 0.01, 0.01 ))
+                AABB2d(Vector2d(-1.0,-1.0 ), Vector2d( 1.0, 1.0 )),
+                AABB2d(Vector2d(-1.0,-1.0 ), Vector2d( 1.0, 1.0 )),
+                AABB2d(Vector2d(-1.0,-1.0 ), Vector2d( 1.0, 1.0 )),
+                AABB2d(Vector2d(-1.0,-1.0 ), Vector2d( 1.0, 1.0 ))
             };
         
         MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
