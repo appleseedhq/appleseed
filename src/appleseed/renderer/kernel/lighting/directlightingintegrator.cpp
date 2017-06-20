@@ -431,14 +431,13 @@ void DirectLightingIntegrator::take_single_material_sample(
     Dual3f incoming;
     Spectrum sample_value;
     float sample_probability;
-
     if (!m_material_sampler.sample(
-        sampling_context,
-        outgoing, incoming,
-        sample_value, sample_probability))
-    {
+            sampling_context,
+            outgoing,
+            incoming,
+            sample_value,
+            sample_probability))
         return;
-    }
 
     // Trace a ray in the direction of the reflection.
     float weight;
