@@ -159,6 +159,25 @@ bool CameraController::eventFilter(QObject* object, QEvent* event)
 
 void CameraController::configure_controller()
 {
+    //
+    // Terminology:
+    //
+    //   Camera
+    //     The active camera of the scene, if there is one.
+    //
+    //   Camera Controller (or simply Controller)
+    //     This class, allows to control the camera using the mouse.
+    //
+    //   Controller Target
+    //     The point the controller (and thus the camera) "looks at".
+    //     It should always be along the viewing direction of the camera.
+    //
+    //   Pivot Point
+    //     A point of the scene that can be changed by clicking on objects
+    //     (or clicking in empty space to reset it) and that can become the
+    //     controller target if the user wishes so (by pressing 'f').
+    //
+
     // By default, the pivot point is the scene's center.
     m_pivot = Vector3d(m_project.get_scene()->compute_bbox().center());
 
@@ -181,13 +200,16 @@ void CameraController::configure_controller()
                 Vector3d(0.0, 1.0, 0.0)));  // up
     }
 
-    Vector3d controller_target;
+    // Check whether the camera has a controller target.
+    const bool has_target =
+        camera && camera->get_parameters().strings().exist("controller_target");
 
-    // Set the controller target.
-    if (camera && camera->get_parameters().strings().exist("controller_target"))
+    // Retrieve the controller target.
+    Vector3d controller_target;
+    if (has_target)
     {
-        // The scene's camera already has a target position, use it.
-        controller_target = 
+        // The scene's camera already has a controller target, use it.
+        controller_target =
             camera->get_parameters().get<Vector3d>("controller_target");
     }
     else
@@ -197,9 +219,8 @@ void CameraController::configure_controller()
     }
 
     const Matrix4d& m = m_controller.get_transform();
-
     const Vector3d camera_position = m.extract_translation();
-    const Vector3d camera_direction(normalize(Vector3d(-m[2], -m[6], -m[10])));
+    const Vector3d camera_direction = normalize(Vector3d(-m[2], -m[6], -m[10]));
     const Vector3d to_target = controller_target - camera_position;
 
     const double target_to_viewing_vector_distance =
@@ -208,14 +229,13 @@ void CameraController::configure_controller()
             camera_position,
             camera_direction);
 
-    // Threshold to determine whether the target is on the viewing vector.
-    const double DistanceThreshold = 1.0e-7;
-
+    // Check whether the target is on the viewing vector and in front of the camera.
     const bool target_is_behind = dot(to_target, camera_direction) < 0.0;
-    const bool target_is_off = target_to_viewing_vector_distance > DistanceThreshold;
-    
-    // Adjust the target so that it is always on the  
-    // viewing vector and in front of the camera.
+    const bool target_is_off = target_to_viewing_vector_distance > 1.0e-7;
+    if (has_target && (target_is_behind || target_is_off))
+        RENDERER_LOG_WARNING("camera's controller target is off the viewing direction, realigning it.");
+
+    // Realign the controller target if necessary.
     if (target_is_behind)
     {
         // If the target is behind, choose a new valid target.
@@ -223,13 +243,16 @@ void CameraController::configure_controller()
     }
     else if (target_is_off)
     {
-        // If the target is not behind but it is off, move the target 
+        // If the target is not behind but it is off, move it
         // to the closest point on the viewing vector.
         controller_target =
-            camera_position + dot(to_target, camera_direction) * camera_direction;
+            camera_position +
+            dot(to_target, camera_direction) * camera_direction;
     }
 
+    // Set the controller target and save it into the camera.
     m_controller.set_target(controller_target);
+    save_camera_target();
 }
 
 Vector2d CameraController::get_mouse_position(const QMouseEvent* event) const
