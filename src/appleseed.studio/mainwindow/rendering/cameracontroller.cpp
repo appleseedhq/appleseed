@@ -218,7 +218,7 @@ void CameraController::configure_controller()
     // viewing vector and in front of the camera.
     if (target_is_behind)
     {
-        // If the target is behind, choose a new valid target
+        // If the target is behind, choose a new valid target.
         controller_target = camera_position + camera_direction;
     }
     else if (target_is_off)
