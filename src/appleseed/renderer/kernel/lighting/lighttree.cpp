@@ -317,11 +317,6 @@ std::pair<size_t, float> LightTree::sample(
     float light_probability = 1.0;
     size_t node_index = 0;
 
-    printf("--------------otput light probabilities------------------\n");
-    printf("m_nodes size: %zu\n", m_nodes.size());
-    output_every_light_probability(0, surface_point, 1.0, s);
-    printf("--------------otput finished-----------------------------\n");
-
     std::pair<size_t, float> nearest_light;
 
     while (!m_nodes[node_index].is_leaf())
