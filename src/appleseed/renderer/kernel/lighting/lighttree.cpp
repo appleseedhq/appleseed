@@ -257,11 +257,12 @@ std::pair<size_t, float> LightTree::sample(
         const auto& bbox_left  = node.get_left_bbox();
         const auto& bbox_right = node.get_right_bbox();
 
-        const float distance_left  = foundation::square_distance(surface_point, bbox_left.center());
-        const float distance_right = foundation::square_distance(surface_point, bbox_right.center());
+        const float square_distance_left  = foundation::square_distance(surface_point, bbox_left.center());
+        const float square_distance_right = foundation::square_distance(surface_point, bbox_right.center());
 
-        float p1 = child1.get_probability(distance_left, bbox_left.radius());
-        float p2 = child2.get_probability(distance_right, bbox_right.radius());
+        float p1 = child1.get_probability(square_distance_left, bbox_left.radius());
+        float p2 = child2.get_probability(square_distance_right, bbox_right.radius());
+
 
         const float total = p1 + p2;
 
