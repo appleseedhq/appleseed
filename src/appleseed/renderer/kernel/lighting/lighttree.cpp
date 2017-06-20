@@ -238,12 +238,82 @@ float LightTree::update_luminance(size_t node_index)
     return luminance;
 }
 
+void LightTree::output_every_light_probability(
+        size_t                        node_index,
+        const foundation::Vector3d&   surface_point,
+        float                         light_probability,
+        float                         s) const
+{
+    printf("m_nodes index: %zu\n", node_index);
+
+    if(!m_nodes[node_index].is_leaf())
+    {
+        printf("NOT LEAF\n");
+        // LightTreeNodes
+        const auto& node   = m_nodes[node_index];
+        const auto& child1 = m_nodes[node.get_child_node_index()];
+        const auto& child2 = m_nodes[node.get_child_node_index() + 1];
+
+        const auto& bbox_left  = node.get_left_bbox();
+        const auto& bbox_right = node.get_right_bbox();
+
+        const float square_distance_left  = foundation::square_distance(surface_point, bbox_left.center());
+        const float square_distance_right = foundation::square_distance(surface_point, bbox_right.center());
+
+        float p1 = child1.get_probability(square_distance_left, bbox_left.radius());
+        float p2 = child2.get_probability(square_distance_right, bbox_right.radius());
+
+        const float total = p1 + p2;
+
+        if (total <= 0.0f)
+        {
+            p1 = 0.5;
+            p2 = 0.5;
+        }
+        else
+        {
+            p1 = p1 / total;
+            p2 = p2 / total;
+        }
+
+        printf("calling m_nodes index: %zu\n", node.get_child_node_index());
+        output_every_light_probability(
+            node.get_child_node_index(),
+            surface_point,
+            light_probability * p1,
+            s / p1);
+
+        printf("calling m_nodes index: %zu\n", node.get_child_node_index()+1);
+        output_every_light_probability(
+            node.get_child_node_index() + 1,
+            surface_point,
+            light_probability * p2,
+            (s - p1) / p2);
+    }
+    else
+    {
+        printf("IS LEAF\n");
+        size_t item_index = m_nodes[node_index].get_item_index();
+        // NOTE: this will work only for pure NPL scene as the lights in
+        // m_light_sources will be mixed. Rewrite this!
+        size_t light_index = m_items[item_index].m_light_sources_index;
+    
+        printf("light index: %zu\n", light_index);
+        printf("light_probability: %f\n", light_probability);
+    }
+}
+
 std::pair<size_t, float> LightTree::sample(
         const foundation::Vector3d    surface_point,
         float                         s) const
 {
     float light_probability = 1.0;
     size_t node_index = 0;
+
+    printf("--------------otput light probabilities------------------\n");
+    printf("m_nodes size: %zu\n", m_nodes.size());
+    output_every_light_probability(0, surface_point, 1.0, s);
+    printf("--------------otput finished-----------------------------\n");
 
     std::pair<size_t, float> nearest_light;
 

@@ -115,6 +115,11 @@ class LightTree
 
     void store_items_in_leaves(foundation::Statistics& statistics);
     void update_nodes_luminance();
+    void output_every_light_probability(
+        size_t                        node_index,
+        const foundation::Vector3d&   surface_point,
+        float                         light_probability,
+        float                         s) const;
 
     float update_luminance(size_t node_index);
 };
