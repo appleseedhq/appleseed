@@ -42,33 +42,36 @@ using namespace appleseed::studio;
 using namespace renderer;
 using namespace foundation;
 
+MainWindow* mainwindow()
+{
+    return PythonInterpreter::instance().get_mainwindow();
+}
+
 Project* new_project()
 {
-    MainWindow* mainWindow = PythonInterpreter::instance().get_mainwindow();
-    mainWindow->new_project();
+    mainwindow()->new_project();
 
-    return mainWindow->current_project();
+    return mainwindow()->current_project();
 }
 
 void open_project(const char* project_path)
 {
-    PythonInterpreter::instance().get_mainwindow()->open_project(project_path);
+    mainwindow()->open_project(project_path);
 }
 
 void save_project(const char* project_path = 0)
 {
-    MainWindow* mainWindow = PythonInterpreter::instance().get_mainwindow();
     if (project_path == 0)
     {
-        mainWindow->save_project(mainWindow->current_project()->get_path());
+        mainwindow()->save_project(mainwindow()->current_project()->get_path());
     } else
-        mainWindow->save_project(project_path);
+        mainwindow()->save_project(project_path);
 }
 BOOST_PYTHON_FUNCTION_OVERLOADS(save_project_overloads, save_project, 0, 1)
 
 Project* current_project()
 {
-    return PythonInterpreter::instance().get_mainwindow()->current_project();
+    mainwindow()->current_project();
 }
 
 BOOST_PYTHON_MODULE(_appleseedstudio)
