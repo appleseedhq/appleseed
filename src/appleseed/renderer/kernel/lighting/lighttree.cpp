@@ -146,6 +146,17 @@ void LightTree::build(
             statistics).to_string().c_str());
 
     RENDERER_LOG_INFO("Number of nodes: %zu", m_nodes.size());
+    
+    // Output the tree structure.
+    // TODO: Add ASCII graphics.
+    for(size_t i = 0; i < m_nodes.size(); i++)
+    {
+        RENDERER_LOG_INFO("Index: %zu", i);
+        RENDERER_LOG_INFO("Is leaf: %d", m_nodes[i].is_leaf());
+        RENDERER_LOG_INFO("Left node index: %zu", m_nodes[i].get_child_node_index());
+        RENDERER_LOG_INFO("Right node index: %zu", m_nodes[i].get_child_node_index() + 1);
+    }
+}
 
 void LightTree::store_items_in_leaves(foundation::Statistics& statistics)
 {
