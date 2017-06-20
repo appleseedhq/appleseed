@@ -38,10 +38,10 @@ using namespace std;
 
 TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 {
+    typedef std::vector<AABB3d> AABB3dVector;
+    
     TEST_CASE(TestBBoxesOrderedAlongLongestDimension)
     {
-        typedef std::vector<AABB3d> AABB3dVector;
-        
         AABB3dVector bboxes;
         
         bboxes.push_back(AABB3d(Vector3d(-7.0, -1.0, -1.0), Vector3d(1.0,  1.0, 1.0)));
@@ -58,8 +58,6 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 
     TEST_CASE(TestBBoxesUnorderedAlongAllDimensions)
     {
-        typedef std::vector<AABB3d> AABB3dVector;
-        
         AABB3dVector bboxes;
         
         bboxes.push_back(AABB3d(Vector3d( 3.0,  13.0, -3.0), Vector3d(5.0,  15.0, -1.0)));
@@ -76,8 +74,6 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 
     TEST_CASE(TestBBoxes3PointLightsTestScene)
     {
-        typedef std::vector<AABB3d> AABB3dVector;
-        
         AABB3dVector bboxes;
         
         bboxes.push_back(AABB3d(Vector3d( -0.01, 0.09, 0.99 ), Vector3d( 0.01, 0.11, 1.01 )));
@@ -94,8 +90,6 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 
     TEST_CASE(TestBBoxesLightsFormingCube)
     {
-        typedef std::vector<AABB3d> AABB3dVector;
-        
         AABB3dVector bboxes;
         
         bboxes.push_back(AABB3d(Vector3d( -0.51,-0.51,-0.51 ), Vector3d(-0.49,-0.49,-0.49 )));
@@ -118,8 +112,6 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 
     TEST_CASE(TestBBoxesOverlapping)
     {
-        typedef std::vector<AABB3d> AABB3dVector;
-        
         AABB3dVector bboxes;
         
         bboxes.push_back(AABB3d(Vector3d( -0.01,-0.01,-0.01 ), Vector3d( 0.01, 0.01, 0.01 )));
