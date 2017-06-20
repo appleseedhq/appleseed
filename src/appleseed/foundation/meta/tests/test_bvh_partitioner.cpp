@@ -40,7 +40,7 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 {
     typedef std::vector<AABB2d> AABB2dVector;
 
-    TEST_CASE(TestBBoxesOrderedAlongLongestDimension)
+    TEST_CASE(Partition_BBoxesOrderedAlongLongestDimension_ReturnsFirstElementAfterCenter)
     {
         AABB2dVector bboxes = 
             {
@@ -48,16 +48,15 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
                 AABB2d(Vector2d( 1.0, -5.0 ), Vector2d( 3.0, -3.0 )),
                 AABB2d(Vector2d( 3.0,  3.0 ), Vector2d( 5.0,  5.0 ))
             };
-        
         MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
         const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
+
         size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
 
-        // Expect to return the end.
         EXPECT_EQ(1, pivot);
     }
 
-    TEST_CASE(TestBBoxesUnorderedAlongAllDimensions)
+    TEST_CASE(Partition_BBoxesUnorderedAlongAllDimensions_ReturnsFirstElementAfterCenter)
     {
         AABB2dVector bboxes =
             {
@@ -70,11 +69,11 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
         const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
 
         size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
-        // Expect to return the end.
+
         EXPECT_EQ(1, pivot);
     }
 
-    TEST_CASE(TestBBoxes3PointLightsTestScene)
+    TEST_CASE(Partition_BBoxes3PointLightsTestScene)
     {
         AABB2dVector bboxes =
             {
@@ -87,21 +86,17 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
         const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
 
         size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
-        // Expect to return the end.
+
         EXPECT_EQ(2, pivot);
     }
 
-    TEST_CASE(TestBBoxesLightsFormingCube)
+    TEST_CASE(Partition_BBoxesFormingRectangle_ReturnsFirstElementAfterCenter)
     {
         AABB2dVector bboxes =
             {
                 AABB2d(Vector2d(-0.51,-0.51 ), Vector2d(-0.49,-0.49 )),
-                AABB2d(Vector2d(-0.51,-0.51 ), Vector2d(-0.49,-0.49 )),
-                AABB2d(Vector2d(-0.51, 0.49 ), Vector2d(-0.49, 0.51 )),
                 AABB2d(Vector2d(-0.51, 0.49 ), Vector2d(-0.49, 0.51 )),
                 AABB2d(Vector2d( 0.49,-0.51 ), Vector2d( 0.51,-0.49 )),
-                AABB2d(Vector2d( 0.49,-0.51 ), Vector2d( 0.51,-0.49 )),
-                AABB2d(Vector2d( 0.49, 0.49 ), Vector2d( 0.51, 0.51 )),
                 AABB2d(Vector2d( 0.49, 0.49 ), Vector2d( 0.51, 0.51 ))
             };
 
@@ -110,11 +105,10 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
         
         size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
         
-        // Expect to return the end.
-        EXPECT_EQ(4, pivot);
+        EXPECT_EQ(2, pivot);
     }
 
-    TEST_CASE(TestBBoxesOverlapping)
+    TEST_CASE(Partition_BBoxesOverlapping_ReturnSecondElement)
     {
         AABB2dVector bboxes =
             {
@@ -129,7 +123,6 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
         
         size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
         
-        // Expect to return the end.
         EXPECT_EQ(1, pivot);
     }
 }
