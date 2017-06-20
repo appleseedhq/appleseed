@@ -239,6 +239,7 @@ void ColorMapInputWidget::set_value(const QString& value)
     }
     catch (const ExceptionStringConversionError&)
     {
+        m_line_edit->setText(value);
         m_entity_button->setText(value);
         setCurrentIndex(1);
     }
