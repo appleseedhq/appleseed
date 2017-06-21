@@ -149,81 +149,6 @@ color get_illuminant_XYZ(string illuminant)
     return transform_xyY_to_XYZ(white_xyY);
 }
 
-//
-// Reference:
-//
-//      "Design of Advanced Color Temperature Control Systems for HTDV 
-//      Applications"
-//      Bongsoon Kang, Ohak Moon, Changhee Hong, Honam Lee, Bonghwan Cho,
-//      Youngsun Kim
-//
-//      http://www.jkps.or.kr/journal/download_pdf.php?spage=865&volume=41&number=6
-//
-
-void get_xy_from_CCT_Kang(int CCT, output float xy[2])
-{
-    float x, y;
-
-    if (CCT >= 1667 && CCT <= 4000)
-    {
-        float T2 = sqr(CCT);
-
-        float A = -0.2661239e10 / T2 * CCT;
-        float B = -0.2343589e7 / T2;
-        float C = 0.8776956e4 / CCT;
-
-        x = A + B + C + 0.179910;
-        float x2 = sqr(x);
-
-        if (CCT < 2222)
-        {
-            A = -1.1063814 * x2 * x;
-            B = -1.34811020 * x2;
-            C = 2.18555832 * x;
-
-            y = A + B + C - 0.20219683;
-        }
-        else
-        {
-            A = -0.9549476 * x2 * x;
-            B = -1.37418593 * x2;
-            C = 2.09137015 * x;
-
-            y = A + B + C - 0.16748867;
-        }
-    }
-    else if (CCT > 4000 && CCT <= 25000)
-    {
-        float T2 = sqr(CCT);
-
-        float A = -3.0258469e10 / T2 * CCT;
-        float B = 2.1070379e7 / T2;
-        float C = 0.2226347e4 / CCT;
-
-        x = A + B + C + 0.24039;
-        float x2 = sqr(x);
-
-        A = 3.0817580 * x2 * x;
-        B = -5.8733867 * x2;
-        C = 3.75112997 * x;
-
-        y = A + B + C - 0.37001483;
-    }
-    else
-    {
-        x = y = 0.0;
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]: CCT out of range in %s, %s:%i\n",
-                shadername, __FILE__, __LINE__);
-#endif
-    }
-    xy[0] = x;
-    xy[1] = y;
-}
-
 void get_RGB_to_XYZ_matrix(
     string color_space,
     output vector RGB_to_XYZ[3],
@@ -405,7 +330,7 @@ color transform_linear_RGB_to_XYZ(
 
         XYZ = adapted_XYZ;
     }
-    return (color) XYZ;
+    return (color) max(0.0, XYZ);
 }
 
 //
@@ -455,7 +380,7 @@ color transform_XYZ_to_linear_RGB(
         dot(source_XYZ_to_RGB[1], XYZ),
         dot(source_XYZ_to_RGB[2], XYZ));
 
-    return (color) linear_RGB;
+    return (color) max(0.0, linear_RGB); // negative values = imaginary colors
 }
 
 //
@@ -477,7 +402,7 @@ color transform_linear_RGB_to_XYZ(
         dot(source_RGB_to_XYZ[1], (vector) linear_RGB_color),
         dot(source_RGB_to_XYZ[2], (vector) linear_RGB_color));
 
-    return (color) XYZ;
+    return (color) max(0.0, XYZ);
 } 
 
 color transform_XYZ_to_linear_RGB(
@@ -495,128 +420,86 @@ color transform_XYZ_to_linear_RGB(
         dot(source_XYZ_to_RGB[1], XYZ),
         dot(source_XYZ_to_RGB[2], XYZ));
 
-    return (color) linear_RGB;
+    return (color) max(0.0, linear_RGB); // negative values = imaginary colors
 }
 
 //
 // Reference:
 //
-//      CIE UCS 1960 color space
+//      "Design of Advanced Color Temperature Control Systems for HTDV 
+//      Applications"
+//      Bongsoon Kang, Ohak Moon, Changhee Hong, Honam Lee, Bonghwan Cho,
+//      Youngsun Kim
 //
-//      https://en.wikipedia.org/wiki/CIE_1960_color_space
-//
-
-color transform_XYZ_to_UCS(color XYZ)
-{
-    float U = 2 * XYZ[0] / 3.0;
-    float V = XYZ[1];
-    float W = (-XYZ[0] + 3 * XYZ[1] + XYZ[2]) / 2.0;
-
-    return color(U, V, W);
-}
-
-color transform_UCS_to_XYZ(color UCS)
-{
-    float X = 3 * UCS[0] / 2.0;
-    float Y = UCS[1];
-    float Z = 3 * (UCS[0] - 3 * UCS[1] + 2 * UCS[2]) / 2.0;
-
-    return color(X, Y, Z);
-}
-
-color transform_UCS_to_uv(color UCS)
-{
-    float denom = UCS[0] + UCS[1] + UCS[2];
-
-    return color(UCS[0] / denom, UCS[1] / denom, 1.0);
-}
-
-void transform_UCS_to_uv(color UCS, output float uv[2])
-{
-    color UCS_uv = transform_UCS_to_uv(UCS);
-
-    uv[0] = UCS_uv[0];
-    uv[1] = UCS_uv[1];
-}
-
-color transform_XYZ_to_uv(color XYZ)
-{
-    float denom = XYZ[0] + 15 * XYZ[1] + 3 * XYZ[2];
-
-    return color(4 * XYZ[0] / denom, 6 * XYZ[1] / denom, 1.0);
-}
-
-void transform_XYZ_to_uv(color XYZ, output float uv[2])
-{
-    color UCS_uv = transform_XYZ_to_uv(XYZ);
-
-    uv[0] = UCS_uv[0];
-    uv[1] = UCS_uv[1];
-}
-
-//
-// CIE L*a*b* and CIE L*u*v have L in [0,100] range, and a,b and u,v in
-// [-100,100] range. Remap to [0,1]
+//      http://www.jkps.or.kr/journal/download_pdf.php?spage=865&volume=41&number=6
 //
 
-color remap_CIELab(color Lab)
+void get_xy_from_CCT_Kang(int CCT, output float xy[2])
 {
-    float L = Lab[0] * 0.01;
-    float a = (Lab[1] + 100.0) * 0.005;
-    float b = (Lab[2] + 100.0) * 0.005;
+    float x, y;
 
-    return color(L, a, b);
-}
+    if (CCT >= 1667 && CCT <= 4000)
+    {
+        // Not enough precision otherwise, so explicit powers used.
 
-color remap_CIELuv(color Luv)
-{
-    return remap_CIELab(Luv);
-}
+        x = -0.2661239 * pow(10.0, 9.0) / pow(CCT, 3.0) -
+             0.2343589 * pow(10.0, 6.0) / pow(CCT, 2.0) +
+             0.8776596 * pow(10.0, 3.0) / CCT +
+             0.179910;
 
-color inverse_remap_CIELab(color C)
-{
-    float L = C[0] * 100.0;
-    float a = C[1] * 200.0 - 100.0;
-    float b = C[2] * 200.0 - 100.0;
+        if (CCT <= 2222)
+        {
+            y = -1.10638140 * pow(x, 3.0) -
+                 1.34811020 * pow(x, 2.0) +
+                 2.18555832 * x -
+                 0.20219683;
+        }
+        else
+        {
+            y = -0.95494760 * pow(x, 3.0) -
+                 1.37418593 * pow(x, 2.0) +
+                 2.09137015 * x -
+                 0.16748867;
+        }
+    }
+    else if (CCT > 4000 && CCT < 25000)
+    {
+        x = -3.0258469 * pow(10.0, 9.0) / pow(CCT, 3.0) +
+             2.1070379 * pow(10.0, 6.0) / pow(CCT, 2.0) +
+             0.2226347 * pow(10.0, 3.0) / CCT +
+             0.24039;
 
-    return color(L, a, b);
-}
+        y = 3.08175800 * pow(x, 3.0) -
+            5.87338670 * pow(x, 2.0) +
+            3.75112997 * x -
+            0.37001483;
+    }
+    else
+    {
+        x = y = 0.0;
+#ifdef DEBUG
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
 
-color inverse_remap_CIELuv(color C)
-{
-    return inverse_remap_CIELab(C);
-}
-
-//
-// Remap LCh to [0,1], L in [0,100] range, C in [0,100] range and
-// hue in [0,360] degrees range.
-//
-
-color remap_CIELCh(color LCh)
-{
-    float L = LCh[0] * 0.01;
-    float C = LCh[1] * 0.01;
-    float h = LCh[2] / 360;
-
-    return color(L, C, h);
-}
-
-color inverse_remap_CIELCh(color in)
-{
-    float L = in[0] * 100.0;
-    float C = in[1] * 100.0;
-    float h = in[2] * 360;
-
-    return color(L, C, h);
+        warning("[WARNING]: CCT out of range in %s, %s:%i\n",
+                shadername, __FILE__, __LINE__);
+#endif
+    }
+    xy[0] = x;
+    xy[1] = y;
 }
 
 //
 // Reference:
 //
-//      RGB to XYZ to Lab equations
+//      XYZ to CIE 1976 L*a*b* | CIELAB equations
+//      Colorimetry - Part 4: CIE 1976 L*a*b* colour space
 //
 //      http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_Lab.html
 //      http://www.brucelindbloom.com/LContinuity.html
+//      http://cie.co.at/index.php?i_ca_id=485
+//
+//      Lightness in [0,100], a*,b* in [-100,100] ranges
 //
 
 color transform_XYZ_to_Lab(color XYZ_color, color reference_white_xyY)
@@ -635,7 +518,7 @@ color transform_XYZ_to_Lab(color XYZ_color, color reference_white_xyY)
     float a = 500.0 * (XYZ[0] - XYZ[1]);
     float b = 200.0 * (XYZ[1] - XYZ[2]);
 
-    return color(L, a, b); // L in [0,100]
+    return color(L, a, b);
 }
 
 color transform_XYZ_to_Lab(color XYZ_color, float reference_white_xy[2])
@@ -653,9 +536,13 @@ color transform_XYZ_to_Lab(color XYZ_color, string illuminant)
 //
 // Reference:
 //
-//      Lab to XYZ
+//      CIE L*a*b* 1976 | CIELAB to XYZ
+//      Colorimetry - Part 4: CIE 1976 L*a*b* colour space
 //
 //      http://www.brucelindbloom.com/index.html?Eqn_Lab_to_XYZ.html
+//      http://cie.co.at/index.php?i_ca_id=485
+//
+//      Lightness in [0,100], a,b in [-100,100] domains
 //
 
 color transform_Lab_to_XYZ(color Lab, color reference_white_xyY)
@@ -696,10 +583,15 @@ color transform_Lab_to_XYZ(color Lab_color, string illuminant)
 //
 // Reference:
 //
-//      XYZ to Luv
+//      XYZ to CIE 1976 L*u*v* | CIELUV
+//      Colorimetry - Part 5: CIE 1976 L*u*v* colour space and u',v'
+//      Uniform Chromaticity Scale Diagram
 //
 //      http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_Luv.html
 //      http://www.brucelindbloom.com/LContinuity.html
+//      http://hsevi.ir/RI_Standard/File/987
+//
+//      Lightness in [0,100], u,v in [-100,100] ranges
 //
 
 color transform_XYZ_to_Luv(color XYZ_color, color reference_white_xyY)
@@ -742,10 +634,15 @@ color transform_XYZ_to_Luv(color XYZ_color, string illuminant)
 //
 // Reference:
 //
-//      Luv to XYZ
+//      CIE 1976 L*u*v* | CIELUV to XYZ
+//      Colorimetry - Part 5: CIE 1976 L*u*v* colour space and u',v'
+//      Uniform Chromaticity Scale Diagram 
 //
 //      http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_Luv.html
 //      http://www.brucelindbloom.com/LContinuity.html
+//      http://hsevi.ir/RI_Standard/File/987
+//
+//      Lightness in [0,100], u,v in [-100,100] domains
 //
 
 color transform_Luv_to_XYZ(color Luv, color reference_white_xyY)
@@ -787,13 +684,15 @@ color transform_Luv_to_XYZ(color Luv, string illuminant)
 //
 // Reference:
 //
-//      Lab to LCH(ab) equations
-//
+//      CIE 1976 L*a*b* to LCh_ab equations
+//      Colorimetry - Part 4: CIE 1976 L*a*b* colour space
+//      
 //      http://www.brucelindbloom.com/index.html?Eqn_Lab_to_LCH.html
 //      http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_Luv.html
-//
-// Note: When converting from Lab, LCH contains H in degrees, and when
-//       converting to LCH, H is also expected in degrees.
+//      http://cie.co.at/index.php?i_ca_id=485      
+//      
+//      Lightness in [0,100], Chroma in [0,100], hue angle in [0,360] degrees
+//      ranges.
 //
 
 color transform_Lab_to_LCh_ab(color Lab)
@@ -869,10 +768,16 @@ color transform_LCh_ab_to_linear_RGB(
 //
 // Reference:
 //
-//      Luv to LCH(uv) equations
+//      CIE 1976 L*u*v* to LCh_uv equations
+//      Colorimetry - Part 5: CIE 1976 L*u*v* colour space and u',v'
+//      Uniform Chromaticity Scale Diagram
 //
 //      http://www.brucelindbloom.com/index.html?Eqn_Luv_to_LCH.html
+//      http://hsevi.ir/RI_Standard/File/987
 //
+//      Lightness in [0,100], Chroma in [0,100], hue angle in [0,360] degrees
+//      ranges
+//      
 
 color transform_Luv_to_LCh_uv(color Luv)
 {
@@ -945,218 +850,248 @@ color transform_LCh_uv_to_linear_RGB(
 }
 
 //
-// Reference:
+// CIELAB, CIELUV, have values in range L [0,100], a,b [-100,100]
+// and u,v [-100,100].
 //
-//      http://colour-science.org/
-//      colour/colour/models/rgb/deprecated.py
+
+color remap_CIELab(color Lab)
+{
+    float L = Lab[0] * 0.01;
+    float a = (Lab[1] + 100.0) * 0.005;
+    float b = (Lab[2] + 100.0) * 0.005;
+
+    return color(L, a, b);
+}
+
+color remap_CIELuv(color Luv)
+{
+    return remap_CIELab(Luv);
+}
+
+color inverse_remap_CIELab(color C)
+{
+    float L = C[0] * 100.0;
+    float a = C[1] * 200.0 - 100.0;
+    float b = C[2] * 200.0 - 100.0;
+
+    return color(L, a, b);
+}
+
+color inverse_remap_CIELuv(color C)
+{
+    return inverse_remap_CIELab(C);
+}
+
+//
+// LCh (ab, uv), has values L in [0,100] range, chroma in [0,100] range
+// and hue in [0,360] degrees range.
+//
+
+color remap_CIELCh(color LCh)
+{
+    float L = LCh[0] * 0.01;
+    float C = LCh[1] * 0.01;
+    float h = LCh[2] / 360;
+
+    return color(L, C, h);
+}
+
+color inverse_remap_CIELCh(color in)
+{
+    float L = in[0] * 100.0;
+    float C = in[1] * 100.0;
+    float h = in[2] * 360;
+
+    return color(L, C, h);
+}
+
+//
+// Reference:
 //
 //      Handbook of Digital Image Synthesis: Scientific Foundations of
 //      Rendering, Vincent Pegoraro, CRC Press, 2016
 //      ISBN 1315395215, 9781315395210
-//      (chapter 20: color science, page 707)
+//
+// Note: hue values are in [0,1], instead of [0,360] degrees
 //
 
-color transform_RGB_to_HSV(color C)
+float get_hue_angle(color C, float value, float rgbmin, float chroma)
 {
-    if (C != color(0))
+    float hue;
+
+    if (C[0] == value)
     {
-        float r = C[0], g = C[1], b = C[2];
-
-        float maximum = max(r, max(g, b));
-        float minimum = min(r, min(g, b));
-
-        float delta = max(0.0, maximum - minimum);
-
-        float value = maximum, hue;
-
-        float saturation = (delta == 0.0 || maximum == 0.0)
-            ? 0.0
-            : delta / maximum;
-
-        if (delta == 0.0 || saturation == 0.0)
-        {
-            hue = 0.0;
-        }
-        else
-        {
-            float delta_r = (((maximum - r) / 6.0) + (delta / 2.0)) / delta;
-            float delta_g = (((maximum - g) / 6.0) + (delta / 2.0)) / delta;
-            float delta_b = (((maximum - b) / 6.0) + (delta / 2.0)) / delta;
-
-            hue = delta_b - delta_g;
-            hue = (g == maximum) ? (1.0 / 3.0) + delta_r - delta_b : hue;
-            hue = (b == maximum) ? (2.0 / 3.0) + delta_g - delta_r : hue;
-            hue = mod(hue, 1.0);
-        }
-        return color(hue, saturation, value);
+        hue = mod((C[1] - C[2]) / chroma, 6.0);
+    }
+    else if (C[1] == value)
+    {
+        hue = (C[2] - C[0]) / chroma + 2.0;
     }
     else
     {
-        return color(0);
+        hue = (C[0] - C[1]) / chroma + 4.0;
     }
+    return mod(hue / 6.0, 1.0);
 }
 
-//
-// Reference:
-//
-//      http://www.easyrgb.com/en/math.php#text21
-//
-
-color transform_HSV_to_RGB(color C)
+float hue_to_rgb(float v1, float v2, float vH)
 {
-    if (C != color(0) || C[2] > 0.0)
+    float vh = mod(vH, 1.0), out = 0.0;
+
+    if (vh * 6.0 < 1.0)
     {
-        float hue = C[0], saturation = C[1], value = C[2], r, g, b;
-
-        hue *= 6.0;
-        if (hue == 6.0) hue = 0.0;
-
-        int i = (int) floor(hue);
-
-        float j = value * (1.0 - saturation);
-        float k = value * (1.0 - saturation * (hue - (float) i));
-        float l = value * (1.0 - saturation * (1.0 - (hue - (float) i)));
-
-        if (i == 0)
-        {
-            r = value;
-            g = l;
-            b = j;
-        }
-        else if (i == 1)
-        {
-            r = k;
-            g = value;
-            b = j;
-        }
-        else if (i == 2)
-        {
-            r = j;
-            g = value;
-            b = l;
-        }
-        else if (i == 3)
-        {
-            r = j;
-            g = k;
-            b = value;
-        }
-        else if (i == 4)
-        {
-            r = l;
-            g = j;
-            b = value;
-        }
-        else
-        {
-            r = value;
-            g = j;
-            b = k;
-        }
-        return color(r, g, b);
+        out = v1 + (v2 - v1) * 6.0 * vh;
+    }
+    else if (vh * 2.0 < 1.0)
+    {
+        out = v2;
+    }
+    else if (vh * 3.0 < 2.0)
+    {
+        out = v1 + (v2 - v1) * ((2.0 / 3.0) - vh) * 6.0;
     }
     else
     {
-        return color(0);
+        out = v1;
     }
+    return out;
 }
 
-color transform_RGB_to_HSL(color C)
+color transform_RGB_to_HSV(color RGB)
 {
-    if (C != color(0))
+    float value = max(RGB[0], max(RGB[1], RGB[2]));
+
+    if (value <= 0.0)
     {
-        float r = C[0], g = C[1], b = C[2];
-        float hue, saturation, lightness;
+        return color(0); // black
+    }
 
-        float maximum = max(r, max(g, b));
-        float minimum = min(r, min(g, b));
+    float rgbmin = min(RGB[0], min(RGB[1], RGB[2]));
+    float chroma = value - rgbmin;
 
-        lightness = (maximum + minimum) / 2.0;
+    if (chroma == 0.0)
+    {
+        return color(0.0, 0.0, value); // greyscale
+    }
 
-        float delta = max(0.0, maximum - minimum);        
+    float hue = get_hue_angle(RGB, value, rgbmin, chroma);
+    float saturation = chroma / value;
 
-        if (delta == 0.0 || lightness == 0.0)
-        {
-            hue = saturation = 0.0;
-        }
-        else
-        {
-            saturation = (lightness < 0.5)
-                ? delta / (maximum + minimum)
-                : delta / (2.0 - maximum - minimum);
+    return color(hue, saturation, value);
+}
 
-            float delta_r = (((maximum - r) / 6.0) + (delta / 2.0)) / delta;
-            float delta_g = (((maximum - g) / 6.0) + (delta / 2.0)) / delta;
-            float delta_b = (((maximum - b) / 6.0) + (delta / 2.0)) / delta;
+color transform_RGB_to_HSL(color RGB)
+{
+    float value = max(RGB[0], max(RGB[1], RGB[2]));
 
-            hue = delta_b - delta_g;
-            hue = (g == maximum) ? (1.0 / 3.0) + delta_r - delta_b : hue;
-            hue = (b == maximum) ? (2.0 / 3.0) + delta_g - delta_r : hue;
-            hue = mod(hue, 1.0);
-        }
-        return color(hue, saturation, lightness);
+    if (value <= 0.0)
+    {
+        return color(0); // black
+    }
+
+    float rgbmin = min(RGB[0], min(RGB[1], RGB[2]));
+    float chroma = value - rgbmin;
+    float lightness = (value + rgbmin) / 2.0;
+
+    if (chroma == 0.0 || lightness == 1.0)
+    {
+       return color(0.0, 0.0, lightness);
+    }
+
+    float saturation = chroma / (1.0 - abs(2.0 * lightness - 1.0));
+    float hue = get_hue_angle(RGB, value, rgbmin, chroma);
+
+    return color(hue, saturation, lightness);
+}
+
+color transform_HSV_to_RGB(color HSV)
+{
+    float hue = HSV[0], saturation = HSV[1], value = HSV[2];
+
+    if (value <= 0.0)
+    {
+        return color(0);
+    }
+
+    if (saturation <= 0.0)
+    {
+        return color(value); // grey
+    }
+
+    float sector = hue * 6.0, r, g, b;
+
+    int sextant = (int) floor(sector);
+    float fract = sector - (float) sextant;
+
+    float p = value * (1.0 - saturation);
+    float q = value * (1.0 - saturation * fract);
+    float t = value * (1.0 - saturation * (1.0 - fract));
+
+    if (sextant == 0)
+    {
+        r = value;
+        g = t;
+        b = p;
+    }
+    else if (sextant == 1)
+    {
+        r = q;
+        g = value;
+        b = p;
+    }
+    else if (sextant == 2)
+    {
+        r = p;
+        g = value;
+        b = t;
+    }
+    else if (sextant == 3)
+    {
+        r = p;
+        g = q;
+        b = value;
+    }
+    else if (sextant == 4)
+    {
+        r = t;
+        g = p;
+        b = value;
     }
     else
     {
-        return color(0);
+        r = value;
+        g = p;
+        b = q;
     }
-}
 
-//
-// Reference:
-//
-//      http://www.easyrgb.com/en/math.php#text21
-//
+    return color(r, g, b);
+} 
 
-color transform_HSL_to_RGB(color C)
+color transform_HSL_to_RGB(color HSL)
 {
-    float hue_to_rgb(float v1, float v2, float vH)
-    {
-        float vh = mod(vH, 1.0), out = 0.0;
+    float hue = HSL[0], saturation = HSL[1], lightness = HSL[2];
 
-        if (vh * 6.0 < 1.0)
-        {
-            out = v1 + (v2 - v1) * 6.0 * vh;
-        }
-        else if (vh * 2.0 < 1.0)
-        {
-            out = v2;
-        }
-        else if (vh * 3.0 < 2.0)
-        {
-            out = v1 + (v2 - v1) * ((2.0 / 3.0) - vh) * 6.0;
-        }
-        else
-        {
-            out = v1;
-        }
-        return out;
-    }
-
-    float hue = C[0], saturation = C[1], lightness = C[2];
-
-    if (C == color(0) || lightness == 0.0)
+    if (lightness <= 0.0)
     {
         return color(0);
     }
-    else if (saturation == 0.0)
+
+    if (saturation <= 0.0)
     {
         return color(lightness);
     }
-    else
-    {
-        float v2 = (lightness < 0.5)
-            ? lightness * (1.0 + saturation)
-            : (lightness + saturation) - (saturation * lightness);
 
-        float v1 = 2.0 * lightness - v2;
+    float v2 = (lightness < 0.5)
+        ? lightness * (1.0 + saturation)
+        : (lightness + saturation) - (saturation * lightness);
 
-        float r = hue_to_rgb(v1, v2, hue + (1.0 / 3.0));
-        float g = hue_to_rgb(v1, v2, hue);
-        float b = hue_to_rgb(v1, v2, hue - (1.0 / 3.0));
+    float v1 = 2.0 * lightness - v2;
 
-        return color(r, g, b);
-    }
+    float r = hue_to_rgb(v1, v2, hue + (1.0 / 3.0));
+    float g = hue_to_rgb(v1, v2, hue);
+    float b = hue_to_rgb(v1, v2, hue - (1.0 / 3.0));
+
+    return color(r, g, b);
 }
 
 //
@@ -1173,10 +1108,7 @@ color transform_HSL_to_RGB(color C)
 //
 //      http://www.ece.rochester.edu/~gsharma/ciede2000/ciede2000noteCRNA.pdf
 //
-// Note: It's unlikely this will be of any use to the end user, but it's of
-//       use to us in measuring deviation from the color transformation 
-//       results against reference values. Used for now with OSL testshade
-//       exclusively.
+// Note. It's unlikely of use to the end-user, but it's handy for us.
 //
 
 float deltaE_CIEDE2000(

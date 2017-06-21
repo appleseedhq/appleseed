@@ -51,7 +51,7 @@ shader as_color_transform
         string as_maya_attribute_short_name = "is",
         int as_maya_attribute_keyable = 0,
         string widget = "mapper",
-        string options = "RGB:0|HSV:1|HSL:2|XYZ:3|xyY:4|CIE L*a*b*:5|CIE L*u*v*:6|CIE Lch_ab:7|CIE Lch_uv:8|CIE UCS 1960:9",
+        string options = "RGB:0|HSV:1|HSL:2|XYZ:3|xyY:4|CIE 1976 L*a*b*:5|CIE 1976 L*u*v*:6|CIE 1976 LCh_ab:7|CIE 1976 LCh_uv:8",
         string label = "Input Space",
         string page = "Color Attributes"
     ]],
@@ -61,7 +61,7 @@ shader as_color_transform
         string as_maya_attribute_short_name = "os",
         int as_maya_attribute_keyable = 0,
         string widget = "mapper",
-        string options = "RGB:0|HSV:1|HSL:2|XYZ:3|xyY:4|CIE L*a*b*:5|CIE L*u*v*:6|CIE Lch_ab:7|CIE Lch_uv:8|CIE UCS 1960:9",
+        string options = "RGB:0|HSV:1|HSL:2|XYZ:3|xyY:4|CIE 1976 L*a*b*:5|CIE 1976 L*u*v*:6|CIE 1976 LCh_ab:7|CIE 1976 LCh_uv:8",
         string label = "Output Space",
         string page = "Color Attributes"
     ]],
@@ -154,10 +154,6 @@ shader as_color_transform
             color Luv = transform_LCh_uv_to_Luv(LCh_uv);
             XYZ = transform_Luv_to_XYZ(Luv, illuminant);
         }
-        else if (in_inputSpace == 9)
-        {
-            XYZ = transform_UCS_to_XYZ(in_color);
-        }
         else
         {
 #ifdef DEBUG
@@ -217,10 +213,6 @@ shader as_color_transform
             out = transform_Luv_to_LCh_uv(Luv);
             out = remap_CIELCh(out);
         }
-        else if (in_outputSpace == 9)
-        {
-            out = transform_XYZ_to_UCS(XYZ);
-        }
         else
         {
 #ifdef DEBUG
@@ -231,7 +223,6 @@ shader as_color_transform
                     in_outputSpace, shadername, __FILE__, __LINE__);
 #endif
         }
-
         out_outColor = out;
     }
     else
@@ -239,5 +230,5 @@ shader as_color_transform
         out_outColor = in_color;
     }
 
-    out_outColor = max(0, out_outColor);
+    out_outColor = max(0.0, out_outColor);
 }
