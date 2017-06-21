@@ -332,7 +332,7 @@ std::pair<size_t, float> LightTree::sample(
             node_index = node.get_child_node_index() + 1;
         }
     }
-
+    light_probability = 1.0;
     size_t item_index = m_nodes[node_index].get_item_index();
     // NOTE: this will work only for pure NPL scene as the lights in
     // m_light_sources will be mixed. Rewrite this!
