@@ -28,7 +28,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/mainwindow.h"
-#include "pythoninterpreter.h"
+#include "python/pythoninterpreter.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
@@ -42,40 +42,40 @@ using namespace appleseed::studio;
 using namespace renderer;
 using namespace foundation;
 
-MainWindow* mainwindow()
+MainWindow* main_window()
 {
-    return PythonInterpreter::instance().get_mainwindow();
+    return PythonInterpreter::instance().get_main_window();
 }
 
 Project* new_project()
 {
-    mainwindow()->new_project();
-    return mainwindow()->current_project();
+    main_window()->new_project();
+    return main_window()->current_project();
 }
 
 Project* open_project(const char* project_path)
 {
-    mainwindow()->open_project(project_path);
-    return mainwindow()->current_project();
+    main_window()->open_project(project_path);
+    return main_window()->current_project();
 }
 
 void save_project(const char* project_path = 0)
 {
     if (project_path == 0)
-        mainwindow()->save_project(mainwindow()->current_project()->get_path());
+        main_window()->save_project(main_window()->current_project()->get_path());
     else
-        mainwindow()->save_project(project_path);
+        main_window()->save_project(project_path);
 }
 BOOST_PYTHON_FUNCTION_OVERLOADS(save_project_overloads, save_project, 0, 1)
 
 Project* current_project()
 {
-    return mainwindow()->current_project();
+    return main_window()->current_project();
 }
 
 bool is_project_dirty()
 {
-    return mainwindow()->is_project_dirty();
+    return main_window()->is_project_dirty();
 }
 
 BOOST_PYTHON_MODULE(_appleseedstudio)

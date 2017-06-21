@@ -59,9 +59,14 @@ PythonInterpreter& PythonInterpreter::instance()
     return interpreter;
 }
 
-void PythonInterpreter::execute_command(const char* command)
+void PythonInterpreter::set_main_window(MainWindow* main_window)
 {
-    PyRun_SimpleString(command);
+    m_main_window = main_window;
+}
+
+MainWindow* PythonInterpreter::get_main_window() const
+{
+    return m_main_window;
 }
 
 void PythonInterpreter::redirect_output(OutputRedirector redirector)
@@ -74,14 +79,9 @@ void PythonInterpreter::redirect_output(OutputRedirector redirector)
     sys_module.attr("stderr") = redirector;
 }
 
-void PythonInterpreter::set_mainwindow(MainWindow* window)
+void PythonInterpreter::execute_command(const char* command)
 {
-    mainWindow = window;
-}
-
-MainWindow* PythonInterpreter::get_mainwindow()
-{
-    return mainWindow;
+    PyRun_SimpleString(command);
 }
 
 PythonInterpreter::PythonInterpreter()
@@ -97,11 +97,11 @@ PythonInterpreter::PythonInterpreter()
     // Add path to appleseed module to sys.path so python can find it.
     bpy::import("sys").attr("path").attr("append")(lib.string());
 
-    // Imports appleseed module and creates asd alias for it
-    // so we can refer to it by both names.
+    // Imports appleseed module with 'asd' alias for it
+    // and _appleseedstudio module with 'studio' alias for it.
     PyRun_SimpleString("import appleseed\n"
-                       "asr = appleseed\n"
                        "import _appleseedstudio\n"
+                       "asr = appleseed\n"
                        "studio = _appleseedstudio");
 }
 

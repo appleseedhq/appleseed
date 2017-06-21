@@ -98,8 +98,6 @@
 #include <algorithm>
 #include <cassert>
 
-#include "python/pythoninterpreter.h"
-
 using namespace appleseed::shared;
 using namespace foundation;
 using namespace renderer;
@@ -912,38 +910,36 @@ namespace
     }
 }
 
-bool MainWindow::attempt_close_project()
+bool MainWindow::can_close_project()
 {
+    // Project being loaded: can't close.
     if (m_project_manager.is_project_loading())
         return false;
 
-    if (can_close_project())
+    // No project open: no problem.
+    if (!m_project_manager.is_project_open())
         return true;
 
+    // Unmodified project: no problem.
+    if (!m_project_manager.is_project_dirty())
+        return true;
 
     // The current project has been modified, ask the user what to do.
     switch (show_modified_project_message_box(this))
     {
-      case QMessageBox::Save:
-        slot_save_project();
-        return true;
+        case QMessageBox::Save:
+            slot_save_project();
+            return true;
 
-      case QMessageBox::Discard:
-        return true;
+        case QMessageBox::Discard:
+            return true;
 
-      case QMessageBox::Cancel:
-        return false;
+        case QMessageBox::Cancel:
+            return false;
     }
 
     assert(!"Should never be reached.");
     return false;
-}
-
-bool MainWindow::can_close_project()
-{
-    return !m_project_manager.is_project_loading() && // Project is not being loaded: no problem
-        (!m_project_manager.is_project_open() ||      // No project open: no problem
-         !m_project_manager.is_project_dirty());      // Unmodified project: no problem
 }
 
 void MainWindow::on_project_change()
@@ -1129,7 +1125,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
         m_rendering_manager.wait_until_rendering_end();
     }
 
-    if (!attempt_close_project())
+    if (!can_close_project())
     {
         event->ignore();
         return;
@@ -1160,7 +1156,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::slot_new_project()
 {
-    if (!attempt_close_project())
+    if (!can_close_project())
         return;
 
     new_project();
@@ -1168,7 +1164,7 @@ void MainWindow::slot_new_project()
 
 void MainWindow::slot_open_project()
 {
-    if (!attempt_close_project())
+    if (!can_close_project())
         return;
 
     const QString filter_string =
@@ -1197,7 +1193,7 @@ void MainWindow::slot_open_project()
 
 void MainWindow::slot_open_recent()
 {
-    if (!attempt_close_project())
+    if (!can_close_project())
         return;
 
     QAction* action = qobject_cast<QAction*>(sender());
@@ -1219,7 +1215,7 @@ void MainWindow::slot_clear_open_recent_files_menu()
 
 void MainWindow::slot_open_cornellbox_builtin_project()
 {
-    if (!attempt_close_project())
+    if (!can_close_project())
         return;
 
     APPLESEED_UNUSED const bool successful = m_project_manager.load_builtin_project("cornell_box");
@@ -1233,7 +1229,7 @@ void MainWindow::slot_reload_project()
     assert(m_project_manager.is_project_open());
     assert(m_project_manager.get_project()->has_path());
 
-    if (!attempt_close_project())
+    if (!can_close_project())
         return;
 
     open_project(m_project_manager.get_project()->get_path());

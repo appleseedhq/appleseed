@@ -96,7 +96,6 @@ class MainWindow
 
     renderer::Project* current_project();
     bool is_project_dirty();
-    bool can_close_project();
 
   signals:
     void signal_refresh_attribute_editor(const foundation::Dictionary& values) const;
@@ -190,7 +189,7 @@ class MainWindow
 
     // Project file handling.
     renderer::ParamArray get_project_params(const char* configuration_name) const;
-    bool attempt_close_project();
+    bool can_close_project();
     void on_project_change();
 
     // Project file monitoring.

@@ -307,7 +307,7 @@ int main(int argc, char* argv[])
     configure_application(application);
 
     appleseed::studio::MainWindow window;
-    PythonInterpreter::instance().set_mainwindow(&window);
+    PythonInterpreter::instance().set_main_window(&window);
 
     if (!cl.m_filename.values().empty())
     {

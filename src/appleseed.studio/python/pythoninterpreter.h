@@ -44,17 +44,19 @@ class PythonInterpreter
 {
   public:
     static PythonInterpreter& instance();
-    void execute_command(const char* command);
+
+    void set_main_window(MainWindow* main_window);
+    MainWindow* get_main_window() const;
 
     void redirect_output(OutputRedirector redirector);
-    void set_mainwindow(MainWindow* mainWindow);
-    MainWindow* get_mainwindow();
+
+    void execute_command(const char* command);
 
   private:
     PythonInterpreter();
     ~PythonInterpreter();
 
-    MainWindow* mainWindow;
+    MainWindow* m_main_window;
 };
 
 }       // namespace studio
