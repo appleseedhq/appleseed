@@ -72,6 +72,11 @@ void save_project(const char* project_path = 0)
 }
 BOOST_PYTHON_FUNCTION_OVERLOADS(save_project_overloads, save_project, 0, 1)
 
+void close_project()
+{
+    main_window()->close_project();
+}
+
 Project* current_project()
 {
     return project_manager()->get_project();
@@ -90,6 +95,7 @@ BOOST_PYTHON_MODULE(_appleseedstudio)
              bpy::return_value_policy<bpy::reference_existing_object>());
     bpy::def("save_project", save_project,
              save_project_overloads(bpy::args("project_path")));
+    bpy::def("close_project", close_project);
 
     bpy::def("current_project", current_project,
              bpy::return_value_policy<bpy::reference_existing_object>());

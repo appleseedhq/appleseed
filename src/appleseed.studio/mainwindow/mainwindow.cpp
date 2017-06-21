@@ -258,6 +258,12 @@ void MainWindow::save_project(QString filepath)
     }
 }
 
+void MainWindow::close_project()
+{
+    m_project_manager.close_project();
+    on_project_change();
+}
+
 void MainWindow::build_menus()
 {
     //
@@ -1323,9 +1329,7 @@ void MainWindow::slot_close_project()
     if (!can_close_project())
         return;
 
-    m_project_manager.close_project();
-
-    on_project_change();
+    close_project();
 }
 
 QString MainWindow::get_filter_string(const int filter)
