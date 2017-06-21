@@ -190,6 +190,11 @@ namespace
     };
 }
 
+ProjectManager* MainWindow::get_project_manager()
+{
+    return &m_project_manager;
+}
+
 void MainWindow::new_project()
 {
     m_project_manager.create_project();
@@ -251,16 +256,6 @@ void MainWindow::save_project(QString filepath)
 
         update_workspace();
     }
-}
-
-Project* MainWindow::current_project()
-{
-    return m_project_manager.get_project();
-}
-
-bool MainWindow::is_project_dirty()
-{
-    return m_project_manager.is_project_dirty();
 }
 
 void MainWindow::build_menus()
@@ -1269,10 +1264,10 @@ void MainWindow::slot_save_project()
 {
     assert(m_project_manager.is_project_open());
 
-    if (!current_project()->has_path())
+    if (!m_project_manager.get_project()->has_path())
         slot_save_project_as();
     else
-        save_project(current_project()->get_path());
+        save_project(m_project_manager.get_project()->get_path());
 }
 
 void MainWindow::slot_save_project_as()

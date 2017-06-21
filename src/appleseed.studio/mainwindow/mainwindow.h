@@ -89,13 +89,12 @@ class MainWindow
     // Destructor.
     ~MainWindow();
 
+    ProjectManager* get_project_manager();
+
     void new_project();
     void open_project(const QString& filepath);
     void open_and_render_project(const QString& filepath, const QString& configuration);
     void save_project(QString filepath);
-
-    renderer::Project* current_project();
-    bool is_project_dirty();
 
   signals:
     void signal_refresh_attribute_editor(const foundation::Dictionary& values) const;

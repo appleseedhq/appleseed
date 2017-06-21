@@ -47,22 +47,26 @@ MainWindow* main_window()
     return PythonInterpreter::instance().get_main_window();
 }
 
+ProjectManager* project_manager() {
+    return main_window()->get_project_manager();
+}
+
 Project* new_project()
 {
     main_window()->new_project();
-    return main_window()->current_project();
+    return project_manager()->get_project();
 }
 
 Project* open_project(const char* project_path)
 {
     main_window()->open_project(project_path);
-    return main_window()->current_project();
+    return project_manager()->get_project();
 }
 
 void save_project(const char* project_path = 0)
 {
     if (project_path == 0)
-        main_window()->save_project(main_window()->current_project()->get_path());
+        main_window()->save_project(project_manager()->get_project()->get_path());
     else
         main_window()->save_project(project_path);
 }
@@ -70,12 +74,12 @@ BOOST_PYTHON_FUNCTION_OVERLOADS(save_project_overloads, save_project, 0, 1)
 
 Project* current_project()
 {
-    return main_window()->current_project();
+    return project_manager()->get_project();
 }
 
 bool is_project_dirty()
 {
-    return main_window()->is_project_dirty();
+    return project_manager()->is_project_dirty();
 }
 
 BOOST_PYTHON_MODULE(_appleseedstudio)
