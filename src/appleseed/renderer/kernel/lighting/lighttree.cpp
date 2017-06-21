@@ -133,11 +133,8 @@ void LightTree::build(
             &ordering[0],
             ordering.size());
 
-        // Store the items in the tree leaves whenever possible.
-        store_items_in_leaves(statistics);
-    
         // Set total luminance for each node of the LightTree
-        update_nodes_luminance();
+        update_luminance(0);
     }
     
     // Print light tree statistics.
@@ -159,66 +156,6 @@ void LightTree::build(
     }
 }
 
-void LightTree::store_items_in_leaves(foundation::Statistics& statistics)
-{
-    size_t leaf_count = 0;
-    size_t fat_leaf_count = 0;
-
-    const size_t node_count = m_nodes.size();
-
-    for (size_t i = 0; i < node_count; ++i)
-    {
-        NodeType& node = m_nodes[i];
-
-        if (node.is_leaf())
-        {
-            ++leaf_count;
-
-            const size_t item_count = node.get_item_count();
-
-            if (item_count <= NodeType::MaxUserDataSize / sizeof(Item))
-            {
-                ++fat_leaf_count;
-
-                const size_t item_begin = node.get_item_index();
-                Item* user_data = &node.get_user_data<Item>();
-
-                for (size_t j = 0; j < item_count; ++j)
-                    user_data[j] = m_items[item_begin + j];
-            }
-        }
-    }
-}
-
-void LightTree::update_nodes_luminance()
-{
-    // Make sure the tree was built.
-    assert(!m_nodes.empty());
-    
-    float luminance = 0.0f;
-    // Check if the scene has only one light
-    if(m_nodes[0].is_leaf())
-    {   
-        size_t item_index = m_nodes[0].get_item_index();
-        size_t light_source_index = m_items[item_index].m_light_sources_index;
-        Spectrum spectrum = m_light_sources[light_source_index]->get_intensity();
-
-        for(size_t i = 0; i < spectrum.size(); i++)
-        {
-            luminance += spectrum[i];
-        }
-        luminance /= spectrum.size();
-    }
-    else 
-    {
-        // Start luminance update with the root node
-        luminance = update_luminance(m_nodes[0].get_child_node_index()) // left child
-                        + update_luminance(m_nodes[0].get_child_node_index() + 1);  // right child
-    }
-
-    m_nodes[0].set_node_luminance(luminance);
-}
-
 float LightTree::update_luminance(size_t node_index)
 {
     float luminance = 0.0f;
@@ -227,6 +164,7 @@ float LightTree::update_luminance(size_t node_index)
     {
         luminance = update_luminance(m_nodes[node_index].get_child_node_index()) // left child
                   + update_luminance(m_nodes[node_index].get_child_node_index() + 1);  // right child    
+        RENDERER_LOG_INFO("Node %zu luminance: %f", node_index, luminance);
         m_nodes[node_index].set_node_luminance(luminance);        
     }
     else
@@ -239,6 +177,7 @@ float LightTree::update_luminance(size_t node_index)
             luminance += spectrum[i];
         }
         luminance /= spectrum.size();
+        RENDERER_LOG_INFO("Node %zu luminance: %f", node_index, luminance);
         
         m_nodes[node_index].set_node_luminance(luminance);
     }
@@ -256,6 +195,7 @@ void LightTree::output_every_light_probability(
     if(!m_nodes[node_index].is_leaf())
     {
         printf("NOT LEAF\n");
+        printf("s: %f\n",s);
         // LightTreeNodes
         const auto& node   = m_nodes[node_index];
         const auto& child1 = m_nodes[node.get_child_node_index()];
@@ -282,6 +222,8 @@ void LightTree::output_every_light_probability(
             p1 = p1 / total;
             p2 = p2 / total;
         }
+        printf("p1: %f\n",p1);
+        printf("p2: %f\n",p2);
 
         printf("calling m_nodes index: %zu\n", node.get_child_node_index());
         output_every_light_probability(
@@ -317,8 +259,8 @@ std::pair<size_t, float> LightTree::sample(
     float light_probability = 1.0;
     size_t node_index = 0;
 
-    std::pair<size_t, float> nearest_light;
 
+    std::pair<size_t, float> nearest_light;
     while (!m_nodes[node_index].is_leaf())
     {
         // LightTreeNodes
@@ -328,15 +270,13 @@ std::pair<size_t, float> LightTree::sample(
 
         const auto& bbox_left  = node.get_left_bbox();
         const auto& bbox_right = node.get_right_bbox();
-
         const float square_distance_left  = foundation::square_distance(surface_point, bbox_left.center());
         const float square_distance_right = foundation::square_distance(surface_point, bbox_right.center());
 
         float p1 = child1.get_probability(square_distance_left, bbox_left.radius());
         float p2 = child2.get_probability(square_distance_right, bbox_right.radius());
 
-
-        const float total = p1 + p2;
+        float total = p1 + p2;
 
         if (total <= 0.0f)
         {

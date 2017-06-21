@@ -91,10 +91,6 @@ class LightTree
 
         // Item contains bbox and source index of each light source
         // source_index represents the light index in m_light_sources vector
-        //
-        // NOTE: Index will be used to retrieve all the needed values like
-        //       position and light energy because otherwise compiling fails with
-        //       > static assertion failed: sizeof(U) <= MAX_USER_DATA_SIZE
         Item(
             foundation::AABB3d      bbox,
             size_t                  source_index) 
@@ -113,8 +109,6 @@ class LightTree
     LightSourcePointerVector   m_light_sources;
     ItemVector                 m_items;
 
-    void store_items_in_leaves(foundation::Statistics& statistics);
-    void update_nodes_luminance();
     void output_every_light_probability(
         size_t                        node_index,
         const foundation::Vector3d&   surface_point,
