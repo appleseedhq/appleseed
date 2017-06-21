@@ -275,6 +275,8 @@ void MainWindow::build_menus()
     connect(m_ui->action_file_open_builtin_project_cornellbox, SIGNAL(triggered()), SLOT(slot_open_cornellbox_builtin_project()));
     connect(m_ui->action_file_reload_project, SIGNAL(triggered()), SLOT(slot_reload_project()));
 
+    connect(m_ui->action_file_monitor_project, SIGNAL(toggled(bool)), SLOT(slot_toggle_project_file_monitoring(const bool)));
+
     m_ui->action_file_save_project->setShortcut(QKeySequence::Save);
     connect(m_ui->action_file_save_project, SIGNAL(triggered()), SLOT(slot_save_project()));
 
@@ -283,7 +285,8 @@ void MainWindow::build_menus()
 
     connect(m_ui->action_file_pack_project_as, SIGNAL(triggered()), SLOT(slot_pack_project_as()));
 
-    connect(m_ui->action_monitor_project_file, SIGNAL(toggled(bool)), SLOT(slot_toggle_project_file_monitoring(const bool)));
+    m_ui->action_file_close_project->setShortcut(QKeySequence::Close);
+    connect(m_ui->action_file_close_project, SIGNAL(triggered()), SLOT(slot_close_project()));
 
     m_ui->action_file_exit->setShortcut(QKeySequence::Quit);
     connect(m_ui->action_file_exit, SIGNAL(triggered()), SLOT(close()));
@@ -592,10 +595,10 @@ void MainWindow::build_connections()
 {
     connect(
         m_action_monitor_project_file, SIGNAL(toggled(bool)),
-        m_ui->action_monitor_project_file, SLOT(setChecked(bool)));
+        m_ui->action_file_monitor_project, SLOT(setChecked(bool)));
 
     connect(
-        m_ui->action_monitor_project_file, SIGNAL(toggled(bool)),
+        m_ui->action_file_monitor_project, SIGNAL(toggled(bool)),
         m_action_monitor_project_file, SLOT(setChecked(bool)));
 
     connect(
@@ -701,7 +704,7 @@ void MainWindow::set_file_widgets_enabled(const bool is_enabled, const Rendering
 
     // File -> Monitor Project.
     const bool allow_monitor = (is_enabled || rendering_mode == InteractiveRendering) && project_has_path;
-    m_ui->action_monitor_project_file->setEnabled(allow_monitor);
+    m_ui->action_file_monitor_project->setEnabled(allow_monitor);
     m_action_monitor_project_file->setEnabled(allow_monitor);
 
     // File -> Save Project, Save Project As and Pack Project As.
@@ -710,6 +713,10 @@ void MainWindow::set_file_widgets_enabled(const bool is_enabled, const Rendering
     m_action_save_project->setEnabled(allow_save);
     m_ui->action_file_save_project_as->setEnabled(allow_save);
     m_ui->action_file_pack_project_as->setEnabled(allow_save);
+
+    // File -> Close Project.
+    const bool allow_close = is_enabled && is_project_open;
+    m_ui->action_file_close_project->setEnabled(allow_close);
 
     // File -> Exit.
     m_ui->action_file_exit->setEnabled(is_enabled);
@@ -1309,6 +1316,16 @@ void MainWindow::slot_pack_project_as()
 
         m_project_manager.pack_project_as(filepath.toAscii().constData());
     }
+}
+
+void MainWindow::slot_close_project()
+{
+    if (!can_close_project())
+        return;
+
+    m_project_manager.close_project();
+
+    on_project_change();
 }
 
 QString MainWindow::get_filter_string(const int filter)

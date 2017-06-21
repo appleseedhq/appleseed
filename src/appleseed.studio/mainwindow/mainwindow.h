@@ -231,6 +231,7 @@ class MainWindow
     void slot_save_project();
     void slot_save_project_as();
     void slot_pack_project_as();
+    void slot_close_project();
     void slot_project_modified();
 
     // Project file monitoring.
