@@ -40,6 +40,7 @@
 #include "foundation/math/permutation.h"
 #include "foundation/platform/timers.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/vpythonfile.h"
 
 namespace renderer
 {
@@ -91,9 +92,13 @@ void LightTree::build(
         Spectrum spectrum = light_source->get_intensity();
         RENDERER_LOG_INFO("Non physical light intensity: %f", spectrum[0]);
         RENDERER_LOG_INFO("Non physical light bbox center [%f %f %f]",
-                            bbox.center()[0],
-                            bbox.center()[1],
-                            bbox.center()[2]);
+                            bbox.center(0),
+                            bbox.center(1),
+                            bbox.center(2));
+        RENDERER_LOG_INFO("Non physical light bbox size [%f %f %f]",
+                            bbox.extent(0),
+                            bbox.extent(1),
+                            bbox.extent(2));
     }
 
     for (foundation::const_each<EmittingTriangleVector> i = emitting_triangles; i; ++i)
@@ -154,6 +159,33 @@ void LightTree::build(
         RENDERER_LOG_INFO("Left node index: %zu", m_nodes[i].get_child_node_index());
         RENDERER_LOG_INFO("Right node index: %zu", m_nodes[i].get_child_node_index() + 1);
     }
+
+    // Vpython
+    const char* filename = "light_tree.py";
+    const double Width = 0.1;
+    const char* root_color = "color.yellow";
+
+    foundation::VPythonFile file(filename);
+    file.draw_axes(Width);
+
+    const auto& root_bbox = partitioner.compute_bbox(0, m_items.size());
+    file.draw_aabb(root_bbox, root_color, Width);
+    for(size_t i = 0; i < m_nodes.size(); i++)
+    {
+        if (m_nodes[i].is_leaf())
+            break;
+
+        const char* color =
+            i % 2 == 0 
+            ? "color.green"
+            : "color.red";
+
+        const auto& bbox_left = m_nodes[i].get_left_bbox();
+        const auto& bbox_right = m_nodes[i].get_right_bbox();
+
+        file.draw_aabb(bbox_left, color, Width);
+        file.draw_aabb(bbox_right, color, Width);
+    }
 }
 
 float LightTree::update_luminance(size_t node_index)
@@ -164,8 +196,6 @@ float LightTree::update_luminance(size_t node_index)
     {
         luminance = update_luminance(m_nodes[node_index].get_child_node_index()) // left child
                   + update_luminance(m_nodes[node_index].get_child_node_index() + 1);  // right child    
-        RENDERER_LOG_INFO("Node %zu luminance: %f", node_index, luminance);
-        m_nodes[node_index].set_node_luminance(luminance);        
     }
     else
     {
@@ -177,10 +207,10 @@ float LightTree::update_luminance(size_t node_index)
             luminance += spectrum[i];
         }
         luminance /= spectrum.size();
-        RENDERER_LOG_INFO("Node %zu luminance: %f", node_index, luminance);
-        
-        m_nodes[node_index].set_node_luminance(luminance);
     }
+   
+    m_nodes[node_index].set_node_luminance(luminance);
+
     return luminance;
 }
 
