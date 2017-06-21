@@ -73,6 +73,11 @@ Project* current_project()
     return mainwindow()->current_project();
 }
 
+bool is_project_dirty()
+{
+    return mainwindow()->is_project_dirty();
+}
+
 BOOST_PYTHON_MODULE(_appleseedstudio)
 {
     bpy::def("new_project", new_project,
@@ -84,4 +89,5 @@ BOOST_PYTHON_MODULE(_appleseedstudio)
 
     bpy::def("current_project", current_project,
              bpy::return_value_policy<bpy::reference_existing_object>());
+    bpy::def("is_project_dirty", is_project_dirty);
 }

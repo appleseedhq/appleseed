@@ -95,6 +95,7 @@ class MainWindow
     void save_project(QString filepath);
 
     renderer::Project* current_project();
+    bool is_project_dirty();
     bool can_close_project();
 
   signals:

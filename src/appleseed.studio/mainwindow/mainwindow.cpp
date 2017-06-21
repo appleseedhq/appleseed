@@ -232,11 +232,6 @@ void MainWindow::open_and_render_project(const QString& filepath, const QString&
     open_project(filepath);
 }
 
-Project* MainWindow::current_project()
-{
-    return m_project_manager.get_project();
-}
-
 void MainWindow::save_project(QString filepath)
 {
     if (!filepath.isEmpty())
@@ -258,6 +253,16 @@ void MainWindow::save_project(QString filepath)
 
         update_workspace();
     }
+}
+
+Project* MainWindow::current_project()
+{
+    return m_project_manager.get_project();
+}
+
+bool MainWindow::is_project_dirty()
+{
+    return m_project_manager.is_project_dirty();
 }
 
 void MainWindow::build_menus()
