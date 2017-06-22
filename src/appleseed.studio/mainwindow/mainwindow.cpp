@@ -1329,7 +1329,7 @@ void MainWindow::slot_close_project()
 {
     if (!can_close_project())
         return;
-
+  
     close_project();
 }
 
