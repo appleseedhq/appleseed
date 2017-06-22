@@ -27,7 +27,7 @@
 // THE SOFTWARE.
 //
 
-// Project headers.
+// projecttool headers.
 #include "commandlinehandler.h"
 
 // appleseed.shared headers.

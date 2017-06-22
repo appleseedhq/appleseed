@@ -27,7 +27,7 @@
 // THE SOFTWARE.
 //
 
-// Project headers.
+// convertmeshfile headers.
 #include "commandlinehandler.h"
 
 // appleseed.shared headers.

@@ -27,7 +27,7 @@
 // THE SOFTWARE.
 //
 
-// Project headers.
+// animatecamera headers.
 #include "animationpath.h"
 #include "commandlinehandler.h"
 
