@@ -47,7 +47,8 @@ MainWindow* main_window()
     return PythonInterpreter::instance().get_main_window();
 }
 
-ProjectManager* project_manager() {
+ProjectManager* project_manager()
+{
     return main_window()->get_project_manager();
 }
 
@@ -63,9 +64,9 @@ Project* open_project(const char* project_path)
     return project_manager()->get_project();
 }
 
-void save_project(const char* project_path = 0)
+void save_project(const char* project_path = nullptr)
 {
-    if (project_path == 0)
+    if (project_path == nullptr)
         main_window()->save_project(project_manager()->get_project()->get_path());
     else
         main_window()->save_project(project_path);

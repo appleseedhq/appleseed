@@ -237,25 +237,23 @@ void MainWindow::open_and_render_project(const QString& filepath, const QString&
 
 void MainWindow::save_project(QString filepath)
 {
-    if (!filepath.isEmpty())
-    {
-        const QString Extension = "appleseed";
 
-        if (QFileInfo(filepath).suffix() != Extension)
-            filepath += "." + Extension;
+    const QString Extension = "appleseed";
 
-        filepath = QDir::toNativeSeparators(filepath);
+    if (QFileInfo(filepath).suffix() != Extension)
+        filepath += "." + Extension;
 
-        if (m_project_file_watcher)
-            stop_monitoring_project_file();
+    filepath = QDir::toNativeSeparators(filepath);
 
-        m_project_manager.save_project_as(filepath.toAscii().constData());
+    if (m_project_file_watcher)
+        stop_monitoring_project_file();
 
-        if (m_project_file_watcher)
-            start_monitoring_project_file();
+    m_project_manager.save_project_as(filepath.toAscii().constData());
 
-        update_workspace();
-    }
+    if (m_project_file_watcher)
+        start_monitoring_project_file();
+
+    update_workspace();
 }
 
 void MainWindow::close_project()
@@ -935,15 +933,15 @@ bool MainWindow::can_close_project()
     // The current project has been modified, ask the user what to do.
     switch (show_modified_project_message_box(this))
     {
-        case QMessageBox::Save:
-            slot_save_project();
-            return true;
+      case QMessageBox::Save:
+        slot_save_project();
+        return true;
 
-        case QMessageBox::Discard:
-            return true;
+      case QMessageBox::Discard:
+        return true;
 
-        case QMessageBox::Cancel:
-            return false;
+      case QMessageBox::Cancel:
+        return false;
     }
 
     assert(!"Should never be reached.");
@@ -1295,8 +1293,11 @@ void MainWindow::slot_save_project_as()
             m_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 
-    save_project(filepath);
-    update_recent_files_menu(filepath);
+    if (!filepath.isEmpty())
+    {
+        save_project(filepath);
+        update_recent_files_menu(filepath);
+    }
 }
 
 void MainWindow::slot_pack_project_as()
