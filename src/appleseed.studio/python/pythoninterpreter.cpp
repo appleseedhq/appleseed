@@ -97,7 +97,7 @@ PythonInterpreter::PythonInterpreter()
     // Add path to appleseed module to sys.path so python can find it.
     bpy::import("sys").attr("path").attr("append")(lib.string());
 
-    // Import appleseed module with 'asd' alias and _appleseedstudio module with 'studio' alias.
+    // Import appleseed module with 'asr' alias and _appleseedstudio module with 'studio' alias.
     const int result =
         PyRun_SimpleString("import appleseed\n"
                            "import _appleseedstudio\n"
