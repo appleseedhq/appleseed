@@ -98,10 +98,13 @@ PythonInterpreter::PythonInterpreter()
     bpy::import("sys").attr("path").attr("append")(lib.string());
 
     // Import appleseed module with 'asd' alias and _appleseedstudio module with 'studio' alias.
-    PyRun_SimpleString("import appleseed\n"
-                       "import _appleseedstudio\n"
-                       "asr = appleseed\n"
-                       "studio = _appleseedstudio");
+    const int result =
+        PyRun_SimpleString("import appleseed\n"
+                           "import _appleseedstudio\n"
+                           "asr = appleseed\n"
+                           "studio = _appleseedstudio\n");
+    if (result != 0)
+        RENDERER_LOG_ERROR("failed to import Python modules.");
 }
 
 PythonInterpreter::~PythonInterpreter()
