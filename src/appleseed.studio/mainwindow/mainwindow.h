@@ -57,7 +57,7 @@
 namespace appleseed { namespace studio { class AttributeEditor; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace appleseed { namespace studio { class MinimizeButton; } }
-namespace renderer { class Project; }
+namespace renderer  { class Project; }
 namespace Ui        { class MainWindow; }
 class QAction;
 class QCloseEvent;
@@ -208,7 +208,6 @@ class MainWindow
     // Miscellaneous.
     void print_startup_information();
     virtual void closeEvent(QCloseEvent* event);
-    void do_save_project(const int filter);
     static QString get_filter_string(const int filter);
 
     // Enum of filters for save project dialog.

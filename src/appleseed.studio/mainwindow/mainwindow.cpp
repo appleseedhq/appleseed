@@ -237,7 +237,6 @@ void MainWindow::open_and_render_project(const QString& filepath, const QString&
 
 void MainWindow::save_project(QString filepath)
 {
-
     const QString Extension = "appleseed";
 
     if (QFileInfo(filepath).suffix() != Extension)

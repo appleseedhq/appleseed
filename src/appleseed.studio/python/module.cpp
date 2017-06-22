@@ -71,6 +71,7 @@ void save_project(const char* project_path = nullptr)
     else
         main_window()->save_project(project_path);
 }
+
 BOOST_PYTHON_FUNCTION_OVERLOADS(save_project_overloads, save_project, 0, 1)
 
 void close_project()
