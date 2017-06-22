@@ -729,6 +729,7 @@ namespace
 
 int main(int argc, const char* argv[])
 {
+    // Enable memory tracking immediately as to catch as many leaks as possible.
     start_memory_tracking();
 
     // Make sure appleseed is correctly installed.
