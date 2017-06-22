@@ -162,25 +162,6 @@ MainWindow::~MainWindow()
     delete m_ui;
 }
 
-void MainWindow::open_project(const QString& filepath)
-{
-    save_state_before_project_open();
-
-    if (m_rendering_manager.is_rendering())
-    {
-        m_rendering_manager.abort_rendering();
-        m_rendering_manager.wait_until_rendering_end();
-    }
-
-    remove_render_widgets();
-
-    set_file_widgets_enabled(false, NotRendering);
-    set_project_explorer_enabled(false);
-    set_rendering_widgets_enabled(false, NotRendering);
-
-    m_project_manager.load_project(filepath.toAscii().constData());
-}
-
 namespace
 {
     class CustomSignalMapper
@@ -209,6 +190,36 @@ namespace
     };
 }
 
+ProjectManager* MainWindow::get_project_manager()
+{
+    return &m_project_manager;
+}
+
+void MainWindow::new_project()
+{
+    m_project_manager.create_project();
+    on_project_change();
+}
+
+void MainWindow::open_project(const QString& filepath)
+{
+    save_state_before_project_open();
+
+    if (m_rendering_manager.is_rendering())
+    {
+        m_rendering_manager.abort_rendering();
+        m_rendering_manager.wait_until_rendering_end();
+    }
+
+    remove_render_widgets();
+
+    set_file_widgets_enabled(false, NotRendering);
+    set_project_explorer_enabled(false);
+    set_rendering_widgets_enabled(false, NotRendering);
+
+    m_project_manager.load_project(filepath.toAscii().constData());
+}
+
 void MainWindow::open_and_render_project(const QString& filepath, const QString& configuration)
 {
     CustomSignalMapper* mapper = new CustomSignalMapper(this, configuration);
@@ -222,6 +233,33 @@ void MainWindow::open_and_render_project(const QString& filepath, const QString&
         SLOT(slot_start_rendering_once(const QString&, const QString&, const bool)));
 
     open_project(filepath);
+}
+
+void MainWindow::save_project(QString filepath)
+{
+
+    const QString Extension = "appleseed";
+
+    if (QFileInfo(filepath).suffix() != Extension)
+        filepath += "." + Extension;
+
+    filepath = QDir::toNativeSeparators(filepath);
+
+    if (m_project_file_watcher)
+        stop_monitoring_project_file();
+
+    m_project_manager.save_project_as(filepath.toAscii().constData());
+
+    if (m_project_file_watcher)
+        start_monitoring_project_file();
+
+    update_workspace();
+}
+
+void MainWindow::close_project()
+{
+    m_project_manager.close_project();
+    on_project_change();
 }
 
 void MainWindow::build_menus()
@@ -1127,9 +1165,7 @@ void MainWindow::slot_new_project()
     if (!can_close_project())
         return;
 
-    m_project_manager.create_project();
-
-    on_project_change();
+    new_project();
 }
 
 void MainWindow::slot_open_project()
@@ -1240,20 +1276,9 @@ void MainWindow::slot_save_project()
     assert(m_project_manager.is_project_open());
 
     if (!m_project_manager.get_project()->has_path())
-    {
         slot_save_project_as();
-        return;
-    }
-
-    if (m_project_file_watcher)
-        stop_monitoring_project_file();
-
-    m_project_manager.save_project();
-
-    if (m_project_file_watcher)
-        start_monitoring_project_file();
-
-    update_workspace();
+    else
+        save_project(m_project_manager.get_project()->get_path());
 }
 
 void MainWindow::slot_save_project_as()
@@ -1270,23 +1295,8 @@ void MainWindow::slot_save_project_as()
 
     if (!filepath.isEmpty())
     {
-        const QString Extension = "appleseed";
-
-        if (QFileInfo(filepath).suffix() != Extension)
-            filepath += "." + Extension;
-
-        filepath = QDir::toNativeSeparators(filepath);
-
-        if (m_project_file_watcher)
-            stop_monitoring_project_file();
-
-        m_project_manager.save_project_as(filepath.toAscii().constData());
-
-        if (m_project_file_watcher)
-            start_monitoring_project_file();
-
+        save_project(filepath);
         update_recent_files_menu(filepath);
-        update_workspace();
     }
 }
 
@@ -1319,10 +1329,8 @@ void MainWindow::slot_close_project()
 {
     if (!can_close_project())
         return;
-
-    m_project_manager.close_project();
-
-    on_project_change();
+  
+    close_project();
 }
 
 QString MainWindow::get_filter_string(const int filter)

@@ -87,11 +87,6 @@ bool ProjectManager::load_builtin_project(const string& name)
     return true;
 }
 
-bool ProjectManager::save_project()
-{
-    return save_project_as(m_project->get_path());
-}
-
 bool ProjectManager::save_project_as(const string& filepath)
 {
     const bool IsSuccess = do_save_project(filepath, ProjectFileWriter::Defaults);
