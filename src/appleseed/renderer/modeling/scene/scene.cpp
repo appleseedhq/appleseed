@@ -209,12 +209,62 @@ namespace
 
         return false;
     }
+
+    bool assembly_instances_has_participating_media(
+        const AssemblyInstanceContainer&  assembly_instances,
+        set<UniqueID>&                    visited_assemblies)
+    {
+        // Regarding participating media in the Tracer,
+        // we only care about camera and shadow rays.
+        const uint32 visibility_mask = VisibilityFlags::CameraRay | VisibilityFlags::ShadowRay;
+
+        for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
+        {
+            // Retrieve the assembly instance.
+            const AssemblyInstance& assembly_instance = *i;
+
+            // Skip invisible assembly instances.
+            if ((assembly_instance.get_vis_flags() & visibility_mask) == 0)
+                continue;
+
+            // Retrieve the assembly.
+            const Assembly& assembly = assembly_instance.get_assembly();
+
+            if (visited_assemblies.find(assembly.get_uid()) == visited_assemblies.end())
+            {
+                visited_assemblies.insert(assembly.get_uid());
+
+                // Check the assembly contents.
+                for (const_each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
+                {
+                    // Skip invisible object instances.
+                    if ((i->get_vis_flags() & visibility_mask) == 0)
+                        continue;
+
+                    if (i->has_participating_media())
+                        return true;
+                }
+
+                // Recurse into child assembly instances.
+                if (assembly_instances_use_alpha_mapping(assembly.assembly_instances(), visited_assemblies))
+                    return true;
+            }
+        }
+
+        return false;
+    }
 }
 
 bool Scene::uses_alpha_mapping() const
 {
     set<UniqueID> visited_assemblies;
     return assembly_instances_use_alpha_mapping(assembly_instances(), visited_assemblies);
+}
+
+bool Scene::has_participating_media() const
+{
+    set<UniqueID> visited_assemblies;
+    return assembly_instances_has_participating_media(assembly_instances(), visited_assemblies);
 }
 
 namespace

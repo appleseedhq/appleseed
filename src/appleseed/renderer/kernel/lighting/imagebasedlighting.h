@@ -59,8 +59,8 @@ void compute_ibl_combined_sampling(
     SamplingContext&                sampling_context,
     const ShadingContext&           shading_context,
     const EnvironmentEDF&           environment_edf,
-    const IMaterialSampler&         material_sampler,
     const foundation::Dual3d&       outgoing,               // world space outgoing direction, unit-length
+    const IMaterialSampler&         material_sampler,
     const int                       env_sampling_modes,     // permitted scattering modes during environment sampling
     const size_t                    material_sample_count,  // number of samples in BSDF sampling
     const size_t                    env_sample_count,       // number of samples in environment sampling

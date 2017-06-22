@@ -180,6 +180,10 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     const MaterialArray& get_front_materials() const;
     const MaterialArray& get_back_materials() const;
 
+    // Return true if at least one of the material referenced by this instance
+    // has a phase function assigned to it.
+    bool has_participating_media() const;
+
     // Return true if at least one of the material referenced by this instance has an alpha map set.
     bool uses_alpha_mapping() const;
 

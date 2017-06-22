@@ -56,8 +56,8 @@ void compute_ibl_combined_sampling(
     SamplingContext&            sampling_context,
     const ShadingContext&       shading_context,
     const EnvironmentEDF&       environment_edf,
-    const IMaterialSampler&     material_sampler,
     const Dual3d&               outgoing,
+    const IMaterialSampler&     material_sampler,
     const int                   env_sampling_modes,
     const size_t                material_sample_count,
     const size_t                env_sample_count,
@@ -124,12 +124,12 @@ void compute_ibl_material_sampling(
             continue;
 
         // Discard occluded samples.
-        float transmission;
+        Spectrum transmission;
         material_sampler.trace(
             shading_context,
             incoming.get_value(),
             transmission);
-        if (transmission == 0.0f)
+        if (max_value(transmission) == 0.0f)
             continue;
 
         // Evaluate the environment's EDF.
@@ -205,9 +205,9 @@ void compute_ibl_environment_sampling(
             continue;
 
         // Discard occluded samples.
-        float transmission;
+        Spectrum transmission;
         material_sampler.trace(shading_context, incoming, transmission);
-        if (transmission == 0.0f)
+        if (max_value(transmission) == 0.0f)
             continue;
 
         // Evaluate the BSDF.

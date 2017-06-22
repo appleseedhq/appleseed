@@ -62,15 +62,6 @@ class IMaterialSampler
     virtual const ShadingPoint& trace(
         const ShadingContext&           shading_context,
         const foundation::Vector3f&     direction,
-        float&                          transmission) const = 0;
-
-    virtual float trace_between(
-        const ShadingContext&           shading_context,
-        const foundation::Vector3d&     target_position) const = 0;
-
-    virtual const ShadingPoint& trace(
-        const ShadingContext&           shading_context,
-        const foundation::Vector3f&     direction,
         Spectrum&                       transmission) const = 0;
 
     virtual void trace_between(
@@ -108,15 +99,6 @@ class BSDFSampler
     virtual const foundation::Vector3d& get_point() const override;
 
     virtual bool contributes_to_light_sampling() const override;
-
-    virtual const ShadingPoint& trace(
-        const ShadingContext&           shading_context,
-        const foundation::Vector3f&     direction,
-        float&                          transmission) const override;
-
-    virtual float trace_between(
-        const ShadingContext&           shading_context,
-        const foundation::Vector3d&     target_position) const override;
 
     virtual const ShadingPoint& trace(
         const ShadingContext&           shading_context,
@@ -159,22 +141,13 @@ class PhaseFunctionSampler
   public:
     PhaseFunctionSampler(
         const ShadingRay&               volume_ray,
-        const PhaseFunction&            phasefunction,
-        const void*                     phasefunction_data,
+        const PhaseFunction&            phase_function,
+        const void*                     phase_function_data,
         const float                     distance);
 
     virtual const foundation::Vector3d& get_point() const override;
 
     virtual bool contributes_to_light_sampling() const override;
-
-    virtual const ShadingPoint& trace(
-        const ShadingContext&           shading_context,
-        const foundation::Vector3f&     direction,
-        float&                          transmission) const override;
-
-    virtual float trace_between(
-        const ShadingContext&           shading_context,
-        const foundation::Vector3d&     target_position) const override;
 
     virtual const ShadingPoint& trace(
         const ShadingContext&           shading_context,
@@ -204,8 +177,8 @@ class PhaseFunctionSampler
 
   private:
     const ShadingRay&               m_volume_ray;
-    const PhaseFunction&            m_phasefunction;
-    const void*                     m_phasefunction_data;
+    const PhaseFunction&            m_phase_function;
+    const void*                     m_phase_function_data;
     const float                     m_distance;
     const foundation::Vector3d      m_point;
 };

@@ -43,6 +43,7 @@
 #include "foundation/utility/poison.h"
 
 // Standard headers.
+#include <array>
 #include <cassert>
 
 // Forward declarations.

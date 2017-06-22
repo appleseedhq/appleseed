@@ -741,7 +741,9 @@ namespace
                 Spectrum dl_radiance(0.0f, Spectrum::Illuminance);
 
                 const ShadingRay::Medium* medium = volume_ray.get_current_medium();
+                assert(medium != nullptr);
                 const PhaseFunction* phase_function = medium->get_phase_function();
+                assert(phase_function != nullptr);
 
                 // Sample distance.
                 float distance_sample;
@@ -750,6 +752,13 @@ namespace
                     volume_ray,
                     vertex.m_phase_function_data,
                     distance_sample);
+
+                Spectrum transmission;
+                phase_function->evaluate_transmission(
+                    volume_ray, vertex.m_phase_function_data, distance_sample, transmission);
+                const float extinction = phase_function->extinction_multiplier(
+                    volume_ray, vertex.m_phase_function_data, distance_sample);
+                if (extinction == 0.0f) return;
 
                 const PhaseFunctionSampler phase_function_sampler(
                     volume_ray,
@@ -783,8 +792,8 @@ namespace
                     dl_radiance *= m_params.m_rcp_dl_light_sample_count;
 
                 // Add direct lighting contribution.
-                dl_radiance /= distance_prob;
-                dl_radiance *= static_cast<float>(volume_ray.get_length());
+                dl_radiance *= transmission;
+                dl_radiance /= (distance_prob * extinction);
                 dl_radiance *= vertex.m_throughput;
                 m_path_radiance += dl_radiance;
 

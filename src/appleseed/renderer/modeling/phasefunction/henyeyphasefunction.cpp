@@ -271,6 +271,14 @@ class HenyeyPhaseFunction
         spectrum *= values->m_precomputed.m_extinction_multiplier;
     }
 
+    virtual float extinction_multiplier(
+        const ShadingRay&           volume_ray,
+        const void*                 data,
+        const float                 distance) const override
+    {
+        return static_cast<const InputValues*>(data)->m_precomputed.m_extinction_multiplier;
+    }
+
   private:
     typedef HenyeyPhaseFunctionInputValues InputValues;
 };

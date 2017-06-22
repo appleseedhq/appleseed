@@ -96,6 +96,20 @@ bool uses_alpha_mapping(const MaterialArray& materials)
     return false;
 }
 
+bool has_participating_media(const MaterialArray& materials)
+{
+    for (size_t i = 0, e = materials.size(); i < e; ++i)
+    {
+        if (materials[i])
+        {
+            if (materials[i]->get_uncached_phase_function() != nullptr)
+                return true;
+        }
+    }
+
+    return false;
+}
+
 
 //
 // ObjectInstance class implementation.
@@ -436,6 +450,13 @@ void ObjectInstance::check_materials() const
 
     do_check_materials(this, *m_object, m_front_materials, impl->m_front_material_mappings);
     do_check_materials(this, *m_object, m_back_materials, impl->m_back_material_mappings);
+}
+
+bool ObjectInstance::has_participating_media() const
+{
+    return
+        renderer::has_participating_media(m_back_materials) ||
+        renderer::has_participating_media(m_front_materials);
 }
 
 bool ObjectInstance::uses_alpha_mapping() const

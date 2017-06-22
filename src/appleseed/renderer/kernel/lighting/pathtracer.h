@@ -472,7 +472,6 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
             break;
 
         ShadingRay next_ray;
-        bool continue_path;
         if (vertex.m_bsdf == nullptr)
         {
             // If there is no BSDF, just continue the current ray without increasing its depth.
@@ -482,16 +481,15 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                 ray.m_time,
                 ray.m_flags,
                 ray.m_depth);
-            continue_path = true;
         }
         else
         {
             // If there is a BSDF, compute the bounce.
-            continue_path = process_bounce(sampling_context, vertex, bsdf_sample, next_ray);
+            const bool continue_path =
+                process_bounce(sampling_context, vertex, bsdf_sample, next_ray);
+            // Terminate the path if this scattering event is not accepted.
+            if (!continue_path) break;
         }
-
-        // Terminate the path if there is BSDF, but the scattering event is not accepted.
-        if (!continue_path) break;
 
         // Build the medium list of the scattered ray.
         const foundation::Vector3d& geometric_normal = vertex.get_geometric_normal();
@@ -510,7 +508,10 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                         vertex.m_bsdf_data);
                 next_ray.add_medium(ray, &object_instance, vertex.get_material(), ior);
             }
-            else next_ray.remove_medium(ray, &object_instance);
+            else
+            {
+                next_ray.remove_medium(ray, &object_instance);
+            }
         }
         else
         {
@@ -551,6 +552,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
             current_medium->get_phase_function() != 0)
         {
             // This ray is being cast into a participating medium:
+            bool continue_path;
             march(sampling_context, shading_context,
                 next_ray, vertex, shading_points[shading_point_index], continue_path);
             if (!continue_path) break;

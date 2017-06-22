@@ -104,6 +104,9 @@ class APPLESEED_DLLSYMBOL Scene
     // Return true if at least one of the object instance references a material with an alpha map set.
     bool uses_alpha_mapping() const;
 
+    // Return true if the scene contains participating media.
+    bool has_participating_media() const;
+
     // Expose asset file paths referenced by this entity to the outside.
     virtual void collect_asset_paths(foundation::StringArray& paths) const override;
     virtual void update_asset_paths(const foundation::StringDictionary& mappings) override;

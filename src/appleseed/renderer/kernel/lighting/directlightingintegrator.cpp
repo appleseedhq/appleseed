@@ -377,8 +377,8 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
         incoming_prob = sample.m_probability / g;
 
         // Compute and return the incoming radiance.
-        transmission *= g / sample.m_probability;
         radiance *= transmission;
+        radiance *= g / sample.m_probability;
     }
     else
     {
@@ -444,7 +444,7 @@ void DirectLightingIntegrator::take_single_material_sample(
         return;
 
     // Trace a ray in the direction of the reflection.
-    float weight;
+    Spectrum weight;
     const ShadingPoint& light_shading_point =
         m_material_sampler.trace(
             m_shading_context,
@@ -714,8 +714,8 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     // Add the contribution of this sample to the illumination.
     const float attenuation = light->compute_distance_attenuation(
         m_material_sampler.get_point(), emission_position);
-    transmission *= attenuation / sample.m_probability;
     light_value *= transmission;
+    light_value *= attenuation / sample.m_probability;
     light_value *= material_value;
     radiance += light_value;
 }
