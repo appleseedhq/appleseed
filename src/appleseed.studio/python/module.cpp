@@ -30,12 +30,12 @@
 #include "mainwindow/mainwindow.h"
 #include "python/pythoninterpreter.h"
 
+// appleseed.renderer headers.
+#include "renderer/api/project.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/platform/python.h"
-
-// appleseed.renderer headers.
-#include "renderer/api/project.h"
 
 namespace bpy = boost::python;
 using namespace appleseed::studio;

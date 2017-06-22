@@ -44,15 +44,15 @@
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
 
+// appleseed.shared headers.
+#include "application/application.h"
+
 // appleseed.renderer headers.
 #include "renderer/api/material.h"
 #include "renderer/api/scene.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/settings/settingsfilereader.h"
-
-// appleseed.shared headers.
-#include "application/application.h"
 
 // Qt headers.
 #include <QString>
