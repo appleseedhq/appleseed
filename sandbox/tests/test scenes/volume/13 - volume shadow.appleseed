@@ -11,7 +11,7 @@
     </search_paths>
     <scene>
         <camera name="camera" model="pinhole_camera">
-            <parameter name="controller_target" value="0.278 0.2744 0.2796" />
+            <parameter name="controller_target" value="0.0137536 1.02133 0.277283" />
             <parameter name="film_dimensions" value="0.025 0.025" />
             <parameter name="focal_length" value="0.035" />
             <parameter name="near_z" value="-0.001" />
@@ -26,8 +26,25 @@
                 </matrix>
             </transform>
         </camera>
-        <environment name="environment" model="generic_environment" />
+        <environment_shader name="environment_shader" model="background_environment_shader">
+            <parameter name="alpha" value="1.0" />
+            <parameter name="color" value="0.0" />
+        </environment_shader>
+        <environment name="environment" model="generic_environment">
+            <parameter name="environment_shader" value="environment_shader" />
+        </environment>
         <assembly name="assembly">
+            <color name="red">
+                <parameter name="color_space" value="srgb" />
+                <parameter name="multiplier" value="1.0" />
+                <parameter name="wavelength_range" value="400.0 700.0" />
+                <values>
+                    0.800000 0.120000 0.080000
+                </values>
+                <alpha>
+                    1.000000
+                </alpha>
+            </color>
             <bsdf name="floor_bsdf" model="lambertian_brdf">
                 <parameter name="reflectance" value="0.5" />
                 <parameter name="reflectance_multiplier" value="1.0" />
@@ -40,6 +57,14 @@
                 <parameter name="radiance" value="1.0" />
                 <parameter name="radiance_multiplier" value="1.0" />
             </edf>
+            <material name="red_material" model="generic_material">
+                <parameter name="bump_amplitude" value="1.0" />
+                <parameter name="bump_offset" value="2.0" />
+                <parameter name="displacement_method" value="bump" />
+                <parameter name="normal_map_up" value="z" />
+                <parameter name="phase_function" value="phase_function_red" />
+                <parameter name="shade_alpha_cutouts" value="false" />
+            </material>
             <material name="volume_material" model="generic_material">
                 <parameter name="bump_amplitude" value="1.0" />
                 <parameter name="bump_offset" value="2.0" />
@@ -81,10 +106,11 @@
                 <assign_material slot="default" side="front" material="white_material" />
             </object_instance>
             <object_instance name="sphere" object="sphere_above_the_plane.sphere_above_the_plane:pSphere1">
-                <parameter name="medium_priority" value="0" />
+                <parameter name="medium_priority" value="1" />
                 <parameter name="ray_bias_distance" value="0.0" />
                 <parameter name="ray_bias_method" value="none" />
-                <assign_material slot="default" side="front" material="white_material" />
+                <assign_material slot="default" side="front" material="red_material" />
+                <assign_material slot="default" side="back" material="red_material" />
             </object_instance>
             <object_instance name="volume" object="sphere_above_the_plane.pCube1">
                 <parameter name="medium_priority" value="0" />
@@ -100,6 +126,13 @@
                 <parameter name="scattering" value="0.5" />
                 <parameter name="scattering_multiplier" value="1.0" />
             </phase_function>
+            <phase_function name="phase_function_red" model="henyey_phasefunction">
+                <parameter name="absorption" value="red" />
+                <parameter name="absorption_multiplier" value="30" />
+                <parameter name="average_cosine" value="0.0" />
+                <parameter name="scattering" value="red" />
+                <parameter name="scattering_multiplier" value="80.0" />
+            </phase_function>
         </assembly>
         <assembly_instance name="assembly_inst" assembly="assembly">
         </assembly_instance>
@@ -114,7 +147,7 @@
             <parameter name="gamma_correction" value="1.0" />
             <parameter name="pixel_format" value="half" />
             <parameter name="premultiplied_alpha" value="true" />
-            <parameter name="resolution" value="1024 1024" />
+            <parameter name="resolution" value="512 512" />
         </frame>
     </output>
     <configurations>

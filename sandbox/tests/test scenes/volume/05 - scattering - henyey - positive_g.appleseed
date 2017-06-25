@@ -11,7 +11,7 @@
     </search_paths>
     <scene>
         <camera name="camera" model="pinhole_camera">
-            <parameter name="controller_target" value="0.278 0.2744 0.2796" />
+            <parameter name="controller_target" value="0.013764 0.0213484 0.281302" />
             <parameter name="film_dimensions" value="0.025 0.025" />
             <parameter name="focal_length" value="0.035" />
             <parameter name="near_z" value="-0.001" />
@@ -52,9 +52,9 @@
                 </transform>
             </light>
             <object name="scattering_test_scene" model="mesh_object">
-                <parameter name="filename" value="F:\Appleseed\scenes\scattering_test_scene.obj" />
+                <parameter name="filename" value="F:\Appleseed\appleseed\sandbox\tests\test scenes\volume\_geometry\scattering_test_scene.obj" />
             </object>
-            <object_instance name="scattering_test_plane" object="scattering_test_scene.scattering_test_plane:pCube1">
+            <object_instance name="wall" object="scattering_test_scene.scattering_test_scene:pCube1">
                 <parameter name="medium_priority" value="0" />
                 <parameter name="ray_bias_distance" value="0.0" />
                 <parameter name="ray_bias_method" value="none" />
@@ -64,7 +64,7 @@
             <phase_function name="phase_function" model="henyey_phasefunction">
                 <parameter name="absorption" value="0.0" />
                 <parameter name="absorption_multiplier" value="0.0" />
-                <parameter name="average_cosine" value="0.5" />
+                <parameter name="average_cosine" value="0.6" />
                 <parameter name="scattering" value="1.0" />
                 <parameter name="scattering_multiplier" value="1.0" />
             </phase_function>
@@ -75,7 +75,14 @@
     <output>
         <frame name="beauty">
             <parameter name="camera" value="camera" />
-            <parameter name="resolution" value="1024 1024" />
+            <parameter name="clamping" value="false" />
+            <parameter name="color_space" value="linear_rgb" />
+            <parameter name="filter" value="blackman-harris" />
+            <parameter name="filter_size" value="1.5" />
+            <parameter name="gamma_correction" value="1.0" />
+            <parameter name="pixel_format" value="half" />
+            <parameter name="premultiplied_alpha" value="true" />
+            <parameter name="resolution" value="200 200" />
         </frame>
     </output>
     <configurations>
