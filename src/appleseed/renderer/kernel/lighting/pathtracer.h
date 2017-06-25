@@ -100,7 +100,7 @@ class PathTracer
         const ShadingPoint&     shading_point);
 
     // This method performs raymarching across the volume.
-    // Returns the number of scattering events occured during the marching.
+    // Returns the number of scattering events that occurred during the marching.
     size_t march(
         SamplingContext&        sampling_context,
         const ShadingContext&   shading_context,
@@ -471,6 +471,14 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         if (vertex.m_bsdf == 0 && material->get_render_data().m_phase_function == 0)
             break;
 
+        // Determine which scattering modes are still enabled.
+        if (m_diffuse_bounces >= m_max_diffuse_bounces)
+            vertex.m_scattering_modes &= ~ScatteringMode::Diffuse;
+        if (m_glossy_bounces >= m_max_glossy_bounces)
+            vertex.m_scattering_modes &= ~ScatteringMode::Glossy;
+        if (m_specular_bounces >= m_max_specular_bounces)
+            vertex.m_scattering_modes &= ~ScatteringMode::Specular;
+
         ShadingRay next_ray;
         if (vertex.m_bsdf == nullptr)
         {
@@ -487,6 +495,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
             // If there is a BSDF, compute the bounce.
             const bool continue_path =
                 process_bounce(sampling_context, vertex, bsdf_sample, next_ray);
+
             // Terminate the path if this scattering event is not accepted.
             if (!continue_path) break;
         }
@@ -581,14 +590,6 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     BSDFSample&         sample,
     ShadingRay&         ray)
 {
-    // Determine which scattering modes are still enabled.
-    if (m_diffuse_bounces >= m_max_diffuse_bounces)
-        vertex.m_scattering_modes &= ~ScatteringMode::Diffuse;
-    if (m_glossy_bounces >= m_max_glossy_bounces)
-        vertex.m_scattering_modes &= ~ScatteringMode::Glossy;
-    if (m_specular_bounces >= m_max_specular_bounces)
-        vertex.m_scattering_modes &= ~ScatteringMode::Specular;
-
     // Let the path visitor handle the scattering event.
     m_path_visitor.on_scatter(vertex);
 
@@ -666,6 +667,9 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
     continue_path = continue_path_rr(sampling_context, vertex);
     if (!continue_path) return 0;
 
+    continue_path = (vertex.m_scattering_modes != ScatteringMode::None);
+    if (!continue_path) return 0;
+
     const ShadingRay::Medium* medium = ray.get_current_medium();
     const PhaseFunction* phase_function = medium->get_phase_function();
 
@@ -682,7 +686,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
 
     m_volume_visitor.visit(vertex, volume_ray);
 
-    if (vertex.m_shading_point->hit())
+    if (exit_point.hit())
     {
         Spectrum transmission;
         phase_function->evaluate_transmission(volume_ray, data, transmission);

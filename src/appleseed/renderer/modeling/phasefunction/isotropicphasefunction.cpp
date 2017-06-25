@@ -101,7 +101,14 @@ class IsotropicPhaseFunction
             values->m_scattering_multiplier * values->m_scattering;
 
         // Ensure that extinction spectrum has unit norm, which is neccessary for distance sampling.
-        const float extinction_norm = max_value(values->m_precomputed.m_normalized_extinction);
+        float extinction_norm = 0.0;
+        const float Power = 4.0;
+        const float RcpPower = 0.25;
+        const size_t n = values->m_precomputed.m_normalized_extinction.size();
+        for (size_t i = 0; i < n; ++i)
+            extinction_norm += std::pow(values->m_precomputed.m_normalized_extinction[i], RcpPower);
+        extinction_norm = std::pow(extinction_norm / n, Power);
+
         if (extinction_norm > 1.0e-6f)
             values->m_precomputed.m_normalized_extinction /= extinction_norm;
         values->m_precomputed.m_extinction_multiplier = extinction_norm;
@@ -271,8 +278,8 @@ DictionaryArray IsotropicPhaseFunctionFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors"))
-                    .insert("use", "required")
-                    .insert("default", "0.5"));
+                .insert("use", "required")
+                .insert("default", "0.5"));
 
     metadata.push_back(
         Dictionary()

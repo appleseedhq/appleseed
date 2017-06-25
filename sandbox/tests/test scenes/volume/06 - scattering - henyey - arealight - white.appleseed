@@ -53,7 +53,7 @@
                 <parameter name="shade_alpha_cutouts" value="false" />
             </material>
             <object name="scattering_test_scene" model="mesh_object">
-                <parameter name="filename" value="F:\Appleseed\appleseed\sandbox\tests\test scenes\volume\_geometry\scattering_test_scene.obj" />
+                <parameter name="filename" value="scattering_test_scene.obj" />
             </object>
             <object_instance name="light_quad" object="scattering_test_scene.scattering_test_scene:pPlane1">
                 <parameter name="medium_priority" value="0" />

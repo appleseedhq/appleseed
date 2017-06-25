@@ -112,6 +112,8 @@ namespace
             const bool      m_has_max_ray_intensity;
             const float     m_max_ray_intensity;
 
+            const size_t    m_distance_sample_count;        // number of distance samples until the ray is completely extincted
+
             float           m_rcp_dl_light_sample_count;
             float           m_rcp_ibl_env_sample_count;
 
@@ -129,6 +131,7 @@ namespace
               , m_dl_low_light_threshold(params.get_optional<float>("dl_low_light_threshold", 0.0f))
               , m_ibl_env_sample_count(params.get_optional<float>("ibl_env_samples", 1.0f))
               , m_has_max_ray_intensity(params.strings().exist("max_ray_intensity"))
+              , m_distance_sample_count(params.get_optional<size_t>("volume_distance_samples", 4))
               , m_max_ray_intensity(params.get_optional<float>("max_ray_intensity", 0.0f))
             {
                 // Precompute the reciprocal of the number of light samples.
@@ -170,7 +173,8 @@ namespace
                     "  dl light samples              %s\n"
                     "  dl light threshold            %s\n"
                     "  ibl env samples               %s\n"
-                    "  max ray intensity             %s",
+                    "  max ray intensity             %s\n"
+                    "  volume distance samples       %s",
                     m_enable_dl ? "on" : "off",
                     m_enable_ibl ? "on" : "off",
                     m_enable_caustics ? "on" : "off",
@@ -183,7 +187,8 @@ namespace
                     pretty_scalar(m_dl_light_sample_count).c_str(),
                     pretty_scalar(m_dl_low_light_threshold, 3).c_str(),
                     pretty_scalar(m_ibl_env_sample_count).c_str(),
-                    m_has_max_ray_intensity ? pretty_scalar(m_max_ray_intensity).c_str() : "infinite");
+                    m_has_max_ray_intensity ? pretty_scalar(m_max_ray_intensity).c_str() : "infinite",
+                    pretty_int(m_distance_sample_count).c_str());
             }
         };
 
@@ -646,7 +651,7 @@ namespace
                     bsdf_sampler,
                     shading_point.get_time(),
                     scattering_modes,   // light_sampling_modes
-                    1,                  // bsdf_sample_count
+                    1,                  // material_sample_count
                     light_sample_count,
                     m_params.m_dl_low_light_threshold,
                     m_is_indirect_lighting);
@@ -720,6 +725,14 @@ namespace
 
         struct VolumeVisitorDistanceSampling
         {
+            const Parameters&           m_params;
+            const LightSampler&         m_light_sampler;
+            SamplingContext&            m_sampling_context;
+            const ShadingContext&       m_shading_context;
+            Spectrum&                   m_path_radiance;
+            const EnvironmentEDF*       m_env_edf;
+            bool                        m_is_indirect_lighting;
+
             VolumeVisitorDistanceSampling(
                 const Parameters&       params,
                 const LightSampler&     light_sampler,
@@ -733,37 +746,24 @@ namespace
               , m_shading_context(shading_context)
               , m_path_radiance(path_radiance)
               , m_env_edf(scene.get_environment()->get_environment_edf())
+              , m_is_indirect_lighting(false)
             {
             }
 
-            void visit(PathVertex& vertex, const ShadingRay& volume_ray)
+            void add_direct_lighting_contribution(
+                const ShadingRay&       volume_ray,
+                const PhaseFunction&    phase_function,
+                const void*             phase_function_data, 
+                const float             distance_sample,
+                const int               scattering_modes,
+                Spectrum&               radiance)
             {
                 Spectrum dl_radiance(0.0f, Spectrum::Illuminance);
 
-                const ShadingRay::Medium* medium = volume_ray.get_current_medium();
-                assert(medium != nullptr);
-                const PhaseFunction* phase_function = medium->get_phase_function();
-                assert(phase_function != nullptr);
-
-                // Sample distance.
-                float distance_sample;
-                const float distance_prob = phase_function->sample_distance(
-                    m_sampling_context,
-                    volume_ray,
-                    vertex.m_phase_function_data,
-                    distance_sample);
-
-                Spectrum transmission;
-                phase_function->evaluate_transmission(
-                    volume_ray, vertex.m_phase_function_data, distance_sample, transmission);
-                const float extinction = phase_function->extinction_multiplier(
-                    volume_ray, vertex.m_phase_function_data, distance_sample);
-                if (extinction == 0.0f) return;
-
                 const PhaseFunctionSampler phase_function_sampler(
                     volume_ray,
-                    *phase_function,
-                    vertex.m_phase_function_data,
+                    phase_function,
+                    phase_function_data,
                     distance_sample);
 
                 const size_t light_sample_count =
@@ -776,14 +776,13 @@ namespace
                     m_light_sampler,
                     phase_function_sampler,
                     volume_ray.m_time,
-                    ScatteringMode::All, // light sampling modes
-                    1,                   // phase function sample count
+                    scattering_modes,   // light sampling modes
+                    1,                  // phase function sample count
                     light_sample_count,
                     m_params.m_dl_low_light_threshold,
-                    false);
-                integrator.compute_outgoing_radiance_light_sampling(
+                    m_is_indirect_lighting);
+                integrator.compute_outgoing_radiance_combined_sampling_low_variance(
                     m_sampling_context,
-                    MISPower2,
                     Dual3d(volume_ray.m_dir),
                     dl_radiance);
 
@@ -792,49 +791,114 @@ namespace
                     dl_radiance *= m_params.m_rcp_dl_light_sample_count;
 
                 // Add direct lighting contribution.
-                dl_radiance *= transmission;
-                dl_radiance /= (distance_prob * extinction);
-                dl_radiance *= vertex.m_throughput;
-                m_path_radiance += dl_radiance;
-
-                if (m_env_edf != nullptr)
-                {
-                    Spectrum ibl_radiance(Spectrum::Illuminance);
-
-                    const size_t env_sample_count =
-                        stochastic_cast<size_t>(
-                        m_sampling_context,
-                        m_params.m_ibl_env_sample_count);
-
-                    compute_ibl_environment_sampling(
-                        m_sampling_context,
-                        m_shading_context,
-                        *m_env_edf,
-                        Dual3d(volume_ray.m_dir),
-                        phase_function_sampler,
-                        ScatteringMode::All,
-                        1,                  // bsdf_sample_count
-                        env_sample_count,
-                        ibl_radiance);
-
-                    // Divide by the sample count when this number is less than 1.
-                    if (m_params.m_rcp_ibl_env_sample_count > 0.0f)
-                        ibl_radiance *= m_params.m_rcp_ibl_env_sample_count;
-
-                    // Add image-based lighting contribution.
-                    ibl_radiance *= transmission;
-                    ibl_radiance /= (distance_prob * extinction);
-                    ibl_radiance *= vertex.m_throughput;
-                    m_path_radiance += ibl_radiance;
-                }
+                radiance += dl_radiance;
             }
 
-            const Parameters&           m_params;
-            const LightSampler&         m_light_sampler;
-            SamplingContext&            m_sampling_context;
-            const ShadingContext&       m_shading_context;
-            Spectrum&                   m_path_radiance;
-            const EnvironmentEDF*       m_env_edf;
+            void add_image_based_lighting_contribution(
+                const ShadingRay&       volume_ray,
+                const PhaseFunction&    phase_function,
+                const void*             phase_function_data,
+                const float             distance_sample,
+                Spectrum&               radiance)
+            {
+                const PhaseFunctionSampler phase_function_sampler(
+                    volume_ray,
+                    phase_function,
+                    phase_function_data,
+                    distance_sample);
+
+                Spectrum ibl_radiance(0.0f, Spectrum::Illuminance);
+
+                const size_t env_sample_count =
+                    stochastic_cast<size_t>(
+                    m_sampling_context,
+                    m_params.m_ibl_env_sample_count);
+
+                compute_ibl_environment_sampling(
+                    m_sampling_context,
+                    m_shading_context,
+                    *m_env_edf,
+                    Dual3d(volume_ray.m_dir),
+                    phase_function_sampler,
+                    ScatteringMode::All,
+                    1,                  // bsdf_sample_count
+                    env_sample_count,
+                    ibl_radiance);
+
+                // Divide by the sample count when this number is less than 1.
+                if (m_params.m_rcp_ibl_env_sample_count > 0.0f)
+                    ibl_radiance *= m_params.m_rcp_ibl_env_sample_count;
+
+                // Add image-based lighting contribution.
+                radiance += ibl_radiance;
+            }
+
+            void visit(PathVertex& vertex, const ShadingRay& volume_ray)
+            {
+                const ShadingRay::Medium* medium = volume_ray.get_current_medium();
+                assert(medium != nullptr);
+                const PhaseFunction* phase_function = medium->get_phase_function();
+                assert(phase_function != nullptr);
+
+                // Any light contribution after a diffuse or glossy bounce is considered indirect.
+                if (ScatteringMode::has_diffuse_or_glossy(vertex.m_scattering_modes))
+                    m_is_indirect_lighting = true;
+
+                Spectrum ray_transmission;
+                phase_function->evaluate_transmission(
+                    volume_ray, vertex.m_phase_function_data, ray_transmission);
+
+                const float density = 1.0f - min_value(ray_transmission);
+                const float distance_sample_count_float = density * m_params.m_distance_sample_count;
+                const size_t distance_sample_count = stochastic_cast<size_t>(
+                    m_sampling_context, distance_sample_count_float);
+                if (distance_sample_count == 0) return;
+
+                for (size_t i = 0; i < distance_sample_count; ++i)
+                {
+                    Spectrum radiance(0.0f, Spectrum::Illuminance);
+
+                    // Sample distance.
+                    float distance_sample;
+                    const float distance_prob = phase_function->sample_distance(
+                        m_sampling_context,
+                        volume_ray,
+                        vertex.m_phase_function_data,
+                        distance_sample);
+
+                    Spectrum transmission;
+                    phase_function->evaluate_transmission(
+                        volume_ray, vertex.m_phase_function_data, distance_sample, transmission);
+                    const float extinction = phase_function->extinction_multiplier(
+                        volume_ray, vertex.m_phase_function_data, distance_sample);
+                    if (extinction == 0.0f) continue;
+
+                    if (m_params.m_enable_dl || vertex.m_path_length > 1)
+                    {
+                        add_direct_lighting_contribution(
+                            volume_ray,
+                            *phase_function,
+                            vertex.m_phase_function_data,
+                            distance_sample,
+                            vertex.m_scattering_modes,
+                            radiance);
+                    }
+                    if (m_params.m_enable_ibl && m_env_edf)
+                    {
+                        add_image_based_lighting_contribution(
+                            volume_ray,
+                            *phase_function,
+                            vertex.m_phase_function_data,
+                            distance_sample,
+                            radiance);
+                    }
+
+                    radiance *= transmission;
+                    radiance /= (distance_prob * distance_sample_count_float);
+                    radiance *= vertex.m_throughput;
+                    m_path_radiance += radiance;
+                }
+            }
         };
     };
 }
@@ -950,6 +1014,16 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("min", "0.0")
             .insert("label", "Max Ray Intensity")
             .insert("help", "Clamp intensity of rays (after the first bounce) to this value to reduce fireflies"));
+
+    metadata.dictionaries().insert(
+        "volume_distance_samples",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "4")
+            .insert("unlimited", "true")
+            .insert("min", "0")
+            .insert("label", "Distance Samples")
+            .insert("help", "Number of distance samples per ray for volume rendering"));
 
     return metadata;
 }

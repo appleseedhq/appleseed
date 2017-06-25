@@ -152,6 +152,8 @@ class ShadingRay
     // Return the IOR of the medium the ray would be in if it would leave the currently active medium.
     float get_previous_ior() const;
 
+    // Return the length of this ray
+    // (i.e. distance between the origin and the target, if the ray is bounded).
     double get_length() const;
 };
 

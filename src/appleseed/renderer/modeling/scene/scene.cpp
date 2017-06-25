@@ -172,7 +172,9 @@ namespace
     {
         // Regarding transparency in the Tracer,
         // we only care about camera and shadow rays.
-        const uint32 visibility_mask = VisibilityFlags::CameraRay | VisibilityFlags::ShadowRay;
+        const VisibilityFlags::Type visibility_mask =
+            VisibilityFlags::CameraRay |
+            VisibilityFlags::ShadowRay;
 
         for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
         {
@@ -216,7 +218,9 @@ namespace
     {
         // Regarding participating media in the Tracer,
         // we only care about camera and shadow rays.
-        const uint32 visibility_mask = VisibilityFlags::CameraRay | VisibilityFlags::ShadowRay;
+        const VisibilityFlags::Type visibility_mask =
+            VisibilityFlags::CameraRay |
+            VisibilityFlags::ShadowRay;
 
         for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
         {

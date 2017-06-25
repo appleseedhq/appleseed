@@ -202,9 +202,7 @@ inline void Tracer::trace<void>(
     Spectrum&                       transmission)
 {
     if (m_assume_no_alpha_mapping && m_assume_no_participating_media)
-    {
-        transmission = m_intersector.trace_probe(ray) ? Spectrum(0.0f) : Spectrum(1.0f);
-    }
+        transmission.set(m_intersector.trace_probe(ray) ? 0.0f : 1.0f);
     else
     {
         const ShadingPoint& shading_point =
@@ -225,9 +223,7 @@ inline void Tracer::trace<void>(
     Spectrum&                       transmission)
 {
     if (m_assume_no_alpha_mapping && m_assume_no_participating_media)
-    {
-        transmission = m_intersector.trace_probe(ray, &origin) ? Spectrum(0.0f) : Spectrum(1.0f);
-    }
+        transmission.set(m_intersector.trace_probe(ray, &origin) ? 0.0f : 1.0f);
     else
     {
         const ShadingPoint& shading_point =
@@ -383,7 +379,7 @@ inline void Tracer::trace_between<void>(
             ray_flags,
             ray_depth);
 
-        transmission = m_intersector.trace_probe(ray) ? Spectrum(0.0f) : Spectrum(1.0f);
+        transmission.set(m_intersector.trace_probe(ray) ? 0.0f : 1.0f);
     }
     else
     {
@@ -424,7 +420,7 @@ inline void Tracer::trace_between<void>(
             ray_flags,
             parent_ray.m_depth);
 
-        transmission = m_intersector.trace_probe(ray) ? Spectrum(0.0f) : Spectrum(1.0f);
+        transmission.set(m_intersector.trace_probe(ray) ? 0.0f : 1.0f);
     }
     else
     {
@@ -463,7 +459,7 @@ inline void Tracer::trace_between<void>(
             ray_flags,
             origin.get_ray().m_depth + 1);
 
-        transmission = m_intersector.trace_probe(ray, &origin) ? Spectrum(0.0f) : Spectrum(1.0f);
+        transmission.set(m_intersector.trace_probe(ray, &origin) ? 0.0f : 1.0f);
     }
     else
     {
@@ -502,7 +498,7 @@ inline void Tracer::trace_between<void>(
             ray_flags,
             parent_ray.m_depth);
 
-        transmission = m_intersector.trace_probe(ray, &origin) ? Spectrum(0.0f) : Spectrum(1.0f);
+        transmission.set(m_intersector.trace_probe(ray, &origin) ? 0.0f : 1.0f);
     }
     else
     {

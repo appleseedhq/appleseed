@@ -70,7 +70,7 @@
                 </transform>
             </light>
             <object name="stacked_cube_above_the_plane" model="mesh_object">
-                <parameter name="filename" value="F:\Appleseed\scenes\stacked_cube_above_the_plane.obj" />
+                <parameter name="filename" value="stacked_cube_above_the_plane.obj" />
             </object>
             <object_instance name="cube1" object="stacked_cube_above_the_plane.stacked_cube_above_the_plane:pCube1">
                 <assign_material slot="default" side="front" material="volume_material" />

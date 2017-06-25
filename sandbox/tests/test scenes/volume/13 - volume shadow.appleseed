@@ -97,7 +97,7 @@
                 </transform>
             </light>
             <object name="sphere_above_the_plane" model="mesh_object">
-                <parameter name="filename" value="F:\Appleseed\scenes\sphere_above_the_plane.obj" />
+                <parameter name="filename" value="sphere_above_the_plane.obj" />
             </object>
             <object_instance name="floor" object="sphere_above_the_plane.sphere_above_the_plane:pPlane2">
                 <parameter name="medium_priority" value="0" />
@@ -128,10 +128,10 @@
             </phase_function>
             <phase_function name="phase_function_red" model="henyey_phasefunction">
                 <parameter name="absorption" value="red" />
-                <parameter name="absorption_multiplier" value="30" />
+                <parameter name="absorption_multiplier" value="60.0" />
                 <parameter name="average_cosine" value="0.0" />
                 <parameter name="scattering" value="red" />
-                <parameter name="scattering_multiplier" value="80.0" />
+                <parameter name="scattering_multiplier" value="160.0" />
             </phase_function>
         </assembly>
         <assembly_instance name="assembly_inst" assembly="assembly">

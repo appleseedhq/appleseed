@@ -45,7 +45,7 @@
                 <parameter name="importance_multiplier" value="1.0" />
                 <parameter name="light_near_start" value="0.0" />
                 <parameter name="radiance" value="1.0" />
-                <parameter name="radiance_multiplier" value="200.0" />
+                <parameter name="radiance_multiplier" value="50.0" />
             </edf>
             <material name="light_material" model="generic_material">
                 <parameter name="bump_amplitude" value="1.0" />
@@ -64,7 +64,7 @@
                 <parameter name="shade_alpha_cutouts" value="false" />
             </material>
             <object name="scattering_test_scene" model="mesh_object">
-                <parameter name="filename" value="F:\Appleseed\appleseed\sandbox\tests\test scenes\volume\_geometry\scattering_test_scene.obj" />
+                <parameter name="filename" value="scattering_test_scene.obj" />
             </object>
             <object_instance name="light_quad" object="scattering_test_scene.scattering_test_scene:pPlane1">
                 <parameter name="medium_priority" value="0" />
@@ -84,7 +84,7 @@
                 <parameter name="absorption_multiplier" value="0.0" />
                 <parameter name="average_cosine" value="0.4" />
                 <parameter name="scattering" value="blue" />
-                <parameter name="scattering_multiplier" value="12.0" />
+                <parameter name="scattering_multiplier" value="13.0" />
             </phase_function>
         </assembly>
         <assembly_instance name="assembly_inst" assembly="assembly">

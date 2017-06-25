@@ -91,7 +91,11 @@ const ShadingPoint& Tracer::do_trace(
     Vector3d point = ray.m_org;
     size_t iterations = 0;
 
-    ShadingRay current_ray = ray;
+    m_shading_points[shading_point_index].clear();
+    m_intersector.trace(
+        ray,
+        m_shading_points[shading_point_index],
+        shading_point_ptr);
 
     while (true)
     {
@@ -104,16 +108,11 @@ const ShadingPoint& Tracer::do_trace(
             break;
         }
 
-        // Trace the ray.
-        m_shading_points[shading_point_index].clear();
-        m_intersector.trace(
-            current_ray,
-            m_shading_points[shading_point_index],
-            shading_point_ptr);
-
         // Update the pointers to the shading points.
         shading_point_ptr = &m_shading_points[shading_point_index];
         shading_point_index = 1 - shading_point_index;
+
+        const ShadingRay& current_ray = shading_point_ptr->get_ray();
 
         const ShadingRay::Medium* medium = current_ray.get_current_medium();
         const PhaseFunction* phase_function =
@@ -125,7 +124,7 @@ const ShadingPoint& Tracer::do_trace(
             if (phase_function != nullptr)
             {
                 // The ray escaped the scene filled with volume, thus its transmission is 0
-                transmission = Spectrum(0.0f);
+                transmission.set(0.0f);
             }
             break;
         }
@@ -187,12 +186,16 @@ const ShadingPoint& Tracer::do_trace(
         // Update the medium list.
         const ObjectInstance& object_instance = shading_point_ptr->get_object_instance();
         if (entering)
-        {
             next_ray.add_medium(current_ray, &object_instance, material, 1.0f);
-        }
-        else next_ray.remove_medium(current_ray, &object_instance);
+        else
+            next_ray.remove_medium(current_ray, &object_instance);
 
-        std::swap(next_ray, current_ray);
+        // Trace ray further.
+        m_shading_points[shading_point_index].clear();
+        m_intersector.trace(
+            next_ray,
+            m_shading_points[shading_point_index],
+            shading_point_ptr);
     }
 
     return *shading_point_ptr;
@@ -212,7 +215,11 @@ const ShadingPoint& Tracer::do_trace_between(
     Vector3d point = ray.m_org;
     size_t iterations = 0;
 
-    ShadingRay current_ray = ray;
+    m_shading_points[shading_point_index].clear();
+    m_intersector.trace(
+        ray,
+        m_shading_points[shading_point_index],
+        shading_point_ptr);
 
     while (true)
     {
@@ -225,23 +232,19 @@ const ShadingPoint& Tracer::do_trace_between(
             break;
         }
 
-        // Trace the ray.
-        m_shading_points[shading_point_index].clear();
-        m_intersector.trace(
-            current_ray,
-            m_shading_points[shading_point_index],
-            shading_point_ptr);
-
         // Update the pointers to the shading points.
         shading_point_ptr = &m_shading_points[shading_point_index];
         shading_point_index = 1 - shading_point_index;
 
-        // Compute transmission of participating media.
+        const ShadingRay& current_ray = shading_point_ptr->get_ray();
+
+        // Get information about the medium that contains the shadow ray.
         const ShadingRay::Medium* medium = current_ray.get_current_medium();
         const PhaseFunction* phase_function =
             (medium == nullptr) ? nullptr : medium->get_phase_function();
         const ShadingRay& volume_ray = shading_point_ptr->get_ray();
 
+        // Compute transmission of participating media.
         if (phase_function != nullptr)
         {
             Spectrum volume_transmission;
@@ -306,12 +309,16 @@ const ShadingPoint& Tracer::do_trace_between(
         // Update the medium list.
         const ObjectInstance& object_instance = shading_point_ptr->get_object_instance();
         if (entering)
-        {
             next_ray.add_medium(current_ray, &object_instance, material, 1.0f);
-        }
-        else next_ray.remove_medium(current_ray, &object_instance);
+        else
+            next_ray.remove_medium(current_ray, &object_instance);
 
-        std::swap(current_ray, next_ray);
+        // Trace ray further.
+        m_shading_points[shading_point_index].clear();
+        m_intersector.trace(
+            next_ray,
+            m_shading_points[shading_point_index],
+            shading_point_ptr);
     }
 
     return *shading_point_ptr;

@@ -110,7 +110,14 @@ class HenyeyPhaseFunction
             values->m_scattering_multiplier * values->m_scattering;
 
         // Ensure that extinction spectrum has unit norm, which is neccessary for distance sampling.
-        const float extinction_norm = max_value(values->m_precomputed.m_normalized_extinction);
+        float extinction_norm = 0.0f;
+        const float Power = 4.0f;
+        const float RcpPower = 0.25f;
+        const size_t n = values->m_precomputed.m_normalized_extinction.size();
+        for (size_t i = 0; i < n; ++i)
+            extinction_norm += std::pow(values->m_precomputed.m_normalized_extinction[i], RcpPower);
+        extinction_norm = std::pow(extinction_norm / n, Power);
+        
         if (extinction_norm > 1.0e-6f)
             values->m_precomputed.m_normalized_extinction /= extinction_norm;
         values->m_precomputed.m_extinction_multiplier = extinction_norm;
@@ -125,9 +132,7 @@ class HenyeyPhaseFunction
     {
         const InputValues* values = static_cast<const InputValues*>(data);
 
-        const float ray_length = static_cast<float>(
-            norm(volume_ray.m_dir) *
-            (volume_ray.m_tmax - volume_ray.m_tmin));
+        const float ray_length = static_cast<float>(volume_ray.get_length());
 
         // Sample distance.
         sampling_context.split_in_place(1, 1);
