@@ -822,8 +822,8 @@ namespace
                         ibl_radiance *= m_params.m_rcp_ibl_env_sample_count;
 
                     // Add image-based lighting contribution.
-                    ibl_radiance /= distance_prob;
-                    ibl_radiance *= static_cast<float>(volume_ray.get_length());
+                    ibl_radiance *= transmission;
+                    ibl_radiance /= (distance_prob * extinction);
                     ibl_radiance *= vertex.m_throughput;
                     m_path_radiance += ibl_radiance;
                 }
