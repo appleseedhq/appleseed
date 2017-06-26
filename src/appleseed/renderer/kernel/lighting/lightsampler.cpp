@@ -459,48 +459,24 @@ std::pair<size_t, float> LightSampler::sample_test(
     const foundation::Vector3d    surface_point,
     const float                   s) const
 {
-    std::vector<float> probabilities(m_non_physical_light_count, 0);
+    CDF<size_t, double> cdf;
+    cdf.reserve(m_non_physical_light_count);
 
-    std::vector<float> cdf(m_non_physical_light_count, 0);
-    // Collect light distances
     for (size_t i = 0; i < m_non_physical_light_count; i++)
     {
         const auto& light = m_non_physical_lights[i].m_light;
-        
         // Compute the exact position of the light
-        foundation::Vector3d light_position = light->get_transform()
-                                              .get_local_to_parent()
-                                              .extract_translation();
-        float distance = std::sqrt(foundation::square_distance(surface_point, light_position));
+        const foundation::Vector3d light_position = light->get_transform()
+                                                          .get_local_to_parent()
+                                                          .extract_translation();
 
+        const double distance2 = foundation::square_distance(surface_point, light_position);
 
-        probabilities[i] = 1.0 / distance;
-        // if (probabilities[i] < 0.005)
-        //     probabilities[i] = 0.005;
+        cdf.insert(i, 1.0 / distance2);
     }
 
-    float distance_sum = 0;
-    for (size_t i = 0; i < probabilities.size(); i++)
-    {
-        distance_sum += probabilities[i];
-    }
-    // Calculate probabilities based on the distances
-    for (size_t i = 0; i < probabilities.size(); i++)
-    {
-        probabilities[i] /= distance_sum;
-        for (size_t k = 0; k <= i; k++)
-        {
-            cdf[i] += probabilities[k];
-        }
-    }
-
-    const auto i = std::upper_bound(cdf.begin(), cdf.end(), s);
-    size_t light_index = std::distance( cdf.begin(), i );
-    
-    if (light_index == m_non_physical_light_count)
-        light_index = m_non_physical_light_count - 1;
-
-    return std::pair<size_t, float> (light_index, probabilities[light_index]);
+    cdf.prepare();
+    return cdf.sample(s);
 }
 
 void LightSampler::sample_non_physical_lights(
