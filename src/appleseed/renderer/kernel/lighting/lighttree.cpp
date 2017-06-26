@@ -86,19 +86,6 @@ void LightTree::build(
             Item(
                 bbox,
                 light_index++));
-
-        // Test output
-        RENDERER_LOG_INFO("Non physical light index: %zu", light_index-1);
-        Spectrum spectrum = light_source->get_intensity();
-        RENDERER_LOG_INFO("Non physical light intensity: %f", spectrum[0]);
-        RENDERER_LOG_INFO("Non physical light bbox center [%f %f %f]",
-                            bbox.center(0),
-                            bbox.center(1),
-                            bbox.center(2));
-        RENDERER_LOG_INFO("Non physical light bbox size [%f %f %f]",
-                            bbox.extent(0),
-                            bbox.extent(1),
-                            bbox.extent(2));
     }
 
     for (foundation::const_each<EmittingTriangleVector> i = emitting_triangles; i; ++i)
@@ -150,15 +137,6 @@ void LightTree::build(
 
     RENDERER_LOG_INFO("Number of nodes: %zu", m_nodes.size());
     
-    // Output the tree structure.
-    // TODO: Add ASCII graphics.
-    for(size_t i = 0; i < m_nodes.size(); i++)
-    {
-        RENDERER_LOG_INFO("Index: %zu", i);
-        RENDERER_LOG_INFO("Is leaf: %d", m_nodes[i].is_leaf());
-        RENDERER_LOG_INFO("Left node index: %zu", m_nodes[i].get_child_node_index());
-        RENDERER_LOG_INFO("Right node index: %zu", m_nodes[i].get_child_node_index() + 1);
-    }
 
     // Vpython
     const char* filename = "light_tree.py";
@@ -173,7 +151,7 @@ void LightTree::build(
     for(size_t i = 0; i < m_nodes.size(); i++)
     {
         if (m_nodes[i].is_leaf())
-            break;
+            continue;
 
         const char* color =
             i % 2 == 0 
@@ -300,8 +278,8 @@ std::pair<size_t, float> LightTree::sample(
 
         const auto& bbox_left  = node.get_left_bbox();
         const auto& bbox_right = node.get_right_bbox();
-        const float square_distance_left  = foundation::square_distance(surface_point, bbox_left.center());
-        const float square_distance_right = foundation::square_distance(surface_point, bbox_right.center());
+        float square_distance_left  = foundation::square_distance(surface_point, bbox_left.center());
+        float square_distance_right = foundation::square_distance(surface_point, bbox_right.center());
 
         float p1 = child1.get_probability(square_distance_left, bbox_left.radius());
         float p2 = child2.get_probability(square_distance_right, bbox_right.radius());
@@ -332,7 +310,6 @@ std::pair<size_t, float> LightTree::sample(
             node_index = node.get_child_node_index() + 1;
         }
     }
-    light_probability = 1.0;
     size_t item_index = m_nodes[node_index].get_item_index();
     // NOTE: this will work only for pure NPL scene as the lights in
     // m_light_sources will be mixed. Rewrite this!
