@@ -194,6 +194,10 @@ class LightSampler
         const foundation::Vector3f&         s,
         const ShadingPoint&                 shading_point,
         LightSample&                        light_sample) const;
+    
+    std::pair<size_t, float> sample_test(
+        const foundation::Vector3d    surface_point,
+        const float                   s) const;
 
     // Compute the probability density in area measure of a given light sample.
     float evaluate_pdf(const ShadingPoint& shading_point) const;

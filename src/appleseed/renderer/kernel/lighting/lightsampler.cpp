@@ -53,6 +53,7 @@
 #include "renderer/utility/triangle.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/distance.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/utility/foreach.h"
@@ -454,6 +455,52 @@ void LightSampler::sample_non_physical_lights(
     assert(light_sample.m_probability > 0.0f);
 }
 
+std::pair<size_t, float> LightSampler::sample_test(
+    const foundation::Vector3d    surface_point,
+    const float                   s) const
+{
+    std::vector<float> probabilities;
+    probabilities.reserve(m_non_physical_light_count);
+    
+    std::vector<float> cdf(m_non_physical_light_count, 0);
+    // Collect light distances
+    for (size_t i = 0; i < m_non_physical_light_count; i++)
+    {
+        const auto& light = m_non_physical_lights[i].m_light;
+        
+        // Compute the exact position of the light
+        foundation::Vector3d light_position = light->get_transform()
+                                              .get_local_to_parent()
+                                              .extract_translation();
+        float distance2 = foundation::square_distance(surface_point, light_position);
+
+        probabilities.push_back(1.0 / distance2);
+    }
+
+    float distance2_sum = 0;
+    for (size_t i = 0; i < probabilities.size(); i++)
+    {
+        distance2_sum += probabilities[i];
+    }
+    // Calculate probabilities based on the distances
+    for (size_t i = 0; i < probabilities.size(); i++)
+    {
+        probabilities[i] /= distance2_sum;
+        for (size_t k = 0; k <= i; k++)
+        {
+            cdf[i] += probabilities[k];
+        }
+    }
+
+    const auto i = std::upper_bound(cdf.begin(), cdf.end(), s);
+    size_t light_index = std::distance( cdf.begin(), i );
+    
+    if (light_index == m_non_physical_light_count)
+        light_index = m_non_physical_light_count - 1;
+
+    return std::pair<size_t, float> (light_index, probabilities[light_index]);
+}
+
 void LightSampler::sample_non_physical_lights(
     const ShadingRay::Time&             time,
     const Vector3f&                     s,
@@ -463,7 +510,8 @@ void LightSampler::sample_non_physical_lights(
     assert(m_non_physical_lights_cdf.valid());
 
     // const EmitterCDF::ItemWeightPair result = m_non_physical_lights_cdf.sample(s[0]);
-    const std::pair<size_t, float> result = m_light_tree.sample(shading_point.get_point(), s[0]);
+    // const std::pair<size_t, float> result = m_light_tree.sample(shading_point.get_point(), s[0]);
+    const std::pair<size_t, float> result = sample_test(shading_point.get_point(), s[0]);
     const size_t light_index = result.first;
     const float light_prob = result.second;
 
