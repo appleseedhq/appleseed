@@ -300,8 +300,14 @@ std::pair<size_t, float> LightTree::sample(
 
         const auto& bbox_left  = node.get_left_bbox();
         const auto& bbox_right = node.get_right_bbox();
-        const float square_distance_left  = foundation::square_distance(surface_point, bbox_left.center());
-        const float square_distance_right = foundation::square_distance(surface_point, bbox_right.center());
+        float square_distance_left  = foundation::square_distance(surface_point, bbox_left.center());
+        float square_distance_right = foundation::square_distance(surface_point, bbox_right.center());
+
+        if (square_distance_left < 0.005)
+            square_distance_left = 0.005;
+
+        if (square_distance_right < 0.005)
+            square_distance_right = 0.005;
 
         float p1 = child1.get_probability(square_distance_left, bbox_left.radius());
         float p2 = child2.get_probability(square_distance_right, bbox_right.radius());
@@ -332,7 +338,6 @@ std::pair<size_t, float> LightTree::sample(
             node_index = node.get_child_node_index() + 1;
         }
     }
-    light_probability = 1.0;
     size_t item_index = m_nodes[node_index].get_item_index();
     // NOTE: this will work only for pure NPL scene as the lights in
     // m_light_sources will be mixed. Rewrite this!
