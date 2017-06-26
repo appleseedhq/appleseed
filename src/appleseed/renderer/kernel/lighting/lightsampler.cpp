@@ -459,9 +459,8 @@ std::pair<size_t, float> LightSampler::sample_test(
     const foundation::Vector3d    surface_point,
     const float                   s) const
 {
-    std::vector<float> probabilities;
-    probabilities.reserve(m_non_physical_light_count);
-    
+    std::vector<float> probabilities(m_non_physical_light_count, 0);
+
     std::vector<float> cdf(m_non_physical_light_count, 0);
     // Collect light distances
     for (size_t i = 0; i < m_non_physical_light_count; i++)
@@ -474,7 +473,10 @@ std::pair<size_t, float> LightSampler::sample_test(
                                               .extract_translation();
         float distance2 = foundation::square_distance(surface_point, light_position);
 
-        probabilities.push_back(1.0 / distance2);
+
+        probabilities[i] = 1.0 / distance2;
+        if (probabilities[i] < 0.005)
+            probabilities[i] = 0.005;
     }
 
     float distance2_sum = 0;
