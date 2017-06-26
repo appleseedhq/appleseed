@@ -471,23 +471,23 @@ std::pair<size_t, float> LightSampler::sample_test(
         foundation::Vector3d light_position = light->get_transform()
                                               .get_local_to_parent()
                                               .extract_translation();
-        float distance2 = foundation::square_distance(surface_point, light_position);
+        float distance = std::sqrt(foundation::square_distance(surface_point, light_position));
 
 
-        probabilities[i] = 1.0 / distance2;
-        if (probabilities[i] < 0.005)
-            probabilities[i] = 0.005;
+        probabilities[i] = 1.0 / distance;
+        // if (probabilities[i] < 0.005)
+        //     probabilities[i] = 0.005;
     }
 
-    float distance2_sum = 0;
+    float distance_sum = 0;
     for (size_t i = 0; i < probabilities.size(); i++)
     {
-        distance2_sum += probabilities[i];
+        distance_sum += probabilities[i];
     }
     // Calculate probabilities based on the distances
     for (size_t i = 0; i < probabilities.size(); i++)
     {
-        probabilities[i] /= distance2_sum;
+        probabilities[i] /= distance_sum;
         for (size_t k = 0; k <= i; k++)
         {
             cdf[i] += probabilities[k];
