@@ -969,7 +969,7 @@ color transform_RGB_to_HSV(color RGB)
     float rgbmin = min(RGB[0], min(RGB[1], RGB[2]));
     float chroma = value - rgbmin;
 
-    if (chroma == 0.0)
+    if (chroma <= 0.005) // chroma/value explodes otherwise with low V
     {
         return color(0.0, 0.0, value); // greyscale
     }
@@ -993,7 +993,7 @@ color transform_RGB_to_HSL(color RGB)
     float chroma = value - rgbmin;
     float lightness = (value + rgbmin) / 2.0;
 
-    if (chroma == 0.0 || lightness == 1.0)
+    if (chroma <= 0.005 || lightness == 1.0) // chroma explodes with low V
     {
        return color(0.0, 0.0, lightness);
     }
