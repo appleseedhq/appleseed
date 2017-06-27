@@ -37,14 +37,14 @@
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
 
+// appleseed.shared headers.
+#include "application/application.h"
+
 // appleseed.renderer headers.
 #include "renderer/api/log.h"
 #include "renderer/api/material.h"
 #include "renderer/api/project.h"
 #include "renderer/api/utility.h"
-
-// appleseed.shared headers.
-#include "application/application.h"
 
 // SeExpr headers.
 #pragma warning (push)

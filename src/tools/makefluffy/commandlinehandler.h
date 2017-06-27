@@ -29,11 +29,11 @@
 #ifndef APPLESEED_MAKEFLUFFY_COMMANDLINEHANDLER_H
 #define APPLESEED_MAKEFLUFFY_COMMANDLINEHANDLER_H
 
-// appleseed.foundation headers.
-#include "foundation/utility/commandlineparser.h"
-
 // appleseed.shared headers.
 #include "application/commandlinehandlerbase.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/commandlineparser.h"
 
 // Standard headers.
 #include <cstddef>

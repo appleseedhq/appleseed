@@ -30,17 +30,25 @@
 #include "mainwindow/mainwindow.h"
 #include "python/pythoninterpreter.h"
 
+// appleseed.renderer headers.
+#include "renderer/api/project.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/platform/python.h"
-
-// appleseed.renderer headers.
-#include "renderer/api/project.h"
 
 namespace bpy = boost::python;
 using namespace appleseed::studio;
 using namespace renderer;
 using namespace foundation;
+
+// Work around a regression in Visual Studio 2015 Update 3.
+#if defined(_MSC_VER) && _MSC_VER == 1900
+namespace boost
+{
+    template <> Project const volatile* get_pointer<Project const volatile>(Project const volatile* p) { return p; }
+}
+#endif
 
 MainWindow* main_window()
 {
@@ -71,6 +79,7 @@ void save_project(const char* project_path = nullptr)
     else
         main_window()->save_project(project_path);
 }
+
 BOOST_PYTHON_FUNCTION_OVERLOADS(save_project_overloads, save_project, 0, 1)
 
 void close_project()

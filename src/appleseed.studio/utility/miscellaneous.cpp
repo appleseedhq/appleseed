@@ -34,15 +34,15 @@
 #include "utility/interop.h"
 #include "utility/settingskeys.h"
 
+// appleseed.shared headers.
+#include "application/application.h"
+
 // appleseed.renderer headers.
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
-
-// appleseed.shared headers.
-#include "application/application.h"
 
 // OpenImageIO headers.
 #include "foundation/platform/_beginoiioheaders.h"

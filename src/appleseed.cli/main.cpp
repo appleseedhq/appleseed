@@ -33,6 +33,10 @@
 #include "houdinitilecallbacks.h"
 #include "progresstilecallback.h"
 
+// appleseed.shared headers.
+#include "application/application.h"
+#include "application/superlogger.h"
+
 // appleseed.renderer headers.
 #include "renderer/api/color.h"
 #include "renderer/api/frame.h"
@@ -57,10 +61,6 @@
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
-
-// appleseed.shared headers.
-#include "application/application.h"
-#include "application/superlogger.h"
 
 // appleseed.main headers.
 #include "main/allocator.h"
@@ -729,6 +729,7 @@ namespace
 
 int main(int argc, const char* argv[])
 {
+    // Enable memory tracking immediately as to catch as many leaks as possible.
     start_memory_tracking();
 
     // Make sure appleseed is correctly installed.

@@ -26,8 +26,12 @@
 // THE SOFTWARE.
 //
 
-// Project headers.
+// dumpmetadata headers.
 #include "commandlinehandler.h"
+
+// appleseed.shared headers.
+#include "application/application.h"
+#include "application/superlogger.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
@@ -44,10 +48,6 @@
 #include "renderer/api/project.h"
 #include "renderer/api/surfaceshader.h"
 #include "renderer/api/texture.h"
-
-// appleseed.shared headers.
-#include "application/application.h"
-#include "application/superlogger.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"

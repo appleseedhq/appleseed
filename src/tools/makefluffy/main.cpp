@@ -26,7 +26,7 @@
 // THE SOFTWARE.
 //
 
-// Project headers.
+// makefluffy headers.
 #include "commandlinehandler.h"
 
 // appleseed.shared headers.
