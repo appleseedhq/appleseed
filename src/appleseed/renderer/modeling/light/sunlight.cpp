@@ -96,6 +96,7 @@ namespace
             m_inputs.declare("environment_edf", InputFormatEntity, "");
             m_inputs.declare("turbidity", InputFormatFloat);
             m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("size_multiplier", InputFormatFloat, "1.0");
         }
 
         virtual void release() override
@@ -127,6 +128,12 @@ namespace
 
             // Apply turbidity bias.
             m_values.m_turbidity += BaseTurbidity;
+
+            const Source* size_multiplier_src = get_inputs().source("size_multiplier");
+            if (size_multiplier_src && size_multiplier_src->is_uniform())
+            {
+                size_multiplier_src->evaluate_uniform(m_values.m_size_multiplier);
+            }
 
             const Scene::RenderData& scene_data = project.get_scene()->get_render_data();
             m_scene_center = Vector3d(scene_data.m_center);
@@ -233,6 +240,7 @@ namespace
         {
             float       m_turbidity;                // atmosphere turbidity
             float       m_radiance_multiplier;      // emitted radiance multiplier
+            float       m_size_multiplier;          // sun size multiplier
         };
 
         Vector3d        m_scene_center;             // world space
@@ -485,6 +493,17 @@ DictionaryArray SunLightFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("help", "Light intensity multiplier"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "size_multiplier")
+            .insert("label", "Sun Size Multiplier")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "100.0")
+            .insert("use", "optional")
+            .insert("default", "1.0")
+            .insert("help", "Shadow softness multiplier"));
 
     add_common_input_metadata(metadata);
 
