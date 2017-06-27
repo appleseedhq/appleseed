@@ -132,7 +132,7 @@ def build_project():
     # Lights
     #------------------------------------------------------------------------
 
-    # Create a color called "light_intensity" and insert it into the assembly.
+    # Create a list of colors and for each of them create a light.
     light_colors = {
         "white" : [1.0, 1.0, 1.0],
         "red"   : [1.0, 0.0, 0.0],
@@ -149,10 +149,11 @@ def build_project():
 
     for key in light_colors:
         color_name = "color_" + key
+        # Add colors to the project.
         assembly.colors().insert(asr.ColorEntity(color_name, {'color_space': 'linear_rgb', 'multiplier': 1.0}, light_colors[key]))
-        # Create a point light called "light" and insert it into the assembly.
         idx = light_colors.keys().index(key)
         light_name = "light_" + key
+        # Create the light.
         light = asr.Light("max_omni_light", light_name, {
                                                         'decay_exponent': "0",
                                                         'decay_start': "40",
@@ -187,7 +188,7 @@ def build_project():
     # Camera
     #------------------------------------------------------------------------
 
-    # Create a pinhole camera with film dimensions 128 x 128 in.
+    # Create an orthographic camera with film dimensions 128 x 128 in.
     params = {
         'controller_target': "0 0 0",
         'film_dimensions': "128 128",
