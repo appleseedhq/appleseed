@@ -211,9 +211,17 @@ def build_project():
     #------------------------------------------------------------------------
 
     # Create a frame and bind it to the project.
-    params = {'camera': 'camera',
-              'resolution': asr.Vector2i(512, 512),
-              'color_space': 'srgb'}
+    params = {
+            "camera": "camera",
+            "clamping": "false",
+            "color_space": "srgb",
+            "filter": "box",
+            "filter_size": "0.5",
+            "gamma_correction": "1.0",
+            "pixel_format": "float",
+            "premultiplied_alpha": "true",
+            "resolution": "512 512",
+            "tile_size": "64 64"}
     project.set_frame(asr.Frame("beauty", params))
 
     # Bind the scene to the project.
