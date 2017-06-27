@@ -98,7 +98,7 @@ inline size_t MiddlePartitioner<AABBVector>::partition(
     if (count <= m_max_leaf_size)
         return end;
 
-    // Split the longest dimension of the bounding box.
+    // Split along the longest dimension of the bounding box.
     const size_t split_dim = max_index(bbox.extent());
     const std::vector<size_t>& indices = PartitionerBase<AABBVector>::m_indices[split_dim];
 
@@ -113,7 +113,7 @@ inline size_t MiddlePartitioner<AABBVector>::partition(
 
     // In case there are multiple bboxes perfectly overlapping, return the next one.
     if (pivot == 0)
-        pivot++;
+        pivot = (end - begin) / 2;
     assert(pivot < end);
 
     PartitionerBase<AABBVector>::sort_indices(split_dim, begin, end, pivot);
