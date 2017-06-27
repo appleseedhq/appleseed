@@ -154,11 +154,16 @@ namespace
             Spectrum&               value,
             float&                  probability) const override
         {
+            //angular_diameter = one_radian * sun_diameter / distance
+            //sun_diameter = angular_diameter * distance / one_radian = 0.5331 degrees * 1.496 * 10^8 km / 57.29578 degrees
+            double sun_diameter = 0.5331 * m_safe_scene_diameter / 57.29578;
+            sun_diameter *= m_values.m_size_multiplier;
+
             sample_disk(
                 light_transform,
                 s,
                 m_scene_center,
-                m_scene_radius,
+                sun_diameter/2,
                 position,
                 outgoing,
                 value,
