@@ -119,7 +119,34 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
         EXPECT_EQ(2, pivot);
     }
 
-    TEST_CASE(Partition_BBoxesOverlapping_ReturnElementAfterMiddle)
+    //      [0]    [2]
+    //      __  |  __ 
+    //     |__| | |__|
+    //          | 
+    //  ---2--1---1--2---
+    //         _|_     
+    //        |_|_|     
+    //          |
+    //         [1]
+
+    TEST_CASE(Partition_BBoxesFormingEvenTriangle_ReturnsMiddleElement)
+    {
+        AABB2dVector bboxes =
+            {
+                AABB2d(Vector2d(-2.0, 1.0 ), Vector2d(-1.0, 2.0 )),
+                AABB2d(Vector2d(-1.0,-2.0 ), Vector2d( 1.0,-1.0 )),
+                AABB2d(Vector2d( 1.0, 1.0 ), Vector2d( 2.0, 2.0 ))
+            };
+
+        MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
+        const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
+        
+        size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
+        
+        EXPECT_EQ(1, pivot);
+    }
+
+    TEST_CASE(Partition_BBoxesOverlapping_ReturnMiddleElement)
     {
         AABB2dVector bboxes =
             {
