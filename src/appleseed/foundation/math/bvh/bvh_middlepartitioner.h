@@ -113,7 +113,7 @@ inline size_t MiddlePartitioner<AABBVector>::partition(
 
     // In case there are multiple bboxes perfectly overlapping, return the next one.
     if (pivot == 0)
-        pivot++;
+        pivot = (end - begin) / 2;
     assert(pivot < end);
 
     PartitionerBase<AABBVector>::sort_indices(split_dim, begin, end, pivot);

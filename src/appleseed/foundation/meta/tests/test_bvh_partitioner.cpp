@@ -119,7 +119,7 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
         EXPECT_EQ(2, pivot);
     }
 
-    TEST_CASE(Partition_BBoxesOverlapping_ReturnSecondElement)
+    TEST_CASE(Partition_BBoxesOverlapping_ReturnElementAfterMiddle)
     {
         AABB2dVector bboxes =
             {
@@ -134,6 +134,6 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
         
         size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
         
-        EXPECT_EQ(1, pivot);
+        EXPECT_EQ(2, pivot);
     }
 }
