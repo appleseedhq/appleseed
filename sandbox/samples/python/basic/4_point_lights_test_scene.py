@@ -200,8 +200,7 @@ def build_project():
 
     # Place and orient the camera. By default cameras are located in (0.0, 0.0, 0.0)
     # and are looking toward Z- (0.0, 0.0, -1.0).
-    mat = asr.Matrix4d.make_rotation(asr.Vector3d(1.0, 0.0, 0.0), math.radians(-90.0))
-    mat = mat * asr.Matrix4d.make_translation(asr.Vector3d(0.0, 0.0, 0.0))
+    mat = orientation * asr.Matrix4d.make_translation(asr.Vector3d(0.0, 0.0, 0.0))
     camera.transform_sequence().set_transform(0.0, asr.Transformd(mat))
 
     # Bind the camera to the scene.
