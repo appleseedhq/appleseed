@@ -173,7 +173,7 @@ void LightTree::build(
     for(size_t i = 0; i < m_nodes.size(); i++)
     {
         if (m_nodes[i].is_leaf())
-            break;
+            continue;
 
         const char* color =
             i % 2 == 0 
@@ -302,12 +302,6 @@ std::pair<size_t, float> LightTree::sample(
         const auto& bbox_right = node.get_right_bbox();
         float square_distance_left  = foundation::square_distance(surface_point, bbox_left.center());
         float square_distance_right = foundation::square_distance(surface_point, bbox_right.center());
-
-        if (square_distance_left < 0.005)
-            square_distance_left = 0.005;
-
-        if (square_distance_right < 0.005)
-            square_distance_right = 0.005;
 
         float p1 = child1.get_probability(square_distance_left, bbox_left.radius());
         float p2 = child2.get_probability(square_distance_right, bbox_right.radius());
