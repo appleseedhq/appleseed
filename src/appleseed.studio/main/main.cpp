@@ -101,6 +101,7 @@ namespace
             exit(EXIT_FAILURE);
         }
 
+#ifdef _WIN32
         if (getenv("PYTHONHOME") == nullptr)
         {
             QMessageBox msgbox;
@@ -116,6 +117,7 @@ namespace
 
             exit(EXIT_FAILURE);
         }
+#endif
     }
 
     bool load_file(const string& filename, string& contents)
