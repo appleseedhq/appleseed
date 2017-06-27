@@ -153,7 +153,13 @@ def build_project():
         # Create a point light called "light" and insert it into the assembly.
         idx = light_colors.keys().index(key)
         light_name = "light_" + key
-        light = asr.Light("point_light", light_name, {'intensity': color_name})
+        light = asr.Light("max_omni_light", light_name, {
+                                                        'decay_exponent': "0",
+                                                        'decay_start': "40",
+                                                        'intensity': color_name,
+                                                        'intensity_multiplier': "3.14159"
+
+                                                     })
         mat = orientation * asr.Matrix4d.make_translation(light_positions[idx])
         light.set_transform(asr.Transformd(mat))
         assembly.lights().insert(light)
