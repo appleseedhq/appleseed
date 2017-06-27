@@ -102,7 +102,7 @@ def build_project():
     for object in objects:
         # Create an instance of this object and insert it into the assembly.
         instance_name = object.get_name() + "_inst"
-        material_names = {"default": "01 - Default_mat", "default2": "01 - Default_mat"}
+        material_name = {"material_slot_0": "01 - Default_mat"}
         mat = orientation * asr.Matrix4d.make_translation(asr.Vector3d(0.0, 0.0, 0.0))
         instance = asr.ObjectInstance(
                                         instance_name,
@@ -120,7 +120,8 @@ def build_project():
                                             }},
                                         object.get_name(),
                                         asr.Transformd(mat),
-                                        material_names)
+                                        material_name,
+                                        material_name)
 
         assembly.object_instances().insert(instance)
 
@@ -181,8 +182,15 @@ def build_project():
     #------------------------------------------------------------------------
 
     # Create a pinhole camera with film dimensions 128 x 128 in.
-    params = {'film_dimensions': asr.Vector2f(128, 128), 'focal_length': 0.035}
-    camera = asr.Camera("pinhole_camera", "camera", params)
+    params = {
+        'controller_target': "0 0 0",
+        'film_dimensions': "128 128",
+        'near_z': "-0.1",
+        'shutter_close_time': "1.0",
+        'shutter_open_time': "0.0"
+    }
+
+    camera = asr.Camera("orthographic_camera", "camera", params)
 
     # Place and orient the camera. By default cameras are located in (0.0, 0.0, 0.0)
     # and are looking toward Z- (0.0, 0.0, -1.0).
