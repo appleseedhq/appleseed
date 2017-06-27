@@ -470,13 +470,14 @@ std::pair<size_t, float> LightSampler::sample_test(
                                                           .get_local_to_parent()
                                                           .extract_translation();
 
-        const double distance2 = (foundation::square_distance(surface_point, light_position));
+        const double distance = std::sqrt(foundation::square_distance(surface_point, light_position));
 
-        float light_attenuation = 1.0 / distance2;
-        
+        float light_attenuation = 1.0 / distance;
+
         // Distance capping
-        if (light_attenuation < 0.005)
-            light_attenuation = 0.005;
+        const float capping_value = 1.0e-4;
+        if (light_attenuation < capping_value)
+            light_attenuation = capping_value;
 
         cdf.insert(i, light_attenuation);
     }
