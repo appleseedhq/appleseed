@@ -73,7 +73,7 @@ PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
 
     setLayout(layout);
 
-    PythonInterpreter::instance().redirect_output(OutputRedirector(output));
+    PythonInterpreter::instance().initialize(OutputRedirector(output));
 }
 
 void PythonConsoleWidget::init_actions()

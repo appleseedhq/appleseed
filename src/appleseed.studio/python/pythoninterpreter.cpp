@@ -37,8 +37,8 @@
 #include "application/application.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptions/exception.h"
 #include "foundation/platform/path.h"
-#include "foundation/platform/python.h"
 #include "foundation/utility/string.h"
 
 // Boost headers.
@@ -79,72 +79,82 @@ MainWindow* PythonInterpreter::get_main_window() const
     return m_main_window;
 }
 
-void PythonInterpreter::redirect_output(OutputRedirector redirector)
+namespace
 {
+string compute_python_modules_path()
+{
+    // Start with the absolute path to appleseed.studio's executable.
+    bf::path base_path(get_executable_path());
+    bf::path lib_path;
+
+    // Strip appleseed.studio's executable filename from the path.
+    base_path = base_path.parent_path();
+
+    // Go up in the hierarchy until bin/ is found.
+    while (base_path.filename() != "bin")
+    {
+        lib_path = base_path.filename() / lib_path;
+        base_path = base_path.parent_path();
+    }
+
+    // One more step up to reach the parent of bin/.
+    lib_path = "lib" / lib_path;
+    base_path = base_path.parent_path();
+
+    // Compute full path.
+    lib_path = base_path / lib_path / "python2.7";
+
+    return lib_path.string();
+}
+
+void import_python_module(const char* module_name, const char* alias_name)
+{
+    const string s =
+        format("import {0}\n{1} = {0}\n", module_name, alias_name);
+
+    const int result = PyRun_SimpleString(s.c_str());
+
+    if (result != 0)
+        RENDERER_LOG_ERROR("failed to import Python module '%s'.", module_name);
+}
+}
+
+void PythonInterpreter::initialize(OutputRedirector redirector)
+{
+    PyImport_AppendInittab("_appleseedstudio", init_appleseedstudio);
+    Py_Initialize();
+
+    bpy::object main_module = bpy::import("__main__");
+    m_main_namespace = main_module.attr("__dict__");
+
+    // Add path to appleseed module to sys.path so that Python can find it.
+    bpy::import("sys").attr("path").attr("append")(compute_python_modules_path());
+
     bpy::class_<OutputRedirector>("OutputRedirector", bpy::no_init)
         .def("write", &OutputRedirector::write);
 
     bpy::object sys_module = bpy::import("sys");
     sys_module.attr("stdout") = redirector;
     sys_module.attr("stderr") = redirector;
-}
-
-void PythonInterpreter::execute_command(const char* command)
-{
-    PyRun_SimpleString(command);
-}
-
-namespace
-{
-    string compute_python_modules_path()
-    {
-        // Start with the absolute path to appleseed.studio's executable.
-        bf::path base_path(get_executable_path());
-        bf::path lib_path;
-
-        // Strip appleseed.studio's executable filename from the path.
-        base_path = base_path.parent_path();
-
-        // Go up in the hierarchy until bin/ is found.
-        while (base_path.filename() != "bin")
-        {
-            lib_path = base_path.filename() / lib_path;
-            base_path = base_path.parent_path();
-        }
-
-        // One more step up to reach the parent of bin/.
-        lib_path = "lib" / lib_path;
-        base_path = base_path.parent_path();
-
-        // Compute full path.
-        lib_path = base_path / lib_path / "python2.7";
-
-        return lib_path.string();
-    }
-
-    void import_python_module(const char* module_name, const char* alias_name)
-    {
-        const string s =
-            format("import {0}\n{1} = {0}\n", module_name, alias_name);
-
-        const int result = PyRun_SimpleString(s.c_str());
-
-        if (result != 0)
-            RENDERER_LOG_ERROR("failed to import Python module '%s'.", module_name);
-    }
-}
-
-PythonInterpreter::PythonInterpreter()
-{
-    PyImport_AppendInittab("_appleseedstudio", init_appleseedstudio);
-    Py_Initialize();
-
-    // Add path to appleseed module to sys.path so that Python can find it.
-    bpy::import("sys").attr("path").attr("append")(compute_python_modules_path());
 
     // Import Python modules.
     import_python_module("appleseed", "asr");
     import_python_module("_appleseedstudio", "studio");
+
+    m_is_initialized = true;
+}
+
+void PythonInterpreter::execute_command(const char* command)
+{
+    if (!m_is_initialized)
+        throw Exception("Attempt to execute command while interpreter is not initialized");
+
+    PyRun_SimpleString(command);
+}
+
+PythonInterpreter::PythonInterpreter()
+{
+    m_is_initialized = false;
 }
 
 PythonInterpreter::~PythonInterpreter()
