@@ -685,6 +685,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     light->sample(
         m_shading_context,
         sample.m_light_transform,
+        m_material_sampler.get_point(),
         s,
         emission_position,
         emission_direction,
@@ -692,7 +693,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
         probability
     );
 
-    sample.m_probability *= probability;
+    //sample.m_probability *= probability;
 
     //light->evaluate(
     //    m_shading_context,

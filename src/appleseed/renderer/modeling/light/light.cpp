@@ -126,6 +126,7 @@ bool Light::on_frame_begin(
 void Light::sample(
     const ShadingContext&   shading_context,
     const Transformd&       light_transform,
+    const Vector3d&         target_point,
     const Vector2d&         s,
     const LightTargetArray& targets,
     Vector3d&               position,
@@ -138,6 +139,7 @@ void Light::sample(
         sample(
             shading_context,
             light_transform,
+            target_point,
             s,
             position,
             outgoing,
