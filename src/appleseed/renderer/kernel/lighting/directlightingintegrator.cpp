@@ -329,13 +329,14 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
             return false;
 
         // Compute the transmission factor between the light sample and the shading point.
-        const float transmission =
-            m_material_sampler.trace_between(
-                m_shading_context,
-                sample.m_point);
+        Spectrum transmission;
+        m_material_sampler.trace_between(
+            m_shading_context,
+            sample.m_point,
+            transmission);
 
         // Discard occluded samples.
-        if (transmission == 0.0f)
+        if (max_value(transmission) == 0.0f)
             return false;
 
         // Don't use this sample if we're closer than the light near start value.
@@ -376,7 +377,8 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
         incoming_prob = sample.m_probability / g;
 
         // Compute and return the incoming radiance.
-        radiance *= transmission * g / sample.m_probability;
+        radiance *= transmission;
+        radiance *= g / sample.m_probability;
     }
     else
     {
@@ -397,13 +399,14 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
             radiance);
 
         // Compute the transmission factor between the light sample and the shading point.
-        const float transmission =
-            m_material_sampler.trace_between(
-                m_shading_context,
-                emission_position);
+        Spectrum transmission;
+        m_material_sampler.trace_between(
+            m_shading_context,
+            emission_position,
+            transmission);
 
         // Discard occluded samples.
-        if (transmission == 0.0f)
+        if (max_value(transmission) == 0.0f)
             return false;
 
         // Compute the incoming direction in world space.
@@ -413,7 +416,8 @@ bool DirectLightingIntegrator::compute_incoming_radiance(
         // Compute and return the incoming radiance.
         const float attenuation = light->compute_distance_attenuation(
             m_material_sampler.get_point(), emission_position);
-        radiance *= transmission * attenuation / sample.m_probability;
+        radiance *= transmission;
+        radiance *= attenuation / sample.m_probability;
     }
 
     return true;
@@ -440,7 +444,7 @@ void DirectLightingIntegrator::take_single_material_sample(
         return;
 
     // Trace a ray in the direction of the reflection.
-    float weight;
+    Spectrum weight;
     const ShadingPoint& light_shading_point =
         m_material_sampler.trace(
             m_shading_context,
@@ -597,13 +601,14 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     }
 
     // Compute the transmission factor between the light sample and the shading point.
-    const float transmission =
-        m_material_sampler.trace_between(
-            m_shading_context,
-            sample.m_point);
+    Spectrum transmission;
+    m_material_sampler.trace_between(
+        m_shading_context,
+        sample.m_point,
+        transmission);
 
     // Discard occluded samples.
-    if (transmission == 0.0f)
+    if (max_value(transmission) == 0.0f)
         return;
 
     // Evaluate the BSDF (or phase function).
@@ -641,17 +646,17 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
         edf_value);
 
     const float g = static_cast<float>(cos_on * rcp_sample_square_distance);
-    float weight = (transmission * g) / (sample.m_probability * contribution_prob);
 
     // Apply MIS weighting.
-    weight *=
+    const float mis_weight =
         mis(
             mis_heuristic,
             m_light_sample_count * sample.m_probability,
             m_material_sample_count * material_probability * g);
 
     // Add the contribution of this sample to the illumination.
-    edf_value *= weight;
+    edf_value *= transmission;
+    edf_value *= (mis_weight * g) / (sample.m_probability * contribution_prob);
     edf_value *= material_value;
     radiance += edf_value;
 }
@@ -685,13 +690,14 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
         return;
 
     // Compute the transmission factor between the light sample and the shading point.
-    const float transmission =
-        m_material_sampler.trace_between(
-            m_shading_context,
-            emission_position);
+    Spectrum transmission;
+    m_material_sampler.trace_between(
+        m_shading_context,
+        emission_position,
+        transmission);
 
     // Discard occluded samples.
-    if (transmission == 0.0f)
+    if (max_value(transmission) == 0.0f)
         return;
 
     // Evaluate the BSDF (or phase function).
@@ -708,8 +714,8 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     // Add the contribution of this sample to the illumination.
     const float attenuation = light->compute_distance_attenuation(
         m_material_sampler.get_point(), emission_position);
-    const float weight = transmission * attenuation / sample.m_probability;
-    light_value *= weight;
+    light_value *= transmission;
+    light_value *= attenuation / sample.m_probability;
     light_value *= material_value;
     radiance += light_value;
 }

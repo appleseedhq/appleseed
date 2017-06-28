@@ -61,10 +61,10 @@ class IsotropicPhaseFunction
         const ParamArray&     params)
       : PhaseFunction(name, params)
     {
-        m_inputs.declare("scattering", InputFormatSpectralReflectance);
-        m_inputs.declare("scattering_multiplier", InputFormatFloat, "1.0");
         m_inputs.declare("absorption", InputFormatSpectralReflectance);
         m_inputs.declare("absorption_multiplier", InputFormatFloat, "1.0");
+        m_inputs.declare("scattering", InputFormatSpectralReflectance);
+        m_inputs.declare("scattering_multiplier", InputFormatFloat, "1.0");
     }
 
     virtual void release() override
@@ -101,7 +101,14 @@ class IsotropicPhaseFunction
             values->m_scattering_multiplier * values->m_scattering;
 
         // Ensure that extinction spectrum has unit norm, which is neccessary for distance sampling.
-        const float extinction_norm = max_value(values->m_precomputed.m_normalized_extinction);
+        float extinction_norm = 0.0;
+        const float Power = 4.0;
+        const float RcpPower = 0.25;
+        const size_t n = values->m_precomputed.m_normalized_extinction.size();
+        for (size_t i = 0; i < n; ++i)
+            extinction_norm += std::pow(values->m_precomputed.m_normalized_extinction[i], RcpPower);
+        extinction_norm = std::pow(extinction_norm / n, Power);
+
         if (extinction_norm > 1.0e-6f)
             values->m_precomputed.m_normalized_extinction /= extinction_norm;
         values->m_precomputed.m_extinction_multiplier = extinction_norm;
@@ -207,6 +214,14 @@ class IsotropicPhaseFunction
             values->m_precomputed.m_normalized_extinction;
     }
 
+    virtual float extinction_multiplier(
+        const ShadingRay&           volume_ray,
+        const void*                 data,
+        const float                 distance) const override
+    {
+        return static_cast<const InputValues*>(data)->m_precomputed.m_extinction_multiplier;
+    }
+
   private:
     typedef IsotropicPhaseFunctionInputValues InputValues;
 };
@@ -235,27 +250,6 @@ DictionaryArray IsotropicPhaseFunctionFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "scattering")
-            .insert("label", "Scattering Coefficient")
-            .insert("type", "colormap")
-            .insert("entity_types",
-        Dictionary()
-            .insert("color", "Colors"))
-            .insert("use", "required")
-            .insert("default", "0.5"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "scattering_multiplier")
-            .insert("label", "Scattering Coefficient Multiplier")
-            .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "200.0")
-            .insert("use", "optional")
-            .insert("default", "1.0"));
-
-    metadata.push_back(
-        Dictionary()
             .insert("name", "absorption")
             .insert("label", "Absorption Coefficient")
             .insert("type", "colormap")
@@ -269,6 +263,28 @@ DictionaryArray IsotropicPhaseFunctionFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "absorption_multiplier")
             .insert("label", "Absorption Coefficient Multiplier")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "200.0")
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "scattering")
+            .insert("label", "Scattering Coefficient")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors"))
+                .insert("use", "required")
+                .insert("default", "0.5"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "scattering_multiplier")
+            .insert("label", "Scattering Coefficient Multiplier")
             .insert("type", "numeric")
             .insert("min_value", "0.0")
             .insert("max_value", "200.0")

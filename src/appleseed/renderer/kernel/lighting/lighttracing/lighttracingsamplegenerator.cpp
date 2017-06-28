@@ -249,7 +249,7 @@ namespace
       private:
         struct VolumeVisitor
         {
-            void visit(const ShadingRay& volume_ray) {}
+            void visit(PathVertex& vertex, const ShadingRay& volume_ray) {}
         };
 
         struct PathVisitor
@@ -331,16 +331,18 @@ namespace
 
                 // Compute the transmission factor between the light vertex and the camera.
                 // Prevent self-intersections by letting the ray originate from the camera.
-                const float transmission =
-                    m_shading_context.get_tracer().trace_between(
-                        light_sample.m_point - camera_outgoing,
-                        light_sample.m_point,
-                        time,
-                        VisibilityFlags::CameraRay,
-                        0);
+                Spectrum radiance;
+                m_shading_context.get_tracer().trace_between(
+                    m_shading_context,
+                    light_sample.m_point - camera_outgoing,
+                    light_sample.m_point,
+                    time,
+                    VisibilityFlags::CameraRay,
+                    0,
+                    radiance);
 
                 // Ignore occluded vertices.
-                if (transmission == 0.0f)
+                if (max_value(radiance) == 0.0f)
                     return;
 
                 // Adjust cos(alpha) to account for the fact that the camera outgoing direction was not unit-length.
@@ -348,8 +350,8 @@ namespace
                 cos_alpha /= distance;
 
                 // Store the contribution of this vertex.
-                Spectrum radiance = light_particle_flux;
-                radiance *= static_cast<float>(transmission * cos_alpha * importance);
+                radiance *= light_particle_flux;
+                radiance *= static_cast<float>(cos_alpha * importance);
                 emit_sample(sample_position, radiance);
             }
 
@@ -372,21 +374,23 @@ namespace
                     return;
 
                 // Compute the transmission factor between the light vertex and the camera.
-                const float transmission =
-                    m_shading_context.get_tracer().trace_between(
-                        light_vertex - camera_outgoing,
-                        light_vertex,
-                        time,
-                        VisibilityFlags::CameraRay,
-                        0);
+                Spectrum radiance;
+                m_shading_context.get_tracer().trace_between(
+                    m_shading_context,
+                    light_vertex - camera_outgoing,
+                    light_vertex,
+                    time,
+                    VisibilityFlags::CameraRay,
+                    0,
+                    radiance);
 
                 // Ignore occluded vertices.
-                if (transmission == 0.0f)
+                if (max_value(radiance) == 0.0f)
                     return;
 
                 // Store the contribution of this vertex.
-                Spectrum radiance = light_particle_flux;
-                radiance *= transmission * importance;
+                radiance *= light_particle_flux;
+                radiance *= importance;
                 emit_sample(sample_position, radiance);
             }
 
@@ -421,16 +425,18 @@ namespace
 
                 // Compute the transmission factor between the path vertex and the camera.
                 // Prevent self-intersections by letting the ray originate from the camera.
-                const float transmission =
-                    m_shading_context.get_tracer().trace_between(
-                        vertex.get_point() - camera_outgoing,
-                        vertex.get_point(),
-                        vertex.get_time(),
-                        VisibilityFlags::CameraRay,
-                        static_cast<ShadingRay::DepthType>(vertex.m_path_length));  // ray depth = (path length - 1) + 1
+                Spectrum transmission;
+                m_shading_context.get_tracer().trace_between(
+                    m_shading_context,
+                    vertex.get_point() - camera_outgoing,
+                    vertex.get_point(),
+                    vertex.get_time(),
+                    VisibilityFlags::CameraRay,
+                    static_cast<ShadingRay::DepthType>(vertex.m_path_length), // ray depth = (path length - 1) + 1
+                    transmission);
 
                 // Ignore occluded vertices.
-                if (transmission == 0.0f)
+                if (max_value(transmission) == 0.0f)
                     return;
 
                 // Normalize the camera outgoing direction.
@@ -463,7 +469,8 @@ namespace
                 Spectrum radiance = m_initial_flux;
                 radiance *= vertex.m_throughput;
                 radiance *= bsdf_value;
-                radiance *= transmission * importance;
+                radiance *= transmission;
+                radiance *= importance;
                 emit_sample(sample_position, radiance);
             }
 

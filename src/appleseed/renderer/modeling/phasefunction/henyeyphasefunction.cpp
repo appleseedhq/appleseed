@@ -69,11 +69,11 @@ class HenyeyPhaseFunction
         const ParamArray&     params)
       : PhaseFunction(name, params)
     {
-        m_inputs.declare("scattering", InputFormatSpectralReflectance);
-        m_inputs.declare("scattering_multiplier", InputFormatFloat, "1.0");
         m_inputs.declare("absorption", InputFormatSpectralReflectance);
         m_inputs.declare("absorption_multiplier", InputFormatFloat, "1.0");
-        m_inputs.declare("average_cosine", InputFormatFloat, "1.0");
+        m_inputs.declare("scattering", InputFormatSpectralReflectance);
+        m_inputs.declare("scattering_multiplier", InputFormatFloat, "1.0");
+        m_inputs.declare("average_cosine", InputFormatFloat, "0.0");
     }
 
     virtual void release() override
@@ -110,7 +110,14 @@ class HenyeyPhaseFunction
             values->m_scattering_multiplier * values->m_scattering;
 
         // Ensure that extinction spectrum has unit norm, which is neccessary for distance sampling.
-        const float extinction_norm = max_value(values->m_precomputed.m_normalized_extinction);
+        float extinction_norm = 0.0f;
+        const float Power = 4.0f;
+        const float RcpPower = 0.25f;
+        const size_t n = values->m_precomputed.m_normalized_extinction.size();
+        for (size_t i = 0; i < n; ++i)
+            extinction_norm += std::pow(values->m_precomputed.m_normalized_extinction[i], RcpPower);
+        extinction_norm = std::pow(extinction_norm / n, Power);
+        
         if (extinction_norm > 1.0e-6f)
             values->m_precomputed.m_normalized_extinction /= extinction_norm;
         values->m_precomputed.m_extinction_multiplier = extinction_norm;
@@ -125,9 +132,7 @@ class HenyeyPhaseFunction
     {
         const InputValues* values = static_cast<const InputValues*>(data);
 
-        const float ray_length = static_cast<float>(
-            norm(volume_ray.m_dir) *
-            (volume_ray.m_tmax - volume_ray.m_tmin));
+        const float ray_length = static_cast<float>(volume_ray.get_length());
 
         // Sample distance.
         sampling_context.split_in_place(1, 1);
@@ -271,6 +276,14 @@ class HenyeyPhaseFunction
         spectrum *= values->m_precomputed.m_extinction_multiplier;
     }
 
+    virtual float extinction_multiplier(
+        const ShadingRay&           volume_ray,
+        const void*                 data,
+        const float                 distance) const override
+    {
+        return static_cast<const InputValues*>(data)->m_precomputed.m_extinction_multiplier;
+    }
+
   private:
     typedef HenyeyPhaseFunctionInputValues InputValues;
 };
@@ -299,8 +312,8 @@ DictionaryArray HenyeyPhaseFunctionFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "scattering")
-            .insert("label", "Scattering Coefficient")
+            .insert("name", "absorption")
+            .insert("label", "Absorption Coefficient")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
@@ -310,8 +323,8 @@ DictionaryArray HenyeyPhaseFunctionFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "scattering_multiplier")
-            .insert("label", "Scattering Coefficient Multiplier")
+            .insert("name", "absorption_multiplier")
+            .insert("label", "Absorption Coefficient Multiplier")
             .insert("type", "numeric")
             .insert("min_value", "0.0")
             .insert("max_value", "200.0")
@@ -320,19 +333,19 @@ DictionaryArray HenyeyPhaseFunctionFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-        .insert("name", "absorption")
-        .insert("label", "Absorption Coefficient")
-        .insert("type", "colormap")
-        .insert("entity_types",
-            Dictionary()
-                .insert("color", "Colors"))
-        .insert("use", "required")
-        .insert("default", "0.5"));
+            .insert("name", "scattering")
+            .insert("label", "Scattering Coefficient")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors"))
+                    .insert("use", "required")
+                    .insert("default", "0.5"));
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "absorption_multiplier")
-            .insert("label", "Absorption Coefficient Multiplier")
+            .insert("name", "scattering_multiplier")
+            .insert("label", "Scattering Coefficient Multiplier")
             .insert("type", "numeric")
             .insert("min_value", "0.0")
             .insert("max_value", "200.0")

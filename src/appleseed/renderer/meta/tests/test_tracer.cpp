@@ -35,6 +35,7 @@
 #include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/kernel/shading/oslshadergroupexec.h"
 #include "renderer/kernel/shading/oslshadingsystem.h"
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/oiiotexturesystem.h"
@@ -55,6 +56,7 @@
 #include "renderer/modeling/scene/visibilityflags.h"
 #include "renderer/modeling/surfaceshader/constantsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
+#include "renderer/utility/iostreamop.h"
 #include "renderer/utility/paramarray.h"
 #include "renderer/utility/testutils.h"
 
@@ -220,12 +222,15 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Arena                                   m_arena;
         std::shared_ptr<OSLShaderGroupExec>     m_shading_group_exec;
         OnFrameBeginRecorder                    m_recorder;
+        std::shared_ptr<ShadingContext>         m_shading_context;
+        Tracer                                  m_tracer;
 
         Fixture()
           : m_trace_context(*Base::m_scene)
           , m_texture_store(*Base::m_scene)
           , m_texture_cache(m_texture_store)
           , m_intersector(m_trace_context, m_texture_cache)
+          , m_tracer(*Base::m_scene, m_intersector, m_texture_cache, *m_shading_group_exec)
         {
             m_texture_system.reset(
                 OIIOTextureSystemFactory::create(),
@@ -238,6 +243,15 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 OSLShadingSystemFactory::create(m_renderer_services.get(), m_texture_system.get()),
                 [](OSLShadingSystem* object) { object->release(); });
             m_shading_group_exec.reset(new OSLShaderGroupExec(*m_shading_system, m_arena));
+            m_shading_context.reset(
+                new ShadingContext(
+                    m_intersector,
+                    m_tracer,
+                    m_texture_cache,
+                    *m_texture_system,
+                    *m_shading_group_exec,
+                    m_arena,
+                    0));
 
             Base::m_scene->on_frame_begin(Base::m_project.ref(), 0, m_recorder);
         }
@@ -255,56 +269,46 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(Trace_GivenNoOccluder, Fixture<EmptyScene>)
     {
-        Tracer tracer(
-            *m_scene,
-            m_intersector,
-            m_texture_cache,
-            *m_shading_group_exec);
-
-        float transmission;
+        Spectrum transmission;
+        ShadingRay ray(
+            Vector3d(0.0),
+            Vector3d(1.0, 0.0, 0.0),
+            ShadingRay::Time(),
+            VisibilityFlags::ShadowRay,
+            0);
         const ShadingPoint& shading_point =
-            tracer.trace(
-                Vector3d(0.0),
-                Vector3d(1.0, 0.0, 0.0),
-                ShadingRay::Time(),
-                VisibilityFlags::ShadowRay,
-                0,
+            m_tracer.trace<const ShadingPoint&>(
+                *m_shading_context,
+                ray,
                 transmission);
 
         EXPECT_FALSE(shading_point.hit());
-        EXPECT_EQ(1.0f, transmission);
+        EXPECT_EQ(Spectrum(1.0f), transmission);
     }
 
     TEST_CASE_F(Trace_QuickVariant_GivenNoOccluder, Fixture<EmptyScene>)
     {
-        Tracer tracer(
-            *m_scene,
-            m_intersector,
-            m_texture_cache,
-            *m_shading_group_exec);
+        ShadingRay ray(
+            Vector3d(0.0),
+            Vector3d(1.0, 0.0, 0.0),
+            ShadingRay::Time(),
+            VisibilityFlags::ShadowRay,
+            0);
+        Spectrum transmission;
+        m_tracer.trace(
+            *m_shading_context,
+            ray,
+            transmission);
 
-        const float transmission =
-            tracer.trace(
-                Vector3d(0.0),
-                Vector3d(1.0, 0.0, 0.0),
-                ShadingRay::Time(),
-                VisibilityFlags::ShadowRay,
-                0);
-
-        EXPECT_EQ(1.0f, transmission);
+        EXPECT_EQ(Spectrum(1.0f), transmission);
     }
 
     TEST_CASE_F(TraceBetween_GivenNoOccluder, Fixture<EmptyScene>)
     {
-        Tracer tracer(
-            *m_scene,
-            m_intersector,
-            m_texture_cache,
-            *m_shading_group_exec);
-
-        float transmission;
+        Spectrum transmission;
         const ShadingPoint& shading_point =
-            tracer.trace_between(
+            m_tracer.trace_between<const ShadingPoint&>(
+                *m_shading_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 ShadingRay::Time(),
@@ -313,26 +317,22 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 transmission);
 
         EXPECT_FALSE(shading_point.hit());
-        EXPECT_EQ(1.0f, transmission);
+        EXPECT_EQ(Spectrum(1.0f), transmission);
     }
 
     TEST_CASE_F(TraceBetween_QuickVariant_GivenNoOccluder, Fixture<EmptyScene>)
     {
-        Tracer tracer(
-            *m_scene,
-            m_intersector,
-            m_texture_cache,
-            *m_shading_group_exec);
+        Spectrum transmission;
+        m_tracer.trace_between(
+            *m_shading_context,
+            Vector3d(0.0, 0.0, 0.0),
+            Vector3d(5.0, 0.0, 0.0),
+            ShadingRay::Time(),
+            VisibilityFlags::ShadowRay,
+            0,
+            transmission);
 
-        const float transmission =
-            tracer.trace_between(
-                Vector3d(0.0, 0.0, 0.0),
-                Vector3d(5.0, 0.0, 0.0),
-                ShadingRay::Time(),
-                VisibilityFlags::ShadowRay,
-                0);
-
-        EXPECT_EQ(1.0f, transmission);
+        EXPECT_EQ(Spectrum(1.0f), transmission);
     }
 
     struct SceneWithSingleOpaqueOccluder
@@ -346,57 +346,47 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(Trace_GivenSingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
     {
-        Tracer tracer(
-            *m_scene,
-            m_intersector,
-            m_texture_cache,
-            *m_shading_group_exec);
-
-        float transmission;
+        Spectrum transmission;
+        ShadingRay ray(
+            Vector3d(0.0, 0.0, 0.0),
+            Vector3d(1.0, 0.0, 0.0),
+            ShadingRay::Time(),
+            VisibilityFlags::ShadowRay,
+            0);
         const ShadingPoint& shading_point =
-            tracer.trace(
-                Vector3d(0.0, 0.0, 0.0),
-                Vector3d(1.0, 0.0, 0.0),
-                ShadingRay::Time(),
-                VisibilityFlags::ShadowRay,
-                0,
+            m_tracer.trace<const ShadingPoint&>(
+                *m_shading_context,
+                ray,
                 transmission);
 
         ASSERT_TRUE(shading_point.hit());
         EXPECT_FEQ(Vector3d(2.0, 0.0, 0.0), shading_point.get_point());
-        EXPECT_EQ(1.0f, transmission);
+        EXPECT_EQ(Spectrum(1.0f), transmission);
     }
 
     TEST_CASE_F(Trace_QuickVariant_GivenSingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
     {
-        Tracer tracer(
-            *m_scene,
-            m_intersector,
-            m_texture_cache,
-            *m_shading_group_exec);
+        Spectrum transmission;
+        ShadingRay ray(
+            Vector3d(0.0, 0.0, 0.0),
+            Vector3d(1.0, 0.0, 0.0),
+            ShadingRay::Time(),
+            VisibilityFlags::ShadowRay,
+            0);
+        m_tracer.trace(
+            *m_shading_context,
+            ray,
+            transmission);
 
-        const float transmission =
-            tracer.trace(
-                Vector3d(0.0, 0.0, 0.0),
-                Vector3d(1.0, 0.0, 0.0),
-                ShadingRay::Time(),
-                VisibilityFlags::ShadowRay,
-                0);
-
-        EXPECT_EQ(0.0f, transmission);
+        EXPECT_EQ(Spectrum(0.0f), transmission);
     }
 
     TEST_CASE_F(TraceBetween_GivenSingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
     {
-        Tracer tracer(
-            *m_scene,
-            m_intersector,
-            m_texture_cache,
-            *m_shading_group_exec);
-
-        float transmission;
+        Spectrum transmission;
         const ShadingPoint& shading_point =
-            tracer.trace_between(
+            m_tracer.trace_between<const ShadingPoint&>(
+                *m_shading_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 ShadingRay::Time(),
@@ -406,26 +396,22 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
         ASSERT_TRUE(shading_point.hit());
         EXPECT_FEQ(Vector3d(2.0, 0.0, 0.0), shading_point.get_point());
-        EXPECT_EQ(1.0f, transmission);
+        EXPECT_EQ(Spectrum(1.0f), transmission);
     }
 
     TEST_CASE_F(TraceBetween_QuickVariant_GivenSingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
     {
-        Tracer tracer(
-            *m_scene,
-            m_intersector,
-            m_texture_cache,
-            *m_shading_group_exec);
+        Spectrum transmission;
+        m_tracer.trace_between(
+            *m_shading_context,
+            Vector3d(0.0, 0.0, 0.0),
+            Vector3d(5.0, 0.0, 0.0),
+            ShadingRay::Time(),
+            VisibilityFlags::ShadowRay,
+            0,
+            transmission);
 
-        const float transmission =
-            tracer.trace_between(
-                Vector3d(0.0, 0.0, 0.0),
-                Vector3d(5.0, 0.0, 0.0),
-                ShadingRay::Time(),
-                VisibilityFlags::ShadowRay,
-                0);
-
-        EXPECT_EQ(0.0f, transmission);
+        EXPECT_EQ(Spectrum(0.0f), transmission);
     }
 
     struct SceneWithSingleTransparentOccluder
@@ -439,56 +425,46 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(Trace_GivenSingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
     {
-        Tracer tracer(
-            *m_scene,
-            m_intersector,
-            m_texture_cache,
-            *m_shading_group_exec);
-
-        float transmission;
+        Spectrum transmission;
+        ShadingRay ray(
+            Vector3d(0.0, 0.0, 0.0),
+            Vector3d(1.0, 0.0, 0.0),
+            ShadingRay::Time(),
+            VisibilityFlags::ShadowRay,
+            0);
         const ShadingPoint& shading_point =
-            tracer.trace(
-                Vector3d(0.0, 0.0, 0.0),
-                Vector3d(1.0, 0.0, 0.0),
-                ShadingRay::Time(),
-                VisibilityFlags::ShadowRay,
-                0,
+            m_tracer.trace<const ShadingPoint&>(
+                *m_shading_context,
+                ray,
                 transmission);
 
         ASSERT_FALSE(shading_point.hit());
-        EXPECT_FEQ(0.5f, transmission);
+        EXPECT_FEQ(Spectrum(0.5f), transmission);
     }
 
     TEST_CASE_F(Trace_QuickVariant_GivenSingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
     {
-        Tracer tracer(
-            *m_scene,
-            m_intersector,
-            m_texture_cache,
-            *m_shading_group_exec);
+        Spectrum transmission;
+        ShadingRay ray(
+            Vector3d(0.0, 0.0, 0.0),
+            Vector3d(1.0, 0.0, 0.0),
+            ShadingRay::Time(),
+            VisibilityFlags::ShadowRay,
+            0);
+        m_tracer.trace(
+            *m_shading_context,
+            ray,
+            transmission);
 
-        const float transmission =
-            tracer.trace(
-                Vector3d(0.0, 0.0, 0.0),
-                Vector3d(1.0, 0.0, 0.0),
-                ShadingRay::Time(),
-                VisibilityFlags::ShadowRay,
-                0);
-
-        EXPECT_FEQ(0.5f, transmission);
+        EXPECT_FEQ(Spectrum(0.5f), transmission);
     }
 
     TEST_CASE_F(TraceBetween_GivenSingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
     {
-        Tracer tracer(
-            *m_scene,
-            m_intersector,
-            m_texture_cache,
-            *m_shading_group_exec);
-
-        float transmission;
+        Spectrum transmission;
         const ShadingPoint& shading_point =
-            tracer.trace_between(
+            m_tracer.trace_between<const ShadingPoint&>(
+                *m_shading_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 ShadingRay::Time(),
@@ -497,26 +473,22 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 transmission);
 
         ASSERT_FALSE(shading_point.hit());
-        EXPECT_FEQ(0.5f, transmission);
+        EXPECT_FEQ(Spectrum(0.5f), transmission);
     }
 
     TEST_CASE_F(TraceBetween_QuickVariant_GivenSingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
     {
-        Tracer tracer(
-            *m_scene,
-            m_intersector,
-            m_texture_cache,
-            *m_shading_group_exec);
+        Spectrum transmission;
+        m_tracer.trace_between(
+            *m_shading_context,
+            Vector3d(0.0, 0.0, 0.0),
+            Vector3d(5.0, 0.0, 0.0),
+            ShadingRay::Time(),
+            VisibilityFlags::ShadowRay,
+            0,
+            transmission);
 
-        const float transmission =
-            tracer.trace_between(
-                Vector3d(0.0, 0.0, 0.0),
-                Vector3d(5.0, 0.0, 0.0),
-                ShadingRay::Time(),
-                VisibilityFlags::ShadowRay,
-                0);
-
-        EXPECT_FEQ(0.5f, transmission);
+        EXPECT_FEQ(Spectrum(0.5f), transmission);
     }
 
     struct SceneWithTransparentThenOpaqueOccluders
@@ -531,57 +503,47 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(Trace_GivenTransparentThenOpaqueOccluders, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
-        Tracer tracer(
-            *m_scene,
-            m_intersector,
-            m_texture_cache,
-            *m_shading_group_exec);
-
-        float transmission;
+        Spectrum transmission;
+        ShadingRay ray(
+            Vector3d(0.0, 0.0, 0.0),
+            Vector3d(1.0, 0.0, 0.0),
+            ShadingRay::Time(),
+            VisibilityFlags::ShadowRay,
+            0);
         const ShadingPoint& shading_point =
-            tracer.trace(
-                Vector3d(0.0, 0.0, 0.0),
-                Vector3d(1.0, 0.0, 0.0),
-                ShadingRay::Time(),
-                VisibilityFlags::ShadowRay,
-                0,
+            m_tracer.trace<const ShadingPoint&>(
+                *m_shading_context,
+                ray,
                 transmission);
 
         ASSERT_TRUE(shading_point.hit());
         EXPECT_FEQ(Vector3d(4.0, 0.0, 0.0), shading_point.get_point());
-        EXPECT_FEQ(0.5f, transmission);
+        EXPECT_FEQ(Spectrum(0.5f), transmission);
     }
 
     TEST_CASE_F(Trace_QuickVariant_GivenTransparentThenOpaqueOccluders, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
-        Tracer tracer(
-            *m_scene,
-            m_intersector,
-            m_texture_cache,
-            *m_shading_group_exec);
+        Spectrum transmission;
+        ShadingRay ray(
+            Vector3d(0.0, 0.0, 0.0),
+            Vector3d(1.0, 0.0, 0.0),
+            ShadingRay::Time(),
+            VisibilityFlags::ShadowRay,
+            0);
+        m_tracer.trace(
+            *m_shading_context,
+            ray,
+            transmission);
 
-        const float transmission =
-            tracer.trace(
-                Vector3d(0.0, 0.0, 0.0),
-                Vector3d(1.0, 0.0, 0.0),
-                ShadingRay::Time(),
-                VisibilityFlags::ShadowRay,
-                0);
-
-        EXPECT_FEQ(0.0f, transmission);
+        EXPECT_FEQ(Spectrum(0.0f), transmission);
     }
 
     TEST_CASE_F(TraceBetween_GivenTransparentThenOpaqueOccluders_GivenTargetPastOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
-        Tracer tracer(
-            *m_scene,
-            m_intersector,
-            m_texture_cache,
-            *m_shading_group_exec);
-
-        float transmission;
+        Spectrum transmission;
         const ShadingPoint& shading_point =
-            tracer.trace_between(
+            m_tracer.trace_between<const ShadingPoint&>(
+                *m_shading_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 ShadingRay::Time(),
@@ -591,39 +553,30 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
         ASSERT_TRUE(shading_point.hit());
         EXPECT_FEQ(Vector3d(4.0, 0.0, 0.0), shading_point.get_point());
-        EXPECT_FEQ(0.5f, transmission);
+        EXPECT_FEQ(Spectrum(0.5f), transmission);
     }
 
     TEST_CASE_F(TraceBetween_QuickVariant_GivenTransparentThenOpaqueOccluders_GivenTargetPastOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
-        Tracer tracer(
-            *m_scene,
-            m_intersector,
-            m_texture_cache,
-            *m_shading_group_exec);
+        Spectrum transmission;
+        m_tracer.trace_between(
+            *m_shading_context,
+            Vector3d(0.0, 0.0, 0.0),
+            Vector3d(5.0, 0.0, 0.0),
+            ShadingRay::Time(),
+            VisibilityFlags::ShadowRay,
+            0,
+            transmission);
 
-        const float transmission =
-            tracer.trace_between(
-                Vector3d(0.0, 0.0, 0.0),
-                Vector3d(5.0, 0.0, 0.0),
-                ShadingRay::Time(),
-                VisibilityFlags::ShadowRay,
-                0);
-
-        EXPECT_FEQ(0.0f, transmission);
+        EXPECT_FEQ(Spectrum(0.0f), transmission);
     }
 
     TEST_CASE_F(TraceBetween_GivenTransparentThenOpaqueOccluders_GivenTargetOnOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
-        Tracer tracer(
-            *m_scene,
-            m_intersector,
-            m_texture_cache,
-            *m_shading_group_exec);
-
-        float transmission;
+        Spectrum transmission;
         const ShadingPoint& shading_point =
-            tracer.trace_between(
+            m_tracer.trace_between<const ShadingPoint&>(
+                *m_shading_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(4.0, 0.0, 0.0),
                 ShadingRay::Time(),
@@ -632,26 +585,22 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 transmission);
 
         ASSERT_FALSE(shading_point.hit());
-        EXPECT_FEQ(0.5f, transmission);
+        EXPECT_FEQ(Spectrum(0.5f), transmission);
     }
 
     TEST_CASE_F(TraceBetween_QuickVariant_GivenTransparentThenOpaqueOccluders_GivenTargetOnOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
-        Tracer tracer(
-            *m_scene,
-            m_intersector,
-            m_texture_cache,
-            *m_shading_group_exec);
+        Spectrum transmission;
+        m_tracer.trace_between(
+            *m_shading_context,
+            Vector3d(0.0, 0.0, 0.0),
+            Vector3d(4.0, 0.0, 0.0),
+            ShadingRay::Time(),
+            VisibilityFlags::ShadowRay,
+            0,
+            transmission);
 
-        const float transmission =
-            tracer.trace_between(
-                Vector3d(0.0, 0.0, 0.0),
-                Vector3d(4.0, 0.0, 0.0),
-                ShadingRay::Time(),
-                VisibilityFlags::ShadowRay,
-                0);
-
-        EXPECT_FEQ(0.5f, transmission);
+        EXPECT_FEQ(Spectrum(0.5f), transmission);
     }
 
     struct SceneWithTwoOpaqueOccluders
@@ -666,38 +615,31 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(TraceBetween_ComputeVisibilityBetweenTwoOpaqueOccluders_ReturnsOne, Fixture<SceneWithTwoOpaqueOccluders>)
     {
-        Tracer parent_tracer(
-            *m_scene,
-            m_intersector,
-            m_texture_cache,
-            *m_shading_group_exec);
-
-        float parent_transmission;
+        ShadingRay ray(
+            Vector3d(0.0, 0.0, 0.0),
+            Vector3d(1.0, 0.0, 0.0),
+            ShadingRay::Time(),
+            VisibilityFlags::ShadowRay,
+            0);
+        Spectrum parent_transmission;
         const ShadingPoint& parent_shading_point =
-            parent_tracer.trace(
-                Vector3d(0.0, 0.0, 0.0),
-                Vector3d(1.0, 0.0, 0.0),
-                ShadingRay::Time(),
-                VisibilityFlags::ShadowRay,
-                0,
+            m_tracer.trace<const ShadingPoint&>(
+                *m_shading_context,
+                ray,
                 parent_transmission);
 
         ASSERT_TRUE(parent_shading_point.hit());
         ASSERT_FEQ(2.0, parent_shading_point.get_distance());
 
-        Tracer tracer(
-            *m_scene,
-            m_intersector,
-            m_texture_cache,
-            *m_shading_group_exec);
+        Spectrum transmission;
+        m_tracer.trace_between(
+            *m_shading_context,
+            parent_shading_point,
+            Vector3d(4.0, 0.0, 0.0),
+            VisibilityFlags::ShadowRay,
+            transmission);
 
-        const float transmission =
-            tracer.trace_between(
-                parent_shading_point,
-                Vector3d(4.0, 0.0, 0.0),
-                VisibilityFlags::ShadowRay);
-
-        EXPECT_EQ(1.0f, transmission);
+        EXPECT_EQ(Spectrum(1.0f), transmission);
     }
 
     struct SceneWithTwoOpaqueOccludersAndScaledAssemblyInstance
@@ -714,37 +656,30 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(TraceBetween_ComputeVisibilityBetweenTwoOpaqueOccludersAndScaledAssemblyInstance_ReturnsOne, Fixture<SceneWithTwoOpaqueOccludersAndScaledAssemblyInstance>)
     {
-        Tracer parent_tracer(
-            *m_scene,
-            m_intersector,
-            m_texture_cache,
-            *m_shading_group_exec);
-
-        float parent_transmission;
+        ShadingRay ray(
+            Vector3d(0.0, 0.0, 0.0),
+            Vector3d(1.0, 0.0, 0.0),
+            ShadingRay::Time(),
+            VisibilityFlags::ShadowRay,
+            0);
+        Spectrum parent_transmission;
         const ShadingPoint& parent_shading_point =
-            parent_tracer.trace(
-                Vector3d(0.0, 0.0, 0.0),
-                Vector3d(1.0, 0.0, 0.0),
-                ShadingRay::Time(),
-                VisibilityFlags::ShadowRay,
-                0,
+            m_tracer.trace<const ShadingPoint&>(
+                *m_shading_context,
+                ray,
                 parent_transmission);
 
         ASSERT_TRUE(parent_shading_point.hit());
         ASSERT_FEQ(1.0, parent_shading_point.get_distance());
 
-        Tracer tracer(
-            *m_scene,
-            m_intersector,
-            m_texture_cache,
-            *m_shading_group_exec);
+        Spectrum transmission;
+        m_tracer.trace_between(
+            *m_shading_context,
+            parent_shading_point,
+            Vector3d(2.0, 0.0, 0.0),
+            VisibilityFlags::ShadowRay,
+            transmission);
 
-        const float transmission =
-            tracer.trace_between(
-                parent_shading_point,
-                Vector3d(2.0, 0.0, 0.0),
-                VisibilityFlags::ShadowRay);
-
-        EXPECT_EQ(1.0f, transmission);
+        EXPECT_EQ(Spectrum(1.0f), transmission);
     }
 }

@@ -100,13 +100,14 @@ class PathTracer
         const ShadingPoint&     shading_point);
 
     // This method performs raymarching across the volume.
-    // Returns the number of scattering events occured during the marching.
+    // Returns the number of scattering events that occurred during the marching.
     size_t march(
         SamplingContext&        sampling_context,
         const ShadingContext&   shading_context,
         const ShadingRay&       ray,
         PathVertex&             vertex,
-        ShadingPoint&           shading_point);
+        ShadingPoint&           shading_point,
+        bool&                   continue_path);
 
   private:
     PathVisitor&                m_path_visitor;
@@ -137,6 +138,10 @@ class PathTracer
         BSDFSample&         sample,
         ShadingRay&         ray);
 
+    // Use Russian Roulette to cut the path without introducing bias.
+    bool continue_path_rr(
+        SamplingContext&    sampling_context,
+        PathVertex&         vertex);
 };
 
 
@@ -454,25 +459,8 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         m_path_visitor.on_hit(vertex);
 
         // Use Russian Roulette to cut the path without introducing bias.
-        float scattering_prob;
-        if (vertex.m_path_length > m_rr_min_path_length)
-        {
-            // Generate a uniform sample in [0,1).
-            sampling_context.split_in_place(1, 1);
-            const float s = sampling_context.next2<float>();
-
-            // Compute the probability of extending this path.
-            // todo: make max scattering prob lower (0.99) to avoid getting stuck?
-            scattering_prob = std::min(foundation::max_value(vertex.m_throughput), 1.0f);
-
-            // Russian Roulette.
-            if (!foundation::pass_rr(scattering_prob, s))
-                break;
-
-            // Adjust throughput to account for terminated paths.
-            assert(scattering_prob > 0.0f);
-            vertex.m_throughput /= scattering_prob;
-        }
+        if (!continue_path_rr(sampling_context, vertex))
+            break;
 
         // Honor the global bounce limit.
         const size_t bounces = vertex.m_path_length - 1;
@@ -483,8 +471,15 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         if (vertex.m_bsdf == 0 && material->get_render_data().m_phase_function == 0)
             break;
 
+        // Determine which scattering modes are still enabled.
+        if (m_diffuse_bounces >= m_max_diffuse_bounces)
+            vertex.m_scattering_modes &= ~ScatteringMode::Diffuse;
+        if (m_glossy_bounces >= m_max_glossy_bounces)
+            vertex.m_scattering_modes &= ~ScatteringMode::Glossy;
+        if (m_specular_bounces >= m_max_specular_bounces)
+            vertex.m_scattering_modes &= ~ScatteringMode::Specular;
+
         ShadingRay next_ray;
-        bool continue_path;
         if (vertex.m_bsdf == nullptr)
         {
             // If there is no BSDF, just continue the current ray without increasing its depth.
@@ -494,16 +489,16 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                 ray.m_time,
                 ray.m_flags,
                 ray.m_depth);
-            continue_path = true;
         }
         else
         {
             // If there is a BSDF, compute the bounce.
-            continue_path = process_bounce(sampling_context, vertex, bsdf_sample, next_ray);
-        }
+            const bool continue_path =
+                process_bounce(sampling_context, vertex, bsdf_sample, next_ray);
 
-        // Terminate the path if there is BSDF, but the scattering event is not accepted.
-        if (!continue_path) break;
+            // Terminate the path if this scattering event is not accepted.
+            if (!continue_path) break;
+        }
 
         // Build the medium list of the scattered ray.
         const foundation::Vector3d& geometric_normal = vertex.get_geometric_normal();
@@ -522,7 +517,10 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                         vertex.m_bsdf_data);
                 next_ray.add_medium(ray, &object_instance, vertex.get_material(), ior);
             }
-            else next_ray.remove_medium(ray, &object_instance);
+            else
+            {
+                next_ray.remove_medium(ray, &object_instance);
+            }
         }
         else
         {
@@ -560,11 +558,13 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         shading_points[shading_point_index].clear();
         const ShadingRay::Medium* current_medium = next_ray.get_current_medium();
         if (current_medium != 0 && 
-            current_medium->m_material->get_render_data().m_phase_function != 0)
+            current_medium->get_phase_function() != 0)
         {
             // This ray is being cast into a participating medium:
+            bool continue_path;
             march(sampling_context, shading_context,
-                next_ray, vertex, shading_points[shading_point_index]); 
+                next_ray, vertex, shading_points[shading_point_index], continue_path);
+            if (!continue_path) break;
         }
         else
         {
@@ -590,14 +590,6 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     BSDFSample&         sample,
     ShadingRay&         ray)
 {
-    // Determine which scattering modes are still enabled.
-    if (m_diffuse_bounces >= m_max_diffuse_bounces)
-        vertex.m_scattering_modes &= ~ScatteringMode::Diffuse;
-    if (m_glossy_bounces >= m_max_glossy_bounces)
-        vertex.m_scattering_modes &= ~ScatteringMode::Glossy;
-    if (m_specular_bounces >= m_max_specular_bounces)
-        vertex.m_scattering_modes &= ~ScatteringMode::Specular;
-
     // Let the path visitor handle the scattering event.
     m_path_visitor.on_scatter(vertex);
 
@@ -669,10 +661,17 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
     const ShadingContext&   shading_context,
     const ShadingRay&       ray,
     PathVertex&             vertex,
-    ShadingPoint&           exit_point)
+    ShadingPoint&           exit_point,
+    bool&                   continue_path)
 {
+    continue_path = continue_path_rr(sampling_context, vertex);
+    if (!continue_path) return 0;
+
+    continue_path = (vertex.m_scattering_modes != ScatteringMode::None);
+    if (!continue_path) return 0;
+
     const ShadingRay::Medium* medium = ray.get_current_medium();
-    const PhaseFunction* phase_function = medium->m_material->get_render_data().m_phase_function;
+    const PhaseFunction* phase_function = medium->get_phase_function();
 
     shading_context.get_intersector().trace(
         ray,
@@ -683,10 +682,11 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
 
     void* data = phase_function->evaluate_inputs(shading_context, volume_ray);
     phase_function->prepare_inputs(shading_context.get_arena(), volume_ray, data);
+    vertex.m_phase_function_data = data;
 
-    m_volume_visitor.visit(volume_ray);
+    m_volume_visitor.visit(vertex, volume_ray);
 
-    if (vertex.m_shading_point->hit())
+    if (exit_point.hit())
     {
         Spectrum transmission;
         phase_function->evaluate_transmission(volume_ray, data, transmission);
@@ -711,6 +711,35 @@ inline bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::pass_through(
     sampling_context.split_in_place(1, 1);
 
     return sampling_context.next2<float>() >= alpha[0];
+}
+
+// Use Russian Roulette to cut the path without introducing bias.
+template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
+inline bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::continue_path_rr(
+    SamplingContext&    sampling_context,
+    PathVertex&         vertex)
+{
+    if (vertex.m_path_length <= m_rr_min_path_length)
+        return true;
+
+    // Generate a uniform sample in [0,1).
+    sampling_context.split_in_place(1, 1);
+    const float s = sampling_context.next2<float>();
+
+    // Compute the probability of extending this path.
+    // todo: make max scattering prob lower (0.99) to avoid getting stuck?
+    const float scattering_prob = 
+        std::min(foundation::max_value(vertex.m_throughput), 1.0f);
+
+    // Russian Roulette.
+    if (!foundation::pass_rr(scattering_prob, s))
+        return false;
+
+    // Adjust throughput to account for terminated paths.
+    assert(scattering_prob > 0.0f);
+    vertex.m_throughput /= scattering_prob;
+
+    return true;
 }
 
 }       // namespace renderer

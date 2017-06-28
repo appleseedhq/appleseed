@@ -62,11 +62,12 @@ class IMaterialSampler
     virtual const ShadingPoint& trace(
         const ShadingContext&           shading_context,
         const foundation::Vector3f&     direction,
-        float&                          transmission) const = 0;
+        Spectrum&                       transmission) const = 0;
 
-    virtual float trace_between(
+    virtual void trace_between(
         const ShadingContext&           shading_context,
-        const foundation::Vector3d&     target_position) const = 0;
+        const foundation::Vector3d&     target_position,
+        Spectrum&                       transmission) const = 0;
 
     virtual bool sample(
         SamplingContext&                sampling_context,
@@ -99,9 +100,15 @@ class BSDFSampler
 
     virtual bool contributes_to_light_sampling() const override;
 
-    virtual float trace_between(
+    virtual const ShadingPoint& trace(
         const ShadingContext&           shading_context,
-        const foundation::Vector3d&     target_position) const override;
+        const foundation::Vector3f&     direction,
+        Spectrum&                       transmission) const override;
+
+    virtual void trace_between(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3d&     target_position,
+        Spectrum&                       transmission) const override;
 
     virtual bool sample(
         SamplingContext&                sampling_context,
@@ -115,11 +122,6 @@ class BSDFSampler
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
         Spectrum&                       value) const override;
-
-    virtual const ShadingPoint& trace(
-        const ShadingContext&           shading_context,
-        const foundation::Vector3f&     direction,
-        float&                          transmission) const override;
 
     virtual bool cull_incoming_direction(
         const foundation::Vector3d&  incoming) const override;
@@ -139,13 +141,23 @@ class PhaseFunctionSampler
   public:
     PhaseFunctionSampler(
         const ShadingRay&               volume_ray,
-        const PhaseFunction&            phasefunction,
-        const void*                     phasefunction_data,
+        const PhaseFunction&            phase_function,
+        const void*                     phase_function_data,
         const float                     distance);
 
     virtual const foundation::Vector3d& get_point() const override;
 
     virtual bool contributes_to_light_sampling() const override;
+
+    virtual const ShadingPoint& trace(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3f&     direction,
+        Spectrum&                       transmission) const override;
+
+    virtual void trace_between(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3d&     target_position,
+        Spectrum&                       transmission) const override;
 
     virtual bool sample(
         SamplingContext&                sampling_context,
@@ -160,22 +172,13 @@ class PhaseFunctionSampler
         const foundation::Vector3f&     incoming,
         Spectrum&                       value) const override;
 
-    virtual float trace_between(
-        const ShadingContext&           shading_context,
-        const foundation::Vector3d&     target_position) const override;
-
-    virtual const ShadingPoint& trace(
-        const ShadingContext&           shading_context,
-        const foundation::Vector3f&     direction,
-        float&                          transmission) const override;
-
     virtual bool cull_incoming_direction(
         const foundation::Vector3d&     incoming) const override;
 
   private:
     const ShadingRay&               m_volume_ray;
-    const PhaseFunction&            m_phasefunction;
-    const void*                     m_phasefunction_data;
+    const PhaseFunction&            m_phase_function;
+    const void*                     m_phase_function_data;
     const float                     m_distance;
     const foundation::Vector3d      m_point;
 };

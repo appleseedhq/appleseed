@@ -43,6 +43,7 @@
 #include "foundation/utility/poison.h"
 
 // Standard headers.
+#include <array>
 #include <cassert>
 
 // Forward declarations.
@@ -93,6 +94,8 @@ class ShadingRay
         const ObjectInstance*       m_object_instance;
         const Material*             m_material;
         float                       m_ior;
+
+        const PhaseFunction* get_phase_function() const;
     };
 
     // Public members, in an order that optimizes packing.
@@ -148,6 +151,10 @@ class ShadingRay
 
     // Return the IOR of the medium the ray would be in if it would leave the currently active medium.
     float get_previous_ior() const;
+
+    // Return the length of this ray
+    // (i.e. distance between the origin and the target, if the ray is bounded).
+    double get_length() const;
 };
 
 
@@ -211,6 +218,11 @@ inline float ShadingRay::get_current_ior() const
 inline float ShadingRay::get_previous_ior() const
 {
     return m_medium_count > 1 ? m_media[1].m_ior : 1.0f;
+}
+
+inline double ShadingRay::get_length() const
+{
+    return foundation::norm(m_dir) * (m_tmax - m_tmin);
 }
 
 

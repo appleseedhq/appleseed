@@ -815,6 +815,7 @@ namespace
             create_direct_link("advanced.dl.light_samples",        "pt.dl_light_samples");
             create_direct_link("advanced.ibl.env_samples",         "pt.ibl_env_samples");
             create_direct_link("advanced.dl.low_light_threshold",  "pt.dl_low_light_threshold");
+            create_direct_link("advanced.volume_distance_samples", "pt.volume_distance_samples");
 
             load_directly_linked_values(config);
 
@@ -859,6 +860,14 @@ namespace
             create_pt_advanced_dl_settings(nee_layout);
             create_pt_advanced_ibl_settings(nee_layout);
             create_pt_advanced_max_ray_intensity_settings(nee_layout);
+
+            QSpinBox* volume_distance_samples =
+                create_integer_input("advanced.volume_distance_samples", 0, 1000, 1);
+            volume_distance_samples->setToolTip(
+                m_params_metadata.get_path("pt.volume_distance_samples.help"));
+
+            QHBoxLayout* sublayout = create_horizontal_layout();
+            layout->addLayout(create_form_layout("Distance Samples:", volume_distance_samples));
         }
 
         void create_pt_advanced_dl_settings(QVBoxLayout* parent)
