@@ -51,11 +51,13 @@ class PythonInterpreter
 
     void initialize(OutputRedirector redirector);
 
-    void execute_command(const char* command);
+    boost::python::object execute(const char* command);
 
   private:
     PythonInterpreter();
     ~PythonInterpreter();
+
+    void import_python_module(const char* module_name, const char* alias_name);
 
     MainWindow* m_main_window;
     boost::python::object m_main_namespace;
