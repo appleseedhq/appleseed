@@ -588,8 +588,10 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     SamplingContext&    sampling_context,
     PathVertex&         vertex,
     BSDFSample&         sample,
-    ShadingRay&         ray)
+    ShadingRay&         next_ray)
 {
+    const ShadingRay& ray = vertex.get_ray();
+
     // Let the path visitor handle the scattering event.
     m_path_visitor.on_scatter(vertex);
 
@@ -634,22 +636,22 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
 
     // Construct the scattered ray.
     const foundation::Vector3d incoming(sample.m_incoming.get_value());
-    ray = ShadingRay(
+    next_ray = ShadingRay(
         vertex.m_shading_point->get_biased_point(incoming),
         incoming,
         ray.m_time,
         ScatteringMode::get_vis_flags(sample.m_mode),
         ray.m_depth + 1);
-    ray.m_dir = foundation::improve_normalization<2>(ray.m_dir);
+    next_ray.m_dir = foundation::improve_normalization<2>(next_ray.m_dir);
 
     // Compute scattered ray differentials.
     if (sample.m_incoming.has_derivatives())
     {
-        ray.m_rx.m_org = ray.m_org + vertex.m_shading_point->get_dpdx();
-        ray.m_ry.m_org = ray.m_org + vertex.m_shading_point->get_dpdy();
-        ray.m_rx.m_dir = ray.m_dir + foundation::Vector3d(sample.m_incoming.get_dx());
-        ray.m_ry.m_dir = ray.m_dir + foundation::Vector3d(sample.m_incoming.get_dy());
-        ray.m_has_differentials = true;
+        next_ray.m_rx.m_org = next_ray.m_org + vertex.m_shading_point->get_dpdx();
+        next_ray.m_ry.m_org = next_ray.m_org + vertex.m_shading_point->get_dpdy();
+        next_ray.m_rx.m_dir = next_ray.m_dir + foundation::Vector3d(sample.m_incoming.get_dx());
+        next_ray.m_ry.m_dir = next_ray.m_dir + foundation::Vector3d(sample.m_incoming.get_dy());
+        next_ray.m_has_differentials = true;
     }
 
     return true;
