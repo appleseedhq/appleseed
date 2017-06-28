@@ -1021,7 +1021,7 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("type", "int")
             .insert("default", "4")
             .insert("unlimited", "true")
-            .insert("min", "0")
+            .insert("min", "1")
             .insert("label", "Distance Samples")
             .insert("help", "Number of distance samples per ray for volume rendering"));
 
