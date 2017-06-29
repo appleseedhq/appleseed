@@ -124,6 +124,8 @@ namespace
             position = light_transform.get_parent_origin();
             outgoing = sample_sphere_uniform(s);
             value = m_values.m_intensity;
+
+            // todo: only correct if m_decay_exponent == 2.
             probability = RcpFourPi<float>();
         }
 
