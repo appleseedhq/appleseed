@@ -39,9 +39,9 @@ import appleseed as asr
 
 
 # Initial parameters for generating grid light scene
-grid_lights_count = 16
+grid_lights_count = 20
 color = "white" # TODO this should be a switch between white and mix
-film_dimensions = 128
+plane_size = 100
 output_scene_name = "output/" + str(grid_lights_count) + "x" + str(grid_lights_count) + "_" + color + "_point_lights"
 
 def build_project():
@@ -146,9 +146,9 @@ def build_project():
                                             },
                                             [1.0, 1.0, 1.0]))
 
-    step = float(film_dimensions) / grid_lights_count
+    step = float(plane_size) / grid_lights_count
     light_count = 0
-    grid_range = np.linspace(-film_dimensions / 2 + step, film_dimensions / 2, grid_lights_count)
+    grid_range = np.linspace(-plane_size / 2 + step, plane_size / 2 - step, grid_lights_count)
     print grid_range
     for j in grid_range:
         # Skip the middle position.
@@ -199,7 +199,7 @@ def build_project():
     # Create an orthographic camera.
     params = {
         'controller_target': "0 0 0",
-        'film_dimensions': asr.Vector2f(film_dimensions, film_dimensions),
+        'film_dimensions': "128 128",
         'near_z': "-0.1",
         'shutter_close_time': "1.0",
         'shutter_open_time': "0.0"
