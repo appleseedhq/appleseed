@@ -65,9 +65,19 @@ class LightTreeNode
         return m_node_luminance;
     }
 
+    float get_level() const
+    {
+        return m_node_level;
+    }
+
     void set_node_luminance(const float luminance)
     {
         m_node_luminance = luminance;
+    }
+
+    void set_level(const size_t node_level)
+    {
+        m_node_level = node_level;
     }
 
     float get_probability(const float squared_distance, const float radius) const
@@ -80,6 +90,7 @@ class LightTreeNode
   
   private:
     float  m_node_luminance;
+    size_t m_node_level;
 };
 
 }       // namespace renderer
