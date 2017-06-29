@@ -160,6 +160,9 @@ void LightTree::build(
         // Find the parent node to draw child bboxes from.
         for(size_t i = 0; i < m_nodes.size(); i++)
         {
+            if (m_nodes[i].is_leaf())
+                continue;
+
             if (m_nodes[i].get_level() == parent_level)
             {
                 const size_t node_luminance = m_nodes[i].get_node_luminance();
