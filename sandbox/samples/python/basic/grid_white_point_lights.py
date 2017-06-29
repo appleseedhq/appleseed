@@ -161,11 +161,9 @@ def build_project():
             # Create a point light called "light" and insert it into the assembly.
             light_name = "light_" + str(light_count)
             light_count = light_count + 1
-            light = asr.Light("max_omni_light", light_name, {
-                                                            'decay_exponent': "0",
-                                                            'decay_start': "40",
+            light = asr.Light("point_light", light_name, {
                                                             'intensity': "white",
-                                                            'intensity_multiplier': "0.5"
+                                                            'intensity_multiplier': "3"
 
                                                          })
             light_position = asr.Vector3d( i, j, 0.2 )
