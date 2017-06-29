@@ -173,6 +173,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling(
         else
         {
             add_non_physical_light_sample_contribution(
+                sampling_context,
                 sample,
                 outgoing,
                 radiance);
@@ -233,15 +234,19 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
     }
 
     // Add contributions from non-physical light sources only.
-    for (size_t i = 0, e = m_light_sampler.get_non_physical_light_count(); i < e; ++i)
+    if (m_light_sample_count > 0)
     {
-        LightSample sample;
-        m_light_sampler.sample_non_physical_light(m_time, i, sample);
+        for (size_t i = 0, e = m_light_sampler.get_non_physical_light_count(); i < e; ++i)
+        {
+            LightSample sample;
+            m_light_sampler.sample_non_physical_light(m_time, i, sample);
 
-        add_non_physical_light_sample_contribution(
-            sample,
-            outgoing,
-            radiance);
+            add_non_physical_light_sample_contribution(
+                sampling_context,
+                sample,
+                outgoing,
+                radiance);
+        }
     }
 }
 
@@ -662,7 +667,8 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
 }
 
 void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
-    const LightSample&          sample,
+    SamplingContext&            sampling_context,
+    LightSample&                sample,
     const Dual3d&               outgoing,
     Spectrum&                   radiance) const
 {
@@ -675,13 +681,32 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     // Evaluate the light.
     Vector3d emission_position, emission_direction;
     Spectrum light_value(Spectrum::Illuminance);
-    light->evaluate(
+
+    // Generate a uniform sample in [0,1).
+    sampling_context.split_in_place(2, 1);
+    const Vector2d s = sampling_context.next2<Vector2d>();
+    float probability;
+
+    light->sample(
         m_shading_context,
         sample.m_light_transform,
         m_material_sampler.get_point(),
+        s,
         emission_position,
         emission_direction,
-        light_value);
+        light_value,
+        probability
+    );
+
+    //sample.m_probability *= probability;
+
+    //light->evaluate(
+    //    m_shading_context,
+    //    sample.m_light_transform,
+    //    m_material_sampler.get_point(),
+    //    emission_position,
+    //    emission_direction,
+    //    light_value);
 
     // Compute the incoming direction in world space.
     const Vector3d incoming = -emission_direction;

@@ -126,6 +126,28 @@ bool Light::on_frame_begin(
 void Light::sample(
     const ShadingContext&   shading_context,
     const Transformd&       light_transform,
+    const Vector3d&         target_point,
+    const Vector2d&         s,
+    Vector3d&               position,
+    Vector3d&               outgoing,
+    Spectrum&               value,
+    float&                  probability) const
+{
+    // By default we ignore target point.
+    return
+        sample(
+            shading_context,
+            light_transform,
+            s,
+            position,
+            outgoing,
+            value,
+            probability);
+}
+
+void Light::sample(
+    const ShadingContext&   shading_context,
+    const Transformd&       light_transform,
     const Vector2d&         s,
     const LightTargetArray& targets,
     Vector3d&               position,
