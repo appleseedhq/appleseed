@@ -805,6 +805,7 @@ namespace
             sublayout->addWidget(create_checkbox("lighting_components.caustics", "Caustics"));
 
             create_separate_bounce_settings_group(layout, "pt", "pt.max_bounces");
+            create_pt_volume_settings(layout);
             create_pt_advanced_settings(layout);
 
             create_direct_link("lighting_components.dl",           "pt.enable_dl");
@@ -860,14 +861,24 @@ namespace
             create_pt_advanced_dl_settings(nee_layout);
             create_pt_advanced_ibl_settings(nee_layout);
             create_pt_advanced_max_ray_intensity_settings(nee_layout);
+        }
+
+        void create_pt_volume_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* groupbox = new QGroupBox("Participating Media");
+            parent->addWidget(groupbox);
+
+            QVBoxLayout* layout = create_vertical_layout();
+            groupbox->setLayout(layout);
+
+            QFormLayout* sublayout = create_form_layout();
+            layout->addLayout(sublayout);
 
             QSpinBox* volume_distance_samples =
-                create_integer_input("advanced.volume_distance_samples", 0, 1000, 1);
+                create_integer_input("advanced.volume_distance_samples", 1, 1000, 1);
             volume_distance_samples->setToolTip(
                 m_params_metadata.get_path("pt.volume_distance_samples.help"));
-
-            QHBoxLayout* sublayout = create_horizontal_layout();
-            layout->addLayout(create_form_layout("Distance Samples:", volume_distance_samples));
+            sublayout->addRow("Distance Samples:", volume_distance_samples);
         }
 
         void create_pt_advanced_dl_settings(QVBoxLayout* parent)
