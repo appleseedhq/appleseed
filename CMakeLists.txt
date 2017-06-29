@@ -288,7 +288,7 @@ endif ()
 if (USE_EXTERNAL_XERCES)
     include_directories (${XERCES_INCLUDE_DIRS})
 else ()
-    include_directories (${APPLESEED_DEPS_STAGE_DIR}/xerces-c/include)
+    include_directories (${APPLESEED_DEPS_STAGE_DIR}/xerces-c-debug/include)
 endif ()
 
 if (USE_EXTERNAL_OIIO)

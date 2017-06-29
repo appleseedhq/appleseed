@@ -253,8 +253,8 @@ macro (link_against_xercesc target)
         target_link_libraries (${target} ${XERCES_LIBRARIES})
     else ()
         target_link_libraries (${target}
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/xerces-c/Static\ Debug/xerces-c_static_3D.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/xerces-c/Static\ Release/xerces-c_static_3.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/xerces-c-debug/lib/xerces-c_3D.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/xerces-c-release/lib/xerces-c_3.lib
         )
     endif ()
 endmacro ()
