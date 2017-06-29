@@ -161,8 +161,8 @@ void ErrorLogger::fatalError(const SAXParseException& e)
 #ifndef APPLESEED_WITH_EXTERNAL_XERCES
     switch (e.getOriginalExceptionCode())
     {
-      // Using our modified version of Xerces-C++, we can catch the case where
-      // it failed to open the input file, and print a reasonable error message.
+      // Using our modified version of Xerces-C, we can catch the case where
+      // the file failed to open and print a (more) reasonable error message.
       case XMLExcepts::Scan_CouldNotOpenSource:
         LOG_ERROR(
             m_logger,
@@ -170,7 +170,7 @@ void ErrorLogger::fatalError(const SAXParseException& e)
             m_input_filepath.c_str());
         break;
 
-      // For now, all other errors will be reported as is.
+      // Report all other errors as is.
       default:
         print(LogMessage::Error, e);
         break;
