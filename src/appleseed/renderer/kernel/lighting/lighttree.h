@@ -117,7 +117,7 @@ class LightTree
 
     float update_luminance(size_t node_index);
 
-    void update_level(size_t node_index, size_t node_level);
+    size_t update_level(size_t node_index, size_t node_level);
 };
 
 }

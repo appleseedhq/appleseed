@@ -112,6 +112,7 @@ void LightTree::build(
     statistics.insert_time("build time", builder.get_build_time());
 
     // Reorder m_items vector to match the ordering in the LightTree
+    size_t tree_depth = 0;
     if (!m_items.empty())
     {
         const std::vector<size_t>& ordering = partitioner.get_item_ordering();
@@ -127,7 +128,7 @@ void LightTree::build(
 
         // Set total luminance for each node of the LightTree
         update_luminance(0);
-        update_level(0, 0);
+        tree_depth = update_level(0, 0);
     }
     
     // Print light tree statistics.
@@ -137,6 +138,7 @@ void LightTree::build(
             statistics).to_string().c_str());
 
     RENDERER_LOG_INFO("Number of nodes: %zu", m_nodes.size());
+    RENDERER_LOG_INFO("Tree depth: %zu", tree_depth);
     
 
     // Vpython tree output
@@ -156,8 +158,8 @@ void LightTree::build(
 
         const char* color =
             i % 2 == 0 
-            ? "color.green"
-            : "color.red";
+            ? "(0,0.5,0)"
+            : "(0.5,0,0)";
 
         const auto& bbox_left = m_nodes[i].get_left_bbox();
         const auto& bbox_right = m_nodes[i].get_right_bbox();
@@ -193,15 +195,22 @@ float LightTree::update_luminance(size_t node_index)
     return luminance;
 }
 
-void LightTree::update_level(size_t node_index, size_t node_level)
+size_t LightTree::update_level(size_t node_index, size_t node_level)
 {
+    size_t tree_depth = 0;
     if (!m_nodes[node_index].is_leaf())
     {
-        update_level(m_nodes[node_index].get_child_node_index(), node_level + 1); // left child
-        update_level(m_nodes[node_index].get_child_node_index() + 1, node_level + 1);  // right child    
+        size_t depth1 = update_level(m_nodes[node_index].get_child_node_index(), node_level + 1); // left child
+        size_t depth2 = update_level(m_nodes[node_index].get_child_node_index() + 1, node_level + 1);  // right child    
+
+        tree_depth = depth2 < depth2 ? depth1
+                                     : depth2;
     }
+    else
+        tree_depth = node_level;
    
     m_nodes[node_index].set_level(node_level);
+    return tree_depth;
 }
 
 void LightTree::output_every_light_probability(
