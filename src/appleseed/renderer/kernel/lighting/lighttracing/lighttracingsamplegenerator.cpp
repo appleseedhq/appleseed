@@ -706,7 +706,6 @@ namespace
             light_sample.m_light->sample(
                 m_shading_context,
                 light_sample.m_light_transform,
-                Vector3d(0.0),
                 sampling_context.next2<Vector2d>(),
                 emission_position,
                 emission_direction,

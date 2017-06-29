@@ -125,7 +125,6 @@ namespace
         virtual void sample(
             const ShadingContext&   shading_context,
             const Transformd&       light_transform,
-            const Vector3d&         target_point,
             const Vector2d&         s,
             Vector3d&               position,
             Vector3d&               outgoing,
@@ -146,7 +145,6 @@ namespace
         virtual void sample(
             const ShadingContext&   shading_context,
             const Transformd&       light_transform,
-            const Vector3d&         target_point,
             const Vector2d&         s,
             const LightTargetArray& targets,
             Vector3d&               position,

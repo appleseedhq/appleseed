@@ -148,6 +148,26 @@ namespace
         virtual void sample(
             const ShadingContext&   shading_context,
             const Transformd&       light_transform,
+            const Vector2d&         s,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            float&                  probability) const override
+        {
+            sample(
+                shading_context,
+                light_transform,
+                Vector3d(), //todo: calculate vector perpendicular to light disk
+                s,
+                position,
+                outgoing,
+                value,
+                probability);
+        }
+
+        virtual void sample(
+            const ShadingContext&   shading_context,
+            const Transformd&       light_transform,
             const Vector3d&         target_point,
             const Vector2d&         s,
             Vector3d&               position,
@@ -175,7 +195,6 @@ namespace
         virtual void sample(
             const ShadingContext&   shading_context,
             const Transformd&       light_transform,
-            const Vector3d&         target_point,
             const Vector2d&         s,
             const LightTargetArray& targets,
             Vector3d&               position,
@@ -194,7 +213,6 @@ namespace
 
                 sample_disk(
                     light_transform,
-                    target_point,
                     target_s,
                     target.get_center(),
                     target.get_radius(),
@@ -207,7 +225,6 @@ namespace
             {
                 sample_disk(
                     light_transform,
-                    target_point,
                     s,
                     m_scene_center,
                     m_scene_radius,
@@ -417,6 +434,28 @@ namespace
 
         void sample_disk(
             const Transformd&       light_transform,
+            const Vector2d&         s,
+            const Vector3d&         disk_center,
+            const double            disk_radius,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            float&                  probability) const
+        {
+            sample_disk(
+                light_transform,
+                Vector3d(), //todo: calculate vector perpendicular to light disk
+                s,
+                disk_center,
+                disk_radius,
+                position,
+                outgoing,
+                value,
+                probability);
+        }
+
+        void sample_disk(
+            const Transformd&       light_transform,
             const Vector3d&         target_point,
             const Vector2d&         s,
             const Vector3d&         disk_center,
@@ -437,8 +476,7 @@ namespace
                 + disk_radius * p[0] * basis.get_tangent_u()
                 + disk_radius * p[1] * basis.get_tangent_v();
 
-            if (target_point != Vector3d(0.0))
-                outgoing = normalize(target_point - position);
+            outgoing = normalize(target_point - position);
 
             probability = 1.0f / (Pi<float>() * square(static_cast<float>(disk_radius)));
 
