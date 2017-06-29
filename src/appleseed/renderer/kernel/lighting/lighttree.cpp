@@ -142,42 +142,45 @@ void LightTree::build(
     
 
     // Vpython tree output
-    const char* filename = "light_tree.py";
     const double Width = 0.1;
     const char* root_color = "color.yellow";
 
-    foundation::VPythonFile file(filename);
-    file.draw_axes(Width);
-
-    // Draw the initial bbox.
-    const auto& root_bbox = partitioner.compute_bbox(0, m_items.size());
-    file.draw_aabb(root_bbox, root_color, Width);
-
     // Calculate steps of a color heat map.
-    const float color_map_step = 1.0 / tree_depth;
-
-    for(size_t i = 0; i < m_nodes.size(); i++)
+    const float color_map_step = 1.0 / m_nodes[0].get_node_luminance();
+    for(size_t parent_level = 0; parent_level < tree_depth; parent_level++)
     {
-        if (m_nodes[i].is_leaf())
-            continue;
+        const std::string filename = "light_tree_level_" + std::to_string(parent_level + 1) + ".py";
+        foundation::VPythonFile file(filename.c_str());
+        file.draw_axes(Width);
 
-        const size_t node_level = m_nodes[i].get_level();
-        
-        // Calculate color.
-        foundation::Color3f node_color(color_map_step * node_level, 1.0, 0.5);
-        std::string vpy_color = "("
-                                    + std::to_string(node_color[0])
-                                    +","
-                                    + std::to_string(node_color[1])
-                                    + ","
-                                    + std::to_string(node_color[2])
-                                    + ")";
+        // Draw the initial bbox.
+        const auto& root_bbox = partitioner.compute_bbox(0, m_items.size());
+        file.draw_aabb(root_bbox, root_color, Width);
 
-        const auto& bbox_left = m_nodes[i].get_left_bbox();
-        const auto& bbox_right = m_nodes[i].get_right_bbox();
+        // Find the parent node to draw child bboxes from.
+        for(size_t i = 0; i < m_nodes.size(); i++)
+        {
+            if (m_nodes[i].get_level() == parent_level)
+            {
+                const size_t node_luminance = m_nodes[i].get_node_luminance();
+                const float luminance = color_map_step * node_luminance;
+                // Calculate color.
+                foundation::Color3f node_color(luminance, 1.0 - luminance, 0.0);
+                std::string vpy_color = "("
+                                        + std::to_string(node_color[0])
+                                        +","
+                                        + std::to_string(node_color[1])
+                                        + ","
+                                        + std::to_string(node_color[2])
+                                        + ")";
 
-        file.draw_aabb(bbox_left, vpy_color.c_str(), Width);
-        file.draw_aabb(bbox_right, vpy_color.c_str(), Width);
+                const auto& bbox_left = m_nodes[i].get_left_bbox();
+                const auto& bbox_right = m_nodes[i].get_right_bbox();
+
+                file.draw_aabb(bbox_left, vpy_color.c_str(), Width);
+                file.draw_aabb(bbox_right, vpy_color.c_str(), Width);
+            }
+        }
     }
 }
 
