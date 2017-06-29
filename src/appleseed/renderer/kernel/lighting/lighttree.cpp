@@ -111,7 +111,7 @@ void LightTree::build(
     builder.build<foundation::DefaultWallclockTimer>(*this, partitioner, m_items.size(), 1);
     statistics.insert_time("build time", builder.get_build_time());
 
-    // Reorder m_items vector to match the ordering in the LightTree
+    // Reorder m_items vector to match the ordering in the LightTree.
     size_t tree_depth = 0;
     if (!m_items.empty())
     {
@@ -126,7 +126,7 @@ void LightTree::build(
             &ordering[0],
             ordering.size());
 
-        // Set total luminance for each node of the LightTree
+        // Set total luminance for each node of the LightTree.
         update_luminance(0);
         tree_depth = update_level(0, 0);
     }
@@ -149,23 +149,35 @@ void LightTree::build(
     foundation::VPythonFile file(filename);
     file.draw_axes(Width);
 
+    // Draw the initial bbox.
     const auto& root_bbox = partitioner.compute_bbox(0, m_items.size());
     file.draw_aabb(root_bbox, root_color, Width);
+
+    // Calculate steps of a color heat map.
+    const float color_map_step = 1.0 / tree_depth;
+
     for(size_t i = 0; i < m_nodes.size(); i++)
     {
         if (m_nodes[i].is_leaf())
             continue;
 
-        const char* color =
-            i % 2 == 0 
-            ? "(0,0.5,0)"
-            : "(0.5,0,0)";
+        const size_t node_level = m_nodes[i].get_level();
+        
+        // Calculate color.
+        foundation::Color3f node_color(color_map_step * node_level, 1.0, 0.5);
+        std::string vpy_color = "("
+                                    + std::to_string(node_color[0])
+                                    +","
+                                    + std::to_string(node_color[1])
+                                    + ","
+                                    + std::to_string(node_color[2])
+                                    + ")";
 
         const auto& bbox_left = m_nodes[i].get_left_bbox();
         const auto& bbox_right = m_nodes[i].get_right_bbox();
 
-        file.draw_aabb(bbox_left, color, Width);
-        file.draw_aabb(bbox_right, color, Width);
+        file.draw_aabb(bbox_left, vpy_color.c_str(), Width);
+        file.draw_aabb(bbox_right, vpy_color.c_str(), Width);
     }
 }
 
