@@ -115,6 +115,8 @@ class LightTree
         float                         light_probability,
         float                         s) const;
 
+    // update_level and update_luminance can be easily merged into recursive_node_update
+    // if something like that is neccessary i.e. the node level will actually be stored.
     float update_luminance(size_t node_index);
 
     size_t update_level(size_t node_index, size_t node_level);
