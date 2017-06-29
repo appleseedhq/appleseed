@@ -218,7 +218,7 @@ size_t LightTree::update_level(size_t node_index, size_t node_level)
         size_t depth1 = update_level(m_nodes[node_index].get_child_node_index(), node_level + 1); // left child
         size_t depth2 = update_level(m_nodes[node_index].get_child_node_index() + 1, node_level + 1);  // right child    
 
-        tree_depth = depth2 < depth2 ? depth1
+        tree_depth = depth2 < depth1 ? depth1
                                      : depth2;
     }
     else
