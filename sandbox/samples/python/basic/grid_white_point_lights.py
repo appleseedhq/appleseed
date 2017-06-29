@@ -39,7 +39,7 @@ import appleseed as asr
 
 
 # Initial parameters for generating grid light scene
-grid_lights_count = 20
+grid_lights_count = 16
 color = "white" # TODO this should be a switch between white and mix
 film_dimensions = 128
 output_scene_name = "output/" + str(grid_lights_count) + "x" + str(grid_lights_count) + "_" + color + "_point_lights"
@@ -228,7 +228,7 @@ def build_project():
             "gamma_correction": "1.0",
             "pixel_format": "float",
             "premultiplied_alpha": "true",
-            "resolution": "1512 1512",
+            "resolution": "512 512",
             "tile_size": "64 64"}
     project.set_frame(asr.Frame("beauty", params))
 
