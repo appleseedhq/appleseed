@@ -108,7 +108,7 @@ void LightSample::make_shading_point(
 LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
   : m_params(params)
   , m_emitting_triangle_hash_table(m_triangle_key_hasher)
-  , m_light_tree(scene)
+  , m_light_tree()
 {
 
     RENDERER_LOG_INFO("collecting light emitters...");

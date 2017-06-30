@@ -63,9 +63,7 @@ class LightTree
 {
   public:
     // Constructor.
-    // NOTE: Scene is not used at the moment as the lights are given as arguments
-    //       Right now it is only a placeholder and reminder to use it later on.
-    explicit LightTree(const Scene& scene);
+    explicit LightTree();
 
     // Destructor
     ~LightTree();

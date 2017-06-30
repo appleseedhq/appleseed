@@ -49,7 +49,7 @@ namespace renderer
 // LightTree class implementation.
 //
 
-LightTree::LightTree(const Scene& scene)
+LightTree::LightTree()
 {
 
 }
@@ -316,8 +316,6 @@ std::pair<size_t, float> LightTree::sample(
         }
     }
     size_t item_index = m_nodes[node_index].get_item_index();
-    // NOTE: this will work only for pure NPL scene as the lights in
-    // m_light_sources will be mixed. Rewrite this!
     size_t light_index = m_items[item_index].m_npl_external_index;
 
     return std::pair<size_t, float>(light_index, light_probability);
