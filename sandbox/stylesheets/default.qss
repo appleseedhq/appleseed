@@ -375,6 +375,7 @@ QToolBar
     border: BORDER_STYLE;
     padding: 4px;
     border-width: 0 0 1px 0;
+    icon-size: 18px;
 }
 
 QToolBar::separator

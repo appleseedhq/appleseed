@@ -58,17 +58,15 @@ class PythonConsoleWidget
     void slot_clear_output();
 
   private:
-    QPlainTextEdit* output;
-    QPlainTextEdit* input;
+    QPlainTextEdit* m_output;
+    QPlainTextEdit* m_input;
 
-    QAction* m_action_execute_selection;
-    QAction* m_action_execute_all;
-    QAction* m_action_clear_selection;
-    QAction* m_action_focus_on_input;
+    QAction*        m_action_execute_all;
+    QAction*        m_action_execute_selection;
+    QAction*        m_action_clear_selection;
+    QAction*        m_action_focus_on_input;
 
     void execute(const QString& script);
-
-    void init_actions();
 };
 
 }       // namespace studio
