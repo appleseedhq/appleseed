@@ -277,6 +277,19 @@ void LightTree::output_every_light_probability(
     }
 }
 
+float LightTree::node_probability(
+        const LightTreeNode<foundation::AABB3d>&    node,
+        const foundation::AABB3d                    bbox,
+        const foundation::Vector3d                  surface_point) const
+{
+    // Calculate probabiliy weight of a single node based on its distance
+    // to the surface point being evaluated.
+    const float squared_distance = foundation::square_distance(surface_point, bbox.center());
+    const float inverse_distance_falloff = 1.0f / squared_distance;
+
+    return node.get_node_luminance() * inverse_distance_falloff;
+}
+
 std::pair<float, float> LightTree::child_node_probabilites(
         const LightTreeNode<foundation::AABB3d>&    node,
         const foundation::Vector3d                  surface_point) const
@@ -284,17 +297,14 @@ std::pair<float, float> LightTree::child_node_probabilites(
     const auto& child1 = m_nodes[node.get_child_node_index()];
     const auto& child2 = m_nodes[node.get_child_node_index() + 1];
 
+    // Node has currently no info about its own bbox characteristics.
+    // Hence we have to extract it before from its parent.
+    // TODO: make LightTreeNode aware of its bbox!
     const auto& bbox_left  = node.get_left_bbox();
     const auto& bbox_right = node.get_right_bbox();
 
-    float squared_distance_left  = foundation::square_distance(surface_point, bbox_left.center());
-    float squared_distance_right = foundation::square_distance(surface_point, bbox_right.center());
-
-    const float inverse_distance_falloff_left = 1.0f / squared_distance_left;
-    const float inverse_distance_falloff_right = 1.0f / squared_distance_right;
-
-    float p1 = child1.get_node_luminance() * inverse_distance_falloff_left;
-    float p2 = child2.get_node_luminance() * inverse_distance_falloff_right;
+    float p1 = node_probability(child1, bbox_left, surface_point);
+    float p2 = node_probability(child2, bbox_right, surface_point);
 
     // Normalize probabilities
     float total = p1 + p2;
