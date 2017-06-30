@@ -146,7 +146,7 @@ void LightTree::build(
     const char* root_color = "color.yellow";
 
     // Calculate steps of a color heat map.
-    const float color_map_step = 1.0 / m_nodes[0].get_node_luminance();
+    const float color_map_step = 1.0 / m_nodes[0].get_luminance();
     for(size_t parent_level = 0; parent_level < tree_depth; parent_level++)
     {
         const std::string filename = "light_tree_level_" + std::to_string(parent_level + 1) + ".py";
@@ -165,7 +165,7 @@ void LightTree::build(
 
             if (m_nodes[i].get_level() == parent_level)
             {
-                const size_t node_luminance = m_nodes[i].get_node_luminance();
+                const size_t node_luminance = m_nodes[i].get_luminance();
                 const float luminance = color_map_step * node_luminance;
                 // Calculate color.
                 foundation::Color3f node_color(luminance, 1.0 - luminance, 0.0);
@@ -208,7 +208,7 @@ float LightTree::update_luminance(size_t node_index)
         luminance /= spectrum.size();
     }
    
-    m_nodes[node_index].set_node_luminance(luminance);
+    m_nodes[node_index].set_luminance(luminance);
 
     return luminance;
 }
@@ -287,7 +287,7 @@ float LightTree::node_probability(
     const float squared_distance = foundation::square_distance(surface_point, bbox.center());
     const float inverse_distance_falloff = 1.0f / squared_distance;
 
-    return node.get_node_luminance() * inverse_distance_falloff;
+    return node.get_luminance() * inverse_distance_falloff;
 }
 
 std::pair<float, float> LightTree::child_node_probabilites(

@@ -60,7 +60,7 @@ class LightTreeNode
     {
     }
 
-    float get_node_luminance() const
+    float get_luminance() const
     {
         return m_node_luminance;
     }
@@ -70,7 +70,7 @@ class LightTreeNode
         return m_node_level;
     }
 
-    void set_node_luminance(const float luminance)
+    void set_luminance(const float luminance)
     {
         m_node_luminance = luminance;
     }
