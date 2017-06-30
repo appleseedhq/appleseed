@@ -255,8 +255,8 @@ void LightTree::output_every_light_probability(
         printf("square_distance_left: %f\n",square_distance_left);
         printf("square_distance_right: %f\n",square_distance_right);
 
-        float p1 = child1.get_probability(square_distance_left, bbox_left.radius());
-        float p2 = child2.get_probability(square_distance_right, bbox_right.radius());
+        float p1 = node_probability(child1, square_distance_left, bbox_left.radius());
+        float p2 = node_probability(child2, square_distance_right, bbox_right.radius());
 
         const float total = p1 + p2;
 
@@ -298,6 +298,17 @@ void LightTree::output_every_light_probability(
     }
 }
 
+float LightTree::node_probability(
+        const LightTreeNode<foundation::AABB3d>& node,
+        const float squared_distance,
+        const float radius) const
+{
+    const float inverse_distance_falloff = 1.0f / squared_distance;
+    const float probability = node.get_node_luminance() * inverse_distance_falloff;
+
+    return probability;
+}
+
 std::pair<size_t, float> LightTree::sample(
         const foundation::Vector3d    surface_point,
         float                         s) const
@@ -322,8 +333,8 @@ std::pair<size_t, float> LightTree::sample(
         float square_distance_left  = foundation::square_distance(surface_point, bbox_left.center());
         float square_distance_right = foundation::square_distance(surface_point, bbox_right.center());
 
-        float p1 = child1.get_probability(square_distance_left, bbox_left.radius());
-        float p2 = child2.get_probability(square_distance_right, bbox_right.radius());
+        float p1 = node_probability(child1, square_distance_left, bbox_left.radius());
+        float p2 = node_probability(child2, square_distance_right, bbox_right.radius());
 
         float total = p1 + p2;
 
