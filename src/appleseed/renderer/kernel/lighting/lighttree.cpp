@@ -138,8 +138,16 @@ void LightTree::build(
 
     RENDERER_LOG_INFO("Number of nodes: %zu", m_nodes.size());
     RENDERER_LOG_INFO("Tree depth: %zu", m_tree_depth);
+        
+    const auto& root_bbox = partitioner.compute_bbox(0, m_items.size());
+    draw_tree_structure("light_tree", root_bbox);
     
-    draw_tree_structure("light_tree");
+}
+
+void LightTree::draw_tree_structure(
+        std::string                  filename,
+        const foundation::AABB3d&    root_bbox) const
+{
     // Vpython tree output
     const double Width = 0.1;
     const char* root_color = "color.yellow";
@@ -148,12 +156,11 @@ void LightTree::build(
     const float color_map_step = 1.0 / m_nodes[0].get_luminance();
     for(size_t parent_level = 0; parent_level < m_tree_depth; parent_level++)
     {
-        const std::string filename = "light_tree_level_" + std::to_string(parent_level + 1) + ".py";
+        filename += "_" + std::to_string(parent_level + 1) + ".py";
         foundation::VPythonFile file(filename.c_str());
         file.draw_axes(Width);
 
         // Draw the initial bbox.
-        const auto& root_bbox = partitioner.compute_bbox(0, m_items.size());
         file.draw_aabb(root_bbox, root_color, Width);
 
         // Find the parent node to draw child bboxes from.
@@ -185,8 +192,6 @@ void LightTree::build(
         }
     }
 }
-
-void LightTree::draw_tree_structure(std::string filename);
 
 float LightTree::update_luminance(size_t node_index)
 {

@@ -110,6 +110,10 @@ class LightTree
     ItemVector                 m_items;
     size_t                     m_tree_depth;
 
+    void draw_tree_structure(
+        std::string                  filename,
+        const foundation::AABB3d&    root_bbox) const;
+
     // update_level and update_luminance can be easily merged into recursive_node_update
     // if something like that is neccessary i.e. the node level will actually be stored.
     float update_luminance(size_t node_index);
