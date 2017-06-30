@@ -231,52 +231,6 @@ size_t LightTree::update_level(size_t node_index, size_t node_level)
     return tree_depth;
 }
 
-void LightTree::output_every_light_probability(
-        size_t                        node_index,
-        const foundation::Vector3d&   surface_point,
-        float                         light_probability,
-        float                         s) const
-{
-    printf("m_nodes index: %zu\n", node_index);
-
-    if(!m_nodes[node_index].is_leaf())
-    {
-        printf("NOT LEAF\n");
-        // LightTreeNodes
-        const auto& node = m_nodes[node_index];
-        
-        std::pair<float, float> result = child_node_probabilites(node, surface_point);
-        const float p1 = result.first;
-        const float p2 = result.second;
-
-        printf("p1: %f\n",p1);
-        printf("p2: %f\n",p2);
-
-        output_every_light_probability(
-            node.get_child_node_index(),
-            surface_point,
-            light_probability * p1,
-            s / p1);
-
-        output_every_light_probability(
-            node.get_child_node_index() + 1,
-            surface_point,
-            light_probability * p2,
-            (s - p1) / p2);
-    }
-    else
-    {
-        printf("IS LEAF\n");
-        size_t item_index = m_nodes[node_index].get_item_index();
-        // NOTE: this will work only for pure NPL scene as the lights in
-        // m_light_sources will be mixed. Rewrite this!
-        size_t light_index = m_items[item_index].m_light_sources_index;
-    
-        printf("light index: %zu\n", light_index);
-        printf("light_probability: %f\n", light_probability);
-    }
-}
-
 float LightTree::node_probability(
         const LightTreeNode<foundation::AABB3d>&    node,
         const foundation::AABB3d                    bbox,
@@ -329,10 +283,6 @@ std::pair<size_t, float> LightTree::sample(
     float light_probability = 1.0;
     size_t node_index = 0;
 
-    // printf("surface_point: [%f %f %f]\n", surface_point[0], surface_point[1], surface_point[2]);
-    // printf("s: %f\n", s);
-    // output_every_light_probability(0, surface_point, 1.0, s);
-
     std::pair<size_t, float> nearest_light;
     while (!m_nodes[node_index].is_leaf())
     {
@@ -360,7 +310,6 @@ std::pair<size_t, float> LightTree::sample(
     // NOTE: this will work only for pure NPL scene as the lights in
     // m_light_sources will be mixed. Rewrite this!
     size_t light_index = m_items[item_index].m_light_sources_index;
-    // printf("chosen light_probability: %f\n\n\n", light_probability);
 
     return std::pair<size_t, float>(light_index, light_probability);
 }

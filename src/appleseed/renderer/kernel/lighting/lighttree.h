@@ -109,12 +109,6 @@ class LightTree
     LightSourcePointerVector   m_light_sources;
     ItemVector                 m_items;
 
-    void output_every_light_probability(
-        size_t                        node_index,
-        const foundation::Vector3d&   surface_point,
-        float                         light_probability,
-        float                         s) const;
-
     // update_level and update_luminance can be easily merged into recursive_node_update
     // if something like that is neccessary i.e. the node level will actually be stored.
     float update_luminance(size_t node_index);
