@@ -72,16 +72,17 @@ void LightTree::build(
     size_t light_index = 0;
 
     // Collect all possible light sources into one vector
-    for (foundation::const_each<NonPhysicalLightVector> i = non_physical_lights; i; ++i)
+    for (size_t i = 0; i < non_physical_lights.size(); ++i)
     {
-        LightSource* light_source = new NonPhysicalLightSource(&*i);
+        LightSource* light_source = new NonPhysicalLightSource(&non_physical_lights[i]);
         foundation::AABB3d bbox = light_source->get_bbox();
         m_light_sources.push_back(light_source);
         light_bboxes.push_back(bbox);
         m_items.push_back(
             Item(
                 bbox,
-                light_index++));
+                light_index++,
+                i));
     }
 
     RENDERER_LOG_INFO("Number of light sources: %zu", m_light_sources.size());
@@ -317,7 +318,7 @@ std::pair<size_t, float> LightTree::sample(
     size_t item_index = m_nodes[node_index].get_item_index();
     // NOTE: this will work only for pure NPL scene as the lights in
     // m_light_sources will be mixed. Rewrite this!
-    size_t light_index = m_items[item_index].m_light_sources_index;
+    size_t light_index = m_items[item_index].m_npl_external_index;
 
     return std::pair<size_t, float>(light_index, light_probability);
 }
