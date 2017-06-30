@@ -108,18 +108,28 @@ class LightTree
 
     LightSourcePointerVector   m_light_sources;
     ItemVector                 m_items;
+    size_t                     m_tree_depth;
 
-    void output_every_light_probability(
-        size_t                        node_index,
-        const foundation::Vector3d&   surface_point,
-        float                         light_probability,
-        float                         s) const;
+    void draw_tree_structure(
+        std::string                 filename,
+        const foundation::AABB3d&   root_bbox,
+        bool                        separate_by_levels = false) const;
 
     // update_level and update_luminance can be easily merged into recursive_node_update
     // if something like that is neccessary i.e. the node level will actually be stored.
     float update_luminance(size_t node_index);
 
+    std::pair<float, float> child_node_probabilites(
+        const LightTreeNode<foundation::AABB3d>&    node,
+        const foundation::Vector3d                  surface_point) const;
+
+    float node_probability(
+        const LightTreeNode<foundation::AABB3d>&    node,
+        const foundation::AABB3d                    bbox,
+        const foundation::Vector3d                  surface_point) const;
+
     size_t update_level(size_t node_index, size_t node_level);
+
 };
 
 }

@@ -60,17 +60,17 @@ class LightTreeNode
     {
     }
 
-    float get_node_luminance() const
+    float get_luminance() const
     {
         return m_node_luminance;
     }
 
-    float get_level() const
+    size_t get_level() const
     {
         return m_node_level;
     }
 
-    void set_node_luminance(const float luminance)
+    void set_luminance(const float luminance)
     {
         m_node_luminance = luminance;
     }
@@ -78,14 +78,6 @@ class LightTreeNode
     void set_level(const size_t node_level)
     {
         m_node_level = node_level;
-    }
-
-    float get_probability(const float squared_distance, const float radius) const
-    {
-        const float inverse_distance_falloff = 1.0f / squared_distance;
-        const float probability = m_node_luminance * inverse_distance_falloff;
-
-        return probability;
     }
   
   private:

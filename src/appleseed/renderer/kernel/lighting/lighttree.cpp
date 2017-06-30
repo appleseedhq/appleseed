@@ -112,7 +112,6 @@ void LightTree::build(
     statistics.insert_time("build time", builder.get_build_time());
 
     // Reorder m_items vector to match the ordering in the LightTree.
-    size_t tree_depth = 0;
     if (!m_items.empty())
     {
         const std::vector<size_t>& ordering = partitioner.get_item_ordering();
@@ -128,7 +127,7 @@ void LightTree::build(
 
         // Set total luminance for each node of the LightTree.
         update_luminance(0);
-        tree_depth = update_level(0, 0);
+        m_tree_depth = update_level(0, 0);
     }
     
     // Print light tree statistics.
@@ -138,24 +137,60 @@ void LightTree::build(
             statistics).to_string().c_str());
 
     RENDERER_LOG_INFO("Number of nodes: %zu", m_nodes.size());
-    RENDERER_LOG_INFO("Tree depth: %zu", tree_depth);
+    RENDERER_LOG_INFO("Tree depth: %zu", m_tree_depth);
+        
+    const auto& root_bbox = partitioner.compute_bbox(0, m_items.size());
+    draw_tree_structure("light_tree", root_bbox);
     
+}
 
+void LightTree::draw_tree_structure(
+        std::string                 filename,
+        const foundation::AABB3d&   root_bbox,
+        bool                        separate_by_levels) const
+{
     // Vpython tree output
     const double Width = 0.1;
-    const char* root_color = "color.yellow";
 
-    // Calculate steps of a color heat map.
-    const float color_map_step = 1.0 / m_nodes[0].get_node_luminance();
-    for(size_t parent_level = 0; parent_level < tree_depth; parent_level++)
+    if(separate_by_levels)
     {
-        const std::string filename = "light_tree_level_" + std::to_string(parent_level + 1) + ".py";
+        const char* color = "color.green";
+        for(size_t parent_level = 0; parent_level < m_tree_depth; parent_level++)
+        {
+            filename += "_" + std::to_string(parent_level + 1) + ".py";
+            foundation::VPythonFile file(filename.c_str());
+            file.draw_axes(Width);
+
+            // Draw the initial bbox.
+            file.draw_aabb(root_bbox, color, Width);
+
+            // Find the parent node to draw child bboxes from.
+            for(size_t i = 0; i < m_nodes.size(); i++)
+            {
+                if (m_nodes[i].is_leaf())
+                    continue;
+
+                if (m_nodes[i].get_level() == parent_level)
+                {
+
+                    const auto& bbox_left = m_nodes[i].get_left_bbox();
+                    const auto& bbox_right = m_nodes[i].get_right_bbox();
+
+                    file.draw_aabb(bbox_left, color, Width);
+                    file.draw_aabb(bbox_right, color, Width);
+                }
+            }
+        }
+    }
+    else
+    {
+        filename += ".py";
         foundation::VPythonFile file(filename.c_str());
         file.draw_axes(Width);
+        const char* color = "color.yellow";
 
         // Draw the initial bbox.
-        const auto& root_bbox = partitioner.compute_bbox(0, m_items.size());
-        file.draw_aabb(root_bbox, root_color, Width);
+        file.draw_aabb(root_bbox, color, Width);
 
         // Find the parent node to draw child bboxes from.
         for(size_t i = 0; i < m_nodes.size(); i++)
@@ -163,26 +198,15 @@ void LightTree::build(
             if (m_nodes[i].is_leaf())
                 continue;
 
-            if (m_nodes[i].get_level() == parent_level)
-            {
-                const size_t node_luminance = m_nodes[i].get_node_luminance();
-                const float luminance = color_map_step * node_luminance;
-                // Calculate color.
-                foundation::Color3f node_color(luminance, 1.0 - luminance, 0.0);
-                std::string vpy_color = "("
-                                        + std::to_string(node_color[0])
-                                        +","
-                                        + std::to_string(node_color[1])
-                                        + ","
-                                        + std::to_string(node_color[2])
-                                        + ")";
+            // Make even levels red and odd green
+            color = m_nodes[i].get_level() % 2 ? "color.red"
+                                               : "color.green";
 
-                const auto& bbox_left = m_nodes[i].get_left_bbox();
-                const auto& bbox_right = m_nodes[i].get_right_bbox();
+            const auto& bbox_left = m_nodes[i].get_left_bbox();
+            const auto& bbox_right = m_nodes[i].get_right_bbox();
 
-                file.draw_aabb(bbox_left, vpy_color.c_str(), Width);
-                file.draw_aabb(bbox_right, vpy_color.c_str(), Width);
-            }
+            file.draw_aabb(bbox_left, color, Width);
+            file.draw_aabb(bbox_right, color, Width);
         }
     }
 }
@@ -208,94 +232,72 @@ float LightTree::update_luminance(size_t node_index)
         luminance /= spectrum.size();
     }
    
-    m_nodes[node_index].set_node_luminance(luminance);
+    m_nodes[node_index].set_luminance(luminance);
 
     return luminance;
 }
 
 size_t LightTree::update_level(size_t node_index, size_t node_level)
 {
-    size_t tree_depth = 0;
+    size_t m_tree_depth = 0;
     if (!m_nodes[node_index].is_leaf())
     {
         size_t depth1 = update_level(m_nodes[node_index].get_child_node_index(), node_level + 1); // left child
         size_t depth2 = update_level(m_nodes[node_index].get_child_node_index() + 1, node_level + 1);  // right child    
 
-        tree_depth = depth2 < depth1 ? depth1
+        m_tree_depth = depth2 < depth1 ? depth1
                                      : depth2;
     }
     else
-        tree_depth = node_level;
+        m_tree_depth = node_level;
    
     m_nodes[node_index].set_level(node_level);
-    return tree_depth;
+    return m_tree_depth;
 }
 
-void LightTree::output_every_light_probability(
-        size_t                        node_index,
-        const foundation::Vector3d&   surface_point,
-        float                         light_probability,
-        float                         s) const
+float LightTree::node_probability(
+        const LightTreeNode<foundation::AABB3d>&    node,
+        const foundation::AABB3d                    bbox,
+        const foundation::Vector3d                  surface_point) const
 {
-    printf("m_nodes index: %zu\n", node_index);
+    // Calculate probabiliy weight of a single node based on its distance
+    // to the surface point being evaluated.
+    const float squared_distance = foundation::square_distance(surface_point, bbox.center());
+    const float inverse_distance_falloff = 1.0f / squared_distance;
 
-    if(!m_nodes[node_index].is_leaf())
+    return node.get_luminance() * inverse_distance_falloff;
+}
+
+std::pair<float, float> LightTree::child_node_probabilites(
+        const LightTreeNode<foundation::AABB3d>&    node,
+        const foundation::Vector3d                  surface_point) const
+{
+    const auto& child1 = m_nodes[node.get_child_node_index()];
+    const auto& child2 = m_nodes[node.get_child_node_index() + 1];
+
+    // Node has currently no info about its own bbox characteristics.
+    // Hence we have to extract it before from its parent.
+    // TODO: make LightTreeNode aware of its bbox!
+    const auto& bbox_left  = node.get_left_bbox();
+    const auto& bbox_right = node.get_right_bbox();
+
+    float p1 = node_probability(child1, bbox_left, surface_point);
+    float p2 = node_probability(child2, bbox_right, surface_point);
+
+    // Normalize probabilities
+    float total = p1 + p2;
+    if (total <= 0.0f)
     {
-        printf("NOT LEAF\n");
-        // LightTreeNodes
-        const auto& node   = m_nodes[node_index];
-        const auto& child1 = m_nodes[node.get_child_node_index()];
-        const auto& child2 = m_nodes[node.get_child_node_index() + 1];
-
-        const auto& bbox_left  = node.get_left_bbox();
-        const auto& bbox_right = node.get_right_bbox();
-
-        const float square_distance_left  = foundation::square_distance(surface_point, bbox_left.center());
-        const float square_distance_right = foundation::square_distance(surface_point, bbox_right.center());
-        printf("square_distance_left: %f\n",square_distance_left);
-        printf("square_distance_right: %f\n",square_distance_right);
-
-        float p1 = child1.get_probability(square_distance_left, bbox_left.radius());
-        float p2 = child2.get_probability(square_distance_right, bbox_right.radius());
-
-        const float total = p1 + p2;
-
-        if (total <= 0.0f)
-        {
-            p1 = 0.5;
-            p2 = 0.5;
-        }
-        else
-        {
-            p1 = p1 / total;
-            p2 = p2 / total;
-        }
-        printf("p1: %f\n",p1);
-        printf("p2: %f\n",p2);
-
-        output_every_light_probability(
-            node.get_child_node_index(),
-            surface_point,
-            light_probability * p1,
-            s / p1);
-
-        output_every_light_probability(
-            node.get_child_node_index() + 1,
-            surface_point,
-            light_probability * p2,
-            (s - p1) / p2);
+        p1 = 0.5;
+        p2 = 0.5;
     }
     else
     {
-        printf("IS LEAF\n");
-        size_t item_index = m_nodes[node_index].get_item_index();
-        // NOTE: this will work only for pure NPL scene as the lights in
-        // m_light_sources will be mixed. Rewrite this!
-        size_t light_index = m_items[item_index].m_light_sources_index;
-    
-        printf("light index: %zu\n", light_index);
-        printf("light_probability: %f\n", light_probability);
+        p1 = p1 / total;
+        p2 = p2 / total;
     }
+
+    return std::pair<float, float>(p1, p2);
 }
 
 std::pair<size_t, float> LightTree::sample(
@@ -305,38 +307,15 @@ std::pair<size_t, float> LightTree::sample(
     float light_probability = 1.0;
     size_t node_index = 0;
 
-    // printf("surface_point: [%f %f %f]\n", surface_point[0], surface_point[1], surface_point[2]);
-    // printf("s: %f\n", s);
-    // output_every_light_probability(0, surface_point, 1.0, s);
-
     std::pair<size_t, float> nearest_light;
     while (!m_nodes[node_index].is_leaf())
     {
-        // LightTreeNodes
-        const auto& node   = m_nodes[node_index];
-        const auto& child1 = m_nodes[node.get_child_node_index()];
-        const auto& child2 = m_nodes[node.get_child_node_index() + 1];
+        // LightTreeNode
+        const auto& node = m_nodes[node_index];
 
-        const auto& bbox_left  = node.get_left_bbox();
-        const auto& bbox_right = node.get_right_bbox();
-        float square_distance_left  = foundation::square_distance(surface_point, bbox_left.center());
-        float square_distance_right = foundation::square_distance(surface_point, bbox_right.center());
-
-        float p1 = child1.get_probability(square_distance_left, bbox_left.radius());
-        float p2 = child2.get_probability(square_distance_right, bbox_right.radius());
-
-        float total = p1 + p2;
-
-        if (total <= 0.0f)
-        {
-            p1 = 0.5;
-            p2 = 0.5;
-        }
-        else
-        {
-            p1 = p1 / total;
-            p2 = p2 / total;
-        }
+        std::pair<float, float> result = child_node_probabilites(node, surface_point);
+        const float p1 = result.first;
+        const float p2 = result.second;
 
         if (s <= p1)
         {
@@ -355,7 +334,6 @@ std::pair<size_t, float> LightTree::sample(
     // NOTE: this will work only for pure NPL scene as the lights in
     // m_light_sources will be mixed. Rewrite this!
     size_t light_index = m_items[item_index].m_light_sources_index;
-    // printf("chosen light_probability: %f\n\n\n", light_probability);
 
     return std::pair<size_t, float>(light_index, light_probability);
 }
