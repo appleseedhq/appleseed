@@ -108,6 +108,7 @@ class LightTree
 
     LightSourcePointerVector   m_light_sources;
     ItemVector                 m_items;
+    size_t                     m_tree_depth;
 
     // update_level and update_luminance can be easily merged into recursive_node_update
     // if something like that is neccessary i.e. the node level will actually be stored.
