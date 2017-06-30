@@ -64,33 +64,17 @@ LightTree::~LightTree()
 }
 
 void LightTree::build(
-        const std::vector<NonPhysicalLightInfo>     non_physical_lights,
-        const std::vector<EmittingTriangle>         emitting_triangles)
+        const std::vector<NonPhysicalLightInfo>     non_physical_lights)
 {
-
-    RENDERER_LOG_INFO("Building a tree");
     foundation::Statistics statistics;
     AABBVector light_bboxes;
 
-    RENDERER_LOG_INFO("Collecting light sources...");
     size_t light_index = 0;
 
     // Collect all possible light sources into one vector
     for (foundation::const_each<NonPhysicalLightVector> i = non_physical_lights; i; ++i)
     {
         LightSource* light_source = new NonPhysicalLightSource(&*i);
-        foundation::AABB3d bbox = light_source->get_bbox();
-        m_light_sources.push_back(light_source);
-        light_bboxes.push_back(bbox);
-        m_items.push_back(
-            Item(
-                bbox,
-                light_index++));
-    }
-
-    for (foundation::const_each<EmittingTriangleVector> i = emitting_triangles; i; ++i)
-    {
-        LightSource* light_source = new EmittingTriangleLightSource(&*i);
         foundation::AABB3d bbox = light_source->get_bbox();
         m_light_sources.push_back(light_source);
         light_bboxes.push_back(bbox);

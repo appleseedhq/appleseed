@@ -73,9 +73,7 @@ class LightTree
     // Build the tree based on the lights collected by the LightSampler.
     // TODO: Remove light lists from arguments when they start being collected
     //       by the LightTree class itself.
-    void build(
-        const std::vector<NonPhysicalLightInfo>     non_physical_lights,
-        const std::vector<EmittingTriangle>         emitting_triangles);
+    void build(const std::vector<NonPhysicalLightInfo>     non_physical_lights);
     
     std::pair<size_t, float> sample(
         const foundation::Vector3d    surface_point,
@@ -100,11 +98,9 @@ class LightTree
         }
     };  
 
-    typedef std::vector<EmittingTriangle>           EmittingTriangleVector;
     typedef std::vector<NonPhysicalLightInfo>       NonPhysicalLightVector;
     typedef std::vector<LightSource*>               LightSourcePointerVector;
     typedef std::vector<Item>                       ItemVector;
-    typedef foundation::CDF<size_t, float>          EmitterCDF;
 
     LightSourcePointerVector   m_light_sources;
     ItemVector                 m_items;

@@ -124,9 +124,7 @@ LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
 
     // Build a BVH tree for the found lights.
     // Currently uses only non-physical lights.
-    m_light_tree.build(
-        m_non_physical_lights,
-        m_emitting_triangles);
+    m_light_tree.build(m_non_physical_lights);
 
     // Build the hash table of emitting triangles.
     build_emitting_triangle_hash_table();
