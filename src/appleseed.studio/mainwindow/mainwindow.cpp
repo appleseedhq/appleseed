@@ -494,6 +494,7 @@ void MainWindow::build_toolbar()
     //
     // File actions.
     //
+
     m_action_new_project = new QAction(load_icons("project_new"), combine_name_and_shortcut("New Project", m_ui->action_file_new_project->shortcut()), this);
     connect(m_action_new_project, SIGNAL(triggered()), SLOT(slot_new_project()));
     m_ui->main_toolbar->addAction(m_action_new_project);
@@ -520,6 +521,7 @@ void MainWindow::build_toolbar()
     //
     // Rendering actions.
     //
+
     m_action_start_interactive_rendering = new QAction(load_icons("rendering_start_interactive"), combine_name_and_shortcut("Start Interactive Rendering", m_ui->action_rendering_start_interactive_rendering->shortcut()), this);
     connect(m_action_start_interactive_rendering, SIGNAL(triggered()), SLOT(slot_start_interactive_rendering()));
     m_ui->main_toolbar->addAction(m_action_start_interactive_rendering);
