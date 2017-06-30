@@ -65,7 +65,7 @@ class LightTreeNode
         return m_node_luminance;
     }
 
-    float get_level() const
+    size_t get_level() const
     {
         return m_node_level;
     }
