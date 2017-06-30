@@ -112,7 +112,7 @@ class APPLESEED_DLLSYMBOL Light
         foundation::Vector3d&           position,                   // world space emission position
         foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
         Spectrum&                       value,                      // light value
-        float&                          probability) const;     // PDF value
+        float&                          probability) const;         // PDF value
     virtual void sample(
         const ShadingContext&           shading_context,
         const foundation::Transformd&   light_transform,            // light space to world space transform

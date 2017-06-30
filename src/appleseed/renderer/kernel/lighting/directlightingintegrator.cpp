@@ -234,19 +234,16 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
     }
 
     // Add contributions from non-physical light sources only.
-    if (m_light_sample_count > 0)
+    for (size_t i = 0, e = m_light_sampler.get_non_physical_light_count(); i < e; ++i)
     {
-        for (size_t i = 0, e = m_light_sampler.get_non_physical_light_count(); i < e; ++i)
-        {
-            LightSample sample;
-            m_light_sampler.sample_non_physical_light(m_time, i, sample);
+        LightSample sample;
+        m_light_sampler.sample_non_physical_light(m_time, i, sample);
 
-            add_non_physical_light_sample_contribution(
-                sampling_context,
-                sample,
-                outgoing,
-                radiance);
-        }
+        add_non_physical_light_sample_contribution(
+            sampling_context,
+            sample,
+            outgoing,
+            radiance);
     }
 }
 
@@ -693,16 +690,6 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
         probability
     );
 
-    //sample.m_probability *= probability;
-
-    //light->evaluate(
-    //    m_shading_context,
-    //    sample.m_light_transform,
-    //    m_material_sampler.get_point(),
-    //    emission_position,
-    //    emission_direction,
-    //    light_value);
-
     // Compute the incoming direction in world space.
     const Vector3d incoming = -emission_direction;
 
@@ -733,7 +720,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     // Add the contribution of this sample to the illumination.
     const float attenuation = light->compute_distance_attenuation(
         m_material_sampler.get_point(), emission_position);
-    const float weight = transmission * attenuation / sample.m_probability;
+    const float weight = transmission * attenuation / sample.m_probability / probability;
     light_value *= weight;
     light_value *= material_value;
     radiance += light_value;

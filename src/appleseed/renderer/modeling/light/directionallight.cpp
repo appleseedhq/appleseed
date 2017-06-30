@@ -135,7 +135,7 @@ namespace
                 light_transform,
                 s,
                 m_scene_center,
-                m_scene_radius,
+                0,
                 position,
                 outgoing,
                 value,
@@ -242,7 +242,7 @@ namespace
 
             value = m_values.m_irradiance;
 
-            probability = 1.0f / (Pi<float>() * square(static_cast<float>(disk_radius)));
+            probability = 1.0f;
         }
     };
 }

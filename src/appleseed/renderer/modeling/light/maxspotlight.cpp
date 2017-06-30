@@ -123,6 +123,7 @@ namespace
         virtual void sample(
             const ShadingContext&   shading_context,
             const Transformd&       light_transform,
+            const Vector3d&         target_point,
             const Vector2d&         s,
             Vector3d&               position,
             Vector3d&               outgoing,
@@ -139,6 +140,31 @@ namespace
             const Vector3d axis = -normalize(light_transform.get_parent_z());
 
             compute_radiance(shading_context, light_transform, axis, outgoing, value);
+
+            outgoing = normalize(target_point - position);
+            value *= probability;
+        }
+
+        virtual void sample(
+            const ShadingContext&   shading_context,
+            const Transformd&       light_transform,
+            const Vector2d&         s,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            float&                  probability) const override
+        {
+            position = light_transform.get_parent_origin();
+            outgoing =
+                light_transform.vector_to_parent(
+                    rotate_minus_pi_around_x(
+                        sample_cone_uniform(s, m_cos_outer_half_angle)));
+            probability = sample_cone_uniform_pdf(static_cast<float>(m_cos_outer_half_angle));
+
+            const Vector3d axis = -normalize(light_transform.get_parent_z());
+
+            compute_radiance(shading_context, light_transform, axis, outgoing, value);
+            value *= probability;
         }
 
         virtual void evaluate(

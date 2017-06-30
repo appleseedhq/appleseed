@@ -154,11 +154,13 @@ namespace
             Spectrum&               value,
             float&                  probability) const override
         {
-            sample(
-                shading_context,
+            const double sun_radius = compute_sun_radius(m_scene_radius, m_values.m_size_multiplier);
+
+            sample_disk_parallel(
                 light_transform,
-                Vector3d(), //todo: calculate vector perpendicular to light disk
                 s,
+                m_scene_center,
+                sun_radius,
                 position,
                 outgoing,
                 value,
@@ -175,17 +177,14 @@ namespace
             Spectrum&               value,
             float&                  probability) const override
         {
-            //angular_diameter = one_radian * sun_diameter / distance
-            //sun_diameter = angular_diameter * distance / one_radian = 0.5331 degrees * 1.496 * 10^8 km / 57.29578 degrees
-            double sun_diameter = 0.5331 * m_safe_scene_diameter / 57.29578;
-            sun_diameter *= m_values.m_size_multiplier;
+            const double sun_radius = compute_sun_radius(m_scene_radius, m_values.m_size_multiplier);
 
             sample_disk(
                 light_transform,
                 target_point,
                 s,
                 m_scene_center,
-                sun_diameter/2,
+                sun_radius,
                 position,
                 outgoing,
                 value,
@@ -211,7 +210,7 @@ namespace
                 const Vector2d target_s(x - target_index, s[1]);
                 const LightTarget& target = targets[target_index];
 
-                sample_disk(
+                sample_disk_parallel(
                     light_transform,
                     target_s,
                     target.get_center(),
@@ -223,7 +222,7 @@ namespace
             }
             else
             {
-                sample_disk(
+                sample_disk_parallel(
                     light_transform,
                     s,
                     m_scene_center,
@@ -432,7 +431,19 @@ namespace
             radiance *= radiance_multiplier;
         }
 
-        void sample_disk(
+        const double compute_sun_radius(
+            const double            distance,
+            float                   size_multiplier) const
+        {
+            //angular_diameter = one_radian * sun_diameter / distance
+            //sun_diameter = angular_diameter * distance / one_radian = 0.53289 degrees * 1.496 * 10^8 km / 57.29578 degrees
+            double sun_radius = 0.266445 * distance / 57.29578;
+            sun_radius *= size_multiplier;
+
+            return sun_radius;
+        }
+
+        void sample_disk_parallel(
             const Transformd&       light_transform,
             const Vector2d&         s,
             const Vector3d&         disk_center,
@@ -442,16 +453,27 @@ namespace
             Spectrum&               value,
             float&                  probability) const
         {
-            sample_disk(
-                light_transform,
-                Vector3d(), //todo: calculate vector perpendicular to light disk
-                s,
-                disk_center,
-                disk_radius,
-                position,
+            outgoing = -normalize(light_transform.get_parent_z());
+
+            const Basis3d basis(outgoing);
+            const Vector2d p = sample_disk_uniform(s);
+
+            position =
+                disk_center
+                - m_safe_scene_diameter * basis.get_normal()
+                + disk_radius * p[0] * basis.get_tangent_u()
+                + disk_radius * p[1] * basis.get_tangent_v();
+
+            probability = 1.0f / (Pi<float>() * square(static_cast<float>(disk_radius)));
+
+            compute_sun_radiance(
                 outgoing,
-                value,
-                probability);
+                m_values.m_turbidity,
+                m_values.m_radiance_multiplier,
+                value);
+
+            value *= SunSolidAngle;
+            value *= probability;
         }
 
         void sample_disk(
@@ -487,6 +509,7 @@ namespace
                 value);
 
             value *= SunSolidAngle;
+            value *= probability;
         }
     };
 }
@@ -549,13 +572,13 @@ DictionaryArray SunLightFactory::get_input_metadata() const
     metadata.push_back(
         Dictionary()
             .insert("name", "size_multiplier")
-            .insert("label", "Sun Size Multiplier")
+            .insert("label", "Size Multiplier")
             .insert("type", "numeric")
             .insert("min_value", "0.0")
             .insert("max_value", "100.0")
             .insert("use", "optional")
             .insert("default", "1.0")
-            .insert("help", "Shadow softness multiplier"));
+            .insert("help", "The size multiplier allows to make the sun bigger or smaller, hence making it cast softer or harder shadows"));
 
     add_common_input_metadata(metadata);
 
