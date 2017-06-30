@@ -243,33 +243,12 @@ void LightTree::output_every_light_probability(
     {
         printf("NOT LEAF\n");
         // LightTreeNodes
-        const auto& node   = m_nodes[node_index];
-        const auto& child1 = m_nodes[node.get_child_node_index()];
-        const auto& child2 = m_nodes[node.get_child_node_index() + 1];
+        const auto& node = m_nodes[node_index];
+        
+        std::pair<float, float> result = child_node_probabilites(node, surface_point);
+        const float p1 = result.first;
+        const float p2 = result.second;
 
-        const auto& bbox_left  = node.get_left_bbox();
-        const auto& bbox_right = node.get_right_bbox();
-
-        const float square_distance_left  = foundation::square_distance(surface_point, bbox_left.center());
-        const float square_distance_right = foundation::square_distance(surface_point, bbox_right.center());
-        printf("square_distance_left: %f\n",square_distance_left);
-        printf("square_distance_right: %f\n",square_distance_right);
-
-        float p1 = node_probability(child1, square_distance_left, bbox_left.radius());
-        float p2 = node_probability(child2, square_distance_right, bbox_right.radius());
-
-        const float total = p1 + p2;
-
-        if (total <= 0.0f)
-        {
-            p1 = 0.5;
-            p2 = 0.5;
-        }
-        else
-        {
-            p1 = p1 / total;
-            p2 = p2 / total;
-        }
         printf("p1: %f\n",p1);
         printf("p2: %f\n",p2);
 
@@ -298,15 +277,39 @@ void LightTree::output_every_light_probability(
     }
 }
 
-float LightTree::node_probability(
-        const LightTreeNode<foundation::AABB3d>& node,
-        const float squared_distance,
-        const float radius) const
+std::pair<float, float> LightTree::child_node_probabilites(
+        const LightTreeNode<foundation::AABB3d>&    node,
+        const foundation::Vector3d                  surface_point) const
 {
-    const float inverse_distance_falloff = 1.0f / squared_distance;
-    const float probability = node.get_node_luminance() * inverse_distance_falloff;
+    const auto& child1 = m_nodes[node.get_child_node_index()];
+    const auto& child2 = m_nodes[node.get_child_node_index() + 1];
 
-    return probability;
+    const auto& bbox_left  = node.get_left_bbox();
+    const auto& bbox_right = node.get_right_bbox();
+
+    float squared_distance_left  = foundation::square_distance(surface_point, bbox_left.center());
+    float squared_distance_right = foundation::square_distance(surface_point, bbox_right.center());
+
+    const float inverse_distance_falloff_left = 1.0f / squared_distance_left;
+    const float inverse_distance_falloff_right = 1.0f / squared_distance_right;
+
+    float p1 = child1.get_node_luminance() * inverse_distance_falloff_left;
+    float p2 = child2.get_node_luminance() * inverse_distance_falloff_right;
+
+    // Normalize probabilities
+    float total = p1 + p2;
+    if (total <= 0.0f)
+    {
+        p1 = 0.5;
+        p2 = 0.5;
+    }
+    else
+    {
+        p1 = p1 / total;
+        p2 = p2 / total;
+    }
+
+    return std::pair<float, float>(p1, p2);
 }
 
 std::pair<size_t, float> LightTree::sample(
@@ -323,31 +326,12 @@ std::pair<size_t, float> LightTree::sample(
     std::pair<size_t, float> nearest_light;
     while (!m_nodes[node_index].is_leaf())
     {
-        // LightTreeNodes
-        const auto& node   = m_nodes[node_index];
-        const auto& child1 = m_nodes[node.get_child_node_index()];
-        const auto& child2 = m_nodes[node.get_child_node_index() + 1];
+        // LightTreeNode
+        const auto& node = m_nodes[node_index];
 
-        const auto& bbox_left  = node.get_left_bbox();
-        const auto& bbox_right = node.get_right_bbox();
-        float square_distance_left  = foundation::square_distance(surface_point, bbox_left.center());
-        float square_distance_right = foundation::square_distance(surface_point, bbox_right.center());
-
-        float p1 = node_probability(child1, square_distance_left, bbox_left.radius());
-        float p2 = node_probability(child2, square_distance_right, bbox_right.radius());
-
-        float total = p1 + p2;
-
-        if (total <= 0.0f)
-        {
-            p1 = 0.5;
-            p2 = 0.5;
-        }
-        else
-        {
-            p1 = p1 / total;
-            p2 = p2 / total;
-        }
+        std::pair<float, float> result = child_node_probabilites(node, surface_point);
+        const float p1 = result.first;
+        const float p2 = result.second;
 
         if (s <= p1)
         {

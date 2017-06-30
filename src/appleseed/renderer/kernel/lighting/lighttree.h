@@ -119,10 +119,9 @@ class LightTree
     // if something like that is neccessary i.e. the node level will actually be stored.
     float update_luminance(size_t node_index);
 
-    float node_probability(
-        const LightTreeNode<foundation::AABB3d>& node,
-        const float squared_distance,
-        const float radius) const;
+    std::pair<float, float> child_node_probabilites(
+        const LightTreeNode<foundation::AABB3d>&    node,
+        const foundation::Vector3d                  surface_point) const;
 
     size_t update_level(size_t node_index, size_t node_level);
 
