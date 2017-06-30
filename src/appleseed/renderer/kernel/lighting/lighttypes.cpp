@@ -90,6 +90,12 @@ Spectrum NonPhysicalLightSource::get_intensity() const
     return intensity;
 }
 
+bool NonPhysicalLightSource::is_light_tree_compatible() const
+{
+    const Light* light = m_light_info->m_light;
+    return light->is_light_tree_compatible();
+}
+
 //
 // Emitting triangle light source class implementation
 //
@@ -130,6 +136,13 @@ foundation::AABB3d EmittingTriangleLightSource::get_bbox() const
 Spectrum EmittingTriangleLightSource::get_intensity() const
 {
     Spectrum hard_coded_placeholder(foundation::Color3f(1.0f, 2.0f, 3.0f));
+    return hard_coded_placeholder;
+}
+
+bool EmittingTriangleLightSource::is_light_tree_compatible() const
+{
+    bool hard_coded_placeholder = false;
+    
     return hard_coded_placeholder;
 }
 

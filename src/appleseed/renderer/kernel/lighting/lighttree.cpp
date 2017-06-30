@@ -49,9 +49,10 @@ namespace renderer
 // LightTree class implementation.
 //
 
-LightTree::LightTree(const Scene& scene)
+LightTree::LightTree()
+  :m_tree_depth(0)
 {
-
+    m_built = false;
 }
 
 LightTree::~LightTree()
@@ -63,41 +64,31 @@ LightTree::~LightTree()
     }
 }
 
-void LightTree::build(
-        const std::vector<NonPhysicalLightInfo>     non_physical_lights,
-        const std::vector<EmittingTriangle>         emitting_triangles)
+bool LightTree::is_built() const
 {
+    return m_built;
+}
 
-    RENDERER_LOG_INFO("Building a tree");
+void LightTree::build(
+        const std::vector<NonPhysicalLightInfo>     non_physical_lights)
+{
     foundation::Statistics statistics;
     AABBVector light_bboxes;
 
-    RENDERER_LOG_INFO("Collecting light sources...");
     size_t light_index = 0;
 
     // Collect all possible light sources into one vector
-    for (foundation::const_each<NonPhysicalLightVector> i = non_physical_lights; i; ++i)
+    for (size_t i = 0; i < non_physical_lights.size(); ++i)
     {
-        LightSource* light_source = new NonPhysicalLightSource(&*i);
+        LightSource* light_source = new NonPhysicalLightSource(&non_physical_lights[i]);
         foundation::AABB3d bbox = light_source->get_bbox();
         m_light_sources.push_back(light_source);
         light_bboxes.push_back(bbox);
         m_items.push_back(
             Item(
                 bbox,
-                light_index++));
-    }
-
-    for (foundation::const_each<EmittingTriangleVector> i = emitting_triangles; i; ++i)
-    {
-        LightSource* light_source = new EmittingTriangleLightSource(&*i);
-        foundation::AABB3d bbox = light_source->get_bbox();
-        m_light_sources.push_back(light_source);
-        light_bboxes.push_back(bbox);
-        m_items.push_back(
-            Item(
-                bbox,
-                light_index++));
+                light_index++,
+                i));
     }
 
     RENDERER_LOG_INFO("Number of light sources: %zu", m_light_sources.size());
@@ -114,6 +105,8 @@ void LightTree::build(
     // Reorder m_items vector to match the ordering in the LightTree.
     if (!m_items.empty())
     {
+        m_built = true;
+
         const std::vector<size_t>& ordering = partitioner.get_item_ordering();
         assert(m_items.size() == ordering.size());
 
@@ -126,8 +119,9 @@ void LightTree::build(
             ordering.size());
 
         // Set total luminance for each node of the LightTree.
-        update_luminance(0);
-        m_tree_depth = update_level(0, 0);
+        // update_luminance(0);
+        // m_tree_depth = update_level(0, 0);
+        recursive_node_update(0, 0);
     }
     
     // Print light tree statistics.
@@ -211,14 +205,23 @@ void LightTree::draw_tree_structure(
     }
 }
 
-float LightTree::update_luminance(size_t node_index)
+//
+// Calculate tree depth and assign total luminance to each node of the tree.
+// Total luminance represents the sum of all its child nodes luminances.
+//
+
+float LightTree::recursive_node_update(size_t node_index, size_t node_level)
 {
     float luminance = 0.0f;
 
     if (!m_nodes[node_index].is_leaf())
     {
-        luminance = update_luminance(m_nodes[node_index].get_child_node_index()) // left child
-                  + update_luminance(m_nodes[node_index].get_child_node_index() + 1);  // right child    
+        float luminance1 = recursive_node_update(m_nodes[node_index].get_child_node_index(),
+                                                                 node_level + 1);
+        float luminance2 = recursive_node_update(m_nodes[node_index].get_child_node_index() + 1,
+                                                                 node_level + 1);
+
+        luminance = luminance1 + luminance2;
     }
     else
     {
@@ -230,29 +233,14 @@ float LightTree::update_luminance(size_t node_index)
             luminance += spectrum[i];
         }
         luminance /= spectrum.size();
+
+        if (m_tree_depth < node_level)
+            m_tree_depth = node_level;
     }
-   
     m_nodes[node_index].set_luminance(luminance);
+    m_nodes[node_index].set_level(node_level);
 
     return luminance;
-}
-
-size_t LightTree::update_level(size_t node_index, size_t node_level)
-{
-    size_t m_tree_depth = 0;
-    if (!m_nodes[node_index].is_leaf())
-    {
-        size_t depth1 = update_level(m_nodes[node_index].get_child_node_index(), node_level + 1); // left child
-        size_t depth2 = update_level(m_nodes[node_index].get_child_node_index() + 1, node_level + 1);  // right child    
-
-        m_tree_depth = depth2 < depth1 ? depth1
-                                     : depth2;
-    }
-    else
-        m_tree_depth = node_level;
-   
-    m_nodes[node_index].set_level(node_level);
-    return m_tree_depth;
 }
 
 float LightTree::node_probability(
@@ -331,9 +319,7 @@ std::pair<size_t, float> LightTree::sample(
         }
     }
     size_t item_index = m_nodes[node_index].get_item_index();
-    // NOTE: this will work only for pure NPL scene as the lights in
-    // m_light_sources will be mixed. Rewrite this!
-    size_t light_index = m_items[item_index].m_light_sources_index;
+    size_t light_index = m_items[item_index].m_npl_external_index;
 
     return std::pair<size_t, float>(light_index, light_probability);
 }

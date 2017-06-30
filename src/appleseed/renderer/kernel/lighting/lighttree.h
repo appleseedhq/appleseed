@@ -63,19 +63,17 @@ class LightTree
 {
   public:
     // Constructor.
-    // NOTE: Scene is not used at the moment as the lights are given as arguments
-    //       Right now it is only a placeholder and reminder to use it later on.
-    explicit LightTree(const Scene& scene);
+    explicit LightTree();
 
     // Destructor
     ~LightTree();
 
+    bool is_built() const;
+
     // Build the tree based on the lights collected by the LightSampler.
     // TODO: Remove light lists from arguments when they start being collected
     //       by the LightTree class itself.
-    void build(
-        const std::vector<NonPhysicalLightInfo>     non_physical_lights,
-        const std::vector<EmittingTriangle>         emitting_triangles);
+    void build(const std::vector<NonPhysicalLightInfo>     non_physical_lights);
     
     std::pair<size_t, float> sample(
         const foundation::Vector3d    surface_point,
@@ -86,38 +84,40 @@ class LightTree
     {
         foundation::AABB3d      m_bbox;
         size_t                  m_light_sources_index;
+        size_t                  m_npl_external_index;
 
         Item() {}
 
         // Item contains bbox and source index of each light source
         // source_index represents the light index in m_light_sources vector
+        // m_npl_external_index - index of the light as registered within the light sampler
+        //                          (index of m_non_physical_lights within the LightSampler)
         Item(
             foundation::AABB3d      bbox,
-            size_t                  source_index) 
+            size_t                  source_index,
+            size_t                  npl_external_index) 
             :m_bbox(bbox)
             ,m_light_sources_index(source_index)
+            ,m_npl_external_index(npl_external_index)
         {
         }
     };  
 
-    typedef std::vector<EmittingTriangle>           EmittingTriangleVector;
     typedef std::vector<NonPhysicalLightInfo>       NonPhysicalLightVector;
     typedef std::vector<LightSource*>               LightSourcePointerVector;
     typedef std::vector<Item>                       ItemVector;
-    typedef foundation::CDF<size_t, float>          EmitterCDF;
 
     LightSourcePointerVector   m_light_sources;
     ItemVector                 m_items;
     size_t                     m_tree_depth;
+    bool                       m_built; // Was the tree built?
 
     void draw_tree_structure(
         std::string                 filename,
         const foundation::AABB3d&   root_bbox,
         bool                        separate_by_levels = false) const;
 
-    // update_level and update_luminance can be easily merged into recursive_node_update
-    // if something like that is neccessary i.e. the node level will actually be stored.
-    float update_luminance(size_t node_index);
+    float recursive_node_update(size_t node_index, size_t node_level);
 
     std::pair<float, float> child_node_probabilites(
         const LightTreeNode<foundation::AABB3d>&    node,
@@ -127,9 +127,6 @@ class LightTree
         const LightTreeNode<foundation::AABB3d>&    node,
         const foundation::AABB3d                    bbox,
         const foundation::Vector3d                  surface_point) const;
-
-    size_t update_level(size_t node_index, size_t node_level);
-
 };
 
 }
