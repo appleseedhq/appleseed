@@ -30,8 +30,9 @@
 #include "pythonconsolewidget.h"
 
 // appleseed.studio headers.
-#include "outputredirector.h"
-#include "pythoneditor.h"
+#include "mainwindow/pythonconsole/outputredirector.h"
+#include "mainwindow/pythonconsole/pythoneditor.h"
+#include "utility/miscellaneous.h"
 
 // Qt headers.
 #include <QAction>
@@ -48,18 +49,42 @@ namespace studio {
 PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
   : QWidget(parent)
 {
-    input = new PythonEditor(this);
+    m_input = new PythonEditor(this);
 
-    output = new QPlainTextEdit(this);
-    output->setUndoRedoEnabled(false);
-    output->setLineWrapMode(QPlainTextEdit::WidgetWidth);
-    output->setReadOnly(true);
-    output->setTextInteractionFlags(
+    m_output = new QPlainTextEdit(this);
+    m_output->setUndoRedoEnabled(false);
+    m_output->setLineWrapMode(QPlainTextEdit::WidgetWidth);
+    m_output->setReadOnly(true);
+    m_output->setTextInteractionFlags(
         Qt::TextSelectableByMouse |
         Qt::TextSelectableByKeyboard);
-    output->setFont(input->font());
+    m_output->setFont(m_input->font());
 
-    init_actions();
+    m_action_execute_all =
+        new QAction(load_icons("python_execute_all"), "Execute All Code", this);
+    m_action_execute_all->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_Return);
+    m_action_execute_all->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    connect(m_action_execute_all, SIGNAL(triggered()), this, SLOT(slot_execute_all()));
+    addAction(m_action_execute_all);
+
+    m_action_execute_selection =
+        new QAction(load_icons("python_execute_selection"), "Execute Selected Code", this);
+    m_action_execute_selection->setShortcut(Qt::CTRL + Qt::Key_Return);
+    m_action_execute_selection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    connect(m_action_execute_selection, SIGNAL(triggered()), this, SLOT(slot_execute_selection()));
+    addAction(m_action_execute_selection);
+
+    m_action_clear_selection =
+        new QAction(load_icons("python_clear_output"), "Clear Console Output", this);
+    m_action_clear_selection->setShortcut(Qt::CTRL + Qt::Key_D);
+    m_action_clear_selection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    connect(m_action_clear_selection, SIGNAL(triggered()), this, SLOT(slot_clear_output()));
+    addAction(m_action_clear_selection);
+
+    m_action_focus_on_input = new QAction("Focus on Console Input", this);
+    m_action_focus_on_input->setShortcut(Qt::CTRL + Qt::Key_L);
+    connect(m_action_focus_on_input, SIGNAL(triggered()), m_input, SLOT(setFocus()));
+    addAction(m_action_focus_on_input);
 
     QToolBar* toolbar = new QToolBar(this);
     toolbar->addAction(m_action_execute_selection);
@@ -67,64 +92,32 @@ PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
     toolbar->addAction(m_action_clear_selection);
 
     QVBoxLayout* layout = new QVBoxLayout();
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(toolbar);
-    layout->addWidget(input);
-    layout->addWidget(output);
+    layout->addWidget(m_input);
+    layout->addWidget(m_output);
 
     setLayout(layout);
 
-    PythonInterpreter::instance().redirect_output(OutputRedirector(output));
-}
-
-void PythonConsoleWidget::init_actions()
-{
-    m_action_execute_selection =
-        new QAction(QIcon(":icons/exec_button_icon.png"), "Execute Selection", this);
-    m_action_execute_selection->setShortcut(Qt::CTRL + Qt::Key_Return);
-    m_action_execute_selection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-
-    connect(m_action_execute_selection, SIGNAL(triggered()), this, SLOT(slot_execute_selection()));
-    addAction(m_action_execute_selection);
-
-    m_action_execute_all =
-        new QAction(QIcon(":icons/exec_all_button_icon.png"), "Execute All Text", this);
-    m_action_execute_all->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_Return);
-    m_action_execute_all->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-
-    connect(m_action_execute_all, SIGNAL(triggered()), this, SLOT(slot_execute_all()));
-    addAction(m_action_execute_all);
-
-    m_action_clear_selection =
-        new QAction(QIcon(":icons/clear_button_icon.png"), "Clear Console Output", this);
-    m_action_clear_selection->setShortcut(Qt::CTRL + Qt::Key_D);
-    m_action_clear_selection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-
-    connect(m_action_clear_selection, SIGNAL(triggered()), this, SLOT(slot_clear_output()));
-    addAction(m_action_clear_selection);
-
-    m_action_focus_on_input = new QAction("Focus on Console Input", this);
-    m_action_focus_on_input->setShortcut(Qt::CTRL + Qt::Key_L);
-
-    connect(m_action_focus_on_input, SIGNAL(triggered()), input, SLOT(setFocus()));
-    addAction(m_action_focus_on_input);
+    PythonInterpreter::instance().redirect_output(OutputRedirector(m_output));
 }
 
 void PythonConsoleWidget::slot_execute_selection()
 {
     // QTextCursor returned by textCursor() function uses QChar(8233) instead of newline.
     // It breaks Python indentation rules so it has to be replaced.
-    const QString selected = input->textCursor().selectedText().replace(QChar(8233), "\n");
+    const QString selected = m_input->textCursor().selectedText().replace(QChar(8233), "\n");
     execute(selected);
 }
 
 void PythonConsoleWidget::slot_execute_all()
 {
-    execute(input->toPlainText());
+    execute(m_input->toPlainText());
 }
 
 void PythonConsoleWidget::slot_clear_output()
 {
-    output->clear();
+    m_output->clear();
 }
 
 void PythonConsoleWidget::execute(const QString& script)

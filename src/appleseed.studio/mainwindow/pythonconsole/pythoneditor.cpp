@@ -30,17 +30,14 @@
 #include "pythoneditor.h"
 
 // appleseed.studio headers.
-#include "linenumberarea.h"
-#include "pythonhighlighter.h"
+#include "mainwindow/pythonconsole/linenumberarea.h"
+#include "mainwindow/pythonconsole/pythonhighlighter.h"
 
 // Qt headers.
 #include <QKeyEvent>
 #include <QPainter>
 #include <QString>
 #include <QStringList>
-
-// Standard headers.
-#include <string>
 
 namespace appleseed {
 namespace studio {
@@ -60,7 +57,7 @@ PythonEditor::PythonEditor(QWidget* parent)
 
     new PythonSyntaxHighlighter(this->document());
 
-    line_number_area = new LineNumberArea(this);
+    m_line_number_area = new LineNumberArea(this);
 
     connect(this, SIGNAL(cursorPositionChanged()), SLOT(slot_highlight_current_line()));
     slot_highlight_current_line();
@@ -71,7 +68,7 @@ void PythonEditor::resizeEvent(QResizeEvent* event)
     QPlainTextEdit::resizeEvent(event);
 
     QRect cr = contentsRect();
-    line_number_area->setGeometry(QRect(cr.left(), cr.top(), line_number_area->width(), cr.height()));
+    m_line_number_area->setGeometry(QRect(cr.left(), cr.top(), m_line_number_area->width(), cr.height()));
 }
 
 void PythonEditor::keyPressEvent(QKeyEvent* event)
@@ -95,7 +92,8 @@ void PythonEditor::indent()
 
     // If last non-space character in previous line is ':' add 4 spaces indentation.
     for (std::string::const_reverse_iterator it = previous.rbegin();
-         it != previous.rend(); ++it) {
+         it != previous.rend(); ++it)
+    {
         if (*it == ':')
         {
             insert_spaces(4);
@@ -109,6 +107,7 @@ void PythonEditor::indent()
 void PythonEditor::indent_like_previous(const std::string& previous)
 {
     size_t indentation = 0;
+
     for (size_t i = 0; i < previous.size(); ++i)
     {
         if (previous[i] == ' ')
@@ -128,16 +127,13 @@ void PythonEditor::insert_spaces(const size_t count)
 
 void PythonEditor::slot_highlight_current_line()
 {
-    QList<QTextEdit::ExtraSelection> current_line;
     QTextEdit::ExtraSelection selection;
-
-    QColor line_color = QColor(53, 53, 53);
-
-    selection.format.setBackground(line_color);
+    selection.format.setBackground(QColor(53, 53, 53));
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
     selection.cursor = textCursor();
     selection.cursor.clearSelection();
 
+    QList<QTextEdit::ExtraSelection> current_line;
     current_line.append(selection);
     setExtraSelections(current_line);
 }
