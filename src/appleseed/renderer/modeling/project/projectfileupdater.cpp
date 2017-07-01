@@ -59,7 +59,6 @@
 #include "renderer/modeling/light/pointlight.h"
 #include "renderer/modeling/light/spotlight.h"
 #include "renderer/modeling/light/sunlight.h"
-#include "renderer/modeling/material/disneymaterial.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/project/configuration.h"
@@ -1345,7 +1344,10 @@ namespace
 
         static void update_material_inputs(Material& material)
         {
-            if (strcmp(material.get_model(), DisneyMaterialFactory().get_model()) == 0)
+            // Don't rely on DisneyMaterialFactory().get_model() because appleseed needs
+            // to be able to update projects even when built without Disney material support
+            // (i.e. the APPLESEED_WITH_DISNEY_MATERIAL preprocessor symbol is undefined).
+            if (strcmp(material.get_model(), "disney_material") == 0)
             {
                 ParamArray& params = material.get_parameters();
                 for (each<DictionaryDictionary> i = params.dictionaries(); i; ++i)
