@@ -41,6 +41,7 @@
 class QKeyEvent;
 class QResizeEvent;
 class QWidget;
+namespace appleseed { namespace studio { class LineNumberArea; } }
 
 namespace appleseed {
 namespace studio {
