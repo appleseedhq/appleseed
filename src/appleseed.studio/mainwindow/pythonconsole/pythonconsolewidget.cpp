@@ -99,7 +99,7 @@ PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
 
     setLayout(layout);
 
-    PythonInterpreter::instance().redirect_output(OutputRedirector(m_output));
+    PythonInterpreter::instance().initialize(OutputRedirector(m_output));
 }
 
 void PythonConsoleWidget::slot_execute_selection()
