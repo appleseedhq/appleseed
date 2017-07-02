@@ -36,6 +36,7 @@
 
 // Qt headers.
 #include <QAction>
+#include <QSplitter>
 #include <QToolBar>
 #include <QVBoxLayout>
 
@@ -49,9 +50,12 @@ namespace studio {
 PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
   : QWidget(parent)
 {
-    m_input = new PythonEditor(this);
+    QSplitter* console_body = new QSplitter(this);
+    console_body->setOrientation(Qt::Vertical);
 
-    m_output = new QPlainTextEdit(this);
+    m_input = new PythonEditor(console_body);
+
+    m_output = new QPlainTextEdit(console_body);
     m_output->setUndoRedoEnabled(false);
     m_output->setLineWrapMode(QPlainTextEdit::WidgetWidth);
     m_output->setReadOnly(true);
@@ -59,6 +63,9 @@ PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
         Qt::TextSelectableByMouse |
         Qt::TextSelectableByKeyboard);
     m_output->setFont(m_input->font());
+
+    console_body->addWidget(m_input);
+    console_body->addWidget(m_output);
 
     m_action_execute_all =
         new QAction(load_icons("python_execute_all"), "Execute All Code", this);
@@ -94,8 +101,7 @@ PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
     QVBoxLayout* layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(toolbar);
-    layout->addWidget(m_input);
-    layout->addWidget(m_output);
+    layout->addWidget(console_body);
 
     setLayout(layout);
 
