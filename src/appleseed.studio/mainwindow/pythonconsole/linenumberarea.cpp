@@ -30,12 +30,11 @@
 #include "linenumberarea.h"
 
 // appleseed.studio headers.
-#include "pythoneditor.h"
+#include "mainwindow/pythonconsole/pythoneditor.h"
 
 // Qt headers.
 #include <QPainter>
 #include <QTextBlock>
-
 
 namespace appleseed {
 namespace studio {
@@ -47,7 +46,7 @@ LineNumberArea::LineNumberArea(PythonEditor* parent)
     connect(editor, SIGNAL(updateRequest(QRect, int)), this, SLOT(slot_update_area(QRect, int)));
 
     slot_update_area_width();
-};
+}
 
 void LineNumberArea::slot_update_area_width()
 {
@@ -86,9 +85,9 @@ void LineNumberArea::paintEvent(QPaintEvent* event)
 
     QTextBlock block = editor->firstVisibleBlock();
     int block_number = block.blockNumber();
-    int top = static_cast<int> (editor->blockBoundingGeometry(block).
-                                translated(editor->contentOffset()).top());
-    int bottom = top + static_cast<int> (editor->blockBoundingRect(block).height());
+    int top = static_cast<int>(editor->blockBoundingGeometry(block).
+                               translated(editor->contentOffset()).top());
+    int bottom = top + static_cast<int>(editor->blockBoundingRect(block).height());
 
     while (block.isValid() && top <= event->rect().bottom())
     {
@@ -102,7 +101,7 @@ void LineNumberArea::paintEvent(QPaintEvent* event)
 
         block = block.next();
         top = bottom;
-        bottom = top + static_cast<int> (editor->blockBoundingRect(block).height());
+        bottom = top + static_cast<int>(editor->blockBoundingRect(block).height());
         ++block_number;
     }
 }

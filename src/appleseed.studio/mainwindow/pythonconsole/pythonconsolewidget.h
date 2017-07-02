@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_CONSOLEWIDGET_H
-#define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_CONSOLEWIDGET_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONCONSOLEWIDGET_H
+#define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONCONSOLEWIDGET_H
 
 // appleseed.studio headers.
 #include "python/pythoninterpreter.h"
@@ -38,8 +38,8 @@
 
 // Forward declarations.
 class QAction;
-class QString;
 class QPlainTextEdit;
+class QString;
 
 namespace appleseed {
 namespace studio {
@@ -58,20 +58,18 @@ class PythonConsoleWidget
     void slot_clear_output();
 
   private:
-    QPlainTextEdit* output;
-    QPlainTextEdit* input;
+    QPlainTextEdit* m_output;
+    QPlainTextEdit* m_input;
 
-    QAction* m_action_execute_selection;
-    QAction* m_action_execute_all;
-    QAction* m_action_clear_selection;
-    QAction* m_action_focus_on_input;
+    QAction*        m_action_execute_all;
+    QAction*        m_action_execute_selection;
+    QAction*        m_action_clear_selection;
+    QAction*        m_action_focus_on_input;
 
     void execute(const QString& script);
-
-    void init_actions();
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_CONSOLEWIDGET_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONCONSOLEWIDGET_H

@@ -638,6 +638,9 @@ namespace
                         m_sampling_context,
                         m_params.m_dl_light_sample_count);
 
+                // No light samples has to be made.
+                if (light_sample_count == 0) return;
+
                 const BSDFSampler bsdf_sampler(
                     bsdf,
                     bsdf_data,
@@ -760,16 +763,19 @@ namespace
             {
                 Spectrum dl_radiance(0.0f, Spectrum::Illuminance);
 
+                const size_t light_sample_count =
+                    stochastic_cast<size_t>(
+                        m_sampling_context,
+                        m_params.m_dl_light_sample_count);
+
+                // No light samples has to be made.
+                if (light_sample_count == 0) return;
+
                 const PhaseFunctionSampler phase_function_sampler(
                     volume_ray,
                     phase_function,
                     phase_function_data,
                     distance_sample);
-
-                const size_t light_sample_count =
-                    stochastic_cast<size_t>(
-                        m_sampling_context,
-                        m_params.m_dl_light_sample_count);
 
                 const DirectLightingIntegrator integrator(
                     m_shading_context,
@@ -1021,7 +1027,7 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("type", "int")
             .insert("default", "4")
             .insert("unlimited", "true")
-            .insert("min", "0")
+            .insert("min", "1")
             .insert("label", "Distance Samples")
             .insert("help", "Number of distance samples per ray for volume rendering"));
 

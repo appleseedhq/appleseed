@@ -113,13 +113,13 @@ void compute_ibl_material_sampling(
         // afterward. We need a mechanism to indicate that we want the contribution of some of
         // the components only.
         Dual3f incoming;
-        Spectrum value;
+        Spectrum material_value;
         float material_prob;
         if (!material_sampler.sample(
                 sampling_context,
                 Dual3d(outgoing),
                 incoming,
-                value,
+                material_value,
                 material_prob))
             continue;
 
@@ -154,7 +154,7 @@ void compute_ibl_material_sampling(
         }
 
         // Add the contribution of this sample to the illumination.
-        env_value *= material_prob;
+        env_value *= material_value;
         radiance += env_value;
     }
 

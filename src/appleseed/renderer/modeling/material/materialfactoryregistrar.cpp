@@ -31,12 +31,12 @@
 #include "materialfactoryregistrar.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/material/genericmaterial.h"
-#include "renderer/modeling/material/material.h"
-#include "renderer/modeling/material/oslmaterial.h"
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
 #include "renderer/modeling/material/disneymaterial.h"
 #endif
+#include "renderer/modeling/material/genericmaterial.h"
+#include "renderer/modeling/material/material.h"
+#include "renderer/modeling/material/oslmaterial.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -62,13 +62,11 @@ struct MaterialFactoryRegistrar::Impl
 MaterialFactoryRegistrar::MaterialFactoryRegistrar()
   : impl(new Impl())
 {
-    register_factory(auto_ptr<FactoryType>(new GenericMaterialFactory()));
-
-    register_factory(auto_ptr<FactoryType>(new OSLMaterialFactory()));
-
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
     register_factory(auto_ptr<FactoryType>(new DisneyMaterialFactory()));
 #endif
+    register_factory(auto_ptr<FactoryType>(new GenericMaterialFactory()));
+    register_factory(auto_ptr<FactoryType>(new OSLMaterialFactory()));
 }
 
 MaterialFactoryRegistrar::~MaterialFactoryRegistrar()

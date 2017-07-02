@@ -314,6 +314,9 @@ namespace
                         m_sampling_context,
                         m_params.m_dl_light_sample_count);
 
+                // No light samples has to be made.
+                if (light_sample_count == 0) return;
+
                 const size_t bsdf_sample_count = light_sample_count;
 
                 const BSDFSampler bsdf_sampler(
