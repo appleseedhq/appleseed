@@ -48,7 +48,7 @@ if (POLICY CMP0043)
     cmake_policy (SET CMP0043 OLD)  # consume the content of the suffixed COMPILE_DEFINITIONS_<CONFIG>
 endif ()
 
-include (src/cmake/utilities.txt)
+include (cmake/utilities.txt)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -73,7 +73,7 @@ endif ()
 project (appleseed)
 
 # Setup the path for our FindPackage modules.
-set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/src/cmake/Modules)
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -150,11 +150,11 @@ set (CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
 # This must come after project () otherwise CMAKE_SYSTEM_NAME is undefined.
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    include (src/cmake/config/win-vs.txt)
+    include (cmake/config/win-vs.txt)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    include (src/cmake/config/mac-clang.txt)
+    include (cmake/config/mac-clang.txt)
 elseif (CMAKE_SYSTEM_NAME MATCHES "Linux|FreeBSD")
-    include (src/cmake/config/linux-gcc.txt)
+    include (cmake/config/linux-gcc.txt)
 else ()
     message (FATAL_ERROR "Unsupported platform or compiler (CMAKE_SYSTEM_NAME is \"${CMAKE_SYSTEM_NAME}\"). "
                          "Edit ${CMAKE_CURRENT_LIST_FILE} to add support for it.")
