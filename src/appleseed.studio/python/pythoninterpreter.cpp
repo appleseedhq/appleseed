@@ -81,31 +81,31 @@ MainWindow* PythonInterpreter::get_main_window() const
 
 namespace
 {
-string compute_python_modules_path()
-{
-    // Start with the absolute path to appleseed.studio's executable.
-    bf::path base_path(get_executable_path());
-    bf::path lib_path;
-
-    // Strip appleseed.studio's executable filename from the path.
-    base_path = base_path.parent_path();
-
-    // Go up in the hierarchy until bin/ is found.
-    while (base_path.filename() != "bin")
+    string compute_python_modules_path()
     {
-        lib_path = base_path.filename() / lib_path;
+        // Start with the absolute path to appleseed.studio's executable.
+        bf::path base_path(get_executable_path());
+        bf::path lib_path;
+
+        // Strip appleseed.studio's executable filename from the path.
         base_path = base_path.parent_path();
+
+        // Go up in the hierarchy until bin/ is found.
+        while (base_path.filename() != "bin")
+        {
+            lib_path = base_path.filename() / lib_path;
+            base_path = base_path.parent_path();
+        }
+
+        // One more step up to reach the parent of bin/.
+        lib_path = "lib" / lib_path;
+        base_path = base_path.parent_path();
+
+        // Compute full path.
+        lib_path = base_path / lib_path / "python2.7";
+
+        return lib_path.string();
     }
-
-    // One more step up to reach the parent of bin/.
-    lib_path = "lib" / lib_path;
-    base_path = base_path.parent_path();
-
-    // Compute full path.
-    lib_path = base_path / lib_path / "python2.7";
-
-    return lib_path.string();
-}
 }
 
 void PythonInterpreter::initialize(OutputRedirector redirector)
@@ -156,8 +156,8 @@ bpy::object PythonInterpreter::execute(const char* command)
 }
 
 PythonInterpreter::PythonInterpreter()
+  : m_is_initialized(false), m_main_window(nullptr)
 {
-    m_is_initialized = false;
 }
 
 PythonInterpreter::~PythonInterpreter()
