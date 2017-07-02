@@ -86,6 +86,7 @@ set (sources
     logging.py
     metadata.h
     module.cpp
+    studio.py
     unalignedmatrix44.h
     unalignedtransform.h
 )
@@ -163,6 +164,7 @@ target_link_libraries (appleseed.python
 add_copy_target_to_sandbox_py_module_command (appleseed.python)
 add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/__init__.py)
 add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/logging.py)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/studio.py)
 add_copy_dir_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/test)
 
 
@@ -173,5 +175,6 @@ add_copy_dir_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.p
 set (py_module_dst "lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/appleseed")
 install (FILES __init__.py DESTINATION ${py_module_dst})
 install (FILES logging.py DESTINATION ${py_module_dst})
+install (FILES studio.py DESTINATION ${py_module_dst})
 install (DIRECTORY test DESTINATION ${py_module_dst})
 install (TARGETS appleseed.python DESTINATION ${py_module_dst})

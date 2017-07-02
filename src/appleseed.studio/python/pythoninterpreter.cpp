@@ -37,8 +37,8 @@
 #include "application/application.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptions/exception.h"
 #include "foundation/platform/path.h"
-#include "foundation/platform/python.h"
 #include "foundation/utility/string.h"
 
 // Boost headers.
@@ -79,21 +79,6 @@ MainWindow* PythonInterpreter::get_main_window() const
     return m_main_window;
 }
 
-void PythonInterpreter::redirect_output(OutputRedirector redirector)
-{
-    bpy::class_<OutputRedirector>("OutputRedirector", bpy::no_init)
-        .def("write", &OutputRedirector::write);
-
-    bpy::object sys_module = bpy::import("sys");
-    sys_module.attr("stdout") = redirector;
-    sys_module.attr("stderr") = redirector;
-}
-
-void PythonInterpreter::execute_command(const char* command)
-{
-    PyRun_SimpleString(command);
-}
-
 namespace
 {
     string compute_python_modules_path()
@@ -121,30 +106,58 @@ namespace
 
         return lib_path.string();
     }
-
-    void import_python_module(const char* module_name, const char* alias_name)
-    {
-        const string s =
-            format("import {0}\n{1} = {0}\n", module_name, alias_name);
-
-        const int result = PyRun_SimpleString(s.c_str());
-
-        if (result != 0)
-            RENDERER_LOG_ERROR("failed to import Python module '%s'.", module_name);
-    }
 }
 
-PythonInterpreter::PythonInterpreter()
+void PythonInterpreter::initialize(OutputRedirector redirector)
 {
     PyImport_AppendInittab("_appleseedstudio", init_appleseedstudio);
     Py_Initialize();
+    m_is_initialized = true;
+
+    bpy::object main_module = bpy::import("__main__");
+    m_main_namespace = main_module.attr("__dict__");
 
     // Add path to appleseed module to sys.path so that Python can find it.
     bpy::import("sys").attr("path").attr("append")(compute_python_modules_path());
 
+    bpy::class_<OutputRedirector>("OutputRedirector", bpy::no_init)
+        .def("write", &OutputRedirector::write);
+
+    bpy::object sys_module = bpy::import("sys");
+    sys_module.attr("stdout") = redirector;
+    sys_module.attr("stderr") = redirector;
+
     // Import Python modules.
     import_python_module("appleseed", "asr");
-    import_python_module("_appleseedstudio", "studio");
+    import_python_module("appleseed.studio", "studio");
+}
+
+void PythonInterpreter::import_python_module(const char* module_name, const char* alias_name)
+{
+    const string s =
+        format("import {0}\n{1} = {0}\n", module_name, alias_name);
+    execute(s.c_str());
+}
+
+bpy::object PythonInterpreter::execute(const char* command)
+{
+    if (!m_is_initialized)
+        throw Exception("Attempt to execute command while interpreter is not initialized");
+
+    try
+    {
+        return bpy::exec(command, m_main_namespace, m_main_namespace);
+    }
+    catch (const bpy::error_already_set&)
+    {
+        PyErr_Print();
+        return bpy::object();
+    }
+}
+
+PythonInterpreter::PythonInterpreter()
+  : m_is_initialized(false), m_main_window(nullptr)
+{
 }
 
 PythonInterpreter::~PythonInterpreter()

@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/platform/python.h"
 
 namespace appleseed {
 namespace studio {
@@ -48,15 +49,19 @@ class PythonInterpreter
     void set_main_window(MainWindow* main_window);
     MainWindow* get_main_window() const;
 
-    void redirect_output(OutputRedirector redirector);
+    void initialize(OutputRedirector redirector);
 
-    void execute_command(const char* command);
+    boost::python::object execute(const char* command);
 
   private:
     PythonInterpreter();
     ~PythonInterpreter();
 
+    void import_python_module(const char* module_name, const char* alias_name);
+
     MainWindow* m_main_window;
+    boost::python::object m_main_namespace;
+    bool m_is_initialized;
 };
 
 }       // namespace studio
