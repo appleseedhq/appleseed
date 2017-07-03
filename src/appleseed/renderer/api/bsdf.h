@@ -51,6 +51,5 @@
 #include "renderer/modeling/bsdf/sheenbrdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
-#include "renderer/modeling/bsdf/velvetbrdf.h"
 
 #endif  // !APPLESEED_RENDERER_API_BSDF_H
