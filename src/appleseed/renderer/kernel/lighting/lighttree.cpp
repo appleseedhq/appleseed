@@ -51,7 +51,7 @@ namespace renderer
 
 LightTree::LightTree()
 {
-
+    m_built = false;
 }
 
 LightTree::~LightTree()
@@ -61,6 +61,11 @@ LightTree::~LightTree()
     {
         delete *i;
     }
+}
+
+bool LightTree::is_built() const
+{
+    return m_built;
 }
 
 void LightTree::build(
@@ -102,6 +107,8 @@ void LightTree::build(
     // Reorder m_items vector to match the ordering in the LightTree.
     if (!m_items.empty())
     {
+        m_built = true;
+        
         const std::vector<size_t>& ordering = partitioner.get_item_ordering();
         assert(m_items.size() == ordering.size());
 

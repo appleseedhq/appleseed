@@ -68,6 +68,8 @@ class LightTree
     // Destructor
     ~LightTree();
 
+    bool is_built() const;
+
     // Build the tree based on the lights collected by the LightSampler.
     // TODO: Remove light lists from arguments when they start being collected
     //       by the LightTree class itself.
@@ -108,6 +110,7 @@ class LightTree
     LightSourcePointerVector   m_light_sources;
     ItemVector                 m_items;
     size_t                     m_tree_depth;
+    bool                       m_built; // Was the tree built?
 
     void draw_tree_structure(
         std::string                 filename,
