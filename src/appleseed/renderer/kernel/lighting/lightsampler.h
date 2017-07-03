@@ -164,7 +164,7 @@ class LightSampler
         LightSample&                        light_sample) const;
 
     // Sample the set of non-physical lights using a light tree.
-    void sample_non_physical_lights(
+    void sample_light_tree_lights(
         const ShadingRay::Time&             time,
         const foundation::Vector3f&         s,
         const ShadingPoint&                 shading_point,
@@ -212,8 +212,10 @@ class LightSampler
 
     const Parameters            m_params;
 
+    NonPhysicalLightVector      m_light_tree_lights;
     NonPhysicalLightVector      m_non_physical_lights;
     size_t                      m_non_physical_light_count;
+    size_t                      m_light_tree_light_count;
 
     EmittingTriangleVector      m_emitting_triangles;
 
@@ -248,6 +250,13 @@ class LightSampler
 
     // Build a hash table that allows to find the emitting triangle at a given shading point.
     void build_emitting_triangle_hash_table();
+
+    // Sample a given non-physical light.
+    void sample_light_tree_light(
+        const ShadingRay::Time&             time,
+        const size_t                        light_index,
+        const float                         light_prob,
+        LightSample&                        sample) const;
 
     // Sample a given non-physical light.
     void sample_non_physical_light(

@@ -80,17 +80,14 @@ void LightTree::build(
     for (size_t i = 0; i < non_physical_lights.size(); ++i)
     {
         LightSource* light_source = new NonPhysicalLightSource(&non_physical_lights[i]);
-        if (light_source->is_light_tree_compatible())
-        {
-            foundation::AABB3d bbox = light_source->get_bbox();
-            m_light_sources.push_back(light_source);
-            light_bboxes.push_back(bbox);
-            m_items.push_back(
-                Item(
-                    bbox,
-                    light_index++,
-                    i));
-        }
+        foundation::AABB3d bbox = light_source->get_bbox();
+        m_light_sources.push_back(light_source);
+        light_bboxes.push_back(bbox);
+        m_items.push_back(
+            Item(
+                bbox,
+                light_index++,
+                i));
     }
 
     RENDERER_LOG_INFO("Number of light sources: %zu", m_light_sources.size());
@@ -108,7 +105,7 @@ void LightTree::build(
     if (!m_items.empty())
     {
         m_built = true;
-        
+
         const std::vector<size_t>& ordering = partitioner.get_item_ordering();
         assert(m_items.size() == ordering.size());
 

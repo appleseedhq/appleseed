@@ -86,6 +86,9 @@ class APPLESEED_DLLSYMBOL Light
     // Retrieve the flags.
     int get_flags() const;
 
+    // Set the flags
+    void set_flags(Flags flag);
+
     // Retrieve the importance multiplier.
     float get_uncached_importance_multiplier() const;
 

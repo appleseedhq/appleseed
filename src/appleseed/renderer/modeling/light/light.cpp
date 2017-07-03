@@ -94,6 +94,13 @@ void Light::set_transform(const Transformd& transform)
     bump_version_id();
 }
 
+
+    // Set the flags
+void Light::set_flags(Flags flag)
+{
+    m_flags |= flag;
+}
+
 bool Light::is_light_tree_compatible() const
 {
     return strcmp(get_model(), "point_light") == 0;
