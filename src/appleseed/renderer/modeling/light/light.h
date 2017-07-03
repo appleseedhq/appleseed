@@ -79,8 +79,7 @@ class APPLESEED_DLLSYMBOL Light
 
     enum Flags
     {
-        CastIndirectLight = 1 << 0,         // does this light generate indirect lighting?
-        LightTreeCompatible = 1 << 1        // can this light be used by the LightTree?
+        CastIndirectLight = 1 << 0         // does this light generate indirect lighting?
     };
 
     // Retrieve the flags.
@@ -91,6 +90,9 @@ class APPLESEED_DLLSYMBOL Light
 
     // Set the light transformation.
     void set_transform(const foundation::Transformd& transform);
+
+    // Set the flag that the light is LightTreeCompatible
+    bool is_light_tree_compatible() const;
 
     // Get the light transformation.
     const foundation::Transformd& get_transform() const;

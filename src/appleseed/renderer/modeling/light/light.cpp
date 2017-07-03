@@ -94,6 +94,11 @@ void Light::set_transform(const Transformd& transform)
     bump_version_id();
 }
 
+bool Light::is_light_tree_compatible() const
+{
+    return strcmp(get_model(), "point_light") == 0;
+}
+
 const Transformd& Light::get_transform() const
 {
     return impl->m_transform;
@@ -112,9 +117,6 @@ bool Light::on_frame_begin(
 
     if (m_params.get_optional<bool>("cast_indirect_light", true))
         m_flags |= CastIndirectLight;
-
-    if (std::strcmp(get_model(), "point_light") == 0)
-        m_flags |= LightTreeCompatible;
 
     if (get_uncached_importance_multiplier() <= 0.0)
     {
