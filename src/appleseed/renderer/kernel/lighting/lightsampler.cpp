@@ -115,6 +115,7 @@ LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
 
     // Collect all non-physical lights and separate them according to compatibility
     // with the LightTree.
+    printf("HERE\n");
     collect_non_physical_lights(scene.assembly_instances(), TransformSequence());
     m_non_physical_light_count = m_non_physical_lights.size();
     m_light_tree_light_count   = m_light_tree_lights.size();
@@ -554,9 +555,9 @@ void LightSampler::sample(
     const ShadingPoint&                 shading_point,
     LightSample&                        light_sample) const
 {
-    int const light_type__non_physical_cdf = 0;
-    int const light_type__emitting_triangle_cdf = 1;
-    int const light_type__light_tree = 2;
+    int const light_type_non_physical_cdf = 0;
+    int const light_type_emitting_triangle_cdf = 1;
+    int const light_type_light_tree = 2;
 
     std::vector<int> candidate_types;
     candidate_types.reserve(3);
