@@ -44,59 +44,57 @@ shader as_glass
     float in_transmittanceAmount = 0.8
     [[
         string as_maya_attribute_name = "transmittanceAmount",
+        string as_maya_attribute_short_name = "ta",
         float min = 0.0,
         float max = 1.0,
-        float softmin = 0.0,
-        float softmax = 1.0,
         string label = "Transmittance Amount",
         string page = "Surface Transmittance Parameters"
     ]],
     color in_reflectionTint = color(1)
     [[
         string as_maya_attribute_name = "reflectionTint",
+        string as_maya_attribute_short_name = "rt",
         string label = "Reflection Tint",
         string page = "Specular Parameters"
     ]],
     color in_refractionTint = color(1)
     [[
         string as_maya_attribute_name = "refractionTint",
+        string as_maya_attribute_short_name = "tt",
         string label = "Refraction Tint",
         string page = "Specular Parameters"
     ]],
     float in_ior = 1.5
     [[
         string as_maya_attribute_name = "ior",
-        int as_maya_attribute_connectable = 0,
-        int as_maya_attribute_hidden = 1,
+        string as_maya_attribute_short_name = "io",
         float min = 1.0,
         float max = 10.0,
-        float softmin = 1.0,
         float softmax = 2.0,
-        string widget = "slider",
         string label = "Index Of Refraction",
         string page = "Specular Parameters",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_hidden = 1,
         int divider = 1
     ]],
     int in_distribution = 0
     [[
         string as_maya_attribute_name = "distribution",
-        int as_maya_attribute_connectable = 0,
-        int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1,
+        string as_maya_attribute_short_name = "dd",
         string label = "Distribution",
-        string as_maya_attribute_type = "enum",
-        int min = 0,
-        int max = 1,
         string widget = "mapper",
         string options = "Beckmann:0|GGX:1",
-        string page = "Specular Parameters"
+        string page = "Specular Parameters",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1
     ]],
     float in_roughness = 0.1
     [[
         string as_maya_attribute_name = "roughness",
+        string as_maya_attribute_short_name = "ro",
         float min = 0.001,
         float max = 1.0,
-        string widget = "slider",
         string label = "Roughness",
         string page = "Specular Parameters",
         int divider = 1
@@ -104,55 +102,43 @@ shader as_glass
     float in_anisotropyAmount = 0.0
     [[
         string as_maya_attribute_name = "anisotropyAmount",
+        string as_maya_attribute_short_name = "aa",
         float min = 0.0,
         float max = 1.0,
-        string widget = "slider",
         string label = "Anisotropy Amount",
         string page = "Specular Parameters"
     ]],
     float in_anisotropyAngle = 0.0
     [[
         string as_maya_attribute_name = "anisotropyAngle",
+        string as_maya_attribute_short_name = "an",
         float min = 0.0,
         float max = 1.0,
-        float slidermin = 0.0,
-        float slidermax = 1.0,
-        string widget = "slider",
         string label = "Anisotropy Rotation",
-        string help = "The [0,1] range maps to [0,360] degrees range",
-        string page = "Specular Parameters"
+        string page = "Specular Parameters",
+        string help = "The [0,1] range maps to [0,360] degrees range"
     ]],
     color in_anisotropyVectorMap = color(0)
     [[
         string as_maya_attribute_name = "anisotropyVectorMap",
+        string as_maya_attribute_short_name = "av",
         string label = "Anisotropy Vector Map",
         string page = "Specular Parameters",
         string help = "Vector tangent field map, with XY in R,G channels"
     ]],
-    vector Tn = vector(0)
-    [[
-        int lockgeom = 0,
-        int as_maya_attribute_hidden = 1,
-        string widget = "null"
-    ]],
-    vector Bn = vector(0)
-    [[
-        int lockgeom = 0,
-        int as_maya_attribute_hidden = 1,
-        string widget = "null"
-    ]],
     color in_volumeTransmittance = 1.0
     [[
         string as_maya_attribute_name = "volumeTransmittance",
+        string as_maya_attribute_short_name = "vt",
         string label = "Volume Transmittance",
         string page = "Volume Material Parameters"
     ]],
     float in_volumeTransmittanceDistance = 0.0
     [[
         string as_maya_attribute_name = "volumeTransmittanceDistance",
+        string as_maya_attribute_short_name = "vd",
         float min = 0.0,
         float max = 1e+9,
-        string widget = "slider",
         string label = "Transmittance Distance",
         string page = "Volume Material Parameters"
     ]],
@@ -166,42 +152,80 @@ shader as_glass
     int in_matteOpacityMode = 2
     [[
         string as_maya_attribute_name = "matteOpacityMode",
-        int as_maya_attribute_connectable = 0,
-        int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1,
+        string as_maya_attribute_short_name = "mm",
         string label = "Matte Opacity Mode",
         string widget = "mapper",
         string options = "Black Hole:0|Solid Matte:1|Opacity Gain:2",
-        string page = "Matte Opacity Parameters"
+        string page = "Matte Opacity Parameters",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1
     ]],
     float in_matteOpacity = 1.0
     [[
         string as_maya_attribute_name = "matteOpacity",
-        int as_maya_attribute_hidden = 1,
+        string as_maya_attribute_short_name = "mo",
         string widget = "slider",
         string label = "Matte Opacity",
-        string page = "Matte Opacity Parameters"
+        string page = "Matte Opacity Parameters",
+        int as_maya_attribute_hidden = 1
+    ]],
+    int in_maximumRayDepth = 4
+    [[
+        string as_maya_attribute_name = "maximumRayDepth",
+        string as_maya_attribute_short_name = "mr",
+        int min = 0,
+        int max = 32,
+        int softmax = 8,
+        string label = "Ray Depth",
+        string page = "Advanced Parameters",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1 
+    ]],
+    vector Tn = vector(0)
+    [[
+        int lockgeom = 0,
+        int as_maya_attribute_hidden = 1,
+        string widget = "null"
+    ]],
+    vector Bn = vector(0)
+    [[
+        int lockgeom = 0,
+        int as_maya_attribute_hidden = 1,
+        string widget = "null"
     ]],
 
     output closure color out_outColor = 0
     [[
         string as_maya_attribute_name = "outColor",
-        string as_maya_attribute_short_name = "oc"
+        string as_maya_attribute_short_name = "oc",
+        string widget = "null"
     ]],
     output closure color out_outTransparency = 0
     [[
         string as_maya_attribute_name = "outTransparency",
-        string as_maya_attribute_short_name = "ot"
+        string as_maya_attribute_short_name = "ot",
+        string widget = "null"
     ]],
     output closure color out_outMatteOpacity = 0
     [[
         string as_maya_attribute_name = "outMatteOpacity",
         string as_maya_attribute_short_name = "om",
+        string widget = "null",
         int as_maya_attribute_hidden = 1
     ]]
 )
 {
-    if (!raytype("shadow") && !raytype("transparency"))
+    if (raytype("shadow") || raytype("transparency"))
+    {
+        return; // no transparency set, color default 0
+    }
+
+    int ray_depth = 0;
+    int status = getattribute("path:ray_depth", ray_depth);
+
+    if (status && ray_depth <= in_maximumRayDepth)
     {
         normal Nn = normalize(in_normalCamera);
         vector tangent;
