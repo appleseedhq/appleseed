@@ -114,10 +114,6 @@ class LightTree
         const foundation::AABB3d&   root_bbox,
         bool                        separate_by_levels = false) const;
 
-    // update_level and update_luminance can be easily merged into recursive_node_update
-    // if something like that is neccessary i.e. the node level will actually be stored.
-    float update_luminance(size_t node_index);
-
     float recursive_node_update(size_t node_index, size_t node_level);
 
     std::pair<float, float> child_node_probabilites(
@@ -128,9 +124,6 @@ class LightTree
         const LightTreeNode<foundation::AABB3d>&    node,
         const foundation::AABB3d                    bbox,
         const foundation::Vector3d                  surface_point) const;
-
-    size_t update_level(size_t node_index, size_t node_level);
-
 };
 
 }

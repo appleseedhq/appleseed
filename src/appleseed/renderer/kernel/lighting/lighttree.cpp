@@ -235,51 +235,6 @@ float LightTree::recursive_node_update(size_t node_index, size_t node_level)
     return luminance;
 }
 
-
-float LightTree::update_luminance(size_t node_index)
-{
-    float luminance = 0.0f;
-
-    if (!m_nodes[node_index].is_leaf())
-    {
-        luminance = update_luminance(m_nodes[node_index].get_child_node_index()) // left child
-                  + update_luminance(m_nodes[node_index].get_child_node_index() + 1);  // right child    
-    }
-    else
-    {
-        size_t item_index = m_nodes[node_index].get_item_index();
-        size_t light_source_index = m_items[item_index].m_light_sources_index;
-        Spectrum spectrum = m_light_sources[light_source_index]->get_intensity();
-        for(size_t i = 0; i < spectrum.size(); i++)
-        {
-            luminance += spectrum[i];
-        }
-        luminance /= spectrum.size();
-    }
-   
-    m_nodes[node_index].set_luminance(luminance);
-
-    return luminance;
-}
-
-size_t LightTree::update_level(size_t node_index, size_t node_level)
-{
-    size_t m_tree_depth = 0;
-    if (!m_nodes[node_index].is_leaf())
-    {
-        size_t depth1 = update_level(m_nodes[node_index].get_child_node_index(), node_level + 1); // left child
-        size_t depth2 = update_level(m_nodes[node_index].get_child_node_index() + 1, node_level + 1);  // right child    
-
-        m_tree_depth = depth2 < depth1 ? depth1
-                                     : depth2;
-    }
-    else
-        m_tree_depth = node_level;
-   
-    m_nodes[node_index].set_level(node_level);
-    return m_tree_depth;
-}
-
 float LightTree::node_probability(
         const LightTreeNode<foundation::AABB3d>&    node,
         const foundation::AABB3d                    bbox,
