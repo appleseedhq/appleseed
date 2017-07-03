@@ -118,6 +118,8 @@ class LightTree
     // if something like that is neccessary i.e. the node level will actually be stored.
     float update_luminance(size_t node_index);
 
+    float recursive_node_update(size_t node_index, size_t node_level);
+
     std::pair<float, float> child_node_probabilites(
         const LightTreeNode<foundation::AABB3d>&    node,
         const foundation::Vector3d                  surface_point) const;

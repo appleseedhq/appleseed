@@ -111,8 +111,9 @@ void LightTree::build(
             ordering.size());
 
         // Set total luminance for each node of the LightTree.
-        update_luminance(0);
-        m_tree_depth = update_level(0, 0);
+        // update_luminance(0);
+        // m_tree_depth = update_level(0, 0);
+        recursive_node_update(0, 0);
     }
     
     // Print light tree statistics.
@@ -195,6 +196,45 @@ void LightTree::draw_tree_structure(
         }
     }
 }
+
+//
+// Calculate tree depth and assign total luminance to each node of the tree.
+// Total luminance represents the sum of all its child nodes luminances.
+//
+
+float LightTree::recursive_node_update(size_t node_index, size_t node_level)
+{
+    float luminance = 0.0f;
+
+    if (!m_nodes[node_index].is_leaf())
+    {
+        float luminance1 = recursive_node_update(m_nodes[node_index].get_child_node_index(),
+                                                                 node_level + 1);
+        float luminance2 = recursive_node_update(m_nodes[node_index].get_child_node_index() + 1,
+                                                                 node_level + 1);
+
+        luminance = luminance1 + luminance2;
+    }
+    else
+    {
+        size_t item_index = m_nodes[node_index].get_item_index();
+        size_t light_source_index = m_items[item_index].m_light_sources_index;
+        Spectrum spectrum = m_light_sources[light_source_index]->get_intensity();
+        for(size_t i = 0; i < spectrum.size(); i++)
+        {
+            luminance += spectrum[i];
+        }
+        luminance /= spectrum.size();
+
+        if (m_tree_depth < node_level)
+            m_tree_depth = node_level;
+    }
+    m_nodes[node_index].set_luminance(luminance);
+    m_nodes[node_index].set_level(node_level);
+
+    return luminance;
+}
+
 
 float LightTree::update_luminance(size_t node_index)
 {
