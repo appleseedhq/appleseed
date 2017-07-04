@@ -37,6 +37,7 @@
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/aov/shadingfragmentstack.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingpoint.h"
@@ -127,7 +128,7 @@ namespace
                 &values);
 
             // Compute lighting.
-            Spectrum radiance(Spectrum::Illuminance);
+            ShadingComponents radiance(Spectrum::Illuminance);
             compute_lighting(
                 values,
                 sampling_context,
@@ -135,10 +136,11 @@ namespace
                 shading_context,
                 shading_point,
                 radiance);
-            aov_accumulators.beauty().set(radiance);
 
-            // Apply multipliers.
-            aov_accumulators.beauty().apply_multiplier(values.m_color_multiplier);
+            // Accumulate into AOVs.
+            aov_accumulators.write(radiance, values.m_color_multiplier);
+
+            // Apply alpha multiplier.
             aov_accumulators.alpha().apply_multiplier(Alpha(values.m_alpha_multiplier));
         }
 
@@ -159,7 +161,7 @@ namespace
             const PixelContext&         pixel_context,
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point,
-            Spectrum&                   radiance) const
+            ShadingComponents&          radiance) const
         {
             radiance.set(0.0f);
 
@@ -174,10 +176,7 @@ namespace
             }
 
             if (m_lighting_samples > 1)
-            {
-                const float rcp_sample_count = 1.0f / m_lighting_samples;
-                radiance *= rcp_sample_count;
-            }
+                radiance /= m_lighting_samples;
         }
     };
 }

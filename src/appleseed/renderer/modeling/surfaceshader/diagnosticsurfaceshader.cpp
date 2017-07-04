@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/shading/ambientocclusion.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -244,7 +245,7 @@ void DiagnosticSurfaceShader::evaluate(
                 {
                     const Vector3f direction = -normalize(Vector3f(shading_point.get_ray().m_dir));
 
-                    Spectrum value;
+                    ShadingComponents value;
                     material_data.m_bsdf->evaluate(
                         material_data.m_bsdf->evaluate_inputs(shading_context, shading_point),
                         false,
@@ -255,7 +256,7 @@ void DiagnosticSurfaceShader::evaluate(
                         direction,
                         ScatteringMode::All,
                         value);
-                    set_result(value, aov_accumulators);
+                    set_result(value.m_beauty, aov_accumulators);
                 }
             }
         }
