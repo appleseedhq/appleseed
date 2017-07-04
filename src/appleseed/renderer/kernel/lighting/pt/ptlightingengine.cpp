@@ -674,7 +674,7 @@ namespace
                     light_sample_count,
                     m_params.m_dl_low_light_threshold,
                     m_is_indirect_lighting);
-                integrator.compute_outgoing_radiance_light_sampling(
+                integrator.compute_outgoing_radiance_light_sampling_low_variance(
                     m_sampling_context,
                     MISPower2,
                     outgoing,
