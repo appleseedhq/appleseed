@@ -151,6 +151,9 @@ class LightSampler
     // Return the number of non-physical lights in the scene.
     size_t get_non_physical_light_count() const;
 
+    // Return the number of non-physical lights in the scene.
+    size_t get_light_tree_light_count() const;
+
     // Return the number of emitting triangles in the scene.
     size_t get_emitting_triangle_count() const;
 
@@ -333,6 +336,11 @@ inline size_t EmittingTriangleKeyHasher::operator()(const EmittingTriangleKey& k
 inline size_t LightSampler::get_non_physical_light_count() const
 {
     return m_non_physical_light_count;
+}
+
+inline size_t LightSampler::get_light_tree_light_count() const
+{
+    return m_light_tree_light_count;
 }
 
 inline size_t LightSampler::get_emitting_triangle_count() const
