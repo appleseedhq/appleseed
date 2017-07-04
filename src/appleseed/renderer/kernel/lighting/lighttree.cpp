@@ -50,6 +50,7 @@ namespace renderer
 //
 
 LightTree::LightTree()
+  :m_tree_depth(0)
 {
     m_built = false;
 }
