@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/modeling/bsdf/backfacingpolicy.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
@@ -129,8 +130,9 @@ namespace
                     : -backfacing_policy.transform_to_parent(wi));
 
             // Compute the BRDF value.
-            sample.m_value = values->m_transmittance;
-            sample.m_value *= values->m_transmittance_multiplier * RcpPi<float>();
+            sample.m_value.m_diffuse = values->m_transmittance;
+            sample.m_value.m_diffuse *= values->m_transmittance_multiplier * RcpPi<float>();
+            sample.m_value.m_beauty = sample.m_value.m_diffuse;
 
             // Compute the probability density of the sampled direction.
             sample.m_probability = abs(wi.y) * RcpPi<float>();
@@ -149,7 +151,7 @@ namespace
             const Vector3f&         outgoing,
             const Vector3f&         incoming,
             const int               modes,
-            Spectrum&               value) const override
+            ShadingComponents&      value) const override
         {
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0f;
@@ -164,8 +166,10 @@ namespace
             if (cos_in * cos_on < 0.0f)
             {
                 // Compute the BRDF value.
-                value = values->m_transmittance;
-                value *= values->m_transmittance_multiplier * RcpPi<float>();
+                value.set(0.0f);
+                value.m_diffuse = values->m_transmittance;
+                value.m_diffuse *= values->m_transmittance_multiplier * RcpPi<float>();
+                value.m_beauty = value.m_diffuse;
 
                 // Return the probability density of the sampled direction.
                 return abs(cos_in) * RcpPi<float>();

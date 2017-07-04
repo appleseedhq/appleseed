@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/modeling/color/colorspace.h"
@@ -172,7 +173,7 @@ namespace
                     sample.m_shading_basis,
                     sample.m_outgoing.get_value(),
                     incoming,
-                    sample.m_value);
+                    sample.m_value.m_diffuse);
             assert(sample.m_probability > 0.0f);
 
             sample.m_mode = ScatteringMode::Diffuse;
@@ -260,7 +261,7 @@ namespace
                     sample.m_shading_basis,
                     sample.m_outgoing.get_value(),
                     incoming,
-                    sample.m_value);
+                    sample.m_value.m_diffuse);
             assert(sample.m_probability > 0.0f);
 
             sample.m_mode = ScatteringMode::Diffuse;
@@ -486,7 +487,7 @@ namespace
                         outgoing,
                         incoming,
                         diffuse);
-                sample.m_value += diffuse;
+                sample.m_value.m_diffuse += diffuse;
             }
 
             if (weights[SheenComponent] > 0.0f)
@@ -500,7 +501,7 @@ namespace
                         outgoing,
                         incoming,
                         sheen);
-                sample.m_value += sheen;
+                sample.m_value.m_diffuse += sheen;
             }
 
             if (weights[SpecularComponent] > 0.0f)
@@ -527,7 +528,7 @@ namespace
                         cos_in,
                         cos_on,
                         spec);
-                sample.m_value += spec;
+                sample.m_value.m_glossy += spec;
             }
 
             if (weights[ClearcoatComponent] > 0.0f)
@@ -549,8 +550,10 @@ namespace
                         cos_in,
                         cos_on,
                         clear);
-                sample.m_value += clear;
+                sample.m_value.m_glossy += clear;
             }
+
+            sample.m_value.m_beauty = sample.m_value.m_diffuse + sample.m_value.m_glossy;
         }
 
         virtual float evaluate(
@@ -562,7 +565,7 @@ namespace
             const Vector3f&         outgoing,
             const Vector3f&         incoming,
             const int               modes,
-            Spectrum&               value) const override
+            ShadingComponents&      value) const override
         {
             // No reflection below the shading surface.
             const Vector3f& n = shading_basis.get_normal();
@@ -589,7 +592,7 @@ namespace
                         shading_basis,
                         outgoing,
                         incoming,
-                        value);
+                        value.m_diffuse);
             }
 
             if (weights[SheenComponent] > 0.0f)
@@ -603,7 +606,7 @@ namespace
                         outgoing,
                         incoming,
                         sheen);
-                value += sheen;
+                value.m_diffuse += sheen;
             }
 
             if (weights[SpecularComponent] > 0.0f)
@@ -614,7 +617,6 @@ namespace
                     values->m_anisotropic,
                     alpha_x,
                     alpha_y);
-                Spectrum spec;
                 const GGXMDF ggx_mdf;
                 pdf +=
                     weights[SpecularComponent] *
@@ -629,8 +631,7 @@ namespace
                         DisneySpecularFresnelFun(*values),
                         cos_in,
                         cos_on,
-                        spec);
-                value += spec;
+                        value.m_glossy);
             }
 
             if (weights[ClearcoatComponent] > 0.0f)
@@ -652,9 +653,11 @@ namespace
                         cos_in,
                         cos_on,
                         clear);
-                value += clear;
+                value.m_glossy += clear;
             }
 
+            value.m_beauty = value.m_diffuse;
+            value.m_beauty += value.m_glossy;
             return pdf;
         }
 

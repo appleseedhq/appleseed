@@ -33,6 +33,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/closures.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/blinnbrdf.h"
@@ -235,7 +236,7 @@ namespace
             {
                 if (pdfs[i] > 0.0f)
                 {
-                    Spectrum s;
+                    ShadingComponents s;
                     const float pdf =
                         bsdf_from_closure_id(c->get_closure_type(i))
                             .evaluate(
@@ -267,7 +268,7 @@ namespace
             const Vector3f&         outgoing,
             const Vector3f&         incoming,
             const int               modes,
-            Spectrum&               value) const override
+            ShadingComponents&      value) const override
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
 
@@ -281,7 +282,7 @@ namespace
             {
                 if (pdfs[i] > 0.0f)
                 {
-                    Spectrum s;
+                    ShadingComponents s;
                     const float pdf =
                         bsdf_from_closure_id(c->get_closure_type(i))
                             .evaluate(

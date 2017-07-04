@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
@@ -247,7 +248,8 @@ namespace
               assert_otherwise;
             }
 
-            sample.m_value *= values->m_reflectance_multiplier;
+            sample.m_value.m_glossy *= values->m_reflectance_multiplier;
+            sample.m_value.m_beauty = sample.m_value.m_glossy;
         }
 
         virtual float evaluate(
@@ -259,7 +261,7 @@ namespace
             const Vector3f&         outgoing,
             const Vector3f&         incoming,
             const int               modes,
-            Spectrum&               value) const override
+            ShadingComponents&      value) const override
         {
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
@@ -274,6 +276,7 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
             const float glossiness = values->m_glossiness * values->m_glossiness_multiplier;
 
+            value.set(0.0f);
             float pdf = 0.0f;
 
             switch (m_mdf)
@@ -293,7 +296,7 @@ namespace
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
                         cos_in,
                         cos_on,
-                        value);
+                        value.m_glossy);
                 }
                 break;
 
@@ -312,7 +315,7 @@ namespace
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
                         cos_in,
                         cos_on,
-                        value);
+                        value.m_glossy);
                 }
                 break;
 
@@ -331,7 +334,7 @@ namespace
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
                         cos_in,
                         cos_on,
-                        value);
+                        value.m_glossy);
                 }
                 break;
 
@@ -350,14 +353,15 @@ namespace
                         FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
                         cos_in,
                         cos_on,
-                        value);
+                        value.m_glossy);
                 }
                 break;
 
               assert_otherwise;
             }
 
-            value *= values->m_reflectance_multiplier;
+            value.m_glossy *= values->m_reflectance_multiplier;
+            value.m_beauty = value.m_glossy;
             return pdf;
         }
 

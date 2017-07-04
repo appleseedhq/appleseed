@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 
@@ -134,8 +135,8 @@ namespace
             {
                 // Total internal reflection: compute the reflected direction and radiance.
                 incoming = reflect(sample.m_outgoing.get_value(), shading_normal);
-                sample.m_value = values->m_transmittance;
-                sample.m_value *= values->m_transmittance_multiplier;
+                sample.m_value.m_glossy = values->m_transmittance;
+                sample.m_value.m_glossy *= values->m_transmittance_multiplier;
                 refract_differentials = false;
             }
             else
@@ -157,8 +158,8 @@ namespace
                 {
                     // Fresnel reflection: compute the reflected direction and radiance.
                     incoming = reflect(sample.m_outgoing.get_value(), shading_normal);
-                    sample.m_value = values->m_reflectance;
-                    sample.m_value *= values->m_reflectance_multiplier;
+                    sample.m_value.m_glossy = values->m_reflectance;
+                    sample.m_value.m_glossy *= values->m_reflectance_multiplier;
                     refract_differentials = false;
                 }
                 else
@@ -171,8 +172,8 @@ namespace
                             : (eta * cos_theta_i + cos_theta_t) * shading_normal - eta * sample.m_outgoing.get_value();
 
                     // Compute the refracted radiance.
-                    sample.m_value = values->m_transmittance;
-                    sample.m_value *=
+                    sample.m_value.m_glossy = values->m_transmittance;
+                    sample.m_value.m_glossy *=
                         adjoint
                             ? values->m_transmittance_multiplier
                             : square(eta) * values->m_transmittance_multiplier;
@@ -181,7 +182,8 @@ namespace
 
             // todo: we could get rid of this by not wrapping this BTDF in BSDFWrapper<>.
             const float cos_in = abs(dot(incoming, shading_normal));
-            sample.m_value /= cos_in;
+            sample.m_value.m_glossy /= cos_in;
+            sample.m_value.m_beauty = sample.m_value.m_glossy;
 
             // The probability density of the sampled direction is the Dirac delta.
             sample.m_probability = DiracDelta;
@@ -208,7 +210,7 @@ namespace
             const Vector3f&         outgoing,
             const Vector3f&         incoming,
             const int               modes,
-            Spectrum&               value) const override
+            ShadingComponents&      value) const override
         {
             return 0.0f;
         }

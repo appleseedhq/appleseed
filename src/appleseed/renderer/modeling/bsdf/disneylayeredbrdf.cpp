@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/material/disneymaterial.h"
@@ -164,7 +165,7 @@ float DisneyLayeredBRDF::evaluate(
     const Vector3f&             outgoing,
     const Vector3f&             incoming,
     const int                   modes,
-    Spectrum&                   value) const
+    ShadingComponents&          value) const
 {
     if (m_parent->get_layer_count() == 0)
     {

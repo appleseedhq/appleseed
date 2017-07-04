@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/fresnel.h"
@@ -104,6 +105,7 @@ namespace
                 values->m_reflectance_multiplier);
 
             SpecularBRDFHelper::sample(f, sample);
+            sample.m_value.m_beauty = sample.m_value.m_glossy;
         }
 
         virtual float evaluate(
@@ -115,7 +117,7 @@ namespace
             const Vector3f&     outgoing,
             const Vector3f&     incoming,
             const int           modes,
-            Spectrum&           value) const override
+            ShadingComponents&  value) const override
         {
             return 0.0f;
         }
