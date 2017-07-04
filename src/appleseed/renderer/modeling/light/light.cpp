@@ -120,7 +120,9 @@ bool Light::on_frame_begin(
     if (!ConnectableEntity::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
-    // m_flags = 0;
+    m_flags = 0;
+    if (is_light_tree_compatible())
+        m_flags |= LightTreeCompatible;
 
     if (m_params.get_optional<bool>("cast_indirect_light", true))
         m_flags |= CastIndirectLight;
