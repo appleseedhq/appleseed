@@ -291,7 +291,7 @@ macro (link_against_osl target)
         target_link_libraries (${target}
             ${OSL_EXEC_LIBRARY}
             ${OSL_QUERY_LIBRARY}
-            ${OSL_COMP_LIBRARY}     # required on Windows
+            ${OSL_COMP_LIBRARY}
         )
         foreach (lib ${LLVM_LIBS})
             target_link_libraries (${target} "${LLVM_LIBS_DIR}/${lib}.lib")
