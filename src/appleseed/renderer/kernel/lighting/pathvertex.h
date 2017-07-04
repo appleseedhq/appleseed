@@ -88,6 +88,9 @@ class PathVertex
     ScatteringMode::Mode        m_prev_mode;
     float                       m_prev_prob;
 
+    // AOV properties.
+    ScatteringMode::Mode        m_aov_mode;
+
     // Constructor.
     explicit PathVertex(SamplingContext& sampling_context);
 

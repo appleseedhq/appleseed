@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovaccumulator.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/environment/environment.h"
@@ -168,15 +169,17 @@ void ShadingEngine::shade_environment(
         // There is an environment shader: execute it.
         const ShadingRay& ray = shading_point.get_ray();
         const Vector3d direction = normalize(ray.m_dir);
-        Spectrum value;
+        ShadingComponents value;
         Alpha alpha;
         environment_shader->evaluate(
             shading_context,
             pixel_context,
             direction,
-            value,
+            value.m_emission,
             alpha);
-        aov_accumulators.beauty().set(value);
+
+        value.m_beauty = value.m_emission;
+        aov_accumulators.write(value, 1.0f);
         aov_accumulators.alpha().set(alpha);
     }
 }

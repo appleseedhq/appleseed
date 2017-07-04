@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
@@ -60,7 +61,7 @@ class ILightingEngine
         const PixelContext&     pixel_context,
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point,
-        Spectrum&               radiance) = 0;      // output radiance, in W.sr^-1.m^-2
+        ShadingComponents&      radiance) = 0;      // output radiance, in W.sr^-1.m^-2
 
     // Retrieve performance statistics.
     virtual foundation::StatisticsVector get_statistics() const = 0;
