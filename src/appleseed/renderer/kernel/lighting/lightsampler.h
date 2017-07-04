@@ -342,7 +342,7 @@ inline size_t LightSampler::get_emitting_triangle_count() const
 
 inline bool LightSampler::has_lights_or_emitting_triangles() const
 {
-    return m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid();
+    return m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid() || m_light_tree.is_built();
 }
 
 inline void LightSampler::sample_non_physical_light(

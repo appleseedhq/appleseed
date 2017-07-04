@@ -115,7 +115,6 @@ LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
 
     // Collect all non-physical lights and separate them according to compatibility
     // with the LightTree.
-    printf("HERE\n");
     collect_non_physical_lights(scene.assembly_instances(), TransformSequence());
     m_non_physical_light_count = m_non_physical_lights.size();
     m_light_tree_light_count   = m_light_tree_lights.size();
@@ -555,11 +554,11 @@ void LightSampler::sample(
     const ShadingPoint&                 shading_point,
     LightSample&                        light_sample) const
 {
-    int const light_type_non_physical_cdf = 0;
-    int const light_type_emitting_triangle_cdf = 1;
-    int const light_type_light_tree = 2;
+    size_t const light_type_non_physical_cdf = 0;
+    size_t const light_type_emitting_triangle_cdf = 1;
+    size_t const light_type_light_tree = 2;
 
-    std::vector<int> candidate_types;
+    std::vector<size_t> candidate_types;
     candidate_types.reserve(3);
 
     if (m_non_physical_lights_cdf.valid())
@@ -571,28 +570,28 @@ void LightSampler::sample(
 
     assert(!candidate_types.empty());
 
-    int const selected_type = candidate_types[s[0] * candidate_types.size()];
+    size_t const selected_type = candidate_types[s[0] * candidate_types.size()];
 
     switch (selected_type)
     {
         case light_type_non_physical_cdf:
             sample_non_physical_lights(
                 time,
-                Vector3f(s[0] * 2.0f, s[1], s[2]),
+                s,
                 light_sample);
             light_sample.m_probability *= 1.0 / candidate_types.size();
             break;
         case light_type_emitting_triangle_cdf:
             sample_emitting_triangles(
                 time,
-                Vector3f((s[0] - 0.5f) * 2.0f, s[1], s[2]),
+                s,
                 light_sample);
             light_sample.m_probability *= 1.0 / candidate_types.size();
             break;
         case light_type_light_tree:
             sample_light_tree_lights(
                 time,
-                Vector3f(s[0] * 2.0f, s[1], s[2]),
+                s,
                 shading_point,
                 light_sample);
             break;
