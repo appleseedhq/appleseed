@@ -473,7 +473,6 @@ namespace
                 value);
 
             value *= SunSolidAngle;
-            value *= probability;
         }
 
         void sample_disk(
@@ -509,7 +508,6 @@ namespace
                 value);
 
             value *= SunSolidAngle;
-            value *= probability;
         }
     };
 }

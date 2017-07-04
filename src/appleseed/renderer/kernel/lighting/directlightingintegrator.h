@@ -145,7 +145,7 @@ class DirectLightingIntegrator
 
     void add_non_physical_light_sample_contribution(
         SamplingContext&                sampling_context,
-        LightSample&                    sample,
+        const LightSample&              sample,
         const foundation::Dual3d&       outgoing,
         Spectrum&                       radiance) const;
 };

@@ -142,7 +142,6 @@ namespace
             compute_radiance(shading_context, light_transform, axis, outgoing, value);
 
             outgoing = normalize(target_point - position);
-            value *= probability;
         }
 
         virtual void sample(
@@ -164,7 +163,6 @@ namespace
             const Vector3d axis = -normalize(light_transform.get_parent_z());
 
             compute_radiance(shading_context, light_transform, axis, outgoing, value);
-            value *= probability;
         }
 
         virtual void evaluate(

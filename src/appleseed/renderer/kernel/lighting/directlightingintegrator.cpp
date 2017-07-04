@@ -660,7 +660,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
 
 void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     SamplingContext&            sampling_context,
-    LightSample&                sample,
+    const LightSample&          sample,
     const Dual3d&               outgoing,
     Spectrum&                   radiance) const
 {
@@ -689,6 +689,8 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
         light_value,
         probability
     );
+
+    light_value *= probability;
 
     // Compute the incoming direction in world space.
     const Vector3d incoming = -emission_direction;
@@ -720,7 +722,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     // Add the contribution of this sample to the illumination.
     const float attenuation = light->compute_distance_attenuation(
         m_material_sampler.get_point(), emission_position);
-    const float weight = transmission * attenuation / sample.m_probability / probability;
+    const float weight = transmission * attenuation / (sample.m_probability * probability);
     light_value *= weight;
     light_value *= material_value;
     radiance += light_value;
