@@ -1136,6 +1136,8 @@ set (renderer_kernel_shading_sources
     renderer/kernel/shading/closures.h
     renderer/kernel/shading/fastambientocclusion.cpp
     renderer/kernel/shading/fastambientocclusion.h
+    renderer/kernel/shading/oslshadercompiler.cpp
+    renderer/kernel/shading/oslshadercompiler.h
     renderer/kernel/shading/oslshadergroupexec.cpp
     renderer/kernel/shading/oslshadergroupexec.h
     renderer/kernel/shading/oslshadingsystem.cpp
@@ -1321,8 +1323,6 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/specularbtdf.cpp
     renderer/modeling/bsdf/specularbtdf.h
     renderer/modeling/bsdf/specularhelper.h
-    renderer/modeling/bsdf/velvetbrdf.cpp
-    renderer/modeling/bsdf/velvetbrdf.h
 )
 if (WITH_DISNEY_MATERIAL)
     list (APPEND renderer_modeling_bsdf_sources

@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2017 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,56 +26,57 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_VELVETBRDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_VELVETBRDF_H
-
-// appleseed.renderer headers.
-#include "renderer/modeling/bsdf/ibsdffactory.h"
+#ifndef APPLESEED_RENDERER_KERNEL_SHADING_OSLSHADERCOMPILER_H
+#define APPLESEED_RENDERER_KERNEL_SHADING_OSLSHADERCOMPILER_H
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/autoreleaseptr.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace foundation    { class DictionaryArray; }
-namespace renderer      { class BSDF; }
-namespace renderer      { class ParamArray; }
+namespace foundation    { class APIString; }
 
 namespace renderer
 {
 
 //
-// Velvet BRDF factory.
+// Simple wrapper around OSL's OSLCompiler.
 //
 
-class APPLESEED_DLLSYMBOL VelvetBRDFFactory
-  : public IBSDFFactory
+class ShaderCompiler
+  : public foundation::NonCopyable
 {
   public:
-    // Return a string identifying this BSDF model.
-    virtual const char* get_model() const override;
+    // Delete this instance.
+    void release();
 
-    // Return metadata for this BSDF model.
-    virtual foundation::Dictionary get_model_metadata() const override;
+    bool compile_buffer(
+        const char*             source_code,
+        foundation::APIString&  result);
 
-    // Return metadata for the inputs of this BSDF model.
-    virtual foundation::DictionaryArray get_input_metadata() const override;
+  private:
+    friend class ShaderCompilerFactory;
 
-    // Create a new BSDF instance.
-    virtual foundation::auto_release_ptr<BSDF> create(
-        const char*         name,
-        const ParamArray&   params) const override;
+    struct Impl;
+    Impl* impl;
 
-    // Static variant of the create() method above.
-    static foundation::auto_release_ptr<BSDF> static_create(
-        const char*         name,
-        const ParamArray&   params);
+    explicit ShaderCompiler(const char* stdosl_path);
+    ~ShaderCompiler();
+};
+
+
+//
+// ShaderCompiler factory.
+//
+
+class ShaderCompilerFactory
+{
+  public:
+    // Create a new shader compiler.
+    static foundation::auto_release_ptr<ShaderCompiler> create(
+        const char* stdosl_path);
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_VELVETBRDF_H
+#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_OSLSHADERCOMPILER_H
