@@ -217,8 +217,8 @@ class LightSampler
 
     NonPhysicalLightVector      m_light_tree_lights;
     NonPhysicalLightVector      m_non_physical_lights;
-    size_t                      m_non_physical_light_count;
     size_t                      m_light_tree_light_count;
+    size_t                      m_non_physical_light_count;
 
     EmittingTriangleVector      m_emitting_triangles;
 

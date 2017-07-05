@@ -84,21 +84,21 @@ class LightTree
     {
         foundation::AABB3d      m_bbox;
         size_t                  m_light_sources_index;
-        size_t                  m_npl_external_index;
+        size_t                  m_light_tree_external_index;
 
         Item() {}
 
         // Item contains bbox and source index of each light source
         // source_index represents the light index in m_light_sources vector
-        // m_npl_external_index - index of the light as registered within the light sampler
-        //                          (index of m_non_physical_lights within the LightSampler)
+        // m_light_tree_external_index - index of the light as registered within the light sampler
+        //                          (index of m_light_tree_lights within the LightSampler)
         Item(
             foundation::AABB3d      bbox,
             size_t                  source_index,
-            size_t                  npl_external_index) 
+            size_t                  light_tree_external_index) 
             :m_bbox(bbox)
             ,m_light_sources_index(source_index)
-            ,m_npl_external_index(npl_external_index)
+            ,m_light_tree_external_index(light_tree_external_index)
         {
         }
     };  

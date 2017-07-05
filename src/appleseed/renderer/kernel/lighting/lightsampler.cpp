@@ -554,41 +554,45 @@ void LightSampler::sample(
     const ShadingPoint&                 shading_point,
     LightSample&                        light_sample) const
 {
-    size_t const light_type_non_physical_cdf = 0;
-    size_t const light_type_emitting_triangle_cdf = 1;
-    size_t const light_type_light_tree = 2;
+    // Mark different light groups
+    size_t const light_group_non_physical_cdf       = 0;
+    size_t const light_group_emitting_triangle_cdf  = 1;
+    size_t const light_group_light_tree             = 2;
 
-    std::vector<size_t> candidate_types;
-    candidate_types.reserve(3);
+    std::vector<size_t> candidate_groups;
+    candidate_groups.reserve(3);
 
+    // Check for existance of each light group and record it.
     if (m_non_physical_lights_cdf.valid())
-        candidate_types.push_back(light_type_non_physical_cdf);
+        candidate_groups.push_back(light_group_non_physical_cdf);
     if (m_emitting_triangles_cdf.valid())
-        candidate_types.push_back(light_type_emitting_triangle_cdf);
+        candidate_groups.push_back(light_group_emitting_triangle_cdf);
     if (m_light_tree.is_built())
-        candidate_types.push_back(light_type_light_tree);
+        candidate_groups.push_back(light_group_light_tree);
 
-    assert(!candidate_types.empty());
+    // At least one light group must be present
+    assert(!candidate_groups.empty());
 
-    size_t const selected_type = candidate_types[s[0] * candidate_types.size()];
+    // Randomly select one of the group which will be sampled
+    size_t const selected_type = candidate_groups[s[0] * candidate_groups.size()];
 
     switch (selected_type)
     {
-        case light_type_non_physical_cdf:
+        case light_group_non_physical_cdf:
             sample_non_physical_lights(
                 time,
                 s,
                 light_sample);
-            light_sample.m_probability *= 1.0 / candidate_types.size();
+            light_sample.m_probability *= 1.0 / candidate_groups.size();
             break;
-        case light_type_emitting_triangle_cdf:
+        case light_group_emitting_triangle_cdf:
             sample_emitting_triangles(
                 time,
                 s,
                 light_sample);
-            light_sample.m_probability *= 1.0 / candidate_types.size();
+            light_sample.m_probability *= 1.0 / candidate_groups.size();
             break;
-        case light_type_light_tree:
+        case light_group_light_tree:
             sample_light_tree_lights(
                 time,
                 s,
