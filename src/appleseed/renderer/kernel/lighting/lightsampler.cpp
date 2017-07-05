@@ -573,29 +573,33 @@ void LightSampler::sample(
     // At least one light group must be present
     assert(!candidate_groups.empty());
 
-    // Randomly select one of the group which will be sampled
-    size_t const selected_type = candidate_groups[s[0] * candidate_groups.size()];
+    // Randomly select one of the group which will be sampled.
+    size_t const selected_index = s[0] * candidate_groups.size();
+    size_t const selected_type  = candidate_groups[selected_index];
+    
+    // Avoid bias propagation by expanding the chosen interval back to [0,1].
+    float probability_interval_shift = (s[0] - selected_index / candidate_groups.size()) * candidate_groups.size();
 
     switch (selected_type)
     {
         case light_group_non_physical_cdf:
             sample_non_physical_lights(
                 time,
-                s,
+                foundation::Vector3f(probability_interval_shift, s[1], s[2]),
                 light_sample);
             light_sample.m_probability *= 1.0 / candidate_groups.size();
             break;
         case light_group_emitting_triangle_cdf:
             sample_emitting_triangles(
                 time,
-                s,
+                foundation::Vector3f(probability_interval_shift, s[1], s[2]),
                 light_sample);
             light_sample.m_probability *= 1.0 / candidate_groups.size();
             break;
         case light_group_light_tree:
             sample_light_tree_lights(
                 time,
-                s,
+                foundation::Vector3f(probability_interval_shift, s[1], s[2]),
                 shading_point,
                 light_sample);
             break;
