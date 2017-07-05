@@ -106,7 +106,18 @@ shader as_maya_file
         string widget = "checkBox",
         string page = "Ptex Controls"
     ]],
-
+    int in_uvTilingMode = 0
+    [[
+        string as_maya_attribute_name = "uvTilingMode",
+        string label = "UV Tiling Mode",
+        string widget = "mapper",
+        string options = "Off:0|ZBrush:1|Mudbox:2|Mari:3|Explicit UV Tiles:4"
+    ]],
+    string in_computedFileTextureNamePattern = ""
+    [[
+        string as_maya_attribute_name = "computedFileTextureNamePattern",
+        string widget = "null"
+    ]],
     float in_exposure = 0.0
     [[
         string as_maya_attribute_name = "exposure",
@@ -250,9 +261,21 @@ shader as_maya_file
 
         out_fileHasAlpha = (channels > 3) ? 1 : 0;
 
-        float st[2] = {in_uvCoord[0], in_uvCoord[1]}, dsdt[4];
+        float st[2], dsdt[4];
+        string filename, filter;
 
-        string filter = "";
+        if (in_uvTilingMode != 0)
+        {
+            st[0] = u; // bypass mod(u,1+eps) from place2d node (for tiling)
+            st[1] = v;
+            filename = in_computedFileTextureNamePattern;
+        }
+        else
+        {
+            st[0] = in_uvCoord[0];
+            st[1] = in_uvCoord[1];
+            filename = in_fileTextureName;
+        }
 
         if (in_filterType != 0)
         {
@@ -314,7 +337,7 @@ shader as_maya_file
         {
             out_outColor =
                 texture(
-                    in_fileTextureName,
+                    filename,
                     st[0], st[1],
                     dsdt[0], dsdt[1], dsdt[2], dsdt[3],
                     "blur", in_filterOffset,
@@ -330,7 +353,7 @@ shader as_maya_file
         {
             out_outColor =
                 texture(
-                    in_fileTextureName,
+                    filename,
                     st[0], st[1],
                     dsdt[0], dsdt[1], dsdt[2], dsdt[3],
                     "blur", in_filterOffset,
