@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Petra Gospodnetic, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -43,15 +42,14 @@
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/uid.h"
 
-// Forward declarations.
-namespace renderer      { class Scene; }
-namespace renderer      { class NonPhysicalLightInfo; }
-namespace renderer      { class EmittingTriangle; }
+// Standard headers.
+#include  <cstddef>
 
-namespace renderer{
+namespace renderer
+{
 
 //
-// Light tree.
+// Light-tree.
 //
 
 class LightTree
@@ -63,7 +61,7 @@ class LightTree
 {
   public:
     // Constructor.
-    explicit LightTree();
+    LightTree();
 
     // Destructor
     ~LightTree();
@@ -73,32 +71,28 @@ class LightTree
     // Build the tree based on the lights collected by the LightSampler.
     // TODO: Remove light lists from arguments when they start being collected
     //       by the LightTree class itself.
-    void build(const std::vector<NonPhysicalLightInfo>     non_physical_lights);
+    void build(const std::vector<NonPhysicalLightInfo>& non_physical_lights);
     
     std::pair<size_t, float> sample(
-        const foundation::Vector3d    surface_point,
-        const float                   s) const;
+        const foundation::Vector3d&     surface_point,
+        const float                     s) const;
 
   private:
     struct Item
     {
         foundation::AABB3d      m_bbox;
-        size_t                  m_light_sources_index;
-        size_t                  m_npl_external_index;
+        size_t                  m_light_index;
 
         Item() {}
 
         // Item contains bbox and source index of each light source
-        // source_index represents the light index in m_light_sources vector
-        // m_npl_external_index - index of the light as registered within the light sampler
-        //                          (index of m_non_physical_lights within the LightSampler)
+        // source_index represents the light index in m_light_sources vector and
+        // corresponds to the m_light_tree_lights within the LightSampler
         Item(
-            foundation::AABB3d      bbox,
-            size_t                  source_index,
-            size_t                  npl_external_index) 
-            :m_bbox(bbox)
-            ,m_light_sources_index(source_index)
-            ,m_npl_external_index(npl_external_index)
+            const foundation::AABB3d&       bbox,
+            const size_t                    source_index) 
+            : m_bbox(bbox)
+            , m_light_index(source_index)
         {
         }
     };  
@@ -113,20 +107,15 @@ class LightTree
     bool                       m_built; // Was the tree built?
 
     void draw_tree_structure(
-        std::string                 filename,
+        const std::string&          filename_base,
         const foundation::AABB3d&   root_bbox,
-        bool                        separate_by_levels = false) const;
+        const bool                  separate_by_levels = false) const;
 
     float recursive_node_update(size_t node_index, size_t node_level);
 
     std::pair<float, float> child_node_probabilites(
         const LightTreeNode<foundation::AABB3d>&    node,
-        const foundation::Vector3d                  surface_point) const;
-
-    float node_probability(
-        const LightTreeNode<foundation::AABB3d>&    node,
-        const foundation::AABB3d                    bbox,
-        const foundation::Vector3d                  surface_point) const;
+        const foundation::Vector3d&                 surface_point) const;
 };
 
 }

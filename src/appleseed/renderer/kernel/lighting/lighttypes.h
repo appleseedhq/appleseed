@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Petra Gospodnetic, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +35,12 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed. foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/aabb.h"
+#include "foundation/math/vector.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace renderer  { class AssemblyInstance; }
@@ -88,26 +92,22 @@ class LightSource
     // Constructor.
     LightSource();
 
-
     // Destructor
     virtual ~LightSource();
 
-    // Get the reference to the source position.
+    // Get the light source position.
     virtual foundation::Vector3d get_position() const = 0;
     
-    // Get the light bounding box
+    // Get the light source bounding box.
     virtual foundation::AABB3d get_bbox() const = 0;
 
-    // Get the light intensity
-    // NOTE: currently works only for NPL point lights!!
+    // Get the light intensity.
+    // NOTE: currently works only for point lights!
     virtual Spectrum get_intensity() const = 0;
-    
-    // Check if the light can be used by the LightTree
-    virtual bool is_light_tree_compatible() const = 0;
 };
 
 //
-// Non-physical light source
+// Non-physical light source.
 //
 
 class NonPhysicalLightSource
@@ -116,12 +116,11 @@ class NonPhysicalLightSource
   public:
     NonPhysicalLightSource(const NonPhysicalLightInfo* light);
 
-  private:
-    virtual foundation::Vector3d get_position() const APPLESEED_OVERRIDE;
-    virtual foundation::AABB3d get_bbox() const APPLESEED_OVERRIDE;
-    virtual Spectrum get_intensity() const APPLESEED_OVERRIDE;
-    virtual bool is_light_tree_compatible() const APPLESEED_OVERRIDE;
+    virtual foundation::Vector3d get_position() const override;
+    virtual foundation::AABB3d get_bbox() const override;
+    virtual Spectrum get_intensity() const override;
 
+  private:
     // Get the reference to an actual source.
     const NonPhysicalLightInfo* m_light_info;
 };
@@ -136,12 +135,11 @@ class EmittingTriangleLightSource
   public:
     EmittingTriangleLightSource(const EmittingTriangle* light);
 
-  private:
-    virtual foundation::Vector3d get_position() const APPLESEED_OVERRIDE;
-    virtual foundation::AABB3d get_bbox() const APPLESEED_OVERRIDE;
-    virtual Spectrum get_intensity() const APPLESEED_OVERRIDE;
-    virtual bool is_light_tree_compatible() const APPLESEED_OVERRIDE;
+    virtual foundation::Vector3d get_position() const override;
+    virtual foundation::AABB3d get_bbox() const override;
+    virtual Spectrum get_intensity() const override;
 
+  private:
     // Get the reference to an actual source.
     const EmittingTriangle* m_light;
 };

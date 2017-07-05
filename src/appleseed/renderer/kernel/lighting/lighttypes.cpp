@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Petra Gospodnetic, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +34,6 @@
 #include "renderer/modeling/light/light.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/minmax.h"
 #include "foundation/math/transform.h"
 
 namespace renderer
@@ -50,11 +48,12 @@ LightSource::~LightSource()
 }
 
 //
-// Non-physical light source class implementation
+// NonPhysicalLightSource class implementation.
 //
 
-NonPhysicalLightSource::NonPhysicalLightSource(const NonPhysicalLightInfo* light)
-: m_light_info(light)
+NonPhysicalLightSource::NonPhysicalLightSource(
+    const NonPhysicalLightInfo* light)
+  : m_light_info(light)
 {
 }
 
@@ -62,7 +61,7 @@ foundation::Vector3d NonPhysicalLightSource::get_position()  const
 {
     const Light* light = m_light_info->m_light;
 
-    // Compute the exact position of the light
+    // Compute the exact position of the light.
     foundation::Vector3d position = light->get_transform()
                                           .get_local_to_parent()
                                           .extract_translation();
@@ -72,63 +71,52 @@ foundation::Vector3d NonPhysicalLightSource::get_position()  const
 
 foundation::AABB3d NonPhysicalLightSource::get_bbox() const
 {
-    const Light* light = m_light_info->m_light;
-    foundation::Vector3d position = light->get_transform()
-                                          .get_local_to_parent()
-                                          .extract_translation();
-    // Non physical light has no real size - hence we are fixing some small value for the bbox
+    foundation::Vector3d position = get_position();
+
+    // Non physical light has no real size - hence we are assigning it some
+    // arbitrary small value for the bbox.
     return foundation::AABB3d(
-                foundation::Vector3d(position[0] - 0.001, position[1] - 0.001, position[2] - 0.001),
-                foundation::Vector3d(position[0] + 0.001, position[1] + 0.001, position[2] + 0.001));
+                foundation::Vector3d(position[0] - 0.001,
+                                     position[1] - 0.001,
+                                     position[2] - 0.001),
+                foundation::Vector3d(position[0] + 0.001,
+                                     position[1] + 0.001,
+                                     position[2] + 0.001));
 }
 
 Spectrum NonPhysicalLightSource::get_intensity() const
 {
-    const Light* light = m_light_info->m_light;
     Spectrum intensity;
-    light->get_inputs().find("intensity").source()->evaluate_uniform(intensity);
+    m_light_info->m_light->get_inputs()
+                          .find("intensity")
+                          .source()->evaluate_uniform(intensity);
     return intensity;
 }
 
-bool NonPhysicalLightSource::is_light_tree_compatible() const
-{
-    const Light* light = m_light_info->m_light;
-    return light->is_light_tree_compatible();
-}
-
 //
-// Emitting triangle light source class implementation
+// EmittingTriangleLightSource class implementation.
 //
 
-EmittingTriangleLightSource::EmittingTriangleLightSource(const EmittingTriangle* light)
-: m_light(light)
+EmittingTriangleLightSource::EmittingTriangleLightSource(
+    const EmittingTriangle* light)
+  : m_light(light)
 {
 }
 
 foundation::Vector3d EmittingTriangleLightSource::get_position() const
 {
-    // Retrieve coordinates of each vertex in world space
-    foundation::Vector3d vertex0 = m_light->m_v0;
-    foundation::Vector3d vertex1 = m_light->m_v1;
-    foundation::Vector3d vertex2 = m_light->m_v2;
-    
-    foundation::Vector3d centroid = (vertex0 + vertex1 + vertex2) / 3;
-
-    return centroid;
+    // Return the centroid of the triangle as the position.
+    return (m_light->m_v0 + m_light->m_v1 + m_light->m_v2) / 3;
 }
 
 foundation::AABB3d EmittingTriangleLightSource::get_bbox() const
 {
-    // Retrieve coordinates of each vertex in world space
-    foundation::Vector3d vertex0 = m_light->m_v0;
-    foundation::Vector3d vertex1 = m_light->m_v1;
-    foundation::Vector3d vertex2 = m_light->m_v2;
-
     foundation::AABB3d bbox;
+    
     bbox.invalidate();
-    bbox.insert(vertex0);
-    bbox.insert(vertex1);
-    bbox.insert(vertex2);
+    bbox.insert(m_light->m_v0);
+    bbox.insert(m_light->m_v1);
+    bbox.insert(m_light->m_v2);
 
     return bbox;
 }
@@ -136,13 +124,6 @@ foundation::AABB3d EmittingTriangleLightSource::get_bbox() const
 Spectrum EmittingTriangleLightSource::get_intensity() const
 {
     Spectrum hard_coded_placeholder(foundation::Color3f(1.0f, 2.0f, 3.0f));
-    return hard_coded_placeholder;
-}
-
-bool EmittingTriangleLightSource::is_light_tree_compatible() const
-{
-    bool hard_coded_placeholder = false;
-    
     return hard_coded_placeholder;
 }
 

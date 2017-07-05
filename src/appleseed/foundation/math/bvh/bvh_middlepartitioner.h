@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Petra Gospodnetic, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +29,6 @@
 #ifndef APPLESEED_FOUNDATION_MATH_BVH_BVH_MIDDLEPARTITIONER_H
 #define APPLESEED_FOUNDATION_MATH_BVH_BVH_MIDDLEPARTITIONER_H
 
-// appleseed.renderer headers.
-#include "renderer/global/globallogger.h"
 // appleseed.foundation headers.
 #include "foundation/math/bvh/bvh_partitionerbase.h"
 
@@ -43,7 +40,7 @@ namespace foundation {
 namespace bvh {
 
 //
-// A BVH partitioner that use splitting in the middle of the bbox.
+// A BVH partitioner that splits boxes in the middle of their longest dimension.
 //
 
 template <typename AABBVector>
@@ -53,6 +50,7 @@ class MiddlePartitioner
   public:
     typedef AABBVector AABBVectorType;
     typedef typename AABBVectorType::value_type AABBType;
+    typedef typename AABBType::ValueType ValueType;
 
     // Constructor.
     MiddlePartitioner(
@@ -91,8 +89,6 @@ inline size_t MiddlePartitioner<AABBVector>::partition(
 {
     const size_t count = end - begin;
     assert(count > 1);
-    
-    const AABBVectorType& bboxes = PartitionerBase<AABBVector>::m_bboxes;
 
     // Don't split leaves containing less than a predefined number of items.
     if (count <= m_max_leaf_size)
@@ -102,18 +98,17 @@ inline size_t MiddlePartitioner<AABBVector>::partition(
     const size_t split_dim = max_index(bbox.extent());
     const std::vector<size_t>& indices = PartitionerBase<AABBVector>::m_indices[split_dim];
 
-    const float center = bbox.center(split_dim);
+    const ValueType center = bbox.center(split_dim);
 
-    // Find the first bbox with center bigger than half and split at that point
+    // Find the first bbox with center bigger than half and split at that point.
+    const AABBVectorType& bboxes = PartitionerBase<AABBVector>::m_bboxes;
     size_t pivot = begin;
-    while(bboxes[indices[pivot]].center(split_dim) < center)
-    {
+    while (bboxes[indices[pivot]].center(split_dim) < center)
         pivot++;
-    };
 
-    // In case there are multiple bboxes perfectly overlapping, return the next one.
-    if (pivot == 0)
-        pivot = (end - begin) / 2;
+    // In case of multiple bboxes perfectly overlapping, return the middle one.
+    if (pivot == begin)
+        pivot = (begin + end) / 2;
     assert(pivot < end);
 
     PartitionerBase<AABBVector>::sort_indices(split_dim, begin, end, pivot);

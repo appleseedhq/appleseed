@@ -30,8 +30,6 @@
 #ifndef APPLESEED_FOUNDATION_MATH_BVH_BVH_PARTITIONERBASE_H
 #define APPLESEED_FOUNDATION_MATH_BVH_BVH_PARTITIONERBASE_H
 
-// appleseed.renderer headers.
-#include "renderer/global/globallogger.h"
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/bvh/bvh_bboxsortpredicate.h"
@@ -69,7 +67,7 @@ class PartitionerBase
 
     // Return the items ordering.
     const std::vector<size_t>& get_item_ordering(
-        size_t  dimension = 0) const;
+        const size_t  dimension = 0) const;
 
   protected:
     static const size_t Dimension = AABBType::Dimension;
@@ -109,7 +107,7 @@ PartitionerBase<AABBVector>::PartitionerBase(
         for (size_t i = 0; i < size; ++i)
             indices[i] = i;
 
-        // Sort the items according to the centre of their bounding boxes.
+        // Sort the items according to the center of their bounding boxes.
         BboxSortPredicate<AABBVectorType> predicate(m_bboxes, d);
         std::sort(indices.begin(), indices.end(), predicate);
     }
@@ -202,7 +200,7 @@ void PartitionerBase<AABBVector>::sort_indices(
 
 template <typename Tree>
 inline const std::vector<size_t>& PartitionerBase<Tree>::get_item_ordering(
-    size_t  dimension) const
+    const size_t  dimension) const
 {
     assert(dimension < Dimension);
     return m_indices[dimension];

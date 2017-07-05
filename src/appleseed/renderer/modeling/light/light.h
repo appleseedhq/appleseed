@@ -86,17 +86,11 @@ class APPLESEED_DLLSYMBOL Light
     // Retrieve the flags.
     int get_flags() const;
 
-    // Set the flags
-    void set_flags(Flags flag);
-
     // Retrieve the importance multiplier.
     float get_uncached_importance_multiplier() const;
 
     // Set the light transformation.
     void set_transform(const foundation::Transformd& transform);
-
-    // Set the flag that the light is LightTreeCompatible
-    bool is_light_tree_compatible() const;
 
     // Get the light transformation.
     const foundation::Transformd& get_transform() const;
@@ -143,11 +137,12 @@ class APPLESEED_DLLSYMBOL Light
         const foundation::Vector3d&     target,                     // world space target point
         const foundation::Vector3d&     position) const = 0;        // world space emission position
 
+  protected:
+    int m_flags;
+
   private:
     struct Impl;
     Impl* impl;
-
-    int m_flags;
 };
 
 

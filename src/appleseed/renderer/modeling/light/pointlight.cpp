@@ -78,8 +78,8 @@ namespace
             m_inputs.declare("intensity_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("exposure", InputFormatFloat, "0.0");
 
-            // Point lights can be used by the LightTree
-            set_flags(LightTreeCompatible);
+            // Point lights can be used by the LightTree.
+            m_flags |= LightTreeCompatible;
         }
 
         virtual void release() override

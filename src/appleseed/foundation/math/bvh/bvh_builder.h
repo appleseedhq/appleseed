@@ -140,7 +140,7 @@ void Builder<Tree, Partitioner>::build(
 
     // todo: preallocate node memory?
 
-    // Recursively subdivide the tree
+    // Recursively subdivide the tree.
     subdivide_recurse(
         tree,
         partitioner,

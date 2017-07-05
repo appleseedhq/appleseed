@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Petra Gospodnetic, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -50,18 +49,15 @@ namespace renderer
 //
 
 LightTree::LightTree()
-  :m_tree_depth(0)
+  : m_tree_depth(0)
+  , m_built(false)
 {
-    m_built = false;
 }
 
 LightTree::~LightTree()
 {
-    RENDERER_LOG_INFO("Deleting the light tree...");
-    for(foundation::const_each<LightSourcePointerVector> i = m_light_sources; i; ++i)
-    {
+    for (foundation::const_each<LightSourcePointerVector> i = m_light_sources; i; ++i)
         delete *i;
-    }
 }
 
 bool LightTree::is_built() const
@@ -70,33 +66,26 @@ bool LightTree::is_built() const
 }
 
 void LightTree::build(
-        const std::vector<NonPhysicalLightInfo>     non_physical_lights)
+    const std::vector<NonPhysicalLightInfo>&    non_physical_lights)
 {
     foundation::Statistics statistics;
     AABBVector light_bboxes;
 
-    size_t light_index = 0;
-
-    // Collect all possible light sources into one vector
+    // Collect all possible light sources into one vector.
     for (size_t i = 0; i < non_physical_lights.size(); ++i)
     {
         LightSource* light_source = new NonPhysicalLightSource(&non_physical_lights[i]);
         foundation::AABB3d bbox = light_source->get_bbox();
         m_light_sources.push_back(light_source);
         light_bboxes.push_back(bbox);
-        m_items.push_back(
-            Item(
-                bbox,
-                light_index++,
-                i));
+        m_items.push_back(Item(bbox,i));
     }
-
-    RENDERER_LOG_INFO("Number of light sources: %zu", m_light_sources.size());
 
     // Create the partitioner.
     typedef foundation::bvh::MiddlePartitioner<AABBVector> Partitioner;
     Partitioner partitioner(light_bboxes);
-    // Build the light tree.
+
+    // Build the light-tree.
     typedef foundation::bvh::Builder<LightTree, Partitioner> Builder;
     Builder builder;
     builder.build<foundation::DefaultWallclockTimer>(*this, partitioner, m_items.size(), 1);
@@ -118,55 +107,58 @@ void LightTree::build(
             &ordering[0],
             ordering.size());
 
-        // Set total luminance for each node of the LightTree.
-        // update_luminance(0);
-        // m_tree_depth = update_level(0, 0);
+        // Set total luminance and level for each node of the LightTree.
         recursive_node_update(0, 0);
     }
     
-    // Print light tree statistics.
+    // Print light-tree statistics.
     RENDERER_LOG_INFO("%s",
         foundation::StatisticsVector::make(
-            "light tree statistics",
+            "light-tree statistics",
             statistics).to_string().c_str());
 
-    RENDERER_LOG_INFO("Number of nodes: %zu", m_nodes.size());
-    RENDERER_LOG_INFO("Tree depth: %zu", m_tree_depth);
-        
-    const auto& root_bbox = partitioner.compute_bbox(0, m_items.size());
-    draw_tree_structure("light_tree", root_bbox);
-    
+    RENDERER_LOG_INFO("number of light sources: %zu", m_light_sources.size());
+    RENDERER_LOG_INFO("number of nodes: %zu", m_nodes.size());
+    RENDERER_LOG_INFO("tree depth: %zu", m_tree_depth);
 }
 
+//
+// Control output of the built tree bboxes into the VPython file.
+// The py file is written to the cwd.
+// TODO: Add a possibility to shift each level of bboxes along the z-axis.
+//
+
 void LightTree::draw_tree_structure(
-        std::string                 filename,
-        const foundation::AABB3d&   root_bbox,
-        bool                        separate_by_levels) const
+    const std::string&          filename_base,
+    const foundation::AABB3d&   root_bbox,
+    const bool                  separate_by_levels) const
 {
     // Vpython tree output
     const double Width = 0.1;
 
-    if(separate_by_levels)
+    if (separate_by_levels)
     {
         const char* color = "color.green";
-        for(size_t parent_level = 0; parent_level < m_tree_depth; parent_level++)
+        // Find nodes on each level of the tree and draw their child bboxes.
+        for (size_t parent_level = 0; parent_level < m_tree_depth; parent_level++)
         {
-            filename += "_" + std::to_string(parent_level + 1) + ".py";
+            const auto filename = foundation::format("{0}_{1}.py",
+                                                    filename_base,
+                                                    parent_level + 1);
             foundation::VPythonFile file(filename.c_str());
             file.draw_axes(Width);
 
             // Draw the initial bbox.
             file.draw_aabb(root_bbox, color, Width);
 
-            // Find the parent node to draw child bboxes from.
-            for(size_t i = 0; i < m_nodes.size(); i++)
+            // Find every node at the parent level and draw its child bboxes.
+            for (size_t i = 0; i < m_nodes.size(); i++)
             {
                 if (m_nodes[i].is_leaf())
                     continue;
 
                 if (m_nodes[i].get_level() == parent_level)
                 {
-
                     const auto& bbox_left = m_nodes[i].get_left_bbox();
                     const auto& bbox_right = m_nodes[i].get_right_bbox();
 
@@ -178,7 +170,7 @@ void LightTree::draw_tree_structure(
     }
     else
     {
-        filename += ".py";
+        const auto filename = foundation::format("{0}.py", filename_base);
         foundation::VPythonFile file(filename.c_str());
         file.draw_axes(Width);
         const char* color = "color.yellow";
@@ -186,8 +178,8 @@ void LightTree::draw_tree_structure(
         // Draw the initial bbox.
         file.draw_aabb(root_bbox, color, Width);
 
-        // Find the parent node to draw child bboxes from.
-        for(size_t i = 0; i < m_nodes.size(); i++)
+        // Find nodes on each level of the tree and draw their child bboxes.
+        for (size_t i = 0; i < m_nodes.size(); i++)
         {
             if (m_nodes[i].is_leaf())
                 continue;
@@ -206,7 +198,7 @@ void LightTree::draw_tree_structure(
 }
 
 //
-// Calculate tree depth and assign total luminance to each node of the tree.
+// Calculate the tree depth and assign total luminance to each node of the tree.
 // Total luminance represents the sum of all its child nodes luminances.
 //
 
@@ -216,92 +208,47 @@ float LightTree::recursive_node_update(size_t node_index, size_t node_level)
 
     if (!m_nodes[node_index].is_leaf())
     {
-        float luminance1 = recursive_node_update(m_nodes[node_index].get_child_node_index(),
-                                                                 node_level + 1);
-        float luminance2 = recursive_node_update(m_nodes[node_index].get_child_node_index() + 1,
-                                                                 node_level + 1);
+        const auto& child1 = m_nodes[node_index].get_child_node_index();
+        const auto& child2 = m_nodes[node_index].get_child_node_index() + 1;
+
+        float luminance1 = recursive_node_update(child1, node_level + 1);
+        float luminance2 = recursive_node_update(child2, node_level + 1);
 
         luminance = luminance1 + luminance2;
     }
     else
     {
+        // Access the light intensity value.
         size_t item_index = m_nodes[node_index].get_item_index();
-        size_t light_source_index = m_items[item_index].m_light_sources_index;
+        size_t light_source_index = m_items[item_index].m_light_index;
         Spectrum spectrum = m_light_sources[light_source_index]->get_intensity();
-        for(size_t i = 0; i < spectrum.size(); i++)
-        {
-            luminance += spectrum[i];
-        }
-        luminance /= spectrum.size();
 
+        luminance = foundation::average_value(spectrum);
+
+        // Modify the tree depth if the branch is deeper than the other branches
+        // visited so far.
         if (m_tree_depth < node_level)
             m_tree_depth = node_level;
     }
+
     m_nodes[node_index].set_luminance(luminance);
     m_nodes[node_index].set_level(node_level);
 
     return luminance;
 }
 
-float LightTree::node_probability(
-        const LightTreeNode<foundation::AABB3d>&    node,
-        const foundation::AABB3d                    bbox,
-        const foundation::Vector3d                  surface_point) const
-{
-    // Calculate probabiliy weight of a single node based on its distance
-    // to the surface point being evaluated.
-    const float squared_distance = foundation::square_distance(surface_point, bbox.center());
-    const float inverse_distance_falloff = 1.0f / squared_distance;
-
-    return node.get_luminance() * inverse_distance_falloff;
-}
-
-std::pair<float, float> LightTree::child_node_probabilites(
-        const LightTreeNode<foundation::AABB3d>&    node,
-        const foundation::Vector3d                  surface_point) const
-{
-    const auto& child1 = m_nodes[node.get_child_node_index()];
-    const auto& child2 = m_nodes[node.get_child_node_index() + 1];
-
-    // Node has currently no info about its own bbox characteristics.
-    // Hence we have to extract it before from its parent.
-    // TODO: make LightTreeNode aware of its bbox!
-    const auto& bbox_left  = node.get_left_bbox();
-    const auto& bbox_right = node.get_right_bbox();
-
-    float p1 = node_probability(child1, bbox_left, surface_point);
-    float p2 = node_probability(child2, bbox_right, surface_point);
-
-    // Normalize probabilities
-    float total = p1 + p2;
-    if (total <= 0.0f)
-    {
-        p1 = 0.5;
-        p2 = 0.5;
-    }
-    else
-    {
-        p1 = p1 / total;
-        p2 = p2 / total;
-    }
-
-    return std::pair<float, float>(p1, p2);
-}
-
 std::pair<size_t, float> LightTree::sample(
-        const foundation::Vector3d    surface_point,
-        float                         s) const
+    const foundation::Vector3d&     surface_point,
+    float                           s) const
 {
     float light_probability = 1.0;
     size_t node_index = 0;
 
-    std::pair<size_t, float> nearest_light;
     while (!m_nodes[node_index].is_leaf())
     {
-        // LightTreeNode
-        const auto& node = m_nodes[node_index];
+        const LightTreeNode<foundation::AABB3d>& node = m_nodes[node_index];
 
-        std::pair<float, float> result = child_node_probabilites(node, surface_point);
+        const std::pair<float, float> result = child_node_probabilites(node, surface_point);
         const float p1 = result.first;
         const float p2 = result.second;
 
@@ -318,10 +265,58 @@ std::pair<size_t, float> LightTree::sample(
             node_index = node.get_child_node_index() + 1;
         }
     }
-    size_t item_index = m_nodes[node_index].get_item_index();
-    size_t light_index = m_items[item_index].m_npl_external_index;
+    const size_t item_index = m_nodes[node_index].get_item_index();
+    const size_t light_index = m_items[item_index].m_light_index;
 
     return std::pair<size_t, float>(light_index, light_probability);
+}
+
+namespace
+{
+    float node_probability(
+        const LightTreeNode<foundation::AABB3d>&    node,
+        const foundation::AABB3d&                   bbox,
+        const foundation::Vector3d&                 surface_point)
+    {
+        // Calculate probability a single node based on its distance
+        // to the surface point being evaluated.
+        const float squared_distance = foundation::square_distance(surface_point, bbox.center());
+        const float inverse_distance_falloff = 1.0f / squared_distance;
+
+        return node.get_luminance() * inverse_distance_falloff;
+    }    
+}
+
+std::pair<float, float> LightTree::child_node_probabilites(
+    const LightTreeNode<foundation::AABB3d>&    node,
+    const foundation::Vector3d&                 surface_point) const
+{
+    const auto& child1 = m_nodes[node.get_child_node_index()];
+    const auto& child2 = m_nodes[node.get_child_node_index() + 1];
+
+    // Node has currently no info about its own bbox characteristics.
+    // Hence we have to extract it before from its parent.
+    // TODO: make LightTreeNode aware of its bbox!
+    const auto& bbox_left  = node.get_left_bbox();
+    const auto& bbox_right = node.get_right_bbox();
+
+    float p1 = node_probability(child1, bbox_left, surface_point);
+    float p2 = node_probability(child2, bbox_right, surface_point);
+
+    // Normalize probabilities.
+    const float total = p1 + p2;
+    if (total <= 0.0f)
+    {
+        p1 = 0.5;
+        p2 = 0.5;
+    }
+    else
+    {
+        p1 = p1 / total;
+        p2 = p2 / total;
+    }
+
+    return std::pair<float, float>(p1, p2);
 }
 
 }   // namespace renderer

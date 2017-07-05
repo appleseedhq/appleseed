@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Petra Gospodnetic, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,9 +31,11 @@
 #include "foundation/math/bvh.h"
 #include "foundation/utility/test.h"
 
+// Standard headers.
+#include <vector>
+
 using namespace foundation;
 using namespace bvh;
-using namespace std;
 
 TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 {
@@ -51,16 +52,17 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 
     TEST_CASE(Partition_BBoxesOrderedAlongLongestDimension_ReturnsFirstElementAfterCenter)
     {
-        AABB2dVector bboxes = 
+        const AABB2dVector bboxes = 
             {
                 AABB2d(Vector2d(-10.0, -1.0 ), Vector2d( -9.0,  0.0 )),
                 AABB2d(Vector2d( -2.0,  0.0 ), Vector2d( -1.0,  1.0 )),
                 AABB2d(Vector2d(  1.0, -1.0 ), Vector2d(  2.0,  0.0 ))
             };
+
         MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
         const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
 
-        size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
+        const size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
 
         EXPECT_EQ(1, pivot);
     }
@@ -76,7 +78,7 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 
     TEST_CASE(Partition_BBoxesUnorderedAlongAllDimensions_ReturnsFirstElementAfterCenter)
     {
-        AABB2dVector bboxes =
+        const AABB2dVector bboxes =
             {
                 AABB2d(Vector2d( -2.0,  0.0 ), Vector2d( -1.0,  1.0 )),
                 AABB2d(Vector2d(-10.0, -1.0 ), Vector2d( -9.0,  0.0 )),
@@ -86,7 +88,7 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
         MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
         const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
 
-        size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
+        const size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
 
         EXPECT_EQ(1, pivot);
     }
@@ -103,7 +105,7 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 
     TEST_CASE(Partition_BBoxesFormingRectangle_ReturnsFirstElementAfterCenter)
     {
-        AABB2dVector bboxes =
+        const AABB2dVector bboxes =
             {
                 AABB2d(Vector2d(-2.0, 1.0 ), Vector2d(-1.0, 2.0 )),
                 AABB2d(Vector2d(-2.0,-2.0 ), Vector2d(-1.0,-1.0 )),
@@ -114,7 +116,7 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
         MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
         const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
         
-        size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
+        const size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
         
         EXPECT_EQ(2, pivot);
     }
@@ -131,7 +133,7 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 
     TEST_CASE(Partition_BBoxesFormingEvenTriangle_ReturnsMiddleElement)
     {
-        AABB2dVector bboxes =
+        const AABB2dVector bboxes =
             {
                 AABB2d(Vector2d(-2.0, 1.0 ), Vector2d(-1.0, 2.0 )),
                 AABB2d(Vector2d(-1.0,-2.0 ), Vector2d( 1.0,-1.0 )),
@@ -141,14 +143,14 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
         MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
         const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
         
-        size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
+        const size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
         
         EXPECT_EQ(1, pivot);
     }
 
     TEST_CASE(Partition_BBoxesOverlapping_ReturnMiddleElement)
     {
-        AABB2dVector bboxes =
+        const AABB2dVector bboxes =
             {
                 AABB2d(Vector2d(-1.0,-1.0 ), Vector2d( 1.0, 1.0 )),
                 AABB2d(Vector2d(-1.0,-1.0 ), Vector2d( 1.0, 1.0 )),
@@ -159,8 +161,11 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
         MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
         const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
         
-        size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
+        const size_t pivot1 = partitioner.partition(0, bboxes.size(), root_bbox);
+        // Check partitioning in case the begin is not 0.
+        const size_t pivot2 = partitioner.partition(2, bboxes.size(), root_bbox);
         
-        EXPECT_EQ(2, pivot);
+        EXPECT_EQ(2, pivot1);
+        EXPECT_EQ(3, pivot2);
     }
 }
