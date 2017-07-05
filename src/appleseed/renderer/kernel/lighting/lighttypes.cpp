@@ -35,7 +35,6 @@
 #include "renderer/modeling/light/light.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/minmax.h"
 #include "foundation/math/transform.h"
 
 namespace renderer
@@ -76,10 +75,16 @@ foundation::AABB3d NonPhysicalLightSource::get_bbox() const
     foundation::Vector3d position = light->get_transform()
                                           .get_local_to_parent()
                                           .extract_translation();
-    // Non physical light has no real size - hence we are fixing some small value for the bbox
+
+    // Non physical light has no real size - hence we are assigning it some
+    // arbitrary small value for the bbox.
     return foundation::AABB3d(
-                foundation::Vector3d(position[0] - 0.001, position[1] - 0.001, position[2] - 0.001),
-                foundation::Vector3d(position[0] + 0.001, position[1] + 0.001, position[2] + 0.001));
+                foundation::Vector3d(position[0] - 0.001,
+                                     position[1] - 0.001,
+                                     position[2] - 0.001),
+                foundation::Vector3d(position[0] + 0.001,
+                                     position[1] + 0.001,
+                                     position[2] + 0.001));
 }
 
 Spectrum NonPhysicalLightSource::get_intensity() const
