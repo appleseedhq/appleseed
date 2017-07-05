@@ -29,8 +29,8 @@
 // Interface header.
 #include "shadingcomponents.h"
 
-// Standard headers.
-#include <cassert>
+// appleseed.foundation headers.
+#include "foundation/utility/otherwise.h"
 
 namespace renderer
 {
@@ -61,14 +61,19 @@ void ShadingComponents::add_to_component(
     const ScatteringMode::Mode  scattering_mode,
     const Spectrum&             value)
 {
-    if (scattering_mode == ScatteringMode::Diffuse)
+    switch (scattering_mode)
+    {
+      case ScatteringMode::Diffuse:
         m_diffuse += value;
-    else if (scattering_mode == ScatteringMode::Glossy)
+      break;
+
+      case ScatteringMode::Glossy:
+      case ScatteringMode::Specular:
         m_glossy += value;
-    else if (scattering_mode == ScatteringMode::Specular)
-        m_glossy += value;
-    else
-        assert(false && "Invalid scattering mode");
+      break;
+
+      assert_otherwise;
+    }
 }
 
 void ShadingComponents::add_to_component(

@@ -94,14 +94,8 @@ bool BSDFSampler::sample(
         return false;
 
     incoming = sample.m_incoming;
-
-    value.m_beauty = sample.m_value.m_beauty;
-    value.m_diffuse = sample.m_value.m_diffuse;
-    value.m_glossy = sample.m_value.m_glossy;
-    value.m_volume = sample.m_value.m_volume;
-
+    value = sample.m_value;
     pdf = sample.m_probability;
-
     return true;
 }
 

@@ -32,9 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 
-// appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
 
@@ -42,7 +39,6 @@ namespace renderer
 {
 
 class ShadingComponents
-  : foundation::NonCopyable
 {
   public:
     // Constructor.
@@ -64,12 +60,9 @@ class ShadingComponents
         const Spectrum&             value);
 
     Spectrum m_beauty;
-
     Spectrum m_diffuse;
     Spectrum m_glossy;
-
     Spectrum m_volume;
-
     Spectrum m_emission;
 };
 
