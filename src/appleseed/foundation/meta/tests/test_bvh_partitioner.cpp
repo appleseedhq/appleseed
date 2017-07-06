@@ -161,8 +161,11 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
         MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
         const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
         
-        const size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
+        const size_t pivot1 = partitioner.partition(0, bboxes.size(), root_bbox);
+        // Check partitioning in case the begin is not 0.
+        const size_t pivot2 = partitioner.partition(2, bboxes.size(), root_bbox);
         
-        EXPECT_EQ(2, pivot);
+        EXPECT_EQ(2, pivot1);
+        EXPECT_EQ(3, pivot2);
     }
 }
