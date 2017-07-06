@@ -247,8 +247,8 @@ float LightTree::recursive_node_update(size_t node_index, size_t node_level)
 }
 
 std::pair<size_t, float> LightTree::sample(
-    const foundation::Vector3d    surface_point,
-    float                         s) const
+    const foundation::Vector3d&     surface_point,
+    float                           s) const
 {
     float light_probability = 1.0;
     size_t node_index = 0;
@@ -285,8 +285,8 @@ namespace
 {
     float node_probability(
             const LightTreeNode<foundation::AABB3d>&    node,
-            const foundation::AABB3d                    bbox,
-            const foundation::Vector3d                  surface_point)
+            const foundation::AABB3d&                   bbox,
+            const foundation::Vector3d&                 surface_point)
     {
         // Calculate probabiliy a single node based on its distance
         // to the surface point being evaluated.
@@ -299,7 +299,7 @@ namespace
 
 std::pair<float, float> LightTree::child_node_probabilites(
     const LightTreeNode<foundation::AABB3d>&    node,
-    const foundation::Vector3d                  surface_point) const
+    const foundation::Vector3d&                 surface_point) const
 {
     const auto& child1 = m_nodes[node.get_child_node_index()];
     const auto& child2 = m_nodes[node.get_child_node_index() + 1];

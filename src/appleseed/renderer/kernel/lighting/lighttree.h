@@ -76,8 +76,8 @@ class LightTree
     void build(const std::vector<NonPhysicalLightInfo>& non_physical_lights);
     
     std::pair<size_t, float> sample(
-        const foundation::Vector3d    surface_point,
-        const float                   s) const;
+        const foundation::Vector3d&     surface_point,
+        const float                     s) const;
 
   private:
     struct Item
@@ -117,7 +117,7 @@ class LightTree
 
     std::pair<float, float> child_node_probabilites(
         const LightTreeNode<foundation::AABB3d>&    node,
-        const foundation::Vector3d                  surface_point) const;
+        const foundation::Vector3d&                 surface_point) const;
 };
 
 }

@@ -95,7 +95,7 @@ class APPLESEED_DLLSYMBOL Light
     // Set the light transformation.
     void set_transform(const foundation::Transformd& transform);
 
-    // Set the flag that the light is LightTreeCompatible
+    // Check the model of the light is compatible with the light-tree.
     bool is_light_tree_compatible() const;
 
     // Get the light transformation.

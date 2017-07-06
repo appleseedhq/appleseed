@@ -87,7 +87,6 @@ class LightSource
     // Constructor.
     LightSource();
 
-
     // Destructor
     virtual ~LightSource();
 
@@ -98,7 +97,7 @@ class LightSource
     virtual foundation::AABB3d get_bbox() const = 0;
 
     // Get the light intensity.
-    // NOTE: currently works only for NPL point lights!
+    // NOTE: currently works only for point lights!
     virtual Spectrum get_intensity() const = 0;
     
     // Check if the light can be used by the LightTree.
