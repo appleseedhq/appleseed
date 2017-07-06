@@ -86,9 +86,6 @@ class APPLESEED_DLLSYMBOL Light
     // Retrieve the flags.
     int get_flags() const;
 
-    // Set the flags
-    void set_flags(Flags flag);
-
     // Retrieve the importance multiplier.
     float get_uncached_importance_multiplier() const;
 
@@ -140,11 +137,12 @@ class APPLESEED_DLLSYMBOL Light
         const foundation::Vector3d&     target,                     // world space target point
         const foundation::Vector3d&     position) const = 0;        // world space emission position
 
+  protected:
+    int m_flags;
+
   private:
     struct Impl;
     Impl* impl;
-
-    int m_flags;
 };
 
 

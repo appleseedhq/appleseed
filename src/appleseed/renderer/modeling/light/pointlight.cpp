@@ -79,7 +79,7 @@ namespace
             m_inputs.declare("exposure", InputFormatFloat, "0.0");
 
             // Point lights can be used by the LightTree
-            set_flags(LightTreeCompatible);
+            m_flags |= LightTreeCompatible;
         }
 
         virtual void release() APPLESEED_OVERRIDE
