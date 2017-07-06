@@ -36,10 +36,14 @@
 #include <QObject>
 #include <QWidget>
 
+// Standard headers;
+#include <string>
+
 // Forward declarations.
 class QAction;
 class QPlainTextEdit;
 class QString;
+
 
 namespace appleseed {
 namespace studio {
@@ -57,14 +61,36 @@ class PythonConsoleWidget
     void slot_execute_all();
     void slot_clear_output();
 
+  private slots:
+    void slot_new_file();
+    void slot_open_file();
+    void slot_save_file();
+    void slot_save_file_as();
+
+    void slot_file_changed();
+
   private:
     QPlainTextEdit* m_output;
     QPlainTextEdit* m_input;
 
+    QAction*        m_action_new_file;
+    QAction*        m_action_open_file;
+    QAction*        m_action_save_file;
+    QAction*        m_action_save_file_as;
     QAction*        m_action_execute_all;
     QAction*        m_action_execute_selection;
     QAction*        m_action_clear_selection;
     QAction*        m_action_focus_on_input;
+
+    bool m_is_file_dirty;
+    std::string m_opened_file;
+
+    bool can_close_file();
+    bool has_file_path();
+
+    void open_file(const std::string& filepath);
+    void save_file(std::string filepath);
+    void close_file();
 
     void execute(const QString& script);
 };

@@ -30,15 +30,27 @@
 #include "pythonconsolewidget.h"
 
 // appleseed.studio headers.
+#include "mainwindow/mainwindow.h"
 #include "mainwindow/pythonconsole/outputredirector.h"
 #include "mainwindow/pythonconsole/pythoneditor.h"
 #include "utility/miscellaneous.h"
+#include "utility/settingskeys.h"
+
+// appleseed.renderer headers
+#include "renderer/utility/paramarray.h"
 
 // Qt headers.
 #include <QAction>
+#include <QMessageBox>
 #include <QSplitter>
 #include <QToolBar>
 #include <QVBoxLayout>
+
+// Standard headers.
+#include <fstream>
+
+using namespace std;
+using namespace renderer;
 
 namespace appleseed {
 namespace studio {
@@ -48,12 +60,13 @@ namespace studio {
 //
 
 PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
-  : QWidget(parent)
+  : QWidget(parent), m_is_file_dirty(false), m_opened_file("")
 {
     QSplitter* console_body = new QSplitter(this);
     console_body->setOrientation(Qt::Vertical);
 
     m_input = new PythonEditor(console_body);
+    connect(m_input, SIGNAL(textChanged()), this, SLOT(slot_file_changed()));
 
     m_output = new QPlainTextEdit(console_body);
     m_output->setUndoRedoEnabled(false);
@@ -66,6 +79,26 @@ PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
 
     console_body->addWidget(m_input);
     console_body->addWidget(m_output);
+
+    m_action_new_file =
+        new QAction(load_icons("project_new"), "New Python Script", this);
+    connect(m_action_new_file, SIGNAL(triggered()), this, SLOT(slot_new_file()));
+    addAction(m_action_new_file);
+
+    m_action_open_file =
+        new QAction(load_icons("project_open"), "Open Python Script", this);
+    connect(m_action_open_file, SIGNAL(triggered()), this, SLOT(slot_open_file()));
+    addAction(m_action_open_file);
+
+    m_action_save_file =
+        new QAction(load_icons("project_save"), "Save Python Script", this);
+    connect(m_action_save_file, SIGNAL(triggered()), this, SLOT(slot_save_file()));
+    addAction(m_action_save_file);
+
+    m_action_save_file_as =
+        new QAction(load_icons("project_reload"), "Save Python Script As...", this);
+    connect(m_action_save_file_as, SIGNAL(triggered()), this, SLOT(slot_save_file_as()));
+    addAction(m_action_save_file_as);
 
     m_action_execute_all =
         new QAction(load_icons("python_execute_all"), "Execute All Code", this);
@@ -94,6 +127,12 @@ PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
     addAction(m_action_focus_on_input);
 
     QToolBar* toolbar = new QToolBar(this);
+    toolbar->setObjectName("python_console_toolbar");
+    toolbar->addAction(m_action_new_file);
+    toolbar->addAction(m_action_open_file);
+    toolbar->addAction(m_action_save_file);
+    toolbar->addAction(m_action_save_file_as);
+    toolbar->addSeparator();
     toolbar->addAction(m_action_execute_selection);
     toolbar->addAction(m_action_execute_all);
     toolbar->addAction(m_action_clear_selection);
@@ -106,6 +145,12 @@ PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
     setLayout(layout);
 
     PythonInterpreter::instance().initialize(OutputRedirector(m_output));
+}
+
+void PythonConsoleWidget::slot_file_changed()
+{
+    if (m_input->document()->isModified())
+        m_is_file_dirty = true;
 }
 
 void PythonConsoleWidget::slot_execute_selection()
@@ -121,14 +166,166 @@ void PythonConsoleWidget::slot_execute_all()
     execute(m_input->toPlainText());
 }
 
+void PythonConsoleWidget::execute(const QString& script)
+{
+    PythonInterpreter::instance().execute(script.toStdString().c_str());
+}
+
 void PythonConsoleWidget::slot_clear_output()
 {
     m_output->clear();
 }
 
-void PythonConsoleWidget::execute(const QString& script)
+void PythonConsoleWidget::slot_new_file()
 {
-    PythonInterpreter::instance().execute(script.toStdString().c_str());
+    if (!can_close_file())
+        return;
+
+    close_file();
+}
+
+void PythonConsoleWidget::close_file()
+{
+    m_input->clear();
+    m_opened_file = "";
+    m_is_file_dirty = false;
+}
+
+namespace
+{
+    int show_modified_file_message_box(QWidget* parent)
+    {
+        QMessageBox msgbox(parent);
+        msgbox.setWindowTitle("Save Changes?");
+        msgbox.setIcon(QMessageBox::Question);
+        msgbox.setText("The python script has been modified.");
+        msgbox.setInformativeText("Do you want to save your changes?");
+        msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        msgbox.setDefaultButton(QMessageBox::Save);
+        return msgbox.exec();
+    }
+}
+
+bool PythonConsoleWidget::can_close_file()
+{
+    // Unmodified file: no problem.
+    if (!m_is_file_dirty)
+        return true;
+
+    // The current file has been modified, ask the user what to do.
+    switch (show_modified_file_message_box(this))
+    {
+        case QMessageBox::Save:
+            slot_save_file();
+            return true;
+
+        case QMessageBox::Discard:
+            return true;
+
+        case QMessageBox::Cancel:
+            return false;
+    }
+
+    assert(!"Should never be reached.");
+    return false;
+}
+
+void PythonConsoleWidget::slot_open_file()
+{
+    if (!can_close_file())
+        return;
+
+    ParamArray settings = PythonInterpreter::instance().get_main_window()->get_settings();
+
+    QString filepath =
+        get_open_filename(
+            this,
+            "Open...",
+            "Python Script File (*.py)",
+            settings,
+            SETTINGS_FILE_DIALOG_PYTHON_SCRIPTS);
+
+    if (!filepath.isEmpty())
+    {
+        filepath = QDir::toNativeSeparators(filepath);
+        open_file(filepath.toStdString());
+    }
+}
+
+void PythonConsoleWidget::open_file(const string& filepath)
+{
+    fstream file(filepath, fstream::in);
+    if (file.bad())
+    {
+        RENDERER_LOG_ERROR("Can't open python script \"%s\"", filepath.c_str());
+        return;
+    }
+
+    close_file();
+    m_opened_file = filepath;
+
+    while (!file.eof())
+    {
+        string str;
+        getline(file, str);
+        m_input->appendPlainText(str.c_str());
+    }
+
+    file.close();
+    m_is_file_dirty = false;
+}
+
+void PythonConsoleWidget::slot_save_file()
+{
+    if (!has_file_path())
+        slot_save_file_as();
+    else
+        save_file(m_opened_file);
+}
+
+bool PythonConsoleWidget::has_file_path()
+{
+    return m_opened_file != "";
+}
+
+void PythonConsoleWidget::slot_save_file_as()
+{
+    ParamArray settings = PythonInterpreter::instance().get_main_window()->get_settings();
+
+    const QString filepath =
+        get_save_filename(
+            this,
+            "Save As...",
+            "Python Script File (*.py)",
+            settings,
+            SETTINGS_FILE_DIALOG_PYTHON_SCRIPTS);
+
+    if (!filepath.isEmpty())
+        save_file(filepath.toStdString());
+}
+
+void PythonConsoleWidget::save_file(std::string filepath)
+{
+    const size_t extension_start = filepath.rfind('.') + 1;
+    string extension = "";
+    if (extension_start != string::npos)
+        extension = filepath.substr(extension_start);
+
+    if (extension != "py")
+        filepath += ".py";
+
+    fstream file(filepath, fstream::out);
+    if (file.bad())
+    {
+        RENDERER_LOG_ERROR("Can't save python script \"%s\"", filepath.c_str());
+        return;
+    }
+
+    string text = m_input->toPlainText().toStdString();
+    file.write(text.c_str(), text.size());
+
+    m_opened_file = filepath;
+    m_is_file_dirty = false;
 }
 
 }   // namespace studio
