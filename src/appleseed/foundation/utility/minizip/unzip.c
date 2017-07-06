@@ -753,7 +753,7 @@ local unzFile unzOpenInternal (const void *path,
 
 
     s=(unz64_s*)ALLOC(sizeof(unz64_s));
-    if( s != NULL)
+    if ( s != NULL)
     {
         *s=us;
         unzGoToFirstFile((unzFile)s);
@@ -1024,7 +1024,7 @@ local int unz64local_GetCurrentFileInfoInternal (unzFile file,
                 err=UNZ_ERRNO;
         }
 
-        while(acc < file_info.size_file_extra)
+        while (acc < file_info.size_file_extra)
         {
             uLong headerId;
                                                 uLong dataSize;
@@ -1040,26 +1040,26 @@ local int unz64local_GetCurrentFileInfoInternal (unzFile file,
             {
                                                         uLong uL;
 
-                                                                if(file_info.uncompressed_size == MAXU32)
+                                                                if (file_info.uncompressed_size == MAXU32)
                                                                 {
                                                                         if (unz64local_getLong64(&s->z_filefunc, s->filestream,&file_info.uncompressed_size) != UNZ_OK)
                                                                                         err=UNZ_ERRNO;
                                                                 }
 
-                                                                if(file_info.compressed_size == MAXU32)
+                                                                if (file_info.compressed_size == MAXU32)
                                                                 {
                                                                         if (unz64local_getLong64(&s->z_filefunc, s->filestream,&file_info.compressed_size) != UNZ_OK)
                                                                                   err=UNZ_ERRNO;
                                                                 }
 
-                                                                if(file_info_internal.offset_curfile == MAXU32)
+                                                                if (file_info_internal.offset_curfile == MAXU32)
                                                                 {
                                                                         /* Relative Header offset */
                                                                         if (unz64local_getLong64(&s->z_filefunc, s->filestream,&file_info_internal.offset_curfile) != UNZ_OK)
                                                                                 err=UNZ_ERRNO;
                                                                 }
 
-                                                                if(file_info.disk_num_start == MAXU32)
+                                                                if (file_info.disk_num_start == MAXU32)
                                                                 {
                                                                         /* Disk Start Number */
                                                                         if (unz64local_getLong(&s->z_filefunc, s->filestream,&uL) != UNZ_OK)
@@ -1623,7 +1623,7 @@ extern int ZEXPORT unzOpenCurrentFile3 (unzFile file, int* method,
                      s->pfile_in_zip_read->byte_before_the_zipfile,
                   SEEK_SET)!=0)
             return UNZ_INTERNALERROR;
-        if(ZREAD64(s->z_filefunc, s->filestream,source, 12)<12)
+        if (ZREAD64(s->z_filefunc, s->filestream,source, 12)<12)
             return UNZ_INTERNALERROR;
 
         for (i = 0; i<12; i++)
@@ -1741,10 +1741,10 @@ extern int ZEXPORT unzReadCurrentFile  (unzFile file, voidp buf, unsigned len)
 
 
 #            ifndef NOUNCRYPT
-            if(s->encrypted)
+            if (s->encrypted)
             {
                 uInt i;
-                for(i=0;i<uReadThis;i++)
+                for (i=0;i<uReadThis;i++)
                   pfile_in_zip_read_info->read_buffer[i] =
                       zdecode(s->keys,s->pcrc_32_tab,
                               pfile_in_zip_read_info->read_buffer[i]);

@@ -290,7 +290,7 @@ public:
       FreeLibrary(m_hDbhHelp);
     m_hDbhHelp = NULL;
     m_parent = NULL;
-    if(m_szSymPath != NULL)
+    if (m_szSymPath != NULL)
       free(m_szSymPath);
     m_szSymPath = NULL;
   }
@@ -758,7 +758,7 @@ private:
       const char *szSymType = "-unknown-";
       if (this->GetModuleInfo(hProcess, baseAddr, &Module) != FALSE)
       {
-        switch(Module.SymType)
+        switch (Module.SymType)
         {
           case SymNone:
             szSymType = "-nosymbols-";
@@ -812,7 +812,7 @@ public:
   BOOL GetModuleInfo(HANDLE hProcess, DWORD64 baseAddr, IMAGEHLP_MODULE64_V3 *pModuleInfo)
   {
     memset(pModuleInfo, 0, sizeof(IMAGEHLP_MODULE64_V3));
-    if(this->pSGMI == NULL)
+    if (this->pSGMI == NULL)
     {
       SetLastError(ERROR_DLL_INIT_FAILED);
       return FALSE;

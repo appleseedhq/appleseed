@@ -188,7 +188,7 @@ protected:
     if (pExp != NULL) \
       memcpy(&c, pExp->ContextRecord, sizeof(CONTEXT)); \
       c.ContextFlags = contextFlags; \
-  } while(0);
+  } while (0);
 #else
 // The following should be enough for walking the callstack...
 #define GET_CURRENT_CONTEXT(c, contextFlags) \
@@ -200,7 +200,7 @@ protected:
     __asm    mov c.Eip, eax \
     __asm    mov c.Ebp, ebp \
     __asm    mov c.Esp, esp \
-  } while(0);
+  } while (0);
 #endif
 
 #else
@@ -211,7 +211,7 @@ protected:
     memset(&c, 0, sizeof(CONTEXT)); \
     c.ContextFlags = contextFlags; \
     RtlCaptureContext(&c); \
-} while(0);
+} while (0);
 #endif
 
 #endif  // !APPLESEED_FOUNDATION_PLATFORM_WIN32STACKWALKER_H
