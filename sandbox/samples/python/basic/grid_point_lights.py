@@ -41,7 +41,7 @@ import appleseed as asr
 
 # Initial parameters for generating grid light scene
 grid_lights_count = 20
-color = "white"
+color = "mix"
 plane_size = 100
 output_scene_name = "output/" + str(grid_lights_count) + "x" + str(grid_lights_count) + "_" + color + "_point_lights"
 
@@ -140,6 +140,8 @@ def build_project():
     #------------------------------------------------------------------------
     # Lights
     #------------------------------------------------------------------------
+    light_z_distance = 1.5
+
     if color == "white":
         assembly.colors().insert(asr.ColorEntity("white",
                                             {
@@ -168,14 +170,14 @@ def build_project():
                                                                 'intensity_multiplier': "3"
 
                                                              })
-                light_position = asr.Vector3d( i, j, 0.2 )
+                light_position = asr.Vector3d( i, j, light_z_distance )
                 mat = orientation * asr.Matrix4d.make_translation(light_position)
                 light.set_transform(asr.Transformd(mat))
                 assembly.lights().insert(light)
 
     elif color == "mix":
         for i in xrange(0, grid_lights_count * grid_lights_count):
-            random_color = list(colorsys.hsv_to_rgb(random.uniform(0, 1), 1.0, 1.0))
+            random_color = list(colorsys.hsv_to_rgb(random.uniform(0, 1), 1.0, 3.0))
             assembly.colors().insert(asr.ColorEntity("color_" + str(i),
                                                 {
                                                     'color_space': 'linear_rgb',
@@ -204,7 +206,7 @@ def build_project():
                                                                 'intensity_multiplier': "3"
 
                                                              })
-                light_position = asr.Vector3d( i, j, 0.2 )
+                light_position = asr.Vector3d( i, j, light_z_distance )
                 mat = orientation * asr.Matrix4d.make_translation(light_position)
                 light.set_transform(asr.Transformd(mat))
                 assembly.lights().insert(light)
