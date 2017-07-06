@@ -140,7 +140,7 @@ def build_project():
     #------------------------------------------------------------------------
     # Lights
     #------------------------------------------------------------------------
-    light_z_distance = 1.5
+    light_z_distance = 1.0
 
     if color == "white":
         assembly.colors().insert(asr.ColorEntity("white",
@@ -177,7 +177,14 @@ def build_project():
 
     elif color == "mix":
         for i in xrange(0, grid_lights_count * grid_lights_count):
-            random_color = list(colorsys.hsv_to_rgb(random.uniform(0, 1), 1.0, 3.0))
+            s = random.uniform(0, 1)
+            if s < 0.65:
+                ran = random.gauss(1, 0.01)
+            elif s < 0.9:
+                ran = random.gauss(0.3, 0.1)
+            else:
+                ran = random.gauss(0.7, 0.01)
+            random_color = list(colorsys.hls_to_rgb(ran, 0.5, 1.0))
             assembly.colors().insert(asr.ColorEntity("color_" + str(i),
                                                 {
                                                     'color_space': 'linear_rgb',
