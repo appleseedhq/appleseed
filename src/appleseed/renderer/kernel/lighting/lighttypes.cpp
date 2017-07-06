@@ -48,7 +48,7 @@ LightSource::~LightSource()
 }
 
 //
-// Non-physical light source class implementation
+// Non-physical light source class implementation.
 //
 
 NonPhysicalLightSource::NonPhysicalLightSource(const NonPhysicalLightInfo* light)
@@ -60,7 +60,7 @@ foundation::Vector3d NonPhysicalLightSource::get_position()  const
 {
     const Light* light = m_light_info->m_light;
 
-    // Compute the exact position of the light
+    // Compute the exact position of the light.
     foundation::Vector3d position = light->get_transform()
                                           .get_local_to_parent()
                                           .extract_translation();
@@ -101,7 +101,7 @@ bool NonPhysicalLightSource::is_light_tree_compatible() const
 }
 
 //
-// Emitting triangle light source class implementation
+// Emitting triangle light source class implementation.
 //
 
 EmittingTriangleLightSource::EmittingTriangleLightSource(const EmittingTriangle* light)
@@ -111,7 +111,7 @@ EmittingTriangleLightSource::EmittingTriangleLightSource(const EmittingTriangle*
 
 foundation::Vector3d EmittingTriangleLightSource::get_position() const
 {
-    // Retrieve coordinates of each vertex in world space
+    // Retrieve the coordinates of each vertex in world space.
     foundation::Vector3d vertex0 = m_light->m_v0;
     foundation::Vector3d vertex1 = m_light->m_v1;
     foundation::Vector3d vertex2 = m_light->m_v2;
@@ -123,7 +123,7 @@ foundation::Vector3d EmittingTriangleLightSource::get_position() const
 
 foundation::AABB3d EmittingTriangleLightSource::get_bbox() const
 {
-    // Retrieve coordinates of each vertex in world space
+    // Retrieve the coordinates of each vertex in world space.
     foundation::Vector3d vertex0 = m_light->m_v0;
     foundation::Vector3d vertex1 = m_light->m_v1;
     foundation::Vector3d vertex2 = m_light->m_v2;
