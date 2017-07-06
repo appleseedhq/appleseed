@@ -80,6 +80,7 @@
 // Standard headers.
 #include <cassert>
 #include <cmath>
+#include <limits>
 
 using namespace foundation;
 using namespace renderer;
@@ -289,18 +290,24 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_text_input_widgets(const Dictio
 
 auto_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
-    const double min_value = metadata.get<double>("min_value");
-    const double max_value = metadata.get<double>("max_value");
+    const Dictionary& min = metadata.dictionary("min");
+    const Dictionary& max = metadata.dictionary("max");
+
+    const double slider_min = min.get<double>("value");
+    const double slider_max = max.get<double>("value");
+
+    const double validator_min = min.get<string>("type") == "hard" ? slider_min : -numeric_limits<double>::max();
+    const double validator_max = max.get<string>("type") == "hard" ? slider_max : +numeric_limits<double>::max();
 
     QLineEdit* line_edit = new QLineEdit(m_parent);
     line_edit->setMaximumWidth(60);
-    line_edit->setValidator(new QDoubleValidator(min_value, max_value, 16, line_edit));
+    line_edit->setValidator(new QDoubleValidator(validator_min, validator_max, 16, line_edit));
 
     DoubleSlider* slider = new DoubleSlider(Qt::Horizontal, m_parent);
-    slider->setRange(min_value, max_value);
-    slider->setPageStep((max_value - min_value) / 10.0);
+    slider->setRange(slider_min, slider_max);
+    slider->setPageStep((slider_max - slider_min) / 10.0);
     new MouseWheelFocusEventFilter(slider);
-    LineEditDoubleSliderAdaptor* adaptor = new LineEditDoubleSliderAdaptor(line_edit, slider);
+    auto adaptor = new LineEditDoubleSliderAdaptor(line_edit, slider);
     connect(slider, SIGNAL(valueChanged(int)), SLOT(slot_apply()));
 
     if (should_be_focused(metadata))
@@ -333,15 +340,21 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dic
 
 auto_ptr<IInputWidgetProxy> EntityEditor::create_integer_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
-    const int min_value = metadata.get<int>("min_value");
-    const int max_value = metadata.get<int>("max_value");
+    const Dictionary& min = metadata.dictionary("min");
+    const Dictionary& max = metadata.dictionary("max");
+
+    const int slider_min = min.get<int>("value");
+    const int slider_max = max.get<int>("value");
+
+    const int validator_min = slider_min;
+    const int validator_max = slider_max;
 
     QLineEdit* line_edit = new QLineEdit(m_parent);
     line_edit->setMaximumWidth(60);
-    line_edit->setValidator(new QIntValidator(min_value, max_value, line_edit));
+    line_edit->setValidator(new QIntValidator(validator_min, validator_max, line_edit));
 
     QSlider* slider = new QSlider(Qt::Horizontal, m_parent);
-    slider->setRange(min_value, max_value);
+    slider->setRange(slider_min, slider_max);
     new MouseWheelFocusEventFilter(slider);
     new LineEditSliderAdaptor(line_edit, slider);
     connect(slider, SIGNAL(valueChanged(int)), SLOT(slot_apply()));
@@ -466,8 +479,39 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_colormap_input_widgets(const Di
 {
     const string name = metadata.get<string>("name");
 
+    double slider_min, slider_max;
+    double validator_min, validator_max;
+
+    if (metadata.dictionaries().exist("min"))
+    {
+        const Dictionary& min = metadata.dictionary("min");
+        slider_min = min.get<double>("value");
+        validator_min = min.get<string>("type") == "hard" ? slider_min : -numeric_limits<double>::max();
+    }
+    else
+    {
+        slider_min = 0.0;
+        validator_min = 0.0;
+    }
+
+    if (metadata.dictionaries().exist("max"))
+    {
+        const Dictionary& max = metadata.dictionary("max");
+        slider_max = max.get<double>("value");
+        validator_max = max.get<string>("type") == "hard" ? slider_max : +numeric_limits<double>::max();
+    }
+    else
+    {
+        slider_max = 1.0;
+        validator_max = 1.0;
+    }
+
+    const QString default_value = metadata.strings().exist("default") ? metadata.get<QString>("default") : "";
+
     ColorMapInputWidget* input_widget = new ColorMapInputWidget(m_parent);
-    input_widget->set_default_value(metadata.strings().exist("default") ? metadata.get<QString>("default") : "");
+    input_widget->set_validator(new QDoubleValidatorWithDefault(validator_min, validator_max, 16, default_value));
+    input_widget->set_default_value(default_value);
+
     connect(input_widget, SIGNAL(signal_bind_button_clicked()), m_entity_picker_bind_signal_mapper, SLOT(map()));
     m_entity_picker_bind_signal_mapper->setMapping(input_widget, QString::fromStdString(name));
 

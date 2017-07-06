@@ -282,8 +282,14 @@ DictionaryArray MaxSpotLightFactory::get_input_metadata() const
             .insert("name", "inner_angle")
             .insert("label", "Inner Angle")
             .insert("type", "numeric")
-            .insert("min_value", "-180.0")
-            .insert("max_value", "180.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-180.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "180.0")
+                    .insert("type", "soft"))
             .insert("use", "required")
             .insert("default", "20.0")
             .insert("help", "Cone distribution inner angle"));
@@ -293,8 +299,14 @@ DictionaryArray MaxSpotLightFactory::get_input_metadata() const
             .insert("name", "outer_angle")
             .insert("label", "Outer Angle")
             .insert("type", "numeric")
-            .insert("min_value", "-180.0")
-            .insert("max_value", "180.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-180.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "180.0")
+                    .insert("type", "soft"))
             .insert("use", "required")
             .insert("default", "30.0")
             .insert("help", "Cone distribution outer angle"));
@@ -304,8 +316,14 @@ DictionaryArray MaxSpotLightFactory::get_input_metadata() const
             .insert("name", "tilt_angle")
             .insert("label", "Tilt Angle")
             .insert("type", "numeric")
-            .insert("min_value", "-360.0")
-            .insert("max_value", "360.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-360.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "360.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "0.0")
             .insert("help", "Rotate the spot light around its axis; only useful when using the light intensity is textured (gobo)"));
@@ -315,8 +333,14 @@ DictionaryArray MaxSpotLightFactory::get_input_metadata() const
             .insert("name", "decay_start")
             .insert("label", "Decay Start")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "10.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "0.0")
             .insert("help", "Distance at which light decay starts"));
@@ -326,8 +350,14 @@ DictionaryArray MaxSpotLightFactory::get_input_metadata() const
             .insert("name", "decay_exponent")
             .insert("label", "Decay Exponent")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "4.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "4.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "2.0")
             .insert("help", "Exponent of the light decay function"));

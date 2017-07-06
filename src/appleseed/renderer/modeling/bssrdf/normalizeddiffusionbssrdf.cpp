@@ -343,8 +343,14 @@ DictionaryArray NormalizedDiffusionBSSRDFFactory::get_input_metadata() const
             .insert("name", "ior")
             .insert("label", "Index of Refraction")
             .insert("type", "numeric")
-            .insert("min_value", "1.0")
-            .insert("max_value", "2.5")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "2.5")
+                    .insert("type", "hard"))
             .insert("use", "required")
             .insert("default", "1.3"));
 
@@ -353,8 +359,14 @@ DictionaryArray NormalizedDiffusionBSSRDFFactory::get_input_metadata() const
             .insert("name", "fresnel_weight")
             .insert("label", "Fresnel Weight")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "1.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 

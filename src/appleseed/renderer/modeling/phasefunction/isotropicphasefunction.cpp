@@ -264,8 +264,14 @@ DictionaryArray IsotropicPhaseFunctionFactory::get_input_metadata() const
             .insert("name", "absorption_multiplier")
             .insert("label", "Absorption Coefficient Multiplier")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "200.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "200.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
@@ -286,8 +292,14 @@ DictionaryArray IsotropicPhaseFunctionFactory::get_input_metadata() const
             .insert("name", "scattering_multiplier")
             .insert("label", "Scattering Coefficient Multiplier")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "200.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "200.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 

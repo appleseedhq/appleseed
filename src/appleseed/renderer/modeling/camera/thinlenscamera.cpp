@@ -710,8 +710,14 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
             .insert("name", "horizontal_fov")
             .insert("label", "Horizontal FOV")
             .insert("type", "numeric")
-            .insert("min_value", "1.0")
-            .insert("max_value", "180.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "180.0")
+                    .insert("type", "soft"))
             .insert("use", "required"));
 
     metadata.push_back(
@@ -743,8 +749,14 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
             .insert("name", "diaphragm_blades")
             .insert("label", "Diaphragm Blades")
             .insert("type", "integer")
-            .insert("min_value", "3")
-            .insert("max_value", "256")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "3")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "256")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "0"));
 
@@ -753,8 +765,14 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
             .insert("name", "diaphragm_tilt_angle")
             .insert("label", "Diaphragm Tilt Angle")
             .insert("type", "numeric")
-            .insert("min_value", "-360.0")
-            .insert("max_value", "360.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-360.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "360.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "0.0"));
 

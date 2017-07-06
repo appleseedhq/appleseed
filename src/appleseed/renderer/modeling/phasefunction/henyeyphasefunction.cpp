@@ -326,8 +326,14 @@ DictionaryArray HenyeyPhaseFunctionFactory::get_input_metadata() const
             .insert("name", "absorption_multiplier")
             .insert("label", "Absorption Coefficient Multiplier")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "200.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "200.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
@@ -347,8 +353,14 @@ DictionaryArray HenyeyPhaseFunctionFactory::get_input_metadata() const
             .insert("name", "scattering_multiplier")
             .insert("label", "Scattering Coefficient Multiplier")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "200.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "200.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
@@ -357,8 +369,14 @@ DictionaryArray HenyeyPhaseFunctionFactory::get_input_metadata() const
             .insert("name", "average_cosine")
             .insert("label", "Average Cosine (g)")
             .insert("type", "numeric")
-            .insert("min_value", "-0.9")
-            .insert("max_value", "0.9")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-0.9")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "0.9")
+                    .insert("type", "soft"))
             .insert("use", "required")
             .insert("default", "0.0"));
 

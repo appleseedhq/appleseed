@@ -379,8 +379,14 @@ DictionaryArray PinholeCameraFactory::get_input_metadata() const
             .insert("name", "horizontal_fov")
             .insert("label", "Horizontal FOV")
             .insert("type", "numeric")
-            .insert("min_value", "1.0")
-            .insert("max_value", "180.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "180.0")
+                    .insert("type", "soft"))
             .insert("use", "required"));
 
     metadata.push_back(

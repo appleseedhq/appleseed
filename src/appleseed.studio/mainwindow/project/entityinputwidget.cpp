@@ -44,6 +44,7 @@
 #include <QPushButton>
 #include <QStackedWidget>
 #include <QString>
+#include <QValidator>
 
 // Standard headers.
 #include <string>
@@ -172,7 +173,7 @@ ColorMapInputWidget::ColorMapInputWidget(QWidget* parent)
     m_slider->setRange(0.0, 1.0);
     m_slider->setPageStep(0.1);
     new MouseWheelFocusEventFilter(m_slider);
-    new LineEditDoubleSliderAdaptor(m_line_edit, m_slider);
+    m_adaptor = new LineEditDoubleSliderAdaptor(m_line_edit, m_slider);
     connect(m_slider, SIGNAL(valueChanged(int)), SIGNAL(signal_changed()));
 
     QWidget* bind_button = new QPushButton("Bind", this);
@@ -209,6 +210,17 @@ ColorMapInputWidget::ColorMapInputWidget(QWidget* parent)
     addWidget(entity_button_group);
 }
 
+void ColorMapInputWidget::set_validator(QValidator* validator)
+{
+    validator->setParent(m_line_edit);
+    m_line_edit->setValidator(validator);
+}
+
+void ColorMapInputWidget::set_default_value(const QString& default_value)
+{
+    m_default_value = default_value;
+}
+
 void ColorMapInputWidget::set_focus()
 {
     switch (currentIndex())
@@ -224,24 +236,19 @@ void ColorMapInputWidget::set_focus()
     }
 }
 
-void ColorMapInputWidget::set_default_value(const QString& default_value)
-{
-    m_default_value = default_value;
-}
-
 void ColorMapInputWidget::set_value(const QString& value)
 {
     try
     {
         const double x = from_string<double>(value);
-        m_slider->setValue(x);
+        m_adaptor->slot_set_line_edit_value(x);
         setCurrentIndex(0);
     }
     catch (const ExceptionStringConversionError&)
     {
         m_line_edit->setText(value);
         m_entity_button->setText(value);
-        setCurrentIndex(1);
+        setCurrentIndex(value.isEmpty() ? 0 : 1);   // don't show the button if the line edit is empty
     }
 }
 

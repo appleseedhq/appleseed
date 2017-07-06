@@ -167,7 +167,7 @@ namespace
             assert(is_normalized(ni_star));
 
             // Compute direction of real ray source.
-            Vector3f wr;
+            Vector3f wr(0.0f);                                                          // prevent wr from being uninitialized if refract() fails
             APPLESEED_UNUSED const bool successful = refract(wi, ni, eta, wr);
             assert(successful);
             assert(is_normalized(wr));

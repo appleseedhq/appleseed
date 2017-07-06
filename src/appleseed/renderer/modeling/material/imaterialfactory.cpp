@@ -102,8 +102,14 @@ void IMaterialFactory::add_displacement_metadata(DictionaryArray& metadata)
             .insert("name", "bump_amplitude")
             .insert("label", "Bump Amplitude")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "1.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("visible_if",
@@ -115,8 +121,14 @@ void IMaterialFactory::add_displacement_metadata(DictionaryArray& metadata)
             .insert("name", "bump_offset")
             .insert("label", "Bump Offset")
             .insert("type", "numeric")
-            .insert("min_value", "0.01")
-            .insert("max_value", "10.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.01")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "2.0")
             .insert("visible_if", Dictionary()));   // invisible

@@ -802,8 +802,14 @@ DictionaryArray KelemenBRDFFactory::get_input_metadata() const
             .insert("name", "specular_reflectance_multiplier")
             .insert("label", "Specular Reflectance Multiplier")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "10.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
@@ -812,8 +818,14 @@ DictionaryArray KelemenBRDFFactory::get_input_metadata() const
             .insert("name", "roughness")
             .insert("label", "Roughness")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "1.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
             .insert("use", "required")
             .insert("default", "0.5"));
 

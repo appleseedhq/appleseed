@@ -34,6 +34,7 @@
 #include "mainwindow/project/entityeditor.h"
 
 // Qt headers.
+#include <QDoubleValidator>
 #include <QObject>
 #include <QString>
 
@@ -149,6 +150,29 @@ class LineEditDoubleSliderAdaptor
     DoubleSlider*   m_slider;
 
     void adjust_slider(const double new_value);
+};
+
+
+//
+// A QDoubleValidator that also accepts a given string value, for instance an empty string.
+//
+
+class QDoubleValidatorWithDefault
+  : public QDoubleValidator
+{
+  public:
+    explicit QDoubleValidatorWithDefault(const QString& default_value, QObject* parent = 0);
+    QDoubleValidatorWithDefault(
+        const double    bottom,
+        const double    top,
+        const int       decimals,
+        const QString&  default_value,
+        QObject*        parent = 0);
+
+    virtual QValidator::State validate(QString& input, int& pos) const override;
+
+  private:
+    const QString m_default_value;
 };
 
 

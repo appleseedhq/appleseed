@@ -303,8 +303,14 @@ DictionaryArray ColorEntityFactory::get_input_metadata()
             .insert("name", "alpha")
             .insert("label", "Alpha")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "1.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
             .insert("default", "1.0")
             .insert("use", "optional"));
 
@@ -313,8 +319,14 @@ DictionaryArray ColorEntityFactory::get_input_metadata()
             .insert("name", "multiplier")
             .insert("label", "Multiplier")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "10.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10.0")
+                    .insert("type", "soft"))
             .insert("default", "1.0")
             .insert("use", "optional"));
 

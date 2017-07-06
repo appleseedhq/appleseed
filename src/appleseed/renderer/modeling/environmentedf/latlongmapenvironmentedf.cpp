@@ -541,8 +541,14 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_input_metadata() const
             .insert("name", "horizontal_shift")
             .insert("label", "Horizontal Shift")
             .insert("type", "numeric")
-            .insert("min_value", "-360.0")
-            .insert("max_value", "360.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-360.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "360.0")
+                    .insert("type", "soft"))
             .insert("default", "0.0")
             .insert("use", "optional")
             .insert("help", "Environment texture horizontal shift in degrees"));
@@ -552,8 +558,14 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_input_metadata() const
             .insert("name", "vertical_shift")
             .insert("label", "Vertical Shift")
             .insert("type", "numeric")
-            .insert("min_value", "-360.0")
-            .insert("max_value", "360.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-360.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "360.0")
+                    .insert("type", "soft"))
             .insert("default", "0.0")
             .insert("use", "optional")
             .insert("help", "Environment texture vertical shift in degrees"));

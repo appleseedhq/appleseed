@@ -514,8 +514,14 @@ DictionaryArray ObjectInstanceFactory::get_input_metadata()
             .insert("name", "medium_priority")
             .insert("label", "Medium Priority")
             .insert("type", "integer")
-            .insert("min_value", "-128")
-            .insert("max_value", "127")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-128")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "127")
+                    .insert("type", "hard"))
             .insert("use", "optional")
             .insert("default", "0"));
 
