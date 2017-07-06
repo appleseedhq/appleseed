@@ -134,7 +134,7 @@ TEST_SUITE(Renderer_Modeling_ShaderParamParser)
         EXPECT_EQ(9, values.size());
     }
 
-    TEST_CASE(ShaderParamParserVectorArrayWrongLenght)
+    TEST_CASE(ShaderParamParserVectorArrayWrongLength)
     {
         ShaderParamParser parser("vector[] 1.0 2.0 3.0 4.0 5.0");
         std::vector<float> values;

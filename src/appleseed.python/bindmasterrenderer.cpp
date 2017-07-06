@@ -130,7 +130,7 @@ namespace
 
     bool master_renderer_render(MasterRendererWrapper* m)
     {
-        // Unlock Python's global interpreter lock (GIL) while we do lenghty C++ computations.
+        // Unlock Python's global interpreter lock (GIL) while we do lengthy C++ computations.
         // The GIL is locked again when unlock goes out of scope.
         ScopedGILUnlock unlock;
 
