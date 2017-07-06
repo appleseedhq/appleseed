@@ -553,7 +553,8 @@ namespace
                 sample.m_value.m_glossy += clear;
             }
 
-            sample.m_value.m_beauty = sample.m_value.m_diffuse + sample.m_value.m_glossy;
+            sample.m_value.m_beauty = sample.m_value.m_diffuse;
+            sample.m_value.m_beauty += sample.m_value.m_glossy;
         }
 
         virtual float evaluate(

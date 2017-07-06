@@ -65,12 +65,12 @@ void ShadingComponents::add_to_component(
     {
       case ScatteringMode::Diffuse:
         m_diffuse += value;
-      break;
+        break;
 
       case ScatteringMode::Glossy:
       case ScatteringMode::Specular:
         m_glossy += value;
-      break;
+        break;
 
       assert_otherwise;
     }
@@ -85,13 +85,13 @@ void ShadingComponents::add_to_component(
 }
 
 void ShadingComponents::add_emission(
-    const size_t                path_lenght,
+    const size_t                path_length,
     const ScatteringMode::Mode  scattering_mode,
     const Spectrum&             value)
 {
     m_beauty += value;
 
-    if (path_lenght == 1)
+    if (path_length == 1)
         m_emission += value;
     else
         add_to_component(scattering_mode, value);

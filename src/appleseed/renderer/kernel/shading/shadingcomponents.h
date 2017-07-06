@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADING_COMPONENTS_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_SHADING_COMPONENTS_H
+#ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGCOMPONENTS_H
+#define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGCOMPONENTS_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -41,6 +41,12 @@ namespace renderer
 class ShadingComponents
 {
   public:
+    Spectrum m_beauty;
+    Spectrum m_diffuse;
+    Spectrum m_glossy;
+    Spectrum m_volume;
+    Spectrum m_emission;
+
     // Constructor.
     explicit ShadingComponents(const Spectrum::Intent intent = Spectrum::Reflectance);
 
@@ -55,15 +61,9 @@ class ShadingComponents
         const ShadingComponents&    value);
 
     void add_emission(
-        const size_t                path_lenght,
+        const size_t                path_length,
         const ScatteringMode::Mode  scattering_mode,
         const Spectrum&             value);
-
-    Spectrum m_beauty;
-    Spectrum m_diffuse;
-    Spectrum m_glossy;
-    Spectrum m_volume;
-    Spectrum m_emission;
 };
 
 ShadingComponents& operator+=(ShadingComponents& lhs, const ShadingComponents& rhs);
@@ -78,4 +78,4 @@ void madd(ShadingComponents& a, const ShadingComponents& b, const Spectrum& c);
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADING_COMPONENTS_H
+#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGCOMPONENTS_H

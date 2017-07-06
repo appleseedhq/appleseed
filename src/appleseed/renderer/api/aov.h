@@ -39,8 +39,8 @@
 #include "renderer/modeling/aov/depthaov.h"
 #include "renderer/modeling/aov/diffuseaov.h"
 #include "renderer/modeling/aov/emissionaov.h"
-#include "renderer/modeling/aov/iaovfactory.h"
 #include "renderer/modeling/aov/glossyaov.h"
+#include "renderer/modeling/aov/iaovfactory.h"
 #include "renderer/modeling/aov/normalaov.h"
 #include "renderer/modeling/aov/uvaov.h"
 

@@ -32,7 +32,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
@@ -41,6 +40,7 @@
 namespace foundation    { class Dictionary; }
 namespace foundation    { class StatisticsVector; }
 namespace renderer      { class PixelContext; }
+namespace renderer      { class ShadingComponents; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 

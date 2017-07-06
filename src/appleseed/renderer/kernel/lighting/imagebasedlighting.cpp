@@ -152,7 +152,7 @@ void compute_ibl_material_sampling(
                     bsdf_sample_count * material_prob,
                     env_sample_count * env_prob);
             env_value *= transmission;
-            env_value *= 1.0f / material_prob * mis_weight;
+            env_value *= mis_weight / material_prob;
         }
 
         // Add the contribution of this sample to the illumination.
@@ -228,7 +228,8 @@ void compute_ibl_environment_sampling(
                 material_sample_count * material_prob);
 
         // Add the contribution of this sample to the illumination.
-        env_value *= transmission / env_prob * mis_weight;
+        env_value *= transmission;
+        env_value *= mis_weight / env_prob;
         madd(radiance, material_value, env_value);
     }
 

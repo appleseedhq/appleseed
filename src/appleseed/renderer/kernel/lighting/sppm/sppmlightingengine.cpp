@@ -298,8 +298,7 @@ namespace
                 if (vertex.m_edf && vertex.m_cos_on > 0.0)
                 {
                     Spectrum emitted(0.0f, Spectrum::Illuminance);
-                    add_emitted_light_contribution(vertex, emitted);
-
+                    vertex.compute_emitted_radiance(m_shading_context, emitted);
                     vertex_radiance.m_emission += emitted;
                     vertex_radiance.m_beauty += emitted;
                 }
@@ -575,18 +574,6 @@ namespace
                     // Accumulate reflected flux.
                     radiance += bsdf_value.m_beauty;
                 }
-            }
-
-            void add_emitted_light_contribution(
-                const PathVertex&       vertex,
-                Spectrum&               vertex_radiance)
-            {
-                // Compute the emitted radiance.
-                Spectrum emitted_radiance(Spectrum::Illuminance);
-                vertex.compute_emitted_radiance(m_shading_context, emitted_radiance);
-
-                // Add the emitted light contribution.
-                vertex_radiance += emitted_radiance;
             }
         };
 

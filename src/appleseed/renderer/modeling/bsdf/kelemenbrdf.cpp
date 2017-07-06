@@ -340,7 +340,8 @@ namespace
                 assert(pdf_specular >= 0.0f);
             }
 
-            sample.m_value.m_beauty = sample.m_value.m_diffuse + sample.m_value.m_glossy;
+            sample.m_value.m_beauty = sample.m_value.m_diffuse;
+            sample.m_value.m_beauty += sample.m_value.m_glossy;
             sample.m_mode = mode;
             sample.m_probability = matte_weight * pdf_matte + specular_weight * pdf_specular;
             sample.m_incoming = Dual3f(incoming);

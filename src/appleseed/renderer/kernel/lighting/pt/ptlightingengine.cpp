@@ -932,7 +932,7 @@ namespace
 
                     radiance *= vertex.m_throughput;
                     radiance *= transmission;
-                    madd(m_path_radiance, radiance, 1.0f / distance_prob * distance_sample_count_float);
+                    madd(m_path_radiance, radiance, distance_sample_count_float / distance_prob);
                 }
             }
         };

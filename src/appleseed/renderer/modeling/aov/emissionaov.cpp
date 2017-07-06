@@ -41,7 +41,7 @@
 #include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
-#include <string>
+#include <cstddef>
 
 using namespace foundation;
 using namespace std;

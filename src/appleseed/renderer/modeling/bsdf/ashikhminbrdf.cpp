@@ -245,7 +245,8 @@ namespace
             }
 
             sample.m_mode = mode;
-            sample.m_value.m_beauty = sample.m_value.m_diffuse + sample.m_value.m_glossy;
+            sample.m_value.m_beauty = sample.m_value.m_diffuse;
+            sample.m_value.m_beauty += sample.m_value.m_glossy;
             sample.m_probability = diffuse_weight * pdf_diffuse + glossy_weight * pdf_glossy;
             sample.m_incoming = Dual3f(incoming);
             sample.compute_reflected_differentials();

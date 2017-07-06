@@ -178,7 +178,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling(
     }
 
     if (m_light_sample_count > 1)
-        radiance /= m_light_sample_count;
+        radiance /= static_cast<float>(m_light_sample_count);
 }
 
 void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_variance(
