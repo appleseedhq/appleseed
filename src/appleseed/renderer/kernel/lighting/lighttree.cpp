@@ -49,18 +49,15 @@ namespace renderer
 //
 
 LightTree::LightTree()
-  :m_tree_depth(0)
+  : m_tree_depth(0)
+  , m_built(false)
 {
-    m_built = false;
 }
 
 LightTree::~LightTree()
 {
-    RENDERER_LOG_INFO("Deleting the light tree...");
     for (foundation::const_each<LightSourcePointerVector> i = m_light_sources; i; ++i)
-    {
         delete *i;
-    }
 }
 
 bool LightTree::is_built() const
@@ -69,14 +66,12 @@ bool LightTree::is_built() const
 }
 
 void LightTree::build(
-        const std::vector<NonPhysicalLightInfo>     non_physical_lights)
+    const std::vector<NonPhysicalLightInfo>&    non_physical_lights)
 {
     foundation::Statistics statistics;
     AABBVector light_bboxes;
 
-    size_t light_index = 0;
-
-    // Collect all possible light sources into one vector
+    // Collect all possible light sources into one vector.
     for (size_t i = 0; i < non_physical_lights.size(); ++i)
     {
         LightSource* light_source = new NonPhysicalLightSource(&non_physical_lights[i]);
@@ -86,7 +81,6 @@ void LightTree::build(
         m_items.push_back(
             Item(
                 bbox,
-                light_index++,
                 i));
     }
 
@@ -94,7 +88,7 @@ void LightTree::build(
     typedef foundation::bvh::MiddlePartitioner<AABBVector> Partitioner;
     Partitioner partitioner(light_bboxes);
 
-    // Build the light tree.
+    // Build the light-tree.
     typedef foundation::bvh::Builder<LightTree, Partitioner> Builder;
     Builder builder;
     builder.build<foundation::DefaultWallclockTimer>(*this, partitioner, m_items.size(), 1);
@@ -120,10 +114,10 @@ void LightTree::build(
         recursive_node_update(0, 0);
     }
     
-    // Print light tree statistics.
+    // Print light-tree statistics.
     RENDERER_LOG_INFO("%s",
         foundation::StatisticsVector::make(
-            "light tree statistics",
+            "light-tree statistics",
             statistics).to_string().c_str());
 
     RENDERER_LOG_INFO("Number of light sources: %zu", m_light_sources.size());
@@ -134,7 +128,7 @@ void LightTree::build(
 //
 // Control output of the built tree bboxes into the VPython file.
 // The py file is written to the cwd.
-// TODO: Add possibility to shift each level of bboxes along the z-axis.
+// TODO: Add a possibility to shift each level of bboxes along the z-axis.
 //
 
 void LightTree::draw_tree_structure(
@@ -227,10 +221,10 @@ float LightTree::recursive_node_update(size_t node_index, size_t node_level)
     {
         // Access the light intensity value.
         size_t item_index = m_nodes[node_index].get_item_index();
-        size_t light_source_index = m_items[item_index].m_light_sources_index;
+        size_t light_source_index = m_items[item_index].m_light_index;
         Spectrum spectrum = m_light_sources[light_source_index]->get_intensity();
 
-        // Luminance is the average accross all the spectrum channels
+        // Luminance is the average accross all the spectrum channels.
         for (size_t i = 0; i < spectrum.size(); i++)
         {
             luminance += spectrum[i];
@@ -238,7 +232,7 @@ float LightTree::recursive_node_update(size_t node_index, size_t node_level)
         luminance /= spectrum.size();
 
         // Modify the tree depth if the branch is deeper than the other branches
-        // visited so far
+        // visited so far.
         if (m_tree_depth < node_level)
             m_tree_depth = node_level;
     }
@@ -258,7 +252,7 @@ std::pair<size_t, float> LightTree::sample(
 
     while (!m_nodes[node_index].is_leaf())
     {
-        // LightTreeNode
+        // LightTreeNode.
         const auto& node = m_nodes[node_index];
 
         std::pair<float, float> result = child_node_probabilites(node, surface_point);
@@ -279,7 +273,7 @@ std::pair<size_t, float> LightTree::sample(
         }
     }
     size_t item_index = m_nodes[node_index].get_item_index();
-    size_t light_index = m_items[item_index].m_light_tree_external_index;
+    size_t light_index = m_items[item_index].m_light_index;
 
     return std::pair<size_t, float>(light_index, light_probability);
 }
@@ -300,8 +294,8 @@ std::pair<float, float> LightTree::child_node_probabilites(
     float p1 = node_probability(child1, bbox_left, surface_point);
     float p2 = node_probability(child2, bbox_right, surface_point);
 
-    // Normalize probabilities
-    float total = p1 + p2;
+    // Normalize probabilities.
+    const float total = p1 + p2;
     if (total <= 0.0f)
     {
         p1 = 0.5;

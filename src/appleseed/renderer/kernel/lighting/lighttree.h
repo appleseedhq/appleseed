@@ -50,7 +50,7 @@ namespace renderer      { class EmittingTriangle; }
 namespace renderer{
 
 //
-// Light tree.
+// Light-tree.
 //
 
 class LightTree
@@ -72,7 +72,7 @@ class LightTree
     // Build the tree based on the lights collected by the LightSampler.
     // TODO: Remove light lists from arguments when they start being collected
     //       by the LightTree class itself.
-    void build(const std::vector<NonPhysicalLightInfo>     non_physical_lights);
+    void build(const std::vector<NonPhysicalLightInfo>& non_physical_lights);
     
     std::pair<size_t, float> sample(
         const foundation::Vector3d    surface_point,
@@ -82,22 +82,18 @@ class LightTree
     struct Item
     {
         foundation::AABB3d      m_bbox;
-        size_t                  m_light_sources_index;
-        size_t                  m_light_tree_external_index;
+        size_t                  m_light_index;
 
         Item() {}
 
         // Item contains bbox and source index of each light source
-        // source_index represents the light index in m_light_sources vector
-        // m_light_tree_external_index - index of the light as registered within the light sampler
-        //                          (index of m_light_tree_lights within the LightSampler)
+        // source_index represents the light index in m_light_sources vector and
+        // corresponds to the m_light_tree_lights within the LightSampler
         Item(
             foundation::AABB3d      bbox,
-            size_t                  source_index,
-            size_t                  light_tree_external_index) 
-            :m_bbox(bbox)
-            ,m_light_sources_index(source_index)
-            ,m_light_tree_external_index(light_tree_external_index)
+            size_t                  source_index) 
+            : m_bbox(bbox)
+            , m_light_index(source_index)
         {
         }
     };  
