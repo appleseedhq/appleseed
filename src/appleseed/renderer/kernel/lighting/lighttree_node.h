@@ -46,7 +46,7 @@ namespace renderer
 {
 
 //
-// LightTreeNode implementation
+// LightTreeNode implementation.
 //
 
 template<typename AABB> 

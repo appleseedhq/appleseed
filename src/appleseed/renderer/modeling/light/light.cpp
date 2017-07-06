@@ -94,8 +94,6 @@ void Light::set_transform(const Transformd& transform)
     bump_version_id();
 }
 
-
-    // Set the flags
 void Light::set_flags(Flags flag)
 {
     m_flags |= flag;

@@ -108,7 +108,6 @@ class DirectLightingIntegrator
         const foundation::MISHeuristic  mis_heuristic,
         const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
         Spectrum&                       radiance) const;
-    
     void compute_outgoing_radiance_light_sampling_low_variance(
         SamplingContext&                sampling_context,
         const foundation::MISHeuristic  mis_heuristic,

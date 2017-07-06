@@ -134,7 +134,7 @@ void LightTree::build(
 void LightTree::draw_tree_structure(
     const std::string &         filename_base,
     const foundation::AABB3d&   root_bbox,
-    bool                        separate_by_levels) const
+    const bool                  separate_by_levels) const
 {
     // Vpython tree output
     const double Width = 0.1;
@@ -247,8 +247,8 @@ float LightTree::recursive_node_update(size_t node_index, size_t node_level)
 }
 
 std::pair<size_t, float> LightTree::sample(
-        const foundation::Vector3d    surface_point,
-        float                         s) const
+    const foundation::Vector3d    surface_point,
+    float                         s) const
 {
     float light_probability = 1.0;
     size_t node_index = 0;
@@ -298,8 +298,8 @@ namespace
 }
 
 std::pair<float, float> LightTree::child_node_probabilites(
-        const LightTreeNode<foundation::AABB3d>&    node,
-        const foundation::Vector3d                  surface_point) const
+    const LightTreeNode<foundation::AABB3d>&    node,
+    const foundation::Vector3d                  surface_point) const
 {
     const auto& child1 = m_nodes[node.get_child_node_index()];
     const auto& child2 = m_nodes[node.get_child_node_index() + 1];

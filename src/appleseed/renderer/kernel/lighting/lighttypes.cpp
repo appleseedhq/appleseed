@@ -51,8 +51,9 @@ LightSource::~LightSource()
 // Non-physical light source class implementation.
 //
 
-NonPhysicalLightSource::NonPhysicalLightSource(const NonPhysicalLightInfo* light)
-: m_light_info(light)
+NonPhysicalLightSource::NonPhysicalLightSource(
+    const NonPhysicalLightInfo* light)
+  : m_light_info(light)
 {
 }
 
@@ -104,8 +105,9 @@ bool NonPhysicalLightSource::is_light_tree_compatible() const
 // Emitting triangle light source class implementation.
 //
 
-EmittingTriangleLightSource::EmittingTriangleLightSource(const EmittingTriangle* light)
-: m_light(light)
+EmittingTriangleLightSource::EmittingTriangleLightSource(
+    const EmittingTriangle* light)
+  : m_light(light)
 {
 }
 

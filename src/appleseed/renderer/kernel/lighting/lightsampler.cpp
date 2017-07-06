@@ -557,7 +557,7 @@ void LightSampler::sample(
     size_t candidate_groups [3];
     size_t candidate_groups_count = 0;
 
-    // Check for existance of each light group and record it.
+    // Check for existence of each light group and record it.
     if (m_non_physical_lights_cdf.valid())
         candidate_groups[candidate_groups_count++] = light_group_non_physical_cdf;
     if (m_emitting_triangles_cdf.valid())
@@ -582,14 +582,14 @@ void LightSampler::sample(
                 time,
                 foundation::Vector3f(probability_interval_shift, s[1], s[2]),
                 light_sample);
-            light_sample.m_probability *= 1.0 / candidate_groups_count;
+            light_sample.m_probability /= candidate_groups_count;
             break;
         case light_group_emitting_triangle_cdf:
             sample_emitting_triangles(
                 time,
                 foundation::Vector3f(probability_interval_shift, s[1], s[2]),
                 light_sample);
-            light_sample.m_probability *= 1.0 / candidate_groups_count;
+            light_sample.m_probability /= candidate_groups_count;
             break;
         case light_group_light_tree:
             sample_light_tree_lights(

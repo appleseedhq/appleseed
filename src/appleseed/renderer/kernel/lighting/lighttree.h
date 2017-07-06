@@ -43,11 +43,12 @@
 #include "foundation/utility/uid.h"
 
 // Forward declarations.
-namespace renderer      { class Scene; }
-namespace renderer      { class NonPhysicalLightInfo; }
 namespace renderer      { class EmittingTriangle; }
+namespace renderer      { class NonPhysicalLightInfo; }
+namespace renderer      { class Scene; }
 
-namespace renderer{
+namespace renderer
+{
 
 //
 // Light-tree.
@@ -110,7 +111,7 @@ class LightTree
     void draw_tree_structure(
         const std::string&          filename_base,
         const foundation::AABB3d&   root_bbox,
-        bool                        separate_by_levels = false) const;
+        const bool                  separate_by_levels = false) const;
 
     float recursive_node_update(size_t node_index, size_t node_level);
 

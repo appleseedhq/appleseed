@@ -252,14 +252,14 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
             radiance);
     }
 
-    // Add contributions from light tree lights only.
+    // Add contributions from light-tree lights only.
     if (m_light_sampler.get_light_tree_light_count() > 0)
     {
         sampling_context.split_in_place(3, m_light_sample_count);
 
         for (size_t i = 0; i < m_light_sample_count; ++i)
         {
-            // Sample light tree lights only.
+            // Sample light-tree lights only.
             LightSample sample;
             m_light_sampler.sample_light_tree_lights(
                 m_time,
@@ -267,9 +267,9 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
                 m_shading_point,
                 sample);
 
-            // TODO: The LightTree currently consists only of non physical lights
-            // write a more general function which will know how to handle every
-            // type of light which comes from the light tree.
+            // TODO: The LightTree currently consists only of non physical lights.
+            // Write a more general function which will know how to handle every
+            // type of light which comes from the light-tree.
             add_non_physical_light_sample_contribution(
                 sample,
                 outgoing,
