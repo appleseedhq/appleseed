@@ -30,8 +30,6 @@
 #ifndef APPLESEED_FOUNDATION_MATH_BVH_BVH_PARTITIONERBASE_H
 #define APPLESEED_FOUNDATION_MATH_BVH_BVH_PARTITIONERBASE_H
 
-// appleseed.renderer headers.
-#include "renderer/global/globallogger.h"
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/bvh/bvh_bboxsortpredicate.h"
