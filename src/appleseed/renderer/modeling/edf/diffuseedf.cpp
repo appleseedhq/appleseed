@@ -258,8 +258,14 @@ DictionaryArray DiffuseEDFFactory::get_input_metadata() const
             .insert("type", "numeric")
             .insert("use", "optional")
             .insert("default", "0.0")
-            .insert("min_value", "-64.0")
-            .insert("max_value", "64.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-64.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "64.0")
+                    .insert("type", "soft"))
             .insert("help", "Exposure"));
 
     add_common_input_metadata(metadata);

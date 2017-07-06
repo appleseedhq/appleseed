@@ -299,7 +299,8 @@ void LineEditDoubleSliderAdaptor::slot_apply_slider_value()
     m_slider->setValue(new_value);
 
     // Force reformatting of the value in the QLineEdit if necessary.
-    slot_set_line_edit_value(new_value);
+    if (!m_line_edit->text().isEmpty())
+        slot_set_line_edit_value(new_value);
 
     m_slider->blockSignals(were_signals_blocked);
 }
@@ -310,6 +311,36 @@ void LineEditDoubleSliderAdaptor::adjust_slider(const double new_value)
     const double new_max = new_value == 0.0 ? 1.0 : +2.0 * abs(new_value);
     m_slider->setRange(new_min, new_max);
     m_slider->setPageStep((new_max - new_min) / 10.0);
+}
+
+
+//
+// QDoubleValidatorWithDefault class implementation.
+//
+
+QDoubleValidatorWithDefault::QDoubleValidatorWithDefault(const QString& default_value, QObject* parent)
+  : QDoubleValidator(parent)
+  , m_default_value(default_value)
+{
+}
+
+QDoubleValidatorWithDefault::QDoubleValidatorWithDefault(
+    const double    bottom,
+    const double    top,
+    const int       decimals,
+    const QString&  default_value,
+    QObject*        parent)
+  : QDoubleValidator(bottom, top, decimals, parent)
+  , m_default_value(default_value)
+{
+}
+
+QValidator::State QDoubleValidatorWithDefault::validate(QString& input, int& pos) const
+{
+    return
+        input == m_default_value
+            ? QValidator::Acceptable
+            : QDoubleValidator::validate(input, pos);
 }
 
 

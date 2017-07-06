@@ -287,8 +287,14 @@ DictionaryArray DirectionalLightFactory::get_input_metadata() const
             .insert("name", "irradiance_multiplier")
             .insert("label", "Irradiance Multiplier")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "10.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("help", "Light intensity multiplier"));
@@ -300,8 +306,14 @@ DictionaryArray DirectionalLightFactory::get_input_metadata() const
             .insert("type", "numeric")
             .insert("use", "optional")
             .insert("default", "0.0")
-            .insert("min_value", "-64.0")
-            .insert("max_value", "64.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-64.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "64.0")
+                    .insert("type", "soft"))
             .insert("help", "Light exposure"));
 
     add_common_input_metadata(metadata);

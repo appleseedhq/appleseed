@@ -752,8 +752,14 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
             .insert("name", "ior")
             .insert("label", "Index of Refraction")
             .insert("type", "numeric")
-            .insert("min_value", "1.0")
-            .insert("max_value", "2.5")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "2.5")
+                    .insert("type", "hard"))
             .insert("use", "required")
             .insert("default", "1.5"));
 
@@ -767,8 +773,14 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("min_value", "0.0")
-            .insert("max_value", "1.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
             .insert("default", "0.15"));
 
     metadata.push_back(
@@ -776,8 +788,15 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
             .insert("name", "highlight_falloff")
             .insert("label", "Highlight Falloff")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "1.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
+            .insert("bounds", "hard")
             .insert("use", "optional")
             .insert("default", "0.4"));
 
@@ -791,8 +810,14 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("min_value", "-1.0")
-            .insert("max_value", "1.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-1.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
             .insert("default", "0.0"));
 
     metadata.push_back(
@@ -833,7 +858,14 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("min_value", "0.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10.0")
+                    .insert("type", "soft"))
             .insert("default", "0.0")
             .insert("visible_if",
                 Dictionary()
@@ -859,8 +891,14 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
             .insert("name", "volume_density")
             .insert("label", "Volume Density")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "10.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "0.0")
             .insert("visible_if",
@@ -872,8 +910,14 @@ DictionaryArray GlassBSDFFactory::get_input_metadata() const
             .insert("name", "volume_scale")
             .insert("label", "Volume Scale")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "10.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("visible_if",

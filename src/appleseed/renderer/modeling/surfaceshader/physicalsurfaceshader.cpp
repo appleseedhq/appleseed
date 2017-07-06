@@ -230,8 +230,14 @@ DictionaryArray PhysicalSurfaceShaderFactory::get_input_metadata() const
             .insert("name", "lighting_samples")
             .insert("label", "Lighting Samples")
             .insert("type", "integer")
-            .insert("min_value", "1")
-            .insert("max_value", "1000")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "1")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1000")
+                    .insert("type", "soft"))
             .insert("default", "1")
             .insert("use", "optional"));
 
