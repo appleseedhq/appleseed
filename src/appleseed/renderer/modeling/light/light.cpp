@@ -99,11 +99,6 @@ void Light::set_flags(Flags flag)
     m_flags |= flag;
 }
 
-bool Light::is_light_tree_compatible() const
-{
-    return strcmp(get_model(), "point_light") == 0;
-}
-
 const Transformd& Light::get_transform() const
 {
     return impl->m_transform;
@@ -118,9 +113,13 @@ bool Light::on_frame_begin(
     if (!ConnectableEntity::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
-    m_flags = 0;
-    if (is_light_tree_compatible())
+    if (m_flags & LightTreeCompatible)
+    {
+        m_flags = 0;
         m_flags |= LightTreeCompatible;
+    }
+    else
+        m_flags = 0;
 
     if (m_params.get_optional<bool>("cast_indirect_light", true))
         m_flags |= CastIndirectLight;
