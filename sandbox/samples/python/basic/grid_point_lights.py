@@ -155,13 +155,7 @@ def build_project():
         grid_range = np.linspace(-plane_size / 2 + step, plane_size / 2 - step, grid_lights_count)
 
         for j in grid_range:
-            # Skip the middle position.
-            if j == 0:
-                continue;
             for i in grid_range:
-                # Skip the middle position.
-                if i == 0:
-                    continue;
                 # Create a point light called "light" and insert it into the assembly.
                 light_name = "light_" + str(light_count)
                 light_count = light_count + 1
@@ -197,13 +191,7 @@ def build_project():
         grid_range = np.linspace(-plane_size / 2 + step, plane_size / 2 - step, grid_lights_count)
 
         for j in grid_range:
-            # Skip the middle position.
-            if j == 0:
-                continue;
             for i in grid_range:
-                # Skip the middle position.
-                if i == 0:
-                    continue;
                 # Create a point light called "light" and insert it into the assembly.
                 light_name = "light_" + str(light_count)
                 color_name = "color_" + str(light_count)
