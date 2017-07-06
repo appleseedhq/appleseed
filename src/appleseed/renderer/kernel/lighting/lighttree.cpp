@@ -120,9 +120,9 @@ void LightTree::build(
             "light-tree statistics",
             statistics).to_string().c_str());
 
-    RENDERER_LOG_INFO("Number of light sources: %zu", m_light_sources.size());
-    RENDERER_LOG_INFO("Number of nodes: %zu", m_nodes.size());
-    RENDERER_LOG_INFO("Tree depth: %zu", m_tree_depth);
+    RENDERER_LOG_INFO("number of light sources: %zu", m_light_sources.size());
+    RENDERER_LOG_INFO("number of nodes: %zu", m_nodes.size());
+    RENDERER_LOG_INFO("tree depth: %zu", m_tree_depth);
 }
 
 //
@@ -132,9 +132,9 @@ void LightTree::build(
 //
 
 void LightTree::draw_tree_structure(
-        std::string                 filename,
-        const foundation::AABB3d&   root_bbox,
-        bool                        separate_by_levels) const
+    const std::string &         filename_base,
+    const foundation::AABB3d&   root_bbox,
+    bool                        separate_by_levels) const
 {
     // Vpython tree output
     const double Width = 0.1;
@@ -144,7 +144,10 @@ void LightTree::draw_tree_structure(
         const char* color = "color.green";
         for (size_t parent_level = 0; parent_level < m_tree_depth; parent_level++)
         {
-            filename += "_" + std::to_string(parent_level + 1) + ".py";
+            const std::string filename = filename_base
+                                       + "_"
+                                       + std::to_string(parent_level + 1)
+                                       + ".py";
             foundation::VPythonFile file(filename.c_str());
             file.draw_axes(Width);
 
@@ -171,7 +174,7 @@ void LightTree::draw_tree_structure(
     }
     else
     {
-        filename += ".py";
+        const std::string filename = filename_base + ".py";
         foundation::VPythonFile file(filename.c_str());
         file.draw_axes(Width);
         const char* color = "color.yellow";
@@ -278,6 +281,22 @@ std::pair<size_t, float> LightTree::sample(
     return std::pair<size_t, float>(light_index, light_probability);
 }
 
+namespace
+{
+    float node_probability(
+            const LightTreeNode<foundation::AABB3d>&    node,
+            const foundation::AABB3d                    bbox,
+            const foundation::Vector3d                  surface_point)
+    {
+        // Calculate probabiliy a single node based on its distance
+        // to the surface point being evaluated.
+        const float squared_distance = foundation::square_distance(surface_point, bbox.center());
+        const float inverse_distance_falloff = 1.0f / squared_distance;
+
+        return node.get_luminance() * inverse_distance_falloff;
+    }    
+}
+
 std::pair<float, float> LightTree::child_node_probabilites(
         const LightTreeNode<foundation::AABB3d>&    node,
         const foundation::Vector3d                  surface_point) const
@@ -308,19 +327,6 @@ std::pair<float, float> LightTree::child_node_probabilites(
     }
 
     return std::pair<float, float>(p1, p2);
-}
-
-float LightTree::node_probability(
-        const LightTreeNode<foundation::AABB3d>&    node,
-        const foundation::AABB3d                    bbox,
-        const foundation::Vector3d                  surface_point) const
-{
-    // Calculate probabiliy a single node based on its distance
-    // to the surface point being evaluated.
-    const float squared_distance = foundation::square_distance(surface_point, bbox.center());
-    const float inverse_distance_falloff = 1.0f / squared_distance;
-
-    return node.get_luminance() * inverse_distance_falloff;
 }
 
 }   // namespace renderer

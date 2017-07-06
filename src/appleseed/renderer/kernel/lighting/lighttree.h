@@ -108,7 +108,7 @@ class LightTree
     bool                       m_built; // Was the tree built?
 
     void draw_tree_structure(
-        std::string                 filename,
+        const std::string&          filename_base,
         const foundation::AABB3d&   root_bbox,
         bool                        separate_by_levels = false) const;
 
@@ -116,11 +116,6 @@ class LightTree
 
     std::pair<float, float> child_node_probabilites(
         const LightTreeNode<foundation::AABB3d>&    node,
-        const foundation::Vector3d                  surface_point) const;
-
-    float node_probability(
-        const LightTreeNode<foundation::AABB3d>&    node,
-        const foundation::AABB3d                    bbox,
         const foundation::Vector3d                  surface_point) const;
 };
 
