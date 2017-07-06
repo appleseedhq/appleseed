@@ -132,7 +132,7 @@ void LightTree::build(
 //
 
 void LightTree::draw_tree_structure(
-    const std::string &         filename_base,
+    const std::string&          filename_base,
     const foundation::AABB3d&   root_bbox,
     const bool                  separate_by_levels) const
 {
@@ -284,9 +284,9 @@ std::pair<size_t, float> LightTree::sample(
 namespace
 {
     float node_probability(
-            const LightTreeNode<foundation::AABB3d>&    node,
-            const foundation::AABB3d&                   bbox,
-            const foundation::Vector3d&                 surface_point)
+        const LightTreeNode<foundation::AABB3d>&    node,
+        const foundation::AABB3d&                   bbox,
+        const foundation::Vector3d&                 surface_point)
     {
         // Calculate probabiliy a single node based on its distance
         // to the surface point being evaluated.

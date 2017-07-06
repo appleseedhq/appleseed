@@ -554,7 +554,7 @@ void LightSampler::sample(
     const size_t light_group_emitting_triangle_cdf  = 1;
     const size_t light_group_light_tree             = 2;
 
-    size_t candidate_groups [3];
+    size_t candidate_groups[3];
     size_t candidate_groups_count = 0;
 
     // Check for existence of each light group and record it.
