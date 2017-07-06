@@ -57,7 +57,7 @@ LightTree::LightTree()
 LightTree::~LightTree()
 {
     RENDERER_LOG_INFO("Deleting the light tree...");
-    for(foundation::const_each<LightSourcePointerVector> i = m_light_sources; i; ++i)
+    for (foundation::const_each<LightSourcePointerVector> i = m_light_sources; i; ++i)
     {
         delete *i;
     }
@@ -145,10 +145,10 @@ void LightTree::draw_tree_structure(
     // Vpython tree output
     const double Width = 0.1;
 
-    if(separate_by_levels)
+    if (separate_by_levels)
     {
         const char* color = "color.green";
-        for(size_t parent_level = 0; parent_level < m_tree_depth; parent_level++)
+        for (size_t parent_level = 0; parent_level < m_tree_depth; parent_level++)
         {
             filename += "_" + std::to_string(parent_level + 1) + ".py";
             foundation::VPythonFile file(filename.c_str());
@@ -158,7 +158,7 @@ void LightTree::draw_tree_structure(
             file.draw_aabb(root_bbox, color, Width);
 
             // Find the parent node to draw child bboxes from.
-            for(size_t i = 0; i < m_nodes.size(); i++)
+            for (size_t i = 0; i < m_nodes.size(); i++)
             {
                 if (m_nodes[i].is_leaf())
                     continue;
@@ -186,7 +186,7 @@ void LightTree::draw_tree_structure(
         file.draw_aabb(root_bbox, color, Width);
 
         // Find the parent node to draw child bboxes from.
-        for(size_t i = 0; i < m_nodes.size(); i++)
+        for (size_t i = 0; i < m_nodes.size(); i++)
         {
             if (m_nodes[i].is_leaf())
                 continue;
@@ -231,7 +231,7 @@ float LightTree::recursive_node_update(size_t node_index, size_t node_level)
         Spectrum spectrum = m_light_sources[light_source_index]->get_intensity();
 
         // Luminance is the average accross all the spectrum channels
-        for(size_t i = 0; i < spectrum.size(); i++)
+        for (size_t i = 0; i < spectrum.size(); i++)
         {
             luminance += spectrum[i];
         }
