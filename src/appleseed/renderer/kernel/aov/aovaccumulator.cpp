@@ -30,6 +30,7 @@
 #include "aovaccumulator.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
@@ -65,8 +66,14 @@ void AOVAccumulator::release()
 }
 
 void AOVAccumulator::write(
-    const ShadingPoint&     shading_point,
-    const Camera&           camera)
+    const ShadingComponents&    shading_components,
+    const float                 multiplier)
+{
+}
+
+void AOVAccumulator::write(
+    const ShadingPoint&         shading_point,
+    const Camera&               camera)
 {
 }
 
@@ -108,6 +115,16 @@ void BeautyAOVAccumulator::reset()
 {
     m_color_space = ColorSpaceLinearRGB;
     m_color.set(0.0f);
+}
+
+void BeautyAOVAccumulator::write(
+    const ShadingComponents&    shading_components,
+    const float                 multiplier)
+{
+    const Spectrum& value = shading_components.m_beauty;
+    m_color_space = value.is_rgb() ? ColorSpaceLinearRGB : ColorSpaceSpectral;
+    m_color = value;
+    m_color *= multiplier;
 }
 
 void BeautyAOVAccumulator::flush(ShadingResult& result)
@@ -181,8 +198,16 @@ void AOVAccumulatorContainer::reset()
 }
 
 void AOVAccumulatorContainer::write(
-    const ShadingPoint&     shading_point,
-    const Camera&           camera)
+    const ShadingComponents&    shading_components,
+    const float                 multiplier)
+{
+    for (size_t i = 0, e = m_size; i < e; ++i)
+        m_accumulators[i]->write(shading_components, multiplier);
+}
+
+void AOVAccumulatorContainer::write(
+    const ShadingPoint&         shading_point,
+    const Camera&               camera)
 {
     for (size_t i = 0, e = m_size; i < e; ++i)
         m_accumulators[i]->write(shading_point, camera);

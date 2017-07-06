@@ -1143,6 +1143,8 @@ set (renderer_kernel_shading_sources
     renderer/kernel/shading/oslshadergroupexec.h
     renderer/kernel/shading/oslshadingsystem.cpp
     renderer/kernel/shading/oslshadingsystem.h
+    renderer/kernel/shading/shadingcomponents.cpp
+    renderer/kernel/shading/shadingcomponents.h
     renderer/kernel/shading/shadingcontext.cpp
     renderer/kernel/shading/shadingcontext.h
     renderer/kernel/shading/shadingengine.cpp
@@ -1260,6 +1262,12 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/aovtraits.h
     renderer/modeling/aov/depthaov.cpp
     renderer/modeling/aov/depthaov.h
+    renderer/modeling/aov/diffuseaov.cpp
+    renderer/modeling/aov/diffuseaov.h
+    renderer/modeling/aov/emissionaov.cpp
+    renderer/modeling/aov/emissionaov.h
+    renderer/modeling/aov/glossyaov.cpp
+    renderer/modeling/aov/glossyaov.h
     renderer/modeling/aov/iaovfactory.h
     renderer/modeling/aov/normalaov.cpp
     renderer/modeling/aov/normalaov.h

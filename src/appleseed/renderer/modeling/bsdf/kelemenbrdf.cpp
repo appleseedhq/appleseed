@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/input/inputarray.h"
@@ -307,7 +308,6 @@ namespace
             }
 
             float pdf_matte = 0.0f, pdf_specular = 0.0f;
-            sample.m_value.set(0.0f);
 
             if (ScatteringMode::has_diffuse(modes))
             {
@@ -320,7 +320,7 @@ namespace
                 matte_comp -= specular_albedo_L;
                 matte_comp *= matte_albedo;
                 matte_comp *= m_s;
-                sample.m_value += matte_comp;
+                sample.m_value.m_diffuse = matte_comp;
 
                 // Evaluate the PDF of the incoming direction for the matte component.
                 pdf_matte = dot_LN * RcpPi<float>();
@@ -332,9 +332,7 @@ namespace
                 // Specular component (equation 3).
                 Spectrum rs(values->m_rs);
                 rs *= values->m_rs_multiplier;
-                Spectrum fr_spec;
-                evaluate_fr_spec(*m_mdf.get(), rs, dot_HV, dot_HN, fr_spec);
-                sample.m_value += fr_spec;
+                evaluate_fr_spec(*m_mdf.get(), rs, dot_HV, dot_HN, sample.m_value.m_glossy);
 
                 // Evaluate the PDF of the incoming direction for the specular component.
                 const float pdf_H = m_mdf->evaluate_pdf(dot_HN);
@@ -342,6 +340,8 @@ namespace
                 assert(pdf_specular >= 0.0f);
             }
 
+            sample.m_value.m_beauty = sample.m_value.m_diffuse;
+            sample.m_value.m_beauty += sample.m_value.m_glossy;
             sample.m_mode = mode;
             sample.m_probability = matte_weight * pdf_matte + specular_weight * pdf_specular;
             sample.m_incoming = Dual3f(incoming);
@@ -357,7 +357,7 @@ namespace
             const Vector3f&         outgoing,
             const Vector3f&         incoming,
             const int               modes,
-            Spectrum&               value) const override
+            ShadingComponents&      value) const override
         {
             // Define aliases to match the notations in the paper.
             const Vector3f& V = outgoing;
@@ -411,7 +411,7 @@ namespace
                 matte_comp -= specular_albedo_L;
                 matte_comp *= matte_albedo;
                 matte_comp *= m_s;
-                value += matte_comp;
+                value.m_diffuse = matte_comp;
 
                 // Evaluate the PDF of the incoming direction for the matte component.
                 pdf_matte = dot_LN * RcpPi<float>();
@@ -423,9 +423,7 @@ namespace
                 // Compute the specular component (equation 3).
                 Spectrum rs(values->m_rs);
                 rs *= values->m_rs_multiplier;
-                Spectrum fr_spec;
-                evaluate_fr_spec(*m_mdf.get(), rs, dot_HL, dot_HN, fr_spec);
-                value += fr_spec;
+                evaluate_fr_spec(*m_mdf.get(), rs, dot_HL, dot_HN, value.m_glossy);
 
                 // Evaluate the PDF of the incoming direction for the specular component.
                 const float pdf_H = m_mdf->evaluate_pdf(dot_HN);
@@ -433,6 +431,8 @@ namespace
                 assert(pdf_specular >= 0.0f);
             }
 
+            value.m_beauty = value.m_diffuse;
+            value.m_beauty += value.m_glossy;
             return matte_weight * pdf_matte + specular_weight * pdf_specular;
         }
 

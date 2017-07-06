@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 
@@ -120,8 +121,9 @@ namespace
             const float fh = pow_int<5>(saturate(1.0f - cos_ih));
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            sample.m_value = values->m_reflectance;
-            sample.m_value *= fh * values->m_reflectance_multiplier;
+            sample.m_value.m_diffuse = values->m_reflectance;
+            sample.m_value.m_diffuse *= fh * values->m_reflectance_multiplier;
+            sample.m_value.m_beauty = sample.m_value.m_diffuse;
 
             sample.m_probability = RcpTwoPi<float>();
 
@@ -139,7 +141,7 @@ namespace
             const Vector3f&     outgoing,
             const Vector3f&     incoming,
             const int           modes,
-            Spectrum&           value) const override
+            ShadingComponents&  value) const override
         {
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0f;
@@ -157,8 +159,11 @@ namespace
             const float fh = pow_int<5>(saturate(1.0f - cos_ih));
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            value = values->m_reflectance;
-            value *= fh * values->m_reflectance_multiplier;
+
+            value.set(0.0f);
+            value.m_diffuse = values->m_reflectance;
+            value.m_diffuse *= fh * values->m_reflectance_multiplier;
+            value.m_beauty = value.m_diffuse;
 
             return RcpTwoPi<float>();
         }

@@ -38,6 +38,7 @@
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -211,7 +212,7 @@ namespace
             const PixelContext&     pixel_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
-            Spectrum&               radiance) override      // output radiance, in W.sr^-1.m^-2
+            ShadingComponents&      radiance) override      // output radiance, in W.sr^-1.m^-2
         {
             if (m_params.m_next_event_estimation)
             {
@@ -236,7 +237,7 @@ namespace
             SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
-            Spectrum&               radiance)               // output radiance, in W.sr^-1.m^-2
+            ShadingComponents&      radiance)               // output radiance, in W.sr^-1.m^-2
         {
             PathVisitor path_visitor(
                 m_params,
@@ -302,7 +303,7 @@ namespace
             SamplingContext&            m_sampling_context;
             const ShadingContext&       m_shading_context;
             const EnvironmentEDF*       m_env_edf;
-            Spectrum&                   m_path_radiance;
+            ShadingComponents&          m_path_radiance;
             bool                        m_omit_emitted_light;
 
             PathVisitorBase(
@@ -311,7 +312,7 @@ namespace
                 SamplingContext&        sampling_context,
                 const ShadingContext&   shading_context,
                 const Scene&            scene,
-                Spectrum&               path_radiance)
+                ShadingComponents&      path_radiance)
               : m_params(params)
               , m_light_sampler(light_sampler)
               , m_sampling_context(sampling_context)
@@ -358,7 +359,7 @@ namespace
                 SamplingContext&        sampling_context,
                 const ShadingContext&   shading_context,
                 const Scene&            scene,
-                Spectrum&               path_radiance)
+                ShadingComponents&      path_radiance)
               : PathVisitorBase(
                     params,
                     light_sampler,
@@ -392,7 +393,10 @@ namespace
 
                 // Update path radiance.
                 env_radiance *= vertex.m_throughput;
-                m_path_radiance += env_radiance;
+                m_path_radiance.add_emission(
+                    vertex.m_path_length,
+                    vertex.m_aov_mode,
+                    env_radiance);
             }
 
             void on_hit(const PathVertex& vertex)
@@ -410,7 +414,10 @@ namespace
 
                     // Update the path radiance.
                     emitted_radiance *= vertex.m_throughput;
-                    m_path_radiance += emitted_radiance;
+                    m_path_radiance.add_emission(
+                        vertex.m_path_length,
+                        vertex.m_aov_mode,
+                        emitted_radiance);
                 }
             }
 
@@ -442,7 +449,7 @@ namespace
                 SamplingContext&        sampling_context,
                 const ShadingContext&   shading_context,
                 const Scene&            scene,
-                Spectrum&               path_radiance)
+                ShadingComponents&      path_radiance)
               : PathVisitorBase(
                     params,
                     light_sampler,
@@ -500,7 +507,10 @@ namespace
                     clamp_contribution(env_radiance);
 
                 // Update the path radiance.
-                m_path_radiance += env_radiance;
+                m_path_radiance.add_emission(
+                    vertex.m_path_length,
+                    vertex.m_aov_mode,
+                    env_radiance);
             }
 
             void on_hit(const PathVertex& vertex)
@@ -518,7 +528,10 @@ namespace
 
                     // Update the path radiance.
                     emitted_radiance *= vertex.m_throughput;
-                    m_path_radiance += emitted_radiance;
+                    m_path_radiance.add_emission(
+                        vertex.m_path_length,
+                        vertex.m_aov_mode,
+                        emitted_radiance);
                 }
             }
 
@@ -538,7 +551,7 @@ namespace
                 if (vertex.m_scattering_modes == ScatteringMode::None)
                     return;
 
-                Spectrum vertex_radiance(0.0f, Spectrum::Illuminance);
+                ShadingComponents vertex_radiance(Spectrum::Illuminance);
 
                 if (vertex.m_bssrdf == 0)
                 {
@@ -597,7 +610,10 @@ namespace
                     clamp_contribution(vertex_radiance);
 
                 // Update path radiance.
-                m_path_radiance += vertex_radiance;
+                if (vertex.m_path_length == 1)
+                    m_path_radiance += vertex_radiance;
+                else
+                    m_path_radiance.add_to_component(vertex.m_aov_mode, vertex_radiance);
             }
 
             void add_emitted_light_contribution(
@@ -629,9 +645,9 @@ namespace
                 const BSDF&             bsdf,
                 const void*             bsdf_data,
                 const int               scattering_modes,
-                Spectrum&               vertex_radiance)
+                ShadingComponents&      vertex_radiance)
             {
-                Spectrum dl_radiance(Spectrum::Illuminance);
+                ShadingComponents dl_radiance(Spectrum::Illuminance);
 
                 const size_t light_sample_count =
                     stochastic_cast<size_t>(
@@ -678,9 +694,9 @@ namespace
                 const BSDF&             bsdf,
                 const void*             bsdf_data,
                 const int               scattering_modes,
-                Spectrum&               vertex_radiance)
+                ShadingComponents&      vertex_radiance)
             {
-                Spectrum ibl_radiance(Spectrum::Illuminance);
+                ShadingComponents ibl_radiance(Spectrum::Illuminance);
 
                 const size_t env_sample_count =
                     stochastic_cast<size_t>(
@@ -720,6 +736,21 @@ namespace
                 if (avg > m_params.m_max_ray_intensity)
                     radiance *= m_params.m_max_ray_intensity / avg;
             }
+
+            void clamp_contribution(ShadingComponents& radiance) const
+            {
+                // Clamp all components.
+                clamp_contribution(radiance.m_diffuse);
+                clamp_contribution(radiance.m_glossy);
+                clamp_contribution(radiance.m_volume);
+                clamp_contribution(radiance.m_emission);
+
+                // Rebuild the beauty component.
+                radiance.m_beauty  = radiance.m_diffuse;
+                radiance.m_beauty += radiance.m_glossy;
+                radiance.m_beauty += radiance.m_volume;
+                radiance.m_beauty += radiance.m_emission;
+            }
         };
 
         //
@@ -732,7 +763,7 @@ namespace
             const LightSampler&         m_light_sampler;
             SamplingContext&            m_sampling_context;
             const ShadingContext&       m_shading_context;
-            Spectrum&                   m_path_radiance;
+            ShadingComponents&          m_path_radiance;
             const EnvironmentEDF*       m_env_edf;
             bool                        m_is_indirect_lighting;
 
@@ -742,7 +773,7 @@ namespace
                 SamplingContext&        sampling_context,
                 const ShadingContext&   shading_context,
                 const Scene&            scene,
-                Spectrum&               path_radiance)
+                ShadingComponents&      path_radiance)
               : m_params(params)
               , m_light_sampler(light_sampler)
               , m_sampling_context(sampling_context)
@@ -756,12 +787,12 @@ namespace
             void add_direct_lighting_contribution(
                 const ShadingRay&       volume_ray,
                 const PhaseFunction&    phase_function,
-                const void*             phase_function_data, 
+                const void*             phase_function_data,
                 const float             distance_sample,
                 const int               scattering_modes,
-                Spectrum&               radiance)
+                ShadingComponents&      radiance)
             {
-                Spectrum dl_radiance(0.0f, Spectrum::Illuminance);
+                ShadingComponents dl_radiance(Spectrum::Illuminance);
 
                 const size_t light_sample_count =
                     stochastic_cast<size_t>(
@@ -805,7 +836,7 @@ namespace
                 const PhaseFunction&    phase_function,
                 const void*             phase_function_data,
                 const float             distance_sample,
-                Spectrum&               radiance)
+                ShadingComponents&      radiance)
             {
                 const PhaseFunctionSampler phase_function_sampler(
                     volume_ray,
@@ -813,7 +844,7 @@ namespace
                     phase_function_data,
                     distance_sample);
 
-                Spectrum ibl_radiance(0.0f, Spectrum::Illuminance);
+                ShadingComponents ibl_radiance(Spectrum::Illuminance);
 
                 const size_t env_sample_count =
                     stochastic_cast<size_t>(
@@ -862,7 +893,7 @@ namespace
 
                 for (size_t i = 0; i < distance_sample_count; ++i)
                 {
-                    Spectrum radiance(0.0f, Spectrum::Illuminance);
+                    ShadingComponents radiance(Spectrum::Illuminance);
 
                     // Sample distance.
                     float distance_sample;
@@ -899,10 +930,9 @@ namespace
                             radiance);
                     }
 
-                    radiance *= transmission;
-                    radiance /= (distance_prob * distance_sample_count_float);
                     radiance *= vertex.m_throughput;
-                    m_path_radiance += radiance;
+                    radiance *= transmission;
+                    madd(m_path_radiance, radiance, distance_sample_count_float / distance_prob);
                 }
             }
         };

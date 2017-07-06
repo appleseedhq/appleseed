@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 
@@ -138,14 +139,16 @@ namespace
                     sample.m_outgoing.get_value(),
                     incoming,
                     n,
-                    sample.m_value);
+                    sample.m_value.m_diffuse);
             }
             else
             {
                 // Revert to Lambertian when roughness is zero.
-                sample.m_value = values->m_reflectance;
-                sample.m_value *= values->m_reflectance_multiplier * RcpPi<float>();
+                sample.m_value.m_diffuse = values->m_reflectance;
+                sample.m_value.m_diffuse *= values->m_reflectance_multiplier * RcpPi<float>();
             }
+
+            sample.m_value.m_beauty = sample.m_value.m_diffuse;
 
             // Compute the probability density of the sampled direction.
             sample.m_probability = wi.y * RcpPi<float>();
@@ -167,7 +170,7 @@ namespace
             const Vector3f&     outgoing,
             const Vector3f&     incoming,
             const int           modes,
-            Spectrum&           value) const override
+            ShadingComponents&  value) const override
         {
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0f;
@@ -177,6 +180,8 @@ namespace
             const float cos_in = dot(incoming, n);
             if (cos_in < 0.0f)
                 return 0.0f;
+
+            value.set(0.0f);
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
@@ -196,14 +201,16 @@ namespace
                     outgoing,
                     incoming,
                     n,
-                    value);
+                    value.m_diffuse);
             }
             else
             {
                 // Revert to Lambertian when roughness is zero.
-                value = values->m_reflectance;
-                value *= values->m_reflectance_multiplier * RcpPi<float>();
+                value.m_diffuse = values->m_reflectance;
+                value.m_diffuse *= values->m_reflectance_multiplier * RcpPi<float>();
             }
+
+            value.m_beauty = value.m_diffuse;
 
             // Return the probability density of the sampled direction.
             return cos_in * RcpPi<float>();

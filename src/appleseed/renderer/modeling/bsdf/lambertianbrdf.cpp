@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 
@@ -109,8 +110,9 @@ namespace
 
             // Compute the BRDF value.
             const LambertianBRDFInputValues* values = static_cast<const LambertianBRDFInputValues*>(data);
-            sample.m_value = values->m_reflectance;
-            sample.m_value *= values->m_reflectance_multiplier * RcpPi<float>();
+            sample.m_value.m_diffuse = values->m_reflectance;
+            sample.m_value.m_diffuse *= values->m_reflectance_multiplier * RcpPi<float>();
+            sample.m_value.m_beauty = sample.m_value.m_diffuse;
 
             // Compute the probability density of the sampled direction.
             sample.m_probability = wi.y * RcpPi<float>();
@@ -131,7 +133,7 @@ namespace
             const Vector3f&     outgoing,
             const Vector3f&     incoming,
             const int           modes,
-            Spectrum&           value) const override
+            ShadingComponents&  value) const override
         {
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0f;
@@ -144,8 +146,9 @@ namespace
 
             // Compute the BRDF value.
             const LambertianBRDFInputValues* values = static_cast<const LambertianBRDFInputValues*>(data);
-            value = values->m_reflectance;
-            value *= values->m_reflectance_multiplier * RcpPi<float>();
+            value.m_diffuse = values->m_reflectance;
+            value.m_diffuse *= values->m_reflectance_multiplier * RcpPi<float>();
+            value.m_beauty = value.m_diffuse;
 
             // Return the probability density of the sampled direction.
             return cos_in * RcpPi<float>();

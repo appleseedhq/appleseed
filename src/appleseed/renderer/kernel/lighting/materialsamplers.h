@@ -40,6 +40,7 @@
 
 // Forward declarations.
 namespace renderer  { class BSDF; }
+namespace renderer  { class ShadingComponents; }
 namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }
 
@@ -73,14 +74,14 @@ class IMaterialSampler
         SamplingContext&                sampling_context,
         const foundation::Dual3d&       outgoing,
         foundation::Dual3f&             incoming,
-        Spectrum&                       value,
+        ShadingComponents&              value,
         float&                          pdf) const = 0;
 
     virtual float evaluate(
         const int                       light_sampling_modes,
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
-        Spectrum&                       value) const = 0;
+        ShadingComponents&              value) const = 0;
 
     virtual bool cull_incoming_direction(
         const foundation::Vector3d&     incoming) const = 0;
@@ -114,14 +115,14 @@ class BSDFSampler
         SamplingContext&                sampling_context,
         const foundation::Dual3d&       outgoing,
         foundation::Dual3f&             incoming,
-        Spectrum&                       value,
+        ShadingComponents&              value,
         float&                          pdf) const override;
 
     virtual float evaluate(
         const int                       light_sampling_modes,
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
-        Spectrum&                       value) const override;
+        ShadingComponents&              value) const override;
 
     virtual bool cull_incoming_direction(
         const foundation::Vector3d&  incoming) const override;
@@ -163,14 +164,14 @@ class PhaseFunctionSampler
         SamplingContext&                sampling_context,
         const foundation::Dual3d&       outgoing,
         foundation::Dual3f&             incoming,
-        Spectrum&                       value,
+        ShadingComponents&              value,
         float&                          pdf) const override;
 
     virtual float evaluate(
         const int                       light_sampling_modes,
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
-        Spectrum&                       value) const override;
+        ShadingComponents&              value) const override;
 
     virtual bool cull_incoming_direction(
         const foundation::Vector3d&     incoming) const override;

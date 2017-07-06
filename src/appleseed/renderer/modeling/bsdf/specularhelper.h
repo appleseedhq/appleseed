@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
 
@@ -64,8 +65,8 @@ class SpecularBRDFHelper
         if (cos_in < 0.0f)
             return;
 
-        f(outgoing, n, n, sample.m_value);
-        sample.m_value *= (1.0f / cos_in);
+        f(outgoing, n, n, sample.m_value.m_glossy);
+        sample.m_value.m_glossy *= (1.0f / cos_in);
 
         // The probability density of the sampled direction is the Dirac delta.
         sample.m_probability = BSDF::DiracDelta;

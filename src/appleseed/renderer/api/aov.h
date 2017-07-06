@@ -37,6 +37,11 @@
 #include "renderer/modeling/aov/aovfactoryregistrar.h"
 #include "renderer/modeling/aov/aovtraits.h"
 #include "renderer/modeling/aov/depthaov.h"
+#include "renderer/modeling/aov/diffuseaov.h"
+#include "renderer/modeling/aov/emissionaov.h"
+#include "renderer/modeling/aov/glossyaov.h"
 #include "renderer/modeling/aov/iaovfactory.h"
+#include "renderer/modeling/aov/normalaov.h"
+#include "renderer/modeling/aov/uvaov.h"
 
 #endif  // !APPLESEED_RENDERER_API_AOV_H

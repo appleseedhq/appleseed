@@ -27,11 +27,11 @@
 //
 
 // Interface header.
-#include "depthaov.h"
+#include "glossyaov.h"
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovaccumulator.h"
-#include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
 
@@ -42,7 +42,6 @@
 
 // Standard headers.
 #include <cstddef>
-#include <limits>
 
 using namespace foundation;
 using namespace std;
@@ -53,53 +52,53 @@ namespace renderer
 namespace
 {
     //
-    // Depth AOV accumulator.
+    // Glossy AOV accumulator.
     //
 
-    class DepthAOVAccumulator
+    class GlossyAOVAccumulator
       : public AOVAccumulator
     {
       public:
-        explicit DepthAOVAccumulator(const size_t index)
+        explicit GlossyAOVAccumulator(const size_t index)
           : AOVAccumulator(index)
         {
         }
 
         virtual void reset() override
         {
-            m_depth = numeric_limits<float>::max();
+            m_color.set(0.0f);
         }
 
         virtual void write(
-            const ShadingPoint&     shading_point,
-            const Camera&           camera) override
+            const ShadingComponents&    shading_components,
+            const float                 multiplier) override
         {
-            if (shading_point.hit())
-                m_depth = static_cast<float>(shading_point.get_distance());
+            m_color = shading_components.m_glossy;
+            m_color *= multiplier;
         }
 
         virtual void flush(ShadingResult& result) override
         {
-            result.m_aovs[m_index].m_color.set(m_depth);
-            result.m_aovs[m_index].m_alpha.set(1.0f);
+            result.m_aovs[m_index].m_color = m_color;
+            result.m_aovs[m_index].m_alpha = result.m_main.m_alpha;
         }
 
       private:
-        float m_depth;
+        Spectrum m_color;
     };
 
 
     //
-    // Depth AOV.
+    // Glossy AOV.
     //
 
-    const char* Model = "depth_aov";
+    const char* Model = "glossy_aov";
 
-    class DepthAOV
+    class GlossyAOV
       : public AOV
     {
       public:
-        DepthAOV(const char* name, const ParamArray& params)
+        GlossyAOV(const char* name, const ParamArray& params)
           : AOV(name, params)
         {
         }
@@ -116,68 +115,69 @@ namespace
 
         virtual size_t get_channel_count() const override
         {
-            return 1;
+            return 3;
         }
 
         virtual const char* get_channel_name(const size_t i) const override
         {
-            return "Z";
+            static const char* channels[] = {"R", "G", "B"};
+            return channels[i];
         }
 
         virtual bool has_color_data() const override
         {
-            return false;
+            return true;
         }
 
         virtual auto_release_ptr<AOVAccumulator> create_accumulator(
             const size_t index) const override
         {
-            return auto_release_ptr<AOVAccumulator>(new DepthAOVAccumulator(index));
+            return auto_release_ptr<AOVAccumulator>(new GlossyAOVAccumulator(index));
         }
     };
 }
 
 
 //
-// DepthAOVFactory class implementation.
+// GlossyAOVFactory class implementation.
 //
 
-const char* DepthAOVFactory::get_model() const
+const char* GlossyAOVFactory::get_model() const
 {
     return Model;
 }
 
-Dictionary DepthAOVFactory::get_model_metadata() const
+Dictionary GlossyAOVFactory::get_model_metadata() const
 {
     return
         Dictionary()
             .insert("name", Model)
-            .insert("label", "Depth")
-            .insert("default_model", "true");
+            .insert("label", "Glossy")
+            .insert("default_model", "false");
 }
 
-DictionaryArray DepthAOVFactory::get_input_metadata() const
+DictionaryArray GlossyAOVFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
     return metadata;
 }
 
-auto_release_ptr<AOV> DepthAOVFactory::create(
+auto_release_ptr<AOV> GlossyAOVFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
     return
         auto_release_ptr<AOV>(
-            new DepthAOV(name, params));
+            new GlossyAOV(name, params));
 }
 
-auto_release_ptr<AOV> DepthAOVFactory::static_create(
+auto_release_ptr<AOV> GlossyAOVFactory::static_create(
     const char*         name,
     const ParamArray&   params)
 {
     return
         auto_release_ptr<AOV>(
-            new DepthAOV(name, params));
+            new GlossyAOV(name, params));
 }
 
 }   // namespace renderer

@@ -39,6 +39,7 @@
 #include "renderer/kernel/lighting/sppm/sppmpasscallback.h"
 #include "renderer/kernel/lighting/sppm/sppmphoton.h"
 #include "renderer/kernel/lighting/sppm/sppmphotonmap.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -145,11 +146,11 @@ namespace
             const PixelContext&     pixel_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
-            Spectrum&               radiance) override      // output radiance, in W.sr^-1.m^-2
+            ShadingComponents&      radiance) override      // output radiance, in W.sr^-1.m^-2
         {
             if (m_params.m_view_photons)
             {
-                view_photons(shading_point, radiance);
+                view_photons(shading_point, radiance.m_beauty);
                 return;
             }
 
@@ -212,7 +213,7 @@ namespace
             const ShadingContext&       m_shading_context;
             const EnvironmentEDF*       m_env_edf;
             knn::Answer<float>&         m_answer;
-            Spectrum&                   m_path_radiance;
+            ShadingComponents&          m_path_radiance;
 
             PathVisitor(
                 const SPPMParameters&   params,
@@ -222,7 +223,7 @@ namespace
                 const ShadingContext&   shading_context,
                 const Scene&            scene,
                 knn::Answer<float>&     answer,
-                Spectrum&               path_radiance)
+                ShadingComponents&      path_radiance)
               : m_params(params)
               , m_pass_callback(pass_callback)
               , m_light_sampler(light_sampler)
@@ -270,12 +271,15 @@ namespace
 
                 // Update the path radiance.
                 env_radiance *= vertex.m_throughput;
-                m_path_radiance += env_radiance;
+                m_path_radiance.add_emission(
+                    vertex.m_path_length,
+                    vertex.m_aov_mode,
+                    env_radiance);
             }
 
             void on_hit(const PathVertex& vertex)
             {
-                Spectrum vertex_radiance(0.0f, Spectrum::Illuminance);
+                ShadingComponents vertex_radiance(Spectrum::Illuminance);
 
                 if (vertex.m_bsdf)
                 {
@@ -292,11 +296,20 @@ namespace
 
                 // Emitted light.
                 if (vertex.m_edf && vertex.m_cos_on > 0.0)
-                    add_emitted_light_contribution(vertex, vertex_radiance);
+                {
+                    Spectrum emitted(0.0f, Spectrum::Illuminance);
+                    vertex.compute_emitted_radiance(m_shading_context, emitted);
+                    vertex_radiance.m_emission += emitted;
+                    vertex_radiance.m_beauty += emitted;
+                }
 
                 // Update the path radiance.
                 vertex_radiance *= vertex.m_throughput;
-                m_path_radiance += vertex_radiance;
+
+                if (vertex.m_path_length == 1)
+                    m_path_radiance += vertex_radiance;
+                else
+                    m_path_radiance.add_to_component(vertex.m_aov_mode, vertex_radiance);
             }
 
             void on_scatter(const PathVertex& vertex)
@@ -305,9 +318,9 @@ namespace
 
             void add_direct_lighting_contribution(
                 const PathVertex&       vertex,
-                Spectrum&               vertex_radiance)
+                ShadingComponents&      vertex_radiance)
             {
-                Spectrum dl_radiance(Spectrum::Illuminance);
+                ShadingComponents dl_radiance(Spectrum::Illuminance);
 
                 const size_t light_sample_count =
                     stochastic_cast<size_t>(
@@ -354,7 +367,7 @@ namespace
 
             void add_photon_map_lighting_contribution(
                 const PathVertex&       vertex,
-                Spectrum&               vertex_radiance)
+                ShadingComponents&      vertex_radiance)
             {
                 const SPPMPhotonMap& photon_map = m_pass_callback.get_photon_map();
 
@@ -412,7 +425,8 @@ namespace
                 indirect_radiance *= rcp_max_square_dist;
 
                 // Add the indirect lighting contribution.
-                vertex_radiance += indirect_radiance;
+                vertex_radiance.m_diffuse += indirect_radiance;
+                vertex_radiance.m_beauty += indirect_radiance;
             }
 
             void accumulate_mono_photons(
@@ -457,7 +471,7 @@ namespace
 #endif
 
                     // Evaluate the BSDF for this photon.
-                    Spectrum bsdf_value;
+                    ShadingComponents bsdf_value;
                     const float bsdf_prob =
                         vertex.m_bsdf->evaluate(
                             vertex.m_bsdf_data,
@@ -474,7 +488,7 @@ namespace
 
                     // Make sure the BSDF value is spectral.
                     Spectrum spectral_bsdf_value;
-                    Spectrum::upgrade(bsdf_value, spectral_bsdf_value);
+                    Spectrum::upgrade(bsdf_value.m_beauty, spectral_bsdf_value);
 
                     // The photons store flux but we are computing reflected radiance.
                     // The first step of the flux -> radiance conversion is done here.
@@ -533,7 +547,7 @@ namespace
 #endif
 
                     // Evaluate the BSDF for this photon.
-                    Spectrum bsdf_value;
+                    ShadingComponents bsdf_value;
                     const float bsdf_prob =
                         vertex.m_bsdf->evaluate(
                             vertex.m_bsdf_data,
@@ -551,27 +565,15 @@ namespace
                     // The photons store flux but we are computing reflected radiance.
                     // The first step of the flux -> radiance conversion is done here.
                     // The conversion will be completed when doing density estimation.
-                    bsdf_value /= abs(dot(photon.m_incoming, photon.m_geometric_normal));
-                    bsdf_value *= photon.m_flux;
+                    bsdf_value.m_beauty /= abs(dot(photon.m_incoming, photon.m_geometric_normal));
+                    bsdf_value.m_beauty *= photon.m_flux;
 
                     // Apply kernel weight.
-                    bsdf_value *= epanechnikov2d(entry.m_square_dist * rcp_max_square_dist);
+                    bsdf_value.m_beauty *= epanechnikov2d(entry.m_square_dist * rcp_max_square_dist);
 
                     // Accumulate reflected flux.
-                    radiance += bsdf_value;
+                    radiance += bsdf_value.m_beauty;
                 }
-            }
-
-            void add_emitted_light_contribution(
-                const PathVertex&       vertex,
-                Spectrum&               vertex_radiance)
-            {
-                // Compute the emitted radiance.
-                Spectrum emitted_radiance(Spectrum::Illuminance);
-                vertex.compute_emitted_radiance(m_shading_context, emitted_radiance);
-
-                // Add the emitted light contribution.
-                vertex_radiance += emitted_radiance;
             }
         };
 

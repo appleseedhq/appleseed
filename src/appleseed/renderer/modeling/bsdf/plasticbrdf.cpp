@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/fresnel.h"
@@ -213,8 +214,9 @@ namespace
                     if (!ScatteringMode::has_specular(modes))
                         return;
 
-                    sample.m_value = values->m_specular_reflectance;
-                    sample.m_value *= F;
+                    sample.m_value.m_glossy = values->m_specular_reflectance;
+                    sample.m_value.m_glossy *= F;
+
                     sample.m_probability = DiracDelta;
                     sample.m_mode = ScatteringMode::Specular;
                 }
@@ -229,11 +231,13 @@ namespace
                         wo,
                         m,
                         F,
-                        sample.m_value);
+                        sample.m_value.m_glossy);
 
                     sample.m_probability = specular_pdf(*m_mdf, alpha, gamma, wo, m) * specular_probability;
                     sample.m_mode = ScatteringMode::Glossy;
                 }
+
+                sample.m_value.m_beauty = sample.m_value.m_glossy;
             }
             else
             {
@@ -245,7 +249,8 @@ namespace
                     values->m_internal_scattering,
                     F,
                     Fi,
-                    sample.m_value);
+                    sample.m_value.m_diffuse);
+                sample.m_value.m_beauty = sample.m_value.m_diffuse;
 
                 sample.m_mode = ScatteringMode::Diffuse;
                 sample.m_probability = wi.y * RcpPi<float>() * (1.0f - specular_probability);
@@ -264,7 +269,7 @@ namespace
             const Vector3f&         outgoing,
             const Vector3f&         incoming,
             const int               modes,
-            Spectrum&               value) const override
+            ShadingComponents&      value) const override
         {
             // No reflection below the shading surface.
             const Vector3f& n = shading_basis.get_normal();
@@ -291,7 +296,6 @@ namespace
 
             float pdf_glossy = 0.0f, pdf_diffuse = 0.0f;
 
-            value.resize(values->m_specular_reflectance.size());
             value.set(0.0f);
 
             if (ScatteringMode::has_glossy(modes))
@@ -305,25 +309,26 @@ namespace
                     wo,
                     m,
                     Fo,
-                    value);
+                    value.m_glossy);
 
                 pdf_glossy = specular_pdf(*m_mdf, alpha, gamma, wo, m);
             }
 
             if (ScatteringMode::has_diffuse(modes))
             {
-                Spectrum substrate_value;
                 evaluate_diffuse(
                     values->m_diffuse_reflectance,
                     values->m_precomputed.m_eta,
                     values->m_internal_scattering,
                     Fo,
                     Fi,
-                    substrate_value);
-                value += substrate_value;
+                    value.m_diffuse);
 
                 pdf_diffuse = wi.y * RcpPi<float>();
             }
+
+            value.m_beauty = value.m_diffuse;
+            value.m_beauty += value.m_glossy;
 
             return
                 ScatteringMode::has_diffuse_and_glossy(modes) ? lerp(pdf_diffuse, pdf_glossy, specular_probability) :
