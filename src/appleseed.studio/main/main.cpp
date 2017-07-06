@@ -66,9 +66,7 @@
 #include <sstream>
 #include <string>
 
-
-#include <QPixmap>
-#include <QImage>
+// Qt headers
 #include <QImageReader>
 
 using namespace appleseed::studio;
