@@ -48,7 +48,7 @@ LightSource::~LightSource()
 }
 
 //
-// Non-physical light source class implementation.
+// NonPhysicalLightSource class implementation.
 //
 
 NonPhysicalLightSource::NonPhysicalLightSource(
@@ -71,10 +71,7 @@ foundation::Vector3d NonPhysicalLightSource::get_position()  const
 
 foundation::AABB3d NonPhysicalLightSource::get_bbox() const
 {
-    const Light* light = m_light_info->m_light;
-    foundation::Vector3d position = light->get_transform()
-                                          .get_local_to_parent()
-                                          .extract_translation();
+    foundation::Vector3d position = get_position();
 
     // Non physical light has no real size - hence we are assigning it some
     // arbitrary small value for the bbox.
@@ -89,14 +86,15 @@ foundation::AABB3d NonPhysicalLightSource::get_bbox() const
 
 Spectrum NonPhysicalLightSource::get_intensity() const
 {
-    const Light* light = m_light_info->m_light;
     Spectrum intensity;
-    light->get_inputs().find("intensity").source()->evaluate_uniform(intensity);
+    m_light_info->m_light->get_inputs()
+                          .find("intensity")
+                          .source()->evaluate_uniform(intensity);
     return intensity;
 }
 
 //
-// Emitting triangle light source class implementation.
+// EmittingTriangleLightSource class implementation.
 //
 
 EmittingTriangleLightSource::EmittingTriangleLightSource(
@@ -107,28 +105,18 @@ EmittingTriangleLightSource::EmittingTriangleLightSource(
 
 foundation::Vector3d EmittingTriangleLightSource::get_position() const
 {
-    // Retrieve the coordinates of each vertex in world space.
-    foundation::Vector3d vertex0 = m_light->m_v0;
-    foundation::Vector3d vertex1 = m_light->m_v1;
-    foundation::Vector3d vertex2 = m_light->m_v2;
-    
-    foundation::Vector3d centroid = (vertex0 + vertex1 + vertex2) / 3;
-
-    return centroid;
+    // Return the centroid of the triangle as the position.
+    return (m_light->m_v0 + m_light->m_v1 + m_light->m_v2) / 3;
 }
 
 foundation::AABB3d EmittingTriangleLightSource::get_bbox() const
 {
-    // Retrieve the coordinates of each vertex in world space.
-    foundation::Vector3d vertex0 = m_light->m_v0;
-    foundation::Vector3d vertex1 = m_light->m_v1;
-    foundation::Vector3d vertex2 = m_light->m_v2;
-
     foundation::AABB3d bbox;
+    
     bbox.invalidate();
-    bbox.insert(vertex0);
-    bbox.insert(vertex1);
-    bbox.insert(vertex2);
+    bbox.insert(m_light->m_v0);
+    bbox.insert(m_light->m_v1);
+    bbox.insert(m_light->m_v2);
 
     return bbox;
 }
