@@ -40,6 +40,7 @@
 // Forward declarations.
 class QKeyEvent;
 class QResizeEvent;
+class QWheelEvent;
 class QWidget;
 namespace appleseed { namespace studio { class LineNumberArea; } }
 
@@ -58,8 +59,14 @@ class PythonEditor
     // Event used to update line number area.
     void resizeEvent(QResizeEvent* event);
 
-    // Event used to autoindent new lines and replace tabs with spaces.
+    // Event used for indentation and font size change.
     void keyPressEvent(QKeyEvent* event);
+
+    // Event used to change font size on wheel rotation.
+    void wheelEvent(QWheelEvent* event);
+
+  signals:
+    void fontChanged(QFont);
 
   private slots:
     void slot_highlight_current_line();
@@ -72,6 +79,8 @@ class PythonEditor
     void indent();
     void indent_like_previous(const std::string& previous);
     void insert_spaces(const size_t count);
+
+    void change_font_size(const int delta);
 };
 
 }       // namespace studio

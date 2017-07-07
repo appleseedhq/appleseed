@@ -26,44 +26,39 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_LINENUMBERAREA_H
-#define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_LINENUMBERAREA_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONOUTPUT_H
+#define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONOUTPUT_H
 
 // Qt headers.
 #include <QObject>
-#include <QWidget>
+#include <QPlainTextEdit>
 
 // Forward declarations.
-class QFont;
+class QWheelEvent;
 
 namespace appleseed {
 namespace studio {
 
-// Forward declarations.
-class PythonEditor;
-
-class LineNumberArea
-  : public QWidget
+class PythonOutput
+    : public QPlainTextEdit
 {
     Q_OBJECT
 
   public:
-    explicit LineNumberArea(PythonEditor* parent = 0);
+    explicit PythonOutput(QWidget* parent);
 
   protected:
-    void paintEvent(QPaintEvent* event);
+    // Event used for indentation and font size change.
+    void keyPressEvent(QKeyEvent* event);
 
-  private slots:
-    void slot_update_area_width();
-    void slot_update_area(const QRect& rect, int dy);
-    void slot_change_font(const QFont& font);
+    // Event used to change font size on wheel rotation.
+    void wheelEvent(QWheelEvent* event);
 
   private:
-    PythonEditor* editor;
-    int area_width();
+    void change_font_size(const int delta);
 };
 
-}       // namespace studio
-}       // namespace appleseed
+}   // namespace studio
+}   // namespace appleseed
 
-#endif // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_LINENUMBERAREA_H
+#endif // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONOUTPUT_H

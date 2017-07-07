@@ -33,6 +33,7 @@
 #include "mainwindow/mainwindow.h"
 #include "mainwindow/pythonconsole/outputredirector.h"
 #include "mainwindow/pythonconsole/pythoneditor.h"
+#include "mainwindow/pythonconsole/pythonoutput.h"
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
 
@@ -41,10 +42,12 @@
 
 // Qt headers.
 #include <QAction>
+#include <QApplication>
 #include <QMessageBox>
 #include <QSplitter>
 #include <QToolBar>
 #include <QVBoxLayout>
+#include <QWheelEvent>
 
 // Standard headers.
 #include <fstream>
@@ -68,14 +71,7 @@ PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
     m_input = new PythonEditor(console_body);
     connect(m_input, SIGNAL(textChanged()), this, SLOT(slot_file_changed()));
 
-    m_output = new QPlainTextEdit(console_body);
-    m_output->setUndoRedoEnabled(false);
-    m_output->setLineWrapMode(QPlainTextEdit::WidgetWidth);
-    m_output->setReadOnly(true);
-    m_output->setTextInteractionFlags(
-        Qt::TextSelectableByMouse |
-        Qt::TextSelectableByKeyboard);
-    m_output->setFont(m_input->font());
+    m_output = new PythonOutput(console_body);
 
     console_body->addWidget(m_input);
     console_body->addWidget(m_output);
@@ -145,6 +141,20 @@ PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
     setLayout(layout);
 
     PythonInterpreter::instance().initialize(OutputRedirector(m_output));
+}
+
+void PythonConsoleWidget::wheelEvent(QWheelEvent* event)
+{
+    if (QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
+    {
+        int new_font_size = font().pointSize() - event->delta() / 120;
+
+        QFont new_font = m_output->font();
+        new_font.setPointSize(new_font_size);
+        m_output->setFont(new_font);
+    }
+    else
+        QWidget::wheelEvent(event);
 }
 
 void PythonConsoleWidget::slot_file_changed()

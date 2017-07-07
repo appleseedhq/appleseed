@@ -228,6 +228,8 @@ set (mainwindow_pythonconsole_sources
     mainwindow/pythonconsole/pythoneditor.h
     mainwindow/pythonconsole/pythonhighlighter.cpp
     mainwindow/pythonconsole/pythonhighlighter.h
+    mainwindow/pythonconsole/pythonoutput.cpp
+    mainwindow/pythonconsole/pythonoutput.h
     )
 list (APPEND appleseed.studio_sources
     ${mainwindow_pythonconsole_sources}

@@ -43,6 +43,7 @@
 class QAction;
 class QPlainTextEdit;
 class QString;
+class QWheelEvent;
 
 
 namespace appleseed {
@@ -55,6 +56,9 @@ class PythonConsoleWidget
 
   public:
     explicit PythonConsoleWidget(QWidget* parent = 0);
+
+  protected:
+    void wheelEvent(QWheelEvent* event);
 
   public slots:
     void slot_execute_selection();

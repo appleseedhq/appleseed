@@ -34,6 +34,7 @@
 #include "mainwindow/pythonconsole/pythonhighlighter.h"
 
 // Qt headers.
+#include <QApplication>
 #include <QKeyEvent>
 #include <QPainter>
 #include <QString>
@@ -75,6 +76,10 @@ void PythonEditor::keyPressEvent(QKeyEvent* event)
 {
     if (event->key() == Qt::Key_Tab)
         insert_spaces(4);
+    else if (event->key() == Qt::Key_Plus || event->key() == Qt::Key_Equal)
+        change_font_size(1);
+    else if (event->key() == Qt::Key_Minus)
+        change_font_size(-1);
     else
     {
         QPlainTextEdit::keyPressEvent(event);
@@ -123,6 +128,25 @@ void PythonEditor::insert_spaces(const size_t count)
 {
     const std::string spaces(count, ' ');
     insertPlainText(spaces.c_str());
+}
+
+void PythonEditor::wheelEvent(QWheelEvent* event)
+{
+    if (QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
+        // Minus here because if you turn wheel up delta is negative
+        // while font should be incremented.
+        change_font_size(- event->delta() / 120);
+    else
+        QPlainTextEdit::wheelEvent(event);
+}
+
+void PythonEditor::change_font_size(const int delta)
+{
+    int new_font_size = font().pointSize() + delta;
+    QFont new_font = font();
+    new_font.setPointSize(new_font_size);
+    setFont(new_font);
+    emit(fontChanged(new_font));
 }
 
 void PythonEditor::slot_highlight_current_line()
