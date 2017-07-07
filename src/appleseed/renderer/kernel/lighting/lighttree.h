@@ -89,8 +89,8 @@ class LightTree
         // source_index represents the light index in m_light_sources vector and
         // corresponds to the m_light_tree_lights within the LightSampler
         Item(
-            foundation::AABB3d&     bbox,
-            const size_t            source_index) 
+            const foundation::AABB3d&       bbox,
+            const size_t                    source_index) 
             : m_bbox(bbox)
             , m_light_index(source_index)
         {
