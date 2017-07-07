@@ -134,6 +134,12 @@ namespace
             {
                 size_multiplier_src->evaluate_uniform(m_values.m_size_multiplier);
             }
+            else if (size_multiplier_src && !size_multiplier_src->is_uniform())
+            {
+                RENDERER_LOG_WARNING(
+                    "size multiplier of the sun light \"%s\" is not uniform.",
+                    get_path().c_str());
+            }
 
             const Scene::RenderData& scene_data = project.get_scene()->get_render_data();
             m_scene_center = Vector3d(scene_data.m_center);
