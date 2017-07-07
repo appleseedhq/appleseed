@@ -97,7 +97,7 @@ class MainWindow
     void save_project(QString filepath);
     void close_project();
 
-    renderer::ParamArray get_settings();
+    renderer::ParamArray& get_settings();
 
   signals:
     void signal_refresh_attribute_editor(const foundation::Dictionary& values) const;
