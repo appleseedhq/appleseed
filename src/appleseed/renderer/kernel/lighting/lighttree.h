@@ -42,6 +42,9 @@
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/uid.h"
 
+// Standard headers.
+#include  <cstddef>
+
 namespace renderer
 {
 

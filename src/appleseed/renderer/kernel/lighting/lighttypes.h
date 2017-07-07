@@ -35,7 +35,12 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed. foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/aabb.h"
+#include "foundation/math/vector.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace renderer  { class AssemblyInstance; }
@@ -90,10 +95,10 @@ class LightSource
     // Destructor
     virtual ~LightSource();
 
-    // Get the reference to the source position.
+    // Get the light source position.
     virtual foundation::Vector3d get_position() const = 0;
     
-    // Get the light bounding box.
+    // Get the light source bounding box.
     virtual foundation::AABB3d get_bbox() const = 0;
 
     // Get the light intensity.
