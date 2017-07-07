@@ -32,16 +32,17 @@ import sys
 import time
 import threading
 import os
+
 import appleseed as asr
 
 output_scene_name = "4-colored-point-lights"
 
 def build_project():
     # Create an empty project.
-    project = asr.Project('4-point-lights')
+    project = asr.Project("4-point-lights")
 
     paths = project.get_search_paths()
-    paths.append('data')
+    paths.append("data")
     project.set_search_paths(paths)
 
     # Add default configurations to the project.
@@ -50,8 +51,8 @@ def build_project():
     # Set the number of samples. This is basically the quality parameter: the higher the number
     # of samples, the smoother the image but the longer the rendering time.
     # todo: fix.
-    conf = project.configurations()['final']
-    conf.insert_path('uniform_pixel_renderer.samples', 1)
+    conf = project.configurations()["final"]
+    conf.insert_path("uniform_pixel_renderer.samples", 1)
 
     # Create a scene.
     scene = asr.Scene()
@@ -94,7 +95,7 @@ def build_project():
     #------------------------------------------------------------------------
 
     # Load the scene geometry from disk.
-    objects = asr.MeshObjectReader.read(project.get_search_paths(), "plane", {'filename': 'Plane001.binarymesh'})
+    objects = asr.MeshObjectReader.read(project.get_search_paths(), "plane", {"filename": "Plane001.binarymesh"})
 
     # Insert all the objects into the assembly.
     for object in objects:
@@ -148,15 +149,15 @@ def build_project():
     for key in light_colors:
         color_name = "color_" + key
         # Add colors to the project.
-        assembly.colors().insert(asr.ColorEntity(color_name, {'color_space': 'linear_rgb', 'multiplier': 1.0}, light_colors[key]))
+        assembly.colors().insert(asr.ColorEntity(color_name, {"color_space": "linear_rgb", "multiplier": 1.0}, light_colors[key]))
         idx = light_colors.keys().index(key)
         light_name = "light_" + key
         # Create the light.
         light = asr.Light("max_omni_light", light_name, {
-                                                        'decay_exponent': "0",
-                                                        'decay_start': "40",
-                                                        'intensity': color_name,
-                                                        'intensity_multiplier': "3.14159"
+                                                        "decay_exponent": "0",
+                                                        "decay_start": "40",
+                                                        "intensity": color_name,
+                                                        "intensity_multiplier": "3.14159"
 
                                                      })
         mat = orientation * asr.Matrix4d.make_translation(light_positions[idx])

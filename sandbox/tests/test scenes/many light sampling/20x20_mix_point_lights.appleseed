@@ -28,7 +28,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.231619 1.000000 0.000000
+                    1.000000 0.000000 0.017064
                 </values>
                 <alpha>
                     1.000000
@@ -38,7 +38,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.294587
+                    0.616897 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -48,7 +48,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.009975 0.000000
+                    1.000000 0.000000 0.028925
                 </values>
                 <alpha>
                     1.000000
@@ -58,7 +58,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.014325 0.000000
+                    0.179985 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -68,7 +68,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.075815
+                    0.000000 1.000000 0.498336
                 </values>
                 <alpha>
                     1.000000
@@ -78,7 +78,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.208365
+                    1.000000 0.007853 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -88,7 +88,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.109723 0.000000
+                    1.000000 0.060721 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -98,7 +98,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.029795 0.000000
+                    0.000000 1.000000 0.033249
                 </values>
                 <alpha>
                     1.000000
@@ -108,7 +108,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.078738
+                    1.000000 0.000000 0.089894
                 </values>
                 <alpha>
                     1.000000
@@ -118,7 +118,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.035021 0.000000
+                    1.000000 0.000000 0.084066
                 </values>
                 <alpha>
                     1.000000
@@ -128,7 +128,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.079923
+                    1.000000 0.092847 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -138,7 +138,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.048765
+                    1.000000 0.061412 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -148,7 +148,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.073103 0.000000
+                    1.000000 0.000000 0.000214
                 </values>
                 <alpha>
                     1.000000
@@ -158,7 +158,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.037510
+                    0.194593 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -168,7 +168,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.003413 0.000000
+                    1.000000 0.000000 0.009557
                 </values>
                 <alpha>
                     1.000000
@@ -178,7 +178,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.059205 0.000000
+                    1.000000 0.000000 0.042133
                 </values>
                 <alpha>
                     1.000000
@@ -188,7 +188,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.073898 0.000000
+                    1.000000 0.010645 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -198,7 +198,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.068261 0.000000
+                    0.000000 1.000000 0.158597
                 </values>
                 <alpha>
                     1.000000
@@ -208,7 +208,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.103322 0.000000
+                    1.000000 0.019207 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -218,7 +218,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.017947
+                    1.000000 0.023366 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -228,7 +228,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.023151 0.000000
+                    1.000000 0.000000 0.055482
                 </values>
                 <alpha>
                     1.000000
@@ -238,7 +238,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000385 0.000000
+                    0.333796 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -248,7 +248,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.203052 1.000000 0.000000
+                    0.287565 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -258,7 +258,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.015464
+                    0.533185 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -268,7 +268,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.006424
+                    1.000000 0.000000 0.050857
                 </values>
                 <alpha>
                     1.000000
@@ -278,7 +278,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.857984
+                    1.000000 0.098233 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -288,7 +288,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.010545 0.000000
+                    0.194041 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -298,7 +298,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.102607
+                    1.000000 0.000000 0.022499
                 </values>
                 <alpha>
                     1.000000
@@ -308,7 +308,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.082645 0.000000
+                    1.000000 0.011803 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -318,7 +318,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.005864 0.000000
+                    1.000000 0.000000 0.038579
                 </values>
                 <alpha>
                     1.000000
@@ -328,7 +328,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.020020
+                    1.000000 0.000000 0.016251
                 </values>
                 <alpha>
                     1.000000
@@ -338,7 +338,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.053816 0.000000
+                    0.355439 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -348,7 +348,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.783811 1.000000 0.000000
+                    1.000000 0.000000 0.044071
                 </values>
                 <alpha>
                     1.000000
@@ -358,7 +358,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.095972
+                    1.000000 0.065079 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -368,7 +368,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.150890 0.000000 1.000000
+                    1.000000 0.081191 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -378,7 +378,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.064380
+                    1.000000 0.145880 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -388,7 +388,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.043963
+                    1.000000 0.001688 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -398,7 +398,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000880 0.000000
+                    1.000000 0.043805 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -408,7 +408,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.038105
+                    0.000000 1.000000 0.116187
                 </values>
                 <alpha>
                     1.000000
@@ -418,7 +418,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.018300 0.000000
+                    1.000000 0.084062 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -428,7 +428,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.107206 0.000000
+                    1.000000 0.000000 0.079420
                 </values>
                 <alpha>
                     1.000000
@@ -438,7 +438,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.040078
+                    1.000000 0.049725 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -448,7 +448,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.019583 0.000000
+                    0.000000 1.000000 0.409116
                 </values>
                 <alpha>
                     1.000000
@@ -458,7 +458,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.021456
+                    0.789186 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -468,7 +468,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.077068 0.000000
+                    0.823686 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -478,7 +478,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.430912 1.000000 0.000000
+                    1.000000 0.000000 0.015632
                 </values>
                 <alpha>
                     1.000000
@@ -488,7 +488,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.227856 0.000000 1.000000
+                    1.000000 0.000000 0.067379
                 </values>
                 <alpha>
                     1.000000
@@ -498,7 +498,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.063678 0.000000
+                    1.000000 0.000000 0.010259
                 </values>
                 <alpha>
                     1.000000
@@ -508,7 +508,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.001087
+                    1.000000 0.000000 0.057296
                 </values>
                 <alpha>
                     1.000000
@@ -518,7 +518,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.052405
+                    1.000000 0.000000 0.090812
                 </values>
                 <alpha>
                     1.000000
@@ -528,7 +528,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.044917 1.000000 0.000000
+                    0.191919 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -538,7 +538,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.139650 0.000000 1.000000
+                    1.000000 0.000000 0.019330
                 </values>
                 <alpha>
                     1.000000
@@ -548,7 +548,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.000910
+                    1.000000 0.000000 0.039422
                 </values>
                 <alpha>
                     1.000000
@@ -558,7 +558,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.244852 0.000000 1.000000
+                    0.030879 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -568,7 +568,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.046499 0.000000
+                    1.000000 0.000000 0.129477
                 </values>
                 <alpha>
                     1.000000
@@ -578,7 +578,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.015896 0.000000
+                    1.000000 0.000000 0.057483
                 </values>
                 <alpha>
                     1.000000
@@ -588,7 +588,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.301606 1.000000 0.000000
+                    1.000000 0.100614 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -598,7 +598,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.043901
+                    0.277272 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -608,7 +608,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.729200 1.000000 0.000000
+                    0.066080 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -618,7 +618,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.476279 1.000000 0.000000
+                    1.000000 0.068293 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -628,7 +628,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.091657 0.000000
+                    1.000000 0.013366 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -638,7 +638,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.081069
+                    0.549936 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -648,7 +648,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.766936
+                    0.000000 1.000000 0.086332
                 </values>
                 <alpha>
                     1.000000
@@ -658,7 +658,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.079676
+                    1.000000 0.016245 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -668,7 +668,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.052859 0.000000
+                    1.000000 0.013874 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -678,7 +678,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.032483 0.000000
+                    1.000000 0.000000 0.001263
                 </values>
                 <alpha>
                     1.000000
@@ -688,7 +688,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.112697 0.000000
+                    1.000000 0.107851 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -698,7 +698,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.519688 0.000000
+                    1.000000 0.019741 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -708,7 +708,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.259357 0.000000 1.000000
+                    1.000000 0.000000 0.104212
                 </values>
                 <alpha>
                     1.000000
@@ -718,7 +718,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.034262 0.000000
+                    1.000000 0.000000 0.122633
                 </values>
                 <alpha>
                     1.000000
@@ -728,7 +728,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.131057 1.000000 0.000000
+                    0.040860 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -738,7 +738,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.385564
+                    1.000000 0.106979 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -748,7 +748,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.850382 1.000000 0.000000
+                    0.000000 1.000000 0.201662
                 </values>
                 <alpha>
                     1.000000
@@ -758,7 +758,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.079065 1.000000 0.000000
+                    1.000000 0.000000 0.063747
                 </values>
                 <alpha>
                     1.000000
@@ -768,7 +768,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.005446 0.000000
+                    1.000000 0.000000 0.019488
                 </values>
                 <alpha>
                     1.000000
@@ -778,7 +778,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.012054 0.000000
+                    1.000000 0.078510 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -788,7 +788,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.248677 0.000000 1.000000
+                    1.000000 0.000000 0.038558
                 </values>
                 <alpha>
                     1.000000
@@ -798,7 +798,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.309488 0.000000 1.000000
+                    0.000000 0.809070 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -808,7 +808,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.017885 0.000000
+                    1.000000 0.841616 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -818,7 +818,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.006792 0.000000
+                    1.000000 0.002310 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -828,7 +828,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.052150
+                    1.000000 0.000000 0.052516
                 </values>
                 <alpha>
                     1.000000
@@ -838,7 +838,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.048191
+                    0.887140 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -848,7 +848,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.173648
+                    1.000000 0.000000 0.086500
                 </values>
                 <alpha>
                     1.000000
@@ -858,7 +858,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.115635
+                    1.000000 0.000000 0.025441
                 </values>
                 <alpha>
                     1.000000
@@ -868,7 +868,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.000159
+                    1.000000 0.064131 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -878,7 +878,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.029902
+                    1.000000 0.024345 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -888,7 +888,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.104445
+                    1.000000 0.016011 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -898,7 +898,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.037893 0.000000
+                    1.000000 0.000000 0.057492
                 </values>
                 <alpha>
                     1.000000
@@ -908,7 +908,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.119096 0.000000
+                    1.000000 0.026746 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -918,7 +918,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.030460 0.000000
+                    1.000000 0.017287 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -928,7 +928,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.277320 1.000000 0.000000
+                    0.000000 1.000000 0.134200
                 </values>
                 <alpha>
                     1.000000
@@ -938,7 +938,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.086112 1.000000 0.000000
+                    1.000000 0.000000 0.099413
                 </values>
                 <alpha>
                     1.000000
@@ -948,7 +948,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.805839
+                    1.000000 0.000000 0.079132
                 </values>
                 <alpha>
                     1.000000
@@ -958,7 +958,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.066480
+                    0.000000 1.000000 0.193011
                 </values>
                 <alpha>
                     1.000000
@@ -968,7 +968,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.232031 0.000000 1.000000
+                    0.000000 1.000000 0.211557
                 </values>
                 <alpha>
                     1.000000
@@ -978,7 +978,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.112260 1.000000 0.000000
+                    1.000000 0.000000 0.040191
                 </values>
                 <alpha>
                     1.000000
@@ -988,7 +988,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.706306 1.000000 0.000000
+                    1.000000 0.073149 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -998,7 +998,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.056273 0.000000
+                    0.182229 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1008,7 +1008,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.096371 0.000000
+                    1.000000 0.047114 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1018,7 +1018,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.019612
+                    1.000000 0.000000 0.016583
                 </values>
                 <alpha>
                     1.000000
@@ -1028,7 +1028,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.045086 0.000000
+                    0.277260 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1038,7 +1038,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.038086 0.000000
+                    0.112383 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1048,7 +1048,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.003074 0.000000
+                    1.000000 0.000000 0.008111
                 </values>
                 <alpha>
                     1.000000
@@ -1058,7 +1058,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.029632 0.000000
+                    0.050667 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1068,7 +1068,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.047500
+                    1.000000 0.027364 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1078,7 +1078,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.050091
+                    1.000000 0.043377 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1088,7 +1088,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.025071
+                    1.000000 0.000000 0.041727
                 </values>
                 <alpha>
                     1.000000
@@ -1098,7 +1098,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.074312
+                    1.000000 0.000000 0.017952
                 </values>
                 <alpha>
                     1.000000
@@ -1108,7 +1108,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.254331 1.000000 0.000000
+                    1.000000 0.000000 0.039646
                 </values>
                 <alpha>
                     1.000000
@@ -1118,7 +1118,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.059000
+                    1.000000 0.000214 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1128,7 +1128,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.091805
+                    0.523211 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1138,7 +1138,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.032702
+                    1.000000 0.000000 0.012953
                 </values>
                 <alpha>
                     1.000000
@@ -1148,7 +1148,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.033175
+                    1.000000 0.000000 0.065552
                 </values>
                 <alpha>
                     1.000000
@@ -1158,7 +1158,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.236750 0.000000 1.000000
+                    0.000000 1.000000 0.685543
                 </values>
                 <alpha>
                     1.000000
@@ -1168,7 +1168,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.033361 0.000000
+                    1.000000 0.000000 0.030941
                 </values>
                 <alpha>
                     1.000000
@@ -1178,7 +1178,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.455003
+                    1.000000 0.024346 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1188,7 +1188,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.067366
+                    1.000000 0.098423 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1198,7 +1198,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.069276
+                    0.261483 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1208,7 +1208,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.744704 0.000000
+                    0.000000 1.000000 0.255189
                 </values>
                 <alpha>
                     1.000000
@@ -1218,7 +1218,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.003711 0.000000
+                    1.000000 0.026993 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1228,7 +1228,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.006522
+                    0.595994 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1238,7 +1238,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.045389
+                    1.000000 0.014765 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1248,7 +1248,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.116355
+                    0.000000 1.000000 0.739605
                 </values>
                 <alpha>
                     1.000000
@@ -1258,7 +1258,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.046587 0.000000
+                    1.000000 0.043385 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1268,7 +1268,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.876005 1.000000 0.000000
+                    0.183720 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1278,7 +1278,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.002366 0.000000
+                    1.000000 0.026465 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1288,7 +1288,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.103359
+                    1.000000 0.000000 0.026188
                 </values>
                 <alpha>
                     1.000000
@@ -1298,7 +1298,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.809833 0.000000
+                    0.867643 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1308,7 +1308,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.929848 1.000000 0.000000
+                    1.000000 0.000000 0.034211
                 </values>
                 <alpha>
                     1.000000
@@ -1318,7 +1318,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.180007 1.000000 0.000000
+                    1.000000 0.008072 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1328,7 +1328,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.226474 0.000000 1.000000
+                    1.000000 0.021127 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1338,7 +1338,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.314982
+                    1.000000 0.033838 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1348,7 +1348,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.042925 0.000000
+                    0.000000 1.000000 0.107021
                 </values>
                 <alpha>
                     1.000000
@@ -1358,7 +1358,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.009568 0.000000
+                    0.222031 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1368,7 +1368,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.211526 0.000000
+                    0.777842 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1378,7 +1378,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.569776 1.000000 0.000000
+                    1.000000 0.056066 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1388,7 +1388,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.048779 0.000000
+                    0.224421 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1398,7 +1398,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.078315
+                    1.000000 0.000000 0.088805
                 </values>
                 <alpha>
                     1.000000
@@ -1408,7 +1408,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.065686
+                    0.000000 1.000000 0.803009
                 </values>
                 <alpha>
                     1.000000
@@ -1418,7 +1418,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.038348 0.000000
+                    1.000000 0.027009 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1428,7 +1428,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.025883
+                    1.000000 0.001993 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1438,7 +1438,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.020536
+                    1.000000 0.027222 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1448,7 +1448,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.071443 0.000000
+                    1.000000 0.000000 0.010912
                 </values>
                 <alpha>
                     1.000000
@@ -1458,7 +1458,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.020392 0.000000
+                    1.000000 0.058124 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1468,7 +1468,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.062177
+                    0.000000 1.000000 0.443979
                 </values>
                 <alpha>
                     1.000000
@@ -1478,7 +1478,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.013720 0.000000
+                    0.616236 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1488,7 +1488,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.058729 0.000000
+                    1.000000 0.013727 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1498,7 +1498,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.079223
+                    1.000000 0.000000 0.027802
                 </values>
                 <alpha>
                     1.000000
@@ -1508,7 +1508,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.031014 0.000000
+                    1.000000 0.030396 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1518,7 +1518,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.269560 0.000000 1.000000
+                    0.259192 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1528,7 +1528,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.081048
+                    0.252415 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1538,7 +1538,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.637636 1.000000 0.000000
+                    0.090688 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1548,7 +1548,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.055484 0.000000
+                    1.000000 0.010194 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1558,7 +1558,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.022665
+                    0.182379 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1568,7 +1568,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.001369
+                    1.000000 0.000000 0.052820
                 </values>
                 <alpha>
                     1.000000
@@ -1578,7 +1578,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.017980
+                    1.000000 0.060034 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1588,7 +1588,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.117136
+                    1.000000 0.000000 0.087267
                 </values>
                 <alpha>
                     1.000000
@@ -1598,7 +1598,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.043831 0.000000
+                    1.000000 0.000000 0.024287
                 </values>
                 <alpha>
                     1.000000
@@ -1608,7 +1608,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.105285
+                    0.003796 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1618,7 +1618,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.043667 0.000000
+                    0.249470 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1628,7 +1628,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.093605
+                    1.000000 0.001430 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1638,7 +1638,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.028265 0.000000
+                    1.000000 0.000000 0.018406
                 </values>
                 <alpha>
                     1.000000
@@ -1648,7 +1648,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.079530
+                    1.000000 0.017524 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1658,7 +1658,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.027543 0.000000
+                    1.000000 0.000000 0.002120
                 </values>
                 <alpha>
                     1.000000
@@ -1668,7 +1668,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.686874 0.000000
+                    1.000000 0.057587 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1678,7 +1678,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.036894 0.000000
+                    0.000000 1.000000 0.387781
                 </values>
                 <alpha>
                     1.000000
@@ -1688,7 +1688,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.033358
+                    0.890159 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1698,7 +1698,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.684678 1.000000 0.000000
+                    0.240574 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1708,7 +1708,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.500951 1.000000 0.000000
+                    1.000000 0.000000 0.021044
                 </values>
                 <alpha>
                     1.000000
@@ -1718,7 +1718,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.066651
+                    1.000000 0.015185 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1728,7 +1728,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.081797
+                    1.000000 0.013907 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1738,7 +1738,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.014616
+                    1.000000 0.004803 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1748,7 +1748,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.027447
+                    1.000000 0.023469 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1758,7 +1758,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.013296 0.000000
+                    1.000000 0.000000 0.008386
                 </values>
                 <alpha>
                     1.000000
@@ -1768,7 +1768,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.826909 1.000000 0.000000
+                    1.000000 0.041925 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1778,7 +1778,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.034030 0.000000
+                    1.000000 0.000000 0.045575
                 </values>
                 <alpha>
                     1.000000
@@ -1788,7 +1788,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.010199
+                    1.000000 0.946194 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1798,7 +1798,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.012071
+                    1.000000 0.032910 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1808,7 +1808,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.094398
+                    1.000000 0.000000 0.034804
                 </values>
                 <alpha>
                     1.000000
@@ -1818,7 +1818,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.098303 0.000000
+                    1.000000 0.029684 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1828,7 +1828,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.085741
+                    1.000000 0.000000 0.036535
                 </values>
                 <alpha>
                     1.000000
@@ -1838,7 +1838,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.048479 0.000000
+                    0.316531 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1848,7 +1848,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.064059 1.000000 0.000000
+                    1.000000 0.085198 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1858,7 +1858,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.036856
+                    1.000000 0.000000 0.161420
                 </values>
                 <alpha>
                     1.000000
@@ -1868,7 +1868,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.005095
+                    0.830152 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1878,7 +1878,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.009534 0.000000
+                    1.000000 0.000000 0.025438
                 </values>
                 <alpha>
                     1.000000
@@ -1888,7 +1888,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.858131 0.000000
+                    1.000000 0.000000 0.051210
                 </values>
                 <alpha>
                     1.000000
@@ -1898,7 +1898,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.026876
+                    0.230166 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1908,7 +1908,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.035082
+                    1.000000 0.000000 0.045856
                 </values>
                 <alpha>
                     1.000000
@@ -1918,7 +1918,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.030739 0.000000
+                    1.000000 0.000000 0.031872
                 </values>
                 <alpha>
                     1.000000
@@ -1928,7 +1928,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.039227 0.000000
+                    0.818060 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1938,7 +1938,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.831283
+                    1.000000 0.024638 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1948,7 +1948,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.058344 0.000000
+                    1.000000 0.000000 0.072771
                 </values>
                 <alpha>
                     1.000000
@@ -1958,7 +1958,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.093081 0.000000
+                    1.000000 0.000000 0.017009
                 </values>
                 <alpha>
                     1.000000
@@ -1968,7 +1968,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.097094
+                    1.000000 0.062531 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1978,7 +1978,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.064852
+                    1.000000 0.013663 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1988,7 +1988,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.059791
+                    0.061001 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -1998,7 +1998,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.040295
+                    0.210811 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2008,7 +2008,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.042665 0.000000
+                    0.239269 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2018,7 +2018,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.022647 0.000000
+                    1.000000 0.000000 0.111346
                 </values>
                 <alpha>
                     1.000000
@@ -2028,7 +2028,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.187836
+                    1.000000 0.000000 0.010256
                 </values>
                 <alpha>
                     1.000000
@@ -2038,7 +2038,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.127477 0.000000
+                    1.000000 0.000000 0.017899
                 </values>
                 <alpha>
                     1.000000
@@ -2048,7 +2048,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.366526
+                    0.012908 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2058,7 +2058,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.008287
+                    1.000000 0.036135 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2068,7 +2068,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.008727 0.000000
+                    1.000000 0.000000 0.018199
                 </values>
                 <alpha>
                     1.000000
@@ -2078,7 +2078,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.018396 0.000000
+                    1.000000 0.094195 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2088,7 +2088,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.030818
+                    1.000000 0.019377 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2098,7 +2098,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.238065 0.000000 1.000000
+                    1.000000 0.077948 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2108,7 +2108,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.040832
+                    1.000000 0.026288 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2118,7 +2118,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.004622 0.000000
+                    1.000000 0.000000 0.120109
                 </values>
                 <alpha>
                     1.000000
@@ -2128,7 +2128,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.056989
+                    0.986178 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2138,7 +2138,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.128305 0.000000 1.000000
+                    1.000000 0.000000 0.033246
                 </values>
                 <alpha>
                     1.000000
@@ -2148,7 +2148,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.865433 1.000000 0.000000
+                    1.000000 0.000000 0.103926
                 </values>
                 <alpha>
                     1.000000
@@ -2158,7 +2158,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.133663
+                    1.000000 0.073435 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2168,7 +2168,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.024822
+                    1.000000 0.000000 0.103164
                 </values>
                 <alpha>
                     1.000000
@@ -2178,7 +2178,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.015185 0.000000
+                    1.000000 0.007330 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2188,7 +2188,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.062867
+                    0.288635 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2198,7 +2198,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.064115
+                    1.000000 0.083622 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2208,7 +2208,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.064699 0.000000
+                    0.044866 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2218,7 +2218,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.527101
+                    1.000000 0.003828 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2228,7 +2228,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.002557
+                    1.000000 0.000000 0.102671
                 </values>
                 <alpha>
                     1.000000
@@ -2238,7 +2238,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.779480 1.000000 0.000000
+                    0.000000 1.000000 0.237467
                 </values>
                 <alpha>
                     1.000000
@@ -2248,7 +2248,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.001730 0.000000
+                    0.000000 1.000000 0.364148
                 </values>
                 <alpha>
                     1.000000
@@ -2258,7 +2258,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.930349 0.000000
+                    1.000000 0.000000 0.016111
                 </values>
                 <alpha>
                     1.000000
@@ -2268,7 +2268,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.031129 0.000000
+                    1.000000 0.000000 0.028084
                 </values>
                 <alpha>
                     1.000000
@@ -2278,7 +2278,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.027220
+                    1.000000 0.043966 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2288,7 +2288,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.027964
+                    0.000000 1.000000 0.737737
                 </values>
                 <alpha>
                     1.000000
@@ -2298,7 +2298,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.509684 1.000000 0.000000
+                    1.000000 0.057515 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2308,7 +2308,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.051093
+                    1.000000 0.000000 0.046301
                 </values>
                 <alpha>
                     1.000000
@@ -2318,7 +2318,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.286913 1.000000 0.000000
+                    1.000000 0.000000 0.032715
                 </values>
                 <alpha>
                     1.000000
@@ -2328,7 +2328,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.226016 0.000000 1.000000
+                    1.000000 0.009213 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2338,7 +2338,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.078611
+                    1.000000 0.000000 0.128718
                 </values>
                 <alpha>
                     1.000000
@@ -2348,7 +2348,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 0.802665 1.000000
+                    0.000000 0.811520 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2358,7 +2358,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.084626 0.000000
+                    1.000000 0.000000 0.055419
                 </values>
                 <alpha>
                     1.000000
@@ -2368,7 +2368,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.036001
+                    1.000000 0.000000 0.013448
                 </values>
                 <alpha>
                     1.000000
@@ -2378,7 +2378,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.640506 1.000000 0.000000
+                    0.271681 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2388,7 +2388,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.023814 0.000000
+                    1.000000 0.042708 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2398,7 +2398,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.004506
+                    1.000000 0.000000 0.014655
                 </values>
                 <alpha>
                     1.000000
@@ -2408,7 +2408,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.003146 0.000000
+                    0.405875 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2418,7 +2418,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.323657 1.000000 0.000000
+                    1.000000 0.937777 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2428,7 +2428,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.023665 0.000000
+                    1.000000 0.000000 0.063099
                 </values>
                 <alpha>
                     1.000000
@@ -2438,7 +2438,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.000643
+                    1.000000 0.041678 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2448,7 +2448,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.418006 1.000000 0.000000
+                    1.000000 0.057417 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2458,7 +2458,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.269250 0.000000 1.000000
+                    1.000000 0.000000 0.076389
                 </values>
                 <alpha>
                     1.000000
@@ -2468,7 +2468,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.008240
+                    1.000000 0.000000 0.022918
                 </values>
                 <alpha>
                     1.000000
@@ -2478,7 +2478,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.038413 0.000000
+                    1.000000 0.000000 0.017821
                 </values>
                 <alpha>
                     1.000000
@@ -2488,7 +2488,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.043432
+                    0.221870 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2498,7 +2498,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.067330 0.000000
+                    1.000000 0.085304 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2508,7 +2508,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.022541 0.000000
+                    1.000000 0.069342 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2518,7 +2518,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.066007
+                    1.000000 0.000000 0.020244
                 </values>
                 <alpha>
                     1.000000
@@ -2528,7 +2528,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.012102 0.000000
+                    1.000000 0.000000 0.049411
                 </values>
                 <alpha>
                     1.000000
@@ -2538,7 +2538,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.009054
+                    1.000000 0.000000 0.059944
                 </values>
                 <alpha>
                     1.000000
@@ -2548,7 +2548,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.044851
+                    0.178526 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2558,7 +2558,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.023500 0.000000
+                    1.000000 0.000000 0.028025
                 </values>
                 <alpha>
                     1.000000
@@ -2568,7 +2568,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.014339
+                    1.000000 0.000000 0.007020
                 </values>
                 <alpha>
                     1.000000
@@ -2578,7 +2578,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.752213
+                    0.235518 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2588,7 +2588,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.001743 0.000000
+                    1.000000 0.046405 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2598,7 +2598,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.852970 1.000000 0.000000
+                    1.000000 0.000000 0.084108
                 </values>
                 <alpha>
                     1.000000
@@ -2608,7 +2608,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.055893 0.000000
+                    0.000000 1.000000 0.099703
                 </values>
                 <alpha>
                     1.000000
@@ -2618,7 +2618,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.235731 0.000000 1.000000
+                    1.000000 0.046219 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2628,7 +2628,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.370407 1.000000 0.000000
+                    1.000000 0.006364 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2638,7 +2638,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.061744 0.000000
+                    1.000000 0.000000 0.000134
                 </values>
                 <alpha>
                     1.000000
@@ -2648,7 +2648,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.068176
+                    1.000000 0.000000 0.087793
                 </values>
                 <alpha>
                     1.000000
@@ -2658,7 +2658,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.074092 0.000000
+                    1.000000 0.022583 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2668,7 +2668,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.223205 1.000000 0.000000
+                    0.063720 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2678,7 +2678,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.089815
+                    1.000000 0.028152 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2688,7 +2688,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.047519
+                    1.000000 0.000000 0.075720
                 </values>
                 <alpha>
                     1.000000
@@ -2698,7 +2698,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.034699 0.000000
+                    1.000000 0.000000 0.039375
                 </values>
                 <alpha>
                     1.000000
@@ -2708,7 +2708,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.032211
+                    1.000000 0.109120 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2718,7 +2718,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.012361 0.000000
+                    0.111841 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2728,7 +2728,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.010045 0.000000
+                    1.000000 0.037495 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2738,7 +2738,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.075819 0.000000
+                    1.000000 0.000000 0.075322
                 </values>
                 <alpha>
                     1.000000
@@ -2748,7 +2748,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.032911 0.000000
+                    1.000000 0.006272 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2758,7 +2758,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.024728
+                    1.000000 0.000000 0.087312
                 </values>
                 <alpha>
                     1.000000
@@ -2768,7 +2768,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.002888 0.000000
+                    0.000881 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2778,7 +2778,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.213357 0.000000 1.000000
+                    0.190755 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2788,7 +2788,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.015738
+                    1.000000 0.007431 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2798,7 +2798,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.159254 0.000000
+                    1.000000 0.041148 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2808,7 +2808,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.310737 0.000000 1.000000
+                    1.000000 0.164777 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2818,7 +2818,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.907443 0.000000
+                    1.000000 0.034551 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2828,7 +2828,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.287324 1.000000 0.000000
+                    1.000000 0.000000 0.022622
                 </values>
                 <alpha>
                     1.000000
@@ -2838,7 +2838,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.001278 0.000000
+                    0.057314 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2848,7 +2848,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.020951
+                    1.000000 0.055998 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2858,7 +2858,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.037200 0.000000
+                    0.000000 1.000000 0.202274
                 </values>
                 <alpha>
                     1.000000
@@ -2868,7 +2868,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.079820 0.000000
+                    1.000000 0.030414 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2878,7 +2878,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.014689 0.000000
+                    1.000000 0.019829 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2888,7 +2888,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.027657 0.000000
+                    0.437477 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2898,7 +2898,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.041466 0.000000
+                    1.000000 0.109521 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2908,7 +2908,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.206623
+                    1.000000 0.044324 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2918,7 +2918,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.028072 0.000000
+                    0.000000 1.000000 0.682929
                 </values>
                 <alpha>
                     1.000000
@@ -2928,7 +2928,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.167606
+                    1.000000 0.007126 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2938,7 +2938,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.041791
+                    1.000000 0.000000 0.010693
                 </values>
                 <alpha>
                     1.000000
@@ -2948,7 +2948,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.017553 0.000000
+                    0.000000 1.000000 0.818539
                 </values>
                 <alpha>
                     1.000000
@@ -2958,7 +2958,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.001897
+                    1.000000 0.068582 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2968,7 +2968,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.068644
+                    1.000000 0.099778 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2978,7 +2978,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.904545 1.000000 0.000000
+                    0.041249 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2988,7 +2988,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.155251 1.000000 0.000000
+                    1.000000 0.041808 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -2998,7 +2998,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.275466
+                    1.000000 0.000000 0.064882
                 </values>
                 <alpha>
                     1.000000
@@ -3008,7 +3008,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.016460
+                    1.000000 0.000000 0.000816
                 </values>
                 <alpha>
                     1.000000
@@ -3018,7 +3018,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.014987 0.000000
+                    1.000000 0.032405 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3028,7 +3028,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.052250 0.000000
+                    1.000000 0.000000 0.038002
                 </values>
                 <alpha>
                     1.000000
@@ -3038,7 +3038,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.031127
+                    1.000000 0.000000 0.008270
                 </values>
                 <alpha>
                     1.000000
@@ -3048,7 +3048,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.074788
+                    1.000000 0.009097 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3058,7 +3058,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 0.712143 1.000000
+                    1.000000 0.000000 0.040541
                 </values>
                 <alpha>
                     1.000000
@@ -3068,7 +3068,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.739531 0.000000
+                    0.000000 1.000000 0.386439
                 </values>
                 <alpha>
                     1.000000
@@ -3078,7 +3078,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.232937 0.000000 1.000000
+                    1.000000 0.000000 0.009641
                 </values>
                 <alpha>
                     1.000000
@@ -3088,7 +3088,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.032440
+                    0.313850 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3098,7 +3098,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.419056 1.000000 0.000000
+                    1.000000 0.007722 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3108,7 +3108,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.980049 0.000000
+                    1.000000 0.124007 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3118,7 +3118,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.002028
+                    1.000000 0.000000 0.067228
                 </values>
                 <alpha>
                     1.000000
@@ -3128,7 +3128,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.029500
+                    0.143712 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3138,7 +3138,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.018976
+                    0.000000 1.000000 0.099248
                 </values>
                 <alpha>
                     1.000000
@@ -3148,7 +3148,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.003460
+                    1.000000 0.008801 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3158,7 +3158,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.177141
+                    1.000000 0.895131 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3168,7 +3168,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.033055 0.000000
+                    1.000000 0.000000 0.136370
                 </values>
                 <alpha>
                     1.000000
@@ -3178,7 +3178,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.069725
+                    1.000000 0.000000 0.004137
                 </values>
                 <alpha>
                     1.000000
@@ -3188,7 +3188,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.043792
+                    0.244877 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3198,7 +3198,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.008936 0.000000
+                    1.000000 0.003581 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3208,7 +3208,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.004109
+                    1.000000 0.000000 0.055992
                 </values>
                 <alpha>
                     1.000000
@@ -3218,7 +3218,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.849455 1.000000 0.000000
+                    1.000000 0.025509 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3228,7 +3228,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.027229
+                    0.204989 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3238,7 +3238,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.027983
+                    1.000000 0.008349 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3248,7 +3248,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.027670
+                    1.000000 0.122906 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3258,7 +3258,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.044726
+                    0.189412 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3268,7 +3268,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.033810
+                    1.000000 0.000000 0.070440
                 </values>
                 <alpha>
                     1.000000
@@ -3278,7 +3278,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.040089
+                    0.034633 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3288,7 +3288,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.004948 0.000000
+                    1.000000 0.000000 0.024854
                 </values>
                 <alpha>
                     1.000000
@@ -3298,7 +3298,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.066436 0.000000
+                    0.033591 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3308,7 +3308,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.071775 0.000000
+                    1.000000 0.000000 0.050284
                 </values>
                 <alpha>
                     1.000000
@@ -3318,7 +3318,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.123107 0.000000 1.000000
+                    1.000000 0.000000 0.072876
                 </values>
                 <alpha>
                     1.000000
@@ -3328,7 +3328,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.185694 0.000000 1.000000
+                    1.000000 0.019857 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3338,7 +3338,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.371268
+                    1.000000 0.001105 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3348,7 +3348,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.022550 0.000000
+                    1.000000 0.982065 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3358,7 +3358,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.075922 0.000000
+                    1.000000 0.000000 0.056087
                 </values>
                 <alpha>
                     1.000000
@@ -3368,7 +3368,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.987130 0.000000
+                    1.000000 0.000000 0.037409
                 </values>
                 <alpha>
                     1.000000
@@ -3378,7 +3378,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.056854 1.000000 0.000000
+                    0.000000 1.000000 0.268933
                 </values>
                 <alpha>
                     1.000000
@@ -3388,7 +3388,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.032748
+                    1.000000 0.000000 0.042296
                 </values>
                 <alpha>
                     1.000000
@@ -3398,7 +3398,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.086537
+                    0.000000 1.000000 0.490887
                 </values>
                 <alpha>
                     1.000000
@@ -3408,7 +3408,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.724553
+                    0.564702 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3418,7 +3418,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.003460
+                    1.000000 0.000000 0.052802
                 </values>
                 <alpha>
                     1.000000
@@ -3428,7 +3428,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.011662 0.000000
+                    1.000000 0.000000 0.016243
                 </values>
                 <alpha>
                     1.000000
@@ -3438,7 +3438,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.112772
+                    0.388402 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3448,7 +3448,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.005265 0.000000
+                    1.000000 0.000000 0.033943
                 </values>
                 <alpha>
                     1.000000
@@ -3458,7 +3458,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.028667 0.000000
+                    0.129191 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3468,7 +3468,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.030000 0.000000
+                    1.000000 0.058106 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3478,7 +3478,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.008417
+                    0.599992 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3488,7 +3488,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.420565
+                    1.000000 0.001145 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3498,7 +3498,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.070013
+                    0.266206 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3508,7 +3508,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.009253 0.000000
+                    1.000000 0.000000 0.000070
                 </values>
                 <alpha>
                     1.000000
@@ -3518,7 +3518,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.836549 1.000000 0.000000
+                    1.000000 0.005986 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3528,7 +3528,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.013448
+                    1.000000 0.511820 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3538,7 +3538,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.052510
+                    0.000000 1.000000 0.007146
                 </values>
                 <alpha>
                     1.000000
@@ -3548,7 +3548,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.583422
+                    0.214020 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3558,7 +3558,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.621957
+                    1.000000 0.018240 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3568,7 +3568,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.071876
+                    1.000000 0.000000 0.066777
                 </values>
                 <alpha>
                     1.000000
@@ -3578,7 +3578,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.395891 1.000000 0.000000
+                    1.000000 0.058907 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3588,7 +3588,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.104199 0.000000 1.000000
+                    1.000000 0.000000 0.021251
                 </values>
                 <alpha>
                     1.000000
@@ -3598,7 +3598,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.023775
+                    0.265062 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3608,7 +3608,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.066795 0.000000
+                    1.000000 0.001049 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3618,7 +3618,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.026596 0.000000
+                    0.000000 1.000000 0.061854
                 </values>
                 <alpha>
                     1.000000
@@ -3628,7 +3628,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.247323 0.000000 1.000000
+                    0.245659 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3638,7 +3638,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.591354 1.000000 0.000000
+                    1.000000 0.089602 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3648,7 +3648,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.520505
+                    1.000000 0.016046 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3658,7 +3658,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.047293
+                    1.000000 0.000000 0.037777
                 </values>
                 <alpha>
                     1.000000
@@ -3668,7 +3668,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.126178
+                    1.000000 0.000000 0.005748
                 </values>
                 <alpha>
                     1.000000
@@ -3678,7 +3678,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000930 0.000000
+                    1.000000 0.000000 0.085289
                 </values>
                 <alpha>
                     1.000000
@@ -3688,7 +3688,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.057102 0.000000
+                    1.000000 0.000000 0.003694
                 </values>
                 <alpha>
                     1.000000
@@ -3698,7 +3698,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.440498
+                    1.000000 0.000000 0.042964
                 </values>
                 <alpha>
                     1.000000
@@ -3708,7 +3708,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.083041
+                    1.000000 0.000000 0.084843
                 </values>
                 <alpha>
                     1.000000
@@ -3718,7 +3718,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.040380
+                    1.000000 0.097400 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3728,7 +3728,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.019779 0.000000
+                    0.000000 1.000000 0.340357
                 </values>
                 <alpha>
                     1.000000
@@ -3738,7 +3738,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.049316 0.000000
+                    0.000000 1.000000 0.529391
                 </values>
                 <alpha>
                     1.000000
@@ -3748,7 +3748,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.088815
+                    0.231481 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3758,7 +3758,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.009442
+                    1.000000 0.000000 0.057160
                 </values>
                 <alpha>
                     1.000000
@@ -3768,7 +3768,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.196905 1.000000 0.000000
+                    0.284747 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3778,7 +3778,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.003866 0.000000
+                    1.000000 0.029223 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3788,7 +3788,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.034723
+                    1.000000 0.120509 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3798,7 +3798,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.003939
+                    1.000000 0.000000 0.070524
                 </values>
                 <alpha>
                     1.000000
@@ -3808,7 +3808,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.115047 0.000000
+                    1.000000 0.834607 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3818,7 +3818,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.036669 0.000000
+                    1.000000 0.000000 0.096882
                 </values>
                 <alpha>
                     1.000000
@@ -3828,7 +3828,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.087688 0.000000
+                    1.000000 0.000000 0.086157
                 </values>
                 <alpha>
                     1.000000
@@ -3838,7 +3838,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.016410 0.000000
+                    1.000000 0.000000 0.016461
                 </values>
                 <alpha>
                     1.000000
@@ -3848,7 +3848,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.030429
+                    1.000000 0.000000 0.091861
                 </values>
                 <alpha>
                     1.000000
@@ -3858,7 +3858,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.010181 0.000000
+                    1.000000 0.000000 0.057935
                 </values>
                 <alpha>
                     1.000000
@@ -3868,7 +3868,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.019513 0.000000
+                    0.107359 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3878,7 +3878,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.077209
+                    1.000000 0.933022 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3888,7 +3888,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.033098
+                    1.000000 0.000000 0.082984
                 </values>
                 <alpha>
                     1.000000
@@ -3898,7 +3898,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.034280
+                    1.000000 0.000000 0.000052
                 </values>
                 <alpha>
                     1.000000
@@ -3908,7 +3908,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.728681 1.000000 0.000000
+                    0.287448 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3918,7 +3918,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.207041 1.000000 0.000000
+                    1.000000 0.089061 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3928,7 +3928,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.000000 1.000000 0.582554
+                    1.000000 0.094256 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3938,7 +3938,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.006157 0.000000
+                    0.329391 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3948,7 +3948,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.894849 0.000000
+                    0.200968 0.000000 1.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3958,7 +3958,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.007520
+                    1.000000 0.000000 0.111094
                 </values>
                 <alpha>
                     1.000000
@@ -3968,7 +3968,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.060274
+                    0.650751 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3978,7 +3978,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.058630 0.000000
+                    0.781984 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3988,7 +3988,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.082965
+                    0.492867 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -3998,7 +3998,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.054082
+                    0.302556 1.000000 0.000000
                 </values>
                 <alpha>
                     1.000000
@@ -4008,7 +4008,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    0.279486 0.000000 1.000000
+                    1.000000 0.000000 0.014030
                 </values>
                 <alpha>
                     1.000000
@@ -4018,7 +4018,7 @@
                 <parameter name="color_space" value="linear_rgb" />
                 <parameter name="multiplier" value="1" />
                 <values>
-                    1.000000 0.000000 0.025689
+                    1.000000 0.000000 0.122299
                 </values>
                 <alpha>
                     1.000000

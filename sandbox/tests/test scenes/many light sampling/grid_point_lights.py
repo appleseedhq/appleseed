@@ -26,6 +26,8 @@
 # THE SOFTWARE.
 #
 
+from __future__ import print_function
+
 import colorsys
 import math
 import random
@@ -38,20 +40,18 @@ import numpy as np
 
 import appleseed as asr
 
-
 # Initial parameters for generating grid light scene
 grid_lights_count = 20
-color = "mix"
+color = "white"
 plane_size = 100
-output_scene_name = str(grid_lights_count) + "x" + str(grid_lights_count) + "_" + color + "_point_lights"
+output_scene_name = "{0}x{0}_{1}_point_lights".format(grid_lights_count, color)
 
 def build_project():
-
     # Create an empty project.
-    project = asr.Project('grid-point-lights-generator')
+    project = asr.Project("grid-point-lights-generator")
 
     paths = project.get_search_paths()
-    paths.append('data')
+    paths.append("data")
     project.set_search_paths(paths)
 
     # Add default configurations to the project.
@@ -60,8 +60,8 @@ def build_project():
     # Set the number of samples. This is basically the quality parameter: the higher the number
     # of samples, the smoother the image but the longer the rendering time.
     # todo: fix.
-    conf = project.configurations()['final']
-    conf.insert_path('uniform_pixel_renderer.samples', 1)
+    conf = project.configurations()["final"]
+    conf.insert_path("uniform_pixel_renderer.samples", 1)
 
     # Create a scene.
     scene = asr.Scene()
@@ -104,7 +104,7 @@ def build_project():
     #------------------------------------------------------------------------
 
     # Load the scene geometry from disk.
-    objects = asr.MeshObjectReader.read(project.get_search_paths(), "plane", {'filename': 'Plane001.binarymesh'})
+    objects = asr.MeshObjectReader.read(project.get_search_paths(), "plane", {"filename": "Plane001.binarymesh"})
 
     # Insert all the objects into the assembly.
     for object in objects:
@@ -144,8 +144,8 @@ def build_project():
     if color == "white":
         assembly.colors().insert(asr.ColorEntity("white",
                                             {
-                                                'color_space': 'linear_rgb',
-                                                'multiplier': 1.0
+                                                "color_space": "linear_rgb",
+                                                "multiplier": 1.0
                                             },
                                             [1.0, 1.0, 1.0]))
 
@@ -159,11 +159,11 @@ def build_project():
                 light_name = "light_" + str(light_count)
                 light_count = light_count + 1
                 light = asr.Light("point_light", light_name, {
-                                                                'intensity': "white",
-                                                                'intensity_multiplier': "3"
+                                                                "intensity": "white",
+                                                                "intensity_multiplier": "3"
 
                                                              })
-                light_position = asr.Vector3d( i, j, light_z_distance )
+                light_position = asr.Vector3d(i, j, light_z_distance)
                 mat = orientation * asr.Matrix4d.make_translation(light_position)
                 light.set_transform(asr.Transformd(mat))
                 assembly.lights().insert(light)
@@ -180,8 +180,8 @@ def build_project():
             random_color = list(colorsys.hls_to_rgb(ran, 0.5, 1.0))
             assembly.colors().insert(asr.ColorEntity("color_" + str(i),
                                                 {
-                                                    'color_space': 'linear_rgb',
-                                                    'multiplier': 1.0
+                                                    "color_space": "linear_rgb",
+                                                    "multiplier": 1.0
                                                 },
                                                 random_color))
 
@@ -196,16 +196,16 @@ def build_project():
                 color_name = "color_" + str(light_count)
                 light_count = light_count + 1
                 light = asr.Light("point_light", light_name, {
-                                                                'intensity': color_name,
-                                                                'intensity_multiplier': "3"
+                                                                "intensity": color_name,
+                                                                "intensity_multiplier": "3"
 
                                                              })
-                light_position = asr.Vector3d( i, j, light_z_distance )
+                light_position = asr.Vector3d(i, j, light_z_distance)
                 mat = orientation * asr.Matrix4d.make_translation(light_position)
                 light.set_transform(asr.Transformd(mat))
                 assembly.lights().insert(light)
     else:
-        print "Unknown color: ", color
+        print("Unknown color: {0}".format(color))
         return
 
     #------------------------------------------------------------------------
@@ -233,11 +233,11 @@ def build_project():
 
     # Create an orthographic camera.
     params = {
-        'controller_target': "0 0 0",
-        'film_dimensions': "128 128",
-        'near_z': "-0.1",
-        'shutter_close_time': "1.0",
-        'shutter_open_time': "0.0"
+            "controller_target": "0 0 0",
+            "film_dimensions": "128 128",
+            "near_z": "-0.1",
+            "shutter_close_time": "1.0",
+            "shutter_open_time": "0.0"
     }
 
     camera = asr.Camera("orthographic_camera", "camera", params)
