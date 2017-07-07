@@ -261,6 +261,11 @@ void MainWindow::close_project()
     on_project_change();
 }
 
+ParamArray& MainWindow::get_settings()
+{
+    return m_settings;
+}
+
 void MainWindow::build_menus()
 {
     //

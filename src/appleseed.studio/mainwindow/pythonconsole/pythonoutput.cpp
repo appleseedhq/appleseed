@@ -26,44 +26,54 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_LINENUMBERAREA_H
-#define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_LINENUMBERAREA_H
+// Interface header.
+#include "pythonoutput.h"
 
 // Qt headers.
-#include <QObject>
-#include <QWidget>
-
-// Forward declarations.
-class QFont;
+#include <QApplication>
 
 namespace appleseed {
 namespace studio {
 
-// Forward declarations.
-class PythonEditor;
-
-class LineNumberArea
-  : public QWidget
+PythonOutput::PythonOutput(QWidget* parent)
+  : QPlainTextEdit(parent)
 {
-    Q_OBJECT
+    setObjectName("python_output");
+    setUndoRedoEnabled(false);
+    setLineWrapMode(QPlainTextEdit::WidgetWidth);
+    setReadOnly(true);
+    setTextInteractionFlags(
+        Qt::TextSelectableByMouse |
+        Qt::TextSelectableByKeyboard);
+}
 
-  public:
-    explicit LineNumberArea(PythonEditor* parent = 0);
+void PythonOutput::keyPressEvent(QKeyEvent* event)
+{
+    if (event->key() == Qt::Key_Plus || event->key() == Qt::Key_Equal)
+        change_font_size(1);
+    else if (event->key() == Qt::Key_Minus)
+        change_font_size(-1);
+    else
+        QPlainTextEdit::keyPressEvent(event);
+}
 
-  protected:
-    void paintEvent(QPaintEvent* event);
+void PythonOutput::wheelEvent(QWheelEvent* event)
+{
+    if (QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
+        // Minus here because if you turn wheel up delta is negative
+        // while font should be incremented.
+        change_font_size(- event->delta() / 120);
+    else
+        QPlainTextEdit::wheelEvent(event);
+}
 
-  private slots:
-    void slot_update_area_width();
-    void slot_update_area(const QRect& rect, int dy);
-    void slot_change_font(const QFont& font);
+void PythonOutput::change_font_size(const int delta)
+{
+    int new_font_size = font().pointSize() + delta;
+    QFont new_font = font();
+    new_font.setPointSize(new_font_size);
+    setFont(new_font);
+}
 
-  private:
-    PythonEditor* editor;
-    int area_width();
-};
-
-}       // namespace studio
-}       // namespace appleseed
-
-#endif // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_LINENUMBERAREA_H
+}   // namespace studio
+}   // namespace appleseed

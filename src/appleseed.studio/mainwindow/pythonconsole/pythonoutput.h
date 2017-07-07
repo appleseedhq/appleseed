@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Gleb Mishchenko, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,23 +26,39 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_UTILITY_SETTINGSKEYS_H
-#define APPLESEED_STUDIO_UTILITY_SETTINGSKEYS_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONOUTPUT_H
+#define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONOUTPUT_H
 
-// Defines are sometimes more convenient than C++ constants...
+// Qt headers.
+#include <QObject>
+#include <QPlainTextEdit>
 
-#define SETTINGS_ORGANIZATION                       "appleseedhq"
-#define SETTINGS_APPLICATION                        "appleseed.studio"
+// Forward declarations.
+class QWheelEvent;
 
-#define SETTINGS_LAST_DIRECTORY                     ".last_directory"
-#define SETTINGS_SELECTED_FILTER                    ".selected_filter"
+namespace appleseed {
+namespace studio {
 
-#define SETTINGS_FILE_DIALOG_FRAMES                 "ui.file_dialog.frames"
-#define SETTINGS_FILE_DIALOG_PROJECTS               "ui.file_dialog.projects"
-#define SETTINGS_FILE_DIALOG_OIIO_TEXTURES          "ui.file_dialog.oiio_textures"
-#define SETTINGS_FILE_DIALOG_PYTHON_SCRIPTS         "ui.file.dialog.python_editor"
+class PythonOutput
+    : public QPlainTextEdit
+{
+    Q_OBJECT
 
-#define SETTINGS_RENDER_REGION_TRIGGERS_RENDERING   "ui.render_region.triggers_rendering"
-#define SETTINGS_WATCH_FILE_CHANGES                 "ui.watch_file_changes"
+  public:
+    explicit PythonOutput(QWidget* parent);
 
-#endif  // !APPLESEED_STUDIO_UTILITY_SETTINGSKEYS_H
+  protected:
+    // Event used for indentation and font size change.
+    void keyPressEvent(QKeyEvent* event);
+
+    // Event used to change font size on wheel rotation.
+    void wheelEvent(QWheelEvent* event);
+
+  private:
+    void change_font_size(const int delta);
+};
+
+}   // namespace studio
+}   // namespace appleseed
+
+#endif // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONOUTPUT_H
