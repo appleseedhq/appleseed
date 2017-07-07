@@ -78,10 +78,7 @@ void LightTree::build(
         foundation::AABB3d bbox = light_source->get_bbox();
         m_light_sources.push_back(light_source);
         light_bboxes.push_back(bbox);
-        m_items.push_back(
-            Item(
-                bbox,
-                i));
+        m_items.push_back(Item(bbox,i));
     }
 
     // Create the partitioner.
@@ -144,10 +141,9 @@ void LightTree::draw_tree_structure(
         const char* color = "color.green";
         for (size_t parent_level = 0; parent_level < m_tree_depth; parent_level++)
         {
-            const std::string filename = filename_base
-                                       + "_"
-                                       + std::to_string(parent_level + 1)
-                                       + ".py";
+            const auto filename = foundation::format("{0}_{1}.py",
+                                                    filename_base,
+                                                    parent_level + 1);
             foundation::VPythonFile file(filename.c_str());
             file.draw_axes(Width);
 
@@ -162,7 +158,6 @@ void LightTree::draw_tree_structure(
 
                 if (m_nodes[i].get_level() == parent_level)
                 {
-
                     const auto& bbox_left = m_nodes[i].get_left_bbox();
                     const auto& bbox_right = m_nodes[i].get_right_bbox();
 
@@ -174,7 +169,7 @@ void LightTree::draw_tree_structure(
     }
     else
     {
-        const std::string filename = filename_base + ".py";
+        const auto filename = foundation::format("{0}.py", filename_base);
         foundation::VPythonFile file(filename.c_str());
         file.draw_axes(Width);
         const char* color = "color.yellow";
