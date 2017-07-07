@@ -550,20 +550,20 @@ void LightSampler::sample(
     LightSample&                        light_sample) const
 {
     // Mark different light groups.
-    const size_t light_group_non_physical_cdf       = 0;
-    const size_t light_group_emitting_triangle_cdf  = 1;
-    const size_t light_group_light_tree             = 2;
+    const size_t LightGroupNonPhysicalCdf       = 0;
+    const size_t LightGroupemittingTriangleCdf  = 1;
+    const size_t LightGroupLightTree             = 2;
 
     size_t candidate_groups[3];
     size_t candidate_groups_count = 0;
 
     // Check for existence of each light group and record it.
     if (m_non_physical_lights_cdf.valid())
-        candidate_groups[candidate_groups_count++] = light_group_non_physical_cdf;
+        candidate_groups[candidate_groups_count++] = LightGroupNonPhysicalCdf;
     if (m_emitting_triangles_cdf.valid())
-        candidate_groups[candidate_groups_count++] = light_group_emitting_triangle_cdf;
+        candidate_groups[candidate_groups_count++] = LightGroupemittingTriangleCdf;
     if (m_light_tree.is_built())
-        candidate_groups[candidate_groups_count++] = light_group_light_tree;
+        candidate_groups[candidate_groups_count++] = LightGroupLightTree;
 
     // At least one light group must be present.
     assert(!candidate_groups.empty());
@@ -577,21 +577,21 @@ void LightSampler::sample(
 
     switch (selected_type)
     {
-        case light_group_non_physical_cdf:
+        case LightGroupNonPhysicalCdf:
             sample_non_physical_lights(
                 time,
                 Vector3f(probability_interval_shift, s[1], s[2]),
                 light_sample);
             light_sample.m_probability /= candidate_groups_count;
             break;
-        case light_group_emitting_triangle_cdf:
+        case LightGroupemittingTriangleCdf:
             sample_emitting_triangles(
                 time,
                 Vector3f(probability_interval_shift, s[1], s[2]),
                 light_sample);
             light_sample.m_probability /= candidate_groups_count;
             break;
-        case light_group_light_tree:
+        case LightGroupLightTree:
             sample_light_tree_lights(
                 time,
                 Vector3f(probability_interval_shift, s[1], s[2]),
