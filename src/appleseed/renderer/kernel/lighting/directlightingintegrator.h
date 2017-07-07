@@ -76,6 +76,7 @@ class DirectLightingIntegrator
     DirectLightingIntegrator(
         const ShadingContext&       shading_context,
         const LightSampler&         light_sampler,
+        const ShadingPoint&         shading_point,
         const IMaterialSampler&     material_sampler,
         const ShadingRay::Time&     time,
         const int                   light_sampling_modes,
@@ -122,6 +123,7 @@ class DirectLightingIntegrator
 
   private:
     const ShadingContext&               m_shading_context;
+    const ShadingPoint&                 m_shading_point;
     const LightSampler&                 m_light_sampler;
     const ShadingRay::Time&             m_time;
     const IMaterialSampler&             m_material_sampler;

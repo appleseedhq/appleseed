@@ -667,6 +667,7 @@ namespace
                 const DirectLightingIntegrator integrator(
                     m_shading_context,
                     m_light_sampler,
+                    shading_point,
                     bsdf_sampler,
                     shading_point.get_time(),
                     scattering_modes,   // light_sampling_modes
@@ -785,6 +786,7 @@ namespace
             }
 
             void add_direct_lighting_contribution(
+                const ShadingPoint&     shading_point,
                 const ShadingRay&       volume_ray,
                 const PhaseFunction&    phase_function,
                 const void*             phase_function_data,
@@ -811,6 +813,7 @@ namespace
                 const DirectLightingIntegrator integrator(
                     m_shading_context,
                     m_light_sampler,
+                    shading_point,
                     phase_function_sampler,
                     volume_ray.m_time,
                     scattering_modes,   // light sampling modes
@@ -913,6 +916,7 @@ namespace
                     if (m_params.m_enable_dl || vertex.m_path_length > 1)
                     {
                         add_direct_lighting_contribution(
+                            *vertex.m_shading_point,
                             volume_ray,
                             *phase_function,
                             vertex.m_phase_function_data,
