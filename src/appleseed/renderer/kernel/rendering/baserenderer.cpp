@@ -36,6 +36,7 @@
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/texturing/oiiotexturesystem.h"
+#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/visibilityflags.h"
@@ -144,7 +145,9 @@ void BaseRenderer::initialize_oiio()
     const ParamArray& params = m_params.child("texture_store");
 
     const size_t texture_cache_size_bytes =
-        params.get_optional<size_t>("max_size", 256 * 1024 * 1024);
+        params.get_optional<size_t>(
+            "max_size",
+            TextureStore::get_default_size());
     RENDERER_LOG_INFO(
         "setting oiio texture cache size to %s.",
         pretty_size(texture_cache_size_bytes).c_str());
