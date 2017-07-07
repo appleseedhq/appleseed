@@ -552,7 +552,7 @@ void LightSampler::sample(
     // Mark different light groups.
     const size_t LightGroupNonPhysicalCdf       = 0;
     const size_t LightGroupemittingTriangleCdf  = 1;
-    const size_t LightGroupLightTree             = 2;
+    const size_t LightGroupLightTree            = 2;
 
     size_t candidate_groups[3];
     size_t candidate_groups_count = 0;
@@ -566,11 +566,11 @@ void LightSampler::sample(
         candidate_groups[candidate_groups_count++] = LightGroupLightTree;
 
     // At least one light group must be present.
-    assert(!candidate_groups.empty());
+    assert(candidate_groups_count > 0);
 
     // Randomly select one of the group which will be sampled.
-    size_t const selected_index = s[0] * candidate_groups_count;
-    size_t const selected_type  = candidate_groups[selected_index];
+    const size_t selected_index = s[0] * candidate_groups_count;
+    const size_t selected_type  = candidate_groups[selected_index];
     
     // Avoid bias propagation by expanding the chosen interval back to [0,1].
     float probability_interval_shift = (s[0] - selected_index / candidate_groups_count) * candidate_groups_count;
@@ -597,6 +597,7 @@ void LightSampler::sample(
                 Vector3f(probability_interval_shift, s[1], s[2]),
                 shading_point,
                 light_sample);
+            light_sample.m_probability /= candidate_groups_count;
             break;
         default:
             assert(!"unexpected candidate light type tag");
