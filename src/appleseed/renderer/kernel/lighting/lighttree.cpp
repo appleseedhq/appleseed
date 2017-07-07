@@ -223,12 +223,7 @@ float LightTree::recursive_node_update(size_t node_index, size_t node_level)
         size_t light_source_index = m_items[item_index].m_light_index;
         Spectrum spectrum = m_light_sources[light_source_index]->get_intensity();
 
-        // Luminance is the average accross all the spectrum channels.
-        for (size_t i = 0; i < spectrum.size(); i++)
-        {
-            luminance += spectrum[i];
-        }
-        luminance /= spectrum.size();
+        luminance = foundation::average_value(spectrum);
 
         // Modify the tree depth if the branch is deeper than the other branches
         // visited so far.
