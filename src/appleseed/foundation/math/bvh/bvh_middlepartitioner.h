@@ -89,8 +89,6 @@ inline size_t MiddlePartitioner<AABBVector>::partition(
 {
     const size_t count = end - begin;
     assert(count > 1);
-    
-    const AABBVectorType& bboxes = PartitionerBase<AABBVector>::m_bboxes;
 
     // Don't split leaves containing less than a predefined number of items.
     if (count <= m_max_leaf_size)
@@ -103,8 +101,8 @@ inline size_t MiddlePartitioner<AABBVector>::partition(
     const ValueType center = bbox.center(split_dim);
 
     // Find the first bbox with center bigger than half and split at that point.
+    const AABBVectorType& bboxes = PartitionerBase<AABBVector>::m_bboxes;
     size_t pivot = begin;
-
     while (bboxes[indices[pivot]].center(split_dim) < center)
         pivot++;
 

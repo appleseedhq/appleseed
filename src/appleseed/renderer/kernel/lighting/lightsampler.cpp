@@ -471,7 +471,7 @@ void LightSampler::sample_light_tree_lights(
 {
     assert(m_non_physical_lights_cdf.valid());
 
-    const std::pair<size_t, float> result = m_light_tree.sample(shading_point.get_point(), s[0]);
+    const pair<size_t, float> result = m_light_tree.sample(shading_point.get_point(), s[0]);
 
     const size_t light_index = result.first;
     const float light_prob = result.second;
@@ -580,21 +580,21 @@ void LightSampler::sample(
         case light_group_non_physical_cdf:
             sample_non_physical_lights(
                 time,
-                foundation::Vector3f(probability_interval_shift, s[1], s[2]),
+                Vector3f(probability_interval_shift, s[1], s[2]),
                 light_sample);
             light_sample.m_probability /= candidate_groups_count;
             break;
         case light_group_emitting_triangle_cdf:
             sample_emitting_triangles(
                 time,
-                foundation::Vector3f(probability_interval_shift, s[1], s[2]),
+                Vector3f(probability_interval_shift, s[1], s[2]),
                 light_sample);
             light_sample.m_probability /= candidate_groups_count;
             break;
         case light_group_light_tree:
             sample_light_tree_lights(
                 time,
-                foundation::Vector3f(probability_interval_shift, s[1], s[2]),
+                Vector3f(probability_interval_shift, s[1], s[2]),
                 shading_point,
                 light_sample);
             break;
