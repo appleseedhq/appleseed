@@ -36,7 +36,7 @@
 #include <QObject>
 #include <QWidget>
 
-// Standard headers;
+// Standard headers.
 #include <string>
 
 // Forward declarations.
@@ -44,7 +44,6 @@ class QAction;
 class QPlainTextEdit;
 class QString;
 class QWheelEvent;
-
 
 namespace appleseed {
 namespace studio {
@@ -86,8 +85,8 @@ class PythonConsoleWidget
     QAction*        m_action_clear_selection;
     QAction*        m_action_focus_on_input;
 
-    bool m_is_file_dirty;
-    std::string m_opened_file;
+    bool            m_is_file_dirty;
+    std::string     m_opened_filepath;
 
     bool can_close_file();
     bool has_file_path();

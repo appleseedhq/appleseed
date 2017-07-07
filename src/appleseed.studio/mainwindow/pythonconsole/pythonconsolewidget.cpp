@@ -37,7 +37,7 @@
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
 
-// appleseed.renderer headers
+// appleseed.renderer headers.
 #include "renderer/utility/paramarray.h"
 
 // Qt headers.
@@ -63,7 +63,9 @@ namespace studio {
 //
 
 PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
-  : QWidget(parent), m_is_file_dirty(false), m_opened_file("")
+  : QWidget(parent)
+  , m_is_file_dirty(false)
+  , m_opened_filepath("")
 {
     QSplitter* console_body = new QSplitter(this);
     console_body->setOrientation(Qt::Vertical);
@@ -197,7 +199,7 @@ void PythonConsoleWidget::slot_new_file()
 void PythonConsoleWidget::close_file()
 {
     m_input->clear();
-    m_opened_file = "";
+    m_opened_filepath.clear();
     m_is_file_dirty = false;
 }
 
@@ -208,7 +210,7 @@ namespace
         QMessageBox msgbox(parent);
         msgbox.setWindowTitle("Save Changes?");
         msgbox.setIcon(QMessageBox::Question);
-        msgbox.setText("The python script has been modified.");
+        msgbox.setText("The Python script has been modified.");
         msgbox.setInformativeText("Do you want to save your changes?");
         msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
         msgbox.setDefaultButton(QMessageBox::Save);
@@ -245,7 +247,7 @@ void PythonConsoleWidget::slot_open_file()
     if (!can_close_file())
         return;
 
-    ParamArray settings = PythonInterpreter::instance().get_main_window()->get_settings();
+    ParamArray& settings = PythonInterpreter::instance().get_main_window()->get_settings();
 
     QString filepath =
         get_open_filename(
@@ -267,12 +269,12 @@ void PythonConsoleWidget::open_file(const string& filepath)
     fstream file(filepath, fstream::in);
     if (file.bad())
     {
-        RENDERER_LOG_ERROR("Can't open python script \"%s\"", filepath.c_str());
+        RENDERER_LOG_ERROR("Can't open Python script \"%s\"", filepath.c_str());
         return;
     }
 
     close_file();
-    m_opened_file = filepath;
+    m_opened_filepath = filepath;
 
     while (!file.eof())
     {
@@ -281,7 +283,6 @@ void PythonConsoleWidget::open_file(const string& filepath)
         m_input->appendPlainText(str.c_str());
     }
 
-    file.close();
     m_is_file_dirty = false;
 }
 
@@ -290,17 +291,17 @@ void PythonConsoleWidget::slot_save_file()
     if (!has_file_path())
         slot_save_file_as();
     else
-        save_file(m_opened_file);
+        save_file(m_opened_filepath);
 }
 
 bool PythonConsoleWidget::has_file_path()
 {
-    return m_opened_file != "";
+    return m_opened_filepath != "";
 }
 
 void PythonConsoleWidget::slot_save_file_as()
 {
-    ParamArray settings = PythonInterpreter::instance().get_main_window()->get_settings();
+    ParamArray& settings = PythonInterpreter::instance().get_main_window()->get_settings();
 
     const QString filepath =
         get_save_filename(
@@ -327,14 +328,14 @@ void PythonConsoleWidget::save_file(std::string filepath)
     fstream file(filepath, fstream::out);
     if (file.bad())
     {
-        RENDERER_LOG_ERROR("Can't save python script \"%s\"", filepath.c_str());
+        RENDERER_LOG_ERROR("Can't save Python script \"%s\"", filepath.c_str());
         return;
     }
 
     string text = m_input->toPlainText().toStdString();
     file.write(text.c_str(), text.size());
 
-    m_opened_file = filepath;
+    m_opened_filepath = filepath;
     m_is_file_dirty = false;
 }
 
