@@ -582,14 +582,12 @@ void LightSampler::sample(
                 time,
                 Vector3f(probability_interval_shift, s[1], s[2]),
                 light_sample);
-            light_sample.m_probability /= candidate_groups_count;
             break;
         case LightGroupemittingTriangleCdf:
             sample_emitting_triangles(
                 time,
                 Vector3f(probability_interval_shift, s[1], s[2]),
                 light_sample);
-            light_sample.m_probability /= candidate_groups_count;
             break;
         case LightGroupLightTree:
             sample_light_tree_lights(
@@ -597,11 +595,11 @@ void LightSampler::sample(
                 Vector3f(probability_interval_shift, s[1], s[2]),
                 shading_point,
                 light_sample);
-            light_sample.m_probability /= candidate_groups_count;
             break;
         default:
             assert(!"unexpected candidate light type tag");
     }
+    light_sample.m_probability /= candidate_groups_count;
 }
 
 float LightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
