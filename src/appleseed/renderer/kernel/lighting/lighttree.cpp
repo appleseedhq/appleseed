@@ -139,6 +139,7 @@ void LightTree::draw_tree_structure(
     if (separate_by_levels)
     {
         const char* color = "color.green";
+        // For each level of the tree, draw the child bboxes.
         for (size_t parent_level = 0; parent_level < m_tree_depth; parent_level++)
         {
             const auto filename = foundation::format("{0}_{1}.py",
@@ -150,7 +151,7 @@ void LightTree::draw_tree_structure(
             // Draw the initial bbox.
             file.draw_aabb(root_bbox, color, Width);
 
-            // Find the parent node to draw child bboxes from.
+            // Find every node at the parent level and draw its child bboxes.
             for (size_t i = 0; i < m_nodes.size(); i++)
             {
                 if (m_nodes[i].is_leaf())
