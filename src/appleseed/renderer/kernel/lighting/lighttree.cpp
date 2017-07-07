@@ -246,8 +246,7 @@ std::pair<size_t, float> LightTree::sample(
 
     while (!m_nodes[node_index].is_leaf())
     {
-        // LightTreeNode.
-        const auto& node = m_nodes[node_index];
+        const LightTreeNode<foundation::AABB3d>& node = m_nodes[node_index];
 
         const std::pair<float, float> result = child_node_probabilites(node, surface_point);
         const float p1 = result.first;
