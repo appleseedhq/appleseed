@@ -37,10 +37,8 @@
 #include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
 
-// Forward declarations.
-namespace renderer      { class Scene; }
-namespace renderer      { class NonPhysicalLightInfo; }
-namespace renderer      { class EmittingTriangle; }
+// Standard headers.
+#include  <cstddef>
 
 namespace renderer
 {

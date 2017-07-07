@@ -249,7 +249,7 @@ std::pair<size_t, float> LightTree::sample(
         // LightTreeNode.
         const auto& node = m_nodes[node_index];
 
-        std::pair<float, float> result = child_node_probabilites(node, surface_point);
+        const std::pair<float, float> result = child_node_probabilites(node, surface_point);
         const float p1 = result.first;
         const float p2 = result.second;
 
@@ -266,8 +266,8 @@ std::pair<size_t, float> LightTree::sample(
             node_index = node.get_child_node_index() + 1;
         }
     }
-    size_t item_index = m_nodes[node_index].get_item_index();
-    size_t light_index = m_items[item_index].m_light_index;
+    const size_t item_index = m_nodes[node_index].get_item_index();
+    const size_t light_index = m_items[item_index].m_light_index;
 
     return std::pair<size_t, float>(light_index, light_probability);
 }
@@ -279,7 +279,7 @@ namespace
         const foundation::AABB3d&                   bbox,
         const foundation::Vector3d&                 surface_point)
     {
-        // Calculate probabiliy a single node based on its distance
+        // Calculate probability a single node based on its distance
         // to the surface point being evaluated.
         const float squared_distance = foundation::square_distance(surface_point, bbox.center());
         const float inverse_distance_falloff = 1.0f / squared_distance;
