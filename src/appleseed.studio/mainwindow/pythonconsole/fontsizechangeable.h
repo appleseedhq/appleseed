@@ -26,23 +26,36 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "pythonoutput.h"
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_FONTSIZECHANGEABLE_H
+#define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_FONTSIZECHANGEABLE_H
+
+// Qt headers.
+#include <QObject>
+#include <QPlainTextEdit>
 
 namespace appleseed {
 namespace studio {
 
-PythonOutput::PythonOutput(QWidget* parent)
-  : FontSizeChangeable(parent)
+class FontSizeChangeable
+    : public QPlainTextEdit
 {
-    setObjectName("python_output");
-    setUndoRedoEnabled(false);
-    setLineWrapMode(QPlainTextEdit::WidgetWidth);
-    setReadOnly(true);
-    setTextInteractionFlags(
-        Qt::TextSelectableByMouse |
-        Qt::TextSelectableByKeyboard);
-}
+    Q_OBJECT
+
+  public:
+    FontSizeChangeable(QWidget* parent);
+
+  protected:
+    void keyPressEvent(QKeyEvent* event);
+    void wheelEvent(QWheelEvent* event);
+
+  private:
+    void change_font_size(const int delta);
+
+  signals:
+    void fontChanged(QFont);
+};
 
 }   // namespace studio
 }   // namespace appleseed
+
+#endif // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_FONTSIZECHANGEABLE_H

@@ -27,21 +27,44 @@
 //
 
 // Interface header.
-#include "pythonoutput.h"
+#include "fontsizechangeable.h"
 
 namespace appleseed {
 namespace studio {
 
-PythonOutput::PythonOutput(QWidget* parent)
-  : FontSizeChangeable(parent)
+FontSizeChangeable::FontSizeChangeable(QWidget* parent)
+  : QPlainTextEdit(parent)
 {
-    setObjectName("python_output");
-    setUndoRedoEnabled(false);
-    setLineWrapMode(QPlainTextEdit::WidgetWidth);
-    setReadOnly(true);
-    setTextInteractionFlags(
-        Qt::TextSelectableByMouse |
-        Qt::TextSelectableByKeyboard);
+}
+
+void FontSizeChangeable::keyPressEvent(QKeyEvent* event)
+{
+    if (event->modifiers() & Qt::ControlModifier &&
+        (event->key() == Qt::Key_Plus || event->key() == Qt::Key_Equal))
+        change_font_size(1);
+    else if (event->modifiers() & Qt::ControlModifier && event->key() == Qt::Key_Minus)
+        change_font_size(-1);
+    else
+        QPlainTextEdit::keyPressEvent(event);
+}
+
+void FontSizeChangeable::wheelEvent(QWheelEvent* event)
+{
+    if (event->modifiers() & Qt::ControlModifier)
+        // Minus here because if you turn wheel up delta is negative
+        // while font should be incremented.
+        change_font_size(- event->delta() / 120);
+    else
+        QPlainTextEdit::wheelEvent(event);
+}
+
+void FontSizeChangeable::change_font_size(const int delta)
+{
+    int new_font_size = font().pointSize() + delta;
+    QFont new_font = font();
+    new_font.setPointSize(new_font_size);
+    setFont(new_font);
+    emit(fontChanged(new_font));
 }
 
 }   // namespace studio
