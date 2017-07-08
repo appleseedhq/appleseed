@@ -79,7 +79,8 @@ class APPLESEED_DLLSYMBOL Light
 
     enum Flags
     {
-        CastIndirectLight = 1 << 0                                  // does this light generate indirect lighting?
+        CastIndirectLight = 1 << 0,         // does this light generate indirect lighting?
+        LightTreeCompatible = 1 << 1        // can this light be used by the LightTree?
     };
 
     // Retrieve the flags.
@@ -136,11 +137,12 @@ class APPLESEED_DLLSYMBOL Light
         const foundation::Vector3d&     target,                     // world space target point
         const foundation::Vector3d&     position) const = 0;        // world space emission position
 
+  protected:
+    int m_flags;
+
   private:
     struct Impl;
     Impl* impl;
-
-    int m_flags;
 };
 
 

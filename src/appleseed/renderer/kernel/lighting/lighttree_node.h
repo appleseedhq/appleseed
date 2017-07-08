@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Petra Gospodnetic, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,21 +26,62 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_BVH_H
-#define APPLESEED_FOUNDATION_MATH_BVH_H
+#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTREE_NODE_H
+#define APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTREE_NODE_H
 
-// Interface headers.
-#include "foundation/math/bvh/bvh_bboxsortpredicate.h"
-#include "foundation/math/bvh/bvh_builder.h"
-#include "foundation/math/bvh/bvh_intersector.h"
-#include "foundation/math/bvh/bvh_medianpartitioner.h"
-#include "foundation/math/bvh/bvh_middlepartitioner.h"
-#include "foundation/math/bvh/bvh_node.h"
-#include "foundation/math/bvh/bvh_partitionerbase.h"
-#include "foundation/math/bvh/bvh_sahpartitioner.h"
-#include "foundation/math/bvh/bvh_sbvhpartitioner.h"
-#include "foundation/math/bvh/bvh_spatialbuilder.h"
-#include "foundation/math/bvh/bvh_statistics.h"
-#include "foundation/math/bvh/bvh_tree.h"
+// appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
+#include "renderer/kernel/lighting/lighttypes.h"
 
-#endif  // !APPLESEED_FOUNDATION_MATH_BVH_H
+// appleseed.foundation headers.
+#include "foundation/math/aabb.h"
+#include "foundation/math/bvh.h"
+
+// Standard headers.
+#include  <cstddef>
+
+namespace renderer
+{
+
+//
+// LightTreeNode class implementation.
+//
+
+template<typename AABB> 
+class LightTreeNode
+    : public foundation::bvh::Node<AABB>
+{
+  public:
+    LightTreeNode()
+      : m_node_luminance(0)
+    {
+    }
+
+    float get_luminance() const
+    {
+        return m_node_luminance;
+    }
+
+    size_t get_level() const
+    {
+        return m_node_level;
+    }
+
+    void set_luminance(const float luminance)
+    {
+        m_node_luminance = luminance;
+    }
+
+    void set_level(const size_t node_level)
+    {
+        m_node_level = node_level;
+    }
+  
+  private:
+    float  m_node_luminance;
+    size_t m_node_level;
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTREE_NODE_H

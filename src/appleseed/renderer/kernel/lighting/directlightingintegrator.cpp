@@ -86,6 +86,7 @@ namespace renderer
 DirectLightingIntegrator::DirectLightingIntegrator(
     const ShadingContext&       shading_context,
     const LightSampler&         light_sampler,
+    const ShadingPoint&         shading_point,
     const IMaterialSampler&     material_sampler,
     const ShadingRay::Time&     time,
     const int                   light_sampling_modes,
@@ -95,6 +96,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
     const bool                  indirect)
   : m_shading_context(shading_context)
   , m_light_sampler(light_sampler)
+  , m_shading_point(shading_point)
   , m_material_sampler(material_sampler)
   , m_time(time)
   , m_light_sampling_modes(light_sampling_modes)
@@ -157,6 +159,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling(
         m_light_sampler.sample(
             m_time,
             sampling_context.next2<Vector3f>(),
+            m_shading_point,
             sample);
 
         if (sample.m_triangle)
@@ -232,6 +235,31 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
             LightSample sample;
             m_light_sampler.sample_non_physical_light(m_time, i, sample);
 
+            add_non_physical_light_sample_contribution(
+                sample,
+                outgoing,
+                radiance);
+        }
+    }
+
+    // Add contributions from light-tree lights only.
+    if (m_light_sampler.get_light_tree_light_count() > 0)
+    {
+        sampling_context.split_in_place(3, m_light_sample_count);
+
+        for (size_t i = 0; i < m_light_sample_count; ++i)
+        {
+            // Sample light-tree lights only.
+            LightSample sample;
+            m_light_sampler.sample_light_tree_lights(
+                m_time,
+                sampling_context.next2<Vector3f>(),
+                m_shading_point,
+                sample);
+
+            // TODO: The LightTree currently consists only of non physical lights.
+            // Write a more general function which will know how to handle every
+            // type of light which comes from the light-tree.
             add_non_physical_light_sample_contribution(
                 sample,
                 outgoing,
