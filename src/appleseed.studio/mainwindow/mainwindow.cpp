@@ -956,7 +956,8 @@ void MainWindow::on_project_change()
 
     update_override_shading_menu_item();
 
-    if (m_rendering_settings_window.get())
+    if (m_rendering_settings_window.get() != nullptr &&
+        m_project_manager.get_project() != nullptr)
         m_rendering_settings_window->reload();
 
     m_status_bar.clear();
@@ -1821,7 +1822,7 @@ void MainWindow::slot_show_rendering_settings_window()
 {
     assert(m_project_manager.is_project_open());
 
-    if (m_rendering_settings_window.get() == 0)
+    if (m_rendering_settings_window.get() == nullptr)
     {
         m_rendering_settings_window.reset(new RenderingSettingsWindow(m_project_manager, this));
 
