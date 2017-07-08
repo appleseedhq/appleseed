@@ -176,7 +176,7 @@ namespace
             }
 
             if (m_lighting_samples > 1)
-                radiance /= m_lighting_samples;
+                radiance /= static_cast<float>(m_lighting_samples);
         }
     };
 }

@@ -280,7 +280,8 @@ namespace
     {
         // Calculate probability a single node based on its distance
         // to the surface point being evaluated.
-        const float squared_distance = foundation::square_distance(surface_point, bbox.center());
+        const float squared_distance =
+            static_cast<float>(foundation::square_distance(surface_point, bbox.center()));
         const float inverse_distance_falloff = 1.0f / squared_distance;
 
         return node.get_luminance() * inverse_distance_falloff;
