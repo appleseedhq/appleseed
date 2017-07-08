@@ -97,6 +97,12 @@ bool is_project_dirty()
     return project_manager()->is_project_dirty();
 }
 
+bpy::long_ main_window_as_pylong()
+{
+    const uintptr_t ptr = binary_cast<uintptr_t>(main_window());
+    return bpy::long_(ptr);
+}
+
 BOOST_PYTHON_MODULE(_appleseedstudio)
 {
     bpy::def("new_project", new_project,
@@ -110,4 +116,6 @@ BOOST_PYTHON_MODULE(_appleseedstudio)
     bpy::def("current_project", current_project,
              bpy::return_value_policy<bpy::reference_existing_object>());
     bpy::def("is_project_dirty", is_project_dirty);
+
+    bpy::def("main_window", main_window_as_pylong);
 }
