@@ -44,6 +44,8 @@ void FontSizeChangeable::keyPressEvent(QKeyEvent* event)
         change_font_size(1);
     else if (event->modifiers() & Qt::ControlModifier && event->key() == Qt::Key_Minus)
         change_font_size(-1);
+    else if (event->modifiers() & Qt::ControlModifier && event->key() == Qt::Key_0)
+        change_font_size(QFont().pointSize() - font().pointSize());
     else
         QPlainTextEdit::keyPressEvent(event);
 }
