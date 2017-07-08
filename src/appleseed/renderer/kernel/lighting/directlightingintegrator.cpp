@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/lightsampler.h"
 #include "renderer/kernel/lighting/tracer.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -85,6 +86,7 @@ namespace renderer
 DirectLightingIntegrator::DirectLightingIntegrator(
     const ShadingContext&       shading_context,
     const LightSampler&         light_sampler,
+    const ShadingPoint&         shading_point,
     const IMaterialSampler&     material_sampler,
     const ShadingRay::Time&     time,
     const int                   light_sampling_modes,
@@ -94,6 +96,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
     const bool                  indirect)
   : m_shading_context(shading_context)
   , m_light_sampler(light_sampler)
+  , m_shading_point(shading_point)
   , m_material_sampler(material_sampler)
   , m_time(time)
   , m_light_sampling_modes(light_sampling_modes)
@@ -108,7 +111,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_material_sampling(
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
     const Dual3d&               outgoing,
-    Spectrum&                   radiance) const
+    ShadingComponents&          radiance) const
 {
     radiance.set(0.0f);
 
@@ -126,17 +129,14 @@ void DirectLightingIntegrator::compute_outgoing_radiance_material_sampling(
     }
 
     if (m_material_sample_count > 1)
-    {
-        const float rcp_material_sample_count = 1.0f / m_material_sample_count;
-        radiance *= rcp_material_sample_count;
-    }
+        radiance /= m_material_sample_count;
 }
 
 void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling(
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
     const Dual3d&               outgoing,
-    Spectrum&                   radiance) const
+    ShadingComponents&          radiance) const
 {
     radiance.set(0.0f);
 
@@ -159,6 +159,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling(
         m_light_sampler.sample(
             m_time,
             sampling_context.next2<Vector3f>(),
+            m_shading_point,
             sample);
 
         if (sample.m_triangle)
@@ -180,17 +181,14 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling(
     }
 
     if (m_light_sample_count > 1)
-    {
-        const float rcp_light_sample_count = 1.0f / m_light_sample_count;
-        radiance *= rcp_light_sample_count;
-    }
+        radiance /= static_cast<float>(m_light_sample_count);
 }
 
 void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_variance(
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
     const Dual3d&               outgoing,
-    Spectrum&                   radiance) const
+    ShadingComponents&          radiance) const
 {
     radiance.set(0.0f);
 
@@ -226,10 +224,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
         }
 
         if (m_light_sample_count > 1)
-        {
-            const float rcp_light_sample_count = 1.0f / m_light_sample_count;
-            radiance *= rcp_light_sample_count;
-        }
+            radiance /= m_light_sample_count;
     }
 
     if (m_light_sample_count > 0)
@@ -246,12 +241,37 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
                 radiance);
         }
     }
+
+    // Add contributions from light-tree lights only.
+    if (m_light_sampler.get_light_tree_light_count() > 0)
+    {
+        sampling_context.split_in_place(3, m_light_sample_count);
+
+        for (size_t i = 0; i < m_light_sample_count; ++i)
+        {
+            // Sample light-tree lights only.
+            LightSample sample;
+            m_light_sampler.sample_light_tree_lights(
+                m_time,
+                sampling_context.next2<Vector3f>(),
+                m_shading_point,
+                sample);
+
+            // TODO: The LightTree currently consists only of non physical lights.
+            // Write a more general function which will know how to handle every
+            // type of light which comes from the light-tree.
+            add_non_physical_light_sample_contribution(
+                sample,
+                outgoing,
+                radiance);
+        }
+    }
 }
 
 void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling(
     SamplingContext&            sampling_context,
     const Dual3d&               outgoing,
-    Spectrum&                   radiance) const
+    ShadingComponents&          radiance) const
 {
     compute_outgoing_radiance_material_sampling(
         sampling_context,
@@ -259,7 +279,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling(
         outgoing,
         radiance);
 
-    Spectrum radiance_light_sampling(Spectrum::Illuminance);
+    ShadingComponents radiance_light_sampling(Spectrum::Illuminance);
 
     compute_outgoing_radiance_light_sampling(
         sampling_context,
@@ -273,7 +293,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling(
 void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling_low_variance(
     SamplingContext&            sampling_context,
     const Dual3d&               outgoing,
-    Spectrum&                   radiance) const
+    ShadingComponents&          radiance) const
 {
     compute_outgoing_radiance_material_sampling(
         sampling_context,
@@ -281,7 +301,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling_low_v
         outgoing,
         radiance);
 
-    Spectrum radiance_light_sampling(Spectrum::Illuminance);
+    ShadingComponents radiance_light_sampling(Spectrum::Illuminance);
 
     compute_outgoing_radiance_light_sampling_low_variance(
         sampling_context,
@@ -430,13 +450,13 @@ void DirectLightingIntegrator::take_single_material_sample(
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
     const Dual3d&               outgoing,
-    Spectrum&                   radiance) const
+    ShadingComponents&          radiance) const
 {
     assert(m_light_sampler.get_emitting_triangle_count() > 0);
 
     // Sample material.
     Dual3f incoming;
-    Spectrum sample_value;
+    ShadingComponents sample_value;
     float sample_probability;
     if (!m_material_sampler.sample(
             sampling_context,
@@ -531,8 +551,7 @@ void DirectLightingIntegrator::take_single_material_sample(
     }
 
     // Add the contribution of this sample to the illumination.
-    edf_value *= sample_value;
-    radiance += edf_value;
+    madd(radiance, sample_value, edf_value);
 }
 
 void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
@@ -540,7 +559,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     const LightSample&          sample,
     const MISHeuristic          mis_heuristic,
     const Dual3d&               outgoing,
-    Spectrum&                   radiance) const
+    ShadingComponents&          radiance) const
 {
     const Material* material = sample.m_triangle->m_material;
     const Material::RenderData& material_data = material->get_render_data();
@@ -560,21 +579,21 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     double cos_on = dot(-incoming, sample.m_shading_normal);
     if (cos_on <= 0.0)
         return;
-    
+
     // Compute the square distance between the light sample and the shading point.
     const double square_distance = square_norm(incoming);
-    
+
     // Don't use this sample if we're closer than the light near start value.
     if (square_distance < square(edf->get_light_near_start()))
         return;
 
     const double rcp_sample_square_distance = 1.0 / square_distance;
     const double rcp_sample_distance = sqrt(rcp_sample_square_distance);
-    
-    // Normalize the incoming direction. 
+
+    // Normalize the incoming direction.
     cos_on *= rcp_sample_distance;
     incoming *= rcp_sample_distance;
-    
+
     // Probabilistically skip light samples with low maximum contribution.
     float contribution_prob = 1.0f;
     if (m_low_light_threshold > 0.0f)
@@ -615,7 +634,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
         return;
 
     // Evaluate the BSDF (or phase function).
-    Spectrum material_value;
+    ShadingComponents material_value;
     const float material_probability =
         m_material_sampler.evaluate(
             m_light_sampling_modes,
@@ -660,14 +679,13 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     // Add the contribution of this sample to the illumination.
     edf_value *= transmission;
     edf_value *= (mis_weight * g) / (sample.m_probability * contribution_prob);
-    edf_value *= material_value;
-    radiance += edf_value;
+    madd(radiance, material_value, edf_value);
 }
 
 void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     const LightSample&          sample,
     const Dual3d&               outgoing,
-    Spectrum&                   radiance) const
+    ShadingComponents&          radiance) const
 {
     const Light* light = sample.m_light;
 
@@ -704,7 +722,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
         return;
 
     // Evaluate the BSDF (or phase function).
-    Spectrum material_value;
+    ShadingComponents material_value;
     const float material_probability =
         m_material_sampler.evaluate(
             m_light_sampling_modes,
@@ -719,8 +737,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
         m_material_sampler.get_point(), emission_position);
     light_value *= transmission;
     light_value *= attenuation / sample.m_probability;
-    light_value *= material_value;
-    radiance += light_value;
+    madd(radiance, material_value, light_value);
 }
 
 }   // namespace renderer

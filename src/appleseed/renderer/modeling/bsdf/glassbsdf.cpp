@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/modeling/bsdf/backfacingpolicy.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
@@ -261,7 +262,7 @@ namespace
                     alpha_y,
                     gamma,
                     F,
-                    sample.m_value);
+                    sample.m_value.m_glossy);
 
                 sample.m_probability =
                     r_probability *
@@ -294,7 +295,7 @@ namespace
                     alpha_y,
                     gamma,
                     1.0f - F,
-                    sample.m_value);
+                    sample.m_value.m_glossy);
 
                 sample.m_probability =
                     (1.0f - r_probability) *
@@ -303,6 +304,8 @@ namespace
 
             if (sample.m_probability < 1.0e-9f)
                 return;
+
+            sample.m_value.m_beauty = sample.m_value.m_glossy;
 
             sample.m_mode = ScatteringMode::Glossy;
             sample.m_incoming = Dual3f(backfacing_policy.transform_to_parent(wi));
@@ -321,13 +324,15 @@ namespace
             const Vector3f&         outgoing,
             const Vector3f&         incoming,
             const int               modes,
-            Spectrum&               value) const override
+            ShadingComponents&      value) const override
         {
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
 
             const InputValues* values = static_cast<const InputValues*>(data);
             const BackfacingPolicy backfacing_policy(shading_basis, values->m_precomputed.m_backfacing);
+
+            value.set(0.0f);
 
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
@@ -339,6 +344,8 @@ namespace
 
             const Vector3f wi = backfacing_policy.transform_to_local(incoming);
             const Vector3f wo = backfacing_policy.transform_to_local(outgoing);
+
+            float pdf;
 
             if (wi.y * wo.y >= 0.0f)
             {
@@ -356,9 +363,9 @@ namespace
                     alpha_y,
                     gamma,
                     F,
-                    value);
+                    value.m_glossy);
 
-                return
+                pdf =
                     choose_reflection_probability(values, F) *
                     reflection_pdf(wo, m, cos_wom, alpha_x, alpha_y, gamma);
             }
@@ -379,12 +386,16 @@ namespace
                     alpha_y,
                     gamma,
                     1.0f - F,
-                    value);
+                    value.m_glossy);
+                value.m_beauty = value.m_glossy;
 
-                return
+                pdf =
                     (1.0f - choose_reflection_probability(values, F)) *
                     refraction_pdf(wi, wo, m, alpha_x, alpha_y, gamma, values->m_precomputed.m_eta);
             }
+
+            value.m_beauty = value.m_glossy;
+            return pdf;
         }
 
         virtual float evaluate_pdf(

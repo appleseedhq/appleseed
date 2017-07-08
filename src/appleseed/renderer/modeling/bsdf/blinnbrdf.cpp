@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/fresnel.h"
@@ -166,6 +167,7 @@ namespace
                 f,
                 cos_on,
                 sample);
+            sample.m_value.m_beauty = sample.m_value.m_glossy;
         }
 
         virtual float evaluate(
@@ -177,7 +179,7 @@ namespace
             const Vector3f&         outgoing,
             const Vector3f&         incoming,
             const int               modes,
-            Spectrum&               value) const override
+            ShadingComponents&      value) const override
         {
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
@@ -192,7 +194,8 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
             const FresnelFun f(values->m_precomputed.m_outside_ior / values->m_ior);
 
-            return MicrofacetBRDFHelper::evaluate(
+            value.set(0.0f);
+            const float pdf = MicrofacetBRDFHelper::evaluate(
                 m_mdf,
                 values->m_exponent,
                 values->m_exponent,
@@ -203,7 +206,10 @@ namespace
                 f,
                 cos_in,
                 cos_on,
-                value);
+                value.m_glossy);
+            value.m_beauty = value.m_glossy;
+
+            return pdf;
         }
 
         virtual float evaluate_pdf(

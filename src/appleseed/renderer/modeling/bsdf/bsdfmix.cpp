@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
@@ -172,7 +173,7 @@ namespace
             const Vector3f&         outgoing,
             const Vector3f&         incoming,
             const int               modes,
-            Spectrum&               value) const override
+            ShadingComponents&      value) const override
         {
             assert(m_bsdf[0] && m_bsdf[1]);
 
@@ -193,7 +194,7 @@ namespace
             w1 *= rcp_total_weight;
 
             // Evaluate the first BSDF.
-            Spectrum bsdf0_value;
+            ShadingComponents bsdf0_value;
             const float bsdf0_prob =
                 w0 > 0.0f
                     ? m_bsdf[0]->evaluate(
@@ -209,7 +210,7 @@ namespace
                     : 0.0f;
 
             // Evaluate the second BSDF.
-            Spectrum bsdf1_value;
+            ShadingComponents bsdf1_value;
             const float bsdf1_prob =
                 w1 > 0.0f
                     ? m_bsdf[1]->evaluate(

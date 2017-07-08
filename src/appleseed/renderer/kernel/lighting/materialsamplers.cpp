@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/tracer.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -76,7 +77,7 @@ bool BSDFSampler::sample(
     SamplingContext&        sampling_context,
     const Dual3d&           outgoing,
     Dual3f&                 incoming,
-    Spectrum&               value,
+    ShadingComponents&      value,
     float&                  pdf) const
 {
     BSDFSample sample(&m_shading_point, Dual3f(outgoing));
@@ -95,7 +96,6 @@ bool BSDFSampler::sample(
     incoming = sample.m_incoming;
     value = sample.m_value;
     pdf = sample.m_probability;
-
     return true;
 }
 
@@ -103,7 +103,7 @@ float BSDFSampler::evaluate(
     const int               light_sampling_modes,
     const Vector3f&         outgoing,
     const Vector3f&         incoming,
-    Spectrum&               value) const
+    ShadingComponents&      value) const
 {
     return
         m_bsdf.evaluate(
@@ -202,7 +202,7 @@ bool PhaseFunctionSampler::sample(
     SamplingContext&        sampling_context,
     const Dual3d&           outgoing,
     Dual3f&                 incoming,
-    Spectrum&               value,
+    ShadingComponents&      value,
     float&                  pdf) const
 {
     Vector3f incoming_direction;
@@ -218,7 +218,8 @@ bool PhaseFunctionSampler::sample(
     incoming = Dual3f(incoming_direction);
 
     m_phase_function.scattering_coefficient(
-        m_volume_ray, m_phase_function_data, m_distance, value);
+        m_volume_ray, m_phase_function_data, m_distance, value.m_volume);
+    value.m_beauty = value.m_volume;
 
     return true;
 }
@@ -227,7 +228,7 @@ float PhaseFunctionSampler::evaluate(
     const int               light_sampling_modes,
     const Vector3f&         outgoing,
     const Vector3f&         incoming,
-    Spectrum&               value) const
+    ShadingComponents&      value) const
 {
     const float pdf =
         m_phase_function.evaluate(
@@ -237,8 +238,9 @@ float PhaseFunctionSampler::evaluate(
             incoming);
 
     m_phase_function.scattering_coefficient(
-        m_volume_ray, m_phase_function_data, m_distance, value);
-    value *= pdf;
+        m_volume_ray, m_phase_function_data, m_distance, value.m_volume);
+    value.m_volume *= pdf;
+    value.m_beauty = value.m_volume;
 
     return pdf;
 }

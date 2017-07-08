@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 
@@ -216,14 +217,14 @@ namespace
             const float cos_hn = dot(h, sample.m_shading_basis.get_normal());
 
             float pdf_diffuse = 0.0f, pdf_glossy = 0.0f;
-            sample.m_value.set(0.0f);
 
             if (ScatteringMode::has_diffuse(modes))
             {
                 // Evaluate the diffuse component of the BRDF (equation 5).
                 const float a = 1.0f - pow5(1.0f - 0.5f * cos_in);
                 const float b = 1.0f - pow5(1.0f - 0.5f * cos_on);
-                madd(sample.m_value, rval.m_kd, a * b);
+                sample.m_value.m_diffuse = rval.m_kd;
+                sample.m_value.m_diffuse *= a * b;
 
                 // Evaluate the PDF of the diffuse component.
                 pdf_diffuse = cos_in * RcpPi<float>();
@@ -235,9 +236,8 @@ namespace
                 // Evaluate the glossy component of the BRDF (equation 4).
                 const float num = sval.m_kg * pow(cos_hn, exp);
                 const float den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
-                Spectrum glossy;
-                fresnel_reflectance_dielectric_schlick(glossy, rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
-                madd(sample.m_value, glossy, num / den);
+                fresnel_reflectance_dielectric_schlick(sample.m_value.m_glossy, rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
+                sample.m_value.m_glossy *= num / den;
 
                 // Evaluate the PDF of the glossy component (equation 8).
                 pdf_glossy = num / cos_oh;      // omit division by 4 since num = pdf(h) / 4
@@ -245,6 +245,8 @@ namespace
             }
 
             sample.m_mode = mode;
+            sample.m_value.m_beauty = sample.m_value.m_diffuse;
+            sample.m_value.m_beauty += sample.m_value.m_glossy;
             sample.m_probability = diffuse_weight * pdf_diffuse + glossy_weight * pdf_glossy;
             sample.m_incoming = Dual3f(incoming);
             sample.compute_reflected_differentials();
@@ -259,7 +261,7 @@ namespace
             const Vector3f&     outgoing,
             const Vector3f&     incoming,
             const int           modes,
-            Spectrum&           value) const override
+            ShadingComponents&  value) const override
         {
             // No reflection below the shading surface.
             const Vector3f& shading_normal = shading_basis.get_normal();
@@ -306,7 +308,8 @@ namespace
                 // Evaluate the diffuse component of the BRDF (equation 5).
                 const float a = 1.0f - pow5(1.0f - 0.5f * cos_in);
                 const float b = 1.0f - pow5(1.0f - 0.5f * cos_on);
-                madd(value, rval.m_kd, a * b);
+                value.m_diffuse = rval.m_kd;
+                value.m_diffuse *= a * b;
 
                 // Evaluate the PDF of the diffuse component.
                 pdf_diffuse = cos_in * RcpPi<float>();
@@ -322,15 +325,16 @@ namespace
                 const float exp = (exp_num_u + exp_num_v) / exp_den;
                 const float num = exp_den == 0.0f ? 0.0f : sval.m_kg * pow(cos_hn, exp);
                 const float den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
-                Spectrum glossy;
-                fresnel_reflectance_dielectric_schlick(glossy, rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
-                madd(value, glossy, num / den);
+                fresnel_reflectance_dielectric_schlick(value.m_glossy, rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
+                value.m_glossy *= num / den;
 
                 // Evaluate the PDF of the glossy component (equation 8).
                 pdf_glossy = num / cos_oh;      // omit division by 4 since num = pdf(h) / 4
                 assert(pdf_glossy >= 0.0f);
             }
 
+            value.m_beauty = value.m_diffuse;
+            value.m_beauty += value.m_glossy;
             return diffuse_weight * pdf_diffuse + glossy_weight * pdf_glossy;
         }
 

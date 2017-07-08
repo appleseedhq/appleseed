@@ -209,6 +209,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
     vertex.m_shading_point = &shading_point;
     vertex.m_prev_mode = ScatteringMode::Specular;
     vertex.m_prev_prob = BSDF::DiracDelta;
+    vertex.m_aov_mode = ScatteringMode::None;
 
     // This variable tracks the beginning of the path segment inside the current medium.
     // While it is properly initialized when entering a medium, we also initialize it
@@ -554,7 +555,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
         shading_points[shading_point_index].clear();
         const ShadingRay::Medium* current_medium = next_ray.get_current_medium();
-        if (current_medium != 0 && 
+        if (current_medium != 0 &&
             current_medium->get_phase_function() != 0)
         {
             // This ray is being cast into a participating medium:
@@ -618,10 +619,14 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     vertex.m_prev_mode = sample.m_mode;
     vertex.m_prev_prob = sample.m_probability;
 
+    // Update the AOV scattering mode only for the first bounce.
+    if (vertex.m_path_length == 1)
+        vertex.m_aov_mode = sample.m_mode;
+
     // Update path throughput.
     if (sample.m_probability != BSDF::DiracDelta)
         sample.m_value /= sample.m_probability;
-    vertex.m_throughput *= sample.m_value;
+    vertex.m_throughput *= sample.m_value.m_beauty;
 
     // Update bounce counters.
     ++vertex.m_path_length;
@@ -724,7 +729,7 @@ inline bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::continue_path_rr(
 
     // Compute the probability of extending this path.
     // todo: make max scattering prob lower (0.99) to avoid getting stuck?
-    const float scattering_prob = 
+    const float scattering_prob =
         std::min(foundation::max_value(vertex.m_throughput), 1.0f);
 
     // Russian Roulette.

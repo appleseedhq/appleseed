@@ -450,7 +450,7 @@ namespace
                         shading_normal);
 
                 // Evaluate the BSDF at the vertex position.
-                Spectrum bsdf_value;
+                ShadingComponents bsdf_value;
                 const float bsdf_prob =
                     vertex.m_bsdf->evaluate(
                         vertex.m_bsdf_data,
@@ -468,7 +468,7 @@ namespace
                 // Store the contribution of this vertex.
                 Spectrum radiance = m_initial_flux;
                 radiance *= vertex.m_throughput;
-                radiance *= bsdf_value;
+                radiance *= bsdf_value.m_beauty;
                 radiance *= transmission;
                 radiance *= importance;
                 emit_sample(sample_position, radiance);

@@ -33,6 +33,7 @@
 #include "mainwindow/pythonconsole/pythoneditor.h"
 
 // Qt headers.
+#include <QFont>
 #include <QPainter>
 #include <QTextBlock>
 
@@ -44,6 +45,7 @@ LineNumberArea::LineNumberArea(PythonEditor* parent)
 {
     connect(editor, SIGNAL(blockCountChanged(int)), this, SLOT(slot_update_area_width()));
     connect(editor, SIGNAL(updateRequest(QRect, int)), this, SLOT(slot_update_area(QRect, int)));
+    connect(editor, SIGNAL(fontChanged(QFont)), this, SLOT(slot_change_font(QFont)));
 
     slot_update_area_width();
 }
@@ -104,6 +106,12 @@ void LineNumberArea::paintEvent(QPaintEvent* event)
         bottom = top + static_cast<int>(editor->blockBoundingRect(block).height());
         ++block_number;
     }
+}
+
+void LineNumberArea::slot_change_font(const QFont& font)
+{
+    setFont(font);
+    slot_update_area_width();
 }
 
 }   // namespace studio

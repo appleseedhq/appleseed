@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/materialsamplers.h"
 #include "renderer/kernel/lighting/tracer.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -61,7 +62,7 @@ void compute_ibl_combined_sampling(
     const int                   env_sampling_modes,
     const size_t                material_sample_count,
     const size_t                env_sample_count,
-    Spectrum&                   radiance)
+    ShadingComponents&          radiance)
 {
     assert(is_normalized(outgoing.get_value()));
 
@@ -77,7 +78,7 @@ void compute_ibl_combined_sampling(
         radiance);
 
     // Compute IBL by sampling the environment.
-    Spectrum radiance_env_sampling(Spectrum::Illuminance);
+    ShadingComponents radiance_env_sampling(Spectrum::Illuminance);
     compute_ibl_environment_sampling(
         sampling_context,
         shading_context,
@@ -99,7 +100,7 @@ void compute_ibl_material_sampling(
     const IMaterialSampler&     material_sampler,
     const size_t                bsdf_sample_count,
     const size_t                env_sample_count,
-    Spectrum&                   radiance)
+    ShadingComponents&          radiance)
 {
     assert(is_normalized(outgoing.get_value()));
 
@@ -113,7 +114,7 @@ void compute_ibl_material_sampling(
         // afterward. We need a mechanism to indicate that we want the contribution of some of
         // the components only.
         Dual3f incoming;
-        Spectrum material_value;
+        ShadingComponents material_value;
         float material_prob;
         if (!material_sampler.sample(
                 sampling_context,
@@ -150,12 +151,12 @@ void compute_ibl_material_sampling(
                 mis_power2(
                     bsdf_sample_count * material_prob,
                     env_sample_count * env_prob);
-            env_value *= transmission / material_prob * mis_weight;
+            env_value *= transmission;
+            env_value *= mis_weight / material_prob;
         }
 
         // Add the contribution of this sample to the illumination.
-        env_value *= material_value;
-        radiance += env_value;
+        madd(radiance, material_value, env_value);
     }
 
     if (bsdf_sample_count > 1)
@@ -171,7 +172,7 @@ void compute_ibl_environment_sampling(
     const int                   env_sampling_modes,
     const size_t                material_sample_count,
     const size_t                env_sample_count,
-    Spectrum&                   radiance)
+    ShadingComponents&          radiance)
 {
     assert(is_normalized(outgoing.get_value()));
 
@@ -211,7 +212,7 @@ void compute_ibl_environment_sampling(
             continue;
 
         // Evaluate the BSDF.
-        Spectrum material_value;
+        ShadingComponents material_value;
         const float material_prob = material_sampler.evaluate(
             env_sampling_modes,
             Vector3f(outgoing.get_value()),
@@ -227,9 +228,9 @@ void compute_ibl_environment_sampling(
                 material_sample_count * material_prob);
 
         // Add the contribution of this sample to the illumination.
-        env_value *= transmission / env_prob * mis_weight;
-        env_value *= material_value;
-        radiance += env_value;
+        env_value *= transmission;
+        env_value *= mis_weight / env_prob;
+        madd(radiance, material_value, env_value);
     }
 
     if (env_sample_count > 1)

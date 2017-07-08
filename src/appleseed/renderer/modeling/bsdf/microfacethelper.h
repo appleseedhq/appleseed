@@ -34,6 +34,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
 
 // appleseed.foundation headers.
@@ -129,8 +130,8 @@ class MicrofacetBRDFHelper
                 alpha_y,
                 gamma);
 
-        f(sample.m_outgoing.get_value(), h, sample.m_shading_basis.get_normal(), sample.m_value);
-        sample.m_value *= D * G / (4.0f * cos_on * cos_in);
+        f(sample.m_outgoing.get_value(), h, sample.m_shading_basis.get_normal(), sample.m_value.m_glossy);
+        sample.m_value.m_glossy *= D * G / (4.0f * cos_on * cos_in);
         sample.m_probability = mdf.pdf(wo, m, alpha_x, alpha_y, gamma) / (4.0f * cos_oh);
         sample.m_mode = ScatteringMode::Glossy;
         sample.m_incoming = foundation::Dual<foundation::Vector3f>(incoming);

@@ -1160,6 +1160,11 @@ QWidget#python_editor
     background-color: rgb(48, 48, 48);
 }
 
+QWidget#python_output
+{
+    FIXED_WIDTH_FONT_STYLE;
+}
+
 QPushButton#bind_entity_button,
 QPushButton#unbind_entity_button
 {
@@ -1184,4 +1189,10 @@ QToolTip
     color: rgba(255, 255, 255, 180);
     border: 0px;
     opacity: 200;
+}
+
+QToolBar#python_console_toolbar::separator
+{
+    background-color: DISABLED_TEXT_COLOR;
+    width: 5;
 }

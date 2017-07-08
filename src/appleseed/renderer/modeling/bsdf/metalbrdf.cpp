@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/fresnel.h"
@@ -190,6 +191,8 @@ namespace
             {
                 if (ScatteringMode::has_specular(modes))
                     SpecularBRDFHelper::sample(f, sample);
+
+                sample.m_value.m_beauty = sample.m_value.m_glossy;
                 return;
             }
 
@@ -212,6 +215,8 @@ namespace
                     f,
                     cos_on,
                     sample);
+
+                sample.m_value.m_beauty = sample.m_value.m_glossy;
             }
         }
 
@@ -224,7 +229,7 @@ namespace
             const Vector3f&         outgoing,
             const Vector3f&         incoming,
             const int               modes,
-            Spectrum&               value) const override
+            ShadingComponents&      value) const override
         {
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
@@ -237,6 +242,8 @@ namespace
                 return 0.0f;
 
             const InputValues* values = static_cast<const InputValues*>(data);
+
+            value.set(0.0f);
 
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
@@ -252,7 +259,7 @@ namespace
                 values->m_precomputed.m_outside_ior,
                 values->m_reflectance_multiplier);
 
-            return MicrofacetBRDFHelper::evaluate(
+            const float pdf = MicrofacetBRDFHelper::evaluate(
                 *m_mdf,
                 alpha_x,
                 alpha_y,
@@ -263,7 +270,9 @@ namespace
                 f,
                 cos_in,
                 cos_on,
-                value);
+                value.m_glossy);
+            value.m_beauty = value.m_glossy;
+            return pdf;
         }
 
         virtual float evaluate_pdf(

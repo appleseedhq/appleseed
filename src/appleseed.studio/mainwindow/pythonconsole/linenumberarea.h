@@ -33,6 +33,9 @@
 #include <QObject>
 #include <QWidget>
 
+// Forward declarations.
+class QFont;
+
 namespace appleseed {
 namespace studio {
 
@@ -53,6 +56,7 @@ class LineNumberArea
   private slots:
     void slot_update_area_width();
     void slot_update_area(const QRect& rect, int dy);
+    void slot_change_font(const QFont& font);
 
   private:
     PythonEditor* editor;

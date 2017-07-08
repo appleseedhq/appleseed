@@ -136,6 +136,7 @@ set (foundation_math_bvh_sources
     foundation/math/bvh/bvh_builder.h
     foundation/math/bvh/bvh_intersector.h
     foundation/math/bvh/bvh_medianpartitioner.h
+    foundation/math/bvh/bvh_middlepartitioner.h
     foundation/math/bvh/bvh_node.h
     foundation/math/bvh/bvh_partitionerbase.h
     foundation/math/bvh/bvh_sahpartitioner.h
@@ -326,6 +327,7 @@ source_group ("foundation\\mesh" FILES
 )
 
 set (foundation_meta_benchmarks_sources
+    foundation/meta/benchmarks/benchmark_basis.cpp
     foundation/meta/benchmarks/benchmark_cache.cpp
     foundation/meta/benchmarks/benchmark_cdf.cpp
     foundation/meta/benchmarks/benchmark_colorspace.cpp
@@ -376,6 +378,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_bsp.cpp
     foundation/meta/tests/test_bufferedfile.cpp
     foundation/meta/tests/test_bvh.cpp
+    foundation/meta/tests/test_bvh_partitioner.cpp
     foundation/meta/tests/test_cache.cpp
     foundation/meta/tests/test_cameracontroller.cpp
     foundation/meta/tests/test_casts.cpp
@@ -988,6 +991,12 @@ set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/lightsampler.h
     renderer/kernel/lighting/materialsamplers.cpp
     renderer/kernel/lighting/materialsamplers.h
+    renderer/kernel/lighting/lighttypes.h
+    renderer/kernel/lighting/lighttypes.cpp
+    renderer/kernel/lighting/lighttree.cpp
+    renderer/kernel/lighting/lighttree.h
+    renderer/kernel/lighting/lighttypes.cpp
+    renderer/kernel/lighting/lighttypes.h
     renderer/kernel/lighting/pathtracer.h
     renderer/kernel/lighting/pathvertex.cpp
     renderer/kernel/lighting/pathvertex.h
@@ -1142,6 +1151,8 @@ set (renderer_kernel_shading_sources
     renderer/kernel/shading/oslshadergroupexec.h
     renderer/kernel/shading/oslshadingsystem.cpp
     renderer/kernel/shading/oslshadingsystem.h
+    renderer/kernel/shading/shadingcomponents.cpp
+    renderer/kernel/shading/shadingcomponents.h
     renderer/kernel/shading/shadingcontext.cpp
     renderer/kernel/shading/shadingcontext.h
     renderer/kernel/shading/shadingengine.cpp
@@ -1259,6 +1270,12 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/aovtraits.h
     renderer/modeling/aov/depthaov.cpp
     renderer/modeling/aov/depthaov.h
+    renderer/modeling/aov/diffuseaov.cpp
+    renderer/modeling/aov/diffuseaov.h
+    renderer/modeling/aov/emissionaov.cpp
+    renderer/modeling/aov/emissionaov.h
+    renderer/modeling/aov/glossyaov.cpp
+    renderer/modeling/aov/glossyaov.h
     renderer/modeling/aov/iaovfactory.h
     renderer/modeling/aov/normalaov.cpp
     renderer/modeling/aov/normalaov.h

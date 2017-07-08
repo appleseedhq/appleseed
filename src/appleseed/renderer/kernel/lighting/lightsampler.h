@@ -32,6 +32,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/intersectionsettings.h"
+#include "renderer/kernel/lighting/lighttree.h"
+#include "renderer/kernel/lighting/lighttypes.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/utility/transformsequence.h"
@@ -64,41 +66,6 @@ namespace renderer  { class ShadingPoint; }
 
 namespace renderer
 {
-
-//
-// Non-physical light.
-//
-
-class NonPhysicalLightInfo
-{
-  public:
-    TransformSequence           m_transform_sequence;           // assembly instance (parent of the light) space to world space
-    const Light*                m_light;
-};
-
-
-//
-// Light-emitting triangle.
-//
-
-class EmittingTriangle
-{
-  public:
-    const AssemblyInstance*     m_assembly_instance;
-    size_t                      m_object_instance_index;
-    size_t                      m_region_index;
-    size_t                      m_triangle_index;
-    foundation::Vector3d        m_v0, m_v1, m_v2;               // world space vertices of the triangle
-    foundation::Vector3d        m_n0, m_n1, m_n2;               // world space vertex normals
-    foundation::Vector3d        m_geometric_normal;             // world space geometric normal, unit-length
-    TriangleSupportPlaneType    m_triangle_support_plane;       // support plane of the triangle in assembly space
-    float                       m_area;                         // world space triangle area 
-    float                       m_rcp_area;                     // world space triangle area reciprocal
-    float                       m_triangle_prob;                // probability density of this triangle
-    const Material*             m_material;
-};
-
-
 //
 // A key to uniquely identify a light-emitting triangle in a hash table.
 //
@@ -184,6 +151,9 @@ class LightSampler
     // Return the number of non-physical lights in the scene.
     size_t get_non_physical_light_count() const;
 
+    // Return the number of light-tree lights in the scene.
+    size_t get_light_tree_light_count() const;
+
     // Return the number of emitting triangles in the scene.
     size_t get_emitting_triangle_count() const;
 
@@ -194,6 +164,13 @@ class LightSampler
     void sample_non_physical_lights(
         const ShadingRay::Time&             time,
         const foundation::Vector3f&         s,
+        LightSample&                        light_sample) const;
+
+    // Sample the set of non-physical lights using a light-tree.
+    void sample_light_tree_lights(
+        const ShadingRay::Time&             time,
+        const foundation::Vector3f&         s,
+        const ShadingPoint&                 shading_point,
         LightSample&                        light_sample) const;
 
     // Sample a single given non-physical light.
@@ -214,6 +191,13 @@ class LightSampler
         const foundation::Vector3f&         s,
         LightSample&                        light_sample) const;
 
+    // Sample the sets of non-physical lights and emitting triangles using a light-tree.
+    void sample(
+        const ShadingRay::Time&             time,
+        const foundation::Vector3f&         s,
+        const ShadingPoint&                 shading_point,
+        LightSample&                        light_sample) const;
+
     // Compute the probability density in area measure of a given light sample.
     float evaluate_pdf(const ShadingPoint& shading_point) const;
 
@@ -231,7 +215,9 @@ class LightSampler
 
     const Parameters            m_params;
 
+    NonPhysicalLightVector      m_light_tree_lights;
     NonPhysicalLightVector      m_non_physical_lights;
+    size_t                      m_light_tree_light_count;
     size_t                      m_non_physical_light_count;
 
     EmittingTriangleVector      m_emitting_triangles;
@@ -241,6 +227,8 @@ class LightSampler
 
     EmittingTriangleKeyHasher   m_triangle_key_hasher;
     EmittingTriangleHashTable   m_emitting_triangle_hash_table;
+    
+    LightTree                   m_light_tree;
 
     // Recursively collect non-physical lights from a given set of assembly instances.
     void collect_non_physical_lights(
@@ -265,6 +253,13 @@ class LightSampler
 
     // Build a hash table that allows to find the emitting triangle at a given shading point.
     void build_emitting_triangle_hash_table();
+
+    // Sample a given non-physical light.
+    void sample_light_tree_light(
+        const ShadingRay::Time&             time,
+        const size_t                        light_index,
+        const float                         light_prob,
+        LightSample&                        sample) const;
 
     // Sample a given non-physical light.
     void sample_non_physical_light(
@@ -343,6 +338,11 @@ inline size_t LightSampler::get_non_physical_light_count() const
     return m_non_physical_light_count;
 }
 
+inline size_t LightSampler::get_light_tree_light_count() const
+{
+    return m_light_tree_light_count;
+}
+
 inline size_t LightSampler::get_emitting_triangle_count() const
 {
     return m_emitting_triangles.size();
@@ -350,7 +350,7 @@ inline size_t LightSampler::get_emitting_triangle_count() const
 
 inline bool LightSampler::has_lights_or_emitting_triangles() const
 {
-    return m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid();
+    return m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid() || m_light_tree.is_built();
 }
 
 inline void LightSampler::sample_non_physical_light(
