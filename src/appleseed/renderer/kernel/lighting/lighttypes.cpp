@@ -29,7 +29,7 @@
 // Interface header.
 #include "lighttypes.h"
 
-// appleseed. renderer headers.
+// appleseed.renderer headers.
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/light/light.h"
 
@@ -39,39 +39,31 @@
 namespace renderer
 {
 
-LightSource::LightSource()
-{
-}
-
-LightSource::~LightSource()
-{
-}
-
 //
 // NonPhysicalLightSource class implementation.
 //
 
-NonPhysicalLightSource::NonPhysicalLightSource(
-    const NonPhysicalLightInfo* light)
+NonPhysicalLightSource::NonPhysicalLightSource(const NonPhysicalLightInfo* light)
   : m_light_info(light)
 {
 }
 
-foundation::Vector3d NonPhysicalLightSource::get_position()  const
+foundation::Vector3d NonPhysicalLightSource::get_position() const
 {
     const Light* light = m_light_info->m_light;
 
     // Compute the exact position of the light.
-    foundation::Vector3d position = light->get_transform()
-                                          .get_local_to_parent()
-                                          .extract_translation();
+    const foundation::Vector3d position =
+        light->get_transform()
+            .get_local_to_parent()
+            .extract_translation();
     
     return position;
 }
 
 foundation::AABB3d NonPhysicalLightSource::get_bbox() const
 {
-    foundation::Vector3d position = get_position();
+    const foundation::Vector3d position = get_position();
 
     // Non physical light has no real size - hence we are assigning it some
     // arbitrary small value for the bbox.
@@ -88,17 +80,17 @@ Spectrum NonPhysicalLightSource::get_intensity() const
 {
     Spectrum intensity;
     m_light_info->m_light->get_inputs()
-                          .find("intensity")
-                          .source()->evaluate_uniform(intensity);
+        .find("intensity")
+        .source()->evaluate_uniform(intensity);
     return intensity;
 }
+
 
 //
 // EmittingTriangleLightSource class implementation.
 //
 
-EmittingTriangleLightSource::EmittingTriangleLightSource(
-    const EmittingTriangle* light)
+EmittingTriangleLightSource::EmittingTriangleLightSource(const EmittingTriangle* light)
   : m_light(light)
 {
 }
@@ -123,7 +115,7 @@ foundation::AABB3d EmittingTriangleLightSource::get_bbox() const
 
 Spectrum EmittingTriangleLightSource::get_intensity() const
 {
-    Spectrum hard_coded_placeholder(foundation::Color3f(1.0f, 2.0f, 3.0f));
+    const Spectrum hard_coded_placeholder(foundation::Color3f(1.0f, 2.0f, 3.0f));
     return hard_coded_placeholder;
 }
 

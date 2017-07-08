@@ -133,12 +133,12 @@ void LightTree::draw_tree_structure(
     const foundation::AABB3d&   root_bbox,
     const bool                  separate_by_levels) const
 {
-    // Vpython tree output
     const double Width = 0.1;
 
     if (separate_by_levels)
     {
         const char* color = "color.green";
+
         // Find nodes on each level of the tree and draw their child bboxes.
         for (size_t parent_level = 0; parent_level < m_tree_depth; parent_level++)
         {
@@ -173,10 +173,9 @@ void LightTree::draw_tree_structure(
         const auto filename = foundation::format("{0}.py", filename_base);
         foundation::VPythonFile file(filename.c_str());
         file.draw_axes(Width);
-        const char* color = "color.yellow";
 
         // Draw the initial bbox.
-        file.draw_aabb(root_bbox, color, Width);
+        file.draw_aabb(root_bbox, "color.yellow", Width);
 
         // Find nodes on each level of the tree and draw their child bboxes.
         for (size_t i = 0; i < m_nodes.size(); i++)
@@ -184,9 +183,11 @@ void LightTree::draw_tree_structure(
             if (m_nodes[i].is_leaf())
                 continue;
 
-            // Make even levels red and odd green
-            color = m_nodes[i].get_level() % 2 ? "color.red"
-                                               : "color.green";
+            // Make even levels red and odd green.
+            const char* color =
+                m_nodes[i].get_level() % 2 != 0
+                    ? "color.red"
+                    : "color.green";
 
             const auto& bbox_left = m_nodes[i].get_left_bbox();
             const auto& bbox_right = m_nodes[i].get_right_bbox();
@@ -241,16 +242,15 @@ std::pair<size_t, float> LightTree::sample(
     const foundation::Vector3d&     surface_point,
     float                           s) const
 {
-    float light_probability = 1.0;
+    float light_probability = 1.0f;
     size_t node_index = 0;
 
     while (!m_nodes[node_index].is_leaf())
     {
         const LightTreeNode<foundation::AABB3d>& node = m_nodes[node_index];
 
-        const std::pair<float, float> result = child_node_probabilites(node, surface_point);
-        const float p1 = result.first;
-        const float p2 = result.second;
+        float p1, p2;
+        child_node_probabilites(node, surface_point, p1, p2);
 
         if (s <= p1)
         {
@@ -265,6 +265,7 @@ std::pair<size_t, float> LightTree::sample(
             node_index = node.get_child_node_index() + 1;
         }
     }
+
     const size_t item_index = m_nodes[node_index].get_item_index();
     const size_t light_index = m_items[item_index].m_light_index;
 
@@ -288,9 +289,11 @@ namespace
     }    
 }
 
-std::pair<float, float> LightTree::child_node_probabilites(
+void LightTree::child_node_probabilites(
     const LightTreeNode<foundation::AABB3d>&    node,
-    const foundation::Vector3d&                 surface_point) const
+    const foundation::Vector3d&                 surface_point,
+    float&                                      p1,
+    float&                                      p2) const
 {
     const auto& child1 = m_nodes[node.get_child_node_index()];
     const auto& child2 = m_nodes[node.get_child_node_index() + 1];
@@ -301,23 +304,21 @@ std::pair<float, float> LightTree::child_node_probabilites(
     const auto& bbox_left  = node.get_left_bbox();
     const auto& bbox_right = node.get_right_bbox();
 
-    float p1 = node_probability(child1, bbox_left, surface_point);
-    float p2 = node_probability(child2, bbox_right, surface_point);
+    p1 = node_probability(child1, bbox_left, surface_point);
+    p2 = node_probability(child2, bbox_right, surface_point);
 
     // Normalize probabilities.
     const float total = p1 + p2;
     if (total <= 0.0f)
     {
-        p1 = 0.5;
-        p2 = 0.5;
+        p1 = 0.5f;
+        p2 = 0.5f;
     }
     else
     {
         p1 = p1 / total;
         p2 = p2 / total;
     }
-
-    return std::pair<float, float>(p1, p2);
 }
 
 }   // namespace renderer

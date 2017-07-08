@@ -34,7 +34,7 @@
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/utility/transformsequence.h"
 
-// appleseed. foundation headers.
+// appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
@@ -49,6 +49,7 @@ namespace renderer  { class Material; }
 
 namespace renderer
 {
+
 //
 // Non-physical light.
 //
@@ -59,6 +60,7 @@ class NonPhysicalLightInfo
     TransformSequence           m_transform_sequence;           // assembly instance (parent of the light) space to world space
     const Light*                m_light;
 };
+
 
 //
 // Light-emitting triangle.
@@ -81,6 +83,7 @@ class EmittingTriangle
     const Material*             m_material;
 };
 
+
 //
 // Any kind of light source. Both non-physical light and emitting triangle.
 //
@@ -89,11 +92,8 @@ class LightSource
   : public foundation::NonCopyable
 {
   public:
-    // Constructor.
-    LightSource();
-
-    // Destructor
-    virtual ~LightSource();
+    // Destructor.
+    virtual ~LightSource() {}
 
     // Get the light source position.
     virtual foundation::Vector3d get_position() const = 0;
@@ -106,6 +106,7 @@ class LightSource
     virtual Spectrum get_intensity() const = 0;
 };
 
+
 //
 // Non-physical light source.
 //
@@ -114,16 +115,17 @@ class NonPhysicalLightSource
   : public LightSource
 {
   public:
-    NonPhysicalLightSource(const NonPhysicalLightInfo* light);
+    explicit NonPhysicalLightSource(const NonPhysicalLightInfo* light);
 
     virtual foundation::Vector3d get_position() const override;
     virtual foundation::AABB3d get_bbox() const override;
     virtual Spectrum get_intensity() const override;
 
   private:
-    // Get the reference to an actual source.
+    // Reference to the actual source.
     const NonPhysicalLightInfo* m_light_info;
 };
+
 
 //
 // Emitting triangle light source.
@@ -133,17 +135,17 @@ class EmittingTriangleLightSource
   : public LightSource
 {
   public:
-    EmittingTriangleLightSource(const EmittingTriangle* light);
+    explicit EmittingTriangleLightSource(const EmittingTriangle* light);
 
     virtual foundation::Vector3d get_position() const override;
     virtual foundation::AABB3d get_bbox() const override;
     virtual Spectrum get_intensity() const override;
 
   private:
-    // Get the reference to an actual source.
+    // Reference to the actual source.
     const EmittingTriangle* m_light;
 };
 
-} // namespace renderer
+}       // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTYPES_H
