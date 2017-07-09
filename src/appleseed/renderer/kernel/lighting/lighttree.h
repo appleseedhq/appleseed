@@ -72,7 +72,7 @@ class LightTree
     // TODO: Remove light lists from arguments when they start being collected
     //       by the LightTree class itself.
     void build(const std::vector<NonPhysicalLightInfo>& non_physical_lights);
-    
+
     std::pair<size_t, float> sample(
         const foundation::Vector3d&     surface_point,
         const float                     s) const;
@@ -90,12 +90,12 @@ class LightTree
         // corresponds to the m_light_tree_lights within the LightSampler
         Item(
             const foundation::AABB3d&       bbox,
-            const size_t                    source_index) 
+            const size_t                    source_index)
             : m_bbox(bbox)
             , m_light_index(source_index)
         {
         }
-    };  
+    };
 
     typedef std::vector<NonPhysicalLightInfo>       NonPhysicalLightVector;
     typedef std::vector<LightSource*>               LightSourcePointerVector;

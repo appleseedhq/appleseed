@@ -194,7 +194,7 @@ shader as_maya_marble
         int octaves = (int) floor(iterate);
 
         // Essentially a fBm with an extra iteration for fract(iterate).
-        
+
         vector ripples = isconnected(in_ripples)
             ? in_ripples
             : vector(in_ripplesX, in_ripplesY, in_ripplesZ);

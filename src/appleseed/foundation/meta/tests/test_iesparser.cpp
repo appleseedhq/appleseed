@@ -238,7 +238,7 @@ TEST_SUITE(Foundation_Utility_Iesparser)
         {
             std::istringstream input_stream("0 1 2 3");
             parser.reset(input_stream);
-            EXPECT_EXCEPTION(IESParser::ParsingException, 
+            EXPECT_EXCEPTION(IESParser::ParsingException,
                 parser.parse_to_vector<int>(input_stream, 5));
         }
         {

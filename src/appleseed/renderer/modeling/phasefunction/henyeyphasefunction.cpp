@@ -85,7 +85,7 @@ class HenyeyPhaseFunction
     {
         return Model;
     }
-        
+
     virtual bool is_homogeneous() const
     {
         return true;
@@ -117,7 +117,7 @@ class HenyeyPhaseFunction
         for (size_t i = 0; i < n; ++i)
             extinction_norm += std::pow(values->m_precomputed.m_normalized_extinction[i], RcpPower);
         extinction_norm = std::pow(extinction_norm / n, Power);
-        
+
         if (extinction_norm > 1.0e-6f)
             values->m_precomputed.m_normalized_extinction /= extinction_norm;
         values->m_precomputed.m_extinction_multiplier = extinction_norm;

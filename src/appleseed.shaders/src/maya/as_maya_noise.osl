@@ -51,7 +51,7 @@ shader as_maya_noise
         float min = 0.0,
         float softmax = 1.0,
         string label = "Amplitude",
-        string page = "Noise Attributes" 
+        string page = "Noise Attributes"
     ]],
     float in_ratio = 0.707
     [[
@@ -87,7 +87,7 @@ shader as_maya_noise
     [[
         string as_maya_attribute_name = "inflection",
         string widget = "checkBox",
-        string label = "Inflection",,
+        string label = "Inflection",
         string page = "Noise Attributes",
         int divider = 1
     ]],
@@ -105,7 +105,7 @@ shader as_maya_noise
         string widget = "slider",
         float slidermin = 0.0,
         float slidermax = 100.0,
-        string label = "Frequency",,
+        string label = "Frequency",
         string page = "Noise Attributes",
         int divider = 1
     ]],
@@ -123,7 +123,7 @@ shader as_maya_noise
     float in_implodeCenter[2] = {0.5, 0.5}
     [[
         string as_maya_attribute_name = "implodeCenter",
-        string label = "Implode Center",,
+        string label = "Implode Center",
         string page = "Noise Attributes",
         int divider = 1
     ]],
@@ -248,8 +248,8 @@ shader as_maya_noise
             implode_2d(in_implode, in_implodeCenter, coords[0], coords[1]);
         }
 
-        coords *= in_frequency;  
-             
+        coords *= in_frequency;
+
         if (in_noiseType == 0)
         {
             if (in_inflection)
@@ -306,7 +306,7 @@ shader as_maya_noise
         else if (in_noiseType == 3)
         {
             coords += (vector) noise("uperlin", coords * 0.2) * 2.5;
-            
+
             if (in_inflection)
             {
                 val = maya_turbulence(

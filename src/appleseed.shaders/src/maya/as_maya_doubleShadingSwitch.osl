@@ -45,14 +45,14 @@ shader as_maya_doubleShadingSwitch
         string label = "Shape Names",
         string page = "Switch Attributes"
     ]],
-    float in_default[2] = {0,0}
+    float in_default[2] = {0, 0}
     [[
         string as_maya_attribute_name = "default",
         string label = "Default Values",
         string page = "Switch Attributes"
     ]],
 
-    output float out_output[2] = {0,0}
+    output float out_output[2] = {0, 0}
     [[
         string as_maya_attribute_name = "output",
         string label = "Output Values",

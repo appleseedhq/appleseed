@@ -75,10 +75,10 @@ void LightTree::build(
     for (size_t i = 0; i < non_physical_lights.size(); ++i)
     {
         LightSource* light_source = new NonPhysicalLightSource(&non_physical_lights[i]);
-        foundation::AABB3d bbox = light_source->get_bbox();
+        const foundation::AABB3d bbox = light_source->get_bbox();
         m_light_sources.push_back(light_source);
         light_bboxes.push_back(bbox);
-        m_items.push_back(Item(bbox,i));
+        m_items.push_back(Item(bbox, i));
     }
 
     // Create the partitioner.
@@ -110,7 +110,7 @@ void LightTree::build(
         // Set total luminance and level for each node of the LightTree.
         recursive_node_update(0, 0);
     }
-    
+
     // Print light-tree statistics.
     RENDERER_LOG_INFO("%s",
         foundation::StatisticsVector::make(
@@ -286,7 +286,7 @@ namespace
         const float inverse_distance_falloff = 1.0f / squared_distance;
 
         return node.get_luminance() * inverse_distance_falloff;
-    }    
+    }
 }
 
 void LightTree::child_node_probabilites(

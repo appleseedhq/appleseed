@@ -81,7 +81,7 @@ shader as_maya_samplerInfo
         string widget = "null",
         string help = "UV coordinates"
     ]],
-    output vector out_rayDirection = -I   
+    output vector out_rayDirection = -I
     [[
         string as_maya_attribute_name = "rayDirection",
         string label = "I In Camera Space",
@@ -150,7 +150,7 @@ shader as_maya_samplerInfo
     // Maya expects (0,0) to be lower-left corner, and (xres,yres) upper right
     // while raster is (0,0) at upper left, and (xres,yres) at lower right.
 
-    int resolution[2] = {0,0};
+    int resolution[2] = {0, 0};
 
     getattribute("camera:resolution", resolution);
 

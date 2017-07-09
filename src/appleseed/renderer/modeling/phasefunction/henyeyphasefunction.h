@@ -71,6 +71,7 @@ APPLESEED_DECLARE_INPUT_VALUES(HenyeyPhaseFunctionInputValues)
     Precomputed m_precomputed;
 };
 
+
 //
 // Henyey-Greenstein phase function factory.
 //

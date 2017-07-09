@@ -162,7 +162,7 @@ shader as_maya_ramp
 
         st[0] = mod(st[0] + noise_val, 1);
         st[1] = mod(st[1] + noise_val, 1);
-        
+
         if (in_uWave > 0.0 || in_vWave > 0.0)
         {
             float tmp_st[2] = {st[0], st[1]};

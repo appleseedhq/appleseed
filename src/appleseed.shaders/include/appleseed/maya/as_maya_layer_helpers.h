@@ -36,7 +36,7 @@
 
 #define MAYA_BLENDMODE_NONE          0
 #define MAYA_BLENDMODE_OVER          1
-#define MAYA_BLENDMODE_IN            2   
+#define MAYA_BLENDMODE_IN            2
 #define MAYA_BLENDMODE_OUT           3
 #define MAYA_BLENDMODE_ADD           4
 #define MAYA_BLENDMODE_SUBTRACT      5

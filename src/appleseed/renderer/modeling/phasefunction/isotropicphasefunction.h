@@ -70,6 +70,7 @@ APPLESEED_DECLARE_INPUT_VALUES(IsotropicPhaseFunctionInputValues)
     Precomputed m_precomputed;
 };
 
+
 //
 // Isotropic phase function factory.
 //

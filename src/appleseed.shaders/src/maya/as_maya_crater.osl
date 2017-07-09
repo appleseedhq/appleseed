@@ -219,7 +219,7 @@ shader as_maya_crater
             in_refPointCamera,
             in_shaker,
             in_melt);
-        
+
         float coeff = 1.0 / (in_balance + 1.0);
 
         float m1 = sqr(sin(value * in_frequency));

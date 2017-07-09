@@ -894,7 +894,7 @@ namespace
 
             QDoubleSpinBox* light_samples = create_double_input("advanced.dl.light_samples", 0.0, 1000000.0, 3, 1.0);
             light_samples->setToolTip(m_params_metadata.get_path("pt.dl_light_samples.help"));
-            sublayout->addRow("Light Samples:", light_samples); 
+            sublayout->addRow("Light Samples:", light_samples);
 
             QDoubleSpinBox* low_light_threshold = create_double_input("advanced.dl.low_light_threshold", 0.0, 1000.0, 3, 0.1);
             low_light_threshold->setToolTip(m_params_metadata.get_path("pt.dl_low_light_threshold.help"));
@@ -914,14 +914,14 @@ namespace
 
             QDoubleSpinBox* env_samples = create_double_input("advanced.ibl.env_samples", 0.0, 1000000.0, 3, 1.0);
             env_samples->setToolTip(m_params_metadata.get_path("pt.ibl_env_samples.help"));
-            sublayout->addLayout(create_form_layout("Environment Samples:", env_samples)); 
+            sublayout->addLayout(create_form_layout("Environment Samples:", env_samples));
         }
 
         void create_pt_advanced_max_ray_intensity_settings(QVBoxLayout* parent)
         {
             QDoubleSpinBox* max_ray_intensity = create_double_input("advanced.max_ray_intensity", 0.0, 1.0e9, 3, 0.1);
             max_ray_intensity->setToolTip(m_params_metadata.get_path("pt.max_ray_intensity.help"));
-            
+
             QCheckBox* unlimited_ray_intensity = create_checkbox("advanced.unlimited_ray_intensity", "Unlimited");
             parent->addLayout(create_form_layout("Max Ray Intensity:", create_horizontal_group(max_ray_intensity, unlimited_ray_intensity)));
             connect(unlimited_ray_intensity, SIGNAL(toggled(bool)), max_ray_intensity, SLOT(setDisabled(bool)));
@@ -1054,7 +1054,7 @@ namespace
             layout->addLayout(sublayout);
 
             create_bounce_settings(sublayout, "photon_tracing", "sppm.photon_tracing_max_bounces");
-            
+
             QSpinBox* light_photons = create_integer_input("photon_tracing.light_photons", 0, 1000000000, 100000);
             light_photons->setToolTip(m_params_metadata.get_path("sppm.light_photons_per_pass.help"));
             sublayout->addRow("Light Photons:", light_photons);
@@ -1188,7 +1188,7 @@ namespace
             tile_ordering->addItem("Spiral", "spiral");
             tile_ordering->addItem("Hilbert", "hilbert");
             tile_ordering->addItem("Random", "random");
-            groupbox->setLayout(create_form_layout("Tile Ordering:", tile_ordering));   
+            groupbox->setLayout(create_form_layout("Tile Ordering:", tile_ordering));
         }
     };
 }

@@ -158,7 +158,7 @@ shader as_maya_fractal
                     : in_uvFilterSize[1])};
 
         // The filter size factors seem to match Maya's result better.
-                
+
         dsdt[0] += 2 * in_filterOffset;
         dsdt[1] += 2 * in_filterOffset;
 
@@ -170,7 +170,7 @@ shader as_maya_fractal
         st[1] *= MAYA_FRACTAL_FREQ;
 
         float filter_size = abs(max(dsdt[0], dsdt[1]));
-        
+
         filter_size = clamp(
             MAYA_FRACTAL_FREQ * filter_size,
             MAYA_FRACTAL_FREQ * 1.0e-8,
@@ -195,7 +195,7 @@ shader as_maya_fractal
         int recursion_level = (int) floor(iterate);
 
         float time_value = in_time, amplitude = in_amplitude, c = 0.0, val;
-        
+
         for (int i = 0; i <= recursion_level; ++i)
         {
             if (i == recursion_level)

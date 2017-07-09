@@ -173,7 +173,7 @@ shader as_maya_stucco
 
         // Normal output.
         float melt = 0.1 * in_normMelt;
-        
+
         out_outNormal = recurrence3(filter_width, Pp, in_normDepth, melt);
 
         if (!in_wrap && in_blend)

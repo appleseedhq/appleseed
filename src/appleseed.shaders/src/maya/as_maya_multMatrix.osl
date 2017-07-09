@@ -38,7 +38,7 @@ shader as_maya_multMatrix
     ]],
 
     // The output matrix param is indeed named matrixSum, not matrixProduct.
-    output matrix out_matrixSum = 0 
+    output matrix out_matrixSum = 0
     [[
         string as_maya_attribute_name = "matrixSum",
         string label = "Output Matrix",

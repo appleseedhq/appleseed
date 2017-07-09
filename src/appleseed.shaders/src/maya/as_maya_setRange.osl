@@ -83,5 +83,5 @@ shader as_maya_setRange
     else
     {
         out_outValue = in_value;
-    }     
+    }
 }
