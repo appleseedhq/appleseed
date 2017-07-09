@@ -148,19 +148,6 @@ namespace
             probability = RcpFourPi<float>();
         }
 
-        virtual void evaluate(
-            const ShadingContext&   shading_context,
-            const Transformd&       light_transform,
-            const Vector3d&         target,
-            Vector3d&               position,
-            Vector3d&               outgoing,
-            Spectrum&               value) const override
-        {
-            position = light_transform.get_parent_origin();
-            outgoing = normalize(target - position);
-            value = m_values.m_intensity;
-        }
-
         float compute_distance_attenuation(
             const Vector3d&         target,
             const Vector3d&         position) const override

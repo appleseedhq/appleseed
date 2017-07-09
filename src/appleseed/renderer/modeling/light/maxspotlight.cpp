@@ -163,24 +163,6 @@ namespace
             compute_radiance(shading_context, light_transform, axis, outgoing, value);
         }
 
-        virtual void evaluate(
-            const ShadingContext&   shading_context,
-            const Transformd&       light_transform,
-            const Vector3d&         target,
-            Vector3d&               position,
-            Vector3d&               outgoing,
-            Spectrum&               value) const override
-        {
-            position = light_transform.get_parent_origin();
-            outgoing = normalize(target - position);
-
-            const Vector3d axis = -normalize(light_transform.get_parent_z());
-
-            if (dot(outgoing, axis) > m_cos_outer_half_angle)
-                compute_radiance(shading_context, light_transform, axis, outgoing, value);
-            else value.set(0.0f);
-        }
-
         float compute_distance_attenuation(
             const Vector3d&         target,
             const Vector3d&         position) const override

@@ -132,15 +132,6 @@ class APPLESEED_DLLSYMBOL Light
         Spectrum&                       value,                      // light value
         float&                          probability) const;         // PDF value
 
-    // Evaluate the light for a given target point.
-    virtual void evaluate(
-        const ShadingContext&           shading_context,
-        const foundation::Transformd&   light_transform,            // light space to world space transform
-        const foundation::Vector3d&     target_point,               // world space target point
-        foundation::Vector3d&           position,                   // world space emission position
-        foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
-        Spectrum&                       value) const = 0;           // light value
-
     // Compute the distance attenuation of this light.
     virtual float compute_distance_attenuation(
         const foundation::Vector3d&     target,                     // world space target point

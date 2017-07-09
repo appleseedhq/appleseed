@@ -114,13 +114,6 @@ class DirectLightingIntegrator
         const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
         ShadingComponents&              radiance) const;
 
-    // Evaluate incoming radiance.
-    bool compute_incoming_radiance(
-        SamplingContext&                sampling_context,
-        foundation::Vector3d&           incoming,
-        float&                          incoming_prob,
-        Spectrum&                       radiance) const;
-
   private:
     const ShadingContext&               m_shading_context;
     const ShadingPoint&                 m_shading_point;
