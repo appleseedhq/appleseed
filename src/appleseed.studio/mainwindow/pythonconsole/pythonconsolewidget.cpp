@@ -45,6 +45,7 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QSplitter>
+#include <QTextDocumentFragment>
 #include <QToolBar>
 #include <QVBoxLayout>
 #include <QWheelEvent>
@@ -75,8 +76,8 @@ PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
 
     m_output = new PythonOutput(console_body);
 
-    console_body->addWidget(m_input);
     console_body->addWidget(m_output);
+    console_body->addWidget(m_input);
 
     m_action_new_file =
         new QAction(load_icons("project_new"), "New Python Script", this);
@@ -135,6 +136,8 @@ PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
     toolbar->addAction(m_action_execute_all);
     toolbar->addAction(m_action_clear_selection);
 
+    connect(m_input, SIGNAL(selectionChanged()), this, SLOT(slot_change_exec_selection_button_state()));
+
     QVBoxLayout* layout = new QVBoxLayout();
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(toolbar);
@@ -186,6 +189,12 @@ void PythonConsoleWidget::execute(const QString& script)
 void PythonConsoleWidget::slot_clear_output()
 {
     m_output->clear();
+}
+
+void PythonConsoleWidget::slot_change_exec_selection_button_state()
+{
+    const bool is_enabled = m_input->textCursor().selection().isEmpty();
+    m_action_execute_selection->setEnabled(is_enabled);
 }
 
 void PythonConsoleWidget::slot_new_file()

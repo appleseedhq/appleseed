@@ -72,6 +72,8 @@ class PythonConsoleWidget
 
     void slot_file_changed();
 
+    void slot_change_exec_selection_button_state();
+
   private:
     QPlainTextEdit* m_output;
     QPlainTextEdit* m_input;

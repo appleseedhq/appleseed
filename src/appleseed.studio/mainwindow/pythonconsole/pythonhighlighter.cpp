@@ -84,14 +84,14 @@ void PythonSyntaxHighlighter::initializeRules()
     // FF: originally: r'\bclass\b\s*(\w+)'
     rules.append(HighlightingRule("\\bclass\\b\\s*(\\w+)", 1, basicStyles.value("defclass")));
 
-    // From '#' until a newline
-    // FF: originally: r'#[^\\n]*'
-    rules.append(HighlightingRule("#[^\\n]*", 0, basicStyles.value("comment")));
-
     // Numeric literals
     rules.append(HighlightingRule("\\b[+-]?[0-9]+[lL]?\\b", 0, basicStyles.value("numbers"))); // r'\b[+-]?[0-9]+[lL]?\b'
     rules.append(HighlightingRule("\\b[+-]?0[xX][0-9A-Fa-f]+[lL]?\\b", 0, basicStyles.value("numbers"))); // r'\b[+-]?0[xX][0-9A-Fa-f]+[lL]?\b'
     rules.append(HighlightingRule("\\b[+-]?[0-9]+(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?\\b", 0, basicStyles.value("numbers"))); // r'\b[+-]?[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?\b'
+
+    // From '#' until a newline
+    // FF: originally: r'#[^\\n]*'
+    rules.append(HighlightingRule("#[^\\n]*", 0, basicStyles.value("comment")));
 }
 
 void PythonSyntaxHighlighter::highlightBlock(const QString &text)
