@@ -94,6 +94,7 @@ class APPLESEED_DLLSYMBOL PhaseFunction
         SamplingContext&            sampling_context,
         const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
         const void*                 data,                       // input values
+        size_t                      channel,                    // index of the chroma that is used for sampling
         float&                      distance                    // resulting distance
         ) const = 0;
 
@@ -134,12 +135,22 @@ class APPLESEED_DLLSYMBOL PhaseFunction
         const float                 distance,                   // distance to the point on this volume segment
         Spectrum&                   spectrum) const = 0;        // resulting spectrum
 
+    // Get the scattering coefficient (spectrum) in the ray origin.
+    virtual const Spectrum& scattering_coefficient(
+        const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
+        const void*                 data) const = 0;            // input values
+
     // Get the absorption coefficient (spectrum) at a given point.
     virtual void absorption_coefficient(
         const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
         const void*                 data,                       // input values
         const float                 distance,                   // distance to the point on this volume segment
         Spectrum&                   spectrum) const = 0;        // resulting spectrum
+
+    // Get the absorption coefficient (spectrum) in the ray origin.
+    virtual const Spectrum& absorption_coefficient(
+        const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
+        const void*                 data) const = 0;            // input values
 
     // Get the extinction coefficient (spectrum) at a given point.
     virtual void extinction_coefficient(
@@ -148,11 +159,10 @@ class APPLESEED_DLLSYMBOL PhaseFunction
         const float                 distance,                   // distance to the point on this volume segment
         Spectrum&                   spectrum) const = 0;        // resulting spectrum
 
-    // Get the extinction coefficient (float) at a given point.
-    virtual float extinction_multiplier(
+    // Get the extinction coefficient (spectrum) in the ray origin.
+    virtual const Spectrum& extinction_coefficient(
         const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
-        const void*                 data,                       // input values
-        const float                 distance) const = 0;        // distance to the point on this volume segment
+        const void*                 data) const = 0;            // input values
 };
 
 }   // namespace renderer
