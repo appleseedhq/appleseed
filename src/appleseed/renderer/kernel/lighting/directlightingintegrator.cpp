@@ -174,6 +174,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling(
         else
         {
             add_non_physical_light_sample_contribution(
+                sampling_context,
                 sample,
                 outgoing,
                 radiance);
@@ -236,6 +237,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
             m_light_sampler.sample_non_physical_light(m_time, i, sample);
 
             add_non_physical_light_sample_contribution(
+                sampling_context,
                 sample,
                 outgoing,
                 radiance);
@@ -261,6 +263,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
             // Write a more general function which will know how to handle every
             // type of light which comes from the light-tree.
             add_non_physical_light_sample_contribution(
+                sampling_context,
                 sample,
                 outgoing,
                 radiance);
@@ -683,6 +686,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
 }
 
 void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
+    SamplingContext&            sampling_context,
     const LightSample&          sample,
     const Dual3d&               outgoing,
     ShadingComponents&          radiance) const
@@ -693,16 +697,23 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     if (m_indirect && !(light->get_flags() & Light::CastIndirectLight))
         return;
 
+    // Generate a uniform sample in [0,1).
+    sampling_context.split_in_place(2, 1);
+    const Vector2d s = sampling_context.next2<Vector2d>();
+
     // Evaluate the light.
     Vector3d emission_position, emission_direction;
     Spectrum light_value(Spectrum::Illuminance);
-    light->evaluate(
+    float probability;
+    light->sample(
         m_shading_context,
         sample.m_light_transform,
         m_material_sampler.get_point(),
+        s,
         emission_position,
         emission_direction,
-        light_value);
+        light_value,
+        probability);
 
     // Compute the incoming direction in world space.
     const Vector3d incoming = -emission_direction;
@@ -736,7 +747,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     const float attenuation = light->compute_distance_attenuation(
         m_material_sampler.get_point(), emission_position);
     light_value *= transmission;
-    light_value *= attenuation / sample.m_probability;
+    light_value *= attenuation / (sample.m_probability * probability);
     madd(radiance, material_value, light_value);
 }
 

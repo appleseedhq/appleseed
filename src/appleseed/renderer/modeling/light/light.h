@@ -108,6 +108,15 @@ class APPLESEED_DLLSYMBOL Light
     virtual void sample(
         const ShadingContext&           shading_context,
         const foundation::Transformd&   light_transform,            // light space to world space transform
+        const foundation::Vector3d&     target_point,               // world space target point
+        const foundation::Vector2d&     s,                          // sample in [0,1)^2
+        foundation::Vector3d&           position,                   // world space emission position
+        foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
+        Spectrum&                       value,                      // light value
+        float&                          probability) const = 0;     // PDF value
+    virtual void sample(
+        const ShadingContext&           shading_context,
+        const foundation::Transformd&   light_transform,            // light space to world space transform
         const foundation::Vector2d&     s,                          // sample in [0,1)^2
         foundation::Vector3d&           position,                   // world space emission position
         foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
@@ -127,7 +136,7 @@ class APPLESEED_DLLSYMBOL Light
     virtual void evaluate(
         const ShadingContext&           shading_context,
         const foundation::Transformd&   light_transform,            // light space to world space transform
-        const foundation::Vector3d&     target,                     // world space target point
+        const foundation::Vector3d&     target_point,               // world space target point
         foundation::Vector3d&           position,                   // world space emission position
         foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
         Spectrum&                       value) const = 0;           // light value
