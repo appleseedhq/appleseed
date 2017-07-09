@@ -1,0 +1,957 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/color/as_color_transforms.h"
+#include "appleseed/color/as_colorimetry.h"
+#include "appleseed/maya/as_maya_helpers.h"
+
+shader as_standard_surface
+[[
+    string as_maya_node_name = "asStandardSurface",
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
+    string help = "Primaries and illuminants aware relative luminance node",
+    int as_maya_type_id = 1210836
+]]
+(
+    // 
+    // Diffuse
+    //
+
+    float in_diffuse_weight = 1.0
+    [[
+        string as_maya_attribute_name = "diffuseWeight",
+        string as_maya_attribute_short_name = "diw",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Diffuse Weight",
+        string page = "Diffuse Parameters"
+    ]],
+    color in_color = color(0.5)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Diffuse Color",
+        string page = "Diffuse Parameters"
+    ]],
+    float in_diffuse_roughness = 0.1
+    [[
+        string as_maya_attribute_name = "diffuseRoughness",
+        string as_maya_attribute_short_name = "dir",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Diffuse Roughness",
+        string page = "Diffuse Parameters"
+    ]],
+
+    //
+    // BSSRDF
+    //
+
+    float in_subsurface_weight = 0.0
+    [[
+        string as_maya_attribute_name = "subsurfaceWeight",
+        string as_maya_attribute_short_name = "ssw",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Subsurface Weight",
+        string page = "Subsurface Parameters",
+        int divider = 1
+    ]],
+    color in_sss_mfp = color(0)
+    [[
+        string as_maya_attribute_name = "subsurfaceMfp",
+        string as_maya_attribute_short_name = "mfp",
+        string label = "Subsurface Mean Free Path",
+        string page = "Subsurface Parameters"
+    ]],
+    float in_sss_mfp_scale = 1.0
+    [[
+        string as_maya_attribute_name = "subsurfaceMfpScale",
+        string as_maya_attribute_short_name = "sfm",
+        float min = 0.0,
+        float max = 1000.0,
+        float softmax = 100.0,
+        string label = "Subsurface MFP Scale",
+        string page = "Subsurface Parameters"
+    ]],
+
+    //
+    // Thin translucency
+    //
+
+    float in_translucency_weight = 0.0
+    [[
+        string as_maya_attribute_name = "translucencyWeight",
+        string as_maya_attribute_short_name = "trw",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Translucency Weight",
+        string page = "Translucency Parameters"
+    ]],
+    color in_translucency_color = color(0.0)
+    [[
+        string as_maya_attribute_name = "translucencyColor",
+        string as_maya_attribute_short_name = "trc",
+        string label = "Translucency Color",
+        string page = "Translucency Parameters"
+    ]],
+
+    // 
+    // Specular
+    //
+
+    color in_specular_color = color(1)
+    [[
+        string as_maya_attribute_name = "specularColor",
+        string as_maya_attribute_short_name = "spc",
+        string label = "SpecularColor",
+        string page = "Specular Parameters"
+    ]],
+    float in_specular_roughness = 0.1
+    [[
+        string as_maya_attribute_name = "specularRoughness",
+        string as_maya_attribute_short_name = "sro",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Roughness",
+        string page = "Specular Parameters",
+        int divider = 1
+    ]],
+
+    int in_fresnel_type = 0
+    [[
+        string as_maya_attribute_name = "fresnelType",
+        string as_maya_attribute_short_name = "fty",
+        string widget = "mapper",
+        string options = "IOR:0|Artist Friendly:1",
+        string label = "Fresnel Type",
+        string page = "Fresnel Parameters"
+    ]],
+
+    //
+    // Fresnel: float (monochromatic) IOR (dielectric, no k)
+    //
+
+    float in_ior = 1.37
+    [[
+        string as_maya_attribute_name = "ior",
+        string as_maya_attribute_short_name = "sio",
+        float min = 1.0,
+        float max = 10.0,
+        float softmax = 2.0,
+        string label = "Index Of Refraction",
+        string page = "Fresnel Parameters"
+    ]],
+
+    // 
+    // Fresnel: AFC (not texturable, specular tint provides the
+    // appropriate modulating factors. Alternatively one can use diffuse
+    // color as reflectance at facing angle, and specular color as
+    // reflectance at grazing angle, which would imply a "metalness"
+    // parameter to drive the weight of the diffuse color)
+    //
+
+    color in_face_tint = color(0.85, 0.21, 0.05)
+    [[
+        string as_maya_attribute_name = "faceTint",
+        string as_maya_attribute_short_name = "f0",
+        string label = "Facing Tint",
+        string page = "Fresnel Parameters",
+        string help = "Reflectance at facing incidence",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1
+    ]],
+    color in_edge_tint = color(1)
+    [[
+        string as_maya_attribute_name = "edgeTint",
+        string as_maya_attribute_short_name = "f90",
+        string label = "Edge Tint",
+        string page = "Fresnel Parameters",
+        string help = "Reflectance at grazing incidence",
+        int as_maya_attribute_hidden = 1,
+        int divider = 1
+    ]],
+
+    // 
+    // Specular distribution control: Beckmann | GGX | Student (?)
+    // (Student, provide spread control?)
+    //
+
+    string in_specular_type = "ggx"
+    [[
+        string as_maya_attribute_name = "specularType",
+        string as_maya_attribute_short_name = "sty",
+        string widget = "popup",
+        string options = "beckmann|ggx|std",
+        string label = "Specular Distribution",
+        string page = "Specular Parameters",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int divider = 1
+    ]],
+    float in_specular_spread = 0.25
+    [[
+        string as_maya_attribute_name = "specularSpread",
+        string as_maya_attribute_short_name = "sps",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Specular Spread",
+        string page = "Specular Parameters",
+        string help = "Specular spread, only valid for Student distribution"
+    ]],  
+
+    //
+    // Anisotropy
+    //
+
+    float in_anisotropy_amount = 0.0
+    [[
+        string as_maya_attribute_name = "anisotropyAmount",
+        string as_maya_attribute_short_name = "anw",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Anisotropy Amount",
+        string page = "Anisotropy Parameters"
+    ]],
+    float in_anisotropy_angle = 0.0
+    [[
+        string as_maya_attribute_name = "anisotropyAngle",
+        string as_maya_attribute_short_name = "ana",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Anisotropy Angle",
+        string page = "Anisotropy Parameters",
+        string help = "Anisotropy angle in [0,1], mapping to [0,360] degrees"
+    ]],
+    color in_anisotropy_map = color(0)
+    [[
+        string as_maya_attribute_name = "anisotropyMap",
+        string as_maya_attribute_short_name = "ama",
+        string label = "Anisotropy Vector Map",
+        string page = "Anisotropy Parameters",
+        string help = "Anisotropy vector map, with XY encoded in RG channels"
+    ]],
+
+    // 
+    // Transmission | refraction
+    //
+
+    float in_refraction_amount = 0.0
+    [[
+        string as_maya_attribute_name = "refractionAmount",
+        string as_maya_attribute_short_name = "rtw",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Refraction Amount",
+        string page = "Refraction Parameters",
+        string help = "Refraction amount. Refraction inherits the IOR"
+    ]],
+    color in_refraction_tint = color(1)
+    [[
+        string as_maya_attribute_name = "refractionTint",
+        string as_maya_attribute_short_name = "rti",
+        string label = "Refraction Tint",
+        string page = "Refraction Parameters",
+        int divider = 1
+    ]],
+    float in_absorption_depth = 0.0
+    [[
+        string as_maya_attribute_name = "absorptionDepth",
+        string as_maya_attribute_short_name = "rad",
+        float min = 0.0,
+        float max = 10000.0,
+        float softmax = 100.0,
+        string label = "Absorption Depth",
+        string page = "Refraction Parameters"
+    ]],
+    color in_absorption_color = color(1)
+    [[
+        string as_maya_attribute_name = "absorptionColor",
+        string as_maya_attribute_short_name = "rac",
+        string label = "Absorption Color",
+        string page = "Refraction Parameters"
+    ]],
+
+    // 
+    // Coating
+    //
+
+    float in_coating_amount = 0.0
+    [[
+        string as_maya_attribute_name = "coatingAmount",
+        string as_maya_attribute_short_name = "cow",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Coating Amount",
+        string page = "Coating Parameters"
+    ]],
+    float in_coating_roughness = 0.0
+    [[
+        string as_maya_attribute_name = "coatingRoughness",
+        string as_maya_attribute_short_name = "cor",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Coating Roughness",
+        string page = "Coating Parameters"
+    ]],
+    float in_coating_ior = 1.41
+    [[
+        string as_maya_attribute_name = "coatingIor",
+        string as_maya_attribute_short_name = "coi",
+        float min = 1.0,
+        float max = 5.0,
+        float softmax = 2.0,
+        string label = "Coating IOR",
+        string page = "Coating Parameters",
+        string help = "Coating (monochromatic) dielectric IOR",
+        int divider = 1
+    ]],
+    float in_coating_depth = 0.0
+    [[
+        string as_maya_attribute_name = "coatingDepth",
+        string as_maya_attribute_short_name = "cod",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Coating Depth",
+        string page = "Coating Parameters",
+        string help = "Coating depth in nanometers. When in light wavelength range, thin film interference will be computed."
+    ]],
+    color in_coating_absorption = color(1)
+    [[
+        string as_maya_attribute_name = "coatingAbsorption",
+        string as_maya_attribute_short_name = "coa",
+        string label = "Coating Absorption",
+        string page = "Coating Parameters"
+    ]],
+
+    //
+    // Thin film interference
+    //
+    float in_interference_amount = 0.0
+    [[
+        string as_maya_attribute_name = "interferenceAmount",
+        string as_maya_attribute_short_name = "tiw",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Interference Amount",
+        string page = "Thin Film Interference Parameters",
+        string help = "Thin film interference inherits IOR and coating depth (in nanometer scale) from coating parameters."
+    ]],
+
+    //
+    // EDF
+    //
+
+    float in_incandescence_amount = 0.0
+    [[
+        string as_maya_attribute_name = "incandescence_amount",
+        string as_maya_attribute_short_name = "inw",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Incandescence Amount",
+        string page = "Incandescence Parameters"
+    ]],
+    int in_incandescence_type = 0
+    [[
+        string as_maya_attribute_name = "incandescenceType",
+        string as_maya_attribute_short_name = "int",
+        string widget = "mapper",
+        string options = "Constant:0|Physically Based:1",
+        string label = "Incandescence Type",
+        string page = "Incancescence Parameters",
+        string help = "Constant based, or blackbody radiator based EDF",
+        int divider = 1,
+    ]],
+    color in_incandescence_color = color(0)
+    [[
+        string as_maya_attribute_name = "incandescenceColor",
+        string as_maya_attribute_short_name = "inc",
+        string label = "Incandescence Color",
+        string page = "Incandescence Parameters",
+        string help = "Incandescence color, only valid in constant mode."
+    ]],
+    int in_temperature = 4300
+    [[
+        string as_maya_attribute_name = "temperature",
+        string as_maya_attribute_short_name = "tem",
+        int min = 1000,
+        int max = 11000,
+        int softmin = 3400,
+        int softmax = 9300,
+        string label = "Temperature",
+        string page = "Incandescence Parameters",
+        string help = "Temperature in Kelvin degrees, only valid in physically based mode",
+        int divider = 1
+    ]],
+
+    int in_area_normalize_edf = 1
+    [[
+        string as_maya_attribute_name = "normalizeAreaEDF",
+        string as_maya_attribute_short_name = "nae",
+        string widget = "checkBox",
+        string label = "Normalize Area",
+        string page = "Incandescence Parameters"
+    ]],
+    int in_tonemap_edf = 1
+    [[
+        string as_maya_attribute_name = "toneMapEDF",
+        string as_maya_attribute_short_name = "tme",
+        string widget = "checkBox",
+        string label = "Tonemap Color",
+        string page = "Incandescence Parameters",
+        string help = "Tonemap incandescence, only valid for physically based mode"
+    ]],
+
+    //
+    // Transparency: colored shadows
+    //
+    
+    color in_transparency = color(0)
+    [[
+        string as_maya_attribute_name = "transparency",
+        string as_maya_attribute_short_name = "it",
+        string label = "Transparency Color",
+        string page = "Transparency Parameters"
+    ]],
+
+    //
+    // bump mapping
+    //
+
+    normal in_normalCamera = N
+    [[
+        string as_maya_attribute_name = "normalCamera",
+        string as_maya_attribute_short_name = "n",
+        string label = "Bump Normal",
+        string page = "Bump Parameters"
+    ]],
+
+    // 
+    // matte control
+
+    int in_enable_matte = 0
+    [[
+        string as_maya_attribute_name = "enableMatte",
+        string as_maya_attribute_short_name = "ema",
+        string widget = "checkBox",
+        string label = "Enable Matte Opacity",
+        string page = "Matte Opacity Parameters",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int divider = 1
+    ]],
+    float in_matte_opacity = 0.0
+    [[
+        string as_maya_attribute_name = "matteOpacity",
+        string as_maya_attribute_short_name = "mao",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Matte Opacity",
+        string page = "Matte Opacity Parameters"
+    ]],
+    color in_matte_opacity_color = color(1,0.5,0)
+    [[
+        string as_maya_attribute_name = "matteOpacityColor",
+        string as_maya_attribute_short_name = "mac",
+        string label = "Matte Opacity Color",
+        string page = "Matte Opacity Parameters"
+    ]],
+
+    // advanced
+    // global ray depth
+    // maximum ray depth for a SSS ray
+
+    int in_sss_maximum_ray_depth = 2
+    [[
+        string as_maya_attribute_name = "sssMaximumRayDepth",
+        string as_maya_attribute_short_name = "ssd",
+        int min = 1,
+        int max = 16,
+        int softmax = 8,
+        string label = "SSS Ray Depth",
+        string page = "Advanced Parameters",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1
+    ]],
+    float in_sss_threshold = 0.001
+    [[
+        string as_maya_attribute_name = "sssThreshold",
+        string as_maya_attibute_short_name = "sth",
+        float min = 0.0,
+        float max = 1.0,
+        float softmax = 0.01,
+        string label = "SSS Diffuse Threshold",
+        string page = "Advanced Parameters",
+        string help = "Threshold at which SSS is replaced by a diffuse term"
+    ]],
+
+    int in_maximum_ray_depth = 8
+    [[
+        string as_maya_attribute_name = "maximumRayDepth",
+        string as_maya_attribute_short_name = "mrd",
+        int min = 0,
+        int max = 32,
+        int softmax = 8,
+        string label = "Ray Depth",
+        string page = "Advanced Parameters",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1
+    ]],
+
+    // primvars
+
+    vector Tn = vector(0)
+    [[
+        int lockgeom = 0,
+        int as_maya_attribute_hidden = 1,
+        string widget = "null"
+    ]],
+    vector Bn = vector(0)
+    [[
+        int lockgeom = 0,
+        int as_maya_attribute_hidden = 1,
+        string widget = "null"
+    ]],
+
+    // outputs
+
+    output closure color out_outColor = 0
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string widget = "null"
+    ]],
+    output closure color out_outTransparency = 0
+    [[
+        string as_maya_attribute_name = "outTransparency",
+        string as_maya_attribute_short_name = "ot",
+        string widget = "null"
+    ]],
+    output closure color out_outMatteOpacity = 0
+    [[
+        string as_maya_attribute_name = "outMatteOpacity",
+        string as_maya_attribute_short_name = "om",
+        string widget = "null",
+        int as_maya_attribute_hidden = 1
+    ]]
+)
+{
+    // Matte opacity is computed regardless of ray depth, or transparency.
+
+    if (in_enable_matte)
+    {
+        out_outMatteOpacity = in_matte_opacity *
+            in_matte_opacity_color * holdout();
+    }
+
+    // Now it's possible to bailout early by computing transparency first.
+
+    int compute_transparency = (max(in_transparency) > 0.0) ? 1 : 0;
+
+    if (compute_transparency)
+    {
+        out_outTransparency = in_transparency * transparent();
+    }
+    out_outColor += out_outTransparency;
+
+    if (raytype("shadow") || raytype("transparency"))
+    {
+        return; // all's done
+    }
+
+    // Allowed bounces, or bailout early.
+    int ray_depth = 0;
+    int status = getattribute("path:ray_depth", ray_depth);
+
+    if (!status || ray_depth > in_maximum_ray_depth)
+    {
+        return;
+    }
+
+    int compute_translucency = (in_translucency_weight *
+        max(in_translucency_color) > 0.0) ? 1 : 0;
+
+    int compute_transmission = (in_refraction_amount *
+        max(in_refraction_tint) > 0.0) ? 1 : 0;
+
+    //
+    // No SSS when transparency, translucency, refraction are on, but when
+    // on, if below mean free path, assume diffuse behaviour.
+    //
+
+    int compute_sss;
+
+    if (!compute_transparency && !compute_translucency &&
+        !compute_transmission && ray_depth <= in_sss_maximum_ray_depth &&
+        in_subsurface_weight > 0.0 && max(in_sss_mfp) > in_sss_threshold)
+    {
+        compute_sss = 1;
+    }
+    else
+    {
+        compute_sss = 0;
+    }
+
+    //
+    // coating (w/absorption, thin film interference)
+    // -------
+    // specular
+    // --------
+    // diffuse (and translucency)
+    // -------
+    // subsurface
+    // ----------
+    // incandescence
+    //
+
+    normal Nn = normalize(in_normalCamera);
+
+    // compute coating first, since both coating Fresnel and absorption might
+    // render underlying terms unnecessary.
+
+    color coating_transmittance = 1.0, coating_reflectance = 0.0;
+
+    int compute_coating =
+        (in_coating_amount > 0.0 && in_coating_ior > 1.0) ? 1 : 0;
+
+    int compute_specular = (max(in_specular_color) > 0.0) ? 1 : 0;
+
+    if (compute_coating)
+    {
+        vector In = normalize(I);
+
+        float costheta_o = dot(-In, Nn);
+
+        // The Schlick approximation suffices, and we only care about 
+        // entering rays anyway.
+
+        float R0 = sqr((in_coating_ior - 1.0) / (in_coating_ior + 1.0));
+
+        coating_reflectance = clamp(
+            R0 + (1.0 - R0) * pow(1.0 - costheta_o, 5.0), 0.0, 1.0);
+
+        coating_transmittance = 1.0 - coating_reflectance;
+
+        // reset coating reflectance since the closure does its internal
+        // Fresnel (i know, this exterior Fresnel is evil)
+        //
+        coating_reflectance = color(1);
+
+        // fake absorption
+        //
+
+        float remapped_depth = 0.0;
+
+        if (in_coating_depth * max(in_coating_absorption) > 0.0)
+        {
+            float viewer_ratio = 1.0 - max(0.0, costheta_o);
+
+            remapped_depth = 10000.0 * sqr(sqr(in_coating_depth));
+
+            color tau = remapped_depth * viewer_ratio *
+                (1.0 - in_coating_absorption);
+
+            color fake_absorption = clamp(exp(-tau), 0.0, 1.0);
+
+            coating_transmittance *= fake_absorption;
+        }
+
+        // thin film here (requires more planning)
+    }
+
+
+    //
+    closure color coating_term = 0;
+
+    if (max(coating_reflectance) > 0.0)
+    {
+        coating_term = coating_reflectance *
+            microfacet("beckmann", Nn, in_coating_roughness, in_coating_ior, 0);
+    }
+
+    out_outColor += coating_term;
+
+    // Nailout if transmittance is 0, no further action to be taken since
+    // the terms underneath the coating cannot be seen.
+
+    if (max(coating_transmittance) <= EPS)
+    {
+        return;
+    }
+
+    closure color diffuse_term = 0;
+    closure color subsurface_term = 0;
+    closure color translucency_term = 0;
+
+    if (compute_sss)
+    {
+        color albedo = in_diffuse_weight * in_color;
+
+        if (max(albedo) > 0.0)
+        {
+            albedo = clamp(albedo, 0.01, 0.99);
+            
+            float fresnel_weight = (compute_coating || compute_specular)
+                ? 1.0
+                : 0.0;
+                
+            subsurface_term = in_subsurface_weight *
+                coating_transmittance * as_subsurface(
+                    "normalized_diffusion",
+                    Nn,
+                    in_diffuse_weight * in_color,
+                    in_sss_mfp_scale * in_sss_mfp,
+                    in_ior,
+                    "fresnel_weight", 0.0);
+
+            out_outColor += subsurface_term;
+        }
+    }
+    else
+    {
+        color diffuse_color = in_diffuse_weight *
+            in_color * coating_transmittance;
+
+        if (max(diffuse_color) > 0.0)
+        {
+            diffuse_term = diffuse_color * oren_nayar(Nn, in_diffuse_roughness);
+
+            out_outColor += diffuse_term;
+        }
+
+        // NOTE: Should we mix? 
+        // as in: diffuse_weight * diffuse_term +
+        //        (1.0 - diffuse_weight) * trans_weight * translucency_term
+
+        color translucency_color = in_translucency_weight *
+            in_translucency_color * coating_transmittance;
+
+        if (max(translucency_color) > 0.0)
+        {
+            translucency_term = translucency_color * translucent(Nn);
+
+            out_outColor += translucency_term;
+        }
+    }
+
+    closure color specular_term = 0;
+    closure color transmission_term = 0;
+
+    if (compute_specular)
+    {
+        // anisotropy first (move to own block/function)
+
+        color specular_color = in_specular_color * coating_transmittance;
+        color transmission_color = in_refraction_amount *
+            in_refraction_tint * coating_transmittance;
+
+        vector tangent = Tn;
+
+        if (max(specular_color) > 0.0 || max(transmission_color) > 0.0)
+        {
+            if (in_anisotropy_amount > 0.0)
+            {
+                if (isconnected(in_anisotropy_map))
+                {
+                    vector vector_map = normalize(
+                        (vector) in_anisotropy_map * 2.0 - 1.0);
+
+                    tangent = normalize(
+                        vector_map[0] * Tn +
+                        vector_map[1] * Bn +
+                        vector_map[2] * Nn);
+                }
+
+                if (in_anisotropy_angle > 0.0)
+                {
+                    tangent = rotate(
+                        tangent,
+                        in_anisotropy_angle * M_2PI,
+                        point(0),
+                        point(Nn));
+                }
+            }
+        }
+
+        //
+        // If (monochromatic) dielectric IOR, use glossy, else AFC mode,
+        // derive eta+k, use conductor closure
+        //
+        // NOTE: for thin film interference, we need eta of exterior and
+        //       interior mediums, which means that for conductor mode, we
+        //       would need to compute eta+k and use full conductor Fresnel.
+        //       This will be implemented in OSL _first_, but
+        //       as part of a physically correct shader, it is dependent on
+        //       microfacet orientation, shadowing and masking, so the
+        //       actual thin film interference implementation has to have
+        //       access to specular closure, and coating closure data
+        //       (fresnel reflection & transmission coefficients, IORs)
+        //
+        
+        if (max(specular_color) > 0.0)
+        {
+            if (in_fresnel_type == 0)
+            {
+                // The issue here is that since the conductor fresnel is
+                // tied to the as_metal closure, instead of being generic,
+                // the refraction term makes sense only in the glossy case,
+                // that is, Fresnel type 0, with monochromatic dielectric IOR.
+                //
+                // This is correct in that a conductor has a non negligible
+                // extinction coefficient k, but there might be a k value 
+                // such that there is enough light to traverse the medium
+                // volume.
+
+                // NOTE: we ignore this, and just use transmission/refraction
+                //       with as_glass, as_glossy, monochrome dielectric IOR
+
+                // NOTE: this seems to be what is done in other apps
+                //       (judging from the UI docs at least)
+
+                if (max(transmission_color) > 0.0)
+                {
+                    // With coating on, we would need to layer the coating
+                    // on the glass substrate (entirely valid, painting with
+                    // translucent/transparent inks on glass).
+                    // The alsurface_layer closure requires the substrate
+                    // and computes a specular layer on top, but we already
+                    // know the specular layer|coating.
+                    // 
+                    // So, coating would need to be deferred until this, but
+                    // the substrate is already dependent on some quantities,
+                    // such as coating absorption, transmittance
+                    //
+                    // NOTE: just adding the closures, as long as you keep 
+                    //       track of the coating transmittance, helps a 
+                    //       _LOT_ in reducing noise.
+                    //
+
+                    specular_term = as_glass(
+                        in_specular_type,
+                        Nn,
+                        tangent,
+                        coating_transmittance,
+                        in_specular_color,
+                        in_refraction_amount * in_refraction_tint,
+                        in_specular_roughness,
+                        in_specular_spread,
+                        in_anisotropy_amount,
+                        in_ior,
+                        in_absorption_color,
+                        in_absorption_depth);
+                }
+                else
+                {
+                    specular_term = specular_color * as_glossy(
+                        in_specular_type,
+                        Nn,
+                        tangent,
+                        in_specular_roughness,
+                        in_specular_spread,
+                        in_anisotropy_amount,
+                        in_ior);
+                }
+            }
+            else
+            {
+                specular_term = specular_color * as_metal(
+                    in_specular_type,
+                    Nn,
+                    tangent,
+                    in_face_tint,
+                    in_edge_tint,
+                    in_specular_roughness,
+                    in_specular_spread,
+                    in_anisotropy_amount);
+            }
+        }
+        out_outColor += specular_term;
+    }
+
+    int compute_edf = (in_incandescence_amount > 0.0 &&
+        (max(in_incandescence_color) > 0.0 || in_temperature > 800))
+        ? 1
+        : 0;
+
+    closure color incandescence_term = 0;
+
+    if (compute_edf)
+    {
+        color edf_color;
+
+        if (in_incandescence_type == 0)
+        {
+            edf_color = in_incandescence_amount * in_incandescence_color;
+        }
+        else
+        {
+            // TODO: Blackbody radiator is a spectral emitter, depends on
+            //       the correct color space primaries and white point
+            //
+
+            color blackbody_color = in_incandescence_amount *
+                blackbody((float) in_temperature);
+
+            if (in_tonemap_edf)
+            {
+                // TODO: Global tonemapping operator, but some TMOs require 
+                //       luminance of a color, which again, depends on the
+                //       correct color space primaries and white point of the
+                //       current rendering/working space.
+
+                // TODO: The simplest (and probably fastest) global TMO is
+                //       x / (Y(x) + 1.0), where Y is luminance of input.
+                //       Other global TMOs could have good results as well.
+
+                blackbody_color /= luminance(blackbody_color) + 1.0;
+            }
+
+            edf_color = blackbody_color;
+        }
+
+        if (max(edf_color * coating_transmittance) > 0.0)
+        {
+            float normalization = (in_area_normalize_edf)
+                ? 1.0 / surfacearea()
+                : 1.0;
+
+            incandescence_term = emission() * normalization *
+                coating_transmittance * edf_color;
+        }
+        out_outColor += incandescence_term;
+    }
+
+    out_outColor += coating_term;
+
+    out_outColor += out_outTransparency;
+}
