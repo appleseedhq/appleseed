@@ -26,55 +26,36 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONEDITOR_H
-#define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONEDITOR_H
-
-// appleseed.studio headers.
-#include "mainwindow/pythonconsole/zoomableplaintextedit.h"
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_ZOOMABLEPLAINTEXTEDIT_H
+#define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_ZOOMABLEPLAINTEXTEDIT_H
 
 // Qt headers.
 #include <QObject>
 #include <QPlainTextEdit>
 
-// Standard headers.
-#include <cstddef>
-#include <string>
-
-// Forward declarations.
-class QWidget;
-namespace appleseed { namespace studio { class LineNumberArea; } }
-
 namespace appleseed {
 namespace studio {
 
-class PythonEditor
-  : public ZoomablePlainTextEdit
+class ZoomablePlainTextEdit
+    : public QPlainTextEdit
 {
     Q_OBJECT
 
   public:
-    explicit PythonEditor(QWidget* parent = 0);
+    ZoomablePlainTextEdit(QWidget* parent);
 
   protected:
-    // Event used to update line number area.
-    void resizeEvent(QResizeEvent* event);
-
     void keyPressEvent(QKeyEvent* event);
-
-  private slots:
-    void slot_highlight_current_line();
+    void wheelEvent(QWheelEvent* event);
 
   private:
-    friend class LineNumberArea;
+    void change_font_size(const int delta);
 
-    LineNumberArea* m_line_number_area;
-
-    void indent();
-    void indent_like_previous(const std::string& previous);
-    void insert_spaces(const size_t count);
+  signals:
+    void fontChanged(QFont);
 };
 
-}       // namespace studio
-}       // namespace appleseed
+}   // namespace studio
+}   // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONEDITOR_H
+#endif // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_ZOOMABLEPLAINTEXTEDIT_H
