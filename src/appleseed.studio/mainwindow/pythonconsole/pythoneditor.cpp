@@ -44,7 +44,7 @@ namespace appleseed {
 namespace studio {
 
 PythonEditor::PythonEditor(QWidget* parent)
-  : FontSizeChangeable(parent)
+  : ZoomablePlainTextEdit(parent)
 {
     setObjectName("python_editor");
     setUndoRedoEnabled(true);
@@ -80,7 +80,7 @@ void PythonEditor::keyPressEvent(QKeyEvent* event)
     {
         if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
             event->setModifiers(event->modifiers() & ~Qt::ShiftModifier);
-        FontSizeChangeable::keyPressEvent(event);
+        ZoomablePlainTextEdit::keyPressEvent(event);
         if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
             indent();
     }

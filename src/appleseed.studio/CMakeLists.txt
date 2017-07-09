@@ -218,8 +218,6 @@ source_group ("mainwindow\\project" FILES
 )
 
 set (mainwindow_pythonconsole_sources
-    mainwindow/pythonconsole/fontsizechangeable.cpp
-    mainwindow/pythonconsole/fontsizechangeable.h
     mainwindow/pythonconsole/linenumberarea.cpp
     mainwindow/pythonconsole/linenumberarea.h
     mainwindow/pythonconsole/outputredirector.cpp
@@ -232,6 +230,8 @@ set (mainwindow_pythonconsole_sources
     mainwindow/pythonconsole/pythonhighlighter.h
     mainwindow/pythonconsole/pythonoutput.cpp
     mainwindow/pythonconsole/pythonoutput.h
+    mainwindow/pythonconsole/zoomableplaintextedit.cpp
+    mainwindow/pythonconsole/zoomableplaintextedit.h
     )
 list (APPEND appleseed.studio_sources
     ${mainwindow_pythonconsole_sources}

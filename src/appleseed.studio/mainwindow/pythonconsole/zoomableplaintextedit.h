@@ -26,48 +26,36 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "fontsizechangeable.h"
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_ZOOMABLEPLAINTEXTEDIT_H
+#define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_ZOOMABLEPLAINTEXTEDIT_H
+
+// Qt headers.
+#include <QObject>
+#include <QPlainTextEdit>
 
 namespace appleseed {
 namespace studio {
 
-FontSizeChangeable::FontSizeChangeable(QWidget* parent)
-  : QPlainTextEdit(parent)
+class ZoomablePlainTextEdit
+    : public QPlainTextEdit
 {
-}
+    Q_OBJECT
 
-void FontSizeChangeable::keyPressEvent(QKeyEvent* event)
-{
-    if (event->modifiers() & Qt::ControlModifier &&
-        (event->key() == Qt::Key_Plus || event->key() == Qt::Key_Equal))
-        change_font_size(1);
-    else if (event->modifiers() & Qt::ControlModifier && event->key() == Qt::Key_Minus)
-        change_font_size(-1);
-    else if (event->modifiers() & Qt::ControlModifier && event->key() == Qt::Key_0)
-        change_font_size(QFont().pointSize() - font().pointSize());
-    else
-        QPlainTextEdit::keyPressEvent(event);
-}
+  public:
+    ZoomablePlainTextEdit(QWidget* parent);
 
-void FontSizeChangeable::wheelEvent(QWheelEvent* event)
-{
-    if (event->modifiers() & Qt::ControlModifier)
-        // Minus here because if you turn wheel up delta is negative
-        // while font should be incremented.
-        change_font_size(- event->delta() / 120);
-    else
-        QPlainTextEdit::wheelEvent(event);
-}
+  protected:
+    void keyPressEvent(QKeyEvent* event);
+    void wheelEvent(QWheelEvent* event);
 
-void FontSizeChangeable::change_font_size(const int delta)
-{
-    int new_font_size = font().pointSize() + delta;
-    QFont new_font = font();
-    new_font.setPointSize(new_font_size);
-    setFont(new_font);
-    emit(fontChanged(new_font));
-}
+  private:
+    void change_font_size(const int delta);
+
+  signals:
+    void fontChanged(QFont);
+};
 
 }   // namespace studio
 }   // namespace appleseed
+
+#endif // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_ZOOMABLEPLAINTEXTEDIT_H

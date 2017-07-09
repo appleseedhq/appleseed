@@ -26,36 +26,46 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_FONTSIZECHANGEABLE_H
-#define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_FONTSIZECHANGEABLE_H
-
-// Qt headers.
-#include <QObject>
-#include <QPlainTextEdit>
+// Interface header.
+#include "zoomableplaintextedit.h"
 
 namespace appleseed {
 namespace studio {
 
-class FontSizeChangeable
-    : public QPlainTextEdit
+ZoomablePlainTextEdit::ZoomablePlainTextEdit(QWidget* parent)
+  : QPlainTextEdit(parent)
 {
-    Q_OBJECT
+}
 
-  public:
-    FontSizeChangeable(QWidget* parent);
+void ZoomablePlainTextEdit::keyPressEvent(QKeyEvent* event)
+{
+    if (event->modifiers() & Qt::ControlModifier &&
+        (event->key() == Qt::Key_Plus || event->key() == Qt::Key_Equal))
+        change_font_size(1);
+    else if (event->modifiers() & Qt::ControlModifier && event->key() == Qt::Key_Minus)
+        change_font_size(-1);
+    else if (event->modifiers() & Qt::ControlModifier && event->key() == Qt::Key_0)
+        change_font_size(QFont().pointSize() - font().pointSize());
+    else
+        QPlainTextEdit::keyPressEvent(event);
+}
 
-  protected:
-    void keyPressEvent(QKeyEvent* event);
-    void wheelEvent(QWheelEvent* event);
+void ZoomablePlainTextEdit::wheelEvent(QWheelEvent* event)
+{
+    if (event->modifiers() & Qt::ControlModifier)
+        change_font_size(event->delta() / 120);
+    else
+        QPlainTextEdit::wheelEvent(event);
+}
 
-  private:
-    void change_font_size(const int delta);
-
-  signals:
-    void fontChanged(QFont);
-};
+void ZoomablePlainTextEdit::change_font_size(const int delta)
+{
+    int new_font_size = font().pointSize() + delta;
+    QFont new_font = font();
+    new_font.setPointSize(new_font_size);
+    setFont(new_font);
+    emit(fontChanged(new_font));
+}
 
 }   // namespace studio
 }   // namespace appleseed
-
-#endif // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_FONTSIZECHANGEABLE_H

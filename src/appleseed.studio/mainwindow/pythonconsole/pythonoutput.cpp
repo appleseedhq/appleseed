@@ -33,7 +33,7 @@ namespace appleseed {
 namespace studio {
 
 PythonOutput::PythonOutput(QWidget* parent)
-  : FontSizeChangeable(parent)
+  : ZoomablePlainTextEdit(parent)
 {
     setObjectName("python_output");
     setUndoRedoEnabled(false);

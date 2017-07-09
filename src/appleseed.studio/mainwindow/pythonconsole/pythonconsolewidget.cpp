@@ -76,8 +76,8 @@ PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
 
     m_output = new PythonOutput(console_body);
 
-    console_body->addWidget(m_input);
     console_body->addWidget(m_output);
+    console_body->addWidget(m_input);
 
     m_action_new_file =
         new QAction(load_icons("project_new"), "New Python Script", this);
@@ -193,7 +193,7 @@ void PythonConsoleWidget::slot_clear_output()
 
 void PythonConsoleWidget::slot_change_exec_selection_button_state()
 {
-    bool is_enabled = m_input->textCursor().selection().isEmpty();
+    const bool is_enabled = m_input->textCursor().selection().isEmpty();
     m_action_execute_selection->setEnabled(is_enabled);
 }
 

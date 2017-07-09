@@ -30,7 +30,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONOUTPUT_H
 
 // appleseed.studio headers.
-#include "mainwindow/pythonconsole/fontsizechangeable.h"
+#include "mainwindow/pythonconsole/zoomableplaintextedit.h"
 
 // Qt headers.
 #include <QObject>
@@ -43,7 +43,7 @@ namespace appleseed {
 namespace studio {
 
 class PythonOutput
-    : public FontSizeChangeable
+    : public ZoomablePlainTextEdit
 {
     Q_OBJECT
 
