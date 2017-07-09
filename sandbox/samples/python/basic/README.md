@@ -6,14 +6,14 @@ On Windows
 
 With an end-user release of appleseed:
 
-    set PYTHONPATH=%PYTHONPATH%;C:\path\to\appleseed\lib
+    set PYTHONPATH=%PYTHONPATH%;C:\path\to\appleseed\lib\python2.7
     set PATH=%PATH%;C:\path\to\appleseed\bin
     python basic.py
 
 
 With a developer release of appleseed:
 
-    set PYTHONPATH=%PYTHONPATH%;C:\path\to\appleseed\sandbox\lib\<compiler>\<config>
+    set PYTHONPATH=%PYTHONPATH%;C:\path\to\appleseed\sandbox\lib\<compiler>\<config>\python2.7
     set PATH=%PATH%;C:\path\to\appleseed\sandbox\bin\<compiler>\<config>
     python basic.py
 

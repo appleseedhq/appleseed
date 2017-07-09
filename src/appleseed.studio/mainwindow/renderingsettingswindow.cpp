@@ -1222,14 +1222,17 @@ RenderingSettingsWindow::~RenderingSettingsWindow()
 
 void RenderingSettingsWindow::reload()
 {
-    vector<QString> configs;
+    assert(m_project_manager.get_project() != nullptr);
 
+    // Collect configuration names.
+    vector<QString> configs;
     for (const_each<ConfigurationContainer> i = m_project_manager.get_project()->configurations(); i; ++i)
     {
         if (!BaseConfigurationFactory::is_base_configuration(i->get_name()))
             configs.push_back(i->get_name());
     }
 
+    // Sort configuration names alphabetically.
     sort(configs.begin(), configs.end());
 
     // This will load an empty configuration.

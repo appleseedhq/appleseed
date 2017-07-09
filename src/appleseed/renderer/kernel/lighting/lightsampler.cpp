@@ -569,7 +569,7 @@ void LightSampler::sample(
     assert(candidate_groups_count > 0);
 
     // Randomly select one of the group which will be sampled.
-    const size_t selected_index = s[0] * candidate_groups_count;
+    const size_t selected_index = truncate<size_t>(s[0] * candidate_groups_count);
     const size_t selected_type  = candidate_groups[selected_index];
     
     // Avoid bias propagation by expanding the chosen interval back to [0,1].

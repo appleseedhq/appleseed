@@ -43,7 +43,7 @@
 #include "foundation/utility/uid.h"
 
 // Standard headers.
-#include  <cstddef>
+#include <cstddef>
 
 namespace renderer
 {
@@ -63,7 +63,7 @@ class LightTree
     // Constructor.
     LightTree();
 
-    // Destructor
+    // Destructor.
     ~LightTree();
 
     bool is_built() const;
@@ -113,11 +113,13 @@ class LightTree
 
     float recursive_node_update(size_t node_index, size_t node_level);
 
-    std::pair<float, float> child_node_probabilites(
+    void child_node_probabilites(
         const LightTreeNode<foundation::AABB3d>&    node,
-        const foundation::Vector3d&                 surface_point) const;
+        const foundation::Vector3d&                 surface_point,
+        float&                                      p1,
+        float&                                      p2) const;
 };
 
-}
+}       // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTREE_H

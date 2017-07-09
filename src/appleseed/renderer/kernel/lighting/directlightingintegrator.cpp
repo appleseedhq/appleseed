@@ -129,7 +129,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_material_sampling(
     }
 
     if (m_material_sample_count > 1)
-        radiance /= m_material_sample_count;
+        radiance /= static_cast<float>(m_material_sample_count);
 }
 
 void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling(
@@ -224,7 +224,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
         }
 
         if (m_light_sample_count > 1)
-            radiance /= m_light_sample_count;
+            radiance /= static_cast<float>(m_light_sample_count);
     }
 
     if (m_light_sample_count > 0)

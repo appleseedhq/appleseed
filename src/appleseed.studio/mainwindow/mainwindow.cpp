@@ -242,8 +242,6 @@ void MainWindow::save_project(QString filepath)
     if (QFileInfo(filepath).suffix() != Extension)
         filepath += "." + Extension;
 
-    filepath = QDir::toNativeSeparators(filepath);
-
     if (m_project_file_watcher)
         stop_monitoring_project_file();
 
@@ -478,9 +476,9 @@ void MainWindow::update_recent_files_menu(const QString& filepath)
 
 void MainWindow::update_recent_files_menu(const QStringList& files)
 {
-    const int num_recent_files = min(files.size(), MaxRecentlyOpenedFiles);
+    const int recent_file_count = min(files.size(), MaxRecentlyOpenedFiles);
 
-    for (int i = 0; i < num_recent_files; ++i)
+    for (int i = 0; i < recent_file_count; ++i)
     {
         const QString filepath = files[i];
         const QString text = tr("&%1 %2").arg(i + 1).arg(filepath);
@@ -490,7 +488,7 @@ void MainWindow::update_recent_files_menu(const QStringList& files)
         m_recently_opened[i]->setVisible(true);
     }
 
-    for (int i = num_recent_files; i < MaxRecentlyOpenedFiles; ++i)
+    for (int i = recent_file_count; i < MaxRecentlyOpenedFiles; ++i)
         m_recently_opened[i]->setVisible(false);
 }
 
@@ -961,7 +959,8 @@ void MainWindow::on_project_change()
 
     update_override_shading_menu_item();
 
-    if (m_rendering_settings_window.get())
+    if (m_rendering_settings_window.get() != nullptr &&
+        m_project_manager.get_project() != nullptr)
         m_rendering_settings_window->reload();
 
     m_status_bar.clear();
@@ -1283,8 +1282,7 @@ void MainWindow::slot_save_project()
 
     if (!m_project_manager.get_project()->has_path())
         slot_save_project_as();
-    else
-        save_project(m_project_manager.get_project()->get_path());
+    else save_project(m_project_manager.get_project()->get_path());
 }
 
 void MainWindow::slot_save_project_as()
@@ -1301,6 +1299,8 @@ void MainWindow::slot_save_project_as()
 
     if (!filepath.isEmpty())
     {
+        filepath = QDir::toNativeSeparators(filepath);
+
         save_project(filepath);
         update_recent_files_menu(filepath);
     }
@@ -1328,6 +1328,8 @@ void MainWindow::slot_pack_project_as()
         filepath = QDir::toNativeSeparators(filepath);
 
         m_project_manager.pack_project_as(filepath.toAscii().constData());
+
+        // Don't update the Recent Files menu.
     }
 }
 
@@ -1826,7 +1828,7 @@ void MainWindow::slot_show_rendering_settings_window()
 {
     assert(m_project_manager.is_project_open());
 
-    if (m_rendering_settings_window.get() == 0)
+    if (m_rendering_settings_window.get() == nullptr)
     {
         m_rendering_settings_window.reset(new RenderingSettingsWindow(m_project_manager, this));
 
