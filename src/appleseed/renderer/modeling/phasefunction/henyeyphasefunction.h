@@ -64,8 +64,7 @@ APPLESEED_DECLARE_INPUT_VALUES(HenyeyPhaseFunctionInputValues)
 
     struct Precomputed
     {
-        Spectrum    m_normalized_extinction;    // extinction coefficient of the media (normalized)
-        float       m_extinction_multiplier;    // extinction coefficient multiplier
+        Spectrum    m_extinction;    // extinction coefficient of the media
     };
 
     Precomputed m_precomputed;

@@ -690,7 +690,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
     if (exit_point.hit())
     {
         Spectrum transmission;
-        phase_function->evaluate_transmission(volume_ray, data, transmission);
+        phase_function->evaluate_transmission(data, volume_ray, transmission);
 
         vertex.m_throughput *= transmission;
     }
