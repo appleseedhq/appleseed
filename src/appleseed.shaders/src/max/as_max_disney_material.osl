@@ -29,7 +29,10 @@
 surface as_max_disney_material
 (
     vector Normal = N,
-    vector Tn = 0.0,
+    vector Tn = 0.0
+    [[
+        int lockgeom = 0
+    ]],
     color  BaseColor = 0.5,
     float  Subsurface = 0.0,
     float  Metallic = 0.0,
