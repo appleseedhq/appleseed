@@ -122,8 +122,8 @@ LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
         scene.assembly_instances(),
         TransformSequence());
 
-    // Build the light-tree (currently uses only non-physical lights).
-    m_light_tree.build(m_light_tree_lights);
+    // Build the light-tree.
+    m_light_tree.build(m_light_tree_lights, m_emitting_triangles);
 
     // Build the hash table of emitting triangles.
     build_emitting_triangle_hash_table();

@@ -69,9 +69,9 @@ class LightTree
     bool is_built() const;
 
     // Build the tree based on the lights collected by the LightSampler.
-    // TODO: Remove light lists from arguments when they start being collected
-    //       by the LightTree class itself.
-    void build(const std::vector<NonPhysicalLightInfo>& non_physical_lights);
+    void build(
+        const std::vector<NonPhysicalLightInfo>&    non_physical_lights,
+        const std::vector<EmittingTriangle>&        emitting_triangles);
     
     std::pair<size_t, float> sample(
         const foundation::Vector3d&     surface_point,
