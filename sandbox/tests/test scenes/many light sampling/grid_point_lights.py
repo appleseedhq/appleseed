@@ -319,7 +319,7 @@ def generate_appleseed(assembly, orientation):
     #------------------------------------------------------------------------
     # Template image
     #------------------------------------------------------------------------
-    img = misc.imread("/home/gospodnetic/Desktop/appleseed/resources/logo/appleseed-seeds-2048.png")
+    img = misc.imread("../../../../resources/logo/appleseed-seeds-2048.png")
     
     # Make image rectangular
     height, width, channels = img.shape
