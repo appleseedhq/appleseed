@@ -148,7 +148,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
             {
                 const Vector2f s = sampling_context.next2<Vector2f>();
                 const Vector3f incoming = sample_sphere_uniform<float>(s);
-                integral += phase_function.evaluate(shading_ray, data, 0.5f, incoming);
+                integral += phase_function.evaluate(data, shading_ray, 0.5f, incoming);
             }
 
             return integral * foundation::FourPi<float>() / NumberOfSamples;
@@ -174,7 +174,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
             {
                 Vector3f incoming;
                 const float pdf = phase_function.sample(
-                    sampling_context, shading_ray, data, 0.5f, incoming);
+                    sampling_context, data, shading_ray, 0.5f, incoming);
                 bias += incoming / pdf;
             }
 
@@ -201,7 +201,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
             {
                 Vector3f incoming;
                 phase_function.sample(
-                    sampling_context, shading_ray, data, 0.5f, incoming);
+                    sampling_context, data, shading_ray, 0.5f, incoming);
                 bias += incoming;
             }
 
@@ -228,7 +228,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
             {
                 Vector3f incoming;
                 const float pdf = phase_function.sample(
-                    sampling_context, shading_ray, data, 0.5f, incoming);
+                    sampling_context, data, shading_ray, 0.5f, incoming);
                 points.emplace_back(incoming.x * pdf, incoming.y * pdf);
             }
 
