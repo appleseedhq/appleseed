@@ -48,7 +48,7 @@ grid_lights_count = 100
 color = "appleseed"
 plane_size = 100
 color_multiplier = 0.001
-light_z_distance = 0.5
+light_z_distance = 0.3
 output_scene_name = "{0}x{0}_{1}_point_lights".format(grid_lights_count, color)
 
 def build_project():
@@ -368,11 +368,11 @@ def generate_appleseed(assembly, orientation):
             if is_gray(light_color_template[i,j]):
                 color_name = "gray"
 
-            elif is_orange(light_color_template[i,j]):
-                color_name = "orange"
+            elif is_white(light_color_template[i,j]):
+                color_name = "white"
             
             else:
-                color_name = "white"
+                color_name = "orange"
 
             light_name = "light_" + str(light_count)
             light_count = light_count + 1
@@ -398,6 +398,12 @@ def is_orange(pxl):
     orange_c = range(16, 19)
 
     if pxl[0] == 255 and pxl[1] in orange_b and pxl[2] in orange_c:
+        return True
+
+    return False
+
+def is_white(pxl):
+    if pxl[0] == 0 == pxl[1] == pxl[2]:
         return True
 
     return False
