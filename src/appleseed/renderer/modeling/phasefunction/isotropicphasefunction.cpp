@@ -104,9 +104,9 @@ class IsotropicPhaseFunction
 
     virtual float sample_distance(
         SamplingContext&       sampling_context,
-        const ShadingRay&      volume_ray,
         const void*            data,
-        size_t                 channel,
+        const ShadingRay&      volume_ray,
+        const size_t           channel,
         float&                 distance
         ) const override
     {
@@ -127,8 +127,8 @@ class IsotropicPhaseFunction
 
     virtual float sample(
         SamplingContext&     sampling_context,
-        const ShadingRay&    volume_ray,
         const void*          data,
+        const ShadingRay&    volume_ray,
         const float          distance,
         Vector3f&            incoming) const override
     {
@@ -141,8 +141,8 @@ class IsotropicPhaseFunction
     }
 
     virtual float evaluate(
-        const ShadingRay&   volume_ray,
         const void*         data,
+        const ShadingRay&   volume_ray,
         const float         distance,
         const Vector3f&     incoming) const override
     {
@@ -150,29 +150,29 @@ class IsotropicPhaseFunction
     }
 
     virtual void evaluate_transmission(
-        const ShadingRay&     volume_ray,
         const void*           data,
+        const ShadingRay&     volume_ray,
         const float           distance,
         Spectrum&             spectrum) const override
     {
-        extinction_coefficient(volume_ray, data, distance, spectrum);
+        extinction_coefficient(data, volume_ray, distance, spectrum);
         for (size_t i = 0, e = spectrum.size(); i < e; ++i)
             spectrum[i] = std::exp(-distance * spectrum[i]);
     }
 
     virtual void evaluate_transmission(
-        const ShadingRay&     volume_ray,
         const void*           data,
+        const ShadingRay&     volume_ray,
         Spectrum&             spectrum) const override
     {
         const float distance = static_cast<float>(
             norm(volume_ray.m_dir) * (volume_ray.m_tmax - volume_ray.m_tmin));
-        evaluate_transmission(volume_ray, data, distance, spectrum);
+        evaluate_transmission(data, volume_ray, distance, spectrum);
     }
 
     virtual void scattering_coefficient(
-        const ShadingRay&     volume_ray,
         const void*           data,
+        const ShadingRay&     volume_ray,
         const float           distance,
         Spectrum&             spectrum) const override
     {
@@ -181,16 +181,16 @@ class IsotropicPhaseFunction
     }
 
     virtual const Spectrum& scattering_coefficient(
-        const ShadingRay&     volume_ray,
-        const void*           data) const override
+        const void*           data,
+        const ShadingRay&     volume_ray) const override
     {
         const InputValues* values = static_cast<const InputValues*>(data);
         return values->m_scattering;
     }
 
     virtual void absorption_coefficient(
-        const ShadingRay&    volume_ray,
         const void*          data,
+        const ShadingRay&    volume_ray,
         const float          distance,
         Spectrum&            spectrum) const override
     {
@@ -199,16 +199,16 @@ class IsotropicPhaseFunction
     }
 
     virtual const Spectrum& absorption_coefficient(
-        const ShadingRay&     volume_ray,
-        const void*           data) const override
+        const void*           data,
+        const ShadingRay&     volume_ray) const override
     {
         const InputValues* values = static_cast<const InputValues*>(data);
         return values->m_absorption;
     }
 
     virtual void extinction_coefficient(
-        const ShadingRay&    volume_ray,
         const void*          data,
+        const ShadingRay&    volume_ray,
         const float          distance,
         Spectrum&            spectrum) const override
     {
@@ -217,8 +217,8 @@ class IsotropicPhaseFunction
     }
 
     virtual const Spectrum& extinction_coefficient(
-        const ShadingRay&     volume_ray,
-        const void*           data) const override
+        const void*           data,
+        const ShadingRay&     volume_ray) const override
     {
         const InputValues* values = static_cast<const InputValues*>(data);
         return values->m_precomputed.m_extinction;
