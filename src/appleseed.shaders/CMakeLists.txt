@@ -299,6 +299,20 @@ source_group ("src\\gaffer\\vector" FILES
     ${src_gaffer_vector_sources}
 )
 
+set (src_max_sources
+     src/max/as_max_bump_map.osl
+     src/max/as_max_color_texture.osl
+     src/max/as_max_disney_material.osl
+     src/max/as_max_float_texture.osl
+     src/max/as_max_normal_map.osl
+)
+list (APPEND osl_sources
+    ${src_max_sources}
+)
+source_group ("src\\max" FILES
+    ${src_max_sources}
+)
+
 set (src_maya_sources
      src/maya/as_maya_addDoubleLinear.osl
      src/maya/as_maya_addMatrix.osl
