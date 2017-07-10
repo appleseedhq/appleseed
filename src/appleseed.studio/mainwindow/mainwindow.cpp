@@ -568,8 +568,7 @@ void MainWindow::build_python_console_panel()
 
 void MainWindow::build_project_explorer()
 {
-    m_ui->treewidget_project_explorer_scene->setColumnWidth(0, 220);    // name
-    m_ui->treewidget_project_explorer_scene->setColumnWidth(1, 75);     // render layer
+    m_ui->treewidget_project_explorer_scene->setColumnWidth(0, 295);    // name
 
     disable_osx_focus_rect(m_ui->treewidget_project_explorer_scene);
 

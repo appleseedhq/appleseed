@@ -201,7 +201,7 @@
         <bool>true</bool>
        </property>
        <property name="columnCount">
-        <number>2</number>
+        <number>1</number>
        </property>
        <attribute name="headerVisible">
         <bool>true</bool>
@@ -209,11 +209,6 @@
        <column>
         <property name="text">
          <string>Name</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Render Layer</string>
         </property>
        </column>
       </widget>

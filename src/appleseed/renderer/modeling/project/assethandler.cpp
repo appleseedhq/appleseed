@@ -34,7 +34,6 @@
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/project.h"
-#include "renderer/modeling/project/renderlayerrule.h"
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
@@ -156,7 +155,6 @@ bool AssetHandler::handle_assets() const
     if (frame)
         frame->collect_asset_paths(paths);
 
-    do_collect_asset_paths(paths, m_project.render_layer_rules());
     do_collect_asset_paths(paths, m_project.configurations());
 
     vector<string> unique_paths = array_vector<vector<string>>(paths);
@@ -187,7 +185,6 @@ bool AssetHandler::handle_assets() const
     if (frame)
         frame->update_asset_paths(mappings);
 
-    do_update_asset_paths(mappings, m_project.render_layer_rules());
     do_update_asset_paths(mappings, m_project.configurations());
 
     // If we copied all assets, we no longer need the absolute search paths, so remove them.
