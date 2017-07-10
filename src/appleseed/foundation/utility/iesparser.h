@@ -125,7 +125,7 @@ class IESParser
                                         // of the luminaire tilt angle (and TILT is not specified)
     };
 
-    // Lamp-to-luminaire geometry types. 
+    // Lamp-to-luminaire geometry types.
     // For more information, see the IESNA LM-63 specifications
     enum LampToLuminaireGeometry
     {
@@ -144,14 +144,14 @@ class IESParser
         PhotometricTypeA
     };
 
-    // Types of symmetry that candela values have with respect to horziontal angle 
+    // Types of symmetry that candela values have with respect to horziontal angle
     enum SymmetryType
     {
         NoSymmetry,
         SymmetricHalvesX,               // bilaterally symmetric about the 0-180 degree axis
         SymmetricHalvesY,               // bilaterally symmetric about the 90-270 degree axis
         SymmetricQuadrants,             // symmetric in each quadrant
-        FullySymmetric                  // full rotational symmetry 
+        FullySymmetric                  // full rotational symmetry
     };
 
     // Shape of luminous opening.

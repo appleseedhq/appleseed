@@ -32,7 +32,7 @@
 //      Texturing & Modeling: A Procedural Approach, 3rd edition,
 //      David Ebert, F.Kenton Musgrave, Darwyn Peachey, Ken Perlin,
 //      Steve Worley.
-//      ISBN: 9781558608481 
+//      ISBN: 9781558608481
 //
 
 #ifndef AS_FRACTAL_HELPERS_H
@@ -113,7 +113,7 @@ float metric_2D(
     float delta[2] = {
         test_position[0] - surface_position[0],
         test_position[1] - surface_position[1]}, dist;
-                        
+
     if (metric == 0)
     {
         dist = hypot(delta[0], delta[1]);
@@ -258,14 +258,14 @@ void voronoi_2D(
 
             test_position[1] = test_cell[1] + jittering *
                 (cellnoise(test_cell[0] + 42, test_cell[1] + 23) - 0.5);
-                    
+
             dist = metric_2D(
                 metric,
                 st,
                 test_position,
                 Minkowski_P,
                 Akritean_coverage);
-            
+
             if (dist < features[0])
             {
                 features[3] = features[2];
@@ -304,7 +304,7 @@ void voronoi_2D(
 
                 positions[3] = positions[2];
                 positions[2] = point(test_position[0], test_position[1], 0);
-                
+
                 cell_IDs[3] = cell_IDs[2];
                 cell_IDs[2] = cellnoise(test_position[0], test_position[1]);
             }
@@ -334,7 +334,7 @@ void voronoi_3D(
     point test_cell, test_position;
     point this_cell = point(floor(surface_point[0]) + 0.5,
                             floor(surface_point[1]) + 0.5,
-                            floor(surface_point[2]) + 0.5);   
+                            floor(surface_point[2]) + 0.5);
 
     for (int i = -1; i <= 1; ++i)
     {
@@ -346,7 +346,7 @@ void voronoi_3D(
 
                 test_position = test_cell + jittering *
                     ((vector) cellnoise(test_cell) - 0.5);
-                    
+
                 dist = metric_3D(
                     metric,
                     surface_point,

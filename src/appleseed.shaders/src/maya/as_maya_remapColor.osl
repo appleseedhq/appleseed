@@ -81,7 +81,7 @@ shader as_maya_remapColor
         string options = "None:0|Linear:1|Smooth:2|Spline:3",
         string label = "Green Interpolation",
         string page = "Green"
-    ]], 
+    ]],
     float in_blue_Position[] = {0}
     [[
         string as_maya_attribute_name = "blue",
@@ -119,7 +119,7 @@ shader as_maya_remapColor
         string as_maya_attribute_name = "outputMin",
         string label = "Output Min",
         string page = "Input And Output Attributes"
-    ]], 
+    ]],
     float in_outputMax = 0.0
     [[
         string as_maya_attribute_name = "outputMax",

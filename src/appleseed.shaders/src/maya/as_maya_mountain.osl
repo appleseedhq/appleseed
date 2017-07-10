@@ -103,7 +103,7 @@ shader as_maya_mountain
         string label = "Depth Max",
         string page = "Mountain Attributes"
     ]],
-    
+
     MAYA_COLORBALANCE_PARAMETERS,
     MAYA_EFFECTS_PARAMETERS,
     MAYA_UV_PARAMETERS,
@@ -152,7 +152,7 @@ shader as_maya_mountain
             NOISE_CUBE_SIDE * filter_size,
             NOISE_CUBE_SIDE * 1.0e-8,
             0.5);
-        
+
         float iterate = min(in_depthMax, -log(filter_size) / M_LN2);
 
         int recursion_level = (int) iterate;
@@ -179,7 +179,7 @@ shader as_maya_mountain
             vector slope = (vector) value_noise_2d(
                 st[0] * frequency + offset_x,
                 st[1] * frequency + offset_y);
-            
+
             offset_x += 0.1;
             offset_y += 0.03;
 

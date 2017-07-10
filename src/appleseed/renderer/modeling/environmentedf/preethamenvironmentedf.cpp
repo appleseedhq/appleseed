@@ -76,7 +76,7 @@ namespace
     //   http://www.cs.utah.edu/~shirley/papers/sunsky/sunsky.pdf
     //   http://www.cg.tuwien.ac.at/research/publications/2007/zotti-2007-wscg/zotti-2007-wscg-.pdf
     //   http://liveweb.archive.org/http://www.eisscholle.de/articles/daysky.pdf
-    //   http://igad2.nhtv.nl/ompf2/viewtopic.php?f=3&t=33
+    //   http://ompf2.com/viewtopic.php?f=3&t=33
     //
 
     const char* Model = "preetham_environment_edf";

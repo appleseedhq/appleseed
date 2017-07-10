@@ -57,7 +57,7 @@ foundation::Vector3d NonPhysicalLightSource::get_position() const
         light->get_transform()
             .get_local_to_parent()
             .extract_translation();
-    
+
     return position;
 }
 
@@ -104,7 +104,7 @@ foundation::Vector3d EmittingTriangleLightSource::get_position() const
 foundation::AABB3d EmittingTriangleLightSource::get_bbox() const
 {
     foundation::AABB3d bbox;
-    
+
     bbox.invalidate();
     bbox.insert(m_light->m_v0);
     bbox.insert(m_light->m_v1);

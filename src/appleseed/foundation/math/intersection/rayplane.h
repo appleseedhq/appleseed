@@ -54,6 +54,7 @@ bool intersect(
     const Vector<T, 3>&     normal,
     T&                      t);
 
+
 //
 // 3D ray-plane intersection implementation.
 //

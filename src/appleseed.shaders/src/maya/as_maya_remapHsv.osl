@@ -81,7 +81,7 @@ shader as_maya_remapHsv
         string options = "None:0|Linear:1|Smooth:2|Spline:3",
         string label = "Saturation Interpolation",
         string page = "Saturation"
-    ]], 
+    ]],
     float in_value_Position[] = {0}
     [[
         string as_maya_attribute_name = "value",
@@ -119,7 +119,7 @@ shader as_maya_remapHsv
         string as_maya_attribute_name = "outputMin",
         string label = "Output Min",
         string page = "Input And Output Attributes"
-    ]], 
+    ]],
     float in_outputMax = 0.0
     [[
         string as_maya_attribute_name = "outputMax",

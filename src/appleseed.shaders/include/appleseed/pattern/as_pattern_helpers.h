@@ -36,7 +36,7 @@
  *
  * $Revision: #1 $    $Date: 2009/03/10 $
  *
- ************************************************************************/ 
+ ************************************************************************/
 
 #ifndef AS_PATTERN_HELPERS_H
 #define AS_PATTERN_HELPERS_H
@@ -48,7 +48,7 @@
 //
 //      Towards Automatic Band-Limited Procedural Shaders
 //
-//      https://www.cs.virginia.edu/~connelly/publications/2015_bandlimit.pdf 
+//      https://www.cs.virginia.edu/~connelly/publications/2015_bandlimit.pdf
 //
 
 float filtered_abs(float x, float dx)

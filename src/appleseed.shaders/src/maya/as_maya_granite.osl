@@ -46,14 +46,14 @@ shader as_maya_granite
         string label = "Color 1",
         string page = "Granite Attributes"
     ]],
-    color in_color2 = color(0.549, 0.784, 0.392) 
+    color in_color2 = color(0.549, 0.784, 0.392)
     [[
         string as_maya_attribute_name = "color2",
         string as_maya_attribute_name_short = "c2",
         string label = "Color 2",
         string page = "Granite Attributes"
     ]],
-    color in_color3 = color(0.627, 0.824, 0.823) 
+    color in_color3 = color(0.627, 0.824, 0.823)
     [[
         string as_maya_attribute_name = "color3",
         string as_maya_attribute_name_short = "c3",

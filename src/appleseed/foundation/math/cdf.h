@@ -135,6 +135,7 @@ T invert_cdf_function(
     const T             eps,                // root precision
     const size_t        max_iterations);    // max root refinement iterations
 
+
 //
 // CDF class implementation.
 //

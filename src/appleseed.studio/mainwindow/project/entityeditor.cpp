@@ -689,7 +689,7 @@ void EntityEditor::slot_open_color_picker(const QString& widget_name)
     dialog->setOptions(QColorDialog::DontUseNativeDialog);
 
     ForwardColorChangedSignal* forward_signal =
-        new ForwardColorChangedSignal(dialog, widget_name, color_to_qcolor(initial_color));  
+        new ForwardColorChangedSignal(dialog, widget_name, color_to_qcolor(initial_color));
     connect(
         dialog, SIGNAL(currentColorChanged(const QColor&)),
         forward_signal, SLOT(slot_color_changed(const QColor&)));

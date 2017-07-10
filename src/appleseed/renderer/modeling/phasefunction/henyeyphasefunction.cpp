@@ -85,7 +85,7 @@ class HenyeyPhaseFunction
     {
         return Model;
     }
-        
+
     virtual bool is_homogeneous() const
     {
         return true;

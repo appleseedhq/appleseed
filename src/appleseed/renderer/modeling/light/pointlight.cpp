@@ -120,6 +120,22 @@ namespace
         virtual void sample(
             const ShadingContext&   shading_context,
             const Transformd&       light_transform,
+            const Vector3d&         target_point,
+            const Vector2d&         s,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            float&                  probability) const override
+        {
+            position = light_transform.get_parent_origin();
+            outgoing = normalize(target_point - position);
+            value = m_values.m_intensity;
+            probability = 1.0f;
+        }
+
+        virtual void sample(
+            const ShadingContext&   shading_context,
+            const Transformd&       light_transform,
             const Vector2d&         s,
             Vector3d&               position,
             Vector3d&               outgoing,
@@ -130,19 +146,6 @@ namespace
             outgoing = sample_sphere_uniform(s);
             value = m_values.m_intensity;
             probability = RcpFourPi<float>();
-        }
-
-        virtual void evaluate(
-            const ShadingContext&   shading_context,
-            const Transformd&       light_transform,
-            const Vector3d&         target,
-            Vector3d&               position,
-            Vector3d&               outgoing,
-            Spectrum&               value) const override
-        {
-            position = light_transform.get_parent_origin();
-            outgoing = normalize(target - position);
-            value = m_values.m_intensity;
         }
 
         float compute_distance_attenuation(

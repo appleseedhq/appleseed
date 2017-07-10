@@ -130,7 +130,7 @@ shader as_luminance
     ]],
 
     MAYA_COLORMANAGEMENT_PARAMETERS,
-    
+
     output float out_result = 0.0
     [[
         string as_maya_attribute_name = "result",

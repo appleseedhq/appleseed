@@ -25,7 +25,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
- 
+
 #ifndef AS_MAYA_FRACTAL_HELPERS_H
 #define AS_MAYA_FRACTAL_HELPERS_H
 
@@ -305,7 +305,7 @@ float billow_noise_2d(
     int current_step,
     int falloff_mode)
 {
-    float jittering = 0.5 * randomness, inv_spottyness = 1.0 - spottyness; 
+    float jittering = 0.5 * randomness, inv_spottyness = 1.0 - spottyness;
     float blob_density = min(density, 2.0 - randomness), falloff;
 
     if (density < blob_density)
@@ -327,7 +327,7 @@ float billow_noise_2d(
 
     int x_cell_index = (int) lattice_x, nx;
     int y_cell_index = (int) lattice_y, ny;
-    
+
     float sum = 0.0;
 
     for (int dy = -1; dy <= 1; dy++)
@@ -374,7 +374,7 @@ float billow_noise_2d(
 
             float sample_distance = blob_size * (
                 sqr(x_sample_distance) + sqr(y_sample_distance));
-            
+
             if (size_randomness > 0.0)
             {
                 sample_distance /= (random_noise(index++) + 1.0) *
@@ -433,7 +433,7 @@ float billow_noise_3d(
     int current_step,
     int falloff_mode)
 {
-    float jittering = 0.5 * randomness, inv_spottyness = 1.0 - spottyness; 
+    float jittering = 0.5 * randomness, inv_spottyness = 1.0 - spottyness;
     float blob_density = min(density, 2.0 - randomness), falloff;
 
     if (density < blob_density)
@@ -458,7 +458,7 @@ float billow_noise_3d(
     int x_cell_index = (int) lattice_x, nx;
     int y_cell_index = (int) lattice_y, ny;
     int z_cell_index = (int) lattice_z, nz;
-    
+
     float sum = 0.0;
 
     for (int dz = -1; dz <= 1; dz++)
@@ -501,7 +501,7 @@ float billow_noise_3d(
                 {
                     nx += MAYA_LATTICE_SIZE;
                 }
-                
+
                 int index = nx + ny;
 
                 float pos_x =
@@ -520,11 +520,11 @@ float billow_noise_3d(
                 float x_sample_distance = cell_x - (float) dx - pos_x;
                 float y_sample_distance = cell_y - (float) dy - pos_y;
                 float z_sample_distance = cell_z - (float) dz - pos_z;
-            
+
                 float sample_distance = blob_size * (
                     sqr(x_sample_distance) + sqr(y_sample_distance) +
                     sqr(z_sample_distance));
-            
+
                 if (size_randomness > 0.0)
                 {
                     sample_distance /= (random_noise(index++) + 1.0) *
@@ -711,7 +711,7 @@ float maya_billow_noise_3d(
 //
 //      Box and sphere folding: What is a Mandelbox, Tom Lowe
 //      https://sites.google.com/site/mandelbox/what-is-a-mandelbox
-//      
+//
 //      The Mandelbox Set, Rudi Chen
 //      http://digitalfreepen.com/mandelbox370/
 //
@@ -782,7 +782,7 @@ void compute_mandelbox(
             sqr_box_min_radius,
             sqr_box_radius,
             tmp_Z);
-        
+
         tmp_Z.real = box_ratio * tmp_Z.real + C_Z.real;
         tmp_Z.imag = box_ratio * tmp_Z.imag + C_Z.imag;
         iteration++;
@@ -803,9 +803,9 @@ void compute_mandelbrot(
     output float min_radius)
 {
     Complex Z2, tmp_Z = Z;
-    
+
     while (iteration < iteration_depth && sqr_distance <= sqr_escape_radius)
-    { 
+    {
         if (lobes.real == 2)
         {
             square_complex(tmp_Z);
@@ -989,7 +989,7 @@ float recurrence(
     }
 
     int nb1 = nb - 1, gainin = 0x1;
-    float out_recurrence = 0;    
+    float out_recurrence = 0;
 
     for (int i = 0; i < nb; i++, gainin <<= 1)
     {

@@ -140,7 +140,7 @@ namespace
     }
 
     // Split string and convert it to the vector of values.
-    // Returns false, if one of the tokens cannot be converted 
+    // Returns false, if one of the tokens cannot be converted
     // to the value of specified type.
     template <typename ValueType>
     bool string_to_vector(

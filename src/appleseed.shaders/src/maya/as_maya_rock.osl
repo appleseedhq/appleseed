@@ -63,7 +63,7 @@ float cycloid(float x)
 {
     float u1 = x - (int) x;
     u1 += (u1 < 0.0) ? 0.5 : -0.5;
-    
+
     return sqr(u1) * -4 + 1;
 }
 
@@ -200,7 +200,7 @@ shader as_maya_rock
 
         point xyz = abs(Pp + 100) / max(EPS, in_grainSize);
         point tx1 = trunc(xyz), tx2, inv;
-        
+
         xyz -= tx1;
         tx1 *= in_grainSize;
         tx2 = tx1 + in_grainSize;

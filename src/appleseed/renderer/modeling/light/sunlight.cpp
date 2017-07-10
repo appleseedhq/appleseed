@@ -46,6 +46,7 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
 
@@ -72,7 +73,7 @@ namespace
     // References:
     //
     //   http://www.cs.utah.edu/~shirley/papers/sunsky/sunsky.pdf
-    //   http://igad2.nhtv.nl/ompf2/viewtopic.php?f=3&t=33
+    //   http://ompf2.com/viewtopic.php?f=3&t=33
     //
 
     const char* Model = "sun_light";
@@ -96,6 +97,7 @@ namespace
             m_inputs.declare("environment_edf", InputFormatEntity, "");
             m_inputs.declare("turbidity", InputFormatFloat);
             m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("size_multiplier", InputFormatFloat, "1.0");
         }
 
         virtual void release() override
@@ -128,6 +130,17 @@ namespace
             // Apply turbidity bias.
             m_values.m_turbidity += BaseTurbidity;
 
+            const Source* size_multiplier_src = get_inputs().source("size_multiplier");
+            assert(size_multiplier_src != nullptr);
+            if (size_multiplier_src->is_uniform())
+                size_multiplier_src->evaluate_uniform(m_values.m_size_multiplier);
+            else
+            {
+                RENDERER_LOG_WARNING(
+                    "size multiplier of the sun light \"%s\" is not uniform.",
+                    get_path().c_str());
+            }
+
             const Scene::RenderData& scene_data = project.get_scene()->get_render_data();
             m_scene_center = Vector3d(scene_data.m_center);
             m_scene_radius = scene_data.m_radius;
@@ -147,11 +160,33 @@ namespace
             Spectrum&               value,
             float&                  probability) const override
         {
+            // todo: we need to choose a random direction as well in order to get
+            // soft shadows when using photon mapping.
             sample_disk(
                 light_transform,
                 s,
                 m_scene_center,
                 m_scene_radius,
+                position,
+                outgoing,
+                value,
+                probability);
+        }
+
+        virtual void sample(
+            const ShadingContext&   shading_context,
+            const Transformd&       light_transform,
+            const Vector3d&         target_point,
+            const Vector2d&         s,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            float&                  probability) const override
+        {
+            sample_sun_surface(
+                light_transform,
+                target_point,
+                s,
                 position,
                 outgoing,
                 value,
@@ -201,26 +236,6 @@ namespace
             }
         }
 
-        virtual void evaluate(
-            const ShadingContext&   shading_context,
-            const Transformd&       light_transform,
-            const Vector3d&         target,
-            Vector3d&               position,
-            Vector3d&               outgoing,
-            Spectrum&               value) const override
-        {
-            outgoing = -normalize(light_transform.get_parent_z());
-            position = target - m_safe_scene_diameter * outgoing;
-
-            compute_sun_radiance(
-                outgoing,
-                m_values.m_turbidity,
-                m_values.m_radiance_multiplier,
-                value);
-
-            value *= SunSolidAngle;
-        }
-
         virtual float compute_distance_attenuation(
             const Vector3d&         target,
             const Vector3d&         position) const override
@@ -233,6 +248,7 @@ namespace
         {
             float       m_turbidity;                // atmosphere turbidity
             float       m_radiance_multiplier;      // emitted radiance multiplier
+            float       m_size_multiplier;          // sun size multiplier
         };
 
         Vector3d        m_scene_center;             // world space
@@ -397,6 +413,14 @@ namespace
             radiance *= radiance_multiplier;
         }
 
+        static double compute_sun_radius(const double distance)
+        {
+            // angular diameter = sun diameter / distance -> sun diameter = angular diameter * distance
+            // sun diameter = 0.009301 radians * distance
+            // sun radius = 0.0046505 radians * distance
+            return 0.0046505 * distance;
+        }
+
         void sample_disk(
             const Transformd&       light_transform,
             const Vector2d&         s,
@@ -427,6 +451,53 @@ namespace
                 value);
 
             value *= SunSolidAngle;
+        }
+
+        void sample_sun_surface(
+            const Transformd&       light_transform,
+            const Vector3d&         target_point,
+            const Vector2d&         s,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            float&                  probability) const
+        {
+            outgoing = -normalize(light_transform.get_parent_z());
+
+            const Basis3d basis(outgoing);
+            const Vector2d p = sample_disk_uniform(s);
+            const double sun_radius = compute_sun_radius(m_scene_radius) * m_values.m_size_multiplier;
+
+            position =
+                  m_scene_center
+                - m_safe_scene_diameter * basis.get_normal()
+                + sun_radius * p[0] * basis.get_tangent_u()
+                + sun_radius * p[1] * basis.get_tangent_v();
+
+            outgoing = normalize(target_point - position);
+
+            compute_sun_radiance(
+                outgoing,
+                m_values.m_turbidity,
+                m_values.m_radiance_multiplier,
+                value);
+
+            value *= SunSolidAngle;
+
+            //
+            // The sun is represented by a disk of finite radius. The sun's illumination
+            // at a given point of the scene is computed by integrating the sun's
+            // contribution over that disk. The probability density of a given sample on
+            // that disk is 1 / sun's disk surface area.
+            //
+            // Since compute_sun_radiance() assumes that the sun is reduced to a point
+            // infinitely far away, it's really returning an irradiance, and we need to
+            // convert it back to a radiance by dividing its return value by the surface
+            // area of the sun's disk, which is equivalent to multiplying the probability
+            // density by the sun disk's surface area, which leaves us with probability = 1.
+            //
+
+            probability = 1.0f;
         }
     };
 }
@@ -491,6 +562,23 @@ DictionaryArray SunLightFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("help", "Light intensity multiplier"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "size_multiplier")
+            .insert("label", "Size Multiplier")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "100.0")
+                    .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", "1.0")
+            .insert("help", "The size multiplier allows to make the sun bigger or smaller, hence making it cast softer or harder shadows"));
 
     add_common_input_metadata(metadata);
 

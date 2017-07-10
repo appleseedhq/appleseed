@@ -271,8 +271,8 @@ const ShadingPoint& Tracer::do_trace_between(
         Alpha alpha;
         evaluate_alpha(*material, *shading_point_ptr, alpha);
         if (
-            render_data.m_bsdf == nullptr && 
-            render_data.m_bssrdf == nullptr && 
+            render_data.m_bsdf == nullptr &&
+            render_data.m_bssrdf == nullptr &&
             render_data.m_phase_function != nullptr)
         {
             alpha[0] = 0.0f;

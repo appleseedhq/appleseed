@@ -43,7 +43,7 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 
     //                 .         |
     //                 .     __  |
-    //                 .    |  | | 
+    //                 .    |  | |
     //  --10-9---------4----2--1---1--2-----
     //    |__|         .         | |__|
     //                 .         |
@@ -52,7 +52,7 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 
     TEST_CASE(Partition_BBoxesOrderedAlongLongestDimension_ReturnsFirstElementAfterCenter)
     {
-        const AABB2dVector bboxes = 
+        const AABB2dVector bboxes =
             {
                 AABB2d(Vector2d(-10.0, -1.0 ), Vector2d( -9.0,  0.0 )),
                 AABB2d(Vector2d( -2.0,  0.0 ), Vector2d( -1.0,  1.0 )),
@@ -69,9 +69,9 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 
     //                 .         |  __
     //                 .     __  | |__|
-    //                 .    |  | | 
+    //                 .    |  | |
     //  --10-9---------4----2--1---1--2-----
-    //    |__|         .         | 
+    //    |__|         .         |
     //                 .         |
     //                 .         |
     //     [1]               [0]    [2]
@@ -94,11 +94,11 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
     }
 
     //      [0]    [2]
-    //      __  |  __ 
+    //      __  |  __
     //     |__| | |__|
-    //          | 
+    //          |
     //  ---2--1---1--2---
-    //      __  |  __ 
+    //      __  |  __
     //     |__| | |__|
     //          |
     //      [1]    [3]
@@ -115,19 +115,19 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 
         MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
         const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
-        
+
         const size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
-        
+
         EXPECT_EQ(2, pivot);
     }
 
     //      [0]    [2]
-    //      __  |  __ 
+    //      __  |  __
     //     |__| | |__|
-    //          | 
+    //          |
     //  ---2--1---1--2---
-    //         _|_     
-    //        |_|_|     
+    //         _|_
+    //        |_|_|
     //          |
     //         [1]
 
@@ -142,9 +142,9 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
 
         MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
         const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
-        
+
         const size_t pivot = partitioner.partition(0, bboxes.size(), root_bbox);
-        
+
         EXPECT_EQ(1, pivot);
     }
 
@@ -157,14 +157,14 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
                 AABB2d(Vector2d(-1.0,-1.0 ), Vector2d( 1.0, 1.0 )),
                 AABB2d(Vector2d(-1.0,-1.0 ), Vector2d( 1.0, 1.0 ))
             };
-        
+
         MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
         const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
-        
+
         const size_t pivot1 = partitioner.partition(0, bboxes.size(), root_bbox);
         // Check partitioning in case the begin is not 0.
         const size_t pivot2 = partitioner.partition(2, bboxes.size(), root_bbox);
-        
+
         EXPECT_EQ(2, pivot1);
         EXPECT_EQ(3, pivot2);
     }

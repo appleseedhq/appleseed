@@ -89,7 +89,7 @@ void get_illuminant_xyY(string illuminant, output float white_xy[2])
 //
 //      http://www.poynton.com/PDFs/coloureq.pdf
 //      http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_xyY.html
-//      
+//
 
 color transform_XYZ_to_xyY(color XYZ, float white_xy[2])
 {
@@ -403,7 +403,7 @@ color transform_linear_RGB_to_XYZ(
         dot(source_RGB_to_XYZ[2], (vector) linear_RGB_color));
 
     return (color) max(0.0, XYZ);
-} 
+}
 
 color transform_XYZ_to_linear_RGB(
     color XYZ,
@@ -426,7 +426,7 @@ color transform_XYZ_to_linear_RGB(
 //
 // Reference:
 //
-//      "Design of Advanced Color Temperature Control Systems for HTDV 
+//      "Design of Advanced Color Temperature Control Systems for HTDV
 //      Applications"
 //      Bongsoon Kang, Ohak Moon, Changhee Hong, Honam Lee, Bonghwan Cho,
 //      Youngsun Kim
@@ -636,7 +636,7 @@ color transform_XYZ_to_Luv(color XYZ_color, string illuminant)
 //
 //      CIE 1976 L*u*v* | CIELUV to XYZ
 //      Colorimetry - Part 5: CIE 1976 L*u*v* colour space and u',v'
-//      Uniform Chromaticity Scale Diagram 
+//      Uniform Chromaticity Scale Diagram
 //
 //      http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_Luv.html
 //      http://www.brucelindbloom.com/LContinuity.html
@@ -686,11 +686,11 @@ color transform_Luv_to_XYZ(color Luv, string illuminant)
 //
 //      CIE 1976 L*a*b* to LCh_ab equations
 //      Colorimetry - Part 4: CIE 1976 L*a*b* colour space
-//      
+//
 //      http://www.brucelindbloom.com/index.html?Eqn_Lab_to_LCH.html
 //      http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_Luv.html
-//      http://cie.co.at/index.php?i_ca_id=485      
-//      
+//      http://cie.co.at/index.php?i_ca_id=485
+//
 //      Lightness in [0,100], Chroma in [0,100], hue angle in [0,360] degrees
 //      ranges.
 //
@@ -777,7 +777,7 @@ color transform_LCh_ab_to_linear_RGB(
 //
 //      Lightness in [0,100], Chroma in [0,100], hue angle in [0,360] degrees
 //      ranges
-//      
+//
 
 color transform_Luv_to_LCh_uv(color Luv)
 {
@@ -1065,7 +1065,7 @@ color transform_HSV_to_RGB(color HSV)
     }
 
     return color(r, g, b);
-} 
+}
 
 color transform_HSL_to_RGB(color HSL)
 {
@@ -1114,7 +1114,7 @@ color transform_HSL_to_RGB(color HSL)
 float deltaE_CIEDE2000(
     color   reference_Lab,
     color   sampleval_Lab)
-{   
+{
     float reference_L = reference_Lab[0];
     float reference_a = reference_Lab[1];
     float reference_b = reference_Lab[2];

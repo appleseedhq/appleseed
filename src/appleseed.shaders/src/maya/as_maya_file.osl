@@ -251,7 +251,7 @@ shader as_maya_file
     else
     {
         int channels = 0;
-        int size[2] = {0,0};
+        int size[2] = {0, 0};
 
         gettextureinfo(in_fileTextureName, "channels", channels);
         gettextureinfo(in_fileTextureName, "resolution", size);
@@ -266,7 +266,7 @@ shader as_maya_file
 
         if (in_uvTilingMode != 0)
         {
-            st[0] = u; // bypass mod(u,1+eps) from place2d node (for tiling)
+            st[0] = u; // bypass mod(u, 1+eps) from place2d node (for tiling)
             st[1] = v;
             filename = in_computedFileTextureNamePattern;
         }

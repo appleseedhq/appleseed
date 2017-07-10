@@ -125,7 +125,7 @@ void divide_complex(
 
     quotient.real = (numerator.real * denominator.real +
                      numerator.imag * denominator.imag) / denom;
-                     
+
     quotient.imag = (numerator.imag * denominator.real -
                      numerator.real * denominator.imag) / denom;
 }
@@ -138,7 +138,7 @@ float abs_complex(Complex Z)
 void inverse_complex(output Complex Z)
 {
     float denom = sqr(Z.real) + sqr(Z.imag);
-    
+
     Z.real = Z.real / denom;
     Z.imag = -Z.imag / denom;
 }

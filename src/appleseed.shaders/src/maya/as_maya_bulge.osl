@@ -51,7 +51,7 @@ shader as_maya_bulge
     MAYA_COLORBALANCE_PARAMETERS,
     MAYA_EFFECTS_PARAMETERS,
     MAYA_UV_PARAMETERS,
-    
+
     output color out_outColor = color(0.0)
     [[
         string as_maya_attribute_name = "outColor",

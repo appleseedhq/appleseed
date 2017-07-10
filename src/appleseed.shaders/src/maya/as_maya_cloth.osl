@@ -162,7 +162,7 @@ shader as_maya_cloth
 
         float uu = mod(st[0], 1);
         float vv = mod(st[1], 1);
-        
+
         int flipped, u_thread;
 
         if ((vv < 0.5 && uu >= 0.5) || (vv >= 0.5 && uu <= 0.5))

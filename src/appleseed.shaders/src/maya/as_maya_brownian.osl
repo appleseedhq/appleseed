@@ -67,7 +67,7 @@ shader as_maya_brownian
         string as_maya_attribute_name = "weight3d",
         string label = "Weight 3D",
         string page = "Brownian Attributes"
-    ]], 
+    ]],
     matrix in_placementMatrix = matrix(1)
     [[
         string as_maya_attribute_name = "placementMatrix",
@@ -124,7 +124,7 @@ shader as_maya_brownian
     else
     {
         float filter_width = 0.0;
-        
+
         if (in_filter > 0.0)
         {
             filter_width = in_filter * max(EPS, sqrt(area(Pp)));
@@ -134,7 +134,7 @@ shader as_maya_brownian
         Pp *= in_weight3d;
 
         float frequency = 1.0, factor = 1.0, out = 0.0;
-        float iterate = -log2(filter_width);        
+        float iterate = -log2(filter_width);
         iterate = (iterate < in_octaves) ? iterate : in_octaves; // lowpass
 
         for (int i = 0; i < iterate + 1; ++i)

@@ -87,7 +87,7 @@ shader as_maya_bump3d
     else
     {
         float bump_depth = abs(in_bumpDepth);
-        
+
         // Halve the bump value to avoid excess clamp.
         float bump_offset = clamp(
             in_bumpValue * 0.5 * in_bumpDepth, -bump_depth, bump_depth);

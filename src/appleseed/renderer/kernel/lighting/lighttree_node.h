@@ -29,16 +29,12 @@
 #ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTREE_NODE_H
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTREE_NODE_H
 
-// appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
-#include "renderer/kernel/lighting/lighttypes.h"
-
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
 
 // Standard headers.
-#include  <cstddef>
+#include <cstddef>
 
 namespace renderer
 {
@@ -47,13 +43,13 @@ namespace renderer
 // LightTreeNode class implementation.
 //
 
-template<typename AABB> 
+template <typename AABB>
 class LightTreeNode
-    : public foundation::bvh::Node<AABB>
+  : public foundation::bvh::Node<AABB>
 {
   public:
     LightTreeNode()
-      : m_node_luminance(0)
+      : m_node_luminance(0.0f)
     {
     }
 
@@ -76,7 +72,7 @@ class LightTreeNode
     {
         m_node_level = node_level;
     }
-  
+
   private:
     float  m_node_luminance;
     size_t m_node_level;

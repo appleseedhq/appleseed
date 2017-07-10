@@ -227,7 +227,7 @@ class LightSampler
 
     EmittingTriangleKeyHasher   m_triangle_key_hasher;
     EmittingTriangleHashTable   m_emitting_triangle_hash_table;
-    
+
     LightTree                   m_light_tree;
 
     // Recursively collect non-physical lights from a given set of assembly instances.

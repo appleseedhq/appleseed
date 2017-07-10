@@ -201,7 +201,7 @@ void LightSampler::collect_non_physical_lights(
             // Copy the light into the light vector.
             const size_t light_index = m_non_physical_lights.size();
             m_non_physical_lights.push_back(light_info);
-    
+
             // Insert the light into the CDF.
             // todo: compute importance.
             float importance = 1.0f;
@@ -571,7 +571,7 @@ void LightSampler::sample(
     // Randomly select one of the group which will be sampled.
     const size_t selected_index = truncate<size_t>(s[0] * candidate_groups_count);
     const size_t selected_type  = candidate_groups[selected_index];
-    
+
     // Avoid bias propagation by expanding the chosen interval back to [0,1].
     float probability_interval_shift = (s[0] - selected_index / candidate_groups_count) * candidate_groups_count;
 

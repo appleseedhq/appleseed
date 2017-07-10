@@ -194,7 +194,7 @@ shader as_maya_solidFractal
     else if (in_amplitude > 0.0 && in_bias > -1.0)
     {
         float filter_width = 0.0;
-        
+
         if (in_filter > 0.0)
         {
             filter_width = in_filter * max(EPS, sqrt(area(Pp)));
@@ -224,7 +224,7 @@ shader as_maya_solidFractal
         iterate = clamp(iterate, in_depth[0], in_depth[1]);
 
         int max_iteration = (int) floor(iterate);
-        
+
         vector frequency = ripples * 0.5; // better match with .5 factor
         vector offset = vector(0);
 
@@ -285,7 +285,7 @@ shader as_maya_solidFractal
             }
 
             out_value += amplitude * val;
-            
+
             frequency *= in_frequencyRatio;
             anim_time *= in_timeRatio;
             amplitude *= in_ratio;
