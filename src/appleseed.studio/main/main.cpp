@@ -298,7 +298,7 @@ int main(int argc, char* argv[])
     //
     // Issue is reported and tracked at GitHub under reference #1435.
     {
-    QImageReader qimReader("../../appleseed/sandbox/icons/project_new_hover.png"); // any image
+    QImageReader qimReader(make_app_path("icons/icon.png")); // any image
     qimReader.read();
     }
 
