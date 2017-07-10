@@ -44,6 +44,7 @@ import appleseed as asr
 grid_lights_count = 100
 color = "white"
 plane_size = 100
+light_z_distance = 0.2
 output_scene_name = "{0}x{0}_{1}_point_lights".format(grid_lights_count, color)
 
 def build_project():
@@ -139,71 +140,15 @@ def build_project():
     #------------------------------------------------------------------------
     # Lights
     #------------------------------------------------------------------------
-    light_z_distance = 0.2
-
     if color == "white":
-        assembly.colors().insert(asr.ColorEntity("white",
-                                            {
-                                                "color_space": "linear_rgb",
-                                                "multiplier": 0.5
-                                            },
-                                            [1.0, 1.0, 1.0]))
-
-        step = float(plane_size) / grid_lights_count
-        light_count = 0
-        grid_range = np.linspace(-plane_size / 2 + step, plane_size / 2 - step, grid_lights_count)
-
-        for j in grid_range:
-            for i in grid_range:
-                # Create a point light called "light" and insert it into the assembly.
-                light_name = "light_" + str(light_count)
-                light_count = light_count + 1
-                light = asr.Light("point_light", light_name, {
-                                                                "intensity": "white",
-                                                                "intensity_multiplier": "0.1"
-
-                                                             })
-                light_position = asr.Vector3d(i, j, light_z_distance)
-                mat = orientation * asr.Matrix4d.make_translation(light_position)
-                light.set_transform(asr.Transformd(mat))
-                assembly.lights().insert(light)
+        generate_white(assembly, orientation)
 
     elif color == "mix":
-        for i in xrange(0, grid_lights_count * grid_lights_count):
-            s = random.uniform(0, 1)
-            if s < 0.65:
-                ran = random.gauss(1, 0.01)
-            elif s < 0.9:
-                ran = random.gauss(0.3, 0.1)
-            else:
-                ran = random.gauss(0.7, 0.01)
-            random_color = list(colorsys.hls_to_rgb(ran, 0.5, 1.0))
-            assembly.colors().insert(asr.ColorEntity("color_" + str(i),
-                                                {
-                                                    "color_space": "linear_rgb",
-                                                    "multiplier": 1.0
-                                                },
-                                                random_color))
+        generate_mix(assembly, orientation)
 
-        step = float(plane_size) / grid_lights_count
-        light_count = 0
-        grid_range = np.linspace(-plane_size / 2 + step, plane_size / 2 - step, grid_lights_count)
-
-        for j in grid_range:
-            for i in grid_range:
-                # Create a point light called "light" and insert it into the assembly.
-                light_name = "light_" + str(light_count)
-                color_name = "color_" + str(light_count)
-                light_count = light_count + 1
-                light = asr.Light("point_light", light_name, {
-                                                                "intensity": color_name,
-                                                                "intensity_multiplier": "3"
-
-                                                             })
-                light_position = asr.Vector3d(i, j, light_z_distance)
-                mat = orientation * asr.Matrix4d.make_translation(light_position)
-                light.set_transform(asr.Transformd(mat))
-                assembly.lights().insert(light)
+    elif color == "appleseed":
+        generate_appleseed()
+        
     else:
         print("Unknown color: {0}".format(color))
         return
@@ -271,6 +216,74 @@ def build_project():
     project.set_scene(scene)
 
     return project
+
+def generate_white(assembly, orientation):
+    assembly.colors().insert(asr.ColorEntity("white",
+                                            {
+                                                "color_space": "linear_rgb",
+                                                "multiplier": 0.5
+                                            },
+                                            [1.0, 1.0, 1.0]))
+
+    step = float(plane_size) / grid_lights_count
+    light_count = 0
+    grid_range = np.linspace(-plane_size / 2 + step, plane_size / 2 - step, grid_lights_count)
+
+    for j in grid_range:
+        for i in grid_range:
+            # Create a point light called "light" and insert it into the assembly.
+            light_name = "light_" + str(light_count)
+            light_count = light_count + 1
+            light = asr.Light("point_light", light_name, {
+                                                            "intensity": "white",
+                                                            "intensity_multiplier": "0.1"
+
+                                                         })
+            light_position = asr.Vector3d(i, j, light_z_distance)
+            mat = orientation * asr.Matrix4d.make_translation(light_position)
+            light.set_transform(asr.Transformd(mat))
+            assembly.lights().insert(light)
+
+def generate_mix(assembly, orientation):
+    for i in xrange(0, grid_lights_count * grid_lights_count):
+        s = random.uniform(0, 1)
+        if s < 0.65:
+            ran = random.gauss(1, 0.01)
+        elif s < 0.9:
+            ran = random.gauss(0.3, 0.1)
+        else:
+            ran = random.gauss(0.7, 0.01)
+        random_color = list(colorsys.hls_to_rgb(ran, 0.5, 1.0))
+        assembly.colors().insert(asr.ColorEntity("color_" + str(i),
+                                            {
+                                                "color_space": "linear_rgb",
+                                                "multiplier": 1.0
+                                            },
+                                            random_color))
+
+    step = float(plane_size) / grid_lights_count
+    light_count = 0
+    grid_range = np.linspace(-plane_size / 2 + step, plane_size / 2 - step, grid_lights_count)
+
+    for j in grid_range:
+        for i in grid_range:
+            # Create a point light called "light" and insert it into the assembly.
+            light_name = "light_" + str(light_count)
+            color_name = "color_" + str(light_count)
+            light_count = light_count + 1
+            light = asr.Light("point_light", light_name, {
+                                                            "intensity": color_name,
+                                                            "intensity_multiplier": "3"
+
+                                                         })
+            light_position = asr.Vector3d(i, j, light_z_distance)
+            mat = orientation * asr.Matrix4d.make_translation(light_position)
+            light.set_transform(asr.Transformd(mat))
+            assembly.lights().insert(light)
+
+def generate_appleseed():
+    # Generate lights colored so that they form the appleseed logo.
+    i = 0
 
 def main():
     # Build the project.
