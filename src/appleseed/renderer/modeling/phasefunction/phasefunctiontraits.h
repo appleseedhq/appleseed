@@ -68,16 +68,16 @@ struct EntityTraits<PhaseFunction>
 
     template <typename ParentEntity>
     static void insert_entity(
-        foundation::auto_release_ptr<PhaseFunction>  entity,
-        ParentEntity&                                parent)
+        foundation::auto_release_ptr<PhaseFunction> entity,
+        ParentEntity&                               parent)
     {
         get_entity_container(parent).insert(entity);
     }
 
     template <typename ParentEntity>
     static void remove_entity(
-        PhaseFunction*                      entity,
-        ParentEntity&                       parent)
+        PhaseFunction*                              entity,
+        ParentEntity&                               parent)
     {
         get_entity_container(parent).remove(entity);
     }

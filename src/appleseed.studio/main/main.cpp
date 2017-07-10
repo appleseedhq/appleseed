@@ -292,15 +292,8 @@ int main(int argc, char* argv[])
     // This is a dirty fix which loads any image at the very beginning and
     // resets the locale right after, thus preventing the `QImageReader.read()`
     // to change it again (as it happens only on the very first `read`).
-    //
-    // In appleseed.studio code the locale change occurs in `miscellaneous.cpp`,
-    // `load_icons()`, line 170.
-    //
-    // Issue is reported and tracked at GitHub under reference #1435.
-    {
-    QImageReader qimReader(make_app_path("icons/icon.png")); // any image
-    qimReader.read();
-    }
+    // Issue reported and tracked on GitHub under reference #1435.
+    QImageReader(make_app_path("icons/icon.png")).read();   // any image
 
     check_installation();
 

@@ -63,7 +63,7 @@ APPLESEED_DECLARE_INPUT_VALUES(IsotropicPhaseFunctionInputValues)
 
     struct Precomputed
     {
-        Spectrum       m_extinction;    // extinction coefficient of the media
+        Spectrum       m_extinction;        // extinction coefficient of the media
     };
 
     Precomputed m_precomputed;
