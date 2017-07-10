@@ -38,13 +38,17 @@ import threading
 import os
 import numpy as np
 
+# Generating appleseed logo with point lights requires SciPy and Pillow deps.
+from scipy import misc
+
 import appleseed as asr
 
-# Initial parameters for generating grid light scene
+# Initial grid light scene parameters.
 grid_lights_count = 100
-color = "white"
+color = "appleseed"
 plane_size = 100
-light_z_distance = 0.2
+color_multiplier = 0.001
+light_z_distance = 0.5
 output_scene_name = "{0}x{0}_{1}_point_lights".format(grid_lights_count, color)
 
 def build_project():
@@ -147,7 +151,7 @@ def build_project():
         generate_mix(assembly, orientation)
 
     elif color == "appleseed":
-        generate_appleseed()
+        generate_appleseed(assembly, orientation)
         
     else:
         print("Unknown color: {0}".format(color))
@@ -257,7 +261,7 @@ def generate_mix(assembly, orientation):
         assembly.colors().insert(asr.ColorEntity("color_" + str(i),
                                             {
                                                 "color_space": "linear_rgb",
-                                                "multiplier": 1.0
+                                                "multiplier": color_multiplier
                                             },
                                             random_color))
 
@@ -273,7 +277,7 @@ def generate_mix(assembly, orientation):
             light_count = light_count + 1
             light = asr.Light("point_light", light_name, {
                                                             "intensity": color_name,
-                                                            "intensity_multiplier": "3"
+                                                            "intensity_multiplier": "1"
 
                                                          })
             light_position = asr.Vector3d(i, j, light_z_distance)
@@ -281,9 +285,122 @@ def generate_mix(assembly, orientation):
             light.set_transform(asr.Transformd(mat))
             assembly.lights().insert(light)
 
-def generate_appleseed():
+def generate_appleseed(assembly, orientation):
     # Generate lights colored so that they form the appleseed logo.
-    i = 0
+    #------------------------------------------------------------------------
+    # Light colors
+    #------------------------------------------------------------------------
+
+    assembly.colors().insert(asr.ColorEntity("white",
+                                            {
+                                                "color_space": "linear_rgb",
+                                                "multiplier": color_multiplier
+                                            },
+                                            [255, 255, 255]))
+
+
+    assembly.colors().insert(asr.ColorEntity("gray",
+                                            {
+                                                "color_space": "linear_rgb",
+                                                "multiplier": color_multiplier
+                                            },
+                                            [127, 127, 127]))
+
+    assembly.colors().insert(asr.ColorEntity("orange",
+                                            {
+                                                "color_space": "linear_rgb",
+                                                "multiplier": color_multiplier
+                                            },
+                                            [255, 90, 17]))
+
+    step = float(plane_size) / grid_lights_count
+    light_count = 0
+
+    #------------------------------------------------------------------------
+    # Template image
+    #------------------------------------------------------------------------
+    img = misc.imread("/home/gospodnetic/Desktop/appleseed/resources/logo/appleseed-seeds-2048.png")
+    
+    # Make image rectangular
+    height, width, channels = img.shape
+
+    if height != width:
+        if height > width:
+            # difference = height - width
+            rectangular_img = np.zeros((height, height, channels))
+            rectangular_img[:height,:width:,::] = img
+        else:
+            # difference = height - width
+            rectangular_img = np.zeros((width, width, channels))
+            rectangular_img[:height,:width:,::] = img
+
+    # Resize the image resolution to match the number of lights.
+    light_color_template = misc.imresize(rectangular_img, (grid_lights_count, grid_lights_count))
+
+    light_color_template = misc.imrotate(light_color_template, -90)
+    
+    #------------------------------------------------------------------------
+    # Lights
+    #------------------------------------------------------------------------
+
+    # For each pixel of the image create the appropriate colored point light.
+    #
+    # We have three general cases
+    #   1) Transparent
+    #       - element value: [0 0 0 0]
+    #   2) Gray
+    #       - element value: [a a a x]
+    #       - e.g. [127 127 127 2] 
+    #   3) Orange
+    #       - element value: [255 b c x]
+    #       - b - around 90
+    #       - c - around 17
+    #       - x - around 255
+    #       - e.g. [255 90 17 255]
+    #
+    # NOTE: Color ranges are introduced due to image resize.
+    #
+
+    for j in xrange(0, grid_lights_count):
+        for i in xrange(0, grid_lights_count):
+
+            
+            if is_gray(light_color_template[i,j]):
+                color_name = "gray"
+
+            elif is_orange(light_color_template[i,j]):
+                color_name = "orange"
+            
+            else:
+                color_name = "white"
+
+            light_name = "light_" + str(light_count)
+            light_count = light_count + 1
+            light = asr.Light("point_light", light_name, {
+                                                            "intensity": color_name,
+                                                            "intensity_multiplier": "1"
+
+                                                         })
+            offset = (-plane_size + step) / 2 
+            light_position = asr.Vector3d(offset + i * step, offset + j * step, light_z_distance)
+            mat = orientation * asr.Matrix4d.make_translation(light_position)
+            light.set_transform(asr.Transformd(mat))
+            assembly.lights().insert(light)
+
+def is_gray(pxl):
+    if pxl[0] != 0 and (pxl[0] == pxl[1] == pxl[2]):
+        return True
+
+    return False
+
+def is_orange(pxl):
+    orange_b = range(85, 95)
+    orange_c = range(16, 19)
+
+    if pxl[0] == 255 and pxl[1] in orange_b and pxl[2] in orange_c:
+        return True
+
+    return False
 
 def main():
     # Build the project.
