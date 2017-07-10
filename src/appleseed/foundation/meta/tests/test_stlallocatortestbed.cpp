@@ -919,7 +919,7 @@ TEST_SUITE(StlAllocatorTestbed)
     {
         c.insert( typename Allocator::value_type() );
         c.clear();
-        for( int i = 0; i < 100; ++i )
+        for ( int i = 0; i < 100; ++i )
             c.insert( typename Allocator::value_type( static_cast<intptr_t>(i) ) );
         c.insert( typename Allocator::value_type( 0 ) );        
         VERIFY( c.find( typename Allocator::value_type( 0 ) ) == c.begin() );
@@ -935,7 +935,7 @@ TEST_SUITE(StlAllocatorTestbed)
     {
         c.insert( std::make_pair( typename Allocator::value_type(), 1 ) );
         c.clear();
-        for( int i = 0; i < 100; ++i )
+        for ( int i = 0; i < 100; ++i )
             c.insert( std::make_pair( typename Allocator::value_type( static_cast<intptr_t>(i) ), i ) );
         c.insert( std::make_pair( typename Allocator::value_type( 0 ), 0 ) );
         VERIFY( c.find( typename Allocator::value_type( 0 ) ) == c.begin() );
@@ -965,17 +965,17 @@ TEST_SUITE(StlAllocatorTestbed)
     {
         c.push( v );
         c.pop();
-        for( int i = 0; i < 100; ++i )
+        for ( int i = 0; i < 100; ++i )
             c.push( typename Allocator::value_type( static_cast<intptr_t>(i) ) );
-    #if( !defined(_MSC_VER) || _MSC_VER < 1310 )
+    #if ( !defined(_MSC_VER) || _MSC_VER < 1310 )
         VERIFY( c.top() == typename Allocator::value_type( 99 ) );
     #endif    
-        for( int i = 0; i < 100; ++i )
+        for ( int i = 0; i < 100; ++i )
             c.pop();
         USED( c );
     }
 
-    #if( !defined(_MSC_VER) || _MSC_VER >= 1310 )
+    #if ( !defined(_MSC_VER) || _MSC_VER >= 1310 )
 
     // Specialize for bool, since we can't convert from c.top() to bool with
     // vector<bool> (see More Exceptional C++ Item 6)
@@ -984,9 +984,9 @@ TEST_SUITE(StlAllocatorTestbed)
     {
         c.push( v );
         c.pop();
-        for( int i = 0; i < 100; ++i )
+        for ( int i = 0; i < 100; ++i )
             c.push( v );
-        for( int i = 0; i < 100; ++i )
+        for ( int i = 0; i < 100; ++i )
             c.pop();
         USED( c );
     }
@@ -1000,10 +1000,10 @@ TEST_SUITE(StlAllocatorTestbed)
     {
         c.push( typename Allocator::value_type() );
         c.pop();
-        for( int i = 0; i < 100; ++i )
+        for ( int i = 0; i < 100; ++i )
             c.push( typename Allocator::value_type( static_cast<intptr_t>(i) ) );
         VERIFY( c.front() == typename Allocator::value_type( 0 ) );        
-        for( int i = 0; i < 100; ++i )
+        for ( int i = 0; i < 100; ++i )
             c.pop();
         USED( c );
     }
@@ -1015,9 +1015,9 @@ TEST_SUITE(StlAllocatorTestbed)
     {
         c.push( typename Allocator::value_type() );
         c.pop();
-        for( int i = 0; i < 100; ++i )
+        for ( int i = 0; i < 100; ++i )
             c.push( typename Allocator::value_type( static_cast<intptr_t>(i) ) );
-        for( int i = 0; i < 100; ++i )
+        for ( int i = 0; i < 100; ++i )
             c.pop();
         USED( c );
     }

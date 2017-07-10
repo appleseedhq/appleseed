@@ -67,7 +67,7 @@ namespace foundation
         v2 += v3; v3=ROTL(v3,16); v3 ^= v2;                 \
         v0 += v3; v3=ROTL(v3,21); v3 ^= v0;                 \
         v2 += v1; v1=ROTL(v1,17); v1 ^= v2; v2=ROTL(v2,32); \
-    } while(0)
+    } while (0)
 
 uint64 siphash24(
     const void*     bytes,
@@ -98,12 +98,12 @@ uint64 siphash24(
 
         v3 ^= m;
 
-        for( i=0; i<cROUNDS; ++i ) SIPROUND;
+        for ( i=0; i<cROUNDS; ++i ) SIPROUND;
 
         v0 ^= m;
     }
 
-    switch( left )
+    switch ( left )
     {
       case 7: b |= ( ( uint64 )in[ 6] )  << 48;
       case 6: b |= ( ( uint64 )in[ 5] )  << 40;
@@ -117,12 +117,12 @@ uint64 siphash24(
 
     v3 ^= b;
 
-    for( i=0; i<cROUNDS; ++i ) SIPROUND;
+    for ( i=0; i<cROUNDS; ++i ) SIPROUND;
 
     v0 ^= b;
     v2 ^= 0xff;
 
-    for( i=0; i<dROUNDS; ++i ) SIPROUND;
+    for ( i=0; i<dROUNDS; ++i ) SIPROUND;
 
     b = v0 ^ v1 ^ v2  ^ v3;
 
