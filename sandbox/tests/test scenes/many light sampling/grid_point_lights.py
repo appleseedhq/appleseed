@@ -41,7 +41,7 @@ import numpy as np
 import appleseed as asr
 
 # Initial parameters for generating grid light scene
-grid_lights_count = 20
+grid_lights_count = 100
 color = "white"
 plane_size = 100
 output_scene_name = "{0}x{0}_{1}_point_lights".format(grid_lights_count, color)
@@ -139,13 +139,13 @@ def build_project():
     #------------------------------------------------------------------------
     # Lights
     #------------------------------------------------------------------------
-    light_z_distance = 1.0
+    light_z_distance = 0.2
 
     if color == "white":
         assembly.colors().insert(asr.ColorEntity("white",
                                             {
                                                 "color_space": "linear_rgb",
-                                                "multiplier": 1.0
+                                                "multiplier": 0.5
                                             },
                                             [1.0, 1.0, 1.0]))
 
@@ -160,7 +160,7 @@ def build_project():
                 light_count = light_count + 1
                 light = asr.Light("point_light", light_name, {
                                                                 "intensity": "white",
-                                                                "intensity_multiplier": "3"
+                                                                "intensity_multiplier": "0.1"
 
                                                              })
                 light_position = asr.Vector3d(i, j, light_z_distance)
@@ -263,7 +263,7 @@ def build_project():
             "gamma_correction": "1.0",
             "pixel_format": "float",
             "premultiplied_alpha": "true",
-            "resolution": "512 512",
+            "resolution": "2048 2048",
             "tile_size": "64 64"}
     project.set_frame(asr.Frame("beauty", params))
 
