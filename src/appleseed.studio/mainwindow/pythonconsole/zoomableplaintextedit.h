@@ -36,13 +36,20 @@
 namespace appleseed {
 namespace studio {
 
+//
+// A QPlainTextEdit control that supports zooming.
+//
+
 class ZoomablePlainTextEdit
-    : public QPlainTextEdit
+  : public QPlainTextEdit
 {
     Q_OBJECT
 
   public:
-    ZoomablePlainTextEdit(QWidget* parent);
+    explicit ZoomablePlainTextEdit(QWidget* parent);
+
+  signals:
+    void fontChanged(QFont);
 
   protected:
     void keyPressEvent(QKeyEvent* event);
@@ -50,12 +57,9 @@ class ZoomablePlainTextEdit
 
   private:
     void change_font_size(const int delta);
-
-  signals:
-    void fontChanged(QFont);
 };
 
-}   // namespace studio
-}   // namespace appleseed
+}       // namespace studio
+}       // namespace appleseed
 
-#endif // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_ZOOMABLEPLAINTEXTEDIT_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_ZOOMABLEPLAINTEXTEDIT_H

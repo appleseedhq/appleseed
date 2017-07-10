@@ -95,8 +95,7 @@ class APPLESEED_DLLSYMBOL PhaseFunction
         const void*                 data,                       // input values
         const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
         const size_t                channel,                    // index of the chroma that is used for sampling
-        float&                      distance                    // resulting distance
-        ) const = 0;
+        float&                      distance) const = 0;        // resulting distance
 
     // Sample phase function in a given point on the ray. Return the PDF value.
     virtual float sample(
@@ -104,8 +103,7 @@ class APPLESEED_DLLSYMBOL PhaseFunction
         const void*                 data,                       // input values
         const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
         const float                 distance,                   // distance to the point on this volume segment
-        foundation::Vector3f&       incoming                    // sampled direction
-        ) const = 0;
+        foundation::Vector3f&       incoming) const = 0;        // sampled direction
 
     // Evaluate PDF value of this phase function at a given point
     // on the ray and for the given incoming direction.
@@ -165,6 +163,6 @@ class APPLESEED_DLLSYMBOL PhaseFunction
         const ShadingRay&           volume_ray) const = 0;      // ray used for marching inside the volume
 };
 
-}   // namespace renderer
+}       // namespace renderer
 
-#endif // !APPLESEED_RENDERER_MODELING_PHASEFUNCTION_PHASEFUNCTION_H
+#endif  // !APPLESEED_RENDERER_MODELING_PHASEFUNCTION_PHASEFUNCTION_H
