@@ -96,6 +96,12 @@ class LightSource
     // Destructor.
     virtual ~LightSource() {}
 
+    enum SourceTypes
+    {
+        NPL = 0,
+        EMT = 1
+    };
+
     // Get the light source position.
     virtual foundation::Vector3d get_position() const = 0;
     
@@ -103,8 +109,10 @@ class LightSource
     virtual foundation::AABB3d get_bbox() const = 0;
 
     // Get the light intensity.
-    // NOTE: currently works only for point lights!
     virtual float get_intensity() const = 0;
+
+    // Get light type.
+    virtual int get_type() const = 0;
 };
 
 
@@ -121,6 +129,7 @@ class NonPhysicalLightSource
     virtual foundation::Vector3d get_position() const override;
     virtual foundation::AABB3d get_bbox() const override;
     virtual float get_intensity() const override;
+    virtual int get_type() const override;
 
   private:
     // Reference to the actual source.
@@ -141,6 +150,7 @@ class EmittingTriangleLightSource
     virtual foundation::Vector3d get_position() const override;
     virtual foundation::AABB3d get_bbox() const override;
     virtual float get_intensity() const override;
+    virtual int get_type() const override;
 
   private:
     // Reference to the actual source.

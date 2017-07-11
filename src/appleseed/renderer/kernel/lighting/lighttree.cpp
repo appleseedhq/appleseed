@@ -65,7 +65,7 @@ bool LightTree::is_built() const
     return m_built;
 }
 
-void LightTree::build(
+size_t LightTree::build(
         const std::vector<NonPhysicalLightInfo>&    non_physical_lights,
         const std::vector<EmittingTriangle>&        emitting_triangles)
 {
@@ -73,13 +73,14 @@ void LightTree::build(
     AABBVector light_bboxes;
 
     // Collect all possible light sources into one vector.
+    size_t light_index = 0;
     for (size_t i = 0; i < non_physical_lights.size(); ++i)
     {
         LightSource* light_source = new NonPhysicalLightSource(&non_physical_lights[i]);
         foundation::AABB3d bbox = light_source->get_bbox();
         m_light_sources.push_back(light_source);
         light_bboxes.push_back(bbox);
-        m_items.push_back(Item(bbox,i));
+        m_items.push_back(Item(bbox,light_index++, i));
     }
 
     // Collect all possible light sources into one vector.
@@ -89,7 +90,7 @@ void LightTree::build(
         foundation::AABB3d bbox = light_source->get_bbox();
         m_light_sources.push_back(light_source);
         light_bboxes.push_back(bbox);
-        m_items.push_back(Item(bbox,i));
+        m_items.push_back(Item(bbox,light_index++,i));
     }
 
     // Create the partitioner.
@@ -131,6 +132,8 @@ void LightTree::build(
     RENDERER_LOG_INFO("number of light sources: %zu", m_light_sources.size());
     RENDERER_LOG_INFO("number of nodes: %zu", m_nodes.size());
     RENDERER_LOG_INFO("tree depth: %zu", m_tree_depth);
+
+    return m_light_sources.size();
 }
 
 //
@@ -232,7 +235,7 @@ float LightTree::recursive_node_update(size_t node_index, size_t node_level)
     {
         // Access the light intensity value.
         size_t item_index = m_nodes[node_index].get_item_index();
-        size_t light_source_index = m_items[item_index].m_light_index;
+        size_t light_source_index = m_items[item_index].m_light_source_index;
         luminance = m_light_sources[light_source_index]->get_intensity();
 
         // Modify the tree depth if the branch is deeper than the other branches
@@ -247,7 +250,7 @@ float LightTree::recursive_node_update(size_t node_index, size_t node_level)
     return luminance;
 }
 
-std::pair<size_t, float> LightTree::sample(
+std::tuple<int, size_t, float> LightTree::sample(
     const foundation::Vector3d&     surface_point,
     float                           s) const
 {
@@ -276,9 +279,26 @@ std::pair<size_t, float> LightTree::sample(
     }
 
     const size_t item_index = m_nodes[node_index].get_item_index();
-    const size_t light_index = m_items[item_index].m_light_index;
+    const size_t source_index = m_items[item_index].m_light_source_index;
+    const int light_type = m_light_sources[source_index]->get_type();
+    size_t light_index;
+    switch (light_type)
+    {
+        // m_light_source index corresponds to the m_light_tree_lights
+        // index of the LightSampler in case of NPL, whereas the EMT index
+        // needs to be stored separately for now as it is not in the same
+        // vector with other light tree compatible lights.
+        case LightSource::NPL:
+            light_index = m_items[item_index].m_light_source_index;
+            break;
+        case LightSource::EMT:
+            light_index = m_items[item_index].m_external_emt_index;
+            break;
+        default:
+            assert(!"unexpected light type");
+    }
 
-    return std::pair<size_t, float>(light_index, light_probability);
+    return std::tuple<int, size_t, float>(light_type, light_index, light_probability);
 }
 
 namespace

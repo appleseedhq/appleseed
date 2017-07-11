@@ -88,6 +88,11 @@ float NonPhysicalLightSource::get_intensity() const
     return foundation::average_value(spectrum);
 }
 
+int NonPhysicalLightSource::get_type() const
+{
+    return LightSource::NPL;
+}
+
 
 //
 // EmittingTriangleLightSource class implementation.
@@ -121,6 +126,11 @@ float EmittingTriangleLightSource::get_intensity() const
     const EDF* edf = m_light->m_material->get_uncached_edf();
     
     return edf->get_max_contribution();
+}
+
+int EmittingTriangleLightSource::get_type() const
+{
+    return LightSource::EMT;
 }
 
 }   // namespace renderer
