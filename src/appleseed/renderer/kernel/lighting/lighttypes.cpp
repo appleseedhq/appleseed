@@ -76,13 +76,14 @@ foundation::AABB3d NonPhysicalLightSource::get_bbox() const
                                      position[2] + 0.001));
 }
 
-Spectrum NonPhysicalLightSource::get_intensity() const
+float NonPhysicalLightSource::get_intensity() const
 {
-    Spectrum intensity;
+    Spectrum spectrum;
     m_light_info->m_light->get_inputs()
         .find("intensity")
-        .source()->evaluate_uniform(intensity);
-    return intensity;
+        .source()->evaluate_uniform(spectrum);
+
+    return foundation::average_value(spectrum);
 }
 
 
@@ -113,10 +114,10 @@ foundation::AABB3d EmittingTriangleLightSource::get_bbox() const
     return bbox;
 }
 
-Spectrum EmittingTriangleLightSource::get_intensity() const
+float EmittingTriangleLightSource::get_intensity() const
 {
     const Spectrum hard_coded_placeholder(foundation::Color3f(1.0f, 2.0f, 3.0f));
-    return hard_coded_placeholder;
+    return foundation::average_value(hard_coded_placeholder);
 }
 
 }   // namespace renderer

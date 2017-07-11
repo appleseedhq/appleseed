@@ -233,9 +233,7 @@ float LightTree::recursive_node_update(size_t node_index, size_t node_level)
         // Access the light intensity value.
         size_t item_index = m_nodes[node_index].get_item_index();
         size_t light_source_index = m_items[item_index].m_light_index;
-        Spectrum spectrum = m_light_sources[light_source_index]->get_intensity();
-
-        luminance = foundation::average_value(spectrum);
+        luminance = m_light_sources[light_source_index]->get_intensity();
 
         // Modify the tree depth if the branch is deeper than the other branches
         // visited so far.
