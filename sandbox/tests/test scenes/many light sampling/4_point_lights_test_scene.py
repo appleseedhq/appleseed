@@ -37,6 +37,7 @@ import appleseed as asr
 
 output_scene_name = "4-colored-point-lights"
 
+
 def build_project():
     # Create an empty project.
     project = asr.Project("4-point-lights")
@@ -68,27 +69,27 @@ def build_project():
     #------------------------------------------------------------------------
     # Create a material called "01 - Default_mat" and insert it into the assembly.
     assembly.materials().insert(asr.Material(
-                                                "disney_material",
-                                                "01 - Default_mat",
-                                                {
-                                                    "alpha_map": "1",
-                                                    "layer1": {
-                                                        "anisotropic": "0",
-                                                        "base_color": "[1, 1, 1]",
-                                                        "clearcoat": "0",
-                                                        "clearcoat_gloss": "0",
-                                                        "layer_name": "layer1",
-                                                        "layer_number": "0",
-                                                        "mask": "1.0",
-                                                        "metallic": "0",
-                                                        "roughness": "1",
-                                                        "sheen": "0",
-                                                        "sheen_tint": "0",
-                                                        "specular": "0",
-                                                        "specular_tint": "0",
-                                                        "subsurface": "0.0"
-                                                    }
-                                                }))
+        "disney_material",
+        "01 - Default_mat",
+        {
+            "alpha_map": "1",
+            "layer1": {
+                "anisotropic": "0",
+                "base_color": "[1, 1, 1]",
+                "clearcoat": "0",
+                "clearcoat_gloss": "0",
+                "layer_name": "layer1",
+                "layer_number": "0",
+                "mask": "1.0",
+                "metallic": "0",
+                "roughness": "1",
+                "sheen": "0",
+                "sheen_tint": "0",
+                "specular": "0",
+                "specular_tint": "0",
+                "subsurface": "0.0"
+            }
+        }))
 
     #------------------------------------------------------------------------
     # Geometry
@@ -104,23 +105,23 @@ def build_project():
         material_name = {"material_slot_0": "01 - Default_mat"}
         mat = orientation * asr.Matrix4d.make_translation(asr.Vector3d(0.0, 0.0, 0.0))
         instance = asr.ObjectInstance(
-                                        instance_name,
-                                        {"visibility":
-                                            {
-                                                "camera": "true",
-                                                "diffuse": "true",
-                                                "glossy": "true",
-                                                "light": "true",
-                                                "probe": "true",
-                                                "shadow": "true",
-                                                "specular": "true",
-                                                "subsurface": "true",
-                                                "transparency": "true"
-                                            }},
-                                        object.get_name(),
-                                        asr.Transformd(mat),
-                                        material_name,
-                                        material_name)
+            instance_name,
+            {"visibility":
+             {
+                 "camera": "true",
+                 "diffuse": "true",
+                 "glossy": "true",
+                 "light": "true",
+                 "probe": "true",
+                 "shadow": "true",
+                 "specular": "true",
+                 "subsurface": "true",
+                 "transparency": "true"
+             }},
+            object.get_name(),
+            asr.Transformd(mat),
+            material_name,
+            material_name)
 
         assembly.object_instances().insert(instance)
 
@@ -133,16 +134,16 @@ def build_project():
 
     # Create a list of colors and for each of them create a light.
     light_colors = {
-        "white" : [1.0, 1.0, 1.0],
-        "red"   : [1.0, 0.0, 0.0],
-        "green" : [0.0, 1.0, 0.0],
-        "blue"  : [0.0, 0.0, 1.0]
+        "white": [1.0, 1.0, 1.0],
+        "red": [1.0, 0.0, 0.0],
+        "green": [0.0, 1.0, 0.0],
+        "blue": [0.0, 0.0, 1.0]
     }
 
     light_positions = [
-        asr.Vector3d( 25.0, -25.0, 5.0),
+        asr.Vector3d(25.0, -25.0, 5.0),
         asr.Vector3d(-25.0, -25.0, 5.0),
-        asr.Vector3d( 25.0,  25.0, 5.0),
+        asr.Vector3d(25.0,  25.0, 5.0),
         asr.Vector3d(-25.0,  25.0, 5.0)
     ]
 
@@ -154,12 +155,12 @@ def build_project():
         light_name = "light_" + key
         # Create the light.
         light = asr.Light("max_omni_light", light_name, {
-                                                        "decay_exponent": "0",
-                                                        "decay_start": "40",
-                                                        "intensity": color_name,
-                                                        "intensity_multiplier": "3.14159"
+            "decay_exponent": "0",
+            "decay_start": "40",
+            "intensity": color_name,
+            "intensity_multiplier": "3.14159"
 
-                                                     })
+        })
         mat = orientation * asr.Matrix4d.make_translation(light_positions[idx])
         light.set_transform(asr.Transformd(mat))
         assembly.lights().insert(light)
@@ -189,11 +190,11 @@ def build_project():
 
     # Create an orthographic camera with film dimensions 128 x 128 in.
     params = {
-            "controller_target": "0 0 0",
-            "film_dimensions": "128 128",
-            "near_z": "-0.1",
-            "shutter_close_time": "1.0",
-            "shutter_open_time": "0.0"
+        "controller_target": "0 0 0",
+        "film_dimensions": "128 128",
+        "near_z": "-0.1",
+        "shutter_close_time": "1.0",
+        "shutter_open_time": "0.0"
     }
 
     camera = asr.Camera("orthographic_camera", "camera", params)
@@ -212,22 +213,23 @@ def build_project():
 
     # Create a frame and bind it to the project.
     params = {
-            "camera": "camera",
-            "clamping": "false",
-            "color_space": "srgb",
-            "filter": "box",
-            "filter_size": "0.5",
-            "gamma_correction": "1.0",
-            "pixel_format": "float",
-            "premultiplied_alpha": "true",
-            "resolution": "512 512",
-            "tile_size": "64 64"}
+        "camera": "camera",
+        "clamping": "false",
+        "color_space": "srgb",
+        "filter": "box",
+        "filter_size": "0.5",
+        "gamma_correction": "1.0",
+        "pixel_format": "float",
+        "premultiplied_alpha": "true",
+        "resolution": "512 512",
+        "tile_size": "64 64"}
     project.set_frame(asr.Frame("beauty", params))
 
     # Bind the scene to the project.
     project.set_scene(scene)
 
     return project
+
 
 def main():
     # Build the project.
