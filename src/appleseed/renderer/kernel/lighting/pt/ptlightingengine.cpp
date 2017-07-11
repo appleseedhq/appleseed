@@ -888,7 +888,7 @@ namespace
                 Spectrum ray_transmission;
                 phase_function->evaluate_transmission(
                     vertex.m_phase_function_data, volume_ray, ray_transmission);
-                const size_t channel_count = std::max(ray_transmission.size(), vertex.m_throughput.size());
+                const size_t channel_count = ray_transmission.size();
 
                 const Spectrum& scattering_coef = phase_function->scattering_coefficient(
                     vertex.m_phase_function_data, volume_ray);
@@ -908,16 +908,17 @@ namespace
                     precomputed_mis_weights = scattering_coef;
                 else
                     Spectrum::upgrade(scattering_coef, precomputed_mis_weights);
-                precomputed_mis_weights *= vertex.m_throughput;
+                if (vertex.m_throughput.size() <= channel_count)
+                    precomputed_mis_weights *= vertex.m_throughput;
                 float max_density = 0.0f;
                 for (size_t i = 0; i < channel_count; ++i)
                 {
                     const float density = 1.0f - ray_transmission[i];
                     precomputed_mis_weights[i] *= density;
+                    if (extinction_coef[i] > 1.0e-6f)
+                        precomputed_mis_weights[i] /= extinction_coef[i];
                     if (max_density < density)
                         max_density = density;
-                    if (extinction_coef[i] > 0.0f)
-                        precomputed_mis_weights[i] /= extinction_coef[i];
                 }
 
                 // Get number of samples based on ray transmission.
