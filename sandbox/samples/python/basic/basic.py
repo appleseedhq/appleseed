@@ -42,8 +42,7 @@ def build_project():
     project = asr.Project('test project')
 
     paths = project.get_search_paths()
-    new_search_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data')
-    paths.append(new_search_path)
+    paths.append('data')
     project.set_search_paths(paths)
 
     # Add default configurations to the project.

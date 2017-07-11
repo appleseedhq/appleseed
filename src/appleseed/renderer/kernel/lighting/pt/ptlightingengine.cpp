@@ -667,6 +667,7 @@ namespace
                 const DirectLightingIntegrator integrator(
                     m_shading_context,
                     m_light_sampler,
+                    shading_point,
                     bsdf_sampler,
                     shading_point.get_time(),
                     scattering_modes,   // light_sampling_modes
@@ -785,6 +786,7 @@ namespace
             }
 
             void add_direct_lighting_contribution(
+                const ShadingPoint&     shading_point,
                 const ShadingRay&       volume_ray,
                 const PhaseFunction&    phase_function,
                 const void*             phase_function_data,
@@ -811,6 +813,7 @@ namespace
                 const DirectLightingIntegrator integrator(
                     m_shading_context,
                     m_light_sampler,
+                    shading_point,
                     phase_function_sampler,
                     volume_ray.m_time,
                     scattering_modes,   // light sampling modes
@@ -818,8 +821,9 @@ namespace
                     light_sample_count,
                     m_params.m_dl_low_light_threshold,
                     m_is_indirect_lighting);
-                integrator.compute_outgoing_radiance_combined_sampling_low_variance(
+                integrator.compute_outgoing_radiance_light_sampling_low_variance(
                     m_sampling_context,
+                    MISPower2,
                     Dual3d(volume_ray.m_dir),
                     dl_radiance);
 
@@ -883,10 +887,41 @@ namespace
 
                 Spectrum ray_transmission;
                 phase_function->evaluate_transmission(
-                    volume_ray, vertex.m_phase_function_data, ray_transmission);
+                    vertex.m_phase_function_data, volume_ray, ray_transmission);
+                const size_t channel_count = std::max(ray_transmission.size(), vertex.m_throughput.size());
 
-                const float density = 1.0f - min_value(ray_transmission);
-                const float distance_sample_count_float = density * m_params.m_distance_sample_count;
+                const Spectrum& scattering_coef = phase_function->scattering_coefficient(
+                    vertex.m_phase_function_data, volume_ray);
+
+                const Spectrum& extinction_coef = phase_function->extinction_coefficient(
+                    vertex.m_phase_function_data, volume_ray);
+
+                // Precompute MIS weights.
+                // MIS terms are:
+                //  - scattering albedo,
+                //  - one minus total ray transmittance (because we sample distance on segment),
+                //  - throughput of the entire path up to the sampled point.
+                // Reference: "Practical and Controllable Subsurface Scattering
+                // for Production Path Tracing", p. 1 [ACM 2016 Article].
+                Spectrum precomputed_mis_weights;
+                if (channel_count == scattering_coef.size())
+                    precomputed_mis_weights = scattering_coef;
+                else
+                    Spectrum::upgrade(scattering_coef, precomputed_mis_weights);
+                precomputed_mis_weights *= vertex.m_throughput;
+                float max_density = 0.0f;
+                for (size_t i = 0; i < channel_count; ++i)
+                {
+                    const float density = 1.0f - ray_transmission[i];
+                    precomputed_mis_weights[i] *= density;
+                    if (max_density < density)
+                        max_density = density;
+                    if (extinction_coef[i] > 0.0f)
+                        precomputed_mis_weights[i] /= extinction_coef[i];
+                }
+
+                // Get number of samples based on ray transmission.
+                const float distance_sample_count_float = max_density * m_params.m_distance_sample_count;
                 const size_t distance_sample_count = stochastic_cast<size_t>(
                     m_sampling_context, distance_sample_count_float);
                 if (distance_sample_count == 0) return;
@@ -895,24 +930,39 @@ namespace
                 {
                     ShadingComponents radiance(Spectrum::Illuminance);
 
+                    // Sample channel uniformly at random.
+                    m_sampling_context.split_in_place(1, 1);
+                    const float s = m_sampling_context.next2<float>();
+                    const size_t channel = truncate<size_t>(s * channel_count);
+                    if (precomputed_mis_weights[channel] == 0.0f)
+                        continue;
+
                     // Sample distance.
                     float distance_sample;
                     const float distance_prob = phase_function->sample_distance(
                         m_sampling_context,
-                        volume_ray,
                         vertex.m_phase_function_data,
+                        volume_ray,
+                        channel,
                         distance_sample);
 
                     Spectrum transmission;
                     phase_function->evaluate_transmission(
-                        volume_ray, vertex.m_phase_function_data, distance_sample, transmission);
-                    const float extinction = phase_function->extinction_multiplier(
-                        volume_ray, vertex.m_phase_function_data, distance_sample);
-                    if (extinction == 0.0f) continue;
+                        vertex.m_phase_function_data, volume_ray, distance_sample, transmission);
 
+                    // Calculate MIS weight for this distance sample (balance heuristic).
+                    float mis_weights_sum = 0.0f;
+                    for (size_t i = 0; i < channel_count; ++i)
+                        mis_weights_sum += precomputed_mis_weights[i] * transmission[i];
+                    const float current_mis_weight =
+                        channel_count * precomputed_mis_weights[channel] *
+                        transmission[channel] / mis_weights_sum;
+
+                    // Calculate in-scattered radiance for this distance sample.
                     if (m_params.m_enable_dl || vertex.m_path_length > 1)
                     {
                         add_direct_lighting_contribution(
+                            *vertex.m_shading_point,
                             volume_ray,
                             *phase_function,
                             vertex.m_phase_function_data,
@@ -932,7 +982,9 @@ namespace
 
                     radiance *= vertex.m_throughput;
                     radiance *= transmission;
-                    madd(m_path_radiance, radiance, distance_sample_count_float / distance_prob);
+                    const float scalar_weight = current_mis_weight /
+                        (distance_sample_count_float * distance_prob);
+                    madd(m_path_radiance, radiance, scalar_weight);
                 }
             }
         };

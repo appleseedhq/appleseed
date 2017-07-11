@@ -73,7 +73,7 @@ shader as_maya_remapValue
         string as_maya_attribute_name = "color",
         string label = "Color",
         string page = "Color Attributes"
-    ]], 
+    ]],
     int in_color_Interp[] = {0}
     [[
         string as_maya_attribute_name = "color",
@@ -99,7 +99,7 @@ shader as_maya_remapValue
         string as_maya_attribute_name = "outputMin",
         string label = "Output Min",
         string page = "Input And Ouput Attributes"
-    ]], 
+    ]],
     float in_outputMax = 0.0
     [[
         string as_maya_attribute_name = "outputMax",

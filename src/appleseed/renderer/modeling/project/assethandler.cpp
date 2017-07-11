@@ -239,10 +239,10 @@ bool AssetHandler::handle_asset(string& asset_path) const
             // Make sure relative paths use POSIX separators.
             asset_path = convert_to_posix(asset_path);
             return true;
-    
+
           case CopyAllAssets:
             return copy_absolute_asset(asset_path);
-    
+
           assert_otherwise_and_return(false);
         }
     }

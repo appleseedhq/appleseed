@@ -136,6 +136,7 @@ set (foundation_math_bvh_sources
     foundation/math/bvh/bvh_builder.h
     foundation/math/bvh/bvh_intersector.h
     foundation/math/bvh/bvh_medianpartitioner.h
+    foundation/math/bvh/bvh_middlepartitioner.h
     foundation/math/bvh/bvh_node.h
     foundation/math/bvh/bvh_partitionerbase.h
     foundation/math/bvh/bvh_sahpartitioner.h
@@ -377,6 +378,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_bsp.cpp
     foundation/meta/tests/test_bufferedfile.cpp
     foundation/meta/tests/test_bvh.cpp
+    foundation/meta/tests/test_bvh_partitioner.cpp
     foundation/meta/tests/test_cache.cpp
     foundation/meta/tests/test_cameracontroller.cpp
     foundation/meta/tests/test_casts.cpp
@@ -989,6 +991,13 @@ set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/lightsampler.h
     renderer/kernel/lighting/materialsamplers.cpp
     renderer/kernel/lighting/materialsamplers.h
+    renderer/kernel/lighting/lighttypes.h
+    renderer/kernel/lighting/lighttypes.cpp
+    renderer/kernel/lighting/lighttree.cpp
+    renderer/kernel/lighting/lighttree.h
+    renderer/kernel/lighting/lighttree_node.h
+    renderer/kernel/lighting/lighttypes.cpp
+    renderer/kernel/lighting/lighttypes.h
     renderer/kernel/lighting/pathtracer.h
     renderer/kernel/lighting/pathvertex.cpp
     renderer/kernel/lighting/pathvertex.h

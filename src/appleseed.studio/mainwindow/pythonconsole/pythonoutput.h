@@ -29,6 +29,9 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONOUTPUT_H
 #define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONOUTPUT_H
 
+// appleseed.studio headers.
+#include "mainwindow/pythonconsole/zoomableplaintextedit.h"
+
 // Qt headers.
 #include <QObject>
 #include <QPlainTextEdit>
@@ -40,22 +43,12 @@ namespace appleseed {
 namespace studio {
 
 class PythonOutput
-    : public QPlainTextEdit
+    : public ZoomablePlainTextEdit
 {
     Q_OBJECT
 
   public:
     explicit PythonOutput(QWidget* parent);
-
-  protected:
-    // Event used for indentation and font size change.
-    void keyPressEvent(QKeyEvent* event);
-
-    // Event used to change font size on wheel rotation.
-    void wheelEvent(QWheelEvent* event);
-
-  private:
-    void change_font_size(const int delta);
 };
 
 }   // namespace studio

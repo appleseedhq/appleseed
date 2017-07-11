@@ -29,6 +29,9 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONEDITOR_H
 #define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_PYTHONEDITOR_H
 
+// appleseed.studio headers.
+#include "mainwindow/pythonconsole/zoomableplaintextedit.h"
+
 // Qt headers.
 #include <QObject>
 #include <QPlainTextEdit>
@@ -38,9 +41,6 @@
 #include <string>
 
 // Forward declarations.
-class QKeyEvent;
-class QResizeEvent;
-class QWheelEvent;
 class QWidget;
 namespace appleseed { namespace studio { class LineNumberArea; } }
 
@@ -48,7 +48,7 @@ namespace appleseed {
 namespace studio {
 
 class PythonEditor
-  : public QPlainTextEdit
+  : public ZoomablePlainTextEdit
 {
     Q_OBJECT
 
@@ -59,14 +59,7 @@ class PythonEditor
     // Event used to update line number area.
     void resizeEvent(QResizeEvent* event);
 
-    // Event used for indentation and font size change.
     void keyPressEvent(QKeyEvent* event);
-
-    // Event used to change font size on wheel rotation.
-    void wheelEvent(QWheelEvent* event);
-
-  signals:
-    void fontChanged(QFont);
 
   private slots:
     void slot_highlight_current_line();
@@ -79,8 +72,6 @@ class PythonEditor
     void indent();
     void indent_like_previous(const std::string& previous);
     void insert_spaces(const size_t count);
-
-    void change_font_size(const int delta);
 };
 
 }       // namespace studio

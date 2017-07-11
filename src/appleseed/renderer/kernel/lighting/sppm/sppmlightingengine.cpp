@@ -343,6 +343,7 @@ namespace
                 const DirectLightingIntegrator integrator(
                     m_shading_context,
                     m_light_sampler,
+                    *vertex.m_shading_point,
                     bsdf_sampler,
                     vertex.m_shading_point->get_time(),
                     ScatteringMode::All,

@@ -33,13 +33,13 @@ shader as_maya_blendColors
     string as_maya_node_name = "blendColors"
 ]]
 (
-    color in_color1 = color(1,0,0)
+    color in_color1 = color(1, 0, 0)
     [[
         string as_maya_attribute_name = "color1",
         string label = "Color 1",
         string page = "Blend Color Attributes"
     ]],
-    color in_color2 = color(0,0,1)
+    color in_color2 = color(0, 0, 1)
     [[
         string as_maya_attribute_name = "color2",
         string label = "Color 2",

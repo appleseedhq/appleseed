@@ -25,7 +25,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
- 
+
 #ifndef AS_MAYA_CMS_SYNCOLOR_IDT_H
 #define AS_MAYA_CMS_SYNCOLOR_IDT_H
 
@@ -41,7 +41,7 @@
 //
 
 // Different working spaces might have different illuminants, and require a
-// chromatic adaptation transform. Though we can use 
+// chromatic adaptation transform. Though we can use
 // chromatic_adaptation_vonKries() in the respective header, that is costly
 // and envolves the use of CIE XYZ as an intermediary space.
 // With that in mind, some RGB<>RGB matrices were precomputed, and these
@@ -296,7 +296,7 @@ color transform_color_space_to_DCIP3(
         transformed_color = color(
             dot(vector(REC709_TO_DCIP3_X), v_color),
             dot(vector(REC709_TO_DCIP3_Y), v_color),
-            dot(vector(REC709_TO_DCIP3_Z), v_color)); 
+            dot(vector(REC709_TO_DCIP3_Z), v_color));
     }
     else if (color_space == "ACES2065-1")
     {

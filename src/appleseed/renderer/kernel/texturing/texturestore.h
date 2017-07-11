@@ -119,6 +119,9 @@ class TextureStore
     // Retrieve performance statistics.
     foundation::StatisticsVector get_statistics() const;
 
+    // Return the default texture store size in bytes.
+    static size_t get_default_size();
+
     // Return the metadata of the texture store parameters.
     static foundation::Dictionary get_params_metadata();
 

@@ -122,6 +122,28 @@ namespace
         virtual void sample(
             const ShadingContext&   shading_context,
             const Transformd&       light_transform,
+            const Vector3d&         target_point,
+            const Vector2d&         s,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            float&                  probability) const override
+        {
+            position = light_transform.get_parent_origin();
+            outgoing = normalize(target_point - position);
+
+            const Vector3d axis = -normalize(light_transform.get_parent_z());
+
+            if (dot(outgoing, axis) > m_cos_outer_half_angle)
+                compute_radiance(shading_context, light_transform, axis, outgoing, value);
+            else value.set(0.0f);
+
+            probability = 1.0f;
+        }
+
+        virtual void sample(
+            const ShadingContext&   shading_context,
+            const Transformd&       light_transform,
             const Vector2d&         s,
             Vector3d&               position,
             Vector3d&               outgoing,
@@ -138,24 +160,6 @@ namespace
             const Vector3d axis = -normalize(light_transform.get_parent_z());
 
             compute_radiance(shading_context, light_transform, axis, outgoing, value);
-        }
-
-        virtual void evaluate(
-            const ShadingContext&   shading_context,
-            const Transformd&       light_transform,
-            const Vector3d&         target,
-            Vector3d&               position,
-            Vector3d&               outgoing,
-            Spectrum&               value) const override
-        {
-            position = light_transform.get_parent_origin();
-            outgoing = normalize(target - position);
-
-            const Vector3d axis = -normalize(light_transform.get_parent_z());
-
-            if (dot(outgoing, axis) > m_cos_outer_half_angle)
-                compute_radiance(shading_context, light_transform, axis, outgoing, value);
-            else value.set(0.0f);
         }
 
         float compute_distance_attenuation(

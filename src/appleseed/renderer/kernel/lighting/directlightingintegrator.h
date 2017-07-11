@@ -76,6 +76,7 @@ class DirectLightingIntegrator
     DirectLightingIntegrator(
         const ShadingContext&       shading_context,
         const LightSampler&         light_sampler,
+        const ShadingPoint&         shading_point,
         const IMaterialSampler&     material_sampler,
         const ShadingRay::Time&     time,
         const int                   light_sampling_modes,
@@ -113,15 +114,9 @@ class DirectLightingIntegrator
         const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
         ShadingComponents&              radiance) const;
 
-    // Evaluate incoming radiance.
-    bool compute_incoming_radiance(
-        SamplingContext&                sampling_context,
-        foundation::Vector3d&           incoming,
-        float&                          incoming_prob,
-        Spectrum&                       radiance) const;
-
   private:
     const ShadingContext&               m_shading_context;
+    const ShadingPoint&                 m_shading_point;
     const LightSampler&                 m_light_sampler;
     const ShadingRay::Time&             m_time;
     const IMaterialSampler&             m_material_sampler;
@@ -145,6 +140,7 @@ class DirectLightingIntegrator
         ShadingComponents&              radiance) const;
 
     void add_non_physical_light_sample_contribution(
+        SamplingContext&                sampling_context,
         const LightSample&              sample,
         const foundation::Dual3d&       outgoing,
         ShadingComponents&              radiance) const;

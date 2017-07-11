@@ -210,15 +210,15 @@ bool PhaseFunctionSampler::sample(
     pdf =
         m_phase_function.sample(
             sampling_context,
-            m_volume_ray,
             m_phase_function_data,
+            m_volume_ray,
             m_distance,
             incoming_direction);
 
     incoming = Dual3f(incoming_direction);
 
     m_phase_function.scattering_coefficient(
-        m_volume_ray, m_phase_function_data, m_distance, value.m_volume);
+        m_phase_function_data, m_volume_ray, m_distance, value.m_volume);
     value.m_beauty = value.m_volume;
 
     return true;
@@ -232,13 +232,13 @@ float PhaseFunctionSampler::evaluate(
 {
     const float pdf =
         m_phase_function.evaluate(
-            m_volume_ray,
             m_phase_function_data,
+            m_volume_ray,
             m_distance,
             incoming);
 
     m_phase_function.scattering_coefficient(
-        m_volume_ray, m_phase_function_data, m_distance, value.m_volume);
+        m_phase_function_data, m_volume_ray, m_distance, value.m_volume);
     value.m_volume *= pdf;
     value.m_beauty = value.m_volume;
 

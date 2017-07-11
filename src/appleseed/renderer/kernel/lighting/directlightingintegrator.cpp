@@ -80,12 +80,11 @@ namespace renderer
 //       compute_outgoing_radiance_material_sampling
 //       compute_outgoing_radiance_light_sampling_low_variance
 //
-//   compute_incoming_radiance
-//
 
 DirectLightingIntegrator::DirectLightingIntegrator(
     const ShadingContext&       shading_context,
     const LightSampler&         light_sampler,
+    const ShadingPoint&         shading_point,
     const IMaterialSampler&     material_sampler,
     const ShadingRay::Time&     time,
     const int                   light_sampling_modes,
@@ -95,6 +94,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
     const bool                  indirect)
   : m_shading_context(shading_context)
   , m_light_sampler(light_sampler)
+  , m_shading_point(shading_point)
   , m_material_sampler(material_sampler)
   , m_time(time)
   , m_light_sampling_modes(light_sampling_modes)
@@ -127,7 +127,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_material_sampling(
     }
 
     if (m_material_sample_count > 1)
-        radiance /= m_material_sample_count;
+        radiance /= static_cast<float>(m_material_sample_count);
 }
 
 void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling(
@@ -157,6 +157,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling(
         m_light_sampler.sample(
             m_time,
             sampling_context.next2<Vector3f>(),
+            m_shading_point,
             sample);
 
         if (sample.m_triangle)
@@ -171,6 +172,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling(
         else
         {
             add_non_physical_light_sample_contribution(
+                sampling_context,
                 sample,
                 outgoing,
                 radiance);
@@ -221,7 +223,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
         }
 
         if (m_light_sample_count > 1)
-            radiance /= m_light_sample_count;
+            radiance /= static_cast<float>(m_light_sample_count);
     }
 
     if (m_light_sample_count > 0)
@@ -233,10 +235,40 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
             m_light_sampler.sample_non_physical_light(m_time, i, sample);
 
             add_non_physical_light_sample_contribution(
+                sampling_context,
                 sample,
                 outgoing,
                 radiance);
         }
+    }
+
+    // Add contributions from light-tree lights only.
+    if (m_light_sampler.get_light_tree_light_count() > 0)
+    {
+        sampling_context.split_in_place(3, m_light_sample_count);
+
+        for (size_t i = 0; i < m_light_sample_count; ++i)
+        {
+            // Sample light-tree lights only.
+            LightSample sample;
+            m_light_sampler.sample_light_tree_lights(
+                m_time,
+                sampling_context.next2<Vector3f>(),
+                m_shading_point,
+                sample);
+
+            // TODO: The LightTree currently consists only of non physical lights.
+            // Write a more general function which will know how to handle every
+            // type of light which comes from the light-tree.
+            add_non_physical_light_sample_contribution(
+                sampling_context,
+                sample,
+                outgoing,
+                radiance);
+        }
+
+        if (m_light_sample_count > 1)
+            radiance /= static_cast<float>(m_light_sample_count);
     }
 }
 
@@ -282,140 +314,6 @@ void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling_low_v
         radiance_light_sampling);
 
     radiance += radiance_light_sampling;
-}
-
-bool DirectLightingIntegrator::compute_incoming_radiance(
-    SamplingContext&            sampling_context,
-    Vector3d&                   incoming,
-    float&                      incoming_prob,
-    Spectrum&                   radiance) const
-{
-    radiance.set(0.0f);
-
-    // No light source in the scene.
-    if (!m_light_sampler.has_lights_or_emitting_triangles())
-        return false;
-
-    sampling_context.split_in_place(3, 1);
-
-    // Sample both emitting triangles and non-physical light sources.
-    LightSample sample;
-    m_light_sampler.sample(
-        m_time,
-        sampling_context.next2<Vector3f>(),
-        sample);
-
-    if (sample.m_triangle)
-    {
-        const Material* material = sample.m_triangle->m_material;
-        const Material::RenderData& material_data = material->get_render_data();
-        const EDF* edf = material_data.m_edf;
-
-        // No contribution if we are computing indirect lighting but this light does not cast indirect light.
-        if (m_indirect && !(edf->get_flags() & EDF::CastIndirectLight))
-            return false;
-
-        // Compute the incoming direction in world space.
-        incoming = sample.m_point - m_material_sampler.get_point();
-
-        // No contribution if the shading point is behind the light.
-        double cos_on_light = dot(-incoming, sample.m_shading_normal);
-        if (cos_on_light <= 0.0)
-            return false;
-
-        // Compute the transmission factor between the light sample and the shading point.
-        Spectrum transmission;
-        m_material_sampler.trace_between(
-            m_shading_context,
-            sample.m_point,
-            transmission);
-
-        // Discard occluded samples.
-        if (max_value(transmission) == 0.0f)
-            return false;
-
-        // Don't use this sample if we're closer than the light near start value.
-        const double square_distance = square_norm(incoming);
-        if (square_distance < square(edf->get_light_near_start()))
-            return false;
-
-        // Normalize the incoming direction.
-        const double rcp_square_distance = 1.0 / square_distance;
-        const double rcp_distance = sqrt(rcp_square_distance);
-        incoming *= rcp_distance;
-        cos_on_light *= rcp_distance;
-
-        // Build a shading point on the light source.
-        ShadingPoint light_shading_point;
-        sample.make_shading_point(
-            light_shading_point,
-            sample.m_shading_normal,
-            m_shading_context.get_intersector());
-
-        if (material_data.m_shader_group)
-        {
-            m_shading_context.execute_osl_emission(
-                *material_data.m_shader_group,
-                light_shading_point);
-        }
-
-        // Evaluate the EDF.
-        edf->evaluate(
-            edf->evaluate_inputs(m_shading_context, light_shading_point),
-            Vector3f(sample.m_geometric_normal),
-            Basis3f(Vector3f(sample.m_shading_normal)),
-            -Vector3f(incoming),
-            radiance);
-
-        // Compute probability with respect to solid angle of incoming direction.
-        const float g = static_cast<float>(cos_on_light * rcp_square_distance);
-        incoming_prob = sample.m_probability / g;
-
-        // Compute and return the incoming radiance.
-        radiance *= transmission;
-        radiance *= g / sample.m_probability;
-    }
-    else
-    {
-        const Light* light = sample.m_light;
-
-        // No contribution if we are computing indirect lighting but this light does not cast indirect light.
-        if (m_indirect && !(light->get_flags() & Light::CastIndirectLight))
-            return false;
-
-        // Evaluate the light.
-        Vector3d emission_position, emission_direction;
-        light->evaluate(
-            m_shading_context,
-            sample.m_light_transform,
-            m_material_sampler.get_point(),
-            emission_position,
-            emission_direction,
-            radiance);
-
-        // Compute the transmission factor between the light sample and the shading point.
-        Spectrum transmission;
-        m_material_sampler.trace_between(
-            m_shading_context,
-            emission_position,
-            transmission);
-
-        // Discard occluded samples.
-        if (max_value(transmission) == 0.0f)
-            return false;
-
-        // Compute the incoming direction in world space.
-        incoming = -emission_direction;
-        incoming_prob = BSDF::DiracDelta;
-
-        // Compute and return the incoming radiance.
-        const float attenuation = light->compute_distance_attenuation(
-            m_material_sampler.get_point(), emission_position);
-        radiance *= transmission;
-        radiance *= attenuation / sample.m_probability;
-    }
-
-    return true;
 }
 
 void DirectLightingIntegrator::take_single_material_sample(
@@ -655,6 +553,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
 }
 
 void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
+    SamplingContext&            sampling_context,
     const LightSample&          sample,
     const Dual3d&               outgoing,
     ShadingComponents&          radiance) const
@@ -665,16 +564,23 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     if (m_indirect && !(light->get_flags() & Light::CastIndirectLight))
         return;
 
+    // Generate a uniform sample in [0,1).
+    sampling_context.split_in_place(2, 1);
+    const Vector2d s = sampling_context.next2<Vector2d>();
+
     // Evaluate the light.
     Vector3d emission_position, emission_direction;
     Spectrum light_value(Spectrum::Illuminance);
-    light->evaluate(
+    float probability;
+    light->sample(
         m_shading_context,
         sample.m_light_transform,
         m_material_sampler.get_point(),
+        s,
         emission_position,
         emission_direction,
-        light_value);
+        light_value,
+        probability);
 
     // Compute the incoming direction in world space.
     const Vector3d incoming = -emission_direction;
@@ -708,7 +614,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     const float attenuation = light->compute_distance_attenuation(
         m_material_sampler.get_point(), emission_position);
     light_value *= transmission;
-    light_value *= attenuation / sample.m_probability;
+    light_value *= attenuation / (sample.m_probability * probability);
     madd(radiance, material_value, light_value);
 }
 

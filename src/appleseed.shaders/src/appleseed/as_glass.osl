@@ -188,7 +188,7 @@ shader as_glass
         string page = "Advanced Parameters",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1 
+        int as_maya_attribute_hidden = 1
     ]],
     vector Tn = vector(0)
     [[

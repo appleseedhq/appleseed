@@ -79,7 +79,8 @@ class APPLESEED_DLLSYMBOL Light
 
     enum Flags
     {
-        CastIndirectLight = 1 << 0                                  // does this light generate indirect lighting?
+        CastIndirectLight = 1 << 0,         // does this light generate indirect lighting?
+        LightTreeCompatible = 1 << 1        // can this light be used by the LightTree?
     };
 
     // Retrieve the flags.
@@ -107,6 +108,15 @@ class APPLESEED_DLLSYMBOL Light
     virtual void sample(
         const ShadingContext&           shading_context,
         const foundation::Transformd&   light_transform,            // light space to world space transform
+        const foundation::Vector3d&     target_point,               // world space target point
+        const foundation::Vector2d&     s,                          // sample in [0,1)^2
+        foundation::Vector3d&           position,                   // world space emission position
+        foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
+        Spectrum&                       value,                      // light value
+        float&                          probability) const = 0;     // PDF value
+    virtual void sample(
+        const ShadingContext&           shading_context,
+        const foundation::Transformd&   light_transform,            // light space to world space transform
         const foundation::Vector2d&     s,                          // sample in [0,1)^2
         foundation::Vector3d&           position,                   // world space emission position
         foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
@@ -122,25 +132,17 @@ class APPLESEED_DLLSYMBOL Light
         Spectrum&                       value,                      // light value
         float&                          probability) const;         // PDF value
 
-    // Evaluate the light for a given target point.
-    virtual void evaluate(
-        const ShadingContext&           shading_context,
-        const foundation::Transformd&   light_transform,            // light space to world space transform
-        const foundation::Vector3d&     target,                     // world space target point
-        foundation::Vector3d&           position,                   // world space emission position
-        foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
-        Spectrum&                       value) const = 0;           // light value
-
     // Compute the distance attenuation of this light.
     virtual float compute_distance_attenuation(
         const foundation::Vector3d&     target,                     // world space target point
         const foundation::Vector3d&     position) const = 0;        // world space emission position
 
+  protected:
+    int m_flags;
+
   private:
     struct Impl;
     Impl* impl;
-
-    int m_flags;
 };
 
 

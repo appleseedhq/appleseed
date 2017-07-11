@@ -468,7 +468,7 @@ shader as_maya_mandelbrot
             float st[2] = {
                 mod(in_uvCoord[0], UVWRAP),
                 mod(in_uvCoord[1], UVWRAP)};
-            
+
             if (in_implode)
             {
                 implode_2d(in_implode, in_implodeCenter, st[0], st[1]);
@@ -509,7 +509,7 @@ shader as_maya_mandelbrot
             float sqr_escape_radius = sqr(in_escapeRadius);
             float sqr_distance = 0.0, leaf_value = 0.0;
             float min_radius = 1.0e+19;
-            
+
             if (in_mandelbrotType < 2)
             {
                 compute_mandelbrot(
@@ -607,7 +607,7 @@ shader as_maya_mandelbrot
                 in_value_Interp,
                 mapping);
         }
-        
+
         maya_colorBalance(
             in_colorGain,
             in_colorOffset,

@@ -59,7 +59,7 @@ shader as_maya_clearCoat
         string as_maya_attribute_name = "rayDirection",
         string label = "rayDirection"
     ]],
-    normal in_normalCamera = normal(0,0,1)
+    normal in_normalCamera = normal(0, 0, 1)
     [[
         string as_maya_attribute_name = "normalCamera",
         string label = "Bump Normal"

@@ -125,6 +125,22 @@ namespace
         virtual void sample(
             const ShadingContext&   shading_context,
             const Transformd&       light_transform,
+            const Vector3d&         target_point,
+            const Vector2d&         s,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            float&                  probability) const override
+        {
+            outgoing = -normalize(light_transform.get_parent_z());
+            position = target_point - m_safe_scene_diameter * outgoing;
+            value = m_values.m_irradiance;
+            probability = 1.0f;
+        }
+
+        virtual void sample(
+            const ShadingContext&   shading_context,
+            const Transformd&       light_transform,
             const Vector2d&         s,
             Vector3d&               position,
             Vector3d&               outgoing,
@@ -183,19 +199,6 @@ namespace
                     value,
                     probability);
             }
-        }
-
-        virtual void evaluate(
-            const ShadingContext&   shading_context,
-            const Transformd&       light_transform,
-            const Vector3d&         target,
-            Vector3d&               position,
-            Vector3d&               outgoing,
-            Spectrum&               value) const override
-        {
-            outgoing = -normalize(light_transform.get_parent_z());
-            position = target - m_safe_scene_diameter * outgoing;
-            value = m_values.m_irradiance;
         }
 
         virtual float compute_distance_attenuation(

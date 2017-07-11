@@ -25,7 +25,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
- 
+
 #ifndef AS_MAYA_RAMP_HELPERS_H
 #define AS_MAYA_RAMP_HELPERS_H
 
@@ -268,7 +268,7 @@ float float_ramp(
     }
 }
 
-color color_ramp(                  
+color color_ramp(
     color colors[],
     float positions[],
     int interpolation,

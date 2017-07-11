@@ -545,6 +545,7 @@ inline T sample_exponential_distribution_on_segment(
 {
     assert(s >= T(0.0));
     assert(s < T(1.0));
+    assert(a > T(0.0));
 
     const T tail = T(1.0) - std::exp(-(r - l) * a);
     return clamp(l - std::log(T(1.0) - s * tail) / a, l, r);

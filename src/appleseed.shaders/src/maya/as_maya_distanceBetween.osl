@@ -38,7 +38,7 @@ shader as_maya_distanceBetween
         string as_maya_attribute_name = "point1",
         string label = "Point 1",
         string page = "Distance Between Attributes"
-    ]], 
+    ]],
     matrix in_inMatrix1 = matrix(1)
     [[
         string as_maya_attribute_name = "inMatrix1",

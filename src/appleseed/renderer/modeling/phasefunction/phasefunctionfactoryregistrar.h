@@ -51,6 +51,7 @@ namespace renderer
 
 APPLESEED_DECLARE_APIARRAY(PhaseFunctionFactoryArray, IPhaseFunctionFactory*);
 
+
 //
 // Phase function factory registrar.
 //

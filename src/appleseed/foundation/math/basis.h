@@ -178,8 +178,8 @@ inline void Basis3<T>::build(const VectorType& normal)
     //
     // Reference:
     //
-    //   Tom Duff, James Burgess, Per Christensen, Christophe Hery, Andrew Kensler, 
-    //   Max Liani, and Ryusuke Villemin, Building an Orthonormal Basis, Revisited, 
+    //   Tom Duff, James Burgess, Per Christensen, Christophe Hery, Andrew Kensler,
+    //   Max Liani, and Ryusuke Villemin, Building an Orthonormal Basis, Revisited,
     //   Journal of Computer Graphics Techniques (JCGT), vol. 6, no. 1, 1-8, 2017
     //   http://jcgt.org/published/0006/01/01/paper-lowres.pdf
     //

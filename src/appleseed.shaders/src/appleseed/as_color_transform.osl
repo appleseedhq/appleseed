@@ -67,7 +67,7 @@ shader as_color_transform
     ]],
 
     MAYA_COLORMANAGEMENT_PARAMETERS,
-    
+
     output color out_outColor = color(0)
     [[
         string as_maya_attribute_name = "outColor",
@@ -162,13 +162,13 @@ shader as_color_transform
 
             warning("Unsupported input color model value %i in %s, %s:%i\n",
                     in_inputSpace, shadername, __FILE__, __LINE__);
-#endif              
+#endif
         }
 
         // Convert from intermediary (XYZ) space to output space
 
         color out = color(0);
-        
+
         if (in_outputSpace == 0)
         {
             out = transform_XYZ_to_linear_RGB(XYZ, space, illuminant);

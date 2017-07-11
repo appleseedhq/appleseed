@@ -38,14 +38,14 @@ shader as_voronoi3d
     int as_maya_type_id = 1210822
 ]]
 (
-    color in_color1 = color(1,0.3,0.05)
+    color in_color1 = color(1, 0.3, 0.05)
     [[
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Color 1",
         string page = "Color Parameters"
     ]],
-    color in_color2 = color(0.1,0.3, 0.9)
+    color in_color2 = color(0.1, 0.3, 0.9)
     [[
         string as_maya_attribute_name = "color2",
         string label = "Color 2",

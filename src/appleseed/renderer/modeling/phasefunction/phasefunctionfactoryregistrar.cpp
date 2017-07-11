@@ -82,7 +82,7 @@ PhaseFunctionFactoryArray PhaseFunctionFactoryRegistrar::get_factories() const
     return factories;
 }
 
-const PhaseFunctionFactoryRegistrar::FactoryType* 
+const PhaseFunctionFactoryRegistrar::FactoryType*
     PhaseFunctionFactoryRegistrar::lookup(const char* name) const
 {
     assert(name);

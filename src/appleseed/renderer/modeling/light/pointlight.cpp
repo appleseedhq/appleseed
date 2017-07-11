@@ -77,6 +77,9 @@ namespace
             m_inputs.declare("intensity", InputFormatSpectralIlluminance);
             m_inputs.declare("intensity_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("exposure", InputFormatFloat, "0.0");
+
+            // Point lights can be used by the LightTree.
+            m_flags |= LightTreeCompatible;
         }
 
         virtual void release() override
@@ -117,6 +120,22 @@ namespace
         virtual void sample(
             const ShadingContext&   shading_context,
             const Transformd&       light_transform,
+            const Vector3d&         target_point,
+            const Vector2d&         s,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            float&                  probability) const override
+        {
+            position = light_transform.get_parent_origin();
+            outgoing = normalize(target_point - position);
+            value = m_values.m_intensity;
+            probability = 1.0f;
+        }
+
+        virtual void sample(
+            const ShadingContext&   shading_context,
+            const Transformd&       light_transform,
             const Vector2d&         s,
             Vector3d&               position,
             Vector3d&               outgoing,
@@ -127,19 +146,6 @@ namespace
             outgoing = sample_sphere_uniform(s);
             value = m_values.m_intensity;
             probability = RcpFourPi<float>();
-        }
-
-        virtual void evaluate(
-            const ShadingContext&   shading_context,
-            const Transformd&       light_transform,
-            const Vector3d&         target,
-            Vector3d&               position,
-            Vector3d&               outgoing,
-            Spectrum&               value) const override
-        {
-            position = light_transform.get_parent_origin();
-            outgoing = normalize(target - position);
-            value = m_values.m_intensity;
         }
 
         float compute_distance_attenuation(

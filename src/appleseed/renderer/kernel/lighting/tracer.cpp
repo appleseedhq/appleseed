@@ -145,7 +145,7 @@ const ShadingPoint& Tracer::do_trace(
             Spectrum volume_transmission;
             void* data = phase_function->evaluate_inputs(shading_context, volume_ray);
             phase_function->prepare_inputs(shading_context.get_arena(), volume_ray, data);
-            phase_function->evaluate_transmission(volume_ray, data, volume_transmission);
+            phase_function->evaluate_transmission(data, volume_ray, volume_transmission);
             transmission *= volume_transmission;
         }
 
@@ -252,7 +252,7 @@ const ShadingPoint& Tracer::do_trace_between(
             Spectrum volume_transmission;
             void* data = phase_function->evaluate_inputs(shading_context, volume_ray);
             phase_function->prepare_inputs(shading_context.get_arena(), volume_ray, data);
-            phase_function->evaluate_transmission(volume_ray, data, volume_transmission);
+            phase_function->evaluate_transmission(data, volume_ray, volume_transmission);
             transmission *= volume_transmission;
         }
 
@@ -271,8 +271,8 @@ const ShadingPoint& Tracer::do_trace_between(
         Alpha alpha;
         evaluate_alpha(*material, *shading_point_ptr, alpha);
         if (
-            render_data.m_bsdf == nullptr && 
-            render_data.m_bssrdf == nullptr && 
+            render_data.m_bsdf == nullptr &&
+            render_data.m_bssrdf == nullptr &&
             render_data.m_phase_function != nullptr)
         {
             alpha[0] = 0.0f;

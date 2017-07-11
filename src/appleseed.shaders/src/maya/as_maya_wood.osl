@@ -324,14 +324,14 @@ shader as_maya_wood
             weight = sqrt(weight);
         }
         out_outColor = mix(in_veinColor, in_fillerColor, weight);
-        
+
         if (in_grainContrast > 0.0)
         {
             float grain_spacing = max(0.000175, in_grainSpacing);
             float inv_frequency = 1.0 / grain_spacing;
 
             float grain = sqr(noise(Pp * inv_frequency));
-            
+
             grain *= max(0.025, in_grainContrast);
             grain *= smoothstep(0.75, 1.5, sqrt(filter_width) * inv_frequency);
 
@@ -344,7 +344,7 @@ shader as_maya_wood
             out_outColor = mix(out_outColor, in_grainColor, sqrt(grain));
         }
         out_outAlpha = maya_luminance(out_outColor);
-        
+
         if (!in_wrap && in_blend)
         {
             out_outColor = mix(in_defaultColor, out_outColor, box_blending);

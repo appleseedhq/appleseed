@@ -185,7 +185,7 @@ shader as_maya_cloud
     {
         // The ripples parameter seems to use only the separate X,Y,Z
         // fields, and the vector type only when a connection exists.
-        
+
         vector ripples = isconnected(in_ripples)
             ? in_ripples
             : vector(in_ripplesX, in_ripplesY, in_ripplesZ);
@@ -240,7 +240,7 @@ shader as_maya_cloud
         {
             out_outAlpha = clamp(exp(density), 0.0, 1.0);
         }
-        
+
         if (in_softEdges)
         {
             out_outColor *= 1.0 - out_outAlpha;

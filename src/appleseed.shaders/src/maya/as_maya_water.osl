@@ -130,7 +130,7 @@ shader as_maya_water
     [[
         string as_maya_attribute_name = "in_dropSize",
         string label = "Drop Size",
-        string page = "Concentric Ripples Attributes"        
+        string page = "Concentric Ripples Attributes"
     ]],
     float in_rippleOrigin[2] = {0.5, 0.5}
     [[
@@ -220,7 +220,7 @@ shader as_maya_water
                 f_num_waves = in_numberOfWaves;
             }
 
-            float wind_normalization = 
+            float wind_normalization =
                 max(EPS, hypot(in_windUV[0], in_windUV[1]));
 
             float wind_UV[2] = {
@@ -228,7 +228,7 @@ shader as_maya_water
                 in_windUV[1] / wind_normalization};
 
             for (int i = 0; i < in_numberOfWaves; ++i)
-            {                    
+            {
                 float random_index = (i + 0.5 * random_noise(i + seed++)) *
                     in_subWaveFrequency;
 
@@ -242,7 +242,7 @@ shader as_maya_water
 
                 float sum = hypot(windwards, sidewards) + EPS;
 
-                float wave_number = M_2PI * 
+                float wave_number = M_2PI *
                     (frequency * in_waveFrequency + EPS);
 
                 // Swap U,V waves to match Maya's results.
@@ -308,7 +308,7 @@ shader as_maya_water
                 envelope = f_envelope_scale * exp(envelope);
             }
 
-            arg = M_2PI * (rad * in_rippleFrequency - 
+            arg = M_2PI * (rad * in_rippleFrequency -
                 in_rippleTime * in_phaseVelocity);
 
             value -= envelope * cos(arg);
@@ -389,7 +389,7 @@ shader as_maya_water
 
             value -= current_waves[i].amplitude * cos(arg);
         }
-        
+
         out_outColor = color(value);
 
         maya_colorBalance(

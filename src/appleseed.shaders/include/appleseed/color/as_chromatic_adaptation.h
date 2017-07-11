@@ -43,7 +43,7 @@
 //      Number Of Color Patches
 //
 //      http://hrcak.srce.hr/file/95370
-//     
+//
 
 void choose_CAT(string CAT, output vector CAT_matrix[3])
 {
@@ -133,7 +133,7 @@ void choose_CAT(string CAT, output vector CAT_matrix[3])
     }
 }
 
-// 
+//
 // Reference:
 //
 //      A Review Of Chromatic Adaptation Transforms

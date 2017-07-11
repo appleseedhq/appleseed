@@ -66,7 +66,7 @@ shader as_maya_plusMinusAverage
         string label = "Output 1D",
         string widget = "null"
     ]],
-    output float out_output2D[2] = {0.0,0.0}
+    output float out_output2D[2] = {0.0, 0.0}
     [[
         string as_maya_attribute_name = "output2D",
         string label = "Output 2D",
