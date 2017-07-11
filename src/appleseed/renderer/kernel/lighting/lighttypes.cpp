@@ -30,8 +30,10 @@
 #include "lighttypes.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/light/light.h"
+#include "renderer/modeling/material/material.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
@@ -116,8 +118,9 @@ foundation::AABB3d EmittingTriangleLightSource::get_bbox() const
 
 float EmittingTriangleLightSource::get_intensity() const
 {
-    const Spectrum hard_coded_placeholder(foundation::Color3f(1.0f, 2.0f, 3.0f));
-    return foundation::average_value(hard_coded_placeholder);
+    const EDF* edf = m_light->m_material->get_uncached_edf();
+    
+    return edf->get_max_contribution();
 }
 
 }   // namespace renderer
