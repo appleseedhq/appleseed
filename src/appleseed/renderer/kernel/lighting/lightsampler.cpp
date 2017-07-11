@@ -557,17 +557,14 @@ void LightSampler::sample(
 {
     // Mark different light groups.
     const size_t LightGroupNonPhysicalCdf       = 0;
-    const size_t LightGroupemittingTriangleCdf  = 1;
-    const size_t LightGroupLightTree            = 2;
+    const size_t LightGroupLightTree            = 1;
 
-    size_t candidate_groups[3];
+    size_t candidate_groups[2];
     size_t candidate_groups_count = 0;
 
     // Check for existence of each light group and record it.
     if (m_non_physical_lights_cdf.valid())
         candidate_groups[candidate_groups_count++] = LightGroupNonPhysicalCdf;
-    // if (m_emitting_triangles_cdf.valid())
-        // candidate_groups[candidate_groups_count++] = LightGroupemittingTriangleCdf;
     if (m_light_tree.is_built())
         candidate_groups[candidate_groups_count++] = LightGroupLightTree;
 
@@ -585,12 +582,6 @@ void LightSampler::sample(
     {
         case LightGroupNonPhysicalCdf:
             sample_non_physical_lights(
-                time,
-                Vector3f(probability_interval_shift, s[1], s[2]),
-                light_sample);
-            break;
-        case LightGroupemittingTriangleCdf:
-            sample_emitting_triangles(
                 time,
                 Vector3f(probability_interval_shift, s[1], s[2]),
                 light_sample);
