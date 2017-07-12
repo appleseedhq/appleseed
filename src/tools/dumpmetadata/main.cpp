@@ -144,7 +144,6 @@ namespace
         dump_metadata_xml<EnvironmentEDF>(file, indenter);
         dump_metadata_xml<EnvironmentShader>(file, indenter);
         dump_metadata_xml<Light>(file, indenter);
-        dump_metadata_xml<RenderLayerRule>(file, indenter);
         dump_metadata_xml<SurfaceShader>(file, indenter);
         dump_metadata_xml<Texture>(file, indenter);
     }
@@ -266,7 +265,6 @@ namespace
         dump_metadata_markdown<EnvironmentEDF>(section_number++, file);
         dump_metadata_markdown<EnvironmentShader>(section_number++, file);
         dump_metadata_markdown<Light>(section_number++, file);
-        dump_metadata_markdown<RenderLayerRule>(section_number++, file);
         dump_metadata_markdown<SurfaceShader>(section_number++, file);
         dump_metadata_markdown<Texture>(section_number++, file);
     }

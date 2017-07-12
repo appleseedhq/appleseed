@@ -33,8 +33,6 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/project/configurationcontainer.h"
-#include "renderer/modeling/project/renderlayerrule.h"
-#include "renderer/modeling/project/renderlayerrulecontainer.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -114,12 +112,6 @@ class APPLESEED_DLLSYMBOL Project
     // Return 0 if the scene does not contain cameras or if
     // no cameras are specified in the frame.
     Camera* get_uncached_active_camera() const;
-
-    // Add a render layer rule.
-    void add_render_layer_rule(foundation::auto_release_ptr<RenderLayerRule> rule);
-
-    // Access the render layer rules.
-    RenderLayerRuleContainer& render_layer_rules() const;
 
     // Access the configurations.
     ConfigurationContainer& configurations() const;

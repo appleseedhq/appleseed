@@ -67,10 +67,13 @@ Frame* ProjectBuilder::edit_frame(
     Dictionary clean_values(values);
     clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
 
-    const size_t old_canvas_width = m_project.get_frame()->image().properties().m_canvas_width;
-    const size_t old_canvas_height = m_project.get_frame()->image().properties().m_canvas_height;
+    Frame* old_frame = m_project.get_frame();
+    const size_t old_canvas_width = old_frame->image().properties().m_canvas_width;
+    const size_t old_canvas_height = old_frame->image().properties().m_canvas_height;
 
-    m_project.set_frame(FrameFactory::create(name.c_str(), clean_values));
+    auto_release_ptr<Frame> new_frame = FrameFactory::create(name.c_str(), clean_values);
+    new_frame->transfer_aovs(old_frame->aovs());
+    m_project.set_frame(new_frame);
 
     const size_t new_canvas_width = m_project.get_frame()->image().properties().m_canvas_width;
     const size_t new_canvas_height = m_project.get_frame()->image().properties().m_canvas_height;

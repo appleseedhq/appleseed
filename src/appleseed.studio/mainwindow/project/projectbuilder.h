@@ -126,7 +126,6 @@ class ProjectBuilder
     renderer::LightFactoryRegistrar                 m_light_factory_registrar;
     renderer::MaterialFactoryRegistrar              m_material_factory_registrar;
     renderer::PhaseFunctionFactoryRegistrar         m_phase_function_factory_registrar;
-    renderer::RenderLayerRuleFactoryRegistrar       m_render_layer_rule_factory_registrar;
     renderer::SurfaceShaderFactoryRegistrar         m_surface_shader_factory_registrar;
     renderer::TextureFactoryRegistrar               m_texture_factory_registrar;
 
@@ -205,13 +204,6 @@ inline const renderer::EntityTraits<renderer::PhaseFunction>::FactoryRegistrarTy
 ProjectBuilder::get_factory_registrar<renderer::PhaseFunction>() const
 {
     return m_phase_function_factory_registrar;
-}
-
-template <>
-inline const renderer::EntityTraits<renderer::RenderLayerRule>::FactoryRegistrarType&
-ProjectBuilder::get_factory_registrar<renderer::RenderLayerRule>() const
-{
-    return m_render_layer_rule_factory_registrar;
 }
 
 template <>

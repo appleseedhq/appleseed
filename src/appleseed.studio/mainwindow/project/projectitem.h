@@ -39,7 +39,6 @@ namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { class OutputItem; } }
 namespace appleseed { namespace studio { class SceneItem; } }
 namespace renderer  { class Project; }
-namespace renderer  { class RenderLayerRule; }
 
 namespace appleseed {
 namespace studio {
@@ -52,13 +51,8 @@ class ProjectItem
 
     void expand();
 
-    void add_item(renderer::RenderLayerRule* rule);
-
   private:
-    typedef CollectionItem<renderer::RenderLayerRule, renderer::Project, ProjectItem> RenderLayerRuleCollectionItem;
-
     SceneItem*                      m_scene_item;
-    RenderLayerRuleCollectionItem*  m_render_layer_collection_item;
     OutputItem*                     m_output_item;
 };
 
