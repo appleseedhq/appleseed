@@ -34,6 +34,7 @@
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/makevector.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -43,6 +44,7 @@
 
 // Standard headers.
 #include <cmath>
+#include <string>
 
 using namespace foundation;
 
@@ -52,6 +54,22 @@ namespace renderer
 namespace
 {
     const char* Model = "henyey_phasefunction";
+
+    void diffuse_albedo_to_scattering_albedo(
+        const Spectrum& diffuse_albedo,
+        Spectrum& scattering_albedo)
+    {
+        const size_t spectrum_size = diffuse_albedo.size();
+        if (scattering_albedo.size() < spectrum_size)
+            Spectrum::upgrade(scattering_albedo, scattering_albedo);
+        for (size_t i = 0; i < spectrum_size; ++i)
+        {
+            const float x1 = diffuse_albedo[i];
+            const float x2 = x1 * x1;
+            const float x3 = x2 * x1;
+            scattering_albedo[i] = 1.0f - std::exp(-5.09406f * x1 + 2.61188f * x2 - 4.31805f * x3);
+        }
+    }
 }
 
 //
@@ -73,6 +91,10 @@ class HenyeyPhaseFunction
         m_inputs.declare("absorption_multiplier", InputFormatFloat, "1.0");
         m_inputs.declare("scattering", InputFormatSpectralReflectance);
         m_inputs.declare("scattering_multiplier", InputFormatFloat, "1.0");
+        m_inputs.declare("reflectance", InputFormatSpectralReflectance);
+        m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
+        m_inputs.declare("mfp", InputFormatSpectralReflectance);
+        m_inputs.declare("mfp_multiplier", InputFormatFloat, "1.0");
         m_inputs.declare("average_cosine", InputFormatFloat, "0.0");
     }
 
@@ -84,6 +106,33 @@ class HenyeyPhaseFunction
     virtual const char* get_model() const override
     {
         return Model;
+    }
+
+    virtual bool on_frame_begin(
+        const Project&          project,
+        const BaseGroup*        parent,
+        OnFrameBeginRecorder&   recorder,
+        IAbortSwitch*           abort_switch) override
+    {
+        if (!PhaseFunction::on_frame_begin(project, parent, recorder, abort_switch))
+            return false;
+
+        const EntityDefMessageContext context("phase function", this);
+
+        const std::string volume_parameterization =
+            m_params.get_required<std::string>(
+                "volume_parameterization",
+                "default",
+            make_vector("default", "sss"),
+            context);
+
+        if (volume_parameterization == "default")
+            m_volume_parameterization = DefaultParameterization;
+        else if (volume_parameterization == "sss")
+            m_volume_parameterization = SSSParameterization;
+        else return false;
+
+        return true;
     }
 
     virtual bool is_homogeneous() const override
@@ -103,11 +152,23 @@ class HenyeyPhaseFunction
     {
         InputValues* values = static_cast<InputValues*>(data);
 
-        values->m_absorption *= values->m_absorption_multiplier;
-        values->m_scattering *= values->m_scattering_multiplier;
+        if (m_volume_parameterization == SSSParameterization)
+        {
+            // See NormalizedDiffusionBSSRDF for more details.
 
-        // Precompute extinction.
-        values->m_precomputed.m_extinction = values->m_absorption + values->m_scattering;
+            values->m_mfp *= values->m_mfp_multiplier;
+            values->m_reflectance *= values->m_reflectance_multiplier;
+
+            values->m_precomputed.m_extinction = rcp(values->m_mfp);
+            values->m_scattering = values->m_reflectance * values->m_precomputed.m_extinction;
+            values->m_absorption = values->m_precomputed.m_extinction - values->m_scattering;
+        }
+        else
+        {
+            values->m_absorption *= values->m_absorption_multiplier;
+            values->m_scattering *= values->m_scattering_multiplier;
+            values->m_precomputed.m_extinction = values->m_absorption + values->m_scattering;
+        }
     }
 
     virtual float sample(
@@ -262,6 +323,14 @@ class HenyeyPhaseFunction
     }
 
   private:
+    enum VolumeParameterization
+    {
+        DefaultParameterization,
+        SSSParameterization
+    };
+
+    VolumeParameterization m_volume_parameterization;
+
     typedef HenyeyPhaseFunctionInputValues InputValues;
 };
 
@@ -289,14 +358,30 @@ DictionaryArray HenyeyPhaseFunctionFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
+            .insert("name", "volume_parameterization")
+            .insert("label", "Volume Parameterization")
+            .insert("type", "enumeration")
+            .insert("items",
+            Dictionary()
+                .insert("Absorption and Transmittance", "default")
+                .insert("Mean Free Path and Reflectance", "sss"))
+            .insert("use", "required")
+            .insert("default", "default")
+            .insert("on_change", "rebuild_form"));
+
+    metadata.push_back(
+        Dictionary()
             .insert("name", "absorption")
             .insert("label", "Absorption Coefficient")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors"))
-            .insert("use", "required")
-            .insert("default", "0.5"));
+            .insert("use", "optional")
+            .insert("default", "0.5")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("volume_parameterization", "default")));
 
     metadata.push_back(
         Dictionary()
@@ -312,7 +397,10 @@ DictionaryArray HenyeyPhaseFunctionFactory::get_input_metadata() const
                     .insert("value", "200.0")
                     .insert("type", "soft"))
             .insert("use", "optional")
-            .insert("default", "1.0"));
+            .insert("default", "1.0")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("volume_parameterization", "default")));
 
     metadata.push_back(
         Dictionary()
@@ -322,8 +410,11 @@ DictionaryArray HenyeyPhaseFunctionFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors"))
-                    .insert("use", "required")
-                    .insert("default", "0.5"));
+            .insert("use", "optional")
+            .insert("default", "0.5")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("volume_parameterization", "default")));
 
     metadata.push_back(
         Dictionary()
@@ -339,7 +430,66 @@ DictionaryArray HenyeyPhaseFunctionFactory::get_input_metadata() const
                     .insert("value", "200.0")
                     .insert("type", "soft"))
             .insert("use", "optional")
-            .insert("default", "1.0"));
+            .insert("default", "1.0")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("volume_parameterization", "default")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "reflectance")
+            .insert("label", "Diffuse Surface Reflectance")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "0.5")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("volume_parameterization", "sss")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "reflectance_multiplier")
+            .insert("label", "Diffuse Surface Reflectance Multiplier")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("volume_parameterization", "sss")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "mfp")
+            .insert("label", "Mean Free Path")
+            .insert("type", "colormap")
+            .insert("entity_types",
+            Dictionary()
+                .insert("color", "Colors")
+                .insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "0.5")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("volume_parameterization", "sss")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "mfp_multiplier")
+            .insert("label", "Mean Free Path Multiplier")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("volume_parameterization", "sss")));
 
     metadata.push_back(
         Dictionary()
