@@ -276,14 +276,13 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             ShadingRay::Time(),
             VisibilityFlags::ShadowRay,
             0);
-        const ShadingPoint* shading_point;
-        m_tracer.trace(
-            *m_shading_context,
-            ray,
-            transmission,
-            shading_point);
+        const ShadingPoint& shading_point =
+            m_tracer.trace_full(
+                *m_shading_context,
+                ray,
+                transmission);
 
-        EXPECT_FALSE(shading_point->hit());
+        EXPECT_FALSE(shading_point.hit());
         EXPECT_EQ(Spectrum(1.0f), transmission);
     }
 
@@ -296,7 +295,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             VisibilityFlags::ShadowRay,
             0);
         Spectrum transmission;
-        m_tracer.trace(
+        m_tracer.trace_simple(
             *m_shading_context,
             ray,
             transmission);
@@ -307,25 +306,24 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(TraceBetween_GivenNoOccluder, Fixture<EmptyScene>)
     {
         Spectrum transmission;
-        const ShadingPoint* shading_point;
-        m_tracer.trace_between(
-            *m_shading_context,
-            Vector3d(0.0, 0.0, 0.0),
-            Vector3d(5.0, 0.0, 0.0),
-            ShadingRay::Time(),
-            VisibilityFlags::ShadowRay,
-            0,
-            transmission,
-            shading_point);
+        const ShadingPoint& shading_point =
+            m_tracer.trace_between_full(
+                *m_shading_context,
+                Vector3d(0.0, 0.0, 0.0),
+                Vector3d(5.0, 0.0, 0.0),
+                ShadingRay::Time(),
+                VisibilityFlags::ShadowRay,
+                0,
+                transmission);
 
-        EXPECT_FALSE(shading_point->hit());
+        EXPECT_FALSE(shading_point.hit());
         EXPECT_EQ(Spectrum(1.0f), transmission);
     }
 
     TEST_CASE_F(TraceBetween_QuickVariant_GivenNoOccluder, Fixture<EmptyScene>)
     {
         Spectrum transmission;
-        m_tracer.trace_between(
+        m_tracer.trace_between_simple(
             *m_shading_context,
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(5.0, 0.0, 0.0),
@@ -355,15 +353,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             ShadingRay::Time(),
             VisibilityFlags::ShadowRay,
             0);
-        const ShadingPoint* shading_point;
-        m_tracer.trace(
-            *m_shading_context,
-            ray,
-            transmission,
-            shading_point);
+        const ShadingPoint& shading_point =
+            m_tracer.trace_full(
+                *m_shading_context,
+                ray,
+                transmission);
 
-        ASSERT_TRUE(shading_point->hit());
-        EXPECT_FEQ(Vector3d(2.0, 0.0, 0.0), shading_point->get_point());
+        ASSERT_TRUE(shading_point.hit());
+        EXPECT_FEQ(Vector3d(2.0, 0.0, 0.0), shading_point.get_point());
         EXPECT_EQ(Spectrum(1.0f), transmission);
     }
 
@@ -376,7 +373,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             ShadingRay::Time(),
             VisibilityFlags::ShadowRay,
             0);
-        m_tracer.trace(
+        m_tracer.trace_simple(
             *m_shading_context,
             ray,
             transmission);
@@ -387,26 +384,25 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(TraceBetween_GivenSingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
     {
         Spectrum transmission;
-        const ShadingPoint* shading_point;
-        m_tracer.trace_between(
-            *m_shading_context,
-            Vector3d(0.0, 0.0, 0.0),
-            Vector3d(5.0, 0.0, 0.0),
-            ShadingRay::Time(),
-            VisibilityFlags::ShadowRay,
-            0,
-            transmission,
-            shading_point);
+        const ShadingPoint& shading_point =
+            m_tracer.trace_between_full(
+                *m_shading_context,
+                Vector3d(0.0, 0.0, 0.0),
+                Vector3d(5.0, 0.0, 0.0),
+                ShadingRay::Time(),
+                VisibilityFlags::ShadowRay,
+                0,
+                transmission);
 
-        ASSERT_TRUE(shading_point->hit());
-        EXPECT_FEQ(Vector3d(2.0, 0.0, 0.0), shading_point->get_point());
+        ASSERT_TRUE(shading_point.hit());
+        EXPECT_FEQ(Vector3d(2.0, 0.0, 0.0), shading_point.get_point());
         EXPECT_EQ(Spectrum(1.0f), transmission);
     }
 
     TEST_CASE_F(TraceBetween_QuickVariant_GivenSingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
     {
         Spectrum transmission;
-        m_tracer.trace_between(
+        m_tracer.trace_between_simple(
             *m_shading_context,
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(5.0, 0.0, 0.0),
@@ -436,14 +432,13 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             ShadingRay::Time(),
             VisibilityFlags::ShadowRay,
             0);
-        const ShadingPoint* shading_point;
-        m_tracer.trace(
-            *m_shading_context,
-            ray,
-            transmission,
-            shading_point);
+        const ShadingPoint& shading_point =
+            m_tracer.trace_full(
+                *m_shading_context,
+                ray,
+                transmission);
 
-        ASSERT_FALSE(shading_point->hit());
+        ASSERT_FALSE(shading_point.hit());
         EXPECT_FEQ(Spectrum(0.5f), transmission);
     }
 
@@ -456,7 +451,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             ShadingRay::Time(),
             VisibilityFlags::ShadowRay,
             0);
-        m_tracer.trace(
+        m_tracer.trace_simple(
             *m_shading_context,
             ray,
             transmission);
@@ -467,25 +462,24 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(TraceBetween_GivenSingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
     {
         Spectrum transmission;
-        const ShadingPoint* shading_point;
-        m_tracer.trace_between(
-            *m_shading_context,
-            Vector3d(0.0, 0.0, 0.0),
-            Vector3d(5.0, 0.0, 0.0),
-            ShadingRay::Time(),
-            VisibilityFlags::ShadowRay,
-            0,
-            transmission,
-            shading_point);
+        const ShadingPoint& shading_point =
+            m_tracer.trace_between_full(
+                *m_shading_context,
+                Vector3d(0.0, 0.0, 0.0),
+                Vector3d(5.0, 0.0, 0.0),
+                ShadingRay::Time(),
+                VisibilityFlags::ShadowRay,
+                0,
+                transmission);
 
-        ASSERT_FALSE(shading_point->hit());
+        ASSERT_FALSE(shading_point.hit());
         EXPECT_FEQ(Spectrum(0.5f), transmission);
     }
 
     TEST_CASE_F(TraceBetween_QuickVariant_GivenSingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
     {
         Spectrum transmission;
-        m_tracer.trace_between(
+        m_tracer.trace_between_simple(
             *m_shading_context,
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(5.0, 0.0, 0.0),
@@ -516,15 +510,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             ShadingRay::Time(),
             VisibilityFlags::ShadowRay,
             0);
-        const ShadingPoint* shading_point;
-        m_tracer.trace(
-            *m_shading_context,
-            ray,
-            transmission,
-            shading_point);
+        const ShadingPoint& shading_point =
+            m_tracer.trace_full(
+                *m_shading_context,
+                ray,
+                transmission);
 
-        ASSERT_TRUE(shading_point->hit());
-        EXPECT_FEQ(Vector3d(4.0, 0.0, 0.0), shading_point->get_point());
+        ASSERT_TRUE(shading_point.hit());
+        EXPECT_FEQ(Vector3d(4.0, 0.0, 0.0), shading_point.get_point());
         EXPECT_FEQ(Spectrum(0.5f), transmission);
     }
 
@@ -537,7 +530,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             ShadingRay::Time(),
             VisibilityFlags::ShadowRay,
             0);
-        m_tracer.trace(
+        m_tracer.trace_simple(
             *m_shading_context,
             ray,
             transmission);
@@ -548,26 +541,25 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(TraceBetween_GivenTransparentThenOpaqueOccluders_GivenTargetPastOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
         Spectrum transmission;
-        const ShadingPoint* shading_point;
-        m_tracer.trace_between(
-            *m_shading_context,
-            Vector3d(0.0, 0.0, 0.0),
-            Vector3d(5.0, 0.0, 0.0),
-            ShadingRay::Time(),
-            VisibilityFlags::ShadowRay,
-            0,
-            transmission,
-            shading_point);
+        const ShadingPoint& shading_point =
+            m_tracer.trace_between_full(
+                *m_shading_context,
+                Vector3d(0.0, 0.0, 0.0),
+                Vector3d(5.0, 0.0, 0.0),
+                ShadingRay::Time(),
+                VisibilityFlags::ShadowRay,
+                0,
+                transmission);
 
-        ASSERT_TRUE(shading_point->hit());
-        EXPECT_FEQ(Vector3d(4.0, 0.0, 0.0), shading_point->get_point());
+        ASSERT_TRUE(shading_point.hit());
+        EXPECT_FEQ(Vector3d(4.0, 0.0, 0.0), shading_point.get_point());
         EXPECT_FEQ(Spectrum(0.5f), transmission);
     }
 
     TEST_CASE_F(TraceBetween_QuickVariant_GivenTransparentThenOpaqueOccluders_GivenTargetPastOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
         Spectrum transmission;
-        m_tracer.trace_between(
+        m_tracer.trace_between_simple(
             *m_shading_context,
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(5.0, 0.0, 0.0),
@@ -582,25 +574,24 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(TraceBetween_GivenTransparentThenOpaqueOccluders_GivenTargetOnOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
         Spectrum transmission;
-        const ShadingPoint* shading_point;
-        m_tracer.trace_between(
-            *m_shading_context,
-            Vector3d(0.0, 0.0, 0.0),
-            Vector3d(4.0, 0.0, 0.0),
-            ShadingRay::Time(),
-            VisibilityFlags::ShadowRay,
-            0,
-            transmission,
-            shading_point);
+        const ShadingPoint& shading_point =
+            m_tracer.trace_between_full(
+                *m_shading_context,
+                Vector3d(0.0, 0.0, 0.0),
+                Vector3d(4.0, 0.0, 0.0),
+                ShadingRay::Time(),
+                VisibilityFlags::ShadowRay,
+                0,
+                transmission);
 
-        ASSERT_FALSE(shading_point->hit());
+        ASSERT_FALSE(shading_point.hit());
         EXPECT_FEQ(Spectrum(0.5f), transmission);
     }
 
     TEST_CASE_F(TraceBetween_QuickVariant_GivenTransparentThenOpaqueOccluders_GivenTargetOnOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
         Spectrum transmission;
-        m_tracer.trace_between(
+        m_tracer.trace_between_simple(
             *m_shading_context,
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(4.0, 0.0, 0.0),
@@ -631,20 +622,19 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             VisibilityFlags::ShadowRay,
             0);
         Spectrum parent_transmission;
-        const ShadingPoint* parent_shading_point;
-        m_tracer.trace(
-            *m_shading_context,
-            ray,
-            parent_transmission,
-            parent_shading_point);
+        const ShadingPoint& parent_shading_point =
+            m_tracer.trace_full(
+                *m_shading_context,
+                ray,
+                parent_transmission);
 
-        ASSERT_TRUE(parent_shading_point->hit());
-        ASSERT_FEQ(2.0, parent_shading_point->get_distance());
+        ASSERT_TRUE(parent_shading_point.hit());
+        ASSERT_FEQ(2.0, parent_shading_point.get_distance());
 
         Spectrum transmission;
-        m_tracer.trace_between(
+        m_tracer.trace_between_simple(
             *m_shading_context,
-            *parent_shading_point,
+            parent_shading_point,
             Vector3d(4.0, 0.0, 0.0),
             VisibilityFlags::ShadowRay,
             transmission);
@@ -673,20 +663,19 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             VisibilityFlags::ShadowRay,
             0);
         Spectrum parent_transmission;
-        const ShadingPoint* parent_shading_point;
-        m_tracer.trace(
-            *m_shading_context,
-            ray,
-            parent_transmission,
-            parent_shading_point);
+        const ShadingPoint& parent_shading_point =
+            m_tracer.trace_full(
+                *m_shading_context,
+                ray,
+                parent_transmission);
 
-        ASSERT_TRUE(parent_shading_point->hit());
-        ASSERT_FEQ(1.0, parent_shading_point->get_distance());
+        ASSERT_TRUE(parent_shading_point.hit());
+        ASSERT_FEQ(1.0, parent_shading_point.get_distance());
 
         Spectrum transmission;
-        m_tracer.trace_between(
+        m_tracer.trace_between_simple(
             *m_shading_context,
-            *parent_shading_point,
+            parent_shading_point,
             Vector3d(2.0, 0.0, 0.0),
             VisibilityFlags::ShadowRay,
             transmission);

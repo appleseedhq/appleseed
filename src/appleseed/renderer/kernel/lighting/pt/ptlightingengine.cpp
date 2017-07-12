@@ -885,16 +885,21 @@ namespace
                 if (ScatteringMode::has_diffuse_or_glossy(vertex.m_scattering_modes))
                     m_is_indirect_lighting = true;
 
+                // Get full ray transmission.
                 Spectrum ray_transmission;
                 phase_function->evaluate_transmission(
                     vertex.m_phase_function_data, volume_ray, ray_transmission);
-                const size_t channel_count = ray_transmission.size();
+                const size_t channel_count = std::max(ray_transmission.size(), vertex.m_throughput.size());
+                if (ray_transmission.size() != channel_count)
+                    Spectrum::upgrade(ray_transmission, ray_transmission);
 
                 const Spectrum& scattering_coef = phase_function->scattering_coefficient(
                     vertex.m_phase_function_data, volume_ray);
 
-                const Spectrum& extinction_coef = phase_function->extinction_coefficient(
+                Spectrum extinction_coef = phase_function->extinction_coefficient(
                     vertex.m_phase_function_data, volume_ray);
+                if (extinction_coef.size() != channel_count)
+                    Spectrum::upgrade(extinction_coef, extinction_coef);
 
                 // Precompute MIS weights.
                 // MIS terms are:
@@ -908,8 +913,7 @@ namespace
                     precomputed_mis_weights = scattering_coef;
                 else
                     Spectrum::upgrade(scattering_coef, precomputed_mis_weights);
-                if (vertex.m_throughput.size() <= channel_count)
-                    precomputed_mis_weights *= vertex.m_throughput;
+                precomputed_mis_weights *= vertex.m_throughput;
                 float max_density = 0.0f;
                 for (size_t i = 0; i < channel_count; ++i)
                 {
@@ -939,17 +943,21 @@ namespace
                         continue;
 
                     // Sample distance.
-                    float distance_sample;
-                    const float distance_prob = phase_function->sample_distance(
-                        m_sampling_context,
-                        vertex.m_phase_function_data,
-                        volume_ray,
-                        channel,
-                        distance_sample);
+                    const float ray_length = static_cast<float>(volume_ray.get_length());
+                    m_sampling_context.split_in_place(1, 1);
+                    const float distance_sample = sample_exponential_distribution_on_segment(
+                        m_sampling_context.next2<float>(), extinction_coef[channel], 0.0f, ray_length);
 
+                    // Calculate PDF of this distance sample.
+                    const float distance_prob = exponential_distribution_on_segment_pdf(
+                        distance_sample, extinction_coef[channel], 0.0f, ray_length);
+
+                    // Calculate transmission between the ray origin and the sampled distance.
                     Spectrum transmission;
                     phase_function->evaluate_transmission(
                         vertex.m_phase_function_data, volume_ray, distance_sample, transmission);
+                    if (transmission.size() != channel_count)
+                        Spectrum::upgrade(transmission, transmission);
 
                     // Calculate MIS weight for this distance sample (balance heuristic).
                     float mis_weights_sum = 0.0f;

@@ -79,35 +79,33 @@ class Tracer
     // with the closest fully opaque occluder and the transmission factor up
     // to (but excluding) this occluder, or a miss if there is no fully opaque
     // occluder in this direction.
-    void trace(
+    void trace_simple(
         const ShadingContext&       shading_context,
         const ShadingRay&           ray,
         Spectrum&                   transmission);
 
-    void trace(
+    const ShadingPoint& trace_full(
         const ShadingContext&       shading_context,
         const ShadingRay&           ray,
-        Spectrum&                   transmission,
-        const ShadingPoint*&        shading_point);
+        Spectrum&                   transmission);
 
-    void trace(
+    void trace_simple(
         const ShadingContext&       shading_context,
         const ShadingPoint&         origin,
         const ShadingRay&           ray,
         Spectrum&                   transmission);
 
-    void trace(
+    const ShadingPoint& trace_full(
         const ShadingContext&       shading_context,
         const ShadingPoint&         origin,
         const ShadingRay&           ray,
-        Spectrum&                   transmission,
-        const ShadingPoint*&        shading_point);
+        Spectrum&                   transmission);
 
     // Compute the transmission between two points. Returns the intersection
     // with the closest fully opaque occluder and the transmission factor up
     // to (but excluding) this occluder, or a miss if there is no fully opaque
     // occluder in the segment [origin, target).
-    void trace_between(
+    void trace_between_simple(
         const ShadingContext&           shading_context,
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     target,
@@ -115,16 +113,24 @@ class Tracer
         const VisibilityFlags::Type     ray_flags,
         Spectrum&                       transmission);
 
-    void trace_between(
+    const ShadingPoint& trace_between_full(
         const ShadingContext&           shading_context,
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     target,
         const ShadingRay&               parent_ray,
         const VisibilityFlags::Type     ray_flags,
-        Spectrum&                       transmission,
-        const ShadingPoint*&            shading_point);
+        Spectrum&                       transmission);
 
-    void trace_between(
+    void trace_between_simple(
+        const ShadingContext&           shading_context,
+        const foundation::Vector3d&     origin,
+        const foundation::Vector3d&     target,
+        const ShadingRay::Time&         ray_time,
+        const VisibilityFlags::Type     ray_flags,
+        const ShadingRay::DepthType     ray_depth,
+        Spectrum&                       transmission);
+
+    const ShadingPoint& trace_between_full(
         const ShadingContext&           shading_context,
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     target,
@@ -133,17 +139,7 @@ class Tracer
         const ShadingRay::DepthType     ray_depth,
         Spectrum&                       transmission);
 
-    void trace_between(
-        const ShadingContext&           shading_context,
-        const foundation::Vector3d&     origin,
-        const foundation::Vector3d&     target,
-        const ShadingRay::Time&         ray_time,
-        const VisibilityFlags::Type     ray_flags,
-        const ShadingRay::DepthType     ray_depth,
-        Spectrum&                       transmission,
-        const ShadingPoint*&            shading_point);
-
-    void trace_between(
+    void trace_between_simple(
         const ShadingContext&           shading_context,
         const ShadingPoint&             origin,
         const foundation::Vector3d&     target,
@@ -151,29 +147,27 @@ class Tracer
         const VisibilityFlags::Type     ray_flags,
         Spectrum&                       transmission);
 
-    void trace_between(
+    const ShadingPoint& trace_between_full(
         const ShadingContext&           shading_context,
         const ShadingPoint&             origin,
         const foundation::Vector3d&     target,
         const ShadingRay&               parent_ray,
         const VisibilityFlags::Type     ray_flags,
-        Spectrum&                       transmission,
-        const ShadingPoint*&            shading_point);
+        Spectrum&                       transmission);
 
-    void trace_between(
+    void trace_between_simple(
         const ShadingContext&           shading_context,
         const ShadingPoint&             origin,
         const foundation::Vector3d&     target,
         const VisibilityFlags::Type     ray_flags,
         Spectrum&                       transmission);
 
-    void trace_between(
+    const ShadingPoint& trace_between_full(
         const ShadingContext&           shading_context,
         const ShadingPoint&             origin,
         const foundation::Vector3d&     target,
         const VisibilityFlags::Type     ray_flags,
-        Spectrum&                       transmission,
-        const ShadingPoint*&            shading_point);
+        Spectrum&                       transmission);
 
   private:
     const Intersector&                  m_intersector;
@@ -209,36 +203,34 @@ class Tracer
 // Tracer class implementation.
 //
 
-inline void Tracer::trace(
+inline const ShadingPoint& Tracer::trace_full(
     const ShadingContext&           shading_context,
     const ShadingRay&               ray,
-    Spectrum&                       transmission,
-    const ShadingPoint*&            shading_point)
+    Spectrum&                       transmission)
 {
-    shading_point =
-        &do_trace(
+    return
+        do_trace(
             shading_context,
             ray,
             transmission,
             0);
 }
 
-inline void Tracer::trace(
+inline const ShadingPoint& Tracer::trace_full(
     const ShadingContext&           shading_context,
     const ShadingPoint&             origin,
     const ShadingRay&               ray,
-    Spectrum&                       transmission,
-    const ShadingPoint*&            shading_point)
+    Spectrum&                       transmission)
 {
-    shading_point =
-        &do_trace(
+    return
+        do_trace(
             shading_context,
             ray,
             transmission,
             &origin);
 }
 
-inline void Tracer::trace(
+inline void Tracer::trace_simple(
     const ShadingContext&           shading_context,
     const ShadingRay&               ray,
     Spectrum&                       transmission)
@@ -247,18 +239,17 @@ inline void Tracer::trace(
         transmission.set(m_intersector.trace_probe(ray) ? 0.0f : 1.0f);
     else
     {
-        const ShadingPoint* shading_point;
-        trace(
-            shading_context,
-            ray,
-            transmission,
-            shading_point);
+        const ShadingPoint& shading_point =
+            trace_full(
+                shading_context,
+                ray,
+                transmission);
 
-        if (shading_point->hit()) transmission.set(0.0f);
+        if (shading_point.hit()) transmission.set(0.0f);
     }
 }
 
-inline void Tracer::trace(
+inline void Tracer::trace_simple(
     const ShadingContext&           shading_context,
     const ShadingPoint&             origin,
     const ShadingRay&               ray,
@@ -268,27 +259,25 @@ inline void Tracer::trace(
         transmission.set(m_intersector.trace_probe(ray, &origin) ? 0.0f : 1.0f);
     else
     {
-        const ShadingPoint* shading_point;
-        trace(
-            shading_context,
-            origin,
-            ray,
-            transmission,
-            shading_point);
+        const ShadingPoint& shading_point =
+            trace_full(
+                shading_context,
+                origin,
+                ray,
+                transmission);
 
-        if (shading_point->hit()) transmission.set(0.0f);
+        if (shading_point.hit()) transmission.set(0.0f);
     }
 }
 
-inline void Tracer::trace_between(
+inline const ShadingPoint& Tracer::trace_between_full(
     const ShadingContext&               shading_context,
     const foundation::Vector3d&         origin,
     const foundation::Vector3d&         target,
     const ShadingRay::Time&             ray_time,
     const VisibilityFlags::Type         ray_flags,
     const ShadingRay::DepthType         ray_depth,
-    Spectrum&                           transmission,
-    const ShadingPoint*&                shading_point)
+    Spectrum&                           transmission)
 {
     double dist = foundation::norm(target - origin);
     ShadingRay ray(
@@ -300,8 +289,8 @@ inline void Tracer::trace_between(
         ray_flags,
         ray_depth + 1);
 
-    shading_point =
-        &do_trace_between(
+    return
+        do_trace_between(
             shading_context,
             target,
             ray,
@@ -309,14 +298,13 @@ inline void Tracer::trace_between(
             nullptr);
 }
 
-inline void Tracer::trace_between(
+inline const ShadingPoint& Tracer::trace_between_full(
     const ShadingContext&               shading_context,
     const foundation::Vector3d&         origin,
     const foundation::Vector3d&         target,
     const ShadingRay&                   parent_ray,
     const VisibilityFlags::Type         ray_flags,
-    Spectrum&                           transmission,
-    const ShadingPoint*&                shading_point)
+    Spectrum&                           transmission)
 {
     double dist = foundation::norm(target - origin);
     ShadingRay ray(
@@ -329,8 +317,8 @@ inline void Tracer::trace_between(
         parent_ray.m_depth + 1);
     ray.copy_media_from(parent_ray);
 
-    shading_point =
-        &do_trace_between(
+    return
+        do_trace_between(
             shading_context,
             target,
             ray,
@@ -338,13 +326,12 @@ inline void Tracer::trace_between(
             nullptr);
 }
 
-inline void Tracer::trace_between(
+inline const ShadingPoint& Tracer::trace_between_full(
     const ShadingContext&               shading_context,
     const ShadingPoint&                 origin,
     const foundation::Vector3d&         target,
     const VisibilityFlags::Type         ray_flags,
-    Spectrum&                           transmission,
-    const ShadingPoint*&                shading_point)
+    Spectrum&                           transmission)
 {
     const foundation::Vector3d direction = target - origin.get_point();
     const double dist = foundation::norm(direction);
@@ -358,8 +345,8 @@ inline void Tracer::trace_between(
         ray_flags,
         origin.get_ray().m_depth + 1);
 
-    shading_point =
-        &do_trace_between(
+    return
+        do_trace_between(
             shading_context,
             target,
             ray,
@@ -367,14 +354,13 @@ inline void Tracer::trace_between(
             &origin);
 }
 
-inline void Tracer::trace_between(
+inline const ShadingPoint& Tracer::trace_between_full(
     const ShadingContext&               shading_context,
     const ShadingPoint&                 origin,
     const foundation::Vector3d&         target,
     const ShadingRay&                   parent_ray,
     const VisibilityFlags::Type         ray_flags,
-    Spectrum&                           transmission,
-    const ShadingPoint*&                shading_point)
+    Spectrum&                           transmission)
 {
     const foundation::Vector3d direction = target - origin.get_point();
     const double dist = foundation::norm(direction);
@@ -389,8 +375,8 @@ inline void Tracer::trace_between(
         parent_ray.m_depth + 1);
     ray.copy_media_from(parent_ray);
 
-    shading_point =
-        &do_trace_between(
+    return
+        do_trace_between(
             shading_context,
             target,
             ray,
@@ -398,7 +384,7 @@ inline void Tracer::trace_between(
             &origin);
 }
 
-inline void Tracer::trace_between(
+inline void Tracer::trace_between_simple(
     const ShadingContext&               shading_context,
     const foundation::Vector3d&         origin,
     const foundation::Vector3d&         target,
@@ -425,22 +411,21 @@ inline void Tracer::trace_between(
     }
     else
     {
-        const ShadingPoint* shading_point;
-        trace_between(
-            shading_context,
-            origin,
-            target,
-            ray_time,
-            ray_flags,
-            ray_depth,
-            transmission,
-            shading_point);
+        const ShadingPoint& shading_point =
+            trace_between_full(
+                shading_context,
+                origin,
+                target,
+                ray_time,
+                ray_flags,
+                ray_depth,
+                transmission);
 
-        if (shading_point->hit()) transmission.set(0.0f);
+        if (shading_point.hit()) transmission.set(0.0f);
     }
 }
 
-inline void Tracer::trace_between(
+inline void Tracer::trace_between_simple(
     const ShadingContext&               shading_context,
     const foundation::Vector3d&         origin,
     const foundation::Vector3d&         target,
@@ -466,21 +451,20 @@ inline void Tracer::trace_between(
     }
     else
     {
-        const ShadingPoint* shading_point;
-        trace_between(
-            shading_context,
-            origin,
-            target,
-            parent_ray,
-            ray_flags,
-            transmission,
-            shading_point);
+        const ShadingPoint& shading_point =
+            trace_between_full(
+                shading_context,
+                origin,
+                target,
+                parent_ray,
+                ray_flags,
+                transmission);
 
-        if (shading_point->hit()) transmission.set(0.0f);
+        if (shading_point.hit()) transmission.set(0.0f);
     }
 }
 
-inline void Tracer::trace_between(
+inline void Tracer::trace_between_simple(
     const ShadingContext&               shading_context,
     const ShadingPoint&                 origin,
     const foundation::Vector3d&         target,
@@ -505,20 +489,19 @@ inline void Tracer::trace_between(
     }
     else
     {
-        const ShadingPoint* shading_point;
-        trace_between(
-            shading_context,
-            origin,
-            target,
-            ray_flags,
-            transmission,
-            shading_point);
+        const ShadingPoint& shading_point =
+            trace_between_full(
+                shading_context,
+                origin,
+                target,
+                ray_flags,
+                transmission);
 
-        if (shading_point->hit()) transmission.set(0.0f);
+        if (shading_point.hit()) transmission.set(0.0f);
     }
 }
 
-inline void Tracer::trace_between(
+inline void Tracer::trace_between_simple(
     const ShadingContext&               shading_context,
     const ShadingPoint&                 origin,
     const foundation::Vector3d&         target,
@@ -544,17 +527,16 @@ inline void Tracer::trace_between(
     }
     else
     {
-        const ShadingPoint* shading_point;
-        trace_between(
-            shading_context,
-            origin,
-            target,
-            parent_ray,
-            ray_flags,
-            transmission,
-            shading_point);
+        const ShadingPoint& shading_point =
+            trace_between_full(
+                shading_context,
+                origin,
+                target,
+                parent_ray,
+                ray_flags,
+                transmission);
 
-        if (shading_point->hit()) transmission.set(0.0f);
+        if (shading_point.hit()) transmission.set(0.0f);
     }
 }
 
