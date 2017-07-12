@@ -576,7 +576,7 @@ void LightSampler::sample(
     const size_t selected_type  = candidate_groups[selected_index];
     
     // Avoid bias propagation by expanding the chosen interval back to [0,1].
-    float probability_interval_shift = (s[0] - selected_index / candidate_groups_count) * candidate_groups_count;
+    float probability_interval_shift = (s[0] - static_cast<float>(selected_index) / candidate_groups_count) * candidate_groups_count;
 
     switch (selected_type)
     {
