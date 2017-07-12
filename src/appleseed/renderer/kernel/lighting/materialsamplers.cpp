@@ -132,7 +132,7 @@ const ShadingPoint& BSDFSampler::trace(
     ray.copy_media_from(m_shading_point.get_ray());
 
     const ShadingPoint& shading_point =
-        shading_context.get_tracer().trace<const ShadingPoint&>(
+        shading_context.get_tracer().trace_full(
             shading_context,
             m_shading_point,
             ray,
@@ -146,7 +146,7 @@ void BSDFSampler::trace_between(
     const Vector3d&         target_position,
     Spectrum&               transmission) const
 {
-    shading_context.get_tracer().trace_between(
+    shading_context.get_tracer().trace_between_simple(
         shading_context,
         m_shading_point,
         target_position,
@@ -259,7 +259,7 @@ const ShadingPoint& PhaseFunctionSampler::trace(
     ray.copy_media_from(m_volume_ray);
 
     const ShadingPoint& shading_point =
-        shading_context.get_tracer().trace<const ShadingPoint&>(
+        shading_context.get_tracer().trace_full(
             shading_context,
             ray,
             transmission);
@@ -272,7 +272,7 @@ void PhaseFunctionSampler::trace_between(
     const Vector3d&         target_position,
     Spectrum&               transmission) const
 {
-    shading_context.get_tracer().trace_between(
+    shading_context.get_tracer().trace_between_simple(
         shading_context,
         m_point,
         target_position,

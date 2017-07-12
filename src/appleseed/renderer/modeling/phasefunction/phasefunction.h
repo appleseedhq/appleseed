@@ -89,14 +89,6 @@ class APPLESEED_DLLSYMBOL PhaseFunction
         const ShadingRay&           volume_ray,
         void*                       data) const;
 
-    // Sample distance before the ray is extincted. Return corresponding PDF value.
-    virtual float sample_distance(
-        SamplingContext&            sampling_context,
-        const void*                 data,                       // input values
-        const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
-        const size_t                channel,                    // index of the chroma that is used for sampling
-        float&                      distance) const = 0;        // resulting distance
-
     // Sample phase function in a given point on the ray. Return the PDF value.
     virtual float sample(
         SamplingContext&            sampling_context,
