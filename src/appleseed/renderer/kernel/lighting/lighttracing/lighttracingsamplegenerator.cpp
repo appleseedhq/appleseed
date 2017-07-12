@@ -332,7 +332,7 @@ namespace
                 // Compute the transmission factor between the light vertex and the camera.
                 // Prevent self-intersections by letting the ray originate from the camera.
                 Spectrum radiance;
-                m_shading_context.get_tracer().trace_between(
+                m_shading_context.get_tracer().trace_between_simple(
                     m_shading_context,
                     light_sample.m_point - camera_outgoing,
                     light_sample.m_point,
@@ -375,7 +375,7 @@ namespace
 
                 // Compute the transmission factor between the light vertex and the camera.
                 Spectrum radiance;
-                m_shading_context.get_tracer().trace_between(
+                m_shading_context.get_tracer().trace_between_simple(
                     m_shading_context,
                     light_vertex - camera_outgoing,
                     light_vertex,
@@ -426,7 +426,7 @@ namespace
                 // Compute the transmission factor between the path vertex and the camera.
                 // Prevent self-intersections by letting the ray originate from the camera.
                 Spectrum transmission;
-                m_shading_context.get_tracer().trace_between(
+                m_shading_context.get_tracer().trace_between_simple(
                     m_shading_context,
                     vertex.get_point() - camera_outgoing,
                     vertex.get_point(),
