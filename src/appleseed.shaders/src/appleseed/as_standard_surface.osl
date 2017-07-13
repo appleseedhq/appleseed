@@ -27,6 +27,7 @@
 //
 
 #include "appleseed/material/as_material_helpers.h"
+#include "appleseed/math/as_math_helpers.h"
 
 shader as_standard_surface
 [[
@@ -273,7 +274,8 @@ shader as_standard_surface
         string as_maya_attribute_name = "coatingDepth",
         string as_maya_attribute_short_name = "cod",
         float min = 0.0,
-        float max = 1.0,
+        float max = 10.0,
+        float softmax = 1.0,
         string label = "Coating Depth",
         string page = "Coating Parameters",
         string help = "Maps from [0,1] to [0,10] microns."
@@ -283,15 +285,6 @@ shader as_standard_surface
         string as_maya_attribute_name = "coatingAbsorption",
         string as_maya_attribute_short_name = "coa",
         string label = "Coating Absorption",
-        string page = "Coating Parameters"
-    ]],
-    float in_interference_amount = 0.0
-    [[
-        string as_maya_attribute_name = "interferenceAmount",
-        string as_maya_attribute_short_name = "ifa",
-        float min = 0.0,
-        float max = 1.0,
-        string label = "Thin Film Interference",
         string page = "Coating Parameters"
     ]],
     float in_incandescence_amount = 0.0
@@ -360,12 +353,21 @@ shader as_standard_surface
         string label = "Transparency Color",
         string page = "Transparency Parameters"
     ]],
-    normal in_bump_normal = N
+    normal in_bump_normal_coating = N
+    [[
+        string as_maya_attribute_name = "coatingNormal",
+        string as_maya_attribute_short_name = "ncn",
+        string label = "Coating Normal",
+        string page = "Bump Parameters",
+        string help = "The coating normal. If not set, the substrate normal is used for both layers."
+    ]],
+    normal in_bump_normal_substrate = N
     [[
         string as_maya_attribute_name = "normalCamera",
         string as_maya_attribute_short_name = "n",
-        string label = "Bump Normal",
-        string page = "Bump Parameters"
+        string label = "Substrate Normal",
+        string page = "Bump Parameters",
+        string help = "The default bump normal."
     ]],
     int in_enable_matte = 0
     [[
@@ -475,7 +477,7 @@ shader as_standard_surface
 
     if (raytype("shadow") || raytype("transparency"))
     {
-        return; // all done
+        return;
     }
 
     int ray_depth = 0;
@@ -483,11 +485,8 @@ shader as_standard_surface
 
     if (!status || ray_depth > in_maximum_ray_depth)
     {
-        return; // all done
+        return;
     }
-
-    // Compute matte opacity, then coating and absorption. With full absorption
-    // the substrate will never be evaluated and the shader bails out earlier.
 
     if (in_enable_matte)
     {
@@ -499,233 +498,87 @@ shader as_standard_surface
 
     if (in_transparency == 1.0)
     {
-        return; // all done
+        return;
     }
 
-    int full_absorption = 0;
+    // Coating first, with full absorption substrate is not lit.
+
     int compute_coating = (in_coating_amount > 0.0 &&
         in_coating_depth > 0.0 && in_coating_ior > 1.0) ? 1 : 0;
 
-    color coating_reflectance = color(0), coating_transmittance = color(1);
-
-    normal Nn = normalize(in_bump_normal); 
-    vector In = normalize(I);
-
-    float costheta_o = dot(-In, Nn);
+    color coating_transmittance = color(1);
 
     if (compute_coating)
     {
-        // The Schlick approximation suffices since we only care about
-        // entering rays, and the coating IOR domain is [1.0,2.0] usually.
+        vector In = normalize(I);
+
+        normal Nn = (isconnected(in_bump_normal_coating))
+            ? normalize(in_bump_normal_coating)
+            : normalize(in_bump_normal_substrate);
+
+        out_outColor += in_coating_amount * microfacet(
+            "beckmann",
+            Nn,
+            in_coating_roughness,
+            in_coating_ior,
+            0);
+
+        // Dielectric coating, usually [1,2], Schlick F suffices for now.
+
+        float costheta_o = dot(-In, Nn);
 
         float R0 = sqr((in_coating_ior - 1.0) / (in_coating_ior + 1.0));
+        float Fs = R0 + (1.0 - R0) * pow(1.0 - costheta_o, 5.0);
 
-        coating_reflectance = clamp(
-            R0 + (1.0 - R0) * pow(1.0 - costheta_o, 5.0), 0.0, 1.0);
+        coating_transmittance = 1.0 - clamp(Fs, 0.0, 1.0);
+        color absorption_coef = 1.0 - in_coating_absorption;
 
-        coating_transmittance = 1.0 - coating_reflectance;
-        coating_reflectance = color(1);
-
-        float remapped_depth;
-
-        if (in_coating_depth * max(in_coating_absorption) > 0.0)
+        if (max(coating_transmittance) > 0.0)
         {
-            float viewer_ratio = 1.0 - max(0.0, costheta_o);
-
             // Arbitrary value, it seems to allow full absorption already.
-            remapped_depth = 10000.0 * sqr(sqr(in_coating_depth));
+            float max_depth = 10000.0 * sqr(sqr(in_coating_depth));
+            float tau = max_depth * (1.0 - max(0.0, costheta_o));
 
-            color tau = remapped_depth * viewer_ratio *
-                (1.0 - in_coating_absorption);
+            // restrict absorption to avoid pure saturated colors
+            absorption_coef = clamp(absorption_coef, 0.0, 0.99);
 
-            color fake_absorption = clamp(exp(-tau), 0.0, 1.0);
+            color fake_absorption = exp(-tau * absorption_coef);
 
-            coating_transmittance *= fake_absorption;
+            coating_transmittance *= clamp(fake_absorption, 0.0, 1.0);
+        }
 
-            if (in_interference_amount > 0.0)
-            {
-                // It's an approximation anyway, this has to be done in
-                // the (microfacet) Fresnel.
-                // See https://en.wikipedia.org/wiki/Thin-film_interference
-
-                float eta2 = sqr(1.0 / in_coating_ior);
-                float sintheta_t = eta2 * (1.0 - sqr(costheta_o));
-
-                remapped_depth = mix(380.0, 780.0, in_coating_depth);
-
-                if (sintheta_t <= 1.0)
-                {
-                    float costheta_t = sqrt(1.0 - sintheta_t);
-                    float optical_path_depth = 2.0 * in_coating_ior *
-                        remapped_depth * costheta_t;
-
-                    // set ranges to visible range, [380,780]nm
-                    int p_min = (int) ceil(optical_path_depth / 780.0 + 0.5);
-                    int p_max = (int) floor(optical_path_depth / 380.0 + 0.5);
-
-                    int p = (p_min + p_max) / 2;
-
-                    if (p > 0)
-                    {
-                        float lambda = optical_path_depth / ((float) p - 0.5);
-                        color thin_c = wavelength_color(lambda);
-
-                        coating_reflectance *= thin_c;
-                        coating_transmittance *= (1.0 - thin_c);
-                    }
-                }
-            }
-
-            if (max(coating_transmittance) <= EPS)
-            {
-                full_absorption = 1;
-            }
+        if (max(coating_transmittance) <= EPS)
+        {
+            return; // full absorption, substrate is never lit
         }
     }
 
-    if (max(coating_reflectance) > 0.0)
-    {
-        out_outColor += in_coating_amount *
-            microfacet("beckmann", Nn, in_coating_roughness, in_coating_ior, 0);
-    }
-
-    if (full_absorption)
-    {
-        return; // the substrate will never be evaluated
-    }
-
-    int compute_edf = (in_incandescence_amount > 0.0 &&
-        (max(in_incandescence_color) > 0.0 || in_temperature > 800))
-        ? 1
-        : 0;
-
-    if (raytype("light") && compute_edf)
-    {
-        color edf_color;
-
-        if (in_incandescence_type == 0)
-        {
-            edf_color = in_incandescence_amount * in_incandescence_color;
-        }
-        else
-        {
-            // TODO: Depends on primaries and white point (SPD->XYZ->RGB).
-
-            color blackbody_color = in_incandescence_amount *
-                blackbody((float) in_temperature);
-
-            if (in_tonemap_edf)
-            {
-                blackbody_color /= (luminance(blackbody_color) + 1.0);
-            }
-
-            edf_color = blackbody_color;
-        }
-
-        if (max(in_specular_color) > 0.0)
-        {
-            // The substrate transmission amount must be calculated as 
-            // well. For dielectric, use Schlick approximation.
-
-            if (in_fresnel_type == 0)
-            {
-                float R0 = sqr((in_ior - 1.0) / (in_ior + 1.0));
-                float Kr = clamp(R0 + (1.0 - R0) *
-                    pow(1.0 - costheta_o, 5.0), 0.0, 1.0);
-
-                edf_color *= (1.0 - Kr);
-            }
-            else
-            {
-                float eta_i = compute_coating ? in_coating_ior : 1.0;
-
-                color Kr = color(0);
-
-                color eta = get_eta(in_face_tint, in_edge_tint);
-                color k = get_kappa(in_face_tint, eta);
-
-                for (int i = 0; i < 3; ++i)
-                {
-                    Kr[i] = dielectricConductorFresnel(
-                                eta_i,
-                                eta[i],
-                                k[i],
-                                costheta_o);
-                }
-
-                edf_color *= (1.0 - Kr);
-            }
-        }
-
-        if (max(edf_color) > 0.0)
-        {
-            // Note: should we check for division by 0, since some borked
-            //       geometry in maya might have 0 area?
-
-            float normalization = (in_area_normalize_edf)
-                ? 1.0 / surfacearea()
-                : 1.0;
-
-            out_outColor += emission() * normalization *
-                coating_transmittance * edf_color;
-        }
-    }
-
-    int compute_specular = (max(in_specular_color) > 0.0) ? 1 : 0;
-
-    int compute_translucency = (in_translucency_weight *
+    int compute_translucency = (in_translucency_weight > 0.0 &&
         max(in_translucency_color) > 0.0) ? 1 : 0;
 
-    int compute_transmission = (in_refraction_amount *
+    int compute_transmission = (in_refraction_amount > 0.0 &&
         max(in_refraction_tint) > 0.0) ? 1 : 0;
 
-    int compute_sss = ((compute_transparency || compute_translucency ||
-        compute_transmission || ray_depth > in_sss_maximum_ray_depth) &&
-        in_subsurface_weight == 0.0 && max(in_sss_mfp) <= in_sss_threshold)
-        ? 0
-        : 1;
+    int compute_diffuse = (in_diffuse_weight > 0.0 &&
+        max(in_color) > 0.0) ? 1 : 0;
 
-    if (compute_sss)
-    {
-        color albedo = in_diffuse_weight * in_color;
+    int compute_edf = (in_incandescence_amount > 0.0 &&
+        (max(in_incandescence_color) > 0.0 || in_temperature > 798))
+        ? 1
+        : 0; // 798K = Draper point
+        
+    int compute_bssrdf = (ray_depth > in_sss_maximum_ray_depth ||
+        compute_transparency || compute_translucency || compute_transmission ||
+        in_subsurface_weight == 0.0 || max(in_sss_mfp) <= in_sss_threshold)
+        ? 0 : 1;
 
-        if (max(albedo) > 0.0)
-        {
-            albedo = clamp(albedo, 0.01, 0.99);
+    int compute_specular =
+        (compute_transmission || max(in_specular_color) > 0.0) &&
+        (in_ior > 1.0 || (max(in_face_tint) > 0.0 && max(in_edge_tint) > 0.0))
+        ? 1 : 0;
 
-            float fresnel_weight = (compute_coating || compute_specular)
-                ? 1.0
-                : 0.0;
-
-            out_outColor += in_subsurface_weight *
-                coating_transmittance * as_subsurface(
-                    "normalized_diffusion",
-                    Nn,
-                    in_diffuse_weight * in_color,
-                    in_sss_mfp_scale * in_sss_mfp,
-                    in_ior,
-                    "fresnel_weight", fresnel_weight);
-        }
-    }
-    else
-    {
-        color diffuse_color = in_diffuse_weight * in_color;
-
-        if (max(diffuse_color) > 0.0)
-        {
-            out_outColor += diffuse_color * coating_transmittance *
-                oren_nayar(Nn, in_diffuse_roughness);
-        }
-
-        color translucency_color = in_translucency_weight *
-            in_translucency_color;
-
-        if (max(translucency_color) > 0.0)
-        {
-            out_outColor += translucency_color * coating_transmittance *
-                translucent(Nn);
-        }
-    }
+    color substrate_transmittance = color(1);
+    normal Nn = normalize(in_bump_normal_substrate);
 
     if (compute_specular)
     {
@@ -733,8 +586,7 @@ shader as_standard_surface
 
         vector tangent = Tn;
 
-        if (in_anisotropy_amount > 0.0 && (
-            max(in_specular_color) > 0.0 || max(transmission_color) > 0.0))
+        if (in_anisotropy_amount > 0.0)
         {
             if (isconnected(in_anisotropy_map))
             {
@@ -757,63 +609,174 @@ shader as_standard_surface
             }
         }
 
-        // Choice of specular BRDF or BSDF(BRDF+BTDF), but the conductor
-        // Fresnel is tied to the metal closure instead of being generic,
-        // and thin metallic films exist. We cannot specify the exterior
-        // medium either.
-        // For now, use specular BRDF or BSDF based on Fresnel choice,
-        // dielectric or conductor, assuming a conductor has a high enough
-        // extinction coeffient to prevent light entering the medium.
-
-        if (max(in_specular_color) > 0.0)
+        // Evaluate the BSDF(BRDF+BTDF) only for monochromatic dielectric eta.
+        
+        if (in_fresnel_type == 0)
         {
-            // The specular spread seems to be reverted, high values produce
-            // sharper highlights, with low values spreading them.
+            color refraction_color = in_refraction_amount * in_refraction_tint;
 
-            if (in_fresnel_type == 0)
+            if (max(refraction_color) > 0.0)
             {
-                if (max(transmission_color) > 0.0)
-                {
-                    out_outColor += as_glass(
+                out_outColor += as_glass(
+                    "std",
+                    Nn,
+                    tangent,
+                    coating_transmittance,
+                    in_specular_color,
+                    refraction_color,
+                    in_specular_roughness,
+                    1.0 - in_specular_spread, // it seems spread is reverted
+                    in_anisotropy_amount,
+                    in_ior,
+                    in_absorption_color,
+                    in_absorption_depth);
+            }
+            else if (max(in_specular_color) > 0.0)
+            {
+                out_outColor += in_specular_color * coating_transmittance *
+                    as_glossy(
                         "std",
                         Nn,
                         tangent,
-                        coating_transmittance,
-                        in_specular_color,
-                        in_refraction_amount * in_refraction_tint,
                         in_specular_roughness,
                         1.0 - in_specular_spread,
                         in_anisotropy_amount,
-                        in_ior,
-                        in_absorption_color,
-                        in_absorption_depth);
-                }
-                else
-                {
-                    out_outColor += in_specular_color * coating_transmittance *
-                        as_glossy(
-                            "std",
-                            Nn,
-                            tangent,
-                            in_specular_roughness,
-                            1.0 - in_specular_spread,
-                            in_anisotropy_amount,
-                            in_ior);
-                }
+                        in_ior);
+            }
+        }
+        else if (max(in_specular_color) > 0.0)
+        {
+            out_outColor += in_specular_color * coating_transmittance *
+                as_metal(
+                    "std",
+                    Nn,
+                    tangent,
+                    in_face_tint,
+                    in_edge_tint,
+                    in_specular_roughness,
+                    1.0 - in_specular_spread,
+                    in_anisotropy_amount);
+        }
+
+        // For layering we need the microfacet F transmission amount (and
+        // absorption), but lacking that we use the viewer Fresnel for now.
+
+        if (max(in_specular_color) > 0.0 && (compute_translucency ||
+            compute_diffuse || compute_bssrdf || compute_edf))
+        {
+            float costheta_o = dot(-normalize(I), Nn);
+
+            if (in_fresnel_type == 0)
+            {
+                float R0 = sqr((in_ior - 1.0) / (in_ior + 1.0));
+                float Kr = clamp(R0 + (1.0 - R0) *
+                    pow(1.0 - costheta_o, 5.0), 0.0, 1.0);
+
+                substrate_transmittance = 1.0 - Kr;
             }
             else
             {
-                out_outColor += in_specular_color * coating_transmittance *
-                    as_metal(
-                        "std",
-                        Nn,
-                        tangent,
-                        in_face_tint,
-                        in_edge_tint,
-                        in_specular_roughness,
-                        1.0 - in_specular_spread,
-                        in_anisotropy_amount);
+                float exterior_n = compute_coating ? in_coating_ior : 1.0;
+
+                color Kr = color(0);
+
+                color n = get_eta(in_face_tint, in_edge_tint);
+                color k = get_kappa(in_face_tint, n);
+
+                for (int i = 0; i < 3; ++i)
+                {
+                    Kr[i] = dielectricConductorFresnel(
+                        exterior_n,
+                        n[i],
+                        k[i],
+                        costheta_o);
+                }
+                substrate_transmittance = 1.0 - Kr;
             }
+        }
+    }
+
+    color total_transmittance = coating_transmittance * substrate_transmittance;
+
+    if (max(total_transmittance) <= EPS)
+    {
+        return; // no light reaches the substrate
+    }
+
+    if (raytype("light") && compute_edf)
+    {
+        color edf_color;
+
+        if (in_incandescence_type == 0)
+        {
+            edf_color = in_incandescence_amount * in_incandescence_color;
+        }
+        else
+        {
+            // TODO: depends on primaries+white point (SPD->XYZ->RGB).
+
+            color blackbody_color = in_incandescence_amount *
+                blackbody((float) in_temperature);
+
+            if (in_tonemap_edf)
+            {
+                blackbody_color /= (luminance(blackbody_color) + 1.0);
+            }
+
+            edf_color = blackbody_color;
+        }
+
+        edf_color *= total_transmittance;
+
+        if (max(edf_color) > 0.0)
+        {
+            float normalization = (in_area_normalize_edf)
+                ? 1.0 / surfacearea()
+                : 1.0;
+
+            out_outColor += emission() * normalization * edf_color;
+        }
+    }
+
+    if (compute_bssrdf)
+    {
+        color albedo = in_diffuse_weight * in_color;
+
+        if (max(albedo) > 0.0)
+        {
+            albedo = clamp(albedo, 0.01, 0.99);
+
+            float fresnel_weight = (compute_coating || compute_specular)
+                ? 1.0
+                : 0.0;
+
+            out_outColor += in_subsurface_weight *
+                total_transmittance * as_subsurface(
+                    "normalized_diffusion",
+                    Nn,
+                    in_diffuse_weight * in_color,
+                    in_sss_mfp_scale * in_sss_mfp,
+                    in_ior,
+                    "fresnel_weight", fresnel_weight);
+        }
+    }
+    else
+    {
+        color diffuse_color = in_diffuse_weight * in_color;
+
+        if (max(diffuse_color) > 0.0)
+        {
+            out_outColor += diffuse_color * total_transmittance *
+                oren_nayar(Nn, in_diffuse_roughness);
+        }
+
+        color translucency_color = in_translucency_weight *
+            in_translucency_color;
+
+        if (max(translucency_color) > 0.0)
+        {
+            out_outColor += translucency_color * total_transmittance *
+                translucent(Nn);
         }
     }
 }
