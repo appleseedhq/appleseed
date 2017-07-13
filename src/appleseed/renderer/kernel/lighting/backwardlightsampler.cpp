@@ -64,8 +64,13 @@ BackwardLightSampler::BackwardLightSampler(
   : m_params(params)
   , m_emitting_triangle_hash_table(m_triangle_key_hasher)
 {
-    // TODO: set based on the Rendering Settings checkbox.
-    m_use_light_tree = true;
+    // Read which sampling algorithm should the sampler use.
+    const string name = params.get_required<string>("algorithm", "cdf");
+    if (name == "cdf")
+        m_use_light_tree = false;
+    else
+        m_use_light_tree = true;
+
     
     RENDERER_LOG_INFO("collecting light emitters...");
 
@@ -87,9 +92,10 @@ BackwardLightSampler::BackwardLightSampler(
         m_non_physical_lights_cdf.prepare();
     
     // Build the light tree.
-    m_light_tree_light_count = m_light_tree.build(
-        m_light_tree_lights,
-        m_emitting_triangles);
+    if (m_use_light_tree)
+        m_light_tree_light_count = m_light_tree.build(
+            m_light_tree_lights,
+            m_emitting_triangles);
 
     if (!m_use_light_tree)
     {
@@ -356,7 +362,8 @@ void BackwardLightSampler::collect_emitting_triangles(
                     // Store the light-emitting triangle.
                     m_emitting_triangles.push_back(emitting_triangle);
 
-                    // Check if the emitting triangle will be sampled using CDF.
+                    // Check if the emitting triangle will be sampled using CDF
+                    // and insert static probability into the cdf.
                     if (!m_use_light_tree)
                     {
                         // Retrieve the EDF and get the importance multiplier.
@@ -516,6 +523,8 @@ void BackwardLightSampler::sample(
     const size_t LightGroupLightTree            = 1;
     const size_t LightGroupEmittingTriangleCdf  = 2;
 
+    // There can be top most 2 candidates groups at once because it will either
+    // be LightTree or EmittingTriangleCdf group.
     size_t candidate_groups[2];
     size_t candidate_groups_count = 0;
 
@@ -578,7 +587,7 @@ float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point) cons
 
     if (m_use_light_tree)
     {
-        // Traverse the tree and update triangle_prob
+        // Traverse the tree and update triangle_prob.
         float triangle_probability;
         m_light_tree.calculate_light_probability(
             shading_point.get_point(),
@@ -698,6 +707,35 @@ void BackwardLightSampler::store_object_area_in_shadergroups(
             }
         }
     }
+}
+
+Dictionary BackwardLightSampler::get_params_metadata()
+{
+    Dictionary metadata;
+    
+    metadata.insert(
+        "algorithm",
+        Dictionary()
+            .insert("type", "enum")
+            .insert("values", "cdf|lighttree")
+            .insert("default", "cdf")
+            .insert("label", "Light Sampler")
+            .insert("help", "Light sampling algoritm")
+            .insert(
+                "options",
+                Dictionary()
+                    .insert(
+                        "cdf",
+                        Dictionary()
+                            .insert("label", "CDF")
+                            .insert("help", "Cumulative Distribution Function"))
+                    .insert(
+                        "lighttree",
+                        Dictionary()
+                            .insert("label", "Light Tree")
+                            .insert("help", "Light Stored Into BVH Tree"))));
+
+    return metadata;
 }
 
 

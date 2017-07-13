@@ -819,6 +819,7 @@ namespace
             create_direct_link("advanced.ibl.env_samples",         "pt.ibl_env_samples");
             create_direct_link("advanced.dl.low_light_threshold",  "pt.dl_low_light_threshold");
             create_direct_link("advanced.volume_distance_samples", "pt.volume_distance_samples");
+            create_direct_link("advanced.algorithm",               "light_sampler.algorithm");
 
             load_directly_linked_values(config);
 
@@ -853,6 +854,16 @@ namespace
 
             QVBoxLayout* layout = new QVBoxLayout();
             groupbox->setLayout(layout);
+
+            QFormLayout* sublayout = create_form_layout();
+            layout->addLayout(sublayout);
+
+            QComboBox* light_sampling;
+            light_sampling = create_combobox("advanced.algorithm");
+            light_sampling->setToolTip(m_params_metadata.get_path("light_sampler.algorithm.help"));
+            light_sampling->addItem("CDF", "cdf");
+            light_sampling->addItem("Light Tree", "lighttree");
+            sublayout->addRow("Light Sampler:", light_sampling);
 
             QGroupBox* nee_groupbox = create_checkable_groupbox("advanced.next_event_estimation", "Next Event Estimation");
             layout->addWidget(nee_groupbox);

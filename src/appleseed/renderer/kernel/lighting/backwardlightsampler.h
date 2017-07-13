@@ -47,13 +47,14 @@
 #include <vector>
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
-namespace renderer  { class AssemblyInstance; }
-namespace renderer  { class MaterialArray; }
-namespace renderer  { class ObjectInstance; }
-namespace renderer  { class ParamArray; }
-namespace renderer  { class Scene; }
-namespace renderer  { class ShadingPoint; }
+namespace foundation    { class Dictionary; }
+namespace renderer      { class Assembly; }
+namespace renderer      { class AssemblyInstance; }
+namespace renderer      { class MaterialArray; }
+namespace renderer      { class ObjectInstance; }
+namespace renderer      { class ParamArray; }
+namespace renderer      { class Scene; }
+namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
@@ -126,6 +127,9 @@ class BackwardLightSampler
 
     // Compute the probability density in area measure of a given light sample.
     float evaluate_pdf(const ShadingPoint& shading_point) const;
+
+    // Return the metadata of the light sampler parameters.
+    static foundation::Dictionary get_params_metadata();
 
   private:
     struct Parameters

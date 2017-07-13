@@ -31,6 +31,7 @@
 #include "configuration.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/lighting/backwardlightsampler.h"
 #include "renderer/kernel/lighting/pt/ptlightingengine.h"
 #include "renderer/kernel/lighting/sppm/sppmlightingengine.h"
 #include "renderer/kernel/rendering/final/adaptivepixelrenderer.h"
@@ -157,6 +158,10 @@ Dictionary Configuration::get_metadata()
             .insert("type", "int")
             .insert("label", "Render Threads")
             .insert("help", "Number of threads to use for rendering"));
+
+    metadata.dictionaries().insert(
+        "light_sampler",
+        BackwardLightSampler::get_params_metadata());
 
     metadata.dictionaries().insert(
         "texture_store",
