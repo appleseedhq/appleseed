@@ -122,7 +122,16 @@ LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
         scene.assembly_instances(),
         TransformSequence());
 
-    // Build the light-tree (currently uses only non-physical lights).
+   RENDERER_LOG_INFO(
+        "found %s %s, %s %s (%s %s).",
+        pretty_int(m_non_physical_light_count).c_str(),
+        plural(m_non_physical_light_count, "non-physical light").c_str(),
+        pretty_int(m_emitting_triangles.size()).c_str(),
+        plural(m_emitting_triangles.size(), "emitting triangle").c_str(),
+        pretty_int(m_light_tree_light_count).c_str(),
+        plural(m_light_tree_light_count, "light tree-compatible light").c_str());
+
+   // Build the light tree (currently uses only non-physical lights).
     m_light_tree.build(m_light_tree_lights);
 
     // Build the hash table of emitting triangles.
@@ -135,18 +144,8 @@ LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
         m_emitting_triangles_cdf.prepare();
 
     // Store the triangle probability densities into the emitting triangles.
-    const size_t emitting_triangle_count = m_emitting_triangles.size();
-    for (size_t i = 0; i < emitting_triangle_count; ++i)
+    for (size_t i = 0, e = m_emitting_triangles.size(); i < e; ++i)
         m_emitting_triangles[i].m_triangle_prob = m_emitting_triangles_cdf[i].second;
-
-   RENDERER_LOG_INFO(
-        "found %s %s, %s %s, %s emitting %s.",
-        pretty_int(m_non_physical_light_count).c_str(),
-        plural(m_non_physical_light_count, "non-physical light").c_str(),
-        pretty_int(m_light_tree_light_count).c_str(),
-        plural(m_light_tree_light_count, "light-tree compatible light").c_str(),
-        pretty_int(m_emitting_triangles.size()).c_str(),
-        plural(m_emitting_triangles.size(), "triangle").c_str());
 }
 
 void LightSampler::collect_non_physical_lights(
@@ -472,7 +471,6 @@ void LightSampler::sample_light_tree_lights(
     assert(m_non_physical_lights_cdf.valid());
 
     const pair<size_t, float> result = m_light_tree.sample(shading_point.get_point(), s[0]);
-
     const size_t light_index = result.first;
     const float light_prob = result.second;
 

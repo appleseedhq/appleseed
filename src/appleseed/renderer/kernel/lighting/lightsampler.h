@@ -151,7 +151,7 @@ class LightSampler
     // Return the number of non-physical lights in the scene.
     size_t get_non_physical_light_count() const;
 
-    // Return the number of light-tree lights in the scene.
+    // Return the number of light tree-compatible lights in the scene.
     size_t get_light_tree_light_count() const;
 
     // Return the number of emitting triangles in the scene.
@@ -166,7 +166,7 @@ class LightSampler
         const foundation::Vector3f&         s,
         LightSample&                        light_sample) const;
 
-    // Sample the set of non-physical lights using a light-tree.
+    // Sample the set of non-physical lights using a light tree.
     void sample_light_tree_lights(
         const ShadingRay::Time&             time,
         const foundation::Vector3f&         s,
@@ -191,7 +191,7 @@ class LightSampler
         const foundation::Vector3f&         s,
         LightSample&                        light_sample) const;
 
-    // Sample the sets of non-physical lights and emitting triangles using a light-tree.
+    // Sample the sets of non-physical lights and emitting triangles using a light tree.
     void sample(
         const ShadingRay::Time&             time,
         const foundation::Vector3f&         s,

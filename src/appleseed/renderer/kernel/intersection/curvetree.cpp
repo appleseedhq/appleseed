@@ -101,10 +101,10 @@ CurveTree::CurveTree(const Arguments& arguments)
     if (algorithm == "bvh")
         build_bvh(params, time, statistics);
     else throw ExceptionNotImplemented();
+    statistics.insert_time("total build time", stopwatch.measure().get_seconds());
+    statistics.insert_size("nodes alignment", alignment(&m_nodes[0]));
 
     // Print curve tree statistics.
-    statistics.insert_size("nodes alignment", alignment(&m_nodes[0]));
-    statistics.insert_time("total time", stopwatch.measure().get_seconds());
     RENDERER_LOG_DEBUG("%s",
         StatisticsVector::make(
             "curve tree #" + to_string(m_arguments.m_curve_tree_uid) + " statistics",
