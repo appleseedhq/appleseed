@@ -79,7 +79,6 @@ class ItemBase
     bool allows_deletion() const;
 
     void set_title(const QString& title);
-    void set_render_layer(const QString& name);
 
     virtual QMenu* get_single_item_context_menu() const;
     virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const;

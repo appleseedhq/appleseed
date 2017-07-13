@@ -110,28 +110,6 @@ class HenyeyPhaseFunction
         values->m_precomputed.m_extinction = values->m_absorption + values->m_scattering;
     }
 
-    virtual float sample_distance(
-        SamplingContext&    sampling_context,
-        const void*         data,
-        const ShadingRay&   volume_ray,
-        const size_t        channel,
-        float&              distance) const override
-    {
-        const InputValues* values = static_cast<const InputValues*>(data);
-
-        const float ray_length = static_cast<float>(volume_ray.get_length());
-
-        // Sample distance.
-        sampling_context.split_in_place(1, 1);
-        const float s = sampling_context.next2<float>();
-        distance = sample_exponential_distribution_on_segment(
-            s, values->m_precomputed.m_extinction[channel], 0.0f, ray_length);
-
-        // Return corresponding PDF value.
-        return exponential_distribution_on_segment_pdf(
-            distance, values->m_precomputed.m_extinction[channel], 0.0f, ray_length);
-    }
-
     virtual float sample(
         SamplingContext&    sampling_context,
         const void*         data,

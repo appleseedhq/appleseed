@@ -91,7 +91,6 @@ struct Project::Impl
     auto_release_ptr<Scene>     m_scene;
     auto_release_ptr<Frame>     m_frame;
     auto_release_ptr<Display>   m_display;
-    RenderLayerRuleContainer    m_render_layer_rules;
     ConfigurationContainer      m_configurations;
     SearchPaths                 m_search_paths;
     auto_ptr<TraceContext>      m_trace_context;
@@ -199,16 +198,6 @@ Camera* Project::get_uncached_active_camera() const
     }
 
     return 0;
-}
-
-void Project::add_render_layer_rule(foundation::auto_release_ptr<RenderLayerRule> rule)
-{
-    impl->m_render_layer_rules.insert(rule);
-}
-
-RenderLayerRuleContainer& Project::render_layer_rules() const
-{
-    return impl->m_render_layer_rules;
 }
 
 ConfigurationContainer& Project::configurations() const
