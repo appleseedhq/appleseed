@@ -54,8 +54,6 @@
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
 #include "renderer/modeling/project/project.h"
-#include "renderer/modeling/project/renderlayerrule.h"
-#include "renderer/modeling/project/renderlayerrulecontainer.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/containers.h"
@@ -145,7 +143,6 @@ namespace
             if (project.get_scene())
                 write_scene(*project.get_scene());
 
-            write_rules(project);
             write_output(project);
             write_configurations(project);
         }
@@ -751,24 +748,6 @@ namespace
 
             if (project.get_frame())
                 write_frame(*project.get_frame());
-        }
-
-        // Write a <rules> element.
-        void write_rules(const Project& project)
-        {
-            if (!project.render_layer_rules().empty())
-            {
-                XMLElement element("rules", m_file, m_indenter);
-                element.write(XMLElement::HasChildElements);
-
-                write_collection(project.render_layer_rules());
-            }
-        }
-
-        // Write an <render_layer_assignment> element.
-        void write(const RenderLayerRule& rule)
-        {
-            write_entity("render_layer_assignment", rule);
         }
 
         // Write a <scene> element.

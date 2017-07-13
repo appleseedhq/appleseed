@@ -65,7 +65,6 @@
 #include "renderer/modeling/project/eventcounters.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/project/projectformatrevision.h"
-#include "renderer/modeling/project/regexrenderlayerrule.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/containers.h"
@@ -647,62 +646,8 @@ namespace
 
         virtual void update() override
         {
-            if (Scene* scene = m_project.get_scene())
-            {
-                update_collection(scene->environment_edfs());
-                update_collection(scene->environment_shaders());
-                update_collection(scene->assemblies());
-                update_collection(scene->assembly_instances());
-            }
-        }
-
-      private:
-        template <typename Collection>
-        void update_collection(Collection& collection)
-        {
-            for (each<Collection> i = collection; i; ++i)
-                update_entity(*i);
-        }
-
-        void update_entity(Assembly& assembly)
-        {
-            update_collection(assembly.edfs());
-            update_collection(assembly.lights());
-            update_collection(assembly.materials());
-            update_collection(assembly.objects());
-            update_collection(assembly.object_instances());
-            update_collection(assembly.surface_shaders());
-            update_collection(assembly.assemblies());
-            update_collection(assembly.assembly_instances());
-        }
-
-        template <typename Entity>
-        void update_entity(Entity& entity)
-        {
-            StringDictionary& string_params = entity.get_parameters().strings();
-
-            const string render_layer_name =
-                string_params.exist("render_layer")
-                    ? string_params.get<string>("render_layer")
-                    : string();
-
-            if (!render_layer_name.empty())
-            {
-                const string entity_path(entity.get_path().c_str());
-
-                string rule_name = entity_path;
-                replace(rule_name.begin(), rule_name.end(), '/', '_');
-
-                m_project.add_render_layer_rule(
-                    RegExRenderLayerRuleFactory().create(
-                        rule_name.c_str(),
-                        ParamArray()
-                            .insert("render_layer", render_layer_name)
-                            .insert("order", "1")
-                            .insert("pattern", "^" + entity_path + "$")));
-
-                string_params.remove("render_layer");
-            }
+            // Here, we used to update render layer rules
+            // but render layers were removed in appleseed 1.7.0-beta.
         }
     };
 

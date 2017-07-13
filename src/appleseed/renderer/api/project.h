@@ -35,14 +35,9 @@
 #include "renderer/modeling/project-builtin/defaultproject.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
-#include "renderer/modeling/project/irenderlayerrulefactory.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/project/projectfilereader.h"
 #include "renderer/modeling/project/projectfileupdater.h"
 #include "renderer/modeling/project/projectfilewriter.h"
-#include "renderer/modeling/project/renderlayerrule.h"
-#include "renderer/modeling/project/renderlayerrulecontainer.h"
-#include "renderer/modeling/project/renderlayerrulefactoryregistrar.h"
-#include "renderer/modeling/project/renderlayerruletraits.h"
 
 #endif  // !APPLESEED_RENDERER_API_PROJECT_H
