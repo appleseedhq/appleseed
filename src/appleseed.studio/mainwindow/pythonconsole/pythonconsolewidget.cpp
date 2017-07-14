@@ -100,21 +100,22 @@ PythonConsoleWidget::PythonConsoleWidget(QWidget* parent)
     addAction(m_action_save_file_as);
 
     m_action_execute_all =
-        new QAction(load_icons("python_execute_all"), "Execute All Code", this);
+        new QAction(load_icons("python_execute_all"), "Execute All Code (Ctrl+Shift+Enter)", this);
     m_action_execute_all->setShortcut(Qt::CTRL + Qt::SHIFT + Qt::Key_Return);
     m_action_execute_all->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(m_action_execute_all, SIGNAL(triggered()), this, SLOT(slot_execute_all()));
     addAction(m_action_execute_all);
 
     m_action_execute_selection =
-        new QAction(load_icons("python_execute_selection"), "Execute Selected Code", this);
+        new QAction(load_icons("python_execute_selection"), "Execute Selected Code (Ctrl+Enter)", this);
     m_action_execute_selection->setShortcut(Qt::CTRL + Qt::Key_Return);
     m_action_execute_selection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    m_action_execute_selection->setEnabled(false);
     connect(m_action_execute_selection, SIGNAL(triggered()), this, SLOT(slot_execute_selection()));
     addAction(m_action_execute_selection);
 
     m_action_clear_selection =
-        new QAction(load_icons("python_clear_output"), "Clear Console Output", this);
+        new QAction(load_icons("python_clear_output"), "Clear Console Output (Ctrl+D)", this);
     m_action_clear_selection->setShortcut(Qt::CTRL + Qt::Key_D);
     m_action_clear_selection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(m_action_clear_selection, SIGNAL(triggered()), this, SLOT(slot_clear_output()));
