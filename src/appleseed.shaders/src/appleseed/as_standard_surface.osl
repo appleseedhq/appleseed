@@ -786,8 +786,8 @@ shader as_standard_surface
         {
             albedo = clamp(albedo, 0.01, 0.99);
 
-            //float weight = (compute_coating || compute_specular) ? 0.0 : 1.0;
-            float weight = 0.0;
+            // Disable Fresnel weight since transmittance is computed earlier,
+            // but ideally, the BSSRDF should be used.
 
             out_outColor += in_subsurface_weight *
                 as_subsurface(
@@ -796,7 +796,7 @@ shader as_standard_surface
                     in_diffuse_weight * in_color,
                     in_sss_mfp_scale * in_sss_mfp,
                     in_ior,
-                    "fresnel_weight", weight);
+                    "fresnel_weight", 0.0);
         }
     }
     else
