@@ -144,15 +144,22 @@ bpy::object PythonInterpreter::execute(const char* command)
     if (!m_is_initialized)
         throw Exception("Attempt to execute command while interpreter is not initialized");
 
+    bpy::object result;
+
     try
     {
-        return bpy::exec(command, m_main_namespace, m_main_namespace);
+        result = bpy::exec(command, m_main_namespace, m_main_namespace);
     }
     catch (const bpy::error_already_set&)
     {
         PyErr_Print();
         return bpy::object();
     }
+
+    if (m_main_window != nullptr)
+        m_main_window->on_project_change();
+
+    return result;
 }
 
 PythonInterpreter::PythonInterpreter()

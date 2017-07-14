@@ -97,6 +97,8 @@ class MainWindow
     void save_project(QString filepath);
     void close_project();
 
+    void on_project_change();
+
     renderer::ParamArray& get_settings();
 
   signals:
@@ -192,7 +194,6 @@ class MainWindow
     // Project file handling.
     renderer::ParamArray get_project_params(const char* configuration_name) const;
     bool can_close_project();
-    void on_project_change();
 
     // Project file monitoring.
     void enable_project_file_monitoring();
