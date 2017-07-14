@@ -200,6 +200,7 @@ namespace
           : m_params(params)
           , m_light_sampler(light_sampler)
           , m_path_count(0)
+          , m_inf_volume_ray_warnings(0)
         {
         }
 
@@ -254,7 +255,8 @@ namespace
                 sampling_context,
                 shading_context,
                 shading_point.get_scene(),
-                radiance);
+                radiance,
+                m_inf_volume_ray_warnings);
 
             PathTracer<PathVisitor, VolumeVisitorDistanceSampling, false> path_tracer(     // false = not adjoint
                 path_visitor,
@@ -292,6 +294,9 @@ namespace
 
         uint64                          m_path_count;
         Population<uint64>              m_path_length;
+
+        size_t                          m_inf_volume_ray_warnings;
+        static const size_t             MaxInfVolumeRayWarnings = 5;
 
         //
         // Base path visitor.
@@ -768,6 +773,7 @@ namespace
             ShadingComponents&          m_path_radiance;
             const EnvironmentEDF*       m_env_edf;
             bool                        m_is_indirect_lighting;
+            size_t&                     m_inf_volume_ray_warnings;
 
             VolumeVisitorDistanceSampling(
                 const Parameters&       params,
@@ -775,7 +781,8 @@ namespace
                 SamplingContext&        sampling_context,
                 const ShadingContext&   shading_context,
                 const Scene&            scene,
-                ShadingComponents&      path_radiance)
+                ShadingComponents&      path_radiance,
+                size_t&                 inf_volume_ray_warnings)
               : m_params(params)
               , m_light_sampler(light_sampler)
               , m_sampling_context(sampling_context)
@@ -783,6 +790,7 @@ namespace
               , m_path_radiance(path_radiance)
               , m_env_edf(scene.get_environment()->get_environment_edf())
               , m_is_indirect_lighting(false)
+              , m_inf_volume_ray_warnings(inf_volume_ray_warnings)
             {
             }
 
@@ -906,7 +914,15 @@ namespace
 
             void visit(PathVertex& vertex, const ShadingRay& volume_ray)
             {
-                assert(volume_ray.m_tmax != numeric_limits<ShadingRay::ValueType>::max());
+                if (volume_ray.get_length() == numeric_limits<ShadingRay::ValueType>().max())
+                {
+                    if (m_inf_volume_ray_warnings < MaxInfVolumeRayWarnings)
+                        RENDERER_LOG_WARNING("volume ray of infinite length encountered.");
+                    else if (m_inf_volume_ray_warnings == MaxInfVolumeRayWarnings)
+                        RENDERER_LOG_WARNING("there are more volume rays of infinite length, "
+                                             "omitting warning messages for brevity.");
+                    ++m_inf_volume_ray_warnings;
+                }
 
                 const ShadingRay::Medium* medium = volume_ray.get_current_medium();
                 assert(medium != nullptr);
