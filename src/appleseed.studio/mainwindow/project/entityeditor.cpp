@@ -330,8 +330,9 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dic
         slider->hide();
     }
 
-    const double value = metadata.strings().get<double>("value");
-    adaptor->slot_set_line_edit_value(value);
+    const string value = metadata.strings().get<string>("value");
+    if (!value.empty())
+        adaptor->slot_set_line_edit_value(from_string<double>(value));
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
 

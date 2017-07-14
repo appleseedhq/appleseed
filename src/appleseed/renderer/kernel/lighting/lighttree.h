@@ -49,7 +49,7 @@ namespace renderer
 {
 
 //
-// Light-tree.
+// Light tree.
 //
 
 class LightTree

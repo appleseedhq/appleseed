@@ -79,10 +79,10 @@ Tracer::Tracer(
 }
 
 const ShadingPoint& Tracer::do_trace(
-    const ShadingContext&           shading_context,
-    const ShadingRay&               ray,
-    Spectrum&                       transmission,
-    const ShadingPoint*             parent_shading_point)
+    const ShadingContext&       shading_context,
+    const ShadingRay&           ray,
+    Spectrum&                   transmission,
+    const ShadingPoint*         parent_shading_point)
 {
     assert(is_normalized(ray.m_dir));
 
@@ -204,11 +204,11 @@ const ShadingPoint& Tracer::do_trace(
 }
 
 const ShadingPoint& Tracer::do_trace_between(
-    const ShadingContext&           shading_context,
-    const foundation::Vector3d&     target,
-    const ShadingRay&               ray,
-    Spectrum&                       transmission,
-    const ShadingPoint*             parent_shading_point)
+    const ShadingContext&       shading_context,
+    const foundation::Vector3d& target,
+    const ShadingRay&           ray,
+    Spectrum&                   transmission,
+    const ShadingPoint*         parent_shading_point)
 {
     transmission = Spectrum(1.0f);
 

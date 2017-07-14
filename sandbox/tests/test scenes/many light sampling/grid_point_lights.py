@@ -46,6 +46,7 @@ color = "white"
 plane_size = 100
 output_scene_name = "{0}x{0}_{1}_point_lights".format(grid_lights_count, color)
 
+
 def build_project():
     # Create an empty project.
     project = asr.Project("grid-point-lights-generator")
@@ -77,27 +78,27 @@ def build_project():
     #------------------------------------------------------------------------
     # Create a material called "01 - Default_mat" and insert it into the assembly.
     assembly.materials().insert(asr.Material(
-                                                "disney_material",
-                                                "01 - Default_mat",
-                                                {
-                                                    "alpha_map": "1",
-                                                    "layer1": {
-                                                        "anisotropic": "0",
-                                                        "base_color": "[1, 1, 1]",
-                                                        "clearcoat": "0",
-                                                        "clearcoat_gloss": "0",
-                                                        "layer_name": "layer1",
-                                                        "layer_number": "0",
-                                                        "mask": "1.0",
-                                                        "metallic": "0",
-                                                        "roughness": "1",
-                                                        "sheen": "0",
-                                                        "sheen_tint": "0",
-                                                        "specular": "0",
-                                                        "specular_tint": "0",
-                                                        "subsurface": "0.0"
-                                                    }
-                                                }))
+        "disney_material",
+        "01 - Default_mat",
+        {
+            "alpha_map": "1",
+            "layer1": {
+                "anisotropic": "0",
+                "base_color": "[1, 1, 1]",
+                "clearcoat": "0",
+                "clearcoat_gloss": "0",
+                "layer_name": "layer1",
+                "layer_number": "0",
+                "mask": "1.0",
+                "metallic": "0",
+                "roughness": "1",
+                "sheen": "0",
+                "sheen_tint": "0",
+                "specular": "0",
+                "specular_tint": "0",
+                "subsurface": "0.0"
+            }
+        }))
 
     #------------------------------------------------------------------------
     # Geometry
@@ -113,23 +114,23 @@ def build_project():
         material_name = {"material_slot_0": "01 - Default_mat"}
         mat = orientation * asr.Matrix4d.make_translation(asr.Vector3d(0.0, 0.0, 0.0))
         instance = asr.ObjectInstance(
-                                        instance_name,
-                                        {"visibility":
-                                            {
-                                                "camera": "true",
-                                                "diffuse": "true",
-                                                "glossy": "true",
-                                                "light": "true",
-                                                "probe": "true",
-                                                "shadow": "true",
-                                                "specular": "true",
-                                                "subsurface": "true",
-                                                "transparency": "true"
-                                            }},
-                                        object.get_name(),
-                                        asr.Transformd(mat),
-                                        material_name,
-                                        material_name)
+            instance_name,
+            {"visibility":
+             {
+                 "camera": "true",
+                 "diffuse": "true",
+                 "glossy": "true",
+                 "light": "true",
+                 "probe": "true",
+                 "shadow": "true",
+                 "specular": "true",
+                 "subsurface": "true",
+                 "transparency": "true"
+             }},
+            object.get_name(),
+            asr.Transformd(mat),
+            material_name,
+            material_name)
 
         assembly.object_instances().insert(instance)
 
@@ -143,11 +144,11 @@ def build_project():
 
     if color == "white":
         assembly.colors().insert(asr.ColorEntity("white",
-                                            {
-                                                "color_space": "linear_rgb",
-                                                "multiplier": 1.0
-                                            },
-                                            [1.0, 1.0, 1.0]))
+                                                 {
+                                                     "color_space": "linear_rgb",
+                                                     "multiplier": 1.0
+                                                 },
+                                                 [1.0, 1.0, 1.0]))
 
         step = float(plane_size) / grid_lights_count
         light_count = 0
@@ -159,10 +160,10 @@ def build_project():
                 light_name = "light_" + str(light_count)
                 light_count = light_count + 1
                 light = asr.Light("point_light", light_name, {
-                                                                "intensity": "white",
-                                                                "intensity_multiplier": "3"
+                    "intensity": "white",
+                    "intensity_multiplier": "3"
 
-                                                             })
+                })
                 light_position = asr.Vector3d(i, j, light_z_distance)
                 mat = orientation * asr.Matrix4d.make_translation(light_position)
                 light.set_transform(asr.Transformd(mat))
@@ -179,11 +180,11 @@ def build_project():
                 ran = random.gauss(0.7, 0.01)
             random_color = list(colorsys.hls_to_rgb(ran, 0.5, 1.0))
             assembly.colors().insert(asr.ColorEntity("color_" + str(i),
-                                                {
-                                                    "color_space": "linear_rgb",
-                                                    "multiplier": 1.0
-                                                },
-                                                random_color))
+                                                     {
+                "color_space": "linear_rgb",
+                "multiplier": 1.0
+            },
+                random_color))
 
         step = float(plane_size) / grid_lights_count
         light_count = 0
@@ -196,10 +197,10 @@ def build_project():
                 color_name = "color_" + str(light_count)
                 light_count = light_count + 1
                 light = asr.Light("point_light", light_name, {
-                                                                "intensity": color_name,
-                                                                "intensity_multiplier": "3"
+                    "intensity": color_name,
+                    "intensity_multiplier": "3"
 
-                                                             })
+                })
                 light_position = asr.Vector3d(i, j, light_z_distance)
                 mat = orientation * asr.Matrix4d.make_translation(light_position)
                 light.set_transform(asr.Transformd(mat))
@@ -233,11 +234,11 @@ def build_project():
 
     # Create an orthographic camera.
     params = {
-            "controller_target": "0 0 0",
-            "film_dimensions": "128 128",
-            "near_z": "-0.1",
-            "shutter_close_time": "1.0",
-            "shutter_open_time": "0.0"
+        "controller_target": "0 0 0",
+        "film_dimensions": "128 128",
+        "near_z": "-0.1",
+        "shutter_close_time": "1.0",
+        "shutter_open_time": "0.0"
     }
 
     camera = asr.Camera("orthographic_camera", "camera", params)
@@ -255,22 +256,23 @@ def build_project():
 
     # Create a frame and bind it to the project.
     params = {
-            "camera": "camera",
-            "clamping": "false",
-            "color_space": "srgb",
-            "filter": "box",
-            "filter_size": "0.5",
-            "gamma_correction": "1.0",
-            "pixel_format": "float",
-            "premultiplied_alpha": "true",
-            "resolution": "512 512",
-            "tile_size": "64 64"}
+        "camera": "camera",
+        "clamping": "false",
+        "color_space": "srgb",
+        "filter": "box",
+        "filter_size": "0.5",
+        "gamma_correction": "1.0",
+        "pixel_format": "float",
+        "premultiplied_alpha": "true",
+        "resolution": "512 512",
+        "tile_size": "64 64"}
     project.set_frame(asr.Frame("beauty", params))
 
     # Bind the scene to the project.
     project.set_scene(scene)
 
     return project
+
 
 def main():
     # Build the project.

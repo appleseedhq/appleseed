@@ -428,6 +428,8 @@ TriangleTree::TriangleTree(const Arguments& arguments)
     if (algorithm == "bvh")
         build_bvh(params, time, save_memory, statistics);
     else build_sbvh(params, time, save_memory, statistics);
+    statistics.insert_time("total build time", stopwatch.measure().get_seconds());
+    statistics.insert_size("nodes alignment", alignment(&m_nodes[0]));
 
 #ifdef RENDERER_TRIANGLE_TREE_REORDER_NODES
     // Optimize the tree layout in memory.
@@ -437,8 +439,6 @@ TriangleTree::TriangleTree(const Arguments& arguments)
 #endif
 
     // Print triangle tree statistics.
-    statistics.insert_size("nodes alignment", alignment(&m_nodes[0]));
-    statistics.insert_time("total time", stopwatch.measure().get_seconds());
     RENDERER_LOG_DEBUG("%s",
         StatisticsVector::make(
             "triangle tree #" + to_string(m_arguments.m_triangle_tree_uid) + " statistics",

@@ -85,11 +85,14 @@ void LightTree::build(
     typedef foundation::bvh::MiddlePartitioner<AABBVector> Partitioner;
     Partitioner partitioner(light_bboxes);
 
-    // Build the light-tree.
+    // Build the light tree.
     typedef foundation::bvh::Builder<LightTree, Partitioner> Builder;
     Builder builder;
     builder.build<foundation::DefaultWallclockTimer>(*this, partitioner, m_items.size(), 1);
-    statistics.insert_time("build time", builder.get_build_time());
+    statistics.insert("light sources", m_light_sources.size());
+    statistics.insert("nodes", m_nodes.size());
+    statistics.insert("max tree depth", m_tree_depth);
+    statistics.insert_time("total build time", builder.get_build_time());
 
     // Reorder m_items vector to match the ordering in the LightTree.
     if (!m_items.empty())
@@ -111,15 +114,11 @@ void LightTree::build(
         recursive_node_update(0, 0);
     }
 
-    // Print light-tree statistics.
+    // Print light tree statistics.
     RENDERER_LOG_INFO("%s",
         foundation::StatisticsVector::make(
-            "light-tree statistics",
+            "light tree statistics",
             statistics).to_string().c_str());
-
-    RENDERER_LOG_INFO("number of light sources: %zu", m_light_sources.size());
-    RENDERER_LOG_INFO("number of nodes: %zu", m_nodes.size());
-    RENDERER_LOG_INFO("tree depth: %zu", m_tree_depth);
 }
 
 //

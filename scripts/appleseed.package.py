@@ -705,7 +705,7 @@ def main():
     print("appleseed.package version " + VERSION)
     print("")
 
-    print("IMPORTANT:");
+    print("IMPORTANT:")
     print("")
     print("  - You may need to run this tool with sudo on Linux and macOS")
     print("  - Make sure there are no obsolete binaries in sandbox/bin")
