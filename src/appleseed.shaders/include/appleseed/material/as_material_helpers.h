@@ -77,12 +77,6 @@ float get_kappa(float f0, float eta)
     return sqrt(nr / (1.0 - f0));
 }
 
-void get_eta_kappa(float f0, float f90, output float etak[2])
-{
-    etak[0] = get_eta(f0, f90);
-    etak[1] = get_kappa(f0, etak[0]);
-}
-
 color get_eta(color f0, color f90)
 {
     return color(get_eta(f0[0], f90[0]),
@@ -95,15 +89,6 @@ color get_kappa(color f0, color eta)
     return color(get_kappa(f0[0], eta[0]),
                  get_kappa(f0[1], eta[1]),
                  get_kappa(f0[2], eta[2]));
-}                  
-
-color fake_absorption(
-    float thickness,
-    float costheta_o,
-    color absorption_coeffs)
-{
-    float tau = thickness / max(0.0, costheta_o);
-    return exp(-absorption_coeffs * tau);
 }
 
 //
@@ -190,7 +175,5 @@ float dielectricConductorFresnel(
 
     return 0.5 * (Rp + Rs);
 }
-
-
 
 #endif // !AS_MATERIAL_HELPERS_H
