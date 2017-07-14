@@ -194,7 +194,7 @@ void PythonConsoleWidget::slot_clear_output()
 
 void PythonConsoleWidget::slot_change_exec_selection_button_state()
 {
-    const bool is_enabled = m_input->textCursor().selection().isEmpty();
+    const bool is_enabled = !m_input->textCursor().selection().isEmpty();
     m_action_execute_selection->setEnabled(is_enabled);
 }
 
