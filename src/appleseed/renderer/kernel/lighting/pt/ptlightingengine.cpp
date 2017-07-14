@@ -63,6 +63,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <limits>
 #include <string>
 
 // Forward declarations.
@@ -785,6 +786,35 @@ namespace
             {
             }
 
+            float sample_distance(
+                const ShadingRay&   volume_ray,
+                const float         extinction,
+                float&              distance)
+            {
+                m_sampling_context.split_in_place(1, 1);
+
+                if (volume_ray.m_tmax == numeric_limits<ShadingRay::ValueType>().max())
+                {
+                    // Sample distance.
+                    distance = sample_exponential_distribution(
+                        m_sampling_context.next2<float>(), extinction);
+
+                    // Calculate PDF of this distance sample.
+                    return exponential_distribution_pdf(distance, extinction);
+                }
+                else
+                {
+                    // Sample distance.
+                    const float ray_length = static_cast<float>(volume_ray.get_length());
+                    distance = sample_exponential_distribution_on_segment(
+                        m_sampling_context.next2<float>(), extinction, 0.0f, ray_length);
+
+                    // Calculate PDF of this distance sample.
+                    return exponential_distribution_on_segment_pdf(
+                        distance, extinction, 0.0f, ray_length);
+                }
+            }
+
             void add_direct_lighting_contribution(
                 const ShadingPoint&     shading_point,
                 const ShadingRay&       volume_ray,
@@ -876,6 +906,8 @@ namespace
 
             void visit(PathVertex& vertex, const ShadingRay& volume_ray)
             {
+                assert(volume_ray.m_tmax != numeric_limits<ShadingRay::ValueType>::max());
+
                 const ShadingRay::Medium* medium = volume_ray.get_current_medium();
                 assert(medium != nullptr);
                 const Volume* volume = medium->get_volume();
@@ -943,14 +975,9 @@ namespace
                         continue;
 
                     // Sample distance.
-                    const float ray_length = static_cast<float>(volume_ray.get_length());
-                    m_sampling_context.split_in_place(1, 1);
-                    const float distance_sample = sample_exponential_distribution_on_segment(
-                        m_sampling_context.next2<float>(), extinction_coef[channel], 0.0f, ray_length);
-
-                    // Calculate PDF of this distance sample.
-                    const float distance_prob = exponential_distribution_on_segment_pdf(
-                        distance_sample, extinction_coef[channel], 0.0f, ray_length);
+                    float distance_sample;
+                    const float distance_prob = sample_distance(
+                        volume_ray, extinction_coef[channel], distance_sample);
 
                     // Calculate transmission between the ray origin and the sampled distance.
                     Spectrum transmission;

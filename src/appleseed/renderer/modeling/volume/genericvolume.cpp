@@ -44,6 +44,7 @@
 
 // Standard headers.
 #include <cmath>
+#include <limits>
 #include <memory>
 
 using namespace foundation;
@@ -171,7 +172,11 @@ class GenericVolume
     {
         extinction_coefficient(data, volume_ray, distance, spectrum);
         for (size_t i = 0, e = spectrum.size(); i < e; ++i)
-            spectrum[i] = std::exp(-distance * spectrum[i]);
+        {
+            const float x = -distance * spectrum[i];
+            assert(!isinf(x) && !isnan(x));
+            spectrum[i] = std::exp(x);
+        }
     }
 
     virtual void evaluate_transmission(
@@ -179,8 +184,13 @@ class GenericVolume
         const ShadingRay&   volume_ray,
         Spectrum&           spectrum) const override
     {
-        const float distance = static_cast<float>(volume_ray.get_length());
-        evaluate_transmission(data, volume_ray, distance, spectrum);
+        if (volume_ray.m_tmax == std::numeric_limits<ShadingRay::ValueType>().max())
+            spectrum.set(0.0f);
+        else
+        {
+            const float distance = static_cast<float>(volume_ray.get_length());
+            evaluate_transmission(data, volume_ray, distance, spectrum);
+        }
     }
 
     virtual void scattering_coefficient(
