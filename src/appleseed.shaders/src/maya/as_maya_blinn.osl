@@ -194,12 +194,6 @@ shader as_maya_blinn
         string label = "Output Transparency",
         string widget = "null"
     ]],
-    output closure color out_outGlowColor = 0
-    [[
-        string as_maya_attribute_name = "outGlowColor",
-        string label = "Output Glow Color",
-        string widget = "null"
-    ]],
     output closure color out_outMatteOpacity = 0
     [[
         string as_maya_attribute_name = "outMatteOpacity",
@@ -208,116 +202,83 @@ shader as_maya_blinn
     ]]
 )
 {
-    if (raytype("shadow"))
+    if (raytype("shadow") || raytype("transparency"))
     {
         color transparency = in_transparency;
 
         // Shadow attenuation: 0=constant, 1=fake caustics.
-        if (in_refractions && in_transparency != 0)
+        if (in_refractions && max(in_transparency) > 0.0)
         {
-            transparency *= mix(
+            transparency = mix(
                 transparency,
                 abs(dot(-normalize(I), normalize(in_normalCamera))),
                 in_shadowAttenuation
                 );
         }
 
-        if (transparency != 0)
+        if (max(transparency) > 0.0)
         {
-            out_outColor = transparency * transparent();
+            out_outTransparency = transparency * transparent();
+            out_outColor = out_outTransparency;
         }
+        return;
+    }
 
-        out_outTransparency = out_outColor;
+    color opacity = 1.0 - in_transparency;
+
+    if (raytype("light") && max(in_incandescence) > 0.0)
+    {
+        out_outColor += opacity * in_incandescence * emission();
+    }
+
+    normal Nn = normalize(in_normalCamera);
+
+    if (max(in_color) > 0.0)
+    {
+        out_outColor += opacity * in_diffuse * in_color * diffuse(Nn);
+        out_outColor += opacity * in_translucence * in_color *
+                        translucent(Nn);
+    }
+
+    if (in_refractions)
+    {
+        int ray_depth = 0;
+        int status = getattribute("path:ray_depth", ray_depth);
+
+        if (status && ray_depth <= in_refractionLimit)
+        {
+            // Maya associates transparency with the BTDF
+            out_outColor += in_transparency *
+                refraction(Nn, in_refractiveIndex);
+        }
+    }
+    else if (max(in_transparency) > 0.0)
+    {
+        out_outTransparency = in_transparency * transparent();
+        out_outColor += out_outTransparency;
+    }
+
+    if (max(in_specularColor) > 0.0)
+    {
+        // Specular rolloff seems to be a simple Fresnel term, get eta, solve
+        // f0=(eta-1)^2/(eta+1)^2 for eta.
+
+        float tmp = sqrt(in_specularRollOff);
+        float eta = (1.0 + tmp) / (1.0 - tmp);
+
+        float m = pow(1.0 / max(EPS, in_eccentricity), 8.0);
+
+        out_outColor += opacity * in_specularColor * as_blinn(Nn, m, eta);
+    }
+    
+    if (in_matteOpacityMode == 1)
+    {
+        out_outMatteOpacity = holdout();
+        out_outColor += out_outMatteOpacity;
     }
     else
     {
-        normal Nn = normalize(in_normalCamera);
-
-        closure color transparency_term = 0, incandescence_term = 0;
-        closure color translucency_term = 0, diffuse_term = 0;
-        closure color specular_term = 0, refraction_term = 0;
-        closure color glow_term = 0;
-
-        color opacity = 1.0 - in_transparency;
-
-        if (in_color != 0)
-        {
-            diffuse_term = opacity * in_diffuse * in_color * diffuse(Nn);
-
-            translucency_term = opacity * in_translucence *
-                in_color * translucent(Nn);
-        }
-
-        if (raytype("light") && in_incandescence != 0)
-        {
-            incandescence_term = opacity * in_incandescence * emission();
-        }
-
-        if (in_refractions)
-        {
-            int ray_depth = 0;
-            int status = getattribute("path:ray_depth", ray_depth);
-
-            if (status && ray_depth <= in_refractionLimit)
-            {
-                // Maya associates transparency with the BTDF.
-                refraction_term = in_transparency *
-                    refraction(Nn, in_refractiveIndex);
-            }
-
-            opacity = 1.0;
-        }
-        else if (in_transparency != 0)
-        {
-            transparency_term = in_transparency * transparent();
-        }
-
-        if (in_specularColor != 0)
-        {
-            // Specular roll-off is a simple Fresnel term, get eta, solve
-            // f0=(eta-1)^2/(eta+1)^2 for eta.
-
-            float tmp = sqrt(in_specularRollOff);
-            float eta = (1 + tmp) / (1 - tmp);
-
-            float m = pow(1.0 / max(EPS, in_eccentricity), 8.0);
-
-            specular_term = opacity * in_specularColor * as_blinn(Nn, m, eta);
-        }
-
-        closure color matte_term;
-
-        if (in_matteOpacityMode == 0)
-        {
-            matte_term = 0;
-        }
-        else if (in_matteOpacityMode == 1)
-        {
-            matte_term = holdout();
-        }
-        else
-        {
-            matte_term = in_matteOpacity * holdout();
-        }
-
-        if (in_glowIntensity != 0)
-        {
-            // glow_term = opacity * in_glowIntensity * post_glow();
-            // out_outGlowColor = glow_term;
-        }
-
-        out_outColor =
-            incandescence_term +
-            diffuse_term +
-            translucency_term +
-            refraction_term +
-            specular_term +
-            matte_term +
-            glow_term +
-            transparency_term;
-
-        out_outTransparency = transparency_term;
-        out_outMatteOpacity = matte_term;
-        out_outGlowColor = glow_term;
-    }
+        out_outMatteOpacity = in_matteOpacity * holdout();
+        out_outColor += out_outMatteOpacity;
+    }  
 }

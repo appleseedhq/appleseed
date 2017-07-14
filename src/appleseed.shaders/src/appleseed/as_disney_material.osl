@@ -43,7 +43,7 @@ shader as_disney_material
         string label = "Surface Color",
         string page = "Common Material Parameters"
     ]],
-    float in_subsurfaceAmount = 0.0
+    float in_subsurface_amount = 0.0
     [[
         string as_maya_attribute_name = "subsurfaceAmount",
         string as_maya_attribute_short_name = "ss",
@@ -52,7 +52,7 @@ shader as_disney_material
         string label = "Subsurface",
         string page = "Common Material Parameters"
     ]],
-    float in_specularAmount = 0.5
+    float in_specular_amount = 0.5
     [[
         string as_maya_attribute_name = "specularAmount",
         string as_maya_attribute_short_name = "sa",
@@ -70,7 +70,7 @@ shader as_disney_material
         string label = "Surface Roughness",
         string page = "Specular Parameters"
     ]],
-    float in_specularTint = 0.0
+    float in_specular_tint = 0.0
     [[
         string as_maya_attribute_name = "specularTint",
         string as_maya_attribute_short_name = "st",
@@ -79,7 +79,7 @@ shader as_disney_material
         string label = "Specular Tinting",
         string page = "Specular Parameters"
     ]],
-    float in_metallicAmount = 0.0
+    float in_metallic_amount = 0.0
     [[
         string as_maya_attribute_name = "metallicAmount",
         string as_maya_attribute_short_name = "ma",
@@ -89,7 +89,7 @@ shader as_disney_material
         string page = "Specular Parameters",
         int divider = 1
     ]],
-    float in_anisotropyAmount = 0.0
+    float in_anisotropy_amount = 0.0
     [[
         string as_maya_attribute_name = "anisotropyAmount",
         string as_maya_attribute_short_name = "am",
@@ -98,7 +98,7 @@ shader as_disney_material
         string label = "Anisotropy Amount",
         string page = "Specular Parameters",
     ]],
-    float in_anisotropyAngle = 0.0
+    float in_anisotropy_angle = 0.0
     [[
         string as_maya_attribute_name = "anisotropyAngle",
         string as_maya_attribute_short_name = "aa",
@@ -108,7 +108,7 @@ shader as_disney_material
         string page = "Specular Parameters",
         string help = "The [0,1] range maps to [0,360] degrees range"
     ]],
-    color in_anisotropyVectorMap = color(0)
+    color in_anisotropy_vector_map= color(0)
     [[
         string as_maya_attribute_name = "anisotropyVectorMap",
         string as_maya_attribute_short_name = "vm",
@@ -116,7 +116,7 @@ shader as_disney_material
         string page = "Specular Parameters",
         string help = "Vector tangent field map, with XY in R,G channels"
     ]],
-    float in_sheenAmount = 0.0
+    float in_sheen_amount = 0.0
     [[
         string as_maya_attribute_name = "sheenAmount",
         string as_maya_attribute_short_name = "ha",
@@ -126,7 +126,7 @@ shader as_disney_material
         string label = "Sheen Amount",
         string page = "Sheen Parameters"
     ]],
-    float in_sheenTint = 0.5
+    float in_sheen_tint = 0.5
     [[
         string as_maya_attribute_name = "sheenTint",
         string as_maya_attribute_short_name = "ht",
@@ -135,7 +135,7 @@ shader as_disney_material
         string label = "Sheen Tint",
         string page = "Sheen Parameters"
     ]],
-    float in_clearCoat = 0.0
+    float in_clear_coat = 0.0
     [[
         string as_maya_attribute_name = "clearCoat",
         string as_maya_attribute_short_name = "ct",
@@ -145,7 +145,7 @@ shader as_disney_material
         string label = "Coating Amount",
         string page = "Clear Coat Parameters"
     ]],
-    float in_clearCoatGlossyness = 1.0
+    float in_clear_coat_glossyness = 1.0
     [[
         string as_maya_attribute_name = "clearCoatGlossyness",
         string as_maya_attribute_short_name = "cy",
@@ -154,36 +154,42 @@ shader as_disney_material
         string label = "Coating Glossyness",
         string page = "Clear Coat Parameters"
     ]],
-    normal in_normalCamera = N
+    normal in_bump_normal = N
     [[
         string as_maya_attribute_name = "normalCamera",
         string as_maya_attribute_short_name = "n",
         string label = "Bump Normal",
         string page = "Bump Parameters"
     ]],
-    int in_matteOpacityMode = 2
+    int in_enable_matte = 0
     [[
-        string as_maya_attribute_name = "matteOpacityMode",
-        string as_maya_attribute_short_name = "mm",
-        string widget = "mapper",
-        string options = "Black Hole:0|Solid Matte:1|Opacity Gain:2",
-        string label = "Matte Opacity Mode",
+        string as_maya_attribute_name = "enableMatte",
+        string as_maya_attribute_short_name = "ema",
+        string widget = "checkBox",
+        string label = "Enable Matte Opacity",
         string page = "Matte Opacity Parameters",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1
+        int as_maya_attribute_hidden = 1,
+        int divider = 1
     ]],
-    float in_matteOpacity = 1.0
+    float in_matte_opacity = 0.0
     [[
         string as_maya_attribute_name = "matteOpacity",
-        string as_maya_attribute_short_name = "mo",
-        int as_maya_attribute_hidden = 1,
+        string as_maya_attribute_short_name = "mao",
         float min = 0.0,
         float max = 1.0,
         string label = "Matte Opacity",
         string page = "Matte Opacity Parameters"
     ]],
-    int in_maximumRayDepth = 4
+    color in_matte_opacity_color = color(1, 0.5, 0)
+    [[
+        string as_maya_attribute_name = "matteOpacityColor",
+        string as_maya_attribute_short_name = "mac",
+        string label = "Matte Opacity Color",
+        string page = "Matte Opacity Parameters"
+    ]], 
+    int in_maximum_ray_depth = 4
     [[
         string as_maya_attribute_name = "maximumRayDepth",
         string as_maya_attribute_short_name = "rd",
@@ -232,75 +238,63 @@ shader as_disney_material
 {
     if (raytype("shadow") || raytype("transparency"))
     {
-        return; // no transparency control, bailout, color default 0
+        return;
+    }
+
+    if (in_enable_matte)
+    {
+        out_outMatteOpacity = in_matte_opacity *
+            in_matte_opacity_color * holdout();
+
+        out_outColor += out_outMatteOpacity;
     }
 
     int ray_depth = 0;
     int status = getattribute("path:ray_depth", ray_depth);
 
-    if (status && ray_depth <= in_maximumRayDepth)
+    if (!status || ray_depth > in_maximum_ray_depth)
     {
-        normal Nn = normalize(in_normalCamera);
-        vector tangent;
+        return;
+    }
 
-        if (in_anisotropyAmount > 0.0)
+    normal Nn = normalize(in_bump_normal);
+    vector tangent = Tn;
+
+    if (max(in_specular_amount * in_specular_tint) > 0.0 &&
+        in_anisotropy_amount > 0.0)
+    {
+        if (isconnected(in_anisotropy_vector_map))
         {
-            if (isconnected(in_anisotropyVectorMap))
-            {
-                vector vector_map = normalize(
-                    (vector) in_anisotropyVectorMap * 2.0 - 1.0);
+            vector vector_map = normalize(
+                (vector) in_anisotropy_vector_map * 2.0 - 1.0);
 
-                tangent = normalize(
-                    vector_map[0] * Tn +
-                    vector_map[1] * Bn +
-                    vector_map[2] * Nn);
-            }
-            else
-            {
-                tangent = Tn;
-            }
-
-            if (in_anisotropyAngle > 0.0)
-            {
-                tangent = rotate(
-                    tangent,
-                    in_anisotropyAngle * M_2PI,
-                    point(0),
-                    point(in_normalCamera));
-            }
+            tangent = normalize(vector_map[0] * Tn +
+                                vector_map[1] * Bn +
+                                vector_map[2] * Nn);
         }
 
-        out_outColor = as_disney(
-            Nn,
-            tangent,
-            in_color,
-            in_subsurfaceAmount,
-            in_metallicAmount,
-            in_specularAmount,
-            in_specularTint,
-            in_anisotropyAmount,
-            in_roughness,
-            in_sheenAmount,
-            in_sheenTint,
-            in_clearCoat,
-            in_clearCoatGlossyness);
+        if (in_anisotropy_angle > 0.0)
+        {
+            tangent = rotate(
+                tangent,
+                in_anisotropy_angle * M_2PI,
+                point(0),
+                point(in_bump_normal));
+        }
     }
 
-    closure color matte_term;
-
-    if (in_matteOpacityMode == 0)
-    {
-        matte_term = 0;
-    }
-    else if (in_matteOpacityMode == 1)
-    {
-        matte_term = holdout();
-    }
-    else
-    {
-        matte_term = in_matteOpacity * holdout();
-    }
-
-    out_outMatteOpacity = matte_term;
-    out_outColor += matte_term;
+    out_outColor += as_disney(
+        Nn,
+        tangent,
+        in_color,
+        in_subsurface_amount,
+        in_metallic_amount,
+        in_specular_amount,
+        in_specular_tint,
+        in_anisotropy_amount,
+        in_roughness,
+        in_sheen_amount,
+        in_sheen_tint,
+        in_clear_coat,
+        in_clear_coat_glossyness);
 }

@@ -214,121 +214,78 @@ shader as_maya_phongE
     ]]
 )
 {
-    if (raytype("shadow"))
+    if (raytype("shadow") || raytype("transparency"))
     {
-        color transparency = in_transparency ;
+        color transparency = in_transparency;
 
         // Shadow attenuation: 0=constant, 1=fake caustics.
-        if (in_refractions && in_transparency != 0)
+        if (in_refractions && max(in_transparency) > 0.0)
         {
-            transparency *= mix(
+            transparency = mix(
                 transparency,
-                abs(dot(normalize(I), normalize(in_normalCamera))),
+                abs(dot(-normalize(I), normalize(in_normalCamera))),
                 in_shadowAttenuation
                 );
         }
 
-        if (transparency != 0)
+        if (max(transparency) > 0.0)
         {
-            out_outColor = transparency * transparent();
+            out_outTransparency = transparency * transparent();
+            out_outColor = out_outTransparency;
         }
-
-        out_outTransparency = out_outColor;
+        return;
     }
-    else
+
+    color opacity = 1.0 - in_transparency;
+
+    if (raytype("light") && max(in_incandescence) > 0.0)
     {
-        normal Nn = normalize(in_normalCamera);
+        out_outColor += opacity * in_incandescence * emission();
+    }
 
-        closure color transparency_term = 0, incandescence_term = 0;
-        closure color translucency_term = 0, diffuse_term = 0;
-        closure color specular_term = 0, refraction_term = 0;
-        closure color glow_term = 0;
+    normal Nn = normalize(in_normalCamera);
 
-        color opacity = 1.0 - in_transparency;
+    if (max(in_color) > 0.0)
+    {
+        out_outColor += opacity * in_diffuse * in_color * diffuse(Nn);
+        out_outColor += opacity * in_translucence * in_color *
+                        translucent(Nn);
+    }
 
-        if (in_color != 0)
+    if (in_refractions)
+    {
+        int ray_depth = 0;
+        int status = getattribute("path:ray_depth", ray_depth);
+
+        if (status && ray_depth <= in_refractionLimit)
         {
-            diffuse_term = opacity * in_diffuse * in_color * diffuse(Nn);
-
-            translucency_term = opacity * in_translucence *
-                in_color * translucent(Nn);
+            // Maya associates transparency with the BTDF
+            out_outColor += in_transparency *
+                refraction(Nn, in_refractiveIndex);
         }
+    }
+    else if (max(in_transparency) > 0.0)
+    {
+        out_outTransparency = in_transparency * transparent();
+        out_outColor += out_outTransparency;
+    }
 
-        if (raytype("light") && in_incandescence != 0)
-        {
-            incandescence_term = opacity * in_incandescence * emission();
-        }
+    if (max(in_specularColor) > 0.0)
+    {
+        color specular_color = in_specularColor *
+            mix(in_color, color(1), in_whiteness);
 
-        // Maya associates the transparency with the BTDF.
-        if (in_refractions)
-        {
-            int ray_depth = 0;
-            int status = getattribute("path:ray_depth", ray_depth);
+        // Parameter "highlight size" controls the tails of the specular
+        // highlight (i.e: gamma in GTR MDF).
 
-            if (status && ray_depth <= in_refractionLimit)
-            {
-                // Maya associates transparency with the BTDF.
-                refraction_term = in_transparency *
-                    refraction(Nn, in_refractiveIndex);
-            }
-
-            opacity = 1.0;
-        }
-        else if (in_transparency != 0)
-        {
-            transparency_term = in_transparency * transparent();
-        }
-
-        if (in_specularColor != 0)
-        {
-            color specular_color = in_specularColor *
-                mix(in_color, color(1), in_whiteness);
-
-            // Parameter "highlight size" controls the tails of the specular
-            // term (i.e: gamma in GTR MDF). Not implemented yet.
-
-            specular_term = opacity * specular_color *
-                microfacet(
-                    "ggx",
-                    Nn,
-                    in_roughness,
-                    0.0,    // eta
-                    0);     // refract
-        }
-
-        closure color matte_term;
-
-        if (in_matteOpacityMode == 0)
-        {
-            matte_term = 0;
-        }
-        else if (in_matteOpacityMode == 1)
-        {
-            matte_term = holdout();
-        }
-        else
-        {
-            matte_term = in_matteOpacity * holdout();
-        }
-
-        if (in_glowIntensity != 0)
-        {
-            // glow_term = opacity * in_glowIntensity * post_glow();
-            // out_outGlowColor = glow_term;
-        }
-
-        out_outColor =
-            incandescence_term +
-            diffuse_term +
-            translucency_term +
-            specular_term +
-            refraction_term +
-            matte_term +
-            glow_term +
-            transparency_term;
-
-        out_outTransparency = transparency_term;
-        out_outMatteOpacity = matte_term;
-        out_outGlowColor = glow_term;
+        out_outColor += opacity * specular_color *
+            as_glossy(
+                "std",
+                Nn,
+                vector(0),
+                in_roughness,
+                in_highlightSize,
+                0.0,
+                0.0);
     }
 }
