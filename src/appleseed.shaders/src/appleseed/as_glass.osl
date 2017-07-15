@@ -240,7 +240,7 @@ shader as_glass
     int ray_depth = 0;
     int status = getattribute("path:ray_depth", ray_depth);
 
-    if (status || ray_depth > in_maximum_ray_depth)
+    if (!status || ray_depth > in_maximum_ray_depth)
     {
         return;
     }
