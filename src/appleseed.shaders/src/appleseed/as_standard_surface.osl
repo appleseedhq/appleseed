@@ -664,14 +664,22 @@ shader as_standard_surface
             }
 #endif
 
+#ifdef DEBUG
+            if (max(refraction_color) > 0.0)
+#else
             if (!compute_coating && in_coating_depth == 0.0 &&
                 max(refraction_color) > 0.0)
+#endif
             {
                 out_outColor += opacity * as_glass(
                     "std",
                     Nn,
                     tangent,
+#ifdef DEBUG
+                    color(1),
+#else
                     coating_transmittance,
+#endif
                     in_specular_color,
                     refraction_color,
                     in_specular_roughness,
