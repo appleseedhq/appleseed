@@ -927,6 +927,17 @@ source_group ("renderer\\kernel\\intersection" FILES
     ${renderer_kernel_intersection_sources}
 )
 
+set (renderer_kernel_lighting_bdpt_sources
+    renderer/kernel/lighting/bdpt/bdptlightingengine.cpp
+    renderer/kernel/lighting/bdpt/bdptlightingengine.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_lighting_bdpt_sources}
+)
+source_group ("renderer\\kernel\\lighting\\bdpt" FILES
+    ${renderer_kernel_lighting_bdpt_sources}
+)
+
 set (renderer_kernel_lighting_lighttracing_sources
     renderer/kernel/lighting/lighttracing/lighttracingsamplegenerator.cpp
     renderer/kernel/lighting/lighttracing/lighttracingsamplegenerator.h
