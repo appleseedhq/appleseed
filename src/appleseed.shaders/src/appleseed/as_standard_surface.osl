@@ -657,6 +657,13 @@ shader as_standard_surface
         {
             color refraction_color = in_refraction_amount * in_refraction_tint;
 
+            // NOTE: Without the layered closure this returns an unusually
+            //       dark result when coating is on.
+            if (coating)
+            {
+                warning("[WARNING]: Coated glass BSDF is unsupported!\n");
+            }
+
             if (max(refraction_color) > 0.0)
             {
                 out_outColor += opacity * as_glass(
