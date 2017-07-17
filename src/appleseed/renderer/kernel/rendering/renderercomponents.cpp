@@ -102,11 +102,12 @@ RendererComponents::RendererComponents(
   , m_scene(*project.get_scene())
   , m_frame(*project.get_frame())
   , m_trace_context(project.get_trace_context())
-  , m_light_sampler(m_scene, get_child_and_inherit_globals(params, "light_sampler"))
   , m_shading_engine(get_child_and_inherit_globals(params, "shading_engine"))
   , m_texture_store(texture_store)
   , m_texture_system(texture_system)
   , m_shading_system(shading_system)
+  , m_forward_light_sampler(0)
+  , m_backward_light_sampler(0)
 {
 }
 
@@ -146,9 +147,10 @@ bool RendererComponents::create_lighting_engine_factory()
     }
     else if (name == "pt")
     {
+        m_backward_light_sampler = new BackwardLightSampler(m_scene, get_child_and_inherit_globals(m_params, "light_sampler"));
         m_lighting_engine_factory.reset(
             new PTLightingEngineFactory(
-                m_light_sampler,
+                *m_backward_light_sampler,
                 get_child_and_inherit_globals(m_params, "pt")));    // todo: change to "pt_lighting_engine"?
         return true;
     }
@@ -164,10 +166,12 @@ bool RendererComponents::create_lighting_engine_factory()
         const SPPMParameters sppm_params(
             get_child_and_inherit_globals(m_params, "sppm"));
 
+        m_forward_light_sampler = new ForwardLightSampler(m_scene, get_child_and_inherit_globals(m_params, "light_sampler"));
+        m_backward_light_sampler = new BackwardLightSampler(m_scene, get_child_and_inherit_globals(m_params, "light_sampler"));
         SPPMPassCallback* sppm_pass_callback =
             new SPPMPassCallback(
                 m_scene,
-                m_light_sampler,
+                *m_forward_light_sampler,
                 m_trace_context,
                 m_texture_store,
                 m_texture_system,
@@ -179,7 +183,8 @@ bool RendererComponents::create_lighting_engine_factory()
         m_lighting_engine_factory.reset(
             new SPPMLightingEngineFactory(
                 *sppm_pass_callback,
-                m_light_sampler,
+                *m_forward_light_sampler,
+                *m_backward_light_sampler,
                 sppm_params));
 
         return true;
@@ -260,13 +265,14 @@ bool RendererComponents::create_sample_generator_factory()
     }
     else if (name == "lighttracing")
     {
+        m_forward_light_sampler = new ForwardLightSampler(m_scene, get_child_and_inherit_globals(m_params, "light_sampler"));
         m_sample_generator_factory.reset(
             new LightTracingSampleGeneratorFactory(
                 m_project,
                 m_frame,
                 m_trace_context,
                 m_texture_store,
-                m_light_sampler,
+                *m_forward_light_sampler,
                 m_texture_system,
                 m_shading_system,
                 get_child_and_inherit_globals(m_params, "lighttracing_sample_generator")));

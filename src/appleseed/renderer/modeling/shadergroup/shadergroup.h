@@ -131,7 +131,7 @@ class APPLESEED_DLLSYMBOL ShaderGroup
 
   private:
     friend class BackwardLightSampler;
-    // friend class ForwardLightSampler;
+    friend class ForwardLightSampler;
     friend class LightSampler;
     friend class ShaderGroupFactory;
 

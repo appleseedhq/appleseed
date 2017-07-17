@@ -74,16 +74,16 @@ class DirectLightingIntegrator
   public:
     // Constructor.
     DirectLightingIntegrator(
-        const ShadingContext&       shading_context,
-        const BackwardLightSampler&         light_sampler,
-        const ShadingPoint&         shading_point,
-        const IMaterialSampler&     material_sampler,
-        const ShadingRay::Time&     time,
-        const int                   light_sampling_modes,
-        const size_t                material_sample_count,        // number of samples in material sampling
-        const size_t                light_sample_count,           // number of samples in light sampling
-        const float                 low_light_threshold,          // light contribution threshold to disable shadow rays
-        const bool                  indirect);                    // are we computing indirect lighting?
+        const ShadingContext&           shading_context,
+        const BackwardLightSampler&     light_sampler,
+        const ShadingPoint&             shading_point,
+        const IMaterialSampler&         material_sampler,
+        const ShadingRay::Time&         time,
+        const int                       light_sampling_modes,
+        const size_t                    material_sample_count,        // number of samples in material sampling
+        const size_t                    light_sample_count,           // number of samples in light sampling
+        const float                     low_light_threshold,          // light contribution threshold to disable shadow rays
+        const bool                      indirect);                    // are we computing indirect lighting?
 
     // Compute outgoing radiance due to direct lighting via combined BSDF and light sampling.
     void compute_outgoing_radiance_combined_sampling(
@@ -117,7 +117,7 @@ class DirectLightingIntegrator
   private:
     const ShadingContext&               m_shading_context;
     const ShadingPoint&                 m_shading_point;
-    const BackwardLightSampler&                 m_light_sampler;
+    const BackwardLightSampler&         m_light_sampler;
     const ShadingRay::Time&             m_time;
     const IMaterialSampler&             m_material_sampler;
     const int                           m_light_sampling_modes;

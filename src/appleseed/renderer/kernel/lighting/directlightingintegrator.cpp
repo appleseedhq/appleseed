@@ -82,16 +82,16 @@ namespace renderer
 //
 
 DirectLightingIntegrator::DirectLightingIntegrator(
-    const ShadingContext&       shading_context,
-    const BackwardLightSampler&         light_sampler,
-    const ShadingPoint&         shading_point,
-    const IMaterialSampler&     material_sampler,
-    const ShadingRay::Time&     time,
-    const int                   light_sampling_modes,
-    const size_t                material_sample_count,
-    const size_t                light_sample_count,
-    const float                 low_light_threshold,
-    const bool                  indirect)
+    const ShadingContext&           shading_context,
+    const BackwardLightSampler&     light_sampler,
+    const ShadingPoint&             shading_point,
+    const IMaterialSampler&         material_sampler,
+    const ShadingRay::Time&         time,
+    const int                       light_sampling_modes,
+    const size_t                    material_sample_count,
+    const size_t                    light_sample_count,
+    const float                     low_light_threshold,
+    const bool                      indirect)
   : m_shading_context(shading_context)
   , m_light_sampler(light_sampler)
   , m_shading_point(shading_point)

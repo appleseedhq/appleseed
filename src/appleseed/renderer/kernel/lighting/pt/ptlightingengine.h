@@ -54,8 +54,8 @@ class PTLightingEngineFactory
   public:
     // Constructor.
     PTLightingEngineFactory(
-        const BackwardLightSampler& light_sampler,
-        const ParamArray&   params);
+        const BackwardLightSampler&     light_sampler,
+        const ParamArray&               params);
 
     // Delete this instance.
     virtual void release() override;
@@ -68,7 +68,7 @@ class PTLightingEngineFactory
 
   private:
     const BackwardLightSampler&     m_light_sampler;
-    ParamArray              m_params;
+    ParamArray                      m_params;
 };
 
 }       // namespace renderer
