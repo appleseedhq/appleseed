@@ -29,4 +29,44 @@
 #ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_BDPT_BDPTLIGHTINGENGINE_H
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_BDPT_BDPTLIGHTINGENGINE_H
 
+// appleseed.renderer headers.
+#include "renderer/kernel/lighting/ilightingengine.h"
+#include "renderer/utility/paramarray.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
+// Forward declarations.
+namespace foundation { class Dictionary; }
+
+namespace renderer
+{
+
+//
+// Bidirectional path tracing lighting engine factory.
+//
+
+class BDPTLightingEngineFactory
+    : public ILightingEngineFactory
+{
+  public:
+    // Constructor.
+    BDPTLightingEngineFactory(
+        const ParamArray&   params);
+
+    // Delete this instance.
+    virtual void release() override;
+
+    // Return a new path tracing lighting engine instance.
+    virtual ILightingEngine* create() override;
+
+    // Return the metadata of the BDPT lighting engine parameters.
+    static foundation::Dictionary get_params_metadata();
+
+  private:
+    ParamArray  m_params;
+};
+
+}       // namespace renderer
+
 #endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_BDPT_BDPTLIGHTINGENGINE_H

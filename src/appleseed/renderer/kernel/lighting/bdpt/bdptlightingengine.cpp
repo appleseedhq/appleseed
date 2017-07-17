@@ -28,3 +28,95 @@
 
 // Interface header.
 #include "bdptlightingengine.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/statistics.h"
+
+using namespace foundation;
+
+namespace renderer
+{
+
+namespace
+{
+    //
+    // Bidirectional Path Tracing lighting engine.
+    //
+
+    class BDPTLightingEngine 
+      : public ILightingEngine
+    {
+      public:
+        struct Parameters
+        {
+            explicit Parameters(
+                const ParamArray&   params)
+            {
+
+            }
+
+            void print() const
+            {
+                RENDERER_LOG_INFO(
+                    "bdpt settings:\n");
+            }
+        };
+
+        BDPTLightingEngine(
+            const ParamArray&   params)
+          : m_params(params)
+        {
+        }
+
+        virtual void release() override
+        {
+            delete this;
+        }
+
+        virtual void compute_lighting(
+            SamplingContext&        sampling_context,
+            const PixelContext&     pixel_context,
+            const ShadingContext&   shading_context,
+            const ShadingPoint&     shading_point,
+            ShadingComponents&      radiance) override      // output radiance, in W.sr^-1.m^-2
+        {
+        }
+
+        virtual StatisticsVector get_statistics() const override
+        {
+            Statistics stats;
+
+            return StatisticsVector::make("bdpt statistics", stats);
+        }
+
+      private:
+          const Parameters  m_params;
+    };
+}
+
+BDPTLightingEngineFactory::BDPTLightingEngineFactory(
+    const ParamArray&   params)
+  : m_params(params)
+{
+    BDPTLightingEngine::Parameters(params).print();
+}
+
+void BDPTLightingEngineFactory::release()
+{
+    delete this;
+}
+
+ILightingEngine* BDPTLightingEngineFactory::create()
+{
+    return new BDPTLightingEngine(m_params);
+}
+
+Dictionary BDPTLightingEngineFactory::get_params_metadata()
+{
+    Dictionary metadata;
+    add_common_params_metadata(metadata, true);
+
+    return metadata;
+}
+
+}   // namespace renderer
