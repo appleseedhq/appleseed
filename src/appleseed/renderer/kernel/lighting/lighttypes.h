@@ -79,6 +79,7 @@ class EmittingTriangle
     TriangleSupportPlaneType    m_triangle_support_plane;       // support plane of the triangle in assembly space
     float                       m_area;                         // world space triangle area
     float                       m_rcp_area;                     // world space triangle area reciprocal
+    // TODO: remove static triangle probability.
     float                       m_triangle_prob;                // probability density of this triangle
     const Material*             m_material;
 };

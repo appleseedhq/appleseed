@@ -111,7 +111,7 @@ void LightTree::build(
             ordering.size());
 
         // Set total luminance and level for each node of the LightTree.
-        recursive_node_update(0, 0);
+        recursive_node_update(0, 0, 0);
     }
 
     // Print light tree statistics.
@@ -198,11 +198,15 @@ void LightTree::draw_tree_structure(
 }
 
 //
-// Calculate the tree depth and assign total luminance to each node of the tree.
-// Total luminance represents the sum of all its child nodes luminances.
-//
+// Calculate the tree depth.
+// Assign total luminance to each node of the tree, where total luminance
+// represents the sum of all its child nodes luminances.
+// TODO: Update parent index.
 
-float LightTree::recursive_node_update(size_t node_index, size_t node_level)
+float LightTree::recursive_node_update(
+    const size_t parent_index,
+    const size_t node_index, 
+    const size_t node_level)
 {
     float luminance = 0.0f;
 
@@ -211,8 +215,8 @@ float LightTree::recursive_node_update(size_t node_index, size_t node_level)
         const auto& child1 = m_nodes[node_index].get_child_node_index();
         const auto& child2 = m_nodes[node_index].get_child_node_index() + 1;
 
-        float luminance1 = recursive_node_update(child1, node_level + 1);
-        float luminance2 = recursive_node_update(child2, node_level + 1);
+        float luminance1 = recursive_node_update(node_index, child1, node_level + 1);
+        float luminance2 = recursive_node_update(node_index, child2, node_level + 1);
 
         luminance = luminance1 + luminance2;
     }
@@ -233,6 +237,10 @@ float LightTree::recursive_node_update(size_t node_index, size_t node_level)
 
     m_nodes[node_index].set_luminance(luminance);
     m_nodes[node_index].set_level(node_level);
+    if (node_index != 0)
+        m_nodes[node_index].set_parent(parent_index);
+    else
+        m_nodes[node_index].set_root();
 
     return luminance;
 }
@@ -269,6 +277,39 @@ std::pair<size_t, float> LightTree::sample(
     const size_t light_index = m_items[item_index].m_light_index;
 
     return std::pair<size_t, float>(light_index, light_probability);
+}
+
+float LightTree::light_probability(
+    const foundation::Vector3d&     surface_point,
+    const size_t                    leaf_index) const
+{
+    float light_probability = 1.0f;
+    size_t child_index = leaf_index;
+    size_t parent_index = m_nodes[child_index].get_parent();
+
+    while (!m_nodes[parent_index].is_root())
+    {
+        const LightTreeNode<foundation::AABB3d>& node = m_nodes[parent_index];
+
+        float p1, p2;
+        child_node_probabilites(node, surface_point, p1, p2);
+
+        if (node.get_child_node_index() == child_index)
+        {
+            light_probability *= p1;            
+        }
+        else
+        {
+            light_probability *= p2;
+        }
+
+        // Save the child index to be sure which probability should be taken
+        // into consideration.
+        child_index = parent_index;
+        parent_index = m_nodes[child_index].get_parent();
+    }
+
+    return light_probability;
 }
 
 namespace

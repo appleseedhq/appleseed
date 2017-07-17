@@ -92,6 +92,12 @@ class BackwardLightSampler
     // Return the number of emitting triangles in the scene.
     size_t get_emitting_triangle_count() const;
 
+    // Get the node index of the light which is currently being evaluated.
+    size_t get_currently_sampled_tree_node() const;
+
+    // Set the node index of the light which is currently being evaluated.
+    void set_currently_sampled_tree_node(const size_t node_index);
+
     // Return true if the scene contains at least one light or emitting triangle.
     bool has_lights_or_emitting_triangles() const;
 
@@ -119,12 +125,6 @@ class BackwardLightSampler
         const ShadingRay::Time&             time,
         const foundation::Vector3f&         s,
         LightSample&                        light_sample) const;
-
-    // Sample the sets of non-physical lights and emitting triangles.
-    void sample(
-        const ShadingRay::Time&             time,
-        const foundation::Vector3f&         s,
-        LightSample&                        light_sample) const;
     
     // Sample the sets of non-physical lights and emitting triangles using a light-tree.
     void sample(
@@ -133,8 +133,10 @@ class BackwardLightSampler
         const ShadingPoint&                 shading_point,
         LightSample&                        light_sample) const;
 
+    // TODO: switch evaluate_pdf with evaluate_pdf_tree when over.
     // Compute the probability density in area measure of a given light sample.
     float evaluate_pdf(const ShadingPoint& shading_point) const;
+    float evaluate_pdf_tree(const ShadingPoint& shading_point) const;
 
   private:
     struct Parameters
@@ -164,6 +166,7 @@ class BackwardLightSampler
     EmittingTriangleHashTable   m_emitting_triangle_hash_table;
 
     LightTree                   m_light_tree;
+    size_t                      m_currently_sampled_tree_node;
 
     // Recursively collect non-physical lights from a given set of assembly instances.
     void collect_non_physical_lights(
@@ -248,6 +251,16 @@ inline void BackwardLightSampler::sample_non_physical_light(
     LightSample&                            sample) const
 {
     sample_non_physical_light(time, light_index, 1.0, sample);
+}
+
+inline size_t BackwardLightSampler::get_currently_sampled_tree_node() const
+{
+    return m_currently_sampled_tree_node;
+}
+
+inline void BackwardLightSampler::set_currently_sampled_tree_node(const size_t node_index)
+{
+    m_currently_sampled_tree_node = node_index;
 }
 
 }       // namespace renderer

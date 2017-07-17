@@ -104,9 +104,11 @@ BackwardLightSampler::BackwardLightSampler(const Scene& scene, const ParamArray&
     // Prepare the CDFs for sampling.
     if (m_non_physical_lights_cdf.valid())
         m_non_physical_lights_cdf.prepare();
+    // TODO: remove - EMT CDF is no longer necessary.
     if (m_emitting_triangles_cdf.valid())
         m_emitting_triangles_cdf.prepare();
 
+    // TODO: remove - static EMT probability is no longer required.
     // Store the triangle probability densities into the emitting triangles.
     const size_t emitting_triangle_count = m_emitting_triangles.size();
     for (size_t i = 0; i < emitting_triangle_count; ++i)
@@ -486,39 +488,6 @@ void BackwardLightSampler::sample_emitting_triangles(
 void BackwardLightSampler::sample(
     const ShadingRay::Time&             time,
     const Vector3f&                     s,
-    LightSample&                        light_sample) const
-{
-    assert(m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid());
-
-    if (m_non_physical_lights_cdf.valid())
-    {
-        if (m_emitting_triangles_cdf.valid())
-        {
-            if (s[0] < 0.5f)
-            {
-                sample_non_physical_lights(
-                    time,
-                    Vector3f(s[0] * 2.0f, s[1], s[2]),
-                    light_sample);
-            }
-            else
-            {
-                sample_emitting_triangles(
-                    time,
-                    Vector3f((s[0] - 0.5f) * 2.0f, s[1], s[2]),
-                    light_sample);
-            }
-
-            light_sample.m_probability *= 0.5f;
-        }
-        else sample_non_physical_lights(time, s, light_sample);
-    }
-    else sample_emitting_triangles(time, s, light_sample);
-}
-
-void BackwardLightSampler::sample(
-    const ShadingRay::Time&             time,
-    const Vector3f&                     s,
     const ShadingPoint&                 shading_point,
     LightSample&                        light_sample) const
 {
@@ -587,6 +556,27 @@ float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point) cons
 
     const EmittingTriangle* triangle = m_emitting_triangle_hash_table.get(triangle_key);
     return triangle->m_triangle_prob * triangle->m_rcp_area;
+}
+
+// TODO: provide the index of the chosen leaf_node containing the EMT.
+float BackwardLightSampler::evaluate_pdf_tree(const ShadingPoint& shading_point) const
+{
+    assert(shading_point.is_triangle_primitive());
+
+    const EmittingTriangleKey triangle_key(
+        shading_point.get_assembly_instance().get_uid(),
+        shading_point.get_object_instance_index(),
+        shading_point.get_region_index(),
+        shading_point.get_primitive_index());
+
+    const EmittingTriangle* triangle = m_emitting_triangle_hash_table.get(triangle_key);
+
+    // Traverse the tree and update triangle_prob
+    const float prob = m_light_tree.light_probability(
+        shading_point.get_point(),
+        m_currently_sampled_tree_node);
+
+    return prob * triangle->m_rcp_area;
 }
 
 void BackwardLightSampler::sample_light_tree_light(

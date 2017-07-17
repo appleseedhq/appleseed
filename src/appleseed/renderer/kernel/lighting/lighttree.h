@@ -77,6 +77,12 @@ class LightTree
         const foundation::Vector3d&     surface_point,
         const float                     s) const;
 
+    // Compute the light probability of a particular tree node. Start from the
+    // node and go backwards towards the root node.
+    float light_probability(
+        const foundation::Vector3d&     surface_point,
+        const size_t                    leaf_index) const;
+
   private:
     struct Item
     {
@@ -111,7 +117,10 @@ class LightTree
         const foundation::AABB3d&   root_bbox,
         const bool                  separate_by_levels = false) const;
 
-    float recursive_node_update(size_t node_index, size_t node_level);
+    float recursive_node_update(
+        const size_t parent_index,
+        const size_t node_index, 
+        const size_t node_level);
 
     void child_node_probabilites(
         const LightTreeNode<foundation::AABB3d>&    node,
