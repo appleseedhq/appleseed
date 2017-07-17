@@ -51,7 +51,7 @@
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class JobQueue; }
 namespace renderer      { class Frame; }
-namespace renderer      { class LightSampler; }
+namespace renderer      { class BackwardLightSampler; }
 namespace renderer      { class OIIOTextureSystem; }
 namespace renderer      { class OSLShadingSystem; }
 namespace renderer      { class Scene; }
@@ -72,7 +72,7 @@ class SPPMPassCallback
     // Constructor.
     SPPMPassCallback(
         const Scene&                scene,
-        const LightSampler&         light_sampler,
+        const BackwardLightSampler&         light_sampler,
         const TraceContext&         trace_context,
         TextureStore&               texture_store,
         OIIOTextureSystem&          oiio_texture_system,

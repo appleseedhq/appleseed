@@ -42,7 +42,7 @@
 
 // Forward declarations.
 namespace renderer  { class Frame; }
-namespace renderer  { class LightSampler; }
+namespace renderer  { class BackwardLightSampler; }
 namespace renderer  { class OIIOTextureSystem; }
 namespace renderer  { class OSLShadingSystem; }
 namespace renderer  { class Project; }
@@ -63,7 +63,7 @@ class LightTracingSampleGeneratorFactory
         const Frame&            frame,
         const TraceContext&     trace_context,
         TextureStore&           texture_store,
-        const LightSampler&     light_sampler,
+        const BackwardLightSampler&     light_sampler,
         OIIOTextureSystem&      oiio_texture_system,
         OSLShadingSystem&       shading_system,
         const ParamArray&       params);
@@ -84,7 +84,7 @@ class LightTracingSampleGeneratorFactory
     const Frame&                m_frame;
     const TraceContext&         m_trace_context;
     TextureStore&               m_texture_store;
-    const LightSampler&         m_light_sampler;
+    const BackwardLightSampler&         m_light_sampler;
     OIIOTextureSystem&          m_oiio_texture_system;
     OSLShadingSystem&           m_shading_system;
     const ParamArray            m_params;

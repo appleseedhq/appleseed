@@ -31,7 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/ilightingengine.h"
-#include "renderer/kernel/lighting/lightsampler.h"
+#include "renderer/kernel/lighting/backwardlightsampler.h"
 #include "renderer/kernel/rendering/iframerenderer.h"
 #include "renderer/kernel/rendering/ipasscallback.h"
 #include "renderer/kernel/rendering/ipixelrenderer.h"
@@ -91,7 +91,7 @@ class RendererComponents
     const Scene&                m_scene;
     const Frame&                m_frame;
     const TraceContext&         m_trace_context;
-    LightSampler                m_light_sampler;
+    BackwardLightSampler                m_light_sampler;
     ShadingEngine               m_shading_engine;
     TextureStore&               m_texture_store;
     OIIOTextureSystem&          m_texture_system;

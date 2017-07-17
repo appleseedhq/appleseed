@@ -31,7 +31,7 @@
 #include "directlightingintegrator.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/lighting/lightsampler.h"
+#include "renderer/kernel/lighting/backwardlightsampler.h"
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
@@ -83,7 +83,7 @@ namespace renderer
 
 DirectLightingIntegrator::DirectLightingIntegrator(
     const ShadingContext&       shading_context,
-    const LightSampler&         light_sampler,
+    const BackwardLightSampler&         light_sampler,
     const ShadingPoint&         shading_point,
     const IMaterialSampler&     material_sampler,
     const ShadingRay::Time&     time,

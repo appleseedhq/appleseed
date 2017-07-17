@@ -126,7 +126,7 @@ namespace
       public:
         SPPMLightingEngine(
             const SPPMPassCallback& pass_callback,
-            const LightSampler&     light_sampler,
+            const BackwardLightSampler&     light_sampler,
             const SPPMParameters&   params)
           : m_params(params)
           , m_pass_callback(pass_callback)
@@ -199,7 +199,7 @@ namespace
       private:
         const SPPMParameters            m_params;
         const SPPMPassCallback&         m_pass_callback;
-        const LightSampler&             m_light_sampler;
+        const BackwardLightSampler&             m_light_sampler;
         uint64                          m_path_count;
         Population<uint64>              m_path_length;
         knn::Answer<float>              m_answer;
@@ -208,7 +208,7 @@ namespace
         {
             const SPPMParameters&       m_params;
             const SPPMPassCallback&     m_pass_callback;
-            const LightSampler&         m_light_sampler;
+            const BackwardLightSampler&         m_light_sampler;
             SamplingContext&            m_sampling_context;
             const ShadingContext&       m_shading_context;
             const EnvironmentEDF*       m_env_edf;
@@ -218,7 +218,7 @@ namespace
             PathVisitor(
                 const SPPMParameters&   params,
                 const SPPMPassCallback& pass_callback,
-                const LightSampler&     light_sampler,
+                const BackwardLightSampler&     light_sampler,
                 SamplingContext&        sampling_context,
                 const ShadingContext&   shading_context,
                 const Scene&            scene,
@@ -633,7 +633,7 @@ namespace
 
 SPPMLightingEngineFactory::SPPMLightingEngineFactory(
     const SPPMPassCallback&     pass_callback,
-    const LightSampler&         light_sampler,
+    const BackwardLightSampler&         light_sampler,
     const SPPMParameters&       params)
   : m_pass_callback(pass_callback)
   , m_light_sampler(light_sampler)

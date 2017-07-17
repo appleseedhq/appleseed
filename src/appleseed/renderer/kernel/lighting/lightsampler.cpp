@@ -69,38 +69,7 @@ using namespace std;
 
 namespace renderer
 {
-
-//
-// LightSample class implementation.
-//
-
-void LightSample::make_shading_point(
-    ShadingPoint&           shading_point,
-    const Vector3d&         direction,
-    const Intersector&      intersector) const
-{
-    assert(m_triangle && !m_light);
-
-    intersector.manufacture_hit(
-        shading_point,
-        ShadingRay(
-            m_point,
-            direction,
-            0.0,
-            0.0,
-            ShadingRay::Time(),
-            VisibilityFlags::CameraRay, 0),
-        ShadingPoint::PrimitiveTriangle,    // note: we assume light samples are always on triangles (and not on curves)
-        m_bary,
-        m_triangle->m_assembly_instance,
-        m_triangle->m_assembly_instance->transform_sequence().get_earliest_transform(),
-        m_triangle->m_object_instance_index,
-        m_triangle->m_region_index,
-        m_triangle->m_triangle_index,
-        m_triangle->m_triangle_support_plane);
-}
-
-
+    
 //
 // LightSampler class implementation.
 //

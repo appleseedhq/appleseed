@@ -39,7 +39,7 @@
 
 // Forward declarations.
 namespace foundation    { class Dictionary; }
-namespace renderer      { class LightSampler; }
+namespace renderer      { class BackwardLightSampler; }
 
 namespace renderer
 {
@@ -54,7 +54,7 @@ class PTLightingEngineFactory
   public:
     // Constructor.
     PTLightingEngineFactory(
-        const LightSampler& light_sampler,
+        const BackwardLightSampler& light_sampler,
         const ParamArray&   params);
 
     // Delete this instance.
@@ -67,7 +67,7 @@ class PTLightingEngineFactory
     static foundation::Dictionary get_params_metadata();
 
   private:
-    const LightSampler&     m_light_sampler;
+    const BackwardLightSampler&     m_light_sampler;
     ParamArray              m_params;
 };
 

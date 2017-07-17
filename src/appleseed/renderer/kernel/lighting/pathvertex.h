@@ -32,7 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/lighting/lightsampler.h"
+#include "renderer/kernel/lighting/backwardlightsampler.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
@@ -113,7 +113,7 @@ class PathVertex
     float get_bsdf_prob_area() const;
 
     // Return the probability density wrt. surface area mesure of reaching this vertex via light sampling.
-    float get_light_prob_area(const LightSampler& light_sampler) const;
+    float get_light_prob_area(const BackwardLightSampler& light_sampler) const;
 };
 
 
@@ -178,7 +178,7 @@ inline float PathVertex::get_bsdf_prob_area() const
     return m_prev_prob * g;
 }
 
-inline float PathVertex::get_light_prob_area(const LightSampler& light_sampler) const
+inline float PathVertex::get_light_prob_area(const BackwardLightSampler& light_sampler) const
 {
     return light_sampler.evaluate_pdf(*m_shading_point);
 }

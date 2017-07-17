@@ -53,6 +53,7 @@
 #include "renderer/utility/triangle.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/distance.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/utility/foreach.h"
@@ -480,6 +481,39 @@ void BackwardLightSampler::sample_emitting_triangles(
 
     assert(light_sample.m_triangle);
     assert(light_sample.m_probability > 0.0f);
+}
+
+void BackwardLightSampler::sample(
+    const ShadingRay::Time&             time,
+    const Vector3f&                     s,
+    LightSample&                        light_sample) const
+{
+    assert(m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid());
+
+    if (m_non_physical_lights_cdf.valid())
+    {
+        if (m_emitting_triangles_cdf.valid())
+        {
+            if (s[0] < 0.5f)
+            {
+                sample_non_physical_lights(
+                    time,
+                    Vector3f(s[0] * 2.0f, s[1], s[2]),
+                    light_sample);
+            }
+            else
+            {
+                sample_emitting_triangles(
+                    time,
+                    Vector3f((s[0] - 0.5f) * 2.0f, s[1], s[2]),
+                    light_sample);
+            }
+
+            light_sample.m_probability *= 0.5f;
+        }
+        else sample_non_physical_lights(time, s, light_sample);
+    }
+    else sample_emitting_triangles(time, s, light_sample);
 }
 
 void BackwardLightSampler::sample(

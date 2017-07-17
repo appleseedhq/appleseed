@@ -42,7 +42,7 @@
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class JobQueue; }
-namespace renderer      { class LightSampler; }
+namespace renderer      { class BackwardLightSampler; }
 namespace renderer      { class LightTargetArray; }
 namespace renderer      { class OIIOTextureSystem; }
 namespace renderer      { class OSLShadingSystem; }
@@ -60,7 +60,7 @@ class SPPMPhotonTracer
   public:
     SPPMPhotonTracer(
         const Scene&                scene,
-        const LightSampler&         light_sampler,
+        const BackwardLightSampler&         light_sampler,
         const TraceContext&         trace_context,
         TextureStore&               texture_store,
         OIIOTextureSystem&          oiio_texture_system,
@@ -76,7 +76,7 @@ class SPPMPhotonTracer
   private:
     const SPPMParameters            m_params;
     const Scene&                    m_scene;
-    const LightSampler&             m_light_sampler;
+    const BackwardLightSampler&             m_light_sampler;
     const TraceContext&             m_trace_context;
     TextureStore&                   m_texture_store;
     size_t                          m_total_emitted_photon_count;

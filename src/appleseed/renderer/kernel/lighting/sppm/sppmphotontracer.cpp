@@ -35,7 +35,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/lighting/sppm/sppmphoton.h"
-#include "renderer/kernel/lighting/lightsampler.h"
+#include "renderer/kernel/lighting/backwardlightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
@@ -222,7 +222,7 @@ namespace
         LightPhotonTracingJob(
             const Scene&            scene,
             const LightTargetArray& photon_targets,
-            const LightSampler&     light_sampler,
+            const BackwardLightSampler&     light_sampler,
             const TraceContext&     trace_context,
             TextureStore&           texture_store,
             OIIOTextureSystem&      oiio_texture_system,
@@ -292,7 +292,7 @@ namespace
       private:
         const Scene&                m_scene;
         const LightTargetArray&     m_photon_targets;
-        const LightSampler&         m_light_sampler;
+        const BackwardLightSampler&         m_light_sampler;
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
         OIIOTextureSystem&          m_oiio_texture_system;
@@ -513,7 +513,7 @@ namespace
         EnvironmentPhotonTracingJob(
             const Scene&            scene,
             const LightTargetArray& photon_targets,
-            const LightSampler&     light_sampler,
+            const BackwardLightSampler&     light_sampler,
             const TraceContext&     trace_context,
             TextureStore&           texture_store,
             OIIOTextureSystem&      oiio_texture_system,
@@ -590,7 +590,7 @@ namespace
         const Scene&                m_scene;
         const LightTargetArray&     m_photon_targets;
         const EnvironmentEDF&       m_env_edf;
-        const LightSampler&         m_light_sampler;
+        const BackwardLightSampler&         m_light_sampler;
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
         OIIOTextureSystem&          m_oiio_texture_system;
@@ -712,7 +712,7 @@ namespace
 
 SPPMPhotonTracer::SPPMPhotonTracer(
     const Scene&            scene,
-    const LightSampler&     light_sampler,
+    const BackwardLightSampler&     light_sampler,
     const TraceContext&     trace_context,
     TextureStore&           texture_store,
     OIIOTextureSystem&      oiio_texture_system,

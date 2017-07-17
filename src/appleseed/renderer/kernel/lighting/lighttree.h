@@ -68,7 +68,7 @@ class LightTree
 
     bool is_built() const;
 
-    // Build the tree based on the lights collected by the LightSampler.
+    // Build the tree based on the lights collected by the BackwardLightSampler.
     // TODO: Remove light lists from arguments when they start being collected
     //       by the LightTree class itself.
     void build(const std::vector<NonPhysicalLightInfo>& non_physical_lights);
@@ -87,7 +87,7 @@ class LightTree
 
         // Item contains bbox and source index of each light source
         // source_index represents the light index in m_light_sources vector and
-        // corresponds to the m_light_tree_lights within the LightSampler
+        // corresponds to the m_light_tree_lights within the BackwardLightSampler
         Item(
             const foundation::AABB3d&       bbox,
             const size_t                    source_index)

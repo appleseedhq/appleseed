@@ -59,7 +59,7 @@ namespace renderer
 
 SPPMPassCallback::SPPMPassCallback(
     const Scene&            scene,
-    const LightSampler&     light_sampler,
+    const BackwardLightSampler&     light_sampler,
     const TraceContext&     trace_context,
     TextureStore&           texture_store,
     OIIOTextureSystem&      oiio_texture_system,

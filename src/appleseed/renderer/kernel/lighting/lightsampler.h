@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/intersectionsettings.h"
+#include "renderer/kernel/lighting/lightsample.h"
 #include "renderer/kernel/lighting/lighttree.h"
 #include "renderer/kernel/lighting/lighttypes.h"
 #include "renderer/kernel/shading/shadingray.h"
@@ -66,73 +67,6 @@ namespace renderer  { class ShadingPoint; }
 
 namespace renderer
 {
-//
-// A key to uniquely identify a light-emitting triangle in a hash table.
-//
-
-class EmittingTriangleKey
-{
-  public:
-    foundation::UniqueID            m_assembly_instance_uid;
-    foundation::uint32              m_object_instance_index;
-    foundation::uint32              m_region_index;
-    foundation::uint32              m_triangle_index;
-
-    EmittingTriangleKey();
-    EmittingTriangleKey(
-        const foundation::UniqueID  assembly_instance_uid,
-        const size_t                object_instance_index,
-        const size_t                region_index,
-        const size_t                triangle_index);
-
-    bool operator==(const EmittingTriangleKey& rhs) const;
-};
-
-
-//
-// A hash table of light-emitting triangles.
-//
-
-struct EmittingTriangleKeyHasher
-{
-    size_t operator()(const EmittingTriangleKey& key) const;
-};
-
-typedef foundation::HashTable<
-    EmittingTriangleKey,
-    EmittingTriangleKeyHasher,
-    const EmittingTriangle*
-> EmittingTriangleHashTable;
-
-
-//
-// Light sample: the result of sampling the sets of non-physical lights and light-emitting triangles.
-//
-
-class LightSample
-{
-  public:
-    // Data for a light-emitting triangle sample.
-    const EmittingTriangle*     m_triangle;
-    foundation::Vector2f        m_bary;                         // barycentric coordinates of the sample
-    foundation::Vector3d        m_point;                        // world space position of the sample
-    foundation::Vector3d        m_shading_normal;               // world space shading normal at the sample, unit-length
-    foundation::Vector3d        m_geometric_normal;             // world space geometric normal at the sample, unit-length
-
-    // Data for a non-physical light sample.
-    const Light*                m_light;
-    foundation::Transformd      m_light_transform;              // light space to world space transform
-
-    // Data common to all sample types.
-    float                       m_probability;                  // probability density of this sample
-
-    // Construct a shading point out of this light sample and a given direction.
-    void make_shading_point(
-        ShadingPoint&                   shading_point,
-        const foundation::Vector3d&     direction,
-        const Intersector&              intersector) const;
-};
-
 
 //
 // The light sampler collects all the light-emitting entities (non-physical lights, mesh lights)
@@ -282,52 +216,6 @@ class LightSampler
         const float                         object_area,
         const MaterialArray&                materials);
 };
-
-
-//
-// EmittingTriangleKey class implementation.
-//
-
-inline EmittingTriangleKey::EmittingTriangleKey()
-{
-}
-
-inline EmittingTriangleKey::EmittingTriangleKey(
-    const foundation::UniqueID              assembly_instance_uid,
-    const size_t                            object_instance_index,
-    const size_t                            region_index,
-    const size_t                            triangle_index)
-  : m_assembly_instance_uid(static_cast<foundation::uint32>(assembly_instance_uid))
-  , m_object_instance_index(static_cast<foundation::uint32>(object_instance_index))
-  , m_region_index(static_cast<foundation::uint32>(region_index))
-  , m_triangle_index(static_cast<foundation::uint32>(triangle_index))
-{
-}
-
-inline bool EmittingTriangleKey::operator==(const EmittingTriangleKey& rhs) const
-{
-    return
-        m_triangle_index == rhs.m_triangle_index &&
-        m_object_instance_index == rhs.m_object_instance_index &&
-        m_assembly_instance_uid == rhs.m_assembly_instance_uid &&
-        m_region_index == rhs.m_region_index;
-}
-
-
-//
-// EmittingTriangleKeyHasher class implementation.
-//
-
-inline size_t EmittingTriangleKeyHasher::operator()(const EmittingTriangleKey& key) const
-{
-    return
-        foundation::mix_uint32(
-            static_cast<foundation::uint32>(key.m_assembly_instance_uid),
-            key.m_object_instance_index,
-            key.m_region_index,
-            key.m_triangle_index);
-}
-
 
 //
 // LightSampler class implementation.

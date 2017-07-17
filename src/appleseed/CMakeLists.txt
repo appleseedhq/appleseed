@@ -998,12 +998,12 @@ set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/backwardlightsampler.h
     renderer/kernel/lighting/directlightingintegrator.cpp
     renderer/kernel/lighting/directlightingintegrator.h
-    renderer/kernel/lighting/forwardlightsampler.cpp
-    renderer/kernel/lighting/forwardlightsampler.h
     renderer/kernel/lighting/ilightingengine.cpp
     renderer/kernel/lighting/ilightingengine.h
     renderer/kernel/lighting/imagebasedlighting.cpp
     renderer/kernel/lighting/imagebasedlighting.h
+    renderer/kernel/lighting/lightsample.cpp
+    renderer/kernel/lighting/lightsample.h
     renderer/kernel/lighting/lightsampler.cpp
     renderer/kernel/lighting/lightsampler.h
     renderer/kernel/lighting/materialsamplers.cpp
