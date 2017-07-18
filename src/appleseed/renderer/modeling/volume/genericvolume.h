@@ -26,13 +26,13 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PHASEFUNCTION_ISOTROPICPHASEFUNCTION_H
-#define APPLESEED_RENDERER_MODELING_PHASEFUNCTION_ISOTROPICPHASEFUNCTION_H
+#ifndef APPLESEED_RENDERER_MODELING_VOLUME_GENERICVOLUME_H
+#define APPLESEED_RENDERER_MODELING_VOLUME_GENERICVOLUME_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/phasefunction/iphasefunctionfactory.h"
 #include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/volume/ivolumefactory.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -45,25 +45,27 @@
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class ParamArray; }
-namespace renderer      { class PhaseFunction; }
+namespace renderer      { class Volume; }
 
 namespace renderer
 {
 
 //
-// Isotropic phase function input values.
+// Generic volume input values.
 //
 
-APPLESEED_DECLARE_INPUT_VALUES(IsotropicPhaseFunctionInputValues)
+APPLESEED_DECLARE_INPUT_VALUES(GenericVolumeInputValues)
 {
     Spectrum    m_absorption;               // absorption coefficient of the media
     float       m_absorption_multiplier;    // absorption coefficient multiplier
     Spectrum    m_scattering;               // scattering coefficient of the media
     float       m_scattering_multiplier;    // scattering coefficient multiplier
 
+    float       m_average_cosine;           // asymmetry parameter, often referred as g
+
     struct Precomputed
     {
-        Spectrum       m_extinction;        // extinction coefficient of the media
+        Spectrum    m_extinction;           // extinction coefficient of the media
     };
 
     Precomputed m_precomputed;
@@ -71,28 +73,28 @@ APPLESEED_DECLARE_INPUT_VALUES(IsotropicPhaseFunctionInputValues)
 
 
 //
-// Isotropic phase function factory.
+// Generic volume factory.
 //
 
-class APPLESEED_DLLSYMBOL IsotropicPhaseFunctionFactory
-  : public IPhaseFunctionFactory
+class APPLESEED_DLLSYMBOL GenericVolumeFactory
+  : public IVolumeFactory
 {
   public:
-    // Return a string identifying this phase function model.
+    // Return a string identifying this volume model.
     virtual const char* get_model() const override;
 
-    // Return metadata for this phase function model.
+    // Return metadata for this volume model.
     virtual foundation::Dictionary get_model_metadata() const override;
 
-    // Return metadata for the inputs of this phase function model.
+    // Return metadata for the inputs of this volume model.
     virtual foundation::DictionaryArray get_input_metadata() const override;
 
-    // Create a new phase function instance.
-    virtual foundation::auto_release_ptr<PhaseFunction> create(
+    // Create a new volume instance.
+    virtual foundation::auto_release_ptr<Volume> create(
         const char*         name,
         const ParamArray&   params) const override;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_PHASEFUNCTION_ISOTROPICPHASEFUNCTION_H
+#endif  // !APPLESEED_RENDERER_MODELING_VOLUME_GENERICVOLUME_H

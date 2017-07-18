@@ -45,7 +45,7 @@ namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }
 
 //
-// This file contains wrappers over samplable functions, such as BSDF and PhaseFunction.
+// This file contains wrappers over samplable functions, such as BSDF and Volume.
 // These wrappers provide a uniform interface for sampling and evaluating these functions
 // at a certain point, which can be used during lighting integration.
 //
@@ -136,14 +136,14 @@ class BSDFSampler
     const ShadingPoint&                 m_shading_point;
 };
 
-class PhaseFunctionSampler
+class VolumeSampler
   : public IMaterialSampler
 {
   public:
-    PhaseFunctionSampler(
+    VolumeSampler(
         const ShadingRay&               volume_ray,
-        const PhaseFunction&            phase_function,
-        const void*                     phase_function_data,
+        const Volume&                   volume,
+        const void*                     volume_data,
         const float                     distance);
 
     virtual const foundation::Vector3d& get_point() const override;
@@ -178,8 +178,8 @@ class PhaseFunctionSampler
 
   private:
     const ShadingRay&               m_volume_ray;
-    const PhaseFunction&            m_phase_function;
-    const void*                     m_phase_function_data;
+    const Volume&                   m_volume;
+    const void*                     m_volume_data;
     const float                     m_distance;
     const foundation::Vector3d      m_point;
 };

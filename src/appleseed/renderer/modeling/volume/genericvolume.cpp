@@ -26,17 +26,25 @@
 // THE SOFTWARE.
 //
 
+// Interface header.
+#include "genericvolume.h"
+
+// appleseed.foundation headers.
+#include "foundation/math/basis.h"
+#include "foundation/math/phasefunction.h"
+#include "foundation/utility/api/specializedapiarrays.h"
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/makevector.h"
+
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/phasefunction/isotropicphasefunction.h"
-#include "renderer/modeling/phasefunction/phasefunction.h"
+#include "renderer/modeling/volume/volume.h"
 
-// appleseed.foundation headers.
-#include "foundation/math/sampling/mappings.h"
-#include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
+// Standard headers.
+#include <cmath>
+#include <memory>
 
 using namespace foundation;
 
@@ -45,26 +53,27 @@ namespace renderer
 
 namespace
 {
-    const char* Model = "isotropic_phasefunction";
+    const char* Model = "generic_volume";
 }
 
 //
-// Isotropic phase function.
+// Generic volume.
 //
 
-class IsotropicPhaseFunction
-  : public PhaseFunction
+class GenericVolume
+  : public Volume
 {
   public:
-    IsotropicPhaseFunction(
+    GenericVolume(
         const char*         name,
         const ParamArray&   params)
-      : PhaseFunction(name, params)
+      : Volume(name, params)
     {
         m_inputs.declare("absorption", InputFormatSpectralReflectance);
         m_inputs.declare("absorption_multiplier", InputFormatFloat, "1.0");
         m_inputs.declare("scattering", InputFormatSpectralReflectance);
         m_inputs.declare("scattering_multiplier", InputFormatFloat, "1.0");
+        m_inputs.declare("average_cosine", InputFormatFloat, "0.0");
     }
 
     virtual void release() override
@@ -75,6 +84,36 @@ class IsotropicPhaseFunction
     virtual const char* get_model() const override
     {
         return Model;
+    }
+
+    virtual bool on_frame_begin(
+        const Project&          project,
+        const BaseGroup*        parent,
+        OnFrameBeginRecorder&   recorder,
+        IAbortSwitch*           abort_switch) override
+    {
+        if (!Volume::on_frame_begin(project, parent, recorder, abort_switch))
+            return false;
+
+        const EntityDefMessageContext context("volume", this);
+
+        const std::string phase_function =
+            m_params.get_required<std::string>(
+                "phase_function_model",
+                "isotropic",
+                make_vector("isotropic", "henyey"),
+                context);
+
+        if (phase_function == "isotropic")
+            m_phase_function.reset(new IsotropicPhaseFunction());
+        else if (phase_function == "henyey")
+        {
+            float g = m_params.get_optional<float>("average_cosine", 0.0f);
+            m_phase_function.reset(new HenyeyPhaseFunction(g));
+        }
+        else return false;
+
+        return true;
     }
 
     virtual bool is_homogeneous() const override
@@ -108,12 +147,10 @@ class IsotropicPhaseFunction
         const float         distance,
         Vector3f&           incoming) const override
     {
-        // Sample incoming direction.
+        const Vector3f outgoing = Vector3f(normalize(volume_ray.m_dir));
         sampling_context.split_in_place(2, 1);
         const Vector2f s = sampling_context.next2<Vector2f>();
-        incoming = sample_sphere_uniform(s);
-
-        return RcpFourPi<float>();
+        return m_phase_function->sample(outgoing, s, incoming);
     }
 
     virtual float evaluate(
@@ -122,7 +159,8 @@ class IsotropicPhaseFunction
         const float         distance,
         const Vector3f&     incoming) const override
     {
-        return RcpFourPi<float>();
+        const Vector3f outgoing = Vector3f(normalize(volume_ray.m_dir));
+        return m_phase_function->evaluate(outgoing, incoming);
     }
 
     virtual void evaluate_transmission(
@@ -141,8 +179,7 @@ class IsotropicPhaseFunction
         const ShadingRay&   volume_ray,
         Spectrum&           spectrum) const override
     {
-        const float distance = static_cast<float>(
-            norm(volume_ray.m_dir) * (volume_ray.m_tmax - volume_ray.m_tmin));
+        const float distance = static_cast<float>(volume_ray.get_length());
         evaluate_transmission(data, volume_ray, distance, spectrum);
     }
 
@@ -201,28 +238,30 @@ class IsotropicPhaseFunction
     }
 
   private:
-    typedef IsotropicPhaseFunctionInputValues InputValues;
+    typedef GenericVolumeInputValues InputValues;
+
+    std::unique_ptr<PhaseFunction> m_phase_function;
 };
 
 
 //
-// IsotropicPhaseFunctionFactory class implementation.
+// GenericVolumeFactory class implementation.
 //
 
-const char* IsotropicPhaseFunctionFactory::get_model() const
+const char* GenericVolumeFactory::get_model() const
 {
     return Model;
 }
 
-Dictionary IsotropicPhaseFunctionFactory::get_model_metadata() const
+Dictionary GenericVolumeFactory::get_model_metadata() const
 {
     return
         Dictionary()
             .insert("name", Model)
-            .insert("label", "Isotropic Phase Function");
+            .insert("label", "Generic Volume");
 }
 
-DictionaryArray IsotropicPhaseFunctionFactory::get_input_metadata() const
+DictionaryArray GenericVolumeFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
 
@@ -232,8 +271,7 @@ DictionaryArray IsotropicPhaseFunctionFactory::get_input_metadata() const
             .insert("label", "Absorption Coefficient")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary()
-                    .insert("color", "Colors"))
+                Dictionary().insert("color", "Colors"))
             .insert("use", "required")
             .insert("default", "0.5"));
 
@@ -253,17 +291,15 @@ DictionaryArray IsotropicPhaseFunctionFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("default", "1.0"));
 
-
     metadata.push_back(
         Dictionary()
             .insert("name", "scattering")
             .insert("label", "Scattering Coefficient")
             .insert("type", "colormap")
             .insert("entity_types",
-                Dictionary()
-                    .insert("color", "Colors"))
-                .insert("use", "required")
-                .insert("default", "0.5"));
+                Dictionary().insert("color", "Colors"))
+            .insert("use", "required")
+            .insert("default", "0.5"));
 
     metadata.push_back(
         Dictionary()
@@ -281,14 +317,45 @@ DictionaryArray IsotropicPhaseFunctionFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("default", "1.0"));
 
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "phase_function_model")
+            .insert("label", "Phase Function Model")
+            .insert("type", "enumeration")
+            .insert("items",
+                Dictionary()
+                    .insert("Isotropic", "isotropic")
+                    .insert("Henyey-Greenstein", "henyey"))
+            .insert("use", "required")
+            .insert("default", "isotropic")
+            .insert("on_change", "rebuild_form"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "average_cosine")
+            .insert("label", "Average Cosine (g)")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-0.9")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "0.9")
+                    .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", "0.0")
+            .insert("visible_if",
+                Dictionary().insert("phase_function_model", "henyey")));
+
     return metadata;
 }
 
-auto_release_ptr<PhaseFunction> IsotropicPhaseFunctionFactory::create(
+auto_release_ptr<Volume> GenericVolumeFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<PhaseFunction>(new IsotropicPhaseFunction(name, params));
+    return auto_release_ptr<Volume>(new GenericVolume(name, params));
 }
 
 }   // namespace renderer

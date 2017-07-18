@@ -64,7 +64,7 @@ namespace
             m_inputs.declare("edf", InputFormatEntity, "");
             m_inputs.declare("alpha_map", InputFormatFloat, "");
             m_inputs.declare("displacement_map", InputFormatSpectralReflectance, "");
-            m_inputs.declare("phase_function", InputFormatEntity, "");
+            m_inputs.declare("volume", InputFormatEntity, "");
         }
 
         virtual void release() override
@@ -91,7 +91,7 @@ namespace
             m_render_data.m_bsdf = get_uncached_bsdf();
             m_render_data.m_bssrdf = get_uncached_bssrdf();
             m_render_data.m_edf = get_uncached_edf();
-            m_render_data.m_phase_function = get_uncached_phase_function();
+            m_render_data.m_volume = get_uncached_volume();
             m_render_data.m_basis_modifier = create_basis_modifier(context);
 
             if (m_render_data.m_edf && m_render_data.m_alpha_map)
@@ -157,11 +157,11 @@ DictionaryArray GenericMaterialFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-        .insert("name", "phase_function")
-        .insert("label", "Phase Function")
+        .insert("name", "volume")
+        .insert("label", "Volume")
         .insert("type", "entity")
         .insert("entity_types",
-            Dictionary().insert("phase_function", "Phase Function"))
+            Dictionary().insert("volume", "Volume"))
         .insert("use", "optional"));
 
     add_alpha_map_metadata(metadata);

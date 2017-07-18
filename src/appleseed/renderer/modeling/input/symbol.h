@@ -67,11 +67,11 @@ class SymbolTable
         SymbolLight,
         SymbolObject,
         SymbolObjectInstance,
-        SymbolPhaseFunction,
         SymbolShaderGroup,
         SymbolSurfaceShader,
         SymbolTexture,
-        SymbolTextureInstance
+        SymbolTextureInstance,
+        SymbolVolume
     };
 
     // Exception thrown when attempting to insert a symbol
@@ -126,11 +126,11 @@ inline const char* SymbolTable::symbol_name(const SymbolID symbol_id)
         { SymbolLight,              "light" },
         { SymbolObject,             "object" },
         { SymbolObjectInstance,     "object instance" },
-        { SymbolPhaseFunction,      "phase function" },
         { SymbolShaderGroup,        "shader group" },
         { SymbolSurfaceShader,      "surface shader" },
         { SymbolTexture,            "texture" },
-        { SymbolTextureInstance,    "texture instance" }
+        { SymbolTextureInstance,    "texture instance" },
+        { SymbolVolume,             "volume" }
     };
 
     const SymbolNameEntry* symbol = LOOKUP_KVPAIR_ARRAY(SymbolNames, symbol_id);

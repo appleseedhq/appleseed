@@ -38,13 +38,13 @@
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/object.h"
-#include "renderer/modeling/phasefunction/phasefunction.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/modeling/volume/volume.h"
 #include "renderer/utility/bbox.h"
 #include "renderer/utility/paramarray.h"
 
@@ -86,7 +86,7 @@ struct Assembly::Impl
     LightContainer              m_lights;
     ObjectContainer             m_objects;
     ObjectInstanceContainer     m_object_instances;
-    PhaseFunctionContainer      m_phase_functions;
+    VolumeContainer             m_volumes;
 
     explicit Impl(Entity* parent)
       : m_bsdfs(parent)
@@ -97,7 +97,7 @@ struct Assembly::Impl
       , m_lights(parent)
       , m_objects(parent)
       , m_object_instances(parent)
-      , m_phase_functions(parent)
+      , m_volumes(parent)
     {
     }
 };
@@ -169,9 +169,9 @@ ObjectInstanceContainer& Assembly::object_instances() const
     return impl->m_object_instances;
 }
 
-PhaseFunctionContainer& Assembly::phase_functions() const
+VolumeContainer& Assembly::volumes() const
 {
-    return impl->m_phase_functions;
+    return impl->m_volumes;
 }
 
 GAABB3 Assembly::compute_local_bbox() const
@@ -227,7 +227,7 @@ void Assembly::collect_asset_paths(StringArray& paths) const
     do_collect_asset_paths(paths, lights());
     do_collect_asset_paths(paths, objects());
     do_collect_asset_paths(paths, object_instances());
-    do_collect_asset_paths(paths, phase_functions());
+    do_collect_asset_paths(paths, volumes());
 }
 
 void Assembly::update_asset_paths(const StringDictionary& mappings)
@@ -242,7 +242,7 @@ void Assembly::update_asset_paths(const StringDictionary& mappings)
     do_update_asset_paths(mappings, lights());
     do_update_asset_paths(mappings, objects());
     do_update_asset_paths(mappings, object_instances());
-    do_update_asset_paths(mappings, phase_functions());
+    do_update_asset_paths(mappings, volumes());
 }
 
 namespace
@@ -291,7 +291,7 @@ bool Assembly::on_frame_begin(
     success = success && invoke_on_frame_begin(project, this, lights(), recorder, abort_switch);
     success = success && invoke_on_frame_begin(project, this, objects(), recorder, abort_switch);
     success = success && invoke_on_frame_begin(project, this, object_instances(), recorder, abort_switch);
-    success = success && invoke_on_frame_begin(project, this, phase_functions(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, volumes(), recorder, abort_switch);
     success = success && invoke_on_frame_begin(project, this, assemblies(), recorder, abort_switch);
     success = success && invoke_on_frame_begin(project, this, assembly_instances(), recorder, abort_switch);
     return success;

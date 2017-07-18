@@ -45,9 +45,9 @@
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
-#include "renderer/modeling/phasefunction/phasefunction.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
+#include "renderer/modeling/volume/volume.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -469,7 +469,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
             break;
 
         // Terminate the path if no above-surface scattering possible.
-        if (vertex.m_bsdf == 0 && material->get_render_data().m_phase_function == 0)
+        if (vertex.m_bsdf == 0 && material->get_render_data().m_volume == 0)
             break;
 
         // Determine which scattering modes are still enabled.
@@ -556,7 +556,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         shading_points[shading_point_index].clear();
         const ShadingRay::Medium* current_medium = next_ray.get_current_medium();
         if (current_medium != 0 &&
-            current_medium->get_phase_function() != 0)
+            current_medium->get_volume() != 0)
         {
             // This ray is being cast into a participating medium:
             bool continue_path;
@@ -672,7 +672,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
     if (!continue_path) return 0;
 
     const ShadingRay::Medium* medium = ray.get_current_medium();
-    const PhaseFunction* phase_function = medium->get_phase_function();
+    const Volume* volume = medium->get_volume();
 
     shading_context.get_intersector().trace(
         ray,
@@ -681,16 +681,16 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
 
     const ShadingRay& volume_ray = exit_point.get_ray();
 
-    void* data = phase_function->evaluate_inputs(shading_context, volume_ray);
-    phase_function->prepare_inputs(shading_context.get_arena(), volume_ray, data);
-    vertex.m_phase_function_data = data;
+    void* data = volume->evaluate_inputs(shading_context, volume_ray);
+    volume->prepare_inputs(shading_context.get_arena(), volume_ray, data);
+    vertex.m_volume_data = data;
 
     m_volume_visitor.visit(vertex, volume_ray);
 
     if (exit_point.hit())
     {
         Spectrum transmission;
-        phase_function->evaluate_transmission(data, volume_ray, transmission);
+        volume->evaluate_transmission(data, volume_ray, transmission);
 
         vertex.m_throughput *= transmission;
     }

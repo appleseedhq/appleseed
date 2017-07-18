@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PHASEFUNCTION_PHASEFUNCTION_H
-#define APPLESEED_RENDERER_MODELING_PHASEFUNCTION_PHASEFUNCTION_H
+#ifndef APPLESEED_RENDERER_MODELING_VOLUME_VOLUME_H
+#define APPLESEED_RENDERER_MODELING_VOLUME_VOLUME_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -52,7 +52,7 @@ namespace renderer      { class ShadingRay; }
 namespace renderer
 {
 
-class APPLESEED_DLLSYMBOL PhaseFunction
+class APPLESEED_DLLSYMBOL Volume
   : public ConnectableEntity
 {
   public:
@@ -60,25 +60,25 @@ class APPLESEED_DLLSYMBOL PhaseFunction
     static foundation::UniqueID get_class_uid();
 
     // Constructor.
-    PhaseFunction(
+    Volume(
         const char*                 name,
         const ParamArray&           params);
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
-    // Return true if this phase function represents homogeneous media, else false.
+    // Return true if this volume represents homogeneous media, else false.
     virtual bool is_homogeneous() const = 0;
 
-    // Return the size in bytes to allocate for the input values of this phase function
+    // Return the size in bytes to allocate for the input values of this volume
     // and its precomputed values, if any. By default, enough space is allocated
     // for the inputs alone, i.e. this returns get_inputs().compute_data_size().
-    // If a phase function stores additional data such as precomputed values in its input
+    // If a volume stores additional data such as precomputed values in its input
     // block, it must override this method and return the correct size.
     // If evaluate_inputs() is overridden, then this method is irrelevant.
     virtual size_t compute_input_data_size() const;
 
-    // Evaluate the inputs of this phase function, if any.
+    // Evaluate the inputs of this volume, if any.
     virtual void* evaluate_inputs(
         const ShadingContext&       shading_context,
         const ShadingRay&           volume_ray) const;
@@ -89,7 +89,7 @@ class APPLESEED_DLLSYMBOL PhaseFunction
         const ShadingRay&           volume_ray,
         void*                       data) const;
 
-    // Sample phase function in a given point on the ray. Return the PDF value.
+    // Sample the phase function in a given point on the ray. Return the PDF value.
     virtual float sample(
         SamplingContext&            sampling_context,
         const void*                 data,                       // input values
@@ -97,7 +97,7 @@ class APPLESEED_DLLSYMBOL PhaseFunction
         const float                 distance,                   // distance to the point on this volume segment
         foundation::Vector3f&       incoming) const = 0;        // sampled direction
 
-    // Evaluate PDF value of this phase function at a given point
+    // Evaluate PDF value of the phase function at a given point
     // on the ray and for the given incoming direction.
     virtual float evaluate(
         const void*                 data,                       // input values
@@ -157,4 +157,4 @@ class APPLESEED_DLLSYMBOL PhaseFunction
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_PHASEFUNCTION_PHASEFUNCTION_H
+#endif  // !APPLESEED_RENDERER_MODELING_VOLUME_VOLUME_H

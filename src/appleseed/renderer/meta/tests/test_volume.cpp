@@ -43,11 +43,11 @@
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/entity/onframebeginrecorder.h"
 #include "renderer/modeling/input/scalarsource.h"
-#include "renderer/modeling/phasefunction/henyeyphasefunction.h"
-#include "renderer/modeling/phasefunction/phasefunction.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/modeling/volume/genericvolume.h"
+#include "renderer/modeling/volume/volume.h"
 #include "renderer/utility/paramarray.h"
 #include "renderer/utility/testutils.h"
 
@@ -71,22 +71,28 @@ using namespace foundation;
 using namespace renderer;
 using namespace std::placeholders;
 
-TEST_SUITE(Renderer_Modeling_PhaseFunction)
+TEST_SUITE(Renderer_Modeling_Volume)
 {
     struct Fixture
       : public TestFixtureBase
     {
+        Fixture()
+          : TestFixtureBase()
+        {
+            m_base_parameters = ParamArray().insert("phase_function_model", "henyey");
+        }
+
         // Number of MC samples to do integrations.
         static const size_t NumberOfSamples = 50000;
         // Number of samples to draw.
         static const size_t NumberOfSamplesPlot = 100;
 
         ParamArray m_base_parameters;
-        HenyeyPhaseFunctionFactory m_phase_function_factory;
+        GenericVolumeFactory m_volume_factory;
 
         template <typename Procedure>
         typename std::result_of<Procedure(ShadingContext&, Arena&)>::type
-            setup_environment_and_evaluate(Procedure procedure)
+            setup_environment_and_evaluate(Procedure procedure, Volume& volume)
         {
             TextureStore texture_store(m_scene);
             TextureCache texture_cache(texture_store);
@@ -125,20 +131,28 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
                 arena,
                 0);
 
-            return procedure(shading_context, arena);
+            OnFrameBeginRecorder recorder;
+            APPLESEED_UNUSED const bool success = volume.on_frame_begin(m_project, &m_scene, recorder);
+            assert(success);
+
+            auto result = procedure(shading_context, arena);
+
+            recorder.on_frame_end(m_project);
+
+            return result;
         }
 
-        // Integrate PDF of phase function (direction sampling) using straightforward Monte-Carlo approach.
-        static float integrate_phase_function_pdf(
-            PhaseFunction& phase_function,
+        // Integrate PDF of volume using straightforward Monte-Carlo approach.
+        static float integrate_volume_pdf(
+            Volume& volume,
             ShadingContext& shading_context,
             Arena& arena)
         {
             ShadingRay shading_ray;
             shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
             shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
-            void* data = phase_function.evaluate_inputs(shading_context, shading_ray);
-            phase_function.prepare_inputs(arena, shading_ray, data);
+            void* data = volume.evaluate_inputs(shading_context, shading_ray);
+            volume.prepare_inputs(arena, shading_ray, data);
 
             MersenneTwister rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode, 2, NumberOfSamples);
@@ -148,7 +162,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
             {
                 const Vector2f s = sampling_context.next2<Vector2f>();
                 const Vector3f incoming = sample_sphere_uniform<float>(s);
-                integral += phase_function.evaluate(data, shading_ray, 0.5f, incoming);
+                integral += volume.evaluate(data, shading_ray, 0.5f, incoming);
             }
 
             return integral * foundation::FourPi<float>() / NumberOfSamples;
@@ -156,15 +170,15 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
 
         // Check if probabilistic sampling is consistent with the returned PDF values.
         static bool check_sampling_consistency(
-            PhaseFunction& phase_function,
+            Volume& volume,
             ShadingContext& shading_context,
             Arena& arena)
         {
             ShadingRay shading_ray;
             shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
             shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
-            void* data = phase_function.evaluate_inputs(shading_context, shading_ray);
-            phase_function.prepare_inputs(arena, shading_ray, data);
+            void* data = volume.evaluate_inputs(shading_context, shading_ray);
+            volume.prepare_inputs(arena, shading_ray, data);
 
             MersenneTwister rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
@@ -173,7 +187,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
             for (size_t i = 0; i < NumberOfSamples; ++i)
             {
                 Vector3f incoming;
-                const float pdf = phase_function.sample(
+                const float pdf = volume.sample(
                     sampling_context, data, shading_ray, 0.5f, incoming);
                 bias += incoming / pdf;
             }
@@ -181,17 +195,17 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
             return feq(bias / static_cast<float>(NumberOfSamples), Vector3f(0.0f), 0.1f);
         }
 
-        // Sample a given phase function and find average cosine of scattering angle.
+        // Sample a given volume and find average cosine of scattering angle.
         static float get_aposteriori_average_cosine(
-            PhaseFunction& phase_function,
+            Volume& volume,
             ShadingContext& shading_context,
             Arena& arena)
         {
             ShadingRay shading_ray;
             shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
             shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
-            void* data = phase_function.evaluate_inputs(shading_context, shading_ray);
-            phase_function.prepare_inputs(arena, shading_ray, data);
+            void* data = volume.evaluate_inputs(shading_context, shading_ray);
+            volume.prepare_inputs(arena, shading_ray, data);
 
             MersenneTwister rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
@@ -200,7 +214,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
             for (size_t i = 0; i < NumberOfSamples; ++i)
             {
                 Vector3f incoming;
-                phase_function.sample(
+                volume.sample(
                     sampling_context, data, shading_ray, 0.5f, incoming);
                 bias += incoming;
             }
@@ -209,15 +223,15 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
         }
 
         static std::vector<Vector2f> generate_samples_for_plot(
-            PhaseFunction& phase_function,
+            Volume& volume,
             ShadingContext& shading_context,
             Arena& arena)
         {
             ShadingRay shading_ray;
             shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
             shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
-            void* data = phase_function.evaluate_inputs(shading_context, shading_ray);
-            phase_function.prepare_inputs(arena, shading_ray, data);
+            void* data = volume.evaluate_inputs(shading_context, shading_ray);
+            volume.prepare_inputs(arena, shading_ray, data);
 
             MersenneTwister rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
@@ -227,7 +241,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
             for (size_t i = 0; i < NumberOfSamplesPlot; ++i)
             {
                 Vector3f incoming;
-                const float pdf = phase_function.sample(
+                const float pdf = volume.sample(
                     sampling_context, data, shading_ray, 0.5f, incoming);
                 points.emplace_back(incoming.x * pdf, incoming.y * pdf);
             }
@@ -241,13 +255,15 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
         static const float G[4] = { -0.5f, 0.0f, +0.3f, +0.8f };
         for (size_t i = 0; i < countof(G); ++i)
         {
-            auto_release_ptr<PhaseFunction> phase_function =
-                m_phase_function_factory.create("phase_function", m_base_parameters);
-            phase_function->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
+            ParamArray parameters = m_base_parameters;
+            parameters.insert("average_cosine", G[i]);
+            auto_release_ptr<Volume> volume =
+                m_volume_factory.create("volume", parameters);
+            volume->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
 
             const float integral = setup_environment_and_evaluate(
-                std::bind(&Fixture::integrate_phase_function_pdf,
-                    std::ref(*phase_function.get()), _1, _2));
+                std::bind(&Fixture::integrate_volume_pdf,
+                    std::ref(*volume.get()), _1, _2), *volume.get());
 
             EXPECT_FEQ_EPS(1.0f, integral, 0.05f);
         }
@@ -258,13 +274,15 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
         static const float G[4] = { -0.5f, 0.0f, +0.3f, +0.8f };
         for (size_t i = 0; i < countof(G); ++i)
         {
-            auto_release_ptr<PhaseFunction> phase_function =
-                m_phase_function_factory.create("phase_function", m_base_parameters);
-            phase_function->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
+            ParamArray parameters = m_base_parameters;
+            parameters.insert("average_cosine", G[i]);
+            auto_release_ptr<Volume> volume =
+                m_volume_factory.create("volume", parameters);
+            volume->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
 
             const bool consistent = setup_environment_and_evaluate(
                 std::bind(&Fixture::check_sampling_consistency,
-                    std::ref(*phase_function.get()), _1, _2));
+                    std::ref(*volume.get()), _1, _2), *volume.get());
 
             EXPECT_TRUE(consistent);
         }
@@ -275,13 +293,15 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
         static const float G[4] = { -0.5f, 0.0f, +0.3f, +0.8f };
         for (size_t i = 0; i < countof(G); ++i)
         {
-            auto_release_ptr<PhaseFunction> phase_function =
-                m_phase_function_factory.create("phase_function", m_base_parameters);
-            phase_function->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
+            ParamArray parameters = m_base_parameters;
+            parameters.insert("average_cosine", G[i]);
+            auto_release_ptr<Volume> volume =
+                m_volume_factory.create("volume", parameters);
+            volume->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
 
             const float average_cosine = setup_environment_and_evaluate(
                 std::bind(&Fixture::get_aposteriori_average_cosine,
-                    std::ref(*phase_function.get()), _1, _2));
+                    std::ref(*volume.get()), _1, _2), *volume.get());
 
             EXPECT_FEQ_EPS(G[i], average_cosine, 0.05f);
         }
@@ -291,7 +311,7 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
     {
         GnuplotFile plotfile;
         plotfile.set_title(
-            "Samples of Henyey-Greenstein Phase Function"
+            "Samples of Henyey-Greenstein phase function"
             " (multiplied by PDF)");
         plotfile.set_xlabel("X");
         plotfile.set_ylabel("Y");
@@ -307,14 +327,16 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
         static const float G[3] = { -0.5f, +0.3f, 0.0f };
         for (size_t i = 0; i < countof(G); ++i)
         {
-            auto_release_ptr<PhaseFunction> phase_function =
-                m_phase_function_factory.create("phase_function", m_base_parameters);
-            phase_function->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
+            ParamArray parameters = m_base_parameters;
+            parameters.insert("average_cosine", G[i]);
+            auto_release_ptr<Volume> volume =
+                m_volume_factory.create("volume", parameters);
+            volume->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
 
             const std::vector<Vector2f> points =
                 setup_environment_and_evaluate(
                     std::bind(&Fixture::generate_samples_for_plot,
-                        std::ref(*phase_function.get()), _1, _2));
+                        std::ref(*volume.get()), _1, _2), *volume.get());
 
             plotfile
                 .new_plot()
@@ -324,6 +346,6 @@ TEST_SUITE(Renderer_Modeling_PhaseFunction)
                 .set_style("points");
         }
 
-        plotfile.write("unit tests/outputs/test_phasefunction_henyey_samples.gnuplot");
+        plotfile.write("unit tests/outputs/test_volume_henyey_samples.gnuplot");
     }
 }

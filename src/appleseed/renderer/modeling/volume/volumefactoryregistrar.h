@@ -26,51 +26,63 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PHASEFUNCTION_IPHASEFUNCTIONFACTORY_H
-#define APPLESEED_RENDERER_MODELING_PHASEFUNCTION_IPHASEFUNCTIONFACTORY_H
+#ifndef APPLESEED_RENDERER_MODELING_VOLUME_VOLUMEFACTORYREGISTRAR_H
+#define APPLESEED_RENDERER_MODELING_VOLUME_VOLUMEFACTORYREGISTRAR_H
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/api/apiarray.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// Standard headers.
+#include <memory>
+
 // Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace foundation    { class DictionaryArray; }
-namespace renderer      { class ParamArray; }
-namespace renderer      { class PhaseFunction; }
+namespace renderer  { class IVolumeFactory; }
 
 namespace renderer
 {
 
 //
-// Phase function factory interface.
+// An array of volume factories.
 //
 
-class APPLESEED_DLLSYMBOL IPhaseFunctionFactory
+APPLESEED_DECLARE_APIARRAY(VolumeFactoryArray, IVolumeFactory*);
+
+
+//
+// Volume factory registrar.
+//
+
+class APPLESEED_DLLSYMBOL VolumeFactoryRegistrar
   : public foundation::NonCopyable
 {
   public:
+    typedef IVolumeFactory FactoryType;
+    typedef VolumeFactoryArray FactoryArrayType;
+
+    // Constructor.
+    VolumeFactoryRegistrar();
+
     // Destructor.
-    virtual ~IPhaseFunctionFactory() {}
+    ~VolumeFactoryRegistrar();
 
-    // Return a string identifying this phase function model.
-    virtual const char* get_model() const = 0;
+    // Register a light factory.
+    void register_factory(std::auto_ptr<FactoryType> factory);
 
-    // Return metadata for this phase function model.
-    virtual foundation::Dictionary get_model_metadata() const = 0;
+    // Retrieve the registered factories.
+    FactoryArrayType get_factories() const;
 
-    // Return metadata for the inputs of this phase function model.
-    virtual foundation::DictionaryArray get_input_metadata() const = 0;
+    // Lookup a factory by name.
+    const FactoryType* lookup(const char* name) const;
 
-    // Create a new phase function instance.
-    virtual foundation::auto_release_ptr<PhaseFunction> create(
-        const char*         name,
-        const ParamArray&   params) const = 0;
+  private:
+    struct Impl;
+    Impl* impl;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_PHASEFUNCTION_IPHASEFUNCTIONFACTORY_H
+#endif  // !APPLESEED_RENDERER_MODELING_VOLUME_VOLUMEFACTORYREGISTRAR_H

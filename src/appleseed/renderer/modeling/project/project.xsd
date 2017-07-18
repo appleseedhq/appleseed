@@ -118,7 +118,7 @@
                             </xsd:complexContent>
                         </xsd:complexType>
                     </xsd:element>
-                    <xsd:element name="phase_function">
+                    <xsd:element name="volume">
                         <xsd:complexType>
                             <xsd:complexContent>
                                 <xsd:extension base="parameterSet">

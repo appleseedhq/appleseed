@@ -36,7 +36,7 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
-#include "renderer/modeling/phasefunction/phasefunction.h"
+#include "renderer/modeling/volume/volume.h"
 
 using namespace foundation;
 using namespace std;
@@ -172,33 +172,33 @@ bool BSDFSampler::cull_incoming_direction(const Vector3d& incoming) const
 
 
 //
-// PhaseFunctionSampler class implementation.
+// VolumeSampler class implementation.
 //
 
-PhaseFunctionSampler::PhaseFunctionSampler(
+VolumeSampler::VolumeSampler(
     const ShadingRay&       volume_ray,
-    const PhaseFunction&    phase_function,
-    const void*             phase_function_data,
+    const Volume&           volume,
+    const void*             volume_data,
     const float             distance)
   : m_volume_ray(volume_ray)
-  , m_phase_function(phase_function)
-  , m_phase_function_data(phase_function_data)
+  , m_volume(volume)
+  , m_volume_data(volume_data)
   , m_distance(distance)
   , m_point(m_volume_ray.point_at(distance))
 {
 }
 
-const Vector3d& PhaseFunctionSampler::get_point() const
+const Vector3d& VolumeSampler::get_point() const
 {
     return m_point;
 }
 
-bool PhaseFunctionSampler::contributes_to_light_sampling() const
+bool VolumeSampler::contributes_to_light_sampling() const
 {
     return true;
 }
 
-bool PhaseFunctionSampler::sample(
+bool VolumeSampler::sample(
     SamplingContext&        sampling_context,
     const Dual3d&           outgoing,
     Dual3f&                 incoming,
@@ -208,44 +208,44 @@ bool PhaseFunctionSampler::sample(
     Vector3f incoming_direction;
 
     pdf =
-        m_phase_function.sample(
+        m_volume.sample(
             sampling_context,
-            m_phase_function_data,
+            m_volume_data,
             m_volume_ray,
             m_distance,
             incoming_direction);
 
     incoming = Dual3f(incoming_direction);
 
-    m_phase_function.scattering_coefficient(
-        m_phase_function_data, m_volume_ray, m_distance, value.m_volume);
+    m_volume.scattering_coefficient(
+        m_volume_data, m_volume_ray, m_distance, value.m_volume);
     value.m_beauty = value.m_volume;
 
     return true;
 }
 
-float PhaseFunctionSampler::evaluate(
+float VolumeSampler::evaluate(
     const int               light_sampling_modes,
     const Vector3f&         outgoing,
     const Vector3f&         incoming,
     ShadingComponents&      value) const
 {
     const float pdf =
-        m_phase_function.evaluate(
-            m_phase_function_data,
+        m_volume.evaluate(
+            m_volume_data,
             m_volume_ray,
             m_distance,
             incoming);
 
-    m_phase_function.scattering_coefficient(
-        m_phase_function_data, m_volume_ray, m_distance, value.m_volume);
+    m_volume.scattering_coefficient(
+        m_volume_data, m_volume_ray, m_distance, value.m_volume);
     value.m_volume *= pdf;
     value.m_beauty = value.m_volume;
 
     return pdf;
 }
 
-const ShadingPoint& PhaseFunctionSampler::trace(
+const ShadingPoint& VolumeSampler::trace(
     const ShadingContext&   shading_context,
     const Vector3f&         direction,
     Spectrum&               transmission) const
@@ -267,7 +267,7 @@ const ShadingPoint& PhaseFunctionSampler::trace(
     return shading_point;
 }
 
-void PhaseFunctionSampler::trace_between(
+void VolumeSampler::trace_between(
     const ShadingContext&   shading_context,
     const Vector3d&         target_position,
     Spectrum&               transmission) const
@@ -281,9 +281,9 @@ void PhaseFunctionSampler::trace_between(
         transmission);
 }
 
-bool PhaseFunctionSampler::cull_incoming_direction(const Vector3d& incoming) const
+bool VolumeSampler::cull_incoming_direction(const Vector3d& incoming) const
 {
-    // No culling for phase function.
+    // No culling for volume.
     return false;
 }
 

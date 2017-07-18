@@ -45,10 +45,10 @@
 #include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/material/materialtraits.h"
-#include "renderer/modeling/phasefunction/phasefunctiontraits.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/surfaceshader/surfaceshadertraits.h"
+#include "renderer/modeling/volume/volumetraits.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"

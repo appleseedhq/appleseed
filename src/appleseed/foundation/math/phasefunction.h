@@ -26,15 +26,53 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_PHASEFUNCTION_H
-#define APPLESEED_RENDERER_API_PHASEFUNCTION_H
+#ifndef APPLESEED_FOUNDATION_MATH_PHASEFUNCTION_H
+#define APPLESEED_FOUNDATION_MATH_PHASEFUNCTION_H
 
-// API headers.
-#include "renderer/modeling/phasefunction/henyeyphasefunction.h"
-#include "renderer/modeling/phasefunction/iphasefunctionfactory.h"
-#include "renderer/modeling/phasefunction/isotropicphasefunction.h"
-#include "renderer/modeling/phasefunction/phasefunction.h"
-#include "renderer/modeling/phasefunction/phasefunctionfactoryregistrar.h"
-#include "renderer/modeling/phasefunction/phasefunctiontraits.h"
+// appleseed.renderer headers.
+#include "foundation/math/vector.h"
 
-#endif  // !APPLESEED_RENDERER_API_PHASEFUNCTION_H
+namespace foundation
+{
+
+class PhaseFunction
+{
+  public:
+    virtual float evaluate(const Vector3f& outgoing, const Vector3f& incoming) const = 0;
+    virtual float sample(const Vector3f& outgoing, const Vector2f& s, Vector3f& incoming) const = 0;
+};
+
+
+//
+// Henyey-Greenstein phase function.
+//
+// https://www.astro.umd.edu/~jph/HG_note.pdf
+//
+
+class HenyeyPhaseFunction : public PhaseFunction
+{
+public:
+    HenyeyPhaseFunction(const float g) : m_g(g) {}
+
+    virtual float evaluate(const Vector3f& outgoing, const Vector3f& incoming) const override;
+    virtual float sample(const Vector3f& outgoing, const Vector2f& s, Vector3f& incoming) const override;
+
+private:
+    const float m_g;
+};
+
+
+//
+// Isotropic phase function.
+//
+
+class IsotropicPhaseFunction : public PhaseFunction
+{
+public:
+    virtual float evaluate(const Vector3f& outgoing, const Vector3f& incoming) const override;
+    virtual float sample(const Vector3f& outgoing, const Vector2f& s, Vector3f& incoming) const override;
+};
+
+}       // namespace foundation
+
+#endif  // !APPLESEED_FOUNDATION_MATH_PHASEFUNCTION_H

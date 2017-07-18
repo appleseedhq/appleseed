@@ -503,7 +503,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     if (max_value(transmission) == 0.0f)
         return;
 
-    // Evaluate the BSDF (or phase function).
+    // Evaluate the BSDF (or volume).
     ShadingComponents material_value;
     const float material_probability =
         m_material_sampler.evaluate(
@@ -599,7 +599,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     if (max_value(transmission) == 0.0f)
         return;
 
-    // Evaluate the BSDF (or phase function).
+    // Evaluate the BSDF (or volume).
     ShadingComponents material_value;
     const float material_probability =
         m_material_sampler.evaluate(

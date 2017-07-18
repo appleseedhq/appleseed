@@ -50,7 +50,6 @@
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/object.h"
-#include "renderer/modeling/phasefunction/phasefunction.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
@@ -58,6 +57,7 @@
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/modeling/volume/volume.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -175,7 +175,7 @@ void InputBinder::build_assembly_symbol_table(
         insert_entities(symbols, assembly.lights(), SymbolTable::SymbolLight);
         insert_entities(symbols, assembly.objects(), SymbolTable::SymbolObject);
         insert_entities(symbols, assembly.object_instances(), SymbolTable::SymbolObjectInstance);
-        insert_entities(symbols, assembly.phase_functions(), SymbolTable::SymbolPhaseFunction);
+        insert_entities(symbols, assembly.volumes(), SymbolTable::SymbolVolume);
     }
     catch (const SymbolTable::ExceptionDuplicateSymbol& e)
     {
@@ -376,12 +376,12 @@ void InputBinder::bind_assembly_entities_inputs(
     }
 
     // Bind phase punctions inputs.
-    for (each<PhaseFunctionContainer> i = assembly.phase_functions(); i; ++i)
+    for (each<VolumeContainer> i = assembly.volumes(); i; ++i)
     {
         bind_assembly_entity_inputs(
             scene,
             scene_symbols,
-            SymbolTable::symbol_name(SymbolTable::SymbolPhaseFunction),
+            SymbolTable::symbol_name(SymbolTable::SymbolVolume),
             *i);
     }
 
@@ -657,7 +657,7 @@ bool InputBinder::try_bind_assembly_entity_to_input(
           BIND(SymbolTable::SymbolLight, assembly.lights());
           BIND(SymbolTable::SymbolObject, assembly.objects());
           BIND(SymbolTable::SymbolObjectInstance, assembly.object_instances());
-          BIND(SymbolTable::SymbolPhaseFunction, assembly.phase_functions());
+          BIND(SymbolTable::SymbolVolume, assembly.volumes());
         }
 
         #undef BIND

@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "phasefunction.h"
+#include "volume.h"
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingcontext.h"
@@ -43,7 +43,7 @@ namespace renderer
 {
 
 //
-// PhaseFunction class implementation.
+// Volume class implementation.
 //
 
 namespace
@@ -51,12 +51,12 @@ namespace
     const UniqueID g_class_uid = new_guid();
 }
 
-UniqueID PhaseFunction::get_class_uid()
+UniqueID Volume::get_class_uid()
 {
     return g_class_uid;
 }
 
-PhaseFunction::PhaseFunction(
+Volume::Volume(
     const char*             name,
     const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
@@ -64,12 +64,12 @@ PhaseFunction::PhaseFunction(
     set_name(name);
 }
 
-size_t PhaseFunction::compute_input_data_size() const
+size_t Volume::compute_input_data_size() const
 {
     return get_inputs().compute_data_size();
 }
 
-void* PhaseFunction::evaluate_inputs(
+void* Volume::evaluate_inputs(
     const ShadingContext&   shading_context,
     const ShadingRay&       volume_ray) const
 {
@@ -80,7 +80,7 @@ void* PhaseFunction::evaluate_inputs(
     return data;
 }
 
-void PhaseFunction::prepare_inputs(
+void Volume::prepare_inputs(
     foundation::Arena&      arena,
     const ShadingRay&       volume_ray,
     void*                   data) const
