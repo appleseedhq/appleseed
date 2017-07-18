@@ -70,8 +70,8 @@ class LightTree
 
     // Build the tree based on the lights collected by the LightSampler.
     size_t build(
-        const std::vector<NonPhysicalLightInfo>&    non_physical_lights,
-        const std::vector<EmittingTriangle>&        emitting_triangles);
+        std::vector<NonPhysicalLightInfo>&    non_physical_lights,
+        std::vector<EmittingTriangle>&        emitting_triangles);
     
     std::tuple<int, size_t, float> sample(
         const foundation::Vector3d&     surface_point,

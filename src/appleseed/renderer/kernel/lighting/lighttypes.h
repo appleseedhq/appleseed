@@ -58,6 +58,7 @@ class NonPhysicalLightInfo
 {
   public:
     TransformSequence           m_transform_sequence;           // assembly instance (parent of the light) space to world space
+    size_t                      m_light_tree_node_index;
     const Light*                m_light;
 };
 
@@ -73,6 +74,7 @@ class EmittingTriangle
     size_t                      m_object_instance_index;
     size_t                      m_region_index;
     size_t                      m_triangle_index;
+    size_t                      m_light_tree_node_index;
     foundation::Vector3d        m_v0, m_v1, m_v2;               // world space vertices of the triangle
     foundation::Vector3d        m_n0, m_n1, m_n2;               // world space vertex normals
     foundation::Vector3d        m_geometric_normal;             // world space geometric normal, unit-length
@@ -114,6 +116,9 @@ class LightSource
 
     // Get light type.
     virtual int get_type() const = 0;
+
+    // Link the light to it's position in the tree.
+    virtual void set_tree_index(const size_t node_index) const = 0;
 };
 
 
@@ -125,16 +130,17 @@ class NonPhysicalLightSource
   : public LightSource
 {
   public:
-    explicit NonPhysicalLightSource(const NonPhysicalLightInfo* light);
+    explicit NonPhysicalLightSource(NonPhysicalLightInfo* light);
 
     virtual foundation::Vector3d get_position() const override;
     virtual foundation::AABB3d get_bbox() const override;
     virtual float get_intensity() const override;
     virtual int get_type() const override;
+    virtual void set_tree_index(size_t node_index) const override;
 
   private:
     // Reference to the actual source.
-    const NonPhysicalLightInfo* m_light_info;
+    NonPhysicalLightInfo* m_light_info;
 };
 
 
@@ -146,16 +152,17 @@ class EmittingTriangleLightSource
   : public LightSource
 {
   public:
-    explicit EmittingTriangleLightSource(const EmittingTriangle* light);
+    explicit EmittingTriangleLightSource(EmittingTriangle* light);
 
     virtual foundation::Vector3d get_position() const override;
     virtual foundation::AABB3d get_bbox() const override;
     virtual float get_intensity() const override;
     virtual int get_type() const override;
+    virtual void set_tree_index(const size_t node_index) const override;
 
   private:
     // Reference to the actual source.
-    const EmittingTriangle* m_light;
+    EmittingTriangle* m_light;
 };
 
 }       // namespace renderer

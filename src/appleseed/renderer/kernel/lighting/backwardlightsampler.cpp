@@ -88,15 +88,16 @@ BackwardLightSampler::BackwardLightSampler(const Scene& scene, const ParamArray&
     // compatibility with the LightTree.
     collect_non_physical_lights(scene.assembly_instances(), TransformSequence());
     m_non_physical_light_count = m_non_physical_lights.size();
-    m_light_tree_light_count   = m_light_tree_lights.size();
 
     // Collect all light-emitting triangles.
     collect_emitting_triangles(
         scene.assembly_instances(),
         TransformSequence());
 
-    // Build the light-tree (currently uses only non-physical lights).
-    m_light_tree.build(m_light_tree_lights);
+    // Build the light-tree.
+    m_light_tree_light_count = m_light_tree.build(
+        m_light_tree_lights,
+        m_emitting_triangles);
 
     // Build the hash table of emitting triangles.
     build_emitting_triangle_hash_table();
@@ -444,21 +445,25 @@ void BackwardLightSampler::sample_light_tree_lights(
     const ShadingPoint&                 shading_point,
     LightSample&                        light_sample) const
 {
-    assert(m_non_physical_lights_cdf.valid());
+    assert(has_lights_or_emitting_triangles());
 
-    const pair<size_t, float> result = m_light_tree.sample(shading_point.get_point(), s[0]);
+    const std::tuple<int, size_t, float> result = m_light_tree.sample(
+                                                    shading_point.get_point(),
+                                                    s[0]);
 
-    const size_t light_index = result.first;
-    const float light_prob = result.second;
+    const int light_type        = std::get<0>(result);
+    const size_t light_index    = std::get<1>(result);
+    const float light_prob      = std::get<2>(result);
 
-    light_sample.m_triangle = 0;
     sample_light_tree_light(
         time,
+        Vector2f(s[1], s[2]),
+        light_type,
         light_index,
         light_prob,
         light_sample);
 
-    assert(light_sample.m_light);
+    assert(light_sample.m_light || light_sample.m_triangle);
     assert(light_sample.m_probability > 0.0f);
 }
 
@@ -544,7 +549,7 @@ void BackwardLightSampler::sample(
     light_sample.m_probability /= candidate_groups_count;
 }
 
-float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
+float BackwardLightSampler::evaluate_pdf_tree(const ShadingPoint& shading_point) const
 {
     assert(shading_point.is_triangle_primitive());
 
@@ -559,7 +564,7 @@ float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point) cons
 }
 
 // TODO: provide the index of the chosen leaf_node containing the EMT.
-float BackwardLightSampler::evaluate_pdf_tree(const ShadingPoint& shading_point) const
+float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
 {
     assert(shading_point.is_triangle_primitive());
 
@@ -574,28 +579,37 @@ float BackwardLightSampler::evaluate_pdf_tree(const ShadingPoint& shading_point)
     // Traverse the tree and update triangle_prob
     const float prob = m_light_tree.light_probability(
         shading_point.get_point(),
-        m_currently_sampled_tree_node);
+        triangle->m_light_tree_node_index);
 
     return prob * triangle->m_rcp_area;
 }
 
 void BackwardLightSampler::sample_light_tree_light(
     const ShadingRay::Time&             time,
+    const Vector2f&                     s,
+    const int                           light_type,
     const size_t                        light_index,
     const float                         light_prob,
     LightSample&                        light_sample) const
 {
-    // Fetch the light.
-    const NonPhysicalLightInfo& light_info = m_light_tree_lights[light_index];
-    light_sample.m_light = light_info.m_light;
-
-    // Evaluate and store the transform of the light.
-    light_sample.m_light_transform =
-          light_info.m_light->get_transform()
-        * light_info.m_transform_sequence.evaluate(time.m_absolute);
-
-    // Store the probability density of this light.
-    light_sample.m_probability = light_prob;
+    if (light_type == LightSource::NPL)
+    {
+        // Fetch the light.
+        const NonPhysicalLightInfo& light_info = m_light_tree_lights[light_index];
+        light_sample.m_light = light_info.m_light;
+    
+        // Evaluate and store the transform of the light.
+        light_sample.m_light_transform =
+              light_info.m_light->get_transform()
+            * light_info.m_transform_sequence.evaluate(time.m_absolute);
+    
+        // Store the probability density of this light.
+        light_sample.m_probability = light_prob;
+    }
+    else if (light_type == LightSource::EMT)
+    {
+        sample_emitting_triangle(time, s, light_index, light_prob, light_sample);
+    }
 }
 
 void BackwardLightSampler::sample_non_physical_light(
@@ -626,7 +640,6 @@ void BackwardLightSampler::sample_emitting_triangle(
 {
     // Fetch the emitting triangle.
     const EmittingTriangle& emitting_triangle = m_emitting_triangles[triangle_index];
-    assert(emitting_triangle.m_triangle_prob == triangle_prob);
 
     // Store a pointer to the emitting triangle.
     light_sample.m_triangle = &emitting_triangle;

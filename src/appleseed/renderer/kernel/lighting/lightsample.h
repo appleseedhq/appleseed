@@ -106,12 +106,19 @@ typedef foundation::HashTable<
 
 
 //
-// Light sample: the result of sampling the sets of non-physical lights and light-emitting triangles.
+// Light sample: the result of sampling sets of non-physical lights and
+// light-emitting triangles.
 //
 
 class LightSample
 {
   public:
+    LightSample()
+      : m_triangle(0)
+      , m_light(0)
+    {
+    }
+
     // Data for a light-emitting triangle sample.
     const EmittingTriangle*     m_triangle;
     foundation::Vector2f        m_bary;                         // barycentric coordinates of the sample

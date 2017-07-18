@@ -66,8 +66,8 @@ bool LightTree::is_built() const
 }
 
 size_t LightTree::build(
-        const std::vector<NonPhysicalLightInfo>&    non_physical_lights,
-        const std::vector<EmittingTriangle>&        emitting_triangles)
+        std::vector<NonPhysicalLightInfo>&    non_physical_lights,
+        std::vector<EmittingTriangle>&        emitting_triangles)
 {
     foundation::Statistics statistics;
     AABBVector light_bboxes;
@@ -245,6 +245,13 @@ float LightTree::recursive_node_update(
         // visited so far.
         if (m_tree_depth < node_level)
             m_tree_depth = node_level;
+
+        // If the light is emitting triangle, store the info about it's position in the light
+        // tree.
+        if (m_light_sources[light_source_index]->get_type() == LightSource::EMT)
+        {
+            m_light_sources[light_source_index]->set_tree_index(node_index);
+        }
     }
 
     m_nodes[node_index].set_luminance(luminance);

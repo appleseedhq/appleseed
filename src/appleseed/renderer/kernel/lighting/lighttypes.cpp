@@ -45,7 +45,7 @@ namespace renderer
 // NonPhysicalLightSource class implementation.
 //
 
-NonPhysicalLightSource::NonPhysicalLightSource(const NonPhysicalLightInfo* light)
+NonPhysicalLightSource::NonPhysicalLightSource(NonPhysicalLightInfo* light)
   : m_light_info(light)
 {
 }
@@ -93,12 +93,16 @@ int NonPhysicalLightSource::get_type() const
     return LightSource::NPL;
 }
 
+void NonPhysicalLightSource::set_tree_index(size_t node_index) const
+{
+    m_light_info->m_light_tree_node_index = node_index;
+}
 
 //
 // EmittingTriangleLightSource class implementation.
 //
 
-EmittingTriangleLightSource::EmittingTriangleLightSource(const EmittingTriangle* light)
+EmittingTriangleLightSource::EmittingTriangleLightSource(EmittingTriangle* light)
   : m_light(light)
 {
 }
@@ -131,6 +135,11 @@ float EmittingTriangleLightSource::get_intensity() const
 int EmittingTriangleLightSource::get_type() const
 {
     return LightSource::EMT;
+}
+
+void EmittingTriangleLightSource::set_tree_index(size_t node_index) const
+{
+    m_light->m_light_tree_node_index = node_index;
 }
 
 }   // namespace renderer

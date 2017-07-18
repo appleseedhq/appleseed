@@ -166,7 +166,6 @@ class BackwardLightSampler
     EmittingTriangleHashTable   m_emitting_triangle_hash_table;
 
     LightTree                   m_light_tree;
-    size_t                      m_currently_sampled_tree_node;
 
     // Recursively collect non-physical lights from a given set of assembly instances.
     void collect_non_physical_lights(
@@ -195,9 +194,11 @@ class BackwardLightSampler
     // Sample a given non-physical light.
     void sample_light_tree_light(
         const ShadingRay::Time&             time,
+        const foundation::Vector2f&         s,
+        const int                           light_type,
         const size_t                        light_index,
         const float                         light_prob,
-        LightSample&                        sample) const;
+        LightSample&                        light_sample) const;
 
     // Sample a given non-physical light.
     void sample_non_physical_light(
@@ -251,16 +252,6 @@ inline void BackwardLightSampler::sample_non_physical_light(
     LightSample&                            sample) const
 {
     sample_non_physical_light(time, light_index, 1.0, sample);
-}
-
-inline size_t BackwardLightSampler::get_currently_sampled_tree_node() const
-{
-    return m_currently_sampled_tree_node;
-}
-
-inline void BackwardLightSampler::set_currently_sampled_tree_node(const size_t node_index)
-{
-    m_currently_sampled_tree_node = node_index;
 }
 
 }       // namespace renderer
