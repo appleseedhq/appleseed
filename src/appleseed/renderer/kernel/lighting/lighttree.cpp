@@ -268,6 +268,8 @@ std::tuple<int, size_t, float> LightTree::sample(
     const foundation::Vector3d&     surface_point,
     float                           s) const
 {
+    assert (is_built());
+
     float light_probability = 1.0f;
     size_t node_index = 0;
 

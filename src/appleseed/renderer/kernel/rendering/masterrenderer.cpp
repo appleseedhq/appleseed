@@ -292,6 +292,9 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
             return IRendererController::AbortRendering;
         }
 
+        if (components.is_backward_light_sampler_used())
+            components.get_backward_light_sampler()->on_frame_begin();
+
         // Don't proceed with rendering if scene preparation was aborted.
         if (abort_switch.is_aborted())
         {

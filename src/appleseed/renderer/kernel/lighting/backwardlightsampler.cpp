@@ -94,11 +94,6 @@ BackwardLightSampler::BackwardLightSampler(const Scene& scene, const ParamArray&
         scene.assembly_instances(),
         TransformSequence());
 
-    // Build the light-tree.
-    m_light_tree_light_count = m_light_tree.build(
-        m_light_tree_lights,
-        m_emitting_triangles);
-
     // Build the hash table of emitting triangles.
     build_emitting_triangle_hash_table();
 
@@ -123,6 +118,14 @@ BackwardLightSampler::BackwardLightSampler(const Scene& scene, const ParamArray&
         plural(m_light_tree_light_count, "light-tree compatible light").c_str(),
         pretty_int(m_emitting_triangles.size()).c_str(),
         plural(m_emitting_triangles.size(), "triangle").c_str());
+}
+
+void BackwardLightSampler::on_frame_begin()
+{
+    // Build the light-tree.
+    m_light_tree_light_count = m_light_tree.build(
+        m_light_tree_lights,
+        m_emitting_triangles);
 }
 
 void BackwardLightSampler::collect_non_physical_lights(
@@ -549,21 +552,6 @@ void BackwardLightSampler::sample(
     light_sample.m_probability /= candidate_groups_count;
 }
 
-float BackwardLightSampler::evaluate_pdf_tree(const ShadingPoint& shading_point) const
-{
-    assert(shading_point.is_triangle_primitive());
-
-    const EmittingTriangleKey triangle_key(
-        shading_point.get_assembly_instance().get_uid(),
-        shading_point.get_object_instance_index(),
-        shading_point.get_region_index(),
-        shading_point.get_primitive_index());
-
-    const EmittingTriangle* triangle = m_emitting_triangle_hash_table.get(triangle_key);
-    return triangle->m_triangle_prob * triangle->m_rcp_area;
-}
-
-// TODO: provide the index of the chosen leaf_node containing the EMT.
 float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
 {
     assert(shading_point.is_triangle_primitive());

@@ -85,6 +85,10 @@ class RendererComponents
 
     IFrameRenderer& get_frame_renderer();
 
+    BackwardLightSampler* get_backward_light_sampler();
+
+    bool is_backward_light_sampler_used();
+
   private:
     const Project&              m_project;
     const ParamArray&           m_params;
@@ -132,6 +136,15 @@ inline IFrameRenderer& RendererComponents::get_frame_renderer()
     return *m_frame_renderer.get();
 }
 
+inline BackwardLightSampler* RendererComponents::get_backward_light_sampler()
+{
+    return m_backward_light_sampler;
+}
+
+inline bool RendererComponents::is_backward_light_sampler_used()
+{
+    return m_backward_light_sampler;
+}
 }       // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_RENDERERCOMPONENTS_H

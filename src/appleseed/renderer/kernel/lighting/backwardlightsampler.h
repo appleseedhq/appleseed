@@ -83,6 +83,9 @@ class BackwardLightSampler
         const Scene&                        scene,
         const ParamArray&                   params = ParamArray());
 
+    // Build the light tree after the scene is up-to-date.
+    void on_frame_begin();
+    
     // Return the number of non-physical lights in the scene.
     size_t get_non_physical_light_count() const;
 
@@ -133,10 +136,8 @@ class BackwardLightSampler
         const ShadingPoint&                 shading_point,
         LightSample&                        light_sample) const;
 
-    // TODO: switch evaluate_pdf with evaluate_pdf_tree when over.
     // Compute the probability density in area measure of a given light sample.
     float evaluate_pdf(const ShadingPoint& shading_point) const;
-    float evaluate_pdf_tree(const ShadingPoint& shading_point) const;
 
   private:
     struct Parameters
