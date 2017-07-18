@@ -56,11 +56,16 @@ namespace renderer
 
 APPLESEED_DECLARE_INPUT_VALUES(HenyeyPhaseFunctionInputValues)
 {
-    Spectrum    m_absorption;               // absorption coefficient of the media
-    float       m_absorption_multiplier;    // absorption coefficient multiplier
-    Spectrum    m_scattering;               // scattering coefficient of the media
-    float       m_scattering_multiplier;    // scattering coefficient multiplier
+    Spectrum    m_absorption;
+    float       m_absorption_multiplier;
+    Spectrum    m_scattering;
+    float       m_scattering_multiplier;
     float       m_average_cosine;           // asymmetry parameter, often referred as g
+
+    Spectrum    m_reflectance;
+    float       m_reflectance_multiplier;
+    Spectrum    m_mfp;
+    float       m_mfp_multiplier;
 
     struct Precomputed
     {
