@@ -144,19 +144,19 @@ bool RendererComponents::create_lighting_engine_factory()
     {
         return true;
     }
-    else if (name == "bdpt")
-    {
-        m_lighting_engine_factory.reset(
-            new BDPTLightingEngineFactory(
-                get_child_and_inherit_globals(m_params, "bdpt")));
-        return true;
-    }
     else if (name == "pt")
     {
         m_lighting_engine_factory.reset(
             new PTLightingEngineFactory(
                 m_light_sampler,
                 get_child_and_inherit_globals(m_params, "pt")));    // todo: change to "pt_lighting_engine"?
+        return true;
+    }
+    else if (name == "bdpt")
+    {
+        m_lighting_engine_factory.reset(
+            new BDPTLightingEngineFactory(
+                get_child_and_inherit_globals(m_params, "bdpt")));
         return true;
     }
     else if (name == "sppm")
