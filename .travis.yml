@@ -18,6 +18,8 @@ addons:
       - g++-5
       - gcc-6
       - g++-6
+      - python2.7-dev
+      - libqt4-dev
 
 before_install:
   - git clone https://github.com/appleseedhq/prebuilt-linux-deps.git
