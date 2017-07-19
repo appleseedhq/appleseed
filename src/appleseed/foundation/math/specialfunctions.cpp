@@ -133,4 +133,4 @@ float gamma_fraction(const float num, const float denom)
     return std::exp(ab1 - ab2) * (ac1 / ac2);
 }
 
-}       // namespace foundation
+}   // namespace foundation

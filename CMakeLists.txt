@@ -548,7 +548,7 @@ if (WITH_CLI)
 endif ()
 
 if (WITH_PYTHON)
-    set(Python_ADDITIONAL_VERSIONS 2.7)
+    set (Python_ADDITIONAL_VERSIONS 2.7)
     find_package (PythonLibs REQUIRED)
 
     # Splitting version string into list.
