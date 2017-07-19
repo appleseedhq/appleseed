@@ -59,7 +59,6 @@ namespace renderer  { class Light; }
 namespace renderer  { class Material; }
 namespace renderer  { class Object; }
 namespace renderer  { class ObjectInstance; }
-namespace renderer  { class PhaseFunction; }
 namespace renderer  { class Shader; }
 namespace renderer  { class ShaderConnection; }
 namespace renderer  { class ShaderGroup; }
@@ -67,6 +66,7 @@ namespace renderer  { class ShaderParam; }
 namespace renderer  { class SurfaceShader; }
 namespace renderer  { class Texture; }
 namespace renderer  { class TextureInstance; }
+namespace renderer  { class Volume; }
 
 namespace renderer
 {
@@ -88,7 +88,6 @@ typedef TypedEntityVector<Light>                LightContainer;
 typedef TypedEntityVector<Material>             MaterialContainer;
 typedef TypedEntityVector<Object>               ObjectContainer;
 typedef TypedEntityVector<ObjectInstance>       ObjectInstanceContainer;
-typedef TypedEntityVector<PhaseFunction>        PhaseFunctionContainer;
 typedef TypedEntityVector<Shader>               ShaderContainer;
 typedef TypedEntityVector<ShaderConnection>     ShaderConnectionContainer;
 typedef TypedEntityVector<ShaderGroup>          ShaderGroupContainer;
@@ -96,6 +95,7 @@ typedef TypedEntityVector<ShaderParam>          ShaderParamContainer;
 typedef TypedEntityVector<SurfaceShader>        SurfaceShaderContainer;
 typedef TypedEntityVector<Texture>              TextureContainer;
 typedef TypedEntityVector<TextureInstance>      TextureInstanceContainer;
+typedef TypedEntityVector<Volume>               VolumeContainer;
 
 
 //

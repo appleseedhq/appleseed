@@ -40,12 +40,12 @@
 #include "renderer/modeling/input/texturesource.h"
 #include "renderer/modeling/material/bumpmappingmodifier.h"
 #include "renderer/modeling/material/normalmappingmodifier.h"
-#include "renderer/modeling/phasefunction/phasefunction.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/modeling/volume/volume.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
@@ -129,9 +129,9 @@ const char* Material::get_edf_name() const
     return get_non_empty(m_params, "edf");
 }
 
-const char* Material::get_phase_function_name() const
+const char* Material::get_volume_name() const
 {
-    return get_non_empty(m_params, "phase_function");
+    return get_non_empty(m_params, "volume");
 }
 
 const SurfaceShader* Material::get_uncached_surface_shader() const
@@ -154,9 +154,9 @@ const EDF* Material::get_uncached_edf() const
     return static_cast<const EDF*>(m_inputs.get_entity("edf"));
 }
 
-const PhaseFunction* Material::get_uncached_phase_function() const
+const Volume* Material::get_uncached_volume() const
 {
-    return static_cast<const PhaseFunction*>(m_inputs.get_entity("phase_function"));
+    return static_cast<const Volume*>(m_inputs.get_entity("volume"));
 }
 
 const Source* Material::get_uncached_alpha_map() const
@@ -189,7 +189,7 @@ bool Material::on_frame_begin(
     m_render_data.m_alpha_map = get_uncached_alpha_map();
     m_render_data.m_shader_group = 0;
     m_render_data.m_basis_modifier = 0;
-    m_render_data.m_phase_function = 0;
+    m_render_data.m_volume = 0;
     m_has_render_data = true;
 
     return true;

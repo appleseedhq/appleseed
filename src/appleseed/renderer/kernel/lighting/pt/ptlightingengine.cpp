@@ -788,8 +788,8 @@ namespace
             void add_direct_lighting_contribution(
                 const ShadingPoint&     shading_point,
                 const ShadingRay&       volume_ray,
-                const PhaseFunction&    phase_function,
-                const void*             phase_function_data,
+                const Volume&           volume,
+                const void*             volume_data,
                 const float             distance_sample,
                 const int               scattering_modes,
                 ShadingComponents&      radiance)
@@ -804,20 +804,20 @@ namespace
                 // No light samples has to be made.
                 if (light_sample_count == 0) return;
 
-                const PhaseFunctionSampler phase_function_sampler(
+                const VolumeSampler volume_sampler(
                     volume_ray,
-                    phase_function,
-                    phase_function_data,
+                    volume,
+                    volume_data,
                     distance_sample);
 
                 const DirectLightingIntegrator integrator(
                     m_shading_context,
                     m_light_sampler,
                     shading_point,
-                    phase_function_sampler,
+                    volume_sampler,
                     volume_ray.m_time,
                     scattering_modes,   // light sampling modes
-                    1,                  // phase function sample count
+                    1,                  // volume sample count
                     light_sample_count,
                     m_params.m_dl_low_light_threshold,
                     m_is_indirect_lighting);
@@ -837,15 +837,15 @@ namespace
 
             void add_image_based_lighting_contribution(
                 const ShadingRay&       volume_ray,
-                const PhaseFunction&    phase_function,
-                const void*             phase_function_data,
+                const Volume&           volume,
+                const void*             volume_data,
                 const float             distance_sample,
                 ShadingComponents&      radiance)
             {
-                const PhaseFunctionSampler phase_function_sampler(
+                const VolumeSampler volume_sampler(
                     volume_ray,
-                    phase_function,
-                    phase_function_data,
+                    volume,
+                    volume_data,
                     distance_sample);
 
                 ShadingComponents ibl_radiance(Spectrum::Illuminance);
@@ -860,7 +860,7 @@ namespace
                     m_shading_context,
                     *m_env_edf,
                     Dual3d(volume_ray.m_dir),
-                    phase_function_sampler,
+                    volume_sampler,
                     ScatteringMode::All,
                     1,                  // bsdf_sample_count
                     env_sample_count,
@@ -878,8 +878,8 @@ namespace
             {
                 const ShadingRay::Medium* medium = volume_ray.get_current_medium();
                 assert(medium != nullptr);
-                const PhaseFunction* phase_function = medium->get_phase_function();
-                assert(phase_function != nullptr);
+                const Volume* volume = medium->get_volume();
+                assert(volume != nullptr);
 
                 // Any light contribution after a diffuse or glossy bounce is considered indirect.
                 if (ScatteringMode::has_diffuse_or_glossy(vertex.m_scattering_modes))
@@ -887,17 +887,17 @@ namespace
 
                 // Get full ray transmission.
                 Spectrum ray_transmission;
-                phase_function->evaluate_transmission(
-                    vertex.m_phase_function_data, volume_ray, ray_transmission);
+                volume->evaluate_transmission(
+                    vertex.m_volume_data, volume_ray, ray_transmission);
                 const size_t channel_count = std::max(ray_transmission.size(), vertex.m_throughput.size());
                 if (ray_transmission.size() != channel_count)
                     Spectrum::upgrade(ray_transmission, ray_transmission);
 
-                const Spectrum& scattering_coef = phase_function->scattering_coefficient(
-                    vertex.m_phase_function_data, volume_ray);
+                const Spectrum& scattering_coef = volume->scattering_coefficient(
+                    vertex.m_volume_data, volume_ray);
 
-                Spectrum extinction_coef = phase_function->extinction_coefficient(
-                    vertex.m_phase_function_data, volume_ray);
+                Spectrum extinction_coef = volume->extinction_coefficient(
+                    vertex.m_volume_data, volume_ray);
                 if (extinction_coef.size() != channel_count)
                     Spectrum::upgrade(extinction_coef, extinction_coef);
 
@@ -954,8 +954,8 @@ namespace
 
                     // Calculate transmission between the ray origin and the sampled distance.
                     Spectrum transmission;
-                    phase_function->evaluate_transmission(
-                        vertex.m_phase_function_data, volume_ray, distance_sample, transmission);
+                    volume->evaluate_transmission(
+                        vertex.m_volume_data, volume_ray, distance_sample, transmission);
                     if (transmission.size() != channel_count)
                         Spectrum::upgrade(transmission, transmission);
 
@@ -973,8 +973,8 @@ namespace
                         add_direct_lighting_contribution(
                             *vertex.m_shading_point,
                             volume_ray,
-                            *phase_function,
-                            vertex.m_phase_function_data,
+                            *volume,
+                            vertex.m_volume_data,
                             distance_sample,
                             vertex.m_scattering_modes,
                             radiance);
@@ -983,8 +983,8 @@ namespace
                     {
                         add_image_based_lighting_contribution(
                             volume_ray,
-                            *phase_function,
-                            vertex.m_phase_function_data,
+                            *volume,
+                            vertex.m_volume_data,
                             distance_sample,
                             radiance);
                     }

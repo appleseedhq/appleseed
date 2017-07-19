@@ -26,15 +26,63 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_PHASEFUNCTION_H
-#define APPLESEED_RENDERER_API_PHASEFUNCTION_H
+#ifndef APPLESEED_RENDERER_MODELING_VOLUME_VOLUMEFACTORYREGISTRAR_H
+#define APPLESEED_RENDERER_MODELING_VOLUME_VOLUMEFACTORYREGISTRAR_H
 
-// API headers.
-#include "renderer/modeling/phasefunction/henyeyphasefunction.h"
-#include "renderer/modeling/phasefunction/iphasefunctionfactory.h"
-#include "renderer/modeling/phasefunction/isotropicphasefunction.h"
-#include "renderer/modeling/phasefunction/phasefunction.h"
-#include "renderer/modeling/phasefunction/phasefunctionfactoryregistrar.h"
-#include "renderer/modeling/phasefunction/phasefunctiontraits.h"
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/api/apiarray.h"
 
-#endif  // !APPLESEED_RENDERER_API_PHASEFUNCTION_H
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Standard headers.
+#include <memory>
+
+// Forward declarations.
+namespace renderer  { class IVolumeFactory; }
+
+namespace renderer
+{
+
+//
+// An array of volume factories.
+//
+
+APPLESEED_DECLARE_APIARRAY(VolumeFactoryArray, IVolumeFactory*);
+
+
+//
+// Volume factory registrar.
+//
+
+class APPLESEED_DLLSYMBOL VolumeFactoryRegistrar
+  : public foundation::NonCopyable
+{
+  public:
+    typedef IVolumeFactory FactoryType;
+    typedef VolumeFactoryArray FactoryArrayType;
+
+    // Constructor.
+    VolumeFactoryRegistrar();
+
+    // Destructor.
+    ~VolumeFactoryRegistrar();
+
+    // Register a light factory.
+    void register_factory(std::auto_ptr<FactoryType> factory);
+
+    // Retrieve the registered factories.
+    FactoryArrayType get_factories() const;
+
+    // Lookup a factory by name.
+    const FactoryType* lookup(const char* name) const;
+
+  private:
+    struct Impl;
+    Impl* impl;
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_VOLUME_VOLUMEFACTORYREGISTRAR_H

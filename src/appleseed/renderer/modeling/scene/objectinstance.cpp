@@ -102,7 +102,7 @@ bool has_participating_media(const MaterialArray& materials)
     {
         if (materials[i])
         {
-            if (materials[i]->get_uncached_phase_function() != nullptr)
+            if (materials[i]->get_uncached_volume() != nullptr)
                 return true;
         }
     }

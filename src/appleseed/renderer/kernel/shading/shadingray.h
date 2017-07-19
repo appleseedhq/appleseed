@@ -95,7 +95,7 @@ class ShadingRay
         const Material*             m_material;
         float                       m_ior;
 
-        const PhaseFunction* get_phase_function() const;
+        const Volume* get_volume() const;
     };
 
     // Public members, in an order that optimizes packing.

@@ -26,63 +26,66 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PHASEFUNCTION_PHASEFUNCTIONFACTORYREGISTRAR_H
-#define APPLESEED_RENDERER_MODELING_PHASEFUNCTION_PHASEFUNCTIONFACTORYREGISTRAR_H
+// Interface header.
+#include "volumefactoryregistrar.h"
+
+// appleseed.renderer headers.
+#include "renderer/modeling/volume/genericvolume.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-#include "foundation/utility/api/apiarray.h"
-
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+#include "foundation/utility/foreach.h"
+#include "foundation/utility/registrar.h"
 
 // Standard headers.
-#include <memory>
+#include <cassert>
+#include <string>
 
-// Forward declarations.
-namespace renderer  { class IPhaseFunctionFactory; }
+using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
 
-//
-// An array of phase function factories.
-//
+APPLESEED_DEFINE_APIARRAY(VolumeFactoryArray);
 
-APPLESEED_DECLARE_APIARRAY(PhaseFunctionFactoryArray, IPhaseFunctionFactory*);
-
-
-//
-// Phase function factory registrar.
-//
-
-class APPLESEED_DLLSYMBOL PhaseFunctionFactoryRegistrar
-  : public foundation::NonCopyable
+struct VolumeFactoryRegistrar::Impl
 {
-  public:
-    typedef IPhaseFunctionFactory FactoryType;
-    typedef PhaseFunctionFactoryArray FactoryArrayType;
-
-    // Constructor.
-    PhaseFunctionFactoryRegistrar();
-
-    // Destructor.
-    ~PhaseFunctionFactoryRegistrar();
-
-    // Register a light factory.
-    void register_factory(std::auto_ptr<FactoryType> factory);
-
-    // Retrieve the registered factories.
-    FactoryArrayType get_factories() const;
-
-    // Lookup a factory by name.
-    const FactoryType* lookup(const char* name) const;
-
-  private:
-    struct Impl;
-    Impl* impl;
+    Registrar<IVolumeFactory> m_registrar;
 };
 
-}       // namespace renderer
+VolumeFactoryRegistrar::VolumeFactoryRegistrar()
+  : impl(new Impl())
+{
+    register_factory(auto_ptr<FactoryType>(new GenericVolumeFactory()));
+}
 
-#endif  // !APPLESEED_RENDERER_MODELING_PHASEFUNCTION_PHASEFUNCTIONFACTORYREGISTRAR_H
+VolumeFactoryRegistrar::~VolumeFactoryRegistrar()
+{
+    delete impl;
+}
+
+void VolumeFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+{
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, factory);
+}
+
+VolumeFactoryArray VolumeFactoryRegistrar::get_factories() const
+{
+    FactoryArrayType factories;
+
+    for (const_each<Registrar<FactoryType>::Items> i = impl->m_registrar.items(); i; ++i)
+        factories.push_back(i->second);
+
+    return factories;
+}
+
+const VolumeFactoryRegistrar::FactoryType*
+    VolumeFactoryRegistrar::lookup(const char* name) const
+{
+    assert(name);
+
+    return impl->m_registrar.lookup(name);
+}
+
+}   // namespace renderer

@@ -98,10 +98,10 @@ void ShadingRay::remove_medium(
     m_medium_count = j;
 }
 
-const PhaseFunction* ShadingRay::Medium::get_phase_function() const
+const Volume* ShadingRay::Medium::get_volume() const
 {
     if (m_material == nullptr) return nullptr;
-    return m_material->get_render_data().m_phase_function;
+    return m_material->get_render_data().m_volume;
 }
 
 }   // namespace renderer

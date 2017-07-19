@@ -82,7 +82,7 @@ class PathVertex
     const void*                 m_bsdf_data;
     const BSSRDF*               m_bssrdf;
     const void*                 m_bssrdf_data;
-    const void*                 m_phase_function_data;
+    const void*                 m_volume_data;
 
     // Properties of the scattering event leading to this vertex.
     ScatteringMode::Mode        m_prev_mode;

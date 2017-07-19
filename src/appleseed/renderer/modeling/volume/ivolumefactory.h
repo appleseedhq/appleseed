@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PHASEFUNCTION_IPHASEFUNCTIONFACTORY_H
-#define APPLESEED_RENDERER_MODELING_PHASEFUNCTION_IPHASEFUNCTIONFACTORY_H
+#ifndef APPLESEED_RENDERER_MODELING_VOLUME_IVOLUMEFACTORY_H
+#define APPLESEED_RENDERER_MODELING_VOLUME_IVOLUMEFACTORY_H
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -40,37 +40,37 @@
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class ParamArray; }
-namespace renderer      { class PhaseFunction; }
+namespace renderer      { class Volume; }
 
 namespace renderer
 {
 
 //
-// Phase function factory interface.
+// Volume factory interface.
 //
 
-class APPLESEED_DLLSYMBOL IPhaseFunctionFactory
+class APPLESEED_DLLSYMBOL IVolumeFactory
   : public foundation::NonCopyable
 {
   public:
     // Destructor.
-    virtual ~IPhaseFunctionFactory() {}
+    virtual ~IVolumeFactory() {}
 
-    // Return a string identifying this phase function model.
+    // Return a string identifying this volume model.
     virtual const char* get_model() const = 0;
 
-    // Return metadata for this phase function model.
+    // Return metadata for this volume model.
     virtual foundation::Dictionary get_model_metadata() const = 0;
 
-    // Return metadata for the inputs of this phase function model.
+    // Return metadata for the inputs of this volume model.
     virtual foundation::DictionaryArray get_input_metadata() const = 0;
 
-    // Create a new phase function instance.
-    virtual foundation::auto_release_ptr<PhaseFunction> create(
+    // Create a new volume instance.
+    virtual foundation::auto_release_ptr<Volume> create(
         const char*         name,
         const ParamArray&   params) const = 0;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_PHASEFUNCTION_IPHASEFUNCTIONFACTORY_H
+#endif  // !APPLESEED_RENDERER_MODELING_VOLUME_IVOLUMEFACTORY_H

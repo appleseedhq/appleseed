@@ -37,9 +37,9 @@
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
-#include "renderer/modeling/phasefunction/phasefunction.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
+#include "renderer/modeling/volume/volume.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/string.h"
@@ -117,13 +117,13 @@ const ShadingPoint& Tracer::do_trace(
         const ShadingRay& current_ray = shading_point_ptr->get_ray();
 
         const ShadingRay::Medium* medium = current_ray.get_current_medium();
-        const PhaseFunction* phase_function =
-            (medium == nullptr) ? nullptr : medium->get_phase_function();
+        const Volume* volume =
+            (medium == nullptr) ? nullptr : medium->get_volume();
 
         // Stop if the ray escaped the scene.
         if (!shading_point_ptr->hit())
         {
-            if (phase_function != nullptr)
+            if (volume != nullptr)
             {
                 // The ray escaped the scene filled with volume, thus its transmission is 0
                 transmission.set(0.0f);
@@ -140,12 +140,12 @@ const ShadingPoint& Tracer::do_trace(
 
         // Compute transmission of participating media.
         const ShadingRay& volume_ray = shading_point_ptr->get_ray();
-        if (phase_function != nullptr)
+        if (volume != nullptr)
         {
             Spectrum volume_transmission;
-            void* data = phase_function->evaluate_inputs(shading_context, volume_ray);
-            phase_function->prepare_inputs(shading_context.get_arena(), volume_ray, data);
-            phase_function->evaluate_transmission(data, volume_ray, volume_transmission);
+            void* data = volume->evaluate_inputs(shading_context, volume_ray);
+            volume->prepare_inputs(shading_context.get_arena(), volume_ray, data);
+            volume->evaluate_transmission(data, volume_ray, volume_transmission);
             transmission *= volume_transmission;
         }
 
@@ -155,7 +155,7 @@ const ShadingPoint& Tracer::do_trace(
         if (
             render_data.m_bsdf == nullptr &&
             render_data.m_bssrdf == nullptr &&
-            render_data.m_phase_function != nullptr)
+            render_data.m_volume != nullptr)
         {
             alpha[0] = 0.0f;
         }
@@ -180,7 +180,7 @@ const ShadingPoint& Tracer::do_trace(
             current_ray.m_dir,
             current_ray.m_time,
             current_ray.m_flags,
-            current_ray.m_depth + (phase_function == nullptr ? 0 : 1));
+            current_ray.m_depth + (volume == nullptr ? 0 : 1));
 
         // Determine whether the ray is entering or leaving a medium.
         const bool entering = shading_point_ptr->is_entering();
@@ -242,17 +242,17 @@ const ShadingPoint& Tracer::do_trace_between(
 
         // Get information about the medium that contains the shadow ray.
         const ShadingRay::Medium* medium = current_ray.get_current_medium();
-        const PhaseFunction* phase_function =
-            (medium == nullptr) ? nullptr : medium->get_phase_function();
+        const Volume* volume =
+            (medium == nullptr) ? nullptr : medium->get_volume();
         const ShadingRay& volume_ray = shading_point_ptr->get_ray();
 
         // Compute transmission of participating media.
-        if (phase_function != nullptr)
+        if (volume != nullptr)
         {
             Spectrum volume_transmission;
-            void* data = phase_function->evaluate_inputs(shading_context, volume_ray);
-            phase_function->prepare_inputs(shading_context.get_arena(), volume_ray, data);
-            phase_function->evaluate_transmission(data, volume_ray, volume_transmission);
+            void* data = volume->evaluate_inputs(shading_context, volume_ray);
+            volume->prepare_inputs(shading_context.get_arena(), volume_ray, data);
+            volume->evaluate_transmission(data, volume_ray, volume_transmission);
             transmission *= volume_transmission;
         }
 
@@ -273,7 +273,7 @@ const ShadingPoint& Tracer::do_trace_between(
         if (
             render_data.m_bsdf == nullptr &&
             render_data.m_bssrdf == nullptr &&
-            render_data.m_phase_function != nullptr)
+            render_data.m_volume != nullptr)
         {
             alpha[0] = 0.0f;
         }
@@ -303,7 +303,7 @@ const ShadingPoint& Tracer::do_trace_between(
             dist * (1.0 - 1.0e-6),  // ray tmax
             current_ray.m_time,
             current_ray.m_flags,
-            current_ray.m_depth + (phase_function == nullptr ? 0 : 1));
+            current_ray.m_depth + (volume == nullptr ? 0 : 1));
 
         // Determine whether the ray is entering or leaving a medium.
         const bool entering = shading_point_ptr->is_entering();

@@ -269,6 +269,8 @@ set (foundation_math_sources
     foundation/math/ordering.h
     foundation/math/permutation.cpp
     foundation/math/permutation.h
+    foundation/math/phasefunction.cpp
+    foundation/math/phasefunction.h
     foundation/math/population.h
     foundation/math/primes.cpp
     foundation/math/primes.h
@@ -845,7 +847,6 @@ set (renderer_api_sources
     renderer/api/log.h
     renderer/api/material.h
     renderer/api/object.h
-    renderer/api/phasefunction.h
     renderer/api/project.h
     renderer/api/rendering.h
     renderer/api/scene.h
@@ -856,6 +857,7 @@ set (renderer_api_sources
     renderer/api/types.h
     renderer/api/utility.h
     renderer/api/version.h
+    renderer/api/volume.h
 )
 list (APPEND appleseed_sources
     ${renderer_api_sources}
@@ -1248,7 +1250,6 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_lightsampler.cpp
     renderer/meta/tests/test_localsampleaccumulationbuffer.cpp
     renderer/meta/tests/test_paramarray.cpp
-    renderer/meta/tests/test_phasefunction.cpp
     renderer/meta/tests/test_pinholecamera.cpp
     renderer/meta/tests/test_pixelsampler.cpp
     renderer/meta/tests/test_projectfilereader.cpp
@@ -1265,6 +1266,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_tracer.cpp
     renderer/meta/tests/test_transformsequence.cpp
     renderer/meta/tests/test_variationtracker.cpp
+    renderer/meta/tests/test_volume.cpp
 )
 list (APPEND appleseed_sources
     ${renderer_meta_tests_sources}
@@ -1680,25 +1682,6 @@ source_group ("renderer\\modeling\\object" FILES
     ${renderer_modeling_object_sources}
 )
 
-set (renderer_modeling_phasefunction_sources
-    renderer/modeling/phasefunction/henyeyphasefunction.cpp
-    renderer/modeling/phasefunction/henyeyphasefunction.h
-    renderer/modeling/phasefunction/iphasefunctionfactory.h
-    renderer/modeling/phasefunction/isotropicphasefunction.cpp
-    renderer/modeling/phasefunction/isotropicphasefunction.h
-    renderer/modeling/phasefunction/phasefunction.cpp
-    renderer/modeling/phasefunction/phasefunction.h
-    renderer/modeling/phasefunction/phasefunctionfactoryregistrar.cpp
-    renderer/modeling/phasefunction/phasefunctionfactoryregistrar.h
-    renderer/modeling/phasefunction/phasefunctiontraits.h
-)
-list (APPEND appleseed_sources
-    ${renderer_modeling_phasefunction_sources}
-)
-source_group ("renderer\\modeling\\phasefunction" FILES
-    ${renderer_modeling_phasefunction_sources}
-)
-
 set (renderer_modeling_project_sources
     renderer/modeling/project/assethandler.cpp
     renderer/modeling/project/assethandler.h
@@ -1861,6 +1844,23 @@ list (APPEND appleseed_sources
 )
 source_group ("renderer\\utility" FILES
     ${renderer_utility_sources}
+)
+
+set (renderer_modeling_volume_sources
+    renderer/modeling/volume/genericvolume.cpp
+    renderer/modeling/volume/genericvolume.h
+    renderer/modeling/volume/ivolumefactory.h
+    renderer/modeling/volume/volume.cpp
+    renderer/modeling/volume/volume.h
+    renderer/modeling/volume/volumefactoryregistrar.cpp
+    renderer/modeling/volume/volumefactoryregistrar.h
+    renderer/modeling/volume/volumetraits.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_volume_sources}
+)
+source_group ("renderer\\modeling\\volume" FILES
+    ${renderer_modeling_volume_sources}
 )
 
 # Collect all XML Schema files amongst the source files.

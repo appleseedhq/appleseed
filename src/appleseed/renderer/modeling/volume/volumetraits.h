@@ -26,58 +26,58 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PHASEFUNCTION_PHASEFUNCTIONTRAITS_H
-#define APPLESEED_RENDERER_MODELING_PHASEFUNCTION_PHASEFUNCTIONTRAITS_H
+#ifndef APPLESEED_RENDERER_MODELING_VOLUME_VOLUMETRAITS_H
+#define APPLESEED_RENDERER_MODELING_VOLUME_VOLUMETRAITS_H
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entitytraits.h"
-#include "renderer/modeling/phasefunction/phasefunction.h"
 #include "renderer/modeling/scene/containers.h"
+#include "renderer/modeling/volume/volume.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/containers/dictionary.h"
 
 // Forward declarations.
-namespace renderer  { class PhaseFunctionFactoryRegistrar; }
+namespace renderer  { class VolumeFactoryRegistrar; }
 
 namespace renderer
 {
 
 //
-// PhaseFunction entity traits.
+// Volume entity traits.
 //
 
 template <>
-struct EntityTraits<PhaseFunction>
+struct EntityTraits<Volume>
 {
-    typedef PhaseFunctionContainer ContainerType;
-    typedef PhaseFunctionFactoryRegistrar FactoryRegistrarType;
+    typedef VolumeContainer ContainerType;
+    typedef VolumeFactoryRegistrar FactoryRegistrarType;
 
-    static const char* get_entity_type_name()                           { return "phase_function"; }
-    static const char* get_human_readable_entity_type_name()            { return "Phase Function"; }
-    static const char* get_human_readable_collection_type_name()        { return "Phase Functions"; }
+    static const char* get_entity_type_name()                           { return "volume"; }
+    static const char* get_human_readable_entity_type_name()            { return "Volume"; }
+    static const char* get_human_readable_collection_type_name()        { return "Volumes"; }
 
     template <typename ParentEntity>
-    static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.phase_functions(); }
+    static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.volumes(); }
 
-    static foundation::Dictionary get_entity_values(const PhaseFunction* entity)
+    static foundation::Dictionary get_entity_values(const Volume* entity)
     {
         return entity->get_parameters();
     }
 
     template <typename ParentEntity>
     static void insert_entity(
-        foundation::auto_release_ptr<PhaseFunction> entity,
-        ParentEntity&                               parent)
+        foundation::auto_release_ptr<Volume>    entity,
+        ParentEntity&                           parent)
     {
         get_entity_container(parent).insert(entity);
     }
 
     template <typename ParentEntity>
     static void remove_entity(
-        PhaseFunction*                              entity,
-        ParentEntity&                               parent)
+        Volume*                                 entity,
+        ParentEntity&                           parent)
     {
         get_entity_container(parent).remove(entity);
     }
@@ -85,4 +85,4 @@ struct EntityTraits<PhaseFunction>
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_PHASEFUNCTION_PHASEFUNCTIONTRAITS_H
+#endif  // !APPLESEED_RENDERER_MODELING_VOLUME_VOLUMETRAITS_H

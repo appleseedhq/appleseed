@@ -232,8 +232,8 @@
                 <parameter name="bump_offset" value="2.0" />
                 <parameter name="displacement_method" value="bump" />
                 <parameter name="normal_map_up" value="z" />
-                <parameter name="phase_function" value="phase_function_green" />
                 <parameter name="shade_alpha_cutouts" value="false" />
+                <parameter name="volume" value="volume_green" />
             </material>
             <material name="green_material" model="generic_material">
                 <parameter name="bsdf" value="green_material_brdf" />
@@ -249,8 +249,8 @@
                 <parameter name="bump_offset" value="2.0" />
                 <parameter name="displacement_method" value="bump" />
                 <parameter name="normal_map_up" value="z" />
-                <parameter name="phase_function" value="phase_function_red" />
                 <parameter name="shade_alpha_cutouts" value="false" />
+                <parameter name="volume" value="volume_red" />
             </material>
             <material name="red_material" model="generic_material">
                 <parameter name="bsdf" value="red_material_brdf" />
@@ -261,8 +261,8 @@
                 <parameter name="bump_offset" value="2.0" />
                 <parameter name="displacement_method" value="bump" />
                 <parameter name="normal_map_up" value="z" />
-                <parameter name="phase_function" value="phase_function_white" />
                 <parameter name="shade_alpha_cutouts" value="false" />
+                <parameter name="volume" value="volume_white" />
             </material>
             <material name="white_material" model="generic_material">
                 <parameter name="bsdf" value="white_material_brdf" />
@@ -406,27 +406,45 @@
                 <assign_material slot="default" side="front" material="red_mat" />
                 <assign_material slot="default" side="back" material="red_mat" />
             </object_instance>
-            <phase_function name="phase_function_green" model="henyey_phasefunction">
+            <volume name="volume_green" model="generic_volume">
                 <parameter name="absorption" value="green" />
-                <parameter name="absorption_multiplier" value="25" />
+                <parameter name="absorption_multiplier" value="25.0" />
                 <parameter name="average_cosine" value="0.0" />
+                <parameter name="mfp" value="0.5" />
+                <parameter name="mfp_multiplier" value="1.0" />
+                <parameter name="phase_function_model" value="henyey" />
+                <parameter name="reflectance" value="0.5" />
+                <parameter name="reflectance_multiplier" value="1.0" />
                 <parameter name="scattering" value="green" />
                 <parameter name="scattering_multiplier" value="150.0" />
-            </phase_function>
-            <phase_function name="phase_function_red" model="henyey_phasefunction">
+                <parameter name="volume_parameterization" value="default" />
+            </volume>
+            <volume name="volume_red" model="generic_volume">
                 <parameter name="absorption" value="red" />
                 <parameter name="absorption_multiplier" value="50.0" />
                 <parameter name="average_cosine" value="-0.3" />
+                <parameter name="mfp" value="0.5" />
+                <parameter name="mfp_multiplier" value="1.0" />
+                <parameter name="phase_function_model" value="henyey" />
+                <parameter name="reflectance" value="0.5" />
+                <parameter name="reflectance_multiplier" value="1.0" />
                 <parameter name="scattering" value="red" />
                 <parameter name="scattering_multiplier" value="500.0" />
-            </phase_function>
-            <phase_function name="phase_function_white" model="henyey_phasefunction">
+                <parameter name="volume_parameterization" value="default" />
+            </volume>
+            <volume name="volume_white" model="generic_volume">
                 <parameter name="absorption" value="white" />
                 <parameter name="absorption_multiplier" value="2.0" />
                 <parameter name="average_cosine" value="0.0" />
+                <parameter name="mfp" value="0.5" />
+                <parameter name="mfp_multiplier" value="1.0" />
+                <parameter name="phase_function_model" value="henyey" />
+                <parameter name="reflectance" value="0.5" />
+                <parameter name="reflectance_multiplier" value="1.0" />
                 <parameter name="scattering" value="white" />
                 <parameter name="scattering_multiplier" value="12.0" />
-            </phase_function>
+                <parameter name="volume_parameterization" value="default" />
+            </volume>
         </assembly>
         <assembly_instance name="assembly_inst" assembly="assembly">
         </assembly_instance>
