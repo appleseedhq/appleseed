@@ -16,7 +16,7 @@ cd build
 cmake --version
 cmake \
     -D WITH_CLI=ON \
-    -D WITH_STUDIO=OFF \
+    -D WITH_STUDIO=ON \
     -D WITH_TOOLS=OFF \
     -D WITH_PYTHON=ON \
     -D WITH_DISNEY_MATERIAL=ON \
