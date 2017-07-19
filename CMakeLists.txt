@@ -556,6 +556,27 @@ if (WITH_CLI)
     add_subdirectory (src/appleseed.cli)
 endif ()
 
+if (WITH_PYTHON)
+    set(Python_ADDITIONAL_VERSIONS 2.7)
+    find_package (PythonLibs REQUIRED)
+
+    # Splitting version string into list.
+    string (REGEX MATCHALL "[0123456789]+" PYTHON_VERSION_LIST "${PYTHONLIBS_VERSION_STRING}")
+
+    if (PYTHON_VERSION_LIST)
+        # Accessing major and minor version numbers with the version list we got.
+        list (GET PYTHON_VERSION_LIST 0 PYTHON_MAJOR_VERSION)
+        list (GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)
+    else ()
+        # Default to latest Python 2 release if version string cannot be read.
+        message (STATUS "Cannot find Python version. Using 2.7 by default")
+        set (PYTHON_MAJOR_VERSION "2")
+        set (PYTHON_MINOR_VERSION "7")
+    endif ()
+
+    add_subdirectory (src/appleseed.python)
+endif ()
+
 if (WITH_STUDIO)
     add_subdirectory (src/appleseed.studio)
 endif ()
