@@ -60,8 +60,8 @@
                 <parameter name="bump_offset" value="2.0" />
                 <parameter name="displacement_method" value="bump" />
                 <parameter name="normal_map_up" value="z" />
-                <parameter name="phase_function" value="phase_function" />
                 <parameter name="shade_alpha_cutouts" value="false" />
+                <parameter name="volume" value="volume" />
             </material>
             <object name="scattering_test_scene" model="mesh_object">
                 <parameter name="filename" value="scattering_test_scene.obj" />
@@ -79,13 +79,19 @@
                 <assign_material slot="default" side="front" material="scattering_material" />
                 <assign_material slot="default" side="back" material="scattering_material" />
             </object_instance>
-            <phase_function name="phase_function" model="henyey_phasefunction">
+            <volume name="volume" model="generic_volume">
                 <parameter name="absorption" value="blue" />
                 <parameter name="absorption_multiplier" value="0.0" />
                 <parameter name="average_cosine" value="0.4" />
+                <parameter name="mfp" value="0.5" />
+                <parameter name="mfp_multiplier" value="1.0" />
+                <parameter name="phase_function_model" value="henyey" />
+                <parameter name="reflectance" value="0.5" />
+                <parameter name="reflectance_multiplier" value="1.0" />
                 <parameter name="scattering" value="blue" />
                 <parameter name="scattering_multiplier" value="13.0" />
-            </phase_function>
+                <parameter name="volume_parameterization" value="default" />
+            </volume>
         </assembly>
         <assembly_instance name="assembly_inst" assembly="assembly">
         </assembly_instance>

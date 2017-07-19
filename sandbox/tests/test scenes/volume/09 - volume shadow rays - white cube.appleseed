@@ -43,8 +43,8 @@
                 <parameter name="bump_offset" value="2.0" />
                 <parameter name="displacement_method" value="bump" />
                 <parameter name="normal_map_up" value="z" />
-                <parameter name="phase_function" value="phase_function" />
                 <parameter name="shade_alpha_cutouts" value="false" />
+                <parameter name="volume" value="volume" />
             </material>
             <material name="white_material" model="generic_material">
                 <parameter name="bsdf" value="floor_bsdf" />
@@ -86,13 +86,19 @@
                 <assign_material slot="default" side="front" material="white_material" />
                 <assign_material slot="default" side="back" material="white_material" />
             </object_instance>
-            <phase_function name="phase_function" model="henyey_phasefunction">
+            <volume name="volume" model="generic_volume">
                 <parameter name="absorption" value="0.6" />
                 <parameter name="absorption_multiplier" value="1.0" />
                 <parameter name="average_cosine" value="0.0" />
+                <parameter name="mfp" value="0.5" />
+                <parameter name="mfp_multiplier" value="1.0" />
+                <parameter name="phase_function_model" value="henyey" />
+                <parameter name="reflectance" value="0.5" />
+                <parameter name="reflectance_multiplier" value="1.0" />
                 <parameter name="scattering" value="0.6" />
                 <parameter name="scattering_multiplier" value="1.0" />
-            </phase_function>
+                <parameter name="volume_parameterization" value="default" />
+            </volume>
         </assembly>
         <assembly_instance name="assembly_inst" assembly="assembly">
         </assembly_instance>
