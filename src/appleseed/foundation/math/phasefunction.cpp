@@ -46,21 +46,19 @@ namespace foundation
 
 namespace
 {
+    inline float henyey_pdf(const float g, const float sqr_g, const float cosine)
+    {
+        //
+        // p(x) = 1/2 * (1 - g^2) / (1 + g^2 - 2gx)^(3/2),
+        // where x is cos(phi) and g is the average cosine parameter.
+        // Additionally divide by TwoPi, because we sample over the sphere.
+        //
 
-inline float henyey_pdf(const float g, const float sqr_g, const float cosine)
-{
-    //
-    // p(x) = 1/2 * (1 - g^2) / (1 + g^2 - 2gx)^(3/2),
-    // where x is cos(phi) and g is the average cosine parameter.
-    // Additionally divide by TwoPi, because we sample over the sphere.
-    //
+        const float numerator = (1.0f - sqr_g);
+        const float denominator = std::pow(1.0f + sqr_g - 2.0f * g * cosine, -1.5f);
 
-    const float numerator = (1.0f - sqr_g);
-    const float denominator = std::pow(1.0f + sqr_g - 2.0f * g * cosine, -1.5f);
-
-    return RcpFourPi<float>() * numerator * denominator;
-}
-
+        return RcpFourPi<float>() * numerator * denominator;
+    }
 }
 
 

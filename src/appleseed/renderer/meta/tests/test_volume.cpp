@@ -76,18 +76,11 @@ TEST_SUITE(Renderer_Modeling_Volume)
     struct Fixture
       : public TestFixtureBase
     {
-        Fixture()
-          : TestFixtureBase()
-        {
-            m_base_parameters = ParamArray().insert("phase_function_model", "henyey");
-        }
-
         // Number of MC samples to do integrations.
         static const size_t NumberOfSamples = 50000;
         // Number of samples to draw.
         static const size_t NumberOfSamplesPlot = 100;
 
-        ParamArray m_base_parameters;
         GenericVolumeFactory m_volume_factory;
 
         template <typename Procedure>
@@ -144,9 +137,9 @@ TEST_SUITE(Renderer_Modeling_Volume)
 
         // Integrate PDF of volume using straightforward Monte-Carlo approach.
         static float integrate_volume_pdf(
-            Volume& volume,
-            ShadingContext& shading_context,
-            Arena& arena)
+            Volume&             volume,
+            ShadingContext&     shading_context,
+            Arena&              arena)
         {
             ShadingRay shading_ray;
             shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
@@ -170,9 +163,9 @@ TEST_SUITE(Renderer_Modeling_Volume)
 
         // Check if probabilistic sampling is consistent with the returned PDF values.
         static bool check_sampling_consistency(
-            Volume& volume,
-            ShadingContext& shading_context,
-            Arena& arena)
+            Volume&             volume,
+            ShadingContext&     shading_context,
+            Arena&              arena)
         {
             ShadingRay shading_ray;
             shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
@@ -197,9 +190,9 @@ TEST_SUITE(Renderer_Modeling_Volume)
 
         // Sample a given volume and find average cosine of scattering angle.
         static float get_aposteriori_average_cosine(
-            Volume& volume,
-            ShadingContext& shading_context,
-            Arena& arena)
+            Volume&             volume,
+            ShadingContext&     shading_context,
+            Arena&              arena)
         {
             ShadingRay shading_ray;
             shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
@@ -255,8 +248,9 @@ TEST_SUITE(Renderer_Modeling_Volume)
         static const float G[4] = { -0.5f, 0.0f, +0.3f, +0.8f };
         for (size_t i = 0; i < countof(G); ++i)
         {
-            ParamArray parameters = m_base_parameters;
-            parameters.insert("average_cosine", G[i]);
+            ParamArray parameters = ParamArray()
+                .insert("phase_function_model", "henyey")
+                .insert("average_cosine", G[i]);
             auto_release_ptr<Volume> volume =
                 m_volume_factory.create("volume", parameters);
             volume->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
@@ -274,8 +268,9 @@ TEST_SUITE(Renderer_Modeling_Volume)
         static const float G[4] = { -0.5f, 0.0f, +0.3f, +0.8f };
         for (size_t i = 0; i < countof(G); ++i)
         {
-            ParamArray parameters = m_base_parameters;
-            parameters.insert("average_cosine", G[i]);
+            ParamArray parameters = ParamArray()
+                .insert("phase_function_model", "henyey")
+                .insert("average_cosine", G[i]);
             auto_release_ptr<Volume> volume =
                 m_volume_factory.create("volume", parameters);
             volume->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
@@ -293,8 +288,9 @@ TEST_SUITE(Renderer_Modeling_Volume)
         static const float G[4] = { -0.5f, 0.0f, +0.3f, +0.8f };
         for (size_t i = 0; i < countof(G); ++i)
         {
-            ParamArray parameters = m_base_parameters;
-            parameters.insert("average_cosine", G[i]);
+            ParamArray parameters = ParamArray()
+                .insert("phase_function_model", "henyey")
+                .insert("average_cosine", G[i]);
             auto_release_ptr<Volume> volume =
                 m_volume_factory.create("volume", parameters);
             volume->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
@@ -327,8 +323,9 @@ TEST_SUITE(Renderer_Modeling_Volume)
         static const float G[3] = { -0.5f, +0.3f, 0.0f };
         for (size_t i = 0; i < countof(G); ++i)
         {
-            ParamArray parameters = m_base_parameters;
-            parameters.insert("average_cosine", G[i]);
+            ParamArray parameters = ParamArray()
+                .insert("phase_function_model", "henyey")
+                .insert("average_cosine", G[i]);
             auto_release_ptr<Volume> volume =
                 m_volume_factory.create("volume", parameters);
             volume->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));

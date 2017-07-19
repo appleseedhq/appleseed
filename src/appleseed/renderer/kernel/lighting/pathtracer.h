@@ -92,7 +92,7 @@ class PathTracer
         SamplingContext&        sampling_context,
         const ShadingContext&   shading_context,
         const ShadingRay&       ray,
-        const ShadingPoint*     parent_shading_point = 0);
+        const ShadingPoint*     parent_shading_point = nullptr);
 
     size_t trace(
         SamplingContext&        sampling_context,
@@ -270,7 +270,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         const Material* material = vertex.get_material();
 
         // Terminate the path if the surface has no material.
-        if (material == 0)
+        if (material == nullptr)
             break;
 
         // Retrieve the material's render data.
@@ -285,7 +285,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         // Handle false intersections.
         if (ray.get_current_medium() &&
             ray.get_current_medium()->m_object_instance->get_medium_priority() > object_instance.get_medium_priority() &&
-            material_data.m_bsdf != 0)
+            material_data.m_bsdf != nullptr)
         {
             // Construct a ray that continues in the same direction as the incoming ray.
             ShadingRay next_ray(
@@ -409,8 +409,8 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         {
             sampling_context.split_in_place(1, 1);
             if (sampling_context.next2<float>() < 0.5f)
-                vertex.m_bsdf = 0;
-            else vertex.m_bssrdf = 0;
+                vertex.m_bsdf = nullptr;
+            else vertex.m_bssrdf = nullptr;
             vertex.m_throughput *= 2.0f;
         }
 
@@ -469,7 +469,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
             break;
 
         // Terminate the path if no above-surface scattering possible.
-        if (vertex.m_bsdf == 0 && material->get_render_data().m_volume == 0)
+        if (vertex.m_bsdf == nullptr && material->get_render_data().m_volume == nullptr)
             break;
 
         // Determine which scattering modes are still enabled.
@@ -529,7 +529,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
         // Compute absorption for the segment inside the medium.
         const ShadingRay::Medium* prev_medium = ray.get_current_medium();
-        if (prev_medium != 0)
+        if (prev_medium != nullptr)
         {
             const Material::RenderData& render_data = prev_medium->m_material->get_render_data();
 
@@ -555,8 +555,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
         shading_points[shading_point_index].clear();
         const ShadingRay::Medium* current_medium = next_ray.get_current_medium();
-        if (current_medium != 0 &&
-            current_medium->get_volume() != 0)
+        if (current_medium != nullptr && current_medium->get_volume() != nullptr)
         {
             // This ray is being cast into a participating medium:
             bool continue_path;

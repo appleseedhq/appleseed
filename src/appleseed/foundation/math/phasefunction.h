@@ -38,6 +38,8 @@ namespace foundation
 class PhaseFunction
 {
   public:
+    virtual ~PhaseFunction() {}
+
     virtual float evaluate(const Vector3f& outgoing, const Vector3f& incoming) const = 0;
     virtual float sample(const Vector3f& outgoing, const Vector2f& s, Vector3f& incoming) const = 0;
 };
@@ -51,13 +53,14 @@ class PhaseFunction
 
 class HenyeyPhaseFunction : public PhaseFunction
 {
-public:
+  public:
     HenyeyPhaseFunction(const float g) : m_g(g) {}
+    virtual ~HenyeyPhaseFunction() {}
 
     virtual float evaluate(const Vector3f& outgoing, const Vector3f& incoming) const override;
     virtual float sample(const Vector3f& outgoing, const Vector2f& s, Vector3f& incoming) const override;
 
-private:
+  private:
     const float m_g;
 };
 
@@ -68,7 +71,9 @@ private:
 
 class IsotropicPhaseFunction : public PhaseFunction
 {
-public:
+  public:
+    virtual ~IsotropicPhaseFunction() {}
+
     virtual float evaluate(const Vector3f& outgoing, const Vector3f& incoming) const override;
     virtual float sample(const Vector3f& outgoing, const Vector2f& s, Vector3f& incoming) const override;
 };
