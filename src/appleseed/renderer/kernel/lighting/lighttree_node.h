@@ -49,15 +49,15 @@ class LightTreeNode
 {
   public:
     LightTreeNode()
-      : m_luminance(0.0f)
+      : m_importance(0.0f)
       , m_root(false)
       , m_parent(0)
     {
     }
 
-    float get_luminance() const
+    float get_importance() const
     {
-        return m_luminance;
+        return m_importance;
     }
 
     size_t get_level() const
@@ -75,9 +75,9 @@ class LightTreeNode
         return m_root;
     }
 
-    void set_luminance(const float luminance)
+    void set_importance(const float importance)
     {
-        m_luminance = luminance;
+        m_importance = importance;
     }
 
     // TODO: set this during the construction
@@ -99,7 +99,7 @@ class LightTreeNode
     }
 
   private:
-    float   m_luminance;
+    float   m_importance;
     size_t  m_tree_level;
     size_t  m_parent;
     bool    m_root;

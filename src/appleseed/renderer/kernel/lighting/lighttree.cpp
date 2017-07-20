@@ -122,7 +122,7 @@ size_t LightTree::build(
             &ordering[0],
             ordering.size());
 
-        // Set total luminance and level for each node of the LightTree.
+        // Set total node importance and level for each node of the LightTree.
         recursive_node_update(0, 0, 0);
     }
 
@@ -212,24 +212,24 @@ float LightTree::recursive_node_update(
     const size_t node_index, 
     const size_t node_level)
 {
-    float luminance = 0.0f;
+    float importance = 0.0f;
 
     if (!m_nodes[node_index].is_leaf())
     {
         const auto& child1 = m_nodes[node_index].get_child_node_index();
         const auto& child2 = m_nodes[node_index].get_child_node_index() + 1;
 
-        const float luminance1 = recursive_node_update(node_index, child1, node_level + 1);
-        const float luminance2 = recursive_node_update(node_index, child2, node_level + 1);
+        const float importance1 = recursive_node_update(node_index, child1, node_level + 1);
+        const float importance2 = recursive_node_update(node_index, child2, node_level + 1);
 
-        luminance = luminance1 + luminance2;
+        importance = importance1 + importance2;
     }
     else
     {
-        // Access the light intensity value.
+        // Access the light importance value.
         const size_t item_index = m_nodes[node_index].get_item_index();
         const size_t light_source_index = m_items[item_index].m_light_source_index;
-        luminance = m_light_sources[light_source_index]->get_intensity();
+        importance = m_light_sources[light_source_index]->get_importance();
 
         // Modify the tree depth if the branch is deeper than the other branches
         // visited so far.
@@ -242,14 +242,14 @@ float LightTree::recursive_node_update(
             m_light_sources[light_source_index]->set_tree_index(node_index);
     }
 
-    m_nodes[node_index].set_luminance(luminance);
+    m_nodes[node_index].set_importance(importance);
     m_nodes[node_index].set_level(node_level);
     if (node_index != 0)
         m_nodes[node_index].set_parent(parent_index);
     else
         m_nodes[node_index].set_root();
 
-    return luminance;
+    return importance;
 }
 
 void LightTree::sample(
@@ -345,7 +345,7 @@ namespace
             static_cast<float>(foundation::square_distance(surface_point, bbox.center()));
         const float inverse_distance_falloff = 1.0f / squared_distance;
 
-        p = node.get_luminance() * inverse_distance_falloff;
+        p = node.get_importance() * inverse_distance_falloff;
     }
 }
 

@@ -85,8 +85,6 @@ class RendererComponents
 
     IFrameRenderer& get_frame_renderer();
 
-    BackwardLightSampler* get_backward_light_sampler() const;
-
   private:
     const Project&              m_project;
     const ParamArray&           m_params;
@@ -134,12 +132,6 @@ inline ShadingEngine& RendererComponents::get_shading_engine()
 inline IFrameRenderer& RendererComponents::get_frame_renderer()
 {
     return *m_frame_renderer.get();
-}
-
-    
-inline BackwardLightSampler* RendererComponents::get_backward_light_sampler() const
-{
-    return m_backward_light_sampler.get();
 }
 
 }       // namespace renderer
