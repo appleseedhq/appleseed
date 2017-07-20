@@ -78,7 +78,7 @@ foundation::AABB3d NonPhysicalLightSource::get_bbox() const
                                      position[2] + 0.001));
 }
 
-float NonPhysicalLightSource::get_intensity() const
+float NonPhysicalLightSource::get_importance() const
 {
     Spectrum spectrum;
     m_light_info->m_light->get_inputs()
@@ -125,11 +125,11 @@ foundation::AABB3d EmittingTriangleLightSource::get_bbox() const
     return bbox;
 }
 
-float EmittingTriangleLightSource::get_intensity() const
+float EmittingTriangleLightSource::get_importance() const
 {
     const EDF* edf = m_triangle->m_material->get_uncached_edf();
     
-    return edf->get_max_contribution() * edf->get_uncached_importance_multiplier();
+    return edf->get_uncached_max_contribution() * edf->get_uncached_importance_multiplier();
 }
 
 int EmittingTriangleLightSource::get_type() const

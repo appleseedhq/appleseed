@@ -80,6 +80,11 @@ BackwardLightSampler::BackwardLightSampler(const Scene& scene, const ParamArray&
     // Prepare the CDFs for sampling.
     if (m_non_physical_lights_cdf.valid())
         m_non_physical_lights_cdf.prepare();
+    
+    // Build the light-tree.
+    m_light_tree_light_count = m_light_tree.build(
+        m_light_tree_lights,
+        m_emitting_triangles);
 
    RENDERER_LOG_INFO(
         "found %s %s, %s %s, %s emitting %s.",
@@ -89,14 +94,6 @@ BackwardLightSampler::BackwardLightSampler(const Scene& scene, const ParamArray&
         plural(m_light_tree_light_count, "light-tree compatible light").c_str(),
         pretty_int(m_emitting_triangles.size()).c_str(),
         plural(m_emitting_triangles.size(), "triangle").c_str());
-}
-
-void BackwardLightSampler::on_frame_begin()
-{
-    // Build the light-tree.
-    m_light_tree_light_count = m_light_tree.build(
-        m_light_tree_lights,
-        m_emitting_triangles);
 }
 
 void BackwardLightSampler::collect_non_physical_lights(

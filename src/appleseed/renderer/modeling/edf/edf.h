@@ -98,6 +98,9 @@ class APPLESEED_DLLSYMBOL EDF
 
     // Retrieve the light near start value.
     double get_uncached_light_near_start() const;
+    
+    // Retrieve the approximate contribution.
+    virtual float get_uncached_max_contribution() const = 0;
 
     // Get the cached approximate maximum contribution.
     float get_max_contribution() const;
@@ -161,9 +164,6 @@ class APPLESEED_DLLSYMBOL EDF
         const char*                 input_name,
         const char*                 multiplier_name,
         const char*                 exposure_name) const;
-
-    // Retrieve the approximate contribution.
-    virtual float get_uncached_max_contribution() const = 0;
 
   private:
     int    m_flags;

@@ -111,7 +111,7 @@ class LightSource
     virtual foundation::AABB3d get_bbox() const = 0;
 
     // Get the light intensity.
-    virtual float get_intensity() const = 0;
+    virtual float get_importance() const = 0;
 
     // Get light type.
     virtual int get_type() const = 0;
@@ -133,7 +133,7 @@ class NonPhysicalLightSource
 
     virtual foundation::Vector3d get_position() const override;
     virtual foundation::AABB3d get_bbox() const override;
-    virtual float get_intensity() const override;
+    virtual float get_importance() const override;
     virtual int get_type() const override;
     virtual void set_tree_index(const size_t node_index) const override;
 
@@ -155,7 +155,7 @@ class EmittingTriangleLightSource
 
     virtual foundation::Vector3d get_position() const override;
     virtual foundation::AABB3d get_bbox() const override;
-    virtual float get_intensity() const override;
+    virtual float get_importance() const override;
     virtual int get_type() const override;
     virtual void set_tree_index(const size_t node_index) const override;
 
