@@ -126,8 +126,8 @@ class LightTree
         const bool                  separate_by_levels = false) const;
 
     // Calculate the tree depth.
-    // Assign total luminance to each node of the tree, where total luminance
-    // represents the sum of all its child nodes luminances.
+    // Assign total importance to each node of the tree, where total importance
+    // represents the sum of all its child nodes importances.
     float recursive_node_update(
         const size_t parent_index,
         const size_t node_index, 
