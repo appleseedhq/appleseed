@@ -66,6 +66,11 @@ namespace
 // HenyeyPhaseFunction class implementation.
 //
 
+HenyeyPhaseFunction::HenyeyPhaseFunction(const float g)
+  : m_g(g)
+{
+}
+
 float HenyeyPhaseFunction::evaluate(const Vector3f& outgoing, const Vector3f& incoming) const
 {
     return henyey_pdf(m_g, m_g * m_g, dot(incoming, outgoing));
@@ -73,15 +78,12 @@ float HenyeyPhaseFunction::evaluate(const Vector3f& outgoing, const Vector3f& in
 
 float HenyeyPhaseFunction::sample(const Vector3f& outgoing, const Vector2f& s, Vector3f& incoming) const
 {
-    const Basis3f basis(outgoing);
-
     //
     // x = 1/(2g) * (1 + g^2 - [(1 - g^2) / (1 + g*s)]^2),
     // where x is cos(phi) and s is a uniform random sample from [-1, 1).
     //
 
     const float sqr_g = m_g * m_g;
-
     const float t = 2.0f * s[0] - 1.0f;
 
     float cosine;
@@ -96,8 +98,8 @@ float HenyeyPhaseFunction::sample(const Vector3f& outgoing, const Vector2f& s, V
     }
 
     const float sine = std::sqrt(saturate(1.0f - cosine * cosine));
-
     const Vector2f tangent = sample_circle_uniform(s[1]);
+    const Basis3f basis(outgoing);
 
     incoming =
         basis.get_tangent_u() * tangent.x * sine +
@@ -109,6 +111,7 @@ float HenyeyPhaseFunction::sample(const Vector3f& outgoing, const Vector2f& s, V
     // Evaluate PDF.
     return henyey_pdf(m_g, sqr_g, cosine);
 }
+
 
 //
 // IsotropicPhaseFunction class implementation.

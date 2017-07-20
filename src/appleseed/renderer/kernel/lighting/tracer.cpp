@@ -117,15 +117,14 @@ const ShadingPoint& Tracer::do_trace(
         const ShadingRay& current_ray = shading_point_ptr->get_ray();
 
         const ShadingRay::Medium* medium = current_ray.get_current_medium();
-        const Volume* volume =
-            (medium == nullptr) ? nullptr : medium->get_volume();
+        const Volume* volume = medium == nullptr ? nullptr : medium->get_volume();
 
         // Stop if the ray escaped the scene.
         if (!shading_point_ptr->hit())
         {
             if (volume != nullptr)
             {
-                // The ray escaped the scene filled with volume, thus its transmission is 0
+                // The ray escaped the scene filled with volume, thus its transmission is 0.
                 transmission.set(0.0f);
             }
             break;
@@ -152,8 +151,7 @@ const ShadingPoint& Tracer::do_trace(
         // Compute alpha.
         Alpha alpha;
         evaluate_alpha(*material, *shading_point_ptr, alpha);
-        if (
-            render_data.m_bsdf == nullptr &&
+        if (render_data.m_bsdf == nullptr &&
             render_data.m_bssrdf == nullptr &&
             render_data.m_volume != nullptr)
         {

@@ -50,6 +50,7 @@ namespace foundation
 const char* const IESParser::KeywordLineRegex = "\\[(\\w*)\\]\\s*(\\S.*)?";
 const char* const IESParser::TiltLineRegex = "TILT\\s*=\\s*(\\S.*)";
 
+
 //
 // Auxiliary functions.
 //
