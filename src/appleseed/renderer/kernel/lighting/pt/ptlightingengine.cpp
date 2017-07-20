@@ -63,6 +63,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <limits>
 #include <string>
 
 // Forward declarations.
@@ -199,6 +200,7 @@ namespace
           : m_params(params)
           , m_light_sampler(light_sampler)
           , m_path_count(0)
+          , m_inf_volume_ray_warnings(0)
         {
         }
 
@@ -253,7 +255,8 @@ namespace
                 sampling_context,
                 shading_context,
                 shading_point.get_scene(),
-                radiance);
+                radiance,
+                m_inf_volume_ray_warnings);
 
             PathTracer<PathVisitor, VolumeVisitorDistanceSampling, false> path_tracer(     // false = not adjoint
                 path_visitor,
@@ -291,6 +294,9 @@ namespace
 
         uint64                          m_path_count;
         Population<uint64>              m_path_length;
+
+        size_t                          m_inf_volume_ray_warnings;
+        static const size_t             MaxInfVolumeRayWarnings = 5;
 
         //
         // Base path visitor.
@@ -767,6 +773,7 @@ namespace
             ShadingComponents&          m_path_radiance;
             const EnvironmentEDF*       m_env_edf;
             bool                        m_is_indirect_lighting;
+            size_t&                     m_inf_volume_ray_warnings;
 
             VolumeVisitorDistanceSampling(
                 const Parameters&       params,
@@ -774,7 +781,8 @@ namespace
                 SamplingContext&        sampling_context,
                 const ShadingContext&   shading_context,
                 const Scene&            scene,
-                ShadingComponents&      path_radiance)
+                ShadingComponents&      path_radiance,
+                size_t&                 inf_volume_ray_warnings)
               : m_params(params)
               , m_light_sampler(light_sampler)
               , m_sampling_context(sampling_context)
@@ -782,7 +790,37 @@ namespace
               , m_path_radiance(path_radiance)
               , m_env_edf(scene.get_environment()->get_environment_edf())
               , m_is_indirect_lighting(false)
+              , m_inf_volume_ray_warnings(inf_volume_ray_warnings)
             {
+            }
+
+            float sample_distance(
+                const ShadingRay&   volume_ray,
+                const float         extinction,
+                float&              distance)
+            {
+                m_sampling_context.split_in_place(1, 1);
+
+                if (volume_ray.m_tmax == numeric_limits<ShadingRay::ValueType>().max())
+                {
+                    // Sample distance.
+                    distance = sample_exponential_distribution(
+                        m_sampling_context.next2<float>(), extinction);
+
+                    // Calculate PDF of this distance sample.
+                    return exponential_distribution_pdf(distance, extinction);
+                }
+                else
+                {
+                    // Sample distance.
+                    const float ray_length = static_cast<float>(volume_ray.get_length());
+                    distance = sample_exponential_distribution_on_segment(
+                        m_sampling_context.next2<float>(), extinction, 0.0f, ray_length);
+
+                    // Calculate PDF of this distance sample.
+                    return exponential_distribution_on_segment_pdf(
+                        distance, extinction, 0.0f, ray_length);
+                }
             }
 
             void add_direct_lighting_contribution(
@@ -876,6 +914,16 @@ namespace
 
             void visit(PathVertex& vertex, const ShadingRay& volume_ray)
             {
+                if (volume_ray.get_length() == numeric_limits<ShadingRay::ValueType>().max())
+                {
+                    if (m_inf_volume_ray_warnings < MaxInfVolumeRayWarnings)
+                        RENDERER_LOG_WARNING("volume ray of infinite length encountered.");
+                    else if (m_inf_volume_ray_warnings == MaxInfVolumeRayWarnings)
+                        RENDERER_LOG_WARNING("there are more volume rays of infinite length, "
+                                             "omitting warning messages for brevity.");
+                    ++m_inf_volume_ray_warnings;
+                }
+
                 const ShadingRay::Medium* medium = volume_ray.get_current_medium();
                 assert(medium != nullptr);
                 const Volume* volume = medium->get_volume();
@@ -943,14 +991,9 @@ namespace
                         continue;
 
                     // Sample distance.
-                    const float ray_length = static_cast<float>(volume_ray.get_length());
-                    m_sampling_context.split_in_place(1, 1);
-                    const float distance_sample = sample_exponential_distribution_on_segment(
-                        m_sampling_context.next2<float>(), extinction_coef[channel], 0.0f, ray_length);
-
-                    // Calculate PDF of this distance sample.
-                    const float distance_prob = exponential_distribution_on_segment_pdf(
-                        distance_sample, extinction_coef[channel], 0.0f, ray_length);
+                    float distance_sample;
+                    const float distance_prob = sample_distance(
+                        volume_ray, extinction_coef[channel], distance_sample);
 
                     // Calculate transmission between the ray origin and the sampled distance.
                     Spectrum transmission;
