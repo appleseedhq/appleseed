@@ -98,6 +98,12 @@ class BackwardLightSampler
         const ShadingPoint&                 shading_point,
         LightSample&                        light_sample) const;
 
+    // Sample the set of emitting triangles.
+    void sample_emitting_triangles(
+        const ShadingRay::Time&             time,
+        const foundation::Vector3f&         s,
+        LightSample&                        light_sample) const;
+
     // Sample a single given non-physical light.
     void sample_non_physical_light(
         const ShadingRay::Time&             time,
@@ -136,6 +142,7 @@ class BackwardLightSampler
     EmittingTriangleVector      m_emitting_triangles;
 
     EmitterCDF                  m_non_physical_lights_cdf;
+    EmitterCDF                  m_emitting_triangles_cdf;
 
     EmittingTriangleKeyHasher   m_triangle_key_hasher;
     EmittingTriangleHashTable   m_emitting_triangle_hash_table;

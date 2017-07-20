@@ -35,6 +35,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/scene/scene.h"
@@ -85,7 +86,18 @@ namespace renderer
         m_light_tree_lights,
         m_emitting_triangles);
 
-   RENDERER_LOG_INFO(
+    if (!m_use_light_tree)
+    {
+        if (m_emitting_triangles_cdf.valid())
+            m_emitting_triangles_cdf.prepare();
+   
+        // Store the triangle probability densities into the emitting triangles.
+        const size_t emitting_triangle_count = m_emitting_triangles.size();
+        for (size_t i = 0; i < emitting_triangle_count; ++i)
+        m_emitting_triangles[i].m_triangle_prob = m_emitting_triangles_cdf[i].second;
+    }
+
+    RENDERER_LOG_INFO(
         "found %s %s, %s %s, %s emitting %s.",
         pretty_int(m_non_physical_light_count).c_str(),
         plural(m_non_physical_light_count, "non-physical light").c_str(),
@@ -333,7 +345,23 @@ void BackwardLightSampler::collect_emitting_triangles(
                     emitting_triangle.m_material = material;
 
                     // Store the light-emitting triangle.
+                    const size_t emitting_triangle_index = m_emitting_triangles.size();
                     m_emitting_triangles.push_back(emitting_triangle);
+
+                    if (!m_use_light_tree)
+                    {
+                        // Retrieve the EDF and get the importance multiplier.
+                        float importance_multiplier = 1.0f;
+                        if (const EDF* edf = material->get_uncached_edf())
+                            importance_multiplier = edf->get_uncached_importance_multiplier();
+                        
+                        // Compute the probability density of this triangle.
+                        const float triangle_importance = m_params.m_importance_sampling ? static_cast<float>(area) : 1.0f;
+                        const float triangle_prob = triangle_importance * importance_multiplier;
+
+                        // Insert the light-emitting triangle into the CDF.
+                        m_emitting_triangles_cdf.insert(emitting_triangle_index, triangle_prob);
+                    }
                 }
             }
         }
@@ -425,6 +453,29 @@ void BackwardLightSampler::sample_light_tree_lights(
     assert(light_sample.m_probability > 0.0f);
 }
 
+void BackwardLightSampler::sample_emitting_triangles(
+    const ShadingRay::Time&             time,
+    const Vector3f&                     s,
+    LightSample&                        light_sample) const
+{
+    assert(m_emitting_triangles_cdf.valid());
+
+    const EmitterCDF::ItemWeightPair result = m_emitting_triangles_cdf.sample(s[0]);
+    const size_t emitter_index = result.first;
+    const float emitter_prob = result.second;
+
+    light_sample.m_light = 0;
+    sample_emitting_triangle(
+        time,
+        Vector2f(s[1], s[2]),
+        emitter_index,
+        emitter_prob,
+        light_sample);
+
+    assert(light_sample.m_triangle);
+    assert(light_sample.m_probability > 0.0f);
+}
+
 void BackwardLightSampler::sample(
     const ShadingRay::Time&             time,
     const Vector3f&                     s,
@@ -487,14 +538,22 @@ float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point) cons
 
     const EmittingTriangle* triangle = m_emitting_triangle_hash_table.get(triangle_key);
 
-    // Traverse the tree and update triangle_prob
-    float triangle_probability;
-    m_light_tree.calculate_light_probability(
-        shading_point.get_point(),
-        triangle->m_light_tree_node_index,
-        triangle_probability);
+    if (m_use_light_tree)
+    {
+        // Traverse the tree and update triangle_prob
+        float triangle_probability;
+        m_light_tree.calculate_light_probability(
+            shading_point.get_point(),
+            triangle->m_light_tree_node_index,
+            triangle_probability);
 
-    return triangle_probability * triangle->m_rcp_area;
+        return triangle_probability * triangle->m_rcp_area;
+    }
+    else
+    {
+        return triangle->m_triangle_prob * triangle->m_rcp_area;
+    }
+
 }
 
 void BackwardLightSampler::sample_light_tree_light(
