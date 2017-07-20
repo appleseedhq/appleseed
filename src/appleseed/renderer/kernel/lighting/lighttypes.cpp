@@ -30,8 +30,10 @@
 #include "lighttypes.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/light/light.h"
+#include "renderer/modeling/material/material.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
@@ -43,7 +45,7 @@ namespace renderer
 // NonPhysicalLightSource class implementation.
 //
 
-NonPhysicalLightSource::NonPhysicalLightSource(const NonPhysicalLightInfo* light)
+NonPhysicalLightSource::NonPhysicalLightSource(NonPhysicalLightInfo* light)
   : m_light_info(light)
 {
 }
@@ -76,29 +78,39 @@ foundation::AABB3d NonPhysicalLightSource::get_bbox() const
                                      position[2] + 0.001));
 }
 
-Spectrum NonPhysicalLightSource::get_intensity() const
+float NonPhysicalLightSource::get_intensity() const
 {
-    Spectrum intensity;
+    Spectrum spectrum;
     m_light_info->m_light->get_inputs()
         .find("intensity")
-        .source()->evaluate_uniform(intensity);
-    return intensity;
+        .source()->evaluate_uniform(spectrum);
+
+    return foundation::average_value(spectrum);
 }
 
+int NonPhysicalLightSource::get_type() const
+{
+    return LightSource::NonPhysicalLightType;
+}
+
+void NonPhysicalLightSource::set_tree_index(const size_t node_index) const
+{
+    m_light_info->m_light_tree_node_index = node_index;
+}
 
 //
 // EmittingTriangleLightSource class implementation.
 //
 
-EmittingTriangleLightSource::EmittingTriangleLightSource(const EmittingTriangle* light)
-  : m_light(light)
+EmittingTriangleLightSource::EmittingTriangleLightSource(EmittingTriangle* triangle)
+  : m_triangle(triangle)
 {
 }
 
 foundation::Vector3d EmittingTriangleLightSource::get_position() const
 {
     // Return the centroid of the triangle as the position.
-    return (m_light->m_v0 + m_light->m_v1 + m_light->m_v2) / 3;
+    return (m_triangle->m_v0 + m_triangle->m_v1 + m_triangle->m_v2) / 3;
 }
 
 foundation::AABB3d EmittingTriangleLightSource::get_bbox() const
@@ -106,17 +118,28 @@ foundation::AABB3d EmittingTriangleLightSource::get_bbox() const
     foundation::AABB3d bbox;
 
     bbox.invalidate();
-    bbox.insert(m_light->m_v0);
-    bbox.insert(m_light->m_v1);
-    bbox.insert(m_light->m_v2);
+    bbox.insert(m_triangle->m_v0);
+    bbox.insert(m_triangle->m_v1);
+    bbox.insert(m_triangle->m_v2);
 
     return bbox;
 }
 
-Spectrum EmittingTriangleLightSource::get_intensity() const
+float EmittingTriangleLightSource::get_intensity() const
 {
-    const Spectrum hard_coded_placeholder(foundation::Color3f(1.0f, 2.0f, 3.0f));
-    return hard_coded_placeholder;
+    const EDF* edf = m_triangle->m_material->get_uncached_edf();
+    
+    return edf->get_max_contribution() * edf->get_uncached_importance_multiplier();
+}
+
+int EmittingTriangleLightSource::get_type() const
+{
+    return LightSource::EmittingTriangleType;
+}
+
+void EmittingTriangleLightSource::set_tree_index(const size_t node_index) const
+{
+    m_triangle->m_light_tree_node_index = node_index;
 }
 
 }   // namespace renderer

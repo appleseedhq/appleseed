@@ -51,19 +51,20 @@ namespace renderer
 {
 
 //
-// Non-physical light.
+// NonPhysicalLightInfo class implementation.
 //
 
 class NonPhysicalLightInfo
 {
   public:
     TransformSequence           m_transform_sequence;           // assembly instance (parent of the light) space to world space
+    size_t                      m_light_tree_node_index;
     const Light*                m_light;
 };
 
 
 //
-// Light-emitting triangle.
+// EmittingTriangle class implementation.
 //
 
 class EmittingTriangle
@@ -73,6 +74,7 @@ class EmittingTriangle
     size_t                      m_object_instance_index;
     size_t                      m_region_index;
     size_t                      m_triangle_index;
+    size_t                      m_light_tree_node_index;
     foundation::Vector3d        m_v0, m_v1, m_v2;               // world space vertices of the triangle
     foundation::Vector3d        m_n0, m_n1, m_n2;               // world space vertex normals
     foundation::Vector3d        m_geometric_normal;             // world space geometric normal, unit-length
@@ -85,6 +87,7 @@ class EmittingTriangle
 
 
 //
+// LightSource class implementation.
 // Any kind of light source. Both non-physical light and emitting triangle.
 //
 
@@ -95,6 +98,12 @@ class LightSource
     // Destructor.
     virtual ~LightSource() {}
 
+    enum SourceTypes
+    {
+        NonPhysicalLightType = 0,
+        EmittingTriangleType = 1
+    };
+
     // Get the light source position.
     virtual foundation::Vector3d get_position() const = 0;
 
@@ -102,48 +111,57 @@ class LightSource
     virtual foundation::AABB3d get_bbox() const = 0;
 
     // Get the light intensity.
-    // NOTE: currently works only for point lights!
-    virtual Spectrum get_intensity() const = 0;
+    virtual float get_intensity() const = 0;
+
+    // Get light type.
+    virtual int get_type() const = 0;
+
+    // Link the light to its position in the tree.
+    virtual void set_tree_index(const size_t node_index) const = 0;
 };
 
 
 //
-// Non-physical light source.
+// NonPhysicalLightSource class implementation.
 //
 
 class NonPhysicalLightSource
   : public LightSource
 {
   public:
-    explicit NonPhysicalLightSource(const NonPhysicalLightInfo* light);
+    explicit NonPhysicalLightSource(NonPhysicalLightInfo* light);
 
     virtual foundation::Vector3d get_position() const override;
     virtual foundation::AABB3d get_bbox() const override;
-    virtual Spectrum get_intensity() const override;
+    virtual float get_intensity() const override;
+    virtual int get_type() const override;
+    virtual void set_tree_index(const size_t node_index) const override;
 
   private:
     // Reference to the actual source.
-    const NonPhysicalLightInfo* m_light_info;
+    NonPhysicalLightInfo* m_light_info;
 };
 
 
 //
-// Emitting triangle light source.
+// EmittingTriangleLightSource class implementation.
 //
 
 class EmittingTriangleLightSource
   : public LightSource
 {
   public:
-    explicit EmittingTriangleLightSource(const EmittingTriangle* light);
+    explicit EmittingTriangleLightSource(EmittingTriangle* triangle);
 
     virtual foundation::Vector3d get_position() const override;
     virtual foundation::AABB3d get_bbox() const override;
-    virtual Spectrum get_intensity() const override;
+    virtual float get_intensity() const override;
+    virtual int get_type() const override;
+    virtual void set_tree_index(const size_t node_index) const override;
 
   private:
     // Reference to the actual source.
-    const EmittingTriangle* m_light;
+    EmittingTriangle* m_triangle;
 };
 
 }       // namespace renderer

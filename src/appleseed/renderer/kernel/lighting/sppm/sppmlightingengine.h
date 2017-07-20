@@ -39,7 +39,8 @@
 
 // Forward declarations.
 namespace foundation    { class Dictionary; }
-namespace renderer      { class LightSampler; }
+namespace renderer      { class BackwardLightSampler; }
+namespace renderer      { class ForwardLightSampler; }
 namespace renderer      { class SPPMPassCallback; }
 
 namespace renderer
@@ -55,9 +56,10 @@ class SPPMLightingEngineFactory
   public:
     // Constructor.
     SPPMLightingEngineFactory(
-        const SPPMPassCallback&     pass_callback,
-        const LightSampler&         light_sampler,
-        const SPPMParameters&       params);
+        const SPPMPassCallback&         pass_callback,
+        const ForwardLightSampler&      forward_light_sampler,
+        const BackwardLightSampler&     backward_light_sampler,
+        const SPPMParameters&           params);
 
     // Delete this instance.
     virtual void release() override;
@@ -71,7 +73,8 @@ class SPPMLightingEngineFactory
   private:
     const SPPMParameters            m_params;
     const SPPMPassCallback&         m_pass_callback;
-    const LightSampler&             m_light_sampler;
+    const ForwardLightSampler&      m_forward_light_sampler;
+    const BackwardLightSampler&     m_backward_light_sampler;
 };
 
 }       // namespace renderer

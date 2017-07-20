@@ -28,37 +28,21 @@
 //
 
 // Interface header.
-#include "lightsampler.h"
+#include "backwardlightsampler.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/kernel/shading/shadingray.h"
-#include "renderer/kernel/tessellation/statictessellation.h"
-#include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
-#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/iregion.h"
-#include "renderer/modeling/object/object.h"
-#include "renderer/modeling/object/regionkit.h"
-#include "renderer/modeling/object/triangle.h"
-#include "renderer/modeling/scene/assembly.h"
-#include "renderer/modeling/scene/assemblyinstance.h"
-#include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
-#include "renderer/modeling/scene/visibilityflags.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #include "renderer/utility/triangle.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/distance.h"
 #include "foundation/math/sampling/mappings.h"
-#include "foundation/math/scalar.h"
-#include "foundation/utility/foreach.h"
-#include "foundation/utility/lazy.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
@@ -71,41 +55,10 @@ namespace renderer
 {
 
 //
-// LightSample class implementation.
+// BackwardLightSampler class implementation.
 //
 
-void LightSample::make_shading_point(
-    ShadingPoint&           shading_point,
-    const Vector3d&         direction,
-    const Intersector&      intersector) const
-{
-    assert(m_triangle && !m_light);
-
-    intersector.manufacture_hit(
-        shading_point,
-        ShadingRay(
-            m_point,
-            direction,
-            0.0,
-            0.0,
-            ShadingRay::Time(),
-            VisibilityFlags::CameraRay, 0),
-        ShadingPoint::PrimitiveTriangle,    // note: we assume light samples are always on triangles (and not on curves)
-        m_bary,
-        m_triangle->m_assembly_instance,
-        m_triangle->m_assembly_instance->transform_sequence().get_earliest_transform(),
-        m_triangle->m_object_instance_index,
-        m_triangle->m_region_index,
-        m_triangle->m_triangle_index,
-        m_triangle->m_triangle_support_plane);
-}
-
-
-//
-// LightSampler class implementation.
-//
-
-LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
+BackwardLightSampler::BackwardLightSampler(const Scene& scene, const ParamArray& params)
   : m_params(params)
   , m_emitting_triangle_hash_table(m_triangle_key_hasher)
 {
@@ -115,24 +68,11 @@ LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
     // compatibility with the LightTree.
     collect_non_physical_lights(scene.assembly_instances(), TransformSequence());
     m_non_physical_light_count = m_non_physical_lights.size();
-    m_light_tree_light_count   = m_light_tree_lights.size();
 
     // Collect all light-emitting triangles.
     collect_emitting_triangles(
         scene.assembly_instances(),
         TransformSequence());
-
-   RENDERER_LOG_INFO(
-        "found %s %s, %s %s (%s %s).",
-        pretty_int(m_non_physical_light_count).c_str(),
-        plural(m_non_physical_light_count, "non-physical light").c_str(),
-        pretty_int(m_emitting_triangles.size()).c_str(),
-        plural(m_emitting_triangles.size(), "emitting triangle").c_str(),
-        pretty_int(m_light_tree_light_count).c_str(),
-        plural(m_light_tree_light_count, "light tree-compatible light").c_str());
-
-   // Build the light tree (currently uses only non-physical lights).
-    m_light_tree.build(m_light_tree_lights);
 
     // Build the hash table of emitting triangles.
     build_emitting_triangle_hash_table();
@@ -140,15 +80,26 @@ LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
     // Prepare the CDFs for sampling.
     if (m_non_physical_lights_cdf.valid())
         m_non_physical_lights_cdf.prepare();
-    if (m_emitting_triangles_cdf.valid())
-        m_emitting_triangles_cdf.prepare();
 
-    // Store the triangle probability densities into the emitting triangles.
-    for (size_t i = 0, e = m_emitting_triangles.size(); i < e; ++i)
-        m_emitting_triangles[i].m_triangle_prob = m_emitting_triangles_cdf[i].second;
+   RENDERER_LOG_INFO(
+        "found %s %s, %s %s, %s emitting %s.",
+        pretty_int(m_non_physical_light_count).c_str(),
+        plural(m_non_physical_light_count, "non-physical light").c_str(),
+        pretty_int(m_light_tree_light_count).c_str(),
+        plural(m_light_tree_light_count, "light-tree compatible light").c_str(),
+        pretty_int(m_emitting_triangles.size()).c_str(),
+        plural(m_emitting_triangles.size(), "triangle").c_str());
 }
 
-void LightSampler::collect_non_physical_lights(
+void BackwardLightSampler::on_frame_begin()
+{
+    // Build the light-tree.
+    m_light_tree_light_count = m_light_tree.build(
+        m_light_tree_lights,
+        m_emitting_triangles);
+}
+
+void BackwardLightSampler::collect_non_physical_lights(
     const AssemblyInstanceContainer&    assembly_instances,
     const TransformSequence&            parent_transform_seq)
 {
@@ -177,7 +128,7 @@ void LightSampler::collect_non_physical_lights(
     }
 }
 
-void LightSampler::collect_non_physical_lights(
+void BackwardLightSampler::collect_non_physical_lights(
     const Assembly&                     assembly,
     const TransformSequence&            transform_sequence)
 {
@@ -210,7 +161,7 @@ void LightSampler::collect_non_physical_lights(
     }
 }
 
-void LightSampler::collect_emitting_triangles(
+void BackwardLightSampler::collect_emitting_triangles(
     const AssemblyInstanceContainer&    assembly_instances,
     const TransformSequence&            parent_transform_seq)
 {
@@ -240,7 +191,7 @@ void LightSampler::collect_emitting_triangles(
     }
 }
 
-void LightSampler::collect_emitting_triangles(
+void BackwardLightSampler::collect_emitting_triangles(
     const Assembly&                     assembly,
     const AssemblyInstance&             assembly_instance,
     const TransformSequence&            transform_sequence)
@@ -364,17 +315,8 @@ void LightSampler::collect_emitting_triangles(
                     if (material == 0 || material->has_emission() == false)
                         continue;
 
-                    // Retrieve the EDF and get the importance multiplier.
-                    float importance_multiplier = 1.0f;
-                    if (const EDF* edf = material->get_uncached_edf())
-                        importance_multiplier = edf->get_uncached_importance_multiplier();
-
                     // Accumulate the object area for OSL shaders.
                     object_area += area;
-
-                    // Compute the probability density of this triangle.
-                    const float triangle_importance = m_params.m_importance_sampling ? static_cast<float>(area) : 1.0f;
-                    const float triangle_prob = triangle_importance * importance_multiplier;
 
                     // Create a light-emitting triangle.
                     EmittingTriangle emitting_triangle;
@@ -392,15 +334,10 @@ void LightSampler::collect_emitting_triangles(
                     emitting_triangle.m_triangle_support_plane = triangle_support_plane;
                     emitting_triangle.m_area = static_cast<float>(area);
                     emitting_triangle.m_rcp_area = static_cast<float>(rcp_area);
-                    emitting_triangle.m_triangle_prob = 0.0f;   // will be initialized once the emitting triangle CDF is built
                     emitting_triangle.m_material = material;
 
                     // Store the light-emitting triangle.
-                    const size_t emitting_triangle_index = m_emitting_triangles.size();
                     m_emitting_triangles.push_back(emitting_triangle);
-
-                    // Insert the light-emitting triangle into the CDF.
-                    m_emitting_triangles_cdf.insert(emitting_triangle_index, triangle_prob);
                 }
             }
         }
@@ -419,7 +356,7 @@ void LightSampler::collect_emitting_triangles(
     }
 }
 
-void LightSampler::build_emitting_triangle_hash_table()
+void BackwardLightSampler::build_emitting_triangle_hash_table()
 {
     const size_t emitting_triangle_count = m_emitting_triangles.size();
 
@@ -440,7 +377,7 @@ void LightSampler::build_emitting_triangle_hash_table()
     }
 }
 
-void LightSampler::sample_non_physical_lights(
+void BackwardLightSampler::sample_non_physical_lights(
     const ShadingRay::Time&             time,
     const Vector3f&                     s,
     LightSample&                        light_sample) const
@@ -462,86 +399,37 @@ void LightSampler::sample_non_physical_lights(
     assert(light_sample.m_probability > 0.0f);
 }
 
-void LightSampler::sample_light_tree_lights(
+void BackwardLightSampler::sample_light_tree_lights(
     const ShadingRay::Time&             time,
     const Vector3f&                     s,
     const ShadingPoint&                 shading_point,
     LightSample&                        light_sample) const
 {
-    assert(m_non_physical_lights_cdf.valid());
+    assert(has_light_tree_lights());
 
-    const pair<size_t, float> result = m_light_tree.sample(shading_point.get_point(), s[0]);
-    const size_t light_index = result.first;
-    const float light_prob = result.second;
+    int light_type;
+    size_t light_index;
+    float light_prob;
+    m_light_tree.sample(
+        shading_point.get_point(),
+        s[0],
+        light_type,
+        light_index,
+        light_prob);
 
-    light_sample.m_triangle = 0;
     sample_light_tree_light(
         time,
+        Vector2f(s[1], s[2]),
+        light_type,
         light_index,
         light_prob,
         light_sample);
 
-    assert(light_sample.m_light);
+    assert(light_sample.m_light || light_sample.m_triangle);
     assert(light_sample.m_probability > 0.0f);
 }
 
-void LightSampler::sample_emitting_triangles(
-    const ShadingRay::Time&             time,
-    const Vector3f&                     s,
-    LightSample&                        light_sample) const
-{
-    assert(m_emitting_triangles_cdf.valid());
-
-    const EmitterCDF::ItemWeightPair result = m_emitting_triangles_cdf.sample(s[0]);
-    const size_t emitter_index = result.first;
-    const float emitter_prob = result.second;
-
-    light_sample.m_light = 0;
-    sample_emitting_triangle(
-        time,
-        Vector2f(s[1], s[2]),
-        emitter_index,
-        emitter_prob,
-        light_sample);
-
-    assert(light_sample.m_triangle);
-    assert(light_sample.m_probability > 0.0f);
-}
-
-void LightSampler::sample(
-    const ShadingRay::Time&             time,
-    const Vector3f&                     s,
-    LightSample&                        light_sample) const
-{
-    assert(m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid());
-
-    if (m_non_physical_lights_cdf.valid())
-    {
-        if (m_emitting_triangles_cdf.valid())
-        {
-            if (s[0] < 0.5f)
-            {
-                sample_non_physical_lights(
-                    time,
-                    Vector3f(s[0] * 2.0f, s[1], s[2]),
-                    light_sample);
-            }
-            else
-            {
-                sample_emitting_triangles(
-                    time,
-                    Vector3f((s[0] - 0.5f) * 2.0f, s[1], s[2]),
-                    light_sample);
-            }
-
-            light_sample.m_probability *= 0.5f;
-        }
-        else sample_non_physical_lights(time, s, light_sample);
-    }
-    else sample_emitting_triangles(time, s, light_sample);
-}
-
-void LightSampler::sample(
+void BackwardLightSampler::sample(
     const ShadingRay::Time&             time,
     const Vector3f&                     s,
     const ShadingPoint&                 shading_point,
@@ -549,17 +437,14 @@ void LightSampler::sample(
 {
     // Mark different light groups.
     const size_t LightGroupNonPhysicalCdf       = 0;
-    const size_t LightGroupemittingTriangleCdf  = 1;
-    const size_t LightGroupLightTree            = 2;
+    const size_t LightGroupLightTree            = 1;
 
-    size_t candidate_groups[3];
+    size_t candidate_groups[2];
     size_t candidate_groups_count = 0;
 
     // Check for existence of each light group and record it.
     if (m_non_physical_lights_cdf.valid())
         candidate_groups[candidate_groups_count++] = LightGroupNonPhysicalCdf;
-    if (m_emitting_triangles_cdf.valid())
-        candidate_groups[candidate_groups_count++] = LightGroupemittingTriangleCdf;
     if (m_light_tree.is_built())
         candidate_groups[candidate_groups_count++] = LightGroupLightTree;
 
@@ -581,12 +466,6 @@ void LightSampler::sample(
                 Vector3f(probability_interval_shift, s[1], s[2]),
                 light_sample);
             break;
-        case LightGroupemittingTriangleCdf:
-            sample_emitting_triangles(
-                time,
-                Vector3f(probability_interval_shift, s[1], s[2]),
-                light_sample);
-            break;
         case LightGroupLightTree:
             sample_light_tree_lights(
                 time,
@@ -600,7 +479,7 @@ void LightSampler::sample(
     light_sample.m_probability /= candidate_groups_count;
 }
 
-float LightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
+float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
 {
     assert(shading_point.is_triangle_primitive());
 
@@ -611,29 +490,47 @@ float LightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
         shading_point.get_primitive_index());
 
     const EmittingTriangle* triangle = m_emitting_triangle_hash_table.get(triangle_key);
-    return triangle->m_triangle_prob * triangle->m_rcp_area;
+
+    // Traverse the tree and update triangle_prob
+    float triangle_probability;
+    m_light_tree.calculate_light_probability(
+        shading_point.get_point(),
+        triangle->m_light_tree_node_index,
+        triangle_probability);
+
+    return triangle_probability * triangle->m_rcp_area;
 }
 
-void LightSampler::sample_light_tree_light(
+void BackwardLightSampler::sample_light_tree_light(
     const ShadingRay::Time&             time,
+    const Vector2f&                     s,
+    const int                           light_type,
     const size_t                        light_index,
     const float                         light_prob,
     LightSample&                        light_sample) const
 {
-    // Fetch the light.
-    const NonPhysicalLightInfo& light_info = m_light_tree_lights[light_index];
-    light_sample.m_light = light_info.m_light;
-
-    // Evaluate and store the transform of the light.
-    light_sample.m_light_transform =
-          light_info.m_light->get_transform()
-        * light_info.m_transform_sequence.evaluate(time.m_absolute);
-
-    // Store the probability density of this light.
-    light_sample.m_probability = light_prob;
+    if (light_type == LightSource::NonPhysicalLightType)
+    {
+        // Fetch the light.
+        const NonPhysicalLightInfo& light_info = m_light_tree_lights[light_index];
+        light_sample.m_light = light_info.m_light;
+    
+        // Evaluate and store the transform of the light.
+        light_sample.m_light_transform =
+              light_info.m_light->get_transform()
+            * light_info.m_transform_sequence.evaluate(time.m_absolute);
+    
+        // Store the probability density of this light.
+        light_sample.m_probability = light_prob;
+    }
+    else
+    {
+        assert(light_type == LightSource::EmittingTriangleType);  
+        sample_emitting_triangle(time, s, light_index, light_prob, light_sample);
+    } 
 }
 
-void LightSampler::sample_non_physical_light(
+void BackwardLightSampler::sample_non_physical_light(
     const ShadingRay::Time&             time,
     const size_t                        light_index,
     const float                         light_prob,
@@ -652,7 +549,7 @@ void LightSampler::sample_non_physical_light(
     light_sample.m_probability = light_prob;
 }
 
-void LightSampler::sample_emitting_triangle(
+void BackwardLightSampler::sample_emitting_triangle(
     const ShadingRay::Time&             time,
     const Vector2f&                     s,
     const size_t                        triangle_index,
@@ -661,7 +558,6 @@ void LightSampler::sample_emitting_triangle(
 {
     // Fetch the emitting triangle.
     const EmittingTriangle& emitting_triangle = m_emitting_triangles[triangle_index];
-    assert(emitting_triangle.m_triangle_prob == triangle_prob);
 
     // Store a pointer to the emitting triangle.
     light_sample.m_triangle = &emitting_triangle;
@@ -693,7 +589,7 @@ void LightSampler::sample_emitting_triangle(
     light_sample.m_probability = triangle_prob * emitting_triangle.m_rcp_area;
 }
 
-void LightSampler::store_object_area_in_shadergroups(
+void BackwardLightSampler::store_object_area_in_shadergroups(
     const AssemblyInstance*             assembly_instance,
     const ObjectInstance*               object_instance,
     const float                         object_area,
@@ -714,10 +610,10 @@ void LightSampler::store_object_area_in_shadergroups(
 
 
 //
-// LightSampler::Parameters class implementation.
+// BackwardLightSampler::Parameters class implementation.
 //
 
-LightSampler::Parameters::Parameters(const ParamArray& params)
+BackwardLightSampler::Parameters::Parameters(const ParamArray& params)
   : m_importance_sampling(params.get_optional<bool>("enable_importance_sampling", false))
 {
 }

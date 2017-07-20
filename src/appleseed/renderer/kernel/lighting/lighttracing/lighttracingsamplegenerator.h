@@ -41,8 +41,8 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace renderer  { class ForwardLightSampler; }
 namespace renderer  { class Frame; }
-namespace renderer  { class LightSampler; }
 namespace renderer  { class OIIOTextureSystem; }
 namespace renderer  { class OSLShadingSystem; }
 namespace renderer  { class Project; }
@@ -59,14 +59,14 @@ class LightTracingSampleGeneratorFactory
   public:
     // Constructor.
     LightTracingSampleGeneratorFactory(
-        const Project&          project,
-        const Frame&            frame,
-        const TraceContext&     trace_context,
-        TextureStore&           texture_store,
-        const LightSampler&     light_sampler,
-        OIIOTextureSystem&      oiio_texture_system,
-        OSLShadingSystem&       shading_system,
-        const ParamArray&       params);
+        const Project&              project,
+        const Frame&                frame,
+        const TraceContext&         trace_context,
+        TextureStore&               texture_store,
+        const ForwardLightSampler&  light_sampler,
+        OIIOTextureSystem&          oiio_texture_system,
+        OSLShadingSystem&           shading_system,
+        const ParamArray&           params);
 
     // Delete this instance.
     virtual void release() override;
@@ -80,14 +80,14 @@ class LightTracingSampleGeneratorFactory
     virtual SampleAccumulationBuffer* create_sample_accumulation_buffer() override;
 
   private:
-    const Project&              m_project;
-    const Frame&                m_frame;
-    const TraceContext&         m_trace_context;
-    TextureStore&               m_texture_store;
-    const LightSampler&         m_light_sampler;
-    OIIOTextureSystem&          m_oiio_texture_system;
-    OSLShadingSystem&           m_shading_system;
-    const ParamArray            m_params;
+    const Project&                  m_project;
+    const Frame&                    m_frame;
+    const TraceContext&             m_trace_context;
+    TextureStore&                   m_texture_store;
+    const ForwardLightSampler&      m_light_sampler;
+    OIIOTextureSystem&              m_oiio_texture_system;
+    OSLShadingSystem&               m_shading_system;
+    const ParamArray                m_params;
 };
 
 }       // namespace renderer

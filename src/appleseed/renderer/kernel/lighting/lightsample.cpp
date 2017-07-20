@@ -27,50 +27,52 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_PT_PTLIGHTINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_PT_PTLIGHTINGENGINE_H
+// Interface header.
+#include "lightsample.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/lighting/ilightingengine.h"
-#include "renderer/utility/paramarray.h"
+#include "renderer/kernel/intersection/intersector.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+// Standard headers.
+#include <cassert>
+#include <string>
 
-// Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace renderer      { class BackwardLightSampler; }
+using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
 
 //
-// Path tracing lighting engine factory.
+// LightSample class implementation.
 //
 
-class PTLightingEngineFactory
-  : public ILightingEngineFactory
+void LightSample::make_shading_point(
+    ShadingPoint&           shading_point,
+    const Vector3d&         direction,
+    const Intersector&      intersector) const
 {
-  public:
-    // Constructor.
-    PTLightingEngineFactory(
-        const BackwardLightSampler&     light_sampler,
-        const ParamArray&               params);
+    assert(m_triangle && !m_light);
 
-    // Delete this instance.
-    virtual void release() override;
+    intersector.manufacture_hit(
+        shading_point,
+        ShadingRay(
+            m_point,
+            direction,
+            0.0,
+            0.0,
+            ShadingRay::Time(),
+            VisibilityFlags::CameraRay, 0),
+        ShadingPoint::PrimitiveTriangle,    // note: we assume light samples are always on triangles (and not on curves)
+        m_bary,
+        m_triangle->m_assembly_instance,
+        m_triangle->m_assembly_instance->transform_sequence().get_earliest_transform(),
+        m_triangle->m_object_instance_index,
+        m_triangle->m_region_index,
+        m_triangle->m_triangle_index,
+        m_triangle->m_triangle_support_plane);
+}
 
-    // Return a new path tracing lighting engine instance.
-    virtual ILightingEngine* create() override;
+} // namespace renderer
 
-    // Return the metadata of the PT lighting engine parameters.
-    static foundation::Dictionary get_params_metadata();
-
-  private:
-    const BackwardLightSampler&     m_light_sampler;
-    ParamArray                      m_params;
-};
-
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_PT_PTLIGHTINGENGINE_H

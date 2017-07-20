@@ -27,50 +27,27 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_PT_PTLIGHTINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_PT_PTLIGHTINGENGINE_H
-
 // appleseed.renderer headers.
-#include "renderer/kernel/lighting/ilightingengine.h"
-#include "renderer/utility/paramarray.h"
+#include "renderer/kernel/lighting/forwardlightsampler.h"
+#include "renderer/modeling/camera/pinholecamera.h"
+#include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/test.h"
 
-// Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace renderer      { class BackwardLightSampler; }
+using namespace foundation;
+using namespace renderer;
 
-namespace renderer
+TEST_SUITE(Renderer_Kernel_Lighting_ForwardLightSampler)
 {
+    TEST_CASE(HasLightsOrEmittingTriangles_GivenEmptyScene_ReturnsFalse)
+    {
+        auto_release_ptr<Scene> scene(SceneFactory::create());
+        scene->cameras().insert(PinholeCameraFactory().create("camera", ParamArray()));
+        ForwardLightSampler forward_light_sampler(scene.ref());
 
-//
-// Path tracing lighting engine factory.
-//
+        EXPECT_FALSE(forward_light_sampler.has_lights_or_emitting_triangles());
+    }
+}
 
-class PTLightingEngineFactory
-  : public ILightingEngineFactory
-{
-  public:
-    // Constructor.
-    PTLightingEngineFactory(
-        const BackwardLightSampler&     light_sampler,
-        const ParamArray&               params);
-
-    // Delete this instance.
-    virtual void release() override;
-
-    // Return a new path tracing lighting engine instance.
-    virtual ILightingEngine* create() override;
-
-    // Return the metadata of the PT lighting engine parameters.
-    static foundation::Dictionary get_params_metadata();
-
-  private:
-    const BackwardLightSampler&     m_light_sampler;
-    ParamArray                      m_params;
-};
-
-}       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_PT_PTLIGHTINGENGINE_H

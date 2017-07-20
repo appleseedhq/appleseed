@@ -35,7 +35,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/lighting/sppm/sppmphoton.h"
-#include "renderer/kernel/lighting/lightsampler.h"
+#include "renderer/kernel/lighting/forwardlightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
@@ -220,19 +220,19 @@ namespace
     {
       public:
         LightPhotonTracingJob(
-            const Scene&            scene,
-            const LightTargetArray& photon_targets,
-            const LightSampler&     light_sampler,
-            const TraceContext&     trace_context,
-            TextureStore&           texture_store,
-            OIIOTextureSystem&      oiio_texture_system,
-            OSLShadingSystem&       shading_system,
-            const SPPMParameters&   params,
-            SPPMPhotonVector&       global_photons,
-            const size_t            photon_begin,
-            const size_t            photon_end,
-            const size_t            pass_hash,
-            IAbortSwitch&           abort_switch)
+            const Scene&                    scene,
+            const LightTargetArray&         photon_targets,
+            const ForwardLightSampler&      light_sampler,
+            const TraceContext&             trace_context,
+            TextureStore&                   texture_store,
+            OIIOTextureSystem&              oiio_texture_system,
+            OSLShadingSystem&               shading_system,
+            const SPPMParameters&           params,
+            SPPMPhotonVector&               global_photons,
+            const size_t                    photon_begin,
+            const size_t                    photon_end,
+            const size_t                    pass_hash,
+            IAbortSwitch&                   abort_switch)
           : m_scene(scene)
           , m_photon_targets(photon_targets)
           , m_light_sampler(light_sampler)
@@ -292,7 +292,7 @@ namespace
       private:
         const Scene&                m_scene;
         const LightTargetArray&     m_photon_targets;
-        const LightSampler&         m_light_sampler;
+        const ForwardLightSampler&  m_light_sampler;
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
         OIIOTextureSystem&          m_oiio_texture_system;
@@ -511,19 +511,19 @@ namespace
     {
       public:
         EnvironmentPhotonTracingJob(
-            const Scene&            scene,
-            const LightTargetArray& photon_targets,
-            const LightSampler&     light_sampler,
-            const TraceContext&     trace_context,
-            TextureStore&           texture_store,
-            OIIOTextureSystem&      oiio_texture_system,
-            OSLShadingSystem&       shading_system,
-            const SPPMParameters&   params,
-            SPPMPhotonVector&       global_photons,
-            const size_t            photon_begin,
-            const size_t            photon_end,
-            const size_t            pass_hash,
-            IAbortSwitch&           abort_switch)
+            const Scene&                scene,
+            const LightTargetArray&     photon_targets,
+            const ForwardLightSampler&  light_sampler,
+            const TraceContext&         trace_context,
+            TextureStore&               texture_store,
+            OIIOTextureSystem&          oiio_texture_system,
+            OSLShadingSystem&           shading_system,
+            const SPPMParameters&       params,
+            SPPMPhotonVector&           global_photons,
+            const size_t                photon_begin,
+            const size_t                photon_end,
+            const size_t                pass_hash,
+            IAbortSwitch&               abort_switch)
           : m_scene(scene)
           , m_photon_targets(photon_targets)
           , m_env_edf(*scene.get_environment()->get_environment_edf())
@@ -590,7 +590,7 @@ namespace
         const Scene&                m_scene;
         const LightTargetArray&     m_photon_targets;
         const EnvironmentEDF&       m_env_edf;
-        const LightSampler&         m_light_sampler;
+        const ForwardLightSampler&  m_light_sampler;
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
         OIIOTextureSystem&          m_oiio_texture_system;
@@ -711,13 +711,13 @@ namespace
 //
 
 SPPMPhotonTracer::SPPMPhotonTracer(
-    const Scene&            scene,
-    const LightSampler&     light_sampler,
-    const TraceContext&     trace_context,
-    TextureStore&           texture_store,
-    OIIOTextureSystem&      oiio_texture_system,
-    OSLShadingSystem&       shading_system,
-    const SPPMParameters&   params)
+    const Scene&                scene,
+    const ForwardLightSampler&  light_sampler,
+    const TraceContext&         trace_context,
+    TextureStore&               texture_store,
+    OIIOTextureSystem&          oiio_texture_system,
+    OSLShadingSystem&           shading_system,
+    const SPPMParameters&       params)
   : m_params(params)
   , m_scene(scene)
   , m_light_sampler(light_sampler)

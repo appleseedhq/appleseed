@@ -27,26 +27,19 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTSAMPLER_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTSAMPLER_H
+#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_FORWARDLIGHTSAMPLER_H
+#define APPLESEED_RENDERER_KERNEL_LIGHTING_FORWARDLIGHTSAMPLER_H
 
 // appleseed.renderer headers.
-#include "renderer/kernel/intersection/intersectionsettings.h"
+#include "renderer/kernel/lighting/lightsample.h"
 #include "renderer/kernel/lighting/lighttree.h"
 #include "renderer/kernel/lighting/lighttypes.h"
 #include "renderer/kernel/shading/shadingray.h"
-#include "renderer/modeling/scene/containers.h"
-#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/cdf.h"
 #include "foundation/math/hash.h"
-#include "foundation/math/transform.h"
-#include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/containers/hashtable.h"
-#include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <cstddef>
@@ -66,93 +59,24 @@ namespace renderer  { class ShadingPoint; }
 
 namespace renderer
 {
-//
-// A key to uniquely identify a light-emitting triangle in a hash table.
-//
-
-class EmittingTriangleKey
-{
-  public:
-    foundation::UniqueID            m_assembly_instance_uid;
-    foundation::uint32              m_object_instance_index;
-    foundation::uint32              m_region_index;
-    foundation::uint32              m_triangle_index;
-
-    EmittingTriangleKey();
-    EmittingTriangleKey(
-        const foundation::UniqueID  assembly_instance_uid,
-        const size_t                object_instance_index,
-        const size_t                region_index,
-        const size_t                triangle_index);
-
-    bool operator==(const EmittingTriangleKey& rhs) const;
-};
-
 
 //
-// A hash table of light-emitting triangles.
+// The backward light sampler is intended to be used with backward tracing methods.
+// It collects all the light-emitting entities (non-physical lights, mesh lights)
+// and samples them using CDF.
 //
 
-struct EmittingTriangleKeyHasher
-{
-    size_t operator()(const EmittingTriangleKey& key) const;
-};
-
-typedef foundation::HashTable<
-    EmittingTriangleKey,
-    EmittingTriangleKeyHasher,
-    const EmittingTriangle*
-> EmittingTriangleHashTable;
-
-
-//
-// Light sample: the result of sampling the sets of non-physical lights and light-emitting triangles.
-//
-
-class LightSample
-{
-  public:
-    // Data for a light-emitting triangle sample.
-    const EmittingTriangle*     m_triangle;
-    foundation::Vector2f        m_bary;                         // barycentric coordinates of the sample
-    foundation::Vector3d        m_point;                        // world space position of the sample
-    foundation::Vector3d        m_shading_normal;               // world space shading normal at the sample, unit-length
-    foundation::Vector3d        m_geometric_normal;             // world space geometric normal at the sample, unit-length
-
-    // Data for a non-physical light sample.
-    const Light*                m_light;
-    foundation::Transformd      m_light_transform;              // light space to world space transform
-
-    // Data common to all sample types.
-    float                       m_probability;                  // probability density of this sample
-
-    // Construct a shading point out of this light sample and a given direction.
-    void make_shading_point(
-        ShadingPoint&                   shading_point,
-        const foundation::Vector3d&     direction,
-        const Intersector&              intersector) const;
-};
-
-
-//
-// The light sampler collects all the light-emitting entities (non-physical lights, mesh lights)
-// and allows to sample them.
-//
-
-class LightSampler
+class ForwardLightSampler
   : public foundation::NonCopyable
 {
   public:
     // Constructor.
-    LightSampler(
+    ForwardLightSampler(
         const Scene&                        scene,
         const ParamArray&                   params = ParamArray());
 
     // Return the number of non-physical lights in the scene.
     size_t get_non_physical_light_count() const;
-
-    // Return the number of light tree-compatible lights in the scene.
-    size_t get_light_tree_light_count() const;
 
     // Return the number of emitting triangles in the scene.
     size_t get_emitting_triangle_count() const;
@@ -164,13 +88,6 @@ class LightSampler
     void sample_non_physical_lights(
         const ShadingRay::Time&             time,
         const foundation::Vector3f&         s,
-        LightSample&                        light_sample) const;
-
-    // Sample the set of non-physical lights using a light tree.
-    void sample_light_tree_lights(
-        const ShadingRay::Time&             time,
-        const foundation::Vector3f&         s,
-        const ShadingPoint&                 shading_point,
         LightSample&                        light_sample) const;
 
     // Sample a single given non-physical light.
@@ -191,16 +108,6 @@ class LightSampler
         const foundation::Vector3f&         s,
         LightSample&                        light_sample) const;
 
-    // Sample the sets of non-physical lights and emitting triangles using a light tree.
-    void sample(
-        const ShadingRay::Time&             time,
-        const foundation::Vector3f&         s,
-        const ShadingPoint&                 shading_point,
-        LightSample&                        light_sample) const;
-
-    // Compute the probability density in area measure of a given light sample.
-    float evaluate_pdf(const ShadingPoint& shading_point) const;
-
   private:
     struct Parameters
     {
@@ -215,9 +122,7 @@ class LightSampler
 
     const Parameters            m_params;
 
-    NonPhysicalLightVector      m_light_tree_lights;
     NonPhysicalLightVector      m_non_physical_lights;
-    size_t                      m_light_tree_light_count;
     size_t                      m_non_physical_light_count;
 
     EmittingTriangleVector      m_emitting_triangles;
@@ -227,8 +132,6 @@ class LightSampler
 
     EmittingTriangleKeyHasher   m_triangle_key_hasher;
     EmittingTriangleHashTable   m_emitting_triangle_hash_table;
-
-    LightTree                   m_light_tree;
 
     // Recursively collect non-physical lights from a given set of assembly instances.
     void collect_non_physical_lights(
@@ -255,13 +158,6 @@ class LightSampler
     void build_emitting_triangle_hash_table();
 
     // Sample a given non-physical light.
-    void sample_light_tree_light(
-        const ShadingRay::Time&             time,
-        const size_t                        light_index,
-        const float                         light_prob,
-        LightSample&                        sample) const;
-
-    // Sample a given non-physical light.
     void sample_non_physical_light(
         const ShadingRay::Time&             time,
         const size_t                        light_index,
@@ -283,77 +179,26 @@ class LightSampler
         const MaterialArray&                materials);
 };
 
-
 //
-// EmittingTriangleKey class implementation.
-//
-
-inline EmittingTriangleKey::EmittingTriangleKey()
-{
-}
-
-inline EmittingTriangleKey::EmittingTriangleKey(
-    const foundation::UniqueID              assembly_instance_uid,
-    const size_t                            object_instance_index,
-    const size_t                            region_index,
-    const size_t                            triangle_index)
-  : m_assembly_instance_uid(static_cast<foundation::uint32>(assembly_instance_uid))
-  , m_object_instance_index(static_cast<foundation::uint32>(object_instance_index))
-  , m_region_index(static_cast<foundation::uint32>(region_index))
-  , m_triangle_index(static_cast<foundation::uint32>(triangle_index))
-{
-}
-
-inline bool EmittingTriangleKey::operator==(const EmittingTriangleKey& rhs) const
-{
-    return
-        m_triangle_index == rhs.m_triangle_index &&
-        m_object_instance_index == rhs.m_object_instance_index &&
-        m_assembly_instance_uid == rhs.m_assembly_instance_uid &&
-        m_region_index == rhs.m_region_index;
-}
-
-
-//
-// EmittingTriangleKeyHasher class implementation.
+// ForwardLightSampler class implementation.
 //
 
-inline size_t EmittingTriangleKeyHasher::operator()(const EmittingTriangleKey& key) const
-{
-    return
-        foundation::mix_uint32(
-            static_cast<foundation::uint32>(key.m_assembly_instance_uid),
-            key.m_object_instance_index,
-            key.m_region_index,
-            key.m_triangle_index);
-}
-
-
-//
-// LightSampler class implementation.
-//
-
-inline size_t LightSampler::get_non_physical_light_count() const
+inline size_t ForwardLightSampler::get_non_physical_light_count() const
 {
     return m_non_physical_light_count;
 }
 
-inline size_t LightSampler::get_light_tree_light_count() const
-{
-    return m_light_tree_light_count;
-}
-
-inline size_t LightSampler::get_emitting_triangle_count() const
+inline size_t ForwardLightSampler::get_emitting_triangle_count() const
 {
     return m_emitting_triangles.size();
 }
 
-inline bool LightSampler::has_lights_or_emitting_triangles() const
+inline bool ForwardLightSampler::has_lights_or_emitting_triangles() const
 {
-    return m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid() || m_light_tree.is_built();
+    return m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid();
 }
 
-inline void LightSampler::sample_non_physical_light(
+inline void ForwardLightSampler::sample_non_physical_light(
     const ShadingRay::Time&                 time,
     const size_t                            light_index,
     LightSample&                            sample) const
@@ -363,4 +208,4 @@ inline void LightSampler::sample_non_physical_light(
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTSAMPLER_H
+#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_FORWARDLIGHTSAMPLER_H

@@ -31,7 +31,7 @@
 #include "directlightingintegrator.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/lighting/lightsampler.h"
+#include "renderer/kernel/lighting/backwardlightsampler.h"
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
@@ -82,16 +82,16 @@ namespace renderer
 //
 
 DirectLightingIntegrator::DirectLightingIntegrator(
-    const ShadingContext&       shading_context,
-    const LightSampler&         light_sampler,
-    const ShadingPoint&         shading_point,
-    const IMaterialSampler&     material_sampler,
-    const ShadingRay::Time&     time,
-    const int                   light_sampling_modes,
-    const size_t                material_sample_count,
-    const size_t                light_sample_count,
-    const float                 low_light_threshold,
-    const bool                  indirect)
+    const ShadingContext&           shading_context,
+    const BackwardLightSampler&     light_sampler,
+    const ShadingPoint&             shading_point,
+    const IMaterialSampler&         material_sampler,
+    const ShadingRay::Time&         time,
+    const int                       light_sampling_modes,
+    const size_t                    material_sample_count,
+    const size_t                    light_sample_count,
+    const float                     low_light_threshold,
+    const bool                      indirect)
   : m_shading_context(shading_context)
   , m_light_sampler(light_sampler)
   , m_shading_point(shading_point)
@@ -200,32 +200,6 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
     if (!m_material_sampler.contributes_to_light_sampling())
         return;
 
-    // Add contributions from emitting triangles only.
-    if (m_light_sampler.get_emitting_triangle_count() > 0)
-    {
-        sampling_context.split_in_place(3, m_light_sample_count);
-
-        for (size_t i = 0, e = m_light_sample_count; i < e; ++i)
-        {
-            // Sample emitting triangles only.
-            LightSample sample;
-            m_light_sampler.sample_emitting_triangles(
-                m_time,
-                sampling_context.next2<Vector3f>(),
-                sample);
-
-            add_emitting_triangle_sample_contribution(
-                sampling_context,
-                sample,
-                mis_heuristic,
-                outgoing,
-                radiance);
-        }
-
-        if (m_light_sample_count > 1)
-            radiance /= static_cast<float>(m_light_sample_count);
-    }
-
     if (m_light_sample_count > 0)
     {
         // Add contributions from non-physical light sources only.
@@ -242,8 +216,8 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
         }
     }
 
-    // Add contributions from light tree-compatible lights only.
-    if (m_light_sampler.get_light_tree_light_count() > 0)
+    // Add contributions from light-tree lights only.
+    if (m_light_sampler.has_light_tree_lights())
     {
         sampling_context.split_in_place(3, m_light_sample_count);
 
@@ -256,15 +230,24 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
                 sampling_context.next2<Vector3f>(),
                 m_shading_point,
                 sample);
-
-            // TODO: The LightTree currently consists only of non physical lights.
-            // Write a more general function which will know how to handle every
-            // type of light which comes from the light tree.
-            add_non_physical_light_sample_contribution(
-                sampling_context,
-                sample,
-                outgoing,
-                radiance);
+            
+            if (sample.m_triangle)
+            {
+                add_emitting_triangle_sample_contribution(
+                    sampling_context,
+                    sample,
+                    mis_heuristic,
+                    outgoing,
+                    radiance);
+            }
+            else
+            {
+                add_non_physical_light_sample_contribution(
+                    sampling_context,
+                    sample,
+                    outgoing,
+                    radiance);
+            }
         }
 
         if (m_light_sample_count > 1)

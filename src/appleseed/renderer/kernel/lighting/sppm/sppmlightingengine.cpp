@@ -125,12 +125,14 @@ namespace
     {
       public:
         SPPMLightingEngine(
-            const SPPMPassCallback& pass_callback,
-            const LightSampler&     light_sampler,
+            const SPPMPassCallback&         pass_callback,
+            const ForwardLightSampler&      forward_light_sampler,
+            const BackwardLightSampler&     backward_light_sampler,
             const SPPMParameters&   params)
           : m_params(params)
           , m_pass_callback(pass_callback)
-          , m_light_sampler(light_sampler)
+          , m_forward_light_sampler(forward_light_sampler)
+          , m_backward_light_sampler(backward_light_sampler)
           , m_path_count(0)
           , m_answer(m_params.m_max_photons_per_estimate)
         {
@@ -157,7 +159,8 @@ namespace
             PathVisitor path_visitor(
                 m_params,
                 m_pass_callback,
-                m_light_sampler,
+                m_forward_light_sampler,
+                m_backward_light_sampler,
                 sampling_context,
                 shading_context,
                 shading_point.get_scene(),
@@ -199,34 +202,38 @@ namespace
       private:
         const SPPMParameters            m_params;
         const SPPMPassCallback&         m_pass_callback;
-        const LightSampler&             m_light_sampler;
+        const ForwardLightSampler&      m_forward_light_sampler;
+        const BackwardLightSampler&     m_backward_light_sampler;
         uint64                          m_path_count;
         Population<uint64>              m_path_length;
         knn::Answer<float>              m_answer;
 
         struct PathVisitor
         {
-            const SPPMParameters&       m_params;
-            const SPPMPassCallback&     m_pass_callback;
-            const LightSampler&         m_light_sampler;
-            SamplingContext&            m_sampling_context;
-            const ShadingContext&       m_shading_context;
-            const EnvironmentEDF*       m_env_edf;
-            knn::Answer<float>&         m_answer;
-            ShadingComponents&          m_path_radiance;
+            const SPPMParameters&           m_params;
+            const SPPMPassCallback&         m_pass_callback;
+            const ForwardLightSampler&      m_forward_light_sampler;
+            const BackwardLightSampler&     m_backward_light_sampler;
+            SamplingContext&                m_sampling_context;
+            const ShadingContext&           m_shading_context;
+            const EnvironmentEDF*           m_env_edf;
+            knn::Answer<float>&             m_answer;
+            ShadingComponents&              m_path_radiance;
 
             PathVisitor(
-                const SPPMParameters&   params,
-                const SPPMPassCallback& pass_callback,
-                const LightSampler&     light_sampler,
-                SamplingContext&        sampling_context,
-                const ShadingContext&   shading_context,
-                const Scene&            scene,
-                knn::Answer<float>&     answer,
-                ShadingComponents&      path_radiance)
+                const SPPMParameters&           params,
+                const SPPMPassCallback&         pass_callback,
+                const ForwardLightSampler&      forward_light_sampler,
+                const BackwardLightSampler&     backward_light_sampler,
+                SamplingContext&                sampling_context,
+                const ShadingContext&           shading_context,
+                const Scene&                    scene,
+                knn::Answer<float>&             answer,
+                ShadingComponents&              path_radiance)
               : m_params(params)
               , m_pass_callback(pass_callback)
-              , m_light_sampler(light_sampler)
+              , m_forward_light_sampler(forward_light_sampler)
+              , m_backward_light_sampler(backward_light_sampler)
               , m_sampling_context(sampling_context)
               , m_shading_context(shading_context)
               , m_env_edf(scene.get_environment()->get_environment_edf())
@@ -342,7 +349,7 @@ namespace
                 // of the BSDF because we won't extend the path after a diffuse bounce.
                 const DirectLightingIntegrator integrator(
                     m_shading_context,
-                    m_light_sampler,
+                    m_backward_light_sampler,
                     *vertex.m_shading_point,
                     bsdf_sampler,
                     vertex.m_shading_point->get_time(),
@@ -632,11 +639,13 @@ namespace
 //
 
 SPPMLightingEngineFactory::SPPMLightingEngineFactory(
-    const SPPMPassCallback&     pass_callback,
-    const LightSampler&         light_sampler,
-    const SPPMParameters&       params)
+    const SPPMPassCallback&         pass_callback,
+    const ForwardLightSampler&      forward_light_sampler,
+    const BackwardLightSampler&     backward_light_sampler,
+    const SPPMParameters&           params)
   : m_pass_callback(pass_callback)
-  , m_light_sampler(light_sampler)
+  , m_forward_light_sampler(forward_light_sampler)
+  , m_backward_light_sampler(backward_light_sampler)
   , m_params(params)
 {
     m_params.print();
@@ -652,7 +661,8 @@ ILightingEngine* SPPMLightingEngineFactory::create()
     return
         new SPPMLightingEngine(
             m_pass_callback,
-            m_light_sampler,
+            m_forward_light_sampler,
+            m_backward_light_sampler,
             m_params);
 }
 
