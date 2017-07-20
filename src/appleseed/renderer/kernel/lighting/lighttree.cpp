@@ -263,7 +263,7 @@ void LightTree::sample(
     size_t&                         light_index,
     float&                          light_probability) const
 {
-    assert (is_built());
+    assert(is_built());
 
     light_probability = 1.0f;
     size_t node_index = 0;

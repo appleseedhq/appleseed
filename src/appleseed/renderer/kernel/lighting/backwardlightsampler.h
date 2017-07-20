@@ -91,6 +91,13 @@ class BackwardLightSampler
         const foundation::Vector3f&         s,
         LightSample&                        light_sample) const;
 
+    // Sample the set lights.
+    void sample_lightset(
+        const ShadingRay::Time&             time,
+        const foundation::Vector3f&         s,
+        const ShadingPoint&                 shading_point,
+        LightSample&                        light_sample) const;
+
     // Sample the set of non-physical lights using a light-tree.
     void sample_light_tree_lights(
         const ShadingRay::Time&             time,
@@ -148,6 +155,8 @@ class BackwardLightSampler
     EmittingTriangleHashTable   m_emitting_triangle_hash_table;
 
     LightTree                   m_light_tree;
+
+    bool                        m_use_light_tree;
 
     // Recursively collect non-physical lights from a given set of assembly instances.
     void collect_non_physical_lights(
