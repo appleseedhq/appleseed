@@ -58,9 +58,8 @@ namespace renderer
 {
 
 //
-// The backward light sampler is intended to be used with backward tracing methods.
-// It collects all the light-emitting entities (non-physical lights, mesh lights)
-// and samples them using light-tree.
+// The backward light sampler is intended to be used with backward tracing techniques
+// such as unidirectional path tracing.
 //
 
 class BackwardLightSampler
@@ -199,6 +198,7 @@ class BackwardLightSampler
         const MaterialArray&                materials);
 };
 
+
 //
 // BackwardLightSampler class implementation.
 //
@@ -228,7 +228,7 @@ inline void BackwardLightSampler::sample_non_physical_light(
     const size_t                            light_index,
     LightSample&                            sample) const
 {
-    sample_non_physical_light(time, light_index, 1.0, sample);
+    sample_non_physical_light(time, light_index, 1.0f, sample);
 }
 
 }       // namespace renderer

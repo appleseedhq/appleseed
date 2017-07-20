@@ -436,47 +436,51 @@ void BackwardLightSampler::sample(
     LightSample&                        light_sample) const
 {
     // Mark different light groups.
-    const size_t LightGroupNonPhysicalCdf       = 0;
-    const size_t LightGroupLightTree            = 1;
+    const size_t LightGroupNonPhysicalCdf = 0;
+    const size_t LightGroupLightTree = 1;
 
     size_t candidate_groups[2];
-    size_t candidate_groups_count = 0;
+    size_t candidate_group_count = 0;
 
     // Check for existence of each light group and record it.
     if (m_non_physical_lights_cdf.valid())
-        candidate_groups[candidate_groups_count++] = LightGroupNonPhysicalCdf;
+        candidate_groups[candidate_group_count++] = LightGroupNonPhysicalCdf;
     if (m_light_tree.is_built())
-        candidate_groups[candidate_groups_count++] = LightGroupLightTree;
+        candidate_groups[candidate_group_count++] = LightGroupLightTree;
 
     // At least one light group must be present.
-    assert(candidate_groups_count > 0);
+    assert(candidate_group_count > 0);
 
     // Randomly select one of the group which will be sampled.
-    const size_t selected_index = truncate<size_t>(s[0] * candidate_groups_count);
+    const size_t selected_index = truncate<size_t>(s[0] * candidate_group_count);
     const size_t selected_type  = candidate_groups[selected_index];
 
     // Avoid bias propagation by expanding the chosen interval back to [0,1].
-    float probability_interval_shift = (s[0] - static_cast<float>(selected_index) / candidate_groups_count) * candidate_groups_count;
+    const float probability_interval_shift =
+        (s[0] - static_cast<float>(selected_index) / candidate_group_count) * candidate_group_count;
 
     switch (selected_type)
     {
-        case LightGroupNonPhysicalCdf:
-            sample_non_physical_lights(
-                time,
-                Vector3f(probability_interval_shift, s[1], s[2]),
-                light_sample);
-            break;
-        case LightGroupLightTree:
-            sample_light_tree_lights(
-                time,
-                Vector3f(probability_interval_shift, s[1], s[2]),
-                shading_point,
-                light_sample);
-            break;
-        default:
-            assert(!"unexpected candidate light type tag");
+      case LightGroupNonPhysicalCdf:
+        sample_non_physical_lights(
+            time,
+            Vector3f(probability_interval_shift, s[1], s[2]),
+            light_sample);
+        break;
+
+      case LightGroupLightTree:
+        sample_light_tree_lights(
+            time,
+            Vector3f(probability_interval_shift, s[1], s[2]),
+            shading_point,
+            light_sample);
+        break;
+
+      default:
+        assert(!"unexpected candidate light type tag");
     }
-    light_sample.m_probability /= candidate_groups_count;
+
+    light_sample.m_probability /= candidate_group_count;
 }
 
 float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
@@ -491,12 +495,10 @@ float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point) cons
 
     const EmittingTriangle* triangle = m_emitting_triangle_hash_table.get(triangle_key);
 
-    // Traverse the tree and update triangle_prob
-    float triangle_probability;
-    m_light_tree.calculate_light_probability(
-        shading_point.get_point(),
-        triangle->m_light_tree_node_index,
-        triangle_probability);
+    const float triangle_probability =
+        m_light_tree.evaluate_node_pdf(
+            shading_point.get_point(),
+            triangle->m_light_tree_node_index);
 
     return triangle_probability * triangle->m_rcp_area;
 }

@@ -61,9 +61,8 @@ namespace renderer
 {
 
 //
-// The backward light sampler is intended to be used with backward tracing methods.
-// It collects all the light-emitting entities (non-physical lights, mesh lights)
-// and samples them using CDF.
+// The forward light sampler is intended to be used with forward tracing techniques
+// such as light tracing, SPPM, etc.
 //
 
 class ForwardLightSampler
@@ -179,6 +178,7 @@ class ForwardLightSampler
         const MaterialArray&                materials);
 };
 
+
 //
 // ForwardLightSampler class implementation.
 //
@@ -203,7 +203,7 @@ inline void ForwardLightSampler::sample_non_physical_light(
     const size_t                            light_index,
     LightSample&                            sample) const
 {
-    sample_non_physical_light(time, light_index, 1.0, sample);
+    sample_non_physical_light(time, light_index, 1.0f, sample);
 }
 
 }       // namespace renderer
