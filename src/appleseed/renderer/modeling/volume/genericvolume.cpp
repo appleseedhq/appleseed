@@ -174,7 +174,7 @@ class GenericVolume
         for (size_t i = 0, e = spectrum.size(); i < e; ++i)
         {
             const float x = -distance * spectrum[i];
-            assert(!isinf(x) && !isnan(x));
+            assert(!std::isinf(x) && !std::isnan(x));
             spectrum[i] = std::exp(x);
         }
     }
