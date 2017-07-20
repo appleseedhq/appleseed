@@ -191,6 +191,8 @@ class LightSampler
     // Sample a given non-physical light.
     void sample_light_tree_light(
         const ShadingRay::Time&             time,
+        const foundation::Vector2f&         s,
+        const int                           light_type,
         const size_t                        light_index,
         const float                         light_prob,
         LightSample&                        sample) const;

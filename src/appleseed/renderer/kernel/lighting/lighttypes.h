@@ -51,7 +51,7 @@ namespace renderer
 {
 
 //
-// Non-physical light.
+// NonPhysicalLightInfo class implementation.
 //
 
 class NonPhysicalLightInfo
@@ -63,7 +63,7 @@ class NonPhysicalLightInfo
 
 
 //
-// Light-emitting triangle.
+// EmittingTriangle class implementation.
 //
 
 class EmittingTriangle
@@ -86,6 +86,7 @@ class EmittingTriangle
 
 
 //
+// LightSource class implementation.
 // Any kind of light source. Both non-physical light and emitting triangle.
 //
 
@@ -96,6 +97,12 @@ class LightSource
     // Destructor.
     virtual ~LightSource() {}
 
+    enum SourceTypes
+    {
+        NPL = 0,
+        EMT = 1
+    };
+
     // Get the light source position.
     virtual foundation::Vector3d get_position() const = 0;
 
@@ -103,13 +110,15 @@ class LightSource
     virtual foundation::AABB3d get_bbox() const = 0;
 
     // Get the light intensity.
-    // NOTE: currently works only for point lights!
-    virtual Spectrum get_intensity() const = 0;
+    virtual float get_intensity() const = 0;
+
+    // Get light type.
+    virtual int get_type() const = 0;
 };
 
 
 //
-// Non-physical light source.
+// NonPhysicalLightSource class implementation.
 //
 
 class NonPhysicalLightSource
@@ -120,7 +129,8 @@ class NonPhysicalLightSource
 
     virtual foundation::Vector3d get_position() const override;
     virtual foundation::AABB3d get_bbox() const override;
-    virtual Spectrum get_intensity() const override;
+    virtual float get_intensity() const override;
+    virtual int get_type() const override;
 
   private:
     // Reference to the actual source.
@@ -129,7 +139,7 @@ class NonPhysicalLightSource
 
 
 //
-// Emitting triangle light source.
+// EmittingTriangleLightSource class implementation.
 //
 
 class EmittingTriangleLightSource
@@ -140,7 +150,8 @@ class EmittingTriangleLightSource
 
     virtual foundation::Vector3d get_position() const override;
     virtual foundation::AABB3d get_bbox() const override;
-    virtual Spectrum get_intensity() const override;
+    virtual float get_intensity() const override;
+    virtual int get_type() const override;
 
   private:
     // Reference to the actual source.

@@ -84,7 +84,6 @@ LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
     // compatibility with the LightTree.
     collect_non_physical_lights(scene.assembly_instances(), TransformSequence());
     m_non_physical_light_count = m_non_physical_lights.size();
-    m_light_tree_light_count   = m_light_tree_lights.size();
 
     // Collect all light-emitting triangles.
     collect_emitting_triangles(
@@ -100,8 +99,10 @@ LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
         pretty_int(m_light_tree_light_count).c_str(),
         plural(m_light_tree_light_count, "light tree-compatible light").c_str());
 
-   // Build the light tree (currently uses only non-physical lights).
-    m_light_tree.build(m_light_tree_lights);
+    // Build the light-tree.
+    m_light_tree_light_count = m_light_tree.build(
+        m_light_tree_lights,
+        m_emitting_triangles);
 
     // Build the hash table of emitting triangles.
     build_emitting_triangle_hash_table();
@@ -437,15 +438,21 @@ void LightSampler::sample_light_tree_lights(
     const ShadingPoint&                 shading_point,
     LightSample&                        light_sample) const
 {
-    assert(m_non_physical_lights_cdf.valid());
+    assert(m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid());
 
-    const pair<size_t, float> result = m_light_tree.sample(shading_point.get_point(), s[0]);
-    const size_t light_index = result.first;
-    const float light_prob = result.second;
+    const std::tuple<int, size_t, float> result = m_light_tree.sample(
+                                                    shading_point.get_point(),
+                                                    s[0]);
+
+    const int light_type        = std::get<0>(result);
+    const size_t light_index    = std::get<1>(result);
+    const float light_prob      = std::get<2>(result);
 
     light_sample.m_triangle = 0;
     sample_light_tree_light(
         time,
+        Vector2f(s[1], s[2]),
+        light_type,
         light_index,
         light_prob,
         light_sample);
@@ -518,17 +525,14 @@ void LightSampler::sample(
 {
     // Mark different light groups.
     const size_t LightGroupNonPhysicalCdf       = 0;
-    const size_t LightGroupemittingTriangleCdf  = 1;
-    const size_t LightGroupLightTree            = 2;
+    const size_t LightGroupLightTree            = 1;
 
-    size_t candidate_groups[3];
+    size_t candidate_groups[2];
     size_t candidate_groups_count = 0;
 
     // Check for existence of each light group and record it.
     if (m_non_physical_lights_cdf.valid())
         candidate_groups[candidate_groups_count++] = LightGroupNonPhysicalCdf;
-    if (m_emitting_triangles_cdf.valid())
-        candidate_groups[candidate_groups_count++] = LightGroupemittingTriangleCdf;
     if (m_light_tree.is_built())
         candidate_groups[candidate_groups_count++] = LightGroupLightTree;
 
@@ -546,12 +550,6 @@ void LightSampler::sample(
     {
         case LightGroupNonPhysicalCdf:
             sample_non_physical_lights(
-                time,
-                Vector3f(probability_interval_shift, s[1], s[2]),
-                light_sample);
-            break;
-        case LightGroupemittingTriangleCdf:
-            sample_emitting_triangles(
                 time,
                 Vector3f(probability_interval_shift, s[1], s[2]),
                 light_sample);
@@ -585,21 +583,28 @@ float LightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
 
 void LightSampler::sample_light_tree_light(
     const ShadingRay::Time&             time,
+    const Vector2f&                     s,
+    const int                           light_type,
     const size_t                        light_index,
     const float                         light_prob,
     LightSample&                        light_sample) const
 {
-    // Fetch the light.
-    const NonPhysicalLightInfo& light_info = m_light_tree_lights[light_index];
-    light_sample.m_light = light_info.m_light;
-
-    // Evaluate and store the transform of the light.
-    light_sample.m_light_transform =
-          light_info.m_light->get_transform()
-        * light_info.m_transform_sequence.evaluate(time.m_absolute);
-
-    // Store the probability density of this light.
-    light_sample.m_probability = light_prob;
+    if (light_type == LightSource::NPL)
+    {
+        // Fetch the light.
+        const NonPhysicalLightInfo& light_info = m_light_tree_lights[light_index];
+        light_sample.m_light = light_info.m_light;
+    
+        // Evaluate and store the transform of the light.
+        light_sample.m_light_transform =
+              light_info.m_light->get_transform()
+            * light_info.m_transform_sequence.evaluate(time.m_absolute);
+    
+        // Store the probability density of this light.
+        light_sample.m_probability = light_prob;
+    }
+    else if (light_type == LightSource::EMT)
+        sample_emitting_triangle(time, s, light_index, light_prob, light_sample);
 }
 
 void LightSampler::sample_non_physical_light(

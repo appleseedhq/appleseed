@@ -68,12 +68,12 @@ class LightTree
 
     bool is_built() const;
 
-    // Build the tree based on the lights collected by the BackwardLightSampler.
-    // TODO: Remove light lists from arguments when they start being collected
-    //       by the LightTree class itself.
-    void build(const std::vector<NonPhysicalLightInfo>& non_physical_lights);
-
-    std::pair<size_t, float> sample(
+    // Build the tree based on the lights collected by the LightSampler.
+    size_t build(
+        const std::vector<NonPhysicalLightInfo>&    non_physical_lights,
+        const std::vector<EmittingTriangle>&        emitting_triangles);
+    
+    std::tuple<int, size_t, float> sample(
         const foundation::Vector3d&     surface_point,
         const float                     s) const;
 
@@ -87,7 +87,8 @@ class LightTree
     struct Item
     {
         foundation::AABB3d      m_bbox;
-        size_t                  m_light_index;
+        size_t                  m_light_source_index;
+        size_t                  m_external_emt_index;
 
         Item() {}
 
@@ -96,9 +97,11 @@ class LightTree
         // corresponds to the m_light_tree_lights within the BackwardLightSampler
         Item(
             const foundation::AABB3d&       bbox,
-            const size_t                    source_index)
+            const size_t                    source_index,
+            const size_t                    external_emt_index) 
             : m_bbox(bbox)
-            , m_light_index(source_index)
+            , m_light_source_index(source_index)
+            , m_external_emt_index(external_emt_index)
         {
         }
     };
