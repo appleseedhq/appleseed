@@ -72,9 +72,6 @@ class BackwardLightSampler
         const Scene&                        scene,
         const ParamArray&                   params = ParamArray());
 
-    // Build the light tree after the scene is up-to-date.
-    void on_frame_begin();
-
     // Return the number of non-physical lights in the scene.
     size_t get_non_physical_light_count() const;
 

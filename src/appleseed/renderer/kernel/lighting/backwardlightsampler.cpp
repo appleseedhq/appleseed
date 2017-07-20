@@ -81,7 +81,7 @@ BackwardLightSampler::BackwardLightSampler(const Scene& scene, const ParamArray&
     if (m_non_physical_lights_cdf.valid())
         m_non_physical_lights_cdf.prepare();
     
-    // Build the light-tree.
+    // Build the light tree.
     m_light_tree_light_count = m_light_tree.build(
         m_light_tree_lights,
         m_emitting_triangles);

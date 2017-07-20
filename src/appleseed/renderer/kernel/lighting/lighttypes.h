@@ -110,7 +110,7 @@ class LightSource
     // Get the light source bounding box.
     virtual foundation::AABB3d get_bbox() const = 0;
 
-    // Get the light intensity.
+    // Get the light importance.
     virtual float get_importance() const = 0;
 
     // Get light type.
