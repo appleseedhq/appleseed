@@ -81,7 +81,6 @@ class EmittingTriangle
     TriangleSupportPlaneType    m_triangle_support_plane;       // support plane of the triangle in assembly space
     float                       m_area;                         // world space triangle area
     float                       m_rcp_area;                     // world space triangle area reciprocal
-    // TODO: remove static triangle probability.
     float                       m_triangle_prob;                // probability density of this triangle
     const Material*             m_material;
 };
@@ -101,8 +100,8 @@ class LightSource
 
     enum SourceTypes
     {
-        NPL = 0,
-        EMT = 1
+        NonPhysicalLightType = 0,
+        EmittingTriangleType = 1
     };
 
     // Get the light source position.
@@ -117,7 +116,7 @@ class LightSource
     // Get light type.
     virtual int get_type() const = 0;
 
-    // Link the light to it's position in the tree.
+    // Link the light to its position in the tree.
     virtual void set_tree_index(const size_t node_index) const = 0;
 };
 
@@ -136,7 +135,7 @@ class NonPhysicalLightSource
     virtual foundation::AABB3d get_bbox() const override;
     virtual float get_intensity() const override;
     virtual int get_type() const override;
-    virtual void set_tree_index(size_t node_index) const override;
+    virtual void set_tree_index(const size_t node_index) const override;
 
   private:
     // Reference to the actual source.
@@ -152,7 +151,7 @@ class EmittingTriangleLightSource
   : public LightSource
 {
   public:
-    explicit EmittingTriangleLightSource(EmittingTriangle* light);
+    explicit EmittingTriangleLightSource(EmittingTriangle* triangle);
 
     virtual foundation::Vector3d get_position() const override;
     virtual foundation::AABB3d get_bbox() const override;
@@ -162,7 +161,7 @@ class EmittingTriangleLightSource
 
   private:
     // Reference to the actual source.
-    EmittingTriangle* m_light;
+    EmittingTriangle* m_triangle;
 };
 
 }       // namespace renderer

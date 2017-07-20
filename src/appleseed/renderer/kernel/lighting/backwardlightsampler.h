@@ -7,7 +7,6 @@
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 // Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
-// Copyright (c) 2017 Petra Gospodnetic, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,23 +31,15 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_BACKWARDLIGHTSAMPLER_H
 
 // appleseed.renderer headers.
-#include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/lighting/lightsample.h"
 #include "renderer/kernel/lighting/lighttree.h"
 #include "renderer/kernel/lighting/lighttypes.h"
 #include "renderer/kernel/shading/shadingray.h"
-#include "renderer/modeling/scene/containers.h"
-#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/cdf.h"
 #include "foundation/math/hash.h"
-#include "foundation/math/transform.h"
-#include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/containers/hashtable.h"
-#include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <cstddef>
@@ -57,9 +48,6 @@
 // Forward declarations.
 namespace renderer  { class Assembly; }
 namespace renderer  { class AssemblyInstance; }
-namespace renderer  { class Intersector; }
-namespace renderer  { class Light; }
-namespace renderer  { class Material; }
 namespace renderer  { class MaterialArray; }
 namespace renderer  { class ObjectInstance; }
 namespace renderer  { class ParamArray; }
@@ -70,7 +58,8 @@ namespace renderer
 {
 
 //
-// The light sampler collects all the light-emitting entities (non-physical lights, mesh lights)
+// The backward light sampler is intended to be used with backward tracing methods.
+// It collects all the light-emitting entities (non-physical lights, mesh lights)
 // and samples them using light-tree.
 //
 
@@ -85,24 +74,18 @@ class BackwardLightSampler
 
     // Build the light tree after the scene is up-to-date.
     void on_frame_begin();
-    
+
     // Return the number of non-physical lights in the scene.
     size_t get_non_physical_light_count() const;
-
-    // Return the number of light-tree lights in the scene.
-    size_t get_light_tree_light_count() const;
 
     // Return the number of emitting triangles in the scene.
     size_t get_emitting_triangle_count() const;
 
-    // Get the node index of the light which is currently being evaluated.
-    size_t get_currently_sampled_tree_node() const;
-
-    // Set the node index of the light which is currently being evaluated.
-    void set_currently_sampled_tree_node(const size_t node_index);
-
     // Return true if the scene contains at least one light or emitting triangle.
     bool has_lights_or_emitting_triangles() const;
+
+    // Return true if the scene contains light-tree compatible lights.
+    bool has_light_tree_lights() const;
 
     // Sample the set of non-physical lights.
     void sample_non_physical_lights(
@@ -123,12 +106,6 @@ class BackwardLightSampler
         const size_t                        light_index,
         LightSample&                        light_sample) const;
 
-    // Sample the set of emitting triangles.
-    void sample_emitting_triangles(
-        const ShadingRay::Time&             time,
-        const foundation::Vector3f&         s,
-        LightSample&                        light_sample) const;
-    
     // Sample the sets of non-physical lights and emitting triangles using a light-tree.
     void sample(
         const ShadingRay::Time&             time,
@@ -161,7 +138,6 @@ class BackwardLightSampler
     EmittingTriangleVector      m_emitting_triangles;
 
     EmitterCDF                  m_non_physical_lights_cdf;
-    EmitterCDF                  m_emitting_triangles_cdf;
 
     EmittingTriangleKeyHasher   m_triangle_key_hasher;
     EmittingTriangleHashTable   m_emitting_triangle_hash_table;
@@ -237,14 +213,14 @@ inline size_t BackwardLightSampler::get_emitting_triangle_count() const
     return m_emitting_triangles.size();
 }
 
-inline size_t BackwardLightSampler::get_light_tree_light_count() const
-{
-    return m_light_tree_light_count;
-}
-
 inline bool BackwardLightSampler::has_lights_or_emitting_triangles() const
 {
-    return m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid() || m_light_tree.is_built();
+    return m_non_physical_lights_cdf.valid() || m_emitting_triangles.size() > 0 || m_light_tree_lights.size() > 0;
+}
+
+inline bool BackwardLightSampler::has_light_tree_lights() const
+{
+    return m_light_tree_lights.size() > 0 || m_emitting_triangles.size() > 0;
 }
 
 inline void BackwardLightSampler::sample_non_physical_light(

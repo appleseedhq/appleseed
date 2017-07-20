@@ -31,22 +31,15 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_FORWARDLIGHTSAMPLER_H
 
 // appleseed.renderer headers.
-#include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/lighting/lightsample.h"
+#include "renderer/kernel/lighting/lighttree.h"
 #include "renderer/kernel/lighting/lighttypes.h"
 #include "renderer/kernel/shading/shadingray.h"
-#include "renderer/modeling/scene/containers.h"
-#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/cdf.h"
 #include "foundation/math/hash.h"
-#include "foundation/math/transform.h"
-#include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/containers/hashtable.h"
-#include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <cstddef>
@@ -68,7 +61,8 @@ namespace renderer
 {
 
 //
-// The light sampler collects all the light-emitting entities (non-physical lights, mesh lights)
+// The backward light sampler is intended to be used with backward tracing methods.
+// It collects all the light-emitting entities (non-physical lights, mesh lights)
 // and samples them using CDF.
 //
 
@@ -113,9 +107,6 @@ class ForwardLightSampler
         const ShadingRay::Time&             time,
         const foundation::Vector3f&         s,
         LightSample&                        light_sample) const;
-
-    // Compute the probability density in area measure of a given light sample.
-    float evaluate_pdf(const ShadingPoint& shading_point) const;
 
   private:
     struct Parameters

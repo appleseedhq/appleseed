@@ -778,11 +778,11 @@ namespace
             VolumeVisitorDistanceSampling(
                 const Parameters&               params,
                 const BackwardLightSampler&     light_sampler,
-                SamplingContext&        sampling_context,
-                const ShadingContext&   shading_context,
-                const Scene&            scene,
-                ShadingComponents&      path_radiance,
-                size_t&                 inf_volume_ray_warnings)
+                SamplingContext&                sampling_context,
+                const ShadingContext&           shading_context,
+                const Scene&                    scene,
+                ShadingComponents&              path_radiance,
+                size_t&                         inf_volume_ray_warnings)
               : m_params(params)
               , m_light_sampler(light_sampler)
               , m_sampling_context(sampling_context)
@@ -1049,8 +1049,8 @@ namespace
 //
 
 PTLightingEngineFactory::PTLightingEngineFactory(
-    const BackwardLightSampler& light_sampler,
-    const ParamArray&   params)
+    const BackwardLightSampler&     light_sampler,
+    const ParamArray&               params)
   : m_light_sampler(light_sampler)
   , m_params(params)
 {

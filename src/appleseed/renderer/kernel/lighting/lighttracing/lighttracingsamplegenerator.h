@@ -41,8 +41,8 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class Frame; }
 namespace renderer  { class ForwardLightSampler; }
+namespace renderer  { class Frame; }
 namespace renderer  { class OIIOTextureSystem; }
 namespace renderer  { class OSLShadingSystem; }
 namespace renderer  { class Project; }

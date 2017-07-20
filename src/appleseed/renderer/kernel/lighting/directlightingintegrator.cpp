@@ -216,8 +216,8 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
         }
     }
 
-    // Add contributions from light tree-compatible lights only.
-    if (m_light_sampler.get_light_tree_light_count() > 0)
+    // Add contributions from light-tree lights only.
+    if (m_light_sampler.has_light_tree_lights())
     {
         sampling_context.split_in_place(3, m_light_sample_count);
 

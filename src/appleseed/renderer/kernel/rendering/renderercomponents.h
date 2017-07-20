@@ -85,9 +85,7 @@ class RendererComponents
 
     IFrameRenderer& get_frame_renderer();
 
-    BackwardLightSampler* get_backward_light_sampler();
-
-    bool is_backward_light_sampler_used();
+    BackwardLightSampler* get_backward_light_sampler() const;
 
   private:
     const Project&              m_project;
@@ -96,8 +94,10 @@ class RendererComponents
     const Scene&                m_scene;
     const Frame&                m_frame;
     const TraceContext&         m_trace_context;
-    ForwardLightSampler*        m_forward_light_sampler;
-    BackwardLightSampler*       m_backward_light_sampler;
+    std::unique_ptr<ForwardLightSampler>
+                                m_forward_light_sampler;
+    std::unique_ptr<BackwardLightSampler>
+                                m_backward_light_sampler;
     ShadingEngine               m_shading_engine;
     TextureStore&               m_texture_store;
     OIIOTextureSystem&          m_texture_system;
@@ -136,15 +136,12 @@ inline IFrameRenderer& RendererComponents::get_frame_renderer()
     return *m_frame_renderer.get();
 }
 
-inline BackwardLightSampler* RendererComponents::get_backward_light_sampler()
+    
+inline BackwardLightSampler* RendererComponents::get_backward_light_sampler() const
 {
-    return m_backward_light_sampler;
+    return m_backward_light_sampler.get();
 }
 
-inline bool RendererComponents::is_backward_light_sampler_used()
-{
-    return m_backward_light_sampler;
-}
 }       // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_RENDERERCOMPONENTS_H

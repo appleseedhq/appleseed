@@ -35,29 +35,15 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/kernel/shading/shadingray.h"
-#include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
-#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/iregion.h"
-#include "renderer/modeling/object/object.h"
-#include "renderer/modeling/object/regionkit.h"
-#include "renderer/modeling/object/triangle.h"
-#include "renderer/modeling/scene/assembly.h"
-#include "renderer/modeling/scene/assemblyinstance.h"
-#include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
-#include "renderer/modeling/scene/visibilityflags.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #include "renderer/utility/triangle.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/sampling/mappings.h"
-#include "foundation/math/scalar.h"
-#include "foundation/utility/foreach.h"
-#include "foundation/utility/lazy.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
@@ -469,20 +455,6 @@ void ForwardLightSampler::sample(
         else sample_non_physical_lights(time, s, light_sample);
     }
     else sample_emitting_triangles(time, s, light_sample);
-}
-
-float ForwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
-{
-    assert(shading_point.is_triangle_primitive());
-
-    const EmittingTriangleKey triangle_key(
-        shading_point.get_assembly_instance().get_uid(),
-        shading_point.get_object_instance_index(),
-        shading_point.get_region_index(),
-        shading_point.get_primitive_index());
-
-    const EmittingTriangle* triangle = m_emitting_triangle_hash_table.get(triangle_key);
-    return triangle->m_triangle_prob * triangle->m_rcp_area;
 }
 
 void ForwardLightSampler::sample_non_physical_light(

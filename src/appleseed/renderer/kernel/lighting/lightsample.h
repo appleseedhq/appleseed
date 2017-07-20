@@ -31,20 +31,11 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTSAMPLE_H
 
 // appleseed.renderer headers.
-#include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/lighting/lighttree.h"
 #include "renderer/kernel/lighting/lighttypes.h"
-#include "renderer/kernel/shading/shadingray.h"
-#include "renderer/modeling/scene/containers.h"
-#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/cdf.h"
 #include "foundation/math/hash.h"
-#include "foundation/math/transform.h"
-#include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/containers/hashtable.h"
 #include "foundation/utility/uid.h"
 
@@ -53,15 +44,8 @@
 #include <vector>
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
-namespace renderer  { class AssemblyInstance; }
 namespace renderer  { class Intersector; }
 namespace renderer  { class Light; }
-namespace renderer  { class Material; }
-namespace renderer  { class MaterialArray; }
-namespace renderer  { class ObjectInstance; }
-namespace renderer  { class ParamArray; }
-namespace renderer  { class Scene; }
 namespace renderer  { class ShadingPoint; }
 
 namespace renderer
@@ -114,8 +98,8 @@ class LightSample
 {
   public:
     LightSample()
-      : m_triangle(0)
-      , m_light(0)
+      : m_triangle(nullptr)
+      , m_light(nullptr)
     {
     }
 

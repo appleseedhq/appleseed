@@ -90,10 +90,10 @@ float NonPhysicalLightSource::get_intensity() const
 
 int NonPhysicalLightSource::get_type() const
 {
-    return LightSource::NPL;
+    return LightSource::NonPhysicalLightType;
 }
 
-void NonPhysicalLightSource::set_tree_index(size_t node_index) const
+void NonPhysicalLightSource::set_tree_index(const size_t node_index) const
 {
     m_light_info->m_light_tree_node_index = node_index;
 }
@@ -102,15 +102,15 @@ void NonPhysicalLightSource::set_tree_index(size_t node_index) const
 // EmittingTriangleLightSource class implementation.
 //
 
-EmittingTriangleLightSource::EmittingTriangleLightSource(EmittingTriangle* light)
-  : m_light(light)
+EmittingTriangleLightSource::EmittingTriangleLightSource(EmittingTriangle* triangle)
+  : m_triangle(triangle)
 {
 }
 
 foundation::Vector3d EmittingTriangleLightSource::get_position() const
 {
     // Return the centroid of the triangle as the position.
-    return (m_light->m_v0 + m_light->m_v1 + m_light->m_v2) / 3;
+    return (m_triangle->m_v0 + m_triangle->m_v1 + m_triangle->m_v2) / 3;
 }
 
 foundation::AABB3d EmittingTriangleLightSource::get_bbox() const
@@ -118,28 +118,28 @@ foundation::AABB3d EmittingTriangleLightSource::get_bbox() const
     foundation::AABB3d bbox;
 
     bbox.invalidate();
-    bbox.insert(m_light->m_v0);
-    bbox.insert(m_light->m_v1);
-    bbox.insert(m_light->m_v2);
+    bbox.insert(m_triangle->m_v0);
+    bbox.insert(m_triangle->m_v1);
+    bbox.insert(m_triangle->m_v2);
 
     return bbox;
 }
 
 float EmittingTriangleLightSource::get_intensity() const
 {
-    const EDF* edf = m_light->m_material->get_uncached_edf();
+    const EDF* edf = m_triangle->m_material->get_uncached_edf();
     
-    return edf->get_max_contribution();
+    return edf->get_max_contribution() * edf->get_uncached_importance_multiplier();
 }
 
 int EmittingTriangleLightSource::get_type() const
 {
-    return LightSource::EMT;
+    return LightSource::EmittingTriangleType;
 }
 
-void EmittingTriangleLightSource::set_tree_index(size_t node_index) const
+void EmittingTriangleLightSource::set_tree_index(const size_t node_index) const
 {
-    m_light->m_light_tree_node_index = node_index;
+    m_triangle->m_light_tree_node_index = node_index;
 }
 
 }   // namespace renderer

@@ -68,40 +68,45 @@ class LightTree
 
     bool is_built() const;
 
-    // Build the tree based on the lights collected by the LightSampler.
+    // Build the tree based on the lights collected by the BackwardLightSampler.
     size_t build(
         std::vector<NonPhysicalLightInfo>&    non_physical_lights,
         std::vector<EmittingTriangle>&        emitting_triangles);
     
-    std::tuple<int, size_t, float> sample(
+    void sample(
         const foundation::Vector3d&     surface_point,
-        const float                     s) const;
+        const float                     s,
+        int&                            light_type,
+        size_t&                         light_index,
+        float&                          light_probability) const;
 
     // Compute the light probability of a particular tree node. Start from the
     // node and go backwards towards the root node.
-    float light_probability(
+    void calculate_light_probability(
         const foundation::Vector3d&     surface_point,
-        const size_t                    leaf_index) const;
+        const size_t                    leaf_index,
+        float&                          light_probability) const;
 
   private:
     struct Item
     {
         foundation::AABB3d      m_bbox;
         size_t                  m_light_source_index;
-        size_t                  m_external_emt_index;
+        size_t                  m_external_source_index;
 
         Item() {}
 
-        // Item contains bbox and source index of each light source
-        // source_index represents the light index in m_light_sources vector and
-        // corresponds to the m_light_tree_lights within the BackwardLightSampler
+        // Item contains bbox and source index of each light source.
+        // source_index represents the light index in m_light_sources vector.
+        // external_source_index represents the light index in light_tree_lights
+        // and emitting_triangles vectors within the BackwardLightSampler.
         Item(
             const foundation::AABB3d&       bbox,
             const size_t                    source_index,
-            const size_t                    external_emt_index) 
+            const size_t                    external_source_index) 
             : m_bbox(bbox)
             , m_light_source_index(source_index)
-            , m_external_emt_index(external_emt_index)
+            , m_external_source_index(external_source_index)
         {
         }
     };
@@ -120,6 +125,9 @@ class LightTree
         const foundation::AABB3d&   root_bbox,
         const bool                  separate_by_levels = false) const;
 
+    // Calculate the tree depth.
+    // Assign total luminance to each node of the tree, where total luminance
+    // represents the sum of all its child nodes luminances.
     float recursive_node_update(
         const size_t parent_index,
         const size_t node_index, 

@@ -106,8 +106,8 @@ RendererComponents::RendererComponents(
   , m_texture_store(texture_store)
   , m_texture_system(texture_system)
   , m_shading_system(shading_system)
-  , m_forward_light_sampler(0)
-  , m_backward_light_sampler(0)
+  , m_forward_light_sampler(nullptr)
+  , m_backward_light_sampler(nullptr)
 {
 }
 
@@ -147,7 +147,7 @@ bool RendererComponents::create_lighting_engine_factory()
     }
     else if (name == "pt")
     {
-        m_backward_light_sampler = new BackwardLightSampler(m_scene, get_child_and_inherit_globals(m_params, "light_sampler"));
+        m_backward_light_sampler.reset(new BackwardLightSampler(m_scene, get_child_and_inherit_globals(m_params, "light_sampler")));
         m_lighting_engine_factory.reset(
             new PTLightingEngineFactory(
                 *m_backward_light_sampler,
@@ -166,8 +166,8 @@ bool RendererComponents::create_lighting_engine_factory()
         const SPPMParameters sppm_params(
             get_child_and_inherit_globals(m_params, "sppm"));
 
-        m_forward_light_sampler = new ForwardLightSampler(m_scene, get_child_and_inherit_globals(m_params, "light_sampler"));
-        m_backward_light_sampler = new BackwardLightSampler(m_scene, get_child_and_inherit_globals(m_params, "light_sampler"));
+        m_forward_light_sampler.reset(new ForwardLightSampler(m_scene, get_child_and_inherit_globals(m_params, "light_sampler")));
+        m_backward_light_sampler.reset(new BackwardLightSampler(m_scene, get_child_and_inherit_globals(m_params, "light_sampler")));
         SPPMPassCallback* sppm_pass_callback =
             new SPPMPassCallback(
                 m_scene,
@@ -265,7 +265,7 @@ bool RendererComponents::create_sample_generator_factory()
     }
     else if (name == "lighttracing")
     {
-        m_forward_light_sampler = new ForwardLightSampler(m_scene, get_child_and_inherit_globals(m_params, "light_sampler"));
+        m_forward_light_sampler.reset(new ForwardLightSampler(m_scene, get_child_and_inherit_globals(m_params, "light_sampler")));
         m_sample_generator_factory.reset(
             new LightTracingSampleGeneratorFactory(
                 m_project,

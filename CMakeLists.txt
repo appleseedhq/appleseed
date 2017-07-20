@@ -109,7 +109,7 @@ option (WITH_TOOLS                          "Build appleseed tools"             
 option (WITH_PYTHON                         "Build Python bindings"                                 ON)
 option (WITH_DISNEY_MATERIAL                "Build Disney material"                                 OFF)
 
-option (USE_STATIC_BOOST                    "Use static Boost libraries"                            OFF)
+option (USE_STATIC_BOOST                    "Use static Boost libraries"                            ON)
 option (USE_STATIC_OIIO                     "Use static OpenImageIO libraries"                      ON)
 option (USE_STATIC_OSL                      "Use static OpenShadingLanguage libraries"              ON)
 option (WARNINGS_AS_ERRORS                  "Treat compiler warnings as errors"                     ON)
