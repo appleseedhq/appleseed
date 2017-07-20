@@ -28,7 +28,7 @@
 //
 
 // appleseed.renderer headers.
-#include "renderer/kernel/lighting/lightsampler.h"
+#include "renderer/kernel/lighting/backwardlightsampler.h"
 #include "renderer/modeling/camera/pinholecamera.h"
 #include "renderer/modeling/scene/scene.h"
 
@@ -39,14 +39,14 @@
 using namespace foundation;
 using namespace renderer;
 
-TEST_SUITE(Renderer_Kernel_Lighting_LightSampler)
+TEST_SUITE(Renderer_Kernel_Lighting_BackwardLightSampler)
 {
     TEST_CASE(HasLightsOrEmittingTriangles_GivenEmptyScene_ReturnsFalse)
     {
         auto_release_ptr<Scene> scene(SceneFactory::create());
         scene->cameras().insert(PinholeCameraFactory().create("camera", ParamArray()));
-        LightSampler light_sampler(scene.ref());
+        BackwardLightSampler backward_light_sampler(scene.ref());
 
-        EXPECT_FALSE(light_sampler.has_lights_or_emitting_triangles());
+        EXPECT_FALSE(backward_light_sampler.has_lights_or_emitting_triangles());
     }
 }

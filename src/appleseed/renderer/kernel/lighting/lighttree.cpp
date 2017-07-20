@@ -65,20 +65,32 @@ bool LightTree::is_built() const
     return m_built;
 }
 
-void LightTree::build(
-    const std::vector<NonPhysicalLightInfo>&    non_physical_lights)
+size_t LightTree::build(
+    std::vector<NonPhysicalLightInfo>&    non_physical_lights,
+    std::vector<EmittingTriangle>&        emitting_triangles)
 {
     foundation::Statistics statistics;
     AABBVector light_bboxes;
 
     // Collect all possible light sources into one vector.
+    size_t light_index = 0;
     for (size_t i = 0; i < non_physical_lights.size(); ++i)
     {
         LightSource* light_source = new NonPhysicalLightSource(&non_physical_lights[i]);
         const foundation::AABB3d bbox = light_source->get_bbox();
         m_light_sources.push_back(light_source);
         light_bboxes.push_back(bbox);
-        m_items.push_back(Item(bbox, i));
+        m_items.push_back(Item(bbox, light_index++, i));
+    }
+
+    // Collect all possible light sources into one vector.
+    for (size_t i = 0; i < emitting_triangles.size(); ++i)
+    {
+        LightSource* light_source = new EmittingTriangleLightSource(&emitting_triangles[i]);
+        foundation::AABB3d bbox = light_source->get_bbox();
+        m_light_sources.push_back(light_source);
+        light_bboxes.push_back(bbox);
+        m_items.push_back(Item(bbox, light_index++, i));
     }
 
     // Create the partitioner.
@@ -111,7 +123,7 @@ void LightTree::build(
             ordering.size());
 
         // Set total luminance and level for each node of the LightTree.
-        recursive_node_update(0, 0);
+        recursive_node_update(0, 0, 0);
     }
 
     // Print light tree statistics.
@@ -119,6 +131,8 @@ void LightTree::build(
         foundation::StatisticsVector::make(
             "light tree statistics",
             statistics).to_string().c_str());
+
+    return m_light_sources.size();
 }
 
 //
@@ -197,12 +211,10 @@ void LightTree::draw_tree_structure(
     }
 }
 
-//
-// Calculate the tree depth and assign total luminance to each node of the tree.
-// Total luminance represents the sum of all its child nodes luminances.
-//
-
-float LightTree::recursive_node_update(size_t node_index, size_t node_level)
+float LightTree::recursive_node_update(
+    const size_t parent_index,
+    const size_t node_index, 
+    const size_t node_level)
 {
     float luminance = 0.0f;
 
@@ -211,37 +223,49 @@ float LightTree::recursive_node_update(size_t node_index, size_t node_level)
         const auto& child1 = m_nodes[node_index].get_child_node_index();
         const auto& child2 = m_nodes[node_index].get_child_node_index() + 1;
 
-        float luminance1 = recursive_node_update(child1, node_level + 1);
-        float luminance2 = recursive_node_update(child2, node_level + 1);
+        const float luminance1 = recursive_node_update(node_index, child1, node_level + 1);
+        const float luminance2 = recursive_node_update(node_index, child2, node_level + 1);
 
         luminance = luminance1 + luminance2;
     }
     else
     {
         // Access the light intensity value.
-        size_t item_index = m_nodes[node_index].get_item_index();
-        size_t light_source_index = m_items[item_index].m_light_index;
-        Spectrum spectrum = m_light_sources[light_source_index]->get_intensity();
-
-        luminance = foundation::average_value(spectrum);
+        const size_t item_index = m_nodes[node_index].get_item_index();
+        const size_t light_source_index = m_items[item_index].m_light_source_index;
+        luminance = m_light_sources[light_source_index]->get_intensity();
 
         // Modify the tree depth if the branch is deeper than the other branches
         // visited so far.
         if (m_tree_depth < node_level)
             m_tree_depth = node_level;
+
+        // If the light is an emitting triangle, store the info about its
+        // position in the light tree.
+        if (m_light_sources[light_source_index]->get_type() == LightSource::EmittingTriangleType)
+            m_light_sources[light_source_index]->set_tree_index(node_index);
     }
 
     m_nodes[node_index].set_luminance(luminance);
     m_nodes[node_index].set_level(node_level);
+    if (node_index != 0)
+        m_nodes[node_index].set_parent(parent_index);
+    else
+        m_nodes[node_index].set_root();
 
     return luminance;
 }
 
-std::pair<size_t, float> LightTree::sample(
+void LightTree::sample(
     const foundation::Vector3d&     surface_point,
-    float                           s) const
+    float                           s,
+    int&                            light_type,
+    size_t&                         light_index,
+    float&                          light_probability) const
 {
-    float light_probability = 1.0f;
+    assert (is_built());
+
+    light_probability = 1.0f;
     size_t node_index = 0;
 
     while (!m_nodes[node_index].is_leaf())
@@ -266,17 +290,61 @@ std::pair<size_t, float> LightTree::sample(
     }
 
     const size_t item_index = m_nodes[node_index].get_item_index();
-    const size_t light_index = m_items[item_index].m_light_index;
+    const size_t source_index = m_items[item_index].m_light_source_index;
+    light_type = m_light_sources[source_index]->get_type();
+    
+    switch (light_type)
+    {
+        // m_light_source index corresponds to the m_light_tree_lights
+        // index of the BackwardLightSampler in case of NPL, whereas the EMT index
+        // needs to be stored separately for now as it is not in the same
+        // vector with other light tree compatible lights.
+        case LightSource::NonPhysicalLightType:
+            light_index = m_items[item_index].m_light_source_index;
+            break;
+        case LightSource::EmittingTriangleType:
+            light_index = m_items[item_index].m_external_source_index;
+            break;
+        default:
+            assert(!"unexpected light type");
+    }
+}
 
-    return std::pair<size_t, float>(light_index, light_probability);
+void LightTree::calculate_light_probability(
+    const foundation::Vector3d&     surface_point,
+    const size_t                    leaf_index,
+    float&                          light_probability) const
+{
+    light_probability = 1.0f;
+    size_t child_index = leaf_index;
+    size_t parent_index = m_nodes[child_index].get_parent();
+
+    while (!m_nodes[parent_index].is_root())
+    {
+        const LightTreeNode<foundation::AABB3d>& node = m_nodes[parent_index];
+
+        float p1, p2;
+        child_node_probabilites(node, surface_point, p1, p2);
+
+        if (node.get_child_node_index() == child_index)
+            light_probability *= p1;            
+        else
+            light_probability *= p2;
+
+        // Save the child index to be sure which probability should be taken
+        // into consideration.
+        child_index = parent_index;
+        parent_index = m_nodes[child_index].get_parent();
+    }
 }
 
 namespace
 {
-    float node_probability(
+    void node_probability(
         const LightTreeNode<foundation::AABB3d>&    node,
         const foundation::AABB3d&                   bbox,
-        const foundation::Vector3d&                 surface_point)
+        const foundation::Vector3d&                 surface_point,
+        float&                                      p)
     {
         // Calculate probability a single node based on its distance
         // to the surface point being evaluated.
@@ -284,7 +352,7 @@ namespace
             static_cast<float>(foundation::square_distance(surface_point, bbox.center()));
         const float inverse_distance_falloff = 1.0f / squared_distance;
 
-        return node.get_luminance() * inverse_distance_falloff;
+        p = node.get_luminance() * inverse_distance_falloff;
     }
 }
 
@@ -303,8 +371,8 @@ void LightTree::child_node_probabilites(
     const auto& bbox_left  = node.get_left_bbox();
     const auto& bbox_right = node.get_right_bbox();
 
-    p1 = node_probability(child1, bbox_left, surface_point);
-    p2 = node_probability(child2, bbox_right, surface_point);
+    node_probability(child1, bbox_left, surface_point, p1);
+    node_probability(child2, bbox_right, surface_point, p2);
 
     // Normalize probabilities.
     const float total = p1 + p2;

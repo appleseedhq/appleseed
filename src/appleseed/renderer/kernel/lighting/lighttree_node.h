@@ -49,33 +49,60 @@ class LightTreeNode
 {
   public:
     LightTreeNode()
-      : m_node_luminance(0.0f)
+      : m_luminance(0.0f)
+      , m_root(false)
+      , m_parent(0)
     {
     }
 
     float get_luminance() const
     {
-        return m_node_luminance;
+        return m_luminance;
     }
 
     size_t get_level() const
     {
-        return m_node_level;
+        return m_tree_level;
+    }
+
+    size_t get_parent() const
+    {
+        return m_parent;
+    }
+
+    bool is_root() const
+    {
+        return m_root;
     }
 
     void set_luminance(const float luminance)
     {
-        m_node_luminance = luminance;
+        m_luminance = luminance;
     }
 
+    // TODO: set this during the construction
     void set_level(const size_t node_level)
     {
-        m_node_level = node_level;
+        m_tree_level = node_level;
+    }
+
+    // TODO: set this during the construction
+    void set_parent(const size_t node_parent)
+    {
+        m_parent = node_parent;
+    }
+
+    // TODO: set this during the construction
+    void set_root()
+    {
+        m_root = true;
     }
 
   private:
-    float  m_node_luminance;
-    size_t m_node_level;
+    float   m_luminance;
+    size_t  m_tree_level;
+    size_t  m_parent;
+    bool    m_root;
 };
 
 }       // namespace renderer

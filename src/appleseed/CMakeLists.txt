@@ -994,14 +994,18 @@ source_group ("renderer\\kernel\\lighting\\sppm" FILES
 )
 
 set (renderer_kernel_lighting_sources
+    renderer/kernel/lighting/backwardlightsampler.cpp
+    renderer/kernel/lighting/backwardlightsampler.h
     renderer/kernel/lighting/directlightingintegrator.cpp
     renderer/kernel/lighting/directlightingintegrator.h
+    renderer/kernel/lighting/forwardlightsampler.cpp
+    renderer/kernel/lighting/forwardlightsampler.h
     renderer/kernel/lighting/ilightingengine.cpp
     renderer/kernel/lighting/ilightingengine.h
     renderer/kernel/lighting/imagebasedlighting.cpp
     renderer/kernel/lighting/imagebasedlighting.h
-    renderer/kernel/lighting/lightsampler.cpp
-    renderer/kernel/lighting/lightsampler.h
+    renderer/kernel/lighting/lightsample.cpp
+    renderer/kernel/lighting/lightsample.h
     renderer/kernel/lighting/materialsamplers.cpp
     renderer/kernel/lighting/materialsamplers.h
     renderer/kernel/lighting/lighttypes.h
@@ -1239,15 +1243,16 @@ source_group ("renderer\\meta\\benchmarks" FILES
 
 set (renderer_meta_tests_sources
     renderer/meta/tests/test_assembly.cpp
+    renderer/meta/tests/test_backwardlightsampler.cpp
     renderer/meta/tests/test_containers.cpp
     renderer/meta/tests/test_dynamicspectrum.cpp
     renderer/meta/tests/test_entitymap.cpp
     renderer/meta/tests/test_entityvector.cpp
     renderer/meta/tests/test_environmentedf.cpp
+    renderer/meta/tests/test_forwardlightsampler.cpp
     renderer/meta/tests/test_imagetools.cpp
     renderer/meta/tests/test_inputarray.cpp
     renderer/meta/tests/test_intersector.cpp
-    renderer/meta/tests/test_lightsampler.cpp
     renderer/meta/tests/test_localsampleaccumulationbuffer.cpp
     renderer/meta/tests/test_paramarray.cpp
     renderer/meta/tests/test_pinholecamera.cpp
