@@ -73,42 +73,29 @@ class BackwardLightSampler
         const Scene&                        scene,
         const ParamArray&                   params = ParamArray());
 
-    // Return the number of non-physical lights in the scene.
-    size_t get_non_physical_light_count() const;
+    // Return true if the scene contains at least one non-physical light or emitting triangle.
+    bool has_lights() const;
 
-    // Return the number of emitting triangles in the scene.
-    size_t get_emitting_triangle_count() const;
+    // Return true if the scene contains at least one light that can be hit by a ray.
+    bool has_hittable_lights() const;
 
-    // Return true if the scene contains at least one light or emitting triangle.
-    bool has_lights_or_emitting_triangles() const;
+    // Return true if the light set is not empty.
+    bool has_lightset() const;
 
-    // Return true if the scene contains light-tree compatible lights.
-    bool has_light_tree_lights() const;
-
-    // Sample the set of non-physical lights.
-    void sample_non_physical_lights(
-        const ShadingRay::Time&             time,
-        const foundation::Vector3f&         s,
-        LightSample&                        light_sample) const;
-
-    // Sample the set lights.
+    // Sample the light set.
     void sample_lightset(
         const ShadingRay::Time&             time,
         const foundation::Vector3f&         s,
         const ShadingPoint&                 shading_point,
         LightSample&                        light_sample) const;
-    
+
+    // Return the number of non-physical lights in the scene.
+    size_t get_non_physical_light_count() const;
+
     // Sample a single given non-physical light.
     void sample_non_physical_light(
         const ShadingRay::Time&             time,
         const size_t                        light_index,
-        LightSample&                        light_sample) const;
-
-    // Sample the sets of non-physical lights and emitting triangles using a light-tree.
-    void sample(
-        const ShadingRay::Time&             time,
-        const foundation::Vector3f&         s,
-        const ShadingPoint&                 shading_point,
         LightSample&                        light_sample) const;
 
     // Compute the probability density in area measure of a given light sample.
@@ -172,20 +159,19 @@ class BackwardLightSampler
     // Build a hash table that allows to find the emitting triangle at a given shading point.
     void build_emitting_triangle_hash_table();
 
-    // Sample the set of non-physical lights using a light-tree.
+    // Sample a given non-physical light.
+    void sample_non_physical_light(
+        const ShadingRay::Time&             time,
+        const size_t                        light_index,
+        const float                         light_prob,
+        LightSample&                        sample) const;
+
     void sample_light_tree_lights(
         const ShadingRay::Time&             time,
         const foundation::Vector3f&         s,
         const ShadingPoint&                 shading_point,
         LightSample&                        light_sample) const;
 
-    // Sample the set of emitting triangles.
-    void sample_emitting_triangles(
-        const ShadingRay::Time&             time,
-        const foundation::Vector3f&         s,
-        LightSample&                        light_sample) const;
-
-    // Sample a given non-physical light.
     void sample_light_tree_light(
         const ShadingRay::Time&             time,
         const foundation::Vector2f&         s,
@@ -194,12 +180,11 @@ class BackwardLightSampler
         const float                         light_prob,
         LightSample&                        light_sample) const;
 
-    // Sample a given non-physical light.
-    void sample_non_physical_light(
+    // Sample the set of emitting triangles.
+    void sample_emitting_triangles(
         const ShadingRay::Time&             time,
-        const size_t                        light_index,
-        const float                         light_prob,
-        LightSample&                        sample) const;
+        const foundation::Vector3f&         s,
+        LightSample&                        light_sample) const;
 
     // Sample a given emitting triangle.
     void sample_emitting_triangle(
@@ -221,32 +206,27 @@ class BackwardLightSampler
 // BackwardLightSampler class implementation.
 //
 
-inline size_t BackwardLightSampler::get_non_physical_light_count() const
+inline bool BackwardLightSampler::has_lights() const
 {
-    return m_non_physical_light_count;
+    return
+        m_non_physical_lights_cdf.valid() ||
+        m_emitting_triangles.size() > 0 ||
+        m_light_tree_lights.size() > 0;
 }
 
-inline size_t BackwardLightSampler::get_emitting_triangle_count() const
+inline bool BackwardLightSampler::has_hittable_lights() const
 {
-    return m_emitting_triangles.size();
+    return !m_emitting_triangles.empty();
 }
 
-inline bool BackwardLightSampler::has_lights_or_emitting_triangles() const
-{
-    return m_non_physical_lights_cdf.valid() || m_emitting_triangles.size() > 0 || m_light_tree_lights.size() > 0;
-}
-
-inline bool BackwardLightSampler::has_light_tree_lights() const
+inline bool BackwardLightSampler::has_lightset() const
 {
     return m_light_tree_lights.size() > 0 || m_emitting_triangles.size() > 0;
 }
 
-inline void BackwardLightSampler::sample_non_physical_light(
-    const ShadingRay::Time&                 time,
-    const size_t                            light_index,
-    LightSample&                            sample) const
+inline size_t BackwardLightSampler::get_non_physical_light_count() const
 {
-    sample_non_physical_light(time, light_index, 1.0f, sample);
+    return m_non_physical_light_count;
 }
 
 }       // namespace renderer

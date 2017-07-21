@@ -544,7 +544,7 @@ namespace
 
             size_t stored_sample_count = 0;
 
-            if (m_light_sampler.has_lights_or_emitting_triangles())
+            if (m_light_sampler.has_lights())
                 stored_sample_count += generate_light_sample(sampling_context, samples);
 
             if (m_params.m_enable_ibl)

@@ -113,6 +113,102 @@ BackwardLightSampler::BackwardLightSampler(
         plural(m_emitting_triangles.size(), "triangle").c_str());
 }
 
+void BackwardLightSampler::sample_lightset(
+    const ShadingRay::Time&             time,
+    const Vector3f&                     s,
+    const ShadingPoint&                 shading_point,
+    LightSample&                        light_sample) const
+{
+    if (m_use_light_tree)
+    {
+        sample_light_tree_lights(
+            time,
+            s,
+            shading_point,
+            light_sample);
+    }
+    else
+    {
+        // Use CDF based sampling.
+        sample_emitting_triangles(
+            time,
+            s,
+            light_sample);
+    }
+}
+
+void BackwardLightSampler::sample_non_physical_light(
+    const ShadingRay::Time&             time,
+    const size_t                        light_index,
+    LightSample&                        light_sample) const
+{
+    // Fetch the light.
+    const NonPhysicalLightInfo& light_info = m_non_physical_lights[light_index];
+    light_sample.m_light = light_info.m_light;
+
+    // Evaluate and store the transform of the light.
+    light_sample.m_light_transform =
+          light_info.m_light->get_transform()
+        * light_info.m_transform_sequence.evaluate(time.m_absolute);
+
+    // Store the probability density of this light.
+    light_sample.m_probability = 1.0f;
+}
+
+float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
+{
+    assert(shading_point.is_triangle_primitive());
+
+    const EmittingTriangleKey triangle_key(
+        shading_point.get_assembly_instance().get_uid(),
+        shading_point.get_object_instance_index(),
+        shading_point.get_region_index(),
+        shading_point.get_primitive_index());
+
+    const EmittingTriangle* triangle = m_emitting_triangle_hash_table.get(triangle_key);
+
+    if (m_use_light_tree)
+    {
+        const float triangle_probability =
+            m_light_tree.evaluate_node_pdf(
+                shading_point.get_point(),
+                triangle->m_light_tree_node_index);
+
+        return triangle_probability * triangle->m_rcp_area;
+    }
+    else
+        return triangle->m_triangle_prob * triangle->m_rcp_area;
+}
+
+Dictionary BackwardLightSampler::get_params_metadata()
+{
+    Dictionary metadata;
+    
+    metadata.insert(
+        "algorithm",
+        Dictionary()
+            .insert("type", "enum")
+            .insert("values", "cdf|lighttree")
+            .insert("default", "cdf")
+            .insert("label", "Light Sampler")
+            .insert("help", "Light sampling algoritm")
+            .insert(
+                "options",
+                Dictionary()
+                    .insert(
+                        "cdf",
+                        Dictionary()
+                            .insert("label", "CDF")
+                            .insert("help", "Cumulative Distribution Function"))
+                    .insert(
+                        "lighttree",
+                        Dictionary()
+                            .insert("label", "Light Tree")
+                            .insert("help", "Lights organized in a BVH"))));
+
+    return metadata;
+}
+
 void BackwardLightSampler::collect_non_physical_lights(
     const AssemblyInstanceContainer&    assembly_instances,
     const TransformSequence&            parent_transform_seq)
@@ -411,59 +507,13 @@ void BackwardLightSampler::build_emitting_triangle_hash_table()
     }
 }
 
-void BackwardLightSampler::sample_non_physical_lights(
-    const ShadingRay::Time&             time,
-    const Vector3f&                     s,
-    LightSample&                        light_sample) const
-{
-    assert(m_non_physical_lights_cdf.valid());
-
-    const EmitterCDF::ItemWeightPair result = m_non_physical_lights_cdf.sample(s[0]);
-    const size_t light_index = result.first;
-    const float light_prob = result.second;
-
-    light_sample.m_triangle = 0;
-    sample_non_physical_light(
-        time,
-        light_index,
-        light_prob,
-        light_sample);
-
-    assert(light_sample.m_light);
-    assert(light_sample.m_probability > 0.0f);
-}
-
-void BackwardLightSampler::sample_lightset(
-    const ShadingRay::Time&             time,
-    const Vector3f&                     s,
-    const ShadingPoint&                 shading_point,
-    LightSample&                        light_sample) const
-{
-    if (m_use_light_tree)
-    {
-        sample_light_tree_lights(
-            time,
-            s,
-            shading_point,
-            light_sample);
-    }
-    else
-    {
-        // Use CDF based sampling.
-        sample_emitting_triangles(
-            time,
-            s,
-            light_sample);
-    }
-}
-
 void BackwardLightSampler::sample_light_tree_lights(
     const ShadingRay::Time&             time,
     const Vector3f&                     s,
     const ShadingPoint&                 shading_point,
     LightSample&                        light_sample) const
 {
-    assert(has_light_tree_lights());
+    assert(has_lightset());
 
     int light_type;
     size_t light_index;
@@ -485,120 +535,6 @@ void BackwardLightSampler::sample_light_tree_lights(
 
     assert(light_sample.m_light || light_sample.m_triangle);
     assert(light_sample.m_probability > 0.0f);
-}
-
-void BackwardLightSampler::sample_emitting_triangles(
-    const ShadingRay::Time&             time,
-    const Vector3f&                     s,
-    LightSample&                        light_sample) const
-{
-    assert(m_emitting_triangles_cdf.valid());
-
-    const EmitterCDF::ItemWeightPair result = m_emitting_triangles_cdf.sample(s[0]);
-    const size_t emitter_index = result.first;
-    const float emitter_prob = result.second;
-
-    light_sample.m_light = 0;
-    sample_emitting_triangle(
-        time,
-        Vector2f(s[1], s[2]),
-        emitter_index,
-        emitter_prob,
-        light_sample);
-
-    assert(light_sample.m_triangle);
-    assert(light_sample.m_probability > 0.0f);
-}
-
-void BackwardLightSampler::sample(
-    const ShadingRay::Time&             time,
-    const Vector3f&                     s,
-    const ShadingPoint&                 shading_point,
-    LightSample&                        light_sample) const
-{
-    // Mark different light groups.
-    const size_t LightGroupNonPhysicalCdf = 0;
-    const size_t LightGroupLightTree = 1;
-    const size_t LightGroupEmittingTriangleCdf = 2;
-
-    // There can be top most 2 candidates groups at once because it will either
-    // be LightTree or EmittingTriangleCdf group.
-    size_t candidate_groups[2];
-    size_t candidate_group_count = 0;
-
-    // Check for existence of each light group and record it.
-    if (m_non_physical_lights_cdf.valid())
-        candidate_groups[candidate_group_count++] = LightGroupNonPhysicalCdf;
-    if (m_light_tree.is_built())
-        candidate_groups[candidate_group_count++] = LightGroupLightTree;
-    if (m_emitting_triangles_cdf.valid())
-        candidate_groups[candidate_group_count++] = LightGroupEmittingTriangleCdf;
-
-    // At least one light group must be present.
-    assert(candidate_group_count > 0);
-
-    // Randomly select one of the group which will be sampled.
-    const size_t selected_index = truncate<size_t>(s[0] * candidate_group_count);
-    const size_t selected_type  = candidate_groups[selected_index];
-
-    // Avoid bias propagation by expanding the chosen interval back to [0,1].
-    const float probability_interval_shift =
-        (s[0] - static_cast<float>(selected_index) / candidate_group_count) * candidate_group_count;
-
-    switch (selected_type)
-    {
-      case LightGroupNonPhysicalCdf:
-        sample_non_physical_lights(
-            time,
-            Vector3f(probability_interval_shift, s[1], s[2]),
-            light_sample);
-        break;
-
-      case LightGroupLightTree:
-        sample_light_tree_lights(
-            time,
-            Vector3f(probability_interval_shift, s[1], s[2]),
-            shading_point,
-            light_sample);
-        break;
-
-      case LightGroupEmittingTriangleCdf:
-          sample_emitting_triangles(
-              time,
-              Vector3f(probability_interval_shift, s[1], s[2]),
-              light_sample);
-          break;
-
-      default:
-        assert(!"Unexpected candidate light type tag.");
-    }
-
-    light_sample.m_probability /= candidate_group_count;
-}
-
-float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
-{
-    assert(shading_point.is_triangle_primitive());
-
-    const EmittingTriangleKey triangle_key(
-        shading_point.get_assembly_instance().get_uid(),
-        shading_point.get_object_instance_index(),
-        shading_point.get_region_index(),
-        shading_point.get_primitive_index());
-
-    const EmittingTriangle* triangle = m_emitting_triangle_hash_table.get(triangle_key);
-
-    if (m_use_light_tree)
-    {
-        const float triangle_probability =
-            m_light_tree.calculate_light_probability(
-                shading_point.get_point(),
-                triangle->m_light_tree_node_index);
-
-        return triangle_probability * triangle->m_rcp_area;
-    }
-    else
-        return triangle->m_triangle_prob * triangle->m_rcp_area;
 }
 
 void BackwardLightSampler::sample_light_tree_light(
@@ -630,23 +566,27 @@ void BackwardLightSampler::sample_light_tree_light(
     }
 }
 
-void BackwardLightSampler::sample_non_physical_light(
+void BackwardLightSampler::sample_emitting_triangles(
     const ShadingRay::Time&             time,
-    const size_t                        light_index,
-    const float                         light_prob,
+    const Vector3f&                     s,
     LightSample&                        light_sample) const
 {
-    // Fetch the light.
-    const NonPhysicalLightInfo& light_info = m_non_physical_lights[light_index];
-    light_sample.m_light = light_info.m_light;
+    assert(m_emitting_triangles_cdf.valid());
 
-    // Evaluate and store the transform of the light.
-    light_sample.m_light_transform =
-          light_info.m_light->get_transform()
-        * light_info.m_transform_sequence.evaluate(time.m_absolute);
+    const EmitterCDF::ItemWeightPair result = m_emitting_triangles_cdf.sample(s[0]);
+    const size_t emitter_index = result.first;
+    const float emitter_prob = result.second;
 
-    // Store the probability density of this light.
-    light_sample.m_probability = light_prob;
+    light_sample.m_light = 0;
+    sample_emitting_triangle(
+        time,
+        Vector2f(s[1], s[2]),
+        emitter_index,
+        emitter_prob,
+        light_sample);
+
+    assert(light_sample.m_triangle);
+    assert(light_sample.m_probability > 0.0f);
 }
 
 void BackwardLightSampler::sample_emitting_triangle(
@@ -706,35 +646,6 @@ void BackwardLightSampler::store_object_area_in_shadergroups(
             }
         }
     }
-}
-
-Dictionary BackwardLightSampler::get_params_metadata()
-{
-    Dictionary metadata;
-    
-    metadata.insert(
-        "algorithm",
-        Dictionary()
-            .insert("type", "enum")
-            .insert("values", "cdf|lighttree")
-            .insert("default", "cdf")
-            .insert("label", "Light Sampler")
-            .insert("help", "Light sampling algoritm")
-            .insert(
-                "options",
-                Dictionary()
-                    .insert(
-                        "cdf",
-                        Dictionary()
-                            .insert("label", "CDF")
-                            .insert("help", "Cumulative Distribution Function"))
-                    .insert(
-                        "lighttree",
-                        Dictionary()
-                            .insert("label", "Light Tree")
-                            .insert("help", "Light Stored Into BVH Tree"))));
-
-    return metadata;
 }
 
 
