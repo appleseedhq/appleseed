@@ -129,7 +129,7 @@ float EmittingTriangleLightSource::get_importance() const
 {
     const EDF* edf = m_triangle->m_material->get_uncached_edf();
     
-    return edf->get_max_contribution() * edf->get_uncached_importance_multiplier();
+    return edf->get_uncached_max_contribution() * edf->get_uncached_importance_multiplier();
 }
 
 int EmittingTriangleLightSource::get_type() const

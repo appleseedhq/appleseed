@@ -58,6 +58,7 @@ namespace renderer
 //
 // BackwardLightSampler class implementation.
 //
+
 BackwardLightSampler::BackwardLightSampler(
     const Scene&                        scene,
     const ParamArray&                   params)
@@ -65,12 +66,7 @@ BackwardLightSampler::BackwardLightSampler(
   , m_emitting_triangle_hash_table(m_triangle_key_hasher)
 {
     // Read which sampling algorithm should the sampler use.
-    const string name = params.get_required<string>("algorithm", "cdf");
-    if (name == "cdf")
-        m_use_light_tree = false;
-    else
-        m_use_light_tree = true;
-
+    m_use_light_tree = params.get_optional<string>("algorithm", "cdf") == "lighttree";
     
     RENDERER_LOG_INFO("collecting light emitters...");
 
@@ -92,10 +88,9 @@ BackwardLightSampler::BackwardLightSampler(
         m_non_physical_lights_cdf.prepare();
     
     // Build the light tree.
-    if (m_use_light_tree)
-        m_light_tree_light_count = m_light_tree.build(
-            m_light_tree_lights,
-            m_emitting_triangles);
+    m_light_tree_light_count = m_use_light_tree
+        ? m_light_tree.build(m_light_tree_lights, m_emitting_triangles)
+        : 0;
 
     if (!m_use_light_tree)
     {
@@ -105,7 +100,7 @@ BackwardLightSampler::BackwardLightSampler(
         // Store the triangle probability densities into the emitting triangles.
         const size_t emitting_triangle_count = m_emitting_triangles.size();
         for (size_t i = 0; i < emitting_triangle_count; ++i)
-        m_emitting_triangles[i].m_triangle_prob = m_emitting_triangles_cdf[i].second;
+            m_emitting_triangles[i].m_triangle_prob = m_emitting_triangles_cdf[i].second;
     }
 
     RENDERER_LOG_INFO(
@@ -362,8 +357,7 @@ void BackwardLightSampler::collect_emitting_triangles(
                     // Store the light-emitting triangle.
                     m_emitting_triangles.push_back(emitting_triangle);
 
-                    // Check if the emitting triangle will be sampled using CDF
-                    // and insert static probability into the cdf.
+                    // When using the CDF, insert the light-emitting triangle into the CDF.
                     if (!m_use_light_tree)
                     {
                         // Retrieve the EDF and get the importance multiplier.
@@ -446,17 +440,21 @@ void BackwardLightSampler::sample_lightset(
     LightSample&                        light_sample) const
 {
     if (m_use_light_tree)
+    {
         sample_light_tree_lights(
             time,
             s,
             shading_point,
             light_sample);
+    }
     else
+    {
         // Use CDF based sampling.
         sample_emitting_triangles(
             time,
             s,
             light_sample);
+    }
 }
 
 void BackwardLightSampler::sample_light_tree_lights(
@@ -597,9 +595,7 @@ float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point) cons
         return triangle_probability * triangle->m_rcp_area;
     }
     else
-    {
         return triangle->m_triangle_prob * triangle->m_rcp_area;
-    }
 }
 
 void BackwardLightSampler::sample_light_tree_light(

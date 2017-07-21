@@ -810,16 +810,16 @@ namespace
             create_pt_volume_settings(layout);
             create_pt_advanced_settings(layout);
 
-            create_direct_link("lighting_components.dl",           "pt.enable_dl");
-            create_direct_link("lighting_components.ibl",          "pt.enable_ibl");
-            create_direct_link("lighting_components.caustics",     "pt.enable_caustics");
-            create_direct_link("pt.bounces.rr_start_bounce",       "pt.rr_min_path_length");
-            create_direct_link("advanced.next_event_estimation",   "pt.next_event_estimation");
-            create_direct_link("advanced.dl.light_samples",        "pt.dl_light_samples");
-            create_direct_link("advanced.ibl.env_samples",         "pt.ibl_env_samples");
-            create_direct_link("advanced.dl.low_light_threshold",  "pt.dl_low_light_threshold");
-            create_direct_link("advanced.volume_distance_samples", "pt.volume_distance_samples");
-            create_direct_link("advanced.algorithm",               "light_sampler.algorithm");
+            create_direct_link("lighting_components.dl",            "pt.enable_dl");
+            create_direct_link("lighting_components.ibl",           "pt.enable_ibl");
+            create_direct_link("lighting_components.caustics",      "pt.enable_caustics");
+            create_direct_link("pt.bounces.rr_start_bounce",        "pt.rr_min_path_length");
+            create_direct_link("advanced.next_event_estimation",    "pt.next_event_estimation");
+            create_direct_link("advanced.dl.light_samples",         "pt.dl_light_samples");
+            create_direct_link("advanced.dl.low_light_threshold",   "pt.dl_low_light_threshold");
+            create_direct_link("advanced.ibl.env_samples",          "pt.ibl_env_samples");
+            create_direct_link("advanced.volume_distance_samples",  "pt.volume_distance_samples");
+            create_direct_link("advanced.light_sampler.algorithm",  "light_sampler.algorithm");
 
             load_directly_linked_values(config);
 
@@ -859,7 +859,7 @@ namespace
             layout->addLayout(sublayout);
 
             QComboBox* light_sampling;
-            light_sampling = create_combobox("advanced.algorithm");
+            light_sampling = create_combobox("advanced.light_sampler.algorithm");
             light_sampling->setToolTip(m_params_metadata.get_path("light_sampler.algorithm.help"));
             light_sampling->addItem("CDF", "cdf");
             light_sampling->addItem("Light Tree", "lighttree");
