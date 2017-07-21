@@ -61,7 +61,7 @@ namespace renderer
 {
 
 //
-// The backward light sampler is intended to be used with backward tracing methods.
+// The forward light sampler is intended to be used with forward tracing methods.
 // It collects all the light-emitting entities (non-physical lights, mesh lights)
 // and samples them using CDF.
 //
