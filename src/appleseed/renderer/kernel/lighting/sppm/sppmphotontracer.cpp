@@ -808,7 +808,7 @@ void SPPMPhotonTracer::trace_photons(
     // Schedule photon tracing jobs.
     size_t job_count = 0;
     size_t emitted_photon_count = 0;
-    if (m_light_sampler.has_lights_or_emitting_triangles())
+    if (m_light_sampler.has_lights())
     {
         schedule_light_photon_tracing_jobs(
             photon_targets,

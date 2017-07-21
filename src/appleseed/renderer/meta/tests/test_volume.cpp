@@ -78,6 +78,7 @@ TEST_SUITE(Renderer_Modeling_Volume)
     {
         // Number of MC samples to do integrations.
         static const size_t NumberOfSamples = 50000;
+
         // Number of samples to draw.
         static const size_t NumberOfSamplesPlot = 100;
 
@@ -246,13 +247,14 @@ TEST_SUITE(Renderer_Modeling_Volume)
     TEST_CASE_F(CheckHenyeyPdfIntegratesToOne, Fixture)
     {
         static const float G[4] = { -0.5f, 0.0f, +0.3f, +0.8f };
+
         for (size_t i = 0; i < countof(G); ++i)
         {
-            ParamArray parameters = ParamArray()
-                .insert("phase_function_model", "henyey")
-                .insert("average_cosine", G[i]);
             auto_release_ptr<Volume> volume =
-                m_volume_factory.create("volume", parameters);
+                m_volume_factory.create("volume",
+                    ParamArray()
+                        .insert("phase_function_model", "henyey")
+                        .insert("average_cosine", G[i]));
             volume->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
 
             const float integral = setup_environment_and_evaluate(
@@ -266,13 +268,14 @@ TEST_SUITE(Renderer_Modeling_Volume)
     TEST_CASE_F(CheckHenyeySamplingConsistency, Fixture)
     {
         static const float G[4] = { -0.5f, 0.0f, +0.3f, +0.8f };
+
         for (size_t i = 0; i < countof(G); ++i)
         {
-            ParamArray parameters = ParamArray()
-                .insert("phase_function_model", "henyey")
-                .insert("average_cosine", G[i]);
             auto_release_ptr<Volume> volume =
-                m_volume_factory.create("volume", parameters);
+                m_volume_factory.create("volume",
+                    ParamArray()
+                        .insert("phase_function_model", "henyey")
+                        .insert("average_cosine", G[i]));
             volume->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
 
             const bool consistent = setup_environment_and_evaluate(
@@ -286,13 +289,14 @@ TEST_SUITE(Renderer_Modeling_Volume)
     TEST_CASE_F(CheckHenyeyAverageCosine, Fixture)
     {
         static const float G[4] = { -0.5f, 0.0f, +0.3f, +0.8f };
+
         for (size_t i = 0; i < countof(G); ++i)
         {
-            ParamArray parameters = ParamArray()
-                .insert("phase_function_model", "henyey")
-                .insert("average_cosine", G[i]);
             auto_release_ptr<Volume> volume =
-                m_volume_factory.create("volume", parameters);
+                m_volume_factory.create("volume",
+                    ParamArray()
+                        .insert("phase_function_model", "henyey")
+                        .insert("average_cosine", G[i]));
             volume->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
 
             const float average_cosine = setup_environment_and_evaluate(
@@ -314,20 +318,16 @@ TEST_SUITE(Renderer_Modeling_Volume)
         plotfile.set_xrange(-0.6, +0.6);
         plotfile.set_yrange(-0.3, +0.3);
 
-        static const char* Colors[3] =
-        {
-            "blue",
-            "red",
-            "magenta",
-        };
+        static const char* Colors[3] = { "blue", "red", "magenta" };
         static const float G[3] = { -0.5f, +0.3f, 0.0f };
+
         for (size_t i = 0; i < countof(G); ++i)
         {
-            ParamArray parameters = ParamArray()
-                .insert("phase_function_model", "henyey")
-                .insert("average_cosine", G[i]);
             auto_release_ptr<Volume> volume =
-                m_volume_factory.create("volume", parameters);
+                m_volume_factory.create("volume",
+                    ParamArray()
+                        .insert("phase_function_model", "henyey")
+                        .insert("average_cosine", G[i]));
             volume->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
 
             const std::vector<Vector2f> points =

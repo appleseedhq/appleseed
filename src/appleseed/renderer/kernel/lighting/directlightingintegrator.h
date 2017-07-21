@@ -86,10 +86,6 @@ class DirectLightingIntegrator
         const bool                      indirect);                    // are we computing indirect lighting?
 
     // Compute outgoing radiance due to direct lighting via combined BSDF and light sampling.
-    void compute_outgoing_radiance_combined_sampling(
-        SamplingContext&                sampling_context,
-        const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
-        ShadingComponents&              radiance) const;
     void compute_outgoing_radiance_combined_sampling_low_variance(
         SamplingContext&                sampling_context,
         const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
@@ -103,11 +99,6 @@ class DirectLightingIntegrator
         ShadingComponents&              radiance) const;
 
     // Compute outgoing radiance due to direct lighting via light sampling only.
-    void compute_outgoing_radiance_light_sampling(
-        SamplingContext&                sampling_context,
-        const foundation::MISHeuristic  mis_heuristic,
-        const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
-        ShadingComponents&              radiance) const;
     void compute_outgoing_radiance_light_sampling_low_variance(
         SamplingContext&                sampling_context,
         const foundation::MISHeuristic  mis_heuristic,

@@ -64,17 +64,9 @@ namespace renderer
 //   compute_outgoing_radiance_material_sampling
 //       take_single_material_sample
 //
-//   compute_outgoing_radiance_light_sampling
-//       add_emitting_triangle_sample_contribution
-//       add_non_physical_light_sample_contribution
-//
 //   compute_outgoing_radiance_light_sampling_low_variance
 //       add_emitting_triangle_sample_contribution
 //       add_non_physical_light_sample_contribution
-//
-//   compute_outgoing_radiance_combined_sampling
-//       compute_outgoing_radiance_material_sampling
-//       compute_outgoing_radiance_light_sampling
 //
 //   compute_outgoing_radiance_combined_sampling_low_variance
 //       compute_outgoing_radiance_material_sampling
@@ -113,8 +105,8 @@ void DirectLightingIntegrator::compute_outgoing_radiance_material_sampling(
 {
     radiance.set(0.0f);
 
-    // No emitting triangles in the scene.
-    if (m_light_sampler.get_emitting_triangle_count() == 0)
+    // No hittable light in the scene.
+    if (!m_light_sampler.has_hittable_lights())
         return;
 
     for (size_t i = 0, e = m_material_sample_count; i < e; ++i)
@@ -130,59 +122,6 @@ void DirectLightingIntegrator::compute_outgoing_radiance_material_sampling(
         radiance /= static_cast<float>(m_material_sample_count);
 }
 
-void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling(
-    SamplingContext&            sampling_context,
-    const MISHeuristic          mis_heuristic,
-    const Dual3d&               outgoing,
-    ShadingComponents&          radiance) const
-{
-    radiance.set(0.0f);
-
-    // No light source in the scene.
-    if (!m_light_sampler.has_lights_or_emitting_triangles())
-        return;
-
-    // Check if PDF of the sampler is Dirac delta and therefore
-    // cannot contribute to the light sampling.
-    if (!m_material_sampler.contributes_to_light_sampling())
-        return;
-
-    sampling_context.split_in_place(3, m_light_sample_count);
-
-    // Add contributions from both emitting triangles and non-physical light sources.
-    for (size_t i = 0, e = m_light_sample_count; i < e; ++i)
-    {
-        // Sample both emitting triangles and non-physical light sources.
-        LightSample sample;
-        m_light_sampler.sample(
-            m_time,
-            sampling_context.next2<Vector3f>(),
-            m_shading_point,
-            sample);
-
-        if (sample.m_triangle)
-        {
-            add_emitting_triangle_sample_contribution(
-                sampling_context,
-                sample,
-                mis_heuristic,
-                outgoing,
-                radiance);
-        }
-        else
-        {
-            add_non_physical_light_sample_contribution(
-                sampling_context,
-                sample,
-                outgoing,
-                radiance);
-        }
-    }
-
-    if (m_light_sample_count > 1)
-        radiance /= static_cast<float>(m_light_sample_count);
-}
-
 void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_variance(
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
@@ -192,7 +131,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
     radiance.set(0.0f);
 
     // No light source in the scene.
-    if (!m_light_sampler.has_lights_or_emitting_triangles())
+    if (!m_light_sampler.has_lights())
         return;
 
     // Check if PDF of the sampler is Dirac delta and therefore
@@ -217,7 +156,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
     }
 
     // Add contributions from light-tree lights only.
-    if (m_light_sampler.has_light_tree_lights())
+    if (m_light_sampler.has_lightset())
     {
         sampling_context.split_in_place(3, m_light_sample_count);
 
@@ -255,28 +194,6 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
     }
 }
 
-void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling(
-    SamplingContext&            sampling_context,
-    const Dual3d&               outgoing,
-    ShadingComponents&          radiance) const
-{
-    compute_outgoing_radiance_material_sampling(
-        sampling_context,
-        MISPower2,
-        outgoing,
-        radiance);
-
-    ShadingComponents radiance_light_sampling(Spectrum::Illuminance);
-
-    compute_outgoing_radiance_light_sampling(
-        sampling_context,
-        MISPower2,
-        outgoing,
-        radiance_light_sampling);
-
-    radiance += radiance_light_sampling;
-}
-
 void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling_low_variance(
     SamplingContext&            sampling_context,
     const Dual3d&               outgoing,
@@ -305,7 +222,7 @@ void DirectLightingIntegrator::take_single_material_sample(
     const Dual3d&               outgoing,
     ShadingComponents&          radiance) const
 {
-    assert(m_light_sampler.get_emitting_triangle_count() > 0);
+    assert(m_light_sampler.has_hittable_lights());
 
     // Sample material.
     Dual3f incoming;

@@ -147,11 +147,16 @@ bool RendererComponents::create_lighting_engine_factory()
     }
     else if (name == "pt")
     {
-        m_backward_light_sampler.reset(new BackwardLightSampler(m_scene, get_child_and_inherit_globals(m_params, "light_sampler")));
+        m_backward_light_sampler.reset(
+            new BackwardLightSampler(
+                m_scene,
+                get_child_and_inherit_globals(m_params, "light_sampler")));
+
         m_lighting_engine_factory.reset(
             new PTLightingEngineFactory(
                 *m_backward_light_sampler,
                 get_child_and_inherit_globals(m_params, "pt")));    // todo: change to "pt_lighting_engine"?
+
         return true;
     }
     else if (name == "bdpt")
@@ -159,15 +164,24 @@ bool RendererComponents::create_lighting_engine_factory()
         m_lighting_engine_factory.reset(
             new BDPTLightingEngineFactory(
                 get_child_and_inherit_globals(m_params, "bdpt")));
+
         return true;
     }
     else if (name == "sppm")
     {
+        m_forward_light_sampler.reset(
+            new ForwardLightSampler(
+                m_scene,
+                get_child_and_inherit_globals(m_params, "light_sampler")));
+
+        m_backward_light_sampler.reset(
+            new BackwardLightSampler(
+                m_scene,
+                get_child_and_inherit_globals(m_params, "light_sampler")));
+
         const SPPMParameters sppm_params(
             get_child_and_inherit_globals(m_params, "sppm"));
 
-        m_forward_light_sampler.reset(new ForwardLightSampler(m_scene, get_child_and_inherit_globals(m_params, "light_sampler")));
-        m_backward_light_sampler.reset(new BackwardLightSampler(m_scene, get_child_and_inherit_globals(m_params, "light_sampler")));
         SPPMPassCallback* sppm_pass_callback =
             new SPPMPassCallback(
                 m_scene,
@@ -261,11 +275,16 @@ bool RendererComponents::create_sample_generator_factory()
                 m_frame,
                 m_sample_renderer_factory.get(),
                 get_child_and_inherit_globals(m_params, "generic_sample_generator")));
+
         return true;
     }
     else if (name == "lighttracing")
     {
-        m_forward_light_sampler.reset(new ForwardLightSampler(m_scene, get_child_and_inherit_globals(m_params, "light_sampler")));
+        m_forward_light_sampler.reset(
+            new ForwardLightSampler(
+                m_scene,
+                get_child_and_inherit_globals(m_params, "light_sampler")));
+
         m_sample_generator_factory.reset(
             new LightTracingSampleGeneratorFactory(
                 m_project,
@@ -276,6 +295,7 @@ bool RendererComponents::create_sample_generator_factory()
                 m_texture_system,
                 m_shading_system,
                 get_child_and_inherit_globals(m_params, "lighttracing_sample_generator")));
+
         return true;
     }
     else
@@ -309,6 +329,7 @@ bool RendererComponents::create_pixel_renderer_factory()
             new UniformPixelRendererFactory(
                 m_sample_renderer_factory.get(),
                 params));
+
         return true;
     }
     else if (name == "adaptive")
@@ -324,6 +345,7 @@ bool RendererComponents::create_pixel_renderer_factory()
                 m_frame,
                 m_sample_renderer_factory.get(),
                 get_child_and_inherit_globals(m_params, "adaptive_pixel_renderer")));
+
         return true;
     }
     else
@@ -392,6 +414,7 @@ bool RendererComponents::create_tile_renderer_factory()
                 m_pixel_renderer_factory.get(),
                 m_shading_result_framebuffer_factory.get(),
                 get_child_and_inherit_globals(m_params, "generic_tile_renderer")));
+
         return true;
     }
     else if (name == "blank")
@@ -436,6 +459,7 @@ bool RendererComponents::create_frame_renderer_factory()
                 m_tile_callback_factory,
                 m_pass_callback.get(),
                 get_child_and_inherit_globals(m_params, "generic_frame_renderer")));
+
         return true;
     }
     else if (name == "progressive")
@@ -452,6 +476,7 @@ bool RendererComponents::create_frame_renderer_factory()
                 m_sample_generator_factory.get(),
                 m_tile_callback_factory,
                 get_child_and_inherit_globals(m_params, "progressive_frame_renderer")));
+
         return true;
     }
     else

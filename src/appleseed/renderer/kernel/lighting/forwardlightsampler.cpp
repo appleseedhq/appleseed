@@ -96,6 +96,39 @@ ForwardLightSampler::ForwardLightSampler(const Scene& scene, const ParamArray& p
         plural(m_emitting_triangles.size(), "triangle").c_str());
 }
 
+void ForwardLightSampler::sample(
+    const ShadingRay::Time&             time,
+    const Vector3f&                     s,
+    LightSample&                        light_sample) const
+{
+    assert(m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid());
+
+    if (m_non_physical_lights_cdf.valid())
+    {
+        if (m_emitting_triangles_cdf.valid())
+        {
+            if (s[0] < 0.5f)
+            {
+                sample_non_physical_lights(
+                    time,
+                    Vector3f(s[0] * 2.0f, s[1], s[2]),
+                    light_sample);
+            }
+            else
+            {
+                sample_emitting_triangles(
+                    time,
+                    Vector3f((s[0] - 0.5f) * 2.0f, s[1], s[2]),
+                    light_sample);
+            }
+
+            light_sample.m_probability *= 0.5f;
+        }
+        else sample_non_physical_lights(time, s, light_sample);
+    }
+    else sample_emitting_triangles(time, s, light_sample);
+}
+
 void ForwardLightSampler::collect_non_physical_lights(
     const AssemblyInstanceContainer&    assembly_instances,
     const TransformSequence&            parent_transform_seq)
@@ -401,6 +434,25 @@ void ForwardLightSampler::sample_non_physical_lights(
     assert(light_sample.m_probability > 0.0f);
 }
 
+void ForwardLightSampler::sample_non_physical_light(
+    const ShadingRay::Time&             time,
+    const size_t                        light_index,
+    const float                         light_prob,
+    LightSample&                        light_sample) const
+{
+    // Fetch the light.
+    const NonPhysicalLightInfo& light_info = m_non_physical_lights[light_index];
+    light_sample.m_light = light_info.m_light;
+
+    // Evaluate and store the transform of the light.
+    light_sample.m_light_transform =
+          light_info.m_light->get_transform()
+        * light_info.m_transform_sequence.evaluate(time.m_absolute);
+
+    // Store the probability density of this light.
+    light_sample.m_probability = light_prob;
+}
+
 void ForwardLightSampler::sample_emitting_triangles(
     const ShadingRay::Time&             time,
     const Vector3f&                     s,
@@ -422,58 +474,6 @@ void ForwardLightSampler::sample_emitting_triangles(
 
     assert(light_sample.m_triangle);
     assert(light_sample.m_probability > 0.0f);
-}
-
-void ForwardLightSampler::sample(
-    const ShadingRay::Time&             time,
-    const Vector3f&                     s,
-    LightSample&                        light_sample) const
-{
-    assert(m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid());
-
-    if (m_non_physical_lights_cdf.valid())
-    {
-        if (m_emitting_triangles_cdf.valid())
-        {
-            if (s[0] < 0.5f)
-            {
-                sample_non_physical_lights(
-                    time,
-                    Vector3f(s[0] * 2.0f, s[1], s[2]),
-                    light_sample);
-            }
-            else
-            {
-                sample_emitting_triangles(
-                    time,
-                    Vector3f((s[0] - 0.5f) * 2.0f, s[1], s[2]),
-                    light_sample);
-            }
-
-            light_sample.m_probability *= 0.5f;
-        }
-        else sample_non_physical_lights(time, s, light_sample);
-    }
-    else sample_emitting_triangles(time, s, light_sample);
-}
-
-void ForwardLightSampler::sample_non_physical_light(
-    const ShadingRay::Time&             time,
-    const size_t                        light_index,
-    const float                         light_prob,
-    LightSample&                        light_sample) const
-{
-    // Fetch the light.
-    const NonPhysicalLightInfo& light_info = m_non_physical_lights[light_index];
-    light_sample.m_light = light_info.m_light;
-
-    // Evaluate and store the transform of the light.
-    light_sample.m_light_transform =
-          light_info.m_light->get_transform()
-        * light_info.m_transform_sequence.evaluate(time.m_absolute);
-
-    // Store the probability density of this light.
-    light_sample.m_probability = light_prob;
 }
 
 void ForwardLightSampler::sample_emitting_triangle(

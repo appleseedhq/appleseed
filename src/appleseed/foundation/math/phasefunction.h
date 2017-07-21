@@ -29,7 +29,7 @@
 #ifndef APPLESEED_FOUNDATION_MATH_PHASEFUNCTION_H
 #define APPLESEED_FOUNDATION_MATH_PHASEFUNCTION_H
 
-// appleseed.renderer headers.
+// appleseed.foundation headers.
 #include "foundation/math/vector.h"
 
 namespace foundation
@@ -51,11 +51,11 @@ class PhaseFunction
 // https://www.astro.umd.edu/~jph/HG_note.pdf
 //
 
-class HenyeyPhaseFunction : public PhaseFunction
+class HenyeyPhaseFunction
+  : public PhaseFunction
 {
   public:
-    HenyeyPhaseFunction(const float g) : m_g(g) {}
-    virtual ~HenyeyPhaseFunction() {}
+    explicit HenyeyPhaseFunction(const float g);
 
     virtual float evaluate(const Vector3f& outgoing, const Vector3f& incoming) const override;
     virtual float sample(const Vector3f& outgoing, const Vector2f& s, Vector3f& incoming) const override;
@@ -69,11 +69,10 @@ class HenyeyPhaseFunction : public PhaseFunction
 // Isotropic phase function.
 //
 
-class IsotropicPhaseFunction : public PhaseFunction
+class IsotropicPhaseFunction
+  : public PhaseFunction
 {
   public:
-    virtual ~IsotropicPhaseFunction() {}
-
     virtual float evaluate(const Vector3f& outgoing, const Vector3f& incoming) const override;
     virtual float sample(const Vector3f& outgoing, const Vector2f& s, Vector3f& incoming) const override;
 };

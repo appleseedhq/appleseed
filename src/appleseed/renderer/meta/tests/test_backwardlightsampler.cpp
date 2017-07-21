@@ -47,6 +47,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_BackwardLightSampler)
         scene->cameras().insert(PinholeCameraFactory().create("camera", ParamArray()));
         BackwardLightSampler backward_light_sampler(scene.ref());
 
-        EXPECT_FALSE(backward_light_sampler.has_lights_or_emitting_triangles());
+        EXPECT_FALSE(backward_light_sampler.has_lights());
     }
 }

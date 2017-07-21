@@ -135,17 +135,13 @@ size_t LightTree::build(
     return m_light_sources.size();
 }
 
-//
-// Control output of the built tree bboxes into the VPython file.
-// The py file is written to the cwd.
-// TODO: Add a possibility to shift each level of bboxes along the z-axis.
-//
-
 void LightTree::draw_tree_structure(
     const std::string&          filename_base,
     const foundation::AABB3d&   root_bbox,
     const bool                  separate_by_levels) const
 {
+    // TODO: Add a possibility to shift each level of bboxes along the z-axis.
+
     const double Width = 0.1;
 
     if (separate_by_levels)
@@ -310,14 +306,12 @@ void LightTree::sample(
     }
 }
 
-void LightTree::calculate_light_probability(
+float LightTree::evaluate_node_pdf(
     const foundation::Vector3d&     surface_point,
-    const size_t                    leaf_index,
-    float&                          light_probability) const
+    size_t                          node_index) const
 {
-    light_probability = 1.0f;
-    size_t child_index = leaf_index;
-    size_t parent_index = m_nodes[child_index].get_parent();
+    size_t parent_index = m_nodes[node_index].get_parent();
+    float pdf = 1.0f;
 
     while (!m_nodes[parent_index].is_root())
     {
@@ -326,16 +320,15 @@ void LightTree::calculate_light_probability(
         float p1, p2;
         child_node_probabilites(node, surface_point, p1, p2);
 
-        if (node.get_child_node_index() == child_index)
-            light_probability *= p1;            
-        else
-            light_probability *= p2;
+        pdf *= node.get_child_node_index() == node_index ? p1 : p2;
 
         // Save the child index to be sure which probability should be taken
         // into consideration.
-        child_index = parent_index;
-        parent_index = m_nodes[child_index].get_parent();
+        node_index = parent_index;
+        parent_index = m_nodes[node_index].get_parent();
     }
+
+    return pdf;
 }
 
 namespace

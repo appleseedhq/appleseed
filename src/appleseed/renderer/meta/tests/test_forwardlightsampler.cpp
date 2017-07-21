@@ -47,7 +47,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_ForwardLightSampler)
         scene->cameras().insert(PinholeCameraFactory().create("camera", ParamArray()));
         ForwardLightSampler forward_light_sampler(scene.ref());
 
-        EXPECT_FALSE(forward_light_sampler.has_lights_or_emitting_triangles());
+        EXPECT_FALSE(forward_light_sampler.has_lights());
     }
 }
 

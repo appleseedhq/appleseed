@@ -70,22 +70,21 @@ class LightTree
 
     // Build the tree based on the lights collected by the BackwardLightSampler.
     size_t build(
-        std::vector<NonPhysicalLightInfo>&    non_physical_lights,
-        std::vector<EmittingTriangle>&        emitting_triangles);
+        std::vector<NonPhysicalLightInfo>&  non_physical_lights,
+        std::vector<EmittingTriangle>&      emitting_triangles);
     
     void sample(
-        const foundation::Vector3d&     surface_point,
-        const float                     s,
-        int&                            light_type,
-        size_t&                         light_index,
-        float&                          light_probability) const;
+        const foundation::Vector3d&         surface_point,
+        const float                         s,
+        int&                                light_type,
+        size_t&                             light_index,
+        float&                              light_probability) const;
 
     // Compute the light probability of a particular tree node. Start from the
     // node and go backwards towards the root node.
-    void calculate_light_probability(
-        const foundation::Vector3d&     surface_point,
-        const size_t                    leaf_index,
-        float&                          light_probability) const;
+    float evaluate_node_pdf(
+        const foundation::Vector3d&         surface_point,
+        const size_t                        node_index) const;
 
   private:
     struct Item
@@ -120,18 +119,19 @@ class LightTree
     size_t                     m_tree_depth;
     bool                       m_built; // Was the tree built?
 
+    // Dump the tree bounding boxes to a VPython file on disk.
     void draw_tree_structure(
-        const std::string&          filename_base,
-        const foundation::AABB3d&   root_bbox,
-        const bool                  separate_by_levels = false) const;
+        const std::string&                  filename_base,
+        const foundation::AABB3d&           root_bbox,
+        const bool                          separate_by_levels = false) const;
 
     // Calculate the tree depth.
     // Assign total importance to each node of the tree, where total importance
     // represents the sum of all its child nodes importances.
     float recursive_node_update(
-        const size_t parent_index,
-        const size_t node_index, 
-        const size_t node_level);
+        const size_t                        parent_index,
+        const size_t                        node_index, 
+        const size_t                        node_level);
 
     void child_node_probabilites(
         const LightTreeNode<foundation::AABB3d>&    node,
