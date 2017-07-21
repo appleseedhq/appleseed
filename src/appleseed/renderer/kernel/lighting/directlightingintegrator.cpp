@@ -225,7 +225,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
         {
             // Sample light tree-compatible lights only.
             LightSample sample;
-            m_light_sampler.sample_light_tree_lights(
+            m_light_sampler.sample_lightset(
                 m_time,
                 sampling_context.next2<Vector3f>(),
                 m_shading_point,

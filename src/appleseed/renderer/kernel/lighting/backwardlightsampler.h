@@ -31,6 +31,7 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_BACKWARDLIGHTSAMPLER_H
 
 // appleseed.renderer headers.
+#include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/lighting/lightsample.h"
 #include "renderer/kernel/lighting/lighttree.h"
 #include "renderer/kernel/lighting/lighttypes.h"
@@ -46,13 +47,14 @@
 #include <vector>
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
-namespace renderer  { class AssemblyInstance; }
-namespace renderer  { class MaterialArray; }
-namespace renderer  { class ObjectInstance; }
-namespace renderer  { class ParamArray; }
-namespace renderer  { class Scene; }
-namespace renderer  { class ShadingPoint; }
+namespace foundation    { class Dictionary; }
+namespace renderer      { class Assembly; }
+namespace renderer      { class AssemblyInstance; }
+namespace renderer      { class MaterialArray; }
+namespace renderer      { class ObjectInstance; }
+namespace renderer      { class ParamArray; }
+namespace renderer      { class Scene; }
+namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
@@ -89,13 +91,13 @@ class BackwardLightSampler
         const foundation::Vector3f&         s,
         LightSample&                        light_sample) const;
 
-    // Sample the set of non-physical lights using a light-tree.
-    void sample_light_tree_lights(
+    // Sample the set lights.
+    void sample_lightset(
         const ShadingRay::Time&             time,
         const foundation::Vector3f&         s,
         const ShadingPoint&                 shading_point,
         LightSample&                        light_sample) const;
-
+    
     // Sample a single given non-physical light.
     void sample_non_physical_light(
         const ShadingRay::Time&             time,
@@ -111,6 +113,9 @@ class BackwardLightSampler
 
     // Compute the probability density in area measure of a given light sample.
     float evaluate_pdf(const ShadingPoint& shading_point) const;
+
+    // Return the metadata of the light sampler parameters.
+    static foundation::Dictionary get_params_metadata();
 
   private:
     struct Parameters
@@ -134,11 +139,14 @@ class BackwardLightSampler
     EmittingTriangleVector      m_emitting_triangles;
 
     EmitterCDF                  m_non_physical_lights_cdf;
+    EmitterCDF                  m_emitting_triangles_cdf;
 
     EmittingTriangleKeyHasher   m_triangle_key_hasher;
     EmittingTriangleHashTable   m_emitting_triangle_hash_table;
 
     LightTree                   m_light_tree;
+
+    bool                        m_use_light_tree;
 
     // Recursively collect non-physical lights from a given set of assembly instances.
     void collect_non_physical_lights(
@@ -163,6 +171,19 @@ class BackwardLightSampler
 
     // Build a hash table that allows to find the emitting triangle at a given shading point.
     void build_emitting_triangle_hash_table();
+
+    // Sample the set of non-physical lights using a light-tree.
+    void sample_light_tree_lights(
+        const ShadingRay::Time&             time,
+        const foundation::Vector3f&         s,
+        const ShadingPoint&                 shading_point,
+        LightSample&                        light_sample) const;
+
+    // Sample the set of emitting triangles.
+    void sample_emitting_triangles(
+        const ShadingRay::Time&             time,
+        const foundation::Vector3f&         s,
+        LightSample&                        light_sample) const;
 
     // Sample a given non-physical light.
     void sample_light_tree_light(
