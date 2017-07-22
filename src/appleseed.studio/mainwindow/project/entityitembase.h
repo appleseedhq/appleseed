@@ -41,6 +41,9 @@
 #include <QObject>
 #include <QString>
 
+// Standard headers.
+#include <cassert>
+
 // Forward declarations.
 namespace appleseed { namespace studio { class EntityEditorContext; } }
 
@@ -100,6 +103,8 @@ EntityItemBase<Entity>::EntityItemBase(
   : EntityItemBaseSlots(editor_context, entity->get_class_uid())
   , m_entity(entity)
 {
+    assert(m_entity != nullptr);
+
     update();
 }
 
