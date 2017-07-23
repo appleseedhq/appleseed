@@ -33,9 +33,6 @@
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/utility/paramarray.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
 // Forward declarations.
 namespace foundation { class Dictionary; }
 
@@ -47,12 +44,11 @@ namespace renderer
 //
 
 class BDPTLightingEngineFactory
-    : public ILightingEngineFactory
+  : public ILightingEngineFactory
 {
   public:
     // Constructor.
-    BDPTLightingEngineFactory(
-        const ParamArray&   params);
+    explicit BDPTLightingEngineFactory(const ParamArray& params);
 
     // Delete this instance.
     virtual void release() override;

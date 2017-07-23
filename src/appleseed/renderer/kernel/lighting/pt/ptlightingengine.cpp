@@ -660,8 +660,8 @@ namespace
                         m_sampling_context,
                         m_params.m_dl_light_sample_count);
 
-                // No light samples has to be made.
-                if (light_sample_count == 0) return;
+                if (light_sample_count == 0)
+                    return;
 
                 const BSDFSampler bsdf_sampler(
                     bsdf,
@@ -839,8 +839,8 @@ namespace
                         m_sampling_context,
                         m_params.m_dl_light_sample_count);
 
-                // No light samples has to be made.
-                if (light_sample_count == 0) return;
+                if (light_sample_count == 0)
+                    return;
 
                 const VolumeSampler volume_sampler(
                     volume_ray,
