@@ -368,7 +368,15 @@ DictionaryArray CameraFactory::get_input_metadata()
         Dictionary()
             .insert("name", "shutter_open_time")
             .insert("label", "Shutter Open Time")
-            .insert("type", "text")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "0.0"));
 
@@ -376,7 +384,15 @@ DictionaryArray CameraFactory::get_input_metadata()
         Dictionary()
             .insert("name", "shutter_close_time")
             .insert("label", "Shutter Close Time")
-            .insert("type", "text")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
