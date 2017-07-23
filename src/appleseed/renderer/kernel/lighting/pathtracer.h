@@ -99,15 +99,6 @@ class PathTracer
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point);
 
-    // This method performs raymarching across the volume.
-    // Returns whether the path should be continued.
-    bool march(
-        SamplingContext&        sampling_context,
-        const ShadingContext&   shading_context,
-        const ShadingRay&       ray,
-        PathVertex&             vertex,
-        ShadingPoint&           shading_point);
-
   private:
     PathVisitor&                m_path_visitor;
     VolumeVisitor&              m_volume_visitor;
@@ -128,6 +119,11 @@ class PathTracer
         SamplingContext&        sampling_context,
         const Alpha             alpha);
 
+    // Use Russian Roulette to cut the path without introducing bias.
+    bool continue_path_rr(
+        SamplingContext&        sampling_context,
+        PathVertex&             vertex);
+
     // Apply path visitor and sample BSDF in a given path vertex.
     // If all checks are passed, build a bounced ray that continues in the sampled direction
     // and return true, otherwise return false.
@@ -137,10 +133,14 @@ class PathTracer
         BSDFSample&             sample,
         ShadingRay&             ray);
 
-    // Use Russian Roulette to cut the path without introducing bias.
-    bool continue_path_rr(
+    // This method performs raymarching across the volume.
+    // Returns whether the path should be continued.
+    bool march(
         SamplingContext&        sampling_context,
-        PathVertex&             vertex);
+        const ShadingContext&   shading_context,
+        const ShadingRay&       ray,
+        PathVertex&             vertex,
+        ShadingPoint&           shading_point);
 };
 
 
@@ -584,6 +584,50 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 }
 
 template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
+inline bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::pass_through(
+    SamplingContext&            sampling_context,
+    const Alpha                 alpha)
+{
+    if (alpha[0] >= 1.0f)
+        return false;
+
+    if (alpha[0] <= 0.0f)
+        return true;
+
+    sampling_context.split_in_place(1, 1);
+
+    return sampling_context.next2<float>() >= alpha[0];
+}
+
+template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
+inline bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::continue_path_rr(
+    SamplingContext&            sampling_context,
+    PathVertex&                 vertex)
+{
+    if (vertex.m_path_length <= m_rr_min_path_length)
+        return true;
+
+    // Generate a uniform sample in [0,1).
+    sampling_context.split_in_place(1, 1);
+    const float s = sampling_context.next2<float>();
+
+    // Compute the probability of extending this path.
+    // todo: make max scattering prob lower (0.99) to avoid getting stuck?
+    const float scattering_prob =
+        std::min(foundation::max_value(vertex.m_throughput), 1.0f);
+
+    // Russian Roulette.
+    if (!foundation::pass_rr(scattering_prob, s))
+        return false;
+
+    // Adjust throughput to account for terminated paths.
+    assert(scattering_prob > 0.0f);
+    vertex.m_throughput /= scattering_prob;
+
+    return true;
+}
+
+template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
 bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     SamplingContext&            sampling_context,
     PathVertex&                 vertex,
@@ -694,50 +738,6 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
         volume->evaluate_transmission(data, volume_ray, transmission);
         vertex.m_throughput *= transmission;
     }
-
-    return true;
-}
-
-template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
-inline bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::pass_through(
-    SamplingContext&            sampling_context,
-    const Alpha                 alpha)
-{
-    if (alpha[0] >= 1.0f)
-        return false;
-
-    if (alpha[0] <= 0.0f)
-        return true;
-
-    sampling_context.split_in_place(1, 1);
-
-    return sampling_context.next2<float>() >= alpha[0];
-}
-
-template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
-inline bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::continue_path_rr(
-    SamplingContext&            sampling_context,
-    PathVertex&                 vertex)
-{
-    if (vertex.m_path_length <= m_rr_min_path_length)
-        return true;
-
-    // Generate a uniform sample in [0,1).
-    sampling_context.split_in_place(1, 1);
-    const float s = sampling_context.next2<float>();
-
-    // Compute the probability of extending this path.
-    // todo: make max scattering prob lower (0.99) to avoid getting stuck?
-    const float scattering_prob =
-        std::min(foundation::max_value(vertex.m_throughput), 1.0f);
-
-    // Russian Roulette.
-    if (!foundation::pass_rr(scattering_prob, s))
-        return false;
-
-    // Adjust throughput to account for terminated paths.
-    assert(scattering_prob > 0.0f);
-    vertex.m_throughput /= scattering_prob;
 
     return true;
 }
