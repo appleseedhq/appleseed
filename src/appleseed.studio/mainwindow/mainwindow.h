@@ -92,7 +92,8 @@ class MainWindow
     ProjectManager* get_project_manager();
 
     void new_project();
-    void open_project(const QString& filepath);
+    void open_project_sync(const QString& filepath);
+    void open_project_async(const QString& filepath);
     void open_and_render_project(const QString& filepath, const QString& configuration);
     void save_project(QString filepath);
     void close_project();

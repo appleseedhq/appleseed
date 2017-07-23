@@ -68,7 +68,7 @@ Project* new_project()
 
 Project* open_project(const char* project_path)
 {
-    main_window()->open_project(project_path);
+    main_window()->open_project_sync(project_path);
     return project_manager()->get_project();
 }
 

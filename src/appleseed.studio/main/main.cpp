@@ -326,7 +326,7 @@ int main(int argc, char* argv[])
         }
         else
         {
-            window.open_project(filename);
+            window.open_project_async(filename);
         }
     }
 
