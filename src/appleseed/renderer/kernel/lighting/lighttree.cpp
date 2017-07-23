@@ -151,9 +151,7 @@ void LightTree::draw_tree_structure(
         // Find nodes on each level of the tree and draw their child bboxes.
         for (size_t parent_level = 0; parent_level < m_tree_depth; parent_level++)
         {
-            const auto filename = foundation::format("{0}_{1}.py",
-                                                    filename_base,
-                                                    parent_level + 1);
+            const auto filename = foundation::format("{0}_{1}.py", filename_base, parent_level + 1);
             foundation::VPythonFile file(filename.c_str());
             file.draw_axes(Width);
 
@@ -161,7 +159,7 @@ void LightTree::draw_tree_structure(
             file.draw_aabb(root_bbox, color, Width);
 
             // Find every node at the parent level and draw its child bboxes.
-            for (size_t i = 0; i < m_nodes.size(); i++)
+            for (size_t i = 0; i < m_nodes.size(); ++i)
             {
                 if (m_nodes[i].is_leaf())
                     continue;
@@ -187,7 +185,7 @@ void LightTree::draw_tree_structure(
         file.draw_aabb(root_bbox, "color.yellow", Width);
 
         // Find nodes on each level of the tree and draw their child bboxes.
-        for (size_t i = 0; i < m_nodes.size(); i++)
+        for (size_t i = 0; i < m_nodes.size(); ++i)
         {
             if (m_nodes[i].is_leaf())
                 continue;
@@ -266,7 +264,7 @@ void LightTree::sample(
 
     while (!m_nodes[node_index].is_leaf())
     {
-        const LightTreeNode<foundation::AABB3d>& node = m_nodes[node_index];
+        const auto& node = m_nodes[node_index];
 
         float p1, p2;
         child_node_probabilites(node, surface_point, p1, p2);
@@ -291,18 +289,20 @@ void LightTree::sample(
     
     switch (light_type)
     {
-        // m_light_source index corresponds to the m_light_tree_lights
-        // index of the BackwardLightSampler in case of NPL, whereas the EMT index
-        // needs to be stored separately for now as it is not in the same
-        // vector with other light tree compatible lights.
-        case LightSource::NonPhysicalLightType:
-            light_index = m_items[item_index].m_light_source_index;
-            break;
-        case LightSource::EmittingTriangleType:
-            light_index = m_items[item_index].m_external_source_index;
-            break;
-        default:
-            assert(!"unexpected light type");
+      // m_light_source_index corresponds to the m_light_tree_lights
+      // index of the BackwardLightSampler in case of NPL, whereas the EMT index
+      // needs to be stored separately for now as it is not in the same
+      // vector with other light tree compatible lights.
+      case LightSource::NonPhysicalLightType:
+        light_index = m_items[item_index].m_light_source_index;
+        break;
+
+      case LightSource::EmittingTriangleType:
+        light_index = m_items[item_index].m_external_source_index;
+        break;
+
+      default:
+        assert(!"Unexpected light type.");
     }
 }
 
@@ -333,19 +333,16 @@ float LightTree::evaluate_node_pdf(
 
 namespace
 {
-    void node_probability(
+    float compute_node_probability(
         const LightTreeNode<foundation::AABB3d>&    node,
         const foundation::AABB3d&                   bbox,
-        const foundation::Vector3d&                 surface_point,
-        float&                                      p)
+        const foundation::Vector3d&                 surface_point)
     {
         // Calculate probability a single node based on its distance
         // to the surface point being evaluated.
         const float squared_distance =
             static_cast<float>(foundation::square_distance(surface_point, bbox.center()));
-        const float inverse_distance_falloff = 1.0f / squared_distance;
-
-        p = node.get_importance() * inverse_distance_falloff;
+        return node.get_importance() / squared_distance;
     }
 }
 
@@ -364,8 +361,8 @@ void LightTree::child_node_probabilites(
     const auto& bbox_left  = node.get_left_bbox();
     const auto& bbox_right = node.get_right_bbox();
 
-    node_probability(child1, bbox_left, surface_point, p1);
-    node_probability(child2, bbox_right, surface_point, p2);
+    p1 = compute_node_probability(child1, bbox_left, surface_point);
+    p2 = compute_node_probability(child2, bbox_right, surface_point);
 
     // Normalize probabilities.
     const float total = p1 + p2;
@@ -376,8 +373,8 @@ void LightTree::child_node_probabilites(
     }
     else
     {
-        p1 = p1 / total;
-        p2 = p2 / total;
+        p1 /= total;
+        p2 /= total;
     }
 }
 
