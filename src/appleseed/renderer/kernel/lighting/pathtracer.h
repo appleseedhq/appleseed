@@ -85,6 +85,7 @@ class PathTracer
         const size_t            max_diffuse_bounces,
         const size_t            max_glossy_bounces,
         const size_t            max_specular_bounces,
+        const size_t            max_volume_bounces,
         const size_t            max_iterations = 1000,
         const double            near_start = 0.0);          // abort tracing if the first ray is shorter than this
 
@@ -107,13 +108,13 @@ class PathTracer
     const size_t                m_max_diffuse_bounces;
     const size_t                m_max_glossy_bounces;
     const size_t                m_max_specular_bounces;
-    const size_t                m_max_volumetric_bounces;
+    const size_t                m_max_volume_bounces;
     const size_t                m_max_iterations;
     const double                m_near_start;
     size_t                      m_diffuse_bounces;
     size_t                      m_glossy_bounces;
     size_t                      m_specular_bounces;
-    size_t                      m_volumetric_bounces;
+    size_t                      m_volume_bounces;
     size_t                      m_iterations;
 
     // Determine whether a ray can pass through a surface with a given alpha value.
@@ -159,6 +160,7 @@ inline PathTracer<PathVisitor, VolumeVisitor, Adjoint>::PathTracer(
     const size_t                max_diffuse_bounces,
     const size_t                max_glossy_bounces,
     const size_t                max_specular_bounces,
+    const size_t                max_volume_bounces,
     const size_t                max_iterations,
     const double                near_start)
   : m_path_visitor(path_visitor)
@@ -168,7 +170,7 @@ inline PathTracer<PathVisitor, VolumeVisitor, Adjoint>::PathTracer(
   , m_max_diffuse_bounces(max_diffuse_bounces)
   , m_max_glossy_bounces(max_glossy_bounces)
   , m_max_specular_bounces(max_specular_bounces)
-  , m_max_volumetric_bounces(1)
+  , m_max_volume_bounces(max_volume_bounces)
   , m_max_iterations(max_iterations)
   , m_near_start(near_start)
 {
@@ -221,7 +223,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
     m_diffuse_bounces = 0;
     m_glossy_bounces = 0;
     m_specular_bounces = 0;
-    m_volumetric_bounces = 0;
+    m_volume_bounces = 0;
     m_iterations = 0;
 
     while (true)
@@ -482,7 +484,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
             vertex.m_scattering_modes &= ~ScatteringMode::Glossy;
         if (m_specular_bounces >= m_max_specular_bounces)
             vertex.m_scattering_modes &= ~ScatteringMode::Specular;
-        if (m_volumetric_bounces >= m_max_volumetric_bounces)
+        if (m_volume_bounces >= m_max_volume_bounces)
             vertex.m_scattering_modes &= ~ScatteringMode::Volumetric;
 
         // In case there is no BSDF, the current ray will be continued without increasing its depth.
@@ -732,7 +734,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
         if (!continue_path_rr(sampling_context, vertex))
             return false;
 
-        if (m_volumetric_bounces >= m_max_volumetric_bounces)
+        if (m_volume_bounces >= m_max_volume_bounces)
             vertex.m_scattering_modes &= ~ScatteringMode::Volumetric;
 
         // Trace the ray across the volume.
@@ -878,7 +880,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
         if (vertex.m_path_length == 1)
             vertex.m_aov_mode = ScatteringMode::Volumetric;
 
-        ++m_volumetric_bounces;
+        ++m_volume_bounces;
         ++vertex.m_path_length;
 
         // Continue the ray in out-scattered direction.
@@ -888,52 +890,6 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
         volume_ray.m_tmax = std::numeric_limits<ShadingRay::ValueType>().max();
     }
 
-    return true;
-}
-
-template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
-inline bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::pass_through(
-    SamplingContext&            sampling_context,
-    const Alpha                 alpha)
-{
-    if (alpha[0] >= 1.0f)
-        return false;
-
-    if (alpha[0] <= 0.0f)
-        return true;
-
-    sampling_context.split_in_place(1, 1);
-
-    return sampling_context.next2<float>() >= alpha[0];
-}
-
-// Use Russian Roulette to cut the path without introducing bias.
-template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
-inline bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::continue_path_rr(
-    SamplingContext&    sampling_context,
-    PathVertex&         vertex)
-{
-    if (vertex.m_path_length <= m_rr_min_path_length)
-        return true;
-
-    // Generate a uniform sample in [0,1).
-    sampling_context.split_in_place(1, 1);
-    const float s = sampling_context.next2<float>();
-
-    // Compute the probability of extending this path.
-    // todo: make max scattering prob lower (0.99) to avoid getting stuck?
-    const float scattering_prob =
-        std::min(foundation::max_value(vertex.m_throughput), 1.0f);
-
-    // Russian Roulette.
-    if (!foundation::pass_rr(scattering_prob, s))
-        return false;
-
-    // Adjust throughput to account for terminated paths.
-    assert(scattering_prob > 0.0f);
-    vertex.m_throughput /= scattering_prob;
-
->>>>>>> 9a533ea... Fix throughput update formula and MIS in multiple scattering and do some small tweaks
     return true;
 }
 

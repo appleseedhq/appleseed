@@ -103,6 +103,7 @@ namespace
             const size_t    m_max_diffuse_bounces;          // maximum number of diffuse bounces, ~0 for unlimited
             const size_t    m_max_glossy_bounces;           // maximum number of glossy bounces, ~0 for unlimited
             const size_t    m_max_specular_bounces;         // maximum number of specular bounces, ~0 for unlimited
+            const size_t    m_max_volume_bounces;           // maximum number of volume scattering events, ~0 for unlimited
 
             const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
             const bool      m_next_event_estimation;        // use next event estimation?
@@ -127,6 +128,7 @@ namespace
               , m_max_diffuse_bounces(fixup_bounces(params.get_optional<int>("max_diffuse_bounces", -1)))
               , m_max_glossy_bounces(fixup_bounces(params.get_optional<int>("max_glossy_bounces", -1)))
               , m_max_specular_bounces(fixup_bounces(params.get_optional<int>("max_specular_bounces", -1)))
+              , m_max_volume_bounces(fixup_bounces(params.get_optional<int>("max_volume_bounces", 0)))
               , m_rr_min_path_length(fixup_path_length(params.get_optional<size_t>("rr_min_path_length", 6)))
               , m_next_event_estimation(params.get_optional<bool>("next_event_estimation", true))
               , m_dl_light_sample_count(params.get_optional<float>("dl_light_samples", 1.0f))
@@ -184,6 +186,7 @@ namespace
                     m_max_diffuse_bounces == ~0 ? "infinite" : pretty_uint(m_max_diffuse_bounces).c_str(),
                     m_max_glossy_bounces == ~0 ? "infinite" : pretty_uint(m_max_glossy_bounces).c_str(),
                     m_max_specular_bounces == ~0 ? "infinite" : pretty_uint(m_max_specular_bounces).c_str(),
+                    m_max_volume_bounces == ~0 ? "infinite" : pretty_uint(m_max_volume_bounces).c_str(),
                     m_rr_min_path_length == ~0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
                     m_next_event_estimation ? "on" : "off",
                     pretty_scalar(m_dl_light_sample_count).c_str(),
@@ -266,6 +269,7 @@ namespace
                 m_params.m_max_diffuse_bounces == ~0 ? ~0 : m_params.m_max_diffuse_bounces + 1,
                 m_params.m_max_glossy_bounces,
                 m_params.m_max_specular_bounces,
+                m_params.m_max_volume_bounces,
                 shading_context.get_max_iterations());
 
             const size_t path_length =
@@ -1128,6 +1132,16 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("min", "0")
             .insert("label", "Max Specular Bounces")
             .insert("help", "Maximum number of specular bounces"));
+
+    metadata.dictionaries().insert(
+        "max_volume_bounces",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "0")
+            .insert("unlimited", "false")
+            .insert("min", "0")
+            .insert("label", "Max Volumetric Bounces")
+            .insert("help", "Maximum number of volume scattering events (0 - single scattering)"));
 
     metadata.dictionaries().insert(
         "rr_min_path_length",
