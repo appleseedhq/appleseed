@@ -190,18 +190,13 @@ namespace
     };
 }
 
-ProjectManager* MainWindow::get_project_manager()
-{
-    return &m_project_manager;
-}
-
 void MainWindow::new_project()
 {
     m_project_manager.create_project();
     on_project_change();
 }
 
-void MainWindow::open_project_sync(const QString& filepath)
+bool MainWindow::open_project(const QString& filepath)
 {
     save_state_before_project_open();
 
@@ -217,7 +212,19 @@ void MainWindow::open_project_sync(const QString& filepath)
     set_project_explorer_enabled(false);
     set_rendering_widgets_enabled(false, NotRendering);
 
-    m_project_manager.load_project_sync(filepath.toAscii().constData());
+    const bool successful = m_project_manager.load_project(filepath.toAscii().constData());
+
+    if (successful)
+    {
+        on_project_change();
+    }
+    else
+    {
+        recreate_render_widgets();
+        update_workspace();
+    }
+
+    return successful;
 }
 
 void MainWindow::open_project_async(const QString& filepath)
@@ -276,6 +283,11 @@ void MainWindow::close_project()
 {
     m_project_manager.close_project();
     on_project_change();
+}
+
+ProjectManager* MainWindow::get_project_manager()
+{
+    return &m_project_manager;
 }
 
 ParamArray& MainWindow::get_settings()

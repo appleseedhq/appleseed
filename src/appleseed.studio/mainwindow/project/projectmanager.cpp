@@ -67,9 +67,9 @@ void ProjectManager::create_project()
     assert(result);
 }
 
-void ProjectManager::load_project_sync(const std::string& filepath)
+bool ProjectManager::load_project(const std::string& filepath)
 {
-    do_load_project(filepath);
+    return do_load_project(filepath);
 }
 
 void ProjectManager::load_project_async(const string& filepath)
