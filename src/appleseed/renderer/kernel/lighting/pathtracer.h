@@ -731,6 +731,15 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
 
     while (true)
     {
+        // Put a hard limit on the number of iterations.
+        if (m_iterations++ == m_max_iterations)
+        {
+            RENDERER_LOG_WARNING(
+                "reached hard iteration limit (%s), breaking path tracing loop.",
+                foundation::pretty_int(m_max_iterations).c_str());
+            return false;
+        }
+
         if (!continue_path_rr(sampling_context, vertex))
             return false;
 

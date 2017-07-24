@@ -128,7 +128,7 @@ namespace
               , m_max_diffuse_bounces(fixup_bounces(params.get_optional<int>("max_diffuse_bounces", -1)))
               , m_max_glossy_bounces(fixup_bounces(params.get_optional<int>("max_glossy_bounces", -1)))
               , m_max_specular_bounces(fixup_bounces(params.get_optional<int>("max_specular_bounces", -1)))
-              , m_max_volume_bounces(fixup_bounces(params.get_optional<int>("max_volume_bounces", 0)))
+              , m_max_volume_bounces(fixup_bounces(params.get_optional<int>("max_volume_bounces", 8)))
               , m_rr_min_path_length(fixup_path_length(params.get_optional<size_t>("rr_min_path_length", 6)))
               , m_next_event_estimation(params.get_optional<bool>("next_event_estimation", true))
               , m_dl_light_sample_count(params.get_optional<float>("dl_light_samples", 1.0f))
