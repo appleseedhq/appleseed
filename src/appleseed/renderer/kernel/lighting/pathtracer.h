@@ -761,22 +761,18 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
         vertex.m_volume_data = data;
 
         // Apply the visitor to this ray.
-        m_volume_visitor.visit(vertex, volume_ray);
+        m_volume_visitor.visit_ray(vertex, volume_ray);
 
         if ((vertex.m_scattering_modes & ScatteringMode::Volumetric) == 0)
         {
-            //
             // No more scattering events are allowed:
             // update the ray transmission and continue path tracing.
-            //
-
             Spectrum transmission;
             volume->evaluate_transmission(
                 vertex.m_volume_data,
                 volume_ray,
                 transmission);
             vertex.m_throughput *= transmission;
-
             break;
         }
 
@@ -807,7 +803,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
                 distance_sample, extinction_coef[channel]);
         }
 
-        // Continue path tracing if the sampled distance exceeds total length of the ray,
+        // Continue path tracing if sampled distance exceeds total length of the ray,
         // otherwise process the scattering event.
         if (extinction_is_null || exit_point.get_distance() < distance_sample)
         {
@@ -827,6 +823,13 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
         //
         // Bounce.
         //
+
+        // Terminate the path if this scattering event is not accepted.
+        if (!m_volume_visitor.accept_scattering(vertex.m_prev_mode))
+            return false;
+
+        // Let the volume visitor handle the scattering event.
+        m_volume_visitor.on_scatter(vertex);
 
         // Retrieve scattering spectrum.
         Spectrum scattering_coef = volume->scattering_coefficient(

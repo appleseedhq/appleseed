@@ -347,11 +347,11 @@ DictionaryArray GenericVolumeFactory::get_input_metadata() const
             .insert("type", "numeric")
             .insert("min",
                 Dictionary()
-                    .insert("value", "-0.9")
+                    .insert("value", "-0.99")
                     .insert("type", "soft"))
             .insert("max",
                 Dictionary()
-                    .insert("value", "0.9")
+                    .insert("value", "0.99")
                     .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "0.0")
