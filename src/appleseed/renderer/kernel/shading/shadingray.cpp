@@ -100,7 +100,9 @@ void ShadingRay::remove_medium(
 
 const Volume* ShadingRay::Medium::get_volume() const
 {
-    if (m_material == nullptr) return nullptr;
+    if (m_material == nullptr)
+        return nullptr;
+
     return m_material->get_render_data().m_volume;
 }
 

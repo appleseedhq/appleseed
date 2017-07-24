@@ -34,16 +34,15 @@
 
 // Qt headers.
 #include <QObject>
-#include <QPlainTextEdit>
 
 // Forward declarations.
-class QWheelEvent;
+class QWidget;
 
 namespace appleseed {
 namespace studio {
 
 class PythonOutput
-    : public ZoomablePlainTextEdit
+  : public ZoomablePlainTextEdit
 {
     Q_OBJECT
 

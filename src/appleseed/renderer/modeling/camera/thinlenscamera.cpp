@@ -724,7 +724,15 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "f_stop")
             .insert("label", "F-Number")
-            .insert("type", "text")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.5")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "256.0")
+                    .insert("type", "soft"))
             .insert("use", "required")
             .insert("default", "8.0"));
 

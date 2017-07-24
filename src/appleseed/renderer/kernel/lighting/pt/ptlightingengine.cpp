@@ -660,8 +660,8 @@ namespace
                         m_sampling_context,
                         m_params.m_dl_light_sample_count);
 
-                // No light samples has to be made.
-                if (light_sample_count == 0) return;
+                if (light_sample_count == 0)
+                    return;
 
                 const BSDFSampler bsdf_sampler(
                     bsdf,
@@ -839,8 +839,8 @@ namespace
                         m_sampling_context,
                         m_params.m_dl_light_sample_count);
 
-                // No light samples has to be made.
-                if (light_sample_count == 0) return;
+                if (light_sample_count == 0)
+                    return;
 
                 const VolumeSampler volume_sampler(
                     volume_ray,
@@ -977,7 +977,8 @@ namespace
                 const float distance_sample_count_float = max_density * m_params.m_distance_sample_count;
                 const size_t distance_sample_count = stochastic_cast<size_t>(
                     m_sampling_context, distance_sample_count_float);
-                if (distance_sample_count == 0) return;
+                if (distance_sample_count == 0)
+                    return;
 
                 for (size_t i = 0; i < distance_sample_count; ++i)
                 {

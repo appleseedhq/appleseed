@@ -155,21 +155,24 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
         }
     }
 
-    // Add contributions from light-tree lights only.
+    // Add contributions from the light set.
     if (m_light_sampler.has_lightset())
     {
+        ShadingComponents lightset_radiance(Spectrum::Illuminance);
+
         sampling_context.split_in_place(3, m_light_sample_count);
 
-        for (size_t i = 0; i < m_light_sample_count; ++i)
+        for (size_t i = 0, e = m_light_sample_count; i < e; ++i)
         {
-            // Sample light tree-compatible lights only.
+            // Sample the light set.
             LightSample sample;
             m_light_sampler.sample_lightset(
                 m_time,
                 sampling_context.next2<Vector3f>(),
                 m_shading_point,
                 sample);
-            
+
+            // Add the contribution of the chosen light.
             if (sample.m_triangle)
             {
                 add_emitting_triangle_sample_contribution(
@@ -177,7 +180,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
                     sample,
                     mis_heuristic,
                     outgoing,
-                    radiance);
+                    lightset_radiance);
             }
             else
             {
@@ -185,12 +188,14 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
                     sampling_context,
                     sample,
                     outgoing,
-                    radiance);
+                    lightset_radiance);
             }
         }
 
         if (m_light_sample_count > 1)
-            radiance /= static_cast<float>(m_light_sample_count);
+            lightset_radiance /= static_cast<float>(m_light_sample_count);
+
+        radiance += lightset_radiance;
     }
 }
 
