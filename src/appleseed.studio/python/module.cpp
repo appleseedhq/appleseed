@@ -75,7 +75,12 @@ Project* open_project(const char* project_path)
 void save_project(const char* project_path = nullptr)
 {
     if (project_path == nullptr)
-        main_window()->save_project(project_manager()->get_project()->get_path());
+    {
+        if (project_manager()->get_project()->has_path())
+            main_window()->save_project(project_manager()->get_project()->get_path());
+        else
+            throw Exception("No path is specified for project");
+    }
     else
         main_window()->save_project(project_path);
 }
