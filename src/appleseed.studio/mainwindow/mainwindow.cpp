@@ -190,18 +190,13 @@ namespace
     };
 }
 
-ProjectManager* MainWindow::get_project_manager()
-{
-    return &m_project_manager;
-}
-
 void MainWindow::new_project()
 {
     m_project_manager.create_project();
     on_project_change();
 }
 
-void MainWindow::open_project(const QString& filepath)
+bool MainWindow::open_project(const QString& filepath)
 {
     save_state_before_project_open();
 
@@ -217,7 +212,38 @@ void MainWindow::open_project(const QString& filepath)
     set_project_explorer_enabled(false);
     set_rendering_widgets_enabled(false, NotRendering);
 
-    m_project_manager.load_project(filepath.toAscii().constData());
+    const bool successful = m_project_manager.load_project(filepath.toAscii().constData());
+
+    if (successful)
+    {
+        on_project_change();
+    }
+    else
+    {
+        recreate_render_widgets();
+        update_workspace();
+    }
+
+    return successful;
+}
+
+void MainWindow::open_project_async(const QString& filepath)
+{
+    save_state_before_project_open();
+
+    if (m_rendering_manager.is_rendering())
+    {
+        m_rendering_manager.abort_rendering();
+        m_rendering_manager.wait_until_rendering_end();
+    }
+
+    remove_render_widgets();
+
+    set_file_widgets_enabled(false, NotRendering);
+    set_project_explorer_enabled(false);
+    set_rendering_widgets_enabled(false, NotRendering);
+
+    m_project_manager.load_project_async(filepath.toAscii().constData());
 }
 
 void MainWindow::open_and_render_project(const QString& filepath, const QString& configuration)
@@ -232,7 +258,7 @@ void MainWindow::open_and_render_project(const QString& filepath, const QString&
         mapper, SIGNAL(mapped(const QString&, const QString&, const bool)),
         SLOT(slot_start_rendering_once(const QString&, const QString&, const bool)));
 
-    open_project(filepath);
+    open_project_async(filepath);
 }
 
 void MainWindow::save_project(QString filepath)
@@ -257,6 +283,11 @@ void MainWindow::close_project()
 {
     m_project_manager.close_project();
     on_project_change();
+}
+
+ProjectManager* MainWindow::get_project_manager()
+{
+    return &m_project_manager;
 }
 
 ParamArray& MainWindow::get_settings()
@@ -1034,13 +1065,13 @@ void MainWindow::dropEvent(QDropEvent* event)
     {
         const QList<QUrl> urls = event->mimeData()->urls();
         QApplication::sendEvent(this, new QCloseEvent());
-        open_project(urls[0].toLocalFile());
+        open_project_async(urls[0].toLocalFile());
     }
     else
     {
         const QString text = event->mimeData()->text();
         QApplication::sendEvent(this, new QCloseEvent());
-        open_project(text);
+        open_project_async(text);
     }
 
      event->accept();
@@ -1196,7 +1227,7 @@ void MainWindow::slot_open_project()
     {
         filepath = QDir::toNativeSeparators(filepath);
 
-        open_project(filepath);
+        open_project_async(filepath);
         update_recent_files_menu(filepath);
     }
 }
@@ -1211,7 +1242,7 @@ void MainWindow::slot_open_recent()
     if (action)
     {
         const QString filepath = action->data().toString();
-        open_project(filepath);
+        open_project_async(filepath);
     }
 }
 
@@ -1242,7 +1273,7 @@ void MainWindow::slot_reload_project()
     if (!can_close_project())
         return;
 
-    open_project(m_project_manager.get_project()->get_path());
+    open_project_async(m_project_manager.get_project()->get_path());
 }
 
 namespace
