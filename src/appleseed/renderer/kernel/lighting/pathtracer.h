@@ -787,7 +787,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
 
         // Sample channel uniformly at random.
         const float s = sampling_context.next2<float>();
-        const size_t channel = truncate<size_t>(s * channel_count);
+        const size_t channel = foundation::truncate<size_t>(s * channel_count);
         const bool extinction_is_null = (extinction_coef[channel] < 1.0e-6f);
 
         float distance_sample = 0.0f;
@@ -805,7 +805,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
 
         // Continue path tracing if sampled distance exceeds total length of the ray,
         // otherwise process the scattering event.
-        if (extinction_is_null || exit_point.get_distance() < distance_sample)
+        if (extinction_is_null || volume_ray.m_tmax < distance_sample)
         {
             Spectrum transmission;
             volume->evaluate_transmission(
@@ -863,6 +863,10 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
             if (extinction_coef[i] > 1.0e-6f)
                 mis_weights_sum += transmission[i] * scattering_coef[i] / extinction_coef[i];
         }
+        if (mis_weights_sum < 1.0e-6f)
+        {
+            return false;  // no scattering
+        }
         const float current_mis_weight =
             channel_count *
             transmission[channel] *
@@ -895,7 +899,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
         ++m_volume_bounces;
         ++vertex.m_path_length;
 
-        // Continue the ray in out-scattered direction.
+        // Continue the ray in in-scattered direction.
         volume_ray.m_org += static_cast<double>(distance_sample) * volume_ray.m_dir;
         volume_ray.m_dir = foundation::improve_normalization<2>(foundation::Vector3d(incoming));
         ++volume_ray.m_depth;

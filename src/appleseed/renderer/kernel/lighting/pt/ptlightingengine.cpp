@@ -844,7 +844,8 @@ namespace
         // Volume visitor without next event estimation.
         //
 
-        struct VolumeVisitorSimple final : public VolumeVisitorBase
+        struct VolumeVisitorSimple final
+          : public VolumeVisitorBase
         {
             VolumeVisitorSimple(
                 const Parameters&               params,
@@ -871,7 +872,8 @@ namespace
         // that performs distance sampling and light sampling in a decoupled fashion.
         //
 
-        struct VolumeVisitorDistanceSampling final : public VolumeVisitorBase
+        struct VolumeVisitorDistanceSampling final
+          : public VolumeVisitorBase
         {
             VolumeVisitorDistanceSampling(
                 const Parameters&               params,
