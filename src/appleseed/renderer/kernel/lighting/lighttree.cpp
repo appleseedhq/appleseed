@@ -274,19 +274,22 @@ float LightTree::evaluate_node_pdf(
     return pdf;
 }
 
-namespace
+float LightTree::compute_node_probability(
+    const LightTreeNode<foundation::AABB3d>&    node,
+    const foundation::AABB3d&                   bbox,
+    const foundation::Vector3d&                 surface_point) const
 {
-    float compute_node_probability(
-        const LightTreeNode<AABB3d>&    node,
-        const AABB3d&                   bbox,
-        const Vector3d&                 surface_point)
-    {
-        // Calculate probability of a single node based on its distance
-        // to the surface point being illuminated.
-        const float squared_distance =
-            static_cast<float>(square_distance(surface_point, bbox.center()));
-        return node.get_importance() / squared_distance;
-    }
+    // Calculate probability of a single node based on its distance
+    // to the surface point being illuminated.
+    // For leaf nodes use the actual position of the light source, instead
+    // of center of the bbox. It is more correct for shaped lights.
+    const foundation::Vector3d position = node.is_leaf()
+        ? m_light_sources[m_items[node.get_item_index()].m_light_source_index]->get_position()
+        : bbox.center();
+    const float squared_distance =
+        static_cast<float>(square_distance(surface_point, position));
+
+    return node.get_importance() / squared_distance;
 }
 
 void LightTree::child_node_probabilites(
