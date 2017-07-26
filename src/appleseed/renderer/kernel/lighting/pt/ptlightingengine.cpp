@@ -173,6 +173,7 @@ namespace
                     "  max diffuse bounces           %s\n"
                     "  max glossy bounces            %s\n"
                     "  max specular bounces          %s\n"
+                    "  max volume bounces            %s\n"
                     "  rr min path length            %s\n"
                     "  next event estimation         %s\n"
                     "  dl light samples              %s\n"
@@ -245,10 +246,6 @@ namespace
             const ShadingPoint&     shading_point,
             ShadingComponents&      radiance)               // output radiance, in W.sr^-1.m^-2
         {
-            static_assert(
-                std::is_base_of<PathVisitorBase, PathVisitor>::value,
-                "Path visitor must be inherited from PathVisitorBase");
-
             PathVisitor path_visitor(
                 m_params,
                 m_light_sampler,
@@ -256,10 +253,6 @@ namespace
                 shading_context,
                 shading_point.get_scene(),
                 radiance);
-
-            static_assert(
-                std::is_base_of<VolumeVisitorBase, VolumeVisitor>::value,
-                "Volume visitor must be inherited from VolumeVisitorBase");
 
             VolumeVisitor volume_visitor(
                 m_params,
@@ -835,7 +828,7 @@ namespace
         // Volume visitor without next event estimation.
         //
 
-        struct VolumeVisitorSimple final
+        struct VolumeVisitorSimple
           : public VolumeVisitorBase
         {
             VolumeVisitorSimple(
@@ -870,7 +863,7 @@ namespace
         // that performs distance sampling and light sampling in a decoupled fashion.
         //
 
-        struct VolumeVisitorDistanceSampling final
+        struct VolumeVisitorDistanceSampling
           : public VolumeVisitorBase
         {
             VolumeVisitorDistanceSampling(
