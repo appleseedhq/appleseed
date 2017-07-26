@@ -72,6 +72,10 @@ void ShadingComponents::add_to_component(
         m_glossy += value;
         break;
 
+      case ScatteringMode::Volumetric:
+        m_volume += value;
+        break;
+
       assert_otherwise;
     }
 }

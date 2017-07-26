@@ -85,6 +85,7 @@ class PathTracer
         const size_t            max_diffuse_bounces,
         const size_t            max_glossy_bounces,
         const size_t            max_specular_bounces,
+        const size_t            max_volume_bounces,
         const size_t            max_iterations = 1000,
         const double            near_start = 0.0);          // abort tracing if the first ray is shorter than this
 
@@ -107,11 +108,13 @@ class PathTracer
     const size_t                m_max_diffuse_bounces;
     const size_t                m_max_glossy_bounces;
     const size_t                m_max_specular_bounces;
+    const size_t                m_max_volume_bounces;
     const size_t                m_max_iterations;
     const double                m_near_start;
     size_t                      m_diffuse_bounces;
     size_t                      m_glossy_bounces;
     size_t                      m_specular_bounces;
+    size_t                      m_volume_bounces;
     size_t                      m_iterations;
 
     // Determine whether a ray can pass through a surface with a given alpha value.
@@ -157,6 +160,7 @@ inline PathTracer<PathVisitor, VolumeVisitor, Adjoint>::PathTracer(
     const size_t                max_diffuse_bounces,
     const size_t                max_glossy_bounces,
     const size_t                max_specular_bounces,
+    const size_t                max_volume_bounces,
     const size_t                max_iterations,
     const double                near_start)
   : m_path_visitor(path_visitor)
@@ -166,6 +170,7 @@ inline PathTracer<PathVisitor, VolumeVisitor, Adjoint>::PathTracer(
   , m_max_diffuse_bounces(max_diffuse_bounces)
   , m_max_glossy_bounces(max_glossy_bounces)
   , m_max_specular_bounces(max_specular_bounces)
+  , m_max_volume_bounces(max_volume_bounces)
   , m_max_iterations(max_iterations)
   , m_near_start(near_start)
 {
@@ -218,6 +223,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
     m_diffuse_bounces = 0;
     m_glossy_bounces = 0;
     m_specular_bounces = 0;
+    m_volume_bounces = 0;
     m_iterations = 0;
 
     while (true)
@@ -478,6 +484,8 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
             vertex.m_scattering_modes &= ~ScatteringMode::Glossy;
         if (m_specular_bounces >= m_max_specular_bounces)
             vertex.m_scattering_modes &= ~ScatteringMode::Specular;
+        if (m_volume_bounces >= m_max_volume_bounces)
+            vertex.m_scattering_modes &= ~ScatteringMode::Volumetric;
 
         // In case there is no BSDF, the current ray will be continued without increasing its depth.
         ShadingRay next_ray(
@@ -719,24 +727,187 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
     const ShadingRay::Medium* medium = ray.get_current_medium();
     const Volume* volume = medium->get_volume();
 
+    // Trace the ray across the volume.
+    exit_point.clear();
     shading_context.get_intersector().trace(
         ray,
         exit_point,
         vertex.m_shading_point);
 
-    const ShadingRay& volume_ray = exit_point.get_ray();
-
-    void* data = volume->evaluate_inputs(shading_context, volume_ray);
-    volume->prepare_inputs(shading_context.get_arena(), volume_ray, data);
-    vertex.m_volume_data = data;
-
-    m_volume_visitor.visit(vertex, volume_ray);
-
-    if (exit_point.hit())
+    while (true)
     {
+        // Put a hard limit on the number of iterations.
+        if (m_iterations++ == m_max_iterations)
+        {
+            RENDERER_LOG_WARNING(
+                "reached hard iteration limit (%s), breaking path tracing loop.",
+                foundation::pretty_int(m_max_iterations).c_str());
+            return false;
+        }
+
+        if (!continue_path_rr(sampling_context, vertex))
+            return false;
+
+        if (m_volume_bounces >= m_max_volume_bounces)
+            vertex.m_scattering_modes &= ~ScatteringMode::Volumetric;
+
+        const ShadingRay& volume_ray = exit_point.get_ray();
+
+        // Evaluate and prepare volume inputs.
+        void* data = volume->evaluate_inputs(shading_context, volume_ray);
+        volume->prepare_inputs(shading_context.get_arena(), volume_ray, data);
+        vertex.m_volume_data = data;
+
+        // Apply the visitor to this ray.
+        m_volume_visitor.visit_ray(vertex, volume_ray);
+
+        if ((vertex.m_scattering_modes & ScatteringMode::Volumetric) == 0)
+        {
+            // No more scattering events are allowed:
+            // update the ray transmission and continue path tracing.
+            Spectrum transmission;
+            volume->evaluate_transmission(
+                vertex.m_volume_data,
+                volume_ray,
+                transmission);
+            vertex.m_throughput *= transmission;
+            break;
+        }
+
+        // Retrieve extinction spectrum.
+        Spectrum extinction_coef = volume->extinction_coefficient(
+            vertex.m_volume_data, volume_ray);
+        const size_t channel_count = std::max(extinction_coef.size(), vertex.m_throughput.size());
+        if (extinction_coef.size() != channel_count)
+            Spectrum::upgrade(extinction_coef, extinction_coef);
+        
+        sampling_context.split_in_place(1, 2);
+
+        // Sample channel uniformly at random.
+        const float s = sampling_context.next2<float>();
+        const size_t channel = foundation::truncate<size_t>(s * channel_count);
+        const bool extinction_is_null = (extinction_coef[channel] < 1.0e-6f);
+
+        float distance_sample = 0.0f;
+        float distance_pdf = 0.0f;
+        if (!extinction_is_null)
+        {
+            // Sample distance.
+            distance_sample = foundation::sample_exponential_distribution(
+                sampling_context.next2<float>(), extinction_coef[channel]);
+
+            // Calculate PDF of this distance sample.
+            distance_pdf = foundation::exponential_distribution_pdf(
+                distance_sample, extinction_coef[channel]);
+        }
+
+        // Continue path tracing if sampled distance exceeds total length of the ray,
+        // otherwise process the scattering event.
+        if (extinction_is_null || volume_ray.m_tmax < distance_sample)
+        {
+            Spectrum transmission;
+            volume->evaluate_transmission(
+                vertex.m_volume_data,
+                volume_ray,
+                transmission);
+
+            vertex.m_throughput *= transmission;
+            vertex.m_throughput /=                       // equivalent to multiplying by MIS weight
+                foundation::average_value(transmission); // and then dividing by transmission[channel]
+
+            break;
+        }
+
+        //
+        // Bounce.
+        //
+
+        // Terminate the path if this scattering event is not accepted.
+        if (!m_volume_visitor.accept_scattering(vertex.m_prev_mode))
+            return false;
+
+        // Let the volume visitor handle the scattering event.
+        m_volume_visitor.on_scatter(vertex);
+
+        // Retrieve scattering spectrum.
+        Spectrum scattering_coef = volume->scattering_coefficient(
+            vertex.m_volume_data, volume_ray);
+        if (scattering_coef.size() != channel_count)
+            Spectrum::upgrade(scattering_coef, scattering_coef);
+
+        // Evaluate transmission between the origin and the sampled distance.
         Spectrum transmission;
-        volume->evaluate_transmission(data, volume_ray, transmission);
+        volume->evaluate_transmission(
+            vertex.m_volume_data,
+            volume_ray,
+            distance_sample,
+            transmission);
+        if (transmission.size() != channel_count)
+            Spectrum::upgrade(transmission, transmission);
+
+        // Upgrade throughput spectrum, if necessary.
+        if (vertex.m_throughput.size() != channel_count)
+            Spectrum::upgrade(vertex.m_throughput, vertex.m_throughput);
+        
+        // Compute MIS weight.
+        // MIS terms are:
+        //  - scattering albedo,
+        //  - throughput of the entire path up to the sampled point.
+        // Reference: "Practical and Controllable Subsurface Scattering
+        // for Production Path Tracing", p. 1 [ACM 2016 Article].
+        float mis_weights_sum = 0.0f;
+        for (size_t i = 0; i < channel_count; ++i)
+        {
+            if (extinction_coef[i] > 1.0e-6f)
+                mis_weights_sum += transmission[i] * scattering_coef[i] / extinction_coef[i];
+        }
+        if (mis_weights_sum < 1.0e-6f)
+        {
+            return false;  // no scattering
+        }
+        const float current_mis_weight =
+            (channel_count * transmission[channel] * scattering_coef[channel]) /
+            (extinction_coef[channel] * mis_weights_sum);
+
+        vertex.m_throughput *= scattering_coef;
         vertex.m_throughput *= transmission;
+        vertex.m_throughput *= current_mis_weight / distance_pdf;
+
+        // Sample phase function.
+        foundation::Vector3f incoming;
+        const float pdf = volume->sample(
+            sampling_context,
+            vertex.m_volume_data,
+            volume_ray,
+            distance_sample,
+            incoming);
+
+        // Save the scattering properties for MIS at light-emitting vertices.
+        vertex.m_prev_mode = ScatteringMode::Volumetric;
+        vertex.m_prev_prob = pdf;
+
+        // Update the AOV scattering mode only for the first bounce.
+        if (vertex.m_path_length == 1)
+            vertex.m_aov_mode = ScatteringMode::Volumetric;
+
+        ++m_volume_bounces;
+        ++vertex.m_path_length;
+
+        // Continue the ray in in-scattered direction.
+        ShadingRay next_ray(
+            volume_ray.m_org + static_cast<double>(distance_sample)* volume_ray.m_dir,
+            foundation::improve_normalization<2>(foundation::Vector3d(incoming)),
+            volume_ray.m_time,
+            volume_ray.m_flags,
+            volume_ray.m_depth + 1);
+        next_ray.copy_media_from(volume_ray);
+
+        // Trace the ray across the volume.
+        exit_point.clear();
+        shading_context.get_intersector().trace(
+            next_ray,
+            exit_point,
+            nullptr);
     }
 
     return true;

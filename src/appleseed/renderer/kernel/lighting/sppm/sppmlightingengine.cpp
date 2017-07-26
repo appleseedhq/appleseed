@@ -587,7 +587,17 @@ namespace
 
         struct VolumeVisitor
         {
-            void visit(PathVertex& vertex, const ShadingRay& volume_ray)
+            bool accept_scattering(
+                const ScatteringMode::Mode  prev_mode)
+            {
+                return true;
+            }
+
+            void on_scatter(PathVertex& vertex)
+            {
+            }
+
+            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray)
             {
             }
         };
