@@ -793,11 +793,11 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
         if (!extinction_is_null)
         {
             // Sample distance.
-            distance_sample = sample_exponential_distribution(
+            distance_sample = foundation::sample_exponential_distribution(
                 sampling_context.next2<float>(), extinction_coef[channel]);
 
             // Calculate PDF of this distance sample.
-            distance_pdf = exponential_distribution_pdf(
+            distance_pdf = foundation::exponential_distribution_pdf(
                 distance_sample, extinction_coef[channel]);
         }
 
