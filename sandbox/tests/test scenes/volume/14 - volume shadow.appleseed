@@ -132,15 +132,10 @@
             <volume name="volume" model="generic_volume">
                 <parameter name="absorption" value="0.5" />
                 <parameter name="absorption_multiplier" value="1.0" />
-                <parameter name="average_cosine" value="0.0" />
-                <parameter name="mfp" value="0.5" />
-                <parameter name="mfp_multiplier" value="1.0" />
+                <parameter name="average_cosine" value="0.7" />
                 <parameter name="phase_function_model" value="henyey" />
-                <parameter name="reflectance" value="0.5" />
-                <parameter name="reflectance_multiplier" value="1.0" />
                 <parameter name="scattering" value="0.5" />
                 <parameter name="scattering_multiplier" value="1.0" />
-                <parameter name="volume_parameterization" value="default" />
             </volume>
             <volume name="volume_red" model="generic_volume">
                 <parameter name="absorption" value="red" />
