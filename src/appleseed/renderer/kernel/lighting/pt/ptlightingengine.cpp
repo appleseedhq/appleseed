@@ -562,7 +562,7 @@ namespace
                 assert(vertex.m_scattering_modes != ScatteringMode::None);
 
                 // Any light contribution after a diffuse or glossy bounce is considered indirect.
-                if (ScatteringMode::has_diffuse_glossy_or_volume(vertex.m_prev_mode))
+                if (ScatteringMode::has_diffuse_or_glossy_or_volume(vertex.m_prev_mode))
                     m_is_indirect_lighting = true;
 
                 // When caustics are disabled, disable glossy and specular components after a diffuse or volume bounce.
@@ -813,13 +813,13 @@ namespace
             {
             }
 
-            virtual bool accept_scattering(
+            bool accept_scattering(
                 const ScatteringMode::Mode  prev_mode)
             {
                 return true;
             }
 
-            virtual void on_scatter(PathVertex& vertex)
+            void on_scatter(PathVertex& vertex)
             {
                 // When caustics are disabled, disable glossy and specular components after a diffuse or volume bounce.
                 // Note that accept_scattering() is later going to return false in this case.
@@ -829,15 +829,6 @@ namespace
                 if (!m_params.m_enable_caustics && has_diffuse_or_volume_scattering)
                     vertex.m_scattering_modes &= ~(ScatteringMode::Glossy | ScatteringMode::Specular);
             }
-
-            virtual void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray)
-            {
-                // Any light contribution after a diffuse, glossy or volume bounce is considered indirect.
-                if (ScatteringMode::has_diffuse_glossy_or_volume(vertex.m_scattering_modes))
-                    m_is_indirect_lighting = true;
-            }
-
-            virtual ~VolumeVisitorBase() {}
         };
 
         //
@@ -864,6 +855,13 @@ namespace
                   path_radiance,
                   inf_volume_ray_warnings)
             {
+            }
+
+            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray)
+            {
+                // Any light contribution after a diffuse, glossy or volume bounce is considered indirect.
+                if (ScatteringMode::has_diffuse_or_glossy_or_volume(vertex.m_scattering_modes))
+                    m_is_indirect_lighting = true;
             }
         };
 
@@ -1012,9 +1010,11 @@ namespace
                 radiance += ibl_radiance;
             }
 
-            virtual void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray) override
+            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray)
             {
-                VolumeVisitorBase::visit_ray(vertex, volume_ray);
+                // Any light contribution after a diffuse, glossy or volume bounce is considered indirect.
+                if (ScatteringMode::has_diffuse_or_glossy_or_volume(vertex.m_scattering_modes))
+                    m_is_indirect_lighting = true;
 
                 if (volume_ray.get_length() == numeric_limits<ShadingRay::ValueType>().max())
                 {
@@ -1235,7 +1235,7 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("unlimited", "false")
             .insert("min", "0")
             .insert("label", "Max Volumetric Bounces")
-            .insert("help", "Maximum number of volume scattering events (0 - single scattering)"));
+            .insert("help", "Maximum number of volume scattering events (0 = single scattering)"));
 
     metadata.dictionaries().insert(
         "rr_min_path_length",

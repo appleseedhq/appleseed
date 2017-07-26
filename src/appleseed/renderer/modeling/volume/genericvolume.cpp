@@ -109,7 +109,9 @@ class GenericVolume
             m_phase_function.reset(new IsotropicPhaseFunction());
         else if (phase_function == "henyey")
         {
-            float g = m_params.get_optional<float>("average_cosine", 0.0f);
+            const float g = clamp(
+                m_params.get_optional<float>("average_cosine", 0.0f),
+                -0.99f, +0.99f);
             m_phase_function.reset(new HenyeyPhaseFunction(g));
         }
         else return false;
@@ -347,11 +349,11 @@ DictionaryArray GenericVolumeFactory::get_input_metadata() const
             .insert("type", "numeric")
             .insert("min",
                 Dictionary()
-                    .insert("value", "-0.99")
+                    .insert("value", "-1.0")
                     .insert("type", "soft"))
             .insert("max",
                 Dictionary()
-                    .insert("value", "0.99")
+                    .insert("value", "1.0")
                     .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "0.0")

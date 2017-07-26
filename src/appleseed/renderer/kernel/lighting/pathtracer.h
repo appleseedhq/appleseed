@@ -726,8 +726,13 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
 
     const ShadingRay::Medium* medium = ray.get_current_medium();
     const Volume* volume = medium->get_volume();
-    ShadingRay volume_ray = ray;
-    const ShadingPoint* shading_point_ptr = vertex.m_shading_point;
+
+    // Trace the ray across the volume.
+    exit_point.clear();
+    shading_context.get_intersector().trace(
+        ray,
+        exit_point,
+        vertex.m_shading_point);
 
     while (true)
     {
@@ -746,14 +751,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
         if (m_volume_bounces >= m_max_volume_bounces)
             vertex.m_scattering_modes &= ~ScatteringMode::Volumetric;
 
-        // Trace the ray across the volume.
-        exit_point.clear();
-        shading_context.get_intersector().trace(
-            volume_ray,
-            exit_point,
-            shading_point_ptr);
-        volume_ray.m_tmax = exit_point.get_distance();
-        shading_point_ptr = nullptr;
+        const ShadingRay& volume_ray = exit_point.get_ray();
 
         // Evaluate and prepare volume inputs.
         void* data = volume->evaluate_inputs(shading_context, volume_ray);
@@ -868,16 +866,12 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
             return false;  // no scattering
         }
         const float current_mis_weight =
-            channel_count *
-            transmission[channel] *
-            scattering_coef[channel] /
-            extinction_coef[channel] /
-            mis_weights_sum;
+            (channel_count * transmission[channel] * scattering_coef[channel]) /
+            (extinction_coef[channel] * mis_weights_sum);
 
         vertex.m_throughput *= scattering_coef;
         vertex.m_throughput *= transmission;
-        vertex.m_throughput /= distance_pdf;
-        vertex.m_throughput *= current_mis_weight;
+        vertex.m_throughput *= current_mis_weight / distance_pdf;
 
         // Sample phase function.
         foundation::Vector3f incoming;
@@ -900,10 +894,20 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
         ++vertex.m_path_length;
 
         // Continue the ray in in-scattered direction.
-        volume_ray.m_org += static_cast<double>(distance_sample) * volume_ray.m_dir;
-        volume_ray.m_dir = foundation::improve_normalization<2>(foundation::Vector3d(incoming));
-        ++volume_ray.m_depth;
-        volume_ray.m_tmax = std::numeric_limits<ShadingRay::ValueType>().max();
+        ShadingRay next_ray(
+            volume_ray.m_org + static_cast<double>(distance_sample)* volume_ray.m_dir,
+            foundation::improve_normalization<2>(foundation::Vector3d(incoming)),
+            volume_ray.m_time,
+            volume_ray.m_flags,
+            volume_ray.m_depth + 1);
+        next_ray.copy_media_from(volume_ray);
+
+        // Trace the ray across the volume.
+        exit_point.clear();
+        shading_context.get_intersector().trace(
+            next_ray,
+            exit_point,
+            nullptr);
     }
 
     return true;
