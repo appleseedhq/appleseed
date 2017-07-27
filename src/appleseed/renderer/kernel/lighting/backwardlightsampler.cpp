@@ -67,7 +67,7 @@ BackwardLightSampler::BackwardLightSampler(
 {
     // Read which sampling algorithm should the sampler use.
     m_use_light_tree = params.get_optional<string>("algorithm", "cdf") == "lighttree";
-    
+
     RENDERER_LOG_INFO("collecting light emitters...");
 
     // Collect all non-physical lights and separate them according to their
@@ -86,7 +86,7 @@ BackwardLightSampler::BackwardLightSampler(
     // Prepare the CDFs for sampling.
     if (m_non_physical_lights_cdf.valid())
         m_non_physical_lights_cdf.prepare();
-    
+
     // Build the light tree.
     m_light_tree_light_count = m_use_light_tree
         ? m_light_tree.build(m_light_tree_lights, m_emitting_triangles)
@@ -96,7 +96,7 @@ BackwardLightSampler::BackwardLightSampler(
     {
         if (m_emitting_triangles_cdf.valid())
             m_emitting_triangles_cdf.prepare();
-   
+
         // Store the triangle probability densities into the emitting triangles.
         const size_t emitting_triangle_count = m_emitting_triangles.size();
         for (size_t i = 0; i < emitting_triangle_count; ++i)
@@ -184,7 +184,7 @@ float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point) cons
 Dictionary BackwardLightSampler::get_params_metadata()
 {
     Dictionary metadata;
-    
+
     metadata.insert(
         "algorithm",
         Dictionary()
@@ -401,24 +401,34 @@ void BackwardLightSampler::collect_emitting_triangles(
                 geometric_normal *= rcp_geometric_normal_norm;
                 assert(is_normalized(geometric_normal));
 
-                // Retrieve object instance space vertex normals.
-                Vector3d n0_os, n1_os, n2_os;
+                if (object_instance->flip_normals())
+                    geometric_normal = -geometric_normal;
+
+                Vector3d n0, n1, n2;
 
                 if (triangle.m_n0 != Triangle::None &&
                     triangle.m_n1 != Triangle::None &&
                     triangle.m_n2 != Triangle::None)
                 {
-                    n0_os = Vector3d(tess->m_vertex_normals[triangle.m_n0]);
-                    n1_os = Vector3d(tess->m_vertex_normals[triangle.m_n1]);
-                    n2_os = Vector3d(tess->m_vertex_normals[triangle.m_n2]);
+                    // Retrieve object instance space vertex normals.
+                    const Vector3d n0_os = Vector3d(tess->m_vertex_normals[triangle.m_n0]);
+                    const Vector3d n1_os = Vector3d(tess->m_vertex_normals[triangle.m_n1]);
+                    const Vector3d n2_os = Vector3d(tess->m_vertex_normals[triangle.m_n2]);
+
+                    // Transform vertex normals to world space.
+                    n0 = normalize(global_transform.normal_to_parent(n0_os));
+                    n1 = normalize(global_transform.normal_to_parent(n1_os));
+                    n2 = normalize(global_transform.normal_to_parent(n2_os));
+
+                    if (object_instance->flip_normals())
+                    {
+                        n0 = -n0;
+                        n1 = -n1;
+                        n2 = -n2;
+                    }
                 }
                 else
-                    n0_os = n1_os = n2_os = geometric_normal;
-
-                // Transform vertex normals to world space.
-                const Vector3d n0(normalize(global_transform.normal_to_parent(n0_os)));
-                const Vector3d n1(normalize(global_transform.normal_to_parent(n1_os)));
-                const Vector3d n2(normalize(global_transform.normal_to_parent(n2_os)));
+                    n0 = n1 = n2 = geometric_normal;
 
                 for (size_t side = 0; side < 2; ++side)
                 {
@@ -450,7 +460,7 @@ void BackwardLightSampler::collect_emitting_triangles(
                     emitting_triangle.m_material = material;
 
                     const size_t emitting_triangle_index = m_emitting_triangles.size();
-                    
+
                     // Store the light-emitting triangle.
                     m_emitting_triangles.push_back(emitting_triangle);
 
@@ -461,7 +471,7 @@ void BackwardLightSampler::collect_emitting_triangles(
                         float importance_multiplier = 1.0f;
                         if (const EDF* edf = material->get_uncached_edf())
                             importance_multiplier = edf->get_uncached_importance_multiplier();
-                        
+
                         // Compute the probability density of this triangle.
                         const float triangle_importance = m_params.m_importance_sampling ? static_cast<float>(area) : 1.0f;
                         const float triangle_prob = triangle_importance * importance_multiplier;
@@ -531,12 +541,12 @@ void BackwardLightSampler::sample_light_tree(
         // Fetch the light.
         const NonPhysicalLightInfo& light_info = m_light_tree_lights[light_index];
         light_sample.m_light = light_info.m_light;
-    
+
         // Evaluate and store the transform of the light.
         light_sample.m_light_transform =
               light_info.m_light->get_transform()
             * light_info.m_transform_sequence.evaluate(time.m_absolute);
-    
+
         // Store the probability density of this light.
         light_sample.m_probability = light_prob;
     }

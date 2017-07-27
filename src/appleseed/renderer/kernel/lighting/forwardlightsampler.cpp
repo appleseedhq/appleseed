@@ -310,24 +310,34 @@ void ForwardLightSampler::collect_emitting_triangles(
                 geometric_normal *= rcp_geometric_normal_norm;
                 assert(is_normalized(geometric_normal));
 
-                // Retrieve object instance space vertex normals.
-                Vector3d n0_os, n1_os, n2_os;
+                if (object_instance->flip_normals())
+                    geometric_normal = -geometric_normal;
+
+                Vector3d n0, n1, n2;
 
                 if (triangle.m_n0 != Triangle::None &&
                     triangle.m_n1 != Triangle::None &&
                     triangle.m_n2 != Triangle::None)
                 {
-                    n0_os = Vector3d(tess->m_vertex_normals[triangle.m_n0]);
-                    n1_os = Vector3d(tess->m_vertex_normals[triangle.m_n1]);
-                    n2_os = Vector3d(tess->m_vertex_normals[triangle.m_n2]);
+                    // Retrieve object instance space vertex normals.
+                    const Vector3d n0_os = Vector3d(tess->m_vertex_normals[triangle.m_n0]);
+                    const Vector3d n1_os = Vector3d(tess->m_vertex_normals[triangle.m_n1]);
+                    const Vector3d n2_os = Vector3d(tess->m_vertex_normals[triangle.m_n2]);
+
+                    // Transform vertex normals to world space.
+                    n0 = normalize(global_transform.normal_to_parent(n0_os));
+                    n1 = normalize(global_transform.normal_to_parent(n1_os));
+                    n2 = normalize(global_transform.normal_to_parent(n2_os));
+
+                    if (object_instance->flip_normals())
+                    {
+                        n0 = -n0;
+                        n1 = -n1;
+                        n2 = -n2;
+                    }
                 }
                 else
-                    n0_os = n1_os = n2_os = geometric_normal;
-
-                // Transform vertex normals to world space.
-                const Vector3d n0(normalize(global_transform.normal_to_parent(n0_os)));
-                const Vector3d n1(normalize(global_transform.normal_to_parent(n1_os)));
-                const Vector3d n2(normalize(global_transform.normal_to_parent(n2_os)));
+                    n0 = n1 = n2 = geometric_normal;
 
                 for (size_t side = 0; side < 2; ++side)
                 {
