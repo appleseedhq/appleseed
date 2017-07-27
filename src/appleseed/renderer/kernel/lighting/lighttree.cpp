@@ -37,9 +37,16 @@
 #include "foundation/image/colorspace.h"
 #include "foundation/math/distance.h"
 #include "foundation/math/permutation.h"
+#include "foundation/math/scalar.h"
 #include "foundation/platform/timers.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/vpythonfile.h"
+
+// Standard headers.
+#include <cassert>
+
+using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
@@ -56,7 +63,7 @@ LightTree::LightTree()
 
 LightTree::~LightTree()
 {
-    for (foundation::const_each<LightSourcePointerVector> i = m_light_sources; i; ++i)
+    for (const_each<LightSourcePointerVector> i = m_light_sources; i; ++i)
         delete *i;
 }
 
@@ -66,59 +73,59 @@ bool LightTree::is_built() const
 }
 
 size_t LightTree::build(
-    std::vector<NonPhysicalLightInfo>&    non_physical_lights,
-    std::vector<EmittingTriangle>&        emitting_triangles)
+    vector<NonPhysicalLightInfo>&   non_physical_lights,
+    vector<EmittingTriangle>&       emitting_triangles)
 {
-    foundation::Statistics statistics;
     AABBVector light_bboxes;
 
-    // Collect all possible light sources into one vector.
-    size_t light_index = 0;
-    for (size_t i = 0; i < non_physical_lights.size(); ++i)
+    // Collect non-physical light sources.
+    for (size_t i = 0, e = non_physical_lights.size(); i < e; ++i)
     {
         LightSource* light_source = new NonPhysicalLightSource(&non_physical_lights[i]);
-        const foundation::AABB3d bbox = light_source->get_bbox();
+        const size_t light_source_index = m_light_sources.size();
         m_light_sources.push_back(light_source);
+
+        const AABB3d bbox = light_source->get_bbox();
         light_bboxes.push_back(bbox);
-        m_items.push_back(Item(bbox, light_index++, i));
+
+        m_items.push_back(Item(bbox, light_source_index, i));
     }
 
-    // Collect all possible light sources into one vector.
-    for (size_t i = 0; i < emitting_triangles.size(); ++i)
+    // Collect emitting triangles.
+    for (size_t i = 0, e = emitting_triangles.size(); i < e; ++i)
     {
         LightSource* light_source = new EmittingTriangleLightSource(&emitting_triangles[i]);
-        foundation::AABB3d bbox = light_source->get_bbox();
+        const size_t light_source_index = m_light_sources.size();
         m_light_sources.push_back(light_source);
+
+        const AABB3d bbox = light_source->get_bbox();
         light_bboxes.push_back(bbox);
-        m_items.push_back(Item(bbox, light_index++, i));
+
+        m_items.push_back(Item(bbox, light_source_index, i));
     }
 
     // Create the partitioner.
-    typedef foundation::bvh::MiddlePartitioner<AABBVector> Partitioner;
+    typedef bvh::MiddlePartitioner<AABBVector> Partitioner;
     Partitioner partitioner(light_bboxes);
 
     // Build the light tree.
-    typedef foundation::bvh::Builder<LightTree, Partitioner> Builder;
+    typedef bvh::Builder<LightTree, Partitioner> Builder;
     Builder builder;
-    builder.build<foundation::DefaultWallclockTimer>(*this, partitioner, m_items.size(), 1);
-    statistics.insert("light sources", m_light_sources.size());
-    statistics.insert("nodes", m_nodes.size());
-    statistics.insert("max tree depth", m_tree_depth);
-    statistics.insert_time("total build time", builder.get_build_time());
+    builder.build<DefaultWallclockTimer>(*this, partitioner, m_items.size(), 1);
 
     // Reorder m_items vector to match the ordering in the LightTree.
     if (!m_items.empty())
     {
         m_built = true;
 
-        const std::vector<size_t>& ordering = partitioner.get_item_ordering();
+        const vector<size_t>& ordering = partitioner.get_item_ordering();
         assert(m_items.size() == ordering.size());
 
-        // Reorder the items according to the tree ordering.
-        ItemVector temp_lights(ordering.size());
-        foundation::small_item_reorder(
+        // Reorder items according to the tree ordering.
+        ItemVector temp(ordering.size());
+        small_item_reorder(
             &m_items[0],
-            &temp_lights[0],
+            &temp[0],
             &ordering[0],
             ordering.size());
 
@@ -127,88 +134,23 @@ size_t LightTree::build(
     }
 
     // Print light tree statistics.
+    Statistics statistics;
+    statistics.insert("light sources", m_light_sources.size());
+    statistics.insert("nodes", m_nodes.size());
+    statistics.insert("max tree depth", m_tree_depth);
+    statistics.insert_time("total build time", builder.get_build_time());
     RENDERER_LOG_INFO("%s",
-        foundation::StatisticsVector::make(
+        StatisticsVector::make(
             "light tree statistics",
             statistics).to_string().c_str());
 
     return m_light_sources.size();
 }
 
-void LightTree::draw_tree_structure(
-    const std::string&          filename_base,
-    const foundation::AABB3d&   root_bbox,
-    const bool                  separate_by_levels) const
-{
-    // TODO: Add a possibility to shift each level of bboxes along the z-axis.
-
-    const double Width = 0.1;
-
-    if (separate_by_levels)
-    {
-        const char* color = "color.green";
-
-        // Find nodes on each level of the tree and draw their child bboxes.
-        for (size_t parent_level = 0; parent_level < m_tree_depth; parent_level++)
-        {
-            const auto filename = foundation::format("{0}_{1}.py", filename_base, parent_level + 1);
-            foundation::VPythonFile file(filename.c_str());
-            file.draw_axes(Width);
-
-            // Draw the initial bbox.
-            file.draw_aabb(root_bbox, color, Width);
-
-            // Find every node at the parent level and draw its child bboxes.
-            for (size_t i = 0; i < m_nodes.size(); ++i)
-            {
-                if (m_nodes[i].is_leaf())
-                    continue;
-
-                if (m_nodes[i].get_level() == parent_level)
-                {
-                    const auto& bbox_left = m_nodes[i].get_left_bbox();
-                    const auto& bbox_right = m_nodes[i].get_right_bbox();
-
-                    file.draw_aabb(bbox_left, color, Width);
-                    file.draw_aabb(bbox_right, color, Width);
-                }
-            }
-        }
-    }
-    else
-    {
-        const auto filename = foundation::format("{0}.py", filename_base);
-        foundation::VPythonFile file(filename.c_str());
-        file.draw_axes(Width);
-
-        // Draw the initial bbox.
-        file.draw_aabb(root_bbox, "color.yellow", Width);
-
-        // Find nodes on each level of the tree and draw their child bboxes.
-        for (size_t i = 0; i < m_nodes.size(); ++i)
-        {
-            if (m_nodes[i].is_leaf())
-                continue;
-
-            // Make even levels red and odd green.
-            const char* color =
-                m_nodes[i].get_level() % 2 != 0
-                    ? "color.red"
-                    : "color.green";
-
-            const auto& bbox_left = m_nodes[i].get_left_bbox();
-            const auto& bbox_right = m_nodes[i].get_right_bbox();
-
-            file.draw_aabb(bbox_left, color, Width);
-            file.draw_aabb(bbox_right, color, Width);
-        }
-    }
-}
-
 float LightTree::recursive_node_update(
-    const size_t parent_index,
-    const size_t node_index, 
-    const size_t node_level)
+    const size_t        parent_index,
+    const size_t        node_index, 
+    const size_t        node_level)
 {
     float importance = 0.0f;
 
@@ -224,38 +166,39 @@ float LightTree::recursive_node_update(
     }
     else
     {
-        // Access the light importance value.
+        // Retrieve the light source associated to this leaf.
         const size_t item_index = m_nodes[node_index].get_item_index();
         const size_t light_source_index = m_items[item_index].m_light_source_index;
-        importance = m_light_sources[light_source_index]->get_importance();
+        const LightSource* light_source = m_light_sources[light_source_index];
 
-        // Modify the tree depth if the branch is deeper than the other branches
-        // visited so far.
+        // Retrieve the light importance.
+        importance = light_source->get_importance();
+
+        // Keep track of the tree depth.
         if (m_tree_depth < node_level)
             m_tree_depth = node_level;
 
-        // If the light is an emitting triangle, store the info about its
-        // position in the light tree.
+        // For emitting triangles, we must remember to which leaf node they belong.
         if (m_light_sources[light_source_index]->get_type() == LightSource::EmittingTriangleType)
             m_light_sources[light_source_index]->set_tree_index(node_index);
     }
 
+    if (node_index == 0)
+        m_nodes[node_index].set_root();
+    else m_nodes[node_index].set_parent(parent_index);
+
     m_nodes[node_index].set_importance(importance);
     m_nodes[node_index].set_level(node_level);
-    if (node_index != 0)
-        m_nodes[node_index].set_parent(parent_index);
-    else
-        m_nodes[node_index].set_root();
 
     return importance;
 }
 
 void LightTree::sample(
-    const foundation::Vector3d&     surface_point,
-    float                           s,
-    int&                            light_type,
-    size_t&                         light_index,
-    float&                          light_probability) const
+    const Vector3d&     surface_point,
+    float               s,
+    int&                light_type,
+    size_t&             light_index,
+    float&              light_probability) const
 {
     assert(is_built());
 
@@ -269,7 +212,7 @@ void LightTree::sample(
         float p1, p2;
         child_node_probabilites(node, surface_point, p1, p2);
 
-        if (s <= p1)
+        if (s < p1)
         {
             light_probability *= p1;
             s /= p1;
@@ -307,14 +250,15 @@ void LightTree::sample(
 }
 
 float LightTree::evaluate_node_pdf(
-    const foundation::Vector3d&     surface_point,
-    size_t                          node_index) const
+    const Vector3d&     surface_point,
+    size_t              node_index) const
 {
     size_t parent_index = m_nodes[node_index].get_parent();
     float pdf = 1.0f;
 
-    do {
-        const LightTreeNode<foundation::AABB3d>& node = m_nodes[parent_index];
+    do
+	{
+        const LightTreeNode<AABB3d>& node = m_nodes[parent_index];
 
         float p1, p2;
         child_node_probabilites(node, surface_point, p1, p2);
@@ -333,23 +277,23 @@ float LightTree::evaluate_node_pdf(
 namespace
 {
     float compute_node_probability(
-        const LightTreeNode<foundation::AABB3d>&    node,
-        const foundation::AABB3d&                   bbox,
-        const foundation::Vector3d&                 surface_point)
+        const LightTreeNode<AABB3d>&    node,
+        const AABB3d&                   bbox,
+        const Vector3d&                 surface_point)
     {
-        // Calculate probability a single node based on its distance
-        // to the surface point being evaluated.
+        // Calculate probability of a single node based on its distance
+        // to the surface point being illuminated.
         const float squared_distance =
-            static_cast<float>(foundation::square_distance(surface_point, bbox.center()));
+            static_cast<float>(square_distance(surface_point, bbox.center()));
         return node.get_importance() / squared_distance;
     }
 }
 
 void LightTree::child_node_probabilites(
-    const LightTreeNode<foundation::AABB3d>&    node,
-    const foundation::Vector3d&                 surface_point,
-    float&                                      p1,
-    float&                                      p2) const
+    const LightTreeNode<AABB3d>&    node,
+    const Vector3d&                 surface_point,
+    float&                          p1,
+    float&                          p2) const
 {
     const auto& child1 = m_nodes[node.get_child_node_index()];
     const auto& child2 = m_nodes[node.get_child_node_index() + 1];
@@ -357,7 +301,7 @@ void LightTree::child_node_probabilites(
     // Node has currently no info about its own bbox characteristics.
     // Hence we have to extract it before from its parent.
     // TODO: make LightTreeNode aware of its bbox!
-    const auto& bbox_left  = node.get_left_bbox();
+    const auto& bbox_left = node.get_left_bbox();
     const auto& bbox_right = node.get_right_bbox();
 
     p1 = compute_node_probability(child1, bbox_left, surface_point);
@@ -374,6 +318,78 @@ void LightTree::child_node_probabilites(
     {
         p1 /= total;
         p2 /= total;
+    }
+
+    assert(feq(p1 + p2, 1.0f));
+}
+
+void LightTree::draw_tree_structure(
+    const string&       filename_base,
+    const AABB3d&       root_bbox,
+    const bool          separate_by_levels) const
+{
+    // TODO: Add a possibility to shift each level of bboxes along the z-axis.
+
+    const double Width = 0.1;
+
+    if (separate_by_levels)
+    {
+        const char* color = "color.green";
+
+        // Find nodes on each level of the tree and draw their child bboxes.
+        for (size_t parent_level = 0; parent_level < m_tree_depth; parent_level++)
+        {
+            const auto filename = format("{0}_{1}.py", filename_base, parent_level + 1);
+            VPythonFile file(filename.c_str());
+            file.draw_axes(Width);
+
+            // Draw the initial bbox.
+            file.draw_aabb(root_bbox, color, Width);
+
+            // Find every node at the parent level and draw its child bboxes.
+            for (size_t i = 0; i < m_nodes.size(); ++i)
+            {
+                if (m_nodes[i].is_leaf())
+                    continue;
+
+                if (m_nodes[i].get_level() == parent_level)
+                {
+                    const auto& bbox_left = m_nodes[i].get_left_bbox();
+                    const auto& bbox_right = m_nodes[i].get_right_bbox();
+
+                    file.draw_aabb(bbox_left, color, Width);
+                    file.draw_aabb(bbox_right, color, Width);
+                }
+            }
+        }
+    }
+    else
+    {
+        const auto filename = format("{0}.py", filename_base);
+        VPythonFile file(filename.c_str());
+        file.draw_axes(Width);
+
+        // Draw the initial bbox.
+        file.draw_aabb(root_bbox, "color.yellow", Width);
+
+        // Find nodes on each level of the tree and draw their child bboxes.
+        for (size_t i = 0; i < m_nodes.size(); ++i)
+        {
+            if (m_nodes[i].is_leaf())
+                continue;
+
+            // Make even levels red and odd green.
+            const char* color =
+                m_nodes[i].get_level() % 2 != 0
+                    ? "color.red"
+                    : "color.green";
+
+            const auto& bbox_left = m_nodes[i].get_left_bbox();
+            const auto& bbox_right = m_nodes[i].get_right_bbox();
+
+            file.draw_aabb(bbox_left, color, Width);
+            file.draw_aabb(bbox_right, color, Width);
+        }
     }
 }
 
