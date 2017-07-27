@@ -870,19 +870,13 @@ namespace
             QFormLayout* sublayout = create_form_layout();
             layout->addLayout(sublayout);
 
-            QComboBox* light_sampling;
-            light_sampling = create_combobox("advanced.light_sampler.algorithm");
-            light_sampling->setToolTip(m_params_metadata.get_path("light_sampler.algorithm.help"));
-            light_sampling->addItem("CDF", "cdf");
-            light_sampling->addItem("Light Tree", "lighttree");
-            sublayout->addRow("Light Sampler:", light_sampling);
-
             QGroupBox* nee_groupbox = create_checkable_groupbox("advanced.next_event_estimation", "Next Event Estimation");
             layout->addWidget(nee_groupbox);
 
             QVBoxLayout* nee_layout = create_vertical_layout();
             nee_groupbox->setLayout(nee_layout);
 
+            create_pt_advanced_sampler_settings(nee_layout);
             create_pt_advanced_dl_settings(nee_layout);
             create_pt_advanced_ibl_settings(nee_layout);
             create_pt_advanced_max_ray_intensity_settings(nee_layout);
@@ -904,6 +898,19 @@ namespace
             volume_distance_samples->setToolTip(
                 m_params_metadata.get_path("pt.volume_distance_samples.help"));
             sublayout->addRow("Distance Samples:", volume_distance_samples);
+        }
+
+        void create_pt_advanced_sampler_settings(QVBoxLayout* parent)
+        {
+            QFormLayout* sublayout = create_form_layout();
+            parent->addLayout(sublayout);
+
+            QComboBox* light_sampling;
+            light_sampling = create_combobox("advanced.light_sampler.algorithm");
+            light_sampling->setToolTip(m_params_metadata.get_path("light_sampler.algorithm.help"));
+            light_sampling->addItem("CDF", "cdf");
+            light_sampling->addItem("Light Tree", "lighttree");
+            sublayout->addRow("Light Sampler:", light_sampling);
         }
 
         void create_pt_advanced_dl_settings(QVBoxLayout* parent)
