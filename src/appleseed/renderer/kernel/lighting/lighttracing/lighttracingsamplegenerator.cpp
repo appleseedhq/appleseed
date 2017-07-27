@@ -681,6 +681,7 @@ namespace
                 ~0, // max diffuse bounces
                 ~0, // max glossy bounces
                 ~0, // max specular bounces
+                ~0, // max volume bounces
                 m_params.m_max_iterations,
                 material_data.m_edf->get_light_near_start());   // don't illuminate points closer than the light near start value
 
