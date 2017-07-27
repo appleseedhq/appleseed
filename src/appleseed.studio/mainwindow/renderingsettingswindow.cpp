@@ -876,7 +876,7 @@ namespace
             QVBoxLayout* nee_layout = create_vertical_layout();
             nee_groupbox->setLayout(nee_layout);
 
-            create_pt_advanced_sampler_settings(nee_layout);
+            create_pt_advanced_lightsampler_settings(nee_layout);
             create_pt_advanced_dl_settings(nee_layout);
             create_pt_advanced_ibl_settings(nee_layout);
             create_pt_advanced_max_ray_intensity_settings(nee_layout);
@@ -900,7 +900,7 @@ namespace
             sublayout->addRow("Distance Samples:", volume_distance_samples);
         }
 
-        void create_pt_advanced_sampler_settings(QVBoxLayout* parent)
+        void create_pt_advanced_lightsampler_settings(QVBoxLayout* parent)
         {
             QFormLayout* sublayout = create_form_layout();
             parent->addLayout(sublayout);

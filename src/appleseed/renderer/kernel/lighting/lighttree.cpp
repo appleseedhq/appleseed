@@ -178,9 +178,8 @@ float LightTree::recursive_node_update(
         if (m_tree_depth < node_level)
             m_tree_depth = node_level;
 
-        // For emitting triangles, we must remember to which leaf node they belong.
-        if (m_light_sources[light_source_index]->get_type() == LightSource::EmittingTriangleType)
-            m_light_sources[light_source_index]->set_tree_index(node_index);
+        // Remember to which leaf node does the light belong.
+        m_light_sources[light_source_index]->set_tree_index(node_index);
     }
 
     if (node_index == 0)
@@ -275,15 +274,15 @@ float LightTree::evaluate_node_pdf(
 }
 
 float LightTree::compute_node_probability(
-    const LightTreeNode<foundation::AABB3d>&    node,
-    const foundation::AABB3d&                   bbox,
-    const foundation::Vector3d&                 surface_point) const
+    const LightTreeNode<AABB3d>&    node,
+    const AABB3d&                   bbox,
+    const Vector3d&                 surface_point) const
 {
     // Calculate probability of a single node based on its distance
     // to the surface point being illuminated.
     // For leaf nodes use the actual position of the light source, instead
     // of center of the bbox. It is more correct for shaped lights.
-    const foundation::Vector3d position = node.is_leaf()
+    const Vector3d position = node.is_leaf()
         ? m_light_sources[m_items[node.get_item_index()].m_light_source_index]->get_position()
         : bbox.center();
     const float squared_distance =
