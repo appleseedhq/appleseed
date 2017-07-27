@@ -74,15 +74,13 @@ bool save_project(const char* project_path = nullptr)
 {
     if (project_path == nullptr)
     {
-        if (project_manager()->get_project()->has_path())
-            main_window()->save_project(project_manager()->get_project()->get_path());
+        if (project_manager()->get_project() && project_manager()->get_project()->has_path())
+            return main_window()->save_project(project_manager()->get_project()->get_path());
         else
             return false;
     }
     else
-        main_window()->save_project(project_path);
-
-    return true;
+        return main_window()->save_project(project_path);
 }
 
 BOOST_PYTHON_FUNCTION_OVERLOADS(save_project_overloads, save_project, 0, 1)

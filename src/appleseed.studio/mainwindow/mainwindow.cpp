@@ -261,8 +261,11 @@ void MainWindow::open_and_render_project(const QString& filepath, const QString&
     open_project_async(filepath);
 }
 
-void MainWindow::save_project(QString filepath)
+bool MainWindow::save_project(QString filepath)
 {
+    if (!m_project_manager.get_project())
+        return false;
+
     const QString Extension = "appleseed";
 
     if (QFileInfo(filepath).suffix() != Extension)
@@ -271,12 +274,14 @@ void MainWindow::save_project(QString filepath)
     if (m_project_file_watcher)
         stop_monitoring_project_file();
 
-    m_project_manager.save_project_as(filepath.toAscii().constData());
+    bool successful = m_project_manager.save_project_as(filepath.toAscii().constData());
 
     if (m_project_file_watcher)
         start_monitoring_project_file();
 
     update_workspace();
+
+    return successful;
 }
 
 void MainWindow::close_project()
