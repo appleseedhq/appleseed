@@ -206,6 +206,9 @@
             <parameters name="generic_frame_renderer">
                 <parameter name="passes" value="1" />
             </parameters>
+            <parameters name="light_sampler">
+                <parameter name="algorithm" value="cdf" />
+            </parameters>
             <parameters name="pt">
                 <parameter name="dl_light_samples" value="1.000000" />
                 <parameter name="dl_low_light_threshold" value="0.000000" />
@@ -217,8 +220,10 @@
                 <parameter name="max_diffuse_bounces" value="0" />
                 <parameter name="max_glossy_bounces" value="-1" />
                 <parameter name="max_specular_bounces" value="-1" />
+                <parameter name="max_volume_bounces" value="0" />
                 <parameter name="next_event_estimation" value="true" />
                 <parameter name="rr_min_path_length" value="6" />
+                <parameter name="volume_distance_samples" value="4" />
             </parameters>
             <parameters name="sppm">
                 <parameter name="alpha" value="0.700000" />
@@ -243,6 +248,9 @@
         </configuration>
         <configuration name="interactive" base="base_interactive">
             <parameter name="lighting_engine" value="pt" />
+            <parameters name="light_sampler">
+                <parameter name="algorithm" value="cdf" />
+            </parameters>
             <parameters name="pt">
                 <parameter name="dl_light_samples" value="1.000000" />
                 <parameter name="dl_low_light_threshold" value="0.000000" />
@@ -254,8 +262,10 @@
                 <parameter name="max_diffuse_bounces" value="0" />
                 <parameter name="max_glossy_bounces" value="-1" />
                 <parameter name="max_specular_bounces" value="-1" />
+                <parameter name="max_volume_bounces" value="0" />
                 <parameter name="next_event_estimation" value="true" />
                 <parameter name="rr_min_path_length" value="6" />
+                <parameter name="volume_distance_samples" value="4" />
             </parameters>
         </configuration>
     </configurations>

@@ -70,13 +70,6 @@ void PythonSyntaxHighlighter::initializeRules()
     // 'self'
     rules.append(HighlightingRule("\\bself\\b", 0, basicStyles.value("self")));
 
-    // Double-quoted string, possibly containing escape sequences
-    // FF: originally in python : r'"[^"\\]*(\\.[^"\\]*)*"'
-    rules.append(HighlightingRule("\"[^\"\\\\]*(\\\\.[^\"\\\\]*)*\"", 0, basicStyles.value("string")));
-    // Single-quoted string, possibly containing escape sequences
-    // FF: originally in python : r"'[^'\\]*(\\.[^'\\]*)*'"
-    rules.append(HighlightingRule("'[^'\\\\]*(\\\\.[^'\\\\]*)*'", 0, basicStyles.value("string")));
-
     // 'def' followed by an identifier
     // FF: originally: r'\bdef\b\s*(\w+)'
     rules.append(HighlightingRule("\\bdef\\b\\s*(\\w+)", 1, basicStyles.value("defclass")));
@@ -88,6 +81,13 @@ void PythonSyntaxHighlighter::initializeRules()
     rules.append(HighlightingRule("\\b[+-]?[0-9]+[lL]?\\b", 0, basicStyles.value("numbers"))); // r'\b[+-]?[0-9]+[lL]?\b'
     rules.append(HighlightingRule("\\b[+-]?0[xX][0-9A-Fa-f]+[lL]?\\b", 0, basicStyles.value("numbers"))); // r'\b[+-]?0[xX][0-9A-Fa-f]+[lL]?\b'
     rules.append(HighlightingRule("\\b[+-]?[0-9]+(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?\\b", 0, basicStyles.value("numbers"))); // r'\b[+-]?[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?\b'
+
+    // Double-quoted string, possibly containing escape sequences
+    // FF: originally in python : r'"[^"\\]*(\\.[^"\\]*)*"'
+    rules.append(HighlightingRule("\"[^\"\\\\]*(\\\\.[^\"\\\\]*)*\"", 0, basicStyles.value("string")));
+    // Single-quoted string, possibly containing escape sequences
+    // FF: originally in python : r"'[^'\\]*(\\.[^'\\]*)*'"
+    rules.append(HighlightingRule("'[^'\\\\]*(\\\\.[^'\\\\]*)*'", 0, basicStyles.value("string")));
 
     // From '#' until a newline
     // FF: originally: r'#[^\\n]*'

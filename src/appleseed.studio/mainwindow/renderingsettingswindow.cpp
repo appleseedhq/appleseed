@@ -701,6 +701,7 @@ namespace
             QSpinBox* max_diffuse_bounces = create_integer_input(widget_base_key + "max_diffuse_bounces", 0, 10000, 1);
             QSpinBox* max_glossy_bounces = create_integer_input(widget_base_key + "max_glossy_bounces", 0, 10000, 1);
             QSpinBox* max_specular_bounces = create_integer_input(widget_base_key + "max_specular_bounces", 0, 10000, 1);
+            QSpinBox* max_volume_bounces = create_integer_input(widget_base_key + "max_volume_bounces", 0, 10000, 1);
             max_bounces->setToolTip(m_params_metadata.get_path((config_param_path + ".help").c_str()));
 
             QCheckBox* unlimited_bounces = create_checkbox(widget_base_key + "unlimited_bounces", "Unlimited");
@@ -712,6 +713,7 @@ namespace
             layout->addRow("Max Diffuse Bounces:", create_horizontal_group(max_diffuse_bounces, unlimited_diffuse_bounces));
             layout->addRow("Max Glossy Bounces:", create_horizontal_group(max_glossy_bounces, unlimited_glossy_bounces));
             layout->addRow("Max Specular Bounces:", create_horizontal_group(max_specular_bounces, unlimited_specular_bounces));
+            layout->addRow("Max Volume Bounces:", create_horizontal_group(max_volume_bounces));
             connect(unlimited_bounces, SIGNAL(toggled(bool)), max_bounces, SLOT(setDisabled(bool)));
             connect(unlimited_diffuse_bounces, SIGNAL(toggled(bool)), max_diffuse_bounces, SLOT(setDisabled(bool)));
             connect(unlimited_glossy_bounces, SIGNAL(toggled(bool)), max_glossy_bounces, SLOT(setDisabled(bool)));
@@ -751,24 +753,31 @@ namespace
         void load_separate_bounce_settings(
             const Configuration&    config,
             const string&           widget_key_prefix,
-            const string&           bounce_type)
+            const string&           bounce_type,
+            const bool              allow_unlimited = true)
         {
             const int DefaultMaxBounces = 8;
 
             const int max_bounces =
                 get_config<int>(config, construct_bounce_param_path(bounce_type), -1);
 
-            set_widget(widget_key_prefix + ".bounces.unlimited_" + bounce_type + "_bounces", max_bounces == -1);
+            if (allow_unlimited)
+                set_widget(widget_key_prefix + ".bounces.unlimited_" + bounce_type + "_bounces", max_bounces == -1);
             set_widget(widget_key_prefix + ".bounces.max_" + bounce_type + "_bounces", max_bounces == -1 ? DefaultMaxBounces : max_bounces);
         }
 
         void save_separate_bounce_settings(
             Configuration&          config,
             const string&           widget_key_prefix,
-            const string&           bounce_type) const
+            const string&           bounce_type,
+            const bool              allow_unlimited = true) const
         {
+            const bool unlimited_bounces =
+                allow_unlimited &&
+                get_widget<bool>(widget_key_prefix + ".bounces.unlimited_" + bounce_type + "_bounces");
+
             const int max_bounces =
-                !get_widget<bool>(widget_key_prefix + ".bounces.unlimited_" + bounce_type + "_bounces")
+                !unlimited_bounces
                     ? get_widget<int>(widget_key_prefix + ".bounces.max_" + bounce_type + "_bounces")
                     : -1;
 
@@ -828,6 +837,7 @@ namespace
             load_separate_bounce_settings(config, "pt", "diffuse");
             load_separate_bounce_settings(config, "pt", "glossy");
             load_separate_bounce_settings(config, "pt", "specular");
+            load_separate_bounce_settings(config, "pt", "volume", false);
 
             set_widget("advanced.unlimited_ray_intensity", !config.get_parameters().exist_path("pt.max_ray_intensity"));
             set_widget("advanced.max_ray_intensity", get_config<double>(config, "pt.max_ray_intensity", 1.0));
@@ -841,6 +851,7 @@ namespace
             save_separate_bounce_settings(config, "pt", "diffuse");
             save_separate_bounce_settings(config, "pt", "glossy");
             save_separate_bounce_settings(config, "pt", "specular");
+            save_separate_bounce_settings(config, "pt", "volume", false);
 
             if (get_widget<bool>("advanced.unlimited_ray_intensity"))
                 config.get_parameters().remove_path("pt.max_ray_intensity");

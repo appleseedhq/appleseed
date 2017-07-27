@@ -60,24 +60,29 @@ ProjectManager* project_manager()
     return main_window()->get_project_manager();
 }
 
-Project* new_project()
+void new_project()
 {
     main_window()->new_project();
-    return project_manager()->get_project();
 }
 
-Project* open_project(const char* project_path)
+bool open_project(const char* project_path)
 {
-    main_window()->open_project(project_path);
-    return project_manager()->get_project();
+    return main_window()->open_project(project_path);
 }
 
-void save_project(const char* project_path = nullptr)
+bool save_project(const char* project_path = nullptr)
 {
     if (project_path == nullptr)
-        main_window()->save_project(project_manager()->get_project()->get_path());
+    {
+        if (project_manager()->get_project()->has_path())
+            main_window()->save_project(project_manager()->get_project()->get_path());
+        else
+            return false;
+    }
     else
         main_window()->save_project(project_path);
+
+    return true;
 }
 
 BOOST_PYTHON_FUNCTION_OVERLOADS(save_project_overloads, save_project, 0, 1)
@@ -105,10 +110,8 @@ bpy::long_ main_window_as_pylong()
 
 BOOST_PYTHON_MODULE(_appleseedstudio)
 {
-    bpy::def("new_project", new_project,
-             bpy::return_value_policy<bpy::reference_existing_object>());
-    bpy::def("open_project", open_project, bpy::args("project_path"),
-             bpy::return_value_policy<bpy::reference_existing_object>());
+    bpy::def("new_project", new_project);
+    bpy::def("open_project", open_project, bpy::args("project_path"));
     bpy::def("save_project", save_project,
              save_project_overloads(bpy::args("project_path")));
     bpy::def("close_project", close_project);

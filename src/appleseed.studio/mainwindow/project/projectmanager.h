@@ -64,12 +64,19 @@ class ProjectManager
     // If there already is a project open, it is first closed.
     void create_project();
 
+    // Load a project from disk.
+    // If loading was successful, closes the current project, replaces it
+    // with the project loaded from disk, and returns true.  Otherwise,
+    // keeps the current project open and returns false.
+    // Returns true if project is loaded successfully.
+    bool load_project(const std::string& filepath);
+
     // Asynchronously load a project from disk.
     // Emits a signal_load_project_async_complete() signal upon completion.
     // If loading was successful, closes the current project, replaces it
     // with the project loaded from disk, and returns true.  Otherwise,
     // keeps the current project open and returns false.
-    void load_project(const std::string& filepath);
+    void load_project_async(const std::string& filepath);
 
     // Load a built-in project.
     // If loading was successful, closes the current project, replaces it

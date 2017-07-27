@@ -65,6 +65,7 @@
 #include <cstddef>
 #include <limits>
 #include <string>
+#include <type_traits>
 
 // Forward declarations.
 namespace renderer  { class BackwardLightSampler; }
@@ -103,6 +104,7 @@ namespace
             const size_t    m_max_diffuse_bounces;          // maximum number of diffuse bounces, ~0 for unlimited
             const size_t    m_max_glossy_bounces;           // maximum number of glossy bounces, ~0 for unlimited
             const size_t    m_max_specular_bounces;         // maximum number of specular bounces, ~0 for unlimited
+            const size_t    m_max_volume_bounces;           // maximum number of volume scattering events, ~0 for unlimited
 
             const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
             const bool      m_next_event_estimation;        // use next event estimation?
@@ -127,6 +129,7 @@ namespace
               , m_max_diffuse_bounces(fixup_bounces(params.get_optional<int>("max_diffuse_bounces", -1)))
               , m_max_glossy_bounces(fixup_bounces(params.get_optional<int>("max_glossy_bounces", -1)))
               , m_max_specular_bounces(fixup_bounces(params.get_optional<int>("max_specular_bounces", -1)))
+              , m_max_volume_bounces(fixup_bounces(params.get_optional<int>("max_volume_bounces", 8)))
               , m_rr_min_path_length(fixup_path_length(params.get_optional<size_t>("rr_min_path_length", 6)))
               , m_next_event_estimation(params.get_optional<bool>("next_event_estimation", true))
               , m_dl_light_sample_count(params.get_optional<float>("dl_light_samples", 1.0f))
@@ -170,6 +173,7 @@ namespace
                     "  max diffuse bounces           %s\n"
                     "  max glossy bounces            %s\n"
                     "  max specular bounces          %s\n"
+                    "  max volume bounces            %s\n"
                     "  rr min path length            %s\n"
                     "  next event estimation         %s\n"
                     "  dl light samples              %s\n"
@@ -184,6 +188,7 @@ namespace
                     m_max_diffuse_bounces == ~0 ? "infinite" : pretty_uint(m_max_diffuse_bounces).c_str(),
                     m_max_glossy_bounces == ~0 ? "infinite" : pretty_uint(m_max_glossy_bounces).c_str(),
                     m_max_specular_bounces == ~0 ? "infinite" : pretty_uint(m_max_specular_bounces).c_str(),
+                    m_max_volume_bounces == ~0 ? "infinite" : pretty_uint(m_max_volume_bounces).c_str(),
                     m_rr_min_path_length == ~0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
                     m_next_event_estimation ? "on" : "off",
                     pretty_scalar(m_dl_light_sample_count).c_str(),
@@ -218,7 +223,7 @@ namespace
         {
             if (m_params.m_next_event_estimation)
             {
-                do_compute_lighting<PathVisitorNextEventEstimation>(
+                do_compute_lighting<PathVisitorNextEventEstimation, VolumeVisitorDistanceSampling>(
                     sampling_context,
                     shading_context,
                     shading_point,
@@ -226,7 +231,7 @@ namespace
             }
             else
             {
-                do_compute_lighting<PathVisitorSimple>(
+                do_compute_lighting<PathVisitorSimple, VolumeVisitorSimple>(
                     sampling_context,
                     shading_context,
                     shading_point,
@@ -234,7 +239,7 @@ namespace
             }
         }
 
-        template <typename PathVisitor>
+        template <typename PathVisitor, typename VolumeVisitor>
         void do_compute_lighting(
             SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
@@ -249,7 +254,7 @@ namespace
                 shading_point.get_scene(),
                 radiance);
 
-            VolumeVisitorDistanceSampling volume_visitor(
+            VolumeVisitor volume_visitor(
                 m_params,
                 m_light_sampler,
                 sampling_context,
@@ -258,7 +263,7 @@ namespace
                 radiance,
                 m_inf_volume_ray_warnings);
 
-            PathTracer<PathVisitor, VolumeVisitorDistanceSampling, false> path_tracer(     // false = not adjoint
+            PathTracer<PathVisitor, VolumeVisitor, false> path_tracer(     // false = not adjoint
                 path_visitor,
                 volume_visitor,
                 m_params.m_rr_min_path_length,
@@ -266,6 +271,7 @@ namespace
                 m_params.m_max_diffuse_bounces == ~0 ? ~0 : m_params.m_max_diffuse_bounces + 1,
                 m_params.m_max_glossy_bounces,
                 m_params.m_max_specular_bounces,
+                m_params.m_max_volume_bounces,
                 shading_context.get_max_iterations());
 
             const size_t path_length =
@@ -338,7 +344,7 @@ namespace
                 if (!m_params.m_enable_caustics)
                 {
                     // Don't follow paths leading to caustics.
-                    if (ScatteringMode::has_diffuse(prev_mode) &&
+                    if (ScatteringMode::has_diffuse_or_volumetric(prev_mode) &&
                         ScatteringMode::has_glossy_or_specular(next_mode))
                         return false;
 
@@ -429,9 +435,12 @@ namespace
 
             void on_scatter(PathVertex& vertex)
             {
-                // When caustics are disabled, disable glossy and specular components after a diffuse bounce.
+                // When caustics are disabled, disable glossy and specular components after a diffuse or volume bounce.
                 // Note that accept_scattering() is later going to return false in this case.
-                if (!m_params.m_enable_caustics && vertex.m_prev_mode == ScatteringMode::Diffuse)
+                const bool has_diffuse_or_volume_scattering =
+                    vertex.m_prev_mode == ScatteringMode::Diffuse ||
+                    vertex.m_prev_mode == ScatteringMode::Volumetric;
+                if (!m_params.m_enable_caustics && has_diffuse_or_volume_scattering)
                     vertex.m_scattering_modes &= ~(ScatteringMode::Glossy | ScatteringMode::Specular);
 
                 // Terminate the path if all scattering modes are disabled.
@@ -546,11 +555,14 @@ namespace
                 assert(vertex.m_scattering_modes != ScatteringMode::None);
 
                 // Any light contribution after a diffuse or glossy bounce is considered indirect.
-                if (ScatteringMode::has_diffuse_or_glossy(vertex.m_prev_mode))
+                if (ScatteringMode::has_diffuse_or_glossy_or_volume(vertex.m_prev_mode))
                     m_is_indirect_lighting = true;
 
-                // When caustics are disabled, disable glossy and specular components after a diffuse bounce.
-                if (!m_params.m_enable_caustics && vertex.m_prev_mode == ScatteringMode::Diffuse)
+                // When caustics are disabled, disable glossy and specular components after a diffuse or volume bounce.
+                const bool has_diffuse_or_volume_scattering =
+                    vertex.m_prev_mode == ScatteringMode::Diffuse ||
+                    vertex.m_prev_mode == ScatteringMode::Volumetric;
+                if (!m_params.m_enable_caustics && has_diffuse_or_volume_scattering)
                     vertex.m_scattering_modes &= ~(ScatteringMode::Glossy | ScatteringMode::Specular);
 
                 // Terminate the path if all scattering modes are disabled.
@@ -761,10 +773,10 @@ namespace
         };
 
         //
-        // Volume visitor that performs distance sampling and light sampling in a decoupled fashion.
+        // Base volume visitor.
         //
 
-        struct VolumeVisitorDistanceSampling
+        struct VolumeVisitorBase
         {
             const Parameters&               m_params;
             const BackwardLightSampler&     m_light_sampler;
@@ -775,7 +787,7 @@ namespace
             bool                            m_is_indirect_lighting;
             size_t&                         m_inf_volume_ray_warnings;
 
-            VolumeVisitorDistanceSampling(
+            VolumeVisitorBase(
                 const Parameters&               params,
                 const BackwardLightSampler&     light_sampler,
                 SamplingContext&                sampling_context,
@@ -791,6 +803,85 @@ namespace
               , m_env_edf(scene.get_environment()->get_environment_edf())
               , m_is_indirect_lighting(false)
               , m_inf_volume_ray_warnings(inf_volume_ray_warnings)
+            {
+            }
+
+            bool accept_scattering(
+                const ScatteringMode::Mode  prev_mode)
+            {
+                return true;
+            }
+
+            void on_scatter(PathVertex& vertex)
+            {
+                // When caustics are disabled, disable glossy and specular components after a diffuse or volume bounce.
+                // Note that accept_scattering() is later going to return false in this case.
+                const bool has_diffuse_or_volume_scattering =
+                    vertex.m_prev_mode == ScatteringMode::Diffuse ||
+                    vertex.m_prev_mode == ScatteringMode::Volumetric;
+                if (!m_params.m_enable_caustics && has_diffuse_or_volume_scattering)
+                    vertex.m_scattering_modes &= ~(ScatteringMode::Glossy | ScatteringMode::Specular);
+            }
+        };
+
+        //
+        // Volume visitor without next event estimation.
+        //
+
+        struct VolumeVisitorSimple
+          : public VolumeVisitorBase
+        {
+            VolumeVisitorSimple(
+                const Parameters&               params,
+                const BackwardLightSampler&     light_sampler,
+                SamplingContext&                sampling_context,
+                const ShadingContext&           shading_context,
+                const Scene&                    scene,
+                ShadingComponents&              path_radiance,
+                size_t&                         inf_volume_ray_warnings)
+              : VolumeVisitorBase(
+                  params,
+                  light_sampler,
+                  sampling_context,
+                  shading_context,
+                  scene,
+                  path_radiance,
+                  inf_volume_ray_warnings)
+            {
+            }
+
+            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray)
+            {
+                // Any light contribution after a diffuse, glossy or volume bounce is considered indirect.
+                if (ScatteringMode::has_diffuse_or_glossy_or_volume(vertex.m_scattering_modes))
+                    m_is_indirect_lighting = true;
+            }
+        };
+
+        //
+        // Volume visitor with next event estimation
+        // that performs distance sampling and light sampling in a decoupled fashion.
+        //
+
+        struct VolumeVisitorDistanceSampling
+          : public VolumeVisitorBase
+        {
+            VolumeVisitorDistanceSampling(
+                const Parameters&               params,
+                const BackwardLightSampler&     light_sampler,
+                SamplingContext&                sampling_context,
+                const ShadingContext&           shading_context,
+                const Scene&                    scene,
+                ShadingComponents&              path_radiance,
+                size_t&                         inf_volume_ray_warnings)
+              : VolumeVisitorBase(
+                  params,
+                  light_sampler,
+                  sampling_context,
+                  shading_context,
+                  scene,
+                  path_radiance,
+                  inf_volume_ray_warnings)
             {
             }
 
@@ -912,8 +1003,12 @@ namespace
                 radiance += ibl_radiance;
             }
 
-            void visit(PathVertex& vertex, const ShadingRay& volume_ray)
+            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray)
             {
+                // Any light contribution after a diffuse, glossy or volume bounce is considered indirect.
+                if (ScatteringMode::has_diffuse_or_glossy_or_volume(vertex.m_scattering_modes))
+                    m_is_indirect_lighting = true;
+
                 if (volume_ray.get_length() == numeric_limits<ShadingRay::ValueType>().max())
                 {
                     if (m_inf_volume_ray_warnings < MaxInfVolumeRayWarnings)
@@ -928,10 +1023,6 @@ namespace
                 assert(medium != nullptr);
                 const Volume* volume = medium->get_volume();
                 assert(volume != nullptr);
-
-                // Any light contribution after a diffuse or glossy bounce is considered indirect.
-                if (ScatteringMode::has_diffuse_or_glossy(vertex.m_scattering_modes))
-                    m_is_indirect_lighting = true;
 
                 // Get full ray transmission.
                 Spectrum ray_transmission;
@@ -1128,6 +1219,16 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("min", "0")
             .insert("label", "Max Specular Bounces")
             .insert("help", "Maximum number of specular bounces"));
+
+    metadata.dictionaries().insert(
+        "max_volume_bounces",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "0")
+            .insert("unlimited", "false")
+            .insert("min", "0")
+            .insert("label", "Max Volumetric Bounces")
+            .insert("help", "Maximum number of volume scattering events (0 = single scattering)"));
 
     metadata.dictionaries().insert(
         "rr_min_path_length",

@@ -229,7 +229,7 @@ void LightTree::sample(
     const size_t item_index = m_nodes[node_index].get_item_index();
     const size_t source_index = m_items[item_index].m_light_source_index;
     light_type = m_light_sources[source_index]->get_type();
-    
+
     switch (light_type)
     {
       // m_light_source_index corresponds to the m_light_tree_lights
@@ -256,8 +256,8 @@ float LightTree::evaluate_node_pdf(
     size_t parent_index = m_nodes[node_index].get_parent();
     float pdf = 1.0f;
 
-    while (!m_nodes[parent_index].is_root())
-    {
+    do
+	{
         const LightTreeNode<AABB3d>& node = m_nodes[parent_index];
 
         float p1, p2;
@@ -269,7 +269,7 @@ float LightTree::evaluate_node_pdf(
         // into consideration.
         node_index = parent_index;
         parent_index = m_nodes[node_index].get_parent();
-    }
+    } while (!m_nodes[node_index].is_root());
 
     return pdf;
 }
