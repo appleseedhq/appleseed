@@ -177,6 +177,7 @@ namespace
                 ~0, // max diffuse bounces
                 ~0, // max glossy bounces
                 ~0, // max specular bounces
+                ~0, // max volume bounces
                 shading_context.get_max_iterations());
 
             const size_t path_length =
