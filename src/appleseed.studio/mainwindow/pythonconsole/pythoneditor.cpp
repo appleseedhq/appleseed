@@ -89,7 +89,7 @@ void PythonEditor::keyPressEvent(QKeyEvent* event)
 void PythonEditor::indent()
 {
     const QStringList text = toPlainText().split('\n');
-    const std::string previous = text[text.size() - 2].toStdString();
+    const std::string previous = (text.size() >= 2) ? text[text.size() - 2].toStdString() : "";
 
     indent_like_previous(previous);
 
