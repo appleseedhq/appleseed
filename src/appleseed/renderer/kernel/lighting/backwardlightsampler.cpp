@@ -121,7 +121,8 @@ void BackwardLightSampler::sample_lightset(
 {
     if (m_use_light_tree)
     {
-        sample_light_tree_lights(
+        // Light tree sampling.
+        sample_light_tree(
             time,
             s,
             shading_point,
@@ -129,7 +130,7 @@ void BackwardLightSampler::sample_lightset(
     }
     else
     {
-        // Use CDF based sampling.
+        // CDF-based sampling.
         sample_emitting_triangles(
             time,
             s,
@@ -507,7 +508,7 @@ void BackwardLightSampler::build_emitting_triangle_hash_table()
     }
 }
 
-void BackwardLightSampler::sample_light_tree_lights(
+void BackwardLightSampler::sample_light_tree(
     const ShadingRay::Time&             time,
     const Vector3f&                     s,
     const ShadingPoint&                 shading_point,
@@ -525,28 +526,10 @@ void BackwardLightSampler::sample_light_tree_lights(
         light_index,
         light_prob);
 
-    sample_light_tree_light(
-        time,
-        Vector2f(s[1], s[2]),
-        light_type,
-        light_index,
-        light_prob,
-        light_sample);
-
-    assert(light_sample.m_light || light_sample.m_triangle);
-    assert(light_sample.m_probability > 0.0f);
-}
-
-void BackwardLightSampler::sample_light_tree_light(
-    const ShadingRay::Time&             time,
-    const Vector2f&                     s,
-    const int                           light_type,
-    const size_t                        light_index,
-    const float                         light_prob,
-    LightSample&                        light_sample) const
-{
     if (light_type == LightSource::NonPhysicalLightType)
     {
+        //sample_non_physical_light(time, light_index, light_sample);
+
         // Fetch the light.
         const NonPhysicalLightInfo& light_info = m_light_tree_lights[light_index];
         light_sample.m_light = light_info.m_light;
@@ -562,8 +545,16 @@ void BackwardLightSampler::sample_light_tree_light(
     else
     {
         assert(light_type == LightSource::EmittingTriangleType);
-        sample_emitting_triangle(time, s, light_index, light_prob, light_sample);
+        sample_emitting_triangle(
+            time,
+            Vector2f(s[1], s[2]),
+            light_index,
+            light_prob,
+            light_sample);
     }
+
+    assert(light_sample.m_light || light_sample.m_triangle);
+    assert(light_sample.m_probability > 0.0f);
 }
 
 void BackwardLightSampler::sample_emitting_triangles(

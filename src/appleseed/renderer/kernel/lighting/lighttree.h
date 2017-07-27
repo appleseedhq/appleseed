@@ -101,10 +101,10 @@ class LightTree
         // and emitting_triangles vectors within the BackwardLightSampler.
         Item(
             const foundation::AABB3d&       bbox,
-            const size_t                    source_index,
+            const size_t                    light_source_index,
             const size_t                    external_source_index) 
             : m_bbox(bbox)
-            , m_light_source_index(source_index)
+            , m_light_source_index(light_source_index)
             , m_external_source_index(external_source_index)
         {
         }
@@ -119,12 +119,6 @@ class LightTree
     size_t                     m_tree_depth;
     bool                       m_built; // Was the tree built?
 
-    // Dump the tree bounding boxes to a VPython file on disk.
-    void draw_tree_structure(
-        const std::string&                  filename_base,
-        const foundation::AABB3d&           root_bbox,
-        const bool                          separate_by_levels = false) const;
-
     // Calculate the tree depth.
     // Assign total importance to each node of the tree, where total importance
     // represents the sum of all its child nodes importances.
@@ -138,6 +132,12 @@ class LightTree
         const foundation::Vector3d&                 surface_point,
         float&                                      p1,
         float&                                      p2) const;
+
+    // Dump the tree bounding boxes to a VPython file on disk.
+    void draw_tree_structure(
+        const std::string&                  filename_base,
+        const foundation::AABB3d&           root_bbox,
+        const bool                          separate_by_levels = false) const;
 };
 
 }       // namespace renderer
