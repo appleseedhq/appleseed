@@ -126,6 +126,11 @@ class LightTree
         const size_t                        parent_index,
         const size_t                        node_index, 
         const size_t                        node_level);
+    
+    float compute_node_probability(
+        const LightTreeNode<foundation::AABB3d>&    node,
+        const foundation::AABB3d&                   bbox,
+        const foundation::Vector3d&                 surface_point) const;
 
     void child_node_probabilites(
         const LightTreeNode<foundation::AABB3d>&    node,
