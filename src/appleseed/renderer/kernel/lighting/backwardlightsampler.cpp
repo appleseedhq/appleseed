@@ -528,8 +528,6 @@ void BackwardLightSampler::sample_light_tree(
 
     if (light_type == LightSource::NonPhysicalLightType)
     {
-        //sample_non_physical_light(time, light_index, light_sample);
-
         // Fetch the light.
         const NonPhysicalLightInfo& light_info = m_light_tree_lights[light_index];
         light_sample.m_light = light_info.m_light;
