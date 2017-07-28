@@ -69,20 +69,6 @@ CommandLineHandler::CommandLineHandler()
             .set_flags(OptionHandler::Repeatable)
             .set_exact_value_count(1));
 
-#if defined __APPLE__ || defined _WIN32
-
-    parser().add_option_handler(
-        &m_display_output
-            .add_name("--display-output")
-            .set_description("display the output image"));
-
-#endif
-
-    parser().add_option_handler(
-        &m_disable_autosave
-            .add_name("--disable-autosave")
-            .set_description("disable automatic saving of rendered images"));
-
     parser().add_option_handler(
         &m_threads
             .add_name("--threads")
@@ -90,18 +76,6 @@ CommandLineHandler::CommandLineHandler()
             .set_description("set the number of rendering threads")
             .set_syntax("n")
             .set_exact_value_count(1));
-
-    parser().add_option_handler(
-        &m_output.add_name("--output")
-            .add_name("-o")
-            .set_description("set the name of the output file")
-            .set_syntax("filename")
-            .set_exact_value_count(1));
-
-    parser().add_option_handler(
-        &m_continuous_saving
-            .add_name("--continuous-saving")
-            .set_description("write tiles to disk as soon as they are rendered"));
 
     parser().add_option_handler(
         &m_resolution
@@ -149,16 +123,40 @@ CommandLineHandler::CommandLineHandler()
             .set_exact_value_count(1));
 
     parser().add_option_handler(
-        &m_mplay_display
-            .add_name("--mplay")
-            .set_description("use Houdini's mplay"));
+        &m_output.add_name("--output")
+            .add_name("-o")
+            .set_description("set the name of the output file")
+            .set_syntax("filename")
+            .set_exact_value_count(1));
+
+#if defined __APPLE__ || defined _WIN32
+    parser().add_option_handler(
+        &m_display_output
+            .add_name("--display-output")
+            .set_description("display the output image"));
+#endif
 
     parser().add_option_handler(
-        &m_hrmanpipe_display
-            .add_name("--hrmanpipe")
-            .set_description("use Houdini's hrmanpipe; the argument is the socket number to pass to hrmanpipe")
+        &m_send_to_mplay
+            .add_name("--to-mplay")
+            .set_description("send render to Houdini's mplay"));
+
+    parser().add_option_handler(
+        &m_send_to_hrmanpipe
+            .add_name("--to-hrmanpipe")
+            .set_description("send render to Houdini's hrmanpipe; the argument is the socket number to pass to hrmanpipe")
             .set_syntax("socket")
             .set_exact_value_count(1));
+
+    parser().add_option_handler(
+        &m_send_to_stdout
+            .add_name("--to-stdout")
+            .set_description("send render to standard output"));
+
+    parser().add_option_handler(
+        &m_disable_autosave
+            .add_name("--disable-autosave")
+            .set_description("disable automatic saving of rendered images"));
 
     parser().add_option_handler(
         &m_run_unit_tests

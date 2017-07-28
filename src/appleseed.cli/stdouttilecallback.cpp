@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,22 +27,28 @@
 //
 
 // Interface header.
-#include "progresstilecallback.h"
+#include "stdouttilecallback.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
-#include "renderer/api/log.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
+#include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
 #include "foundation/platform/thread.h"
-#include "foundation/utility/string.h"
+#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
-#include <string>
+#include <cstdio>
+
+// Platform headers.
+#ifdef _WIN32
+#include <fcntl.h>
+#include <io.h>
+#endif
 
 using namespace foundation;
 using namespace renderer;
@@ -55,19 +60,13 @@ namespace cli {
 namespace
 {
     //
-    // ProgressTileCallback.
+    // StdOutTileCallbackFactory.
     //
 
-    class ProgressTileCallback
+    class StdOutTileCallback
       : public TileCallbackBase
     {
       public:
-        explicit ProgressTileCallback(Logger& logger)
-          : m_logger(logger)
-          , m_rendered_pixels(0)
-        {
-        }
-
         virtual void release() override
         {
             // The factory always return the same tile callback instance.
@@ -81,40 +80,75 @@ namespace
         {
             boost::mutex::scoped_lock lock(m_mutex);
 
-            // Keep track of the total number of rendered pixels.
+#ifdef _WIN32
+            const int old_stdout_mode = _setmode(_fileno(stdout), _O_BINARY);
+#endif
+
+            // Compute the coordinates in the image of the top-left corner of the tile.
+            const CanvasProperties& frame_props = frame->image().properties();
+            const size_t x = tile_x * frame_props.m_tile_width;
+            const size_t y = tile_y * frame_props.m_tile_height;
+
+            // Retrieve the source tile and its dimensions.
             const Tile& tile = frame->image().tile(tile_x, tile_y);
-            m_rendered_pixels += tile.get_pixel_count();
+            const size_t w = tile.get_width();
+            const size_t h = tile.get_height();
+            const size_t c = tile.get_channel_count();
 
-            // Retrieve the total number of pixels in the frame.
-            const size_t total_pixels = frame->image().properties().m_pixel_count;
+            // Build and write tile header.
+            const uint32 ChunkType = 1;
+            const size_t chunk_size = 5 * 4 + sizeof(float) * w * h * c;
+            const uint32 header[7] =
+            {
+                static_cast<uint32>(ChunkType),
+                static_cast<uint32>(chunk_size),
+                static_cast<uint32>(x),
+                static_cast<uint32>(y),
+                static_cast<uint32>(w),
+                static_cast<uint32>(h),
+                static_cast<uint32>(c),
+            };
+            fwrite(header, sizeof(header), 1, stdout);
 
-            // Print a progress message.
-            LOG_INFO(m_logger, "rendering, %s done", pretty_percent(m_rendered_pixels, total_pixels).c_str());
+            // Write tile pixels.
+            if (frame_props.m_pixel_format != PixelFormatFloat)
+            {
+                const Tile tmp(tile, PixelFormatFloat);
+                fwrite(tmp.get_storage(), 1, tmp.get_size(), stdout);
+            }
+            else
+            {
+                fwrite(tile.get_storage(), 1, tile.get_size(), stdout);
+            }
+
+            fflush(stdout);
+
+#ifdef _WIN32
+            _setmode(_fileno(stdout), old_stdout_mode);
+#endif
         }
 
       private:
-        Logger&             m_logger;
-        boost::mutex        m_mutex;
-        size_t              m_rendered_pixels;
+        boost::mutex m_mutex;
     };
 }
 
 
 //
-// ProgressTileCallbackFactory class implementation.
+// StdOutTileCallbackFactory class implementation.
 //
 
-ProgressTileCallbackFactory::ProgressTileCallbackFactory(Logger& logger)
-  : m_callback(new ProgressTileCallback(logger))
+StdOutTileCallbackFactory::StdOutTileCallbackFactory()
+  : m_callback(new StdOutTileCallback())
 {
 }
 
-void ProgressTileCallbackFactory::release()
+void StdOutTileCallbackFactory::release()
 {
     delete this;
 }
 
-ITileCallback* ProgressTileCallbackFactory::create()
+ITileCallback* StdOutTileCallbackFactory::create()
 {
     return m_callback.get();
 }

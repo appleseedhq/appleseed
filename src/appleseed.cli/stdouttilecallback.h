@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,32 +26,23 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_CLI_CONTINUOUSSAVINGTILECALLBACK_H
-#define APPLESEED_CLI_CONTINUOUSSAVINGTILECALLBACK_H
+#ifndef APPLESEED_CLI_STDOUTTILECALLBACK_H
+#define APPLESEED_CLI_STDOUTTILECALLBACK_H
 
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
 // Standard headers.
 #include <memory>
-#include <string>
-
-// Forward declarations.
-namespace foundation    { class Logger; }
 
 namespace appleseed {
 namespace cli {
 
-class ContinuousSavingTileCallbackFactory
+class StdOutTileCallbackFactory
   : public renderer::ITileCallbackFactory
 {
   public:
-    ContinuousSavingTileCallbackFactory(
-        const std::string&  output_path,
-        foundation::Logger& logger);
+    StdOutTileCallbackFactory();
 
     virtual void release() override;
 
@@ -65,4 +55,4 @@ class ContinuousSavingTileCallbackFactory
 }       // namespace cli
 }       // namespace appleseed
 
-#endif  // !APPLESEED_CLI_CONTINUOUSSAVINGTILECALLBACK_H
+#endif  // !APPLESEED_CLI_STDOUTTILECALLBACK_H

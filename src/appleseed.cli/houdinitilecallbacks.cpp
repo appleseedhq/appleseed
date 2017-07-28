@@ -54,14 +54,14 @@ using namespace std;
 namespace appleseed {
 namespace cli {
 
-//
-// HoudiniTileCallback.
-//
-// This code is based on SideFX's tomdisplay and deepmplay examples distributed with Houdini.
-//
-
 namespace
 {
+    //
+    // HoudiniTileCallback.
+    //
+    // This code is based on SideFX's tomdisplay and deepmplay examples distributed with Houdini.
+    //
+
     class HoudiniTileCallback
       : public TileCallbackBase
     {
@@ -119,9 +119,8 @@ namespace
 
         virtual void release() override
         {
-            // Do nothing: since the same tile callback instance is returned by the factories,
-            // it must not be possible to manually destroy that instance. The lifetime of the
-            // callback is controlled by the factories.
+            // The factory always return the same tile callback instance.
+            // Prevent this instance from being destroyed by doing nothing here.
         }
 
         virtual void post_render_tile(
@@ -237,7 +236,7 @@ namespace
 
                 if (!m_single_plane)
                 {
-                    for (size_t i = 0, e = frame.aov_images().size(); i != e; ++i)
+                    for (size_t i = 0, e = frame.aov_images().size(); i < e; ++i)
                     {
                         send_plane_definition(
                             frame.aov_images().get_image(i),
@@ -335,8 +334,7 @@ namespace
                 LOG_FATAL(m_logger, "error sending tile header.");
 
             // Send tile pixels.
-            if (properties.m_pixel_format == PixelFormatHalf ||
-                properties.m_pixel_format == PixelFormatDouble)
+            if (properties.m_pixel_format != PixelFormatFloat)
             {
                 const Tile tmp(tile, PixelFormatFloat);
                 if (fwrite(tmp.get_storage(), 1, tmp.get_size(), m_fp) != tmp.get_size())
