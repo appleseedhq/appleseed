@@ -35,8 +35,6 @@
 set (sources
     commandlinehandler.cpp
     commandlinehandler.h
-    continuoussavingtilecallback.cpp
-    continuoussavingtilecallback.h
     houdinitilecallbacks.cpp
     houdinitilecallbacks.h
     main.cpp

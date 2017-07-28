@@ -29,9 +29,9 @@
 
 // appleseed.cli headers.
 #include "commandlinehandler.h"
-#include "continuoussavingtilecallback.h"
 #include "houdinitilecallbacks.h"
 #include "progresstilecallback.h"
+#include "stdouttilecallback.h"
 
 // appleseed.shared headers.
 #include "application/application.h"
@@ -527,7 +527,7 @@ namespace
 
         // Create the tile callback factory.
         auto_ptr<ITileCallbackFactory> tile_callback_factory;
-        if (g_cl.m_mplay_display.is_set())
+        if (g_cl.m_send_to_mplay.is_set())
         {
             tile_callback_factory.reset(
                 new MPlayTileCallbackFactory(
@@ -535,22 +535,19 @@ namespace
                     is_progressive_render(params),
                     g_logger));
         }
-        else if (g_cl.m_hrmanpipe_display.is_set())
+        else if (g_cl.m_send_to_hrmanpipe.is_set())
         {
             tile_callback_factory.reset(
                 new HRmanPipeTileCallbackFactory(
-                    g_cl.m_hrmanpipe_display.value(),
+                    g_cl.m_send_to_hrmanpipe.value(),
                     is_progressive_render(params),
                     g_logger));
         }
-        else if (g_cl.m_output.is_set() && g_cl.m_continuous_saving.is_set())
+        else if (g_cl.m_send_to_stdout.is_set())
         {
-            tile_callback_factory.reset(
-                new ContinuousSavingTileCallbackFactory(
-                    g_cl.m_output.value().c_str(),
-                    g_logger));
+            tile_callback_factory.reset(new StdOutTileCallbackFactory());
         }
-        else if (project->get_display() == 0)
+        else if (project->get_display() == nullptr)
         {
             // Create a default tile callback if needed.
             if (params.get_optional<string>("frame_renderer", "") != "progressive")
@@ -611,7 +608,7 @@ namespace
         }
 
         // Write the frame to disk.
-        if (g_cl.m_output.is_set() && !g_cl.m_continuous_saving.is_set())
+        if (g_cl.m_output.is_set())
         {
             LOG_INFO(g_logger, "writing frame to disk...");
             project->get_frame()->write_main_image(g_cl.m_output.value().c_str());
