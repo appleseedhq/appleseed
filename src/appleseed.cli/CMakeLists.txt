@@ -42,6 +42,8 @@ set (sources
     main.cpp
     progresstilecallback.cpp
     progresstilecallback.h
+    stdouttilecallback.cpp
+    stdouttilecallback.h
 )
 list (APPEND appleseed.cli_sources
     ${sources}
