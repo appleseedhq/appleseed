@@ -99,15 +99,21 @@ struct Frame::Impl
     float                   m_filter_radius;
     auto_ptr<Filter2f>      m_filter;
     LightingConditions      m_lighting_conditions;
+    Vector2f                m_red_xy_chromaticity;
+    Vector2f                m_green_xy_chromaticity;
+    Vector2f                m_blue_xy_chromaticity;
+    Vector2f                m_white_xy_chromaticity;
     AABB2u                  m_crop_window;
-
     auto_ptr<Image>         m_image;
     auto_ptr<ImageStack>    m_aov_images;
-
     AOVContainer            m_aovs;
 
     Impl()
       : m_lighting_conditions(IlluminantCIED65, XYZCMFCIE19312Deg)
+      , m_red_xy_chromaticity(0.64f, 0.33f)
+      , m_green_xy_chromaticity(0.30f, 0.60f)
+      , m_blue_xy_chromaticity(0.15f, 0.06f)
+      , m_white_xy_chromaticity(0.3127f, 0.3290f)
     {
     }
 };
@@ -320,8 +326,13 @@ bool Frame::write_main_image(const char* file_path) const
 {
     assert(file_path);
 
-    const ImageAttributes image_attributes =
+    ImageAttributes image_attributes =
         ImageAttributes::create_default_attributes();
+
+    image_attributes.insert("white_xy_chromaticity", impl->m_white_xy_chromaticity);
+    image_attributes.insert("red_xy_chromaticity", impl->m_red_xy_chromaticity);
+    image_attributes.insert("green_xy_chromaticity", impl->m_green_xy_chromaticity);
+    image_attributes.insert("blue_xy_chromaticity", impl->m_blue_xy_chromaticity);
 
     return write_image(file_path, *impl->m_image, image_attributes);
 }
@@ -330,8 +341,13 @@ bool Frame::write_aov_images(const char* file_path) const
 {
     assert(file_path);
 
-    const ImageAttributes image_attributes =
+    ImageAttributes image_attributes =
         ImageAttributes::create_default_attributes();
+
+    image_attributes.insert("white_xy_chromaticity", impl->m_white_xy_chromaticity);
+    image_attributes.insert("red_xy_chromaticity", impl->m_red_xy_chromaticity);
+    image_attributes.insert("green_xy_chromaticity", impl->m_green_xy_chromaticity);
+    image_attributes.insert("blue_xy_chromaticity", impl->m_blue_xy_chromaticity);
 
     bool result = true;
 
