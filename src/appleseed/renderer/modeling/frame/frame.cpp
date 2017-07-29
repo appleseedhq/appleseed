@@ -43,12 +43,10 @@
 #include "foundation/image/color.h"
 #include "foundation/image/exceptionunsupportedimageformat.h"
 #include "foundation/image/exrimagefilewriter.h"
-#include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/image/imageattributes.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
-#include "foundation/math/fastmath.h"
 #include "foundation/math/scalar.h"
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
@@ -100,9 +98,6 @@ struct Frame::Impl
     string                  m_filter_name;
     float                   m_filter_radius;
     auto_ptr<Filter2f>      m_filter;
-    bool                    m_clamp;
-    float                   m_target_gamma;
-    float                   m_rcp_target_gamma;
     LightingConditions      m_lighting_conditions;
     AABB2u                  m_crop_window;
 
@@ -112,7 +107,7 @@ struct Frame::Impl
     AOVContainer            m_aovs;
 
     Impl()
-      : m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
+      : m_lighting_conditions(IlluminantCIED65, XYZCMFCIE19312Deg)
     {
     }
 };
@@ -173,8 +168,6 @@ void Frame::print_settings()
         "  filter size                   %f\n"
         "  color space                   %s\n"
         "  premultiplied alpha           %s\n"
-        "  clamping                      %s\n"
-        "  gamma correction              %f\n"
         "  crop window                   (%s, %s)-(%s, %s)",
         camera_name ? camera_name : "none",
         pretty_uint(impl->m_frame_width).c_str(),
@@ -186,8 +179,6 @@ void Frame::print_settings()
         impl->m_filter_radius,
         color_space_name(m_color_space),
         m_is_premultiplied_alpha ? "on" : "off",
-        impl->m_clamp ? "on" : "off",
-        impl->m_target_gamma,
         pretty_uint(impl->m_crop_window.min[0]).c_str(),
         pretty_uint(impl->m_crop_window.min[1]).c_str(),
         pretty_uint(impl->m_crop_window.max[0]).c_str(),
@@ -308,225 +299,10 @@ size_t Frame::get_pixel_count() const
     return impl->m_crop_window.volume();
 }
 
-namespace
-{
-    template <
-        int  ColorSpace,
-        bool Clamp,
-        bool GammaCorrect
-    >
-    void transform_generic_tile(Tile& tile, const float rcp_target_gamma)
-    {
-        assert(tile.get_channel_count() == 4);
-
-        const size_t pixel_count = tile.get_pixel_count();
-
-        for (size_t i = 0; i < pixel_count; ++i)
-        {
-            // Load the pixel color.
-#ifdef APPLESEED_USE_SSE
-            APPLESEED_SIMD4_ALIGN Color4f color;
-#else
-            Color4f color;
-#endif
-            tile.get_pixel(i, color);
-
-            // Apply color space conversion.
-            switch (ColorSpace)
-            {
-              case ColorSpaceSRGB:
-#ifdef APPLESEED_USE_SSE
-                {
-                    const float old_alpha = color[3];
-                    _mm_store_ps(&color[0], fast_linear_rgb_to_srgb(_mm_load_ps(&color[0])));
-                    color[3] = old_alpha;
-                }
-#else
-                color.rgb() = fast_linear_rgb_to_srgb(color.rgb());
-#endif
-                break;
-
-              case ColorSpaceCIEXYZ:
-                color.rgb() = linear_rgb_to_ciexyz(color.rgb());
-                break;
-
-              default:
-                break;
-            }
-
-            // Apply clamping.
-            // todo: mark clamped pixels in the diagnostic map.
-            if (Clamp)
-                color = saturate(color);
-
-            // Apply gamma correction.
-            if (GammaCorrect)
-            {
-                const float old_alpha = color[3];
-                fast_pow(&color[0], rcp_target_gamma);
-                color[3] = old_alpha;
-            }
-
-            // Store the pixel color.
-            tile.set_pixel(i, color);
-        }
-    }
-
-#ifdef APPLESEED_USE_SSE
-
-    template <
-        int  ColorSpace,
-        bool Clamp,
-        bool GammaCorrect
-    >
-    void transform_float_tile(Tile& tile, const float rcp_target_gamma)
-    {
-        assert(ColorSpace == ColorSpaceLinearRGB || ColorSpace == ColorSpaceSRGB);
-        assert(tile.get_channel_count() == 4);
-
-        float* pixel_ptr = reinterpret_cast<float*>(tile.pixel(0));
-        float* pixel_end = pixel_ptr + tile.get_pixel_count() * 4;
-
-        for (; pixel_ptr < pixel_end; pixel_ptr += 4)
-        {
-            // Load the pixel color.
-            __m128 color = _mm_load_ps(pixel_ptr);
-            __m128 original_color = color;
-
-            // Apply color space conversion.
-            if (ColorSpace == ColorSpaceSRGB)
-                color = fast_linear_rgb_to_srgb(color);
-
-            // Apply clamping.
-            // todo: mark clamped pixels in the diagnostic map.
-            if (Clamp)
-                color = _mm_min_ps(_mm_max_ps(color, _mm_set1_ps(0.0f)), _mm_set1_ps(1.0f));
-
-            // Apply gamma correction.
-            if (GammaCorrect)
-                color = fast_pow(color, _mm_set1_ps(rcp_target_gamma));
-
-            // Store the pixel color (preserve the alpha channel value).
-            _mm_store_ps(pixel_ptr, _mm_shuffle_ps(color, _mm_unpackhi_ps(color, original_color), _MM_SHUFFLE(3, 0, 1, 0)));
-        }
-    }
-
-#else
-
-    template <
-        int  ColorSpace,
-        bool Clamp,
-        bool GammaCorrect
-    >
-    void transform_float_tile(Tile& tile, const float rcp_target_gamma)
-    {
-        assert(ColorSpace == ColorSpaceLinearRGB || ColorSpace == ColorSpaceSRGB);
-        assert(tile.get_channel_count() == 4);
-
-        Color4f* pixel_ptr = reinterpret_cast<Color4f*>(tile.pixel(0));
-        Color4f* pixel_end = pixel_ptr + tile.get_pixel_count();
-
-        for (; pixel_ptr < pixel_end; ++pixel_ptr)
-        {
-            // Load the pixel color.
-            Color4f color(*pixel_ptr);
-
-            // Apply color space conversion.
-            if (ColorSpace == ColorSpaceSRGB)
-                color.rgb() = fast_linear_rgb_to_srgb(color.rgb());
-
-            // Apply clamping.
-            // todo: mark clamped pixels in the diagnostic map.
-            if (Clamp)
-                color = saturate(color);
-
-            // Apply gamma correction.
-            if (GammaCorrect)
-            {
-                const float old_alpha = color[3];
-                fast_pow(&color[0], rcp_target_gamma);
-                color[3] = old_alpha;
-            }
-
-            // Store the pixel color.
-            *pixel_ptr = color;
-        }
-    }
-
-#endif
-}
-
 void Frame::transform_to_output_color_space(Tile& tile) const
 {
-    #define TRANSFORM_GENERIC_TILE(ColorSpace)                                                      \
-        if (impl->m_clamp)                                                                          \
-        {                                                                                           \
-            if (impl->m_target_gamma != 1.0f)                                                       \
-                transform_generic_tile<ColorSpace, true, true>(tile, impl->m_rcp_target_gamma);     \
-            else transform_generic_tile<ColorSpace, true, false>(tile, impl->m_rcp_target_gamma);   \
-        }                                                                                           \
-        else                                                                                        \
-        {                                                                                           \
-            if (impl->m_target_gamma != 1.0f)                                                       \
-                transform_generic_tile<ColorSpace, false, true>(tile, impl->m_rcp_target_gamma);    \
-            else transform_generic_tile<ColorSpace, false, false>(tile, impl->m_rcp_target_gamma);  \
-        }
-
-    #define TRANSFORM_FLOAT_TILE(ColorSpace)                                                        \
-        if (impl->m_clamp)                                                                          \
-        {                                                                                           \
-            if (impl->m_target_gamma != 1.0f)                                                       \
-                transform_float_tile<ColorSpace, true, true>(tile, impl->m_rcp_target_gamma);       \
-            else transform_float_tile<ColorSpace, true, false>(tile, impl->m_rcp_target_gamma);     \
-        }                                                                                           \
-        else                                                                                        \
-        {                                                                                           \
-            if (impl->m_target_gamma != 1.0f)                                                       \
-                transform_float_tile<ColorSpace, false, true>(tile, impl->m_rcp_target_gamma);      \
-            else transform_float_tile<ColorSpace, false, false>(tile, impl->m_rcp_target_gamma);    \
-        }
-
-    if (tile.get_pixel_format() == PixelFormatFloat)
-    {
-        switch (m_color_space)
-        {
-          case ColorSpaceLinearRGB:
-            TRANSFORM_FLOAT_TILE(ColorSpaceLinearRGB);
-            break;
-
-          case ColorSpaceSRGB:
-            TRANSFORM_FLOAT_TILE(ColorSpaceSRGB);
-            break;
-
-          case ColorSpaceCIEXYZ:
-            TRANSFORM_GENERIC_TILE(ColorSpaceCIEXYZ);
-            break;
-
-          assert_otherwise;
-        }
-    }
-    else
-    {
-        switch (m_color_space)
-        {
-          case ColorSpaceLinearRGB:
-            TRANSFORM_GENERIC_TILE(ColorSpaceLinearRGB);
-            break;
-
-          case ColorSpaceSRGB:
-            TRANSFORM_GENERIC_TILE(ColorSpaceSRGB);
-            break;
-
-          case ColorSpaceCIEXYZ:
-            TRANSFORM_GENERIC_TILE(ColorSpaceCIEXYZ);
-            break;
-
-          assert_otherwise;
-        }
-    }
-
-    #undef TRANSFORM_FLOAT_TILE
-    #undef TRANSFORM_GENERIC_TILE
+    assert(tile.get_pixel_format() == PixelFormatFloat);
+    assert(m_color_space == ColorSpaceLinearRGB);
 }
 
 void Frame::transform_to_output_color_space(Image& image) const
@@ -544,13 +320,10 @@ bool Frame::write_main_image(const char* file_path) const
 {
     assert(file_path);
 
-    Image transformed_image(*impl->m_image);
-    transform_to_output_color_space(transformed_image);
-
     const ImageAttributes image_attributes =
         ImageAttributes::create_default_attributes();
 
-    return write_image(file_path, transformed_image, image_attributes);
+    return write_image(file_path, *impl->m_image, image_attributes);
 }
 
 bool Frame::write_aov_images(const char* file_path) const
@@ -576,7 +349,6 @@ bool Frame::write_aov_images(const char* file_path) const
             const string aov_file_name = base_file_name + "." + safe_aov_name + extension;
             const string aov_file_path = (directory / aov_file_name).string();
 
-            // Note: AOVs are always in the linear color space.
             if (!write_image(
                     aov_file_path.c_str(),
                     impl->m_aov_images->get_image(i),
@@ -605,13 +377,10 @@ bool Frame::archive(
     if (output_path)
         *output_path = duplicate_string(file_path.c_str());
 
-    Image transformed_image(*impl->m_image);
-    transform_to_output_color_space(transformed_image);
-
     return
         write_image(
             file_path.c_str(),
-            transformed_image,
+            *impl->m_image,
             ImageAttributes::create_default_attributes());
 }
 
@@ -657,31 +426,8 @@ void Frame::extract_parameters()
 
     // Retrieve pixel format parameter.
     {
-        const PixelFormat DefaultPixelFormat = PixelFormatHalf;
-        const char* DefaultPixelFormatString = "half";
-        const string pixel_format_str =
-            m_params.get_optional<string>("pixel_format", DefaultPixelFormatString);
-        if (pixel_format_str == "uint8")
-            impl->m_pixel_format = PixelFormatUInt8;
-        else if (pixel_format_str == "uint16")
-            impl->m_pixel_format = PixelFormatUInt16;
-        else if (pixel_format_str == "uint32")
-            impl->m_pixel_format = PixelFormatUInt32;
-        else if (pixel_format_str == "half")
-            impl->m_pixel_format = PixelFormatHalf;
-        else if (pixel_format_str == "float")
-            impl->m_pixel_format = PixelFormatFloat;
-        else if (pixel_format_str == "double")
-            impl->m_pixel_format = PixelFormatDouble;
-        else
-        {
-            RENDERER_LOG_ERROR(
-                "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
-                pixel_format_str.c_str(),
-                "pixel_format",
-                DefaultPixelFormatString);
-            impl->m_pixel_format = DefaultPixelFormat;
-        }
+        const string pixel_format_str = "float";
+        impl->m_pixel_format = PixelFormatFloat;
     }
 
     // Retrieve reconstruction filter parameter.
@@ -721,36 +467,11 @@ void Frame::extract_parameters()
 
     // Retrieve color space parameter.
     {
-        const ColorSpace DefaultColorSpace = ColorSpaceLinearRGB;
-        const char* DefaultColorSpaceString = "linear_rgb";
-        const string color_space_str =
-            m_params.get_optional<string>("color_space", DefaultColorSpaceString);
-        if (color_space_str == "linear_rgb")
-            m_color_space = ColorSpaceLinearRGB;
-        else if (color_space_str == "srgb")
-            m_color_space = ColorSpaceSRGB;
-        else if (color_space_str == "ciexyz")
-            m_color_space = ColorSpaceCIEXYZ;
-        else
-        {
-            RENDERER_LOG_ERROR(
-                "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
-                color_space_str.c_str(),
-                "color_space",
-                DefaultColorSpaceString);
-            m_color_space = DefaultColorSpace;
-        }
+        m_color_space = ColorSpaceLinearRGB;
     }
 
     // Retrieve premultiplied alpha parameter.
     m_is_premultiplied_alpha = m_params.get_optional<bool>("premultiplied_alpha", true);
-
-    // Retrieve clamping parameter.
-    impl->m_clamp = m_params.get_optional<bool>("clamping", false);
-
-    // Retrieve gamma correction parameter.
-    impl->m_target_gamma = m_params.get_optional<float>("gamma_correction", 1.0f);
-    impl->m_rcp_target_gamma = 1.0f / impl->m_target_gamma;
 
     // Retrieve crop window parameter.
     const AABB2u default_crop_window(
@@ -771,23 +492,8 @@ bool Frame::write_image(
 
     try
     {
-        try
-        {
-            GenericImageFileWriter writer;
-            writer.write(file_path, image, image_attributes);
-        }
-        catch (const ExceptionUnsupportedFileFormat&)
-        {
-            const string extension = lower_case(bf::path(file_path).extension().string());
-
-            RENDERER_LOG_ERROR(
-                "file format '%s' not supported, writing the image in OpenEXR format "
-                "(but keeping the filename unmodified).",
-                extension.c_str());
-
-            EXRImageFileWriter writer;
-            writer.write(file_path, image, image_attributes);
-        }
+        EXRImageFileWriter writer;
+        writer.write(file_path, image, image_attributes);
     }
     catch (const ExceptionUnsupportedImageFormat&)
     {
@@ -866,22 +572,6 @@ DictionaryArray FrameFactory::get_input_metadata()
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "pixel_format")
-            .insert("label", "Pixel Format")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("Integer, 8-bit", "uint8")
-                    .insert("Integer, 16-bit", "uint16")
-                    .insert("Integer, 32-bit", "uint32")
-                    .insert("Floating-Point, 16-bit", "half")
-                    .insert("Floating-Point, 32-bit", "float")
-                    .insert("Floating-Point, 64-bit", "double"))
-            .insert("use", "optional")
-            .insert("default", "half"));
-
-    metadata.push_back(
-        Dictionary()
             .insert("name", "filter")
             .insert("label", "Filter")
             .insert("type", "enumeration")
@@ -908,40 +598,11 @@ DictionaryArray FrameFactory::get_input_metadata()
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "color_space")
-            .insert("label", "Color Space")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("Linear RGB", "linear_rgb")
-                    .insert("sRGB", "srgb")
-                    .insert("CIE XYZ", "ciexyz"))
-            .insert("use", "optional")
-            .insert("default", "linear_rgb"));
-
-    metadata.push_back(
-        Dictionary()
             .insert("name", "premultiplied_alpha")
             .insert("label", "Premultiplied Alpha")
             .insert("type", "boolean")
             .insert("use", "optional")
             .insert("default", "true"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "clamping")
-            .insert("label", "Clamping")
-            .insert("type", "boolean")
-            .insert("use", "optional")
-            .insert("default", "false"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "gamma_correction")
-            .insert("label", "Gamma Correction")
-            .insert("type", "text")
-            .insert("use", "optional")
-            .insert("default", "1.0"));
 
     return metadata;
 }

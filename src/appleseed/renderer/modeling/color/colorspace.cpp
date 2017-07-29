@@ -42,7 +42,7 @@ namespace
     {
         InitializeStdLightingConditions()
         {
-            g_std_lighting_conditions = LightingConditions(IlluminantCIED65, XYZCMFCIE196410Deg);
+            g_std_lighting_conditions = LightingConditions(IlluminantCIED65, XYZCMFCIE19312Deg);
         }
     };
 

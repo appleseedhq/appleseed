@@ -132,7 +132,7 @@ TEST_SUITE(Renderer_Kernel_Shading_ShadingResult)
         const LightingConditions m_lighting_conditions;
 
         TransformToLinearRGBFixture()
-          : m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
+          : m_lighting_conditions(IlluminantCIED65, XYZCMFCIE19312Deg)
         {
         }
     };

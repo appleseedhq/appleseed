@@ -525,6 +525,7 @@ include_directories (
     .
     ../appleseed.shared
     ${PYTHON_INCLUDE_DIRS}
+    ${OPENCOLORIO_INCLUDE_DIRS}
 )
 
 
@@ -550,6 +551,7 @@ target_link_libraries (appleseed.studio
     ${QT_LIBRARIES}
     ${OPENGL_LIBRARY}
     ${PYTHON_LIBRARIES}
+    ${OPENCOLORIO_LIBRARIES}
 )
 
 if (WITH_DISNEY_MATERIAL)
@@ -587,5 +589,9 @@ install (FILES ../../sandbox/settings/appleseed.studio.xml
 )
 
 install (DIRECTORY ../../sandbox/seexpr
+    DESTINATION .
+)
+
+install (DIRECTORY ../../sandbox/ocio
     DESTINATION .
 )

@@ -33,6 +33,10 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
+// OpenColorIO headers.
+#include<OpenColorIO/OpenColorIO.h>
+namespace OCIO = OCIO_NAMESPACE;
+
 // Qt headers.
 #include <QImage>
 #include <QMutex>
@@ -45,6 +49,7 @@
 
 // Forward declarations.
 namespace foundation    { class CanvasProperties; }
+namespace foundation    { class Image; }
 namespace foundation    { class Tile; }
 namespace renderer      { class Frame; }
 class QPaintEvent;
@@ -59,11 +64,14 @@ namespace studio {
 class RenderWidget
   : public QWidget
 {
+    Q_OBJECT
+
   public:
     // Constructor.
     RenderWidget(
         const size_t            width,
         const size_t            height,
+        OCIO::ConstConfigRcPtr  ocio_config,
         QWidget*                parent = 0);
 
     // Thread-safe.
@@ -99,17 +107,28 @@ class RenderWidget
     QMutex& mutex();
     QImage& image();
 
+  public slots:
+    void slot_display_transform_changed(const QString& transform);
+
   private:
-    mutable QMutex                  m_mutex;
-    QImage                          m_image;
-    QPainter                        m_painter;
-    std::auto_ptr<foundation::Tile> m_float_tile_storage;
-    std::auto_ptr<foundation::Tile> m_uint8_tile_storage;
+    mutable QMutex                      m_mutex;
+    QImage                              m_image;
+    QPainter                            m_painter;
+    std::auto_ptr<foundation::Tile>     m_float_tile_storage;
+    std::auto_ptr<foundation::Tile>     m_uint8_tile_storage;
+    std::auto_ptr<foundation::Image>    m_image_storage;
+
+    OCIO::ConstConfigRcPtr              m_ocio_config;
+    OCIO::ConstProcessorRcPtr           m_ocio_processor;
 
     void allocate_working_storage(const foundation::CanvasProperties& frame_props);
 
     void blit_tile_no_lock(
         const renderer::Frame&  frame,
+        const size_t            tile_x,
+        const size_t            tile_y);
+
+    void update_tile_no_lock(
         const size_t            tile_x,
         const size_t            tile_y);
 

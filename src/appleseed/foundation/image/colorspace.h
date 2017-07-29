@@ -122,18 +122,6 @@ extern const RegularSpectrum31f IlluminantCIEA;                 // CIE A (black 
 
 // XYZ color matching functions.
 extern const RegularSpectrum31f XYZCMFCIE19312Deg[3];           // CIE 1931 2-deg
-extern const RegularSpectrum31f XYZCMFCIE1931Judd2Deg[3];       // CIE 1931 2-deg, modified by Judd (1951)
-extern const RegularSpectrum31f XYZCMFCIE1931JuddVos2Deg[3];    // CIE 1931 2-deg, modified by Judd (1951) and Vos (1978)
-extern const RegularSpectrum31f XYZCMFCIE196410Deg[3];          // CIE 1964 10-deg (recommended)
-
-// RGB color matching functions.
-extern const RegularSpectrum31f RGBCMFStilesBurch19552Deg[3];   // Stiles and Burch (1955) 2-deg
-extern const RegularSpectrum31f RGBCMFStilesBurch195910Deg[3];  // Stiles and Burch (1959) 10-deg (recommended)
-
-
-//
-// Basis spectra for RGB-to-spectrum conversion.
-//
 
 // Basis spectra for reflectance conversions.
 extern const RegularSpectrum31f RGBToSpectrumWhiteReflectance;
