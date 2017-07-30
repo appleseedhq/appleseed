@@ -389,6 +389,11 @@ const LightingConditions& Frame::get_lighting_conditions() const
     return impl->m_lighting_conditions;
 }
 
+const float* Frame::get_xyz_to_rgb_matrix() const
+{
+    return &impl->m_working_space.m_xyz_to_rgb[0];
+}
+
 void Frame::reset_crop_window()
 {
     impl->m_crop_window =

@@ -114,6 +114,8 @@ class APPLESEED_DLLSYMBOL Frame
     // Return the lighting conditions for spectral-to-RGB conversions.
     const foundation::LightingConditions& get_lighting_conditions() const;
 
+    const float* get_xyz_to_rgb_matrix() const;
+
     // Return true if the frame uses premultiplied alpha, false if it uses straight alpha.
     bool is_premultiplied_alpha() const;
 
