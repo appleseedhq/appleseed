@@ -62,16 +62,6 @@ namespace
         return FrameFactory::create(name.c_str(), bpy_dict_to_param_array(params));
     }
 
-    void transform_tile_to_output_color_space(const Frame* frame, Tile* tile)
-    {
-        frame->transform_to_output_color_space(*tile);
-    }
-
-    void transform_image_to_output_color_space(const Frame* frame, Image* image)
-    {
-        frame->transform_to_output_color_space(*image);
-    }
-
     bpy::object archive_frame(const Frame* frame, const char* directory)
     {
         char* output = 0;
@@ -142,9 +132,6 @@ void bind_frame()
 
         .def("image", &Frame::image, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("aov_images", &Frame::aov_images, bpy::return_value_policy<bpy::reference_existing_object>())
-
-        .def("transform_tile_to_output_color_space", transform_tile_to_output_color_space)
-        .def("transform_image_to_output_color_space", transform_image_to_output_color_space)
 
         .def("clear_main_image", &Frame::clear_main_image)
         .def("write_main_image", &Frame::write_main_image)
