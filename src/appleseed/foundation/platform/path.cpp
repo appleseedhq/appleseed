@@ -80,7 +80,7 @@ const char* get_executable_path()
                 sizeof(path));
         assert(result != 0);
 
-// OS X.
+// macOS.
 #elif defined __APPLE__
 
         uint32 path_len = MAXPATHLEN;
@@ -149,7 +149,7 @@ const char* get_home_directory()
 
         return 0;
 
-// OS X.
+// macOS.
 #elif defined __APPLE__
 
         return 0;

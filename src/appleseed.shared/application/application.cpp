@@ -32,6 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/path.h"
+#include "foundation/platform/system.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/settings.h"
@@ -39,6 +40,7 @@
 
 // Standard headers.
 #include <cstring>
+#include <string>
 
 using namespace foundation;
 using namespace std;
@@ -60,21 +62,70 @@ void Application::check_installation(Logger& logger)
 {
     if (!is_correctly_installed())
     {
-        // We need the path to the application's executable to construct the error message.
-        const bf::path executable_path(get_executable_path());
-
-        // Issue a fatal error message.
+        logger.set_all_formats("{message}");
         LOG_FATAL(
             logger,
-            "The application failed to start because it is not properly installed. "
-            "Please reinstall the application.\n"
-            "Specifically, it was expected that %s would reside in a %s subdirectory "
-            "inside the main directory of the application, but it appears not to be "
-            "the case (%s seems to be located in %s).",
-            executable_path.filename().string().c_str(),
-            bf::path("bin/").make_preferred().string().c_str(),
-            executable_path.filename().string().c_str(),
-            executable_path.parent_path().string().c_str());
+            "the application failed to start because it is not properly installed. "
+            "please reinstall the application.");
+    }
+}
+
+bool Application::is_compatible_with_host(const char** missing_feature)
+{
+#ifdef APPLESEED_X86
+    System::X86CpuFeatures features;
+    System::detect_x86_cpu_features(features);
+
+#ifdef APPLESEED_USE_SSE
+    if (!features.m_hw_sse)
+    {
+        if (missing_feature)
+            *missing_feature = "SSE";
+        return false;
+    }
+#endif
+
+#ifdef APPLESEED_USE_SSE42
+    if (!features.m_hw_sse42)
+    {
+        if (missing_feature)
+            *missing_feature = "SSE4.2";
+        return false;
+    }
+#endif
+
+#ifdef APPLESEED_USE_AVX
+    if (!features.m_hw_avx)
+    {
+        if (missing_feature)
+            *missing_feature = "AVX";
+        return false;
+    }
+#endif
+
+#ifdef APPLESEED_USE_AVX2
+    if (!features.m_hw_avx2)
+    {
+        if (missing_feature)
+            *missing_feature = "AVX2";
+        return false;
+    }
+#endif
+#endif
+
+    return true;
+}
+
+void Application::check_compatibility_with_host(Logger& logger)
+{
+    const char* missing_feature = nullptr;
+    if (!is_compatible_with_host(&missing_feature))
+    {
+        logger.set_all_formats("{message}");
+        LOG_FATAL(
+            logger,
+            "this executable requires a cpu with %s support.",
+            lower_case(missing_feature).c_str());
     }
 }
 
@@ -151,7 +202,7 @@ const char* Application::get_user_settings_path()
 
         return 0;
 
-// OS X.
+// macOS.
 #elif defined __APPLE__
 
         return 0;

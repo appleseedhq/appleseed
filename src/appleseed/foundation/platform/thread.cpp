@@ -101,7 +101,7 @@ namespace foundation
         }
     }
 
-// OS X.
+// macOS.
 #elif defined __APPLE__
 
     void set_current_thread_name(const char* name)

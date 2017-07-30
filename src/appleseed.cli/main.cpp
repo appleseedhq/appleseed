@@ -729,6 +729,9 @@ int main(int argc, const char* argv[])
     // Enable memory tracking immediately as to catch as many leaks as possible.
     start_memory_tracking();
 
+    // Make sure this build can run on this host.
+    Application::check_compatibility_with_host(g_logger);
+
     // Make sure appleseed is correctly installed.
     Application::check_installation(g_logger);
 

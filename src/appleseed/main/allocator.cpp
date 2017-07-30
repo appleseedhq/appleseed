@@ -33,9 +33,9 @@
 //
 // This module must be enabled on Windows, and on Windows only. Windows is
 // the only platform we support that doesn't natively provide 16-byte aligned
-// allocations. OS X and Linux do.
+// allocations. macOS and Linux do.
 //
-// Moreover, on these platforms (especially on OS X) overriding the new and
+// Moreover, on these platforms (especially on macOS) overriding the new and
 // delete operators in a shared library such as appleseed creates all kinds
 // of problems, as discussed in this thread on Stack Overflow:
 //

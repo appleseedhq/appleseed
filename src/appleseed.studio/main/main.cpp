@@ -77,26 +77,33 @@ namespace bf = boost::filesystem;
 
 namespace
 {
+    void check_compatibility()
+    {
+        const char* missing_feature = nullptr;
+        if (!Application::is_compatible_with_host(&missing_feature))
+        {
+            QMessageBox msgbox;
+            msgbox.setWindowTitle("System Incompatibility");
+            msgbox.setIcon(QMessageBox::Critical);
+            msgbox.setText(QString("This executable requires a CPU with %1 support.").arg(missing_feature));
+            msgbox.setStandardButtons(QMessageBox::Ok);
+            msgbox.setDefaultButton(QMessageBox::Ok);
+            msgbox.exec();
+
+            exit(EXIT_FAILURE);
+        }
+    }
+
     void check_installation()
     {
         if (!Application::is_correctly_installed())
         {
-            const bf::path executable_path(get_executable_path());
-
-            const string informative_text =
-                "Specifically, it was expected that " + executable_path.filename().string() + " would "
-                "reside in a " + bf::path("bin/").make_preferred().string() + " subdirectory "
-                "inside the main directory of the application, but it appears not to be the case "
-                "(" + executable_path.filename().string() +
-                " seems to be located in " + executable_path.parent_path().string() + ").";
-
             QMessageBox msgbox;
             msgbox.setWindowTitle("Application Incorrectly Installed");
             msgbox.setIcon(QMessageBox::Critical);
             msgbox.setText(
                 "The application failed to start because it is not properly installed. "
                 "Please reinstall the application.");
-            msgbox.setInformativeText(QString::fromStdString(informative_text));
             msgbox.setStandardButtons(QMessageBox::Ok);
             msgbox.setDefaultButton(QMessageBox::Ok);
             msgbox.exec();
@@ -219,7 +226,7 @@ namespace
     void message_handler(QtMsgType type, const char* msg)
     {
 #ifdef __APPLE__
-        // Under certain circumstances (under an OS X virtual machine?), a bogus warning
+        // Under certain circumstances (under an macOS virtual machine?), a bogus warning
         // message is repeatedly printed to the console. Disable this warning message.
         // See https://github.com/appleseedhq/appleseed/issues/254 for details.
         if (type == QtWarningMsg &&
@@ -295,15 +302,19 @@ int main(int argc, char* argv[])
     // Issue reported and tracked on GitHub under reference #1435.
     QImageReader(make_app_path("icons/icon.png")).read();   // any image
 
+    // Make sure this build can run on this host.
+    check_compatibility();
+
+    // Make sure appleseed is correctly installed.
     check_installation();
 
-    // Create and configure a logger.
+    // Parse the command line.
     SuperLogger logger;
 #ifdef _WIN32
+    // On Windows, we will display command line arguments in a message box
+    // so we need to capture CommandLineHandler's output into a string.
     logger.set_log_target(create_string_log_target());
 #endif
-
-    // Parse the command line.
     CommandLineHandler cl;
     cl.parse(argc, const_cast<const char**>(argv), logger);
 
