@@ -296,7 +296,7 @@ namespace
                     if (m_pass_callback)
                     {
                         assert(!m_job_queue.has_scheduled_or_running_jobs());
-                        m_pass_callback->pre_render(m_frame, m_job_queue, m_abort_switch);
+                        m_pass_callback->on_pass_begin(m_frame, m_job_queue, m_abort_switch);
                         assert(!m_job_queue.has_scheduled_or_running_jobs());
                     }
 
@@ -323,7 +323,7 @@ namespace
                     if (m_pass_callback)
                     {
                         assert(!m_job_queue.has_scheduled_or_running_jobs());
-                        m_pass_callback->post_render(m_frame, m_job_queue, m_abort_switch);
+                        m_pass_callback->on_pass_end(m_frame, m_job_queue, m_abort_switch);
                         assert(!m_job_queue.has_scheduled_or_running_jobs());
                     }
                 }

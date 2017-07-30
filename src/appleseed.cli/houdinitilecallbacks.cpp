@@ -123,19 +123,21 @@ namespace
             // Prevent this instance from being destroyed by doing nothing here.
         }
 
-        virtual void post_render_tile(
+        virtual void on_tile_end(
             const Frame*            frame,
             const size_t            tile_x,
             const size_t            tile_y) override
         {
             boost::mutex::scoped_lock lock(m_mutex);
+
             send_header(*frame);
             send_tile(*frame, tile_x, tile_y);
         }
 
-        virtual void post_render(const Frame* frame) override
+        virtual void on_progressive_frame_end(const Frame* frame) override
         {
             boost::mutex::scoped_lock lock(m_mutex);
+
             send_header(*frame);
 
             const CanvasProperties& frame_props = frame->image().properties();

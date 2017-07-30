@@ -57,24 +57,23 @@ class APPLESEED_DLLSYMBOL ITileCallback
   : public foundation::IUnknown
 {
   public:
-    // This method is called before a region of the frame is rendered.
-    // All renderers call this method.
-    virtual void pre_render(
-        const size_t    x,
-        const size_t    y,
-        const size_t    width,
-        const size_t    height) = 0;
+    // This method is called before a tile is rendered.
+    // Only tile-based renderers call this method.
+    virtual void on_tile_begin(
+        const Frame*    frame,
+        const size_t    tile_x,
+        const size_t    tile_y) = 0;
 
     // This method is called after a tile is rendered.
     // Only tile-based renderers call this method.
-    virtual void post_render_tile(
+    virtual void on_tile_end(
         const Frame*    frame,
         const size_t    tile_x,
         const size_t    tile_y) = 0;
 
     // This method is called after a whole frame is rendered.
-    // Only whole-frame (progressive) renderers call this method.
-    virtual void post_render(
+    // Only progressive (whole-frame) renderers call this method.
+    virtual void on_progressive_frame_end(
         const Frame*    frame) = 0;
 };
 

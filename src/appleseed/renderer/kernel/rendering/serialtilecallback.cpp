@@ -55,26 +55,25 @@ namespace
             delete this;
         }
 
-        virtual void pre_render(
-            const size_t     x,
-            const size_t     y,
-            const size_t     width,
-            const size_t     height) override
-        {
-            m_controller->add_pre_render_tile_callback(x, y, width, height);
-        }
-
-        virtual void post_render_tile(
+        virtual void on_tile_begin(
             const Frame*    frame,
             const size_t    tile_x,
             const size_t    tile_y) override
         {
-            m_controller->add_post_render_tile_callback(frame, tile_x, tile_y);
+            m_controller->add_on_tile_begin_callback(frame, tile_x, tile_y);
         }
 
-        virtual void post_render(const Frame* frame) override
+        virtual void on_tile_end(
+            const Frame*    frame,
+            const size_t    tile_x,
+            const size_t    tile_y) override
         {
-            m_controller->add_post_render_tile_callback(frame);
+            m_controller->add_on_tile_end_callback(frame, tile_x, tile_y);
+        }
+
+        virtual void on_progressive_frame_end(const Frame* frame) override
+        {
+            m_controller->add_on_progressive_frame_end_callback(frame);
         }
 
       private:

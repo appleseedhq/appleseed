@@ -91,7 +91,7 @@ void SPPMPassCallback::release()
     delete this;
 }
 
-void SPPMPassCallback::pre_render(
+void SPPMPassCallback::on_pass_begin(
     const Frame&            frame,
     JobQueue&               job_queue,
     IAbortSwitch&           abort_switch)
@@ -122,7 +122,7 @@ void SPPMPassCallback::pre_render(
     m_photon_map.reset(new SPPMPhotonMap(m_photons));
 }
 
-void SPPMPassCallback::post_render(
+void SPPMPassCallback::on_pass_end(
     const Frame&            frame,
     JobQueue&               job_queue,
     IAbortSwitch&           abort_switch)

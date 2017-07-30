@@ -93,26 +93,7 @@ IRendererController::Status SerialRendererController::get_status() const
     return m_controller->get_status();
 }
 
-void SerialRendererController::add_pre_render_tile_callback(
-    const size_t            x,
-    const size_t            y,
-    const size_t            width,
-    const size_t            height)
-{
-    boost::mutex::scoped_lock lock(m_mutex);
-
-    PendingTileCallback callback;
-    callback.m_type = PendingTileCallback::PreRender;
-    callback.m_frame = 0;
-    callback.m_x = x;
-    callback.m_y = y;
-    callback.m_width = width;
-    callback.m_height = height;
-
-    m_pending_callbacks.push_back(callback);
-}
-
-void SerialRendererController::add_post_render_tile_callback(
+void SerialRendererController::add_on_tile_begin_callback(
     const Frame*            frame,
     const size_t            tile_x,
     const size_t            tile_y)
@@ -120,27 +101,39 @@ void SerialRendererController::add_post_render_tile_callback(
     boost::mutex::scoped_lock lock(m_mutex);
 
     PendingTileCallback callback;
-    callback.m_type = PendingTileCallback::PostRenderTile;
+    callback.m_type = PendingTileCallback::OnTileBegin;
     callback.m_frame = frame;
-    callback.m_x = tile_x;
-    callback.m_y = tile_y;
-    callback.m_width = 0;
-    callback.m_height = 0;
+    callback.m_tile_x = tile_x;
+    callback.m_tile_y = tile_y;
 
     m_pending_callbacks.push_back(callback);
 }
 
-void SerialRendererController::add_post_render_tile_callback(const Frame* frame)
+void SerialRendererController::add_on_tile_end_callback(
+    const Frame*            frame,
+    const size_t            tile_x,
+    const size_t            tile_y)
 {
     boost::mutex::scoped_lock lock(m_mutex);
 
     PendingTileCallback callback;
-    callback.m_type = PendingTileCallback::PostRender;
+    callback.m_type = PendingTileCallback::OnTileEnd;
     callback.m_frame = frame;
-    callback.m_x = 0;
-    callback.m_y = 0;
-    callback.m_width = 0;
-    callback.m_height = 0;
+    callback.m_tile_x = tile_x;
+    callback.m_tile_y = tile_y;
+
+    m_pending_callbacks.push_back(callback);
+}
+
+void SerialRendererController::add_on_progressive_frame_end_callback(const Frame* frame)
+{
+    boost::mutex::scoped_lock lock(m_mutex);
+
+    PendingTileCallback callback;
+    callback.m_type = PendingTileCallback::OnProgressiveFrameEnd;
+    callback.m_frame = frame;
+    callback.m_tile_x = 0;
+    callback.m_tile_y = 0;
 
     m_pending_callbacks.push_back(callback);
 }
@@ -149,16 +142,16 @@ void SerialRendererController::exec_callback(const PendingTileCallback& cb)
 {
     switch (cb.m_type)
     {
-      case PendingTileCallback::PreRender:
-        m_tile_callback->pre_render(cb.m_x, cb.m_y, cb.m_width, cb.m_height);
+      case PendingTileCallback::OnTileBegin:
+        m_tile_callback->on_tile_begin(cb.m_frame, cb.m_tile_x, cb.m_tile_y);
         break;
 
-      case PendingTileCallback::PostRenderTile:
-        m_tile_callback->post_render_tile(cb.m_frame, cb.m_x, cb.m_y);
+      case PendingTileCallback::OnTileEnd:
+        m_tile_callback->on_tile_end(cb.m_frame, cb.m_tile_x, cb.m_tile_y);
         break;
 
-      case PendingTileCallback::PostRender:
-        m_tile_callback->post_render(cb.m_frame);
+      case PendingTileCallback::OnProgressiveFrameEnd:
+        m_tile_callback->on_progressive_frame_end(cb.m_frame);
         break;
 
       assert_otherwise;

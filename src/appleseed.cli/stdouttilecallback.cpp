@@ -73,7 +73,7 @@ namespace
             // Prevent this instance from being destroyed by doing nothing here.
         }
 
-        virtual void post_render_tile(
+        virtual void on_tile_end(
             const Frame*    frame,
             const size_t    tile_x,
             const size_t    tile_y) override

@@ -69,35 +69,33 @@ class SerialRendererController
     virtual void on_progress() override;
     virtual Status get_status() const override;
 
-    void add_pre_render_tile_callback(
-        const size_t            x,
-        const size_t            y,
-        const size_t            width,
-        const size_t            height);
-
-    void add_post_render_tile_callback(
+    void add_on_tile_begin_callback(
         const Frame*            frame,
         const size_t            tile_x,
         const size_t            tile_y);
 
-    void add_post_render_tile_callback(const Frame* frame);
+    void add_on_tile_end_callback(
+        const Frame*            frame,
+        const size_t            tile_x,
+        const size_t            tile_y);
+
+    void add_on_progressive_frame_end_callback(
+        const Frame*            frame);
 
   private:
     struct PendingTileCallback
     {
         enum CallbackType
         {
-            PreRender,
-            PostRenderTile,
-            PostRender
+            OnTileBegin,
+            OnTileEnd,
+            OnProgressiveFrameEnd
         };
 
         CallbackType    m_type;
         const Frame*    m_frame;
-        size_t          m_x;
-        size_t          m_y;
-        size_t          m_width;
-        size_t          m_height;
+        size_t          m_tile_x;
+        size_t          m_tile_y;
     };
 
     IRendererController*                m_controller;
