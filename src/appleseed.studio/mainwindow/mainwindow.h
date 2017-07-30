@@ -95,6 +95,7 @@ class MainWindow
     void open_project_async(const QString& filepath);
     void open_and_render_project(const QString& filepath, const QString& configuration);
     bool save_project(QString filepath);
+    bool pack_project(QString filepath);
     void close_project();
 
     void on_project_change();

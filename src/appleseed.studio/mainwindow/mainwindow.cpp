@@ -263,7 +263,7 @@ void MainWindow::open_and_render_project(const QString& filepath, const QString&
 
 bool MainWindow::save_project(QString filepath)
 {
-    if (!m_project_manager.get_project())
+    if (!m_project_manager.is_project_open())
         return false;
 
     const QString Extension = "appleseed";
@@ -282,6 +282,19 @@ bool MainWindow::save_project(QString filepath)
     update_workspace();
 
     return successful;
+}
+
+bool MainWindow::pack_project(QString filepath)
+{
+    if (!m_project_manager.is_project_open())
+        return false;
+
+    const QString Extension = "appleseedz";
+
+    if (QFileInfo(filepath).suffix() != Extension)
+        filepath += "." + Extension;
+
+    return m_project_manager.pack_project_as(filepath.toAscii().constData());
 }
 
 void MainWindow::close_project()
@@ -1355,15 +1368,9 @@ void MainWindow::slot_pack_project_as()
 
     if (!filepath.isEmpty())
     {
-        const QString Extension = "appleseedz";
-
-        if (QFileInfo(filepath).suffix() != Extension)
-            filepath += "." + Extension;
-
         filepath = QDir::toNativeSeparators(filepath);
 
-        m_project_manager.pack_project_as(filepath.toAscii().constData());
-
+        pack_project(filepath);
         // Don't update the Recent Files menu.
     }
 }

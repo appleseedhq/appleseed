@@ -84,6 +84,11 @@ bool save_project_as(const char* project_path)
     return main_window()->save_project(project_path);
 }
 
+bool pack_project_as(const char* project_path)
+{
+    return main_window()->pack_project(project_path);
+}
+
 void close_project()
 {
     main_window()->close_project();
@@ -111,6 +116,7 @@ BOOST_PYTHON_MODULE(_appleseedstudio)
     bpy::def("open_project", open_project, bpy::args("project_path"));
     bpy::def("save_project", save_project);
     bpy::def("save_project_as", save_project_as, bpy::args("project_path"));
+    bpy::def("pack_project_as", pack_project_as, bpy::args("project_path"));
     bpy::def("close_project", close_project);
 
     bpy::def("current_project", current_project,
