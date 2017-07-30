@@ -55,6 +55,16 @@ namespace
             delete this;
         }
 
+        virtual void on_tiled_frame_begin(const Frame* frame)
+        {
+            m_controller->add_on_tiled_frame_begin_callback(frame);
+        }
+
+        virtual void on_tiled_frame_end(const Frame* frame)
+        {
+            m_controller->add_on_tiled_frame_end_callback(frame);
+        }
+
         virtual void on_tile_begin(
             const Frame*    frame,
             const size_t    tile_x,
@@ -69,6 +79,11 @@ namespace
             const size_t    tile_y) override
         {
             m_controller->add_on_tile_end_callback(frame, tile_x, tile_y);
+        }
+
+        virtual void on_progressive_frame_begin(const Frame* frame) override
+        {
+            m_controller->add_on_progressive_frame_begin_callback(frame);
         }
 
         virtual void on_progressive_frame_end(const Frame* frame) override

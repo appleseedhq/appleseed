@@ -69,6 +69,12 @@ class SerialRendererController
     virtual void on_progress() override;
     virtual Status get_status() const override;
 
+    void add_on_tiled_frame_begin_callback(
+        const Frame*            frame);
+
+    void add_on_tiled_frame_end_callback(
+        const Frame*            frame);
+
     void add_on_tile_begin_callback(
         const Frame*            frame,
         const size_t            tile_x,
@@ -79,6 +85,9 @@ class SerialRendererController
         const size_t            tile_x,
         const size_t            tile_y);
 
+    void add_on_progressive_frame_begin_callback(
+        const Frame*            frame);
+
     void add_on_progressive_frame_end_callback(
         const Frame*            frame);
 
@@ -87,8 +96,11 @@ class SerialRendererController
     {
         enum CallbackType
         {
+            OnTiledFrameBegin,
+            OnTiledFrameEnd,
             OnTileBegin,
             OnTileEnd,
+            OnProgressiveFrameBegin,
             OnProgressiveFrameEnd
         };
 

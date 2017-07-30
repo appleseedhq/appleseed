@@ -54,6 +54,32 @@ namespace
             delete this;
         }
 
+        virtual void on_tiled_frame_begin(const Frame* frame) override
+        {
+            // Lock Python's global interpreter lock (it was released in MasterRenderer.render).
+            ScopedGILLock lock;
+
+            if (bpy::override f = this->get_override("on_tiled_frame_begin"))
+                f(bpy::ptr(frame));
+        }
+
+        void default_on_tiled_frame_begin(const Frame* frame)
+        {
+        }
+
+        virtual void on_tiled_frame_end(const Frame* frame) override
+        {
+            // Lock Python's global interpreter lock (it was released in MasterRenderer.render).
+            ScopedGILLock lock;
+
+            if (bpy::override f = this->get_override("on_tiled_frame_end"))
+                f(bpy::ptr(frame));
+        }
+
+        void default_on_tiled_frame_end(const Frame* frame)
+        {
+        }
+
         virtual void on_tile_begin(
             const Frame*    frame,
             const size_t    tile_x,
@@ -92,6 +118,19 @@ namespace
         {
         }
 
+        virtual void on_progressive_frame_begin(const Frame* frame) override
+        {
+            // Lock Python's global interpreter lock (it was released in MasterRenderer.render).
+            ScopedGILLock lock;
+
+            if (bpy::override f = this->get_override("on_progressive_frame_begin"))
+                f(bpy::ptr(frame));
+        }
+
+        void default_on_progressive_frame_begin(const Frame* frame)
+        {
+        }
+
         virtual void on_progressive_frame_end(const Frame* frame) override
         {
             // Lock Python's global interpreter lock (it was released in MasterRenderer.render).
@@ -110,8 +149,11 @@ namespace
 void bind_tile_callback()
 {
     bpy::class_<ITileCallbackWrapper, boost::noncopyable>("ITileCallback")
+        .def("on_tiled_frame_begin", &ITileCallback::on_tiled_frame_begin, &ITileCallbackWrapper::default_on_tiled_frame_begin)
+        .def("on_tiled_frame_end", &ITileCallback::on_tiled_frame_end, &ITileCallbackWrapper::default_on_tiled_frame_end)
         .def("on_tile_begin", &ITileCallback::on_tile_begin, &ITileCallbackWrapper::default_on_tile_begin)
         .def("on_tile_end", &ITileCallback::on_tile_end, &ITileCallbackWrapper::default_on_tile_end)
+        .def("on_progressive_frame_begin", &ITileCallback::on_progressive_frame_begin, &ITileCallbackWrapper::default_on_progressive_frame_begin)
         .def("on_progressive_frame_end", &ITileCallback::on_progressive_frame_end, &ITileCallbackWrapper::default_on_progressive_frame_end)
         ;
 }
