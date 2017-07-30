@@ -159,6 +159,11 @@ void CommandLineHandlerBase::parse(const int argc, const char* argv[], SuperLogg
         exit(EXIT_SUCCESS);
     }
 
+    //
+    // Apply message coloring and verbosity settings a first time just after having
+    // parsed the command line.
+    //
+
     if (impl->m_message_coloring.is_set())
         logger.enable_message_coloring();
 
@@ -168,6 +173,18 @@ void CommandLineHandlerBase::parse(const int argc, const char* argv[], SuperLogg
 
 void CommandLineHandlerBase::apply(SuperLogger& logger)
 {
+    //
+    // At this point, a settings file may have been loaded and applied, and message
+    // coloring and verbosity settings set in parse() may have been overridden.
+    // Apply them again here such that command line parameters have precedence.
+    //
+
+    if (impl->m_message_coloring.is_set())
+        logger.enable_message_coloring();
+
+    if (impl->m_message_verbosity.is_set())
+        logger.set_verbosity_level_from_string(impl->m_message_verbosity.value().c_str());
+
     if (impl->m_version.is_set())
         print_version_information(logger);
 
