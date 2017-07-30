@@ -110,7 +110,7 @@ namespace
         __cpuidex(cpuinfo, index, 0);
     }
 
-    int64 xgetbv(const int32 index)
+    uint64 xgetbv(const int32 index)
     {
         return _xgetbv(index);
     }
