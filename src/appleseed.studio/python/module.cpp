@@ -70,20 +70,19 @@ bool open_project(const char* project_path)
     return main_window()->open_project(project_path);
 }
 
-bool save_project(const char* project_path = nullptr)
+bool save_project()
 {
-    if (project_path == nullptr)
-    {
-        if (project_manager()->get_project() && project_manager()->get_project()->has_path())
-            return main_window()->save_project(project_manager()->get_project()->get_path());
-        else
-            return false;
-    }
+    const Project* project = project_manager()->get_project();
+    if (project != nullptr && project->has_path())
+        return main_window()->save_project(project->get_path());
     else
-        return main_window()->save_project(project_path);
+        return false;
 }
 
-BOOST_PYTHON_FUNCTION_OVERLOADS(save_project_overloads, save_project, 0, 1)
+bool save_project_as(const char* project_path)
+{
+    return main_window()->save_project(project_path);
+}
 
 void close_project()
 {
@@ -110,8 +109,8 @@ BOOST_PYTHON_MODULE(_appleseedstudio)
 {
     bpy::def("new_project", new_project);
     bpy::def("open_project", open_project, bpy::args("project_path"));
-    bpy::def("save_project", save_project,
-             save_project_overloads(bpy::args("project_path")));
+    bpy::def("save_project", save_project);
+    bpy::def("save_project_as", save_project_as, bpy::args("project_path"));
     bpy::def("close_project", close_project);
 
     bpy::def("current_project", current_project,

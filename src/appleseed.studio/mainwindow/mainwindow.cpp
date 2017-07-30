@@ -274,7 +274,7 @@ bool MainWindow::save_project(QString filepath)
     if (m_project_file_watcher)
         stop_monitoring_project_file();
 
-    bool successful = m_project_manager.save_project_as(filepath.toAscii().constData());
+    const bool successful = m_project_manager.save_project_as(filepath.toAscii().constData());
 
     if (m_project_file_watcher)
         start_monitoring_project_file();
