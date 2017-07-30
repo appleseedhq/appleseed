@@ -31,12 +31,14 @@
 #include "system.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/arch.h"
 #include "foundation/platform/thread.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
-#include <string>
+#include <cstring>
+#include <sstream>
 
 // Windows.
 #if defined _WIN32
@@ -72,6 +74,7 @@
     // Platform headers.
     #include <sys/sysinfo.h>
     #include <sys/types.h>
+    #include <cpuid.h>
     #include <unistd.h>
 
 // FreeBSD.
@@ -95,40 +98,6 @@ namespace foundation
 {
 
 // ------------------------------------------------------------------------------------------------
-// Common code.
-// ------------------------------------------------------------------------------------------------
-
-void System::print_information(Logger& logger)
-{
-    LOG_INFO(
-        logger,
-        "system information:\n"
-        "  logical cores                 %s\n"
-        "  L1 data cache                 size %s, line size %s\n"
-        "  L2 cache                      size %s, line size %s\n"
-        "  L3 cache                      size %s, line size %s\n"
-        "  physical memory               size %s\n"
-        "  virtual memory                size %s",
-        pretty_uint(get_logical_cpu_core_count()).c_str(),
-        pretty_size(get_l1_data_cache_size()).c_str(),
-        pretty_size(get_l1_data_cache_line_size()).c_str(),
-        pretty_size(get_l2_cache_size()).c_str(),
-        pretty_size(get_l2_cache_line_size()).c_str(),
-        pretty_size(get_l3_cache_size()).c_str(),
-        pretty_size(get_l3_cache_line_size()).c_str(),
-        pretty_size(get_total_physical_memory_size()).c_str(),
-        pretty_size(get_total_virtual_memory_size()).c_str());
-}
-
-size_t System::get_logical_cpu_core_count()
-{
-    const size_t concurrency =
-        static_cast<size_t>(boost::thread::hardware_concurrency());
-
-    return concurrency > 1 ? concurrency : 1;
-}
-
-// ------------------------------------------------------------------------------------------------
 // Windows.
 // ------------------------------------------------------------------------------------------------
 
@@ -136,6 +105,16 @@ size_t System::get_logical_cpu_core_count()
 
 namespace
 {
+    void cpuid(int32 cpuinfo[4], const int32 index)
+    {
+        __cpuidex(cpuinfo, index, 0);
+    }
+
+    int64 xgetbv(const int32 index)
+    {
+        return _xgetbv(index);
+    }
+
     // This code is based on a code snippet by Nick Strupat (http://stackoverflow.com/a/4049562).
     bool get_cache_descriptor(const size_t level, CACHE_DESCRIPTOR& result)
     {
@@ -303,8 +282,8 @@ uint64 System::get_total_physical_memory_size()
     // Reference: http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
 
     int name[2] = { CTL_HW, HW_MEMSIZE };
-    uint64_t result;
-    size_t result_length = sizeof(uint64_t);
+    uint64 result;
+    size_t result_length = sizeof(uint64);
     sysctl(name, 2, &result, &result_length, 0, 0);
 
     return static_cast<uint64>(result);
@@ -354,6 +333,27 @@ uint64 System::get_process_virtual_memory_size()
 // ------------------------------------------------------------------------------------------------
 
 #elif defined __linux__
+
+namespace
+{
+    void cpuid(int32 cpuinfo[4], const int32 index)
+    {
+        __cpuid_count(
+            index,
+            0,
+            cpuinfo[0],
+            cpuinfo[1],
+            cpuinfo[2],
+            cpuinfo[3]);
+    }
+
+    uint64 xgetbv(const int32 index)
+    {
+        uint32 eax, edx;
+        __asm__ __volatile__("xgetbv" : "=a"(eax), "=d"(edx) : "c"(index));
+        return (static_cast<uint64>(edx) << 32) | eax;
+    }
+}
 
 size_t System::get_l1_data_cache_size()
 {
@@ -458,7 +458,7 @@ namespace
     // explicitly.  Unfortunately, we need a separate implementation for x86-64
     // to preserve %rbx because 32-bit operations would set the upper 32 bits
     // to zero.
-    inline void cpuid(uint32_t* regs)
+    void cpuid(uint32_t* regs)
     {
         asm(
 #if __x86_64__
@@ -518,6 +518,7 @@ namespace
 
         regs[eax] = 2;
         cpuid(regs);
+
         // Doing only one call is technically wrong, but all CPUs up to Core i7
         // require a single call.  Since this is a fallback code path for really
         // old CPUs anyways (modern ones will provide Function 4), we should be
@@ -810,6 +811,213 @@ uint64 System::get_process_virtual_memory_size()
     assert(result == 0);
 
     return static_cast<uint64>(ru.ru_maxrss) * 1024;
+}
+
+#endif
+
+// ------------------------------------------------------------------------------------------------
+// Common code.
+// ------------------------------------------------------------------------------------------------
+
+void System::print_information(Logger& logger)
+{
+#ifdef APPLESEED_X86
+    X86CpuFeatures features;
+    detect_x86_cpu_features(features);
+
+    stringstream isabuilder;
+    if (features.m_hw_sse) isabuilder << "sse ";
+    if (features.m_hw_sse2) isabuilder << "sse2 ";
+    if (features.m_hw_sse3) isabuilder << "sse3 ";
+    if (features.m_hw_ssse3) isabuilder << "ssse3 ";
+    if (features.m_hw_sse41) isabuilder << "sse4.1 ";
+    if (features.m_hw_sse42) isabuilder << "sse4.2 ";
+    if (features.m_hw_sse4a) isabuilder << "sse4a ";
+    if (features.m_hw_avx) isabuilder << "avx ";
+    if (features.m_hw_avx2) isabuilder << "avx2 ";
+    if (features.m_hw_fma3) isabuilder << "fma3 ";
+
+    string isa = isabuilder.str();
+    isa = isa.empty() ? "none" : trim_right(isa);
+#endif
+
+    logger.write(
+        LogMessage::Info,
+        __FILE__,
+        __LINE__,
+        "system information:\n"
+        "  architecture                  %s\n"
+        "  logical cores                 %s\n"
+        "  L1 data cache                 size %s, line size %s\n"
+        "  L2 cache                      size %s, line size %s\n"
+        "  L3 cache                      size %s, line size %s\n"
+#ifdef APPLESEED_X86
+        "  instruction sets              %s\n"
+#endif
+        "  physical memory               size %s\n"
+        "  virtual memory                size %s",
+        get_cpu_architecture(),
+        pretty_uint(get_logical_cpu_core_count()).c_str(),
+        pretty_size(get_l1_data_cache_size()).c_str(),
+        pretty_size(get_l1_data_cache_line_size()).c_str(),
+        pretty_size(get_l2_cache_size()).c_str(),
+        pretty_size(get_l2_cache_line_size()).c_str(),
+        pretty_size(get_l3_cache_size()).c_str(),
+        pretty_size(get_l3_cache_line_size()).c_str(),
+#ifdef APPLESEED_X86
+        isa.c_str(),
+#endif
+        pretty_size(get_total_physical_memory_size()).c_str(),
+        pretty_size(get_total_virtual_memory_size()).c_str());
+}
+
+const char* System::get_cpu_architecture()
+{
+#ifdef APPLESEED_ARCH32
+    #ifdef APPLESEED_X86
+        return "x86 32-bit";
+    #else
+        return "unknown 32-bit"
+    #endif
+#else
+    #ifdef APPLESEED_X86
+        return "x86 64-bit";
+    #else
+        return "unknown 64-bit"
+    #endif
+#endif
+}
+
+size_t System::get_logical_cpu_core_count()
+{
+    const size_t concurrency =
+        static_cast<size_t>(boost::thread::hardware_concurrency());
+
+    return concurrency > 1 ? concurrency : 1;
+}
+
+#ifdef APPLESEED_X86
+
+// This symbol is not defined by gcc (and potentially other compilers).
+#ifndef _XCR_XFEATURE_ENABLED_MASK
+#define _XCR_XFEATURE_ENABLED_MASK 0
+#endif
+
+namespace
+{
+    bool detect_os_avx()
+    {
+        // Reference: http://stackoverflow.com/a/22521619/922184
+
+        int32 cpuinfo[4];
+        cpuid(cpuinfo, 1);
+
+        const bool os_uses_xsave_xrstor = (cpuinfo[2] & (1 << 27)) != 0;
+        const bool cpu_avx_support = (cpuinfo[2] & (1 << 28)) != 0;
+
+        if (os_uses_xsave_xrstor && cpu_avx_support)
+        {
+            const uint64 xcr_feature_mask = xgetbv(_XCR_XFEATURE_ENABLED_MASK);
+            return (xcr_feature_mask & 0x6) == 0x6;
+        }
+
+        return false;
+    }
+
+    bool detect_os_avx512()
+    {
+        if (!detect_os_avx())
+            return false;
+
+        const uint64 xcr_feature_mask = xgetbv(_XCR_XFEATURE_ENABLED_MASK);
+        return (xcr_feature_mask & 0xe6) == 0xe6;
+    }
+
+    string get_vendor_string()
+    {
+        char vendor[13];
+
+        int32 cpuinfo[4];
+        cpuid(cpuinfo, 0);
+
+        memcpy(vendor + 0, &cpuinfo[1], 4);
+        memcpy(vendor + 4, &cpuinfo[3], 4);
+        memcpy(vendor + 8, &cpuinfo[2], 4);
+        vendor[12] = '\0';
+
+        return vendor;
+    }
+}
+
+void System::detect_x86_cpu_features(X86CpuFeatures& features)
+{
+    //
+    // Based on the excellent FeatureDetector project by Alexander J. Yee:
+    // https://github.com/Mysticial/FeatureDetector
+    //
+
+    memset(&features, 0, sizeof(features));
+
+    features.m_os_avx = detect_os_avx();
+    features.m_os_avx512 = detect_os_avx512();
+
+    const string vendor(get_vendor_string());
+    features.m_vendor_intel = vendor == "GenuineIntel";
+    features.m_vendor_amd = vendor == "AuthenticAMD";
+
+    int32 cpuinfo[4];
+    cpuid(cpuinfo, 0);
+    int ids = cpuinfo[0];
+
+    cpuid(cpuinfo, 0x80000000);
+    uint32_t exids = cpuinfo[0];
+
+    if (ids >= 0x00000001)
+    {
+        cpuid(cpuinfo, 0x00000001);
+        features.m_hw_mmx           = (cpuinfo[3] & ((int)1 << 23)) != 0;
+        features.m_hw_sse           = (cpuinfo[3] & ((int)1 << 25)) != 0;
+        features.m_hw_sse2          = (cpuinfo[3] & ((int)1 << 26)) != 0;
+        features.m_hw_sse3          = (cpuinfo[2] & ((int)1 <<  0)) != 0;
+        features.m_hw_ssse3         = (cpuinfo[2] & ((int)1 <<  9)) != 0;
+        features.m_hw_sse41         = (cpuinfo[2] & ((int)1 << 19)) != 0;
+        features.m_hw_sse42         = (cpuinfo[2] & ((int)1 << 20)) != 0;
+        features.m_hw_aes           = (cpuinfo[2] & ((int)1 << 25)) != 0;
+        features.m_hw_avx           = (cpuinfo[2] & ((int)1 << 28)) != 0;
+        features.m_hw_fma3          = (cpuinfo[2] & ((int)1 << 12)) != 0;
+        features.m_hw_rdrand        = (cpuinfo[2] & ((int)1 << 30)) != 0;
+    }
+
+    if (ids >= 0x00000007)
+    {
+        cpuid(cpuinfo, 0x00000007);
+        features.m_hw_avx2          = (cpuinfo[1] & ((int)1 <<  5)) != 0;
+        features.m_hw_bmi1          = (cpuinfo[1] & ((int)1 <<  3)) != 0;
+        features.m_hw_bmi2          = (cpuinfo[1] & ((int)1 <<  8)) != 0;
+        features.m_hw_adx           = (cpuinfo[1] & ((int)1 << 19)) != 0;
+        features.m_hw_mpx           = (cpuinfo[1] & ((int)1 << 14)) != 0;
+        features.m_hw_sha           = (cpuinfo[1] & ((int)1 << 29)) != 0;
+        features.m_hw_prefetchwt1   = (cpuinfo[2] & ((int)1 <<  0)) != 0;
+        features.m_hw_avx512_f      = (cpuinfo[1] & ((int)1 << 16)) != 0;
+        features.m_hw_avx512_cd     = (cpuinfo[1] & ((int)1 << 28)) != 0;
+        features.m_hw_avx512_pf     = (cpuinfo[1] & ((int)1 << 26)) != 0;
+        features.m_hw_avx512_er     = (cpuinfo[1] & ((int)1 << 27)) != 0;
+        features.m_hw_avx512_vl     = (cpuinfo[1] & ((int)1 << 31)) != 0;
+        features.m_hw_avx512_bw     = (cpuinfo[1] & ((int)1 << 30)) != 0;
+        features.m_hw_avx512_dq     = (cpuinfo[1] & ((int)1 << 17)) != 0;
+        features.m_hw_avx512_ifma   = (cpuinfo[1] & ((int)1 << 21)) != 0;
+        features.m_hw_avx512_vbmi   = (cpuinfo[2] & ((int)1 <<  1)) != 0;
+    }
+
+    if (exids >= 0x80000001)
+    {
+        cpuid(cpuinfo, 0x80000001);
+        features.m_hw_x64           = (cpuinfo[3] & ((int)1 << 29)) != 0;
+        features.m_hw_abm           = (cpuinfo[2] & ((int)1 <<  5)) != 0;
+        features.m_hw_sse4a         = (cpuinfo[2] & ((int)1 <<  6)) != 0;
+        features.m_hw_fma4          = (cpuinfo[2] & ((int)1 << 16)) != 0;
+        features.m_hw_xop           = (cpuinfo[2] & ((int)1 << 11)) != 0;
+    }
 }
 
 #endif

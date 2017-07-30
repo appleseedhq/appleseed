@@ -281,6 +281,9 @@ int main(int argc, const char* argv[])
     // Construct the logger that will be used throughout the program.
     SuperLogger logger;
 
+    // Make sure this build can run on this host.
+    Application::check_compatibility_with_host(logger);
+
     // Make sure appleseed is correctly installed.
     Application::check_installation(logger);
 

@@ -55,6 +55,13 @@ namespace shared {
 class SHAREDDLL Application
 {
   public:
+    // Return true if the application can run on the host machine, false otherwise.
+    static bool is_compatible_with_host(const char** missing_feature);
+
+    // Check if the application can run on the host machine. If it cannot, issue
+    // a fatal error message through the provided foundation::Logger object.
+    static void check_compatibility_with_host(foundation::Logger& logger);
+
     // Return true if the application is correctly installed, false otherwise.
     static bool is_correctly_installed();
 

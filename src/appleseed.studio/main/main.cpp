@@ -77,6 +77,23 @@ namespace bf = boost::filesystem;
 
 namespace
 {
+    void check_compatibility()
+    {
+        const char* missing_feature = nullptr;
+        if (!Application::is_compatible_with_host(&missing_feature))
+        {
+            QMessageBox msgbox;
+            msgbox.setWindowTitle("System Incompatibility");
+            msgbox.setIcon(QMessageBox::Critical);
+            msgbox.setText(QString("This executable requires a CPU with %1 support.").arg(missing_feature));
+            msgbox.setStandardButtons(QMessageBox::Ok);
+            msgbox.setDefaultButton(QMessageBox::Ok);
+            msgbox.exec();
+
+            exit(EXIT_FAILURE);
+        }
+    }
+
     void check_installation()
     {
         if (!Application::is_correctly_installed())
@@ -284,6 +301,9 @@ int main(int argc, char* argv[])
     // to change it again (as it happens only on the very first `read`).
     // Issue reported and tracked on GitHub under reference #1435.
     QImageReader(make_app_path("icons/icon.png")).read();   // any image
+
+    // Make sure this build can run on this host.
+    check_compatibility();
 
     // Make sure appleseed is correctly installed.
     check_installation();

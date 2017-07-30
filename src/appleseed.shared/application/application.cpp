@@ -32,6 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/path.h"
+#include "foundation/platform/system.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/settings.h"
@@ -39,6 +40,7 @@
 
 // Standard headers.
 #include <cstring>
+#include <string>
 
 using namespace foundation;
 using namespace std;
@@ -65,6 +67,65 @@ void Application::check_installation(Logger& logger)
             logger,
             "the application failed to start because it is not properly installed. "
             "please reinstall the application.");
+    }
+}
+
+bool Application::is_compatible_with_host(const char** missing_feature)
+{
+#ifdef APPLESEED_X86
+    System::X86CpuFeatures features;
+    System::detect_x86_cpu_features(features);
+
+#ifdef APPLESEED_USE_SSE
+    if (!features.m_hw_sse)
+    {
+        if (missing_feature)
+            *missing_feature = "SSE";
+        return false;
+    }
+#endif
+
+#ifdef APPLESEED_USE_SSE42
+    if (!features.m_hw_sse42)
+    {
+        if (missing_feature)
+            *missing_feature = "SSE4.2";
+        return false;
+    }
+#endif
+
+#ifdef APPLESEED_USE_AVX
+    if (!features.m_hw_avx)
+    {
+        if (missing_feature)
+            *missing_feature = "AVX";
+        return false;
+    }
+#endif
+
+#ifdef APPLESEED_USE_AVX2
+    if (!features.m_hw_avx2)
+    {
+        if (missing_feature)
+            *missing_feature = "AVX2";
+        return false;
+    }
+#endif
+#endif
+
+    return true;
+}
+
+void Application::check_compatibility_with_host(Logger& logger)
+{
+    const char* missing_feature = nullptr;
+    if (!is_compatible_with_host(&missing_feature))
+    {
+        logger.set_all_formats("{message}");
+        LOG_FATAL(
+            logger,
+            "this executable requires a cpu with %s support.",
+            lower_case(missing_feature).c_str());
     }
 }
 
