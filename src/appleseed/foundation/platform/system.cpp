@@ -51,7 +51,7 @@
     // Platform headers.
     #include "psapi.h"
 
-// OS X.
+// macOS.
 #elif defined __APPLE__
 
     // Platform headers.
@@ -253,7 +253,7 @@ uint64 System::get_process_virtual_memory_size()
 }
 
 // ------------------------------------------------------------------------------------------------
-// OS X.
+// macOS.
 // ------------------------------------------------------------------------------------------------
 
 #elif defined __APPLE__

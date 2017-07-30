@@ -94,7 +94,7 @@ QString get_save_filename(
     const QString&          settings_key,
     QFileDialog::Options    options = 0);
 
-// Disable the blue focus rectangle of certain widgets. OS X only.
+// Disable the blue focus rectangle of certain widgets. macOS only.
 void disable_osx_focus_rect(QWidget* widget);
 
 // Set the minimum width of a QMessageBox.

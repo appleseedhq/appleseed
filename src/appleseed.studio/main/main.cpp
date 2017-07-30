@@ -219,7 +219,7 @@ namespace
     void message_handler(QtMsgType type, const char* msg)
     {
 #ifdef __APPLE__
-        // Under certain circumstances (under an OS X virtual machine?), a bogus warning
+        // Under certain circumstances (under an macOS virtual machine?), a bogus warning
         // message is repeatedly printed to the console. Disable this warning message.
         // See https://github.com/appleseedhq/appleseed/issues/254 for details.
         if (type == QtWarningMsg &&

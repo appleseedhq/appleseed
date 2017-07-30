@@ -151,7 +151,7 @@ const char* Application::get_user_settings_path()
 
         return 0;
 
-// OS X.
+// macOS.
 #elif defined __APPLE__
 
         return 0;
