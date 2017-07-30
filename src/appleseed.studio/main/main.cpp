@@ -81,22 +81,12 @@ namespace
     {
         if (!Application::is_correctly_installed())
         {
-            const bf::path executable_path(get_executable_path());
-
-            const string informative_text =
-                "Specifically, it was expected that " + executable_path.filename().string() + " would "
-                "reside in a " + bf::path("bin/").make_preferred().string() + " subdirectory "
-                "inside the main directory of the application, but it appears not to be the case "
-                "(" + executable_path.filename().string() +
-                " seems to be located in " + executable_path.parent_path().string() + ").";
-
             QMessageBox msgbox;
             msgbox.setWindowTitle("Application Incorrectly Installed");
             msgbox.setIcon(QMessageBox::Critical);
             msgbox.setText(
                 "The application failed to start because it is not properly installed. "
                 "Please reinstall the application.");
-            msgbox.setInformativeText(QString::fromStdString(informative_text));
             msgbox.setStandardButtons(QMessageBox::Ok);
             msgbox.setDefaultButton(QMessageBox::Ok);
             msgbox.exec();

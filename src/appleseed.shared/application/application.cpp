@@ -60,21 +60,11 @@ void Application::check_installation(Logger& logger)
 {
     if (!is_correctly_installed())
     {
-        // We need the path to the application's executable to construct the error message.
-        const bf::path executable_path(get_executable_path());
-
-        // Issue a fatal error message.
+        logger.set_all_formats("{message}");
         LOG_FATAL(
             logger,
-            "The application failed to start because it is not properly installed. "
-            "Please reinstall the application.\n"
-            "Specifically, it was expected that %s would reside in a %s subdirectory "
-            "inside the main directory of the application, but it appears not to be "
-            "the case (%s seems to be located in %s).",
-            executable_path.filename().string().c_str(),
-            bf::path("bin/").make_preferred().string().c_str(),
-            executable_path.filename().string().c_str(),
-            executable_path.parent_path().string().c_str());
+            "the application failed to start because it is not properly installed. "
+            "please reinstall the application.");
     }
 }
 
