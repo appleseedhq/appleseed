@@ -295,15 +295,16 @@ int main(int argc, char* argv[])
     // Issue reported and tracked on GitHub under reference #1435.
     QImageReader(make_app_path("icons/icon.png")).read();   // any image
 
+    // Make sure appleseed is correctly installed.
     check_installation();
 
-    // Create and configure a logger.
+    // Parse the command line.
     SuperLogger logger;
 #ifdef _WIN32
+    // On Windows, we will display command line arguments in a message box
+    // so we need to capture CommandLineHandler's output into a string.
     logger.set_log_target(create_string_log_target());
 #endif
-
-    // Parse the command line.
     CommandLineHandler cl;
     cl.parse(argc, const_cast<const char**>(argv), logger);
 

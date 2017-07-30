@@ -154,9 +154,7 @@ namespace
 
         // Print the message.
         for (const_each<vector<string>> i = tokens; i; ++i)
-        {
             sstr << "  " << *i << endl;
-        }
 
         // Print the message footer.
         sstr << file << ", line " << line;

@@ -167,7 +167,7 @@ namespace
 
             // Print the message.
             for (const_each<vector<string>> i = tokens; i; ++i)
-                LOG_ERROR(m_logger, "    %s\n", i->c_str());
+                LOG_ERROR(m_logger, "    %s", i->c_str());
         }
 
         virtual void write(

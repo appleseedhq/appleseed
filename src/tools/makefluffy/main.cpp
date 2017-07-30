@@ -312,7 +312,7 @@ namespace
 
 int main(int argc, const char* argv[])
 {
-    // Initialize the logger that will be used throughout the program.
+    // Construct the logger that will be used throughout the program.
     SuperLogger logger;
 
     // Make sure appleseed is correctly installed.
