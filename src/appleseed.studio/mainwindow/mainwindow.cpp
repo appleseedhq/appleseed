@@ -261,8 +261,11 @@ void MainWindow::open_and_render_project(const QString& filepath, const QString&
     open_project_async(filepath);
 }
 
-void MainWindow::save_project(QString filepath)
+bool MainWindow::save_project(QString filepath)
 {
+    if (!m_project_manager.is_project_open())
+        return false;
+
     const QString Extension = "appleseed";
 
     if (QFileInfo(filepath).suffix() != Extension)
@@ -271,12 +274,27 @@ void MainWindow::save_project(QString filepath)
     if (m_project_file_watcher)
         stop_monitoring_project_file();
 
-    m_project_manager.save_project_as(filepath.toAscii().constData());
+    const bool successful = m_project_manager.save_project_as(filepath.toAscii().constData());
 
     if (m_project_file_watcher)
         start_monitoring_project_file();
 
     update_workspace();
+
+    return successful;
+}
+
+bool MainWindow::pack_project(QString filepath)
+{
+    if (!m_project_manager.is_project_open())
+        return false;
+
+    const QString Extension = "appleseedz";
+
+    if (QFileInfo(filepath).suffix() != Extension)
+        filepath += "." + Extension;
+
+    return m_project_manager.pack_project_as(filepath.toAscii().constData());
 }
 
 void MainWindow::close_project()
@@ -1350,15 +1368,9 @@ void MainWindow::slot_pack_project_as()
 
     if (!filepath.isEmpty())
     {
-        const QString Extension = "appleseedz";
-
-        if (QFileInfo(filepath).suffix() != Extension)
-            filepath += "." + Extension;
-
         filepath = QDir::toNativeSeparators(filepath);
 
-        m_project_manager.pack_project_as(filepath.toAscii().constData());
-
+        pack_project(filepath);
         // Don't update the Recent Files menu.
     }
 }
