@@ -111,9 +111,6 @@ class APPLESEED_DLLSYMBOL Frame
     // Return the reconstruction filter used by the main image and the AOV images.
     const foundation::Filter2f& get_filter() const;
 
-    // Return the color space the frame should be converted to for display.
-    foundation::ColorSpace get_color_space() const;
-
     // Return the lighting conditions for spectral-to-RGB conversions.
     const foundation::LightingConditions& get_lighting_conditions() const;
 
@@ -128,10 +125,6 @@ class APPLESEED_DLLSYMBOL Frame
 
     // Return the number of pixels in the frame, taking into account the crop window.
     size_t get_pixel_count() const;
-
-    // Convert a tile or an image from linear RGB to the output color space.
-    void transform_to_output_color_space(foundation::Tile& tile) const;
-    void transform_to_output_color_space(foundation::Image& image) const;
 
     // Return the normalized device coordinates of a given sample.
     foundation::Vector2d get_sample_position(
@@ -183,9 +176,22 @@ class APPLESEED_DLLSYMBOL Frame
 
     void extract_parameters();
 
-    // Write an image to disk after transformation to the frame's color space.
-    // Return true if successful, false otherwise.
+    void insert_chromaticities_attribute(
+        foundation::ImageAttributes&        image_attributes) const;
+
+    // Write an image to disk. Return true if successful, false otherwise.
     bool write_image(
+        const char*                         file_path,
+        const foundation::Image&            image,
+        const foundation::ImageAttributes&  image_attributes) const;
+
+    void write_exr_image(
+        const char*                         file_path,
+        const foundation::Image&            image,
+        const foundation::ImageAttributes&  image_attributes,
+        const bool                          convert_to_half = true) const;
+
+    void write_png_image(
         const char*                         file_path,
         const foundation::Image&            image,
         const foundation::ImageAttributes&  image_attributes) const;
@@ -212,11 +218,6 @@ class APPLESEED_DLLSYMBOL FrameFactory
 //
 // Frame class implementation.
 //
-
-inline foundation::ColorSpace Frame::get_color_space() const
-{
-    return m_color_space;
-}
 
 inline bool Frame::is_premultiplied_alpha() const
 {

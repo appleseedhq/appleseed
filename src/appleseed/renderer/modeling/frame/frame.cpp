@@ -46,8 +46,11 @@
 #include "foundation/image/image.h"
 #include "foundation/image/imageattributes.h"
 #include "foundation/image/pixel.h"
+#include "foundation/image/pngimagefilewriter.h"
 #include "foundation/image/tile.h"
+#include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
@@ -88,21 +91,143 @@ UniqueID Frame::get_class_uid()
     return g_class_uid;
 }
 
+namespace
+{
+
+class WorkingSpace
+{
+  public:
+    explicit WorkingSpace(const string& name = "scene_linear_srgb_rec_709")
+      : m_name(name)
+    {
+        if (m_name == "scene_linear_rec_2020")
+        {
+            m_xy_chromaticity_rxy = Vector2f(0.708f, 0.292f);
+            m_xy_chromaticity_gxy = Vector2f(0.170f, 0.797f);
+            m_xy_chromaticity_bxy = Vector2f(0.131f, 0.046f);
+            m_xy_chromaticity_wxy = Vector2f(0.31270f, 0.3290f);
+
+            static const float rgb_to_xyz_coeffs[9] =
+            {
+                0.63695805f,  0.14461690f,  0.16888098f,
+                0.26270021f,  0.67799807f,  0.05930172f,
+                0.00000000f,  0.02807269f,  1.06098506f
+            };
+            m_rgb_to_xyz = Matrix3f(rgb_to_xyz_coeffs);
+
+            static const float xyz_to_rgb_coeffs[9] =
+            {
+                1.71665119f, -0.35567078f, -0.25336628f,
+               -0.66668435f,  1.61648124f,  0.01576855f,
+                0.01763986f, -0.04277061f,  0.94210312f
+            };
+            m_xyz_to_rgb = Matrix3f(xyz_to_rgb_coeffs);
+        }
+        else if (m_name == "scene_linear_dci_p3")
+        {
+            m_xy_chromaticity_rxy = Vector2f(0.6800f, 0.3200f);
+            m_xy_chromaticity_gxy = Vector2f(0.2650f, 0.6900f);
+            m_xy_chromaticity_bxy = Vector2f(0.1500f, 0.0600f);
+            m_xy_chromaticity_wxy = Vector2f(0.31400f, 0.3290f);
+
+            static const float rgb_to_xyz_coeffs[9] =
+            {
+                0.44516982f,  0.27713441f,  0.17228267f,
+                0.20949168f,  0.72159525f,  0.06891307f,
+               -0.00000000f,  0.04706056f,  0.90735539f
+            };
+            m_rgb_to_xyz = Matrix3f(rgb_to_xyz_coeffs);
+
+            static const float xyz_to_rgb_coeffs[9] =
+            {
+                2.72539403f, -1.01800301f, -0.44016320f,
+               -0.79516803f,  1.68973205f,  0.02264719f,
+                0.04124189f, -0.08763902f,  1.10092938f
+            };
+            m_xyz_to_rgb = Matrix3f(xyz_to_rgb_coeffs);
+        }
+        else if (m_name == "scene_linear_acescg_ap1")
+        {
+            m_xy_chromaticity_rxy = Vector2f(0.7130f, 0.2930f);
+            m_xy_chromaticity_gxy = Vector2f(0.1650f, 0.8300f);
+            m_xy_chromaticity_bxy = Vector2f(0.1280f, 0.0440f);
+            m_xy_chromaticity_wxy = Vector2f(0.32168f, 0.33767f);
+
+            static const float rgb_to_xyz_coeffs[9] =
+            {
+                0.66245418f,  0.13400421f,  0.15618769f,
+                0.27222872f,  0.67408177f,  0.05368952f,
+               -0.00557465f,  0.00406073f,  1.01033910f
+            };
+            m_rgb_to_xyz = Matrix3f(rgb_to_xyz_coeffs);
+
+            static const float xyz_to_rgb_coeffs[9] =
+            {
+                1.64102338f, -0.32480329f, -0.23642470f,
+               -0.66366286f,  1.61533159f,  0.01675635f,
+                0.01172189f, -0.00828444f,  0.98839486f
+            };
+            m_xyz_to_rgb = Matrix3f(xyz_to_rgb_coeffs);
+        }
+        else // if (m_name == "scene_linear_srgb_rec_709")
+        {
+            m_xy_chromaticity_rxy = Vector2f(0.64f, 0.33f);
+            m_xy_chromaticity_gxy = Vector2f(0.30f, 0.60f);
+            m_xy_chromaticity_bxy = Vector2f(0.15f, 0.06f);
+            m_xy_chromaticity_wxy = Vector2f(0.3127f, 0.3290f);
+
+            static const float rgb_to_xyz_coeffs[9] =
+            {
+                0.41239080f, 0.35758434f, 0.18048079f,
+                0.21263901f, 0.71516868f, 0.07219232f,
+                0.01933082f, 0.11919478f, 0.95053215f
+            };
+            m_rgb_to_xyz = Matrix3f(rgb_to_xyz_coeffs);
+
+            static const float xyz_to_rgb_coeffs[9] =
+            {
+                 3.24096994f, -1.53738318f, -0.49861076f,
+                -0.96924364f,  1.87596750f,  0.04155506f,
+                 0.05563008f, -0.20397696f,  1.05697151f
+            };
+            m_xyz_to_rgb = Matrix3f(xyz_to_rgb_coeffs);
+        }
+    }
+
+    static const char* nice_name(const string& name)
+    {
+        if (name == "scene_linear_rec_2020")
+            return "Scene Linear Rec 2020";
+        else if (name == "scene_linear_dci_p3")
+            return "Scene Linear DCI-P3";
+        else if (name == "scene_linear_acescg_ap1")
+            return "Scene Linear ACEScg AP1";
+        // else if (m_name == "scene_linear_srgb_rec_709")
+            return "Scene Linear sRGB / Rec 709";
+    }
+
+    Matrix3f m_rgb_to_xyz;
+    Matrix3f m_xyz_to_rgb;
+    Vector2f m_xy_chromaticity_rxy;
+    Vector2f m_xy_chromaticity_gxy;
+    Vector2f m_xy_chromaticity_bxy;
+    Vector2f m_xy_chromaticity_wxy;
+    string   m_name;
+};
+
+}
+
 struct Frame::Impl
 {
     size_t                  m_frame_width;
     size_t                  m_frame_height;
     size_t                  m_tile_width;
     size_t                  m_tile_height;
-    PixelFormat             m_pixel_format;
     string                  m_filter_name;
     float                   m_filter_radius;
     auto_ptr<Filter2f>      m_filter;
     LightingConditions      m_lighting_conditions;
-    Vector2f                m_red_xy_chromaticity;
-    Vector2f                m_green_xy_chromaticity;
-    Vector2f                m_blue_xy_chromaticity;
-    Vector2f                m_white_xy_chromaticity;
+    WorkingSpace            m_working_space;
     AABB2u                  m_crop_window;
     auto_ptr<Image>         m_image;
     auto_ptr<ImageStack>    m_aov_images;
@@ -110,10 +235,7 @@ struct Frame::Impl
 
     Impl()
       : m_lighting_conditions(IlluminantCIED65, XYZCMFCIE19312Deg)
-      , m_red_xy_chromaticity(0.64f, 0.33f)
-      , m_green_xy_chromaticity(0.30f, 0.60f)
-      , m_blue_xy_chromaticity(0.15f, 0.06f)
-      , m_white_xy_chromaticity(0.3127f, 0.3290f)
+      , m_working_space()
     {
     }
 };
@@ -136,7 +258,7 @@ Frame::Frame(
             impl->m_tile_width,
             impl->m_tile_height,
             4,
-            impl->m_pixel_format));
+            PixelFormatFloat));
 
     // Retrieve the image properties.
     m_props = impl->m_image->properties();
@@ -169,10 +291,9 @@ void Frame::print_settings()
         "  camera                        %s\n"
         "  resolution                    %s x %s\n"
         "  tile size                     %s x %s\n"
-        "  pixel format                  %s\n"
         "  filter                        %s\n"
         "  filter size                   %f\n"
-        "  color space                   %s\n"
+        "  working space                 %s\n"
         "  premultiplied alpha           %s\n"
         "  crop window                   (%s, %s)-(%s, %s)",
         camera_name ? camera_name : "none",
@@ -180,10 +301,9 @@ void Frame::print_settings()
         pretty_uint(impl->m_frame_height).c_str(),
         pretty_uint(impl->m_tile_width).c_str(),
         pretty_uint(impl->m_tile_height).c_str(),
-        pixel_format_name(impl->m_pixel_format),
         impl->m_filter_name.c_str(),
         impl->m_filter_radius,
-        color_space_name(m_color_space),
+        WorkingSpace::nice_name(impl->m_working_space.m_name),
         m_is_premultiplied_alpha ? "on" : "off",
         pretty_uint(impl->m_crop_window.min[0]).c_str(),
         pretty_uint(impl->m_crop_window.min[1]).c_str(),
@@ -305,34 +425,13 @@ size_t Frame::get_pixel_count() const
     return impl->m_crop_window.volume();
 }
 
-void Frame::transform_to_output_color_space(Tile& tile) const
-{
-    assert(tile.get_pixel_format() == PixelFormatFloat);
-    assert(m_color_space == ColorSpaceLinearRGB);
-}
-
-void Frame::transform_to_output_color_space(Image& image) const
-{
-    const CanvasProperties& image_props = image.properties();
-
-    for (size_t ty = 0; ty < image_props.m_tile_count_y; ++ty)
-    {
-        for (size_t tx = 0; tx < image_props.m_tile_count_x; ++tx)
-            transform_to_output_color_space(image.tile(tx, ty));
-    }
-}
-
 bool Frame::write_main_image(const char* file_path) const
 {
     assert(file_path);
 
     ImageAttributes image_attributes =
         ImageAttributes::create_default_attributes();
-
-    image_attributes.insert("white_xy_chromaticity", impl->m_white_xy_chromaticity);
-    image_attributes.insert("red_xy_chromaticity", impl->m_red_xy_chromaticity);
-    image_attributes.insert("green_xy_chromaticity", impl->m_green_xy_chromaticity);
-    image_attributes.insert("blue_xy_chromaticity", impl->m_blue_xy_chromaticity);
+    insert_chromaticities_attribute(image_attributes);
 
     return write_image(file_path, *impl->m_image, image_attributes);
 }
@@ -343,11 +442,7 @@ bool Frame::write_aov_images(const char* file_path) const
 
     ImageAttributes image_attributes =
         ImageAttributes::create_default_attributes();
-
-    image_attributes.insert("white_xy_chromaticity", impl->m_white_xy_chromaticity);
-    image_attributes.insert("red_xy_chromaticity", impl->m_red_xy_chromaticity);
-    image_attributes.insert("green_xy_chromaticity", impl->m_green_xy_chromaticity);
-    image_attributes.insert("blue_xy_chromaticity", impl->m_blue_xy_chromaticity);
+    insert_chromaticities_attribute(image_attributes);
 
     bool result = true;
 
@@ -440,12 +535,6 @@ void Frame::extract_parameters()
         impl->m_tile_height = static_cast<size_t>(tile_size[1]);
     }
 
-    // Retrieve pixel format parameter.
-    {
-        const string pixel_format_str = "float";
-        impl->m_pixel_format = PixelFormatFloat;
-    }
-
     // Retrieve reconstruction filter parameter.
     {
         const char* DefaultFilterName = "blackman-harris";
@@ -481,9 +570,29 @@ void Frame::extract_parameters()
         }
     }
 
-    // Retrieve color space parameter.
+    // Retrieve color management parameters.
     {
-        m_color_space = ColorSpaceLinearRGB;
+        const char* DefaultWorkingSpaceName = "scene_linear_srgb_rec_709";
+        string working_space_name =
+            m_params.get_optional<string>("working_space", DefaultWorkingSpaceName);
+
+        if (working_space_name == "scene_linear_srgb_rec_709")
+            impl->m_working_space = WorkingSpace(working_space_name);
+        else if (working_space_name == "scene_linear_rec_2020")
+            impl->m_working_space = WorkingSpace(working_space_name);
+        else if (working_space_name == "scene_linear_dci_p3")
+            impl->m_working_space = WorkingSpace(working_space_name);
+        else if (working_space_name == "scene_linear_acescg_ap1")
+            impl->m_working_space = WorkingSpace(working_space_name);
+        else
+        {
+            RENDERER_LOG_ERROR(
+                "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
+                working_space_name.c_str(),
+                "working_space",
+                DefaultWorkingSpaceName);
+            impl->m_working_space = WorkingSpace(DefaultWorkingSpaceName);
+        }
     }
 
     // Retrieve premultiplied alpha parameter.
@@ -496,6 +605,19 @@ void Frame::extract_parameters()
     impl->m_crop_window = m_params.get_optional<AABB2u>("crop_window", default_crop_window);
 }
 
+void Frame::insert_chromaticities_attribute(
+    ImageAttributes&        image_attributes) const
+{
+    image_attributes.insert(
+        "xy_chromaticity_wxy", impl->m_working_space.m_xy_chromaticity_wxy);
+    image_attributes.insert(
+        "xy_chromaticity_rxy", impl->m_working_space.m_xy_chromaticity_rxy);
+    image_attributes.insert(
+        "xy_chromaticity_gxy", impl->m_working_space.m_xy_chromaticity_gxy);
+    image_attributes.insert(
+        "xy_chromaticity_bxy", impl->m_working_space.m_xy_chromaticity_bxy);
+}
+
 bool Frame::write_image(
     const char*             file_path,
     const Image&            image,
@@ -506,18 +628,29 @@ bool Frame::write_image(
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();
 
+    const bf::path filepath(file_path);
+    const string extension = lower_case(filepath.extension().string());
+
     try
     {
-        EXRImageFileWriter writer;
-        writer.write(file_path, image, image_attributes);
-    }
-    catch (const ExceptionUnsupportedImageFormat&)
-    {
-        RENDERER_LOG_ERROR(
-            "failed to write image file %s: unsupported image format.",
-            file_path);
+        if (extension == ".png")
+            write_png_image(file_path, image, image_attributes);
+        else if (extension == ".exr")
+            write_exr_image(file_path, image, image_attributes);
+        else if (extension.empty())
+        {
+            string file_path_with_ext(file_path);
+            file_path_with_ext += ".exr";
+            write_exr_image(file_path_with_ext.c_str(), image, image_attributes);
+        }
+        else
+        {
+            RENDERER_LOG_ERROR(
+                "failed to write image file %s: unsupported image format.",
+                file_path);
 
-        return false;
+            return false;
+        }
     }
     catch (const ExceptionIOError&)
     {
@@ -545,6 +678,80 @@ bool Frame::write_image(
         pretty_time(stopwatch.get_seconds()).c_str());
 
     return true;
+}
+
+void Frame::write_exr_image(
+    const char*             file_path,
+    const Image&            image,
+    const ImageAttributes&  image_attributes,
+    const bool              convert_to_half) const
+{
+    EXRImageFileWriter writer;
+
+    if (convert_to_half)
+    {
+        const CanvasProperties& props = image.properties();
+        Image half_image(
+            image,
+            props.m_tile_width,
+            props.m_tile_height,
+            PixelFormatHalf);
+
+        writer.write(file_path, half_image, image_attributes);
+    }
+    else
+        writer.write(file_path, image, image_attributes);
+}
+
+namespace
+{
+
+void transform_to_srgb(Tile& tile)
+{
+    assert(tile.get_channel_count() == 4);
+
+    Color4f* pixel_ptr = reinterpret_cast<Color4f*>(tile.pixel(0));
+    Color4f* pixel_end = pixel_ptr + tile.get_pixel_count();
+
+    for (; pixel_ptr < pixel_end; ++pixel_ptr)
+    {
+        // Load the pixel color.
+        Color4f color(*pixel_ptr);
+
+        // Apply color space conversion.
+        color.rgb() = fast_linear_rgb_to_srgb(color.rgb());
+
+        // Apply clamping.
+        color = saturate(color);
+
+        // Store the pixel color.
+        *pixel_ptr = color;
+    }
+}
+
+void transform_to_srgb(Image& image)
+{
+    const CanvasProperties& image_props = image.properties();
+
+    for (size_t ty = 0; ty < image_props.m_tile_count_y; ++ty)
+    {
+        for (size_t tx = 0; tx < image_props.m_tile_count_x; ++tx)
+            transform_to_srgb(image.tile(tx, ty));
+    }
+}
+
+}
+
+void Frame::write_png_image(
+    const char*             file_path,
+    const Image&            image,
+    const ImageAttributes&  image_attributes) const
+{
+    Image transformed_image(image);
+    transform_to_srgb(transformed_image);
+
+    PNGImageFileWriter writer;
+    writer.write(file_path, transformed_image, image_attributes);
 }
 
 
@@ -611,6 +818,20 @@ DictionaryArray FrameFactory::get_input_metadata()
             .insert("type", "text")
             .insert("use", "optional")
             .insert("default", "1.5"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "working_space")
+            .insert("label", "Working Space")
+            .insert("type", "enumeration")
+            .insert("items",
+                Dictionary()
+                    .insert(WorkingSpace::nice_name("scene_linear_srgb_rec_709"), "scene_linear_srgb_rec_709")
+                    .insert(WorkingSpace::nice_name("scene_linear_rec_2020"), "scene_linear_rec_2020")
+                    .insert(WorkingSpace::nice_name("scene_linear_dci_p3"), "scene_linear_dci_p3")
+                    .insert(WorkingSpace::nice_name("scene_linear_acescg_ap1"), "scene_linear_acescg_ap1"))
+            .insert("use", "optional")
+            .insert("default", "scene_linear_srgb_rec_709"));
 
     metadata.push_back(
         Dictionary()
