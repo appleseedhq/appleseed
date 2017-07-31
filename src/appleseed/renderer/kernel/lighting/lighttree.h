@@ -66,6 +66,12 @@ class LightTree
     // Destructor.
     ~LightTree();
 
+    enum LightTypes
+    {
+        NonPhysicalLightType = 0,
+        EmittingTriangleType = 1
+    };
+
     bool is_built() const;
 
     // Build the tree based on the lights collected by the BackwardLightSampler.
@@ -94,8 +100,8 @@ class LightTree
         foundation::AABB3d      m_bbox;
         size_t                  m_light_source_index;
         size_t                  m_external_source_index;
-        size_t                  m_non_physical_light_index;
-        size_t                  m_emitting_triangle_index;
+        size_t                  m_light_index;
+        int                     m_light_type;
 
         Item() {}
 
@@ -107,13 +113,13 @@ class LightTree
             const foundation::AABB3d&       bbox,
             const size_t                    light_source_index,
             const size_t                    external_source_index,
-            const size_t                    non_physical_light_index,
-            const size_t                    emitting_triangle_index) 
+            const size_t                    light_index,
+            const int                       light_type) 
             : m_bbox(bbox)
             , m_light_source_index(light_source_index)
             , m_external_source_index(external_source_index)
-            , m_non_physical_light_index(non_physical_light_index)
-            , m_emitting_triangle_index(emitting_triangle_index)
+            , m_light_index(light_index)
+            , m_light_type(light_type)
         {
         }
     };

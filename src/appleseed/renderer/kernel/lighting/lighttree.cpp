@@ -111,7 +111,7 @@ size_t LightTree::build(
                                             position[2] + 0.001));
         light_bboxes.push_back(bbox);
 
-        m_items.push_back(Item(bbox, light_source_index, i, i, ~0));
+        m_items.push_back(Item(bbox, light_source_index, i, i, NonPhysicalLightType));
     }
 
     // Collect emitting triangles.
@@ -131,7 +131,7 @@ size_t LightTree::build(
 
         light_bboxes.push_back(bbox);
 
-        m_items.push_back(Item(bbox, light_source_index, i, ~0, i));
+        m_items.push_back(Item(bbox, light_source_index, i, i, EmittingTriangleType));
     }
 
     // Create the partitioner.
@@ -165,7 +165,6 @@ size_t LightTree::build(
 
     // Print light tree statistics.
     Statistics statistics;
-    statistics.insert("light sources", m_light_sources.size());
     statistics.insert("nodes", m_nodes.size());
     statistics.insert("max tree depth", m_tree_depth);
     statistics.insert_time("total build time", builder.get_build_time());
@@ -174,7 +173,7 @@ size_t LightTree::build(
             "light tree statistics",
             statistics).to_string().c_str());
 
-    return m_light_sources.size();
+    return m_non_physical_lights.size() + m_emitting_triangles.size();
 }
 
 const vector<size_t>& LightTree::get_triangle_LUT() const
@@ -203,12 +202,11 @@ float LightTree::recursive_node_update(
     {
         // Retrieve the light source associated to this leaf.
         const size_t item_index = m_nodes[node_index].get_item_index();
-        // const size_t light_source_index = m_items[item_index].m_light_source_index;
+        const size_t light_index = m_items[item_index].m_light_index;
 
-        if (m_items[item_index].m_non_physical_light_index != ~0)
+        if (m_items[item_index].m_light_type == NonPhysicalLightType)
         {
-            const size_t npl_index = m_items[item_index].m_non_physical_light_index;
-            const Light* light = m_non_physical_lights[npl_index].m_light;
+            const Light* light = m_non_physical_lights[light_index].m_light;
             
             // Retrieve the non physical light importance.
             Spectrum spectrum;
@@ -217,10 +215,9 @@ float LightTree::recursive_node_update(
         }
         else
         {
-            // TODO Assert it is an EMT.
-            const size_t emt_index = m_items[item_index].m_emitting_triangle_index;
-            
-            const EmittingTriangle triangle = m_emitting_triangles[emt_index];
+            assert(m_items[item_index].m_light_type == EmittingTriangleType);
+
+            const EmittingTriangle triangle = m_emitting_triangles[light_index];
 
             // Retrieve the emitting triangle importance.
             const EDF* edf = triangle.m_material->get_uncached_edf();
@@ -228,7 +225,7 @@ float LightTree::recursive_node_update(
             importance = edf->get_uncached_max_contribution() * edf->get_uncached_importance_multiplier();
     
             // Save the index of the light tree node containing the EMT in the look up table.
-            m_triangles_in_tree_LUT[emt_index] = node_index;
+            m_triangles_in_tree_LUT[light_index] = node_index;
         }
 
         // Keep track of the tree depth.
@@ -280,26 +277,9 @@ void LightTree::sample(
     }
 
     const size_t item_index = m_nodes[node_index].get_item_index();
-    const size_t source_index = m_items[item_index].m_light_source_index;
-    light_type = m_light_sources[source_index]->get_type();
 
-    switch (light_type)
-    {
-      // m_light_source_index corresponds to the m_light_tree_lights
-      // index of the BackwardLightSampler in case of NPL, whereas the EMT index
-      // needs to be stored separately for now as it is not in the same
-      // vector with other light tree compatible lights.
-      case LightSource::NonPhysicalLightType:
-        light_index = m_items[item_index].m_light_source_index;
-        break;
-
-      case LightSource::EmittingTriangleType:
-        light_index = m_items[item_index].m_external_source_index;
-        break;
-
-      default:
-        assert(!"Unexpected light type.");
-    }
+    light_type = m_items[item_index].m_light_type;
+    light_index = m_items[item_index].m_light_index;
 }
 
 float LightTree::evaluate_node_pdf(
