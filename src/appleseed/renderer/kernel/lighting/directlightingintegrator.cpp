@@ -470,8 +470,8 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
         return;
 
     // Generate a uniform sample in [0,1).
-    sampling_context.split_in_place(2, 1);
-    const Vector2d s = sampling_context.next2<Vector2d>();
+    SamplingContext child_sampling_context = sampling_context.split(2, 1);
+    const Vector2d s = child_sampling_context.next2<Vector2d>();
 
     // Evaluate the light.
     Vector3d emission_position, emission_direction;
