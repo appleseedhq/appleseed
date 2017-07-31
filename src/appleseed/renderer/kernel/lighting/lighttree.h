@@ -92,6 +92,8 @@ class LightTree
         foundation::AABB3d      m_bbox;
         size_t                  m_light_source_index;
         size_t                  m_external_source_index;
+        size_t                  m_non_physical_light_index;
+        size_t                  m_emitting_triangle_index;
 
         Item() {}
 
@@ -102,22 +104,29 @@ class LightTree
         Item(
             const foundation::AABB3d&       bbox,
             const size_t                    light_source_index,
-            const size_t                    external_source_index) 
+            const size_t                    external_source_index,
+            const size_t                    non_physical_light_index,
+            const size_t                    emitting_triangle_index) 
             : m_bbox(bbox)
             , m_light_source_index(light_source_index)
             , m_external_source_index(external_source_index)
+            , m_non_physical_light_index(non_physical_light_index)
+            , m_emitting_triangle_index(emitting_triangle_index)
         {
         }
     };
 
     typedef std::vector<NonPhysicalLightInfo>       NonPhysicalLightVector;
+    typedef std::vector<EmittingTriangle>           EmittingTriangleVector;
     typedef std::vector<LightSource*>               LightSourcePointerVector;
     typedef std::vector<Item>                       ItemVector;
 
-    LightSourcePointerVector   m_light_sources;
-    ItemVector                 m_items;
-    size_t                     m_tree_depth;
-    bool                       m_built; // Was the tree built?
+    NonPhysicalLightVector                          m_non_physical_lights;
+    EmittingTriangleVector                          m_emitting_triangles;
+    LightSourcePointerVector                        m_light_sources;
+    ItemVector                                      m_items;
+    size_t                                          m_tree_depth;
+    bool                                            m_built; // Was the tree built?
 
     // Calculate the tree depth.
     // Assign total importance to each node of the tree, where total importance
