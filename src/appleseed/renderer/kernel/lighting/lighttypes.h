@@ -34,11 +34,6 @@
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/utility/transformsequence.h"
 
-// appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/aabb.h"
-#include "foundation/math/vector.h"
-
 // Standard headers.
 #include <cstddef>
 
@@ -50,6 +45,12 @@ namespace renderer  { class Material; }
 namespace renderer
 {
 
+enum LightTypes
+{
+    NonPhysicalLightType = 0,
+    EmittingTriangleType = 1
+};
+
 //
 // NonPhysicalLightInfo class implementation.
 //
@@ -58,8 +59,6 @@ class NonPhysicalLightInfo
 {
   public:
     TransformSequence           m_transform_sequence;           // assembly instance (parent of the light) space to world space
-    // TODO: Remove when the LightSource class is removed.
-    size_t                      m_light_tree_node_index;
     const Light*                m_light;
 };
 
@@ -84,80 +83,6 @@ class EmittingTriangle
     float                       m_rcp_area;                     // world space triangle area reciprocal
     float                       m_triangle_prob;                // probability density of this triangle
     const Material*             m_material;
-};
-
-
-//
-// LightSource class implementation.
-// Any kind of light source. Both non-physical light and emitting triangle.
-//
-
-class LightSource
-  : public foundation::NonCopyable
-{
-  public:
-    // Destructor.
-    virtual ~LightSource() {}
-
-    enum SourceTypes
-    {
-        NonPhysicalLightType = 0,
-        EmittingTriangleType = 1
-    };
-
-    // Get the light source position.
-    virtual foundation::Vector3d get_position() const = 0;
-
-    // Get the light source bounding box.
-    virtual foundation::AABB3d get_bbox() const = 0;
-
-    // Get the light importance.
-    virtual float get_importance() const = 0;
-
-    // Get light type.
-    virtual int get_type() const = 0;
-};
-
-
-//
-// NonPhysicalLightSource class implementation.
-//
-
-class NonPhysicalLightSource
-  : public LightSource
-{
-  public:
-    explicit NonPhysicalLightSource(NonPhysicalLightInfo* light);
-
-    virtual foundation::Vector3d get_position() const override;
-    virtual foundation::AABB3d get_bbox() const override;
-    virtual float get_importance() const override;
-    virtual int get_type() const override;
-
-  private:
-    // Reference to the actual source.
-    NonPhysicalLightInfo* m_light_info;
-};
-
-
-//
-// EmittingTriangleLightSource class implementation.
-//
-
-class EmittingTriangleLightSource
-  : public LightSource
-{
-  public:
-    explicit EmittingTriangleLightSource(EmittingTriangle* triangle);
-
-    virtual foundation::Vector3d get_position() const override;
-    virtual foundation::AABB3d get_bbox() const override;
-    virtual float get_importance() const override;
-    virtual int get_type() const override;
-
-  private:
-    // Reference to the actual source.
-    EmittingTriangle* m_triangle;
 };
 
 }       // namespace renderer

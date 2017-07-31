@@ -546,7 +546,7 @@ void BackwardLightSampler::sample_light_tree(
         light_index,
         light_prob);
 
-    if (light_type == LightSource::NonPhysicalLightType)
+    if (light_type == NonPhysicalLightType)
     {
         // Fetch the light.
         const NonPhysicalLightInfo& light_info = m_light_tree_lights[light_index];
@@ -562,7 +562,7 @@ void BackwardLightSampler::sample_light_tree(
     }
     else
     {
-        assert(light_type == LightSource::EmittingTriangleType);
+        assert(light_type == EmittingTriangleType);
         sample_emitting_triangle(
             time,
             Vector2f(s[1], s[2]),
