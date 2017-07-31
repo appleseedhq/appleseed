@@ -112,9 +112,9 @@ class BackwardLightSampler
         explicit Parameters(const ParamArray& params);
     };
 
-    typedef std::vector<NonPhysicalLightInfo> NonPhysicalLightVector;
-    typedef std::vector<EmittingTriangle> EmittingTriangleVector;
-    typedef foundation::CDF<size_t, float> EmitterCDF;
+    typedef std::vector<NonPhysicalLightInfo>   NonPhysicalLightVector;
+    typedef std::vector<EmittingTriangle>       EmittingTriangleVector;
+    typedef foundation::CDF<size_t, float>      EmitterCDF;
 
     const Parameters            m_params;
 

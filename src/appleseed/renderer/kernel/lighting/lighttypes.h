@@ -58,6 +58,7 @@ class NonPhysicalLightInfo
 {
   public:
     TransformSequence           m_transform_sequence;           // assembly instance (parent of the light) space to world space
+    // TODO: Remove when the LightSource class is removed.
     size_t                      m_light_tree_node_index;
     const Light*                m_light;
 };
@@ -115,9 +116,6 @@ class LightSource
 
     // Get light type.
     virtual int get_type() const = 0;
-
-    // Link the light to its position in the tree.
-    virtual void set_tree_index(const size_t node_index) const = 0;
 };
 
 
@@ -135,7 +133,6 @@ class NonPhysicalLightSource
     virtual foundation::AABB3d get_bbox() const override;
     virtual float get_importance() const override;
     virtual int get_type() const override;
-    virtual void set_tree_index(const size_t node_index) const override;
 
   private:
     // Reference to the actual source.
@@ -157,7 +154,6 @@ class EmittingTriangleLightSource
     virtual foundation::AABB3d get_bbox() const override;
     virtual float get_importance() const override;
     virtual int get_type() const override;
-    virtual void set_tree_index(const size_t node_index) const override;
 
   private:
     // Reference to the actual source.

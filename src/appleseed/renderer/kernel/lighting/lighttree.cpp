@@ -77,17 +77,19 @@ bool LightTree::is_built() const
 }
 
 size_t LightTree::build(
-    vector<NonPhysicalLightInfo>&   non_physical_lights,
-    vector<EmittingTriangle>&       emitting_triangles)
+    std::vector<NonPhysicalLightInfo>&    non_physical_lights,
+    std::vector<EmittingTriangle>&        emitting_triangles)
 {
     m_non_physical_lights = non_physical_lights;
     m_emitting_triangles = emitting_triangles;
+    m_triangles_in_tree_LUT.resize(m_emitting_triangles.size());
 
     AABBVector light_bboxes;
 
     // Collect non-physical light sources.
     for (size_t i = 0, e = non_physical_lights.size(); i < e; ++i)
     {
+        // TODO: Remove with the LightSource class.
         LightSource* light_source = new NonPhysicalLightSource(&non_physical_lights[i]);
         const size_t light_source_index = m_light_sources.size();
         m_light_sources.push_back(light_source);
@@ -115,6 +117,7 @@ size_t LightTree::build(
     // Collect emitting triangles.
     for (size_t i = 0, e = emitting_triangles.size(); i < e; ++i)
     {
+        // TODO: Remove with the LightSource class.
         LightSource* light_source = new EmittingTriangleLightSource(&emitting_triangles[i]);
         const size_t light_source_index = m_light_sources.size();
         m_light_sources.push_back(light_source);
@@ -174,6 +177,11 @@ size_t LightTree::build(
     return m_light_sources.size();
 }
 
+const vector<size_t>& LightTree::get_triangle_LUT() const
+{
+    return m_triangles_in_tree_LUT;
+}
+
 float LightTree::recursive_node_update(
     const size_t        parent_index,
     const size_t        node_index, 
@@ -195,7 +203,7 @@ float LightTree::recursive_node_update(
     {
         // Retrieve the light source associated to this leaf.
         const size_t item_index = m_nodes[node_index].get_item_index();
-        const size_t light_source_index = m_items[item_index].m_light_source_index;
+        // const size_t light_source_index = m_items[item_index].m_light_source_index;
 
         if (m_items[item_index].m_non_physical_light_index != ~0)
         {
@@ -211,26 +219,21 @@ float LightTree::recursive_node_update(
         {
             // TODO Assert it is an EMT.
             const size_t emt_index = m_items[item_index].m_emitting_triangle_index;
+            
             const EmittingTriangle triangle = m_emitting_triangles[emt_index];
 
             // Retrieve the emitting triangle importance.
             const EDF* edf = triangle.m_material->get_uncached_edf();
     
             importance = edf->get_uncached_max_contribution() * edf->get_uncached_importance_multiplier();
+    
+            // Save the index of the light tree node containing the EMT in the look up table.
+            m_triangles_in_tree_LUT[emt_index] = node_index;
         }
-        
-        // Access the light orientation.
-        orientation = m_light_sources[light_source_index]->get_orientation();
-
-        // Set the index of the light tree node containing the light source.
-        m_light_sources[light_source_index]->set_tree_index(node_index);
 
         // Keep track of the tree depth.
         if (m_tree_depth < node_level)
             m_tree_depth = node_level;
-
-        // Remember to which leaf node does the light belong.
-        m_light_sources[light_source_index]->set_tree_index(node_index);
     }
 
     if (node_index == 0)

@@ -93,11 +93,6 @@ int NonPhysicalLightSource::get_type() const
     return LightSource::NonPhysicalLightType;
 }
 
-void NonPhysicalLightSource::set_tree_index(const size_t node_index) const
-{
-    m_light_info->m_light_tree_node_index = node_index;
-}
-
 //
 // EmittingTriangleLightSource class implementation.
 //
@@ -135,11 +130,6 @@ float EmittingTriangleLightSource::get_importance() const
 int EmittingTriangleLightSource::get_type() const
 {
     return LightSource::EmittingTriangleType;
-}
-
-void EmittingTriangleLightSource::set_tree_index(const size_t node_index) const
-{
-    m_triangle->m_light_tree_node_index = node_index;
 }
 
 }   // namespace renderer

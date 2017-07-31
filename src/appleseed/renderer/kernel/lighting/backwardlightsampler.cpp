@@ -87,13 +87,23 @@ BackwardLightSampler::BackwardLightSampler(
     if (m_non_physical_lights_cdf.valid())
         m_non_physical_lights_cdf.prepare();
 
-    // Build the light tree.
-    m_light_tree_light_count = m_use_light_tree
-        ? m_light_tree.build(m_light_tree_lights, m_emitting_triangles)
-        : 0;
+    if (m_use_light_tree)
+    {
+        // Build the light tree.
+        m_light_tree_light_count = m_light_tree.build(
+            m_light_tree_lights,
+            m_emitting_triangles);
+
+        // TODO: Reconsider if there is a better way and a better name!
+        // Update information about emitting triangle position in the light tree.
+        const vector<size_t> triangles_in_tree_LUT = m_light_tree.get_triangle_LUT();
+        for (size_t i = 0, e = triangles_in_tree_LUT.size(); i < e; ++i)
+            m_emitting_triangles[i].m_light_tree_node_index = triangles_in_tree_LUT[i];
+    }
 
     if (!m_use_light_tree)
     {
+        m_light_tree_light_count = 0;
         if (m_emitting_triangles_cdf.valid())
             m_emitting_triangles_cdf.prepare();
 

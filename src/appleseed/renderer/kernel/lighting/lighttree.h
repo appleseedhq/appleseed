@@ -70,8 +70,8 @@ class LightTree
 
     // Build the tree based on the lights collected by the BackwardLightSampler.
     size_t build(
-        std::vector<NonPhysicalLightInfo>&  non_physical_lights,
-        std::vector<EmittingTriangle>&      emitting_triangles);
+        std::vector<NonPhysicalLightInfo>&    non_physical_lights,
+        std::vector<EmittingTriangle>&        emitting_triangles);
     
     void sample(
         const foundation::Vector3d&         surface_point,
@@ -85,6 +85,8 @@ class LightTree
     float evaluate_node_pdf(
         const foundation::Vector3d&         surface_point,
         const size_t                        node_index) const;
+
+    const std::vector<size_t>& get_triangle_LUT() const;
 
   private:
     struct Item
@@ -123,6 +125,7 @@ class LightTree
 
     NonPhysicalLightVector                          m_non_physical_lights;
     EmittingTriangleVector                          m_emitting_triangles;
+    std::vector<size_t>                             m_triangles_in_tree_LUT;
     LightSourcePointerVector                        m_light_sources;
     ItemVector                                      m_items;
     size_t                                          m_tree_depth;
