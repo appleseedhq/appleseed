@@ -103,6 +103,8 @@ class MainWindow
     ProjectManager* get_project_manager();
     renderer::ParamArray& get_settings();
 
+    QDockWidget* create_dock_widget(const char* dock_name);
+
   signals:
     void signal_refresh_attribute_editor(const foundation::Dictionary& values) const;
 

@@ -313,6 +313,35 @@ ParamArray& MainWindow::get_settings()
     return m_settings;
 }
 
+QDockWidget* MainWindow::create_dock_widget(const char* dock_name)
+{
+    QDockWidget* dock_widget = new QDockWidget(this);
+
+    const QString object_name = QString(dock_name).toLower().split(' ').join("_");
+    dock_widget->setObjectName(object_name);
+    dock_widget->setWindowTitle(dock_name);
+
+
+    const QList<QAction*>& actions = m_ui->menu_view->actions();
+    QAction* menu_separator = actions.last();
+    for (size_t i = (size_t) actions.size() - 2; i != 0; --i)
+        if (actions[i]->isSeparator())
+        {
+            menu_separator = actions[i];
+            break;
+        }
+
+    m_ui->menu_view->insertAction(menu_separator,
+                                  dock_widget->toggleViewAction());
+
+    m_minimize_buttons.push_back(new MinimizeButton(dock_widget));
+    statusBar()->insertPermanentWidget(
+        static_cast<int>(m_minimize_buttons.size()),
+        m_minimize_buttons.back());
+
+    return dock_widget;
+}
+
 void MainWindow::build_menus()
 {
     //
