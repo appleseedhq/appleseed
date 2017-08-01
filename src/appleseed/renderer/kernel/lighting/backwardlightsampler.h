@@ -131,7 +131,7 @@ class BackwardLightSampler
     EmittingTriangleKeyHasher   m_triangle_key_hasher;
     EmittingTriangleHashTable   m_emitting_triangle_hash_table;
 
-    LightTree                   m_light_tree;
+    std::unique_ptr<LightTree>  m_light_tree;
 
     bool                        m_use_light_tree;
 

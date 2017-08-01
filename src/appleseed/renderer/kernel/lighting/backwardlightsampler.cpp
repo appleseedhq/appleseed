@@ -64,6 +64,7 @@ BackwardLightSampler::BackwardLightSampler(
     const ParamArray&                   params)
   : m_params(params)
   , m_emitting_triangle_hash_table(m_triangle_key_hasher)
+  , m_light_tree(nullptr)
 {
     // Read which sampling algorithm should the sampler use.
     m_use_light_tree = params.get_optional<string>("algorithm", "cdf") == "lighttree";
@@ -89,19 +90,16 @@ BackwardLightSampler::BackwardLightSampler(
 
     if (m_use_light_tree)
     {
-        // Build the light tree.
-        m_light_tree_light_count = m_light_tree.build(
-            m_light_tree_lights,
-            m_emitting_triangles);
-
+        // Initialize and build the LightTree only after the lights are collected.
+        m_light_tree.reset(new LightTree(m_light_tree_lights, m_emitting_triangles));
+        
         // TODO: Reconsider if there is a better way and a better name!
         // Update information about emitting triangle position in the light tree.
-        const vector<size_t> triangles_in_tree_LUT = m_light_tree.get_triangle_LUT();
-        for (size_t i = 0, e = triangles_in_tree_LUT.size(); i < e; ++i)
-            m_emitting_triangles[i].m_light_tree_node_index = triangles_in_tree_LUT[i];
+        const vector<size_t>& triangles_in_tree_lut = m_light_tree->get_triangle_lut();
+        for (size_t i = 0, e = triangles_in_tree_lut.size(); i < e; ++i)
+            m_emitting_triangles[i].m_light_tree_node_index = triangles_in_tree_lut[i];
     }
-
-    if (!m_use_light_tree)
+    else
     {
         m_light_tree_light_count = 0;
         if (m_emitting_triangles_cdf.valid())
@@ -117,7 +115,7 @@ BackwardLightSampler::BackwardLightSampler(
         "found %s %s, %s %s, %s emitting %s.",
         pretty_int(m_non_physical_light_count).c_str(),
         plural(m_non_physical_light_count, "non-physical light").c_str(),
-        pretty_int(m_light_tree_light_count).c_str(),
+        pretty_int(m_light_tree_lights.size() + m_emitting_triangles.size()).c_str(),
         plural(m_light_tree_light_count, "light-tree compatible light").c_str(),
         pretty_int(m_emitting_triangles.size()).c_str(),
         plural(m_emitting_triangles.size(), "triangle").c_str());
@@ -181,7 +179,7 @@ float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point) cons
     if (m_use_light_tree)
     {
         const float triangle_probability =
-            m_light_tree.evaluate_node_pdf(
+            m_light_tree->evaluate_node_pdf(
                 shading_point.get_ray().m_org,
                 triangle->m_light_tree_node_index);
 
@@ -539,7 +537,7 @@ void BackwardLightSampler::sample_light_tree(
     int light_type;
     size_t light_index;
     float light_prob;
-    m_light_tree.sample(
+    m_light_tree->sample(
         shading_point.get_point(),
         s[0],
         light_type,
