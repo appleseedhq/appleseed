@@ -44,6 +44,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <memory>
 #include <vector>
 
 // Forward declarations.

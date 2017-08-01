@@ -64,7 +64,6 @@ BackwardLightSampler::BackwardLightSampler(
     const ParamArray&                   params)
   : m_params(params)
   , m_emitting_triangle_hash_table(m_triangle_key_hasher)
-  , m_light_tree(nullptr)
 {
     // Read which sampling algorithm should the sampler use.
     m_use_light_tree = params.get_optional<string>("algorithm", "cdf") == "lighttree";
@@ -534,7 +533,7 @@ void BackwardLightSampler::sample_light_tree(
 {
     assert(has_lightset());
 
-    int light_type;
+    LightType light_type;
     size_t light_index;
     float light_prob;
     m_light_tree->sample(

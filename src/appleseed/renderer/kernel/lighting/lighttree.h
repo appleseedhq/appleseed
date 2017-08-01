@@ -70,7 +70,7 @@ class LightTree
     void sample(
         const foundation::Vector3d&             surface_point,
         const float                             s,
-        int&                                    light_type,
+        LightType&                             light_type,
         size_t&                                 light_index,
         float&                                  light_probability) const;
 
@@ -87,7 +87,7 @@ class LightTree
     {
         foundation::AABB3d      m_bbox;
         size_t                  m_light_index;
-        int                     m_light_type;
+        LightType              m_light_type;
 
         Item() {}
 
@@ -98,7 +98,7 @@ class LightTree
         Item(
             const foundation::AABB3d&       bbox,
             const size_t                    light_index,
-            const int                       light_type) 
+            const LightType                light_type) 
             : m_bbox(bbox)
             , m_light_index(light_index)
             , m_light_type(light_type)

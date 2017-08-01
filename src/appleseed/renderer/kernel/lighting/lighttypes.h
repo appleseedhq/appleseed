@@ -45,7 +45,7 @@ namespace renderer  { class Material; }
 namespace renderer
 {
 
-enum LightTypes
+enum LightType
 {
     NonPhysicalLightType = 0,
     EmittingTriangleType = 1
