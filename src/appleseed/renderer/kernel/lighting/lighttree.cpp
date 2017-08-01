@@ -66,6 +66,10 @@ LightTree::LightTree(
   , m_non_physical_lights(non_physical_lights)
   , m_emitting_triangles(emitting_triangles)
 {
+}
+
+vector<size_t> LightTree::build()
+{
     AABBVector light_bboxes;
 
     // Collect non-physical light sources.
@@ -133,19 +137,25 @@ LightTree::LightTree(
             ordering.size());
 
         // Set total node importance and level for each node of the LightTree.
-        m_triangles_in_tree_lut.resize(m_emitting_triangles.size());
-        recursive_node_update(0, 0, 0);
+        IndexLUT tri_index_to_node_index;
+        tri_index_to_node_index.resize(m_emitting_triangles.size());
+        recursive_node_update(0, 0, 0, tri_index_to_node_index);
+
+        // Print light tree statistics.
+        Statistics statistics;
+        statistics.insert("nodes", m_nodes.size());
+        statistics.insert("max tree depth", m_tree_depth);
+        statistics.insert_time("total build time", builder.get_build_time());
+        RENDERER_LOG_INFO("%s",
+            StatisticsVector::make(
+                "light tree statistics",
+                statistics).to_string().c_str());
+        
+        return move(tri_index_to_node_index);
     }
 
-    // Print light tree statistics.
-    Statistics statistics;
-    statistics.insert("nodes", m_nodes.size());
-    statistics.insert("max tree depth", m_tree_depth);
-    statistics.insert_time("total build time", builder.get_build_time());
-    RENDERER_LOG_INFO("%s",
-        StatisticsVector::make(
-            "light tree statistics",
-            statistics).to_string().c_str());
+    RENDERER_LOG_INFO("light tree not built - no light tree compatible lights in the scene.");
+    return move(IndexLUT({}));
 }
 
 bool LightTree::is_built() const
@@ -153,15 +163,11 @@ bool LightTree::is_built() const
     return m_is_built;
 }
 
-const vector<size_t>& LightTree::get_triangle_lut() const
-{
-    return m_triangles_in_tree_lut;
-}
-
 float LightTree::recursive_node_update(
     const size_t    parent_index,
     const size_t    node_index, 
-    const size_t    node_level)
+    const size_t    node_level,
+    IndexLUT&       tri_index_to_node_index)
 {
     float importance = 0.0f;
 
@@ -170,8 +176,8 @@ float LightTree::recursive_node_update(
         const auto& child1 = m_nodes[node_index].get_child_node_index();
         const auto& child2 = m_nodes[node_index].get_child_node_index() + 1;
 
-        const float importance1 = recursive_node_update(node_index, child1, node_level + 1);
-        const float importance2 = recursive_node_update(node_index, child2, node_level + 1);
+        const float importance1 = recursive_node_update(node_index, child1, node_level + 1, tri_index_to_node_index);
+        const float importance2 = recursive_node_update(node_index, child2, node_level + 1, tri_index_to_node_index);
 
         importance = importance1 + importance2;
     }
@@ -201,7 +207,7 @@ float LightTree::recursive_node_update(
             importance = edf->get_uncached_max_contribution() * edf->get_uncached_importance_multiplier();
     
             // Save the index of the light tree node containing the EMT in the look up table.
-            m_triangles_in_tree_lut[light_index] = node_index;
+            tri_index_to_node_index[light_index] = node_index;
         }
 
         // Keep track of the tree depth.

@@ -65,12 +65,14 @@ class LightTree
         const std::vector<NonPhysicalLightInfo>&      non_physical_lights,
         const std::vector<EmittingTriangle>&          emitting_triangles);
 
+    std::vector<size_t> build();
+
     bool is_built() const;
 
     void sample(
         const foundation::Vector3d&             surface_point,
         const float                             s,
-        LightType&                             light_type,
+        LightType&                              light_type,
         size_t&                                 light_index,
         float&                                  light_probability) const;
 
@@ -80,14 +82,12 @@ class LightTree
         const foundation::Vector3d&             surface_point,
         const size_t                            node_index) const;
 
-    const std::vector<size_t>& get_triangle_lut() const;
-
   private:
     struct Item
     {
         foundation::AABB3d      m_bbox;
         size_t                  m_light_index;
-        LightType              m_light_type;
+        LightType               m_light_type;
 
         Item() {}
 
@@ -98,7 +98,7 @@ class LightTree
         Item(
             const foundation::AABB3d&       bbox,
             const size_t                    light_index,
-            const LightType                light_type) 
+            const LightType                 light_type) 
             : m_bbox(bbox)
             , m_light_index(light_index)
             , m_light_type(light_type)
@@ -113,7 +113,6 @@ class LightTree
 
     const NonPhysicalLightVector&                   m_non_physical_lights;
     const EmittingTriangleVector&                   m_emitting_triangles;
-    IndexLUT                                        m_triangles_in_tree_lut;
     ItemVector                                      m_items;
     size_t                                          m_tree_depth;
     bool                                            m_is_built;
@@ -124,7 +123,8 @@ class LightTree
     float recursive_node_update(
         const size_t                                parent_index,
         const size_t                                node_index, 
-        const size_t                                node_level);
+        const size_t                                node_level,
+        IndexLUT&                                   tri_index_to_node_index);
     
     float compute_node_probability(
         const LightTreeNode<foundation::AABB3d>&    node,

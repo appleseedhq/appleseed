@@ -89,18 +89,19 @@ BackwardLightSampler::BackwardLightSampler(
 
     if (m_use_light_tree)
     {
-        // Initialize and build the LightTree only after the lights are collected.
+        // Initialize the LightTree only after the lights are collected.
         m_light_tree.reset(new LightTree(m_light_tree_lights, m_emitting_triangles));
         
-        // TODO: Reconsider if there is a better way and a better name!
-        // Update information about emitting triangle position in the light tree.
-        const vector<size_t>& triangles_in_tree_lut = m_light_tree->get_triangle_lut();
-        for (size_t i = 0, e = triangles_in_tree_lut.size(); i < e; ++i)
-            m_emitting_triangles[i].m_light_tree_node_index = triangles_in_tree_lut[i];
+        const vector<size_t>& tri_index_to_node_index = m_light_tree->build();
+        if (has_hittable_lights())
+        {
+            // Update information about emitting triangle position within the light tree.
+            for (size_t i = 0, e = tri_index_to_node_index.size(); i < e; ++i)
+                m_emitting_triangles[i].m_light_tree_node_index = tri_index_to_node_index[i];
+        }
     }
     else
     {
-        m_light_tree_light_count = 0;
         if (m_emitting_triangles_cdf.valid())
             m_emitting_triangles_cdf.prepare();
 
@@ -115,7 +116,7 @@ BackwardLightSampler::BackwardLightSampler(
         pretty_int(m_non_physical_light_count).c_str(),
         plural(m_non_physical_light_count, "non-physical light").c_str(),
         pretty_int(m_light_tree_lights.size() + m_emitting_triangles.size()).c_str(),
-        plural(m_light_tree_light_count, "light-tree compatible light").c_str(),
+        plural(m_light_tree_lights.size() + m_emitting_triangles.size(), "light-tree compatible light").c_str(),
         pretty_int(m_emitting_triangles.size()).c_str(),
         plural(m_emitting_triangles.size(), "triangle").c_str());
 }
