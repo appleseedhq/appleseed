@@ -111,9 +111,9 @@ bpy::long_ main_window_as_pylong()
     return bpy::long_(ptr);
 }
 
-bpy::long_ create_dock(const char* dock_name)
+bpy::long_ create_dock_widget(const char* dock_name)
 {
-    QDockWidget* dock_widget = main_window()->create_dock(dock_name);
+    QDockWidget* dock_widget = main_window()->create_dock_widget(dock_name);
 
     const uintptr_t ptr = binary_cast<uintptr_t>(dock_widget);
     return bpy::long_(ptr);
@@ -133,5 +133,5 @@ BOOST_PYTHON_MODULE(_appleseedstudio)
     bpy::def("is_project_dirty", is_project_dirty);
 
     bpy::def("main_window", main_window_as_pylong);
-    bpy::def("create_dock", create_dock, bpy::args("dock_name"));
+    bpy::def("create_dock_widget", create_dock_widget, bpy::args("dock_name"));
 }
