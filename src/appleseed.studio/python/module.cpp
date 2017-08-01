@@ -28,14 +28,15 @@
 
 // appleseed.studio headers.
 #include "mainwindow/mainwindow.h"
+#include "mainwindow/minimizebutton.h"
 #include "python/pythoninterpreter.h"
-
-// appleseed.renderer headers.
-#include "renderer/api/project.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/platform/python.h"
+
+// Qt headers.
+#include <QDockWidget>
 
 namespace bpy = boost::python;
 using namespace appleseed::studio;
@@ -110,6 +111,14 @@ bpy::long_ main_window_as_pylong()
     return bpy::long_(ptr);
 }
 
+bpy::long_ create_dock(const char* dock_name)
+{
+    QDockWidget* dock_widget = main_window()->create_dock(dock_name);
+
+    const uintptr_t ptr = binary_cast<uintptr_t>(dock_widget);
+    return bpy::long_(ptr);
+}
+
 BOOST_PYTHON_MODULE(_appleseedstudio)
 {
     bpy::def("new_project", new_project);
@@ -124,4 +133,5 @@ BOOST_PYTHON_MODULE(_appleseedstudio)
     bpy::def("is_project_dirty", is_project_dirty);
 
     bpy::def("main_window", main_window_as_pylong);
+    bpy::def("create_dock", create_dock, bpy::args("dock_name"));
 }

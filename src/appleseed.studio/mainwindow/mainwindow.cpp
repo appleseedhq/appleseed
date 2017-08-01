@@ -313,6 +313,28 @@ ParamArray& MainWindow::get_settings()
     return m_settings;
 }
 
+QDockWidget* MainWindow::create_dock(const char* dock_name)
+{
+    QDockWidget* dock_widget = new QDockWidget(this);
+
+    QString object_name = QString(dock_name).toLower().split(' ').join("_");
+    dock_widget->setObjectName(object_name);
+    dock_widget->setWindowTitle(dock_name);
+    dock_widget->setAllowedAreas(Qt::BottomDockWidgetArea);
+
+    addDockWidget(Qt::BottomDockWidgetArea, dock_widget);
+    dock_widget->hide();
+
+    m_ui->menu_view->addAction(dock_widget->toggleViewAction());
+
+    m_minimize_buttons.push_back(new MinimizeButton(dock_widget));
+    statusBar()->insertPermanentWidget(
+        static_cast<int>(m_minimize_buttons.size()),
+        m_minimize_buttons.back());
+
+    return dock_widget;
+}
+
 void MainWindow::build_menus()
 {
     //
