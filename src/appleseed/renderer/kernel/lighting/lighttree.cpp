@@ -61,10 +61,10 @@ namespace renderer
 LightTree::LightTree(
     const vector<NonPhysicalLightInfo>&      non_physical_lights,
     const vector<EmittingTriangle>&          emitting_triangles)
-  : m_tree_depth(0)
-  , m_is_built(false)
-  , m_non_physical_lights(non_physical_lights)
+  : m_non_physical_lights(non_physical_lights)
   , m_emitting_triangles(emitting_triangles)
+  , m_tree_depth(0)
+  , m_is_built(false)
 {
 }
 
@@ -84,7 +84,7 @@ vector<size_t> LightTree::build()
 
         // Non physical light has no real size - hence some arbitrary small 
         // value is assigned.
-        constexpr float BboxSize = 0.001;
+        constexpr double BboxSize = 0.001f;
         const AABB3d bbox = AABB3d(Vector3d(position[0] - BboxSize,
                                             position[1] - BboxSize,
                                             position[2] - BboxSize),
@@ -228,7 +228,7 @@ float LightTree::recursive_node_update(
 void LightTree::sample(
     const Vector3d&     surface_point,
     float               s,
-    LightType&         light_type,
+    LightType&          light_type,
     size_t&             light_index,
     float&              light_probability) const
 {
