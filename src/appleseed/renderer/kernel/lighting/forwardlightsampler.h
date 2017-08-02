@@ -38,7 +38,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/cdf.h"
 
 // Standard headers.
 #include <cstddef>
@@ -64,9 +63,6 @@ class ForwardLightSampler
         const Scene&                        scene,
         const ParamArray&                   params = ParamArray());
 
-    // Return the number of emitting triangles in the scene.
-    size_t get_emitting_triangle_count() const;
-
     // Return true if the scene contains at least one light or emitting triangle.
     bool has_lights() const;
 
@@ -88,11 +84,6 @@ class ForwardLightSampler
 //
 // ForwardLightSampler class implementation.
 //
-
-inline size_t ForwardLightSampler::get_emitting_triangle_count() const
-{
-    return m_emitting_triangles.size();
-}
 
 inline bool ForwardLightSampler::has_lights() const
 {

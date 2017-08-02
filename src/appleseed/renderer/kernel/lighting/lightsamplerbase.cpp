@@ -30,9 +30,11 @@
 #include "lightsamplerbase.h"
 
 // appleseed.renderer headers
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
+#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
@@ -144,8 +146,6 @@ void LightSamplerBase::collect_emitting_triangles(
         if (!has_emitting_materials(front_materials) && !has_emitting_materials(back_materials))
             continue;
 
-        double object_area = 0.0;
-
         // Compute the object space to world space transformation.
         // todo: add support for moving light-emitters.
         const Transformd& object_instance_transform = object_instance->get_transform();
@@ -158,6 +158,7 @@ void LightSamplerBase::collect_emitting_triangles(
         // Retrieve the region kit of the object.
         Access<RegionKit> region_kit(&object.get_region_kit());
 
+        double object_area = 0.0;
         // Loop over the regions of the object.
         const size_t region_count = region_kit->size();
         for (size_t region_index = 0; region_index < region_count; ++region_index)
@@ -474,3 +475,4 @@ LightSamplerBase::Parameters::Parameters(const ParamArray& params)
 }
 
 }   // namespace renderer
+

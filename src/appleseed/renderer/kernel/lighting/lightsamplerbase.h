@@ -59,7 +59,7 @@ class LightSamplerBase
 {
   public:
     // Constructor.
-    LightSamplerBase(const ParamArray& params = ParamArray());
+    explicit LightSamplerBase(const ParamArray& params);
 
     // Return the number of non-physical lights in the scene.
     size_t get_non_physical_light_count() const;
@@ -79,25 +79,25 @@ class LightSamplerBase
         explicit Parameters(const ParamArray& params);
     };
 
-    const Parameters            m_params;
-
     typedef std::vector<NonPhysicalLightInfo>   NonPhysicalLightVector;
     typedef std::vector<EmittingTriangle>       EmittingTriangleVector;
     typedef foundation::CDF<size_t, float>      EmitterCDF;
 
-    NonPhysicalLightVector      m_light_tree_lights;
-    NonPhysicalLightVector      m_non_physical_lights;
-    EmittingTriangleVector      m_emitting_triangles;
-    
-    size_t                      m_non_physical_light_count;
-    
-    EmitterCDF                  m_non_physical_lights_cdf;
-    EmitterCDF                  m_emitting_triangles_cdf;
+    const Parameters                        m_params;
 
-    EmittingTriangleKeyHasher   m_triangle_key_hasher;
-    EmittingTriangleHashTable   m_emitting_triangle_hash_table;
+    NonPhysicalLightVector                  m_light_tree_lights;
+    NonPhysicalLightVector                  m_non_physical_lights;
+    EmittingTriangleVector                  m_emitting_triangles;
+    
+    size_t                                  m_non_physical_light_count;
+    
+    EmitterCDF                              m_non_physical_lights_cdf;
+    EmitterCDF                              m_emitting_triangles_cdf;
 
-    bool                        m_use_light_tree;
+    EmittingTriangleKeyHasher               m_triangle_key_hasher;
+    EmittingTriangleHashTable               m_emitting_triangle_hash_table;
+
+    bool                                    m_use_light_tree;
 
     // Build a hash table that allows to find the emitting triangle at a given shading point.
     void build_emitting_triangle_hash_table();
@@ -153,7 +153,6 @@ inline size_t LightSamplerBase::get_non_physical_light_count() const
 {
     return m_non_physical_light_count;
 }
-
 
 }       // namespace renderer
 

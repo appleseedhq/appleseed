@@ -30,14 +30,12 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTREE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/lighttree_node.h"
 #include "renderer/kernel/lighting/lighttypes.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
-#include "foundation/math/cdf.h"
 #include "foundation/utility/alignedvector.h"
 #include "foundation/utility/statistics.h"
 

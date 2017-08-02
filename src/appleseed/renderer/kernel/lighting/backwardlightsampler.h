@@ -39,7 +39,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/cdf.h"
 
 // Standard headers.
 #include <cstddef>
@@ -91,8 +90,8 @@ class BackwardLightSampler
     static foundation::Dictionary get_params_metadata();
 
   private:
-    size_t                      m_light_tree_light_count;
-    std::unique_ptr<LightTree>  m_light_tree;
+    size_t                                  m_light_tree_light_count;
+    std::unique_ptr<LightTree>              m_light_tree;
 
     void sample_light_tree(
         const ShadingRay::Time&             time,
