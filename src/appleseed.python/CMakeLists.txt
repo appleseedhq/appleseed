@@ -169,11 +169,11 @@ target_link_libraries (appleseed.python
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
 
-add_copy_target_to_sandbox_py_module_command (appleseed.python)
-add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/appleseed/__init__.py)
-add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/appleseed/logtarget.py)
-add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/studio/studio.py)
-add_copy_dir_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/appleseed/test)
+add_copy_target_to_sandbox_py_module_command (appleseed.python appleseed)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/appleseed/__init__.py appleseed)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/appleseed/logtarget.py appleseed)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/studio/studio.py studio)
+add_copy_dir_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/appleseed/test appleseed)
 
 
 #--------------------------------------------------------------------------------------------------
