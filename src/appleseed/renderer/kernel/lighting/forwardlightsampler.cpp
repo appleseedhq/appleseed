@@ -55,7 +55,6 @@ namespace renderer
 
 ForwardLightSampler::ForwardLightSampler(const Scene& scene, const ParamArray& params)
   : LightSamplerBase(params)
-  , m_emitting_triangle_hash_table(m_triangle_key_hasher)
 {
     RENDERER_LOG_INFO("collecting light emitters...");
 
@@ -121,27 +120,6 @@ void ForwardLightSampler::sample(
         else sample_non_physical_lights(time, s, light_sample);
     }
     else sample_emitting_triangles(time, s, light_sample);
-}
-
-void ForwardLightSampler::build_emitting_triangle_hash_table()
-{
-    const size_t emitting_triangle_count = m_emitting_triangles.size();
-
-    m_emitting_triangle_hash_table.resize(
-        emitting_triangle_count > 0 ? next_pow2(emitting_triangle_count) : 0);
-
-    for (size_t i = 0; i < emitting_triangle_count; ++i)
-    {
-        const EmittingTriangle& emitting_triangle = m_emitting_triangles[i];
-
-        const EmittingTriangleKey emitting_triangle_key(
-            emitting_triangle.m_assembly_instance->get_uid(),
-            emitting_triangle.m_object_instance_index,
-            emitting_triangle.m_region_index,
-            emitting_triangle.m_triangle_index);
-
-        m_emitting_triangle_hash_table.insert(emitting_triangle_key, &emitting_triangle);
-    }
 }
 
 void ForwardLightSampler::sample_non_physical_lights(

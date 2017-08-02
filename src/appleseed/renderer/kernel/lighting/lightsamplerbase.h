@@ -30,6 +30,7 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTSAMPLERBASE_H
 
 // appleseed.renderer headers.
+#include "renderer/kernel/lighting/lightsample.h"
 #include "renderer/kernel/lighting/lighttypes.h"
 #include "renderer/modeling/scene/containers.h"
 
@@ -85,8 +86,14 @@ class LightSamplerBase
     EmitterCDF                  m_non_physical_lights_cdf;
     EmitterCDF                  m_emitting_triangles_cdf;
 
+    EmittingTriangleKeyHasher   m_triangle_key_hasher;
+    EmittingTriangleHashTable   m_emitting_triangle_hash_table;
+
     bool                        m_use_light_tree;
 
+    // Build a hash table that allows to find the emitting triangle at a given shading point.
+    void build_emitting_triangle_hash_table();
+    
     // Recursively collect emitting triangles from a given set of assembly instances.
     void collect_emitting_triangles(
         const AssemblyInstanceContainer&    assembly_instances,

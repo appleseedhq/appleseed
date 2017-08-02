@@ -39,8 +39,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/cdf.h"
-#include "foundation/math/hash.h"
-#include "foundation/utility/containers/hashtable.h"
 
 // Standard headers.
 #include <cstddef>
@@ -85,12 +83,6 @@ class ForwardLightSampler
         LightSample&                        light_sample) const;
 
   private:
-    EmittingTriangleKeyHasher               m_triangle_key_hasher;
-    EmittingTriangleHashTable               m_emitting_triangle_hash_table;
-
-    // Build a hash table that allows to find the emitting triangle at a given shading point.
-    void build_emitting_triangle_hash_table();
-
     // Sample the set of non-physical lights.
     void sample_non_physical_lights(
         const ShadingRay::Time&             time,

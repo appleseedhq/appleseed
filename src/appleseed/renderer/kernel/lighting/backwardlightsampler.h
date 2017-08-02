@@ -40,8 +40,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/cdf.h"
-#include "foundation/math/hash.h"
-#include "foundation/utility/containers/hashtable.h"
 
 // Standard headers.
 #include <cstddef>
@@ -101,15 +99,7 @@ class BackwardLightSampler
   private:
     size_t                      m_light_tree_light_count;
 
-    EmittingTriangleKeyHasher   m_triangle_key_hasher;
-    EmittingTriangleHashTable   m_emitting_triangle_hash_table;
-
     std::unique_ptr<LightTree>  m_light_tree;
-
-    bool                        m_use_light_tree;
-
-    // Build a hash table that allows to find the emitting triangle at a given shading point.
-    void build_emitting_triangle_hash_table();
 
     void sample_light_tree(
         const ShadingRay::Time&             time,

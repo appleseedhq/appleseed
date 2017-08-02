@@ -46,9 +46,31 @@ namespace renderer
 
 LightSamplerBase::LightSamplerBase(const ParamArray& params)
   : m_params(params)
+  , m_emitting_triangle_hash_table(m_triangle_key_hasher)
   , m_use_light_tree(false)
   {
   }
+
+void LightSamplerBase::build_emitting_triangle_hash_table()
+{
+    const size_t emitting_triangle_count = m_emitting_triangles.size();
+
+    m_emitting_triangle_hash_table.resize(
+        emitting_triangle_count > 0 ? next_pow2(emitting_triangle_count) : 0);
+
+    for (size_t i = 0; i < emitting_triangle_count; ++i)
+    {
+        const EmittingTriangle& emitting_triangle = m_emitting_triangles[i];
+
+        const EmittingTriangleKey emitting_triangle_key(
+            emitting_triangle.m_assembly_instance->get_uid(),
+            emitting_triangle.m_object_instance_index,
+            emitting_triangle.m_region_index,
+            emitting_triangle.m_triangle_index);
+
+        m_emitting_triangle_hash_table.insert(emitting_triangle_key, &emitting_triangle);
+    }
+}
 
 void LightSamplerBase::collect_emitting_triangles(
     const AssemblyInstanceContainer&    assembly_instances,
