@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/lightsample.h"
 #include "renderer/kernel/lighting/lighttypes.h"
+#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.
@@ -93,7 +94,7 @@ class LightSamplerBase
 
     // Build a hash table that allows to find the emitting triangle at a given shading point.
     void build_emitting_triangle_hash_table();
-    
+
     // Recursively collect emitting triangles from a given set of assembly instances.
     void collect_emitting_triangles(
         const AssemblyInstanceContainer&    assembly_instances,
@@ -120,6 +121,20 @@ class LightSamplerBase
         const ObjectInstance*               object_instance,
         const float                         object_area,
         const MaterialArray&                materials);
+
+    // Sample a given emitting triangle.
+    void sample_emitting_triangle(
+        const ShadingRay::Time&             time,
+        const foundation::Vector2f&         s,
+        const size_t                        triangle_index,
+        const float                         triangle_prob,
+        LightSample&                        sample) const;
+    
+    // Sample the set of emitting triangles.
+    void sample_emitting_triangles(
+        const ShadingRay::Time&             time,
+        const foundation::Vector3f&         s,
+        LightSample&                        light_sample) const;
 };
 
 

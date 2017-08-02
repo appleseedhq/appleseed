@@ -95,20 +95,6 @@ class ForwardLightSampler
         const size_t                        light_index,
         const float                         light_prob,
         LightSample&                        sample) const;
-
-    // Sample the set of emitting triangles.
-    void sample_emitting_triangles(
-        const ShadingRay::Time&             time,
-        const foundation::Vector3f&         s,
-        LightSample&                        light_sample) const;
-
-    // Sample a given emitting triangle.
-    void sample_emitting_triangle(
-        const ShadingRay::Time&             time,
-        const foundation::Vector2f&         s,
-        const size_t                        triangle_index,
-        const float                         triangle_prob,
-        LightSample&                        sample) const;
 };
 
 

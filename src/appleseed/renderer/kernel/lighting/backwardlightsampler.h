@@ -106,18 +106,6 @@ class BackwardLightSampler
         const foundation::Vector3f&         s,
         const ShadingPoint&                 shading_point,
         LightSample&                        light_sample) const;
-
-    void sample_emitting_triangles(
-        const ShadingRay::Time&             time,
-        const foundation::Vector3f&         s,
-        LightSample&                        light_sample) const;
-
-    void sample_emitting_triangle(
-        const ShadingRay::Time&             time,
-        const foundation::Vector2f&         s,
-        const size_t                        triangle_index,
-        const float                         triangle_prob,
-        LightSample&                        sample) const;
 };
 
 

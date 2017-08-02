@@ -36,9 +36,6 @@
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/scene.h"
 
-// appleseed.foundation headers.
-#include "foundation/math/sampling/mappings.h"
-
 // Standard headers.
 #include <cassert>
 #include <string>
@@ -161,70 +158,6 @@ void ForwardLightSampler::sample_non_physical_light(
 
     // Store the probability density of this light.
     light_sample.m_probability = light_prob;
-}
-
-void ForwardLightSampler::sample_emitting_triangles(
-    const ShadingRay::Time&             time,
-    const Vector3f&                     s,
-    LightSample&                        light_sample) const
-{
-    assert(m_emitting_triangles_cdf.valid());
-
-    const EmitterCDF::ItemWeightPair result = m_emitting_triangles_cdf.sample(s[0]);
-    const size_t emitter_index = result.first;
-    const float emitter_prob = result.second;
-
-    light_sample.m_light = 0;
-    sample_emitting_triangle(
-        time,
-        Vector2f(s[1], s[2]),
-        emitter_index,
-        emitter_prob,
-        light_sample);
-
-    assert(light_sample.m_triangle);
-    assert(light_sample.m_probability > 0.0f);
-}
-
-void ForwardLightSampler::sample_emitting_triangle(
-    const ShadingRay::Time&             time,
-    const Vector2f&                     s,
-    const size_t                        triangle_index,
-    const float                         triangle_prob,
-    LightSample&                        light_sample) const
-{
-    // Fetch the emitting triangle.
-    const EmittingTriangle& emitting_triangle = m_emitting_triangles[triangle_index];
-    assert(emitting_triangle.m_triangle_prob == triangle_prob);
-
-    // Store a pointer to the emitting triangle.
-    light_sample.m_triangle = &emitting_triangle;
-
-    // Uniformly sample the surface of the triangle.
-    const Vector3d bary = sample_triangle_uniform(Vector2d(s));
-
-    // Set the barycentric coordinates.
-    light_sample.m_bary[0] = static_cast<float>(bary[0]);
-    light_sample.m_bary[1] = static_cast<float>(bary[1]);
-
-    // Compute the world space position of the sample.
-    light_sample.m_point =
-          bary[0] * emitting_triangle.m_v0
-        + bary[1] * emitting_triangle.m_v1
-        + bary[2] * emitting_triangle.m_v2;
-
-    // Compute the world space shading normal at the position of the sample.
-    light_sample.m_shading_normal =
-          bary[0] * emitting_triangle.m_n0
-        + bary[1] * emitting_triangle.m_n1
-        + bary[2] * emitting_triangle.m_n2;
-    light_sample.m_shading_normal = normalize(light_sample.m_shading_normal);
-
-    // Set the world space geometric normal.
-    light_sample.m_geometric_normal = emitting_triangle.m_geometric_normal;
-
-    // Compute the probability density of this sample.
-    light_sample.m_probability = triangle_prob * emitting_triangle.m_rcp_area;
 }
 
 }   // namespace renderer
