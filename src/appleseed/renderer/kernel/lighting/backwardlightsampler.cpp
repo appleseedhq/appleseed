@@ -92,7 +92,7 @@ BackwardLightSampler::BackwardLightSampler(
         // Initialize the LightTree only after the lights are collected.
         m_light_tree.reset(new LightTree(m_light_tree_lights, m_emitting_triangles));
         
-        const vector<size_t>& tri_index_to_node_index = m_light_tree->build();
+        const vector<size_t> tri_index_to_node_index = m_light_tree->build();
         if (has_hittable_lights())
         {
             // Update information about emitting triangle position within the light tree.

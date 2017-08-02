@@ -151,11 +151,11 @@ vector<size_t> LightTree::build()
                 "light tree statistics",
                 statistics).to_string().c_str());
         
-        return move(tri_index_to_node_index);
+        return tri_index_to_node_index;
     }
 
     RENDERER_LOG_INFO("light tree not built - no light tree compatible lights in the scene.");
-    return move(IndexLUT({}));
+    return {};
 }
 
 bool LightTree::is_built() const
