@@ -164,6 +164,7 @@ add_copy_target_to_sandbox_py_module_command (appleseed.python appleseed)
 add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/appleseed/__init__.py appleseed)
 add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/appleseed/logtarget.py appleseed)
 add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/appleseed/studio/__init__.py appleseed.studio)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/appleseed/studio/Qt.py appleseed.studio)
 add_copy_dir_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/appleseed/test appleseed)
 
 
