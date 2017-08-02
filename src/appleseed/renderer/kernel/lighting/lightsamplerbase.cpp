@@ -54,6 +54,25 @@ LightSamplerBase::LightSamplerBase(const ParamArray& params)
   {
   }
 
+void LightSamplerBase::sample_non_physical_light(
+    const ShadingRay::Time&             time,
+    const size_t                        light_index,
+    LightSample&                        light_sample,
+    const float                         light_prob) const
+{
+    // Fetch the light.
+    const NonPhysicalLightInfo& light_info = m_non_physical_lights[light_index];
+    light_sample.m_light = light_info.m_light;
+
+    // Evaluate and store the transform of the light.
+    light_sample.m_light_transform =
+          light_info.m_light->get_transform()
+        * light_info.m_transform_sequence.evaluate(time.m_absolute);
+
+    // Store the probability density of this light.
+    light_sample.m_probability = light_prob;
+}
+
 void LightSamplerBase::build_emitting_triangle_hash_table()
 {
     const size_t emitting_triangle_count = m_emitting_triangles.size();

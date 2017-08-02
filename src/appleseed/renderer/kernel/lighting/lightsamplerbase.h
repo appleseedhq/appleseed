@@ -63,6 +63,13 @@ class LightSamplerBase
 
     // Return the number of non-physical lights in the scene.
     size_t get_non_physical_light_count() const;
+
+    // Sample a single given non-physical light.
+    void sample_non_physical_light(
+        const ShadingRay::Time&             time,
+        const size_t                        light_index,
+        LightSample&                        light_sample,
+        const float                         light_prob = 1.0f) const;
   
   protected:
     struct Parameters
@@ -129,7 +136,7 @@ class LightSamplerBase
         const size_t                        triangle_index,
         const float                         triangle_prob,
         LightSample&                        sample) const;
-    
+
     // Sample the set of emitting triangles.
     void sample_emitting_triangles(
         const ShadingRay::Time&             time,

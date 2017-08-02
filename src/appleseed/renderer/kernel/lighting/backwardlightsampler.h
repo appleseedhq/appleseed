@@ -84,12 +84,6 @@ class BackwardLightSampler
         const ShadingPoint&                 shading_point,
         LightSample&                        light_sample) const;
 
-    // Sample a single given non-physical light.
-    void sample_non_physical_light(
-        const ShadingRay::Time&             time,
-        const size_t                        light_index,
-        LightSample&                        light_sample) const;
-
     // Compute the probability density in area measure of a given light sample.
     float evaluate_pdf(const ShadingPoint& shading_point) const;
 
@@ -98,7 +92,6 @@ class BackwardLightSampler
 
   private:
     size_t                      m_light_tree_light_count;
-
     std::unique_ptr<LightTree>  m_light_tree;
 
     void sample_light_tree(

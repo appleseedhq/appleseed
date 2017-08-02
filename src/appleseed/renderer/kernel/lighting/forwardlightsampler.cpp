@@ -134,30 +134,12 @@ void ForwardLightSampler::sample_non_physical_lights(
     sample_non_physical_light(
         time,
         light_index,
-        light_prob,
-        light_sample);
+        light_sample,
+        light_prob);
 
     assert(light_sample.m_light);
     assert(light_sample.m_probability > 0.0f);
 }
 
-void ForwardLightSampler::sample_non_physical_light(
-    const ShadingRay::Time&             time,
-    const size_t                        light_index,
-    const float                         light_prob,
-    LightSample&                        light_sample) const
-{
-    // Fetch the light.
-    const NonPhysicalLightInfo& light_info = m_non_physical_lights[light_index];
-    light_sample.m_light = light_info.m_light;
-
-    // Evaluate and store the transform of the light.
-    light_sample.m_light_transform =
-          light_info.m_light->get_transform()
-        * light_info.m_transform_sequence.evaluate(time.m_absolute);
-
-    // Store the probability density of this light.
-    light_sample.m_probability = light_prob;
-}
-
 }   // namespace renderer
+

@@ -70,12 +70,6 @@ class ForwardLightSampler
     // Return true if the scene contains at least one light or emitting triangle.
     bool has_lights() const;
 
-    // Sample a single given non-physical light.
-    void sample_non_physical_light(
-        const ShadingRay::Time&             time,
-        const size_t                        light_index,
-        LightSample&                        light_sample) const;
-
     // Sample the sets of non-physical lights and emitting triangles.
     void sample(
         const ShadingRay::Time&             time,
@@ -88,13 +82,6 @@ class ForwardLightSampler
         const ShadingRay::Time&             time,
         const foundation::Vector3f&         s,
         LightSample&                        light_sample) const;
-
-    // Sample a given non-physical light.
-    void sample_non_physical_light(
-        const ShadingRay::Time&             time,
-        const size_t                        light_index,
-        const float                         light_prob,
-        LightSample&                        sample) const;
 };
 
 
@@ -110,14 +97,6 @@ inline size_t ForwardLightSampler::get_emitting_triangle_count() const
 inline bool ForwardLightSampler::has_lights() const
 {
     return m_non_physical_lights_cdf.valid() || m_emitting_triangles_cdf.valid();
-}
-
-inline void ForwardLightSampler::sample_non_physical_light(
-    const ShadingRay::Time&                 time,
-    const size_t                            light_index,
-    LightSample&                            light_sample) const
-{
-    sample_non_physical_light(time, light_index, 1.0f, light_sample);
 }
 
 }       // namespace renderer

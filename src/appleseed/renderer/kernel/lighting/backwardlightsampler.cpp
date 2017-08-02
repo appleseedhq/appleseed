@@ -136,24 +136,6 @@ void BackwardLightSampler::sample_lightset(
     }
 }
 
-void BackwardLightSampler::sample_non_physical_light(
-    const ShadingRay::Time&             time,
-    const size_t                        light_index,
-    LightSample&                        light_sample) const
-{
-    // Fetch the light.
-    const NonPhysicalLightInfo& light_info = m_non_physical_lights[light_index];
-    light_sample.m_light = light_info.m_light;
-
-    // Evaluate and store the transform of the light.
-    light_sample.m_light_transform =
-          light_info.m_light->get_transform()
-        * light_info.m_transform_sequence.evaluate(time.m_absolute);
-
-    // Store the probability density of this light.
-    light_sample.m_probability = 1.0f;
-}
-
 float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
 {
     assert(shading_point.is_triangle_primitive());
