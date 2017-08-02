@@ -167,10 +167,5 @@ PythonInterpreter::PythonInterpreter()
 {
 }
 
-PythonInterpreter::~PythonInterpreter()
-{
-    Py_Finalize();
-}
-
 }   // namespace studio
 }   // namespace appleseed

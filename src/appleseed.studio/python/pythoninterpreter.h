@@ -55,7 +55,6 @@ class PythonInterpreter
 
   private:
     PythonInterpreter();
-    ~PythonInterpreter();
 
     void import_python_module(const char* module_name, const char* alias_name);
 
