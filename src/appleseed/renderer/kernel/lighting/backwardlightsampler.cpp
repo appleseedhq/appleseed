@@ -87,12 +87,20 @@ BackwardLightSampler::BackwardLightSampler(
     if (m_non_physical_lights_cdf.valid())
         m_non_physical_lights_cdf.prepare();
 
-    // Build the light tree.
-    m_light_tree_light_count = m_use_light_tree
-        ? m_light_tree.build(m_light_tree_lights, m_emitting_triangles)
-        : 0;
-
-    if (!m_use_light_tree)
+    if (m_use_light_tree)
+    {
+        // Initialize the LightTree only after the lights are collected.
+        m_light_tree.reset(new LightTree(m_light_tree_lights, m_emitting_triangles));
+        
+        const vector<size_t> tri_index_to_node_index = m_light_tree->build();
+        if (has_hittable_lights())
+        {
+            // Update information about emitting triangle position within the light tree.
+            for (size_t i = 0, e = tri_index_to_node_index.size(); i < e; ++i)
+                m_emitting_triangles[i].m_light_tree_node_index = tri_index_to_node_index[i];
+        }
+    }
+    else
     {
         if (m_emitting_triangles_cdf.valid())
             m_emitting_triangles_cdf.prepare();
@@ -107,8 +115,8 @@ BackwardLightSampler::BackwardLightSampler(
         "found %s %s, %s %s, %s emitting %s.",
         pretty_int(m_non_physical_light_count).c_str(),
         plural(m_non_physical_light_count, "non-physical light").c_str(),
-        pretty_int(m_light_tree_light_count).c_str(),
-        plural(m_light_tree_light_count, "light-tree compatible light").c_str(),
+        pretty_int(m_light_tree_lights.size() + m_emitting_triangles.size()).c_str(),
+        plural(m_light_tree_lights.size() + m_emitting_triangles.size(), "light-tree compatible light").c_str(),
         pretty_int(m_emitting_triangles.size()).c_str(),
         plural(m_emitting_triangles.size(), "triangle").c_str());
 }
@@ -171,7 +179,7 @@ float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point) cons
     if (m_use_light_tree)
     {
         const float triangle_probability =
-            m_light_tree.evaluate_node_pdf(
+            m_light_tree->evaluate_node_pdf(
                 shading_point.get_ray().m_org,
                 triangle->m_light_tree_node_index);
 
@@ -526,17 +534,17 @@ void BackwardLightSampler::sample_light_tree(
 {
     assert(has_lightset());
 
-    int light_type;
+    LightType light_type;
     size_t light_index;
     float light_prob;
-    m_light_tree.sample(
+    m_light_tree->sample(
         shading_point.get_point(),
         s[0],
         light_type,
         light_index,
         light_prob);
 
-    if (light_type == LightSource::NonPhysicalLightType)
+    if (light_type == NonPhysicalLightType)
     {
         // Fetch the light.
         const NonPhysicalLightInfo& light_info = m_light_tree_lights[light_index];
@@ -552,7 +560,7 @@ void BackwardLightSampler::sample_light_tree(
     }
     else
     {
-        assert(light_type == LightSource::EmittingTriangleType);
+        assert(light_type == EmittingTriangleType);
         sample_emitting_triangle(
             time,
             Vector2f(s[1], s[2]),

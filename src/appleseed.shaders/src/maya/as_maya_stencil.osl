@@ -112,7 +112,6 @@ shader as_maya_stencil
     output float out_outAlpha = 1.0
     [[
         string as_maya_attribute_name = "outAlpha",
-        string as_maya_attribute_name = "oa",
         string label = "Output Alpha",
         string widget = "null"
     ]]

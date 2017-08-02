@@ -36,6 +36,11 @@
 // appleseed.foundation headers.
 #include "foundation/utility/api/apistring.h"
 
+// OpenImageIO headers.
+#include "foundation/platform/_beginoiioheaders.h"
+#include "OpenImageIO/ustring.h"
+#include "foundation/platform/_endoiioheaders.h"
+
 using namespace foundation;
 using namespace std;
 
@@ -44,7 +49,8 @@ namespace renderer
 
 struct Entity::Impl
 {
-    string m_name;
+    string          m_name;
+    OIIO::ustring   m_oiio_name;
 };
 
 Entity::Entity(
@@ -94,11 +100,17 @@ void Entity::set_name(const char* name)
 {
     assert(name);
     impl->m_name = name;
+    impl->m_oiio_name = name;
 }
 
 const char* Entity::get_name() const
 {
     return impl->m_name.c_str();
+}
+
+const void* Entity::get_name_as_ustring() const
+{
+    return &impl->m_oiio_name;
 }
 
 APIString Entity::get_path() const

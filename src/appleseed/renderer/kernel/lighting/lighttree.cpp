@@ -32,6 +32,10 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/modeling/edf/edf.h"
+#include "renderer/modeling/input/source.h"
+#include "renderer/modeling/light/light.h"
+#include "renderer/modeling/material/material.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
@@ -39,7 +43,6 @@
 #include "foundation/math/permutation.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/timers.h"
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/vpythonfile.h"
 
 // Standard headers.
@@ -55,53 +58,57 @@ namespace renderer
 // LightTree class implementation.
 //
 
-LightTree::LightTree()
-  : m_tree_depth(0)
-  , m_built(false)
+LightTree::LightTree(
+    const vector<NonPhysicalLightInfo>&      non_physical_lights,
+    const vector<EmittingTriangle>&          emitting_triangles)
+  : m_non_physical_lights(non_physical_lights)
+  , m_emitting_triangles(emitting_triangles)
+  , m_tree_depth(0)
+  , m_is_built(false)
 {
 }
 
-LightTree::~LightTree()
-{
-    for (const_each<LightSourcePointerVector> i = m_light_sources; i; ++i)
-        delete *i;
-}
-
-bool LightTree::is_built() const
-{
-    return m_built;
-}
-
-size_t LightTree::build(
-    vector<NonPhysicalLightInfo>&   non_physical_lights,
-    vector<EmittingTriangle>&       emitting_triangles)
+vector<size_t> LightTree::build()
 {
     AABBVector light_bboxes;
 
     // Collect non-physical light sources.
-    for (size_t i = 0, e = non_physical_lights.size(); i < e; ++i)
+    for (size_t i = 0, e = m_non_physical_lights.size(); i < e; ++i)
     {
-        LightSource* light_source = new NonPhysicalLightSource(&non_physical_lights[i]);
-        const size_t light_source_index = m_light_sources.size();
-        m_light_sources.push_back(light_source);
+        const Light* light = m_non_physical_lights[i].m_light;
 
-        const AABB3d bbox = light_source->get_bbox();
+        // Retrieve the exact position of the light.
+        const Vector3d position = light->get_transform()
+                                    .get_local_to_parent()
+                                    .extract_translation();
+
+        // Non physical light has no real size - hence some arbitrary small 
+        // value is assigned.
+        constexpr double BboxSize = 0.001f;
+        const AABB3d bbox = AABB3d(Vector3d(position[0] - BboxSize,
+                                            position[1] - BboxSize,
+                                            position[2] - BboxSize),
+                                   Vector3d(position[0] + BboxSize,
+                                            position[1] + BboxSize,
+                                            position[2] + BboxSize));
         light_bboxes.push_back(bbox);
 
-        m_items.push_back(Item(bbox, light_source_index, i));
+        m_items.push_back(Item(bbox, i, NonPhysicalLightType));
     }
 
     // Collect emitting triangles.
-    for (size_t i = 0, e = emitting_triangles.size(); i < e; ++i)
+    for (size_t i = 0, e = m_emitting_triangles.size(); i < e; ++i)
     {
-        LightSource* light_source = new EmittingTriangleLightSource(&emitting_triangles[i]);
-        const size_t light_source_index = m_light_sources.size();
-        m_light_sources.push_back(light_source);
+        const EmittingTriangle& triangle = m_emitting_triangles[i];
+        AABB3d bbox;
+        bbox.invalidate();
+        bbox.insert(triangle.m_v0);
+        bbox.insert(triangle.m_v1);
+        bbox.insert(triangle.m_v2);
 
-        const AABB3d bbox = light_source->get_bbox();
         light_bboxes.push_back(bbox);
 
-        m_items.push_back(Item(bbox, light_source_index, i));
+        m_items.push_back(Item(bbox, i, EmittingTriangleType));
     }
 
     // Create the partitioner.
@@ -116,7 +123,7 @@ size_t LightTree::build(
     // Reorder m_items vector to match the ordering in the LightTree.
     if (!m_items.empty())
     {
-        m_built = true;
+        m_is_built = true;
 
         const vector<size_t>& ordering = partitioner.get_item_ordering();
         assert(m_items.size() == ordering.size());
@@ -130,27 +137,37 @@ size_t LightTree::build(
             ordering.size());
 
         // Set total node importance and level for each node of the LightTree.
-        recursive_node_update(0, 0, 0);
+        IndexLUT tri_index_to_node_index;
+        tri_index_to_node_index.resize(m_emitting_triangles.size());
+        recursive_node_update(0, 0, 0, tri_index_to_node_index);
+
+        // Print light tree statistics.
+        Statistics statistics;
+        statistics.insert("nodes", m_nodes.size());
+        statistics.insert("max tree depth", m_tree_depth);
+        statistics.insert_time("total build time", builder.get_build_time());
+        RENDERER_LOG_INFO("%s",
+            StatisticsVector::make(
+                "light tree statistics",
+                statistics).to_string().c_str());
+        
+        return tri_index_to_node_index;
     }
 
-    // Print light tree statistics.
-    Statistics statistics;
-    statistics.insert("light sources", m_light_sources.size());
-    statistics.insert("nodes", m_nodes.size());
-    statistics.insert("max tree depth", m_tree_depth);
-    statistics.insert_time("total build time", builder.get_build_time());
-    RENDERER_LOG_INFO("%s",
-        StatisticsVector::make(
-            "light tree statistics",
-            statistics).to_string().c_str());
+    RENDERER_LOG_INFO("light tree not built - no light tree compatible lights in the scene.");
+    return {};
+}
 
-    return m_light_sources.size();
+bool LightTree::is_built() const
+{
+    return m_is_built;
 }
 
 float LightTree::recursive_node_update(
-    const size_t        parent_index,
-    const size_t        node_index, 
-    const size_t        node_level)
+    const size_t    parent_index,
+    const size_t    node_index, 
+    const size_t    node_level,
+    IndexLUT&       tri_index_to_node_index)
 {
     float importance = 0.0f;
 
@@ -159,8 +176,8 @@ float LightTree::recursive_node_update(
         const auto& child1 = m_nodes[node_index].get_child_node_index();
         const auto& child2 = m_nodes[node_index].get_child_node_index() + 1;
 
-        const float importance1 = recursive_node_update(node_index, child1, node_level + 1);
-        const float importance2 = recursive_node_update(node_index, child2, node_level + 1);
+        const float importance1 = recursive_node_update(node_index, child1, node_level + 1, tri_index_to_node_index);
+        const float importance2 = recursive_node_update(node_index, child2, node_level + 1, tri_index_to_node_index);
 
         importance = importance1 + importance2;
     }
@@ -168,18 +185,34 @@ float LightTree::recursive_node_update(
     {
         // Retrieve the light source associated to this leaf.
         const size_t item_index = m_nodes[node_index].get_item_index();
-        const size_t light_source_index = m_items[item_index].m_light_source_index;
-        const LightSource* light_source = m_light_sources[light_source_index];
+        const size_t light_index = m_items[item_index].m_light_index;
 
-        // Retrieve the light importance.
-        importance = light_source->get_importance();
+        if (m_items[item_index].m_light_type == NonPhysicalLightType)
+        {
+            const Light* light = m_non_physical_lights[light_index].m_light;
+            
+            // Retrieve the non physical light importance.
+            Spectrum spectrum;
+            light->get_inputs().find("intensity").source()->evaluate_uniform(spectrum);
+            importance = average_value(spectrum);
+        }
+        else
+        {
+            assert(m_items[item_index].m_light_type == EmittingTriangleType);
+
+            const EmittingTriangle& triangle = m_emitting_triangles[light_index];
+
+            // Retrieve the emitting triangle importance.
+            const EDF* edf = triangle.m_material->get_uncached_edf();
+            importance = edf->get_uncached_max_contribution() * edf->get_uncached_importance_multiplier();
+    
+            // Save the index of the light tree node containing the EMT in the look up table.
+            tri_index_to_node_index[light_index] = node_index;
+        }
 
         // Keep track of the tree depth.
         if (m_tree_depth < node_level)
             m_tree_depth = node_level;
-
-        // Remember to which leaf node does the light belong.
-        m_light_sources[light_source_index]->set_tree_index(node_index);
     }
 
     if (node_index == 0)
@@ -195,7 +228,7 @@ float LightTree::recursive_node_update(
 void LightTree::sample(
     const Vector3d&     surface_point,
     float               s,
-    int&                light_type,
+    LightType&          light_type,
     size_t&             light_index,
     float&              light_probability) const
 {
@@ -226,26 +259,9 @@ void LightTree::sample(
     }
 
     const size_t item_index = m_nodes[node_index].get_item_index();
-    const size_t source_index = m_items[item_index].m_light_source_index;
-    light_type = m_light_sources[source_index]->get_type();
-
-    switch (light_type)
-    {
-      // m_light_source_index corresponds to the m_light_tree_lights
-      // index of the BackwardLightSampler in case of NPL, whereas the EMT index
-      // needs to be stored separately for now as it is not in the same
-      // vector with other light tree compatible lights.
-      case LightSource::NonPhysicalLightType:
-        light_index = m_items[item_index].m_light_source_index;
-        break;
-
-      case LightSource::EmittingTriangleType:
-        light_index = m_items[item_index].m_external_source_index;
-        break;
-
-      default:
-        assert(!"Unexpected light type.");
-    }
+    const Item& item = m_items[item_index];
+    light_type = item.m_light_type;
+    light_index = item.m_light_index;
 }
 
 float LightTree::evaluate_node_pdf(
@@ -281,10 +297,19 @@ float LightTree::compute_node_probability(
     // Calculate probability of a single node based on its distance
     // to the surface point being illuminated.
     // For leaf nodes use the actual position of the light source, instead
-    // of center of the bbox. It is more correct for shaped lights.
-    const Vector3d position = node.is_leaf()
-        ? m_light_sources[m_items[node.get_item_index()].m_light_source_index]->get_position()
-        : bbox.center();
+    // of center of the bbox. It is more precise for shaped lights.
+    Vector3d position;
+    const Item& item = m_items[node.get_item_index()];
+    if (node.is_leaf() && item.m_light_type == EmittingTriangleType)
+    {
+        const size_t light_index = item.m_light_index;
+        const EmittingTriangle& triangle = m_emitting_triangles[light_index];
+        // Use centroid as triangle position approximation.
+        position = (triangle.m_v0 + triangle.m_v1 + triangle.m_v2) * (1.0 / 3.0);
+    }
+    else
+        position = bbox.center();
+
     const float squared_distance =
         static_cast<float>(square_distance(surface_point, position));
 
@@ -396,3 +421,4 @@ void LightTree::draw_tree_structure(
 }
 
 }   // namespace renderer
+
