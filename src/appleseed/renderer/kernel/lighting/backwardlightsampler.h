@@ -44,6 +44,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <memory>
 #include <vector>
 
 // Forward declarations.
@@ -112,15 +113,14 @@ class BackwardLightSampler
         explicit Parameters(const ParamArray& params);
     };
 
-    typedef std::vector<NonPhysicalLightInfo> NonPhysicalLightVector;
-    typedef std::vector<EmittingTriangle> EmittingTriangleVector;
-    typedef foundation::CDF<size_t, float> EmitterCDF;
+    typedef std::vector<NonPhysicalLightInfo>   NonPhysicalLightVector;
+    typedef std::vector<EmittingTriangle>       EmittingTriangleVector;
+    typedef foundation::CDF<size_t, float>      EmitterCDF;
 
     const Parameters            m_params;
 
     NonPhysicalLightVector      m_light_tree_lights;
     NonPhysicalLightVector      m_non_physical_lights;
-    size_t                      m_light_tree_light_count;
     size_t                      m_non_physical_light_count;
 
     EmittingTriangleVector      m_emitting_triangles;
@@ -131,7 +131,7 @@ class BackwardLightSampler
     EmittingTriangleKeyHasher   m_triangle_key_hasher;
     EmittingTriangleHashTable   m_emitting_triangle_hash_table;
 
-    LightTree                   m_light_tree;
+    std::unique_ptr<LightTree>  m_light_tree;
 
     bool                        m_use_light_tree;
 

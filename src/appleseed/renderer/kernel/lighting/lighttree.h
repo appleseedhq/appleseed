@@ -40,7 +40,6 @@
 #include "foundation/math/cdf.h"
 #include "foundation/utility/alignedvector.h"
 #include "foundation/utility/statistics.h"
-#include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <cstddef>
@@ -61,37 +60,34 @@ class LightTree
 {
   public:
     // Constructor.
-    LightTree();
+    // Build the tree based on the lights collected by the BackwardLightSampler.
+    LightTree(
+        const std::vector<NonPhysicalLightInfo>&      non_physical_lights,
+        const std::vector<EmittingTriangle>&          emitting_triangles);
 
-    // Destructor.
-    ~LightTree();
+    std::vector<size_t> build();
 
     bool is_built() const;
 
-    // Build the tree based on the lights collected by the BackwardLightSampler.
-    size_t build(
-        std::vector<NonPhysicalLightInfo>&  non_physical_lights,
-        std::vector<EmittingTriangle>&      emitting_triangles);
-    
     void sample(
-        const foundation::Vector3d&         surface_point,
-        const float                         s,
-        int&                                light_type,
-        size_t&                             light_index,
-        float&                              light_probability) const;
+        const foundation::Vector3d&             surface_point,
+        const float                             s,
+        LightType&                              light_type,
+        size_t&                                 light_index,
+        float&                                  light_probability) const;
 
     // Compute the light probability of a particular tree node. Start from the
     // node and go backwards towards the root node.
     float evaluate_node_pdf(
-        const foundation::Vector3d&         surface_point,
-        const size_t                        node_index) const;
+        const foundation::Vector3d&             surface_point,
+        const size_t                            node_index) const;
 
   private:
     struct Item
     {
         foundation::AABB3d      m_bbox;
-        size_t                  m_light_source_index;
-        size_t                  m_external_source_index;
+        size_t                  m_light_index;
+        LightType               m_light_type;
 
         Item() {}
 
@@ -101,31 +97,34 @@ class LightTree
         // and emitting_triangles vectors within the BackwardLightSampler.
         Item(
             const foundation::AABB3d&       bbox,
-            const size_t                    light_source_index,
-            const size_t                    external_source_index) 
+            const size_t                    light_index,
+            const LightType                 light_type) 
             : m_bbox(bbox)
-            , m_light_source_index(light_source_index)
-            , m_external_source_index(external_source_index)
+            , m_light_index(light_index)
+            , m_light_type(light_type)
         {
         }
     };
 
     typedef std::vector<NonPhysicalLightInfo>       NonPhysicalLightVector;
-    typedef std::vector<LightSource*>               LightSourcePointerVector;
+    typedef std::vector<EmittingTriangle>           EmittingTriangleVector;
     typedef std::vector<Item>                       ItemVector;
+    typedef std::vector<size_t>                     IndexLUT;
 
-    LightSourcePointerVector   m_light_sources;
-    ItemVector                 m_items;
-    size_t                     m_tree_depth;
-    bool                       m_built; // Was the tree built?
+    const NonPhysicalLightVector&                   m_non_physical_lights;
+    const EmittingTriangleVector&                   m_emitting_triangles;
+    ItemVector                                      m_items;
+    size_t                                          m_tree_depth;
+    bool                                            m_is_built;
 
     // Calculate the tree depth.
     // Assign total importance to each node of the tree, where total importance
     // represents the sum of all its child nodes importances.
     float recursive_node_update(
-        const size_t                        parent_index,
-        const size_t                        node_index, 
-        const size_t                        node_level);
+        const size_t                                parent_index,
+        const size_t                                node_index, 
+        const size_t                                node_level,
+        IndexLUT&                                   tri_index_to_node_index);
     
     float compute_node_probability(
         const LightTreeNode<foundation::AABB3d>&    node,
@@ -140,9 +139,9 @@ class LightTree
 
     // Dump the tree bounding boxes to a VPython file on disk.
     void draw_tree_structure(
-        const std::string&                  filename_base,
-        const foundation::AABB3d&           root_bbox,
-        const bool                          separate_by_levels = false) const;
+        const std::string&                          filename_base,
+        const foundation::AABB3d&                   root_bbox,
+        const bool                                  separate_by_levels = false) const;
 };
 
 }       // namespace renderer
