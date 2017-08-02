@@ -1006,6 +1006,8 @@ set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/imagebasedlighting.h
     renderer/kernel/lighting/lightsample.cpp
     renderer/kernel/lighting/lightsample.h
+    renderer/kernel/lighting/lightsamplerbase.cpp
+    renderer/kernel/lighting/lightsamplerbase.h
     renderer/kernel/lighting/materialsamplers.cpp
     renderer/kernel/lighting/materialsamplers.h
     renderer/kernel/lighting/lighttree.cpp

@@ -130,8 +130,7 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     void* osl_shader_group() const;
 
   private:
-    friend class BackwardLightSampler;
-    friend class ForwardLightSampler;
+    friend class LightSamplerBase;
     friend class ShaderGroupFactory;
 
     struct Impl;
