@@ -31,14 +31,15 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_BACKWARDLIGHTSAMPLER_H
 
 // appleseed.renderer headers.
-#include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/lighting/lightsample.h"
+#include "renderer/kernel/lighting/lightsamplerbase.h"
 #include "renderer/kernel/lighting/lighttree.h"
 #include "renderer/kernel/lighting/lighttypes.h"
 #include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/cdf.h"
 #include "foundation/math/hash.h"
 #include "foundation/utility/containers/hashtable.h"
 
@@ -66,7 +67,7 @@ namespace renderer
 //
 
 class BackwardLightSampler
-  : public foundation::NonCopyable
+  : public LightSamplerBase
 {
   public:
     // Constructor.
@@ -90,9 +91,6 @@ class BackwardLightSampler
         const ShadingPoint&                 shading_point,
         LightSample&                        light_sample) const;
 
-    // Return the number of non-physical lights in the scene.
-    size_t get_non_physical_light_count() const;
-
     // Sample a single given non-physical light.
     void sample_non_physical_light(
         const ShadingRay::Time&             time,
@@ -106,27 +104,7 @@ class BackwardLightSampler
     static foundation::Dictionary get_params_metadata();
 
   private:
-    struct Parameters
-    {
-        const bool m_importance_sampling;
-
-        explicit Parameters(const ParamArray& params);
-    };
-
-    typedef std::vector<NonPhysicalLightInfo>   NonPhysicalLightVector;
-    typedef std::vector<EmittingTriangle>       EmittingTriangleVector;
-    typedef foundation::CDF<size_t, float>      EmitterCDF;
-
-    const Parameters            m_params;
-
-    NonPhysicalLightVector      m_light_tree_lights;
-    NonPhysicalLightVector      m_non_physical_lights;
-    size_t                      m_non_physical_light_count;
-
-    EmittingTriangleVector      m_emitting_triangles;
-
-    EmitterCDF                  m_non_physical_lights_cdf;
-    EmitterCDF                  m_emitting_triangles_cdf;
+    size_t                      m_light_tree_light_count;
 
     EmittingTriangleKeyHasher   m_triangle_key_hasher;
     EmittingTriangleHashTable   m_emitting_triangle_hash_table;
@@ -134,27 +112,6 @@ class BackwardLightSampler
     std::unique_ptr<LightTree>  m_light_tree;
 
     bool                        m_use_light_tree;
-
-    // Recursively collect non-physical lights from a given set of assembly instances.
-    void collect_non_physical_lights(
-        const AssemblyInstanceContainer&    assembly_instances,
-        const TransformSequence&            parent_transform_seq);
-
-    // Collect non-physical lights from a given assembly.
-    void collect_non_physical_lights(
-        const Assembly&                     assembly,
-        const TransformSequence&            transform_sequence);
-
-    // Recursively collect emitting triangles from a given set of assembly instances.
-    void collect_emitting_triangles(
-        const AssemblyInstanceContainer&    assembly_instances,
-        const TransformSequence&            parent_transform_seq);
-
-    // Collect emitting triangles from a given assembly.
-    void collect_emitting_triangles(
-        const Assembly&                     assembly,
-        const AssemblyInstance&             assembly_instance,
-        const TransformSequence&            transform_sequence);
 
     // Build a hash table that allows to find the emitting triangle at a given shading point.
     void build_emitting_triangle_hash_table();
@@ -176,12 +133,6 @@ class BackwardLightSampler
         const size_t                        triangle_index,
         const float                         triangle_prob,
         LightSample&                        sample) const;
-
-    void store_object_area_in_shadergroups(
-        const AssemblyInstance*             assembly_instance,
-        const ObjectInstance*               object_instance,
-        const float                         object_area,
-        const MaterialArray&                materials);
 };
 
 
@@ -205,11 +156,6 @@ inline bool BackwardLightSampler::has_hittable_lights() const
 inline bool BackwardLightSampler::has_lightset() const
 {
     return m_light_tree_lights.size() > 0 || m_emitting_triangles.size() > 0;
-}
-
-inline size_t BackwardLightSampler::get_non_physical_light_count() const
-{
-    return m_non_physical_light_count;
 }
 
 }       // namespace renderer
