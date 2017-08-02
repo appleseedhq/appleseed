@@ -88,6 +88,7 @@ set (appleseed_module_sources
     appleseed/module.cpp
     appleseed/unalignedmatrix44.h
     appleseed/unalignedtransform.h
+    appleseed/studio/__init__.py
 )
 list (APPEND appleseed.python_sources
     ${appleseed_module_sources}
@@ -98,16 +99,6 @@ list (APPEND appleseed.python_sources
 )
 source_group ("" FILES
     ${appleseed_module_sources}
-)
-
-set (studio_module_sources
-    studio/studio.py
-)
-list (APPEND appleseed.python_sources
-    ${studio_module_sources}
-)
-source_group ("" FILES
-    ${studio_module_sources}
 )
 
 #--------------------------------------------------------------------------------------------------
@@ -172,7 +163,7 @@ target_link_libraries (appleseed.python
 add_copy_target_to_sandbox_py_module_command (appleseed.python appleseed)
 add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/appleseed/__init__.py appleseed)
 add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/appleseed/logtarget.py appleseed)
-add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/studio/studio.py studio)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/appleseed/studio/__init__.py appleseed.studio)
 add_copy_dir_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/appleseed/test appleseed)
 
 
