@@ -50,11 +50,6 @@
 
 // Forward declarations.
 namespace foundation    { class Dictionary; }
-namespace renderer      { class Assembly; }
-namespace renderer      { class AssemblyInstance; }
-namespace renderer      { class MaterialArray; }
-namespace renderer      { class ObjectInstance; }
-namespace renderer      { class ParamArray; }
 namespace renderer      { class Scene; }
 namespace renderer      { class ShadingPoint; }
 

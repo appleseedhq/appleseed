@@ -47,16 +47,7 @@
 #include <vector>
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
-namespace renderer  { class AssemblyInstance; }
-namespace renderer  { class Intersector; }
-namespace renderer  { class Light; }
-namespace renderer  { class Material; }
-namespace renderer  { class MaterialArray; }
-namespace renderer  { class ObjectInstance; }
-namespace renderer  { class ParamArray; }
 namespace renderer  { class Scene; }
-namespace renderer  { class ShadingPoint; }
 
 namespace renderer
 {
