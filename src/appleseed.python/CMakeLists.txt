@@ -46,6 +46,7 @@ endif ()
 
 set (studio_sources
     studio/__init__.py
+    studio/Qt.py
 )
 list (APPEND appleseed.python_sources
     ${studio_sources}
