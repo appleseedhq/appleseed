@@ -30,7 +30,6 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_LIGHTTYPES_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/utility/transformsequence.h"
 

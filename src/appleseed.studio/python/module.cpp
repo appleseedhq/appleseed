@@ -34,6 +34,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/platform/python.h"
+#include "foundation/utility/casts.h"
 
 // Qt headers.
 #include <QDockWidget>

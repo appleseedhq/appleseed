@@ -102,7 +102,7 @@ class APPLESEED_DLLSYMBOL Entity
     void set_name(const char* name);
     const char* get_name() const;
 
-    // Return the name of the object as a pointer to a ustring for OSL.
+    // Return the name of the entity as a pointer to a OIIO::ustring for OSL.
     const void* get_name_as_ustring() const;
 
     // Get the full path from the scene entity to this entity in a human-readable format.
