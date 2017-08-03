@@ -410,7 +410,7 @@ macro (add_copy_py_file_to_sandbox_py_module_command py_src module_name)
     )
 endmacro ()
 
-macro (add_copy_dir_to_sandbox_py_module_command py_dir)
+macro (add_copy_dir_to_sandbox_py_module_command py_dir module_name)
     get_sandbox_py_path (py_path)
     get_relative_path_from_module_name (relative_module_path ${module_name})
     set(module_path "${py_path}\\${relative_module_path}")
