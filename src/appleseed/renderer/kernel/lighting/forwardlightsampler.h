@@ -31,7 +31,6 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_FORWARDLIGHTSAMPLER_H
 
 // appleseed.renderer headers.
-#include "renderer/kernel/lighting/lightsample.h"
 #include "renderer/kernel/lighting/lightsamplerbase.h"
 #include "renderer/kernel/lighting/lighttypes.h"
 #include "renderer/kernel/shading/shadingray.h"
@@ -44,6 +43,7 @@
 #include <vector>
 
 // Forward declarations.
+namespace renderer  { class LightSample; }
 namespace renderer  { class Scene; }
 
 namespace renderer
