@@ -50,7 +50,7 @@ import zipfile
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.4.5"
+VERSION = "2.4.7"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 
 
@@ -335,8 +335,11 @@ class PackageBuilder:
             dest_path = os.path.join(dest_dir, lib_name)
             if not os.path.exists(dest_path):
                 progress("  Copying {0} to {1}".format(lib, dest_dir))
-                shutil.copy(lib, dest_dir)
-                make_writable(dest_path)
+                try:
+                    shutil.copy(lib, dest_dir)
+                    make_writable(dest_path)
+                except IOError:
+                    info("WARNING: could not copy {0} to {1}".format(lib, dest_dir))
 
     def add_headers_to_stage(self):
         progress("Adding headers to staging directory")
@@ -397,7 +400,7 @@ class PackageBuilder:
         archive_util.make_zipfile(package_base_path, "appleseed")
 
     def remove_stage(self):
-        progress("Deleting staging directory...")
+        progress("Deleting staging directory")
         safe_delete_directory("appleseed")
 
     def run(self, cmdline):
@@ -442,7 +445,7 @@ class MacPackageBuilder(PackageBuilder):
         self.shared_lib_ext = ".dylib"
         self.system_libs_prefixes = ["/System/Library/", "/usr/lib/libcurl", "/usr/lib/libc++",
                                      "/usr/lib/libbz2", "/usr/lib/libSystem", "usr/lib/libz",
-                                     "/usr/lib/libncurses"]
+                                     "/usr/lib/libncurses", "/usr/lib/libobjc.A.dylib"]
 
     def alter_stage(self):
         safe_delete_file("appleseed/bin/.DS_Store")
@@ -496,7 +499,8 @@ class MacPackageBuilder(PackageBuilder):
     def change_library_paths_in_libraries(self):
         for dirpath, dirnames, filenames in os.walk("appleseed/lib"):
             for filename in filenames:
-                if os.path.splitext(filename)[1] == ".dylib":
+                ext = os.path.splitext(filename)[1]
+                if ext == ".dylib" or ext == ".so":
                     lib_path = os.path.join(dirpath, filename)
                     self.change_library_paths_in_binary(lib_path)
                     self.change_qt_framework_paths_in_binary(lib_path)
@@ -512,9 +516,12 @@ class MacPackageBuilder(PackageBuilder):
 
     # Can be used on executables and dynamic libraries.
     def change_library_paths_in_binary(self, bin_path):
+        progress("Patching {0}".format(bin_path))
+        bin_dir = os.path.dirname(bin_path)
+        path_to_appleseed_lib = os.path.relpath("appleseed/lib/", bin_dir)
         for lib_path in self.get_dependencies_for_file(bin_path, fix_paths=False):
             lib_name = os.path.basename(lib_path)
-            self.change_library_path(bin_path, lib_path, "@executable_path/../lib/" + lib_name)
+            self.change_library_path(bin_path, lib_path, "@loader_path/{0}/{1}".format(path_to_appleseed_lib, lib_name))
 
     # Can be used on executables and dynamic libraries.
     def change_qt_framework_paths_in_binary(self, bin_path):
@@ -573,6 +580,11 @@ class MacPackageBuilder(PackageBuilder):
                         lib = candidate
 
             libs.add(lib)
+
+        if False:
+            info("Dependencies for file {0}:".format(filename))
+            for lib in libs:
+                info("    {0}".format(lib))
 
         return libs
 
@@ -695,6 +707,12 @@ class LinuxPackageBuilder(PackageBuilder):
 
 def main():
     print("appleseed.package version " + VERSION)
+    print("")
+
+    print("IMPORTANT:")
+    print("")
+    print("  - You may need to run this tool with sudo on Linux and macOS")
+    print("  - Make sure there are no obsolete binaries in sandbox/bin")
     print("")
 
     settings = Settings()

@@ -105,6 +105,8 @@ class BlinnMDF
   : public MDF
 {
   public:
+    BlinnMDF() {}
+
     virtual float D(
         const Vector3f&     h,
         const float         alpha_x,
@@ -169,6 +171,8 @@ class BeckmannMDF
   : public MDF
 {
   public:
+    BeckmannMDF() {}
+
     virtual float D(
         const Vector3f&     h,
         const float         alpha_x,
@@ -236,6 +240,8 @@ class GGXMDF
   : public MDF
 {
   public:
+    GGXMDF() {}
+
     virtual float D(
         const Vector3f&     h,
         const float         alpha_x,
@@ -299,6 +305,8 @@ class WardMDF
   : public MDF
 {
   public:
+    WardMDF() {}
+
     virtual float D(
         const Vector3f&     h,
         const float         alpha_x,
@@ -352,6 +360,8 @@ class GTR1MDF
   : public MDF
 {
   public:
+    GTR1MDF() {}
+
     virtual float D(
         const Vector3f&     h,
         const float         alpha_x,
@@ -408,6 +418,8 @@ class StdMDF
   : public MDF
 {
   public:
+    StdMDF() {}
+
     virtual float D(
         const Vector3f&     h,
         const float         alpha_x,
