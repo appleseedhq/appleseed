@@ -44,7 +44,25 @@ endif ()
 # Source files.
 #--------------------------------------------------------------------------------------------------
 
-set (appleseed_module_sources
+set (studio_sources
+    studio/__init__.py
+)
+list (APPEND appleseed.python_sources
+    ${studio_sources}
+)
+source_group ("studio" FILES
+    ${studio_sources}
+)
+
+file (GLOB test_sources test/*.py)
+list (APPEND appleseed.python_sources
+    ${test_sources}
+)
+source_group ("test" FILES
+    ${test_sources}
+)
+
+set (sources
     __init__.py
     bindaov.cpp
     bindassembly.cpp
@@ -88,17 +106,12 @@ set (appleseed_module_sources
     module.cpp
     unalignedmatrix44.h
     unalignedtransform.h
-    studio/__init__.py
 )
 list (APPEND appleseed.python_sources
-    ${appleseed_module_sources}
-)
-file (GLOB py_test_sources test/*.py)
-list (APPEND appleseed.python_sources
-    ${py_test_sources}
+    ${sources}
 )
 source_group ("" FILES
-    ${appleseed_module_sources}
+    ${sources}
 )
 
 
