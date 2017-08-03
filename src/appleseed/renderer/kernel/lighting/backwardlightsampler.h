@@ -90,6 +90,9 @@ class BackwardLightSampler
     static foundation::Dictionary get_params_metadata();
 
   private:
+    bool                                    m_use_light_tree;
+    
+    NonPhysicalLightVector                  m_light_tree_lights;
     size_t                                  m_light_tree_light_count;
     std::unique_ptr<LightTree>              m_light_tree;
 

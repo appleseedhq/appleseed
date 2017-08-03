@@ -95,23 +95,20 @@ class LightSamplerBase
         const Material*,
         const float,
         const size_t)>                          TriangleHandlingLambda;
- 
+
     const Parameters                        m_params;
- 
-    NonPhysicalLightVector                  m_light_tree_lights;
+
     NonPhysicalLightVector                  m_non_physical_lights;
     EmittingTriangleVector                  m_emitting_triangles;
-    
+
     size_t                                  m_non_physical_light_count;
     
     EmitterCDF                              m_non_physical_lights_cdf;
     EmitterCDF                              m_emitting_triangles_cdf;
- 
+
     EmittingTriangleKeyHasher               m_triangle_key_hasher;
     EmittingTriangleHashTable               m_emitting_triangle_hash_table;
  
-    bool                                    m_use_light_tree;
-
     LightHandlingLambda                     m_cdf_light_handling;
     TriangleHandlingLambda                  m_cdf_triangle_handling;
 

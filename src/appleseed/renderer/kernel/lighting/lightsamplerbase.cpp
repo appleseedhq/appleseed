@@ -52,7 +52,6 @@ namespace renderer
 LightSamplerBase::LightSamplerBase(const ParamArray& params)
   : m_params(params)
   , m_emitting_triangle_hash_table(m_triangle_key_hasher)
-  , m_use_light_tree(false)
   , m_cdf_light_handling(
         [&](
             const NonPhysicalLightInfo& light_info,
