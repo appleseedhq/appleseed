@@ -45,50 +45,50 @@ endif ()
 #--------------------------------------------------------------------------------------------------
 
 set (appleseed_module_sources
-    appleseed/__init__.py
-    appleseed/bindaov.cpp
-    appleseed/bindassembly.cpp
-    appleseed/bindbasis.cpp
-    appleseed/bindbbox.cpp
-    appleseed/bindbsdf.cpp
-    appleseed/bindbssrdf.cpp
-    appleseed/bindcamera.cpp
-    appleseed/bindcolor.cpp
-    appleseed/binddisplay.cpp
-    appleseed/bindedf.cpp
-    appleseed/bindentity.cpp
-    appleseed/bindentitycontainers.h
-    appleseed/bindenvironment.cpp
-    appleseed/bindframe.cpp
-    appleseed/bindimage.cpp
-    appleseed/bindlight.cpp
-    appleseed/bindlogger.cpp
-    appleseed/bindmasterrenderer.cpp
-    appleseed/bindmaterial.cpp
-    appleseed/bindmatrix.cpp
-    appleseed/bindmeshobject.cpp
-    appleseed/bindobject.cpp
-    appleseed/bindproject.cpp
-    appleseed/bindquaternion.cpp
-    appleseed/bindrenderercontroller.cpp
-    appleseed/bindscene.cpp
-    appleseed/bindshadergroup.cpp
-    appleseed/bindsurfaceshader.cpp
-    appleseed/bindtexture.cpp
-    appleseed/bindtilecallback.cpp
-    appleseed/bindtransform.cpp
-    appleseed/bindutility.cpp
-    appleseed/bindvector.cpp
-    appleseed/dict2dict.cpp
-    appleseed/dict2dict.h
-    appleseed/gillocks.h
-    appleseed/gillocks.cpp
-    appleseed/logtarget.py
-    appleseed/metadata.h
-    appleseed/module.cpp
-    appleseed/unalignedmatrix44.h
-    appleseed/unalignedtransform.h
-    appleseed/studio/__init__.py
+    __init__.py
+    bindaov.cpp
+    bindassembly.cpp
+    bindbasis.cpp
+    bindbbox.cpp
+    bindbsdf.cpp
+    bindbssrdf.cpp
+    bindcamera.cpp
+    bindcolor.cpp
+    binddisplay.cpp
+    bindedf.cpp
+    bindentity.cpp
+    bindentitycontainers.h
+    bindenvironment.cpp
+    bindframe.cpp
+    bindimage.cpp
+    bindlight.cpp
+    bindlogger.cpp
+    bindmasterrenderer.cpp
+    bindmaterial.cpp
+    bindmatrix.cpp
+    bindmeshobject.cpp
+    bindobject.cpp
+    bindproject.cpp
+    bindquaternion.cpp
+    bindrenderercontroller.cpp
+    bindscene.cpp
+    bindshadergroup.cpp
+    bindsurfaceshader.cpp
+    bindtexture.cpp
+    bindtilecallback.cpp
+    bindtransform.cpp
+    bindutility.cpp
+    bindvector.cpp
+    dict2dict.cpp
+    dict2dict.h
+    gillocks.h
+    gillocks.cpp
+    logtarget.py
+    metadata.h
+    module.cpp
+    unalignedmatrix44.h
+    unalignedtransform.h
+    studio/__init__.py
 )
 list (APPEND appleseed.python_sources
     ${appleseed_module_sources}
@@ -161,11 +161,11 @@ target_link_libraries (appleseed.python
 #--------------------------------------------------------------------------------------------------
 
 add_copy_target_to_sandbox_py_module_command (appleseed.python appleseed)
-add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/appleseed/__init__.py appleseed)
-add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/appleseed/logtarget.py appleseed)
-add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/appleseed/studio/__init__.py appleseed.studio)
-add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/appleseed/studio/Qt.py appleseed.studio)
-add_copy_dir_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/appleseed/test appleseed)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/__init__.py appleseed)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/logtarget.py appleseed)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/studio/__init__.py appleseed.studio)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/studio/Qt.py appleseed.studio)
+add_copy_dir_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/test appleseed)
 
 
 #--------------------------------------------------------------------------------------------------

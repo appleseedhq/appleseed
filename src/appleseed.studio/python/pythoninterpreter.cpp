@@ -167,5 +167,11 @@ PythonInterpreter::PythonInterpreter()
 {
 }
 
+PythonInterpreter::~PythonInterpreter()
+{
+    // Commented as boost.python doesn't support Py_Finalize call
+    //Py_Finalize();
+}
+
 }   // namespace studio
 }   // namespace appleseed
