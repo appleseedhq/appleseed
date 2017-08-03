@@ -142,4 +142,3 @@ void ForwardLightSampler::sample_non_physical_lights(
 }
 
 }   // namespace renderer
-

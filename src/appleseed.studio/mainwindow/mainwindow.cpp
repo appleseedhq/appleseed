@@ -324,11 +324,13 @@ QDockWidget* MainWindow::create_dock_widget(const char* dock_name)
     const auto& actions = m_ui->menu_view->actions();
     QAction* menu_separator = actions.last();
     for (int i = actions.size() - 2; i != 0; --i)
+    {
         if (actions[i]->isSeparator())
         {
             menu_separator = actions[i];
             break;
         }
+    }
 
     m_ui->menu_view->insertAction(menu_separator,
                                   dock_widget->toggleViewAction());

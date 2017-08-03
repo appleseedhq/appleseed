@@ -60,24 +60,24 @@ class ForwardLightSampler
   public:
     // Constructor.
     ForwardLightSampler(
-        const Scene&                        scene,
-        const ParamArray&                   params = ParamArray());
+        const Scene&                    scene,
+        const ParamArray&               params = ParamArray());
 
     // Return true if the scene contains at least one light or emitting triangle.
     bool has_lights() const;
 
     // Sample the sets of non-physical lights and emitting triangles.
     void sample(
-        const ShadingRay::Time&             time,
-        const foundation::Vector3f&         s,
-        LightSample&                        light_sample) const;
+        const ShadingRay::Time&         time,
+        const foundation::Vector3f&     s,
+        LightSample&                    light_sample) const;
 
   private:
     // Sample the set of non-physical lights.
     void sample_non_physical_lights(
-        const ShadingRay::Time&             time,
-        const foundation::Vector3f&         s,
-        LightSample&                        light_sample) const;
+        const ShadingRay::Time&         time,
+        const foundation::Vector3f&     s,
+        LightSample&                    light_sample) const;
 };
 
 
