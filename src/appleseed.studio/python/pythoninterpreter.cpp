@@ -169,7 +169,8 @@ PythonInterpreter::PythonInterpreter()
 
 PythonInterpreter::~PythonInterpreter()
 {
-    Py_Finalize();
+    // Commented as boost.python doesn't support Py_Finalize call
+    //Py_Finalize();
 }
 
 }   // namespace studio
