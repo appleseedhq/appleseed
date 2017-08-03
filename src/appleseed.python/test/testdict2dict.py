@@ -32,7 +32,7 @@ import appleseed as asr
 
 class TestDict2Dict(unittest.TestCase):
     """
-    Test conversions between Python dictionaries and appleseed's ParamArrays
+    Test conversion between Python dictionaries and appleseed's ParamArray.
     """
 
     def setUp(self):
