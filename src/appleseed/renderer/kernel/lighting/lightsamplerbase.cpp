@@ -53,6 +53,21 @@ LightSamplerBase::LightSamplerBase(const ParamArray& params)
   : m_params(params)
   , m_emitting_triangle_hash_table(m_triangle_key_hasher)
   , m_use_light_tree(false)
+  , m_cdf_light_handling(
+        [&](
+            const NonPhysicalLightInfo& light_info,
+            const Light& light)
+        {
+            // Insert into non physical lights to be evaluated using CDF.
+            const size_t light_index = m_non_physical_lights.size();
+            m_non_physical_lights.push_back(light_info);
+
+            // Insert the light into the CDF.
+            // todo: compute importance.
+            float importance = 1.0f;
+            importance *= light.get_uncached_importance_multiplier();
+            m_non_physical_lights_cdf.insert(light_index, importance);
+        })
   {
   }
 
@@ -321,7 +336,8 @@ void LightSamplerBase::collect_emitting_triangles(
 
 void LightSamplerBase::collect_non_physical_lights(
     const AssemblyInstanceContainer&    assembly_instances,
-    const TransformSequence&            parent_transform_seq)
+    const TransformSequence&            parent_transform_seq,
+    const LightHandlingLambda&          light_handling)
 {
     for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
     {
@@ -339,18 +355,21 @@ void LightSamplerBase::collect_non_physical_lights(
         // Recurse into child assembly instances.
         collect_non_physical_lights(
             assembly.assembly_instances(),
-            cumulated_transform_seq);
+            cumulated_transform_seq,
+            light_handling);
 
         // Collect lights from this assembly.
         collect_non_physical_lights(
             assembly,
-            cumulated_transform_seq);
+            cumulated_transform_seq,
+            light_handling);
     }
 }
 
 void LightSamplerBase::collect_non_physical_lights(
     const Assembly&                     assembly,
-    const TransformSequence&            transform_sequence)
+    const TransformSequence&            transform_sequence,
+    const LightHandlingLambda&          light_handling)
 {
     for (const_each<LightContainer> i = assembly.lights(); i; ++i)
     {
@@ -361,24 +380,7 @@ void LightSamplerBase::collect_non_physical_lights(
         light_info.m_transform_sequence = transform_sequence;
         light_info.m_light = &light;
 
-        if (m_use_light_tree &&
-            ((light.get_flags() & Light::LightTreeCompatible) != 0))
-        {
-            // Copy the light into the light vector.
-            m_light_tree_lights.push_back(light_info);
-        }
-        else
-        {
-            // Copy the light into the light vector.
-            const size_t light_index = m_non_physical_lights.size();
-            m_non_physical_lights.push_back(light_info);
-
-            // Insert the light into the CDF.
-            // todo: compute importance.
-            float importance = 1.0f;
-            importance *= light.get_uncached_importance_multiplier();
-            m_non_physical_lights_cdf.insert(light_index, importance);
-        }
+        light_handling(light_info, light);
     }
 }
 

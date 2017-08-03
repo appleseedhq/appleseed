@@ -56,8 +56,23 @@ ForwardLightSampler::ForwardLightSampler(const Scene& scene, const ParamArray& p
 {
     RENDERER_LOG_INFO("collecting light emitters...");
 
+    LightHandlingLambda light_handling = [&](
+        const NonPhysicalLightInfo& light_info,
+        const Light& light)
+    {
+        // Insert into non physical lights to be evaluated using CDF.
+        const size_t light_index = m_non_physical_lights.size();
+        m_non_physical_lights.push_back(light_info);
+
+        // Insert the light into the CDF.
+        // todo: compute importance.
+        float importance = 1.0f;
+        importance *= light.get_uncached_importance_multiplier();
+        m_non_physical_lights_cdf.insert(light_index, importance);
+    };
+
     // Collect all non-physical lights.
-    collect_non_physical_lights(scene.assembly_instances(), TransformSequence());
+    collect_non_physical_lights(scene.assembly_instances(), TransformSequence(), light_handling);
     m_non_physical_light_count = m_non_physical_lights.size();
 
     // Collect all light-emitting triangles.

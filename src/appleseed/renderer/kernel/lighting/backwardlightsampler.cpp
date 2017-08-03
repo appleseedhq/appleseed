@@ -60,9 +60,23 @@ BackwardLightSampler::BackwardLightSampler(
 
     RENDERER_LOG_INFO("collecting light emitters...");
 
+    LightHandlingLambda light_handling = [&](
+        const NonPhysicalLightInfo& light_info,
+        const Light& light)
+    {
+        if (m_use_light_tree
+            && ((light.get_flags() & Light::LightTreeCompatible) != 0))
+        {
+            // Insert into light tree compatible lights.
+            m_light_tree_lights.push_back(light_info);
+        }
+        else
+            m_cdf_light_handling(light_info, light);
+    };
+
     // Collect all non-physical lights and separate them according to their
     // compatibility with the LightTree.
-    collect_non_physical_lights(scene.assembly_instances(), TransformSequence());
+    collect_non_physical_lights(scene.assembly_instances(), TransformSequence(), light_handling);
     m_non_physical_light_count = m_non_physical_lights.size();
 
     // Collect all light-emitting triangles.
