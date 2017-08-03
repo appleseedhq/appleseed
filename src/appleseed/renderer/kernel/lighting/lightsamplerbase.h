@@ -45,6 +45,7 @@
 // Forward declarations.
 namespace renderer  { class Assembly; }
 namespace renderer  { class AssemblyInstance; }
+namespace renderer  { class Material; }
 namespace renderer  { class MaterialArray; }
 
 namespace renderer
@@ -91,7 +92,9 @@ class LightSamplerBase
         const Light&)>                          LightHandlingLambda;
     
     typedef std::function<void (
-        const EmittingTriangle&)>               TriangleHandlingLambda;
+        const Material*,
+        const float,
+        const size_t)>                          TriangleHandlingLambda;
  
     const Parameters                        m_params;
  
@@ -110,6 +113,7 @@ class LightSamplerBase
     bool                                    m_use_light_tree;
 
     LightHandlingLambda                     m_cdf_light_handling;
+    TriangleHandlingLambda                  m_cdf_triangle_handling;
 
     // Build a hash table that allows to find the emitting triangle at a given shading point.
     void build_emitting_triangle_hash_table();
@@ -117,13 +121,15 @@ class LightSamplerBase
     // Recursively collect emitting triangles from a given set of assembly instances.
     void collect_emitting_triangles(
         const AssemblyInstanceContainer&    assembly_instances,
-        const TransformSequence&            parent_transform_seq);
+        const TransformSequence&            parent_transform_seq,
+        const TriangleHandlingLambda&       triangle_handling);
 
     // Collect emitting triangles from a given assembly.
     void collect_emitting_triangles(
         const Assembly&                     assembly,
         const AssemblyInstance&             assembly_instance,
-        const TransformSequence&            transform_sequence);
+        const TransformSequence&            transform_sequence,
+        const TriangleHandlingLambda&       triangle_handling);
 
     // Recursively collect non-physical lights from a given set of assembly instances.
     void collect_non_physical_lights(

@@ -75,10 +75,19 @@ ForwardLightSampler::ForwardLightSampler(const Scene& scene, const ParamArray& p
     collect_non_physical_lights(scene.assembly_instances(), TransformSequence(), light_handling);
     m_non_physical_light_count = m_non_physical_lights.size();
 
+    TriangleHandlingLambda triangle_handling = [&](
+        const Material* material,
+        const float     area,
+        const size_t    emitting_triangle_index)
+    {
+        m_cdf_triangle_handling(material, area, emitting_triangle_index);
+    };
+
     // Collect all light-emitting triangles.
     collect_emitting_triangles(
         scene.assembly_instances(),
-        TransformSequence());
+        TransformSequence(),
+        triangle_handling);
 
     // Build the hash table of emitting triangles.
     build_emitting_triangle_hash_table();

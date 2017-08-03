@@ -68,6 +68,24 @@ LightSamplerBase::LightSamplerBase(const ParamArray& params)
             importance *= light.get_uncached_importance_multiplier();
             m_non_physical_lights_cdf.insert(light_index, importance);
         })
+  , m_cdf_triangle_handling(
+        [&](
+            const Material* material,
+            const float     area,
+            const size_t    emitting_triangle_index)
+        {
+            // Retrieve the EDF and get the importance multiplier.
+            float importance_multiplier = 1.0f;
+            if (const EDF* edf = material->get_uncached_edf())
+                importance_multiplier = edf->get_uncached_importance_multiplier();
+
+            // Compute the probability density of this triangle.
+            const float triangle_importance = m_params.m_importance_sampling ? static_cast<float>(area) : 1.0f;
+            const float triangle_prob = triangle_importance * importance_multiplier;
+
+            // Insert the light-emitting triangle into the CDF.
+            m_emitting_triangles_cdf.insert(emitting_triangle_index, triangle_prob);
+        })
   {
   }
 
@@ -113,7 +131,8 @@ void LightSamplerBase::build_emitting_triangle_hash_table()
 
 void LightSamplerBase::collect_emitting_triangles(
     const AssemblyInstanceContainer&    assembly_instances,
-    const TransformSequence&            parent_transform_seq)
+    const TransformSequence&            parent_transform_seq,
+    const TriangleHandlingLambda&       triangle_handling)
 {
     for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
     {
@@ -131,20 +150,23 @@ void LightSamplerBase::collect_emitting_triangles(
         // Recurse into child assembly instances.
         collect_emitting_triangles(
             assembly.assembly_instances(),
-            cumulated_transform_seq);
+            cumulated_transform_seq,
+            triangle_handling);
 
         // Collect emitting triangles from this assembly instance.
         collect_emitting_triangles(
             assembly,
             assembly_instance,
-            cumulated_transform_seq);
+            cumulated_transform_seq,
+            triangle_handling);
     }
 }
 
 void LightSamplerBase::collect_emitting_triangles(
     const Assembly&                     assembly,
     const AssemblyInstance&             assembly_instance,
-    const TransformSequence&            transform_sequence)
+    const TransformSequence&            transform_sequence,
+    const TriangleHandlingLambda&       triangle_handling)
 {
     // Loop over the object instances of the assembly.
     const size_t object_instance_count = assembly.object_instances().size();
@@ -301,21 +323,7 @@ void LightSamplerBase::collect_emitting_triangles(
                     // Store the light-emitting triangle.
                     m_emitting_triangles.push_back(emitting_triangle);
 
-                    // When using the CDF, insert the light-emitting triangle into the CDF.
-                    if (!m_use_light_tree)
-                    {
-                        // Retrieve the EDF and get the importance multiplier.
-                        float importance_multiplier = 1.0f;
-                        if (const EDF* edf = material->get_uncached_edf())
-                            importance_multiplier = edf->get_uncached_importance_multiplier();
-
-                        // Compute the probability density of this triangle.
-                        const float triangle_importance = m_params.m_importance_sampling ? static_cast<float>(area) : 1.0f;
-                        const float triangle_prob = triangle_importance * importance_multiplier;
-
-                        // Insert the light-emitting triangle into the CDF.
-                        m_emitting_triangles_cdf.insert(emitting_triangle_index, triangle_prob);
-                    }
+                    triangle_handling(material, area, emitting_triangle_index);
                 }
             }
         }
