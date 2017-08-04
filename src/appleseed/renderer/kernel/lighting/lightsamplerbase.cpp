@@ -352,7 +352,7 @@ void LightSamplerBase::collect_non_physical_lights(
         light_info.m_transform_sequence = transform_sequence;
         light_info.m_light = &light;
 
-        light_handling(light_info, light);
+        light_handling(light_info);
     }
 }
 

@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/lighting/lightsample.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
@@ -62,12 +63,10 @@ BackwardLightSampler::BackwardLightSampler(
 
     RENDERER_LOG_INFO("collecting light emitters...");
 
-    LightHandlingLambda light_handling = [&](
-        const NonPhysicalLightInfo& light_info,
-        const Light& light)
+    LightHandlingLambda light_handling = [&](const NonPhysicalLightInfo& light_info)
     {
         if (m_use_light_tree
-            && ((light.get_flags() & Light::LightTreeCompatible) != 0))
+            && ((light_info.m_light->get_flags() & Light::LightTreeCompatible) != 0))
         {
             // Insert into light tree compatible lights.
             m_light_tree_lights.push_back(light_info);
@@ -81,7 +80,7 @@ BackwardLightSampler::BackwardLightSampler(
             // Insert the light into the CDF.
             // todo: compute importance.
             float importance = 1.0f;
-            importance *= light.get_uncached_importance_multiplier();
+            importance *= light_info.m_light->get_uncached_importance_multiplier();
             m_non_physical_lights_cdf.insert(light_index, importance);
         }
     };

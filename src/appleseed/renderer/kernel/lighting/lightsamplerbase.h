@@ -87,10 +87,8 @@ class LightSamplerBase
     typedef std::vector<EmittingTriangle>       EmittingTriangleVector;
     typedef foundation::CDF<size_t, float>      EmitterCDF;
 
-    typedef std::function<void (
-        const NonPhysicalLightInfo&,
-        const Light&)>                          LightHandlingLambda;
-    
+    typedef std::function<void (const NonPhysicalLightInfo&)>
+                                                LightHandlingLambda;
     typedef std::function<void (
         const Material*,
         const float,

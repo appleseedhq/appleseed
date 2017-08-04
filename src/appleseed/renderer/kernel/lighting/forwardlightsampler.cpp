@@ -58,9 +58,7 @@ ForwardLightSampler::ForwardLightSampler(const Scene& scene, const ParamArray& p
 {
     RENDERER_LOG_INFO("collecting light emitters...");
 
-    LightHandlingLambda light_handling = [&](
-        const NonPhysicalLightInfo& light_info,
-        const Light& light)
+    LightHandlingLambda light_handling = [&](const NonPhysicalLightInfo& light_info)
     {
         // Insert into non physical lights to be evaluated using CDF.
         const size_t light_index = m_non_physical_lights.size();
@@ -69,7 +67,7 @@ ForwardLightSampler::ForwardLightSampler(const Scene& scene, const ParamArray& p
         // Insert the light into the CDF.
         // todo: compute importance.
         float importance = 1.0f;
-        importance *= light.get_uncached_importance_multiplier();
+        importance *= light_info.m_light->get_uncached_importance_multiplier();
         m_non_physical_lights_cdf.insert(light_index, importance);
     };
 
