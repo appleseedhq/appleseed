@@ -109,9 +109,6 @@ class LightSamplerBase
     EmittingTriangleKeyHasher               m_triangle_key_hasher;
     EmittingTriangleHashTable               m_emitting_triangle_hash_table;
  
-    LightHandlingLambda                     m_cdf_light_handling;
-    TriangleHandlingLambda                  m_cdf_triangle_handling;
-
     // Build a hash table that allows to find the emitting triangle at a given shading point.
     void build_emitting_triangle_hash_table();
 
