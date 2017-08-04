@@ -32,9 +32,7 @@
 // appleseed.renderer headers
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
-#include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
-#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
@@ -52,7 +50,6 @@ namespace renderer
 LightSamplerBase::LightSamplerBase(const ParamArray& params)
   : m_params(params)
   , m_emitting_triangle_hash_table(m_triangle_key_hasher)
-  , m_use_light_tree(false)
   {
   }
 
@@ -98,7 +95,8 @@ void LightSamplerBase::build_emitting_triangle_hash_table()
 
 void LightSamplerBase::collect_emitting_triangles(
     const AssemblyInstanceContainer&    assembly_instances,
-    const TransformSequence&            parent_transform_seq)
+    const TransformSequence&            parent_transform_seq,
+    const TriangleHandlingLambda&       triangle_handling)
 {
     for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
     {
@@ -116,20 +114,23 @@ void LightSamplerBase::collect_emitting_triangles(
         // Recurse into child assembly instances.
         collect_emitting_triangles(
             assembly.assembly_instances(),
-            cumulated_transform_seq);
+            cumulated_transform_seq,
+            triangle_handling);
 
         // Collect emitting triangles from this assembly instance.
         collect_emitting_triangles(
             assembly,
             assembly_instance,
-            cumulated_transform_seq);
+            cumulated_transform_seq,
+            triangle_handling);
     }
 }
 
 void LightSamplerBase::collect_emitting_triangles(
     const Assembly&                     assembly,
     const AssemblyInstance&             assembly_instance,
-    const TransformSequence&            transform_sequence)
+    const TransformSequence&            transform_sequence,
+    const TriangleHandlingLambda&       triangle_handling)
 {
     // Loop over the object instances of the assembly.
     const size_t object_instance_count = assembly.object_instances().size();
@@ -286,21 +287,7 @@ void LightSamplerBase::collect_emitting_triangles(
                     // Store the light-emitting triangle.
                     m_emitting_triangles.push_back(emitting_triangle);
 
-                    // When using the CDF, insert the light-emitting triangle into the CDF.
-                    if (!m_use_light_tree)
-                    {
-                        // Retrieve the EDF and get the importance multiplier.
-                        float importance_multiplier = 1.0f;
-                        if (const EDF* edf = material->get_uncached_edf())
-                            importance_multiplier = edf->get_uncached_importance_multiplier();
-
-                        // Compute the probability density of this triangle.
-                        const float triangle_importance = m_params.m_importance_sampling ? static_cast<float>(area) : 1.0f;
-                        const float triangle_prob = triangle_importance * importance_multiplier;
-
-                        // Insert the light-emitting triangle into the CDF.
-                        m_emitting_triangles_cdf.insert(emitting_triangle_index, triangle_prob);
-                    }
+                    triangle_handling(material, area, emitting_triangle_index);
                 }
             }
         }
@@ -321,7 +308,8 @@ void LightSamplerBase::collect_emitting_triangles(
 
 void LightSamplerBase::collect_non_physical_lights(
     const AssemblyInstanceContainer&    assembly_instances,
-    const TransformSequence&            parent_transform_seq)
+    const TransformSequence&            parent_transform_seq,
+    const LightHandlingLambda&          light_handling)
 {
     for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
     {
@@ -339,18 +327,21 @@ void LightSamplerBase::collect_non_physical_lights(
         // Recurse into child assembly instances.
         collect_non_physical_lights(
             assembly.assembly_instances(),
-            cumulated_transform_seq);
+            cumulated_transform_seq,
+            light_handling);
 
         // Collect lights from this assembly.
         collect_non_physical_lights(
             assembly,
-            cumulated_transform_seq);
+            cumulated_transform_seq,
+            light_handling);
     }
 }
 
 void LightSamplerBase::collect_non_physical_lights(
     const Assembly&                     assembly,
-    const TransformSequence&            transform_sequence)
+    const TransformSequence&            transform_sequence,
+    const LightHandlingLambda&          light_handling)
 {
     for (const_each<LightContainer> i = assembly.lights(); i; ++i)
     {
@@ -361,24 +352,7 @@ void LightSamplerBase::collect_non_physical_lights(
         light_info.m_transform_sequence = transform_sequence;
         light_info.m_light = &light;
 
-        if (m_use_light_tree &&
-            ((light.get_flags() & Light::LightTreeCompatible) != 0))
-        {
-            // Copy the light into the light vector.
-            m_light_tree_lights.push_back(light_info);
-        }
-        else
-        {
-            // Copy the light into the light vector.
-            const size_t light_index = m_non_physical_lights.size();
-            m_non_physical_lights.push_back(light_info);
-
-            // Insert the light into the CDF.
-            // todo: compute importance.
-            float importance = 1.0f;
-            importance *= light.get_uncached_importance_multiplier();
-            m_non_physical_lights_cdf.insert(light_index, importance);
-        }
+        light_handling(light_info);
     }
 }
 

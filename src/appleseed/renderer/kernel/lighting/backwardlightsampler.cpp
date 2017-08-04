@@ -32,8 +32,11 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/lighting/lightsample.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
+#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/scene.h"
 
 // Standard headers.
@@ -60,15 +63,60 @@ BackwardLightSampler::BackwardLightSampler(
 
     RENDERER_LOG_INFO("collecting light emitters...");
 
+    LightHandlingLambda light_handling = [&](const NonPhysicalLightInfo& light_info)
+    {
+        if (m_use_light_tree
+            && ((light_info.m_light->get_flags() & Light::LightTreeCompatible) != 0))
+        {
+            // Insert into light tree compatible lights.
+            m_light_tree_lights.push_back(light_info);
+        }
+        else
+        {
+            // Insert into non physical lights to be evaluated using CDF.
+            const size_t light_index = m_non_physical_lights.size();
+            m_non_physical_lights.push_back(light_info);
+
+            // Insert the light into the CDF.
+            // todo: compute importance.
+            float importance = 1.0f;
+            importance *= light_info.m_light->get_uncached_importance_multiplier();
+            m_non_physical_lights_cdf.insert(light_index, importance);
+        }
+    };
+
     // Collect all non-physical lights and separate them according to their
     // compatibility with the LightTree.
-    collect_non_physical_lights(scene.assembly_instances(), TransformSequence());
+    collect_non_physical_lights(scene.assembly_instances(), TransformSequence(), light_handling);
     m_non_physical_light_count = m_non_physical_lights.size();
 
+    TriangleHandlingLambda triangle_handling = [&](
+        const Material* material,
+        const float     area,
+        const size_t    emitting_triangle_index)
+    {
+        if (!m_use_light_tree)
+        {
+            // Prepare emitting triangles for CDF sampling.
+            // Retrieve the EDF and get the importance multiplier.
+            float importance_multiplier = 1.0f;
+            if (const EDF* edf = material->get_uncached_edf())
+                importance_multiplier = edf->get_uncached_importance_multiplier();
+
+            // Compute the probability density of this triangle.
+            const float triangle_importance = m_params.m_importance_sampling ? static_cast<float>(area) : 1.0f;
+            const float triangle_prob = triangle_importance * importance_multiplier;
+
+            // Insert the light-emitting triangle into the CDF.
+            m_emitting_triangles_cdf.insert(emitting_triangle_index, triangle_prob);
+        }
+    };
+    
     // Collect all light-emitting triangles.
     collect_emitting_triangles(
         scene.assembly_instances(),
-        TransformSequence());
+        TransformSequence(),
+        triangle_handling);
 
     // Build the hash table of emitting triangles.
     build_emitting_triangle_hash_table();

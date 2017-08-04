@@ -39,9 +39,13 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/cdf.h"
 
+// Standard headers.
+#include <functional>
+
 // Forward declarations.
 namespace renderer  { class Assembly; }
 namespace renderer  { class AssemblyInstance; }
+namespace renderer  { class Material; }
 namespace renderer  { class MaterialArray; }
 
 namespace renderer
@@ -83,12 +87,18 @@ class LightSamplerBase
     typedef std::vector<EmittingTriangle>       EmittingTriangleVector;
     typedef foundation::CDF<size_t, float>      EmitterCDF;
 
+    typedef std::function<void (const NonPhysicalLightInfo&)>
+                                                LightHandlingLambda;
+    typedef std::function<void (
+        const Material*,
+        const float,
+        const size_t)>                          TriangleHandlingLambda;
+
     const Parameters                        m_params;
 
-    NonPhysicalLightVector                  m_light_tree_lights;
     NonPhysicalLightVector                  m_non_physical_lights;
     EmittingTriangleVector                  m_emitting_triangles;
-    
+
     size_t                                  m_non_physical_light_count;
     
     EmitterCDF                              m_non_physical_lights_cdf;
@@ -96,32 +106,34 @@ class LightSamplerBase
 
     EmittingTriangleKeyHasher               m_triangle_key_hasher;
     EmittingTriangleHashTable               m_emitting_triangle_hash_table;
-
-    bool                                    m_use_light_tree;
-
+ 
     // Build a hash table that allows to find the emitting triangle at a given shading point.
     void build_emitting_triangle_hash_table();
 
     // Recursively collect emitting triangles from a given set of assembly instances.
     void collect_emitting_triangles(
         const AssemblyInstanceContainer&    assembly_instances,
-        const TransformSequence&            parent_transform_seq);
+        const TransformSequence&            parent_transform_seq,
+        const TriangleHandlingLambda&       triangle_handling);
 
     // Collect emitting triangles from a given assembly.
     void collect_emitting_triangles(
         const Assembly&                     assembly,
         const AssemblyInstance&             assembly_instance,
-        const TransformSequence&            transform_sequence);
+        const TransformSequence&            transform_sequence,
+        const TriangleHandlingLambda&       triangle_handling);
 
     // Recursively collect non-physical lights from a given set of assembly instances.
     void collect_non_physical_lights(
         const AssemblyInstanceContainer&    assembly_instances,
-        const TransformSequence&            parent_transform_seq);
+        const TransformSequence&            parent_transform_seq,
+        const LightHandlingLambda&          light_handling);
 
     // Collect non-physical lights from a given assembly.
     void collect_non_physical_lights(
         const Assembly&                     assembly,
-        const TransformSequence&            transform_sequence);
+        const TransformSequence&            transform_sequence,
+        const LightHandlingLambda&          light_handling);
 
     void store_object_area_in_shadergroups(
         const AssemblyInstance*             assembly_instance,

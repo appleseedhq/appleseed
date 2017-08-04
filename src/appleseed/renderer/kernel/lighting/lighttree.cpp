@@ -82,9 +82,9 @@ vector<size_t> LightTree::build()
                                     .get_local_to_parent()
                                     .extract_translation();
 
-        // Non physical light has no real size - hence some arbitrary small 
+        // Non physical light has no real size - hence some arbitrary small
         // value is assigned.
-        constexpr double BboxSize = 0.001f;
+        const double BboxSize = 0.001f;
         const AABB3d bbox = AABB3d(Vector3d(position[0] - BboxSize,
                                             position[1] - BboxSize,
                                             position[2] - BboxSize),
