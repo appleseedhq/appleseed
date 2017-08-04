@@ -32,4 +32,10 @@
 
 #endif
 
+#if __GNUC__ >= 7
+
+    #pragma GCC diagnostic pop
+
+#endif
+
 #include "foundation/platform/_endoiioheaders.h"
