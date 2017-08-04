@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/light/light.h"
@@ -226,11 +227,11 @@ float LightTree::recursive_node_update(
 }
 
 void LightTree::sample(
-    const Vector3d&     surface_point,
-    float               s,
-    LightType&          light_type,
-    size_t&             light_index,
-    float&              light_probability) const
+    const ShadingPoint&     shading_point,
+    float                   s,
+    LightType&              light_type,
+    size_t&                 light_index,
+    float&                  light_probability) const
 {
     assert(is_built());
 
@@ -242,7 +243,7 @@ void LightTree::sample(
         const auto& node = m_nodes[node_index];
 
         float p1, p2;
-        child_node_probabilites(node, surface_point, p1, p2);
+        child_node_probabilites(node, shading_point.get_point(), p1, p2);
 
         if (s < p1)
         {
@@ -265,8 +266,8 @@ void LightTree::sample(
 }
 
 float LightTree::evaluate_node_pdf(
-    const Vector3d&     surface_point,
-    size_t              node_index) const
+    const Vector3d&         surface_point,
+    size_t                  node_index) const
 {
     size_t parent_index = m_nodes[node_index].get_parent();
     float pdf = 1.0f;
