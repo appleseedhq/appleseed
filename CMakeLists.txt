@@ -581,10 +581,6 @@ if (WITH_STUDIO)
     add_subdirectory (src/appleseed.studio)
 endif ()
 
-if (WITH_PYTHON)
-    add_subdirectory (src/appleseed.python)
-endif ()
-
 if (WITH_TOOLS)
     add_subdirectory (src/tools/animatecamera)
     add_subdirectory (src/tools/convertmeshfile)
