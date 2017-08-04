@@ -250,7 +250,7 @@ void BackwardLightSampler::sample_light_tree(
     size_t light_index;
     float light_prob;
     m_light_tree->sample(
-        shading_point.get_point(),
+        shading_point,
         s[0],
         light_type,
         light_index,

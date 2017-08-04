@@ -42,6 +42,9 @@
 // Standard headers.
 #include <cstddef>
 
+// Forward declarations.
+namespace renderer  { class ShadingPoint; }
+
 namespace renderer
 {
 
@@ -68,17 +71,17 @@ class LightTree
     bool is_built() const;
 
     void sample(
-        const foundation::Vector3d&             surface_point,
-        const float                             s,
-        LightType&                              light_type,
-        size_t&                                 light_index,
-        float&                                  light_probability) const;
+        const ShadingPoint&             surface_point,
+        const float                     s,
+        LightType&                      light_type,
+        size_t&                         light_index,
+        float&                          light_probability) const;
 
     // Compute the light probability of a particular tree node. Start from the
     // node and go backwards towards the root node.
     float evaluate_node_pdf(
-        const foundation::Vector3d&             surface_point,
-        const size_t                            node_index) const;
+        const foundation::Vector3d&     surface_point,
+        const size_t                    node_index) const;
 
   private:
     struct Item
