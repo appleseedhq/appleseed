@@ -73,18 +73,17 @@ namespace
             delete this;
         }
 
-        virtual void pre_render(
-            const size_t    x,
-            const size_t    y,
-            const size_t    width,
-            const size_t    height) override
+        virtual void on_tile_begin(
+            const Frame*    frame,
+            const size_t    tile_x,
+            const size_t    tile_y) override
         {
             assert(m_render_widget);
-            m_render_widget->highlight_region(x, y, width, height);
+            m_render_widget->highlight_tile(*frame, tile_x, tile_y);
             emit signal_update();
         }
 
-        virtual void post_render_tile(
+        virtual void on_tile_end(
             const Frame*    frame,
             const size_t    tile_x,
             const size_t    tile_y) override
@@ -94,7 +93,7 @@ namespace
             emit signal_update();
         }
 
-        virtual void post_render(
+        virtual void on_progressive_frame_end(
             const Frame*    frame) override
         {
             assert(m_render_widget);

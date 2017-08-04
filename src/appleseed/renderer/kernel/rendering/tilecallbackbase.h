@@ -53,26 +53,33 @@ class TileCallbackBase
   : public ITileCallback
 {
   public:
-    // This method is called before a region is rendered.
-    virtual void pre_render(
-        const size_t    x,
-        const size_t    y,
-        const size_t    width,
-        const size_t    height) override
+    virtual void on_tiled_frame_begin(const Frame* frame) override
     {
     }
 
-    // This method is called after a tile is rendered.
-    virtual void post_render_tile(
+    virtual void on_tiled_frame_end(const Frame* frame) override
+    {
+    }
+
+    virtual void on_tile_begin(
         const Frame*    frame,
         const size_t    tile_x,
         const size_t    tile_y) override
     {
     }
 
-    // This method is called after a whole frame is rendered.
-    virtual void post_render(
-        const Frame*    frame) override
+    virtual void on_tile_end(
+        const Frame*    frame,
+        const size_t    tile_x,
+        const size_t    tile_y) override
+    {
+    }
+
+    virtual void on_progressive_frame_begin(const Frame* frame) override
+    {
+    }
+
+    virtual void on_progressive_frame_end(const Frame* frame) override
     {
     }
 };

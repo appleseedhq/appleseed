@@ -180,13 +180,21 @@ namespace
     }
 }
 
-void RenderWidget::highlight_region(
-    const size_t    x,
-    const size_t    y,
-    const size_t    width,
-    const size_t    height)
+void RenderWidget::highlight_tile(
+    const Frame&    frame,
+    const size_t    tile_x,
+    const size_t    tile_y)
 {
     QMutexLocker locker(&m_mutex);
+
+    // Retrieve tile bounds.
+    const Image& frame_image = frame.image();
+    const CanvasProperties& frame_props = frame_image.properties();
+    const size_t x = tile_x * frame_props.m_tile_width;
+    const size_t y = tile_y * frame_props.m_tile_height;
+    const Tile& tile = frame_image.tile(tile_x, tile_y);
+    const size_t width = tile.get_width();
+    const size_t height = tile.get_height();
 
     // Retrieve destination image information.
     APPLESEED_UNUSED const size_t image_width = static_cast<size_t>(m_image.width());

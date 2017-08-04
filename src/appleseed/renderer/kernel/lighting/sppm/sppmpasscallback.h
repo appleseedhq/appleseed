@@ -83,13 +83,13 @@ class SPPMPassCallback
     virtual void release() override;
 
     // This method is called at the beginning of a pass.
-    virtual void pre_render(
+    virtual void on_pass_begin(
         const Frame&                frame,
         foundation::JobQueue&       job_queue,
         foundation::IAbortSwitch&   abort_switch) override;
 
     // This method is called at the end of a pass.
-    virtual void post_render(
+    virtual void on_pass_end(
         const Frame&                frame,
         foundation::JobQueue&       job_queue,
         foundation::IAbortSwitch&   abort_switch) override;

@@ -81,11 +81,10 @@ class RenderWidget
     void multiply(const float multiplier);
 
     // Thread-safe.
-    void highlight_region(
-        const size_t            x,
-        const size_t            y,
-        const size_t            width,
-        const size_t            height);
+    void highlight_tile(
+        const renderer::Frame&  frame,
+        const size_t            tile_x,
+        const size_t            tile_y);
 
     // Thread-safe.
     void blit_tile(

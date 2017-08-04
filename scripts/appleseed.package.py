@@ -50,7 +50,7 @@ import zipfile
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.4.6"
+VERSION = "2.4.7"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 
 
@@ -499,7 +499,8 @@ class MacPackageBuilder(PackageBuilder):
     def change_library_paths_in_libraries(self):
         for dirpath, dirnames, filenames in os.walk("appleseed/lib"):
             for filename in filenames:
-                if os.path.splitext(filename)[1] == ".dylib":
+                ext = os.path.splitext(filename)[1]
+                if ext == ".dylib" or ext == ".so":
                     lib_path = os.path.join(dirpath, filename)
                     self.change_library_paths_in_binary(lib_path)
                     self.change_qt_framework_paths_in_binary(lib_path)
@@ -515,9 +516,12 @@ class MacPackageBuilder(PackageBuilder):
 
     # Can be used on executables and dynamic libraries.
     def change_library_paths_in_binary(self, bin_path):
+        progress("Patching {0}".format(bin_path))
+        bin_dir = os.path.dirname(bin_path)
+        path_to_appleseed_lib = os.path.relpath("appleseed/lib/", bin_dir)
         for lib_path in self.get_dependencies_for_file(bin_path, fix_paths=False):
             lib_name = os.path.basename(lib_path)
-            self.change_library_path(bin_path, lib_path, "@executable_path/../lib/" + lib_name)
+            self.change_library_path(bin_path, lib_path, "@loader_path/{0}/{1}".format(path_to_appleseed_lib, lib_name))
 
     # Can be used on executables and dynamic libraries.
     def change_qt_framework_paths_in_binary(self, bin_path):

@@ -97,11 +97,7 @@ typedef foundation::HashTable<
 class LightSample
 {
   public:
-    LightSample()
-      : m_triangle(nullptr)
-      , m_light(nullptr)
-    {
-    }
+    LightSample();
 
     // Data for a light-emitting triangle sample.
     const EmittingTriangle*     m_triangle;
@@ -167,6 +163,17 @@ inline size_t EmittingTriangleKeyHasher::operator()(const EmittingTriangleKey& k
             key.m_object_instance_index,
             key.m_region_index,
             key.m_triangle_index);
+}
+
+
+//
+// LightSample class implementation.
+//
+
+inline LightSample::LightSample()
+  : m_triangle(nullptr)
+  , m_light(nullptr)
+{
 }
 
 }       // namespace renderer
