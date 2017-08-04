@@ -80,7 +80,7 @@ class LightTree
     // Compute the light probability of a particular tree node. Start from the
     // node and go backwards towards the root node.
     float evaluate_node_pdf(
-        const ShadingPoint&     surface_point,
+        const ShadingPoint&             surface_point,
         const size_t                    node_index) const;
 
   private:
@@ -127,6 +127,9 @@ class LightTree
         const size_t                                node_level,
         IndexLUT&                                   tri_index_to_node_index);
     
+    foundation::Vector3d emitting_triangle_centroid(
+        const size_t                                triangle_index) const;
+
     float compute_node_probability(
         const LightTreeNode<foundation::AABB3d>&    node,
         const foundation::AABB3d&                   bbox,

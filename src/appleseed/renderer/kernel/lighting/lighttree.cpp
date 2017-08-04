@@ -43,11 +43,13 @@
 #include "foundation/math/distance.h"
 #include "foundation/math/permutation.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/timers.h"
 #include "foundation/utility/vpythonfile.h"
 
 // Standard headers.
 #include <cassert>
+#include <cmath>
 
 using namespace foundation;
 using namespace std;
@@ -290,31 +292,89 @@ float LightTree::evaluate_node_pdf(
     return pdf;
 }
 
+Vector3d LightTree::emitting_triangle_centroid(const size_t triangle_index) const
+{
+    const EmittingTriangle& triangle = m_emitting_triangles[triangle_index];
+    return (triangle.m_v0 + triangle.m_v1 + triangle.m_v2) * (1.0 / 3.0);
+}
+
+namespace
+{
+
+    float sub_hemispherical_light_source_contribution(const float cos_omega, const float cos_sigma)
+    {
+        const float sin_omega = sqrt(1.0f - cos_omega * cos_omega);
+
+        const float sin_sigma2 = 1.0f - (cos_sigma * cos_sigma);
+        const float sin_sigma = sqrt(sin_sigma2);
+
+        const float sin_gamma = cos_sigma / sin_omega;
+        const float cos_gamma2 = 1.0f - (sin_gamma * sin_gamma);
+        const float cos_gamma = sqrt(cos_gamma2);
+
+        const float g = -2.0f * sin_omega * cos_sigma * cos_gamma
+                    + HalfPi<float>()
+                    - asin(sin_gamma)
+                    + sin_gamma * cos_gamma;
+
+        const float h = 
+            cos_omega * (
+                cos_gamma * sqrt(sin_sigma2 - cos_gamma2)
+                + sin_sigma2 * asin(cos_gamma / sin_sigma));
+
+        const float omega = asin(sin_omega);
+        const float sigma = asin(sin_sigma);
+
+        if (omega < (HalfPi<float>() - sigma))
+            return cos_omega * sin_sigma2;
+        else if (omega < HalfPi<float>())
+            return cos_omega * sin_sigma2 + RcpPi<float>() * (g - h);
+        else if (omega < (HalfPi<float>() + sigma))
+            return RcpPi<float>() * (g + h);
+        else
+            return 0.0f;
+    }
+}
+
 float LightTree::compute_node_probability(
     const LightTreeNode<AABB3d>&    node,
     const AABB3d&                   bbox,
     const ShadingPoint&             shading_point) const
 {
-    // Calculate probability of a single node based on its distance
-    // to the surface point being illuminated.
-    // For leaf nodes use the actual position of the light source, instead
-    // of center of the bbox. It is more precise for shaped lights.
-    Vector3d position;
+    // Calculate probability of a single node based on its contribution over
+    // solid angle.
+    const float r = bbox.radius();
+    const float r2 = r * r;
+    const float rcp_surface_area = 1.0f / r2;
+
+    // Triangle centroid is a more precise pocision than the center of the bbox.
     const Item& item = m_items[node.get_item_index()];
-    if (node.is_leaf() && item.m_light_type == EmittingTriangleType)
-    {
-        const size_t light_index = item.m_light_index;
-        const EmittingTriangle& triangle = m_emitting_triangles[light_index];
-        // Use centroid as triangle position approximation.
-        position = (triangle.m_v0 + triangle.m_v1 + triangle.m_v2) * (1.0 / 3.0);
-    }
-    else
-        position = bbox.center();
+    const Vector3d position = (node.is_leaf() && item.m_light_type == EmittingTriangleType)
+        ? emitting_triangle_centroid(item.m_light_index)
+        : bbox.center();
+
+    const Vector3d surface_point = shading_point.get_point();
 
     const float squared_distance =
-        static_cast<float>(square_distance(shading_point.get_point(), position));
+        static_cast<float>(square_distance(surface_point, position));
 
-    return node.get_importance() / squared_distance;
+    // Evaluated point is outside the volume.
+    if (squared_distance <= r2)
+        return node.get_importance() * rcp_surface_area;
+
+    const Vector3d light_direction = normalize(bbox.center() - surface_point);
+    const float sin_theta2 = min(1.0f, (r2 / squared_distance));
+    const float cos_theta = sqrt(1.0f - sin_theta2);
+
+    const Vector3d incident_direction = shading_point.get_ray().m_dir;
+    const Vector3d normal = (dot(shading_point.get_geometric_normal(), incident_direction) <= 0.0f)
+        ? normalize(shading_point.get_shading_normal())
+        : -normalize(shading_point.get_shading_normal());
+
+    const float cos_omega = min(1.0, max(-1.0, dot(normal, light_direction)));
+    const float approx_contribution = sub_hemispherical_light_source_contribution(cos_omega, cos_theta);
+
+    return node.get_importance() * rcp_surface_area * approx_contribution;
 }
 
 void LightTree::child_node_probabilites(
