@@ -414,6 +414,11 @@ const float* Frame::get_xyz_to_rgb_matrix() const
     return &impl->m_working_color_space.m_xyz_to_rgb[0];
 }
 
+const float*Frame::get_rgb_to_xyz_matrix() const
+{
+    return &impl->m_working_color_space.m_rgb_to_xyz[0];
+}
+
 void Frame::reset_crop_window()
 {
     impl->m_crop_window =
