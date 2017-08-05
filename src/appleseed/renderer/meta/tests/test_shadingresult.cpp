@@ -153,38 +153,6 @@ TEST_SUITE(Renderer_Kernel_Shading_ShadingResult)
         EXPECT_EQ(0.0f, result.m_main.m_color[2]);
     }
 
-    TEST_CASE_F(TransformToLinearRGB_FromSRGB, TransformToLinearRGBFixture)
-    {
-        ShadingResult result;
-        result.m_color_space = ColorSpaceSRGB;
-        result.m_main.m_color[0] = 0.0f;
-        result.m_main.m_color[1] = 0.0f;
-        result.m_main.m_color[2] = 0.0f;
-
-        result.transform_to_linear_rgb(m_lighting_conditions);
-
-        EXPECT_EQ(ColorSpaceLinearRGB, result.m_color_space);
-        EXPECT_EQ(0.0f, result.m_main.m_color[0]);
-        EXPECT_EQ(0.0f, result.m_main.m_color[1]);
-        EXPECT_EQ(0.0f, result.m_main.m_color[2]);
-    }
-
-    TEST_CASE_F(TransformToLinearRGB_FromCIEXYZ, TransformToLinearRGBFixture)
-    {
-        ShadingResult result;
-        result.m_color_space = ColorSpaceCIEXYZ;
-        result.m_main.m_color[0] = 0.0f;
-        result.m_main.m_color[1] = 0.0f;
-        result.m_main.m_color[2] = 0.0f;
-
-        result.transform_to_linear_rgb(m_lighting_conditions);
-
-        EXPECT_EQ(ColorSpaceLinearRGB, result.m_color_space);
-        EXPECT_EQ(0.0f, result.m_main.m_color[0]);
-        EXPECT_EQ(0.0f, result.m_main.m_color[1]);
-        EXPECT_EQ(0.0f, result.m_main.m_color[2]);
-    }
-
     TEST_CASE_F(TransformToLinearRGB_FromSpectrum, TransformToLinearRGBFixture)
     {
         ShadingResult result;
