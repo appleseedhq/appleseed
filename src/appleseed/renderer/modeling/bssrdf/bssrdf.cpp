@@ -33,8 +33,9 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
-#include "renderer/modeling/color/colorspace.h"
+#include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -63,8 +64,33 @@ BSSRDF::BSSRDF(
     const char*             name,
     const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
+  , m_lighting_conditions(nullptr)
 {
     set_name(name);
+}
+
+bool BSSRDF::on_frame_begin(
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
+    IAbortSwitch*           abort_switch)
+{
+    if (!ConnectableEntity::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
+
+    // Get the lighting conditions from the frame.
+    assert(project.get_frame());
+    m_lighting_conditions = &project.get_frame()->get_lighting_conditions();
+
+    return true;
+}
+
+void BSSRDF::on_frame_end(
+    const Project&          project,
+    const BaseGroup*        parent)
+{
+    m_lighting_conditions = nullptr;
+    ConnectableEntity::on_frame_end(project, parent);
 }
 
 size_t BSSRDF::compute_input_data_size() const
@@ -100,7 +126,7 @@ void BSSRDF::prepare_inputs(
 
 void BSSRDF::make_reflectance_and_mfp_compatible(
     Spectrum&               reflectance,
-    const Spectrum&         mfp)
+    const Spectrum&         mfp) const
 {
     if (reflectance.size() != mfp.size())
     {
@@ -109,7 +135,7 @@ void BSSRDF::make_reflectance_and_mfp_compatible(
         // size of the mfp.
         if (mfp.is_spectral())
             Spectrum::upgrade(reflectance, reflectance);
-        else Spectrum::downgrade(g_std_lighting_conditions, reflectance, reflectance);
+        else Spectrum::downgrade(*m_lighting_conditions, reflectance, reflectance);
     }
 }
 
