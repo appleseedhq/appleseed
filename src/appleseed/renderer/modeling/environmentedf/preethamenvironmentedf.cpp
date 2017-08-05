@@ -92,7 +92,6 @@ namespace
             const char*             name,
             const ParamArray&       params)
           : EnvironmentEDF(name, params)
-          , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE19312Deg)
         {
             m_inputs.declare("sun_theta", InputFormatFloat);
             m_inputs.declare("sun_phi", InputFormatFloat);
@@ -237,8 +236,6 @@ namespace
             float   m_saturation_multiplier;
             float   m_horizon_shift;
         };
-
-        const LightingConditions    m_lighting_conditions;
 
         InputValues                 m_uniform_values;
 
