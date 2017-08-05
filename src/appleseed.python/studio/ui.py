@@ -29,30 +29,13 @@
 import Qt
 
 def wrapinstance(addr, type):
-    # Function won't change and will throw Exception for PySide2 and PyQt5.
-    raise Exception("No wrapinstance function defined for " + Qt.__binding__)
-
-def resolve_wrapper():
-    global wrapinstance
-
     if Qt.__binding__ == 'PyQt4':
-        # Make an import to global namespace
-        global sip
         import sip
-
-        def _wrapinstance(addr, type):
-            return sip.wrapinstance(addr, type)
-
-        wrapinstance = _wrapinstance
+        return sip.wrapinstance(addr, type)
 
     elif Qt.__binding__ == 'PySide':
-        # Make an import to global namespace
-        global shiboken
         import shiboken
+        return shiboken.wrapInstance(addr, type)
 
-        def _wrapinstance(addr, type):
-            return shiboken.wrapInstance(addr, type)
-
-        wrapinstance = _wrapinstance
-
-resolve_wrapper()
+    else:
+        raise Exception("No wrapinstance function defined for " + Qt.__binding__)
