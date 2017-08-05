@@ -94,18 +94,20 @@ UniqueID Frame::get_class_uid()
 namespace
 {
 
-class WorkingSpace
+class WorkingColorSpace
 {
   public:
-    explicit WorkingSpace(const string& name = "scene_linear_srgb_rec_709")
+    explicit WorkingColorSpace(const string& name = "scene_linear_srgb_rec_709")
       : m_name(name)
     {
         if (m_name == "scene_linear_rec_2020")
         {
-            m_xy_chromaticity_rxy = Vector2f(0.708f, 0.292f);
-            m_xy_chromaticity_gxy = Vector2f(0.170f, 0.797f);
-            m_xy_chromaticity_bxy = Vector2f(0.131f, 0.046f);
-            m_xy_chromaticity_wxy = Vector2f(0.31270f, 0.3290f);
+            m_chromaticity_rxy = Vector2f(0.708f, 0.292f);
+            m_chromaticity_gxy = Vector2f(0.170f, 0.797f);
+            m_chromaticity_bxy = Vector2f(0.131f, 0.046f);
+            m_chromaticity_wxy = Vector2f(0.31270f, 0.3290f);
+
+            m_lighting_conditions = LightingConditions(IlluminantCIED65, XYZCMFCIE19312Deg);
 
             static const float rgb_to_xyz_coeffs[9] =
             {
@@ -125,10 +127,12 @@ class WorkingSpace
         }
         else if (m_name == "scene_linear_dci_p3")
         {
-            m_xy_chromaticity_rxy = Vector2f(0.6800f, 0.3200f);
-            m_xy_chromaticity_gxy = Vector2f(0.2650f, 0.6900f);
-            m_xy_chromaticity_bxy = Vector2f(0.1500f, 0.0600f);
-            m_xy_chromaticity_wxy = Vector2f(0.31400f, 0.3290f);
+            m_chromaticity_rxy = Vector2f(0.6800f, 0.3200f);
+            m_chromaticity_gxy = Vector2f(0.2650f, 0.6900f);
+            m_chromaticity_bxy = Vector2f(0.1500f, 0.0600f);
+            m_chromaticity_wxy = Vector2f(0.31400f, 0.3290f);
+
+            m_lighting_conditions = LightingConditions(IlluminantCIED65, XYZCMFCIE19312Deg);
 
             static const float rgb_to_xyz_coeffs[9] =
             {
@@ -148,10 +152,12 @@ class WorkingSpace
         }
         else if (m_name == "scene_linear_acescg_ap1")
         {
-            m_xy_chromaticity_rxy = Vector2f(0.7130f, 0.2930f);
-            m_xy_chromaticity_gxy = Vector2f(0.1650f, 0.8300f);
-            m_xy_chromaticity_bxy = Vector2f(0.1280f, 0.0440f);
-            m_xy_chromaticity_wxy = Vector2f(0.32168f, 0.33767f);
+            m_chromaticity_rxy = Vector2f(0.7130f, 0.2930f);
+            m_chromaticity_gxy = Vector2f(0.1650f, 0.8300f);
+            m_chromaticity_bxy = Vector2f(0.1280f, 0.0440f);
+            m_chromaticity_wxy = Vector2f(0.32168f, 0.33767f);
+
+            m_lighting_conditions = LightingConditions(IlluminantCIED65, XYZCMFCIE19312Deg);
 
             static const float rgb_to_xyz_coeffs[9] =
             {
@@ -171,10 +177,12 @@ class WorkingSpace
         }
         else // if (m_name == "scene_linear_srgb_rec_709")
         {
-            m_xy_chromaticity_rxy = Vector2f(0.64f, 0.33f);
-            m_xy_chromaticity_gxy = Vector2f(0.30f, 0.60f);
-            m_xy_chromaticity_bxy = Vector2f(0.15f, 0.06f);
-            m_xy_chromaticity_wxy = Vector2f(0.3127f, 0.3290f);
+            m_chromaticity_rxy = Vector2f(0.64f, 0.33f);
+            m_chromaticity_gxy = Vector2f(0.30f, 0.60f);
+            m_chromaticity_bxy = Vector2f(0.15f, 0.06f);
+            m_chromaticity_wxy = Vector2f(0.3127f, 0.3290f);
+
+            m_lighting_conditions = LightingConditions(IlluminantCIED65, XYZCMFCIE19312Deg);
 
             static const float rgb_to_xyz_coeffs[9] =
             {
@@ -202,17 +210,31 @@ class WorkingSpace
             return "Scene Linear DCI-P3";
         else if (name == "scene_linear_acescg_ap1")
             return "Scene Linear ACEScg AP1";
-        // else if (m_name == "scene_linear_srgb_rec_709")
+        else // if (m_name == "scene_linear_srgb_rec_709")
             return "Scene Linear sRGB / Rec 709";
     }
 
-    Matrix3f m_rgb_to_xyz;
-    Matrix3f m_xyz_to_rgb;
-    Vector2f m_xy_chromaticity_rxy;
-    Vector2f m_xy_chromaticity_gxy;
-    Vector2f m_xy_chromaticity_bxy;
-    Vector2f m_xy_chromaticity_wxy;
-    string   m_name;
+    void insert_chromaticity_attributes(
+        ImageAttributes&        image_attributes) const
+    {
+        image_attributes.insert(
+            "chromaticity_wxy", m_chromaticity_wxy);
+        image_attributes.insert(
+            "chromaticity_rxy", m_chromaticity_rxy);
+        image_attributes.insert(
+            "chromaticity_gxy", m_chromaticity_gxy);
+        image_attributes.insert(
+            "chromaticity_bxy", m_chromaticity_bxy);
+    }
+
+    Matrix3f            m_rgb_to_xyz;
+    Matrix3f            m_xyz_to_rgb;
+    LightingConditions  m_lighting_conditions;
+    Vector2f            m_chromaticity_rxy;
+    Vector2f            m_chromaticity_gxy;
+    Vector2f            m_chromaticity_bxy;
+    Vector2f            m_chromaticity_wxy;
+    string              m_name;
 };
 
 }
@@ -226,16 +248,14 @@ struct Frame::Impl
     string                  m_filter_name;
     float                   m_filter_radius;
     auto_ptr<Filter2f>      m_filter;
-    LightingConditions      m_lighting_conditions;
-    WorkingSpace            m_working_space;
+    WorkingColorSpace       m_working_color_space;
     AABB2u                  m_crop_window;
     auto_ptr<Image>         m_image;
     auto_ptr<ImageStack>    m_aov_images;
     AOVContainer            m_aovs;
 
     Impl()
-      : m_lighting_conditions(IlluminantCIED65, XYZCMFCIE19312Deg)
-      , m_working_space()
+      : m_working_color_space()
     {
     }
 };
@@ -293,7 +313,7 @@ void Frame::print_settings()
         "  tile size                     %s x %s\n"
         "  filter                        %s\n"
         "  filter size                   %f\n"
-        "  working space                 %s\n"
+        "  working color space           %s\n"
         "  premultiplied alpha           %s\n"
         "  crop window                   (%s, %s)-(%s, %s)",
         camera_name ? camera_name : "none",
@@ -303,7 +323,7 @@ void Frame::print_settings()
         pretty_uint(impl->m_tile_height).c_str(),
         impl->m_filter_name.c_str(),
         impl->m_filter_radius,
-        WorkingSpace::nice_name(impl->m_working_space.m_name),
+        WorkingColorSpace::nice_name(impl->m_working_color_space.m_name),
         m_is_premultiplied_alpha ? "on" : "off",
         pretty_uint(impl->m_crop_window.min[0]).c_str(),
         pretty_uint(impl->m_crop_window.min[1]).c_str(),
@@ -386,12 +406,12 @@ const Filter2f& Frame::get_filter() const
 
 const LightingConditions& Frame::get_lighting_conditions() const
 {
-    return impl->m_lighting_conditions;
+    return impl->m_working_color_space.m_lighting_conditions;
 }
 
 const float* Frame::get_xyz_to_rgb_matrix() const
 {
-    return &impl->m_working_space.m_xyz_to_rgb[0];
+    return &impl->m_working_color_space.m_xyz_to_rgb[0];
 }
 
 void Frame::reset_crop_window()
@@ -436,7 +456,7 @@ bool Frame::write_main_image(const char* file_path) const
 
     ImageAttributes image_attributes =
         ImageAttributes::create_default_attributes();
-    insert_chromaticities_attribute(image_attributes);
+    impl->m_working_color_space.insert_chromaticity_attributes(image_attributes);
 
     return write_image(file_path, *impl->m_image, image_attributes);
 }
@@ -447,7 +467,7 @@ bool Frame::write_aov_images(const char* file_path) const
 
     ImageAttributes image_attributes =
         ImageAttributes::create_default_attributes();
-    insert_chromaticities_attribute(image_attributes);
+    impl->m_working_color_space.insert_chromaticity_attributes(image_attributes);
 
     bool result = true;
 
@@ -577,26 +597,26 @@ void Frame::extract_parameters()
 
     // Retrieve color management parameters.
     {
-        const char* DefaultWorkingSpaceName = "scene_linear_srgb_rec_709";
-        string working_space_name =
-            m_params.get_optional<string>("working_space", DefaultWorkingSpaceName);
+        const char* DefaultWorkingColorSpaceName = "scene_linear_srgb_rec_709";
+        string working_color_space_name =
+            m_params.get_optional<string>("working_color_space", DefaultWorkingColorSpaceName);
 
-        if (working_space_name == "scene_linear_srgb_rec_709")
-            impl->m_working_space = WorkingSpace(working_space_name);
-        else if (working_space_name == "scene_linear_rec_2020")
-            impl->m_working_space = WorkingSpace(working_space_name);
-        else if (working_space_name == "scene_linear_dci_p3")
-            impl->m_working_space = WorkingSpace(working_space_name);
-        else if (working_space_name == "scene_linear_acescg_ap1")
-            impl->m_working_space = WorkingSpace(working_space_name);
+        if (working_color_space_name == "scene_linear_srgb_rec_709")
+            impl->m_working_color_space = WorkingColorSpace(working_color_space_name);
+        else if (working_color_space_name == "scene_linear_rec_2020")
+            impl->m_working_color_space = WorkingColorSpace(working_color_space_name);
+        else if (working_color_space_name == "scene_linear_dci_p3")
+            impl->m_working_color_space = WorkingColorSpace(working_color_space_name);
+        else if (working_color_space_name == "scene_linear_acescg_ap1")
+            impl->m_working_color_space = WorkingColorSpace(working_color_space_name);
         else
         {
             RENDERER_LOG_ERROR(
                 "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
-                working_space_name.c_str(),
-                "working_space",
-                DefaultWorkingSpaceName);
-            impl->m_working_space = WorkingSpace(DefaultWorkingSpaceName);
+                working_color_space_name.c_str(),
+                "working_color_space",
+                DefaultWorkingColorSpaceName);
+            impl->m_working_color_space = WorkingColorSpace(DefaultWorkingColorSpaceName);
         }
     }
 
@@ -608,19 +628,6 @@ void Frame::extract_parameters()
         Vector2u(0, 0),
         Vector2u(impl->m_frame_width - 1, impl->m_frame_height - 1));
     impl->m_crop_window = m_params.get_optional<AABB2u>("crop_window", default_crop_window);
-}
-
-void Frame::insert_chromaticities_attribute(
-    ImageAttributes&        image_attributes) const
-{
-    image_attributes.insert(
-        "xy_chromaticity_wxy", impl->m_working_space.m_xy_chromaticity_wxy);
-    image_attributes.insert(
-        "xy_chromaticity_rxy", impl->m_working_space.m_xy_chromaticity_rxy);
-    image_attributes.insert(
-        "xy_chromaticity_gxy", impl->m_working_space.m_xy_chromaticity_gxy);
-    image_attributes.insert(
-        "xy_chromaticity_bxy", impl->m_working_space.m_xy_chromaticity_bxy);
 }
 
 bool Frame::write_image(
@@ -826,15 +833,15 @@ DictionaryArray FrameFactory::get_input_metadata()
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "working_space")
-            .insert("label", "Working Space")
+            .insert("name", "working_color_space")
+            .insert("label", "Working Color Space")
             .insert("type", "enumeration")
             .insert("items",
                 Dictionary()
-                    .insert(WorkingSpace::nice_name("scene_linear_srgb_rec_709"), "scene_linear_srgb_rec_709")
-                    .insert(WorkingSpace::nice_name("scene_linear_rec_2020"), "scene_linear_rec_2020")
-                    .insert(WorkingSpace::nice_name("scene_linear_dci_p3"), "scene_linear_dci_p3")
-                    .insert(WorkingSpace::nice_name("scene_linear_acescg_ap1"), "scene_linear_acescg_ap1"))
+                    .insert(WorkingColorSpace::nice_name("scene_linear_srgb_rec_709"), "scene_linear_srgb_rec_709")
+                    .insert(WorkingColorSpace::nice_name("scene_linear_rec_2020"), "scene_linear_rec_2020")
+                    .insert(WorkingColorSpace::nice_name("scene_linear_dci_p3"), "scene_linear_dci_p3")
+                    .insert(WorkingColorSpace::nice_name("scene_linear_acescg_ap1"), "scene_linear_acescg_ap1"))
             .insert("use", "optional")
             .insert("default", "scene_linear_srgb_rec_709"));
 

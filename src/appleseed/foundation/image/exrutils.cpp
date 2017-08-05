@@ -99,25 +99,25 @@ void add_attributes(
         else if (attr_name == "creation_time")
             addCapDate(header, attr_value);
 
-        else if (attr_name == "xy_chromaticity_wxy")
+        else if (attr_name == "chromaticity_wxy")
         {
             Vector2f c = from_string<Vector2f>(attr_value);
             chromaticities.white = Imath::V2f(c[0], c[1]);
             ++num_chromaticity_coordinates;
         }
-        else if (attr_name == "xy_chromaticity_rxy")
+        else if (attr_name == "chromaticity_rxy")
         {
             Vector2f c = from_string<Vector2f>(attr_value);
             chromaticities.red = Imath::V2f(c[0], c[1]);
             ++num_chromaticity_coordinates;
         }
-        else if (attr_name == "xy_chromaticity_gxy")
+        else if (attr_name == "chromaticity_gxy")
         {
             Vector2f c = from_string<Vector2f>(attr_value);
             chromaticities.green = Imath::V2f(c[0], c[1]);
             ++num_chromaticity_coordinates;
         }
-        else if (attr_name == "xy_chromaticity_bxy")
+        else if (attr_name == "chromaticity_bxy")
         {
             Vector2f c = from_string<Vector2f>(attr_value);
             chromaticities.blue = Imath::V2f(c[0], c[1]);
@@ -127,11 +127,9 @@ void add_attributes(
             header.insert(attr_name.c_str(), StringAttribute(attr_value));
     }
 
-    // Reset chromaticities if they are not complete.
-    if (num_chromaticity_coordinates != 4)
-        chromaticities = Imf::Chromaticities();
-
-    header.insert("chromaticities", Imf::ChromaticitiesAttribute(chromaticities));
+    // Only save chromaticities if they are complete.
+    if (num_chromaticity_coordinates == 4)
+        header.insert("chromaticities", Imf::ChromaticitiesAttribute(chromaticities));
 }
 
 }   // namespace foundation

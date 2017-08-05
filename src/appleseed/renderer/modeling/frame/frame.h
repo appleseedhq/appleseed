@@ -178,9 +178,6 @@ class APPLESEED_DLLSYMBOL Frame
 
     void extract_parameters();
 
-    void insert_chromaticities_attribute(
-        foundation::ImageAttributes&        image_attributes) const;
-
     // Write an image to disk. Return true if successful, false otherwise.
     bool write_image(
         const char*                         file_path,
