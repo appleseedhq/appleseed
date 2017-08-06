@@ -249,25 +249,28 @@ namespace renderer
             get_effective_equiangular_sample_count() * equiangular_prob,
             m_exponential_sample_count * exponential_prob);
 
+        Spectrum inscattered(Spectrum::Illuminance);
         if (light_sample.m_triangle)
         {
-            add_emitting_triangle_sample_contribution(
+            get_inscattered_radiance_from_emitting_triangle(
                 sampling_context,
                 light_sample,
                 equiangular_sample,
                 mis_heuristic,
-                radiance,
-                mis_weight);
+                inscattered);
         }
         else
         {
-            add_non_physical_light_sample_contribution(
+            get_inscattered_radiance_from_non_physical_light(
                 sampling_context,
                 light_sample,
                 equiangular_sample,
-                radiance,
-                mis_weight);
+                inscattered);
         }
+
+        // inscattered *= transmission;
+        inscattered *= mis_weight / equiangular_prob;
+        radiance += inscattered;
     }
 
     void VolumeLightingIntegrator::add_single_light_sample_contribution_exponential(
@@ -314,25 +317,28 @@ namespace renderer
             m_exponential_sample_count * exponential_prob,
             get_effective_equiangular_sample_count() * equiangular_prob);
 
+        Spectrum inscattered(Spectrum::Illuminance);
         if (light_sample.m_triangle)
         {
-            add_emitting_triangle_sample_contribution(
+            get_inscattered_radiance_from_emitting_triangle(
                 sampling_context,
                 light_sample,
                 exponential_sample,
                 mis_heuristic,
-                radiance,
-                mis_weight_distance * mis_weight_channel);
+                inscattered);
         }
         else
         {
-            add_non_physical_light_sample_contribution(
+            get_inscattered_radiance_from_non_physical_light(
                 sampling_context,
                 light_sample,
                 exponential_sample,
-                radiance,
-                mis_weight_distance * mis_weight_channel);
+                inscattered);
         }
+
+        inscattered *= transmission;
+        inscattered *= (mis_weight_channel * mis_weight_distance / exponential_prob);
+        radiance += inscattered;
     }
 
     void VolumeLightingIntegrator::compute_radiance(
@@ -351,19 +357,37 @@ namespace renderer
         if (extinction_coef.size() != m_channel_count)
             Spectrum::upgrade(extinction_coef, extinction_coef);
 
-        if (m_equiangular_sample_count > 0)
+        const size_t total_sample_count =
+            m_equiangular_sample_count + m_exponential_sample_count;
+
+        if (total_sample_count > 0)
         {
+            sampling_context.split_in_place(1, m_light_sampler.get_non_physical_light_count());
+
             // Add contributions from non-physical light sources that don't belong to the lightset.
             for (size_t i = 0, e = m_light_sampler.get_non_physical_light_count(); i < e; ++i)
             {
                 LightSample light_sample;
                 m_light_sampler.sample_non_physical_light(m_time, i, light_sample);
-                add_single_light_sample_contribution_equiangular(
-                    light_sample,
-                    extinction_coef,
-                    sampling_context,
-                    mis_heuristic,
-                    radiance);
+                const float s = sampling_context.next2<float>();
+                if (s * total_sample_count < m_equiangular_sample_count)
+                {
+                    add_single_light_sample_contribution_equiangular(
+                        light_sample,
+                        extinction_coef,
+                        sampling_context,
+                        mis_heuristic,
+                        radiance);
+                }
+                else
+                {
+                    add_single_light_sample_contribution_exponential(
+                        light_sample,
+                        extinction_coef,
+                        sampling_context,
+                        mis_heuristic,
+                        radiance);
+                }
             }
         }
 
@@ -371,9 +395,6 @@ namespace renderer
         if (m_light_sampler.has_lightset())
         {
             Spectrum lightset_radiance(Spectrum::Illuminance);
-
-            const size_t total_sample_count =
-                m_equiangular_sample_count + m_exponential_sample_count;
 
             sampling_context.split_in_place(3, total_sample_count);
 
@@ -426,13 +447,14 @@ namespace renderer
         }
     }
 
-    void VolumeLightingIntegrator::add_non_physical_light_sample_contribution(
+    void VolumeLightingIntegrator::get_inscattered_radiance_from_non_physical_light(
         SamplingContext&            sampling_context,
         const LightSample&          light_sample,
         const float                 distance_sample,
-        Spectrum&                   radiance,
-        const float                 weight) const
+        Spectrum&                   radiance) const
     {
+        radiance.set(0.0f);
+
         const Light* light = light_sample.m_light;
 
         const Vector3d volume_point = m_volume_ray.point_at(distance_sample);
@@ -500,14 +522,15 @@ namespace renderer
         radiance += value;
     }
 
-    void VolumeLightingIntegrator::add_emitting_triangle_sample_contribution(
+    void VolumeLightingIntegrator::get_inscattered_radiance_from_emitting_triangle(
         SamplingContext&            sampling_context,
         const LightSample&          light_sample,
         const float                 distance_sample,
         const MISHeuristic          mis_heuristic,
-        Spectrum&                   radiance,
-        const float                 weight) const
+        Spectrum&                   radiance) const
     {
+        radiance.set(0.0f);
+
         const Vector3d volume_point = m_volume_ray.point_at(distance_sample);
 
         const Material* material = light_sample.m_triangle->m_material;
@@ -612,7 +635,7 @@ namespace renderer
         }
 
         // Evaluate the EDF.
-        Spectrum edf_value(Spectrum::Illuminance);
+        Spectrum edf_value;
         edf->evaluate(
             edf->evaluate_inputs(m_shading_context, light_shading_point),
             Vector3f(light_sample.m_geometric_normal),
@@ -633,7 +656,7 @@ namespace renderer
         // Add the contribution of this sample to the illumination.
         edf_value *= transmission;
         edf_value *= (mis_weight * g) / (light_sample.m_probability * contribution_prob);
-        value *= edf_value;
-        radiance += value;
+        edf_value *= value;
+        radiance += edf_value;
     }
 }   // namespace renderer

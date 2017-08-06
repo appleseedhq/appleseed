@@ -124,20 +124,18 @@ namespace renderer
             const ShadingRay&       volume_ray,
             const float             extinction) const;
 
-        void add_non_physical_light_sample_contribution(
-            SamplingContext&            sampling_context,
-            const LightSample&          light_sample,
-            const float                 distance_sample,
-            Spectrum&                   radiance,
-            const float                 weight = 1.0f) const;
+        void get_inscattered_radiance_from_non_physical_light(
+            SamplingContext&                sampling_context,
+            const LightSample&              light_sample,
+            const float                     distance_sample,
+            Spectrum&                       radiance) const;
 
-        void add_emitting_triangle_sample_contribution(
+        void get_inscattered_radiance_from_emitting_triangle(
             SamplingContext&                sampling_context,
             const LightSample&              light_sample,
             const float                     distance_sample,
             const foundation::MISHeuristic  mis_heuristic,
-            Spectrum&                       radiance,
-            const float                     weight) const;
+            Spectrum&                       radiance) const;
     };
 }
 
