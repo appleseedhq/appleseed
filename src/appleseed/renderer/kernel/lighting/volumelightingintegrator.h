@@ -71,21 +71,12 @@ namespace renderer
             const ShadingRay::Time&         time,
             const int                       light_sampling_modes,
             const size_t                    phasefunction_sample_count,
-            const size_t                    light_sample_count,
             const size_t                    equiangular_sample_count,
             const size_t                    exponential_sample_count,
             const float                     low_light_threshold,
             const bool                      indirect);
 
-        // Method of importance sampling.
-        enum DistanceSampleType
-        {
-            ExponentialSample,  // samples are drawn to fit Beer's law.
-            EquiangularSample   // samples are drawn equangularly with respect to some light sample
-        };
-
         void compute_radiance(
-            const DistanceSampleType&       sampling_type,
             SamplingContext&                sampling_context,
             const foundation::MISHeuristic  mis_heuristic,
             Spectrum&                       radiance) const;
@@ -101,21 +92,14 @@ namespace renderer
         Spectrum                            m_precomputed_mis_weights;
         const int                           m_light_sampling_modes;
         const float                         m_low_light_threshold;
-        const size_t                        m_light_sample_count;
         const size_t                        m_phasefunction_sample_count;
         const size_t                        m_equiangular_sample_count;
         const size_t                        m_exponential_sample_count;
         const bool                          m_indirect;
 
-        void precompute_mis_weights();
+        size_t get_effective_equiangular_sample_count() const;
 
-        void add_single_light_sample_contribution(
-            const DistanceSampleType        sampling_type,
-            const LightSample&              light_sample,
-            const Spectrum&                 extinction_coef,
-            SamplingContext&                sampling_context,
-            const foundation::MISHeuristic  mis_heuristic,
-            Spectrum&                       radiance) const;
+        void precompute_mis_weights();
 
         void add_single_light_sample_contribution_equiangular(
             const LightSample&              light_sample,

@@ -83,7 +83,6 @@ namespace renderer
         const size_t                    phasefunction_sample_count,
         const size_t                    equiangular_sample_count,
         const size_t                    exponential_sample_count,
-        const size_t                    light_sample_count,
         const float                     low_light_threshold,
         const bool                      indirect)
         : m_shading_context(shading_context)
@@ -96,11 +95,17 @@ namespace renderer
         , m_phasefunction_sample_count(phasefunction_sample_count)
         , m_equiangular_sample_count(equiangular_sample_count)
         , m_exponential_sample_count(exponential_sample_count)
-        , m_light_sample_count(light_sample_count)
         , m_low_light_threshold(low_light_threshold)
         , m_indirect(indirect)
     {
         precompute_mis_weights();
+    }
+
+    size_t VolumeLightingIntegrator::get_effective_equiangular_sample_count() const
+    {
+        return
+            m_equiangular_sample_count +
+            m_light_sampler.get_non_physical_light_count();
     }
 
     void VolumeLightingIntegrator::precompute_mis_weights()
@@ -216,38 +221,6 @@ namespace renderer
         }
     }
 
-    void VolumeLightingIntegrator::add_single_light_sample_contribution(
-        const DistanceSampleType    sampling_type,
-        const LightSample&          light_sample,
-        const Spectrum&             extinction_coef,
-        SamplingContext&            sampling_context,
-        const MISHeuristic          mis_heuristic,
-        Spectrum&                   radiance) const
-    {
-        switch (sampling_type)
-        {
-          case ExponentialSample:
-            add_single_light_sample_contribution_exponential(
-                light_sample,
-                extinction_coef,
-                sampling_context,
-                MISPower2,
-                radiance);
-            break;
-
-          case EquiangularSample:
-            add_single_light_sample_contribution_equiangular(
-                light_sample,
-                extinction_coef,
-                sampling_context,
-                MISPower2,
-                radiance);
-            break;
-
-          assert_otherwise;
-        }
-    }
-
     void VolumeLightingIntegrator::add_single_light_sample_contribution_equiangular(
         const LightSample&          light_sample,
         const Spectrum&             extinction_coef,
@@ -274,7 +247,7 @@ namespace renderer
         // Calculate MIS weight for distance sampling.
         const float mis_weight = mis(
             mis_heuristic,
-            m_equiangular_sample_count * equiangular_prob,
+            get_effective_equiangular_sample_count() * equiangular_prob,
             m_exponential_sample_count * exponential_prob);
 
         if (light_sample.m_triangle)
@@ -340,7 +313,7 @@ namespace renderer
         const float mis_weight_distance = mis(
             mis_heuristic,
             m_exponential_sample_count * exponential_prob,
-            m_equiangular_sample_count * equiangular_prob);
+            get_effective_equiangular_sample_count() * equiangular_prob);
 
         if (light_sample.m_triangle)
         {
@@ -364,7 +337,6 @@ namespace renderer
     }
 
     void VolumeLightingIntegrator::compute_radiance(
-        const DistanceSampleType&   sampling_type,
         SamplingContext&            sampling_context,
         const MISHeuristic          mis_heuristic,
         Spectrum&                   radiance) const
@@ -380,15 +352,14 @@ namespace renderer
         if (extinction_coef.size() != m_channel_count)
             Spectrum::upgrade(extinction_coef, extinction_coef);
 
-        if (m_light_sample_count > 0)
+        if (m_equiangular_sample_count > 0)
         {
             // Add contributions from non-physical light sources that don't belong to the lightset.
             for (size_t i = 0, e = m_light_sampler.get_non_physical_light_count(); i < e; ++i)
             {
                 LightSample light_sample;
                 m_light_sampler.sample_non_physical_light(m_time, i, light_sample);
-                add_single_light_sample_contribution(
-                    sampling_type,
+                add_single_light_sample_contribution_equiangular(
                     light_sample,
                     extinction_coef,
                     sampling_context,
@@ -402,9 +373,12 @@ namespace renderer
         {
             Spectrum lightset_radiance(Spectrum::Illuminance);
 
-            sampling_context.split_in_place(3, m_light_sample_count);
+            const size_t total_sample_count =
+                m_equiangular_sample_count + m_exponential_sample_count;
 
-            for (size_t i = 0, e = m_light_sample_count; i < e; ++i)
+            sampling_context.split_in_place(3, total_sample_count);
+
+            for (size_t i = 0, e = m_equiangular_sample_count; i < e; ++i)
             {
                 // Sample the light set.
                 LightSample light_sample;
@@ -417,8 +391,7 @@ namespace renderer
                     light_sample);
 
                 // Add the contribution of the chosen light.
-                add_single_light_sample_contribution(
-                    sampling_type,
+                add_single_light_sample_contribution_equiangular(
                     light_sample,
                     extinction_coef,
                     sampling_context,
@@ -426,8 +399,29 @@ namespace renderer
                     radiance);
             }
 
-            if (m_light_sample_count > 1)
-                lightset_radiance /= static_cast<float>(m_light_sample_count);
+            for (size_t i = 0, e = m_exponential_sample_count; i < e; ++i)
+            {
+                // Sample the light set.
+                LightSample light_sample;
+                ShadingPoint fake_point;
+                fake_point.clear();
+                m_light_sampler.sample_lightset(
+                    m_time,
+                    sampling_context.next2<Vector3f>(),
+                    fake_point,
+                    light_sample);
+
+                // Add the contribution of the chosen light.
+                add_single_light_sample_contribution_exponential(
+                    light_sample,
+                    extinction_coef,
+                    sampling_context,
+                    MISPower2,
+                    radiance);
+            }
+
+            if (total_sample_count > 1)
+                lightset_radiance /= static_cast<float>(total_sample_count);
 
             radiance += lightset_radiance;
         }
@@ -630,10 +624,11 @@ namespace renderer
         const float g = static_cast<float>(cos_on * rcp_sample_square_distance);
 
         // Apply MIS weighting.
+        const size_t total_sample_count = m_equiangular_sample_count + m_exponential_sample_count;
         const float mis_weight =
             mis(
                 mis_heuristic,
-                m_light_sample_count * light_sample.m_probability,
+                total_sample_count * light_sample.m_probability,
                 m_phasefunction_sample_count * phase_function_pdf * g);
 
         // Add the contribution of this sample to the illumination.
