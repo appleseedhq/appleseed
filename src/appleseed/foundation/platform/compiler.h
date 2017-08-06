@@ -187,10 +187,15 @@ namespace foundation
 //  A macro to mark a variable as unused. Useful in unit tests.
 //
 
+// gcc: supported since gcc 4.6.
 #if defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 6)))
     #define APPLESEED_UNUSED   __attribute__((unused))
+
+// clang.
 #elif defined(__clang__)
     #define APPLESEED_UNUSED   __attribute__((unused))
+
+// Other compilers: ignore.
 #else
     #define APPLESEED_UNUSED
 #endif
