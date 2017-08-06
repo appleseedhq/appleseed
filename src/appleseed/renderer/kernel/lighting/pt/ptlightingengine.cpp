@@ -38,6 +38,7 @@
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/lighting/volumelightingintegrator.h"
 #include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
@@ -1024,100 +1025,24 @@ namespace
                 const Volume* volume = medium->get_volume();
                 assert(volume != nullptr);
 
-                // Get full ray transmission.
-                Spectrum ray_transmission;
-                volume->evaluate_transmission(
-                    vertex.m_volume_data, volume_ray, ray_transmission);
+                VolumeLightingIntegrator integrator(
+                    m_shading_context,
+                    m_light_sampler,
+                    *volume,
+                    volume_ray,
+                    vertex.m_volume_data,
+                    vertex.m_scattering_modes,
+                    1,
+                    0,
+                    1,
+                    m_params.m_dl_low_light_threshold,
+                    m_is_indirect_lighting);
 
-                const Spectrum& scattering_coef = volume->scattering_coefficient(
-                    vertex.m_volume_data, volume_ray);
-                const Spectrum& extinction_coef = volume->extinction_coefficient(
-                    vertex.m_volume_data, volume_ray);
+                ShadingComponents radiance;
+                integrator.compute_radiance(m_sampling_context, MISNone, radiance.m_volume);
+                radiance.m_beauty = radiance.m_volume;
 
-                // Precompute MIS weights.
-                // MIS terms are:
-                //  - scattering albedo,
-                //  - one minus total ray transmittance (because we sample distance on segment),
-                //  - throughput of the entire path up to the sampled point.
-                // Reference: "Practical and Controllable Subsurface Scattering
-                // for Production Path Tracing", p. 1 [ACM 2016 Article].
-                Spectrum precomputed_mis_weights = scattering_coef;
-                precomputed_mis_weights *= vertex.m_throughput;
-                float max_density = 0.0f;
-                for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
-                {
-                    const float density = 1.0f - ray_transmission[i];
-                    precomputed_mis_weights[i] *= density;
-                    if (extinction_coef[i] > 1.0e-6f)
-                        precomputed_mis_weights[i] /= extinction_coef[i];
-                    if (max_density < density)
-                        max_density = density;
-                }
-
-                // Get number of samples based on ray transmission.
-                const float distance_sample_count_float = max_density * m_params.m_distance_sample_count;
-                const size_t distance_sample_count = stochastic_cast<size_t>(
-                    m_sampling_context, distance_sample_count_float);
-                if (distance_sample_count == 0)
-                    return;
-
-                for (size_t i = 0; i < distance_sample_count; ++i)
-                {
-                    ShadingComponents radiance;
-
-                    // Sample channel uniformly at random.
-                    m_sampling_context.split_in_place(1, 1);
-                    const float s = m_sampling_context.next2<float>();
-                    const size_t channel = truncate<size_t>(s * Spectrum::size());
-                    if (precomputed_mis_weights[channel] == 0.0f)
-                        continue;
-
-                    // Sample distance.
-                    float distance_sample;
-                    const float distance_prob = sample_distance(
-                        volume_ray, extinction_coef[channel], distance_sample);
-
-                    // Calculate transmission between the ray origin and the sampled distance.
-                    Spectrum transmission;
-                    volume->evaluate_transmission(
-                        vertex.m_volume_data, volume_ray, distance_sample, transmission);
-
-                    // Calculate MIS weight for this distance sample (balance heuristic).
-                    float mis_weights_sum = 0.0f;
-                    for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
-                        mis_weights_sum += precomputed_mis_weights[i] * transmission[i];
-                    const float current_mis_weight =
-                        Spectrum::size() * precomputed_mis_weights[channel] *
-                        transmission[channel] / mis_weights_sum;
-
-                    // Calculate in-scattered radiance for this distance sample.
-                    if (m_params.m_enable_dl || vertex.m_path_length > 1)
-                    {
-                        add_direct_lighting_contribution(
-                            *vertex.m_shading_point,
-                            volume_ray,
-                            *volume,
-                            vertex.m_volume_data,
-                            distance_sample,
-                            vertex.m_scattering_modes,
-                            radiance);
-                    }
-                    if (m_params.m_enable_ibl && m_env_edf)
-                    {
-                        add_image_based_lighting_contribution(
-                            volume_ray,
-                            *volume,
-                            vertex.m_volume_data,
-                            distance_sample,
-                            radiance);
-                    }
-
-                    radiance *= vertex.m_throughput;
-                    radiance *= transmission;
-                    const float scalar_weight = current_mis_weight /
-                        (distance_sample_count_float * distance_prob);
-                    madd(m_path_radiance, radiance, scalar_weight);
-                }
+                madd(m_path_radiance, radiance, vertex.m_throughput);
             }
         };
     };

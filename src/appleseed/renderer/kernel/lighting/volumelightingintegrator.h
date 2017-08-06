@@ -68,7 +68,6 @@ namespace renderer
             const Volume&                   volume,
             const ShadingRay&               volume_ray,
             const void*                     volume_data,
-            const ShadingRay::Time&         time,
             const int                       light_sampling_modes,
             const size_t                    phasefunction_sample_count,
             const size_t                    equiangular_sample_count,

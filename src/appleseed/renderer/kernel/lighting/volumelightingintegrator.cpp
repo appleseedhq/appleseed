@@ -78,7 +78,6 @@ namespace renderer
         const Volume&                   volume,
         const ShadingRay&               volume_ray,
         const void*                     volume_data,
-        const ShadingRay::Time&         time,
         const int                       light_sampling_modes,
         const size_t                    phasefunction_sample_count,
         const size_t                    equiangular_sample_count,
@@ -90,7 +89,7 @@ namespace renderer
         , m_volume(volume)
         , m_volume_ray(volume_ray)
         , m_volume_data(volume_data)
-        , m_time(time)
+        , m_time(volume_ray.m_time)
         , m_light_sampling_modes(light_sampling_modes)
         , m_phasefunction_sample_count(phasefunction_sample_count)
         , m_equiangular_sample_count(equiangular_sample_count)
@@ -363,7 +362,7 @@ namespace renderer
                     light_sample,
                     extinction_coef,
                     sampling_context,
-                    MISPower2,
+                    mis_heuristic,
                     radiance);
             }
         }
@@ -395,7 +394,7 @@ namespace renderer
                     light_sample,
                     extinction_coef,
                     sampling_context,
-                    MISPower2,
+                    mis_heuristic,
                     radiance);
             }
 
@@ -416,7 +415,7 @@ namespace renderer
                     light_sample,
                     extinction_coef,
                     sampling_context,
-                    MISPower2,
+                    mis_heuristic,
                     radiance);
             }
 
