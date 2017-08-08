@@ -116,6 +116,7 @@ class PathTracer
     size_t                      m_specular_bounces;
     size_t                      m_volume_bounces;
     size_t                      m_iterations;
+    foundation::Arena           m_shading_point_arena;
 
     // Determine whether a ray can pass through a surface with a given alpha value.
     static bool pass_through(
@@ -203,9 +204,6 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
     if (shading_point.hit() && shading_point.get_distance() < m_near_start)
         return 1;
 
-    ShadingPoint shading_points[2];
-    size_t shading_point_index = 0;
-
     PathVertex vertex(sampling_context);
     vertex.m_path_length = 1;
     vertex.m_scattering_modes = ScatteringMode::All;
@@ -229,6 +227,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
     while (true)
     {
         shading_context.get_arena().clear();
+        ShadingPoint* next_shading_point = m_shading_point_arena.allocate<ShadingPoint>();
 
 #ifndef NDEBUG
         // Save the sampling context at the beginning of the iteration.
@@ -328,15 +327,13 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
             else next_ray.remove_medium(ray, &object_instance);
 
             // Trace the ray.
-            shading_points[shading_point_index].clear();
             shading_context.get_intersector().trace(
                 next_ray,
-                shading_points[shading_point_index],
+                *next_shading_point,
                 vertex.m_shading_point);
 
             // Update the pointers to the shading points and loop.
-            vertex.m_shading_point = &shading_points[shading_point_index];
-            shading_point_index = 1 - shading_point_index;
+            vertex.m_shading_point = next_shading_point;
             continue;
         }
 
@@ -381,15 +378,13 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                 next_ray.copy_media_from(ray);
 
                 // Trace the ray.
-                shading_points[shading_point_index].clear();
                 shading_context.get_intersector().trace(
                     next_ray,
-                    shading_points[shading_point_index],
+                    *next_shading_point,
                     vertex.m_shading_point);
 
                 // Update the pointers to the shading points and loop.
-                vertex.m_shading_point = &shading_points[shading_point_index];
-                shading_point_index = 1 - shading_point_index;
+                vertex.m_shading_point = next_shading_point;
                 continue;
             }
         }
@@ -560,7 +555,6 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
         medium_start = vertex.get_point();
 
-        shading_points[shading_point_index].clear();
         const ShadingRay::Medium* current_medium = next_ray.get_current_medium();
         if (current_medium != nullptr &&
             current_medium->get_volume() != nullptr)
@@ -571,7 +565,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                     shading_context,
                     next_ray,
                     vertex,
-                    shading_points[shading_point_index]))
+                    *next_shading_point))
                 break;
         }
         else
@@ -579,13 +573,12 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
             // This ray is being cast into an ordinary medium.
             shading_context.get_intersector().trace(
                 next_ray,
-                shading_points[shading_point_index],
+                *next_shading_point,
                 vertex.m_shading_point);
         }
 
         // Update the pointers to the shading points.
-        vertex.m_shading_point = &shading_points[shading_point_index];
-        shading_point_index = 1 - shading_point_index;
+        vertex.m_shading_point = next_shading_point;
     }
 
     return vertex.m_path_length;
