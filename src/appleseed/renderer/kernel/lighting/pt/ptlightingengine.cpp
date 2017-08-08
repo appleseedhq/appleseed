@@ -117,7 +117,8 @@ namespace
             const bool      m_has_max_ray_intensity;
             const float     m_max_ray_intensity;
 
-            const size_t    m_distance_sample_count;        // number of distance samples until the ray is completely extincted
+            const size_t    m_equiangular_sample_count;     // number of equiangular distance samples
+            const size_t    m_exponential_sample_count;     // number of exponential distance samples
 
             float           m_rcp_dl_light_sample_count;
             float           m_rcp_ibl_env_sample_count;
@@ -137,7 +138,8 @@ namespace
               , m_dl_low_light_threshold(params.get_optional<float>("dl_low_light_threshold", 0.0f))
               , m_ibl_env_sample_count(params.get_optional<float>("ibl_env_samples", 1.0f))
               , m_has_max_ray_intensity(params.strings().exist("max_ray_intensity"))
-              , m_distance_sample_count(params.get_optional<size_t>("volume_distance_samples", 4))
+              , m_equiangular_sample_count(params.get_optional<size_t>("equiangular_distance_samples", 2))
+              , m_exponential_sample_count(params.get_optional<size_t>("exponential_distance_samples", 2))
               , m_max_ray_intensity(params.get_optional<float>("max_ray_intensity", 0.0f))
             {
                 // Precompute the reciprocal of the number of light samples.
@@ -181,7 +183,8 @@ namespace
                     "  dl light threshold            %s\n"
                     "  ibl env samples               %s\n"
                     "  max ray intensity             %s\n"
-                    "  volume distance samples       %s",
+                    "  equiangular distance samples  %s\n"
+                    "  exponential distance samples  %s",
                     m_enable_dl ? "on" : "off",
                     m_enable_ibl ? "on" : "off",
                     m_enable_caustics ? "on" : "off",
@@ -196,7 +199,8 @@ namespace
                     pretty_scalar(m_dl_low_light_threshold, 3).c_str(),
                     pretty_scalar(m_ibl_env_sample_count).c_str(),
                     m_has_max_ray_intensity ? pretty_scalar(m_max_ray_intensity).c_str() : "infinite",
-                    pretty_int(m_distance_sample_count).c_str());
+                    pretty_int(m_equiangular_sample_count).c_str(),
+                    pretty_int(m_exponential_sample_count).c_str());
             }
         };
 
@@ -1033,13 +1037,13 @@ namespace
                     vertex.m_volume_data,
                     vertex.m_scattering_modes,
                     1,
-                    0,
-                    1,
+                    m_params.m_equiangular_sample_count,
+                    m_params.m_exponential_sample_count,
                     m_params.m_dl_low_light_threshold,
                     m_is_indirect_lighting);
 
                 ShadingComponents radiance;
-                integrator.compute_radiance(m_sampling_context, MISNone, radiance.m_volume);
+                integrator.compute_radiance(m_sampling_context, MISPower2, radiance.m_volume);
                 radiance.m_beauty = radiance.m_volume;
 
                 madd(m_path_radiance, radiance, vertex.m_throughput);
@@ -1171,14 +1175,24 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("help", "Clamp intensity of rays (after the first bounce) to this value to reduce fireflies"));
 
     metadata.dictionaries().insert(
-        "volume_distance_samples",
+        "equiangular_distance_samples",
         Dictionary()
             .insert("type", "int")
-            .insert("default", "4")
+            .insert("default", "2")
             .insert("unlimited", "true")
-            .insert("min", "1")
-            .insert("label", "Distance Samples")
-            .insert("help", "Number of distance samples per ray for volume rendering"));
+            .insert("min", "0")
+            .insert("label", "Equiangular Distance Samples")
+            .insert("help", "Number of equiangular distance samples for volume rendering"));
+
+    metadata.dictionaries().insert(
+        "exponential_distance_samples",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "2")
+            .insert("unlimited", "true")
+            .insert("min", "0")
+            .insert("label", "Exponential Distance Samples")
+            .insert("help", "Number of exponential distance samples for volume rendering"));
 
     return metadata;
 }

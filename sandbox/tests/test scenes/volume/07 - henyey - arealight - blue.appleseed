@@ -135,7 +135,6 @@
                 <parameter name="max_volume_bounces" value="0" />
                 <parameter name="next_event_estimation" value="true" />
                 <parameter name="rr_min_path_length" value="6" />
-                <parameter name="volume_distance_samples" value="4" />
             </parameters>
             <parameters name="sppm">
                 <parameter name="alpha" value="0.700000" />
@@ -177,7 +176,6 @@
                 <parameter name="max_volume_bounces" value="0" />
                 <parameter name="next_event_estimation" value="true" />
                 <parameter name="rr_min_path_length" value="6" />
-                <parameter name="volume_distance_samples" value="4" />
             </parameters>
         </configuration>
     </configurations>

@@ -157,7 +157,7 @@ namespace renderer
             m_origin_to_center = dot(light_dir, volume_ray.m_dir);
 
             m_center_to_light =
-                sqrt(square_norm(light_dir) - m_origin_to_center * m_origin_to_center);
+                std::sqrt(square_norm(light_dir) - square(m_origin_to_center));
 
             m_near_angle = std::atan2(-m_origin_to_center, m_center_to_light);
             m_far_angle =
@@ -177,7 +177,10 @@ namespace renderer
         float evaluate(const float distance_sample) const
         {
             return static_cast<float>(equiangular_distribution_pdf(
-                static_cast<double>(distance_sample), m_near_angle, m_far_angle, m_center_to_light));
+                static_cast<double>(distance_sample) - m_origin_to_center,
+                m_near_angle,
+                m_far_angle,
+                m_center_to_light));
         }
 
       private:
@@ -246,7 +249,7 @@ namespace renderer
         // Calculate MIS weight for distance sampling.
         const float mis_weight = mis(
             mis_heuristic,
-            get_effective_equiangular_sample_count() * equiangular_prob,
+            m_equiangular_sample_count * equiangular_prob,
             m_exponential_sample_count * exponential_prob);
 
         Spectrum inscattered(Spectrum::Illuminance);
@@ -268,7 +271,10 @@ namespace renderer
                 inscattered);
         }
 
-        // inscattered *= transmission;
+        Spectrum transmission;
+        m_volume.evaluate_transmission(
+            m_volume_data, m_volume_ray, equiangular_sample, transmission);
+        inscattered *= transmission;
         inscattered *= mis_weight / equiangular_prob;
         radiance += inscattered;
     }
@@ -315,7 +321,7 @@ namespace renderer
         const float mis_weight_distance = mis(
             mis_heuristic,
             m_exponential_sample_count * exponential_prob,
-            get_effective_equiangular_sample_count() * equiangular_prob);
+            m_equiangular_sample_count * equiangular_prob);
 
         Spectrum inscattered(Spectrum::Illuminance);
         if (light_sample.m_triangle)
@@ -394,7 +400,8 @@ namespace renderer
         // Add contributions from the light set.
         if (m_light_sampler.has_lightset())
         {
-            Spectrum lightset_radiance(Spectrum::Illuminance);
+            Spectrum equiangular_sampling_radiance(Spectrum::Illuminance);
+            Spectrum exponential_sampling_radiance(Spectrum::Illuminance);
 
             sampling_context.split_in_place(3, total_sample_count);
 
@@ -416,7 +423,7 @@ namespace renderer
                     extinction_coef,
                     sampling_context,
                     mis_heuristic,
-                    radiance);
+                    equiangular_sampling_radiance);
             }
 
             for (size_t i = 0, e = m_exponential_sample_count; i < e; ++i)
@@ -437,13 +444,16 @@ namespace renderer
                     extinction_coef,
                     sampling_context,
                     mis_heuristic,
-                    radiance);
+                    exponential_sampling_radiance);
             }
 
-            if (total_sample_count > 1)
-                lightset_radiance /= static_cast<float>(total_sample_count);
+            if (m_equiangular_sample_count > 1)
+                equiangular_sampling_radiance /= static_cast<float>(m_equiangular_sample_count);
+            if (m_exponential_sample_count > 1)
+                exponential_sampling_radiance /= static_cast<float>(m_exponential_sample_count);
 
-            radiance += lightset_radiance;
+            radiance += equiangular_sampling_radiance;
+            radiance += exponential_sampling_radiance;
         }
     }
 
