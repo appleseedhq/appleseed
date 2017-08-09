@@ -75,6 +75,7 @@ class PathVertex
 
     // Current vertex properties.
     const ShadingPoint*         m_shading_point;
+    const ShadingPoint*         m_parent_shading_point;
     foundation::Dual3d          m_outgoing;
     double                      m_cos_on;       // cos(outgoing direction, shading normal)
     const EDF*                  m_edf;
