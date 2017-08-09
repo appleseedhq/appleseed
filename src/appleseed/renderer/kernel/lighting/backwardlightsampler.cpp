@@ -200,7 +200,7 @@ float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point, cons
     {
         const float triangle_probability =
             m_light_tree->evaluate_node_pdf(
-                parent_shading_point.get_point(),
+                parent_shading_point,
                 triangle->m_light_tree_node_index);
 
         return triangle_probability * triangle->m_rcp_area;
