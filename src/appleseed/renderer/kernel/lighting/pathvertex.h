@@ -181,7 +181,7 @@ inline float PathVertex::get_bsdf_prob_area() const
 
 inline float PathVertex::get_light_prob_area(const BackwardLightSampler& light_sampler) const
 {
-    return light_sampler.evaluate_pdf(*m_shading_point);
+    return light_sampler.evaluate_pdf(*m_shading_point, *m_parent_shading_point);
 }
 
 }       // namespace renderer
