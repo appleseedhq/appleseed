@@ -578,7 +578,8 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                 vertex.m_shading_point);
         }
 
-        // Update the pointers to the shading points.
+        // Update the pointers to the shading point.
+        vertex.m_parent_shading_point = vertex.m_shading_point;
         vertex.m_shading_point = next_shading_point;
     }
 
