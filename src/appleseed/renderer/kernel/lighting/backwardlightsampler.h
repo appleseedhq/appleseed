@@ -84,7 +84,7 @@ class BackwardLightSampler
         LightSample&                        light_sample) const;
 
     // Compute the probability density in area measure of a given light sample.
-    float evaluate_pdf(const ShadingPoint& shading_point) const;
+    float evaluate_pdf(const ShadingPoint& shading_point, const ShadingPoint& parent_shading_point) const;
 
     // Return the metadata of the light sampler parameters.
     static foundation::Dictionary get_params_metadata();

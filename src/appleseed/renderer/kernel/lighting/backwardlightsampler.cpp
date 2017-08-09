@@ -184,7 +184,7 @@ void BackwardLightSampler::sample_lightset(
     }
 }
 
-float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
+float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point, const ShadingPoint& parent_shading_point) const
 {
     assert(shading_point.is_triangle_primitive());
 
@@ -200,7 +200,7 @@ float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point) cons
     {
         const float triangle_probability =
             m_light_tree->evaluate_node_pdf(
-                shading_point.get_ray().m_org,
+                parent_shading_point.get_point(),
                 triangle->m_light_tree_node_index);
 
         return triangle_probability * triangle->m_rcp_area;
