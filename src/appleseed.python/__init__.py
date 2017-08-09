@@ -29,3 +29,4 @@
 
 from _appleseedpython import *
 from logtarget import *
+from TXConverter import *
