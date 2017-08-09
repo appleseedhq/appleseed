@@ -243,7 +243,7 @@ void LightTree::sample(
         const auto& node = m_nodes[node_index];
 
         float p1, p2;
-        child_node_probabilites(node, shading_point.get_point(), p1, p2);
+        child_node_probabilites(node, shading_point, p1, p2);
 
         if (s < p1)
         {
@@ -266,7 +266,7 @@ void LightTree::sample(
 }
 
 float LightTree::evaluate_node_pdf(
-    const Vector3d&         surface_point,
+    const ShadingPoint&     shading_point,
     size_t                  node_index) const
 {
     size_t parent_index = m_nodes[node_index].get_parent();
@@ -277,7 +277,7 @@ float LightTree::evaluate_node_pdf(
         const LightTreeNode<AABB3d>& node = m_nodes[parent_index];
 
         float p1, p2;
-        child_node_probabilites(node, surface_point, p1, p2);
+        child_node_probabilites(node, shading_point, p1, p2);
 
         pdf *= node.get_child_node_index() == node_index ? p1 : p2;
 
@@ -293,7 +293,7 @@ float LightTree::evaluate_node_pdf(
 float LightTree::compute_node_probability(
     const LightTreeNode<AABB3d>&    node,
     const AABB3d&                   bbox,
-    const Vector3d&                 surface_point) const
+    const ShadingPoint&             shading_point) const
 {
     // Calculate probability of a single node based on its distance
     // to the surface point being illuminated.
@@ -312,14 +312,14 @@ float LightTree::compute_node_probability(
         position = bbox.center();
 
     const float squared_distance =
-        static_cast<float>(square_distance(surface_point, position));
+        static_cast<float>(square_distance(shading_point.get_point(), position));
 
     return node.get_importance() / squared_distance;
 }
 
 void LightTree::child_node_probabilites(
     const LightTreeNode<AABB3d>&    node,
-    const Vector3d&                 surface_point,
+    const ShadingPoint&             shading_point,
     float&                          p1,
     float&                          p2) const
 {
@@ -332,8 +332,8 @@ void LightTree::child_node_probabilites(
     const auto& bbox_left = node.get_left_bbox();
     const auto& bbox_right = node.get_right_bbox();
 
-    p1 = compute_node_probability(child1, bbox_left, surface_point);
-    p2 = compute_node_probability(child2, bbox_right, surface_point);
+    p1 = compute_node_probability(child1, bbox_left, shading_point);
+    p2 = compute_node_probability(child2, bbox_right, shading_point);
 
     // Normalize probabilities.
     const float total = p1 + p2;

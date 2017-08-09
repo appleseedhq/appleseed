@@ -71,7 +71,7 @@ class LightTree
     bool is_built() const;
 
     void sample(
-        const ShadingPoint&             surface_point,
+        const ShadingPoint&             shading_point,
         const float                     s,
         LightType&                      light_type,
         size_t&                         light_index,
@@ -80,7 +80,7 @@ class LightTree
     // Compute the light probability of a particular tree node. Start from the
     // node and go backwards towards the root node.
     float evaluate_node_pdf(
-        const foundation::Vector3d&     surface_point,
+        const ShadingPoint&     surface_point,
         const size_t                    node_index) const;
 
   private:
@@ -130,11 +130,11 @@ class LightTree
     float compute_node_probability(
         const LightTreeNode<foundation::AABB3d>&    node,
         const foundation::AABB3d&                   bbox,
-        const foundation::Vector3d&                 surface_point) const;
+        const ShadingPoint&                         shading_point) const;
 
     void child_node_probabilites(
         const LightTreeNode<foundation::AABB3d>&    node,
-        const foundation::Vector3d&                 surface_point,
+        const ShadingPoint&                         shading_point,
         float&                                      p1,
         float&                                      p2) const;
 
