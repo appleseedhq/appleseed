@@ -32,8 +32,8 @@ namespace studio {
 PythonSyntaxHighlighter::PythonSyntaxHighlighter(QTextDocument *parent)
   : QSyntaxHighlighter(parent)
 {
-    keywords = QStringList() << "and" << "assert" << "break" << "class" << "continue" << "def" <<
-                             "del" << "elif" << "else" << "except" << "exec" << "finally" <<
+    keywords = QStringList() << "and" << "as" << "assert" << "break" << "class" << "continue" <<
+                             "def" << "del" << "elif" << "else" << "except" << "exec" << "finally" <<
                              "for" << "from" << "global" << "if" << "import" << "in" <<
                              "is" << "lambda" << "not" << "or" << "pass" << "print" <<
                              "raise" << "return" << "try" << "while" << "yield" <<

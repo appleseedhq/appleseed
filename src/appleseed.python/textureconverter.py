@@ -1,6 +1,6 @@
 import os
 
-class TXConverter:
+class TextureConverter:
     def __init__(self, maketx_path):
         self.converted = {}
         self.maketx_path = maketx_path
