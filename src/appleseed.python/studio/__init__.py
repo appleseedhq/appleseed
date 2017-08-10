@@ -27,4 +27,3 @@
 #
 
 from _appleseedstudio import *
-from ui import *

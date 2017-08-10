@@ -1,6 +1,9 @@
 import os
+import sys
+import logging
+logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
-class TextureConverter:
+class TextureConverter(object):
     def __init__(self, maketx_path):
         self.converted = {}
         self.maketx_path = maketx_path
@@ -9,30 +12,22 @@ class TextureConverter:
         if path in self.converted:
             return self.converted[path]
         else:
-            path_converted = self._convert(path)
+            path_converted = self._convert_with_maketx(path)
             self.converted[path] = path_converted
             return path_converted
 
-    def _convert(self, path):
-        tx_path = self._change_ext_to_tx(path)
+    def _convert_with_maketx(self, path):
+        base_path, _ = os.path.splitext(path)
+        tx_path = base_path + ".tx"
+
         if os.path.exists(tx_path):
-            print('Warning: {tx_texture} exists.'.format(tx_texture=tx_path))
+            logging.warning('%s exists.', tx_path)
             return None
 
-        status = os.system('{maketx} -o "{tx_texture}" "{texture}"'.format(
-            maketx=self.maketx_path, tx_texture=tx_path, texture=path))
+        status = os.system('%s -o "%s" "%s"' % self.maketx_path, tx_path, path)
 
         if status != 0:
-            print('maketx failed with error code {}'.format(status))
+            logging.error('maketx failed with error code %s', status)
             return None
 
         return tx_path
-
-    def _change_ext_to_tx(self, path):
-        extension = '.tx'
-        if path.rfind(os.sep) < path.rfind('.'):
-            path_to_tx = path[:path.rfind('.')] + extension
-        else:
-            path_to_tx += extension
-
-        return path_to_tx
