@@ -1043,8 +1043,7 @@ namespace
                     m_is_indirect_lighting);
 
                 ShadingComponents radiance;
-                integrator.compute_radiance(m_sampling_context, MISPower2, radiance.m_volume);
-                radiance.m_beauty = radiance.m_volume;
+                integrator.compute_radiance(m_sampling_context, MISPower2, radiance);
 
                 madd(m_path_radiance, radiance, vertex.m_throughput);
             }

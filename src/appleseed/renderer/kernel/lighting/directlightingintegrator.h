@@ -71,6 +71,8 @@ namespace renderer
 
 class DirectLightingIntegrator
 {
+    friend class VolumeLightingIntegrator;
+
   public:
     // Constructor.
     DirectLightingIntegrator(

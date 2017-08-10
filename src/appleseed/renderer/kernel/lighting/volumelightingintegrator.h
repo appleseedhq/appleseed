@@ -78,7 +78,7 @@ namespace renderer
         void compute_radiance(
             SamplingContext&                sampling_context,
             const foundation::MISHeuristic  mis_heuristic,
-            Spectrum&                       radiance) const;
+            ShadingComponents&              radiance) const;
 
       private:
         const ShadingContext&               m_shading_context;
@@ -98,23 +98,25 @@ namespace renderer
 
         void precompute_mis_weights();
 
-        void add_single_light_sample_contribution_equiangular(
+        void add_single_equiangular_sample_contribution(
             const LightSample&              light_sample,
             const Spectrum&                 extinction_coef,
             SamplingContext&                sampling_context,
             const foundation::MISHeuristic  mis_heuristic,
-            Spectrum&                       radiance,
+            ShadingComponents&              radiance,
+            const bool                      sample_phasefunction,
             const float                     weight = 1.0f) const;
 
-        void add_single_light_sample_contribution_exponential(
+        void add_single_exponential_sample_contribution(
             const LightSample&              light_sample,
             const Spectrum&                 extinction_coef,
             SamplingContext&                sampling_context,
             const foundation::MISHeuristic  mis_heuristic,
-            Spectrum&                       radiance,
+            ShadingComponents&              radiance,
+            const bool                      sample_phasefunction,
             const float                     weight = 1.0f) const;
 
-        float take_exponential_sample(
+        float draw_exponential_sample(
             SamplingContext&        sampling_context,
             const ShadingRay&       volume_ray,
             const float             extinction) const;
@@ -124,18 +126,18 @@ namespace renderer
             const ShadingRay&       volume_ray,
             const float             extinction) const;
 
-        void get_inscattered_radiance_from_non_physical_light(
-            SamplingContext&                sampling_context,
-            const LightSample&              light_sample,
-            const float                     distance_sample,
-            Spectrum&                       radiance) const;
-
-        void get_inscattered_radiance_from_emitting_triangle(
+        void take_single_light_sample(
             SamplingContext&                sampling_context,
             const LightSample&              light_sample,
             const float                     distance_sample,
             const foundation::MISHeuristic  mis_heuristic,
-            Spectrum&                       radiance) const;
+            ShadingComponents&              radiance) const;
+
+        void take_single_phasefunction_sample(
+            SamplingContext&                sampling_context,
+            const float                     distance_sample,
+            const foundation::MISHeuristic  mis_heuristic,
+            ShadingComponents&              radiance) const;
     };
 }
 
