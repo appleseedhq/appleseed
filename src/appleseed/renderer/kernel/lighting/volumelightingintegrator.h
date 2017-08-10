@@ -105,14 +105,16 @@ namespace renderer
             const Spectrum&                 extinction_coef,
             SamplingContext&                sampling_context,
             const foundation::MISHeuristic  mis_heuristic,
-            Spectrum&                       radiance) const;
+            Spectrum&                       radiance,
+            const float                     weight = 1.0f) const;
 
         void add_single_light_sample_contribution_exponential(
             const LightSample&              light_sample,
             const Spectrum&                 extinction_coef,
             SamplingContext&                sampling_context,
             const foundation::MISHeuristic  mis_heuristic,
-            Spectrum&                       radiance) const;
+            Spectrum&                       radiance,
+            const float                     weight = 1.0f) const;
 
         float take_exponential_sample(
             SamplingContext&        sampling_context,

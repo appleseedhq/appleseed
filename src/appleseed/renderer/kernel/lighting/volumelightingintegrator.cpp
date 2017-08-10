@@ -228,7 +228,8 @@ namespace renderer
         const Spectrum&             extinction_coef,
         SamplingContext&            sampling_context,
         const MISHeuristic          mis_heuristic,
-        Spectrum&                   radiance) const
+        Spectrum&                   radiance,
+        const float                 weight) const
     {
         // Take one equiangular sample and evaluate its pdf value.
         const EquiangularSampler equiangular_distance_sampler(light_sample, m_volume_ray);
@@ -275,7 +276,7 @@ namespace renderer
         m_volume.evaluate_transmission(
             m_volume_data, m_volume_ray, equiangular_sample, transmission);
         inscattered *= transmission;
-        inscattered *= mis_weight / equiangular_prob;
+        inscattered *= weight * mis_weight / equiangular_prob;
         radiance += inscattered;
     }
 
@@ -284,7 +285,8 @@ namespace renderer
         const Spectrum&             extinction_coef,
         SamplingContext&            sampling_context,
         const MISHeuristic          mis_heuristic,
-        Spectrum&                   radiance) const
+        Spectrum&                   radiance,
+        const float                 weight) const
     {
         // Sample channel uniformly at random.
         sampling_context.split_in_place(1, 1);
@@ -343,7 +345,7 @@ namespace renderer
         }
 
         inscattered *= transmission;
-        inscattered *= (mis_weight_channel * mis_weight_distance / exponential_prob);
+        inscattered *= weight * mis_weight_channel * mis_weight_distance / exponential_prob;
         radiance += inscattered;
     }
 
@@ -365,7 +367,10 @@ namespace renderer
 
         const size_t total_sample_count =
             m_equiangular_sample_count + m_exponential_sample_count;
-
+        const float rcp_equiangular_sample_count =
+            m_equiangular_sample_count == 0 ? 0.0f : 1.0f / m_equiangular_sample_count;
+        const float rcp_exponential_sample_count =
+            m_exponential_sample_count == 0 ? 0.0f : 1.0f / m_exponential_sample_count;
         if (total_sample_count > 0)
         {
             sampling_context.split_in_place(1, m_light_sampler.get_non_physical_light_count());
@@ -383,7 +388,8 @@ namespace renderer
                         extinction_coef,
                         sampling_context,
                         mis_heuristic,
-                        radiance);
+                        radiance,
+                        total_sample_count * rcp_equiangular_sample_count);
                 }
                 else
                 {
@@ -392,7 +398,8 @@ namespace renderer
                         extinction_coef,
                         sampling_context,
                         mis_heuristic,
-                        radiance);
+                        radiance,
+                        total_sample_count * rcp_exponential_sample_count);
                 }
             }
         }
@@ -400,11 +407,6 @@ namespace renderer
         // Add contributions from the light set.
         if (m_light_sampler.has_lightset())
         {
-            Spectrum equiangular_sampling_radiance(Spectrum::Illuminance);
-            Spectrum exponential_sampling_radiance(Spectrum::Illuminance);
-
-            sampling_context.split_in_place(3, total_sample_count);
-
             for (size_t i = 0, e = m_equiangular_sample_count; i < e; ++i)
             {
                 // Sample the light set.
@@ -423,7 +425,8 @@ namespace renderer
                     extinction_coef,
                     sampling_context,
                     mis_heuristic,
-                    equiangular_sampling_radiance);
+                    radiance,
+                    rcp_equiangular_sample_count);
             }
 
             for (size_t i = 0, e = m_exponential_sample_count; i < e; ++i)
@@ -444,16 +447,9 @@ namespace renderer
                     extinction_coef,
                     sampling_context,
                     mis_heuristic,
-                    exponential_sampling_radiance);
+                    radiance,
+                    rcp_exponential_sample_count);
             }
-
-            if (m_equiangular_sample_count > 1)
-                equiangular_sampling_radiance /= static_cast<float>(m_equiangular_sample_count);
-            if (m_exponential_sample_count > 1)
-                exponential_sampling_radiance /= static_cast<float>(m_exponential_sample_count);
-
-            radiance += equiangular_sampling_radiance;
-            radiance += exponential_sampling_radiance;
         }
     }
 

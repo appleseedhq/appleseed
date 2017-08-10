@@ -1036,7 +1036,7 @@ namespace
                     volume_ray,
                     vertex.m_volume_data,
                     vertex.m_scattering_modes,
-                    1,
+                    0,
                     m_params.m_equiangular_sample_count,
                     m_params.m_exponential_sample_count,
                     m_params.m_dl_low_light_threshold,
