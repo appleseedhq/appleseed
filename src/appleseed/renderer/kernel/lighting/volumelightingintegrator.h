@@ -96,8 +96,6 @@ namespace renderer
         const size_t                        m_exponential_sample_count;
         const bool                          m_indirect;
 
-        size_t get_effective_equiangular_sample_count() const;
-
         void precompute_mis_weights();
 
         void add_single_light_sample_contribution_equiangular(

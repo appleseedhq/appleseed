@@ -100,13 +100,6 @@ namespace renderer
         precompute_mis_weights();
     }
 
-    size_t VolumeLightingIntegrator::get_effective_equiangular_sample_count() const
-    {
-        return
-            m_equiangular_sample_count +
-            m_light_sampler.get_non_physical_light_count();
-    }
-
     void VolumeLightingIntegrator::precompute_mis_weights()
     {
         // Get full ray transmission.
