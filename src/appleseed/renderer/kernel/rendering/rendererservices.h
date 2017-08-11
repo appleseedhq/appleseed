@@ -325,6 +325,9 @@ class RendererServices
     DECLARE_ATTR_GETTER(ray_ior);
     DECLARE_ATTR_GETTER(ray_has_differentials);
 
+    // Frame attributes.
+    DECLARE_ATTR_GETTER(working_color_space);
+
     // appleseed version attributes.
     DECLARE_ATTR_GETTER(appleseed_version_major);
     DECLARE_ATTR_GETTER(appleseed_version_minor);

@@ -119,6 +119,7 @@ RendererServices::RendererServices(
     m_global_attr_getters[OIIO::ustring("path:ray_length")] = &RendererServices::get_attr_ray_length;
     m_global_attr_getters[OIIO::ustring("path:ray_ior")] = &RendererServices::get_attr_ray_ior;
     m_global_attr_getters[OIIO::ustring("path:ray_has_differentials")] = &RendererServices::get_attr_ray_has_differentials;
+    m_global_attr_getters[OIIO::ustring("appleseed:working_color_space")] = &RendererServices::get_attr_working_color_space;
     m_global_attr_getters[OIIO::ustring("appleseed:version_major")] = &RendererServices::get_attr_appleseed_version_major;
     m_global_attr_getters[OIIO::ustring("appleseed:version_minor")] = &RendererServices::get_attr_appleseed_version_minor;
     m_global_attr_getters[OIIO::ustring("appleseed:version_patch")] = &RendererServices::get_attr_appleseed_version_patch;
@@ -881,6 +882,25 @@ IMPLEMENT_ATTR_GETTER(ray_has_differentials)
         const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
         reinterpret_cast<int*>(val)[0] = static_cast<int>(shading_point->get_ray().m_has_differentials);
+
+        if (derivs)
+            clear_derivatives(type, val);
+
+        return true;
+    }
+
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(working_color_space)
+{
+    if (type == OIIO::TypeDesc::TypeString)
+    {
+        const Frame* frame = m_project.get_frame();
+        const OIIO::ustring* name =
+            reinterpret_cast<const OIIO::ustring*>(frame->get_working_color_space_as_ustring());
+
+        reinterpret_cast<OIIO::ustring*>(val)[0] = *name;
 
         if (derivs)
             clear_derivatives(type, val);

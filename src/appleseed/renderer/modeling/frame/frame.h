@@ -118,6 +118,9 @@ class APPLESEED_DLLSYMBOL Frame
     const float* get_xyz_to_rgb_matrix() const;
     const float* get_rgb_to_xyz_matrix() const;
 
+    // Return the name of the current working color space as a pointer to a OIIO::ustring for OSL.
+    const void* get_working_color_space_as_ustring() const;
+
     // Return true if the frame uses premultiplied alpha, false if it uses straight alpha.
     bool is_premultiplied_alpha() const;
 

@@ -62,6 +62,11 @@
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 
+// OpenImageIO headers.
+#include "foundation/platform/_beginoiioheaders.h"
+#include "OpenImageIO/ustring.h"
+#include "foundation/platform/_endoiioheaders.h"
+
 // Boost headers.
 #include "boost/filesystem/path.hpp"
 
@@ -99,6 +104,7 @@ class WorkingColorSpace
   public:
     explicit WorkingColorSpace(const string& name = "scene_linear_srgb_rec_709")
       : m_name(name)
+      , m_ustring_name(name)
     {
         if (m_name == "scene_linear_rec_2020")
         {
@@ -235,6 +241,7 @@ class WorkingColorSpace
     Vector2f            m_chromaticity_bxy;
     Vector2f            m_chromaticity_wxy;
     string              m_name;
+    OIIO::ustring       m_ustring_name;
 };
 
 }
@@ -414,9 +421,14 @@ const float* Frame::get_xyz_to_rgb_matrix() const
     return &impl->m_working_color_space.m_xyz_to_rgb[0];
 }
 
-const float*Frame::get_rgb_to_xyz_matrix() const
+const float* Frame::get_rgb_to_xyz_matrix() const
 {
     return &impl->m_working_color_space.m_rgb_to_xyz[0];
+}
+
+const void* Frame::get_working_color_space_as_ustring() const
+{
+    return &impl->m_working_color_space.m_ustring_name;
 }
 
 void Frame::reset_crop_window()
