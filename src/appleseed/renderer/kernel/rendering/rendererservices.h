@@ -331,10 +331,6 @@ class RendererServices
     DECLARE_ATTR_GETTER(appleseed_version_patch);
     DECLARE_ATTR_GETTER(appleseed_version);
 
-    // Surface shader attributes.
-    DECLARE_ATTR_GETTER(surface_shader_color);
-    DECLARE_ATTR_GETTER(surface_shader_alpha);
-
     #undef DECLARE_ATTR_GETTER
 
     #define DECLARE_USER_DATA_GETTER(name)      \
