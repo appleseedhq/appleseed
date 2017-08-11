@@ -275,7 +275,7 @@ float LightTree::evaluate_node_pdf(
     float pdf = 1.0f;
 
     do
-	{
+    {
         const LightTreeNode<AABB3d>& node = m_nodes[parent_index];
 
         float p1, p2;
@@ -300,9 +300,14 @@ Vector3d LightTree::emitting_triangle_centroid(const size_t triangle_index) cons
 
 namespace
 {
+    // [1] Section 2.2.
+    float sub_hemispherical_light_source_contribution(
+        const float     cos_omega,
+        const float     cos_sigma)
+    {   
+        assert(cos_omega >= -1.0 && cos_omega <= 1.0);
+        assert(cos_sigma >= 0.0 && cos_sigma <= 1.0);
 
-    float sub_hemispherical_light_source_contribution(const float cos_omega, const float cos_sigma)
-    {
         const float sin_omega = sqrt(1.0f - cos_omega * cos_omega);
 
         const float sin_sigma2 = 1.0f - (cos_sigma * cos_sigma);
@@ -322,17 +327,24 @@ namespace
                 cos_gamma * sqrt(sin_sigma2 - cos_gamma2)
                 + sin_sigma2 * asin(cos_gamma / sin_sigma));
 
-        const float omega = asin(sin_omega);
-        const float sigma = asin(sin_sigma);
+        const float omega = acos(cos_omega);
+        const float sigma = acos(cos_sigma);
 
+        float contribution;
         if (omega < (HalfPi<float>() - sigma))
-            return cos_omega * sin_sigma2;
+            contribution = cos_omega * sin_sigma2;
         else if (omega < HalfPi<float>())
-            return cos_omega * sin_sigma2 + RcpPi<float>() * (g - h);
+            contribution = cos_omega * sin_sigma2 + RcpPi<float>() * (g - h);
         else if (omega < (HalfPi<float>() + sigma))
-            return RcpPi<float>() * (g + h);
+            contribution = RcpPi<float>() * (g + h);
         else
-            return 0.0f;
+            contribution = default_eps<float>();
+
+        // Avoid returning zero contribution.
+        if (fz(contribution))
+            return default_eps<float>();
+        else
+            return contribution;
     }
 }
 
@@ -341,8 +353,7 @@ float LightTree::compute_node_probability(
     const AABB3d&                   bbox,
     const ShadingPoint&             shading_point) const
 {
-    // Calculate probability of a single node based on its contribution over
-    // solid angle.
+    // Calculate probability of a single node based on its contribution over solid angle.
     const float r = bbox.radius();
     const float r2 = r * r;
     const float rcp_surface_area = 1.0f / r2;
@@ -358,22 +369,30 @@ float LightTree::compute_node_probability(
     const float squared_distance =
         static_cast<float>(square_distance(surface_point, position));
 
-    // Evaluated point is outside the volume.
+    // Evaluated point is outside the bbox.
     if (squared_distance <= r2)
         return node.get_importance() * rcp_surface_area;
-
-    const Vector3d light_direction = normalize(bbox.center() - surface_point);
+    //
+    // Implementation of Lambertian lighting model for sub-hemispherical light sources.
+    // Reference:
+    //  [1] Area Light Sources for Real-Time Graphics
+    //      https://www.microsoft.com/en-us/research/wp-content/uploads/1996/03/arealights.pdf
+    //
+    const Vector3d outcoming_light_direction = normalize(bbox.center() - surface_point);
     const float sin_theta2 = min(1.0f, (r2 / squared_distance));
     const float cos_theta = sqrt(1.0f - sin_theta2);
 
-    const Vector3d incident_direction = shading_point.get_ray().m_dir;
-    const Vector3d normal = (dot(shading_point.get_geometric_normal(), incident_direction) <= 0.0f)
+    const Vector3d incoming_light_direction = shading_point.get_ray().m_dir;
+
+    // [1] "Arbitrary direction D receives light only if dot(D,L) >= 0".
+    const Vector3d N = (dot(shading_point.get_geometric_normal(), incoming_light_direction) <= 0.0f)
         ? normalize(shading_point.get_shading_normal())
         : -normalize(shading_point.get_shading_normal());
 
-    const float cos_omega = min(1.0, max(-1.0, dot(normal, light_direction)));
+    const float cos_omega = min(1.0, max(-1.0, dot(N, outcoming_light_direction)));
     const float approx_contribution = sub_hemispherical_light_source_contribution(cos_omega, cos_theta);
-
+    
+    assert(approx_contribution > 0.0f);
     return node.get_importance() * rcp_surface_area * approx_contribution;
 }
 
