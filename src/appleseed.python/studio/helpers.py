@@ -33,8 +33,8 @@ def convert_all_textures_to_tx(maketx_path):
 
         new_texture_path = tx_converter.convert(texture_path)
         if new_texture_path is None:
-            logging.info('Skipped converting of %s', texture_path)
+            logging.info('Skipped converting of {}'.format(texture_path))
         else:
             texture_parameters['filename'] = new_texture_path
             texture.set_parameters(texture_parameters)
-            logging.info('%s converted to %s', texture_path, new_texture_path)
+            logging.info('{} converted to {}'.format(texture_path, new_texture_path))

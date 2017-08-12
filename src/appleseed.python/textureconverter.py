@@ -21,13 +21,13 @@ class TextureConverter(object):
         tx_path = base_path + ".tx"
 
         if os.path.exists(tx_path):
-            logging.warning('%s exists.', tx_path)
+            logging.warning('{} exists.'.format(tx_path))
             return None
 
-        status = os.system('%s -o "%s" "%s"' % self.maketx_path, tx_path, path)
+        status = os.system('{} -o "{}" "{}"'.format(self.maketx_path, tx_path, path))
 
         if status != 0:
-            logging.error('maketx failed with error code %s', status)
+            logging.error('maketx failed with error code {}.'.format(status))
             return None
 
         return tx_path
