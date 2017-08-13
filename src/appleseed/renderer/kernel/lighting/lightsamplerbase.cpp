@@ -287,7 +287,10 @@ void LightSamplerBase::collect_emitting_triangles(
                     // Store the light-emitting triangle.
                     m_emitting_triangles.push_back(emitting_triangle);
 
-                    triangle_handling(material, area, emitting_triangle_index);
+                    triangle_handling(
+                        material,
+                        static_cast<float>(area),
+                        emitting_triangle_index);
                 }
             }
         }
