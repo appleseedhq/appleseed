@@ -251,7 +251,8 @@ namespace
         return bpy::object(project);
     }
 
-    string qualify_path(const Project* project, const char* filepath) {
+    string qualify_path(const Project* project, const char* filepath)
+    {
         const SearchPaths& search_paths = project->search_paths();
         return string(search_paths.qualify(filepath).c_str());
     }

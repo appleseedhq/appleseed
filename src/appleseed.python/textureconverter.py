@@ -21,7 +21,7 @@ class TextureConverter(object):
         tx_path = base_path + ".tx"
 
         if os.path.exists(tx_path):
-            logging.warning('{} exists.'.format(tx_path))
+            logging.warning('{} already exists.'.format(tx_path))
             return None
 
         status = os.system('{} -o "{}" "{}"'.format(self.maketx_path, tx_path, path))

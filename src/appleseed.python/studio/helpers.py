@@ -28,12 +28,11 @@ def get_full_path(texture_path, project):
 
 def convert_all_textures_to_tx():
     def _find_maketx():
-        studio_dir = studio.get_studio_dir()
+        root_path = studio.get_root_path()
+        maketx_path = os.path.join(root_path, 'bin', 'maketx')
 
-        if os.path.exists(os.path.join(studio_dir, 'maketx')):
-            return os.path.join(studio_dir, 'maketx')
-        elif os.path.exists(os.path.join(studio_dir, '../maketx')):
-            return os.path.join(studio_dir, '../maketx')
+        if os.path.exists(maketx_path):
+            return maketx_path
         else:
             raise Exception('maketx binary is not found')
 
@@ -44,19 +43,22 @@ def convert_all_textures_to_tx():
     tx_converter = TextureConverter(_find_maketx())
 
     for texture in textures:
-        texture_parameters = texture.get_parameters()
-        texture_path = texture_parameters['filename']
+        if texture.get_model() != 'disk_texture_2d':
+            continue
 
+        texture_parameters = texture.get_parameters()
+
+        texture_path = texture_parameters['filename']
         texture_full_path = get_full_path(texture_path, project)
 
-        if texture.get_model() != 'disk_texture_2d' or texture_full_path.endswith('.tx'):
-            logging.debug('Skipped converting {}'.format(texture_full_path))
+        if texture_full_path.endswith('.tx'):
+            logging.debug('Skipped conversion of {}'.format(texture_full_path))
             continue
 
         new_texture_full_path = tx_converter.convert(texture_full_path)
 
         if new_texture_full_path is None:
-            logging.info('Skipped converting of {}'.format(texture_full_path))
+            logging.info('Skipped conversion of {}'.format(texture_full_path))
         else:
             new_texture_path = os.path.join(os.path.dirname(texture_path),
                                             os.path.basename(new_texture_full_path))
