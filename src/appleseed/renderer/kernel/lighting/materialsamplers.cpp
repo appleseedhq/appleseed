@@ -137,7 +137,7 @@ const ShadingPoint& BSDFSampler::trace(
             m_shading_point,
             ray,
             transmission);
-    if (shading_point.hit()) transmission.set(0.0f);
+
     return shading_point;
 }
 
@@ -219,6 +219,7 @@ bool VolumeSampler::sample(
 
     m_volume.scattering_coefficient(
         m_volume_data, m_volume_ray, m_distance, value.m_volume);
+    value.m_volume *= pdf;
     value.m_beauty = value.m_volume;
 
     return true;
@@ -263,7 +264,7 @@ const ShadingPoint& VolumeSampler::trace(
             shading_context,
             ray,
             transmission);
-    if (shading_point.hit()) transmission.set(0.0f);
+
     return shading_point;
 }
 

@@ -80,7 +80,7 @@ namespace renderer
         const ShadingRay&               volume_ray,
         const void*                     volume_data,
         const int                       light_sampling_modes,
-        const size_t                    phasefunction_sample_count,
+        const bool                      sample_phasefunction,
         const size_t                    equiangular_sample_count,
         const size_t                    exponential_sample_count,
         const float                     low_light_threshold,
@@ -92,7 +92,8 @@ namespace renderer
         , m_volume_data(volume_data)
         , m_time(volume_ray.m_time)
         , m_light_sampling_modes(light_sampling_modes)
-        , m_phasefunction_sample_count(phasefunction_sample_count)
+        , m_phasefunction_sample_count(1u)
+        , m_sample_phasefunction(sample_phasefunction)
         , m_equiangular_sample_count(equiangular_sample_count)
         , m_exponential_sample_count(exponential_sample_count)
         , m_low_light_threshold(low_light_threshold)
@@ -397,6 +398,43 @@ namespace renderer
         // Add contributions from the light set.
         if (m_light_sampler.has_lightset())
         {
+            if (m_sample_phasefunction)
+            {
+                // Sample the light set.
+                LightSample light_sample;
+                ShadingPoint fake_point;
+                fake_point.clear();
+                m_light_sampler.sample_lightset(
+                    m_time,
+                    sampling_context.next2<Vector3f>(),
+                    fake_point,
+                    light_sample);
+
+                const float s = sampling_context.next2<float>();
+                if (s * total_sample_count < m_equiangular_sample_count)
+                {
+                    add_single_equiangular_sample_contribution(
+                        light_sample,
+                        extinction_coef,
+                        sampling_context,
+                        mis_heuristic,
+                        radiance,
+                        true,
+                        total_sample_count * rcp_equiangular_sample_count);
+                }
+                else
+                {
+                   add_single_exponential_sample_contribution(
+                       light_sample,
+                       extinction_coef,
+                       sampling_context,
+                       mis_heuristic,
+                       radiance,
+                       true,
+                       total_sample_count * rcp_exponential_sample_count);
+                }
+            }
+
             for (size_t i = 0, e = m_equiangular_sample_count; i < e; ++i)
             {
                 // Sample the light set.
@@ -470,8 +508,8 @@ namespace renderer
             volume_sampler,
             m_time,
             m_light_sampling_modes,
-            0,
             1,
+            m_equiangular_sample_count + m_exponential_sample_count,
             m_low_light_threshold,
             m_indirect);
 
@@ -519,7 +557,7 @@ namespace renderer
             m_time,
             m_light_sampling_modes,
             1,
-            0,
+            m_equiangular_sample_count + m_exponential_sample_count,
             m_low_light_threshold,
             m_indirect);
 

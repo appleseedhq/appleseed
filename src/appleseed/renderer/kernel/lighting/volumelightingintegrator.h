@@ -69,7 +69,7 @@ namespace renderer
             const ShadingRay&               volume_ray,
             const void*                     volume_data,
             const int                       light_sampling_modes,
-            const size_t                    phasefunction_sample_count,
+            const bool                      samle_phasefunction,
             const size_t                    equiangular_sample_count,
             const size_t                    exponential_sample_count,
             const float                     low_light_threshold,
@@ -94,6 +94,7 @@ namespace renderer
         const size_t                        m_phasefunction_sample_count;
         const size_t                        m_equiangular_sample_count;
         const size_t                        m_exponential_sample_count;
+        const bool                          m_sample_phasefunction;
         const bool                          m_indirect;
 
         void precompute_mis_weights();

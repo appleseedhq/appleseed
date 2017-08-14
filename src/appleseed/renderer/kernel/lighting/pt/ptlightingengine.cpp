@@ -811,8 +811,7 @@ namespace
             {
             }
 
-            bool accept_scattering(
-                const ScatteringMode::Mode  prev_mode)
+            bool accept_scattering(const ScatteringMode::Mode prev_mode)
             {
                 return true;
             }
@@ -864,8 +863,7 @@ namespace
         };
 
         //
-        // Volume visitor with next event estimation
-        // that performs distance sampling and light sampling in a decoupled fashion.
+        // Volume visitor with next event estimation.
         //
 
         struct VolumeVisitorDistanceSampling
@@ -969,50 +967,14 @@ namespace
                 radiance += dl_radiance;
             }
 
-            void add_image_based_lighting_contribution(
-                const ShadingRay&       volume_ray,
-                const Volume&           volume,
-                const void*             volume_data,
-                const float             distance_sample,
-                ShadingComponents&      radiance)
-            {
-                const VolumeSampler volume_sampler(
-                    volume_ray,
-                    volume,
-                    volume_data,
-                    distance_sample);
-
-                ShadingComponents ibl_radiance;
-
-                const size_t env_sample_count =
-                    stochastic_cast<size_t>(
-                    m_sampling_context,
-                    m_params.m_ibl_env_sample_count);
-
-                compute_ibl_environment_sampling(
-                    m_sampling_context,
-                    m_shading_context,
-                    *m_env_edf,
-                    Dual3d(volume_ray.m_dir),
-                    volume_sampler,
-                    ScatteringMode::All,
-                    1,                  // bsdf_sample_count
-                    env_sample_count,
-                    ibl_radiance);
-
-                // Divide by the sample count when this number is less than 1.
-                if (m_params.m_rcp_ibl_env_sample_count > 0.0f)
-                    ibl_radiance *= m_params.m_rcp_ibl_env_sample_count;
-
-                // Add image-based lighting contribution.
-                radiance += ibl_radiance;
-            }
-
             void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray)
             {
                 // Any light contribution after a diffuse, glossy or volume bounce is considered indirect.
                 if (ScatteringMode::has_diffuse_or_glossy_or_volume(vertex.m_scattering_modes))
                     m_is_indirect_lighting = true;
+
+                const bool phasefunction_sampling_enabled =
+                    !ScatteringMode::has_volume(vertex.m_scattering_modes);
 
                 if (volume_ray.get_length() == numeric_limits<ShadingRay::ValueType>().max())
                 {
@@ -1036,7 +998,7 @@ namespace
                     volume_ray,
                     vertex.m_volume_data,
                     vertex.m_scattering_modes,
-                    0,
+                    phasefunction_sampling_enabled,
                     m_params.m_equiangular_sample_count,
                     m_params.m_exponential_sample_count,
                     m_params.m_dl_low_light_threshold,
