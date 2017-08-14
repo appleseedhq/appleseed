@@ -71,6 +71,19 @@ namespace detail
     }
 
     template <typename T>
+    boost::python::object typed_entity_vector_get_iter(renderer::TypedEntityVector<T>& vec)
+    {
+        boost::python::list items;
+
+        typedef typename renderer::TypedEntityVector<T>::iterator iterator;
+
+        for (iterator it(vec.begin()), e(vec.end()); it != e; ++it)
+            items.append(boost::python::ptr(&(*it)));
+
+        return items.attr("__iter__")();
+    }
+
+    template <typename T>
     T* typed_entity_map_get_item(renderer::TypedEntityMap<T>& map, const std::string& key)
     {
         return map.get_by_name(key.c_str());
@@ -141,7 +154,7 @@ void bind_typed_entity_vector(const char* name)
         .def("insert", &renderer::TypedEntityVector<T>::insert)
         .def("remove", &detail::typed_entity_vector_remove<T>)
 
-        .def("__iter__", boost::python::iterator<renderer::TypedEntityVector<T>, boost::python::return_internal_reference<>>());
+        .def("__iter__", &detail::typed_entity_vector_get_iter<T>);
 }
 
 template <typename T>
