@@ -26,19 +26,26 @@ def get_full_path(texture_path, project):
         return project.qualify_path(texture_path)
 
 
-def convert_all_textures_to_tx(maketx_path):
+def convert_all_textures_to_tx():
+    def _find_maketx():
+        studio_dir = studio.get_studio_dir()
+
+        if os.path.exists(os.path.join(studio_dir, 'maketx')):
+            return os.path.join(studio_dir, 'maketx')
+        elif os.path.exists(os.path.join(studio_dir, '../maketx')):
+            return os.path.join(studio_dir, '../maketx')
+        else:
+            raise Exception('maketx binary is not found')
+
     project = studio.current_project()
     scene = project.get_scene()
     textures = get_textures(scene)
 
-    tx_converter = TextureConverter(maketx_path)
+    tx_converter = TextureConverter(_find_maketx())
 
     for texture in textures:
         texture_parameters = texture.get_parameters()
         texture_path = texture_parameters['filename']
-
-        logging.debug("Processing {}".format(texture_path))
-        print texture_path
 
         texture_full_path = get_full_path(texture_path, project)
 
