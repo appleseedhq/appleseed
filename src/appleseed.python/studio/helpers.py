@@ -28,7 +28,8 @@ def convert_all_textures_to_tx(maketx_path):
         texture_parameters = texture.get_parameters()
         texture_path = texture_parameters['filename']
 
-        if texture_path.endswith('.tx'):
+        if texture.get_model() != 'disk_texture_2d' or texture_path.endswith('.tx'):
+            logging.debug('Skipped converting {}'.format(texture_path))
             continue
 
         new_texture_path = tx_converter.convert(texture_path)
