@@ -83,6 +83,7 @@ namespace
         const char*         name)
     {
         ParamArray child = source.child(name);
+        copy_param(child, source, "spectrum_mode");
         copy_param(child, source, "sampling_mode");
         copy_param(child, source, "rendering_threads");
         return child;

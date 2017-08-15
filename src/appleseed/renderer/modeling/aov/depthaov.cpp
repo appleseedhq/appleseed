@@ -36,6 +36,7 @@
 #include "renderer/modeling/aov/aov.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -80,8 +81,7 @@ namespace
 
         virtual void flush(ShadingResult& result) override
         {
-            result.m_aovs[m_index].m_color.set(m_depth);
-            result.m_aovs[m_index].m_alpha.set(1.0f);
+            result.m_aovs[m_index] = Color4f(m_depth, m_depth, m_depth, 1.0f);
         }
 
       private:

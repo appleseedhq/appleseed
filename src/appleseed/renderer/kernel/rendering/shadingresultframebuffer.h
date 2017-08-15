@@ -64,7 +64,6 @@ class ShadingResultFrameBuffer
         const foundation::AABB2u&       crop_window,
         const foundation::Filter2f&     filter);
 
-    // The sample must be in the linear RGB color space.
     void add(
         const float                     x,
         const float                     y,

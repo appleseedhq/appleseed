@@ -37,14 +37,16 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/color.h"
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 
+// Standard headers.
+#include <cstddef>
+
 // Forward declarations.
-namespace renderer { class Camera; }
-namespace renderer { class ShadingComponents; }
-namespace renderer { class ShadingPoint; }
-namespace renderer { class ShadingResult; }
+namespace renderer  { class Camera; }
+namespace renderer  { class ShadingComponents; }
+namespace renderer  { class ShadingPoint; }
+namespace renderer  { class ShadingResult; }
 
 namespace renderer
 {
@@ -115,8 +117,7 @@ class BeautyAOVAccumulator
     virtual void flush(ShadingResult& result) override;
 
   private:
-    foundation::ColorSpace  m_color_space;
-    Spectrum                m_color;
+    foundation::Color3f m_color;
 };
 
 

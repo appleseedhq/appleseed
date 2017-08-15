@@ -48,6 +48,30 @@ using namespace std;
 namespace renderer
 {
 
+Spectrum::Mode get_spectrum_mode(const ParamArray& params)
+{
+    const string spectrum_mode =
+        params.get_required<string>(
+            "spectrum_mode",
+            "rgb",
+            make_vector("rgb", "spectral"));
+
+    return
+        spectrum_mode == "rgb"
+            ? Spectrum::RGB
+            : Spectrum::Spectral;
+}
+
+string get_spectrum_mode_name(const Spectrum::Mode mode)
+{
+    switch (mode)
+    {
+      case Spectrum::RGB: return "rgb";
+      case Spectrum::Spectral: return "spectral";
+      default: return "unknown";
+    }
+}
+
 SamplingContext::Mode get_sampling_context_mode(const ParamArray& params)
 {
     const string sampling_mode =

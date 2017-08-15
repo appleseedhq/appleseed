@@ -473,8 +473,7 @@ namespace
             const float fdr = fresnel_internal_diffuse_reflectance(1.0f / eta);
             const float T = (1.0f - Fo) * (1.0f - Fi);
 
-            value.resize(diffuse_reflectance.size());
-            for (size_t i = 0, e = diffuse_reflectance.size(); i < e; ++i)
+            for (size_t i = 0; i < Spectrum::size(); ++i)
             {
                 float pd = diffuse_reflectance[i];
                 const float non_linear_term = 1.0f - lerp(1.0f, pd, internal_scattering) * fdr;

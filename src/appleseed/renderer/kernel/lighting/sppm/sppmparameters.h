@@ -47,7 +47,9 @@ struct SPPMParameters
     enum PhotonType { Monochromatic, Polychromatic };
     enum Mode { RayTraced, SPPM, Off };
 
+    const Spectrum::Mode        m_spectrum_mode;
     const SamplingContext::Mode m_sampling_mode;
+
     const PhotonType            m_photon_type;
 
     const Mode                  m_dl_mode;                              // direct lighting mode

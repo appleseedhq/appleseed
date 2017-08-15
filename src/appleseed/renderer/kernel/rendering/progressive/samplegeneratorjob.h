@@ -30,6 +30,9 @@
 #ifndef APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLEGENERATORJOB_H
 #define APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLEGENERATORJOB_H
 
+// appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
+
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
 #include "foundation/utility/job.h"
@@ -58,6 +61,7 @@ class SampleGeneratorJob
         SampleAccumulationBuffer&   buffer,
         ISampleGenerator*           sample_generator,
         SampleCounter&              sample_counter,
+        const Spectrum::Mode        spectrum_mode,
         foundation::JobQueue&       job_queue,
         const size_t                job_index,
         const size_t                job_count,
@@ -70,6 +74,7 @@ class SampleGeneratorJob
     SampleAccumulationBuffer&       m_buffer;
     ISampleGenerator*               m_sample_generator;
     SampleCounter&                  m_sample_counter;
+    const Spectrum::Mode            m_spectrum_mode;
     foundation::JobQueue&           m_job_queue;
     const size_t                    m_job_index;
     const size_t                    m_job_count;

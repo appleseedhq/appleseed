@@ -81,24 +81,30 @@ namespace
     {
         const float one_minus_t = 1.0f - t;
 
-        if (a.size() == b.size())
-        {
-            result.resize(a.size());
+        for (size_t i = 0; i < Spectrum::size(); ++i)
+            result[i] = one_minus_t * a[i] + t * b[i];
+    }
 
-            for (size_t i = 0, e = a.size(); i < e; ++i)
-                result[i] = one_minus_t * a[i] + t * b[i];
-        }
-        else
-        {
-            result.resize(Spectrum::Samples);
+    void mix_one_with_spectra(
+        const Spectrum&     b,
+        const float         t,
+        Spectrum&           result)
+    {
+        const float one_minus_t = 1.0f - t;
 
-            Spectrum up_a, up_b;
-            Spectrum::upgrade(a, up_a);
-            Spectrum::upgrade(b, up_b);
+        for (size_t i = 0; i < Spectrum::size(); ++i)
+            result[i] = one_minus_t + t * b[i];
+    }
 
-            for (size_t i = 0; i < Spectrum::Samples; ++i)
-                result[i] = one_minus_t * up_a[i] + t * up_b[i];
-        }
+    void mix_spectra_with_one(
+        const Spectrum&     a,
+        const float         t,
+        Spectrum&           result)
+    {
+        const float one_minus_t = 1.0f - t;
+
+        for (size_t i = 0; i < Spectrum::size(); ++i)
+            result[i] = one_minus_t * a[i] + t;
     }
 
     struct DisneySpecularFresnelFun
@@ -114,14 +120,13 @@ namespace
             const Vector3f& n,
             Spectrum&       value) const
         {
-            mix_spectra(
-                Color3f(1.0f),
+            mix_one_with_spectra(
                 m_values.m_precomputed.m_tint_color,
                 m_values.m_specular_tint,
                 value);
             value *= m_values.m_specular * 0.08f;
             mix_spectra(value, m_values.m_base_color, m_values.m_metallic, value);
-            mix_spectra(value, Color3f(1.0f), schlick_fresnel(dot(o, h)), value);
+            mix_spectra_with_one(value, schlick_fresnel(dot(o, h)), value);
         }
 
         const DisneyBRDFInputValues& m_values;
@@ -282,8 +287,7 @@ namespace
             const Vector3f h(normalize(incoming + outgoing));
             const float cos_ih = dot(incoming, h);
 
-            mix_spectra(
-                Color3f(1.0f),
+            mix_one_with_spectra(
                 values->m_precomputed.m_tint_color,
                 values->m_sheen_tint,
                 value);
@@ -374,14 +378,14 @@ namespace
             new (&values->m_precomputed) InputValues::Precomputed();
 
             const Color3f tint_xyz =
-                values->m_base_color.is_rgb()
-                    ? linear_rgb_to_ciexyz(values->m_base_color.rgb())
-                    : spectrum_to_ciexyz<float>(g_std_lighting_conditions, values->m_base_color);
+                values->m_base_color.to_ciexyz(g_std_lighting_conditions);
 
-            values->m_precomputed.m_tint_color =
+            values->m_precomputed.m_tint_color.set(
                 tint_xyz[1] > 0.0f
                     ? ciexyz_to_linear_rgb(tint_xyz / tint_xyz[1])
-                    : Color3f(1.0f);
+                    : Color3f(1.0f),
+                g_std_lighting_conditions,
+                Spectrum::Reflectance);
 
             values->m_precomputed.m_base_color_luminance = tint_xyz[1];
         }

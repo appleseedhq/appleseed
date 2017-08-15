@@ -118,8 +118,6 @@ namespace
             // Precompute the relative index of refraction.
             values->m_base_values.m_eta = compute_eta(shading_point, values->m_ior);
 
-            make_reflectance_and_mfp_compatible(values->m_reflectance, values->m_mfp);
-
             // Apply multipliers to input values.
             values->m_reflectance *= values->m_reflectance_multiplier;
             values->m_mfp *= values->m_mfp_multiplier;
@@ -135,8 +133,7 @@ namespace
                 values->m_precomputed.m_channel_pdf);
 
             // Precompute scaling factor.
-            values->m_precomputed.m_s.resize(values->m_reflectance.size());
-            for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
+            for (size_t i = 0; i < Spectrum::size(); ++i)
             {
                 const float a = values->m_reflectance[i];
                 values->m_precomputed.m_s[i] = normalized_diffusion_s_mfp(a);
@@ -144,7 +141,7 @@ namespace
 
             // Precompute the radius of the sampling disk.
             float max_radius = 0.0f;
-            for (size_t i = 0, e = values->m_mfp.size(); i < e; ++i)
+            for (size_t i = 0; i < Spectrum::size(); ++i)
             {
                 const float l = values->m_mfp[i];
                 const float s = values->m_precomputed.m_s[i];
@@ -202,7 +199,7 @@ namespace
 
             float pdf = 0.0f;
 
-            for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
+            for (size_t i = 0; i < Spectrum::size(); ++i)
             {
                 const float channel_pdf = values->m_precomputed.m_channel_pdf[i];
                 const float l = values->m_mfp[i];
@@ -224,13 +221,11 @@ namespace
             const NormalizedDiffusionBSSRDFInputValues* values =
                 static_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
 
-            value.resize(values->m_reflectance.size());
-
             const float radius =
                 static_cast<float>(
                     norm(outgoing_point.get_point() - incoming_point.get_point()));
 
-            for (size_t i = 0, e = value.size(); i < e; ++i)
+            for (size_t i = 0; i < Spectrum::size(); ++i)
             {
                 const float l = values->m_mfp[i];
                 const float s = values->m_precomputed.m_s[i];

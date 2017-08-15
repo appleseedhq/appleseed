@@ -58,6 +58,7 @@ void TileJobFactory::create(
     const TileJob::TileRendererVector&  tile_renderers,
     const TileJob::TileCallbackVector&  tile_callbacks,
     const size_t                        pass_hash,
+    const Spectrum::Mode                spectrum_mode,
     TileJobVector&                      tile_jobs,
     IAbortSwitch&                       abort_switch)
 {
@@ -90,6 +91,7 @@ void TileJobFactory::create(
                 tile_x,
                 tile_y,
                 pass_hash,
+                spectrum_mode,
                 abort_switch));
     }
 }

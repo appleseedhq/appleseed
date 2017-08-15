@@ -35,6 +35,7 @@
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/texturing/oiiotexturesystem.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 
 using namespace foundation;
@@ -141,10 +142,12 @@ void ShadingContext::execute_osl_background(
     const Vector3f&         outgoing,
     Spectrum&               value) const
 {
-    value =
+    value.set(
         m_shadergroup_exec.execute_background(
             shader_group,
-            outgoing);
+            outgoing),
+        g_std_lighting_conditions,
+        Spectrum::Reflectance);
 }
 
 void ShadingContext::choose_bsdf_closure_shading_basis(

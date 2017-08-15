@@ -109,13 +109,35 @@ Dictionary Configuration::get_metadata()
     Dictionary metadata;
 
     metadata.insert(
+        "spectrum_mode",
+        Dictionary()
+        .insert("type", "enum")
+        .insert("values", "rgb|spectral")
+        .insert("default", "rgb")
+        .insert("label", "Color Pipeline")
+        .insert("help", "Color pipeline used throughout the renderer")
+        .insert(
+            "options",
+            Dictionary()
+            .insert(
+                "rgb",
+                Dictionary()
+                .insert("label", "RGB")
+                .insert("help", "RGB pipeline"))
+            .insert(
+                "spectral",
+                Dictionary()
+                .insert("label", "Spectral")
+                .insert("help", "Spectral pipeline using 31 equidistant components in the 400-700 nm range"))));
+
+    metadata.insert(
         "sampling_mode",
         Dictionary()
             .insert("type", "enum")
             .insert("values", "rng|qmc")
             .insert("default", "rng")
             .insert("label", "Sampler")
-            .insert("help", "Sampler to use when generating samples")
+            .insert("help", "Sampling algorithm used in Monte Carlo integration")
             .insert(
                 "options",
                 Dictionary()
@@ -225,6 +247,7 @@ auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_final()
 
     ParamArray& parameters = configuration->get_parameters();
 
+    parameters.insert("spectrum_mode", "rgb");
     parameters.insert("sampling_mode", "rng");
 
     parameters.insert("frame_renderer", "generic");
@@ -248,6 +271,7 @@ auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_interactiv
 
     ParamArray& parameters = configuration->get_parameters();
 
+    parameters.insert("spectrum_mode", "rgb");
     parameters.insert("sampling_mode", "rng");
 
     parameters.insert("frame_renderer", "progressive");

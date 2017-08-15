@@ -31,39 +31,25 @@
 #include "physicalsurfaceshader.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/aov/aovaccumulator.h"
-#include "renderer/kernel/aov/aovsettings.h"
-#include "renderer/kernel/aov/imagestack.h"
-#include "renderer/kernel/aov/shadingfragmentstack.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
-#include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/kernel/shading/shadingray.h"
-#include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/project/project.h"
-#include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/canvasproperties.h"
-#include "foundation/image/colorspace.h"
-#include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
-#include <algorithm>
-#include <cmath>
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
 namespace renderer  { class PixelContext; }
+namespace renderer  { class Project; }
 
 using namespace foundation;
 using namespace std;
@@ -74,7 +60,7 @@ namespace renderer
 namespace
 {
     //
-    // Physical surface shader for physically-based rendering.
+    // A surface shader that uses physically-based rendering to shade pixels.
     //
 
     const char* Model = "physical_surface_shader";
@@ -87,7 +73,6 @@ namespace
             const char*                 name,
             const ParamArray&           params)
           : SurfaceShader(name, params)
-          , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
         {
             m_inputs.declare("color_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("alpha_multiplier", InputFormatFloat, "1.0");
@@ -128,14 +113,18 @@ namespace
                 &values);
 
             // Compute lighting.
-            ShadingComponents radiance(Spectrum::Illuminance);
-            compute_lighting(
-                values,
-                sampling_context,
-                pixel_context,
-                shading_context,
-                shading_point,
-                radiance);
+            ShadingComponents radiance;
+            for (size_t i = 0, e = m_lighting_samples; i < e; ++i)
+            {
+                shading_context.get_lighting_engine()->compute_lighting(
+                    sampling_context,
+                    pixel_context,
+                    shading_context,
+                    shading_point,
+                    radiance);
+            }
+            if (m_lighting_samples > 1)
+                radiance /= static_cast<float>(m_lighting_samples);
 
             // Accumulate into AOVs.
             aov_accumulators.write(radiance, values.m_color_multiplier);
@@ -147,37 +136,11 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            float       m_color_multiplier;
-            float       m_alpha_multiplier;
-            Spectrum    m_translucency;
+            float   m_color_multiplier;
+            float   m_alpha_multiplier;
         };
 
-        const LightingConditions    m_lighting_conditions;
-        size_t                      m_lighting_samples;
-
-        void compute_lighting(
-            const InputValues&          values,
-            SamplingContext&            sampling_context,
-            const PixelContext&         pixel_context,
-            const ShadingContext&       shading_context,
-            const ShadingPoint&         shading_point,
-            ShadingComponents&          radiance) const
-        {
-            radiance.set(0.0f);
-
-            for (size_t i = 0; i < m_lighting_samples; ++i)
-            {
-                shading_context.get_lighting_engine()->compute_lighting(
-                    sampling_context,
-                    pixel_context,
-                    shading_context,
-                    shading_point,
-                    radiance);
-            }
-
-            if (m_lighting_samples > 1)
-                radiance /= static_cast<float>(m_lighting_samples);
-        }
+        size_t      m_lighting_samples;
     };
 }
 

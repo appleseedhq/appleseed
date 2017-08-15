@@ -30,6 +30,9 @@
 #ifndef APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_TILEJOB_H
 #define APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_TILEJOB_H
 
+// appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/job.h"
 
@@ -64,6 +67,7 @@ class TileJob
         const size_t                tile_x,
         const size_t                tile_y,
         const size_t                pass_hash,
+        const Spectrum::Mode        spectrum_mode,
         foundation::IAbortSwitch&   abort_switch);
 
     // Execute the job.
@@ -76,6 +80,7 @@ class TileJob
     const size_t                    m_tile_x;
     const size_t                    m_tile_y;
     const size_t                    m_pass_hash;
+    const Spectrum::Mode            m_spectrum_mode;
     foundation::IAbortSwitch&       m_abort_switch;
 };
 

@@ -34,8 +34,10 @@
 #include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
+#include "renderer/modeling/color/colorspace.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -73,18 +75,18 @@ namespace
             const ShadingComponents&    shading_components,
             const float                 multiplier) override
         {
-            m_color = shading_components.m_diffuse;
+            m_color = shading_components.m_diffuse.to_rgb(g_std_lighting_conditions);
             m_color *= multiplier;
         }
 
         virtual void flush(ShadingResult& result) override
         {
-            result.m_aovs[m_index].m_color = m_color;
-            result.m_aovs[m_index].m_alpha = result.m_main.m_alpha;
+            result.m_aovs[m_index].rgb() = m_color;
+            result.m_aovs[m_index].a = result.m_main.a;
         }
 
       private:
-        Spectrum m_color;
+        Color3f m_color;
     };
 
 

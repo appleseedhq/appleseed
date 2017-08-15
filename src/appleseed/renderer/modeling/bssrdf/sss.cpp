@@ -126,9 +126,7 @@ void effective_extinction_coefficient(
 {
     assert(sigma_a.size() == sigma_s.size());
 
-    sigma_tr.resize(sigma_a.size());
-
-    for (size_t i = 0, e = sigma_tr.size(); i < e; ++i)
+    for (size_t i = 0; i < Spectrum::size(); ++i)
     {
         sigma_tr[i] =
             effective_extinction_coefficient(

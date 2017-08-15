@@ -59,6 +59,7 @@ SampleGeneratorJob::SampleGeneratorJob(
     SampleAccumulationBuffer&   buffer,
     ISampleGenerator*           sample_generator,
     SampleCounter&              sample_counter,
+    const Spectrum::Mode        spectrum_mode,
     JobQueue&                   job_queue,
     const size_t                job_index,
     const size_t                job_count,
@@ -66,6 +67,7 @@ SampleGeneratorJob::SampleGeneratorJob(
   : m_buffer(buffer)
   , m_sample_generator(sample_generator)
   , m_sample_counter(sample_counter)
+  , m_spectrum_mode(spectrum_mode)
   , m_job_queue(job_queue)
   , m_job_index(job_index)
   , m_job_count(job_count)
@@ -109,6 +111,9 @@ uint64 SampleGeneratorJob::samples_to_samples_per_job(const uint64 samples)
 
 void SampleGeneratorJob::execute(const size_t thread_index)
 {
+    // Initialize thread-local variables.
+    Spectrum::set_mode(m_spectrum_mode);
+
 #ifdef PRINT_DETAILED_PROGRESS
     Stopwatch<DefaultWallclockTimer> stopwatch(0);
     stopwatch.measure();

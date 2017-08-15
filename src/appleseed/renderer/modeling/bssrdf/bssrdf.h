@@ -125,10 +125,6 @@ class APPLESEED_DLLSYMBOL BSSRDF
         Spectrum&                   value) const = 0;
 
   protected:
-    static void make_reflectance_and_mfp_compatible(
-        Spectrum&                   reflectance,
-        const Spectrum&             mfp);
-
     static float compute_eta(
         const ShadingPoint&         shading_point,
         const float                 ior);

@@ -34,7 +34,6 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/aov/imagestack.h"
-#include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/rendering/final/pixelsampler.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
 #include "renderer/kernel/rendering/pixelcontext.h"
@@ -165,7 +164,7 @@ namespace
                     m_total_sampling_dim.insert(child_sampling_context.get_total_dimension());
 
                     // Merge the sample into the framebuffer.
-                    if (shading_result.is_valid_linear_rgb())
+                    if (shading_result.is_valid())
                     {
                         framebuffer.add(
                             static_cast<float>(pt.x + s.x),
@@ -217,7 +216,7 @@ namespace
                         m_total_sampling_dim.insert(sampling_context.get_total_dimension());
 
                         // Merge the sample into the framebuffer.
-                        if (shading_result.is_valid_linear_rgb())
+                        if (shading_result.is_valid())
                         {
                             framebuffer.add(
                                 static_cast<float>(s.x - pi.x + pt.x),

@@ -49,7 +49,6 @@
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
-namespace foundation    { class LightingConditions; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Texture; }
 
@@ -112,9 +111,6 @@ class APPLESEED_DLLSYMBOL TextureInstance
     TextureAddressingMode get_addressing_mode() const;
     TextureFilteringMode get_filtering_mode() const;
     TextureAlphaMode get_alpha_mode() const;
-
-    // Return the lighting conditions of the texture.
-    const foundation::LightingConditions& get_lighting_conditions() const;
 
     // Find the texture bound to this instance.
     Texture* find_texture() const;

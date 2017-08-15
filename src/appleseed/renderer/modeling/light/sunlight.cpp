@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/color/wavelengths.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputarray.h"
@@ -41,6 +42,7 @@
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/regularspectrum.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
@@ -294,14 +296,12 @@ namespace
 
         void precompute_constants()
         {
-            m_k1.resize(Spectrum::Samples);
-            for (size_t i = 0; i < Spectrum::Samples; ++i)
+            for (size_t i = 0; i < 31; ++i)
                 m_k1[i] = -0.008735f * pow(g_light_wavelengths_um[i], -4.08f);
 
             const float Alpha = 1.3f;               // ratio of small to large particle sizes (0 to 4, typically 1.3)
 
-            m_k2.resize(Spectrum::Samples);
-            for (size_t i = 0; i < Spectrum::Samples; ++i)
+            for (size_t i = 0; i < 31; ++i)
                 m_k2[i] = pow(g_light_wavelengths_um[i], -Alpha);
         }
 
@@ -309,7 +309,7 @@ namespace
             const Vector3d&         outgoing,
             const float             turbidity,
             const float             radiance_multiplier,
-            Spectrum&               radiance) const
+            RegularSpectrum31f&     radiance) const
         {
             // Compute the relative optical mass.
             const float cos_theta = -static_cast<float>(outgoing.y);
@@ -317,15 +317,13 @@ namespace
             const float m = 1.0f / (cos_theta + 0.15f * pow(93.885f - rad_to_deg(theta), -1.253f));
 
             // Compute transmittance due to Rayleigh scattering.
-            Spectrum tau_r;
-            tau_r.resize(Spectrum::Samples);
+            RegularSpectrum31f tau_r;
             for (size_t i = 0; i < 31; ++i)
                 tau_r[i] = exp(m * m_k1[i]);
 
             // Compute transmittance due to aerosols.
             const float beta = 0.04608f * turbidity - 0.04586f;
-            Spectrum tau_a;
-            tau_a.resize(Spectrum::Samples);
+            RegularSpectrum31f tau_a;
             for (size_t i = 0; i < 31; ++i)
                 tau_a[i] = exp(-beta * m * m_k2[i]);
 
@@ -342,8 +340,7 @@ namespace
                 0.079f, 0.067f, 0.057f, 0.048f,
                 0.036f, 0.028f, 0.023f
             };
-            Spectrum tau_o;
-            tau_o.resize(Spectrum::Samples);
+            RegularSpectrum31f tau_o;
             for (size_t i = 0; i < 31; ++i)
                 tau_o[i] = exp(-Ko[i] * L * m);
 
@@ -361,8 +358,7 @@ namespace
                 0.000f, 0.000f, 0.000f, 0.000f,
                 0.000f, 0.000f, 0.000f
             };
-            Spectrum tau_g;
-            tau_g.resize(Spectrum::Samples);
+            RegularSpectrum31f tau_g;
             for (size_t i = 0; i < 31; ++i)
                 tau_g[i] = exp(-1.41f * Kg[i] * m / pow(1.0f + 118.93f * Kg[i] * m, 0.45f));
 #endif
@@ -380,8 +376,7 @@ namespace
                 0.000f, 0.000f, 0.000f, 0.000f,
                 0.000f, 0.016f, 0.024f
             };
-            Spectrum tau_wa;
-            tau_wa.resize(Spectrum::Samples);
+            RegularSpectrum31f tau_wa;
             for (size_t i = 0; i < 31; ++i)
                 tau_wa[i] = exp(-0.2385f * Kwa[i] * W * m / pow(1.0f + 20.07f * Kwa[i] * W * m, 0.45f));
 
@@ -402,15 +397,19 @@ namespace
             };
 
             // Compute the attenuated radiance of the Sun.
-            radiance = Spectrum(SunRadianceValues, Spectrum::Illuminance);
-            radiance *= tau_r;
-            radiance *= tau_a;
-            radiance *= tau_o;
+            for (size_t i = 0; i < 31; ++i)
+            {
+                radiance[i] =
+                    SunRadianceValues[i] *
+                    tau_r[i] *
+                    tau_a[i] *
+                    tau_o[i] *
 #ifdef COMPUTE_REDUNDANT
-            radiance *= tau_g;      // always 1.0
+                    tau_g[i] *      // always 1.0
 #endif
-            radiance *= tau_wa;
-            radiance *= radiance_multiplier;
+                    tau_wa[i] *
+                    radiance_multiplier;
+            }
         }
 
         static double compute_sun_radius(const double distance)
@@ -444,12 +443,14 @@ namespace
 
             probability = 1.0f / (Pi<float>() * square(static_cast<float>(disk_radius)));
 
+            RegularSpectrum31f radiance;
             compute_sun_radiance(
                 outgoing,
                 m_values.m_turbidity,
                 m_values.m_radiance_multiplier,
-                value);
+                radiance);
 
+            value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
             value *= SunSolidAngle;
         }
 
@@ -476,12 +477,14 @@ namespace
 
             outgoing = normalize(target_point - position);
 
+            RegularSpectrum31f radiance;
             compute_sun_radiance(
                 outgoing,
                 m_values.m_turbidity,
                 m_values.m_radiance_multiplier,
-                value);
+                radiance);
 
+            value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
             value *= SunSolidAngle;
 
             //

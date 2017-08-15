@@ -37,7 +37,6 @@
 #include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/rendering/sample.h"
 #include "renderer/kernel/rendering/samplegeneratorbase.h"
-#include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/utility/settingsparsing.h"
@@ -56,9 +55,6 @@
 // Standard headers.
 #include <cassert>
 #include <vector>
-
-// Forward declarations.
-namespace foundation    { class LightingConditions; }
 
 using namespace foundation;
 using namespace std;
@@ -87,7 +83,6 @@ namespace
           , m_window_origin_y(static_cast<int>(frame.get_crop_window().min.y))
           , m_window_width(static_cast<int>(frame.get_crop_window().extent()[0] + 1))
           , m_window_height(static_cast<int>(frame.get_crop_window().extent()[1] + 1))
-          , m_lighting_conditions(frame.get_lighting_conditions())
           , m_sample_renderer(sample_renderer_factory->create(generator_index))
           , m_window_width_next_pow2(next_power(static_cast<double>(m_window_width), 2.0))
           , m_window_height_next_pow3(next_power(static_cast<double>(m_window_height), 3.0))
@@ -136,7 +131,6 @@ namespace
         const int                           m_window_origin_y;
         const int                           m_window_width;
         const int                           m_window_height;
-        const LightingConditions&           m_lighting_conditions;
         auto_release_ptr<ISampleRenderer>   m_sample_renderer;
         SamplingContext::RNGType            m_rng;
 
@@ -194,7 +188,7 @@ namespace
             m_total_sampling_dim.insert(sampling_context.get_total_dimension());
 
             // Report then ignore invalid samples.
-            if (!shading_result.is_valid_linear_rgb())
+            if (!shading_result.is_valid())
             {
                 signal_invalid_sample();
                 return 0;
@@ -203,9 +197,7 @@ namespace
             // Create a single sample.
             Sample sample;
             sample.m_position = Vector2f(sample_position);
-            sample.m_color = Color4f(
-                shading_result.m_main.m_color.rgb(),
-                shading_result.m_main.m_alpha[0]);
+            sample.m_color = shading_result.m_main;
             samples.push_back(sample);
 
             return 1;

@@ -405,6 +405,39 @@ class RenderSettingsPanel
 namespace
 {
     //
+    // General settings panel.
+    //
+
+    class GeneralSettingsPanel
+      : public RenderSettingsPanel
+    {
+        Q_OBJECT
+
+      public:
+        GeneralSettingsPanel(const Configuration& config, QWidget* parent = 0)
+          : RenderSettingsPanel("General Settings", parent)
+        {
+            QFormLayout* layout = create_form_layout();
+            container()->setLayout(layout);
+
+            QComboBox* color_pipeline_combobox = create_combobox("spectrum_mode");
+            color_pipeline_combobox->setToolTip(m_params_metadata.get_path("spectrum_mode.help"));
+            color_pipeline_combobox->addItem("RGB", "rgb");
+            color_pipeline_combobox->addItem("Spectral", "spectral");
+            layout->addRow("Color Pipeline:", color_pipeline_combobox);
+
+            create_direct_link("spectrum_mode", "spectrum_mode", "rgb");
+
+            load_directly_linked_values(config);
+        }
+
+        virtual void save_config(Configuration& config) const override
+        {
+            save_directly_linked_values(config);
+        }
+    };
+
+    //
     // Image Plane Sampling panel.
     //
 
@@ -601,6 +634,7 @@ namespace
         {
             QFormLayout* layout = create_form_layout();
             container()->setLayout(layout);
+
             layout->addRow("Engine:", engine_combobox);
 
             create_direct_link("engine", "lighting_engine", "pt");
@@ -1321,6 +1355,8 @@ void RenderingSettingsWindow::create_panels(const Configuration& config)
     const bool interactive = is_interactive_configuration(config);
 
     m_panels.clear();
+
+    m_panels.push_back(new GeneralSettingsPanel(config));
 
     if (!interactive)
         m_panels.push_back(new ImagePlaneSamplingPanel(config));

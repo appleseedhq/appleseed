@@ -138,6 +138,7 @@ namespace
                         *m_buffer.get(),
                         m_sample_generators[i],
                         m_sample_counter,
+                        m_params.m_spectrum_mode,
                         m_job_queue,
                         i,                              // job index
                         m_params.m_thread_count,        // job count
@@ -179,8 +180,10 @@ namespace
 
             RENDERER_LOG_INFO(
                 "rendering settings:\n"
+                "  spectrum mode                 %s\n"
                 "  sampling mode                 %s\n"
                 "  threads                       %s",
+                get_spectrum_mode_name(get_spectrum_mode(params)).c_str(),
                 get_sampling_context_mode_name(get_sampling_context_mode(params)).c_str(),
                 pretty_int(m_params.m_thread_count).c_str());
         }
@@ -364,15 +367,17 @@ namespace
 
         struct Parameters
         {
-            const size_t    m_thread_count;             // number of rendering threads
-            const uint64    m_max_sample_count;         // maximum total number of samples to compute
-            const double    m_max_fps;                  // maximum display frequency in frames/second
-            const bool      m_perf_stats;               // collect and print performance statistics?
-            const bool      m_luminance_stats;          // collect and print luminance statistics?
-            const string    m_ref_image_path;           // path to the reference image
+            const Spectrum::Mode    m_spectrum_mode;
+            const size_t            m_thread_count;         // number of rendering threads
+            const uint64            m_max_sample_count;     // maximum total number of samples to compute
+            const double            m_max_fps;              // maximum display frequency in frames/second
+            const bool              m_perf_stats;           // collect and print performance statistics?
+            const bool              m_luminance_stats;      // collect and print luminance statistics?
+            const string            m_ref_image_path;       // path to the reference image
 
             explicit Parameters(const ParamArray& params)
-              : m_thread_count(get_rendering_thread_count(params))
+              : m_spectrum_mode(get_spectrum_mode(params))
+              , m_thread_count(get_rendering_thread_count(params))
               , m_max_sample_count(params.get_optional<uint64>("max_samples", numeric_limits<uint64>::max()))
               , m_max_fps(params.get_optional<double>("max_fps", 30.0))
               , m_perf_stats(params.get_optional<bool>("performance_statistics", false))
