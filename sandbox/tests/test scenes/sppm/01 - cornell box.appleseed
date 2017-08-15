@@ -414,7 +414,10 @@
                 <parameter name="force_antialiasing" value="true" />
                 <parameter name="samples" value="1" />
             </parameters>
+            <parameter name="spectrum_mode" value="spectral" />
         </configuration>
-        <configuration name="interactive" base="base_interactive" />
+        <configuration name="interactive" base="base_interactive">
+            <parameter name="spectrum_mode" value="spectral" />
+        </configuration>
     </configurations>
 </project>

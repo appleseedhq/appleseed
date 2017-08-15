@@ -430,7 +430,10 @@
             <parameters name="uniform_pixel_renderer">
                 <parameter name="samples" value="9" />
             </parameters>
+            <parameter name="spectrum_mode" value="spectral" />
         </configuration>
-        <configuration name="interactive" base="base_interactive" />
+        <configuration name="interactive" base="base_interactive">
+            <parameter name="spectrum_mode" value="spectral" />
+        </configuration>
     </configurations>
 </project>

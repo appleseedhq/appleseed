@@ -224,9 +224,11 @@
             <parameters name="progressive_frame_renderer">
                 <parameter name="max_samples" value="1000000" />
             </parameters>
+            <parameter name="spectrum_mode" value="spectral" />
         </configuration>
         <configuration name="interactive" base="base_interactive">
             <parameter name="sample_generator" value="lighttracing" />
+            <parameter name="spectrum_mode" value="spectral" />
         </configuration>
     </configurations>
 </project>

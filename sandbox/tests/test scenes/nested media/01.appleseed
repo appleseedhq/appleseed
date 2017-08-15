@@ -492,8 +492,10 @@
                 <parameter name="force_antialiasing" value="false" />
                 <parameter name="samples" value="16" />
             </parameters>
+            <parameter name="spectrum_mode" value="spectral" />
         </configuration>
         <configuration name="interactive" base="base_interactive">
+            <parameter name="spectrum_mode" value="spectral" />
             <parameter name="lighting_engine" value="pt" />
             <parameters name="pt">
                 <parameter name="dl_light_samples" value="1.000000" />

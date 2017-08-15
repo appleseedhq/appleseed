@@ -134,8 +134,11 @@
         </frame>
     </output>
     <configurations>
-        <configuration name="final" base="base_final" />
+        <configuration name="final" base="base_final">
+            <parameter name="spectrum_mode" value="spectral" />
+        </configuration>
         <configuration name="interactive" base="base_interactive">
+            <parameter name="spectrum_mode" value="spectral" />
             <parameter name="sample_generator" value="lighttracing" />
         </configuration>
     </configurations>
