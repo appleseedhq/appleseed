@@ -144,7 +144,7 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
     ShadingPoint shading_point;
     impl->m_intersector.trace(ray, shading_point);
 
-    result.m_hit = shading_point.hit();
+    result.m_hit = shading_point.hit_surface();
 
     if (!result.m_hit)
         return result;

@@ -62,7 +62,7 @@ namespace renderer
 
 void ShadingPoint::flip_side()
 {
-    assert(hit());
+    assert(hit_surface());
 
 #if 1
 
@@ -152,7 +152,7 @@ void ShadingPoint::flip_side()
 
 void ShadingPoint::fetch_source_geometry() const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(!(m_members & HasSourceGeometry));
 
     // Retrieve the assembly.
@@ -363,7 +363,7 @@ void ShadingPoint::fetch_curve_source_geometry() const
 
 void ShadingPoint::refine_and_offset() const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(!(m_members & ShadingPoint::HasRefinedPoints));
 
     cache_source_geometry();
@@ -421,7 +421,7 @@ void ShadingPoint::refine_and_offset() const
 
 Vector3d ShadingPoint::get_biased_point(const Vector3d& direction) const
 {
-    assert(hit());
+    assert(hit_surface());
 
     if (!(m_members & HasBiasedPoint))
     {
@@ -900,7 +900,7 @@ void ShadingPoint::initialize_osl_shader_globals(
     const VisibilityFlags::Type ray_flags,
     OSL::RendererServices*      renderer) const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(renderer);
 
     if (!(m_members & HasOSLShaderGlobals))

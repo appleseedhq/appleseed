@@ -250,7 +250,7 @@ void DirectLightingIntegrator::take_single_material_sample(
             weight);
 
     // todo: wouldn't it be more efficient to look the environment up at this point?
-    if (!light_shading_point.hit())
+    if (!light_shading_point.hit_surface())
         return;
 
     // Retrieve the material at the intersection point.

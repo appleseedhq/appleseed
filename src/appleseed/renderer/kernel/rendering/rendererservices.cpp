@@ -445,7 +445,7 @@ bool RendererServices::trace(
 
     trace_data->m_traced = true;
 
-    if (shading_point.hit())
+    if (shading_point.hit_surface())
     {
         trace_data->m_hit = true;
         trace_data->m_P = Imath::V3d(shading_point.get_point());

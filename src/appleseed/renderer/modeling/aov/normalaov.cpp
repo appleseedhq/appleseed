@@ -74,7 +74,7 @@ namespace
             const ShadingPoint&     shading_point,
             const Camera&           camera) override
         {
-            if (shading_point.hit())
+            if (shading_point.hit_surface())
                 m_normal = Vector3f(shading_point.get_shading_normal());
         }
 

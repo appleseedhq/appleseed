@@ -75,7 +75,7 @@ namespace
             const ShadingPoint&     shading_point,
             const Camera&           camera) override
         {
-            if (shading_point.hit())
+            if (shading_point.hit_surface())
                 m_depth = static_cast<float>(shading_point.get_distance());
         }
 

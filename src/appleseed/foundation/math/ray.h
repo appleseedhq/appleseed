@@ -83,6 +83,11 @@ class Ray
     template <typename U>
     Ray(const Ray<U, N>& rhs);
 
+    ValueType get_length() const;
+
+    // Return if the ray has finite length.
+    bool is_finite() const;
+
     // Return the point of the ray at abscissa t, t >= 0.
     VectorType point_at(const ValueType t) const;
 };
@@ -227,6 +232,19 @@ inline Ray<T, N>::Ray(const Ray<U, N>& rhs)
   , m_tmin(static_cast<T>(rhs.m_tmin))
   , m_tmax(static_cast<T>(rhs.m_tmax))
 {
+}
+
+template <typename T, size_t N>
+inline typename Ray<T, N>::ValueType Ray<T, N>::get_length() const
+{
+    assert(is_finite());
+    return foundation::norm((m_tmax - m_tmin) * m_dir);
+}
+
+template <typename T, size_t N>
+inline bool Ray<T, N>::is_finite() const
+{
+    return m_tmax < std::numeric_limits<ValueType>::max();
 }
 
 template <typename T, size_t N>

@@ -519,7 +519,7 @@ namespace
             ShadingPoint shading_point;
             intersector.trace(ray, shading_point);
 
-            if (shading_point.hit())
+            if (shading_point.hit_surface())
             {
                 // Hit: compute the focal distance.
                 const Vector3d v = shading_point.get_point() - ray.m_org;

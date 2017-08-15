@@ -192,7 +192,7 @@ namespace renderer
     {
         sampling_context.split_in_place(1, 1);
 
-        if (volume_ray.m_tmax == std::numeric_limits<ShadingRay::ValueType>().max())
+        if (!volume_ray.is_finite())
             return sample_exponential_distribution(
                 sampling_context.next2<float>(), extinction);
         else
@@ -208,7 +208,7 @@ namespace renderer
         const ShadingRay&   volume_ray,
         const float         extinction) const
     {
-        if (volume_ray.m_tmax == std::numeric_limits<ShadingRay::ValueType>().max())
+        if (!volume_ray.is_finite())
             return exponential_distribution_pdf(distance, extinction);
         else
         {

@@ -201,7 +201,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
     const ShadingPoint&         shading_point)
 {
     // Terminate the path if the first hit is too close to the origin.
-    if (shading_point.hit() && shading_point.get_distance() < m_near_start)
+    if (shading_point.hit_surface() && shading_point.get_distance() < m_near_start)
         return 1;
 
     PathVertex vertex(sampling_context);
@@ -264,7 +264,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                 : foundation::Dual3d(-ray.m_dir);
 
         // Terminate the path if the ray didn't hit anything.
-        if (!vertex.m_shading_point->hit())
+        if (!vertex.m_shading_point->hit_surface())
         {
             m_path_visitor.on_miss(vertex);
             break;

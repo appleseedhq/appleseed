@@ -757,7 +757,7 @@ bool AssemblyLeafVisitor::visit(
         }
 
         // Keep track of the closest hit.
-        if (local_shading_point.hit() && local_shading_point.m_ray.m_tmax < m_shading_point.m_ray.m_tmax)
+        if (local_shading_point.hit_surface() && local_shading_point.m_ray.m_tmax < m_shading_point.m_ray.m_tmax)
         {
             m_shading_point.m_ray.m_tmax = local_shading_point.m_ray.m_tmax;
             m_shading_point.m_primitive_type = local_shading_point.m_primitive_type;

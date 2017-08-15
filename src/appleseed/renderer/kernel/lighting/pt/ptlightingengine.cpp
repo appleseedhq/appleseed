@@ -895,7 +895,7 @@ namespace
             {
                 m_sampling_context.split_in_place(1, 1);
 
-                if (volume_ray.m_tmax == numeric_limits<ShadingRay::ValueType>().max())
+                if (!volume_ray.is_finite())
                 {
                     // Sample distance.
                     distance = sample_exponential_distribution(
@@ -976,7 +976,7 @@ namespace
                 const bool phasefunction_sampling_enabled =
                     !ScatteringMode::has_volume(vertex.m_scattering_modes);
 
-                if (volume_ray.get_length() == numeric_limits<ShadingRay::ValueType>().max())
+                if (!volume_ray.is_finite())
                 {
                     if (m_inf_volume_ray_warnings < MaxInfVolumeRayWarnings)
                         RENDERER_LOG_WARNING("volume ray of infinite length encountered.");

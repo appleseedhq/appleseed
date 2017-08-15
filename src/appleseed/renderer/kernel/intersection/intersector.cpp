@@ -209,8 +209,8 @@ namespace
         const ShadingPoint&         lhs,
         const ShadingPoint&         rhs)
     {
-        assert(lhs.hit());
-        assert(rhs.hit());
+        assert(lhs.hit_surface());
+        assert(rhs.hit_surface());
 
         return
             lhs.get_primitive_type() == rhs.get_primitive_type() &&
@@ -225,7 +225,7 @@ namespace
         const ShadingPoint&         shading_point,
         const ShadingPoint*         parent_shading_point)
     {
-        if (shading_point.hit() &&
+        if (shading_point.hit_surface() &&
             parent_shading_point &&
             same_triangle(*parent_shading_point, shading_point))
         {
@@ -243,9 +243,9 @@ bool Intersector::trace(
 {
     assert(is_normalized(ray.m_dir));
     assert(shading_point.m_scene == 0);
-    assert(shading_point.hit() == false);
+    assert(shading_point.valid() == false);
     assert(parent_shading_point == 0 || parent_shading_point != &shading_point);
-    assert(parent_shading_point == 0 || parent_shading_point->hit());
+    assert(parent_shading_point == 0 || parent_shading_point->hit_surface());
 
     // Update ray casting statistics.
     ++m_shading_ray_count;
@@ -262,7 +262,7 @@ bool Intersector::trace(
 
     // Refine and offset the previous intersection point.
     if (parent_shading_point &&
-        parent_shading_point->hit() &&
+        parent_shading_point->hit_surface() &&
         !(parent_shading_point->m_members & ShadingPoint::HasRefinedPoints))
         parent_shading_point->refine_and_offset();
 
@@ -296,7 +296,13 @@ bool Intersector::trace(
     if (m_report_self_intersections)
         report_self_intersection(shading_point, parent_shading_point);
 
-    return shading_point.hit();
+    const ShadingRay::Medium* medium = ray.get_current_medium();
+    if (!shading_point.hit_surface() && medium != nullptr && medium->get_volume() != nullptr)
+    {
+        shading_point.m_primitive_type = ShadingPoint::PrimitiveVolume;
+    }
+
+    return shading_point.hit_surface();
 }
 
 bool Intersector::trace_probe(
@@ -304,7 +310,7 @@ bool Intersector::trace_probe(
     const ShadingPoint*             parent_shading_point) const
 {
     assert(is_normalized(ray.m_dir));
-    assert(parent_shading_point == 0 || parent_shading_point->hit());
+    assert(parent_shading_point == 0 || parent_shading_point->hit_surface());
 
     // Update ray casting statistics.
     ++m_probe_ray_count;
@@ -314,7 +320,7 @@ bool Intersector::trace_probe(
 
     // Refine and offset the previous intersection point.
     if (parent_shading_point &&
-        parent_shading_point->hit() &&
+        parent_shading_point->hit_surface() &&
         !(parent_shading_point->m_members & ShadingPoint::HasRefinedPoints))
         parent_shading_point->refine_and_offset();
 

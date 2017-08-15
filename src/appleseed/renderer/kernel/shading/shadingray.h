@@ -151,10 +151,6 @@ class ShadingRay
 
     // Return the IOR of the medium the ray would be in if it would leave the currently active medium.
     float get_previous_ior() const;
-
-    // Return the length of this ray in world space.
-    // (i.e. distance between the origin and the target, if the ray is bounded).
-    double get_length() const;
 };
 
 
@@ -218,11 +214,6 @@ inline float ShadingRay::get_current_ior() const
 inline float ShadingRay::get_previous_ior() const
 {
     return m_medium_count > 1 ? m_media[1].m_ior : 1.0f;
-}
-
-inline double ShadingRay::get_length() const
-{
-    return foundation::norm(m_dir) * (m_tmax - m_tmin);
 }
 
 
