@@ -250,6 +250,12 @@ namespace
         auto_release_ptr<Project> project(reader->load_builtin(project_name));
         return bpy::object(project);
     }
+
+    string qualify_path(const Project* project, const char* filepath)
+    {
+        const SearchPaths& search_paths = project->search_paths();
+        return string(search_paths.qualify(filepath).c_str());
+    }
 }
 
 void bind_project()
@@ -298,7 +304,9 @@ void bind_project()
 
         .def("get_active_camera", &Project::get_uncached_active_camera, bpy::return_value_policy<bpy::reference_existing_object>())
 
-        .def("configurations", project_get_configs, bpy::return_value_policy<bpy::reference_existing_object>());
+        .def("configurations", project_get_configs, bpy::return_value_policy<bpy::reference_existing_object>())
+
+        .def("qualify_path", qualify_path, bpy::args("filepath"));
 
     bpy::enum_<ProjectFileReader::Options>("ProjectFileReaderOptions")
         .value("Defaults", ProjectFileReader::Defaults)

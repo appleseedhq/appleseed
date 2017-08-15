@@ -36,6 +36,9 @@
 #include "foundation/platform/python.h"
 #include "foundation/utility/casts.h"
 
+// appleseed.shared headers
+#include "application/application.h"
+
 // Qt headers.
 #include <QDockWidget>
 
@@ -135,4 +138,6 @@ BOOST_PYTHON_MODULE(_appleseedstudio)
 
     bpy::def("main_window", main_window_as_pylong);
     bpy::def("create_dock_widget", create_dock_widget, bpy::args("dock_name"));
+
+    boost::python::def("get_root_path", appleseed::shared::Application::get_root_path);
 }
