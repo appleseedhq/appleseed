@@ -79,6 +79,7 @@ namespace renderer
         const Volume&                   volume,
         const ShadingRay&               volume_ray,
         const void*                     volume_data,
+        const ShadingPoint&             shading_point,
         const int                       light_sampling_modes,
         const bool                      sample_phasefunction,
         const size_t                    equiangular_sample_count,
@@ -90,9 +91,9 @@ namespace renderer
         , m_volume(volume)
         , m_volume_ray(volume_ray)
         , m_volume_data(volume_data)
+        , m_shading_point(shading_point)
         , m_time(volume_ray.m_time)
         , m_light_sampling_modes(light_sampling_modes)
-        , m_phasefunction_sample_count(1u)
         , m_sample_phasefunction(sample_phasefunction)
         , m_equiangular_sample_count(equiangular_sample_count)
         , m_exponential_sample_count(exponential_sample_count)
@@ -496,15 +497,12 @@ namespace renderer
             m_volume_ray,
             m_volume,
             m_volume_data,
-            distance_sample);
-
-        ShadingPoint fake_point;
-        fake_point.clear();
+            distance_sample,
+            m_shading_point);
 
         DirectLightingIntegrator integrator(
             m_shading_context,
             m_light_sampler,
-            fake_point,
             volume_sampler,
             m_time,
             m_light_sampling_modes,
@@ -544,15 +542,12 @@ namespace renderer
             m_volume_ray,
             m_volume,
             m_volume_data,
-            distance_sample);
-
-        ShadingPoint fake_point;
-        fake_point.clear();
+            distance_sample,
+            m_shading_point);
 
         DirectLightingIntegrator integrator(
             m_shading_context,
             m_light_sampler,
-            fake_point,
             volume_sampler,
             m_time,
             m_light_sampling_modes,

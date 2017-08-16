@@ -690,7 +690,6 @@ namespace
                 const DirectLightingIntegrator integrator(
                     m_shading_context,
                     m_light_sampler,
-                    shading_point,
                     bsdf_sampler,
                     shading_point.get_time(),
                     scattering_modes,   // light_sampling_modes
@@ -917,56 +916,6 @@ namespace
                 }
             }
 
-            void add_direct_lighting_contribution(
-                const ShadingPoint&     shading_point,
-                const ShadingRay&       volume_ray,
-                const Volume&           volume,
-                const void*             volume_data,
-                const float             distance_sample,
-                const int               scattering_modes,
-                ShadingComponents&      radiance)
-            {
-                ShadingComponents dl_radiance;
-
-                const size_t light_sample_count =
-                    stochastic_cast<size_t>(
-                        m_sampling_context,
-                        m_params.m_dl_light_sample_count);
-
-                if (light_sample_count == 0)
-                    return;
-
-                const VolumeSampler volume_sampler(
-                    volume_ray,
-                    volume,
-                    volume_data,
-                    distance_sample);
-
-                const DirectLightingIntegrator integrator(
-                    m_shading_context,
-                    m_light_sampler,
-                    shading_point,
-                    volume_sampler,
-                    volume_ray.m_time,
-                    scattering_modes,   // light sampling modes
-                    1,                  // volume sample count
-                    light_sample_count,
-                    m_params.m_dl_low_light_threshold,
-                    m_is_indirect_lighting);
-                integrator.compute_outgoing_radiance_light_sampling_low_variance(
-                    m_sampling_context,
-                    MISPower2,
-                    Dual3d(volume_ray.m_dir),
-                    dl_radiance);
-
-                // Divide by the sample count when this number is less than 1.
-                if (m_params.m_rcp_dl_light_sample_count > 0.0f)
-                    dl_radiance *= m_params.m_rcp_dl_light_sample_count;
-
-                // Add direct lighting contribution.
-                radiance += dl_radiance;
-            }
-
             void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray)
             {
                 // Any light contribution after a diffuse, glossy or volume bounce is considered indirect.
@@ -997,6 +946,7 @@ namespace
                     *volume,
                     volume_ray,
                     vertex.m_volume_data,
+                    *vertex.m_shading_point,
                     vertex.m_scattering_modes,
                     phasefunction_sampling_enabled,
                     m_params.m_equiangular_sample_count,

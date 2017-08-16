@@ -68,6 +68,7 @@ namespace renderer
             const Volume&                   volume,
             const ShadingRay&               volume_ray,
             const void*                     volume_data,
+            const ShadingPoint&             shading_point,
             const int                       light_sampling_modes,
             const bool                      samle_phasefunction,
             const size_t                    equiangular_sample_count,
@@ -87,11 +88,11 @@ namespace renderer
         const Volume&                       m_volume;
         const ShadingRay&                   m_volume_ray;
         const void*                         m_volume_data;
+        const ShadingPoint&                 m_shading_point;
         size_t                              m_channel_count;
         Spectrum                            m_precomputed_mis_weights;
         const int                           m_light_sampling_modes;
         const float                         m_low_light_threshold;
-        const size_t                        m_phasefunction_sample_count;
         const size_t                        m_equiangular_sample_count;
         const size_t                        m_exponential_sample_count;
         const bool                          m_sample_phasefunction;

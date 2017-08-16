@@ -730,6 +730,8 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
 
     while (true)
     {
+        shading_context.get_arena().clear();
+
         // Put a hard limit on the number of iterations.
         if (m_iterations++ == m_max_iterations)
         {
@@ -817,6 +819,9 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
         // Bounce.
         //
 
+        ShadingPoint* next_shading_point = m_shading_point_arena.allocate<ShadingPoint>();
+        next_shading_point->create_volume_shading_point(*vertex.m_shading_point, volume_ray, distance_sample);
+
         // Terminate the path if this scattering event is not accepted.
         if (!m_volume_visitor.accept_scattering(vertex.m_prev_mode))
             return false;
@@ -880,12 +885,15 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
 
         // Continue the ray in in-scattered direction.
         ShadingRay next_ray(
-            volume_ray.m_org + static_cast<double>(distance_sample)* volume_ray.m_dir,
+            volume_ray.m_org + static_cast<double>(distance_sample) * volume_ray.m_dir,
             foundation::improve_normalization<2>(foundation::Vector3d(incoming)),
             volume_ray.m_time,
             volume_ray.m_flags,
             volume_ray.m_depth + 1);
         next_ray.copy_media_from(volume_ray);
+
+        // Update the pointer to the shading points.
+        vertex.m_shading_point = next_shading_point;
 
         // Trace the ray across the volume.
         exit_point.clear();

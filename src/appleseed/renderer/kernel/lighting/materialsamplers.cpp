@@ -67,6 +67,11 @@ const Vector3d& BSDFSampler::get_point() const
     return m_shading_point.get_point();
 }
 
+const ShadingPoint& BSDFSampler::get_shading_point() const
+{
+    return m_shading_point;
+}
+
 bool BSDFSampler::contributes_to_light_sampling() const
 {
     // There cannot be any contribution for purely specular BSDFs.
@@ -179,11 +184,13 @@ VolumeSampler::VolumeSampler(
     const ShadingRay&       volume_ray,
     const Volume&           volume,
     const void*             volume_data,
-    const float             distance)
+    const float             distance,
+    const ShadingPoint&     shading_point)
   : m_volume_ray(volume_ray)
   , m_volume(volume)
   , m_volume_data(volume_data)
   , m_distance(distance)
+  , m_shading_point(shading_point)
   , m_point(m_volume_ray.point_at(distance))
 {
 }
@@ -191,6 +198,11 @@ VolumeSampler::VolumeSampler(
 const Vector3d& VolumeSampler::get_point() const
 {
     return m_point;
+}
+
+const ShadingPoint& VolumeSampler::get_shading_point() const
+{
+    return m_shading_point;
 }
 
 bool VolumeSampler::contributes_to_light_sampling() const
