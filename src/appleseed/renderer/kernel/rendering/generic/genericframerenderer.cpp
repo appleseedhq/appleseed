@@ -295,6 +295,8 @@ namespace
 
             void operator()()
             {
+                set_current_thread_name("pass_manager");
+
                 for (size_t pass = 0; pass < m_pass_count && !m_abort_switch.is_aborted(); ++pass)
                 {
                     if (m_pass_count > 1)
