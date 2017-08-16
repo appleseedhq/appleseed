@@ -350,8 +350,6 @@ class ShadingPoint
     mutable OSLObjectTransformInfo      m_obj_transform_info;
     mutable OSLTraceData                m_osl_trace_data;
     mutable OSL::ShaderGlobals          m_shader_globals;
-    mutable foundation::Color3f         m_surface_shader_color;
-    mutable float                       m_surface_shader_alpha;
 
     // Fetch and cache the source geometry.
     void cache_source_geometry() const;

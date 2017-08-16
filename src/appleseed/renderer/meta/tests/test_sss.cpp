@@ -39,6 +39,7 @@
 #include "renderer/modeling/bssrdf/separablebssrdf.h"
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
 #include "renderer/modeling/entity/onframebeginrecorder.h"
+#include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/scalarsource.h"
 #include "renderer/modeling/project/project.h"
@@ -53,6 +54,7 @@
 #include "foundation/math/basis.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
 #include "foundation/utility/arena.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/gnuplotfile.h"
@@ -85,6 +87,11 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
               static_cast<SeparableBSSRDF*>(
                   BSSRDFFactory().create("bssrdf", ParamArray()).release()))
         {
+            m_project->set_frame(
+                FrameFactory::create(
+                    "frame",
+                    ParamArray().insert("resolution", Vector2i(512, 512))));
+
             ShadingPointBuilder outgoing_builder(m_outgoing_point);
             outgoing_builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
             outgoing_builder.set_point(Vector3d(0.0, 0.0, 0.0));

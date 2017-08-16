@@ -188,24 +188,32 @@ TEST_SUITE(Renderer_Utility_DynamicSpectrum31f)
 
     TEST_CASE(Downgrade_GivenSpectrum_MakesRGB)
     {
-        const DynamicSpectrum31f Expected(Color3f(41.9590912f, 42.0810776f, 41.3171921f));
+        const DynamicSpectrum31f Expected(Color3f(41.8912f, 42.0401f, 41.9237f));
 
         const DynamicSpectrum31f source(SpectrumValues);
         DynamicSpectrum31f dest;
 
-        const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg);
+        const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE19312Deg);
         DynamicSpectrum31f::downgrade(lighting_conditions, source, dest);
+
+        std::cout << "[0] = " << dest[0] << "\n";
+        std::cout << "[1] = " << dest[1] << "\n";
+        std::cout << "[2] = " << dest[2] << "\n";
+
+        std::cout << "[0] = " << Expected[0] << "\n";
+        std::cout << "[1] = " << Expected[1] << "\n";
+        std::cout << "[2] = " << Expected[2] << "\n";
 
         EXPECT_FEQ(Expected, dest);
     }
 
     TEST_CASE(Downgrade_GivenSpectrum_MakesRGB_InPlace)
     {
-        const DynamicSpectrum31f Expected(Color3f(41.9590912f, 42.0810776f, 41.3171921f));
+        const DynamicSpectrum31f Expected(Color3f(41.8912f, 42.0401f, 41.9237f));
 
         DynamicSpectrum31f s(SpectrumValues);
 
-        const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg);
+        const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE19312Deg);
         DynamicSpectrum31f::downgrade(lighting_conditions, s, s);
 
         EXPECT_FEQ(Expected, s);
@@ -216,7 +224,7 @@ TEST_SUITE(Renderer_Utility_DynamicSpectrum31f)
         const DynamicSpectrum31f source(Color3f(0.5f));
         DynamicSpectrum31f dest;
 
-        const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg);
+        const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE19312Deg);
         DynamicSpectrum31f::downgrade(lighting_conditions, source, dest);
 
         EXPECT_EQ(dest, source);

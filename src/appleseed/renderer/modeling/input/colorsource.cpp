@@ -102,7 +102,7 @@ void ColorSource::initialize_from_spectrum(const ColorEntity& color_entity)
     // todo: this should be user-settable.
     const LightingConditions lighting_conditions(
         IlluminantCIED65,
-        XYZCMFCIE196410Deg);
+        XYZCMFCIE19312Deg);
 
     m_linear_rgb = m_spectrum.convert_to_rgb(lighting_conditions);
 }

@@ -92,7 +92,7 @@ TextureInstance::TextureInstance(
     impl->m_texture_name = texture_name;
 
     // todo: retrieve the lighting conditions.
-    impl->m_lighting_conditions = LightingConditions(IlluminantCIED65, XYZCMFCIE196410Deg);
+    impl->m_lighting_conditions = LightingConditions(IlluminantCIED65, XYZCMFCIE19312Deg);
 
     // No bound texture yet.
     m_texture = 0;

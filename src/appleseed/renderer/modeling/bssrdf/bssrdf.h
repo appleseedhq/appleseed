@@ -45,6 +45,7 @@
 
 // Forward declarations.
 namespace foundation    { class Arena; }
+namespace foundation    { class LightingConditions; }
 namespace renderer      { class BSDFSample; }
 namespace renderer      { class BSSRDFSample; }
 namespace renderer      { class ParamArray; }
@@ -86,6 +87,19 @@ class APPLESEED_DLLSYMBOL BSSRDF
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
+    // This method is called once before rendering each frame.
+    // Returns true on success, false otherwise.
+    bool on_frame_begin(
+        const Project&              project,
+        const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
+        foundation::IAbortSwitch*   abort_switch = 0) override;
+
+    // This method is called once after rendering each frame (only if on_frame_begin() was called).
+    void on_frame_end(
+        const Project&              project,
+        const BaseGroup*            parent) override;
+
     // Return the size in bytes to allocate for the input values of this BSSRDF
     // and its precomputed values, if any. By default, enough space is allocated
     // for the inputs alone, i.e. this returns get_inputs().compute_data_size().
@@ -125,9 +139,9 @@ class APPLESEED_DLLSYMBOL BSSRDF
         Spectrum&                   value) const = 0;
 
   protected:
-    static void make_reflectance_and_mfp_compatible(
+    void make_reflectance_and_mfp_compatible(
         Spectrum&                   reflectance,
-        const Spectrum&             mfp);
+        const Spectrum&             mfp) const;
 
     static float compute_eta(
         const ShadingPoint&         shading_point,
@@ -137,6 +151,9 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const Spectrum&             src,
         Spectrum&                   cdf,
         Spectrum&                   pdf);
+
+  private:
+    const foundation::LightingConditions* m_lighting_conditions;
 };
 
 }       // namespace renderer

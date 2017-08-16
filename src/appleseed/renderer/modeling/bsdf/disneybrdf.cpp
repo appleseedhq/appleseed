@@ -34,13 +34,15 @@
 #include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
-#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/color/wavelengths.h"
+#include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/project/project.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/fresnel.h"
+#include "foundation/math/matrix.h"
 #include "foundation/math/microfacet.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
@@ -335,6 +337,7 @@ namespace
             const char*             name,
             const ParamArray&       params)
           : BSDF(name, Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy, params)
+          , m_lighting_conditions(nullptr)
         {
             m_inputs.declare("base_color", InputFormatSpectralReflectance);
             m_inputs.declare("subsurface", InputFormatFloat, "0.0");
@@ -359,6 +362,33 @@ namespace
             return Model;
         }
 
+        virtual bool on_frame_begin(
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch = 0) override
+        {
+            if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
+                return false;
+
+            // Get the lighting conditions and XYZ to RGB matrix from the frame.
+            const Frame* frame = project.get_frame();
+            assert(frame);
+
+            m_lighting_conditions = &frame->get_lighting_conditions();
+            m_xyz_to_rgb = Matrix3f(frame->get_xyz_to_rgb_matrix());
+
+            return true;
+        }
+
+        void on_frame_end(
+            const Project&          project,
+            const BaseGroup*        parent)
+        {
+            m_lighting_conditions = nullptr;
+            BSDF::on_frame_end(project, parent);
+        }
+
         virtual size_t compute_input_data_size() const override
         {
             return sizeof(InputValues);
@@ -376,11 +406,11 @@ namespace
             const Color3f tint_xyz =
                 values->m_base_color.is_rgb()
                     ? linear_rgb_to_ciexyz(values->m_base_color.rgb())
-                    : spectrum_to_ciexyz<float>(g_std_lighting_conditions, values->m_base_color);
+                    : spectrum_to_ciexyz<float>(*m_lighting_conditions, values->m_base_color);
 
             values->m_precomputed.m_tint_color =
                 tint_xyz[1] > 0.0f
-                    ? ciexyz_to_linear_rgb(tint_xyz / tint_xyz[1])
+                    ? ciexyz_to_linear_rgb(tint_xyz / tint_xyz[1], m_xyz_to_rgb)
                     : Color3f(1.0f);
 
             values->m_precomputed.m_base_color_luminance = tint_xyz[1];
@@ -741,6 +771,9 @@ namespace
 
       private:
         typedef DisneyBRDFInputValues InputValues;
+
+        const LightingConditions*   m_lighting_conditions;
+        Matrix3f                    m_xyz_to_rgb;
 
         static bool compute_component_weights(
             const InputValues*      values,

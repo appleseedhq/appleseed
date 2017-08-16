@@ -120,21 +120,14 @@ void ShadingResult::set_aovs_to_transparent_black_linear_rgba()
 
 namespace
 {
-    inline void transform_srgb_to_linear_rgb(Spectrum& s)
-    {
-        Color3f& linear_rgb = reinterpret_cast<Color3f&>(s[0]);
-        linear_rgb = srgb_to_linear_rgb(Color3f(s[0], s[1], s[2]));
-    }
-
-    inline void transform_ciexyz_to_linear_rgb(Spectrum& s)
-    {
-        Color3f& linear_rgb = reinterpret_cast<Color3f&>(s[0]);
-        linear_rgb = ciexyz_to_linear_rgb(Color3f(s[0], s[1], s[2]));
-    }
-
     inline void transform_spectrum_to_linear_rgb(const LightingConditions& lighting, Spectrum& s)
     {
         s = ciexyz_to_linear_rgb(spectrum_to_ciexyz<float>(lighting, s));
+    }
+
+    inline void transform_spectrum_to_linear_rgb(const LightingConditions& lighting, const Matrix3f& xyz_to_rgb_matrix, Spectrum& s)
+    {
+        s = ciexyz_to_linear_rgb(spectrum_to_ciexyz<float>(lighting, s), xyz_to_rgb_matrix);
     }
 }
 
@@ -143,32 +136,36 @@ void ShadingResult::transform_to_linear_rgb(const LightingConditions& lighting)
     if (m_color_space == ColorSpaceLinearRGB)
         return;
 
-    switch (m_color_space)
+    assert(m_color_space == ColorSpaceSpectral);
+
+    if (m_main.m_color.is_spectral())
+        transform_spectrum_to_linear_rgb(lighting, m_main.m_color);
+    for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
     {
-      case ColorSpaceSRGB:
-        transform_srgb_to_linear_rgb(m_main.m_color);
-        for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
-            transform_srgb_to_linear_rgb(m_aovs[i].m_color);
-        break;
+        ShadingFragment& aov = m_aovs[i];
+        if (aov.m_color.is_spectral())
+            transform_spectrum_to_linear_rgb(lighting, aov.m_color);
+    }
 
-      case ColorSpaceCIEXYZ:
-        transform_ciexyz_to_linear_rgb(m_main.m_color);
-        for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
-            transform_ciexyz_to_linear_rgb(m_aovs[i].m_color);
-        break;
+    m_color_space = ColorSpaceLinearRGB;
+}
 
-      case ColorSpaceSpectral:
-        if (m_main.m_color.is_spectral())
-            transform_spectrum_to_linear_rgb(lighting, m_main.m_color);
-        for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
-        {
-            ShadingFragment& aov = m_aovs[i];
-            if (aov.m_color.is_spectral())
-                transform_spectrum_to_linear_rgb(lighting, aov.m_color);
-        }
-        break;
+void ShadingResult::transform_to_linear_rgb(
+    const LightingConditions&   lighting,
+    const Matrix3f&             xyz_to_rgb_matrix)
+{
+    if (m_color_space == ColorSpaceLinearRGB)
+        return;
 
-      assert_otherwise;
+    assert(m_color_space == ColorSpaceSpectral);
+
+    if (m_main.m_color.is_spectral())
+        transform_spectrum_to_linear_rgb(lighting, xyz_to_rgb_matrix, m_main.m_color);
+    for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
+    {
+        ShadingFragment& aov = m_aovs[i];
+        if (aov.m_color.is_spectral())
+            transform_spectrum_to_linear_rgb(lighting, xyz_to_rgb_matrix, aov.m_color);
     }
 
     m_color_space = ColorSpaceLinearRGB;

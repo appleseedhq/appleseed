@@ -52,10 +52,10 @@ class APPLESEED_DLLSYMBOL GenericImageFileWriter
 {
   public:
     // Write an image file.
-    virtual void write(
+    void write(
         const char*             filename,
         const ICanvas&          image,
-        const ImageAttributes&  image_attributes = ImageAttributes());
+        const ImageAttributes&  image_attributes = ImageAttributes()) override;
 };
 
 }       // namespace foundation

@@ -58,6 +58,7 @@
 #include "foundation/image/colorspace.h"
 #include "foundation/image/image.h"
 #include "foundation/image/regularspectrum.h"
+#include "foundation/math/matrix.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/arena.h"
@@ -106,6 +107,7 @@ namespace
           : m_params(params)
           , m_scene(scene)
           , m_lighting_conditions(frame.get_lighting_conditions())
+          , m_xyz_to_rgb(frame.get_xyz_to_rgb_matrix())
           , m_opacity_threshold(1.0f - m_params.m_transparency_threshold)
           , m_texture_cache(texture_store)
           , m_lighting_engine(lighting_engine_factory->create())
@@ -222,7 +224,7 @@ namespace
                     m_aov_accumulators.flush(shading_result);
 
                     // Transform the result to the linear RGB color space.
-                    shading_result.transform_to_linear_rgb(m_lighting_conditions);
+                    shading_result.transform_to_linear_rgb(m_lighting_conditions, m_xyz_to_rgb);
 
                     // Apply alpha premultiplication.
                     if (shading_point_ptr->hit())
@@ -246,7 +248,7 @@ namespace
                     m_aov_accumulators.flush(local_result);
 
                     // Transform the result to the linear RGB color space.
-                    local_result.transform_to_linear_rgb(m_lighting_conditions);
+                    local_result.transform_to_linear_rgb(m_lighting_conditions, m_xyz_to_rgb);
 
                     // Apply alpha premultiplication.
                     if (shading_point_ptr->hit())
@@ -325,6 +327,7 @@ namespace
         const Parameters            m_params;
         const Scene&                m_scene;
         const LightingConditions&   m_lighting_conditions;
+        const Matrix3f              m_xyz_to_rgb;
         const float                 m_opacity_threshold;
         TextureCache                m_texture_cache;
         ILightingEngine*            m_lighting_engine;

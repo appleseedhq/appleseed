@@ -119,12 +119,11 @@ RendererServices::RendererServices(
     m_global_attr_getters[OIIO::ustring("path:ray_length")] = &RendererServices::get_attr_ray_length;
     m_global_attr_getters[OIIO::ustring("path:ray_ior")] = &RendererServices::get_attr_ray_ior;
     m_global_attr_getters[OIIO::ustring("path:ray_has_differentials")] = &RendererServices::get_attr_ray_has_differentials;
+    m_global_attr_getters[OIIO::ustring("appleseed:working_color_space")] = &RendererServices::get_attr_working_color_space;
     m_global_attr_getters[OIIO::ustring("appleseed:version_major")] = &RendererServices::get_attr_appleseed_version_major;
     m_global_attr_getters[OIIO::ustring("appleseed:version_minor")] = &RendererServices::get_attr_appleseed_version_minor;
     m_global_attr_getters[OIIO::ustring("appleseed:version_patch")] = &RendererServices::get_attr_appleseed_version_patch;
     m_global_attr_getters[OIIO::ustring("appleseed:version")] = &RendererServices::get_attr_appleseed_version;
-    m_global_attr_getters[OIIO::ustring("surface_shader:color")] = &RendererServices::get_attr_surface_shader_color;
-    m_global_attr_getters[OIIO::ustring("surface_shader:alpha")] = &RendererServices::get_attr_surface_shader_alpha;
 
     // Set up user data getters.
     m_global_user_data_getters[OIIO::ustring("Tn")] = &RendererServices::get_user_data_tn;
@@ -893,6 +892,25 @@ IMPLEMENT_ATTR_GETTER(ray_has_differentials)
     return false;
 }
 
+IMPLEMENT_ATTR_GETTER(working_color_space)
+{
+    if (type == OIIO::TypeDesc::TypeString)
+    {
+        const Frame* frame = m_project.get_frame();
+        const OIIO::ustring* name =
+            reinterpret_cast<const OIIO::ustring*>(frame->get_working_color_space_as_ustring());
+
+        reinterpret_cast<OIIO::ustring*>(val)[0] = *name;
+
+        if (derivs)
+            clear_derivatives(type, val);
+
+        return true;
+    }
+
+    return false;
+}
+
 IMPLEMENT_ATTR_GETTER(appleseed_version_major)
 {
     if (type == OIIO::TypeDesc::TypeInt)
@@ -943,42 +961,6 @@ IMPLEMENT_ATTR_GETTER(appleseed_version)
     if (type == OIIO::TypeDesc::TypeInt)
     {
         reinterpret_cast<int*>(val)[0] = APPLESEED_VERSION;
-
-        if (derivs)
-            clear_derivatives(type, val);
-
-        return true;
-    }
-
-    return false;
-}
-
-IMPLEMENT_ATTR_GETTER(surface_shader_color)
-{
-    if (type == OIIO::TypeDesc::TypeColor)
-    {
-        const ShadingPoint* shading_point =
-            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
-        reinterpret_cast<float*>(val)[0] = shading_point->m_surface_shader_color[0];
-        reinterpret_cast<float*>(val)[1] = shading_point->m_surface_shader_color[1];
-        reinterpret_cast<float*>(val)[2] = shading_point->m_surface_shader_color[2];
-
-        if (derivs)
-            clear_derivatives(type, val);
-
-        return true;
-    }
-
-    return false;
-}
-
-IMPLEMENT_ATTR_GETTER(surface_shader_alpha)
-{
-    if (type == OIIO::TypeDesc::TypeFloat)
-    {
-        const ShadingPoint* shading_point =
-            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
-        reinterpret_cast<float*>(val)[0] = shading_point->m_surface_shader_alpha;
 
         if (derivs)
             clear_derivatives(type, val);

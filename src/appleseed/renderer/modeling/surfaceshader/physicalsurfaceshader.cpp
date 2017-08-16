@@ -87,7 +87,7 @@ namespace
             const char*                 name,
             const ParamArray&           params)
           : SurfaceShader(name, params)
-          , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
+          , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE19312Deg)
         {
             m_inputs.declare("color_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("alpha_multiplier", InputFormatFloat, "1.0");

@@ -37,6 +37,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/matrix.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/utility/poison.h"
@@ -82,6 +83,11 @@ class ShadingResult
 
     // Transform main and AOV colors to the linear RGB color space.
     void transform_to_linear_rgb(const foundation::LightingConditions& lighting);
+
+    // Transform main and AOV colors to the linear RGB color space.
+    void transform_to_linear_rgb(
+        const foundation::LightingConditions&   lighting,
+        const foundation::Matrix3f&             xyz_to_rgb_matrix);
 
     // Composite this shading result over 'background'.
     // Both shading results must be expressed in linear RGB.

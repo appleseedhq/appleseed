@@ -32,7 +32,6 @@
 
 // API headers.
 #include "renderer/modeling/color/colorentity.h"
-#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/color/colortraits.h"
 #include "renderer/modeling/color/wavelengths.h"
 

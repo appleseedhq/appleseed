@@ -246,6 +246,10 @@ if (WITH_DISNEY_MATERIAL)
     endif ()
 endif ()
 
+if (WITH_STUDIO)
+    find_package (OpenColorIO REQUIRED)
+endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.
