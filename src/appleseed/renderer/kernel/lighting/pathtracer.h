@@ -614,9 +614,8 @@ inline bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::continue_path_rr(
     const float s = sampling_context.next2<float>();
 
     // Compute the probability of extending this path.
-    // todo: make max scattering prob lower (0.99) to avoid getting stuck?
     const float scattering_prob =
-        std::min(foundation::max_value(vertex.m_throughput), 1.0f);
+        std::min(foundation::max_value(vertex.m_throughput), 0.99f);
 
     // Russian Roulette.
     if (!foundation::pass_rr(scattering_prob, s))
