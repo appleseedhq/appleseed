@@ -703,7 +703,7 @@ namespace
         {
             const string widget_base_key = prefix + ".bounces.";
 
-            QSpinBox* max_bounces = create_integer_input(widget_base_key + "max_bounces", 0, 10000, 1);
+            QSpinBox* max_bounces = create_integer_input(widget_base_key + "max_bounces", 0, 100, 1);
             max_bounces->setToolTip(m_params_metadata.get_path((config_param_path + ".help").c_str()));
 
             QCheckBox* unlimited_bounces = create_checkbox(widget_base_key + "unlimited_bounces", "Unlimited");
@@ -711,7 +711,7 @@ namespace
             layout->addRow("Max Bounces:", create_horizontal_group(max_bounces, unlimited_bounces));
             connect(unlimited_bounces, SIGNAL(toggled(bool)), max_bounces, SLOT(setDisabled(bool)));
 
-            QSpinBox* russian_roulette_start = create_integer_input(widget_base_key + "rr_start_bounce", 1, 10000, 1);
+            QSpinBox* russian_roulette_start = create_integer_input(widget_base_key + "rr_start_bounce", 1, 100, 1);
             russian_roulette_start->setToolTip(m_params_metadata.get_path("pt.rr_min_path_length.help"));
             layout->addRow("Russian Roulette Start Bounce:", russian_roulette_start);
         }
@@ -731,11 +731,11 @@ namespace
         {
             const string widget_base_key = prefix + ".bounces.";
 
-            QSpinBox* max_bounces = create_integer_input(widget_base_key + "max_bounces", 0, 10000, 1);
-            QSpinBox* max_diffuse_bounces = create_integer_input(widget_base_key + "max_diffuse_bounces", 0, 10000, 1);
-            QSpinBox* max_glossy_bounces = create_integer_input(widget_base_key + "max_glossy_bounces", 0, 10000, 1);
-            QSpinBox* max_specular_bounces = create_integer_input(widget_base_key + "max_specular_bounces", 0, 10000, 1);
-            QSpinBox* max_volume_bounces = create_integer_input(widget_base_key + "max_volume_bounces", 0, 10000, 1);
+            QSpinBox* max_bounces = create_integer_input(widget_base_key + "max_bounces", 0, 100, 1);
+            QSpinBox* max_diffuse_bounces = create_integer_input(widget_base_key + "max_diffuse_bounces", 0, 100, 1);
+            QSpinBox* max_glossy_bounces = create_integer_input(widget_base_key + "max_glossy_bounces", 0, 100, 1);
+            QSpinBox* max_specular_bounces = create_integer_input(widget_base_key + "max_specular_bounces", 0, 100, 1);
+            QSpinBox* max_volume_bounces = create_integer_input(widget_base_key + "max_volume_bounces", 0, 100, 1);
             max_bounces->setToolTip(m_params_metadata.get_path((config_param_path + ".help").c_str()));
 
             QCheckBox* unlimited_bounces = create_checkbox(widget_base_key + "unlimited_bounces", "Unlimited");
@@ -753,7 +753,7 @@ namespace
             connect(unlimited_glossy_bounces, SIGNAL(toggled(bool)), max_glossy_bounces, SLOT(setDisabled(bool)));
             connect(unlimited_specular_bounces, SIGNAL(toggled(bool)), max_specular_bounces, SLOT(setDisabled(bool)));
 
-            QSpinBox* russian_roulette_start = create_integer_input(widget_base_key + "rr_start_bounce", 1, 10000, 1);
+            QSpinBox* russian_roulette_start = create_integer_input(widget_base_key + "rr_start_bounce", 1, 100, 1);
             russian_roulette_start->setToolTip(m_params_metadata.get_path("pt.rr_min_path_length.help"));
             layout->addRow("Russian Roulette Start Bounce:", russian_roulette_start);
         }

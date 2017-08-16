@@ -306,7 +306,7 @@ namespace
 
             explicit Parameters(const ParamArray& params)
               : m_transparency_threshold(params.get_optional<float>("transparency_threshold", 0.001f))
-              , m_max_iterations(params.get_optional<size_t>("max_iterations", 1000))
+              , m_max_iterations(params.get_optional<size_t>("max_iterations", 100))
               , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
             {
             }

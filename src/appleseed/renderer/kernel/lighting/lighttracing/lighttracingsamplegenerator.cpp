@@ -130,7 +130,7 @@ namespace
               , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
               , m_enable_caustics(params.get_optional<bool>("enable_caustics", true))
               , m_transparency_threshold(params.get_optional<float>("transparency_threshold", 0.001f))
-              , m_max_iterations(params.get_optional<size_t>("max_iterations", 1000))
+              , m_max_iterations(params.get_optional<size_t>("max_iterations", 100))
               , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
               , m_max_bounces(fixup_bounces(params.get_optional<int>("max_bounces", -1)))
               , m_rr_min_path_length(fixup_path_length(params.get_optional<size_t>("rr_min_path_length", 3)))
