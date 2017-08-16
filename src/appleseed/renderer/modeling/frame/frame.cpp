@@ -254,12 +254,12 @@ struct Frame::Impl
     size_t                  m_tile_height;
     string                  m_filter_name;
     float                   m_filter_radius;
-    auto_ptr<Filter2f>      m_filter;
+    unique_ptr<Filter2f>    m_filter;
     WorkingColorSpace       m_working_color_space;
     AABB2u                  m_crop_window;
-    auto_ptr<Image>         m_image;
-    auto_ptr<ImageStack>    m_aov_images;
     AOVContainer            m_aovs;
+    unique_ptr<Image>       m_image;
+    unique_ptr<ImageStack>  m_aov_images;
 
     Impl()
       : m_working_color_space()
@@ -358,7 +358,7 @@ void Frame::clear_main_image()
 
 ImageStack& Frame::aov_images() const
 {
-    return *impl->m_aov_images.get();
+    return *impl->m_aov_images;
 }
 
 void Frame::add_aov(foundation::auto_release_ptr<AOV> aov)
@@ -471,46 +471,52 @@ bool Frame::write_main_image(const char* file_path) const
 {
     assert(file_path);
 
-    ImageAttributes image_attributes =
-        ImageAttributes::create_default_attributes();
-    impl->m_working_color_space.insert_chromaticity_attributes(image_attributes);
-
-    return write_image(file_path, *impl->m_image, image_attributes);
+    // Always save the main image as half floats.
+    const Image& image = *impl->m_image;
+    const CanvasProperties& props = image.properties();
+    Image half_image(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
+    return write_image(file_path, half_image, nullptr);
 }
 
 bool Frame::write_aov_images(const char* file_path) const
 {
     assert(file_path);
 
-    ImageAttributes image_attributes =
-        ImageAttributes::create_default_attributes();
-    impl->m_working_color_space.insert_chromaticity_attributes(image_attributes);
-
     bool result = true;
 
-    if (!impl->m_aov_images->empty())
+    if (!aov_images().empty())
     {
         const bf::path boost_file_path(file_path);
         const bf::path directory = boost_file_path.parent_path();
         const string base_file_name = boost_file_path.stem().string();
         const string extension = boost_file_path.extension().string();
 
-        for (size_t i = 0; i < impl->m_aov_images->size(); ++i)
+        for (size_t i = 0, e = aovs().size(); i < e; ++i)
         {
-            const string aov_name = impl->m_aov_images->get_name(i);
+            const string aov_name = aov_images().get_name(i);
             const string safe_aov_name = make_safe_filename(aov_name);
             const string aov_file_name = base_file_name + "." + safe_aov_name + extension;
             const string aov_file_path = (directory / aov_file_name).string();
 
-            if (!write_image(
-                    aov_file_path.c_str(),
-                    impl->m_aov_images->get_image(i),
-                    image_attributes))
+            if (!write_aov_image(aov_file_path.c_str(), i))
                 result = false;
         }
     }
 
     return result;
+}
+
+bool Frame::write_aov_image(const char* file_path, const size_t aov_index) const
+{
+    assert(file_path);
+
+    if (aov_index >= aovs().size())
+        return true;
+
+    return write_image(
+        file_path,
+        aov_images().get_image(aov_index),
+        aovs().get_by_index(aov_index));
 }
 
 bool Frame::archive(
@@ -534,7 +540,7 @@ bool Frame::archive(
         write_image(
             file_path.c_str(),
             *impl->m_image,
-            ImageAttributes::create_default_attributes());
+            nullptr);
 }
 
 void Frame::extract_parameters()
@@ -650,7 +656,7 @@ void Frame::extract_parameters()
 bool Frame::write_image(
     const char*             file_path,
     const Image&            image,
-    const ImageAttributes&  image_attributes) const
+    const AOV*              aov) const
 {
     assert(file_path);
 
@@ -660,17 +666,20 @@ bool Frame::write_image(
     const bf::path filepath(file_path);
     const string extension = lower_case(filepath.extension().string());
 
+    ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
+    impl->m_working_color_space.insert_chromaticity_attributes(image_attributes);
+
     try
     {
-        if (extension == ".png")
-            write_png_image(file_path, image, image_attributes);
-        else if (extension == ".exr")
-            write_exr_image(file_path, image, image_attributes);
+        if (extension == ".exr")
+            write_exr_image(file_path, image, image_attributes, aov);
+        else if (extension == ".png")
+            write_png_image(file_path, image, image_attributes, aov);
         else if (extension.empty())
         {
             string file_path_with_ext(file_path);
             file_path_with_ext += ".exr";
-            write_exr_image(file_path_with_ext.c_str(), image, image_attributes);
+            write_exr_image(file_path_with_ext.c_str(), image, image_attributes, aov);
         }
         else
         {
@@ -713,20 +722,21 @@ void Frame::write_exr_image(
     const char*             file_path,
     const Image&            image,
     const ImageAttributes&  image_attributes,
-    const bool              convert_to_half) const
+    const AOV*              aov) const
 {
     EXRImageFileWriter writer;
 
-    if (convert_to_half)
+    if (aov)
     {
-        const CanvasProperties& props = image.properties();
-        Image half_image(
-            image,
-            props.m_tile_width,
-            props.m_tile_height,
-            PixelFormatHalf);
-
-        writer.write(file_path, half_image, image_attributes);
+        if (aov->has_color_data())
+        {
+            // If the AOV has color data, assume we can save it as half floats.
+            const CanvasProperties& props = image.properties();
+            Image half_image(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
+            writer.write(file_path, half_image, image_attributes, aov->get_channel_count(), aov->get_channel_names());
+        }
+        else
+            writer.write(file_path, image, image_attributes, aov->get_channel_count(), aov->get_channel_names());
     }
     else
         writer.write(file_path, image, image_attributes);
@@ -774,7 +784,8 @@ void transform_to_srgb(Image& image)
 void Frame::write_png_image(
     const char*             file_path,
     const Image&            image,
-    const ImageAttributes&  image_attributes) const
+    const ImageAttributes&  image_attributes,
+    const AOV*              aov) const
 {
     Image transformed_image(image);
     transform_to_srgb(transformed_image);

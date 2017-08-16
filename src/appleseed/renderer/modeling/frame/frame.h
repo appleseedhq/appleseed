@@ -154,6 +154,7 @@ class APPLESEED_DLLSYMBOL Frame
     // Return true if successful, false otherwise.
     bool write_main_image(const char* file_path) const;
     bool write_aov_images(const char* file_path) const;
+    bool write_aov_image(const char* file_path, const size_t aov_index) const;
 
     // Archive the frame to a given directory on disk. If output_path is provided,
     // the full path to the output file will be returned. The returned string must
@@ -187,18 +188,19 @@ class APPLESEED_DLLSYMBOL Frame
     bool write_image(
         const char*                         file_path,
         const foundation::Image&            image,
-        const foundation::ImageAttributes&  image_attributes) const;
+        const AOV*                          aov) const;
 
     void write_exr_image(
         const char*                         file_path,
         const foundation::Image&            image,
         const foundation::ImageAttributes&  image_attributes,
-        const bool                          convert_to_half = true) const;
+        const AOV*                          aov) const;
 
     void write_png_image(
         const char*                         file_path,
         const foundation::Image&            image,
-        const foundation::ImageAttributes&  image_attributes) const;
+        const foundation::ImageAttributes&  image_attributes,
+        const AOV*                          aov) const;
 };
 
 
