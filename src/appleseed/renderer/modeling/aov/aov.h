@@ -69,8 +69,8 @@ class APPLESEED_DLLSYMBOL AOV
     // Return the number of channels of this AOV.
     virtual size_t get_channel_count() const = 0;
 
-    // Return the ith channel name.
-    virtual const char* get_channel_name(const size_t i) const = 0;
+    // Return the AOV channel names.
+    virtual const char** get_channel_names() const = 0;
 
     // Return true if this AOV contains color data.
     virtual bool has_color_data() const = 0;

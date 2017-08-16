@@ -119,9 +119,10 @@ namespace
             return 1;
         }
 
-        virtual const char* get_channel_name(const size_t i) const override
+        virtual const char** get_channel_names() const override
         {
-            return "Z";
+            static const char* ChannelNames[] = {"Z"};
+            return ChannelNames;
         }
 
         virtual bool has_color_data() const override
