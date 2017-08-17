@@ -68,25 +68,34 @@ namespace foundation
 // EXRImageFileWriter class implementation.
 //
 
-namespace
-{
-    const char* ChannelName[] = { "R", "G", "B", "A" };
-}
-
 void EXRImageFileWriter::write(
     const char*             filename,
     const ICanvas&          image,
     const ImageAttributes&  image_attributes)
 {
+    static const char* ChannelNames[] = {"R", "G", "B", "A"};
+    const CanvasProperties& props = image.properties();
+    write(filename, image, image_attributes, props.m_channel_count, ChannelNames);
+}
+
+void EXRImageFileWriter::write(
+    const char*             filename,
+    const ICanvas&          image,
+    const ImageAttributes&  image_attributes,
+    const size_t            channel_count,
+    const char**            channel_names)
+{
+    assert(channel_names);
+
     initialize_openexr();
 
     try
     {
+        // todo: lift this limitation.
+        assert(channel_count <= 4);
+
         // Retrieve canvas properties.
         const CanvasProperties& props = image.properties();
-
-        // todo: lift this limitation.
-        assert(props.m_channel_count <= 4);
 
         // Figure out the pixel type, based on the pixel format of the image.
         PixelType pixel_type = FLOAT;
@@ -106,8 +115,8 @@ void EXRImageFileWriter::write(
 
         // Construct ChannelList object.
         ChannelList channels;
-        for (size_t c = 0; c < props.m_channel_count; ++c)
-            channels.insert(ChannelName[c], Channel(pixel_type));
+        for (size_t c = 0; c < channel_count; ++c)
+            channels.insert(channel_names[c], Channel(pixel_type));
 
         // Construct Header object.
         Header header(
@@ -139,11 +148,11 @@ void EXRImageFileWriter::write(
 
                 // Construct FrameBuffer object.
                 FrameBuffer framebuffer;
-                for (size_t c = 0; c < props.m_channel_count; ++c)
+                for (size_t c = 0; c < channel_count; ++c)
                 {
                     const char* base = tile_base + c * channel_size;
                     framebuffer.insert(
-                        ChannelName[c],
+                        channel_names[c],
                         Slice(
                             pixel_type,
                             const_cast<char*>(base),

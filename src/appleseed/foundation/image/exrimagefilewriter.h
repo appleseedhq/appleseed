@@ -63,10 +63,18 @@ class APPLESEED_DLLSYMBOL EXRImageFileWriter
 {
   public:
     // Write an OpenEXR image file.
-    virtual void write(
+    void write(
         const char*             filename,
         const ICanvas&          image,
-        const ImageAttributes&  image_attributes = ImageAttributes());
+        const ImageAttributes&  image_attributes = ImageAttributes()) override;
+
+    // Write an OpenEXR image file.
+    void write(
+        const char*             filename,
+        const ICanvas&          image,
+        const ImageAttributes&  image_attributes,
+        const size_t            channel_count,
+        const char**            channel_names);
 };
 
 }       // namespace foundation
