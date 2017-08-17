@@ -235,9 +235,6 @@ void compute_absorption_and_scattering_dmfp(
     assert(g > -1.0f);
     assert(g < 1.0f);
 
-    sigma_a.resize(rd.size());
-    sigma_s.resize(rd.size());
-
     const float rcp_g_complement = 1.0f / (1.0f - g);
 
     for (size_t i = 0; i < Spectrum::size(); ++i)
