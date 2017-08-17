@@ -482,7 +482,7 @@ TEST_SUITE(Foundation_Image_ColorSpace)
     TEST_CASE(TestSpectrumToCIEXYZConversion)
     {
         const RegularSpectrum31f spectrum = get_white_spectrum();
-        const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg);
+        const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE19312Deg);
         const Color3f ciexyz = spectrum_to_ciexyz<float>(lighting_conditions, spectrum);
 
         EXPECT_FEQ_EPS(
