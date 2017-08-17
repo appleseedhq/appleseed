@@ -34,6 +34,7 @@
 #include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/material/disneymaterial.h"
 #include "renderer/utility/paramarray.h"
 
@@ -126,7 +127,10 @@ void* DisneyLayeredBRDF::evaluate_inputs(
 
     // Colors in SeExpr are always in the sRGB color space.
     // todo: convert colors earlier so that all math is done in linear space.
-    values->m_base_color = srgb_to_linear_rgb(base_color);
+    values->m_base_color.set(
+        srgb_to_linear_rgb(base_color),
+        g_std_lighting_conditions,
+        Spectrum::Reflectance);
 
     m_brdf->prepare_inputs(
         shading_context.get_arena(),

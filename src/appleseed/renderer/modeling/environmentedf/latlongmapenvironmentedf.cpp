@@ -36,6 +36,7 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentedf/sphericalcoordinates.h"
 #include "renderer/modeling/input/inputarray.h"
@@ -255,7 +256,7 @@ namespace
             outgoing = transform.vector_to_parent(local_outgoing);
 
             // Return the emitted radiance.
-            value = payload;
+            value.set(payload, g_std_lighting_conditions, Spectrum::Illuminance);
 
             // Compute the probability density of this direction.
             probability = prob_xy * m_probability_scale / sin_theta;

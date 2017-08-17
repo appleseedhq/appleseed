@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/rendering/generic/tilejob.h"
 #include "renderer/kernel/rendering/generic/tilejobfactory.h"
 #include "renderer/kernel/rendering/iframerenderer.h"
@@ -112,8 +113,10 @@ namespace
 
             RENDERER_LOG_INFO(
                 "rendering settings:\n"
+                "  spectrum mode                 %s\n"
                 "  sampling mode                 %s\n"
                 "  threads                       %s",
+                get_spectrum_mode_name(get_spectrum_mode(params)).c_str(),
                 get_sampling_context_mode_name(get_sampling_context_mode(params)).c_str(),
                 pretty_int(m_params.m_thread_count).c_str());
         }
@@ -169,6 +172,7 @@ namespace
                     m_frame,
                     m_params.m_tile_ordering,
                     m_params.m_pass_count,
+                    m_params.m_spectrum_mode,
                     m_tile_renderers,
                     m_tile_callbacks,
                     m_pass_callback,
@@ -214,12 +218,14 @@ namespace
       private:
         struct Parameters
         {
+            const Spectrum::Mode                m_spectrum_mode;
             const size_t                        m_thread_count;     // number of rendering threads
             const TileJobFactory::TileOrdering  m_tile_ordering;    // tile rendering order
             const size_t                        m_pass_count;       // number of rendering passes
 
             explicit Parameters(const ParamArray& params)
-              : m_thread_count(get_rendering_thread_count(params))
+              : m_spectrum_mode(get_spectrum_mode(params))
+              , m_thread_count(get_rendering_thread_count(params))
               , m_tile_ordering(get_tile_ordering(params))
               , m_pass_count(params.get_optional<size_t>("passes", 1))
             {
@@ -267,6 +273,7 @@ namespace
                 const Frame&                        frame,
                 const TileJobFactory::TileOrdering  tile_ordering,
                 const size_t                        pass_count,
+                const Spectrum::Mode                spectrum_mode,
                 vector<ITileRenderer*>&             tile_renderers,
                 vector<ITileCallback*>&             tile_callbacks,
                 IPassCallback*                      pass_callback,
@@ -276,6 +283,7 @@ namespace
               : m_frame(frame)
               , m_tile_ordering(tile_ordering)
               , m_pass_count(pass_count)
+              , m_spectrum_mode(spectrum_mode)
               , m_tile_renderers(tile_renderers)
               , m_tile_callbacks(tile_callbacks)
               , m_pass_callback(pass_callback)
@@ -287,6 +295,8 @@ namespace
 
             void operator()()
             {
+                set_current_thread_name("pass_manager");
+
                 for (size_t pass = 0; pass < m_pass_count && !m_abort_switch.is_aborted(); ++pass)
                 {
                     if (m_pass_count > 1)
@@ -309,6 +319,7 @@ namespace
                         m_tile_renderers,
                         m_tile_callbacks,
                         pass_hash,
+                        m_spectrum_mode,
                         tile_jobs,
                         m_abort_switch);
 
@@ -338,6 +349,7 @@ namespace
             vector<ITileCallback*>&                 m_tile_callbacks;
             IPassCallback*                          m_pass_callback;
             const size_t                            m_pass_count;
+            const Spectrum::Mode                    m_spectrum_mode;
             JobQueue&                               m_job_queue;
             IAbortSwitch&                           m_abort_switch;
             bool&                                   m_is_rendering;

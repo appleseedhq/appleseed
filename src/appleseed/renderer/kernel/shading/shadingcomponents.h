@@ -47,8 +47,8 @@ class ShadingComponents
     Spectrum m_volume;
     Spectrum m_emission;
 
-    // Constructor.
-    explicit ShadingComponents(const Spectrum::Intent intent = Spectrum::Reflectance);
+    // Constructor. Clears all components to 0.
+    ShadingComponents();
 
     void set(const float val);
 

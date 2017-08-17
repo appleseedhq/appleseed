@@ -241,9 +241,7 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
             const float d = values->m_volume_density * values->m_volume_scale * distance;
 
-            absorption.resize(values->m_transmittance.size());
-
-            for (size_t i = 0, e = absorption.size(); i < e; ++i)
+            for (size_t i = 0; i < Spectrum::size(); ++i)
             {
                 //
                 // Reference:

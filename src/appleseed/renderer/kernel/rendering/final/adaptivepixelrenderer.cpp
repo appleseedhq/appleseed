@@ -41,7 +41,6 @@
 #include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/rendering/pixelrendererbase.h"
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
-#include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/utility/settingsparsing.h"
@@ -223,7 +222,7 @@ namespace
                         shading_result);
 
                     // Ignore invalid samples.
-                    if (!shading_result.is_valid_linear_rgb())
+                    if (!shading_result.is_valid())
                     {
                         signal_invalid_sample();
                         continue;
@@ -238,9 +237,9 @@ namespace
                     // Update statistics for this pixel.
                     // todo: variation should be computed in a user-selectable color space, typically the target color space.
                     // todo: one tracker per AOV?
-                    trackers[0].insert(shading_result.m_main.m_color[0]);
-                    trackers[1].insert(shading_result.m_main.m_color[1]);
-                    trackers[2].insert(shading_result.m_main.m_color[2]);
+                    trackers[0].insert(shading_result.m_main[0]);
+                    trackers[1].insert(shading_result.m_main[1]);
+                    trackers[2].insert(shading_result.m_main[2]);
                 }
 
                 // Stop if the variation criterion is met.

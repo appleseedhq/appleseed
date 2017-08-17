@@ -39,7 +39,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
-#include "foundation/image/colorspace.h"
 #include "foundation/image/tile.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
@@ -75,7 +74,6 @@ struct TextureInstance::Impl
     // Order of data members impacts performance, preserve it.
     Transformf              m_transform;
     string                  m_texture_name;
-    LightingConditions      m_lighting_conditions;
 };
 
 TextureInstance::TextureInstance(
@@ -90,9 +88,6 @@ TextureInstance::TextureInstance(
 
     impl->m_transform = transform;
     impl->m_texture_name = texture_name;
-
-    // todo: retrieve the lighting conditions.
-    impl->m_lighting_conditions = LightingConditions(IlluminantCIED65, XYZCMFCIE196410Deg);
 
     // No bound texture yet.
     m_texture = 0;
@@ -154,11 +149,6 @@ const Transformf& TextureInstance::get_transform() const
     return impl->m_transform;
 }
 
-const LightingConditions& TextureInstance::get_lighting_conditions() const
-{
-    return impl->m_lighting_conditions;
-}
-
 Texture* TextureInstance::find_texture() const
 {
     const Entity* parent = get_parent();
@@ -189,9 +179,7 @@ namespace
 {
     bool has_transparent_pixels(const Tile& tile)
     {
-        const size_t pixel_count = tile.get_pixel_count();
-
-        for (size_t i = 0; i < pixel_count; ++i)
+        for (size_t i = 0, e = tile.get_pixel_count(); i < e; ++i)
         {
             if (tile.get_component<float>(i, 3) < 1.0f)
                 return true;

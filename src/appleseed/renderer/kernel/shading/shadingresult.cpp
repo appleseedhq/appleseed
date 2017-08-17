@@ -31,11 +31,8 @@
 #include "shadingresult.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/otherwise.h"
-
-// Standard headers.
-#include <cassert>
-#include <cstddef>
+#include "foundation/platform/types.h"
+#include "foundation/utility/casts.h"
 
 using namespace foundation;
 
@@ -48,15 +45,6 @@ namespace renderer
 
 namespace
 {
-    inline const Color3f& spectrum_as_color3f(const Spectrum& s)
-    {
-        return reinterpret_cast<const Color3f&>(s[0]);
-    }
-
-    template <typename T>
-    inline bool is_valid_scalar(const T x);
-
-    template <>
     inline bool is_valid_scalar(const float x)
     {
         const uint32 ix = binary_cast<uint32>(x);
@@ -69,112 +57,31 @@ namespace
         return !is_neg && !is_nan && !is_inf;
     }
 
-    template <typename T, size_t N>
-    inline bool is_valid_color(const Color<T, N>& c)
+    inline bool is_valid_color(const Color4f& c)
     {
-        for (size_t i = 0; i < N; ++i)
-        {
-            if (!is_valid_scalar(c[i]))
-                return false;
-        }
-
-        return true;
+        return
+            is_valid_scalar(c[0]) &&
+            is_valid_scalar(c[1]) &&
+            is_valid_scalar(c[2]) &&
+            is_valid_scalar(c[3]);
     }
 }
 
-bool ShadingResult::is_valid_linear_rgb() const
+bool ShadingResult::is_valid() const
 {
-    assert(m_color_space == ColorSpaceLinearRGB);
-
-    if (!is_valid_color(spectrum_as_color3f(m_main.m_color)))
+    if (!is_valid_color(m_main))
         return false;
 
-    if (!is_valid_color(m_main.m_alpha))
-        return false;
-
-    for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
+    for (size_t i = 0, e = m_aov_count; i < e; ++i)
     {
-        const ShadingFragment& aov = m_aovs[i];
-
-        if (!is_valid_color(spectrum_as_color3f(aov.m_color)))
-            return false;
-
-        if (!is_valid_color(aov.m_alpha))
+        if (!is_valid_color(m_aovs[i]))
             return false;
     }
 
     return true;
 }
 
-void ShadingResult::set_aovs_to_transparent_black_linear_rgba()
-{
-    for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
-    {
-        ShadingFragment& aov = m_aovs[i];
-        aov.m_color[0] = 0.0f;
-        aov.m_color[1] = 0.0f;
-        aov.m_color[2] = 0.0f;
-        aov.m_alpha.set(0.0f);
-    }
-}
-
-namespace
-{
-    inline void transform_srgb_to_linear_rgb(Spectrum& s)
-    {
-        Color3f& linear_rgb = reinterpret_cast<Color3f&>(s[0]);
-        linear_rgb = srgb_to_linear_rgb(Color3f(s[0], s[1], s[2]));
-    }
-
-    inline void transform_ciexyz_to_linear_rgb(Spectrum& s)
-    {
-        Color3f& linear_rgb = reinterpret_cast<Color3f&>(s[0]);
-        linear_rgb = ciexyz_to_linear_rgb(Color3f(s[0], s[1], s[2]));
-    }
-
-    inline void transform_spectrum_to_linear_rgb(const LightingConditions& lighting, Spectrum& s)
-    {
-        s = ciexyz_to_linear_rgb(spectrum_to_ciexyz<float>(lighting, s));
-    }
-}
-
-void ShadingResult::transform_to_linear_rgb(const LightingConditions& lighting)
-{
-    if (m_color_space == ColorSpaceLinearRGB)
-        return;
-
-    switch (m_color_space)
-    {
-      case ColorSpaceSRGB:
-        transform_srgb_to_linear_rgb(m_main.m_color);
-        for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
-            transform_srgb_to_linear_rgb(m_aovs[i].m_color);
-        break;
-
-      case ColorSpaceCIEXYZ:
-        transform_ciexyz_to_linear_rgb(m_main.m_color);
-        for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
-            transform_ciexyz_to_linear_rgb(m_aovs[i].m_color);
-        break;
-
-      case ColorSpaceSpectral:
-        if (m_main.m_color.is_spectral())
-            transform_spectrum_to_linear_rgb(lighting, m_main.m_color);
-        for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
-        {
-            ShadingFragment& aov = m_aovs[i];
-            if (aov.m_color.is_spectral())
-                transform_spectrum_to_linear_rgb(lighting, aov.m_color);
-        }
-        break;
-
-      assert_otherwise;
-    }
-
-    m_color_space = ColorSpaceLinearRGB;
-}
-
-void ShadingResult::composite_over_linear_rgb(const ShadingResult& background)
+void ShadingResult::composite_over(const ShadingResult& background)
 {
     //
     // Shading results use premultiplied alpha.
@@ -187,42 +94,23 @@ void ShadingResult::composite_over_linear_rgb(const ShadingResult& background)
     //   http://my.opera.com/emoller/blog/2012/08/28/alpha-blending
     //
 
-    assert(m_color_space == ColorSpaceLinearRGB);
-    assert(background.m_color_space == ColorSpaceLinearRGB);
+    m_main += (1.0f - m_main.a) * background.m_main;
 
-    const Alpha contrib = Alpha(1.0f) - m_main.m_alpha;
-    m_main.m_color[0] += contrib[0] * background.m_main.m_color[0];
-    m_main.m_color[1] += contrib[0] * background.m_main.m_color[1];
-    m_main.m_color[2] += contrib[0] * background.m_main.m_color[2];
-    m_main.m_alpha += contrib * background.m_main.m_alpha;
-
-    for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
+    for (size_t i = 0, e = m_aov_count; i < e; ++i)
     {
-        const ShadingFragment& background_aov = background.m_aovs[i];
-        ShadingFragment& aov = m_aovs[i];
-
-        const Alpha contrib = Alpha(1.0f) - aov.m_alpha;
-        aov.m_color[0] += contrib[0] * background_aov.m_color[0];
-        aov.m_color[1] += contrib[0] * background_aov.m_color[1];
-        aov.m_color[2] += contrib[0] * background_aov.m_color[2];
-        aov.m_alpha += contrib * background_aov.m_alpha;
+        Color4f& aov = m_aovs[i];
+        aov += (1.0f - aov.a) * background.m_aovs[i];
     }
 }
 
-void ShadingResult::apply_alpha_premult_linear_rgb()
+void ShadingResult::apply_alpha_premult()
 {
-    assert(m_color_space == ColorSpaceLinearRGB);
+    m_main.rgb() *= m_main.a;
 
-    m_main.m_color[0] *= m_main.m_alpha[0];
-    m_main.m_color[1] *= m_main.m_alpha[0];
-    m_main.m_color[2] *= m_main.m_alpha[0];
-
-    for (size_t i = 0, e = m_aovs.size(); i < e; ++i)
+    for (size_t i = 0, e = m_aov_count; i < e; ++i)
     {
-        ShadingFragment& aov = m_aovs[i];
-        aov.m_color[0] *= aov.m_alpha[0];
-        aov.m_color[1] *= aov.m_alpha[0];
-        aov.m_color[2] *= aov.m_alpha[0];
+        Color4f& aov = m_aovs[i];
+        aov.rgb() *= aov.a;
     }
 }
 

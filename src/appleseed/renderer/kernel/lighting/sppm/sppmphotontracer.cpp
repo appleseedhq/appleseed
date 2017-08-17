@@ -116,8 +116,6 @@ namespace
           , m_store_caustics(store_caustics)
           , m_photons(photons)
         {
-            if (params.m_photon_type == SPPMParameters::Monochromatic)
-                Spectrum::upgrade(m_initial_flux, m_initial_flux);
         }
 
         bool accept_scattering(
@@ -163,11 +161,7 @@ namespace
                     vertex.m_sampling_context.split_in_place(1, 1);
                     const uint32 wavelength =
                         truncate<uint32>(
-                            vertex.m_sampling_context.next2<double>() * Spectrum::Samples);
-
-                    // Make sure the path throughput is spectral.
-                    Spectrum spectral_throughput;
-                    Spectrum::upgrade(vertex.m_throughput, spectral_throughput);
+                            vertex.m_sampling_context.next2<double>() * Spectrum::size());
 
                     // Create and store a new photon.
                     SPPMMonoPhoton photon;
@@ -176,8 +170,8 @@ namespace
                     photon.m_flux.m_wavelength = wavelength;
                     photon.m_flux.m_amplitude =
                         m_initial_flux[wavelength] *
-                        Spectrum::Samples *
-                        spectral_throughput[wavelength];
+                        Spectrum::size() *
+                        vertex.m_throughput[wavelength];
                     m_photons.push_back(Vector3f(vertex.get_point()), photon);
                 }
                 else
@@ -272,6 +266,9 @@ namespace
 
         virtual void execute(const size_t thread_index) override
         {
+            // Initialize thread-local variables.
+            Spectrum::set_mode(m_params.m_spectrum_mode);
+
             const ShadingContext shading_context(
                 m_intersector,
                 m_tracer,
@@ -571,6 +568,9 @@ namespace
 
         virtual void execute(const size_t thread_index) override
         {
+            // Initialize thread-local variables.
+            Spectrum::set_mode(m_params.m_spectrum_mode);
+
             const ShadingContext shading_context(
                 m_intersector,
                 m_tracer,

@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingcontext.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentedf/sphericalcoordinates.h"
 #include "renderer/modeling/input/inputarray.h"
@@ -92,7 +93,6 @@ namespace
             const char*             name,
             const ParamArray&       params)
           : EnvironmentEDF(name, params)
-          , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
         {
             m_inputs.declare("sun_theta", InputFormatFloat);
             m_inputs.declare("sun_phi", InputFormatFloat);
@@ -168,10 +168,12 @@ namespace
             outgoing = transform.vector_to_parent(local_outgoing);
             const Vector3f shifted_outgoing = shift(local_outgoing);
 
+            RegularSpectrum31f radiance;
             if (shifted_outgoing.y > 0.0f)
-                compute_sky_radiance(shading_context, shifted_outgoing, value);
-            else value.set(0.0f);
+                compute_sky_radiance(shading_context, shifted_outgoing, radiance);
+            else radiance.set(0.0f);
 
+            value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
             probability = shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
         }
 
@@ -187,9 +189,12 @@ namespace
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
             const Vector3f shifted_outgoing = shift(local_outgoing);
 
+            RegularSpectrum31f radiance;
             if (shifted_outgoing.y > 0.0f)
-                compute_sky_radiance(shading_context, shifted_outgoing, value);
-            else value.set(0.0f);
+                compute_sky_radiance(shading_context, shifted_outgoing, radiance);
+            else radiance.set(0.0f);
+
+            value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
         }
 
         virtual void evaluate(
@@ -205,10 +210,12 @@ namespace
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
             const Vector3f shifted_outgoing = shift(local_outgoing);
 
+            RegularSpectrum31f radiance;
             if (shifted_outgoing.y > 0.0f)
-                compute_sky_radiance(shading_context, shifted_outgoing, value);
-            else value.set(0.0f);
+                compute_sky_radiance(shading_context, shifted_outgoing, radiance);
+            else radiance.set(0.0f);
 
+            value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
             probability = shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
         }
 
@@ -237,8 +244,6 @@ namespace
             float   m_saturation_multiplier;
             float   m_horizon_shift;
         };
-
-        const LightingConditions    m_lighting_conditions;
 
         InputValues                 m_uniform_values;
 
@@ -357,11 +362,11 @@ namespace
         void compute_sky_radiance(
             const ShadingContext&   shading_context,
             const Vector3f&         outgoing,
-            Spectrum&               value) const
+            RegularSpectrum31f&     radiance) const
         {
             if (m_uniform_values.m_luminance_multiplier == 0.0f)
             {
-                value.set(0.0f);
+                radiance.set(0.0f);
                 return;
             }
 
@@ -429,9 +434,7 @@ namespace
 
             // Split sky color into luminance and chromaticity.
             float luminance = xyY[2];
-            RegularSpectrum31f spectrum;
-            daylight_ciexy_to_spectrum(xyY[0], xyY[1], spectrum);
-            value = spectrum;
+            daylight_ciexy_to_spectrum(xyY[0], xyY[1], radiance);
 
             // Apply luminance gamma and multiplier.
             if (m_uniform_values.m_luminance_gamma != 1.0f)
@@ -439,9 +442,9 @@ namespace
             luminance *= m_uniform_values.m_luminance_multiplier;
 
             // Compute the final sky radiance.
-            value *=
+            radiance *=
                   luminance                                         // start with computed luminance
-                / sum_value(value * Spectrum(XYZCMFCIE19312Deg[1])) // normalize to unit luminance
+                / sum_value(radiance * XYZCMFCIE19312Deg[1])        // normalize to unit luminance
                 * (1.0f / 683.0f)                                   // convert lumens to Watts
                 * RcpPi<float>();                                   // convert irradiance to radiance
         }

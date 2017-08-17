@@ -497,7 +497,8 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                 process_bounce(sampling_context, vertex, bsdf_sample, next_ray);
 
             // Terminate the path if this scattering event is not accepted.
-            if (!continue_path) break;
+            if (!continue_path)
+                break;
         }
 
         // Build the medium list of the scattered ray.
@@ -511,7 +512,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
             // inherit the medium list of the parent ray and add/remove the current medium.
             if (entering)
             {
-                const float ior = (vertex.m_bsdf == nullptr) ? 1.0f :
+                const float ior = vertex.m_bsdf == nullptr ? 1.0f :
                     vertex.m_bsdf->sample_ior(
                         sampling_context,
                         vertex.m_bsdf_data);
@@ -613,9 +614,8 @@ inline bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::continue_path_rr(
     const float s = sampling_context.next2<float>();
 
     // Compute the probability of extending this path.
-    // todo: make max scattering prob lower (0.99) to avoid getting stuck?
     const float scattering_prob =
-        std::min(foundation::max_value(vertex.m_throughput), 1.0f);
+        std::min(foundation::max_value(vertex.m_throughput), 0.99f);
 
     // Russian Roulette.
     if (!foundation::pass_rr(scattering_prob, s))
@@ -768,30 +768,33 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
         }
 
         // Retrieve extinction spectrum.
-        Spectrum extinction_coef = volume->extinction_coefficient(
-            vertex.m_volume_data, volume_ray);
-        const size_t channel_count = std::max(extinction_coef.size(), vertex.m_throughput.size());
-        if (extinction_coef.size() != channel_count)
-            Spectrum::upgrade(extinction_coef, extinction_coef);
+        const Spectrum& extinction_coef =
+            volume->extinction_coefficient(vertex.m_volume_data, volume_ray);
         
         sampling_context.split_in_place(1, 2);
 
         // Sample channel uniformly at random.
         const float s = sampling_context.next2<float>();
-        const size_t channel = foundation::truncate<size_t>(s * channel_count);
-        const bool extinction_is_null = (extinction_coef[channel] < 1.0e-6f);
+        const size_t channel = foundation::truncate<size_t>(s * Spectrum::size());
+        const bool extinction_is_null = extinction_coef[channel] < 1.0e-6f;
 
-        float distance_sample = 0.0f;
-        float distance_pdf = 0.0f;
-        if (!extinction_is_null)
+        // Sample distance.
+        float distance_sample, distance_pdf;
+        if (extinction_is_null)
         {
-            // Sample distance.
-            distance_sample = foundation::sample_exponential_distribution(
-                sampling_context.next2<float>(), extinction_coef[channel]);
-
-            // Calculate PDF of this distance sample.
-            distance_pdf = foundation::exponential_distribution_pdf(
-                distance_sample, extinction_coef[channel]);
+            distance_sample = 0.0f;
+            distance_pdf = 0.0f;
+        }
+        else
+        {
+            distance_sample =
+                foundation::sample_exponential_distribution(
+                    sampling_context.next2<float>(),
+                    extinction_coef[channel]);
+            distance_pdf =
+                foundation::exponential_distribution_pdf(
+                    distance_sample,
+                    extinction_coef[channel]);
         }
 
         // Continue path tracing if sampled distance exceeds total length of the ray,
@@ -803,11 +806,9 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
                 vertex.m_volume_data,
                 volume_ray,
                 transmission);
-
             vertex.m_throughput *= transmission;
             vertex.m_throughput /=                       // equivalent to multiplying by MIS weight
                 foundation::average_value(transmission); // and then dividing by transmission[channel]
-
             break;
         }
 
@@ -823,10 +824,8 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
         m_volume_visitor.on_scatter(vertex);
 
         // Retrieve scattering spectrum.
-        Spectrum scattering_coef = volume->scattering_coefficient(
-            vertex.m_volume_data, volume_ray);
-        if (scattering_coef.size() != channel_count)
-            Spectrum::upgrade(scattering_coef, scattering_coef);
+        const Spectrum& scattering_coef =
+            volume->scattering_coefficient(vertex.m_volume_data, volume_ray);
 
         // Evaluate transmission between the origin and the sampled distance.
         Spectrum transmission;
@@ -835,12 +834,6 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
             volume_ray,
             distance_sample,
             transmission);
-        if (transmission.size() != channel_count)
-            Spectrum::upgrade(transmission, transmission);
-
-        // Upgrade throughput spectrum, if necessary.
-        if (vertex.m_throughput.size() != channel_count)
-            Spectrum::upgrade(vertex.m_throughput, vertex.m_throughput);
         
         // Compute MIS weight.
         // MIS terms are:
@@ -849,17 +842,15 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
         // Reference: "Practical and Controllable Subsurface Scattering
         // for Production Path Tracing", p. 1 [ACM 2016 Article].
         float mis_weights_sum = 0.0f;
-        for (size_t i = 0; i < channel_count; ++i)
+        for (size_t i = 0; i < Spectrum::size(); ++i)
         {
             if (extinction_coef[i] > 1.0e-6f)
                 mis_weights_sum += transmission[i] * scattering_coef[i] / extinction_coef[i];
         }
         if (mis_weights_sum < 1.0e-6f)
-        {
             return false;  // no scattering
-        }
         const float current_mis_weight =
-            (channel_count * transmission[channel] * scattering_coef[channel]) /
+            (Spectrum::size() * transmission[channel] * scattering_coef[channel]) /
             (extinction_coef[channel] * mis_weights_sum);
 
         vertex.m_throughput *= scattering_coef;

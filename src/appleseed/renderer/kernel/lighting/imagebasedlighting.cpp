@@ -78,7 +78,7 @@ void compute_ibl_combined_sampling(
         radiance);
 
     // Compute IBL by sampling the environment.
-    ShadingComponents radiance_env_sampling(Spectrum::Illuminance);
+    ShadingComponents radiance_env_sampling;
     compute_ibl_environment_sampling(
         sampling_context,
         shading_context,

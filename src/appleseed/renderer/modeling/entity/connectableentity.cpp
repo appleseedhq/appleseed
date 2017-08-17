@@ -41,6 +41,8 @@
 // Standard headers.
 #include <cassert>
 
+using namespace foundation;
+
 namespace renderer
 {
 
@@ -69,7 +71,7 @@ bool ConnectableEntity::is_uniform_zero_spectrum(const Source* source)
         Spectrum spectrum;
         source->evaluate_uniform(spectrum);
 
-        if (spectrum == Spectrum(0.0f))
+        if (is_zero(spectrum))
             return true;
     }
 

@@ -43,6 +43,7 @@
 #include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/utility/settingsparsing.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -116,6 +117,9 @@ MasterRenderer::~MasterRenderer()
 
 bool MasterRenderer::render()
 {
+    // Initialize thread-local variables.
+    Spectrum::set_mode(get_spectrum_mode(m_params));
+
     if (m_project.get_scene() == 0)
     {
         RENDERER_LOG_ERROR("project does not contain a scene.");

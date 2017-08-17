@@ -96,7 +96,8 @@ namespace
 }
 
 SPPMParameters::SPPMParameters(const ParamArray& params)
-  : m_sampling_mode(get_sampling_context_mode(params))
+  : m_spectrum_mode(get_spectrum_mode(params))
+  , m_sampling_mode(get_sampling_context_mode(params))
   , m_photon_type(get_photon_type(params, "photon_type", "poly"))
   , m_dl_mode(get_mode(params, "dl_mode", "rt"))
   , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
@@ -109,7 +110,7 @@ SPPMParameters::SPPMParameters(const ParamArray& params)
   , m_path_tracing_max_bounces(fixup_bounces(params.get_optional<int>("path_tracing_max_bounces", -1)))
   , m_path_tracing_rr_min_path_length(fixup_path_length(params.get_optional<size_t>("path_tracing_rr_min_path_length", 6)))
   , m_transparency_threshold(params.get_optional<float>("transparency_threshold", 0.001f))
-  , m_max_iterations(params.get_optional<size_t>("max_iterations", 1000))
+  , m_max_iterations(params.get_optional<size_t>("max_iterations", 100))
   , m_initial_radius_percents(params.get_optional<float>("initial_radius", 0.1f))
   , m_alpha(params.get_optional<float>("alpha", 0.7f))
   , m_max_photons_per_estimate(params.get_optional<size_t>("max_photons_per_estimate", 100))

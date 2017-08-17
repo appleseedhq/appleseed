@@ -39,13 +39,9 @@ namespace renderer
 // ShadingComponents class implementation.
 //
 
-ShadingComponents::ShadingComponents(const Spectrum::Intent intent)
-  : m_beauty(0.0f, intent)
-  , m_diffuse(0.0f, intent)
-  , m_glossy(0.0f, intent)
-  , m_volume(0.0f, intent)
-  , m_emission(0.0f, Spectrum::Illuminance)
+ShadingComponents::ShadingComponents()
 {
+    set(0.0f);
 }
 
 void ShadingComponents::set(const float val)

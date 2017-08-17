@@ -34,7 +34,6 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/aov/aovaccumulator.h"
-#include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
@@ -43,7 +42,6 @@
 #include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingengine.h"
-#include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/shading/shadingresult.h"
@@ -55,7 +53,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
-#include "foundation/image/colorspace.h"
 #include "foundation/image/image.h"
 #include "foundation/image/regularspectrum.h"
 #include "foundation/math/vector.h"
@@ -105,7 +102,6 @@ namespace
             const ParamArray&       params)
           : m_params(params)
           , m_scene(scene)
-          , m_lighting_conditions(frame.get_lighting_conditions())
           , m_opacity_threshold(1.0f - m_params.m_transparency_threshold)
           , m_texture_cache(texture_store)
           , m_lighting_engine(lighting_engine_factory->create())
@@ -221,17 +217,14 @@ namespace
 
                     m_aov_accumulators.flush(shading_result);
 
-                    // Transform the result to the linear RGB color space.
-                    shading_result.transform_to_linear_rgb(m_lighting_conditions);
-
                     // Apply alpha premultiplication.
                     if (shading_point_ptr->hit())
-                        shading_result.apply_alpha_premult_linear_rgb();
+                        shading_result.apply_alpha_premult();
                 }
                 else
                 {
                     // Shade the intersection point.
-                    ShadingResult local_result(shading_result.m_aovs.size());
+                    ShadingResult local_result(shading_result.m_aov_count);
                     m_shading_engine.shade(
                         sampling_context,
                         pixel_context,
@@ -245,15 +238,12 @@ namespace
 
                     m_aov_accumulators.flush(local_result);
 
-                    // Transform the result to the linear RGB color space.
-                    local_result.transform_to_linear_rgb(m_lighting_conditions);
-
                     // Apply alpha premultiplication.
                     if (shading_point_ptr->hit())
-                        local_result.apply_alpha_premult_linear_rgb();
+                        local_result.apply_alpha_premult();
 
                     // Compositing.
-                    shading_result.composite_over_linear_rgb(local_result);
+                    shading_result.composite_over(local_result);
                 }
 
                 // Stop once we hit the environment.
@@ -261,7 +251,7 @@ namespace
                     break;
 
                 // Stop once we hit full opacity.
-                if (max_value(shading_result.m_main.m_alpha) > m_opacity_threshold)
+                if (shading_result.m_main.a > m_opacity_threshold)
                     break;
 
                 // Move the ray origin to the intersection point.
@@ -282,17 +272,17 @@ namespace
             if (delta_hit_count + delta_miss_count == 0)
             {
                 // In black: no access to the texture cache.
-                shading_result.set_main_to_linear_rgba(Color4f(0.0f, 0.0f, 0.0f, 1.0f));
+                shading_result.m_main = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
             }
             else if (delta_hit_count > delta_miss_count)
             {
                 // In green: a majority of cache hits.
-                shading_result.set_main_to_linear_rgba(Color4f(0.0f, 1.0f, 0.0f, 1.0f));
+                shading_result.m_main = Color4f(0.0f, 1.0f, 0.0f, 1.0f);
             }
             else
             {
                 // In red: a majority of cache misses.
-                shading_result.set_main_to_linear_rgba(Color4f(1.0f, 0.0f, 0.0f, 1.0f));
+                shading_result.m_main = Color4f(1.0f, 0.0f, 0.0f, 1.0f);
             }
 
 #endif
@@ -316,7 +306,7 @@ namespace
 
             explicit Parameters(const ParamArray& params)
               : m_transparency_threshold(params.get_optional<float>("transparency_threshold", 0.001f))
-              , m_max_iterations(params.get_optional<size_t>("max_iterations", 1000))
+              , m_max_iterations(params.get_optional<size_t>("max_iterations", 100))
               , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
             {
             }
@@ -324,7 +314,6 @@ namespace
 
         const Parameters            m_params;
         const Scene&                m_scene;
-        const LightingConditions&   m_lighting_conditions;
         const float                 m_opacity_threshold;
         TextureCache                m_texture_cache;
         ILightingEngine*            m_lighting_engine;

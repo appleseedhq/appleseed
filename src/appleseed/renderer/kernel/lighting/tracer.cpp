@@ -86,7 +86,7 @@ const ShadingPoint& Tracer::do_trace(
 {
     assert(is_normalized(ray.m_dir));
 
-    transmission = Spectrum(1.0f);
+    transmission.set(1.0f);
 
     const ShadingPoint* shading_point_ptr = parent_shading_point;
     size_t shading_point_index = 0;
@@ -208,7 +208,7 @@ const ShadingPoint& Tracer::do_trace_between(
     Spectrum&                   transmission,
     const ShadingPoint*         parent_shading_point)
 {
-    transmission = Spectrum(1.0f);
+    transmission.set(1.0f);
 
     const ShadingPoint* shading_point_ptr = parent_shading_point;
     size_t shading_point_index = 0;

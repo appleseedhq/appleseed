@@ -152,8 +152,6 @@ namespace
                         m_source->evaluate(texture_cache, uv, *out_spectrum);
                     else out_spectrum->set(0.0f);
 
-                    out_spectrum->set_intent(Spectrum::Reflectance);
-
                     ptr += sizeof(Spectrum);
                 }
                 break;
@@ -168,8 +166,6 @@ namespace
                     if (m_source)
                         m_source->evaluate(texture_cache, uv, *out_spectrum);
                     else out_spectrum->set(0.0f);
-
-                    out_spectrum->set_intent(Spectrum::Illuminance);
 
                     ptr += sizeof(Spectrum);
                 }
@@ -192,8 +188,6 @@ namespace
                         out_alpha->set(0.0f);
                     }
 
-                    out_spectrum->set_intent(Spectrum::Reflectance);
-
                     ptr += sizeof(Spectrum);
                     ptr += sizeof(Alpha);
                 }
@@ -215,8 +209,6 @@ namespace
                         out_spectrum->set(0.0f);
                         out_alpha->set(0.0f);
                     }
-
-                    out_spectrum->set_intent(Spectrum::Illuminance);
 
                     ptr += sizeof(Spectrum);
                     ptr += sizeof(Alpha);
@@ -261,8 +253,6 @@ namespace
                         m_source->evaluate_uniform(*out_spectrum);
                     else out_spectrum->set(0.0f);
 
-                    out_spectrum->set_intent(Spectrum::Reflectance);
-
                     ptr += sizeof(Spectrum);
                 }
                 break;
@@ -277,8 +267,6 @@ namespace
                     if (m_source && m_source->is_uniform())
                         m_source->evaluate_uniform(*out_spectrum);
                     else out_spectrum->set(0.0f);
-
-                    out_spectrum->set_intent(Spectrum::Illuminance);
 
                     ptr += sizeof(Spectrum);
                 }
@@ -301,8 +289,6 @@ namespace
                         out_alpha->set(0.0f);
                     }
 
-                    out_spectrum->set_intent(Spectrum::Reflectance);
-
                     ptr += sizeof(Spectrum);
                     ptr += sizeof(Alpha);
                 }
@@ -324,8 +310,6 @@ namespace
                         out_spectrum->set(0.0f);
                         out_alpha->set(0.0f);
                     }
-
-                    out_spectrum->set_intent(Spectrum::Illuminance);
 
                     ptr += sizeof(Spectrum);
                     ptr += sizeof(Alpha);

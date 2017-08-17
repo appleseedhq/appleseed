@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/scene/textureinstance.h"
 
@@ -176,7 +177,7 @@ inline void TextureSource::evaluate(
     Spectrum&                               spectrum) const
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
-    spectrum = color.rgb();
+    spectrum.set(color.rgb(), g_std_lighting_conditions, Spectrum::Reflectance);
 }
 
 inline void TextureSource::evaluate(
@@ -206,7 +207,7 @@ inline void TextureSource::evaluate(
     Alpha&                                  alpha) const
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
-    spectrum = color.rgb();
+    spectrum.set(color.rgb(), g_std_lighting_conditions, Spectrum::Reflectance);
     evaluate_alpha(color, alpha);
 }
 

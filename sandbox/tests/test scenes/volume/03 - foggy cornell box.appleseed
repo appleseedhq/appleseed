@@ -420,6 +420,7 @@
             <parameter name="lighting_engine" value="pt" />
             <parameter name="pixel_renderer" value="uniform" />
             <parameter name="shading_result_framebuffer" value="ephemeral" />
+            <parameter name="spectrum_mode" value="spectral" />
             <parameters name="adaptive_pixel_renderer">
                 <parameter name="enable_diagnostics" value="false" />
                 <parameter name="max_samples" value="256" />
@@ -471,6 +472,7 @@
         </configuration>
         <configuration name="interactive" base="base_interactive">
             <parameter name="lighting_engine" value="pt" />
+            <parameter name="spectrum_mode" value="spectral" />
             <parameters name="light_sampler">
                 <parameter name="algorithm" value="cdf" />
             </parameters>

@@ -33,7 +33,6 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
-#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/utility/paramarray.h"
 
@@ -98,21 +97,6 @@ void BSSRDF::prepare_inputs(
 {
 }
 
-void BSSRDF::make_reflectance_and_mfp_compatible(
-    Spectrum&               reflectance,
-    const Spectrum&         mfp)
-{
-    if (reflectance.size() != mfp.size())
-    {
-        // Since it does not really make sense to convert a mfp, a per channel distance,
-        // as if it were a color, we instead always convert the reflectance to match the
-        // size of the mfp.
-        if (mfp.is_spectral())
-            Spectrum::upgrade(reflectance, reflectance);
-        else Spectrum::downgrade(g_std_lighting_conditions, reflectance, reflectance);
-    }
-}
-
 float BSSRDF::compute_eta(
     const ShadingPoint&     shading_point,
     const float             ior)
@@ -130,11 +114,8 @@ void BSSRDF::build_cdf_and_pdf(
     Spectrum&               cdf,
     Spectrum&               pdf)
 {
-    pdf.resize(src.size());
-    cdf.resize(src.size());
-
     float cumulated_pdf = 0.0f;
-    for (size_t i = 0, e = src.size(); i < e; ++i)
+    for (size_t i = 0; i < Spectrum::size(); ++i)
     {
         pdf[i] = src[i];
         cumulated_pdf += pdf[i];

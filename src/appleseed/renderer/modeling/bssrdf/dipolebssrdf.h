@@ -181,8 +181,6 @@ void DipoleBSSRDF::do_prepare_inputs(
         // and mean free path (mfp).
         //
 
-        make_reflectance_and_mfp_compatible(values->m_reflectance, values->m_mfp);
-
         // Apply multipliers to input values.
         values->m_reflectance *= values->m_reflectance_multiplier;
         values->m_mfp *= values->m_mfp_multiplier;
@@ -218,8 +216,7 @@ void DipoleBSSRDF::do_prepare_inputs(
         values->m_precomputed.m_sigma_tr);
 
     // Precompute alpha'.
-    values->m_precomputed.m_alpha_prime.resize(values->m_reflectance.size());
-    for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
+    for (size_t i = 0; i < Spectrum::size(); ++i)
     {
         const float sigma_s_prime = values->m_sigma_s[i] * (1.0f - values->m_g);
         const float sigma_t_prime = sigma_s_prime + values->m_sigma_a[i];

@@ -33,10 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/aov/aovaccumulator.h"
-#include "renderer/kernel/aov/shadingfragmentstack.h"
-#include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/shading/shadingcontext.h"
-#include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"

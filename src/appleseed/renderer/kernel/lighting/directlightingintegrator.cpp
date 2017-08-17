@@ -158,7 +158,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
     // Add contributions from the light set.
     if (m_light_sampler.has_lightset())
     {
-        ShadingComponents lightset_radiance(Spectrum::Illuminance);
+        ShadingComponents lightset_radiance;
 
         sampling_context.split_in_place(3, m_light_sample_count);
 
@@ -210,7 +210,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling_low_v
         outgoing,
         radiance);
 
-    ShadingComponents radiance_light_sampling(Spectrum::Illuminance);
+    ShadingComponents radiance_light_sampling;
 
     compute_outgoing_radiance_light_sampling_low_variance(
         sampling_context,

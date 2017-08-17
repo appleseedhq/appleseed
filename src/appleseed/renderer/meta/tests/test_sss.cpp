@@ -38,6 +38,7 @@
 #include "renderer/modeling/bssrdf/sss.h"
 #include "renderer/modeling/bssrdf/separablebssrdf.h"
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/entity/onframebeginrecorder.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/scalarsource.h"
@@ -323,10 +324,10 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         const Color3f sigma_a(0.013f, 0.070f, 0.145f);      // in mm^-1
         const Color3f sigma_s(1.09f, 1.59f, 1.79f);         // in mm^-1
-        const Spectrum sigma_t(sigma_a + sigma_s);
+        const Spectrum sigma_t(sigma_a + sigma_s, g_std_lighting_conditions, Spectrum::Reflectance);
 
-        const Spectrum sigma_a_spectrum(sigma_a);
-        const Spectrum sigma_s_spectrum(sigma_s);
+        const Spectrum sigma_a_spectrum(sigma_a, g_std_lighting_conditions, Spectrum::Reflectance);
+        const Spectrum sigma_s_spectrum(sigma_s, g_std_lighting_conditions, Spectrum::Reflectance);
 
         const Color3f alpha_prime = sigma_s / (sigma_a + sigma_s);
         const float eta = 1.0f;
@@ -352,7 +353,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         //
 
         Spectrum new_sigma_a_spectrum, new_sigma_s_spectrum;
-        const Spectrum rd_spectrum(rd);
+        const Spectrum rd_spectrum(rd, g_std_lighting_conditions, Spectrum::Reflectance);
         compute_absorption_and_scattering_mfp(
             rd_fun,
             rd_spectrum,

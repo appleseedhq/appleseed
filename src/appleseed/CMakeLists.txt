@@ -884,8 +884,6 @@ set (renderer_kernel_aov_sources
     renderer/kernel/aov/aovsettings.h
     renderer/kernel/aov/imagestack.cpp
     renderer/kernel/aov/imagestack.h
-    renderer/kernel/aov/shadingfragmentstack.h
-    renderer/kernel/aov/spectrumstack.h
     renderer/kernel/aov/tilestack.h
 )
 list (APPEND appleseed_sources
@@ -1174,7 +1172,6 @@ set (renderer_kernel_shading_sources
     renderer/kernel/shading/shadingcontext.h
     renderer/kernel/shading/shadingengine.cpp
     renderer/kernel/shading/shadingengine.h
-    renderer/kernel/shading/shadingfragment.h
     renderer/kernel/shading/shadingpoint.cpp
     renderer/kernel/shading/shadingpoint.h
     renderer/kernel/shading/shadingpointbuilder.cpp

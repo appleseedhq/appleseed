@@ -34,11 +34,10 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
-
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+#include "renderer/modeling/color/colorspace.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstring>
 
 using namespace foundation;
@@ -89,16 +88,12 @@ BeautyAOVAccumulator::BeautyAOVAccumulator()
 
 void BeautyAOVAccumulator::set(const Spectrum& value)
 {
-    m_color_space = value.is_rgb() ? ColorSpaceLinearRGB : ColorSpaceSpectral;
-    m_color = value;
+    m_color = value.to_rgb(g_std_lighting_conditions);
 }
 
 void BeautyAOVAccumulator::set(const Color3f& color)
 {
-    m_color_space = ColorSpaceLinearRGB;
-    m_color[0] = color[0];
-    m_color[1] = color[1];
-    m_color[2] = color[2];
+    m_color = color;
 }
 
 void BeautyAOVAccumulator::set_to_pink_linear_rgb()
@@ -113,7 +108,6 @@ void BeautyAOVAccumulator::apply_multiplier(const float multiplier)
 
 void BeautyAOVAccumulator::reset()
 {
-    m_color_space = ColorSpaceLinearRGB;
     m_color.set(0.0f);
 }
 
@@ -121,16 +115,13 @@ void BeautyAOVAccumulator::write(
     const ShadingComponents&    shading_components,
     const float                 multiplier)
 {
-    const Spectrum& value = shading_components.m_beauty;
-    m_color_space = value.is_rgb() ? ColorSpaceLinearRGB : ColorSpaceSpectral;
-    m_color = value;
+    m_color = shading_components.m_beauty.to_rgb(g_std_lighting_conditions);
     m_color *= multiplier;
 }
 
 void BeautyAOVAccumulator::flush(ShadingResult& result)
 {
-    result.m_color_space = m_color_space;
-    result.m_main.m_color = m_color;
+    result.m_main.rgb() = m_color;
 }
 
 
@@ -160,7 +151,7 @@ void AlphaAOVAccumulator::reset()
 
 void AlphaAOVAccumulator::flush(ShadingResult& result)
 {
-    result.m_main.m_alpha = m_alpha;
+    result.m_main.a = m_alpha[0];
 }
 
 

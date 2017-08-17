@@ -67,8 +67,7 @@ namespace
             const Vector2d&     image_point,
             ShadingResult&      shading_result) override
         {
-            shading_result.set_main_to_transparent_black_linear_rgba();
-            shading_result.set_aovs_to_transparent_black_linear_rgba();
+            shading_result.m_main.set(0.0f);
         }
 
         virtual StatisticsVector get_statistics() const override

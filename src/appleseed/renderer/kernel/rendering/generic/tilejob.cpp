@@ -61,6 +61,7 @@ TileJob::TileJob(
     const size_t                tile_x,
     const size_t                tile_y,
     const size_t                pass_hash,
+    const Spectrum::Mode        spectrum_mode,
     IAbortSwitch&               abort_switch)
   : m_tile_renderers(tile_renderers)
   , m_tile_callbacks(tile_callbacks)
@@ -68,6 +69,7 @@ TileJob::TileJob(
   , m_tile_x(tile_x)
   , m_tile_y(tile_y)
   , m_pass_hash(pass_hash)
+  , m_spectrum_mode(spectrum_mode)
   , m_abort_switch(abort_switch)
 {
     // Either there is no tile callback, or there is the same number
@@ -79,9 +81,11 @@ TileJob::TileJob(
 
 void TileJob::execute(const size_t thread_index)
 {
-    assert(thread_index < m_tile_renderers.size());
+    // Initialize thread-local variables.
+    Spectrum::set_mode(m_spectrum_mode);
 
     // Retrieve the tile callback.
+    assert(thread_index < m_tile_renderers.size());
     ITileCallback* tile_callback =
         m_tile_callbacks.size() == m_tile_renderers.size()
             ? m_tile_callbacks[thread_index]

@@ -113,8 +113,6 @@ namespace
             const DipoleBSSRDFInputValues* values =
                 static_cast<const DipoleBSSRDFInputValues*>(data);
 
-            value.resize(values->m_sigma_a.size());
-
             const float square_radius =
                 static_cast<float>(
                     square_norm(outgoing_point.get_point() - incoming_point.get_point()));
@@ -122,7 +120,7 @@ namespace
             const float fdr = fresnel_internal_diffuse_reflectance(values->m_base_values.m_eta);
             const float a = (1.0f + fdr) / (1.0f - fdr);
 
-            for (size_t i = 0, e = value.size(); i < e; ++i)
+            for (size_t i = 0; i < Spectrum::size(); ++i)
             {
                 const float sigma_a = values->m_sigma_a[i];
                 const float sigma_s = values->m_sigma_s[i];

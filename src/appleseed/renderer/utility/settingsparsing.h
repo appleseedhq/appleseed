@@ -45,6 +45,10 @@ namespace renderer  { class ParamArray; }
 namespace renderer
 {
 
+// Spectrum mode.
+APPLESEED_DLLSYMBOL Spectrum::Mode get_spectrum_mode(const ParamArray& params);
+std::string get_spectrum_mode_name(const Spectrum::Mode mode);
+
 // Sampling mode.
 APPLESEED_DLLSYMBOL SamplingContext::Mode get_sampling_context_mode(const ParamArray& params);
 std::string get_sampling_context_mode_name(const SamplingContext::Mode mode);

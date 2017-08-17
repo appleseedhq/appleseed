@@ -103,18 +103,12 @@ struct Frame::Impl
     bool                    m_clamp;
     float                   m_target_gamma;
     float                   m_rcp_target_gamma;
-    LightingConditions      m_lighting_conditions;
     AABB2u                  m_crop_window;
 
     auto_ptr<Image>         m_image;
     auto_ptr<ImageStack>    m_aov_images;
 
     AOVContainer            m_aovs;
-
-    Impl()
-      : m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
-    {
-    }
 };
 
 Frame::Frame(
@@ -265,11 +259,6 @@ size_t Frame::create_extra_aov_image(const char* name) const
 const Filter2f& Frame::get_filter() const
 {
     return *impl->m_filter.get();
-}
-
-const LightingConditions& Frame::get_lighting_conditions() const
-{
-    return impl->m_lighting_conditions;
 }
 
 void Frame::reset_crop_window()

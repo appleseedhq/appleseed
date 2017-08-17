@@ -56,7 +56,6 @@
 namespace foundation    { class DictionaryArray; }
 namespace foundation    { class Image; }
 namespace foundation    { class ImageAttributes; }
-namespace foundation    { class LightingConditions; }
 namespace foundation    { class Tile; }
 namespace renderer      { class AOV; }
 namespace renderer      { class ImageStack; }
@@ -113,9 +112,6 @@ class APPLESEED_DLLSYMBOL Frame
 
     // Return the color space the frame should be converted to for display.
     foundation::ColorSpace get_color_space() const;
-
-    // Return the lighting conditions for spectral-to-RGB conversions.
-    const foundation::LightingConditions& get_lighting_conditions() const;
 
     // Return true if the frame uses premultiplied alpha, false if it uses straight alpha.
     bool is_premultiplied_alpha() const;

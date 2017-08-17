@@ -51,6 +51,7 @@
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/camera/camera.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
@@ -129,7 +130,7 @@ namespace
               , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
               , m_enable_caustics(params.get_optional<bool>("enable_caustics", true))
               , m_transparency_threshold(params.get_optional<float>("transparency_threshold", 0.001f))
-              , m_max_iterations(params.get_optional<size_t>("max_iterations", 1000))
+              , m_max_iterations(params.get_optional<size_t>("max_iterations", 100))
               , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
               , m_max_bounces(fixup_bounces(params.get_optional<int>("max_bounces", -1)))
               , m_rr_min_path_length(fixup_path_length(params.get_optional<size_t>("rr_min_path_length", 3)))
@@ -265,7 +266,6 @@ namespace
             const Parameters&               m_params;
             const Camera&                   m_camera;
             const Frame&                    m_frame;
-            const LightingConditions&       m_lighting_conditions;
             const ShadingContext&           m_shading_context;
             SamplingContext&                m_sampling_context;
 
@@ -284,7 +284,6 @@ namespace
               : m_params(params)
               , m_camera(*scene.get_active_camera())
               , m_frame(frame)
-              , m_lighting_conditions(frame.get_lighting_conditions())
               , m_shading_context(shading_context)
               , m_sampling_context(sampling_context)
               , m_samples(samples)
@@ -492,10 +491,7 @@ namespace
             {
                 assert(min_value(radiance) >= 0.0f);
 
-                const Color3f linear_rgb =
-                    radiance.is_rgb()
-                        ? radiance.rgb()
-                        : radiance.convert_to_rgb(m_lighting_conditions);
+                const Color3f linear_rgb = radiance.to_rgb(g_std_lighting_conditions);
 
                 Sample sample;
                 sample.m_position = Vector2f(position_ndc);

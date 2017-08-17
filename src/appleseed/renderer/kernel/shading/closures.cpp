@@ -45,6 +45,7 @@
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #include "renderer/modeling/bssrdf/gaussianbssrdf.h"
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/edf/diffuseedf.h"
 
 // appleseed.foundation headers.
@@ -190,9 +191,9 @@ namespace
                     p->T,
                     arena);
 
-            values->m_rd = Color3f(p->diffuse_reflectance);
+            values->m_rd.set(Color3f(p->diffuse_reflectance), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_rd_multiplier = 1.0f;
-            values->m_rg = Color3f(p->glossy_reflectance);
+            values->m_rg.set(Color3f(p->glossy_reflectance), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_rg_multiplier = 1.0f;
             values->m_nu = max(p->exponent_u, 0.01f);
             values->m_nv = max(p->exponent_v, 0.01f);
@@ -455,7 +456,7 @@ namespace
                     p->T,
                     arena);
 
-            values->m_base_color = Color3f(p->base_color);
+            values->m_base_color.set(Color3f(p->base_color), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_subsurface = saturate(p->subsurface);
             values->m_metallic = saturate(p->metallic);
             values->m_specular = max(p->specular, 0.0f);
@@ -509,8 +510,7 @@ namespace
                     max_weight_component,
                     arena);
 
-            values->m_radiance.set_intent(Spectrum::Illuminance);
-            values->m_radiance = weight / max_weight_component;
+            values->m_radiance.set(Color3f(weight / max_weight_component), g_std_lighting_conditions, Spectrum::Illuminance);
             values->m_radiance_multiplier = max_weight_component;
             values->m_exposure = 0.0f;
         }
@@ -612,15 +612,15 @@ namespace
                     p->T,
                     arena);
 
-            values->m_surface_transmittance = Color3f(p->surface_transmittance);
+            values->m_surface_transmittance.set(Color3f(p->surface_transmittance), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_surface_transmittance_multiplier = 1.0f;
-            values->m_reflection_tint = Color3f(p->reflection_tint);
-            values->m_refraction_tint = Color3f(p->refraction_tint);
+            values->m_reflection_tint.set(Color3f(p->reflection_tint), g_std_lighting_conditions, Spectrum::Reflectance);
+            values->m_refraction_tint.set(Color3f(p->refraction_tint), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_roughness = max(p->roughness, 0.0001f);
             values->m_highlight_falloff = saturate(p->highlight_falloff);
             values->m_anisotropy = clamp(p->anisotropy, -1.0f, 1.0f);
             values->m_ior = max(p->ior, 0.001f);
-            values->m_volume_transmittance = Color3f(p->volume_transmittance);
+            values->m_volume_transmittance.set(Color3f(p->volume_transmittance), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_volume_transmittance_distance = p->volume_transmittance_distance;
             composite_closure.add_ior(weight, values->m_ior);
         }
@@ -836,8 +836,8 @@ namespace
                     p->T,
                     arena);
 
-            values->m_normal_reflectance = Color3f(p->normal_reflectance);
-            values->m_edge_tint = Color3f(p->edge_tint);
+            values->m_normal_reflectance.set(Color3f(p->normal_reflectance), g_std_lighting_conditions, Spectrum::Reflectance);
+            values->m_edge_tint.set(Color3f(p->edge_tint), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = max(p->roughness, 0.0f);
             values->m_highlight_falloff = saturate(p->highlight_falloff);
@@ -961,9 +961,9 @@ namespace
                     p->N,
                     arena);
 
-            values->m_rd = Color3f(1.0f);
+            values->m_rd.set(1.0f);
             values->m_rd_multiplier = 1.0f;
-            values->m_rg = Color3f(1.0f);
+            values->m_rg.set(1.0f);
             values->m_rg_multiplier = 1.0f;
             values->m_nu = max(p->exponent, 0.01f);
             values->m_nv = max(p->exponent, 0.01f);
@@ -1224,9 +1224,9 @@ namespace
             InputValues*                values)
         {
             values->m_weight = 1.0f;
-            values->m_reflectance = Color3f(p->reflectance);
+            values->m_reflectance.set(Color3f(p->reflectance), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_reflectance_multiplier = 1.0f;
-            values->m_mfp = Color3f(p->mean_free_path);
+            values->m_mfp.set(Color3f(p->mean_free_path), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_mfp_multiplier = 1.0f;
             values->m_ior = p->ior;
             values->m_fresnel_weight = saturate(p->fresnel_weight);
@@ -1439,7 +1439,7 @@ InputValues* CompositeClosure::do_add_closure(
     const float w = luminance(weight);
     assert(w > 0.0f);
 
-    m_weights[m_closure_count] = weight;
+    m_weights[m_closure_count].set(weight, g_std_lighting_conditions, Spectrum::Reflectance);
     m_scalar_weights[m_closure_count] = w;
 
     if (!has_tangent)
@@ -1725,7 +1725,7 @@ InputValues* CompositeEmissionClosure::add_closure(
     }
 
     m_closure_types[m_closure_count] = closure_type;
-    m_weights[m_closure_count] = weight;
+    m_weights[m_closure_count].set(weight, g_std_lighting_conditions, Spectrum::Reflectance);
     m_pdfs[m_closure_count] = max_weight_component;
 
     InputValues* values = arena.allocate<InputValues>();

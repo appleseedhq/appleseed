@@ -173,7 +173,7 @@ class GenericVolume
         Spectrum&           spectrum) const override
     {
         extinction_coefficient(data, volume_ray, distance, spectrum);
-        for (size_t i = 0, e = spectrum.size(); i < e; ++i)
+        for (size_t i = 0; i < Spectrum::size(); ++i)
         {
             const float x = -distance * spectrum[i];
             assert(!std::isinf(x) && !std::isnan(x));

@@ -538,7 +538,7 @@ namespace
                     (vertex.m_path_length < 2 || (vertex.m_edf->get_flags() & EDF::CastIndirectLight)))
                 {
                     // Compute the emitted radiance.
-                    Spectrum emitted_radiance(0.0f, Spectrum::Illuminance);
+                    Spectrum emitted_radiance(0.0f);
                     add_emitted_light_contribution(vertex, emitted_radiance);
 
                     // Update the path radiance.
@@ -569,7 +569,7 @@ namespace
                 if (vertex.m_scattering_modes == ScatteringMode::None)
                     return;
 
-                ShadingComponents vertex_radiance(Spectrum::Illuminance);
+                ShadingComponents vertex_radiance;
 
                 if (vertex.m_bssrdf == 0)
                 {
@@ -665,7 +665,7 @@ namespace
                 const int               scattering_modes,
                 ShadingComponents&      vertex_radiance)
             {
-                ShadingComponents dl_radiance(Spectrum::Illuminance);
+                ShadingComponents dl_radiance;
 
                 const size_t light_sample_count =
                     stochastic_cast<size_t>(
@@ -715,7 +715,7 @@ namespace
                 const int               scattering_modes,
                 ShadingComponents&      vertex_radiance)
             {
-                ShadingComponents ibl_radiance(Spectrum::Illuminance);
+                ShadingComponents ibl_radiance;
 
                 const size_t env_sample_count =
                     stochastic_cast<size_t>(
@@ -923,7 +923,7 @@ namespace
                 const int               scattering_modes,
                 ShadingComponents&      radiance)
             {
-                ShadingComponents dl_radiance(Spectrum::Illuminance);
+                ShadingComponents dl_radiance;
 
                 const size_t light_sample_count =
                     stochastic_cast<size_t>(
@@ -977,7 +977,7 @@ namespace
                     volume_data,
                     distance_sample);
 
-                ShadingComponents ibl_radiance(Spectrum::Illuminance);
+                ShadingComponents ibl_radiance;
 
                 const size_t env_sample_count =
                     stochastic_cast<size_t>(
@@ -1028,17 +1028,11 @@ namespace
                 Spectrum ray_transmission;
                 volume->evaluate_transmission(
                     vertex.m_volume_data, volume_ray, ray_transmission);
-                const size_t channel_count = std::max(ray_transmission.size(), vertex.m_throughput.size());
-                if (ray_transmission.size() != channel_count)
-                    Spectrum::upgrade(ray_transmission, ray_transmission);
 
                 const Spectrum& scattering_coef = volume->scattering_coefficient(
                     vertex.m_volume_data, volume_ray);
-
-                Spectrum extinction_coef = volume->extinction_coefficient(
+                const Spectrum& extinction_coef = volume->extinction_coefficient(
                     vertex.m_volume_data, volume_ray);
-                if (extinction_coef.size() != channel_count)
-                    Spectrum::upgrade(extinction_coef, extinction_coef);
 
                 // Precompute MIS weights.
                 // MIS terms are:
@@ -1047,14 +1041,10 @@ namespace
                 //  - throughput of the entire path up to the sampled point.
                 // Reference: "Practical and Controllable Subsurface Scattering
                 // for Production Path Tracing", p. 1 [ACM 2016 Article].
-                Spectrum precomputed_mis_weights;
-                if (channel_count == scattering_coef.size())
-                    precomputed_mis_weights = scattering_coef;
-                else
-                    Spectrum::upgrade(scattering_coef, precomputed_mis_weights);
+                Spectrum precomputed_mis_weights = scattering_coef;
                 precomputed_mis_weights *= vertex.m_throughput;
                 float max_density = 0.0f;
-                for (size_t i = 0; i < channel_count; ++i)
+                for (size_t i = 0; i < Spectrum::size(); ++i)
                 {
                     const float density = 1.0f - ray_transmission[i];
                     precomputed_mis_weights[i] *= density;
@@ -1073,12 +1063,12 @@ namespace
 
                 for (size_t i = 0; i < distance_sample_count; ++i)
                 {
-                    ShadingComponents radiance(Spectrum::Illuminance);
+                    ShadingComponents radiance;
 
                     // Sample channel uniformly at random.
                     m_sampling_context.split_in_place(1, 1);
                     const float s = m_sampling_context.next2<float>();
-                    const size_t channel = truncate<size_t>(s * channel_count);
+                    const size_t channel = truncate<size_t>(s * Spectrum::size());
                     if (precomputed_mis_weights[channel] == 0.0f)
                         continue;
 
@@ -1091,15 +1081,13 @@ namespace
                     Spectrum transmission;
                     volume->evaluate_transmission(
                         vertex.m_volume_data, volume_ray, distance_sample, transmission);
-                    if (transmission.size() != channel_count)
-                        Spectrum::upgrade(transmission, transmission);
 
                     // Calculate MIS weight for this distance sample (balance heuristic).
                     float mis_weights_sum = 0.0f;
-                    for (size_t i = 0; i < channel_count; ++i)
+                    for (size_t i = 0; i < Spectrum::size(); ++i)
                         mis_weights_sum += precomputed_mis_weights[i] * transmission[i];
                     const float current_mis_weight =
-                        channel_count * precomputed_mis_weights[channel] *
+                        Spectrum::size() * precomputed_mis_weights[channel] *
                         transmission[channel] / mis_weights_sum;
 
                     // Calculate in-scattered radiance for this distance sample.

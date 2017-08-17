@@ -287,7 +287,7 @@ namespace
 
             void on_hit(const PathVertex& vertex)
             {
-                ShadingComponents vertex_radiance(Spectrum::Illuminance);
+                ShadingComponents vertex_radiance;
 
                 if (vertex.m_bsdf)
                 {
@@ -305,7 +305,7 @@ namespace
                 // Emitted light.
                 if (vertex.m_edf && vertex.m_cos_on > 0.0)
                 {
-                    Spectrum emitted(0.0f, Spectrum::Illuminance);
+                    Spectrum emitted;
                     vertex.compute_emitted_radiance(m_shading_context, emitted);
                     vertex_radiance.m_emission += emitted;
                     vertex_radiance.m_beauty += emitted;
@@ -328,7 +328,7 @@ namespace
                 const PathVertex&       vertex,
                 ShadingComponents&      vertex_radiance)
             {
-                ShadingComponents dl_radiance(Spectrum::Illuminance);
+                ShadingComponents dl_radiance;
 
                 const size_t light_sample_count =
                     stochastic_cast<size_t>(
@@ -412,7 +412,6 @@ namespace
                 Spectrum indirect_radiance(Spectrum::Illuminance);
                 if (m_params.m_photon_type == SPPMParameters::Monochromatic)
                 {
-                    indirect_radiance.resize(Spectrum::Samples);
                     indirect_radiance.set(0.0f);
                     accumulate_mono_photons(
                         vertex,
@@ -495,14 +494,10 @@ namespace
                     if (bsdf_prob == 0.0f)
                         continue;
 
-                    // Make sure the BSDF value is spectral.
-                    Spectrum spectral_bsdf_value;
-                    Spectrum::upgrade(bsdf_value.m_beauty, spectral_bsdf_value);
-
                     // The photons store flux but we are computing reflected radiance.
                     // The first step of the flux -> radiance conversion is done here.
                     // The conversion will be completed when doing density estimation.
-                    float bsdf_mono_value = spectral_bsdf_value[photon.m_flux.m_wavelength];
+                    float bsdf_mono_value = bsdf_value.m_beauty[photon.m_flux.m_wavelength];
                     bsdf_mono_value /= abs(dot(photon.m_incoming, photon.m_geometric_normal));
                     bsdf_mono_value *= photon.m_flux.m_amplitude;
 

@@ -181,9 +181,7 @@ namespace
             const float dot_xoxi_no = dot(xoxi, no);
             const float dot_wv_no = dot(wv, no);
 
-            value.resize(values->m_sigma_a.size());
-
-            for (size_t i = 0, e = value.size(); i < e; ++i)
+            for (size_t i = 0; i < Spectrum::size(); ++i)
             {
                 const float sigma_a = values->m_sigma_a[i];
                 const float sigma_s = values->m_sigma_s[i];

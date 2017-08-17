@@ -36,6 +36,7 @@
 #include "renderer/modeling/aov/aov.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -66,7 +67,7 @@ namespace
 
         virtual void reset() override
         {
-            m_uvs = Vector2f(0.0f, 0.0f);
+            m_uvs = Vector2f(0.0f);
         }
 
         virtual void write(
@@ -79,9 +80,7 @@ namespace
 
         virtual void flush(ShadingResult& result) override
         {
-            result.m_aovs[m_index].m_color =
-                Color3f(m_uvs[0], m_uvs[1], 0.0f);
-            result.m_aovs[m_index].m_alpha.set(1.0f);
+            result.m_aovs[m_index] = Color4f(m_uvs[0], m_uvs[1], 0.0f, 1.0f);
         }
 
       private:
