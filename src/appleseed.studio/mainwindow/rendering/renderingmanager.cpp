@@ -311,10 +311,7 @@ void RenderingManager::print_final_rendering_time()
 
 void RenderingManager::print_average_luminance()
 {
-    Image final_image(m_project->get_frame()->image());
-    m_project->get_frame()->transform_to_output_color_space(final_image);
-
-    const double average_luminance = compute_average_luminance(final_image);
+    const double average_luminance = compute_average_luminance(m_project->get_frame()->image());
 
     RENDERER_LOG_DEBUG(
         "final average luminance is %s.",

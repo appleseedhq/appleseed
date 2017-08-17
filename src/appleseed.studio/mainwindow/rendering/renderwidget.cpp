@@ -299,7 +299,7 @@ void RenderWidget::blit_tile_no_lock(
         m_float_tile_storage->get_storage());
 
     // Transform the tile to the color space of the frame.
-    frame.transform_to_output_color_space(fp_rgb_tile);
+    //frame.transform_to_output_color_space(fp_rgb_tile);
 
     // Convert the tile to 8-bit RGB for display.
     static const size_t ShuffleTable[] = { 0, 1, 2, Pixel::SkipChannel };
