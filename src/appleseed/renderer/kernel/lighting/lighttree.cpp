@@ -155,7 +155,7 @@ vector<size_t> LightTree::build()
     }
 
     RENDERER_LOG_INFO("light tree not built - no light tree compatible lights in the scene.");
-    return {};
+    return IndexLUT();
 }
 
 bool LightTree::is_built() const
