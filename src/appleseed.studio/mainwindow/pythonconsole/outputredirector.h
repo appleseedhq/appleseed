@@ -29,6 +29,8 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_OUTPUTREDIRECTOR_H
 #define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_OUTPUTREDIRECTOR_H
 
+#include "foundation/platform/python.h"
+
 // Forward declarations.
 class QPlainTextEdit;
 
@@ -40,7 +42,7 @@ class OutputRedirector
   public:
     OutputRedirector(QPlainTextEdit* output);
 
-    void write(const char* str);
+    void write(boost::python::object obj);
 
   private:
     QPlainTextEdit* output;
