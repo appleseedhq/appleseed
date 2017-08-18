@@ -62,6 +62,12 @@ class APPLESEED_DLLSYMBOL EXRImageFileWriter
   : public IImageFileWriter
 {
   public:
+    // Constructor.
+    EXRImageFileWriter();
+
+    // Destructor.
+    ~EXRImageFileWriter() override;
+
     // Write an OpenEXR image file.
     void write(
         const char*             filename,
@@ -75,6 +81,22 @@ class APPLESEED_DLLSYMBOL EXRImageFileWriter
         const ImageAttributes&  image_attributes,
         const size_t            channel_count,
         const char**            channel_names);
+
+    // Write an OpenEXR image file with multiple parts.
+    void begin_multipart_exr();
+
+    void append_part(
+        const char*             part_name,
+        const ICanvas&          image,
+        const ImageAttributes&  image_attributes,
+        const size_t            channel_count,
+        const char**            channel_names);
+
+    void write_multipart_exr(const char* filename);
+
+  private:
+    struct Impl;
+    Impl *impl;
 };
 
 }       // namespace foundation

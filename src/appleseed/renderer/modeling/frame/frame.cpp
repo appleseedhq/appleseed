@@ -329,6 +329,46 @@ bool Frame::write_aov_image(const char* file_path, const size_t aov_index) const
         aovs().get_by_index(aov_index));
 }
 
+void Frame::write_image_and_aovs_to_multipart_exr(const char *file_path) const
+{
+    EXRImageFileWriter writer;
+
+    ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
+    // todo: add chromaticity attributes here...
+
+    std::vector<Image> images;
+
+    writer.begin_multipart_exr();
+
+    // Always save the main image as half floats.
+    const Image& image = *impl->m_image;
+    {
+        const CanvasProperties& props = image.properties();
+        images.emplace_back(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
+        static const char* ChannelNames[] = {"R", "G", "B", "A"};
+        writer.append_part("beauty", images.back(), image_attributes, 4, ChannelNames);
+    }
+
+    for (size_t i = 0, e = aovs().size(); i < e; ++i)
+    {
+        const string aov_name = aov_images().get_name(i);
+        const AOV* aov = aovs().get_by_index(i);
+        const Image& image = aov_images().get_image(i);
+
+        if (aov->has_color_data())
+        {
+            // If the AOV has color data, assume we can save it as half floats.
+            const CanvasProperties& props = image.properties();
+            images.emplace_back(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
+            writer.append_part(aov_name.c_str(), images.back(), image_attributes, aov->get_channel_count(), aov->get_channel_names());
+        }
+        else
+            writer.append_part(aov_name.c_str(), image, image_attributes, aov->get_channel_count(), aov->get_channel_names());
+    }
+
+    writer.write_multipart_exr(file_path);
+}
+
 bool Frame::archive(
     const char*         directory,
     char**              output_path) const
