@@ -32,6 +32,11 @@
 // Qt headers.
 #include <QPlainTextEdit>
 
+// Standard headers.
+#include <string>
+
+namespace bpy = boost::python;
+
 namespace appleseed {
 namespace studio {
 
@@ -44,10 +49,17 @@ OutputRedirector::OutputRedirector(QPlainTextEdit* output)
 {
 }
 
-void OutputRedirector::write(const char* str)
+void OutputRedirector::write(bpy::object obj)
 {
+    if (PyUnicode_Check(obj.ptr()))
+    {
+        obj = bpy::object(boost::python::handle<>(PyUnicode_AsUTF8String(obj.ptr())));
+    }
+
+    std::string str = bpy::extract<std::string>(obj);
+
     output->moveCursor(QTextCursor::End);
-    output->insertPlainText(str);
+    output->insertPlainText(str.c_str());
     output->moveCursor(QTextCursor::End);
 }
 

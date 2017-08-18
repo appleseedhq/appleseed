@@ -38,6 +38,7 @@
 #include "renderer/modeling/entity/entityvector.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptions/exception.h"
 #include "foundation/platform/python.h"
 #include "foundation/utility/autoreleaseptr.h"
 
@@ -81,6 +82,15 @@ namespace detail
             items.append(boost::python::ptr(&(*it)));
 
         return items.attr("__iter__")();
+    }
+
+    template <typename T>
+    size_t typed_entity_vector_insert(renderer::TypedEntityVector<T>* vector, foundation::auto_release_ptr<T> entity)
+    {
+        if (vector->get_by_name(entity->get_name()) != nullptr)
+            throw foundation::Exception(foundation::format("Entity {0} already exists", entity->get_name()).c_str());
+        else
+            return vector->insert(entity);
     }
 
     template <typename T>
@@ -141,6 +151,15 @@ namespace detail
 
         return items;
     }
+
+    template <typename T>
+    void typed_entity_map_insert(renderer::TypedEntityMap<T>* map, foundation::auto_release_ptr<T> entity)
+    {
+        if (map->get_by_name(entity.get()->get_name()) != nullptr)
+            throw foundation::Exception(foundation::format("Entity {0} already exists", entity->get_name()).c_str());
+        else
+            map->insert(entity);
+    }
 }
 
 template <typename T>
@@ -151,7 +170,7 @@ void bind_typed_entity_vector(const char* name)
         .def("get_by_uid", &renderer::TypedEntityVector<T>::get_by_uid, boost::python::return_value_policy<boost::python::reference_existing_object>())
         .def("get_by_name", &renderer::TypedEntityVector<T>::get_by_name, boost::python::return_value_policy<boost::python::reference_existing_object>())
 
-        .def("insert", &renderer::TypedEntityVector<T>::insert)
+        .def("insert", &detail::typed_entity_vector_insert<T>)
         .def("remove", &detail::typed_entity_vector_remove<T>)
 
         .def("__iter__", &detail::typed_entity_vector_get_iter<T>);
@@ -165,7 +184,7 @@ void bind_typed_entity_map(const char* name)
         .def("get_by_uid", &renderer::TypedEntityMap<T>::get_by_uid, boost::python::return_value_policy<boost::python::reference_existing_object>())
         .def("get_by_name", &renderer::TypedEntityMap<T>::get_by_name, boost::python::return_value_policy<boost::python::reference_existing_object>())
 
-        .def("insert", &renderer::TypedEntityMap<T>::insert)
+        .def("insert", &detail::typed_entity_map_insert<T>)
         .def("remove", &detail::typed_entity_map_remove<T>)
         .def("remove_by_uid", &detail::typed_entity_map_remove_by_uid<T>)
 
