@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/fp.h"
 #include "foundation/math/phasefunction.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -150,9 +151,10 @@ class GenericVolume
         const float         distance,
         Vector3f&           incoming) const override
     {
-        const Vector3f outgoing = Vector3f(normalize(volume_ray.m_dir));
         sampling_context.split_in_place(2, 1);
         const Vector2f s = sampling_context.next2<Vector2f>();
+
+        const Vector3f outgoing(normalize(volume_ray.m_dir));
         return m_phase_function->sample(outgoing, s, incoming);
     }
 
@@ -173,10 +175,11 @@ class GenericVolume
         Spectrum&           spectrum) const override
     {
         extinction_coefficient(data, volume_ray, distance, spectrum);
+
         for (size_t i = 0; i < Spectrum::size(); ++i)
         {
             const float x = -distance * spectrum[i];
-            assert(!std::isinf(x) && !std::isnan(x));
+            assert(FP<float>::is_finite(x));
             spectrum[i] = std::exp(x);
         }
     }
