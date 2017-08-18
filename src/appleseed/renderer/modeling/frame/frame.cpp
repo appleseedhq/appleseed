@@ -154,7 +154,6 @@ void Frame::print_settings()
         "  tile size                     %s x %s\n"
         "  filter                        %s\n"
         "  filter size                   %f\n"
-        "  premultiplied alpha           %s\n"
         "  crop window                   (%s, %s)-(%s, %s)",
         camera_name ? camera_name : "none",
         pretty_uint(impl->m_frame_width).c_str(),
@@ -163,7 +162,6 @@ void Frame::print_settings()
         pretty_uint(impl->m_tile_height).c_str(),
         impl->m_filter_name.c_str(),
         impl->m_filter_radius,
-        m_is_premultiplied_alpha ? "on" : "off",
         pretty_uint(impl->m_crop_window.min[0]).c_str(),
         pretty_uint(impl->m_crop_window.min[1]).c_str(),
         pretty_uint(impl->m_crop_window.max[0]).c_str(),
@@ -431,9 +429,6 @@ void Frame::extract_parameters()
     }
 
 
-    // Retrieve premultiplied alpha parameter.
-    m_is_premultiplied_alpha = m_params.get_optional<bool>("premultiplied_alpha", true);
-
     // Retrieve crop window parameter.
     const AABB2u default_crop_window(
         Vector2u(0, 0),
@@ -646,15 +641,6 @@ DictionaryArray FrameFactory::get_input_metadata()
             .insert("type", "text")
             .insert("use", "optional")
             .insert("default", "1.5"));
-
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "premultiplied_alpha")
-            .insert("label", "Premultiplied Alpha")
-            .insert("type", "boolean")
-            .insert("use", "optional")
-            .insert("default", "true"));
 
     return metadata;
 }

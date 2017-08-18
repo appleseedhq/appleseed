@@ -256,7 +256,6 @@ void LocalSampleAccumulationBuffer::develop_to_frame(
     assert(frame_props.m_channel_count == 4);
 
     const AABB2u& crop_window = frame.get_crop_window();
-    const bool undo_premultiplied_alpha = !frame.is_premultiplied_alpha();
 
     const FilteredTile& level = *m_levels[m_active_level];
 
@@ -280,29 +279,14 @@ void LocalSampleAccumulationBuffer::develop_to_frame(
                 Vector2u(origin_x + color_tile.get_width() - 1, origin_y + color_tile.get_height() - 1));
 
             const AABB2u rect = AABB2u::intersect(tile_rect, crop_window);
-
-            if (undo_premultiplied_alpha)
-            {
-                develop_to_tile_undo_premult_alpha(
-                    color_tile,
-                    frame_props.m_canvas_width,
-                    frame_props.m_canvas_height,
-                    level,
-                    origin_x,
-                    origin_y,
-                    rect);
-            }
-            else
-            {
-                develop_to_tile(
-                    color_tile,
-                    frame_props.m_canvas_width,
-                    frame_props.m_canvas_height,
-                    level,
-                    origin_x,
-                    origin_y,
-                    rect);
-            }
+            develop_to_tile(
+                color_tile,
+                frame_props.m_canvas_width,
+                frame_props.m_canvas_height,
+                level,
+                origin_x,
+                origin_y,
+                rect);
         }
     }
 
@@ -313,91 +297,6 @@ void LocalSampleAccumulationBuffer::develop_to_frame(
     const double t2 = sw.get_seconds();
     RENDERER_LOG_DEBUG("develop_to_frame: %f", (t2 - t1) * 1000.0);
 #endif
-}
-
-void LocalSampleAccumulationBuffer::develop_to_tile_undo_premult_alpha(
-    Tile&               color_tile,
-    const size_t        image_width,
-    const size_t        image_height,
-    const FilteredTile& level,
-    const size_t        origin_x,
-    const size_t        origin_y,
-    const AABB2u&       rect)
-{
-    if (rect.min.x > rect.max.x)
-        return;
-
-    const size_t level_width = level.get_width();
-    const size_t m = image_width / level_width;
-
-    if (image_width % level_width == 0 && is_pow2(m))
-    {
-        const size_t s = log2_int(m);
-        const size_t prefix_end = min(next_multiple(rect.min.x, m), rect.max.x + 1);
-        const size_t suffix_begin = max(prev_multiple(rect.max.x + 1, m), prefix_end);
-
-        for (size_t iy = rect.min.y; iy <= rect.max.y; ++iy)
-        {
-            const size_t src_base = (iy * level.get_height() / image_height) * level_width;
-            const size_t dest_base = (iy - origin_y) * color_tile.get_width();
-
-            Color4f values;
-
-            // Prefix.
-            for (size_t ix = rect.min.x; ix < prefix_end; ++ix)
-            {
-                level.get_pixel(src_base + (rect.min.x >> s), &values[0]);
-                const float rcp_alpha = values.a == 0.0f ? 0.0f : 1.0f / values.a;
-                values.r *= rcp_alpha;
-                values.g *= rcp_alpha;
-                values.b *= rcp_alpha;
-                color_tile.set_pixel<float>(dest_base + ix - origin_x, &values[0]);
-            }
-
-            // Quick run.
-            for (size_t ix = prefix_end; ix < suffix_begin; ix += m)
-            {
-                level.get_pixel(src_base + (ix >> s), &values[0]);
-                const float rcp_alpha = values.a == 0.0f ? 0.0f : 1.0f / values.a;
-                values.r *= rcp_alpha;
-                values.g *= rcp_alpha;
-                values.b *= rcp_alpha;
-                for (size_t j = 0; j < m; ++j)
-                    color_tile.set_pixel<float>(dest_base + ix + j - origin_x, &values[0]);
-            }
-
-            // Suffix.
-            for (size_t ix = suffix_begin; ix < rect.max.x + 1; ++ix)
-            {
-                level.get_pixel(src_base + (rect.max.x >> s), &values[0]);
-                const float rcp_alpha = values.a == 0.0f ? 0.0f : 1.0f / values.a;
-                values.r *= rcp_alpha;
-                values.g *= rcp_alpha;
-                values.b *= rcp_alpha;
-                color_tile.set_pixel<float>(dest_base + ix - origin_x, &values[0]);
-            }
-        }
-    }
-    else
-    {
-        for (size_t iy = rect.min.y; iy <= rect.max.y; ++iy)
-        {
-            const size_t src_base = (iy * level.get_height() / image_height) * level_width;
-            const size_t dest_base = (iy - origin_y) * color_tile.get_width() - origin_x;
-
-            for (size_t ix = rect.min.x; ix <= rect.max.x; ++ix)
-            {
-                Color4f values;
-                level.get_pixel(src_base + ix * level_width / image_width, &values[0]);
-
-                const float rcp_alpha = values.a == 0.0f ? 0.0f : 1.0f / values.a;
-                values.r *= rcp_alpha;
-                values.g *= rcp_alpha;
-                values.b *= rcp_alpha;
-                color_tile.set_pixel<float>(dest_base + ix, &values[0]);
-            }
-        }
-    }
 }
 
 void LocalSampleAccumulationBuffer::develop_to_tile(

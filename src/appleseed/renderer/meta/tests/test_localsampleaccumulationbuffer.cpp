@@ -50,7 +50,7 @@ using namespace std;
 
 TEST_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
 {
-    bool honors_crop_window(const AABB2u crop_window, const bool undo_premultiplied_alpha)
+    bool honors_crop_window(const AABB2u crop_window)
     {
         // A full low resolution framebuffer.
         const BoxFilter2<float> filter(0.5f, 0.5f);
@@ -78,24 +78,12 @@ TEST_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
         const AABB2u rect = AABB2u::intersect(tile_rect, crop_window);
 
         // Develop the low resolution framebuffer to one tile of the high resolution framebuffer.
-        if (undo_premultiplied_alpha)
-        {
-            LocalSampleAccumulationBuffer::develop_to_tile_undo_premult_alpha(
-                color_tile,
-                256, 256,
-                level,
-                0, 0,
-                rect);
-        }
-        else
-        {
-            LocalSampleAccumulationBuffer::develop_to_tile(
-                color_tile,
-                256, 256,
-                level,
-                0, 0,
-                rect);
-        }
+        LocalSampleAccumulationBuffer::develop_to_tile(
+            color_tile,
+            256, 256,
+            level,
+            0, 0,
+            rect);
 
         // Check the contents of the high resolution framebuffer tile.
         for (size_t y = 0; y < color_tile.get_height(); ++y)
@@ -120,17 +108,15 @@ TEST_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
 
     TEST_CASE(DevelopToTile_CropWindowIsFullFrame_HonorsCropWindow)
     {
-        EXPECT_TRUE(honors_crop_window(AABB2u(Vector2u(0, 0), Vector2u(255, 255)), true));
-        EXPECT_TRUE(honors_crop_window(AABB2u(Vector2u(0, 0), Vector2u(255, 255)), false));
+        EXPECT_TRUE(honors_crop_window(AABB2u(Vector2u(0, 0), Vector2u(255, 255))));
     }
 
     TEST_CASE(DevelopToTile_CropWindowIsSmall_HonorsCropWindow)
     {
-        EXPECT_TRUE(honors_crop_window(AABB2u(Vector2u(5, 3), Vector2u(6, 3)), true));
-        EXPECT_TRUE(honors_crop_window(AABB2u(Vector2u(5, 3), Vector2u(6, 3)), false));
+        EXPECT_TRUE(honors_crop_window(AABB2u(Vector2u(5, 3), Vector2u(6, 3))));
     }
 
-    TEST_CASE(DevelopToTileUndoPremultAlpha_StressTest)
+    TEST_CASE(DevelopToTile_StressTest)
     {
         MersenneTwister rng;
 
@@ -149,8 +135,7 @@ TEST_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
                     static_cast<size_t>(max_x),
                     static_cast<size_t>(max_y)));
 
-            EXPECT_TRUE(honors_crop_window(crop_window, true));
-            EXPECT_TRUE(honors_crop_window(crop_window, false));
+            EXPECT_TRUE(honors_crop_window(crop_window));
         }
     }
 }

@@ -110,10 +110,6 @@ class APPLESEED_DLLSYMBOL Frame
     // Return the reconstruction filter used by the main image and the AOV images.
     const foundation::Filter2f& get_filter() const;
 
-
-    // Return true if the frame uses premultiplied alpha, false if it uses straight alpha.
-    bool is_premultiplied_alpha() const;
-
     // Set/get the crop window. The crop window is inclusive on all sides.
     void reset_crop_window();
     bool has_crop_window() const;
@@ -161,8 +157,6 @@ class APPLESEED_DLLSYMBOL Frame
     Impl* impl;
 
     foundation::CanvasProperties    m_props;
-    foundation::ColorSpace          m_color_space;
-    bool                            m_is_premultiplied_alpha;
 
     // Constructor.
     Frame(
@@ -214,11 +208,6 @@ class APPLESEED_DLLSYMBOL FrameFactory
 //
 // Frame class implementation.
 //
-
-inline bool Frame::is_premultiplied_alpha() const
-{
-    return m_is_premultiplied_alpha;
-}
 
 inline foundation::Vector2d Frame::get_sample_position(
     const double    sample_x,
