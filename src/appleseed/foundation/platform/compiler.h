@@ -68,6 +68,14 @@ namespace foundation
 #if defined _MSC_VER && _MSC_VER < 1900
     #define APPLESEED_TLS __declspec(thread)
 
+// gcc.
+#elif defined __GNUC__
+    // On gcc we use __thread because it's faster than thread_local when dynamic
+    // initialization and destruction is not needed.
+    // It also fixes an internal compiler error in gcc 4.8.3 when using
+    // static thread local members in a template class.
+    #define APPLESEED_TLS __thread
+
 // Other compilers: use C++11's thread_local keyword.
 #else
     #define APPLESEED_TLS thread_local
