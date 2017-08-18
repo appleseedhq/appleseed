@@ -29,6 +29,7 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_OUTPUTREDIRECTOR_H
 #define APPLESEED_STUDIO_MAINWINDOW_PYTHONCONSOLE_OUTPUTREDIRECTOR_H
 
+// appleseed.foundation headers.
 #include "foundation/platform/python.h"
 
 // Forward declarations.
@@ -40,7 +41,7 @@ namespace studio {
 class OutputRedirector
 {
   public:
-    OutputRedirector(QPlainTextEdit* output);
+    explicit OutputRedirector(QPlainTextEdit* output);
 
     void write(boost::python::object obj);
 
