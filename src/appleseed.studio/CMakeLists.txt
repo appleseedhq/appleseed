@@ -524,6 +524,7 @@ endif ()
 include_directories (
     .
     ../appleseed.shared
+    ${OPENCOLORIO_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_DIRS}
 )
 
@@ -546,6 +547,7 @@ link_against_openexr (appleseed.studio)
 target_link_libraries (appleseed.studio
     appleseed
     appleseed.shared
+    ${OPENCOLORIO_LIBRARIES}
     ${Boost_LIBRARIES}
     ${QT_LIBRARIES}
     ${OPENGL_LIBRARY}
@@ -587,5 +589,9 @@ install (FILES ../../sandbox/settings/appleseed.studio.xml
 )
 
 install (DIRECTORY ../../sandbox/seexpr
+    DESTINATION .
+)
+
+install (DIRECTORY ../../sandbox/ocio
     DESTINATION .
 )
