@@ -87,12 +87,8 @@ namespace detail
     template <typename T>
     size_t typed_entity_vector_insert(renderer::TypedEntityVector<T>* vector, foundation::auto_release_ptr<T> entity)
     {
-        bool is_entity_in_vector = (vector->get_by_name(entity->get_name()) != 0);
-        if (is_entity_in_vector)
-        {
-            std::string exc_message = std::string("Entity ") + entity->get_name() + " already exists";
-            throw foundation::Exception(exc_message.c_str());
-        }
+        if (vector->get_by_name(entity->get_name()) != nullptr)
+            throw foundation::Exception(foundation::format("Entity {0} already exists", entity->get_name()).c_str());
         else
             return vector->insert(entity);
     }
@@ -159,12 +155,8 @@ namespace detail
     template <typename T>
     void typed_entity_map_insert(renderer::TypedEntityMap<T>* map, foundation::auto_release_ptr<T> entity)
     {
-        bool is_entity_in_map = (map->get_by_name(entity.get()->get_name()) != 0);
-        if (is_entity_in_map)
-        {
-            std::string exc_message = std::string("Entity ") + entity->get_name() + " already exists";
-            throw foundation::Exception(exc_message.c_str());
-        }
+        if (map->get_by_name(entity.get()->get_name()) != nullptr)
+            throw foundation::Exception(foundation::format("Entity {0} already exists", entity->get_name()).c_str());
         else
             map->insert(entity);
     }

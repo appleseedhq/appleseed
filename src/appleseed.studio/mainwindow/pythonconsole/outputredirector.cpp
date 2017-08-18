@@ -51,7 +51,8 @@ OutputRedirector::OutputRedirector(QPlainTextEdit* output)
 
 void OutputRedirector::write(bpy::object obj)
 {
-    if (PyUnicode_Check(obj.ptr())) {
+    if (PyUnicode_Check(obj.ptr()))
+    {
         obj = bpy::object(boost::python::handle<>(PyUnicode_AsUTF8String(obj.ptr())));
     }
 
