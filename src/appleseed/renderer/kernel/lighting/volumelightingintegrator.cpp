@@ -146,9 +146,32 @@ namespace renderer
       public:
         EquiangularSampler(
             const LightSample&          light_sample,
-            const ShadingRay&           volume_ray)
+            const ShadingRay&           volume_ray,
+            const ShadingContext&       shading_context,
+            SamplingContext&            sampling_context)
+          : m_shading_context(shading_context)
+          , m_sampling_context(sampling_context)
         {
-            const Vector3d light_dir = light_sample.m_point - volume_ray.m_org;
+            Vector3d emission_position;
+            if (light_sample.m_light != nullptr)
+            {
+                m_sampling_context.split_in_place(2, 1);
+                Vector3d emission_direction;  // not used
+                Spectrum light_value(Spectrum::Illuminance);
+                float probability;
+                light_sample.m_light->sample(
+                    m_shading_context,
+                    light_sample.m_light_transform,
+                    m_sampling_context.next2<Vector2d>(),
+                    emission_position,
+                    emission_direction,
+                    light_value,
+                    probability);
+            }
+            else
+                emission_position = light_sample.m_point;
+
+            const Vector3d light_dir = emission_position - volume_ray.m_org;
 
             m_origin_to_center = dot(light_dir, volume_ray.m_dir);
 
@@ -161,10 +184,10 @@ namespace renderer
                 std::atan2(volume_ray.get_length() - m_origin_to_center, m_center_to_light);
         }
 
-        float sample(SamplingContext& sampling_context) const
+        float sample() const
         {
-            sampling_context.split_in_place(1, 1);
-            const double s = sampling_context.next2<double>();
+            SamplingContext child_sampling_context = m_sampling_context.split(1, 1);
+            const double s = child_sampling_context.next2<double>();
 
             return static_cast<float>(m_origin_to_center +
                 sample_equiangular_distribution(s, m_near_angle, m_far_angle, m_center_to_light));
@@ -180,10 +203,13 @@ namespace renderer
         }
 
       private:
-        double          m_origin_to_center;
-        double          m_center_to_light;
-        double          m_near_angle;
-        double          m_far_angle;
+        double                  m_origin_to_center;
+        double                  m_center_to_light;
+        double                  m_near_angle;
+        double                  m_far_angle;
+
+        const ShadingContext&   m_shading_context;
+        SamplingContext&        m_sampling_context;
     };
 
     float VolumeLightingIntegrator::draw_exponential_sample(
@@ -222,16 +248,24 @@ namespace renderer
     void VolumeLightingIntegrator::add_single_equiangular_sample_contribution(
         const LightSample&          light_sample,
         const Spectrum&             extinction_coef,
-        SamplingContext&            sampling_context,
+        const SamplingContext&      sampling_context,
         const MISHeuristic          mis_heuristic,
         ShadingComponents&          radiance,
         const bool                  sample_phasefunction,
         const float                 weight) const
     {
         // Take one equiangular sample and evaluate its pdf value.
-        const EquiangularSampler equiangular_distance_sampler(light_sample, m_volume_ray);
-        const float equiangular_sample = equiangular_distance_sampler.sample(sampling_context);
-        const float equiangular_prob = equiangular_distance_sampler.evaluate(equiangular_sample);
+        SamplingContext child_sampling_context = sampling_context;
+        const EquiangularSampler equiangular_distance_sampler(
+            light_sample,
+            m_volume_ray,
+            m_shading_context,
+            child_sampling_context);
+        const float equiangular_sample =
+            equiangular_distance_sampler.sample();
+        const float equiangular_prob =
+            equiangular_distance_sampler.evaluate(equiangular_sample);
+        assert (0.0f <= equiangular_sample && equiangular_sample <= m_volume_ray.get_length());
 
         // Evaluate pdf using exponential estimator as well (for MIS).
         // Since we sample spectral channels uniformly at random,
@@ -250,16 +284,16 @@ namespace renderer
             m_equiangular_sample_count * equiangular_prob,
             m_exponential_sample_count * exponential_prob);
 
-        ShadingComponents inscattered;
+        ShadingComponents inscattered(Spectrum::Illuminance);
         if (sample_phasefunction)
             take_single_phasefunction_sample(
-                sampling_context,
+                child_sampling_context,
                 equiangular_sample,
                 mis_heuristic,
                 inscattered);
         else
             take_single_light_sample(
-                sampling_context,
+                child_sampling_context,
                 light_sample,
                 equiangular_sample,
                 mis_heuristic,
@@ -276,23 +310,27 @@ namespace renderer
     void VolumeLightingIntegrator::add_single_exponential_sample_contribution(
         const LightSample&          light_sample,
         const Spectrum&             extinction_coef,
-        SamplingContext&            sampling_context,
+        const SamplingContext&      sampling_context,
         const MISHeuristic          mis_heuristic,
         ShadingComponents&          radiance,
         const bool                  sample_phasefunction,
         const float                 weight) const
     {
         // Sample channel uniformly at random.
-        sampling_context.split_in_place(1, 1);
-        const float s = sampling_context.next2<float>();
+        SamplingContext child_sampling_context = sampling_context.split(1, 1);
+        const float s = child_sampling_context.next2<float>();
         const size_t channel = truncate<size_t>(s * m_channel_count);
         if (m_precomputed_mis_weights[channel] == 0.0f)
             return;
 
         // Take one exponential sample and evaluate its pdf value.
-        const EquiangularSampler equiangular_distance_sampler(light_sample, m_volume_ray);
+        const EquiangularSampler equiangular_distance_sampler(
+            light_sample,
+            m_volume_ray,
+            m_shading_context,
+            child_sampling_context);
         const float exponential_sample =
-            draw_exponential_sample(sampling_context, m_volume_ray, extinction_coef[channel]);
+            draw_exponential_sample(child_sampling_context, m_volume_ray, extinction_coef[channel]);
         const float exponential_prob =
             evaluate_exponential_sample(exponential_sample, m_volume_ray, extinction_coef[channel]);
 
@@ -319,16 +357,16 @@ namespace renderer
             m_exponential_sample_count * exponential_prob,
             m_equiangular_sample_count * equiangular_prob);
 
-        ShadingComponents inscattered;
+        ShadingComponents inscattered(Spectrum::Illuminance);
         if (sample_phasefunction)
             take_single_phasefunction_sample(
-                sampling_context,
+                child_sampling_context,
                 exponential_sample,
                 mis_heuristic,
                 inscattered);
         else
             take_single_light_sample(
-                sampling_context,
+                child_sampling_context,
                 light_sample,
                 exponential_sample,
                 mis_heuristic,
@@ -364,7 +402,7 @@ namespace renderer
         if (total_sample_count > 0)
         {
             sampling_context.split_in_place(1, m_light_sampler.get_non_physical_light_count());
-
+            
             // Add contributions from non-physical light sources that don't belong to the lightset.
             for (size_t i = 0, e = m_light_sampler.get_non_physical_light_count(); i < e; ++i)
             {
@@ -402,15 +440,15 @@ namespace renderer
             if (m_sample_phasefunction)
             {
                 // Sample the light set.
+                sampling_context.split_in_place(3, 1);
                 LightSample light_sample;
-                ShadingPoint fake_point;
-                fake_point.clear();
                 m_light_sampler.sample_lightset(
                     m_time,
                     sampling_context.next2<Vector3f>(),
-                    fake_point,
+                    m_shading_point,
                     light_sample);
 
+                sampling_context.split_in_place(1, 1);
                 const float s = sampling_context.next2<float>();
                 if (s * total_sample_count < m_equiangular_sample_count)
                 {
@@ -436,16 +474,15 @@ namespace renderer
                 }
             }
 
+            sampling_context.split_in_place(3, total_sample_count);
             for (size_t i = 0, e = m_equiangular_sample_count; i < e; ++i)
             {
                 // Sample the light set.
                 LightSample light_sample;
-                ShadingPoint fake_point;
-                fake_point.clear();
                 m_light_sampler.sample_lightset(
                     m_time,
                     sampling_context.next2<Vector3f>(),
-                    fake_point,
+                    m_shading_point,
                     light_sample);
 
                 // Add the contribution of the chosen light.
@@ -463,12 +500,10 @@ namespace renderer
             {
                 // Sample the light set.
                 LightSample light_sample;
-                ShadingPoint fake_point;
-                fake_point.clear();
                 m_light_sampler.sample_lightset(
                     m_time,
                     sampling_context.next2<Vector3f>(),
-                    fake_point,
+                    m_shading_point,
                     light_sample);
 
                 // Add the contribution of the chosen light.

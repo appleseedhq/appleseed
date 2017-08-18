@@ -470,15 +470,14 @@ inline void ShadingPoint::create_volume_shading_point(
     const float             distance)
 {
     assert(is_normalized(volume_ray.m_dir));
-    assert(shading_point.m_scene == nullptr);
-    assert(shading_point.valid() == false);
+    assert(m_scene == nullptr);
+    assert(valid() == false);
 
     assert(&parent_shading_point != this);
     assert(parent_shading_point.valid());
 
     assert(m_ray.get_current_medium() != nullptr);
-    assert(parent_shading_point.get_object_instance() == m_ray.get_current_medium()->m_object_instance);
-
+ 
     m_region_kit_cache = parent_shading_point.m_region_kit_cache;
     m_tess_cache = parent_shading_point.m_tess_cache;
     m_texture_cache = parent_shading_point.m_texture_cache;

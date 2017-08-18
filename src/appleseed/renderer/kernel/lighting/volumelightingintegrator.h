@@ -103,7 +103,7 @@ namespace renderer
         void add_single_equiangular_sample_contribution(
             const LightSample&              light_sample,
             const Spectrum&                 extinction_coef,
-            SamplingContext&                sampling_context,
+            const SamplingContext&          sampling_context,
             const foundation::MISHeuristic  mis_heuristic,
             ShadingComponents&              radiance,
             const bool                      sample_phasefunction,
@@ -112,7 +112,7 @@ namespace renderer
         void add_single_exponential_sample_contribution(
             const LightSample&              light_sample,
             const Spectrum&                 extinction_coef,
-            SamplingContext&                sampling_context,
+            const SamplingContext&          sampling_context,
             const foundation::MISHeuristic  mis_heuristic,
             ShadingComponents&              radiance,
             const bool                      sample_phasefunction,
