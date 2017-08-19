@@ -279,7 +279,7 @@ namespace
                 thread_index);
 
             const uint32 instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
-            SamplingContext::RNGType rng(instance);
+            SamplingContext::RNGType rng(m_pass_hash, m_photon_begin + 1);
             SamplingContext sampling_context(
                 rng,
                 m_params.m_sampling_mode,
@@ -581,7 +581,7 @@ namespace
                 thread_index);
 
             const uint32 instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
-            SamplingContext::RNGType rng(instance);
+            SamplingContext::RNGType rng(m_pass_hash, m_photon_begin + 1);
             SamplingContext sampling_context(
                 rng,
                 m_params.m_sampling_mode,

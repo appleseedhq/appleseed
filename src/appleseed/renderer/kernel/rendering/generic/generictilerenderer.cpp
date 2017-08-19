@@ -168,11 +168,7 @@ namespace
             // than rendering the full tile, e.g. if the sampling context switches to random
             // sampling because the number of dimensions becomes too high.
             const size_t tile_index = tile_y * frame_properties.m_tile_count_x + tile_x;
-#ifdef APPLESEED_ARCH64
-            m_rng = SamplingContext::RNGType(hash_uint64_to_uint32(pass_hash ^ tile_index));
-#else
-            m_rng = SamplingContext::RNGType(pass_hash ^ tile_index);
-#endif
+            m_rng = SamplingContext::RNGType(pass_hash, tile_index + 1);
 
             // Loop over tile pixels.
             for (size_t i = 0, e = m_pixel_ordering.size(); i < e; ++i)
