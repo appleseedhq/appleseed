@@ -1044,7 +1044,7 @@ namespace
                 Spectrum precomputed_mis_weights = scattering_coef;
                 precomputed_mis_weights *= vertex.m_throughput;
                 float max_density = 0.0f;
-                for (size_t i = 0; i < Spectrum::size(); ++i)
+                for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
                 {
                     const float density = 1.0f - ray_transmission[i];
                     precomputed_mis_weights[i] *= density;
@@ -1084,7 +1084,7 @@ namespace
 
                     // Calculate MIS weight for this distance sample (balance heuristic).
                     float mis_weights_sum = 0.0f;
-                    for (size_t i = 0; i < Spectrum::size(); ++i)
+                    for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
                         mis_weights_sum += precomputed_mis_weights[i] * transmission[i];
                     const float current_mis_weight =
                         Spectrum::size() * precomputed_mis_weights[channel] *

@@ -95,7 +95,7 @@ float DipoleBSSRDF::evaluate_profile_pdf(
 
     float pdf = 0.0f;
 
-    for (size_t i = 0; i < Spectrum::size(); ++i)
+    for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
     {
         const float channel_pdf = values->m_precomputed.m_channel_pdf[i];
         const float sigma_tr = values->m_precomputed.m_sigma_tr[i];

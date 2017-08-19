@@ -216,7 +216,7 @@ void DipoleBSSRDF::do_prepare_inputs(
         values->m_precomputed.m_sigma_tr);
 
     // Precompute alpha'.
-    for (size_t i = 0; i < Spectrum::size(); ++i)
+    for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
     {
         const float sigma_s_prime = values->m_sigma_s[i] * (1.0f - values->m_g);
         const float sigma_t_prime = sigma_s_prime + values->m_sigma_a[i];

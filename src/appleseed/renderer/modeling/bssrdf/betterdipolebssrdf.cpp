@@ -120,7 +120,7 @@ namespace
             const float cphi = 0.25f * (1.0f - two_c1);
             const float ce = 0.5f * (1.0f - three_c2);
 
-            for (size_t i = 0; i < Spectrum::size(); ++i)
+            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
             {
                 const float sigma_a = values->m_sigma_a[i];
                 const float sigma_s = values->m_sigma_s[i];

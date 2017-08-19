@@ -237,7 +237,7 @@ void compute_absorption_and_scattering_dmfp(
 
     const float rcp_g_complement = 1.0f / (1.0f - g);
 
-    for (size_t i = 0; i < Spectrum::size(); ++i)
+    for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
     {
         assert(rd[i] > 0.0f);
         assert(rd[i] < 1.0f);
@@ -270,7 +270,7 @@ void compute_absorption_and_scattering_mfp(
 {
     assert(rd.size() == mfp.size());
 
-    for (size_t i = 0; i < Spectrum::size(); ++i)
+    for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
     {
         assert(rd[i] > 0.0f);
         assert(rd[i] < 1.0f);

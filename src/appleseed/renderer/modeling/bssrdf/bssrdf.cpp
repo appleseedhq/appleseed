@@ -115,7 +115,7 @@ void BSSRDF::build_cdf_and_pdf(
     Spectrum&               pdf)
 {
     float cumulated_pdf = 0.0f;
-    for (size_t i = 0; i < Spectrum::size(); ++i)
+    for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
     {
         pdf[i] = src[i];
         cumulated_pdf += pdf[i];

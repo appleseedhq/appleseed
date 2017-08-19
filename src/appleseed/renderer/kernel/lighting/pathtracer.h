@@ -842,7 +842,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
         // Reference: "Practical and Controllable Subsurface Scattering
         // for Production Path Tracing", p. 1 [ACM 2016 Article].
         float mis_weights_sum = 0.0f;
-        for (size_t i = 0; i < Spectrum::size(); ++i)
+        for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
         {
             if (extinction_coef[i] > 1.0e-6f)
                 mis_weights_sum += transmission[i] * scattering_coef[i] / extinction_coef[i];

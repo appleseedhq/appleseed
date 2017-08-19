@@ -469,7 +469,7 @@ namespace
                 {
                     // [2] Volumetric absorption reparameterization, page 5.
                     const float d = distance / values->m_volume_transmittance_distance;
-                    for (size_t i = 0; i < Spectrum::size(); ++i)
+                    for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
                     {
                         const float a = log(max(values->m_volume_transmittance[i], 0.01f));
                         absorption[i] = exp(a * d);
@@ -480,7 +480,7 @@ namespace
             {
                 const float d = values->m_volume_density * values->m_volume_scale * distance;
 
-                for (size_t i = 0; i < Spectrum::size(); ++i)
+                for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
                 {
                     //
                     // Reference:

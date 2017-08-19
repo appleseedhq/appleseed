@@ -176,7 +176,7 @@ class GenericVolume
     {
         extinction_coefficient(data, volume_ray, distance, spectrum);
 
-        for (size_t i = 0; i < Spectrum::size(); ++i)
+        for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
         {
             const float x = -distance * spectrum[i];
             assert(FP<float>::is_finite(x));
