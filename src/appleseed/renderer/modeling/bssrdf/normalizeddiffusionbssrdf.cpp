@@ -133,7 +133,7 @@ namespace
                 values->m_precomputed.m_channel_pdf);
 
             // Precompute scaling factor.
-            for (size_t i = 0; i < Spectrum::size(); ++i)
+            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
             {
                 const float a = values->m_reflectance[i];
                 values->m_precomputed.m_s[i] = normalized_diffusion_s_mfp(a);
@@ -141,7 +141,7 @@ namespace
 
             // Precompute the radius of the sampling disk.
             float max_radius = 0.0f;
-            for (size_t i = 0; i < Spectrum::size(); ++i)
+            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
             {
                 const float l = values->m_mfp[i];
                 const float s = values->m_precomputed.m_s[i];
@@ -199,7 +199,7 @@ namespace
 
             float pdf = 0.0f;
 
-            for (size_t i = 0; i < Spectrum::size(); ++i)
+            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
             {
                 const float channel_pdf = values->m_precomputed.m_channel_pdf[i];
                 const float l = values->m_mfp[i];
@@ -225,7 +225,7 @@ namespace
                 static_cast<float>(
                     norm(outgoing_point.get_point() - incoming_point.get_point()));
 
-            for (size_t i = 0; i < Spectrum::size(); ++i)
+            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
             {
                 const float l = values->m_mfp[i];
                 const float s = values->m_precomputed.m_s[i];

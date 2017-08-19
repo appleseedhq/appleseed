@@ -187,7 +187,7 @@ namespace
 
             // Precompute 1/(2v).
             float max_sqrt_v = 0.0f;
-            for (size_t i = 0; i < Spectrum::size(); ++i)
+            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
             {
                 // The remapping from mfp to radius comes from alSurface.
                 const float radius = values->m_mfp[i] * 7.0f;
@@ -244,7 +244,7 @@ namespace
 
             float pdf = 0.0f;
 
-            for (size_t i = 0; i < Spectrum::size(); ++i)
+            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
             {
                 const float channel_pdf = values->m_precomputed.m_channel_pdf[i];
                 const float k = values->m_precomputed.m_k[i];
@@ -269,7 +269,7 @@ namespace
                 static_cast<float>(
                     norm(outgoing_point.get_point() - incoming_point.get_point()));
 
-            for (size_t i = 0; i < Spectrum::size(); ++i)
+            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
             {
                 const float a = values->m_reflectance[i];
                 const float k = values->m_precomputed.m_k[i];

@@ -120,7 +120,7 @@ namespace
             const float fdr = fresnel_internal_diffuse_reflectance(values->m_base_values.m_eta);
             const float a = (1.0f + fdr) / (1.0f - fdr);
 
-            for (size_t i = 0; i < Spectrum::size(); ++i)
+            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
             {
                 const float sigma_a = values->m_sigma_a[i];
                 const float sigma_s = values->m_sigma_s[i];

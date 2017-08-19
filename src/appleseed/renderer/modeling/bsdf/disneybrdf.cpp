@@ -81,7 +81,7 @@ namespace
     {
         const float one_minus_t = 1.0f - t;
 
-        for (size_t i = 0; i < Spectrum::size(); ++i)
+        for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
             result[i] = one_minus_t * a[i] + t * b[i];
     }
 
@@ -92,7 +92,7 @@ namespace
     {
         const float one_minus_t = 1.0f - t;
 
-        for (size_t i = 0; i < Spectrum::size(); ++i)
+        for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
             result[i] = one_minus_t + t * b[i];
     }
 
@@ -103,7 +103,7 @@ namespace
     {
         const float one_minus_t = 1.0f - t;
 
-        for (size_t i = 0; i < Spectrum::size(); ++i)
+        for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
             result[i] = one_minus_t * a[i] + t;
     }
 
