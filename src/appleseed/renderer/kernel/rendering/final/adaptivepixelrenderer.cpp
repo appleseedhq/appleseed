@@ -162,7 +162,6 @@ namespace
             const size_t                pass_hash,
             const Vector2i&             pi,
             const Vector2i&             pt,
-            SamplingContext::RNGType&   rng,
             ShadingResultFrameBuffer&   framebuffer) override
         {
             const size_t aov_count = frame.aov_images().size();
@@ -173,10 +172,9 @@ namespace
 
             // Create a sampling context.
             const size_t frame_width = frame.image().properties().m_canvas_width;
-            const size_t instance =
-                mix_uint32(
-                    static_cast<uint32>(pass_hash),
-                    static_cast<uint32>(pi.y * frame_width + pi.x));
+            const size_t pixel_index = pi.y * frame_width + pi.x;
+            const size_t instance = hash_uint32(static_cast<uint32>(pass_hash + pixel_index));
+            SamplingContext::RNGType rng(pass_hash, instance);
             SamplingContext sampling_context(
                 rng,
                 m_params.m_sampling_mode,
