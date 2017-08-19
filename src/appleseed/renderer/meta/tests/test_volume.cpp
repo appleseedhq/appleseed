@@ -52,7 +52,6 @@
 #include "renderer/utility/testutils.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/rng/mersennetwister.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -148,7 +147,7 @@ TEST_SUITE(Renderer_Modeling_Volume)
             void* data = volume.evaluate_inputs(shading_context, shading_ray);
             volume.prepare_inputs(arena, shading_ray, data);
 
-            MersenneTwister rng;
+            SamplingContext::RNGType rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode, 2, NumberOfSamples);
 
             float integral = 0.0f;
@@ -174,7 +173,7 @@ TEST_SUITE(Renderer_Modeling_Volume)
             void* data = volume.evaluate_inputs(shading_context, shading_ray);
             volume.prepare_inputs(arena, shading_ray, data);
 
-            MersenneTwister rng;
+            SamplingContext::RNGType rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
 
             Vector3f bias = Vector3f(0.0f);
@@ -201,7 +200,7 @@ TEST_SUITE(Renderer_Modeling_Volume)
             void* data = volume.evaluate_inputs(shading_context, shading_ray);
             volume.prepare_inputs(arena, shading_ray, data);
 
-            MersenneTwister rng;
+            SamplingContext::RNGType rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
 
             Vector3f bias(0.0f);
@@ -227,7 +226,7 @@ TEST_SUITE(Renderer_Modeling_Volume)
             void* data = volume.evaluate_inputs(shading_context, shading_ray);
             volume.prepare_inputs(arena, shading_ray, data);
 
-            MersenneTwister rng;
+            SamplingContext::RNGType rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
 
             std::vector<Vector2f> points;
