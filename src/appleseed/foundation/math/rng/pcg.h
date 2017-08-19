@@ -48,8 +48,8 @@ class PCG
   public:
     // Constructor, seeds the generator.
     PCG(
-        const uint64 init_state = 0X853C49E6748FEA9BULL,
-        const uint64 init_seq = 0XDA3E39CB94B95BDBULL);
+        const uint64 init_state = 0x853C49E6748FEA9BULL,
+        const uint64 init_seq = 0xDA3E39CB94B95BDBULL);
 
     // Generate a 32-bit random number.
     uint32 rand_uint32();

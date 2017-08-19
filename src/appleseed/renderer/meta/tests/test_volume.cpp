@@ -204,7 +204,7 @@ TEST_SUITE(Renderer_Modeling_Volume)
             MersenneTwister rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
 
-            Vector3f bias = Vector3f(0.0f);
+            Vector3f bias(0.0f);
             for (size_t i = 0; i < NumberOfSamples; ++i)
             {
                 Vector3f incoming;

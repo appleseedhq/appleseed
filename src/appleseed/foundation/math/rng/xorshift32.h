@@ -61,13 +61,14 @@ class Xorshift32
 {
   public:
     // Constructor, seeds the generator.
+    // The seed must not be zero.
     explicit Xorshift32(const uint32 seed = 2463534242UL);
 
     // Generate a 32-bit random number.
     uint32 rand_uint32();
 
   private:
-    uint32 m_x;     // current state of the generator
+    uint32 m_s;
 };
 
 
@@ -76,17 +77,17 @@ class Xorshift32
 //
 
 inline Xorshift32::Xorshift32(const uint32 seed)
-  : m_x(seed)
+  : m_s(seed)
 {
     assert(seed != 0);  // if the seed is 0, all output values will be 0
 }
 
 inline uint32 Xorshift32::rand_uint32()
 {
-    m_x ^= m_x << 13;
-    m_x ^= m_x >> 17;
-    m_x ^= m_x << 5;
-    return m_x;
+    m_s ^= m_s << 13;
+    m_s ^= m_s >> 17;
+    m_s ^= m_s << 5;
+    return m_s;
 }
 
 }       // namespace foundation
