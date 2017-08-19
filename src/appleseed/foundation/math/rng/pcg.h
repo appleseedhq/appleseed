@@ -57,8 +57,6 @@ class PCG
   private:
     uint64  m_state;    // current state of the generator
     uint64  m_inc;      // controls which RNG sequence (stream) is selected -- must *always* be odd
-
-    void init(const uint64 init_state, const uint64 init_seq);
 };
 
 
