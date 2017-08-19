@@ -475,7 +475,7 @@ namespace
 
             for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
             {
-                float pd = diffuse_reflectance[i];
+                const float pd = diffuse_reflectance[i];
                 const float non_linear_term = 1.0f - lerp(1.0f, pd, internal_scattering) * fdr;
                 value[i] = (T * pd * eta2 * RcpPi<float>()) / non_linear_term;
             }
