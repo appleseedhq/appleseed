@@ -196,6 +196,7 @@ set (foundation_math_rng_sources
     foundation/math/rng/serialmersennetwister.cpp
     foundation/math/rng/serialmersennetwister.h
     foundation/math/rng/xorshift32.h
+    foundation/math/rng/xorshift64.h
 )
 if (USE_SSE)
     list (APPEND foundation_math_rng_sources
