@@ -33,7 +33,7 @@
 #ifdef APPLESEED_USE_SSE
 #include "foundation/math/rng/simdmersennetwister.h"
 #endif
-#include "foundation/math/rng/xorshift.h"
+#include "foundation/math/rng/xorshift32.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/benchmark.h"
 
@@ -104,7 +104,7 @@ BENCHMARK_SUITE(Foundation_Math_RNG)
 
 #endif
 
-    BENCHMARK_CASE_F(Xorshift_RandUint32, Fixture<Xorshift>)
+    BENCHMARK_CASE_F(Xorshift32_RandUint32, Fixture<Xorshift32>)
     {
         for (size_t i = 0; i < 250000; ++i)
         {

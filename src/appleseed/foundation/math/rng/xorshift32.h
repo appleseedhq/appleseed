@@ -27,8 +27,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_RNG_XORSHIFT_H
-#define APPLESEED_FOUNDATION_MATH_RNG_XORSHIFT_H
+#ifndef APPLESEED_FOUNDATION_MATH_RNG_XORSHIFT32_H
+#define APPLESEED_FOUNDATION_MATH_RNG_XORSHIFT32_H
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -54,14 +54,14 @@ namespace foundation
 //
 // Additional resource about xorshift generators:
 //
-//   http://xorshift.di.unimi.it/
+//   http://xoroshiro.di.unimi.it/
 //
 
-class Xorshift
+class Xorshift32
 {
   public:
     // Constructor, seeds the generator.
-    explicit Xorshift(const uint32 seed = 2463534242UL);
+    explicit Xorshift32(const uint32 seed = 2463534242UL);
 
     // Generate a 32-bit random number.
     uint32 rand_uint32();
@@ -72,16 +72,16 @@ class Xorshift
 
 
 //
-// Xorshift class implementation.
+// Xorshift32 class implementation.
 //
 
-inline Xorshift::Xorshift(const uint32 seed)
+inline Xorshift32::Xorshift32(const uint32 seed)
   : m_x(seed)
 {
     assert(seed != 0);  // if the seed is 0, all output values will be 0
 }
 
-inline uint32 Xorshift::rand_uint32()
+inline uint32 Xorshift32::rand_uint32()
 {
     m_x ^= m_x << 13;
     m_x ^= m_x >> 17;
@@ -91,4 +91,4 @@ inline uint32 Xorshift::rand_uint32()
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_MATH_RNG_XORSHIFT_H
+#endif  // !APPLESEED_FOUNDATION_MATH_RNG_XORSHIFT32_H

@@ -30,7 +30,7 @@
 #include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/image.h"
 #include "foundation/math/rng/distribution.h"
-#include "foundation/math/rng/xorshift.h"
+#include "foundation/math/rng/xorshift32.h"
 #include "foundation/math/sampling/imageimportancesampler.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/benchmark.h"
@@ -49,7 +49,7 @@ BENCHMARK_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
         typedef ImageImportanceSampler<ImageSampler::Payload, float> ImportanceSamplerType;
 
         auto_ptr<ImportanceSamplerType> m_importance_sampler;
-        Xorshift                        m_rng;
+        Xorshift32                      m_rng;
 
         Vector2u                        m_texel_coords_sum;
         float                           m_texel_prob_sum;
