@@ -195,6 +195,7 @@ set (foundation_math_rng_sources
     foundation/math/rng/pcg.h
     foundation/math/rng/serialmersennetwister.cpp
     foundation/math/rng/serialmersennetwister.h
+    foundation/math/rng/xoroshiro128plus.h
     foundation/math/rng/xorshift32.h
     foundation/math/rng/xorshift64.h
 )

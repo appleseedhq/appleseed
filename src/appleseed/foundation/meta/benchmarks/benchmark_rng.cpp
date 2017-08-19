@@ -33,6 +33,7 @@
 #ifdef APPLESEED_USE_SSE
 #include "foundation/math/rng/simdmersennetwister.h"
 #endif
+#include "foundation/math/rng/xoroshiro128plus.h"
 #include "foundation/math/rng/xorshift32.h"
 #include "foundation/math/rng/xorshift64.h"
 #include "foundation/platform/types.h"
@@ -104,6 +105,17 @@ BENCHMARK_SUITE(Foundation_Math_RNG)
     }
 
 #endif
+
+    BENCHMARK_CASE_F(Xoroshiro128plus, Fixture<Xoroshiro128plus>)
+    {
+        for (size_t i = 0; i < 250000; ++i)
+        {
+            m_dummy ^= m_rng.rand_uint32();
+            m_dummy ^= m_rng.rand_uint32();
+            m_dummy ^= m_rng.rand_uint32();
+            m_dummy ^= m_rng.rand_uint32();
+        }
+    }
 
     BENCHMARK_CASE_F(Xorshift32_RandUint32, Fixture<Xorshift32>)
     {
