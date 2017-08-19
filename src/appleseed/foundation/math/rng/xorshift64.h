@@ -44,7 +44,7 @@ namespace foundation
 // Very fast and reasonably high quality despite a relatively short period.
 // Can be extended to much higher periods if necessary (see the paper).
 //
-// WARNING: will never generate zeros!
+// This RNG will generate zeros because it outputs the high 32 bits of its state.
 //
 // References:
 //

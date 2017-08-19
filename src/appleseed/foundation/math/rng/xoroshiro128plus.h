@@ -44,7 +44,7 @@ namespace foundation
 //
 // Very fast and high quality.
 //
-// WARNING: will never generate zeros!
+// This RNG will generate zeros because it outputs the high 32 bits of its result.
 //
 // Reference:
 //
