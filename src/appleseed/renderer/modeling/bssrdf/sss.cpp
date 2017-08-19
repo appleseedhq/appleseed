@@ -124,8 +124,6 @@ void effective_extinction_coefficient(
     const float     anisotropy,
     Spectrum&       sigma_tr)
 {
-    assert(sigma_a.size() == sigma_s.size());
-
     for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
     {
         sigma_tr[i] =

@@ -231,7 +231,6 @@ void compute_absorption_and_scattering_dmfp(
     Spectrum&           sigma_a,
     Spectrum&           sigma_s)
 {
-    assert(rd.size() == dmfp.size());
     assert(g > -1.0f);
     assert(g < 1.0f);
 
@@ -268,8 +267,6 @@ void compute_absorption_and_scattering_mfp(
     Spectrum&           sigma_a,
     Spectrum&           sigma_s)
 {
-    assert(rd.size() == mfp.size());
-
     for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
     {
         assert(rd[i] > 0.0f);
