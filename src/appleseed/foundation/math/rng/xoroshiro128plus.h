@@ -57,7 +57,7 @@ class Xoroshiro128plus
     // Constructors, seed the generator.
     // The seed must not be zero everywhere.
     Xoroshiro128plus();
-    explicit Xoroshiro128plus(const uint64 seed[2]);
+    explicit Xoroshiro128plus(const uint64 s0, const uint64 s1);
 
     // Generate a 32-bit random number.
     uint32 rand_uint32();
@@ -77,11 +77,11 @@ inline Xoroshiro128plus::Xoroshiro128plus()
     m_s[1] = 0x55897310023CAE21ULL;
 }
 
-inline Xoroshiro128plus::Xoroshiro128plus(const uint64 seed[2])
+inline Xoroshiro128plus::Xoroshiro128plus(const uint64 s0, const uint64 s1)
 {
-    assert(seed[0] != 0 || seed[1] != 0);       // if the seed is 0 everywhere, all output values will be 0
-    m_s[0] = seed[0];
-    m_s[1] = seed[1];
+    assert(s0 != 0 || s1 != 0);     // if the seed is 0 everywhere, all output values will be 0
+    m_s[0] = s0;
+    m_s[1] = s1;
 }
 
 inline uint32 Xoroshiro128plus::rand_uint32()
