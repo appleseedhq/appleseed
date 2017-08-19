@@ -135,7 +135,7 @@ TEST_SUITE(Renderer_Modeling_Volume)
             return result;
         }
 
-        // Integrate PDF of volume using straightforward Monte-Carlo approach.
+        // Integrate PDF of volume using straightforward Monte Carlo approach.
         static float integrate_volume_pdf(
             Volume&             volume,
             ShadingContext&     shading_context,
@@ -185,7 +185,7 @@ TEST_SUITE(Renderer_Modeling_Volume)
                 bias += incoming / pdf;
             }
 
-            return feq(bias / static_cast<float>(NumberOfSamples), Vector3f(0.0f), 0.1f);
+            return feq(bias / static_cast<float>(NumberOfSamples), Vector3f(0.0f), 0.2f);
         }
 
         // Sample a given volume and find average cosine of scattering angle.
