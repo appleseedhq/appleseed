@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,69 +26,69 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_RNG_PCG_H
-#define APPLESEED_FOUNDATION_MATH_RNG_PCG_H
+#ifndef APPLESEED_FOUNDATION_MATH_RNG_XORSHIFT64_H
+#define APPLESEED_FOUNDATION_MATH_RNG_XORSHIFT64_H
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
+
+// Standard headers.
+#include <cassert>
 
 namespace foundation
 {
 
 //
-// PCG random number generator.
+// Xorshift random number generator of period 2^64 - 1.
 //
-// Reference:
+// Very fast and reasonably high quality despite a relatively short period.
+// Can be extended to much higher periods if necessary (see the paper).
 //
-//   http://www.pcg-random.org/
+// This RNG will generate zeros because it outputs the high 32 bits of its state.
+//
+// References:
+//
+//   http://www.jstatsoft.org/v08/i14/paper
+//   http://tbf.coe.wayne.edu/jmasm/vol2_no1.pdf
+//
+// Additional resource about xorshift generators:
+//
+//   http://xoroshiro.di.unimi.it/
 //
 
-class PCG
+class Xorshift64
 {
   public:
     // Constructor, seeds the generator.
-    PCG(
-        const uint64 init_state = 0x853C49E6748FEA9BULL,
-        const uint64 init_seq = 0xDA3E39CB94B95BDBULL);
+    // The seed must not be zero.
+    explicit Xorshift64(const uint64 seed = 88172645463325252ULL);
 
     // Generate a 32-bit random number.
     uint32 rand_uint32();
 
   private:
-    uint64  m_state;    // current state of the generator
-    uint64  m_inc;      // controls which RNG sequence (stream) is selected -- must *always* be odd
+    uint64 m_s;
 };
 
 
 //
-// PCG class implementation.
+// Xorshift64 class implementation.
 //
 
-inline PCG::PCG(const uint64 init_state, const uint64 init_seq)
+inline Xorshift64::Xorshift64(const uint64 seed)
+  : m_s(seed)
 {
-    m_state = 0;
-    m_inc = (init_seq << 1) | 1;
-    rand_uint32();
-
-    m_state += init_state;
-    rand_uint32();
+    assert(seed != 0);  // if the seed is 0, all output values will be 0
 }
 
-#pragma warning (push)
-#pragma warning (disable : 4146)    // unary minus operator applied to unsigned type, result still unsigned
-
-inline uint32 PCG::rand_uint32()
+inline uint32 Xorshift64::rand_uint32()
 {
-    const uint64 old_state = m_state;
-    m_state = old_state * 6364136223846793005ULL + m_inc;
-
-    const uint32 xorshifted = static_cast<uint32>(((old_state >> 18) ^ old_state) >> 27);
-    const uint32 rot = static_cast<uint32>(old_state >> 59);
-    return (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
+    m_s ^= m_s << 13;
+    m_s ^= m_s >> 7;
+    m_s ^= m_s << 17;
+    return static_cast<uint32>(m_s >> 32);
 }
-
-#pragma warning (pop)
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_MATH_RNG_PCG_H
+#endif  // !APPLESEED_FOUNDATION_MATH_RNG_XORSHIFT64_H

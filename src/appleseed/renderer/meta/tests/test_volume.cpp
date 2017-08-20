@@ -52,7 +52,6 @@
 #include "renderer/utility/testutils.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/rng/mersennetwister.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -136,7 +135,7 @@ TEST_SUITE(Renderer_Modeling_Volume)
             return result;
         }
 
-        // Integrate PDF of volume using straightforward Monte-Carlo approach.
+        // Integrate PDF of volume using straightforward Monte Carlo approach.
         static float integrate_volume_pdf(
             Volume&             volume,
             ShadingContext&     shading_context,
@@ -148,7 +147,7 @@ TEST_SUITE(Renderer_Modeling_Volume)
             void* data = volume.evaluate_inputs(shading_context, shading_ray);
             volume.prepare_inputs(arena, shading_ray, data);
 
-            MersenneTwister rng;
+            SamplingContext::RNGType rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode, 2, NumberOfSamples);
 
             float integral = 0.0f;
@@ -174,7 +173,7 @@ TEST_SUITE(Renderer_Modeling_Volume)
             void* data = volume.evaluate_inputs(shading_context, shading_ray);
             volume.prepare_inputs(arena, shading_ray, data);
 
-            MersenneTwister rng;
+            SamplingContext::RNGType rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
 
             Vector3f bias = Vector3f(0.0f);
@@ -186,7 +185,7 @@ TEST_SUITE(Renderer_Modeling_Volume)
                 bias += incoming / pdf;
             }
 
-            return feq(bias / static_cast<float>(NumberOfSamples), Vector3f(0.0f), 0.1f);
+            return feq(bias / static_cast<float>(NumberOfSamples), Vector3f(0.0f), 0.2f);
         }
 
         // Sample a given volume and find average cosine of scattering angle.
@@ -201,10 +200,10 @@ TEST_SUITE(Renderer_Modeling_Volume)
             void* data = volume.evaluate_inputs(shading_context, shading_ray);
             volume.prepare_inputs(arena, shading_ray, data);
 
-            MersenneTwister rng;
+            SamplingContext::RNGType rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
 
-            Vector3f bias = Vector3f(0.0f);
+            Vector3f bias(0.0f);
             for (size_t i = 0; i < NumberOfSamples; ++i)
             {
                 Vector3f incoming;
@@ -227,7 +226,7 @@ TEST_SUITE(Renderer_Modeling_Volume)
             void* data = volume.evaluate_inputs(shading_context, shading_ray);
             volume.prepare_inputs(arena, shading_ray, data);
 
-            MersenneTwister rng;
+            SamplingContext::RNGType rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
 
             std::vector<Vector2f> points;

@@ -42,6 +42,7 @@
 #include <cmath>
 #include <cstddef>
 #ifdef _MSC_VER
+#include <cstdlib>
 #include <intrin.h>
 #endif
 #include <limits>
@@ -194,6 +195,13 @@ Int round(const T x);
 // Compute a % n or fmod(a, n) and always return a non-negative value.
 template <typename T>
 T mod(const T a, const T n);
+
+// Rotate an unsigned integer left or right by a given number of bits.
+// Reference: https://stackoverflow.com/a/776523/393756
+uint32 rotl32(const uint32 n, unsigned int shift);
+uint64 rotl64(const uint64 n, unsigned int shift);
+uint32 rotr32(const uint32 n, unsigned int shift);
+uint64 rotr64(const uint64 n, unsigned int shift);
 
 // linearstep() returns 0 for x < a, 1 for x > b, and generates
 // a linear transition from 0 to 1 between x = a and x = b.
@@ -705,6 +713,63 @@ inline double mod(const double a, const double n)
     const double m = std::fmod(a, n);
     return m < 0.0 ? n + m : m;
 }
+
+#pragma warning (push)
+#pragma warning (disable : 4146)    // unary minus operator applied to unsigned type, result still unsigned
+
+inline uint32 rotl32(const uint32 n, unsigned int shift)
+{
+    const unsigned int Mask = 8 * sizeof(n) - 1;
+    assert(shift <= Mask);
+
+#ifdef _MSC_VER
+    return _rotl(n, shift);
+#else
+    shift &= Mask;
+    return (n << shift) | (n >> ((-shift) & Mask));
+#endif
+}
+
+inline uint64 rotl64(const uint64 n, unsigned int shift)
+{
+    const unsigned int Mask = 8 * sizeof(n) - 1;
+    assert(shift <= Mask);
+
+#ifdef _MSC_VER
+    return _rotl64(n, shift);
+#else
+    shift &= Mask;
+    return (n << shift) | (n >> ((-shift) & Mask));
+#endif
+}
+
+inline uint32 rotr32(const uint32 n, unsigned int shift)
+{
+    const unsigned int Mask = 8 * sizeof(n) - 1;
+    assert(shift <= Mask);
+
+#ifdef _MSC_VER
+    return _rotr(n, shift);
+#else
+    shift &= Mask;
+    return (n >> shift) | (n << ((-shift) & Mask));
+#endif
+}
+
+inline uint64 rotr64(const uint64 n, unsigned int shift)
+{
+    const unsigned int Mask = 8 * sizeof(n) - 1;
+    assert(shift <= Mask);
+
+#ifdef _MSC_VER
+    return _rotr64(n, shift);
+#else
+    shift &= Mask;
+    return (n >> shift) | (n << ((-shift) & Mask));
+#endif
+}
+
+#pragma warning (pop)
 
 template <typename T>
 inline T linearstep(const T a, const T b, const T x)

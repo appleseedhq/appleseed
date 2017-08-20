@@ -162,18 +162,6 @@ namespace
                     tile_bbox);
             assert(framebuffer);
 
-            // Seed the RNG with the tile index and the pass hash.
-            // Seeding the RNG per tile instead of per pixel has potential consequences on
-            // debugging: rendering a subset of a tile may lead to different computations
-            // than rendering the full tile, e.g. if the sampling context switches to random
-            // sampling because the number of dimensions becomes too high.
-            const size_t tile_index = tile_y * frame_properties.m_tile_count_x + tile_x;
-#ifdef APPLESEED_ARCH64
-            m_rng = SamplingContext::RNGType(hash_uint64_to_uint32(pass_hash ^ tile_index));
-#else
-            m_rng = SamplingContext::RNGType(pass_hash ^ tile_index);
-#endif
-
             // Loop over tile pixels.
             for (size_t i = 0, e = m_pixel_ordering.size(); i < e; ++i)
             {
@@ -207,7 +195,6 @@ namespace
                     pass_hash,
                     pi,
                     pt,
-                    m_rng,
                     *framebuffer);
             }
 
@@ -234,7 +221,6 @@ namespace
         int                                 m_margin_width;
         int                                 m_margin_height;
         vector<Vector<int16, 2>>            m_pixel_ordering;
-        SamplingContext::RNGType            m_rng;
 
         void compute_tile_margins(const Frame& frame, const bool primary)
         {

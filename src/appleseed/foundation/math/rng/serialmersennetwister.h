@@ -50,7 +50,7 @@ class APPLESEED_DLLSYMBOL SerialMersenneTwister
     explicit SerialMersenneTwister(const uint32 seed = 5489UL);
     SerialMersenneTwister(const uint32 init_key[], const int key_length);
 
-    // Generate a full-range 32-bit random number.
+    // Generate a 32-bit random number.
     uint32 rand_uint32();
 
   private:

@@ -37,7 +37,7 @@
 #include "foundation/image/color.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/ray.h"
-#include "foundation/math/rng/mersennetwister.h"
+#include "foundation/math/rng/xoroshiro128plus.h"
 #include "foundation/math/sampling/qmcsamplingcontext.h"
 #include "foundation/math/vector.h"
 
@@ -67,7 +67,7 @@ typedef foundation::Color<float, 1> Alpha;
 
 // Sampling context.
 typedef foundation::QMCSamplingContext<
-    foundation::MersenneTwister
+    foundation::Xoroshiro128plus
 > SamplingContext;
 
 }       // namespace renderer

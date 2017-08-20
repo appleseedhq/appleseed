@@ -30,7 +30,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/cdf.h"
 #include "foundation/math/rng/distribution.h"
-#include "foundation/math/rng/xorshift.h"
+#include "foundation/math/rng/xorshift32.h"
 #include "foundation/utility/benchmark.h"
 
 // Standard headers.
@@ -48,7 +48,7 @@ BENCHMARK_SUITE(Foundation_Math_CDF)
         typedef CDF<size_t, double> CDFType;
 
         CDFType     m_cdf;
-        Xorshift    m_rng;
+        Xorshift32  m_rng;
         double      m_x;
 
         Fixture()
@@ -94,7 +94,7 @@ BENCHMARK_SUITE(Foundation_Math_CDF_Linear_Search)
     struct Fixture
     {
         double              m_weights[Size];
-        Xorshift            m_rng;
+        Xorshift32          m_rng;
         double              m_x;
 
         Fixture()

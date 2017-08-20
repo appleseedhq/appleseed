@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,69 +26,78 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_RNG_PCG_H
-#define APPLESEED_FOUNDATION_MATH_RNG_PCG_H
+#ifndef APPLESEED_FOUNDATION_MATH_RNG_XOROSHIRO128PLUS_H
+#define APPLESEED_FOUNDATION_MATH_RNG_XOROSHIRO128PLUS_H
 
 // appleseed.foundation headers.
+#include "foundation/math/scalar.h"
 #include "foundation/platform/types.h"
+
+// Standard headers.
+#include <cassert>
 
 namespace foundation
 {
 
 //
-// PCG random number generator.
+// Xoroshiro128+ random number generator of period 2^128 - 1.
+//
+// Very fast and high quality.
+//
+// This RNG will generate zeros because it outputs the high 32 bits of its result.
 //
 // Reference:
 //
-//   http://www.pcg-random.org/
+//   http://xoroshiro.di.unimi.it/
 //
 
-class PCG
+class Xoroshiro128plus
 {
   public:
-    // Constructor, seeds the generator.
-    PCG(
-        const uint64 init_state = 0x853C49E6748FEA9BULL,
-        const uint64 init_seq = 0xDA3E39CB94B95BDBULL);
+    // Constructors, seed the generator.
+    // The seed must not be zero everywhere.
+    Xoroshiro128plus();
+    explicit Xoroshiro128plus(const uint64 s0, const uint64 s1);
 
     // Generate a 32-bit random number.
     uint32 rand_uint32();
 
   private:
-    uint64  m_state;    // current state of the generator
-    uint64  m_inc;      // controls which RNG sequence (stream) is selected -- must *always* be odd
+    uint64 m_s[2];
 };
 
 
 //
-// PCG class implementation.
+// Xoroshiro128plus class implementation.
 //
 
-inline PCG::PCG(const uint64 init_state, const uint64 init_seq)
+inline Xoroshiro128plus::Xoroshiro128plus()
 {
-    m_state = 0;
-    m_inc = (init_seq << 1) | 1;
-    rand_uint32();
-
-    m_state += init_state;
-    rand_uint32();
+    m_s[0] = 0x46961B5E381BCE6EULL;
+    m_s[1] = 0x55897310023CAE21ULL;
 }
 
-#pragma warning (push)
-#pragma warning (disable : 4146)    // unary minus operator applied to unsigned type, result still unsigned
-
-inline uint32 PCG::rand_uint32()
+inline Xoroshiro128plus::Xoroshiro128plus(const uint64 s0, const uint64 s1)
 {
-    const uint64 old_state = m_state;
-    m_state = old_state * 6364136223846793005ULL + m_inc;
-
-    const uint32 xorshifted = static_cast<uint32>(((old_state >> 18) ^ old_state) >> 27);
-    const uint32 rot = static_cast<uint32>(old_state >> 59);
-    return (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
+    assert(s0 != 0 || s1 != 0);     // if the seed is 0 everywhere, all output values will be 0
+    m_s[0] = s0;
+    m_s[1] = s1;
 }
 
-#pragma warning (pop)
+inline uint32 Xoroshiro128plus::rand_uint32()
+{
+    const uint64 s0 = m_s[0];
+    uint64 s1 = m_s[1];
+
+    const uint64 result = s0 + s1;
+
+    s1 ^= s0;
+    m_s[0] = rotl64(s0, 55) ^ s1 ^ (s1 << 14);  // a, b
+    m_s[1] = rotl64(s1, 36);                    // c
+
+    return static_cast<uint32>(result >> 32);
+}
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_MATH_RNG_PCG_H
+#endif  // !APPLESEED_FOUNDATION_MATH_RNG_XOROSHIRO128PLUS_H

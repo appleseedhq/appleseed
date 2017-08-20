@@ -31,7 +31,7 @@
 #include "foundation/math/knn.h"
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/mersennetwister.h"
-#include "foundation/math/rng/xorshift.h"
+#include "foundation/math/rng/xorshift32.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/timers.h"
 #include "foundation/platform/types.h"
@@ -57,7 +57,7 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Answer)
     template <size_t EntryCount>
     struct Fixture
     {
-        Xorshift            m_rng;
+        Xorshift32          m_rng;
         knn::Answer<float>  m_answer;
 
         Fixture()
