@@ -89,7 +89,6 @@ namespace renderer
         const ShadingRay&                   m_volume_ray;
         const void*                         m_volume_data;
         const ShadingPoint&                 m_shading_point;
-        size_t                              m_channel_count;
         Spectrum                            m_precomputed_mis_weights;
         const int                           m_light_sampling_modes;
         const float                         m_low_light_threshold;

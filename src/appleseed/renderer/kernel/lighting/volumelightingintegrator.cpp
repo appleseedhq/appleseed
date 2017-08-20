@@ -109,17 +109,12 @@ namespace renderer
         Spectrum ray_transmission;
         m_volume.evaluate_transmission(
             m_volume_data, m_volume_ray, ray_transmission);
-        m_channel_count = ray_transmission.size();
-        if (ray_transmission.size() != m_channel_count)
-            Spectrum::upgrade(ray_transmission, ray_transmission);
 
         const Spectrum& scattering_coef = m_volume.scattering_coefficient(
             m_volume_data, m_volume_ray);
 
         Spectrum extinction_coef = m_volume.extinction_coefficient(
             m_volume_data, m_volume_ray);
-        if (extinction_coef.size() != m_channel_count)
-            Spectrum::upgrade(extinction_coef, extinction_coef);
 
         // Precompute MIS weights.
         // MIS terms are:
@@ -128,14 +123,10 @@ namespace renderer
         //  - throughput of the entire path up to the sampled point.
         // Reference: "Practical and Controllable Subsurface Scattering
         // for Production Path Tracing", p. 1 [ACM 2016 Article].
-        if (m_channel_count == scattering_coef.size())
-            m_precomputed_mis_weights = scattering_coef;
-        else
-            Spectrum::upgrade(scattering_coef, m_precomputed_mis_weights);
-        for (size_t i = 0; i < m_channel_count; ++i)
+        for (size_t i = 0; i < Spectrum::size(); ++i)
         {
             const float density = 1.0f - ray_transmission[i];
-            m_precomputed_mis_weights[i] *= density;
+            m_precomputed_mis_weights[i] = scattering_coef[i] * density;
             if (extinction_coef[i] > 1.0e-6f)
                 m_precomputed_mis_weights[i] /= extinction_coef[i];
         }
@@ -284,7 +275,7 @@ namespace renderer
             m_equiangular_sample_count * equiangular_prob,
             m_exponential_sample_count * exponential_prob);
 
-        ShadingComponents inscattered(Spectrum::Illuminance);
+        ShadingComponents inscattered;
         if (sample_phasefunction)
             take_single_phasefunction_sample(
                 child_sampling_context,
@@ -319,7 +310,7 @@ namespace renderer
         // Sample channel uniformly at random.
         SamplingContext child_sampling_context = sampling_context.split(1, 1);
         const float s = child_sampling_context.next2<float>();
-        const size_t channel = truncate<size_t>(s * m_channel_count);
+        const size_t channel = truncate<size_t>(s * Spectrum::size());
         if (m_precomputed_mis_weights[channel] == 0.0f)
             return;
 
@@ -342,13 +333,11 @@ namespace renderer
         Spectrum transmission;
         m_volume.evaluate_transmission(
             m_volume_data, m_volume_ray, exponential_sample, transmission);
-        if (transmission.size() != m_channel_count)
-            Spectrum::upgrade(transmission, transmission);
         float mis_weights_sum = 0.0f;
-        for (size_t i = 0; i < m_channel_count; ++i)
+        for (size_t i = 0; i < Spectrum::size(); ++i)
             mis_weights_sum += m_precomputed_mis_weights[i] * transmission[i];
         const float mis_weight_channel =
-            m_channel_count * m_precomputed_mis_weights[channel] *
+            Spectrum::size() * m_precomputed_mis_weights[channel] *
             transmission[channel] / mis_weights_sum;
 
         // Calculate MIS weight for distance sampling.
@@ -357,7 +346,7 @@ namespace renderer
             m_exponential_sample_count * exponential_prob,
             m_equiangular_sample_count * equiangular_prob);
 
-        ShadingComponents inscattered(Spectrum::Illuminance);
+        ShadingComponents inscattered;
         if (sample_phasefunction)
             take_single_phasefunction_sample(
                 child_sampling_context,
@@ -390,8 +379,6 @@ namespace renderer
 
         Spectrum extinction_coef = m_volume.extinction_coefficient(
             m_volume_data, m_volume_ray);
-        if (extinction_coef.size() != m_channel_count)
-            Spectrum::upgrade(extinction_coef, extinction_coef);
 
         const size_t total_sample_count =
             m_equiangular_sample_count + m_exponential_sample_count;

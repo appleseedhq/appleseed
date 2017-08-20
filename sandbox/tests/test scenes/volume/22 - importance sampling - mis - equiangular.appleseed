@@ -133,9 +133,10 @@
     </output>
     <configurations>
         <configuration name="final" base="base_final">
-            <parameter name="lighting_engine" value="sppm" />
+            <parameter name="lighting_engine" value="bdpt" />
             <parameter name="pixel_renderer" value="uniform" />
             <parameter name="shading_result_framebuffer" value="ephemeral" />
+            <parameter name="spectrum_mode" value="rgb" />
             <parameters name="adaptive_pixel_renderer">
                 <parameter name="enable_diagnostics" value="false" />
                 <parameter name="max_samples" value="256" />
@@ -161,7 +162,7 @@
                 <parameter name="max_diffuse_bounces" value="-1" />
                 <parameter name="max_glossy_bounces" value="-1" />
                 <parameter name="max_specular_bounces" value="-1" />
-                <parameter name="max_volume_bounces" value="8" />
+                <parameter name="max_volume_bounces" value="0" />
                 <parameter name="next_event_estimation" value="true" />
                 <parameter name="rr_min_path_length" value="6" />
             </parameters>

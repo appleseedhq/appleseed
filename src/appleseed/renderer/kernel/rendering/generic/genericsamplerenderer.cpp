@@ -218,13 +218,8 @@ namespace
                     m_aov_accumulators.flush(shading_result);
 
                     // Apply alpha premultiplication.
-<<<<<<< HEAD
-                    if (shading_point_ptr->hit())
-                        shading_result.apply_alpha_premult();
-=======
                     if (shading_point_ptr->hit_surface())
-                        shading_result.apply_alpha_premult_linear_rgb();
->>>>>>> 94e3bf977... Add Volume primitive to ShadingPoint and a few convenience methods for Ray
+                        shading_result.apply_alpha_premult();
                 }
                 else
                 {
