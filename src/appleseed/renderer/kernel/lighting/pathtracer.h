@@ -288,7 +288,8 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
         // Handle false intersections.
         if (ray.get_current_medium() &&
-            ray.get_current_medium()->m_object_instance->get_medium_priority() > object_instance.get_medium_priority() &&
+            ray.get_current_medium()->m_object_instance->get_medium_priority() >
+                object_instance.get_medium_priority() &&
             material_data.m_bsdf != nullptr)
         {
             // Construct a ray that continues in the same direction as the incoming ray.
@@ -416,11 +417,13 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
         // Evaluate the inputs of the BSDF.
         if (vertex.m_bsdf)
-            vertex.m_bsdf_data = vertex.m_bsdf->evaluate_inputs(shading_context, *vertex.m_shading_point);
+            vertex.m_bsdf_data = vertex.m_bsdf->evaluate_inputs(
+                shading_context, *vertex.m_shading_point);
 
         // Evaluate the inputs of the BSSRDF.
         if (vertex.m_bssrdf)
-            vertex.m_bssrdf_data = vertex.m_bssrdf->evaluate_inputs(shading_context, *vertex.m_shading_point);
+            vertex.m_bssrdf_data = vertex.m_bssrdf->evaluate_inputs(
+                shading_context, *vertex.m_shading_point);
 
         BSDFSample bsdf_sample(
             vertex.m_shading_point,
@@ -546,7 +549,9 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                         *vertex.m_shading_point);
                 }
 
-                const void* data = render_data.m_bsdf->evaluate_inputs(shading_context, *vertex.m_shading_point);
+                const void* data = render_data.m_bsdf->evaluate_inputs(
+                    shading_context,
+                    *vertex.m_shading_point);
                 const float distance = static_cast<float>(norm(vertex.get_point() - medium_start));
                 Spectrum absorption;
                 render_data.m_bsdf->compute_absorption(data, distance, absorption);
@@ -773,10 +778,9 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
         // Retrieve extinction spectrum.
         const Spectrum& extinction_coef =
             volume->extinction_coefficient(vertex.m_volume_data, volume_ray);
-        
-        sampling_context.split_in_place(1, 2);
 
         // Sample channel uniformly at random.
+        sampling_context.split_in_place(1, 1);
         const float s = sampling_context.next2<float>();
         const size_t channel = foundation::truncate<size_t>(s * Spectrum::size());
         const bool extinction_is_null = extinction_coef[channel] < 1.0e-6f;
@@ -790,6 +794,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
         }
         else
         {
+            sampling_context.split_in_place(1, 1);
             distance_sample =
                 foundation::sample_exponential_distribution(
                     sampling_context.next2<float>(),
@@ -820,7 +825,10 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
         //
 
         ShadingPoint* next_shading_point = m_shading_point_arena.allocate<ShadingPoint>();
-        next_shading_point->create_volume_shading_point(*vertex.m_shading_point, volume_ray, distance_sample);
+        next_shading_point->create_volume_shading_point(
+            *vertex.m_shading_point,
+            volume_ray,
+            distance_sample);
 
         // Terminate the path if this scattering event is not accepted.
         if (!m_volume_visitor.accept_scattering(vertex.m_prev_mode))

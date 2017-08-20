@@ -32,11 +32,8 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/materialsamplers.h"
-#include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/basis.h"
-#include "foundation/math/dual.h"
 #include "foundation/math/mis.h"
 #include "foundation/math/vector.h"
 
@@ -49,6 +46,7 @@ namespace renderer  { class LightSample; }
 namespace renderer  { class ShadingComponents; }
 namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }
+namespace renderer  { class ShadingRay; }
 
 namespace renderer
 {
@@ -56,6 +54,14 @@ namespace renderer
     //
     // The volume lighting integrator allows to integrate in-scattered direct lighting
     // along a ray in participating medium.
+    //
+    // Combines exponential importance sampling (based on Beer's law) and
+    // equiangular sampling (based on proximity to light sources).
+    // For more information:
+    //   Importance Sampling Techniques for Path Tracing in Participating Media
+    //   Christopher Kulla, Marcos Fajardo
+    //   Journal Computer Graphics Forum Vol. 31 Issue 4, pp. 1519-1528, June 2012.
+    //   https://www.solidangle.com/research/egsr2012_volume.pdf
     //
 
     class VolumeLightingIntegrator
