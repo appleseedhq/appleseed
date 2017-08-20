@@ -136,6 +136,8 @@ void bind_frame()
         .def("clear_main_image", &Frame::clear_main_image)
         .def("write_main_image", &Frame::write_main_image)
         .def("write_aov_images", &Frame::write_aov_images)
+        .def("write_aov_image", &Frame::write_aov_image)
+        .def("write_image_and_aovs_to_multipart_exr", &Frame::write_image_and_aovs_to_multipart_exr)
         .def("archive", archive_frame)
 
         .def("add_aov", &Frame::add_aov)
