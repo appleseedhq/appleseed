@@ -133,11 +133,11 @@ void TestWindow::build_connections()
         this, SLOT(slot_on_test_item_check_state_changed(QTreeWidgetItem*, int)));
 
     connect(
-        m_ui->lineEdit_filter, SIGNAL(textChanged(const QString&)),
+        m_ui->lineedit_filter, SIGNAL(textChanged(const QString&)),
         this, SLOT(slot_filter_text_changed(const QString&)));
 
     connect(
-        m_ui->pushButton_clear_filter, SIGNAL(clicked()),
+        m_ui->pushbutton_clear_filter, SIGNAL(clicked()),
         this, SLOT(slot_clear_filter_text()));
 
     connect(
@@ -411,7 +411,7 @@ void TestWindow::slot_filter_text_changed(const QString& pattern) const
 
 void TestWindow::slot_clear_filter_text() const
 {
-    m_ui->lineEdit_filter->clear();
+    m_ui->lineedit_filter->clear();
 }
 
 void TestWindow::slot_check_all_tests() const
@@ -501,8 +501,8 @@ void TestWindow::enable_widgets(const bool enabled) const
     m_ui->pushbutton_uncheck_all->setEnabled(enabled);
     m_ui->pushbutton_run->setEnabled(enabled);
     m_ui->pushbutton_clear->setEnabled(enabled);
-    m_ui->pushButton_clear_filter->setEnabled(enabled);
-    m_ui->lineEdit_filter->setEnabled(enabled);
+    m_ui->pushbutton_clear_filter->setEnabled(enabled);
+    m_ui->lineedit_filter->setEnabled(enabled);
 }
 
 void TestWindow::slot_clear_output_treeview() const

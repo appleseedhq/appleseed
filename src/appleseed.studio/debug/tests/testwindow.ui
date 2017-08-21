@@ -46,10 +46,10 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_filter"/>
+            <widget class="QLineEdit" name="lineedit_filter"/>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton_clear_filter">
+            <widget class="QPushButton" name="pushbutton_clear_filter">
              <property name="text">
               <string>Clear</string>
              </property>
