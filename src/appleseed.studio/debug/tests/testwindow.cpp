@@ -380,13 +380,13 @@ void TestWindow::slot_on_test_item_check_state_changed(QTreeWidgetItem* item, in
 
 namespace
 {
-    bool do_filter_items(QTreeWidgetItem* item, const QRegExp& regexp)
+    bool adjust_items_visibility(QTreeWidgetItem* item, const QRegExp& regexp)
     {
         bool any_children_visible = false;
 
-        for (int i = 0; i < item->childCount(); ++i)
+        for (int i = 0, e = item->childCount(); i < e; ++i)
         {
-            if (do_filter_items(item->child(i), regexp))
+            if (adjust_items_visibility(item->child(i), regexp))
                 any_children_visible = true;
         }
 
@@ -410,8 +410,8 @@ void TestWindow::slot_filter_text_changed(const QString& pattern) const
 {
     const QRegExp regexp(pattern, Qt::CaseInsensitive);
 
-    for (int i = 0; i < m_ui->treewidget_tests->topLevelItemCount(); ++i)
-        do_filter_items(m_ui->treewidget_tests->topLevelItem(i), regexp);
+    for (int i = 0, e = m_ui->treewidget_tests->topLevelItemCount(); i < e; ++i)
+        adjust_items_visibility(m_ui->treewidget_tests->topLevelItem(i), regexp);
 }
 
 void TestWindow::slot_clear_filter_text() const
