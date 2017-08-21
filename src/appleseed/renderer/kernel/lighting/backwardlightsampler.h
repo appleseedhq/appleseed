@@ -84,7 +84,11 @@ class BackwardLightSampler
         LightSample&                        light_sample) const;
 
     // Compute the probability density in area measure of a given light sample.
-    float evaluate_pdf(const ShadingPoint& shading_point, const ShadingPoint& parent_shading_point) const;
+    // Shading points are located on the light (emitting triangle) hit by the
+    // path tracer, and the surface actually being illuminated, respectively.
+    float evaluate_pdf(
+        const ShadingPoint&                 light_shading_point,
+        const ShadingPoint&                 surface_shading_point) const;
 
     // Return the metadata of the light sampler parameters.
     static foundation::Dictionary get_params_metadata();
