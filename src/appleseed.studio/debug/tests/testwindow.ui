@@ -118,6 +118,13 @@
              </widget>
             </item>
             <item>
+             <widget class="QPushButton" name="pushbutton_check_only_visible">
+              <property name="text">
+               <string>Check Only &amp;Visible</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QPushButton" name="pushbutton_uncheck_all">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
