@@ -387,10 +387,7 @@ namespace
         for (int i = 0; i < item->childCount(); ++i)
         {
             if (do_filter_items(item->child(i), regexp))
-            {
                 any_children_visible = true;
-                break;
-            }
         }
 
         const bool visible = any_children_visible || regexp.indexIn(item->text(0)) >= 0;
@@ -398,6 +395,14 @@ namespace
         item->setHidden(!visible);
 
         return visible;
+    }
+
+    void make_all_items_visible(QTreeWidgetItem* item)
+    {
+        for (int i = 0, e = item->childCount(); i < e; ++i)
+            make_all_items_visible(item->child(i));
+
+        item->setHidden(false);
     }
 }
 
@@ -412,6 +417,9 @@ void TestWindow::slot_filter_text_changed(const QString& pattern) const
 void TestWindow::slot_clear_filter_text() const
 {
     m_ui->lineedit_filter->clear();
+
+    for (int i = 0, e = m_ui->treewidget_tests->topLevelItemCount(); i < e; ++i)
+        make_all_items_visible(m_ui->treewidget_tests->topLevelItem(i));
 }
 
 void TestWindow::slot_check_all_tests() const
