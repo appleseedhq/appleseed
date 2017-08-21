@@ -305,8 +305,8 @@ namespace
         const float     cos_omega,
         const float     cos_sigma)
     {   
-        assert(cos_omega >= -1.0 && cos_omega <= 1.0);
-        assert(cos_sigma >= 0.0 && cos_sigma <= 1.0);
+        assert(cos_omega >= -1.0f && cos_omega <= 1.0f);
+        assert(cos_sigma >= 0.0f && cos_sigma <= 1.0f);
 
         const float sin_omega = sqrt(1.0f - cos_omega * cos_omega);
 
@@ -354,26 +354,26 @@ float LightTree::compute_node_probability(
     const ShadingPoint&             shading_point) const
 {
     // Calculate probability of a single node based on its contribution over solid angle.
-    const float r = bbox.radius();
-    const float r2 = r * r;
+    const float r2 = bbox.square_radius();
     const float rcp_surface_area = 1.0f / r2;
 
-    // Triangle centroid is a more precise pocision than the center of the bbox.
+    // Triangle centroid is a more precise position than the center of the bbox.
     const Item& item = m_items[node.get_item_index()];
     const Vector3d position = (node.is_leaf() && item.m_light_type == EmittingTriangleType)
         ? emitting_triangle_centroid(item.m_light_index)
         : bbox.center();
 
-    const Vector3d surface_point = shading_point.get_point();
+    const Vector3d& surface_point = shading_point.get_point();
 
-    const float squared_distance =
+    const float distance2 =
         static_cast<float>(square_distance(surface_point, position));
 
     // Evaluated point is outside the bbox.
     // The original Nathan's implementation returns importance divided by the node surface area.
-    // However, replacing the surface area by squared distance showed to result in less noise.
-    if (squared_distance <= r2)
-        return node.get_importance() / squared_distance;
+    // However, replacing the surface area by the square distance showed to result in less noise.
+    if (distance2 <= r2)
+        return node.get_importance() / distance2;
+
     //
     // Implementation of Lambertian lighting model for sub-hemispherical light sources.
     // Reference:
@@ -381,18 +381,18 @@ float LightTree::compute_node_probability(
     //      https://www.microsoft.com/en-us/research/wp-content/uploads/1996/03/arealights.pdf
     //
     const Vector3d outcoming_light_direction = normalize(bbox.center() - surface_point);
-    const float sin_theta2 = min(1.0f, (r2 / squared_distance));
-    const float cos_theta = sqrt(1.0f - sin_theta2);
+    const float sin_sigma2 = min(1.0f, (r2 / distance2));
+    const float cos_sigma = sqrt(1.0f - sin_sigma2);
 
-    const Vector3d incoming_light_direction = shading_point.get_ray().m_dir;
+    const Vector3d& incoming_light_direction = shading_point.get_ray().m_dir;
 
     // [1] "Arbitrary direction D receives light only if dot(D,L) >= 0".
-    const Vector3d N = (dot(shading_point.get_geometric_normal(), incoming_light_direction) <= 0.0f)
-        ? normalize(shading_point.get_shading_normal())
-        : -normalize(shading_point.get_shading_normal());
+    const Vector3d& N = (dot(shading_point.get_geometric_normal(), incoming_light_direction) <= 0.0f)
+        ? shading_point.get_shading_normal()
+        : -shading_point.get_shading_normal();
 
-    const float cos_omega = min(1.0, max(-1.0, dot(N, outcoming_light_direction)));
-    const float approx_contribution = sub_hemispherical_light_source_contribution(cos_omega, cos_theta);
+    const float cos_omega = clamp(static_cast<float>(dot(N, outcoming_light_direction)), -1.0f, 1.0f);
+    const float approx_contribution = sub_hemispherical_light_source_contribution(cos_omega, cos_sigma);
     
     assert(approx_contribution > 0.0f);
     return node.get_importance() * rcp_surface_area * approx_contribution;
