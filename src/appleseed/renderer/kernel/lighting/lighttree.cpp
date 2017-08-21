@@ -370,8 +370,10 @@ float LightTree::compute_node_probability(
         static_cast<float>(square_distance(surface_point, position));
 
     // Evaluated point is outside the bbox.
+    // The original Nathan's implementation returns importance divided by the node surface area.
+    // However, replacing the surface area by squared distance showed to result in less noise.
     if (squared_distance <= r2)
-        return node.get_importance() * rcp_surface_area;
+        return node.get_importance() / squared_distance;
     //
     // Implementation of Lambertian lighting model for sub-hemispherical light sources.
     // Reference:
