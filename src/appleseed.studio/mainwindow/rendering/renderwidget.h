@@ -85,6 +85,9 @@ class RenderWidget
     // Thread-safe.
     void clear();
 
+    // Called before rendering begins.
+    void start_render();
+
     // Thread-safe.
     void multiply(const float multiplier);
 

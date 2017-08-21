@@ -131,6 +131,13 @@ namespace
     }
 }
 
+void RenderWidget::start_render()
+{
+    // Clear the image storage.
+    if (m_image_storage.get())
+        m_image_storage->clear(Color4f(0.0f));
+}
+
 void RenderWidget::multiply(const float multiplier)
 {
     QMutexLocker locker(&m_mutex);

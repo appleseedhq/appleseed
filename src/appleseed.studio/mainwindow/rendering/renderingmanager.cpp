@@ -171,6 +171,8 @@ void RenderingManager::start_rendering(
     m_rendering_mode = rendering_mode;
     m_render_tab = render_tab;
 
+    m_render_tab->get_render_widget()->start_render();
+
     m_tile_callback_factory.reset(
         new QtTileCallbackFactory(
             m_render_tab->get_render_widget()));
