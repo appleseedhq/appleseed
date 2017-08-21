@@ -133,11 +133,11 @@ void TestWindow::build_connections()
         this, SLOT(slot_on_test_item_check_state_changed(QTreeWidgetItem*, int)));
 
     connect(
-        m_ui->lineEdit_filter, SIGNAL(textChanged(const QString&)),
+        m_ui->lineedit_filter, SIGNAL(textChanged(const QString&)),
         this, SLOT(slot_filter_text_changed(const QString&)));
 
     connect(
-        m_ui->pushButton_clear_filter, SIGNAL(clicked()),
+        m_ui->pushbutton_clear_filter, SIGNAL(clicked()),
         this, SLOT(slot_clear_filter_text()));
 
     connect(
@@ -151,6 +151,10 @@ void TestWindow::build_connections()
     connect(
         m_ui->pushbutton_check_all, SIGNAL(clicked()),
         this, SLOT(slot_check_all_tests()));
+
+    connect(
+        m_ui->pushbutton_check_only_visible, SIGNAL(clicked()),
+        this, SLOT(slot_check_visible_tests()));
 
     connect(
         m_ui->pushbutton_uncheck_all, SIGNAL(clicked()),
@@ -280,7 +284,7 @@ namespace
         const int               column,
         const Qt::CheckState    state)
     {
-        for (int i = 0; i < parent->childCount(); ++i)
+        for (int i = 0, e = parent->childCount(); i < e; ++i)
         {
             QTreeWidgetItem* item = parent->child(i);
             item->setCheckState(column, state);
@@ -288,29 +292,12 @@ namespace
         }
     }
 
-    void set_all_items_check_state(
-        QTreeWidget*            widget,
-        const int               column,
-        const Qt::CheckState    state)
-    {
-        const bool were_signals_blocked = widget->blockSignals(true);
-
-        for (int i = 0; i < widget->topLevelItemCount(); ++i)
-        {
-            QTreeWidgetItem* item = widget->topLevelItem(i);
-            item->setCheckState(column, state);
-            set_child_items_check_state(item, column, state);
-        }
-
-        widget->blockSignals(were_signals_blocked);
-    }
-
     bool has_child_items(
         const QTreeWidgetItem*  parent,
         const int               column,
         const Qt::CheckState    state)
     {
-        for (int i = 0; i < parent->childCount(); ++i)
+        for (int i = 0, e = parent->childCount(); i < e; ++i)
         {
             QTreeWidgetItem* item = parent->child(i);
             if (item->checkState(column) == state)
@@ -380,17 +367,14 @@ void TestWindow::slot_on_test_item_check_state_changed(QTreeWidgetItem* item, in
 
 namespace
 {
-    bool do_filter_items(QTreeWidgetItem* item, const QRegExp& regexp)
+    bool adjust_items_visibility(QTreeWidgetItem* item, const QRegExp& regexp)
     {
         bool any_children_visible = false;
 
-        for (int i = 0; i < item->childCount(); ++i)
+        for (int i = 0, e = item->childCount(); i < e; ++i)
         {
-            if (do_filter_items(item->child(i), regexp))
-            {
+            if (adjust_items_visibility(item->child(i), regexp))
                 any_children_visible = true;
-                break;
-            }
         }
 
         const bool visible = any_children_visible || regexp.indexIn(item->text(0)) >= 0;
@@ -399,24 +383,89 @@ namespace
 
         return visible;
     }
+
+    void make_all_items_visible(QTreeWidgetItem* item)
+    {
+        for (int i = 0, e = item->childCount(); i < e; ++i)
+            make_all_items_visible(item->child(i));
+
+        item->setHidden(false);
+    }
 }
 
 void TestWindow::slot_filter_text_changed(const QString& pattern) const
 {
     const QRegExp regexp(pattern, Qt::CaseInsensitive);
 
-    for (int i = 0; i < m_ui->treewidget_tests->topLevelItemCount(); ++i)
-        do_filter_items(m_ui->treewidget_tests->topLevelItem(i), regexp);
+    for (int i = 0, e = m_ui->treewidget_tests->topLevelItemCount(); i < e; ++i)
+        adjust_items_visibility(m_ui->treewidget_tests->topLevelItem(i), regexp);
 }
 
 void TestWindow::slot_clear_filter_text() const
 {
-    m_ui->lineEdit_filter->clear();
+    m_ui->lineedit_filter->clear();
+
+    for (int i = 0, e = m_ui->treewidget_tests->topLevelItemCount(); i < e; ++i)
+        make_all_items_visible(m_ui->treewidget_tests->topLevelItem(i));
+}
+
+namespace
+{
+    void set_all_items_check_state(
+        QTreeWidget*            widget,
+        const int               column,
+        const Qt::CheckState    state)
+    {
+        const bool were_signals_blocked = widget->blockSignals(true);
+
+        for (int i = 0, e = widget->topLevelItemCount(); i < e; ++i)
+        {
+            QTreeWidgetItem* item = widget->topLevelItem(i);
+            item->setCheckState(column, state);
+            set_child_items_check_state(item, column, state);
+        }
+
+        widget->blockSignals(were_signals_blocked);
+    }
+
+    void check_visible_child_items(
+        QTreeWidgetItem*        parent,
+        const int               column)
+    {
+        for (int i = 0, e = parent->childCount(); i < e; ++i)
+        {
+            QTreeWidgetItem* item = parent->child(i);
+            item->setCheckState(column, item->isHidden() ? Qt::Unchecked : Qt::Checked);
+            check_visible_child_items(item, column);
+        }
+    }
+
+    void check_visible_items(
+        QTreeWidget*            widget,
+        const int               column)
+    {
+        const bool were_signals_blocked = widget->blockSignals(true);
+
+        for (int i = 0, e = widget->topLevelItemCount(); i < e; ++i)
+        {
+            QTreeWidgetItem* item = widget->topLevelItem(i);
+            item->setCheckState(column, item->isHidden() ? Qt::Unchecked : Qt::Checked);
+            check_visible_child_items(item, column);
+        }
+
+        widget->blockSignals(were_signals_blocked);
+    }
 }
 
 void TestWindow::slot_check_all_tests() const
 {
     set_all_items_check_state(m_ui->treewidget_tests, 0, Qt::Checked);
+    update_checked_tests_label();
+}
+
+void TestWindow::slot_check_visible_tests() const
+{
+    check_visible_items(m_ui->treewidget_tests, 0);
     update_checked_tests_label();
 }
 
@@ -501,8 +550,8 @@ void TestWindow::enable_widgets(const bool enabled) const
     m_ui->pushbutton_uncheck_all->setEnabled(enabled);
     m_ui->pushbutton_run->setEnabled(enabled);
     m_ui->pushbutton_clear->setEnabled(enabled);
-    m_ui->pushButton_clear_filter->setEnabled(enabled);
-    m_ui->lineEdit_filter->setEnabled(enabled);
+    m_ui->pushbutton_clear_filter->setEnabled(enabled);
+    m_ui->lineedit_filter->setEnabled(enabled);
 }
 
 void TestWindow::slot_clear_output_treeview() const

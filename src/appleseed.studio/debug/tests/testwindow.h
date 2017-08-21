@@ -98,6 +98,7 @@ class TestWindow
     void slot_clear_filter_text() const;
 
     void slot_check_all_tests() const;
+    void slot_check_visible_tests() const;
     void slot_uncheck_all_tests() const;
 
     void slot_run_tests();
