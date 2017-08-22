@@ -1,5 +1,7 @@
 import appleseed as asr
 import appleseed.studio as studio
+from appleseed.studio import ui
+from appleseed.studio.Qt import QtWidgets
 from appleseed.textureconverter import *
 
 import os
@@ -7,23 +9,17 @@ import sys
 import logging
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
-def get_textures(container):
-    assert isinstance(container, asr.BaseGroup)
-
-    textures = list(container.textures())
-
-    assemblies = container.assemblies()
-    for key in assemblies:
-        textures += get_textures(assemblies[key])
-
-    return textures
+def register():
+    create_convert_textures_action()
 
 
-def get_full_path(texture_path, project):
-    if os.path.isabs(texture_path):
-        return texture_path
-    else:
-        return project.qualify_path(texture_path)
+def create_convert_textures_action():
+    menu = ui.find_or_create_menu("Utils")
+
+    act = QtWidgets.QAction("Convert textures", menu)
+    act.triggered.connect(convert_all_textures_to_tx)
+
+    menu.addAction(act)
 
 
 def convert_all_textures_to_tx():
@@ -68,22 +64,20 @@ def convert_all_textures_to_tx():
             logging.info('{} converted to {}'.format(texture_path, new_texture_path))
 
 
-def find_or_create_menu(menu_name):
-    from appleseed.studio.Qt import QtCore, QtGui, QtWidgets
-    from appleseed.studio.ui import wrapinstance
+def get_textures(container):
+    assert isinstance(container, asr.BaseGroup)
 
-    ptr = studio.main_window()
-    main_window = wrapinstance(long(ptr), QtWidgets.QMainWindow)
-    menu_bar = main_window.menuBar()
+    textures = list(container.textures())
 
-    for menu in menu_bar.actions():
-        cur_menu_name = menu.text().replace('&', '').lower()
+    assemblies = container.assemblies()
+    for key in assemblies:
+        textures += get_textures(assemblies[key])
 
-        if cur_menu_name == menu_name.lower():
-            return menu.menu()
+    return textures
+
+
+def get_full_path(texture_path, project):
+    if os.path.isabs(texture_path):
+        return texture_path
     else:
-        new_menu = QtWidgets.QAction(menu_name, main_window)
-        new_menu.setMenu(QtWidgets.QMenu(main_window))
-
-        menu_bar.addAction(new_menu)
-        return new_menu.menu()
+        return project.qualify_path(texture_path)

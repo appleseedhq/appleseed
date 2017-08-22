@@ -46,7 +46,9 @@ endif ()
 
 set (studio_sources
     studio/__init__.py
+    studio/plugins.py
     studio/Qt.py
+    studio/ui.py
 )
 list (APPEND appleseed.python_sources
     ${studio_sources}
@@ -184,7 +186,7 @@ add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/applese
 add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/studio/__init__.py appleseed.studio)
 add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/studio/Qt.py appleseed.studio)
 add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/studio/ui.py appleseed.studio)
-add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/studio/helpers.py appleseed.studio)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/studio/plugins.py appleseed.studio)
 add_copy_dir_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/test appleseed)
 
 

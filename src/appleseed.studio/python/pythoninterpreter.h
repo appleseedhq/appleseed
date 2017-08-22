@@ -51,6 +51,8 @@ class PythonInterpreter
 
     void initialize(OutputRedirector redirector);
 
+    void load_plugins();
+
     boost::python::object execute(const char* command);
 
   private:
