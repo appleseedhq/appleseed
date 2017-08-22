@@ -1,6 +1,6 @@
 import appleseed as asr
 import appleseed.studio as studio
-from appleseed.studio import helpers
+from appleseed.studio import ui
 from appleseed.studio.Qt import QtWidgets
 from appleseed.textureconverter import *
 
@@ -14,7 +14,7 @@ def register():
 
 
 def create_convert_textures_action():
-    menu = helpers.find_or_create_menu("Utils")
+    menu = ui.find_or_create_menu("Utils")
 
     act = QtWidgets.QAction("Convert textures", menu)
     act.triggered.connect(convert_all_textures_to_tx)
