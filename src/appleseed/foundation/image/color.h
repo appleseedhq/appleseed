@@ -66,12 +66,14 @@ class Color
 
     // Constructors.
     Color();                                    // leave all components uninitialized
-    explicit Color(const ValueType* rhs);       // initialize with array of N scalars
-    explicit Color(const ValueType val);        // set all components to 'val'
+    explicit Color(const ValueType val);        // set all components to `val`
 
     // Construct a color from another color of a different type.
     template <typename U>
     explicit Color(const Color<U, N>& rhs);
+
+    // Construct a color from an array of N scalars.
+    static Color from_array(const ValueType* rhs);
 
     // Set all components to a given value.
     void set(const ValueType val);
@@ -185,8 +187,7 @@ class Color<T, 3>
 
     // Constructors.
     Color();                                    // leave all components uninitialized
-    explicit Color(const ValueType* rhs);       // initialize with array of 3 scalars
-    explicit Color(const ValueType val);        // set all components to 'val'
+    explicit Color(const ValueType val);        // set all components to `val`
     Color(                                      // set individual components
         const ValueType r,
         const ValueType g,
@@ -206,6 +207,9 @@ class Color<T, 3>
     operator const Imath::Color3<T>&() const;
 
 #endif
+
+    // Construct a color from an array of 3 scalars.
+    static Color from_array(const ValueType* rhs);
 
     // Set all components to a given value.
     void set(const ValueType val);
@@ -233,8 +237,7 @@ class Color<T, 4>
 
     // Constructors.
     Color();                                    // leave all components uninitialized
-    explicit Color(const ValueType* rhs);       // initialize with array of 4 scalars
-    explicit Color(const ValueType val);        // set all components to 'val'
+    explicit Color(const ValueType val);        // set all components to `val`
     Color(
         const Color<T, 3>&  rgb,
         const ValueType     a);
@@ -258,6 +261,9 @@ class Color<T, 4>
     operator const Imath::Color4<T>&() const;
 
 #endif
+
+    // Construct a color from an array of 4 scalars.
+    static Color from_array(const ValueType* rhs);
 
     // Set all components to a given value.
     void set(const ValueType val);
@@ -295,15 +301,6 @@ inline Color<T, N>::Color()
 }
 
 template <typename T, size_t N>
-inline Color<T, N>::Color(const ValueType* rhs)
-{
-    assert(rhs);
-
-    for (size_t i = 0; i < N; ++i)
-        m_comp[i] = rhs[i];
-}
-
-template <typename T, size_t N>
 inline Color<T, N>::Color(const ValueType val)
 {
     set(val);
@@ -315,6 +312,19 @@ inline Color<T, N>::Color(const Color<U, N>& rhs)
 {
     for (size_t i = 0; i < N; ++i)
         m_comp[i] = static_cast<ValueType>(rhs.m_comp[i]);
+}
+
+template <typename T, size_t N>
+inline Color<T, N> Color<T, N>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+
+    Color result;
+
+    for (size_t i = 0; i < N; ++i)
+        result.m_comp[i] = rhs[i];
+
+    return result;
 }
 
 template <typename T, size_t N>
@@ -839,15 +849,6 @@ inline Color<T, 3>::Color()
 }
 
 template <typename T>
-inline Color<T, 3>::Color(const ValueType* rhs)
-{
-    assert(rhs);
-    r = rhs[0];
-    g = rhs[1];
-    b = rhs[2];
-}
-
-template <typename T>
 inline Color<T, 3>::Color(const ValueType val)
   : r(val)
   , g(val)
@@ -900,6 +901,13 @@ inline Color<T, 3>::operator const Imath::Color3<T>&() const
 #endif
 
 template <typename T>
+inline Color<T, 3> Color<T, 3>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+    return Color(rhs[0], rhs[1], rhs[2]);
+}
+
+template <typename T>
 inline void Color<T, 3>::set(const ValueType val)
 {
     r = g = b = val;
@@ -927,16 +935,6 @@ inline const T& Color<T, 3>::operator[](const size_t i) const
 template <typename T>
 inline Color<T, 4>::Color()
 {
-}
-
-template <typename T>
-inline Color<T, 4>::Color(const ValueType* rhs)
-{
-    assert(rhs);
-    r = rhs[0];
-    g = rhs[1];
-    b = rhs[2];
-    a = rhs[3];
 }
 
 template <typename T>
@@ -1006,6 +1004,13 @@ inline Color<T, 4>::operator const Imath::Color4<T>&() const
 }
 
 #endif
+
+template <typename T>
+inline Color<T, 4> Color<T, 4>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+    return Color(rhs[0], rhs[1], rhs[2], rhs[3]);
+}
 
 template <typename T>
 inline void Color<T, 4>::set(const ValueType val)

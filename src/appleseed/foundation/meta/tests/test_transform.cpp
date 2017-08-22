@@ -260,7 +260,7 @@ TEST_SUITE(Foundation_Math_TransformInterpolator)
              0.0, 0.0, 0.0, 1.0
         };
 
-        const Transformd transform(Transformd::from_local_to_parent(Matrix4d(Values)));
+        const auto transform(Transformd::from_local_to_parent(Matrix4d::from_array(Values)));
         const TransformInterpolatord interpolator(transform, transform);
 
         Transformd result;
@@ -288,8 +288,8 @@ TEST_SUITE(Foundation_Math_TransformInterpolator)
         };
 
         const TransformInterpolatord interpolator(
-            Transformd::from_local_to_parent(Matrix4d(FromValues)),
-            Transformd::from_local_to_parent(Matrix4d(ToValues)));
+            Transformd::from_local_to_parent(Matrix4d::from_array(FromValues)),
+            Transformd::from_local_to_parent(Matrix4d::from_array(ToValues)));
 
         Transformd result;
         interpolator.evaluate(0.024320000000000008, result);

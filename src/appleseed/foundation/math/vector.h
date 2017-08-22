@@ -67,12 +67,14 @@ class Vector
 
     // Constructors.
     Vector();                                   // leave all components uninitialized
-    explicit Vector(const ValueType* rhs);      // initialize with array of N scalars
-    explicit Vector(const ValueType val);       // set all components to 'val'
+    explicit Vector(const ValueType val);       // set all components to `val`
 
     // Construct a vector from another vector of a different type.
     template <typename U>
     explicit Vector(const Vector<U, N>& rhs);
+
+    // Construct a vector from an array of N scalars.
+    static VectorType from_array(const ValueType* rhs);
 
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
@@ -248,8 +250,7 @@ class Vector<T, 2>
 
     // Constructors.
     Vector();                                   // leave all components uninitialized
-    explicit Vector(const ValueType* rhs);      // initialize with array of 2 scalars
-    explicit Vector(const ValueType val);       // set all components to 'val'
+    explicit Vector(const ValueType val);       // set all components to `val`
     Vector(                                     // set individual components
         const ValueType x,
         const ValueType y);
@@ -268,6 +269,9 @@ class Vector<T, 2>
     operator const Imath::Vec2<T>&() const;
 
 #endif
+
+    // Construct a vector from an array of 2 scalars.
+    static VectorType from_array(const ValueType* rhs);
 
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
@@ -298,8 +302,7 @@ class Vector<T, 3>
 
     // Constructors.
     Vector();                                   // leave all components uninitialized
-    explicit Vector(const ValueType* rhs);      // initialize with array of 3 scalars
-    explicit Vector(const ValueType val);       // set all components to 'val'
+    explicit Vector(const ValueType val);       // set all components to `val`
     Vector(                                     // set individual components
         const ValueType x,
         const ValueType y,
@@ -319,6 +322,9 @@ class Vector<T, 3>
     operator const Imath::Vec3<T>&() const;
 
 #endif
+
+    // Construct a vector from an array of 3 scalars.
+    static VectorType from_array(const ValueType* rhs);
 
     // Build a unit vector from two angles.
     static VectorType make_unit_vector(
@@ -359,8 +365,7 @@ class Vector<T, 4>
 
     // Constructors.
     Vector();                                   // leave all components uninitialized
-    explicit Vector(const ValueType* rhs);      // initialize with array of 4 scalars
-    explicit Vector(const ValueType val);       // set all components to 'val'
+    explicit Vector(const ValueType val);       // set all components to `val`
     Vector(                                     // set individual components
         const ValueType x,
         const ValueType y,
@@ -370,6 +375,9 @@ class Vector<T, 4>
     // Construct a vector from another vector of a different type.
     template <typename U>
     explicit Vector(const Vector<U, 4>& rhs);
+
+    // Construct a vector from an array of 4 scalars.
+    static VectorType from_array(const ValueType* rhs);
 
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
@@ -436,15 +444,6 @@ inline Vector<T, N>::Vector()
 }
 
 template <typename T, size_t N>
-inline Vector<T, N>::Vector(const ValueType* rhs)
-{
-    assert(rhs);
-
-    for (size_t i = 0; i < N; ++i)
-        m_comp[i] = rhs[i];
-}
-
-template <typename T, size_t N>
 inline Vector<T, N>::Vector(const ValueType val)
 {
     for (size_t i = 0; i < N; ++i)
@@ -457,6 +456,19 @@ inline Vector<T, N>::Vector(const Vector<U, N>& rhs)
 {
     for (size_t i = 0; i < N; ++i)
         m_comp[i] = static_cast<ValueType>(rhs[i]);
+}
+
+template <typename T, size_t N>
+inline Vector<T, N> Vector<T, N>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+
+    Vector<T, N> result;
+
+    for (size_t i = 0; i < N; ++i)
+        result.m_comp[i] = rhs[i];
+
+    return result;
 }
 
 template <typename T, size_t N>
@@ -1039,14 +1051,6 @@ inline Vector<T, 2>::Vector()
 }
 
 template <typename T>
-inline Vector<T, 2>::Vector(const ValueType* rhs)
-{
-    assert(rhs);
-    x = rhs[0];
-    y = rhs[1];
-}
-
-template <typename T>
 inline Vector<T, 2>::Vector(const ValueType val)
   : x(val)
   , y(val)
@@ -1094,6 +1098,13 @@ inline Vector<T, 2>::operator const Imath::Vec2<T>&() const
 #endif
 
 template <typename T>
+inline Vector<T, 2> Vector<T, 2>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+    return Vector(rhs[0], rhs[1]);
+}
+
+template <typename T>
 inline T& Vector<T, 2>::operator[](const size_t i)
 {
     assert(i < Dimension);
@@ -1121,15 +1132,6 @@ inline T det(const Vector<T, 2>& lhs, const Vector<T, 2>& rhs)
 template <typename T>
 inline Vector<T, 3>::Vector()
 {
-}
-
-template <typename T>
-inline Vector<T, 3>::Vector(const ValueType* rhs)
-{
-    assert(rhs);
-    x = rhs[0];
-    y = rhs[1];
-    z = rhs[2];
 }
 
 template <typename T>
@@ -1183,6 +1185,13 @@ inline Vector<T, 3>::operator const Imath::Vec3<T>&() const
 }
 
 #endif
+
+template <typename T>
+inline Vector<T, 3> Vector<T, 3>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+    return Vector(rhs[0], rhs[1], rhs[2]);
+}
 
 template <typename T>
 inline Vector<T, 3> Vector<T, 3>::make_unit_vector(
@@ -1247,16 +1256,6 @@ inline Vector<T, 4>::Vector()
 }
 
 template <typename T>
-inline Vector<T, 4>::Vector(const ValueType* rhs)
-{
-    assert(rhs);
-    x = rhs[0];
-    y = rhs[1];
-    z = rhs[2];
-    w = rhs[3];
-}
-
-template <typename T>
 inline Vector<T, 4>::Vector(const ValueType val)
   : x(val)
   , y(val)
@@ -1286,6 +1285,13 @@ inline Vector<T, 4>::Vector(const Vector<U, 4>& rhs)
   , z(static_cast<ValueType>(rhs.z))
   , w(static_cast<ValueType>(rhs.w))
 {
+}
+
+template <typename T>
+inline Vector<T, 4> Vector<T, 4>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+    return Vector(rhs[0], rhs[1], rhs[2], rhs[3]);
 }
 
 template <typename T>

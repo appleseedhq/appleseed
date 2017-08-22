@@ -150,7 +150,7 @@ class UnalignedMatrix44
 
     Matrix<T, 4, 4> as_foundation_matrix() const
     {
-        return Matrix<T, 4, 4>(m_data);
+        return Matrix<T, 4, 4>::from_array(m_data);
     }
 
     T operator[](const size_t index) const

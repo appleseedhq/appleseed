@@ -89,8 +89,7 @@ class DynamicSpectrum
 
     // Constructors.
     DynamicSpectrum();                                      // leave all components uninitialized
-    explicit DynamicSpectrum(const ValueType* rhs);         // initialize with array of 3 or N scalars depending on mode
-    explicit DynamicSpectrum(const ValueType val);          // set all components to 'val'
+    explicit DynamicSpectrum(const ValueType val);          // set all components to `val`
     DynamicSpectrum(
         const foundation::Color<ValueType, 3>&              rgb,
         const foundation::LightingConditions&               lighting_conditions,
@@ -103,6 +102,9 @@ class DynamicSpectrum
     // Construct a spectrum from another spectrum of a different type.
     template <typename U>
     DynamicSpectrum(const DynamicSpectrum<U, N>& rhs);
+
+    // Construct a spectrum from an array of `s_size` scalars.
+    static DynamicSpectrum from_array(const ValueType* rhs);
 
     // Set all components to a given value.
     void set(const ValueType val);
@@ -303,19 +305,6 @@ inline DynamicSpectrum<T, N>::DynamicSpectrum()
 }
 
 template <typename T, size_t N>
-inline DynamicSpectrum<T, N>::DynamicSpectrum(const ValueType* rhs)
-{
-    assert(rhs);
-
-    for (size_t i = 0; i < s_size; ++i)
-        m_samples[i] = rhs[i];
-
-#ifdef APPLESEED_USE_SSE
-    m_samples[s_size] = T(0.0);
-#endif
-}
-
-template <typename T, size_t N>
 inline DynamicSpectrum<T, N>::DynamicSpectrum(const ValueType val)
 {
     set(val);
@@ -361,6 +350,19 @@ inline DynamicSpectrum<T, N>::DynamicSpectrum(const DynamicSpectrum<U, N>& rhs)
 #ifdef APPLESEED_USE_SSE
     m_samples[s_size] = T(0.0);
 #endif
+}
+
+template <typename T, size_t N>
+inline DynamicSpectrum<T, N> DynamicSpectrum<T, N>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+
+    DynamicSpectrum result;
+
+    for (size_t i = 0; i < s_size; ++i)
+        result.m_samples[i] = rhs[i];
+
+    return result;
 }
 
 template <typename T, size_t N>

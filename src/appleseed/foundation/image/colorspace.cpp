@@ -164,9 +164,9 @@ namespace
     };
 }
 
-const RegularSpectrum31f DaylightS0(DaylightS0Amplitudes);
-const RegularSpectrum31f DaylightS1(DaylightS1Amplitudes);
-const RegularSpectrum31f DaylightS2(DaylightS2Amplitudes);
+const RegularSpectrum31f DaylightS0(RegularSpectrum31f::from_array(DaylightS0Amplitudes));
+const RegularSpectrum31f DaylightS1(RegularSpectrum31f::from_array(DaylightS1Amplitudes));
+const RegularSpectrum31f DaylightS2(RegularSpectrum31f::from_array(DaylightS2Amplitudes));
 
 
 //
@@ -247,10 +247,10 @@ namespace
 }
 
 // Daylight illuminants.
-const RegularSpectrum31f IlluminantCIED65(IlluminantCIED65Tab);
+const RegularSpectrum31f IlluminantCIED65(RegularSpectrum31f::from_array(IlluminantCIED65Tab));
 
 // Incandescent lighting illuminants.
-const RegularSpectrum31f IlluminantCIEA(IlluminantCIEATab);
+const RegularSpectrum31f IlluminantCIEA(RegularSpectrum31f::from_array(IlluminantCIEATab));
 
 
 //
@@ -887,41 +887,41 @@ namespace
 // XYZ color matching functions.
 const RegularSpectrum31f XYZCMFCIE19312Deg[3] =
 {
-    RegularSpectrum31f(XYZCMFCIE19312DegTabX),
-    RegularSpectrum31f(XYZCMFCIE19312DegTabY),
-    RegularSpectrum31f(XYZCMFCIE19312DegTabZ)
+    RegularSpectrum31f::from_array(XYZCMFCIE19312DegTabX),
+    RegularSpectrum31f::from_array(XYZCMFCIE19312DegTabY),
+    RegularSpectrum31f::from_array(XYZCMFCIE19312DegTabZ)
 };
 const RegularSpectrum31f XYZCMFCIE1931Judd2Deg[3] =
 {
-    RegularSpectrum31f(XYZCMFCIE1931Judd2DegTabX),
-    RegularSpectrum31f(XYZCMFCIE1931Judd2DegTabY),
-    RegularSpectrum31f(XYZCMFCIE1931Judd2DegTabZ)
+    RegularSpectrum31f::from_array(XYZCMFCIE1931Judd2DegTabX),
+    RegularSpectrum31f::from_array(XYZCMFCIE1931Judd2DegTabY),
+    RegularSpectrum31f::from_array(XYZCMFCIE1931Judd2DegTabZ)
 };
 const RegularSpectrum31f XYZCMFCIE1931JuddVos2Deg[3] =
 {
-    RegularSpectrum31f(XYZCMFCIE1931JuddVos2DegTabX),
-    RegularSpectrum31f(XYZCMFCIE1931JuddVos2DegTabY),
-    RegularSpectrum31f(XYZCMFCIE1931JuddVos2DegTabZ)
+    RegularSpectrum31f::from_array(XYZCMFCIE1931JuddVos2DegTabX),
+    RegularSpectrum31f::from_array(XYZCMFCIE1931JuddVos2DegTabY),
+    RegularSpectrum31f::from_array(XYZCMFCIE1931JuddVos2DegTabZ)
 };
 const RegularSpectrum31f XYZCMFCIE196410Deg[3] =
 {
-    RegularSpectrum31f(XYZCMFCIE196410DegTabX),
-    RegularSpectrum31f(XYZCMFCIE196410DegTabY),
-    RegularSpectrum31f(XYZCMFCIE196410DegTabZ)
+    RegularSpectrum31f::from_array(XYZCMFCIE196410DegTabX),
+    RegularSpectrum31f::from_array(XYZCMFCIE196410DegTabY),
+    RegularSpectrum31f::from_array(XYZCMFCIE196410DegTabZ)
 };
 
 // RGB color matching functions.
 const RegularSpectrum31f RGBCMFStilesBurch19552Deg[3] =
 {
-    RegularSpectrum31f(RGBCMFStilesBurch19552DegTabX),
-    RegularSpectrum31f(RGBCMFStilesBurch19552DegTabY),
-    RegularSpectrum31f(RGBCMFStilesBurch19552DegTabZ)
+    RegularSpectrum31f::from_array(RGBCMFStilesBurch19552DegTabX),
+    RegularSpectrum31f::from_array(RGBCMFStilesBurch19552DegTabY),
+    RegularSpectrum31f::from_array(RGBCMFStilesBurch19552DegTabZ)
 };
 const RegularSpectrum31f RGBCMFStilesBurch195910Deg[3] =
 {
-    RegularSpectrum31f(RGBCMFStilesBurch195910DegTabX),
-    RegularSpectrum31f(RGBCMFStilesBurch195910DegTabY),
-    RegularSpectrum31f(RGBCMFStilesBurch195910DegTabZ)
+    RegularSpectrum31f::from_array(RGBCMFStilesBurch195910DegTabX),
+    RegularSpectrum31f::from_array(RGBCMFStilesBurch195910DegTabY),
+    RegularSpectrum31f::from_array(RGBCMFStilesBurch195910DegTabZ)
 };
 
 
@@ -1426,22 +1426,22 @@ namespace
 }
 
 // Basis spectra for reflectance conversions.
-const RegularSpectrum31f RGBToSpectrumWhiteReflectance(RGBToSpectrumWhiteReflectanceTab);
-const RegularSpectrum31f RGBToSpectrumCyanReflectance(RGBToSpectrumCyanReflectanceTab);
-const RegularSpectrum31f RGBToSpectrumMagentaReflectance(RGBToSpectrumMagentaReflectanceTab);
-const RegularSpectrum31f RGBToSpectrumYellowReflectance(RGBToSpectrumYellowReflectanceTab);
-const RegularSpectrum31f RGBToSpectrumRedReflectance(RGBToSpectrumRedReflectanceTab);
-const RegularSpectrum31f RGBToSpectrumGreenReflectance(RGBToSpectrumGreenReflectanceTab);
-const RegularSpectrum31f RGBToSpectrumBlueReflectance(RGBToSpectrumBlueReflectanceTab);
+const RegularSpectrum31f RGBToSpectrumWhiteReflectance(RegularSpectrum31f::from_array(RGBToSpectrumWhiteReflectanceTab));
+const RegularSpectrum31f RGBToSpectrumCyanReflectance(RegularSpectrum31f::from_array(RGBToSpectrumCyanReflectanceTab));
+const RegularSpectrum31f RGBToSpectrumMagentaReflectance(RegularSpectrum31f::from_array(RGBToSpectrumMagentaReflectanceTab));
+const RegularSpectrum31f RGBToSpectrumYellowReflectance(RegularSpectrum31f::from_array(RGBToSpectrumYellowReflectanceTab));
+const RegularSpectrum31f RGBToSpectrumRedReflectance(RegularSpectrum31f::from_array(RGBToSpectrumRedReflectanceTab));
+const RegularSpectrum31f RGBToSpectrumGreenReflectance(RegularSpectrum31f::from_array(RGBToSpectrumGreenReflectanceTab));
+const RegularSpectrum31f RGBToSpectrumBlueReflectance(RegularSpectrum31f::from_array(RGBToSpectrumBlueReflectanceTab));
 
 // Basis spectra for illuminance conversions.
-const RegularSpectrum31f RGBToSpectrumWhiteIlluminance(RGBToSpectrumWhiteIlluminanceTab);
-const RegularSpectrum31f RGBToSpectrumCyanIlluminance(RGBToSpectrumCyanIlluminanceTab);
-const RegularSpectrum31f RGBToSpectrumMagentaIlluminance(RGBToSpectrumMagentaIlluminanceTab);
-const RegularSpectrum31f RGBToSpectrumYellowIlluminance(RGBToSpectrumYellowIlluminanceTab);
-const RegularSpectrum31f RGBToSpectrumRedIlluminance(RGBToSpectrumRedIlluminanceTab);
-const RegularSpectrum31f RGBToSpectrumGreenIlluminance(RGBToSpectrumGreenIlluminanceTab);
-const RegularSpectrum31f RGBToSpectrumBlueIlluminance(RGBToSpectrumBlueIlluminanceTab);
+const RegularSpectrum31f RGBToSpectrumWhiteIlluminance(RegularSpectrum31f::from_array(RGBToSpectrumWhiteIlluminanceTab));
+const RegularSpectrum31f RGBToSpectrumCyanIlluminance(RegularSpectrum31f::from_array(RGBToSpectrumCyanIlluminanceTab));
+const RegularSpectrum31f RGBToSpectrumMagentaIlluminance(RegularSpectrum31f::from_array(RGBToSpectrumMagentaIlluminanceTab));
+const RegularSpectrum31f RGBToSpectrumYellowIlluminance(RegularSpectrum31f::from_array(RGBToSpectrumYellowIlluminanceTab));
+const RegularSpectrum31f RGBToSpectrumRedIlluminance(RegularSpectrum31f::from_array(RGBToSpectrumRedIlluminanceTab));
+const RegularSpectrum31f RGBToSpectrumGreenIlluminance(RegularSpectrum31f::from_array(RGBToSpectrumGreenIlluminanceTab));
+const RegularSpectrum31f RGBToSpectrumBlueIlluminance(RegularSpectrum31f::from_array(RGBToSpectrumBlueIlluminanceTab));
 
 
 //
@@ -1490,7 +1490,7 @@ void spectrum_to_ciexyz_standard(
     const Color3f c =
         spectrum_to_ciexyz<float, RegularSpectrum31f>(
             lighting_conditions,
-            RegularSpectrum31f(spectrum));
+            RegularSpectrum31f::from_array(spectrum));
 
     ciexyz[0] = c[0];
     ciexyz[1] = c[1];
