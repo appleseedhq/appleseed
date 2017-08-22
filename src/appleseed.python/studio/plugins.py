@@ -37,7 +37,6 @@ def load_plugins(bundled_plugins_path):
     if user_plugins_path is not None:
         load_plugins_from_dir(user_plugins_path)
 
-
 def load_plugins_from_dir(bundled_plugins_path):
     for plugin in os.listdir(bundled_plugins_path):
         plugin_path = os.path.join(bundled_plugins_path, plugin)
@@ -46,7 +45,6 @@ def load_plugins_from_dir(bundled_plugins_path):
             continue
 
         load_plugin(plugin_path)
-
 
 def load_plugin(plugin_path):
     path, name = os.path.split(plugin_path)
@@ -66,6 +64,6 @@ def load_plugin(plugin_path):
     try:
         plugin_module.register()
     except Exception as e:
-        print "Could not init plugin '{}'".format(plugin_module, e)
+        print "Could not init plugin '{}'".format(plugin_module)
         traceback.print_exc()
         return

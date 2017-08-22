@@ -10,17 +10,12 @@ import logging
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
 def register():
-    create_convert_textures_action()
-
-
-def create_convert_textures_action():
     menu = ui.find_or_create_menu("Utils")
 
     act = QtWidgets.QAction("Convert textures", menu)
     act.triggered.connect(convert_all_textures_to_tx)
 
     menu.addAction(act)
-
 
 def convert_all_textures_to_tx():
     def _find_maketx():
@@ -63,7 +58,6 @@ def convert_all_textures_to_tx():
             texture.set_parameters(texture_parameters)
             logging.info('{} converted to {}'.format(texture_path, new_texture_path))
 
-
 def get_textures(container):
     assert isinstance(container, asr.BaseGroup)
 
@@ -74,7 +68,6 @@ def get_textures(container):
         textures += get_textures(assemblies[key])
 
     return textures
-
 
 def get_full_path(texture_path, project):
     if os.path.isabs(texture_path):

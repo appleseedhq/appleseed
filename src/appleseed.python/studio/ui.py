@@ -41,7 +41,6 @@ def wrapinstance(addr, type):
     else:
         raise Exception("No wrapinstance function defined for " + Qt.__binding__)
 
-
 def find_or_create_menu(menu_name):
     ptr = studio.main_window()
     main_window = wrapinstance(long(ptr), Qt.QtWidgets.QMainWindow)
