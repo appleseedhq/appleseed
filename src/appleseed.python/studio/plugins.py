@@ -28,30 +28,44 @@
 
 import os
 import imp
+import traceback
 
 def load_plugins(bundled_plugins_path):
+    load_plugins_from_dir(bundled_plugins_path)
+
+    user_plugins_path = os.environ.get('APPLESEED_STUDIO_PLUGIN_PATH')
+    if user_plugins_path is not None:
+        load_plugins_from_dir(user_plugins_path)
+
+
+def load_plugins_from_dir(bundled_plugins_path):
     for plugin in os.listdir(bundled_plugins_path):
         plugin_path = os.path.join(bundled_plugins_path, plugin)
 
         if not os.path.isdir(plugin_path):
             continue
 
-        path, name = os.path.split(plugin_path)
-        name, ext = os.path.splitext(name)
+        load_plugin(plugin_path)
 
-        try:
-            file, filename, data = imp.find_module(name, [path])
-            plugin_module = imp.load_module(name, file, filename, data)
-        except ImportError as e:
-            print "*** plugin %s could not be imported, exc=%s" % (plugin, e)
-            continue
 
-        if not hasattr(plugin_module, 'register'):
-            print "*** plugin %s has no register function" % plugin
-            continue
+def load_plugin(plugin_path):
+    path, name = os.path.split(plugin_path)
+    name, ext = os.path.splitext(name)
 
-        try:
-            plugin_module.register()
-        except Exception as e:
-            print "*** Could not init plugin %s, exc=%s", (plugin_module, e)
-            continue
+    try:
+        file, filename, data = imp.find_module(name, [path])
+        plugin_module = imp.load_module(name, file, filename, data)
+    except ImportError as e:
+        print "Plugin '{}' could not be imported, exc={}".format(name, e)
+        return
+
+    if not hasattr(plugin_module, 'register'):
+        print "Plugin '{}' has no register function".format(name)
+        return
+
+    try:
+        plugin_module.register()
+    except Exception as e:
+        print "Could not init plugin '{}'".format(plugin_module, e)
+        traceback.print_exc()
+        return
