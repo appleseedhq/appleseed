@@ -128,10 +128,10 @@ TEST_SUITE(Renderer_Utility_DynamicSpectrum31f)
             0.954259619265f
         };
 
-        const DynamicSpectrum31f a(AValues);
-        const DynamicSpectrum31f b(BValues);
-        const DynamicSpectrum31f t(TValues);
-        const DynamicSpectrum31f result = lerp(a, b, t);
+        const auto a(DynamicSpectrum31f::from_array(AValues));
+        const auto b(DynamicSpectrum31f::from_array(BValues));
+        const auto t(DynamicSpectrum31f::from_array(TValues));
+        const auto result = lerp(a, b, t);
 
         for (size_t i = 0, e = result.size(); i < e; ++i)
             EXPECT_FEQ(lerp(a[i], b[i], t[i]), result[i]);
@@ -210,8 +210,8 @@ TEST_SUITE(Renderer_Utility_DynamicSpectrum31f)
             25.1470816934f
         };
 
-        const DynamicSpectrum31f x(Values);
-        const DynamicSpectrum31f result = sqrt(x);
+        const auto x(DynamicSpectrum31f::from_array(Values));
+        const auto result = sqrt(x);
 
         for (size_t i = 0, e = x.size(); i < e; ++i)
             EXPECT_FEQ(sqrt(Values[i]), result[i]);

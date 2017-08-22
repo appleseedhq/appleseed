@@ -85,12 +85,14 @@ class Matrix
 
     // Constructors.
     Matrix();                                               // leave all components uninitialized
-    explicit Matrix(const ValueType* rhs);                  // initialize with array of M * N scalars
-    explicit Matrix(const ValueType val);                   // set all components to 'val'
+    explicit Matrix(const ValueType val);                   // set all components to `val`
 
     // Construct a matrix from another matrix of a different type.
     template <typename U>
     explicit Matrix(const Matrix<U, M, N>& rhs);
+
+    // Construct a matrix from an array of M * N scalars.
+    static MatrixType from_array(const ValueType* rhs);
 
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
@@ -178,12 +180,14 @@ class Matrix<T, N, N>
 
     // Constructors.
     Matrix();                                               // leave all components uninitialized
-    explicit Matrix(const ValueType* rhs);                  // initialize with array of N * N scalars
-    explicit Matrix(const ValueType val);                   // set all components to 'val'
+    explicit Matrix(const ValueType val);                   // set all components to `val`
 
     // Construct a matrix from another matrix of a different type.
     template <typename U>
     Matrix(const Matrix<U, N, N>& rhs);
+
+    // Construct a matrix from an array of N * N scalars.
+    static MatrixType from_array(const ValueType* rhs);
 
     // Construct and return the NxN identity matrix.
     static MatrixType make_identity();
@@ -244,8 +248,7 @@ class Matrix<T, 3, 3>
 
     // Constructors.
     Matrix();                                               // leave all components uninitialized
-    explicit Matrix(const ValueType* rhs);                  // initialize with array of 9 scalars
-    explicit Matrix(const ValueType val);                   // set all components to 'val'
+    explicit Matrix(const ValueType val);                   // set all components to `val`
 
     // Construct a matrix from another matrix of a different type.
     template <typename U>
@@ -260,6 +263,9 @@ class Matrix<T, 3, 3>
     operator Imath::Matrix33<T>() const;
 
 #endif
+
+    // Construct a matrix from an array of 9 scalars.
+    static MatrixType from_array(const ValueType* rhs);
 
     // Construct and return the 3x3 identity matrix.
     static MatrixType make_identity();
@@ -363,8 +369,7 @@ class Matrix<T, 4, 4>
 
     // Constructors.
     Matrix();                                               // leave all components uninitialized
-    explicit Matrix(const ValueType* rhs);                  // initialize with array of 16 scalars
-    explicit Matrix(const ValueType val);                   // set all components to 'val'
+    explicit Matrix(const ValueType val);                   // set all components to `val`
 
     // Construct a matrix from another matrix of a different type.
     template <typename U>
@@ -379,6 +384,9 @@ class Matrix<T, 4, 4>
     operator Imath::Matrix44<T>() const;
 
 #endif
+
+    // Construct a matrix from an array of 16 scalars.
+    static MatrixType from_array(const ValueType* rhs);
 
     // Construct and return the 4x4 identity matrix.
     static MatrixType make_identity();
@@ -488,14 +496,6 @@ inline Matrix<T, M, N>::Matrix()
 }
 
 template <typename T, size_t M, size_t N>
-inline Matrix<T, M, N>::Matrix(const ValueType* rhs)
-{
-    assert(rhs);
-    for (size_t i = 0; i < Components; ++i)
-        m_comp[i] = rhs[i];
-}
-
-template <typename T, size_t M, size_t N>
 inline Matrix<T, M, N>::Matrix(const ValueType val)
 {
     for (size_t i = 0; i < Components; ++i)
@@ -508,6 +508,19 @@ inline Matrix<T, M, N>::Matrix(const Matrix<U, M, N>& rhs)
 {
     for (size_t i = 0; i < Components; ++i)
         m_comp[i] = static_cast<ValueType>(rhs[i]);
+}
+
+template <typename T, size_t M, size_t N>
+inline Matrix<T, M, N> Matrix<T, M, N>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+
+    Matrix result;
+
+    for (size_t i = 0; i < Components; ++i)
+        result.m_comp[i] = rhs[i];
+
+    return result;
 }
 
 template <typename T, size_t M, size_t N>
@@ -837,15 +850,6 @@ inline Matrix<T, N, N>::Matrix()
 }
 
 template <typename T, size_t N>
-inline Matrix<T, N, N>::Matrix(const ValueType* rhs)
-{
-    assert(rhs);
-
-    for (size_t i = 0; i < Components; ++i)
-        m_comp[i] = rhs[i];
-}
-
-template <typename T, size_t N>
 inline Matrix<T, N, N>::Matrix(const ValueType val)
 {
     for (size_t i = 0; i < Components; ++i)
@@ -858,6 +862,19 @@ inline Matrix<T, N, N>::Matrix(const Matrix<U, N, N>& rhs)
 {
     for (size_t i = 0; i < Components; ++i)
         m_comp[i] = static_cast<ValueType>(rhs[i]);
+}
+
+template <typename T, size_t N>
+inline Matrix<T, N, N> Matrix<T, N, N>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+
+    Matrix result;
+
+    for (size_t i = 0; i < Components; ++i)
+        result.m_comp[i] = rhs[i];
+
+    return result;
 }
 
 template <typename T, size_t N>
@@ -1033,15 +1050,6 @@ inline Matrix<T, 3, 3>::Matrix()
 }
 
 template <typename T>
-inline Matrix<T, 3, 3>::Matrix(const ValueType* rhs)
-{
-    assert(rhs);
-
-    for (size_t i = 0; i < Components; ++i)
-        m_comp[i] = rhs[i];
-}
-
-template <typename T>
 inline Matrix<T, 3, 3>::Matrix(const ValueType val)
 {
     for (size_t i = 0; i < Components; ++i)
@@ -1086,6 +1094,19 @@ inline Matrix<T, 3, 3>::operator Imath::Matrix33<T>() const
 }
 
 #endif
+
+template <typename T>
+inline Matrix<T, 3, 3> Matrix<T, 3, 3>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+
+    Matrix result;
+
+    for (size_t i = 0; i < Components; ++i)
+        result.m_comp[i] = rhs[i];
+
+    return result;
+}
 
 template <typename T>
 Matrix<T, 3, 3> Matrix<T, 3, 3>::make_identity()
@@ -1462,7 +1483,7 @@ inline void Matrix<T, 3, 3>::decompose(
         T(1.0) / scaling[1],
         T(1.0) / scaling[2]);
 
-    Matrix<T, 3, 3> unit_matrix(*this);
+    MatrixType unit_matrix(*this);
 
     unit_matrix[0] *= rcp_scaling[0];
     unit_matrix[3] *= rcp_scaling[0];
@@ -1564,14 +1585,6 @@ inline Matrix<T, 4, 4>::Matrix()
 }
 
 template <typename T>
-inline Matrix<T, 4, 4>::Matrix(const ValueType* rhs)
-{
-    assert(rhs);
-    for (size_t i = 0; i < Components; ++i)
-        m_comp[i] = rhs[i];
-}
-
-template <typename T>
 inline Matrix<T, 4, 4>::Matrix(const ValueType val)
 {
     for (size_t i = 0; i < Components; ++i)
@@ -1616,6 +1629,19 @@ inline Matrix<T, 4, 4>::operator Imath::Matrix44<T>() const
 }
 
 #endif
+
+template <typename T>
+inline Matrix<T, 4, 4> Matrix<T, 4, 4>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+
+    Matrix result;
+
+    for (size_t i = 0; i < Components; ++i)
+        result.m_comp[i] = rhs[i];
+
+    return result;
+}
 
 template <typename T>
 Matrix<T, 4, 4> Matrix<T, 4, 4>::make_identity()

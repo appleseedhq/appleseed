@@ -55,7 +55,7 @@ BENCHMARK_SUITE(Foundation_Math_Matrix44)
                 -10,  62, -82,  80
             };
 
-            m_lhs = Matrix<T, 4, 4>(mat_val);
+            m_lhs = Matrix<T, 4, 4>::from_array(mat_val);
             m_rhs = transpose(m_lhs);
             m_vec = Vector<T, 4>(2, -24, 66, 13);
         }

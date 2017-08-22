@@ -121,7 +121,7 @@ TEST_SUITE(Foundation_Math_VoxelGrid3)
                         break;
                     }
 
-                    image.set_pixel(x, y, saturate(Color3f(values)));
+                    image.set_pixel(x, y, saturate(Color3f::from_array(values)));
                 }
             }
 

@@ -476,7 +476,7 @@ TEST_SUITE(Foundation_Image_ColorSpace)
             0.733000f, 0.724813f, 0.764000f, 0.733563f, 0.740000f, 0.751063f, 0.744000f, 0.739438f,
             0.712000f, 0.731000f, 0.707000f, 0.740500f, 0.751000f, 0.725438f, 0.737000f
         };
-        return RegularSpectrum31f(Values);
+        return RegularSpectrum31f::from_array(Values);
     }
 
     TEST_CASE(TestSpectrumToCIEXYZConversion)
@@ -507,7 +507,7 @@ TEST_SUITE(Foundation_Image_ColorSpace)
         };
 
         EXPECT_FEQ_EPS(
-            RegularSpectrum31f(ExpectedSpectrumValues),
+            RegularSpectrum31f::from_array(ExpectedSpectrumValues),
             spectrum,
             1.0e-6f);
     }
@@ -545,7 +545,7 @@ TEST_SUITE(Foundation_Image_ColorSpace)
         };
 
         EXPECT_FEQ_EPS(
-            RegularSpectrum4f(ExpectedOutputSpectrumValues),
+            RegularSpectrum4f::from_array(ExpectedOutputSpectrumValues),
             output_spectrum,
             1.0e-6f);
     }

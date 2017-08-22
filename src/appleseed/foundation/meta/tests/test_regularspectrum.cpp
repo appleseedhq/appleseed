@@ -49,7 +49,7 @@ TEST_SUITE(Foundation_Image_RegularSpectrum31f)
             42.0f, 42.0f, 42.0f, 42.0f, 42.0f, 42.0f, 42.0f
         };
 
-        const RegularSpectrum31f Expected(ExpectedValues);
+        const auto Expected(RegularSpectrum31f::from_array(ExpectedValues));
         RegularSpectrum31f s;
 
         s.set(42.0f);
@@ -76,8 +76,8 @@ TEST_SUITE(Foundation_Image_RegularSpectrum31f)
         };
 
         const RegularSpectrum31f Expected(32.0f);
-        const RegularSpectrum31f Rhs(RhsValues);
-        RegularSpectrum31f s(InputValues);
+        const auto Rhs(RegularSpectrum31f::from_array(RhsValues));
+        auto s(RegularSpectrum31f::from_array(InputValues));
 
         s += Rhs;
 
@@ -102,8 +102,8 @@ TEST_SUITE(Foundation_Image_RegularSpectrum31f)
             50.0f, 52.0f, 54.0f, 56.0f, 58.0f, 60.0f, 62.0f
         };
 
-        const RegularSpectrum31f Expected(ExpectedValues);
-        RegularSpectrum31f s(InputValues);
+        const auto Expected(RegularSpectrum31f::from_array(ExpectedValues));
+        auto s(RegularSpectrum31f::from_array(InputValues));
 
         s *= 2.0f;
 
@@ -136,9 +136,9 @@ TEST_SUITE(Foundation_Image_RegularSpectrum31f)
             175.0f, 156.0f, 135.0f, 112.0f,  87.0f,  60.0f,  31.0f
         };
 
-        const RegularSpectrum31f Expected(ExpectedValues);
-        const RegularSpectrum31f Rhs(RhsValues);
-        RegularSpectrum31f s(InputValues);
+        const auto Expected(RegularSpectrum31f::from_array(ExpectedValues));
+        const auto Rhs(RegularSpectrum31f::from_array(RhsValues));
+        auto s(RegularSpectrum31f::from_array(InputValues));
 
         s *= Rhs;
 
@@ -163,8 +163,8 @@ TEST_SUITE(Foundation_Image_RegularSpectrum31f)
              1.0f / 25.0f, 1.0f / 26.0f, 1.0f / 27.0f, 1.0f / 28.0f, 1.0f / 29.0f, 1.0f / 30.0f, 1.0f / 31.0f
         };
 
-        const RegularSpectrum31f Expected(ExpectedValues);
-        RegularSpectrum31f s(InputValues);
+        const auto Expected(RegularSpectrum31f::from_array(ExpectedValues));
+        auto s(RegularSpectrum31f::from_array(InputValues));
 
         s = rcp(s);
 

@@ -64,12 +64,14 @@ class RegularSpectrum
 
     // Constructors.
     RegularSpectrum();                                      // leave all components uninitialized
-    explicit RegularSpectrum(const ValueType* rhs);         // initialize with array of N scalars
-    explicit RegularSpectrum(const ValueType val);          // set all components to 'val'
+    explicit RegularSpectrum(const ValueType val);          // set all components to `val`
 
     // Construct a spectrum from another spectrum of a different type.
     template <typename U>
     RegularSpectrum(const RegularSpectrum<U, N>& rhs);
+
+    // Construct a spectrum from an array of N scalars.
+    static RegularSpectrum from_array(const ValueType* rhs);
 
     // Set all components to a given value.
     void set(const ValueType val);
@@ -184,18 +186,6 @@ inline RegularSpectrum<T, N>::RegularSpectrum()
 }
 
 template <typename T, size_t N>
-inline RegularSpectrum<T, N>::RegularSpectrum(const ValueType* rhs)
-{
-    assert(rhs);
-
-    for (size_t i = 0; i < N; ++i)
-        m_samples[i] = rhs[i];
-
-    for (size_t i = N; i < StoredSamples; ++i)
-        m_samples[i] = T(0.0);
-}
-
-template <typename T, size_t N>
 inline RegularSpectrum<T, N>::RegularSpectrum(const ValueType val)
 {
     set(val);
@@ -208,8 +198,24 @@ template <typename T, size_t N>
 template <typename U>
 inline RegularSpectrum<T, N>::RegularSpectrum(const RegularSpectrum<U, N>& rhs)
 {
-    for (size_t i = 0; i < StoredSamples; ++i)
+    for (size_t i = 0; i < N; ++i)
         m_samples[i] = static_cast<ValueType>(rhs[i]);
+
+    for (size_t i = N; i < StoredSamples; ++i)
+        m_samples[i] = T(0.0);
+}
+
+template <typename T, size_t N>
+inline RegularSpectrum<T, N> RegularSpectrum<T, N>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+
+    RegularSpectrum result;
+
+    for (size_t i = 0; i < N; ++i)
+        result.m_samples[i] = rhs[i];
+
+    return result;
 }
 
 template <typename T, size_t N>
