@@ -75,6 +75,7 @@ class PathVertex
 
     // Current vertex properties.
     const ShadingPoint*         m_shading_point;
+    const ShadingPoint*         m_parent_shading_point;
     foundation::Dual3d          m_outgoing;
     double                      m_cos_on;       // cos(outgoing direction, shading normal)
     const EDF*                  m_edf;
@@ -180,7 +181,7 @@ inline float PathVertex::get_bsdf_prob_area() const
 
 inline float PathVertex::get_light_prob_area(const BackwardLightSampler& light_sampler) const
 {
-    return light_sampler.evaluate_pdf(*m_shading_point);
+    return light_sampler.evaluate_pdf(*m_shading_point, *m_parent_shading_point);
 }
 
 }       // namespace renderer

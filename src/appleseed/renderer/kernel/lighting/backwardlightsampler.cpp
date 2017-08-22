@@ -184,15 +184,17 @@ void BackwardLightSampler::sample_lightset(
     }
 }
 
-float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
+float BackwardLightSampler::evaluate_pdf(
+    const ShadingPoint&                 light_shading_point,
+    const ShadingPoint&                 surface_shading_point) const
 {
-    assert(shading_point.is_triangle_primitive());
+    assert(light_shading_point.is_triangle_primitive());
 
     const EmittingTriangleKey triangle_key(
-        shading_point.get_assembly_instance().get_uid(),
-        shading_point.get_object_instance_index(),
-        shading_point.get_region_index(),
-        shading_point.get_primitive_index());
+        light_shading_point.get_assembly_instance().get_uid(),
+        light_shading_point.get_object_instance_index(),
+        light_shading_point.get_region_index(),
+        light_shading_point.get_primitive_index());
 
     const EmittingTriangle* triangle = m_emitting_triangle_hash_table.get(triangle_key);
 
@@ -200,7 +202,7 @@ float BackwardLightSampler::evaluate_pdf(const ShadingPoint& shading_point) cons
     {
         const float triangle_probability =
             m_light_tree->evaluate_node_pdf(
-                shading_point.get_ray().m_org,
+                surface_shading_point,
                 triangle->m_light_tree_node_index);
 
         return triangle_probability * triangle->m_rcp_area;
@@ -250,7 +252,7 @@ void BackwardLightSampler::sample_light_tree(
     size_t light_index;
     float light_prob;
     m_light_tree->sample(
-        shading_point.get_point(),
+        shading_point,
         s[0],
         light_type,
         light_index,

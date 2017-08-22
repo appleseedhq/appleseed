@@ -396,13 +396,37 @@ TEST_SUITE(Foundation_Math_AABB)
         EXPECT_FEQ(sqrt(5.0 * 5.0 + 7.0 * 7.0 + 9.0 * 9.0), bbox.diameter());
     }
 
+    TEST_CASE(TestSquareDiameter)
+    {
+        const AABB3d bbox(
+            Vector3d(-1.0, -2.0, -3.0),
+            Vector3d(4.0, 5.0, 6.0));
+
+        EXPECT_FEQ(5.0 * 5.0 + 7.0 * 7.0 + 9.0 * 9.0, bbox.square_diameter());
+    }
+
     TEST_CASE(TestRadius)
     {
         const AABB3d bbox(
             Vector3d(-1.0, -2.0, -3.0),
             Vector3d(4.0, 5.0, 6.0));
 
-        EXPECT_FEQ(sqrt(5.0 * 5.0 + 7.0 * 7.0 + 9.0 * 9.0) / 2.0, bbox.radius());
+        const float square_diameter = 5.0 * 5.0 + 7.0 * 7.0 + 9.0 * 9.0;
+        const float radius = sqrt(square_diameter / 4.0);
+
+        EXPECT_FEQ(radius, bbox.radius());
+    }
+
+    TEST_CASE(TestSquareRadius)
+    {
+        const AABB3d bbox(
+            Vector3d(-1.0, -2.0, -3.0),
+            Vector3d(4.0, 5.0, 6.0));
+
+        const float square_diameter = 5.0 * 5.0 + 7.0 * 7.0 + 9.0 * 9.0;
+        const float square_radius = square_diameter / 4.0;
+
+        EXPECT_FEQ(square_radius, bbox.square_radius());
     }
 
     TEST_CASE(TestVolume)
