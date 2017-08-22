@@ -124,7 +124,7 @@ class ShadingPoint
 
     // Return true if the shading point is either
     // a surface point or a volume point and can be shaded.
-    bool valid() const;
+    bool is_valid() const;
 
     // Return true if an intersection with some surface was found, false otherwise.
     bool hit_surface() const;
@@ -471,10 +471,10 @@ inline void ShadingPoint::create_volume_shading_point(
 {
     assert(is_normalized(volume_ray.m_dir));
     assert(m_scene == nullptr);
-    assert(valid() == false);
+    assert(is_valid() == false);
 
     assert(&parent_shading_point != this);
-    assert(parent_shading_point.valid());
+    assert(parent_shading_point.is_valid());
 
     assert(m_ray.get_current_medium() != nullptr);
  
@@ -510,14 +510,14 @@ inline const ShadingRay::Time& ShadingPoint::get_time() const
     return m_ray.m_time;
 }
 
-inline bool ShadingPoint::valid() const
+inline bool ShadingPoint::is_valid() const
 {
     return m_primitive_type != PrimitiveNone;
 }
 
 inline bool ShadingPoint::hit_surface() const
 {
-    return valid() && !hit_volume();
+    return is_valid() && !hit_volume();
 }
 
 inline bool ShadingPoint::hit_volume() const
@@ -542,7 +542,7 @@ inline bool ShadingPoint::is_curve_primitive() const
 
 inline double ShadingPoint::get_distance() const
 {
-    assert(valid());
+    assert(is_valid());
     return m_ray.m_tmax;
 }
 
@@ -612,7 +612,7 @@ inline const foundation::Vector2f& ShadingPoint::get_duvdy(const size_t uvset) c
 
 inline const foundation::Vector3d& ShadingPoint::get_point() const
 {
-    assert(valid());
+    assert(is_valid());
 
     if (!(m_members & HasPoint))
     {
@@ -821,7 +821,7 @@ inline const foundation::Vector3d& ShadingPoint::get_world_space_point_velocity(
 
 inline const Material* ShadingPoint::get_material() const
 {
-    assert(valid());
+    assert(is_valid());
 
     if (!(m_members & HasMaterials))
     {
@@ -842,7 +842,7 @@ inline const Material* ShadingPoint::get_material() const
 
 inline const Material* ShadingPoint::get_opposite_material() const
 {
-    assert(valid());
+    assert(is_valid());
 
     if (!(m_members & HasMaterials))
     {

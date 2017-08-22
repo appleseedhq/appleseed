@@ -243,9 +243,9 @@ bool Intersector::trace(
 {
     assert(is_normalized(ray.m_dir));
     assert(shading_point.m_scene == nullptr);
-    assert(shading_point.valid() == false);
+    assert(shading_point.is_valid() == false);
     assert(parent_shading_point == nullptr || parent_shading_point != &shading_point);
-    assert(parent_shading_point == nullptr || parent_shading_point->valid());
+    assert(parent_shading_point == nullptr || parent_shading_point->is_valid());
 
     // Update ray casting statistics.
     ++m_shading_ray_count;

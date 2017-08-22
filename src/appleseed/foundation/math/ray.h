@@ -83,10 +83,11 @@ class Ray
     template <typename U>
     Ray(const Ray<U, N>& rhs);
 
-    ValueType get_length() const;
-
     // Return if the ray has finite length.
     bool is_finite() const;
+
+    // Get length of the ray interval, assuming that m_tmax is finite. 
+    ValueType get_length() const;
 
     // Return the point of the ray at abscissa t, t >= 0.
     VectorType point_at(const ValueType t) const;
@@ -235,10 +236,10 @@ inline Ray<T, N>::Ray(const Ray<U, N>& rhs)
 }
 
 template <typename T, size_t N>
-inline typename Ray<T, N>::ValueType Ray<T, N>::get_length() const
+inline T Ray<T, N>::get_length() const
 {
     assert(is_finite());
-    return foundation::norm((m_tmax - m_tmin) * m_dir);
+    return (m_tmax - m_tmin) * foundation::norm(m_dir);
 }
 
 template <typename T, size_t N>

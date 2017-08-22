@@ -75,14 +75,22 @@ namespace renderer
             const ShadingRay&               volume_ray,
             const void*                     volume_data,
             const ShadingPoint&             shading_point,
-            const int                       light_sampling_modes,
-            const bool                      samle_phasefunction,
-            const size_t                    equiangular_sample_count,
-            const size_t                    exponential_sample_count,
+            const int                       scattering_modes,
+            const size_t                    distance_sample_count,
+            const size_t                    light_sample_count,
             const float                     low_light_threshold,
             const bool                      indirect);
 
+        // Integrate in-scattered radiance over the given ray
+        // using both equiangular and exponential sampling.
         void compute_radiance(
+            SamplingContext&                sampling_context,
+            const foundation::MISHeuristic  mis_heuristic,
+            ShadingComponents&              radiance) const;
+
+        // Integrate in-scattered radiance over the given ray
+        // using only exponential sampling.
+        void compute_radiance_exponential_sampling_only(
             SamplingContext&                sampling_context,
             const foundation::MISHeuristic  mis_heuristic,
             ShadingComponents&              radiance) const;
@@ -96,32 +104,33 @@ namespace renderer
         const void*                         m_volume_data;
         const ShadingPoint&                 m_shading_point;
         Spectrum                            m_precomputed_mis_weights;
-        const int                           m_light_sampling_modes;
+        const int                           m_scattering_modes;
+        const size_t                        m_distance_sample_count;
+        const float                         m_rcp_distance_sample_count;
+        const size_t                        m_light_sample_count;
         const float                         m_low_light_threshold;
-        const size_t                        m_equiangular_sample_count;
-        const size_t                        m_exponential_sample_count;
-        const bool                          m_sample_phasefunction;
         const bool                          m_indirect;
 
         void precompute_mis_weights();
 
-        void add_single_equiangular_sample_contribution(
-            const LightSample&              light_sample,
+        // Sample distance and integrate in-scattered lighting at this distance.
+        void add_single_distance_sample_contribution(
+            const LightSample*              light_sample,
             const Spectrum&                 extinction_coef,
             const SamplingContext&          sampling_context,
             const foundation::MISHeuristic  mis_heuristic,
             ShadingComponents&              radiance,
-            const bool                      sample_phasefunction,
-            const float                     weight = 1.0f) const;
+            const bool                      sample_phasefunction) const;
 
-        void add_single_exponential_sample_contribution(
-            const LightSample&              light_sample,
+        // Sample distance and integrate in-scattered lighting at this distance.
+        // This is the optimized version that uses only exponential sampling.
+        void add_single_distance_sample_contribution_exponential_only(
+            const LightSample*              light_sample,
             const Spectrum&                 extinction_coef,
             const SamplingContext&          sampling_context,
             const foundation::MISHeuristic  mis_heuristic,
             ShadingComponents&              radiance,
-            const bool                      sample_phasefunction,
-            const float                     weight = 1.0f) const;
+            const bool                      sample_phasefunction) const;
 
         float draw_exponential_sample(
             SamplingContext&        sampling_context,
@@ -133,15 +142,15 @@ namespace renderer
             const ShadingRay&       volume_ray,
             const float             extinction) const;
 
-        void take_single_light_sample(
+        // Add single light sample contribution for the specified distance sample.
+        void take_single_direction_sample(
+            const bool                      sample_phasefunction,
             SamplingContext&                sampling_context,
-            const LightSample&              light_sample,
-            const float                     distance_sample,
-            const foundation::MISHeuristic  mis_heuristic,
-            ShadingComponents&              radiance) const;
 
-        void take_single_phasefunction_sample(
-            SamplingContext&                sampling_context,
+            // Light sample that is used as a center for equiangular sampling.
+            // Note that the same light sample is used for shading only if it is non-physical light,
+            // otherwise (if nullptr or area light sample) the lights are sampled again.
+            const LightSample*              light_sample,
             const float                     distance_sample,
             const foundation::MISHeuristic  mis_heuristic,
             ShadingComponents&              radiance) const;
