@@ -323,7 +323,10 @@ int main(int argc, char* argv[])
 
     // Create the application's main window.
     appleseed::studio::MainWindow window;
+
+    // Initialize the python interpreter and load plugins.
     PythonInterpreter::instance().set_main_window(&window);
+    PythonInterpreter::instance().load_plugins();
 
     // If a project file was specified on the command line, open it and optionally start rendering.
     if (!cl.m_filename.values().empty())
