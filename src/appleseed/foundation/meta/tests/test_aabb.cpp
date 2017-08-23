@@ -411,8 +411,8 @@ TEST_SUITE(Foundation_Math_AABB)
             Vector3d(-1.0, -2.0, -3.0),
             Vector3d(4.0, 5.0, 6.0));
 
-        const float square_diameter = 5.0 * 5.0 + 7.0 * 7.0 + 9.0 * 9.0;
-        const float radius = sqrt(square_diameter / 4.0);
+        const double square_diameter = 5.0 * 5.0 + 7.0 * 7.0 + 9.0 * 9.0;
+        const double radius = sqrt(square_diameter / 4.0);
 
         EXPECT_FEQ(radius, bbox.radius());
     }
@@ -423,8 +423,8 @@ TEST_SUITE(Foundation_Math_AABB)
             Vector3d(-1.0, -2.0, -3.0),
             Vector3d(4.0, 5.0, 6.0));
 
-        const float square_diameter = 5.0 * 5.0 + 7.0 * 7.0 + 9.0 * 9.0;
-        const float square_radius = square_diameter / 4.0;
+        const double square_diameter = 5.0 * 5.0 + 7.0 * 7.0 + 9.0 * 9.0;
+        const double square_radius = square_diameter / 4.0;
 
         EXPECT_FEQ(square_radius, bbox.square_radius());
     }
