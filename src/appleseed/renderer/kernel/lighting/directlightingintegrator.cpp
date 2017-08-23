@@ -306,7 +306,8 @@ void DirectLightingIntegrator::take_single_material_sample(
             const float material_prob_area = sample_probability * cos_on / static_cast<float>(square_distance);
 
             // Compute the probability density wrt. surface area mesure of the light sample.
-            const float light_prob_area = m_light_sampler.evaluate_pdf(light_shading_point, m_shading_point);
+            const float light_prob_area = m_light_sampler.evaluate_pdf(
+                light_shading_point, m_material_sampler.get_shading_point());
 
             // Apply the weighting function.
             weight *=
