@@ -106,6 +106,26 @@ namespace
 
         return lib_path.string();
     }
+
+    string compute_bundled_plugins_path()
+    {
+        // Start with the absolute path to appleseed.studio's executable.
+        bf::path base_path(get_executable_path());
+
+        // Strip appleseed.studio's executable filename from the path.
+        base_path = base_path.parent_path();
+
+        // Go up in the hierarchy until bin directory is found.
+        while (base_path.filename() != "bin")
+            base_path = base_path.parent_path();
+
+        // One more step up to reach the parent of bin directory.
+        base_path = base_path.parent_path();
+
+        // Compute full path.
+        bf::path plugins_path = base_path / "studio" / "plugins";
+        return plugins_path.string();
+    }
 }
 
 void PythonInterpreter::initialize(OutputRedirector redirector)
@@ -137,6 +157,16 @@ void PythonInterpreter::import_python_module(const char* module_name, const char
     const string s =
         format("import {0}\n{1} = {0}\n", module_name, alias_name);
     execute(s.c_str());
+}
+
+void PythonInterpreter::load_plugins()
+{
+    string bundled_plugins_path = compute_bundled_plugins_path();
+    const string command = format(
+        "import appleseed.studio.plugins\n"
+        "appleseed.studio.plugins.load_plugins('{0}')\n",
+        bundled_plugins_path);
+    execute(command.c_str());
 }
 
 bpy::object PythonInterpreter::execute(const char* command)
