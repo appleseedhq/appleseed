@@ -248,19 +248,19 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            float       m_turbidity;                // atmosphere turbidity
-            float       m_radiance_multiplier;      // emitted radiance multiplier
-            float       m_size_multiplier;          // sun size multiplier
+            float           m_turbidity;                // atmosphere turbidity
+            float           m_radiance_multiplier;      // emitted radiance multiplier
+            float           m_size_multiplier;          // sun size multiplier
         };
 
-        Vector3d        m_scene_center;             // world space
-        double          m_scene_radius;             // world space
-        double          m_safe_scene_diameter;      // world space
+        Vector3d            m_scene_center;             // world space
+        double              m_scene_radius;             // world space
+        double              m_safe_scene_diameter;      // world space
 
-        InputValues     m_values;
+        InputValues         m_values;
 
-        Spectrum        m_k1;
-        Spectrum        m_k2;
+        RegularSpectrum31f  m_k1;
+        RegularSpectrum31f  m_k2;
 
         void apply_env_edf_overrides(const EnvironmentEDF* env_edf)
         {

@@ -287,7 +287,7 @@ class Color<T, 4>
     ValueType& operator[](const size_t i);
     const ValueType& operator[](const size_t i) const;
 
-    // Apply / undo alpha premultiplication.
+    // Apply/undo alpha premultiplication.
     void premultiply();
     void unpremultiply();
 };
@@ -1105,7 +1105,6 @@ inline void Color<T, 4>::unpremultiply()
         b *= rcp_a;
     }
 }
-
 
 }       // namespace foundation
 

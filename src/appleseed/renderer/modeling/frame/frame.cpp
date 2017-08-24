@@ -468,7 +468,6 @@ void Frame::extract_parameters()
         }
     }
 
-
     // Retrieve crop window parameter.
     const AABB2u default_crop_window(
         Vector2u(0, 0),
@@ -567,13 +566,12 @@ void Frame::write_exr_image(
 
 namespace
 {
-
     void transform_to_srgb(Tile& tile)
     {
         assert(tile.get_channel_count() == 4);
         assert(tile.get_pixel_format() == PixelFormatHalf);
 
-        using Color4h = Color<half, 4>;
+        typedef Color<half, 4> Color4h;
 
         Color4h* pixel_ptr = reinterpret_cast<Color4h*>(tile.pixel(0));
         Color4h* pixel_end = pixel_ptr + tile.get_pixel_count();
@@ -604,7 +602,6 @@ namespace
                 transform_to_srgb(image.tile(tx, ty));
         }
     }
-
 }
 
 void Frame::write_png_image(
