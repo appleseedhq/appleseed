@@ -468,7 +468,6 @@ void Frame::extract_parameters()
         }
     }
 
-
     // Retrieve crop window parameter.
     const AABB2u default_crop_window(
         Vector2u(0, 0),
@@ -567,7 +566,6 @@ void Frame::write_exr_image(
 
 namespace
 {
-
     void transform_to_srgb(Tile& tile)
     {
         assert(tile.get_channel_count() == 4);
@@ -604,7 +602,6 @@ namespace
                 transform_to_srgb(image.tile(tx, ty));
         }
     }
-
 }
 
 void Frame::write_png_image(
