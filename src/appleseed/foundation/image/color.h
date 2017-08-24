@@ -286,6 +286,10 @@ class Color<T, 4>
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
     const ValueType& operator[](const size_t i) const;
+
+    // Apply / undo alpha premultiplication.
+    void premultiply();
+    void unpremultiply();
 };
 
 
@@ -1081,6 +1085,27 @@ inline const T& Color<T, 4>::operator[](const size_t i) const
     assert(i < Components);
     return (&r)[i];
 }
+
+template <typename T>
+inline void Color<T, 4>::premultiply()
+{
+    r *= a;
+    g *= a;
+    b *= a;
+}
+
+template <typename T>
+inline void Color<T, 4>::unpremultiply()
+{
+    if (a > T(0.0))
+    {
+        const T rcp_a = T(1.0) / a;
+        r *= rcp_a;
+        g *= rcp_a;
+        b *= rcp_a;
+    }
+}
+
 
 }       // namespace foundation
 
