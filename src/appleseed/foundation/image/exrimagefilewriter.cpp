@@ -264,11 +264,14 @@ void EXRImageFileWriter::write_multipart_exr(const char *filename)
     if (!impl->m_images.empty())
     {
         initialize_openexr();
-        MultiPartOutputFile multipart_exr(filename, impl->m_image_headers.data(), impl->m_images.size());
+        MultiPartOutputFile multipart_exr(
+            filename,
+            impl->m_image_headers.data(),
+            static_cast<int>(impl->m_images.size()));
 
         for (size_t i = 0, e = impl->m_images.size(); i < e; ++i)
         {
-            TiledOutputPart file(multipart_exr, i);
+            TiledOutputPart file(multipart_exr, static_cast<int>(i));
             write_tiles(file, *impl->m_images[i], impl->m_channel_counts[i], impl->m_channel_names[i]);
         }
     }

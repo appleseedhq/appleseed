@@ -377,9 +377,9 @@ void RenderWidget::update_tile_no_lock(const size_t tile_x, const size_t tile_y)
     // Apply OCIO transform.
     OCIO::PackedImageDesc image_desc(
         reinterpret_cast<float*>(float_tile.get_storage()),
-        float_tile.get_width(),
-        float_tile.get_height(),
-        float_tile.get_channel_count());
+        static_cast<long>(float_tile.get_width()),
+        static_cast<long>(float_tile.get_height()),
+        static_cast<long>(float_tile.get_channel_count()));
     m_ocio_processor->apply(image_desc);
 
     // Convert the tile to 8-bit RGB for display.
