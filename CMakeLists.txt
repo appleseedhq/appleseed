@@ -97,6 +97,7 @@ endif ()
 
 option (USE_EXTERNAL_EXR                    "Use external OpenEXR library"                          OFF)
 option (USE_EXTERNAL_OIIO                   "Use external OpenImageIO library"                      OFF)
+option (USE_EXTERNAL_OCIO                   "Use external OpenColorIO library"                      OFF)
 option (USE_EXTERNAL_OSL                    "Use external OpenShadingLanguage library"              OFF)
 option (USE_EXTERNAL_PNG                    "Use external libpng library"                           OFF)
 option (USE_EXTERNAL_SEEXPR                 "Use external SeExpr library"                           OFF)
@@ -111,6 +112,7 @@ option (WITH_DISNEY_MATERIAL                "Build Disney material"             
 
 option (USE_STATIC_BOOST                    "Use static Boost libraries"                            ON)
 option (USE_STATIC_OIIO                     "Use static OpenImageIO libraries"                      ON)
+option (USE_STATIC_OCIO                     "Use static OpenColorIO libraries"                      ON)
 option (USE_STATIC_OSL                      "Use static OpenShadingLanguage libraries"              ON)
 option (WARNINGS_AS_ERRORS                  "Treat compiler warnings as errors"                     ON)
 
@@ -229,6 +231,15 @@ if (USE_EXTERNAL_OIIO)
     find_package (OpenImageIO REQUIRED)
 endif ()
 
+if (WITH_STUDIO)
+    if (USE_STATIC_OCIO)
+        add_definitions (-DOCIO_STATIC_BUILD)
+    endif ()
+    if (USE_EXTERNAL_OCIO)
+        find_package (OpenColorIO REQUIRED)
+    endif ()
+endif ()
+
 if (USE_STATIC_OSL)
     add_definitions (-DOSL_STATIC_LIBRARY)
 endif ()
@@ -246,9 +257,6 @@ if (WITH_DISNEY_MATERIAL)
     endif ()
 endif ()
 
-if (WITH_STUDIO)
-    find_package (OpenColorIO REQUIRED)
-endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.
@@ -298,6 +306,12 @@ if (USE_EXTERNAL_OIIO)
     include_directories (${OPENIMAGEIO_INCLUDE_DIRS})
 else ()
     include_directories (${APPLESEED_DEPS_STAGE_DIR}/oiio-debug/include)
+endif ()
+
+if (USE_EXTERNAL_OCIO)
+    include_directories (${OPENCOLORIO_INCLUDE_DIRS})
+else ()
+    include_directories (${APPLESEED_DEPS_STAGE_DIR}/ocio-debug/include)
 endif ()
 
 if (USE_EXTERNAL_OSL)

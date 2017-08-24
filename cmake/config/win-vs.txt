@@ -278,6 +278,23 @@ macro (link_against_oiio target)
     endif ()
 endmacro ()
 
+macro (link_against_ocio target)
+    if (USE_EXTERNAL_OCIO)
+        target_link_libraries (${target}
+            ${OPENCOLORIO_LIBRARIES}
+        )
+    else ()
+        target_link_libraries (${target}
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/ocio-debug/lib/libyaml-cppmdd.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/ocio-debug/lib/OpenColorIO.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/ocio-debug/lib/tinyxml.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ocio-release/lib/libyaml-cppmd.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ocio-release/lib/OpenColorIO.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ocio-release/lib/tinyxml.lib
+        )
+    endif ()
+endmacro ()
+
 macro (link_against_osl target)
     set (LLVM_LIBS
         LLVMLTO LLVMLinker LLVMipo LLVMVectorize LLVMBitWriter LLVMTableGen LLVMDebugInfo LLVMOption LLVMX86Disassembler LLVMX86AsmParser
