@@ -571,20 +571,23 @@ namespace
     void transform_to_srgb(Tile& tile)
     {
         assert(tile.get_channel_count() == 4);
+        assert(tile.get_pixel_format() == PixelFormatHalf);
 
-        Color4f* pixel_ptr = reinterpret_cast<Color4f*>(tile.pixel(0));
-        Color4f* pixel_end = pixel_ptr + tile.get_pixel_count();
+        using Color4h = Color<half, 4>;
+
+        Color4h* pixel_ptr = reinterpret_cast<Color4h*>(tile.pixel(0));
+        Color4h* pixel_end = pixel_ptr + tile.get_pixel_count();
 
         for (; pixel_ptr < pixel_end; ++pixel_ptr)
         {
             // Load the pixel color.
             Color4f color(*pixel_ptr);
 
-            // Apply color space conversion.
+            // Apply color space conversion and clamping.
+            color.unpremultiply();
             color.rgb() = fast_linear_rgb_to_srgb(color.rgb());
-
-            // Apply clamping.
             color = saturate(color);
+            color.premultiply();
 
             // Store the pixel color.
             *pixel_ptr = color;
