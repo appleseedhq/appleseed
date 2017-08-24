@@ -617,6 +617,8 @@ namespace
         else
         {
             const Frame* frame = project->get_frame();
+
+            // Write the main image.
             const string output_filename =
                 frame->get_parameters().get_optional<string>("output_filename");
 
@@ -624,9 +626,20 @@ namespace
             {
                 LOG_INFO(g_logger, "writing frame to disk...");
                 frame->write_main_image(output_filename.c_str());
+            }
 
-                if (frame->get_parameters().get_optional<bool>("output_aovs", false))
-                    frame->write_aov_images(output_filename.c_str());
+            // Write AOVs.
+            for (size_t i = 0, e = frame->aovs().size(); i < e; ++i)
+            {
+                const AOV* aov = frame->aovs().get_by_index(i);
+                const string output_filename =
+                    aov->get_parameters().get_optional<string>("output_filename");
+
+                if (!output_filename.empty())
+                {
+                    LOG_INFO(g_logger, "writing %s aov to disk...", aov->get_model());
+                    frame->write_aov_image(output_filename.c_str(), i);
+                }
             }
         }
 

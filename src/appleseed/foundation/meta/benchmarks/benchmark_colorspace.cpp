@@ -70,7 +70,7 @@ BENCHMARK_SUITE(Foundation_Image_ColorSpace)
         Color3f                     m_output;
 
         SpectrumToCIEXYZFixture()
-          : m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
+          : m_lighting_conditions(IlluminantCIED65, XYZCMFCIE19312Deg)
         {
             MersenneTwister rng;
 

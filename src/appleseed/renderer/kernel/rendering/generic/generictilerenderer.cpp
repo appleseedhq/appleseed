@@ -199,9 +199,7 @@ namespace
             }
 
             // Develop the framebuffer to the tile.
-            if (frame.is_premultiplied_alpha())
-                framebuffer->develop_to_tile_premult_alpha(tile, aov_tiles);
-            else framebuffer->develop_to_tile_straight_alpha(tile, aov_tiles);
+            framebuffer->develop_to_tile(tile, aov_tiles);
 
             // Release the framebuffer.
             m_framebuffer_factory->destroy(framebuffer);

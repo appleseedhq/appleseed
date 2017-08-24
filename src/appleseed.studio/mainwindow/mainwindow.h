@@ -47,6 +47,10 @@
 #include <QMainWindow>
 #include <QObject>
 
+// OpenColorIO headers.
+#include <OpenColorIO/OpenColorIO.h>
+namespace OCIO = OCIO_NAMESPACE;
+
 // Standard headers.
 #include <map>
 #include <memory>
@@ -156,6 +160,7 @@ class MainWindow
     std::auto_ptr<StateBeforeProjectOpen>   m_state_before_project_open;
 
     bool                                    m_fullscreen;
+    OCIO::ConstConfigRcPtr                  m_ocio_config;
 
     // Menus.
     void build_menus();
@@ -225,6 +230,9 @@ class MainWindow
         ProjectDialogFilterPackedProjects = 1 << 2,  // .appleseedz extension
         ProjectDialogFilterAllFiles       = 1 << 3   // all extensions
     };
+
+    // OpenColorIO
+    void initialize_ocio();
 
   private slots:
     // Project I/O.

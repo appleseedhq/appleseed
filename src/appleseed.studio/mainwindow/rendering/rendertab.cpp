@@ -43,6 +43,9 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 
+// OpenColorIO headers.
+#include <OpenColorIO/OpenColorIO.h>
+
 // Qt headers.
 #include <QComboBox>
 #include <QGridLayout>
@@ -58,6 +61,7 @@
 
 using namespace foundation;
 using namespace renderer;
+namespace OCIO = OCIO_NAMESPACE;
 
 namespace appleseed {
 namespace studio {
@@ -67,10 +71,12 @@ namespace studio {
 //
 
 RenderTab::RenderTab(
-    ProjectExplorer&    project_explorer,
-    Project&            project)
+    ProjectExplorer&        project_explorer,
+    Project&                project,
+    OCIO::ConstConfigRcPtr  ocio_config)
   : m_project_explorer(project_explorer)
   , m_project(project)
+  , m_ocio_config(ocio_config)
 {
     create_render_widget();
     create_toolbar();
@@ -191,7 +197,8 @@ void RenderTab::create_render_widget()
     m_render_widget =
         new RenderWidget(
             props.m_canvas_width,
-            props.m_canvas_height);
+            props.m_canvas_height,
+            m_ocio_config);
 
     m_render_widget->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -298,6 +305,35 @@ void RenderTab::create_toolbar()
     m_picking_mode_combo = new QComboBox();
     m_picking_mode_combo->setObjectName("picking_mode_combo");
     m_toolbar->addWidget(m_picking_mode_combo);
+
+    // Create the label preceding the display combobox.
+    QLabel* display_label = new QLabel("Display:");
+    display_label->setObjectName("display_label");
+    m_toolbar->addWidget(display_label);
+
+    // Create the display combobox.
+    m_display_transform_combo = new QComboBox();
+    m_display_transform_combo->setObjectName("display_combo");
+    {
+        const char* display_name = m_ocio_config->getDefaultDisplay();
+        const std::string default_transform = m_ocio_config->getDefaultView(display_name);
+
+        int default_index = 0;
+        for (int i = 0, e = m_ocio_config->getNumViews(display_name); i < e; ++i)
+        {
+            const char* name = m_ocio_config->getView(display_name, i);
+            m_display_transform_combo->addItem(name);
+
+            if (default_transform == name)
+                default_index = i;
+        }
+
+        m_display_transform_combo->setCurrentIndex(default_index);
+    }
+    m_toolbar->addWidget(m_display_transform_combo);
+    connect(
+        m_display_transform_combo, SIGNAL(currentIndexChanged(QString)),
+        m_render_widget, SLOT(slot_display_transform_changed(QString)));
 
     // Add stretchy spacer.
     // This places interactive widgets on the left and info on the right.

@@ -171,6 +171,8 @@ void RenderingManager::start_rendering(
     m_rendering_mode = rendering_mode;
     m_render_tab = render_tab;
 
+    m_render_tab->get_render_widget()->start_render();
+
     m_tile_callback_factory.reset(
         new QtTileCallbackFactory(
             m_render_tab->get_render_widget()));
@@ -311,10 +313,7 @@ void RenderingManager::print_final_rendering_time()
 
 void RenderingManager::print_average_luminance()
 {
-    Image final_image(m_project->get_frame()->image());
-    m_project->get_frame()->transform_to_output_color_space(final_image);
-
-    const double average_luminance = compute_average_luminance(final_image);
+    const double average_luminance = compute_average_luminance(m_project->get_frame()->image());
 
     RENDERER_LOG_DEBUG(
         "final average luminance is %s.",

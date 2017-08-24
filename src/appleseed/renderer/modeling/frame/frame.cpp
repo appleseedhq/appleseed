@@ -43,16 +43,12 @@
 #include "foundation/image/color.h"
 #include "foundation/image/exceptionunsupportedimageformat.h"
 #include "foundation/image/exrimagefilewriter.h"
-#include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/image/imageattributes.h"
 #include "foundation/image/pixel.h"
+#include "foundation/image/pngimagefilewriter.h"
 #include "foundation/image/tile.h"
-#include "foundation/math/fastmath.h"
 #include "foundation/math/scalar.h"
-#ifdef APPLESEED_USE_SSE
-#include "foundation/platform/sse.h"
-#endif
 #include "foundation/platform/timers.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/api/specializedapiarrays.h"
@@ -96,18 +92,12 @@ struct Frame::Impl
     size_t                  m_frame_height;
     size_t                  m_tile_width;
     size_t                  m_tile_height;
-    PixelFormat             m_pixel_format;
     string                  m_filter_name;
     float                   m_filter_radius;
     auto_ptr<Filter2f>      m_filter;
-    bool                    m_clamp;
-    float                   m_target_gamma;
-    float                   m_rcp_target_gamma;
     AABB2u                  m_crop_window;
-
     auto_ptr<Image>         m_image;
     auto_ptr<ImageStack>    m_aov_images;
-
     AOVContainer            m_aovs;
 };
 
@@ -129,7 +119,7 @@ Frame::Frame(
             impl->m_tile_width,
             impl->m_tile_height,
             4,
-            impl->m_pixel_format));
+            PixelFormatFloat));
 
     // Retrieve the image properties.
     m_props = impl->m_image->properties();
@@ -162,26 +152,16 @@ void Frame::print_settings()
         "  camera                        %s\n"
         "  resolution                    %s x %s\n"
         "  tile size                     %s x %s\n"
-        "  pixel format                  %s\n"
         "  filter                        %s\n"
         "  filter size                   %f\n"
-        "  color space                   %s\n"
-        "  premultiplied alpha           %s\n"
-        "  clamping                      %s\n"
-        "  gamma correction              %f\n"
         "  crop window                   (%s, %s)-(%s, %s)",
         camera_name ? camera_name : "none",
         pretty_uint(impl->m_frame_width).c_str(),
         pretty_uint(impl->m_frame_height).c_str(),
         pretty_uint(impl->m_tile_width).c_str(),
         pretty_uint(impl->m_tile_height).c_str(),
-        pixel_format_name(impl->m_pixel_format),
         impl->m_filter_name.c_str(),
         impl->m_filter_radius,
-        color_space_name(m_color_space),
-        m_is_premultiplied_alpha ? "on" : "off",
-        impl->m_clamp ? "on" : "off",
-        impl->m_target_gamma,
         pretty_uint(impl->m_crop_window.min[0]).c_str(),
         pretty_uint(impl->m_crop_window.min[1]).c_str(),
         pretty_uint(impl->m_crop_window.max[0]).c_str(),
@@ -208,7 +188,7 @@ void Frame::clear_main_image()
 
 ImageStack& Frame::aov_images() const
 {
-    return *impl->m_aov_images.get();
+    return *impl->m_aov_images;
 }
 
 void Frame::add_aov(foundation::auto_release_ptr<AOV> aov)
@@ -297,284 +277,96 @@ size_t Frame::get_pixel_count() const
     return impl->m_crop_window.volume();
 }
 
-namespace
-{
-    template <
-        int  ColorSpace,
-        bool Clamp,
-        bool GammaCorrect
-    >
-    void transform_generic_tile(Tile& tile, const float rcp_target_gamma)
-    {
-        assert(tile.get_channel_count() == 4);
-
-        const size_t pixel_count = tile.get_pixel_count();
-
-        for (size_t i = 0; i < pixel_count; ++i)
-        {
-            // Load the pixel color.
-#ifdef APPLESEED_USE_SSE
-            APPLESEED_SIMD4_ALIGN Color4f color;
-#else
-            Color4f color;
-#endif
-            tile.get_pixel(i, color);
-
-            // Apply color space conversion.
-            switch (ColorSpace)
-            {
-              case ColorSpaceSRGB:
-#ifdef APPLESEED_USE_SSE
-                {
-                    const float old_alpha = color[3];
-                    _mm_store_ps(&color[0], fast_linear_rgb_to_srgb(_mm_load_ps(&color[0])));
-                    color[3] = old_alpha;
-                }
-#else
-                color.rgb() = fast_linear_rgb_to_srgb(color.rgb());
-#endif
-                break;
-
-              case ColorSpaceCIEXYZ:
-                color.rgb() = linear_rgb_to_ciexyz(color.rgb());
-                break;
-
-              default:
-                break;
-            }
-
-            // Apply clamping.
-            // todo: mark clamped pixels in the diagnostic map.
-            if (Clamp)
-                color = saturate(color);
-
-            // Apply gamma correction.
-            if (GammaCorrect)
-            {
-                const float old_alpha = color[3];
-                fast_pow(&color[0], rcp_target_gamma);
-                color[3] = old_alpha;
-            }
-
-            // Store the pixel color.
-            tile.set_pixel(i, color);
-        }
-    }
-
-#ifdef APPLESEED_USE_SSE
-
-    template <
-        int  ColorSpace,
-        bool Clamp,
-        bool GammaCorrect
-    >
-    void transform_float_tile(Tile& tile, const float rcp_target_gamma)
-    {
-        assert(ColorSpace == ColorSpaceLinearRGB || ColorSpace == ColorSpaceSRGB);
-        assert(tile.get_channel_count() == 4);
-
-        float* pixel_ptr = reinterpret_cast<float*>(tile.pixel(0));
-        float* pixel_end = pixel_ptr + tile.get_pixel_count() * 4;
-
-        for (; pixel_ptr < pixel_end; pixel_ptr += 4)
-        {
-            // Load the pixel color.
-            __m128 color = _mm_load_ps(pixel_ptr);
-            __m128 original_color = color;
-
-            // Apply color space conversion.
-            if (ColorSpace == ColorSpaceSRGB)
-                color = fast_linear_rgb_to_srgb(color);
-
-            // Apply clamping.
-            // todo: mark clamped pixels in the diagnostic map.
-            if (Clamp)
-                color = _mm_min_ps(_mm_max_ps(color, _mm_set1_ps(0.0f)), _mm_set1_ps(1.0f));
-
-            // Apply gamma correction.
-            if (GammaCorrect)
-                color = fast_pow(color, _mm_set1_ps(rcp_target_gamma));
-
-            // Store the pixel color (preserve the alpha channel value).
-            _mm_store_ps(pixel_ptr, _mm_shuffle_ps(color, _mm_unpackhi_ps(color, original_color), _MM_SHUFFLE(3, 0, 1, 0)));
-        }
-    }
-
-#else
-
-    template <
-        int  ColorSpace,
-        bool Clamp,
-        bool GammaCorrect
-    >
-    void transform_float_tile(Tile& tile, const float rcp_target_gamma)
-    {
-        assert(ColorSpace == ColorSpaceLinearRGB || ColorSpace == ColorSpaceSRGB);
-        assert(tile.get_channel_count() == 4);
-
-        Color4f* pixel_ptr = reinterpret_cast<Color4f*>(tile.pixel(0));
-        Color4f* pixel_end = pixel_ptr + tile.get_pixel_count();
-
-        for (; pixel_ptr < pixel_end; ++pixel_ptr)
-        {
-            // Load the pixel color.
-            Color4f color(*pixel_ptr);
-
-            // Apply color space conversion.
-            if (ColorSpace == ColorSpaceSRGB)
-                color.rgb() = fast_linear_rgb_to_srgb(color.rgb());
-
-            // Apply clamping.
-            // todo: mark clamped pixels in the diagnostic map.
-            if (Clamp)
-                color = saturate(color);
-
-            // Apply gamma correction.
-            if (GammaCorrect)
-            {
-                const float old_alpha = color[3];
-                fast_pow(&color[0], rcp_target_gamma);
-                color[3] = old_alpha;
-            }
-
-            // Store the pixel color.
-            *pixel_ptr = color;
-        }
-    }
-
-#endif
-}
-
-void Frame::transform_to_output_color_space(Tile& tile) const
-{
-    #define TRANSFORM_GENERIC_TILE(ColorSpace)                                                      \
-        if (impl->m_clamp)                                                                          \
-        {                                                                                           \
-            if (impl->m_target_gamma != 1.0f)                                                       \
-                transform_generic_tile<ColorSpace, true, true>(tile, impl->m_rcp_target_gamma);     \
-            else transform_generic_tile<ColorSpace, true, false>(tile, impl->m_rcp_target_gamma);   \
-        }                                                                                           \
-        else                                                                                        \
-        {                                                                                           \
-            if (impl->m_target_gamma != 1.0f)                                                       \
-                transform_generic_tile<ColorSpace, false, true>(tile, impl->m_rcp_target_gamma);    \
-            else transform_generic_tile<ColorSpace, false, false>(tile, impl->m_rcp_target_gamma);  \
-        }
-
-    #define TRANSFORM_FLOAT_TILE(ColorSpace)                                                        \
-        if (impl->m_clamp)                                                                          \
-        {                                                                                           \
-            if (impl->m_target_gamma != 1.0f)                                                       \
-                transform_float_tile<ColorSpace, true, true>(tile, impl->m_rcp_target_gamma);       \
-            else transform_float_tile<ColorSpace, true, false>(tile, impl->m_rcp_target_gamma);     \
-        }                                                                                           \
-        else                                                                                        \
-        {                                                                                           \
-            if (impl->m_target_gamma != 1.0f)                                                       \
-                transform_float_tile<ColorSpace, false, true>(tile, impl->m_rcp_target_gamma);      \
-            else transform_float_tile<ColorSpace, false, false>(tile, impl->m_rcp_target_gamma);    \
-        }
-
-    if (tile.get_pixel_format() == PixelFormatFloat)
-    {
-        switch (m_color_space)
-        {
-          case ColorSpaceLinearRGB:
-            TRANSFORM_FLOAT_TILE(ColorSpaceLinearRGB);
-            break;
-
-          case ColorSpaceSRGB:
-            TRANSFORM_FLOAT_TILE(ColorSpaceSRGB);
-            break;
-
-          case ColorSpaceCIEXYZ:
-            TRANSFORM_GENERIC_TILE(ColorSpaceCIEXYZ);
-            break;
-
-          assert_otherwise;
-        }
-    }
-    else
-    {
-        switch (m_color_space)
-        {
-          case ColorSpaceLinearRGB:
-            TRANSFORM_GENERIC_TILE(ColorSpaceLinearRGB);
-            break;
-
-          case ColorSpaceSRGB:
-            TRANSFORM_GENERIC_TILE(ColorSpaceSRGB);
-            break;
-
-          case ColorSpaceCIEXYZ:
-            TRANSFORM_GENERIC_TILE(ColorSpaceCIEXYZ);
-            break;
-
-          assert_otherwise;
-        }
-    }
-
-    #undef TRANSFORM_FLOAT_TILE
-    #undef TRANSFORM_GENERIC_TILE
-}
-
-void Frame::transform_to_output_color_space(Image& image) const
-{
-    const CanvasProperties& image_props = image.properties();
-
-    for (size_t ty = 0; ty < image_props.m_tile_count_y; ++ty)
-    {
-        for (size_t tx = 0; tx < image_props.m_tile_count_x; ++tx)
-            transform_to_output_color_space(image.tile(tx, ty));
-    }
-}
-
 bool Frame::write_main_image(const char* file_path) const
 {
     assert(file_path);
 
-    Image transformed_image(*impl->m_image);
-    transform_to_output_color_space(transformed_image);
-
-    const ImageAttributes image_attributes =
-        ImageAttributes::create_default_attributes();
-
-    return write_image(file_path, transformed_image, image_attributes);
+    // Always save the main image as half floats.
+    const Image& image = *impl->m_image;
+    const CanvasProperties& props = image.properties();
+    const Image half_image(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
+    return write_image(file_path, half_image, nullptr);
 }
 
 bool Frame::write_aov_images(const char* file_path) const
 {
     assert(file_path);
 
-    const ImageAttributes image_attributes =
-        ImageAttributes::create_default_attributes();
-
     bool result = true;
 
-    if (!impl->m_aov_images->empty())
+    if (!aov_images().empty())
     {
         const bf::path boost_file_path(file_path);
         const bf::path directory = boost_file_path.parent_path();
         const string base_file_name = boost_file_path.stem().string();
         const string extension = boost_file_path.extension().string();
 
-        for (size_t i = 0; i < impl->m_aov_images->size(); ++i)
+        for (size_t i = 0, e = aovs().size(); i < e; ++i)
         {
-            const string aov_name = impl->m_aov_images->get_name(i);
+            const string aov_name = aov_images().get_name(i);
             const string safe_aov_name = make_safe_filename(aov_name);
             const string aov_file_name = base_file_name + "." + safe_aov_name + extension;
             const string aov_file_path = (directory / aov_file_name).string();
 
-            // Note: AOVs are always in the linear color space.
-            if (!write_image(
-                    aov_file_path.c_str(),
-                    impl->m_aov_images->get_image(i),
-                    image_attributes))
+            if (!write_aov_image(aov_file_path.c_str(), i))
                 result = false;
         }
     }
 
     return result;
+}
+
+bool Frame::write_aov_image(const char* file_path, const size_t aov_index) const
+{
+    assert(file_path);
+
+    if (aov_index >= aovs().size())
+        return true;
+
+    return write_image(
+        file_path,
+        aov_images().get_image(aov_index),
+        aovs().get_by_index(aov_index));
+}
+
+void Frame::write_image_and_aovs_to_multipart_exr(const char *file_path) const
+{
+    EXRImageFileWriter writer;
+
+    ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
+    // todo: add chromaticity attributes here...
+
+    std::vector<Image> images;
+
+    writer.begin_multipart_exr();
+
+    // Always save the main image as half floats.
+    const Image& image = *impl->m_image;
+    {
+        const CanvasProperties& props = image.properties();
+        images.emplace_back(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
+        static const char* ChannelNames[] = {"R", "G", "B", "A"};
+        writer.append_part("beauty", images.back(), image_attributes, 4, ChannelNames);
+    }
+
+    for (size_t i = 0, e = aovs().size(); i < e; ++i)
+    {
+        const string aov_name = aov_images().get_name(i);
+        const AOV* aov = aovs().get_by_index(i);
+        const Image& image = aov_images().get_image(i);
+
+        if (aov->has_color_data())
+        {
+            // If the AOV has color data, assume we can save it as half floats.
+            const CanvasProperties& props = image.properties();
+            images.emplace_back(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
+            writer.append_part(aov_name.c_str(), images.back(), image_attributes, aov->get_channel_count(), aov->get_channel_names());
+        }
+        else
+            writer.append_part(aov_name.c_str(), image, image_attributes, aov->get_channel_count(), aov->get_channel_names());
+    }
+
+    writer.write_multipart_exr(file_path);
 }
 
 bool Frame::archive(
@@ -594,14 +386,11 @@ bool Frame::archive(
     if (output_path)
         *output_path = duplicate_string(file_path.c_str());
 
-    Image transformed_image(*impl->m_image);
-    transform_to_output_color_space(transformed_image);
-
     return
         write_image(
             file_path.c_str(),
-            transformed_image,
-            ImageAttributes::create_default_attributes());
+            *impl->m_image,
+            nullptr);
 }
 
 void Frame::extract_parameters()
@@ -644,35 +433,6 @@ void Frame::extract_parameters()
         impl->m_tile_height = static_cast<size_t>(tile_size[1]);
     }
 
-    // Retrieve pixel format parameter.
-    {
-        const PixelFormat DefaultPixelFormat = PixelFormatHalf;
-        const char* DefaultPixelFormatString = "half";
-        const string pixel_format_str =
-            m_params.get_optional<string>("pixel_format", DefaultPixelFormatString);
-        if (pixel_format_str == "uint8")
-            impl->m_pixel_format = PixelFormatUInt8;
-        else if (pixel_format_str == "uint16")
-            impl->m_pixel_format = PixelFormatUInt16;
-        else if (pixel_format_str == "uint32")
-            impl->m_pixel_format = PixelFormatUInt32;
-        else if (pixel_format_str == "half")
-            impl->m_pixel_format = PixelFormatHalf;
-        else if (pixel_format_str == "float")
-            impl->m_pixel_format = PixelFormatFloat;
-        else if (pixel_format_str == "double")
-            impl->m_pixel_format = PixelFormatDouble;
-        else
-        {
-            RENDERER_LOG_ERROR(
-                "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
-                pixel_format_str.c_str(),
-                "pixel_format",
-                DefaultPixelFormatString);
-            impl->m_pixel_format = DefaultPixelFormat;
-        }
-    }
-
     // Retrieve reconstruction filter parameter.
     {
         const char* DefaultFilterName = "blackman-harris";
@@ -708,38 +468,6 @@ void Frame::extract_parameters()
         }
     }
 
-    // Retrieve color space parameter.
-    {
-        const ColorSpace DefaultColorSpace = ColorSpaceLinearRGB;
-        const char* DefaultColorSpaceString = "linear_rgb";
-        const string color_space_str =
-            m_params.get_optional<string>("color_space", DefaultColorSpaceString);
-        if (color_space_str == "linear_rgb")
-            m_color_space = ColorSpaceLinearRGB;
-        else if (color_space_str == "srgb")
-            m_color_space = ColorSpaceSRGB;
-        else if (color_space_str == "ciexyz")
-            m_color_space = ColorSpaceCIEXYZ;
-        else
-        {
-            RENDERER_LOG_ERROR(
-                "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
-                color_space_str.c_str(),
-                "color_space",
-                DefaultColorSpaceString);
-            m_color_space = DefaultColorSpace;
-        }
-    }
-
-    // Retrieve premultiplied alpha parameter.
-    m_is_premultiplied_alpha = m_params.get_optional<bool>("premultiplied_alpha", true);
-
-    // Retrieve clamping parameter.
-    impl->m_clamp = m_params.get_optional<bool>("clamping", false);
-
-    // Retrieve gamma correction parameter.
-    impl->m_target_gamma = m_params.get_optional<float>("gamma_correction", 1.0f);
-    impl->m_rcp_target_gamma = 1.0f / impl->m_target_gamma;
 
     // Retrieve crop window parameter.
     const AABB2u default_crop_window(
@@ -751,40 +479,39 @@ void Frame::extract_parameters()
 bool Frame::write_image(
     const char*             file_path,
     const Image&            image,
-    const ImageAttributes&  image_attributes) const
+    const AOV*              aov) const
 {
     assert(file_path);
 
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();
 
+    const bf::path filepath(file_path);
+    const string extension = lower_case(filepath.extension().string());
+
+    ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
+    // todo: add chromaticity attributes here...
+
     try
     {
-        try
+        if (extension == ".exr")
+            write_exr_image(file_path, image, image_attributes, aov);
+        else if (extension == ".png")
+            write_png_image(file_path, image, image_attributes, aov);
+        else if (extension.empty())
         {
-            GenericImageFileWriter writer;
-            writer.write(file_path, image, image_attributes);
+            string file_path_with_ext(file_path);
+            file_path_with_ext += ".exr";
+            write_exr_image(file_path_with_ext.c_str(), image, image_attributes, aov);
         }
-        catch (const ExceptionUnsupportedFileFormat&)
+        else
         {
-            const string extension = lower_case(bf::path(file_path).extension().string());
-
             RENDERER_LOG_ERROR(
-                "file format '%s' not supported, writing the image in OpenEXR format "
-                "(but keeping the filename unmodified).",
-                extension.c_str());
+                "failed to write image file %s: unsupported image format.",
+                file_path);
 
-            EXRImageFileWriter writer;
-            writer.write(file_path, image, image_attributes);
+            return false;
         }
-    }
-    catch (const ExceptionUnsupportedImageFormat&)
-    {
-        RENDERER_LOG_ERROR(
-            "failed to write image file %s: unsupported image format.",
-            file_path);
-
-        return false;
     }
     catch (const ExceptionIOError&)
     {
@@ -812,6 +539,82 @@ bool Frame::write_image(
         pretty_time(stopwatch.get_seconds()).c_str());
 
     return true;
+}
+
+void Frame::write_exr_image(
+    const char*             file_path,
+    const Image&            image,
+    const ImageAttributes&  image_attributes,
+    const AOV*              aov) const
+{
+    EXRImageFileWriter writer;
+
+    if (aov)
+    {
+        if (aov->has_color_data())
+        {
+            // If the AOV has color data, assume we can save it as half floats.
+            const CanvasProperties& props = image.properties();
+            const Image half_image(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
+            writer.write(file_path, half_image, image_attributes, aov->get_channel_count(), aov->get_channel_names());
+        }
+        else
+            writer.write(file_path, image, image_attributes, aov->get_channel_count(), aov->get_channel_names());
+    }
+    else
+        writer.write(file_path, image, image_attributes);
+}
+
+namespace
+{
+
+    void transform_to_srgb(Tile& tile)
+    {
+        assert(tile.get_channel_count() == 4);
+
+        Color4f* pixel_ptr = reinterpret_cast<Color4f*>(tile.pixel(0));
+        Color4f* pixel_end = pixel_ptr + tile.get_pixel_count();
+
+        for (; pixel_ptr < pixel_end; ++pixel_ptr)
+        {
+            // Load the pixel color.
+            Color4f color(*pixel_ptr);
+
+            // Apply color space conversion.
+            color.rgb() = fast_linear_rgb_to_srgb(color.rgb());
+
+            // Apply clamping.
+            color = saturate(color);
+
+            // Store the pixel color.
+            *pixel_ptr = color;
+        }
+    }
+
+    void transform_to_srgb(Image& image)
+    {
+        const CanvasProperties& image_props = image.properties();
+
+        for (size_t ty = 0; ty < image_props.m_tile_count_y; ++ty)
+        {
+            for (size_t tx = 0; tx < image_props.m_tile_count_x; ++tx)
+                transform_to_srgb(image.tile(tx, ty));
+        }
+    }
+
+}
+
+void Frame::write_png_image(
+    const char*             file_path,
+    const Image&            image,
+    const ImageAttributes&  image_attributes,
+    const AOV*              aov) const
+{
+    Image transformed_image(image);
+    transform_to_srgb(transformed_image);
+
+    PNGImageFileWriter writer;
+    writer.write(file_path, transformed_image, image_attributes);
 }
 
 
@@ -855,22 +658,6 @@ DictionaryArray FrameFactory::get_input_metadata()
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "pixel_format")
-            .insert("label", "Pixel Format")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("Integer, 8-bit", "uint8")
-                    .insert("Integer, 16-bit", "uint16")
-                    .insert("Integer, 32-bit", "uint32")
-                    .insert("Floating-Point, 16-bit", "half")
-                    .insert("Floating-Point, 32-bit", "float")
-                    .insert("Floating-Point, 64-bit", "double"))
-            .insert("use", "optional")
-            .insert("default", "half"));
-
-    metadata.push_back(
-        Dictionary()
             .insert("name", "filter")
             .insert("label", "Filter")
             .insert("type", "enumeration")
@@ -894,43 +681,6 @@ DictionaryArray FrameFactory::get_input_metadata()
             .insert("type", "text")
             .insert("use", "optional")
             .insert("default", "1.5"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "color_space")
-            .insert("label", "Color Space")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("Linear RGB", "linear_rgb")
-                    .insert("sRGB", "srgb")
-                    .insert("CIE XYZ", "ciexyz"))
-            .insert("use", "optional")
-            .insert("default", "linear_rgb"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "premultiplied_alpha")
-            .insert("label", "Premultiplied Alpha")
-            .insert("type", "boolean")
-            .insert("use", "optional")
-            .insert("default", "true"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "clamping")
-            .insert("label", "Clamping")
-            .insert("type", "boolean")
-            .insert("use", "optional")
-            .insert("default", "false"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "gamma_correction")
-            .insert("label", "Gamma Correction")
-            .insert("type", "text")
-            .insert("use", "optional")
-            .insert("default", "1.0"));
 
     return metadata;
 }

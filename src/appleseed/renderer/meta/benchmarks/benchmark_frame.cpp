@@ -66,14 +66,4 @@ BENCHMARK_SUITE(Renderer_Modeling_Frame)
             m_tile->clear(Color4f(0.8f, -0.3f, 0.6f, 0.5f));
         }
     };
-
-    BENCHMARK_CASE_F(TransformToOutputColorSpace_GivenTileWithFloatPixels_AndFrameColorSpaceIsSRGB, Fixture<PixelFormatFloat>)
-    {
-        m_frame->transform_to_output_color_space(*m_tile.get());
-    }
-
-    BENCHMARK_CASE_F(TransformToOutputColorSpace_GivenTileWithHalfPixels_AndFrameColorSpaceIsSRGB, Fixture<PixelFormatHalf>)
-    {
-        m_frame->transform_to_output_color_space(*m_tile.get());
-    }
 }

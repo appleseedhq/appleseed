@@ -110,12 +110,6 @@ class APPLESEED_DLLSYMBOL Frame
     // Return the reconstruction filter used by the main image and the AOV images.
     const foundation::Filter2f& get_filter() const;
 
-    // Return the color space the frame should be converted to for display.
-    foundation::ColorSpace get_color_space() const;
-
-    // Return true if the frame uses premultiplied alpha, false if it uses straight alpha.
-    bool is_premultiplied_alpha() const;
-
     // Set/get the crop window. The crop window is inclusive on all sides.
     void reset_crop_window();
     bool has_crop_window() const;
@@ -124,10 +118,6 @@ class APPLESEED_DLLSYMBOL Frame
 
     // Return the number of pixels in the frame, taking into account the crop window.
     size_t get_pixel_count() const;
-
-    // Convert a tile or an image from linear RGB to the output color space.
-    void transform_to_output_color_space(foundation::Tile& tile) const;
-    void transform_to_output_color_space(foundation::Image& image) const;
 
     // Return the normalized device coordinates of a given sample.
     foundation::Vector2d get_sample_position(
@@ -150,6 +140,10 @@ class APPLESEED_DLLSYMBOL Frame
     // Return true if successful, false otherwise.
     bool write_main_image(const char* file_path) const;
     bool write_aov_images(const char* file_path) const;
+    bool write_aov_image(const char* file_path, const size_t aov_index) const;
+
+    // Write the main image and the AOVs as a multipart OpenEXR file.
+    void write_image_and_aovs_to_multipart_exr(const char* file_path) const;
 
     // Archive the frame to a given directory on disk. If output_path is provided,
     // the full path to the output file will be returned. The returned string must
@@ -166,8 +160,6 @@ class APPLESEED_DLLSYMBOL Frame
     Impl* impl;
 
     foundation::CanvasProperties    m_props;
-    foundation::ColorSpace          m_color_space;
-    bool                            m_is_premultiplied_alpha;
 
     // Constructor.
     Frame(
@@ -179,12 +171,23 @@ class APPLESEED_DLLSYMBOL Frame
 
     void extract_parameters();
 
-    // Write an image to disk after transformation to the frame's color space.
-    // Return true if successful, false otherwise.
+    // Write an image to disk. Return true if successful, false otherwise.
     bool write_image(
         const char*                         file_path,
         const foundation::Image&            image,
-        const foundation::ImageAttributes&  image_attributes) const;
+        const AOV*                          aov) const;
+
+    void write_exr_image(
+        const char*                         file_path,
+        const foundation::Image&            image,
+        const foundation::ImageAttributes&  image_attributes,
+        const AOV*                          aov) const;
+
+    void write_png_image(
+        const char*                         file_path,
+        const foundation::Image&            image,
+        const foundation::ImageAttributes&  image_attributes,
+        const AOV*                          aov) const;
 };
 
 
@@ -208,16 +211,6 @@ class APPLESEED_DLLSYMBOL FrameFactory
 //
 // Frame class implementation.
 //
-
-inline foundation::ColorSpace Frame::get_color_space() const
-{
-    return m_color_space;
-}
-
-inline bool Frame::is_premultiplied_alpha() const
-{
-    return m_is_premultiplied_alpha;
-}
 
 inline foundation::Vector2d Frame::get_sample_position(
     const double    sample_x,

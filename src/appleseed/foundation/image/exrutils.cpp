@@ -32,13 +32,17 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/imageattributes.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/system.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/iostreamop.h"
 #include "foundation/utility/string.h"
 
 // OpenEXR headers.
 #include "foundation/platform/_beginexrheaders.h"
+#include "OpenEXR/ImfChromaticities.h"
+#include "OpenEXR/ImfChromaticitiesAttribute.h"
 #include "OpenEXR/ImfStandardAttributes.h"
 #include "OpenEXR/ImfStringAttribute.h"
 #include "OpenEXR/ImfThreading.h"
@@ -74,6 +78,9 @@ void add_attributes(
     const ImageAttributes&  image_attributes,
     Header&                 header)
 {
+    size_t num_chromaticity_coordinates = 0;
+    Imf::Chromaticities chromaticities;
+
     for (const_each<ImageAttributes> i = image_attributes; i; ++i)
     {
         // Fetch the name and the value of the attribute.
@@ -92,9 +99,37 @@ void add_attributes(
         else if (attr_name == "creation_time")
             addCapDate(header, attr_value);
 
+        else if (attr_name == "chromaticity_wxy")
+        {
+            const Vector2f c = from_string<Vector2f>(attr_value);
+            chromaticities.white = Imath::V2f(c[0], c[1]);
+            ++num_chromaticity_coordinates;
+        }
+        else if (attr_name == "chromaticity_rxy")
+        {
+            const Vector2f c = from_string<Vector2f>(attr_value);
+            chromaticities.red = Imath::V2f(c[0], c[1]);
+            ++num_chromaticity_coordinates;
+        }
+        else if (attr_name == "chromaticity_gxy")
+        {
+            const Vector2f c = from_string<Vector2f>(attr_value);
+            chromaticities.green = Imath::V2f(c[0], c[1]);
+            ++num_chromaticity_coordinates;
+        }
+        else if (attr_name == "chromaticity_bxy")
+        {
+            const Vector2f c = from_string<Vector2f>(attr_value);
+            chromaticities.blue = Imath::V2f(c[0], c[1]);
+            ++num_chromaticity_coordinates;
+        }
         else
             header.insert(attr_name.c_str(), StringAttribute(attr_value));
     }
+
+    // Only save chromaticities if they are complete.
+    if (num_chromaticity_coordinates == 4)
+        header.insert("chromaticities", Imf::ChromaticitiesAttribute(chromaticities));
 }
 
 }   // namespace foundation

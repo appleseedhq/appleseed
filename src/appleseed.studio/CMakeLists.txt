@@ -524,6 +524,7 @@ endif ()
 include_directories (
     .
     ../appleseed.shared
+    ${OPENCOLORIO_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_DIRS}
 )
 
@@ -542,6 +543,7 @@ apply_preprocessor_definitions (appleseed.studio)
 # Static libraries must be specified in order of reverse-dependency.
 link_against_platform (appleseed.studio)
 link_against_openexr (appleseed.studio)
+link_against_ocio (appleseed.studio)
 
 target_link_libraries (appleseed.studio
     appleseed
@@ -587,5 +589,9 @@ install (FILES ../../sandbox/settings/appleseed.studio.xml
 )
 
 install (DIRECTORY ../../sandbox/seexpr
+    DESTINATION .
+)
+
+install (DIRECTORY ../../sandbox/ocio
     DESTINATION .
 )
