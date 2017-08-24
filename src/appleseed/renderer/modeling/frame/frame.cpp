@@ -284,7 +284,7 @@ bool Frame::write_main_image(const char* file_path) const
     // Always save the main image as half floats.
     const Image& image = *impl->m_image;
     const CanvasProperties& props = image.properties();
-    Image half_image(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
+    const Image half_image(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
     return write_image(file_path, half_image, nullptr);
 }
 
@@ -555,7 +555,7 @@ void Frame::write_exr_image(
         {
             // If the AOV has color data, assume we can save it as half floats.
             const CanvasProperties& props = image.properties();
-            Image half_image(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
+            const Image half_image(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
             writer.write(file_path, half_image, image_attributes, aov->get_channel_count(), aov->get_channel_names());
         }
         else
@@ -568,39 +568,39 @@ void Frame::write_exr_image(
 namespace
 {
 
-void transform_to_srgb(Tile& tile)
-{
-    assert(tile.get_channel_count() == 4);
-
-    Color4f* pixel_ptr = reinterpret_cast<Color4f*>(tile.pixel(0));
-    Color4f* pixel_end = pixel_ptr + tile.get_pixel_count();
-
-    for (; pixel_ptr < pixel_end; ++pixel_ptr)
+    void transform_to_srgb(Tile& tile)
     {
-        // Load the pixel color.
-        Color4f color(*pixel_ptr);
+        assert(tile.get_channel_count() == 4);
 
-        // Apply color space conversion.
-        color.rgb() = fast_linear_rgb_to_srgb(color.rgb());
+        Color4f* pixel_ptr = reinterpret_cast<Color4f*>(tile.pixel(0));
+        Color4f* pixel_end = pixel_ptr + tile.get_pixel_count();
 
-        // Apply clamping.
-        color = saturate(color);
+        for (; pixel_ptr < pixel_end; ++pixel_ptr)
+        {
+            // Load the pixel color.
+            Color4f color(*pixel_ptr);
 
-        // Store the pixel color.
-        *pixel_ptr = color;
+            // Apply color space conversion.
+            color.rgb() = fast_linear_rgb_to_srgb(color.rgb());
+
+            // Apply clamping.
+            color = saturate(color);
+
+            // Store the pixel color.
+            *pixel_ptr = color;
+        }
     }
-}
 
-void transform_to_srgb(Image& image)
-{
-    const CanvasProperties& image_props = image.properties();
-
-    for (size_t ty = 0; ty < image_props.m_tile_count_y; ++ty)
+    void transform_to_srgb(Image& image)
     {
-        for (size_t tx = 0; tx < image_props.m_tile_count_x; ++tx)
-            transform_to_srgb(image.tile(tx, ty));
+        const CanvasProperties& image_props = image.properties();
+
+        for (size_t ty = 0; ty < image_props.m_tile_count_y; ++ty)
+        {
+            for (size_t tx = 0; tx < image_props.m_tile_count_x; ++tx)
+                transform_to_srgb(image.tile(tx, ty));
+        }
     }
-}
 
 }
 

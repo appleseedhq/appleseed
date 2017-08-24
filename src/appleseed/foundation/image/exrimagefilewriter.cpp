@@ -80,7 +80,7 @@ struct EXRImageFileWriter::Impl
 };
 
 EXRImageFileWriter::EXRImageFileWriter()
-  : impl(0)
+  : impl(nullptr)
 {
 }
 

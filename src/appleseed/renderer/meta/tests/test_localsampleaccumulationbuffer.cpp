@@ -50,7 +50,7 @@ using namespace std;
 
 TEST_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
 {
-    bool honors_crop_window(const AABB2u crop_window)
+    bool honors_crop_window(const AABB2u& crop_window)
     {
         // A full low resolution framebuffer.
         const BoxFilter2<float> filter(0.5f, 0.5f);

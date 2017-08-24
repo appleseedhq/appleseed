@@ -637,7 +637,7 @@ namespace
 
                 if (!output_filename.empty())
                 {
-                    LOG_INFO(g_logger, "writing %s AOV to disk...", aov->get_model());
+                    LOG_INFO(g_logger, "writing %s aov to disk...", aov->get_model());
                     frame->write_aov_image(output_filename.c_str(), i);
                 }
             }

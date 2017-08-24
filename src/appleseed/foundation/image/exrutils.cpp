@@ -101,25 +101,25 @@ void add_attributes(
 
         else if (attr_name == "chromaticity_wxy")
         {
-            Vector2f c = from_string<Vector2f>(attr_value);
+            const Vector2f c = from_string<Vector2f>(attr_value);
             chromaticities.white = Imath::V2f(c[0], c[1]);
             ++num_chromaticity_coordinates;
         }
         else if (attr_name == "chromaticity_rxy")
         {
-            Vector2f c = from_string<Vector2f>(attr_value);
+            const Vector2f c = from_string<Vector2f>(attr_value);
             chromaticities.red = Imath::V2f(c[0], c[1]);
             ++num_chromaticity_coordinates;
         }
         else if (attr_name == "chromaticity_gxy")
         {
-            Vector2f c = from_string<Vector2f>(attr_value);
+            const Vector2f c = from_string<Vector2f>(attr_value);
             chromaticities.green = Imath::V2f(c[0], c[1]);
             ++num_chromaticity_coordinates;
         }
         else if (attr_name == "chromaticity_bxy")
         {
-            Vector2f c = from_string<Vector2f>(attr_value);
+            const Vector2f c = from_string<Vector2f>(attr_value);
             chromaticities.blue = Imath::V2f(c[0], c[1]);
             ++num_chromaticity_coordinates;
         }

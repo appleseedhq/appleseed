@@ -44,7 +44,7 @@
 #include "foundation/image/image.h"
 
 // OpenColorIO headers.
-#include<OpenColorIO/OpenColorIO.h>
+#include <OpenColorIO/OpenColorIO.h>
 
 // Qt headers.
 #include <QComboBox>
@@ -316,7 +316,7 @@ void RenderTab::create_toolbar()
     m_display_transform_combo->setObjectName("display_combo");
     {
         const char* display_name = m_ocio_config->getDefaultDisplay();
-        std::string default_transform = m_ocio_config->getDefaultView(display_name);
+        const std::string default_transform = m_ocio_config->getDefaultView(display_name);
 
         int default_index = 0;
         for (int i = 0, e = m_ocio_config->getNumViews(display_name); i < e; ++i)

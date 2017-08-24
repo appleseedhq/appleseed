@@ -48,7 +48,7 @@
 #include <QObject>
 
 // OpenColorIO headers.
-#include<OpenColorIO/OpenColorIO.h>
+#include <OpenColorIO/OpenColorIO.h>
 namespace OCIO = OCIO_NAMESPACE;
 
 // Standard headers.

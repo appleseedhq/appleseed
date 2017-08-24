@@ -1444,7 +1444,7 @@ void MainWindow::initialize_ocio()
         try
         {
             m_ocio_config = OCIO::GetCurrentConfig();
-            RENDERER_LOG_INFO("Using OpenColorIO config: %s", getenv("OCIO"));
+            RENDERER_LOG_INFO("using ocio configuration: %s", getenv("OCIO"));
             return;
         }
         catch (const OCIO::Exception&)
@@ -1459,11 +1459,11 @@ void MainWindow::initialize_ocio()
     try
     {
         m_ocio_config = OCIO::Config::CreateFromFile(default_ocio_config.c_str());
-        RENDERER_LOG_INFO("Using OpenColorIO config: %s", default_ocio_config.c_str());
+        RENDERER_LOG_INFO("using ocio configuration: %s", default_ocio_config.c_str());
         OCIO::SetCurrentConfig(m_ocio_config);
         return;
     }
-    catch(...)
+    catch (const OCIO::Exception&)
     {
     }
 
