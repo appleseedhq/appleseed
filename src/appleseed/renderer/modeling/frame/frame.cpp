@@ -571,7 +571,7 @@ namespace
         assert(tile.get_channel_count() == 4);
         assert(tile.get_pixel_format() == PixelFormatHalf);
 
-        using Color4h = Color<half, 4>;
+        typedef Color<half, 4> Color4h;
 
         Color4h* pixel_ptr = reinterpret_cast<Color4h*>(tile.pixel(0));
         Color4h* pixel_end = pixel_ptr + tile.get_pixel_count();
