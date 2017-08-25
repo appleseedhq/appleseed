@@ -33,7 +33,7 @@ def convert_all_textures_to_tx():
     project = studio.current_project()
 
     if project is None:
-        raise Exception('No project is opened')
+        return
 
     scene = project.get_scene()
     textures = get_textures(scene)
