@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
 
 def register():
-    menu = ui.find_or_create_menu("Utils")
+    menu = ui.find_or_create_menu("Plugins")
 
     act = QtWidgets.QAction("Convert textures", menu)
     act.triggered.connect(convert_all_textures_to_tx)
