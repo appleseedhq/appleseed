@@ -29,6 +29,7 @@
 import appleseed.studio as studio
 import Qt
 
+
 def wrapinstance(addr, type):
     if Qt.__binding__ == 'PyQt4':
         import sip
@@ -40,6 +41,7 @@ def wrapinstance(addr, type):
 
     else:
         raise Exception("No wrapinstance function defined for " + Qt.__binding__)
+
 
 def find_or_create_menu(menu_name):
     ptr = studio.main_window()
