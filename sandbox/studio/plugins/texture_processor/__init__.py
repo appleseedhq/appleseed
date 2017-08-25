@@ -31,6 +31,10 @@ def convert_all_textures_to_tx():
             raise Exception('maketx binary is not found')
 
     project = studio.current_project()
+
+    if project is None:
+        raise Exception('No project is opened')
+
     scene = project.get_scene()
     textures = get_textures(scene)
 
