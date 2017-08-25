@@ -63,6 +63,7 @@ def convert_all_textures_to_tx():
 
             texture_parameters['filename'] = new_texture_path
             texture.set_parameters(texture_parameters)
+            studio.set_project_dirty()
             logging.info('{} converted to {}'.format(texture_path, new_texture_path))
 
 
