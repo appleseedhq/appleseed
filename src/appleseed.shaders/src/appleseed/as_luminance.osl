@@ -52,7 +52,8 @@ shader as_luminance
         string widget = "checkBox",
         string label = "Use Maya CMS",
         string page = "Color Space",
-        int divider = 1
+        int divider = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     int in_inputColorSpace = 0
     [[
@@ -63,7 +64,8 @@ shader as_luminance
         string options = "ACES 2065-1 AP0:0|ACEScg AP1:1|Rec.2020:2|DCI-P3:3|Rec.709/sRGB:4|Chromaticity Coordinates:5",
         string label = "Input Color Space",
         string page = "Color Space",
-        int divider = 1
+        int divider = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     float in_chromaticityCoordsR[2] = {0.317, 0.329}
     [[
@@ -106,7 +108,8 @@ shader as_luminance
         string label = "Illuminants",
         string page = "Color Space",
         string help = "Preset illuminants, correlated color temperature or explicit white point xy chromaticity coordinates.",
-        int divider = 1
+        int divider = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     int in_colorTemperature = 6504
     [[

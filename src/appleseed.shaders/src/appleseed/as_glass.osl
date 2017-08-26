@@ -75,7 +75,8 @@ shader as_glass
         string page = "Specular Parameters",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_hidden = 1,
-        int divider = 1
+        int divider = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     string in_distribution = "ggx"
     [[
@@ -87,7 +88,8 @@ shader as_glass
         string page = "Specular Parameters",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     float in_roughness = 0.1
     [[
@@ -96,6 +98,15 @@ shader as_glass
         float min = 0.001,
         float max = 1.0,
         string label = "Roughness",
+        string page = "Specular Parameters"
+    ]],
+    float in_specular_spread = 0.5
+    [[
+        string as_maya_attribute_name = "specularSpread",
+        string as_maya_attribute_short_name = "ss",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Specular Spread",
         string page = "Specular Parameters",
         int divider = 1
     ]],
@@ -140,7 +151,8 @@ shader as_glass
         float min = 0.0,
         float max = 1e+9,
         string label = "Transmittance Distance",
-        string page = "Volume Material Parameters"
+        string page = "Volume Material Parameters",
+        int gafferNoduleLayoutVisible = 0
     ]],
     normal in_bump_normal = N
     [[
@@ -159,7 +171,8 @@ shader as_glass
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
-        int divider = 1
+        int divider = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     float in_matte_opacity = 0.0
     [[
@@ -168,14 +181,16 @@ shader as_glass
         float min = 0.0,
         float max = 1.0,
         string label = "Matte Opacity",
-        string page = "Matte Opacity Parameters"
+        string page = "Matte Opacity Parameters",
+        int gafferNoduleLayoutVisible = 0
     ]],
     color in_matte_opacity_color = color(1,0.5,0)
     [[
         string as_maya_attribute_name = "matteOpacityColor",
         string as_maya_attribute_short_name = "mac",
         string label = "Matte Opacity Color",
-        string page = "Matte Opacity Parameters"
+        string page = "Matte Opacity Parameters",
+        int gafferNoduleLayoutVisible = 0
     ]],
     int in_maximum_ray_depth= 4
     [[
@@ -188,19 +203,22 @@ shader as_glass
         string page = "Advanced Parameters",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     vector Tn = vector(0)
     [[
         int lockgeom = 0,
         int as_maya_attribute_hidden = 1,
-        string widget = "null"
+        string widget = "null",
+        int gafferNoduleLayoutVisible = 0
     ]],
     vector Bn = vector(0)
     [[
         int lockgeom = 0,
         int as_maya_attribute_hidden = 1,
-        string widget = "null"
+        string widget = "null",
+        int gafferNoduleLayoutVisible = 0
     ]],
 
     output closure color out_outColor = 0
@@ -220,7 +238,8 @@ shader as_glass
         string as_maya_attribute_name = "outMatteOpacity",
         string as_maya_attribute_short_name = "om",
         string widget = "null",
-        int as_maya_attribute_hidden = 1
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
     ]]
 )
 {
@@ -283,7 +302,7 @@ shader as_glass
         in_reflection_tint,
         in_refraction_tint,
         in_roughness,
-        0.5, // highlight falloff
+        in_specular_spread,
         in_anisotropy_amount,
         in_ior,
         in_volume_transmittance,

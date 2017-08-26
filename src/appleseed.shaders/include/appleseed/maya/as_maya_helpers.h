@@ -44,35 +44,40 @@
         string as_maya_attribute_name = "defaultColor",                     \
         int as_maya_attribute_hidden = 1,                                   \
         string label = "Default Color",                                     \
-        string page = "Color Balance"                                       \
+        string page = "Color Balance",                                      \
+        int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     color in_colorGain = color(1.0)                                         \
     [[                                                                      \
         string as_maya_attribute_name = "colorGain",                        \
         int as_maya_attribute_hidden = 1,                                   \
         string label = "Color Gain",                                        \
-        string page = "Color Balance"                                       \
+        string page = "Color Balance",                                      \
+        int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     color in_colorOffset = color(0.0)                                       \
     [[                                                                      \
         string as_maya_attribute_name = "colorOffset",                      \
         int as_maya_attribute_hidden = 1,                                   \
         string label = "Color Offset",                                      \
-        string page = "Color Balance"                                       \
+        string page = "Color Balance",                                      \
+        int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     float in_alphaGain = 1.0                                                \
     [[                                                                      \
         string as_maya_attribute_name = "alphaGain",                        \
         int as_maya_attribute_hidden = 1,                                   \
         string label = "Alpha Gain",                                        \
-        string page = "Color Balance"                                       \
+        string page = "Color Balance",                                      \
+        int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     float in_alphaOffset = 0.0                                              \
     [[                                                                      \
         string as_maya_attribute_name = "alphaOffset",                      \
         int as_maya_attribute_hidden = 1,                                   \
         string label = "Alpha Offset",                                      \
-        string page = "Color Balance"                                       \
+        string page = "Color Balance",                                      \
+        int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     int in_alphaIsLuminance = 1                                             \
     [[                                                                      \
@@ -80,7 +85,8 @@
         int as_maya_attribute_hidden = 1,                                   \
         string label = "Alpha Is Luminance",                                \
         string widget = "checkBox",                                         \
-        string page = "Color Balance"                                       \
+        string page = "Color Balance",                                      \
+        int gafferNoduleLayoutVisible = 0                                   \
     ]]
 
 #define MAYA_EFFECTS_PARAMETERS                                             \
@@ -91,7 +97,8 @@
         float min = 0.0,                                                    \
         float softmax = 1.0,                                                \
         string label = "Filter",                                            \
-        string page = "Effects"                                             \
+        string page = "Effects",                                            \
+        int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     float in_filterOffset = 0.0                                             \
     [[                                                                      \
@@ -100,7 +107,8 @@
         float softmin = 0.0,                                                \
         float softmax = 1.0,                                                \
         string label = "Filter Offset",                                     \
-        string page = "Effects"                                             \
+        string page = "Effects",                                            \
+        int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     int in_invert = 0                                                       \
     [[                                                                      \
@@ -108,7 +116,8 @@
         int as_maya_attribute_hidden = 1,                                   \
         string label = "Invert",                                            \
         string widget = "checkBox",                                         \
-        string page = "Effects"                                             \
+        string page = "Effects",                                            \
+        int gafferNoduleLayoutVisible = 0                                   \
     ]]
 
 #define MAYA_EFFECTS_3DTEX_PARAMETERS                                       \
@@ -118,7 +127,8 @@
         int as_maya_attribute_hidden = 1,                                   \
         string label = "Wrap",                                              \
         string widget = "checkBox",                                         \
-        string page = "Effects"                                             \
+        string page = "Effects",                                            \
+        int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     int in_local = 0                                                        \
     [[                                                                      \
@@ -126,7 +136,8 @@
         int as_maya_attribute_hidden = 1,                                   \
         string label = "Local",                                             \
         string widget = "checkBox",                                         \
-        string page = "Effects"                                             \
+        string page = "Effects",                                            \
+        int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     float in_blend = 0.0                                                    \
     [[                                                                      \
@@ -135,7 +146,8 @@
         string label = "Blend",                                             \
         float min = 0.0,                                                    \
         float max = 1.0,                                                    \
-        string page = "Effects"                                             \
+        string page = "Effects",                                            \
+        int gafferNoduleLayoutVisible = 0                                   \
     ]]
 
 #define MAYA_UV_PARAMETERS                                                  \
@@ -161,20 +173,23 @@
         int as_maya_attribute_hidden = 1,                                   \
         string widget = "null",                                             \
         string label = "Color Profile",                                     \
+        int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     int in_ignoreColorSpaceFileRules = 0                                    \
     [[                                                                      \
         string as_maya_attribute_name = "ignoreColorSpaceFileRules",        \
         int as_maya_attribute_hidden = 1,                                   \
         string widget = "null",                                             \
-        string label = "Ignore Color Space File Rules"                      \
+        string label = "Ignore Color Space File Rules",                     \
+        int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     string in_colorSpace = ""                                               \
     [[                                                                      \
         string as_maya_attribute_name = "colorSpace",                       \
         int as_maya_attribute_hidden = 1,                                   \
         string widget = "null",                                             \
-        string label = "Color Space"                                        \
+        string label = "Color Space",                                       \
+        int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     string in_workingSpace = ""                                             \
     [[                                                                      \
@@ -188,21 +203,24 @@
         string as_maya_attribute_name = "colorManagementEnabled",           \
         int as_maya_attribute_hidden = 1,                                   \
         string widget = "null",                                             \
-        string label = "Color Management Enabled"                           \
+        string label = "Color Management Enabled",                          \
+        int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     int in_colorManagementConfigFileEnabled = 0                             \
     [[                                                                      \
         string as_maya_attribute_name = "colorManagementConfigFileEnabled", \
         int as_maya_attribute_hidden = 1,                                   \
         string widget = "null",                                             \
-        string label = "Enable CMS Config"                                  \
+        string label = "Enable CMS Config",                                 \
+        int gafferNoduleLayoutVisible = 0                                   \
     ]],                                                                     \
     string in_colorManagementConfigFilePath = ""                            \
     [[                                                                      \
         string as_maya_attribute_name = "colorManagementConfigFilePath",    \
         int as_maya_attribute_hidden = 1,                                   \
         string widget = "null",                                             \
-        string label = "Color Management Config File Path"                  \
+        string label = "Color Management Config File Path",                 \
+        int gafferNoduleLayoutVisible = 0                                   \
     ]]
 
 float maya_luminance(color in_C)
