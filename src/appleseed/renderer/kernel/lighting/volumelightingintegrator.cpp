@@ -225,8 +225,6 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution(
     SamplingContext child_sampling_context = sampling_context.split(1, 1);
     const float s = child_sampling_context.next2<float>();
     const size_t channel = truncate<size_t>(s * Spectrum::size());
-    if (m_precomputed_mis_weights[channel] == 0.0f)
-        return;
 
     // Prepare equiangular sampling.
     const EquiangularSampler equiangular_distance_sampler(
@@ -238,6 +236,7 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution(
     //
     // Exponential sampling.
     //
+    if (m_precomputed_mis_weights[channel] > 0.0f)
     {
         const float exponential_sample = draw_exponential_sample(
             child_sampling_context, m_volume_ray, extinction_coef[channel]);
@@ -588,6 +587,8 @@ float VolumeLightingIntegrator::evaluate_exponential_sample(
     const ShadingRay&   volume_ray,
     const float         extinction) const
 {
+    if (extinction == 0.0f)
+        return 1.0 / m_volume_ray.get_length();
     if (!volume_ray.is_finite())
         return exponential_distribution_pdf(distance, extinction);
     else

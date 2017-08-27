@@ -937,6 +937,11 @@ namespace
                 const Volume* volume = medium->get_volume();
                 assert(volume != nullptr);
 
+                const size_t light_sample_count =
+                    stochastic_cast<size_t>(
+                        m_sampling_context,
+                        m_params.m_dl_light_sample_count);
+
                 VolumeLightingIntegrator integrator(
                     m_shading_context,
                     m_light_sampler,
@@ -946,7 +951,7 @@ namespace
                     *vertex.m_shading_point,
                     vertex.m_scattering_modes,
                     m_params.m_distance_sample_count,
-                    m_params.m_dl_light_sample_count,
+                    light_sample_count,
                     m_params.m_dl_low_light_threshold,
                     m_is_indirect_lighting);
 
