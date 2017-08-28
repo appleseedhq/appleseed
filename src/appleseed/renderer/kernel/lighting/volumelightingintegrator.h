@@ -103,15 +103,12 @@ namespace renderer
         const ShadingRay&                   m_volume_ray;
         const void*                         m_volume_data;
         const ShadingPoint&                 m_shading_point;
-        Spectrum                            m_precomputed_mis_weights;
         const int                           m_scattering_modes;
         const size_t                        m_distance_sample_count;
         const float                         m_rcp_distance_sample_count;
         const size_t                        m_light_sample_count;
         const float                         m_low_light_threshold;
         const bool                          m_indirect;
-
-        void precompute_mis_weights();
 
         // Sample distance and integrate in-scattered lighting at this distance.
         void add_single_distance_sample_contribution(

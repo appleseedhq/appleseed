@@ -859,13 +859,21 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
         for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
         {
             if (extinction_coef[i] > 1.0e-6f)
-                mis_weights_sum += transmission[i] * scattering_coef[i] / extinction_coef[i];
+            {
+                const float probability =
+                    foundation::exponential_distribution_pdf(
+                        distance_sample,
+                        extinction_coef[i]);
+
+                mis_weights_sum += foundation::square(probability);
+            }
         }
         if (mis_weights_sum < 1.0e-6f)
             return false;  // no scattering
         const float current_mis_weight =
-            (Spectrum::size() * transmission[channel] * scattering_coef[channel]) /
-            (extinction_coef[channel] * mis_weights_sum);
+            Spectrum::size() *
+            foundation::square(distance_pdf) /
+            mis_weights_sum;
 
         vertex.m_throughput *= scattering_coef;
         vertex.m_throughput *= transmission;

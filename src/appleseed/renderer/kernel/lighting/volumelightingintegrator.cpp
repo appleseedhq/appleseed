@@ -179,36 +179,6 @@ VolumeLightingIntegrator::VolumeLightingIntegrator(
     , m_low_light_threshold(low_light_threshold)
     , m_indirect(indirect)
 {
-    precompute_mis_weights();
-}
-
-void VolumeLightingIntegrator::precompute_mis_weights()
-{
-    // Get full ray transmission.
-    Spectrum ray_transmission;
-    m_volume.evaluate_transmission(
-        m_volume_data, m_volume_ray, ray_transmission);
-
-    const Spectrum& scattering_coef = m_volume.scattering_coefficient(
-        m_volume_data, m_volume_ray);
-
-    Spectrum extinction_coef = m_volume.extinction_coefficient(
-        m_volume_data, m_volume_ray);
-
-    // Precompute MIS weights.
-    // MIS terms are:
-    //  - scattering albedo,
-    //  - one minus total ray transmittance (because we sample distance on segment),
-    //  - throughput of the entire path up to the sampled point.
-    // Reference: "Practical and Controllable Subsurface Scattering
-    // for Production Path Tracing", p. 1 [ACM 2016 Article].
-    for (size_t i = 0; i < Spectrum::size(); ++i)
-    {
-        const float density = 1.0f - ray_transmission[i];
-        m_precomputed_mis_weights[i] = scattering_coef[i] * density;
-        if (extinction_coef[i] > 1.0e-6f)
-            m_precomputed_mis_weights[i] /= extinction_coef[i];
-    }
 }
 
 void VolumeLightingIntegrator::add_single_distance_sample_contribution(
@@ -236,7 +206,7 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution(
     //
     // Exponential sampling.
     //
-    if (m_precomputed_mis_weights[channel] > 0.0f)
+    if (extinction_coef[channel] > 0.0f)
     {
         const float exponential_sample = draw_exponential_sample(
             child_sampling_context, m_volume_ray, extinction_coef[channel]);
@@ -245,17 +215,20 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution(
         const float equiangular_prob =
             equiangular_distance_sampler.evaluate(exponential_sample);
 
-        // Calculate MIS weight for spectral channel sampling (balance heuristic).
+        // Calculate MIS weight for spectral channel sampling (power heuristic).
         // One-sample estimator is used (Veach: 9.2.4 eq. 9.15).
-        Spectrum transmission;
-        m_volume.evaluate_transmission(
-            m_volume_data, m_volume_ray, exponential_sample, transmission);
         float mis_weights_sum = 0.0f;
         for (size_t i = 0; i < Spectrum::size(); ++i)
-            mis_weights_sum += m_precomputed_mis_weights[i] * transmission[i];
+        {
+            const float probability =
+                evaluate_exponential_sample(
+                    exponential_sample, m_volume_ray, extinction_coef[i]);
+            mis_weights_sum += foundation::square(probability);
+        }
         const float mis_weight_channel =
-            Spectrum::size() * m_precomputed_mis_weights[channel] *
-            transmission[channel] / mis_weights_sum;
+            Spectrum::size() *
+            foundation::square(exponential_prob) /
+            mis_weights_sum;
 
         // Calculate MIS weight for distance sampling.
         const float mis_weight_distance = mis(
@@ -270,6 +243,12 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution(
             mis_heuristic,
             inscattered);
 
+        Spectrum transmission;
+        m_volume.evaluate_transmission(
+            m_volume_data,
+            m_volume_ray,
+            exponential_sample,
+            transmission);
         inscattered *= transmission;
         inscattered *=
             m_rcp_distance_sample_count *
@@ -327,7 +306,7 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution_exponenti
     SamplingContext child_sampling_context = sampling_context.split(1, 1);
     const float s = child_sampling_context.next2<float>();
     const size_t channel = truncate<size_t>(s * Spectrum::size());
-    if (m_precomputed_mis_weights[channel] == 0.0f)
+    if (extinction_coef[channel] == 0.0f)
         return;
 
     const float exponential_sample = draw_exponential_sample(
@@ -337,15 +316,18 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution_exponenti
 
     // Calculate MIS weight for spectral channel sampling (balance heuristic).
     // One-sample estimator is used (Veach: 9.2.4 eq. 9.15).
-    Spectrum transmission;
-    m_volume.evaluate_transmission(
-        m_volume_data, m_volume_ray, exponential_sample, transmission);
     float mis_weights_sum = 0.0f;
     for (size_t i = 0; i < Spectrum::size(); ++i)
-        mis_weights_sum += m_precomputed_mis_weights[i] * transmission[i];
+    {
+        const float probability =
+            evaluate_exponential_sample(
+                exponential_sample, m_volume_ray, extinction_coef[i]);
+        mis_weights_sum += foundation::square(probability);
+    }
     const float mis_weight_channel =
-        Spectrum::size() * m_precomputed_mis_weights[channel] *
-        transmission[channel] / mis_weights_sum;
+        Spectrum::size() *
+        foundation::square(exponential_prob) /
+        mis_weights_sum;
 
     ShadingComponents inscattered;
     take_single_direction_sample(
@@ -356,6 +338,12 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution_exponenti
         mis_heuristic,
         inscattered);
 
+    Spectrum transmission;
+    m_volume.evaluate_transmission(
+        m_volume_data,
+        m_volume_ray,
+        exponential_sample,
+        transmission);
     inscattered *= transmission;
     inscattered *=
         0.5f *
