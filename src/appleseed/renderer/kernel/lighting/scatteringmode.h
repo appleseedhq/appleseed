@@ -50,7 +50,7 @@ class ScatteringMode
         DiffuseBitShift     = 0,
         GlossyBitShift      = 1,
         SpecularBitShift    = 2,
-        VolumetricBitShift  = 3
+        VolumeBitShift      = 3
     };
 
     enum Mode
@@ -59,8 +59,8 @@ class ScatteringMode
         Diffuse             = 1 << DiffuseBitShift,
         Glossy              = 1 << GlossyBitShift,
         Specular            = 1 << SpecularBitShift,
-        Volumetric          = 1 << VolumetricBitShift,
-        All                 = Diffuse | Glossy | Specular | Volumetric
+        Volume              = 1 << VolumeBitShift,
+        All                 = Diffuse | Glossy | Specular | Volume
     };
 
     // Test for the presence of specific scattering modes.
@@ -70,7 +70,7 @@ class ScatteringMode
     static bool has_volume(const int modes);
     static bool has_diffuse_or_glossy_or_volume(const int modes);
     static bool has_diffuse_and_glossy(const int modes);
-    static bool has_diffuse_or_volumetric(const int modes);
+    static bool has_diffuse_or_Volume(const int modes);
     static bool has_glossy_or_specular(const int modes);
 
     // Determine the appropriate visibility type for a given scattering mode.
@@ -99,12 +99,12 @@ inline bool ScatteringMode::has_specular(const int modes)
 
 inline bool ScatteringMode::has_volume(const int modes)
 {
-    return (modes & Volumetric) != 0;
+    return (modes & Volume) != 0;
 }
 
 inline bool ScatteringMode::has_diffuse_or_glossy_or_volume(const int modes)
 {
-    return (modes & (Diffuse | Glossy | Volumetric)) != 0;
+    return (modes & (Diffuse | Glossy | Volume)) != 0;
 }
 
 inline bool ScatteringMode::has_diffuse_and_glossy(const int modes)
@@ -112,9 +112,9 @@ inline bool ScatteringMode::has_diffuse_and_glossy(const int modes)
     return (modes & (Diffuse | Glossy)) == (Diffuse | Glossy);
 }
 
-inline bool ScatteringMode::has_diffuse_or_volumetric(const int modes)
+inline bool ScatteringMode::has_diffuse_or_Volume(const int modes)
 {
-    return (modes & (Diffuse | Volumetric)) == (Diffuse | Volumetric);
+    return (modes & (Diffuse | Volume)) == (Diffuse | Volume);
 }
 
 inline bool ScatteringMode::has_glossy_or_specular(const int modes)

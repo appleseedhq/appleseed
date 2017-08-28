@@ -349,7 +349,7 @@ namespace
                 if (!m_params.m_enable_caustics)
                 {
                     // Don't follow paths leading to caustics.
-                    if (ScatteringMode::has_diffuse_or_volumetric(prev_mode) &&
+                    if (ScatteringMode::has_diffuse_or_Volume(prev_mode) &&
                         ScatteringMode::has_glossy_or_specular(next_mode))
                         return false;
 
@@ -444,7 +444,7 @@ namespace
                 // Note that accept_scattering() is later going to return false in this case.
                 const bool has_diffuse_or_volume_scattering =
                     vertex.m_prev_mode == ScatteringMode::Diffuse ||
-                    vertex.m_prev_mode == ScatteringMode::Volumetric;
+                    vertex.m_prev_mode == ScatteringMode::Volume;
                 if (!m_params.m_enable_caustics && has_diffuse_or_volume_scattering)
                     vertex.m_scattering_modes &= ~(ScatteringMode::Glossy | ScatteringMode::Specular);
 
@@ -566,7 +566,7 @@ namespace
                 // When caustics are disabled, disable glossy and specular components after a diffuse or volume bounce.
                 const bool has_diffuse_or_volume_scattering =
                     vertex.m_prev_mode == ScatteringMode::Diffuse ||
-                    vertex.m_prev_mode == ScatteringMode::Volumetric;
+                    vertex.m_prev_mode == ScatteringMode::Volume;
                 if (!m_params.m_enable_caustics && has_diffuse_or_volume_scattering)
                     vertex.m_scattering_modes &= ~(ScatteringMode::Glossy | ScatteringMode::Specular);
 
@@ -821,7 +821,7 @@ namespace
                 // Note that accept_scattering() is later going to return false in this case.
                 const bool has_diffuse_or_volume_scattering =
                     vertex.m_prev_mode == ScatteringMode::Diffuse ||
-                    vertex.m_prev_mode == ScatteringMode::Volumetric;
+                    vertex.m_prev_mode == ScatteringMode::Volume;
                 if (!m_params.m_enable_caustics && has_diffuse_or_volume_scattering)
                     vertex.m_scattering_modes &= ~(ScatteringMode::Glossy | ScatteringMode::Specular);
             }
@@ -957,9 +957,19 @@ namespace
 
                 ShadingComponents radiance;
                 if (m_params.m_enable_equiangular_sampling)
-                    integrator.compute_radiance(m_sampling_context, MISPower2, radiance);
+                {
+                    integrator.compute_radiance_combined_sampling(
+                        m_sampling_context,
+                        MISPower2,
+                        radiance);
+                }
                 else
-                    integrator.compute_radiance_exponential_sampling_only(m_sampling_context, MISPower2, radiance);
+                {
+                    integrator.compute_radiance_exponential_sampling(
+                        m_sampling_context,
+                        MISPower2,
+                        radiance);
+                }
 
                 madd(m_path_radiance, radiance, vertex.m_throughput);
             }
@@ -1059,7 +1069,7 @@ Dictionary PTLightingEngineFactory::get_params_metadata()
             .insert("default", "0")
             .insert("unlimited", "false")
             .insert("min", "0")
-            .insert("label", "Max Volumetric Bounces")
+            .insert("label", "Max Volume Bounces")
             .insert("help", "Maximum number of volume scattering events (0 = single scattering)"));
 
     metadata.dictionaries().insert(

@@ -352,7 +352,7 @@ bool Intersector::trace_probe(
     return visitor.hit();
 }
 
-void Intersector::manufacture_hit(
+void Intersector::make_surface_shading_point(
     ShadingPoint&                       shading_point,
     const ShadingRay&                   shading_ray,
     const ShadingPoint::PrimitiveType   primitive_type,
@@ -365,7 +365,8 @@ void Intersector::manufacture_hit(
     const TriangleSupportPlaneType&     triangle_support_plane) const
 {
 #ifdef DEBUG
-    // This helps finding bugs if manufacture_hit() is called on a previously used shading point.
+    // This helps finding bugs if make_surface_shading_point()
+    // is called on a previously usedshading point.
     poison(shading_point);
 #endif
 
@@ -386,6 +387,35 @@ void Intersector::manufacture_hit(
     shading_point.m_region_index = region_index;
     shading_point.m_primitive_index = primitive_index;
     shading_point.m_triangle_support_plane = triangle_support_plane;
+
+    // Available on-demand results: none.
+    shading_point.m_members = 0;
+}
+
+void Intersector::make_volume_shading_point(
+    ShadingPoint&           shading_point,
+    const ShadingRay&       volume_ray,
+    const double            distance) const
+{
+#ifdef DEBUG
+    // This helps finding bugs if manufacture_hit()
+    // is called on a previously used shading point.
+    poison(shading_point);
+#endif
+
+    assert(is_normalized(volume_ray.m_dir));
+    assert(m_ray.get_current_medium() != nullptr);
+
+    // Context.
+    shading_point.m_region_kit_cache = &m_region_kit_cache;
+    shading_point.m_tess_cache = &m_tess_cache;
+    shading_point.m_texture_cache = &m_texture_cache;
+    shading_point.m_scene = &m_trace_context.get_scene();
+
+    // Primary data.
+    shading_point.m_ray = volume_ray;
+    shading_point.m_ray.m_tmax = distance;
+    shading_point.m_primitive_type = ShadingPoint::PrimitiveVolume;
 
     // Available on-demand results: none.
     shading_point.m_members = 0;

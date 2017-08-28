@@ -27,23 +27,19 @@
 //
 
 // Interface header.
-#include "renderer/kernel/lighting/volumelightingintegrator.h"
+#include "volumelightingintegrator.h"
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/backwardlightsampler.h"
 #include "renderer/kernel/lighting/directlightingintegrator.h"
-#include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/volume/volume.h"
-#include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
-#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/visibilityflags.h"
+#include "renderer/modeling/volume/volume.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/rr.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 
@@ -88,45 +84,57 @@ namespace
             else
                 emission_position = light_sample.m_point;
 
-            const Vector3d light_dir = emission_position - volume_ray.m_org;
+            // Direction from the ray origin to the light center.
+            const Vector3f origin_to_light(emission_position - volume_ray.m_org);
 
-            m_origin_to_center = dot(light_dir, volume_ray.m_dir);
+            // Signed distance from the ray origin
+            // to the light projection onto the ray.
+            m_origin_to_projection = dot(origin_to_light, Vector3f(volume_ray.m_dir));
 
-            m_center_to_light =
-                std::sqrt(square_norm(light_dir) - square(m_origin_to_center));
+            // Distance from the projection point to the light center (height).
+            m_projection_to_light =
+                std::sqrt(square_norm(origin_to_light) - square(m_origin_to_projection));
 
-            m_near_angle = std::atan2(-m_origin_to_center, m_center_to_light);
+            m_near_angle = std::atan2(-m_origin_to_projection, m_projection_to_light);
+
+            const float ray_length = static_cast<float>(volume_ray.get_length());
             m_far_angle =
-                (volume_ray.m_tmax == std::numeric_limits<double>::max()) ? HalfPi<double>() :
-                std::atan2(volume_ray.get_length() - m_origin_to_center, m_center_to_light);
+                volume_ray.is_finite() ?
+                std::atan2(
+                    ray_length - m_origin_to_projection,
+                    m_projection_to_light) :
+                HalfPi<float>();
         }
 
         float sample() const
         {
             SamplingContext child_sampling_context = m_sampling_context.split(1, 1);
-            const double s = child_sampling_context.next2<double>();
 
-            return static_cast<float>(m_origin_to_center +
-                sample_equiangular_distribution(s, m_near_angle, m_far_angle, m_center_to_light));
+            return m_origin_to_projection +
+                sample_equiangular_distribution(
+                    child_sampling_context.next2<float>(),
+                    m_near_angle,
+                    m_far_angle,
+                    m_projection_to_light);
         }
 
         float evaluate(const float distance_sample) const
         {
-            return static_cast<float>(equiangular_distribution_pdf(
-                static_cast<double>(distance_sample) - m_origin_to_center,
+            return equiangular_distribution_pdf(
+                distance_sample - m_origin_to_projection,
                 m_near_angle,
                 m_far_angle,
-                m_center_to_light));
+                m_projection_to_light);
         }
 
       private:
-        double                  m_origin_to_center;
-        double                  m_center_to_light;
-        double                  m_near_angle;
-        double                  m_far_angle;
-
         const ShadingContext&   m_shading_context;
         SamplingContext&        m_sampling_context;
+
+        float                   m_origin_to_projection;
+        float                   m_projection_to_light;
+        float                   m_near_angle;
+        float                   m_far_angle;
     };
 }
 
@@ -353,7 +361,7 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution_exponenti
     radiance += inscattered;
 }
 
-void VolumeLightingIntegrator::compute_radiance(
+void VolumeLightingIntegrator::compute_radiance_combined_sampling(
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
     ShadingComponents&          radiance) const
@@ -427,7 +435,7 @@ void VolumeLightingIntegrator::compute_radiance(
     }
 }
 
-void VolumeLightingIntegrator::compute_radiance_exponential_sampling_only(
+void VolumeLightingIntegrator::compute_radiance_exponential_sampling(
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
     ShadingComponents&          radiance) const
@@ -470,6 +478,7 @@ void VolumeLightingIntegrator::compute_radiance_exponential_sampling_only(
         for (size_t i = 0; i < 2 * m_distance_sample_count; ++i)
         {
             for (size_t j = 0; j < m_light_sample_count; ++j)
+            {
                 add_single_distance_sample_contribution_exponential_only(
                     nullptr,
                     extinction_coef,
@@ -477,7 +486,10 @@ void VolumeLightingIntegrator::compute_radiance_exponential_sampling_only(
                     mis_heuristic,
                     radiance,
                     false);
+            }
+
             if (!ScatteringMode::has_volume(m_scattering_modes))
+            {
                 add_single_distance_sample_contribution_exponential_only(
                     nullptr,
                     extinction_coef,
@@ -485,12 +497,13 @@ void VolumeLightingIntegrator::compute_radiance_exponential_sampling_only(
                     mis_heuristic,
                     radiance,
                     true);
+            }
         }
     }
 }
 
 void VolumeLightingIntegrator::take_single_direction_sample(
-    const bool                  sample_phasefunction,
+    const bool                  sample_phase_function,
     SamplingContext&            sampling_context,
     const LightSample*          light_sample,
     const float                 distance_sample,
@@ -517,12 +530,12 @@ void VolumeLightingIntegrator::take_single_direction_sample(
         m_low_light_threshold,
         m_indirect);
 
-    if (sample_phasefunction)
+    if (sample_phase_function)
     {
         integrator.take_single_material_sample(
             sampling_context,
             mis_heuristic,
-            foundation::Dual3d(m_volume_ray.m_dir),
+            Dual3d(m_volume_ray.m_dir),
             radiance);
     }
     else if (light_sample == nullptr || light_sample->m_triangle != nullptr)
@@ -560,8 +573,10 @@ float VolumeLightingIntegrator::draw_exponential_sample(
     sampling_context.split_in_place(1, 1);
 
     if (!volume_ray.is_finite())
+    {
         return sample_exponential_distribution(
             sampling_context.next2<float>(), extinction);
+    }
     else
     {
         const float ray_length = static_cast<float>(volume_ray.get_length());

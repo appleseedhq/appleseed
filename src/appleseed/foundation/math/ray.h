@@ -83,7 +83,7 @@ class Ray
     template <typename U>
     Ray(const Ray<U, N>& rhs);
 
-    // Return if the ray has finite length.
+    // Return true if the ray has finite length.
     bool is_finite() const;
 
     // Get length of the ray interval, assuming that m_tmax is finite. 
@@ -236,16 +236,16 @@ inline Ray<T, N>::Ray(const Ray<U, N>& rhs)
 }
 
 template <typename T, size_t N>
+inline bool Ray<T, N>::is_finite() const
+{
+    return m_tmax < std::numeric_limits<ValueType>::max();
+}
+
+template <typename T, size_t N>
 inline T Ray<T, N>::get_length() const
 {
     assert(is_finite());
     return (m_tmax - m_tmin) * foundation::norm(m_dir);
-}
-
-template <typename T, size_t N>
-inline bool Ray<T, N>::is_finite() const
-{
-    return m_tmax < std::numeric_limits<ValueType>::max();
 }
 
 template <typename T, size_t N>

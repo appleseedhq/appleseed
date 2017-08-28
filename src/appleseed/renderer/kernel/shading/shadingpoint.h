@@ -464,30 +464,6 @@ APPLESEED_FORCE_INLINE void ShadingPoint::clear()
     m_members = 0;
 }
 
-inline void ShadingPoint::create_volume_shading_point(
-    const ShadingPoint&     parent_shading_point,
-    const ShadingRay&       volume_ray,
-    const float             distance)
-{
-    assert(is_normalized(volume_ray.m_dir));
-    assert(m_scene == nullptr);
-    assert(is_valid() == false);
-
-    assert(&parent_shading_point != this);
-    assert(parent_shading_point.is_valid());
-
-    assert(m_ray.get_current_medium() != nullptr);
- 
-    m_region_kit_cache = parent_shading_point.m_region_kit_cache;
-    m_tess_cache = parent_shading_point.m_tess_cache;
-    m_texture_cache = parent_shading_point.m_texture_cache;
-    m_scene = parent_shading_point.m_scene;
-
-    m_ray = volume_ray;
-    m_ray.m_tmax = distance;
-    m_primitive_type = PrimitiveVolume;
-}
-
 inline const Scene& ShadingPoint::get_scene() const
 {
     assert(m_scene);

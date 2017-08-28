@@ -83,14 +83,14 @@ namespace renderer
 
         // Integrate in-scattered radiance over the given ray
         // using both equiangular and exponential sampling.
-        void compute_radiance(
+        void compute_radiance_combined_sampling(
             SamplingContext&                sampling_context,
             const foundation::MISHeuristic  mis_heuristic,
             ShadingComponents&              radiance) const;
 
         // Integrate in-scattered radiance over the given ray
         // using only exponential sampling.
-        void compute_radiance_exponential_sampling_only(
+        void compute_radiance_exponential_sampling(
             SamplingContext&                sampling_context,
             const foundation::MISHeuristic  mis_heuristic,
             ShadingComponents&              radiance) const;
@@ -117,7 +117,7 @@ namespace renderer
             const SamplingContext&          sampling_context,
             const foundation::MISHeuristic  mis_heuristic,
             ShadingComponents&              radiance,
-            const bool                      sample_phasefunction) const;
+            const bool                      sample_phase_function) const;
 
         // Sample distance and integrate in-scattered lighting at this distance.
         // This is the optimized version that uses only exponential sampling.
@@ -130,23 +130,22 @@ namespace renderer
             const bool                      sample_phasefunction) const;
 
         float draw_exponential_sample(
-            SamplingContext&        sampling_context,
-            const ShadingRay&       volume_ray,
-            const float             extinction) const;
+            SamplingContext&                sampling_context,
+            const ShadingRay&               volume_ray,
+            const float                     extinction) const;
 
         float evaluate_exponential_sample(
-            const float             distance,
-            const ShadingRay&       volume_ray,
-            const float             extinction) const;
+            const float                     distance,
+            const ShadingRay&               volume_ray,
+            const float                     extinction) const;
 
         // Add single light sample contribution for the specified distance sample.
+        // You can pass light sample that is used as a center for equiangular sampling.
+        // Note that the same light sample is used for shading only if it is non-physical light,
+        // otherwise (if nullptr or area light sample) the lights are sampled again.
         void take_single_direction_sample(
             const bool                      sample_phasefunction,
             SamplingContext&                sampling_context,
-
-            // Light sample that is used as a center for equiangular sampling.
-            // Note that the same light sample is used for shading only if it is non-physical light,
-            // otherwise (if nullptr or area light sample) the lights are sampled again.
             const LightSample*              light_sample,
             const float                     distance_sample,
             const foundation::MISHeuristic  mis_heuristic,

@@ -106,7 +106,7 @@ class Intersector
     // Manufacture a hit "by hand".
     // There is no restriction placed on the shading point passed to this method.
     // For instance it may have been previously initialized and used.
-    void manufacture_hit(
+    void make_surface_shading_point(
         ShadingPoint&                       shading_point,
         const ShadingRay&                   shading_ray,
         const ShadingPoint::PrimitiveType   primitive_type,
@@ -117,6 +117,14 @@ class Intersector
         const size_t                        region_index,
         const size_t                        primitive_index,
         const TriangleSupportPlaneType&     triangle_support_plane) const;
+
+    // Manufacture a volume shading point "by hand".
+    // There is no restriction placed on the shading point passed to this method.
+    // For instance it may have been previously initialized and used.
+    void make_volume_shading_point(
+        ShadingPoint&               shading_point,
+        const ShadingRay&           volume_ray,
+        const double                distance) const;
 
     // Retrieve performance statistics.
     foundation::StatisticsVector get_statistics() const;

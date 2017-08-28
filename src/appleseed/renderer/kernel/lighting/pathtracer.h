@@ -417,13 +417,19 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
         // Evaluate the inputs of the BSDF.
         if (vertex.m_bsdf)
+        {
             vertex.m_bsdf_data = vertex.m_bsdf->evaluate_inputs(
-                shading_context, *vertex.m_shading_point);
+                shading_context,
+                *vertex.m_shading_point);
+        }
 
         // Evaluate the inputs of the BSSRDF.
         if (vertex.m_bssrdf)
+        {
             vertex.m_bssrdf_data = vertex.m_bssrdf->evaluate_inputs(
-                shading_context, *vertex.m_shading_point);
+                shading_context,
+                *vertex.m_shading_point);
+        }
 
         BSDFSample bsdf_sample(
             vertex.m_shading_point,
@@ -483,7 +489,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         if (m_specular_bounces >= m_max_specular_bounces)
             vertex.m_scattering_modes &= ~ScatteringMode::Specular;
         if (m_volume_bounces >= m_max_volume_bounces)
-            vertex.m_scattering_modes &= ~ScatteringMode::Volumetric;
+            vertex.m_scattering_modes &= ~ScatteringMode::Volume;
 
         // In case there is no BSDF, the current ray will be continued without increasing its depth.
         ShadingRay next_ray(
@@ -750,7 +756,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
             return false;
 
         if (m_volume_bounces >= m_max_volume_bounces)
-            vertex.m_scattering_modes &= ~ScatteringMode::Volumetric;
+            vertex.m_scattering_modes &= ~ScatteringMode::Volume;
 
         const ShadingRay& volume_ray = exit_point.get_ray();
 
@@ -762,7 +768,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
         // Apply the visitor to this ray.
         m_volume_visitor.visit_ray(vertex, volume_ray);
 
-        if ((vertex.m_scattering_modes & ScatteringMode::Volumetric) == 0)
+        if ((vertex.m_scattering_modes & ScatteringMode::Volume) == 0)
         {
             // No more scattering events are allowed:
             // update the ray transmission and continue path tracing.
@@ -825,8 +831,8 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
         //
 
         ShadingPoint* next_shading_point = m_shading_point_arena.allocate<ShadingPoint>();
-        next_shading_point->create_volume_shading_point(
-            *vertex.m_shading_point,
+        shading_context.get_intersector().make_volume_shading_point(
+            *next_shading_point,
             volume_ray,
             distance_sample);
 
@@ -889,12 +895,12 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
             incoming);
 
         // Save the scattering properties for MIS at light-emitting vertices.
-        vertex.m_prev_mode = ScatteringMode::Volumetric;
+        vertex.m_prev_mode = ScatteringMode::Volume;
         vertex.m_prev_prob = pdf;
 
         // Update the AOV scattering mode only for the first bounce.
         if (vertex.m_path_length == 1)
-            vertex.m_aov_mode = ScatteringMode::Volumetric;
+            vertex.m_aov_mode = ScatteringMode::Volume;
 
         ++m_volume_bounces;
         ++vertex.m_path_length;
