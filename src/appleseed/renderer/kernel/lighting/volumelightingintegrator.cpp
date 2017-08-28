@@ -228,10 +228,13 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution(
         float mis_weights_sum = 0.0f;
         for (size_t i = 0; i < Spectrum::size(); ++i)
         {
-            const float probability =
-                evaluate_exponential_sample(
-                    exponential_sample, m_volume_ray, extinction_coef[i]);
-            mis_weights_sum += foundation::square(probability);
+            if (extinction_coef[i] > 0.0f)
+            {
+                const float probability =
+                    evaluate_exponential_sample(
+                        exponential_sample, m_volume_ray, extinction_coef[i]);
+                mis_weights_sum += foundation::square(probability);
+            }
         }
         const float mis_weight_channel =
             Spectrum::size() *
