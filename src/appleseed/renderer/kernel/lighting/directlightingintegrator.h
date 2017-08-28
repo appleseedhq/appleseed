@@ -70,8 +70,6 @@ namespace renderer
 
 class DirectLightingIntegrator
 {
-    friend class VolumeLightingIntegrator;
-
   public:
     // Constructor.
     DirectLightingIntegrator(
@@ -106,6 +104,8 @@ class DirectLightingIntegrator
         ShadingComponents&              radiance) const;
 
   private:
+    friend class VolumeLightingIntegrator;
+    
     const ShadingContext&               m_shading_context;
     const BackwardLightSampler&         m_light_sampler;
     const ShadingRay::Time&             m_time;

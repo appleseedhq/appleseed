@@ -298,9 +298,7 @@ bool Intersector::trace(
 
     const ShadingRay::Medium* medium = ray.get_current_medium();
     if (!shading_point.hit_surface() && medium != nullptr && medium->get_volume() != nullptr)
-    {
         shading_point.m_primitive_type = ShadingPoint::PrimitiveVolume;
-    }
 
     return shading_point.hit_surface();
 }
