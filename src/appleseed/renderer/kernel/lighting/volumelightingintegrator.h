@@ -114,7 +114,7 @@ namespace renderer
         void add_single_distance_sample_contribution(
             const LightSample*              light_sample,
             const Spectrum&                 extinction_coef,
-            const SamplingContext&          sampling_context,
+            SamplingContext&                sampling_context,
             const foundation::MISHeuristic  mis_heuristic,
             ShadingComponents&              radiance,
             const bool                      sample_phase_function) const;
@@ -124,7 +124,7 @@ namespace renderer
         void add_single_distance_sample_contribution_exponential_only(
             const LightSample*              light_sample,
             const Spectrum&                 extinction_coef,
-            const SamplingContext&          sampling_context,
+            SamplingContext&                sampling_context,
             const foundation::MISHeuristic  mis_heuristic,
             ShadingComponents&              radiance,
             const bool                      sample_phasefunction) const;

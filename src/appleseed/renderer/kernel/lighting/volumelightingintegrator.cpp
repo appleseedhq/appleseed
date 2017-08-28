@@ -95,27 +95,30 @@ namespace
             m_projection_to_light =
                 std::sqrt(square_norm(origin_to_light) - square(m_origin_to_projection));
 
+            m_ray_length = static_cast<float>(volume_ray.get_length());
+
             m_near_angle = std::atan2(-m_origin_to_projection, m_projection_to_light);
 
-            const float ray_length = static_cast<float>(volume_ray.get_length());
             m_far_angle =
                 volume_ray.is_finite() ?
                 std::atan2(
-                    ray_length - m_origin_to_projection,
+                    m_ray_length - m_origin_to_projection,
                     m_projection_to_light) :
                 HalfPi<float>();
         }
 
         float sample() const
         {
-            SamplingContext child_sampling_context = m_sampling_context.split(1, 1);
+            m_sampling_context.split_in_place(1, 1);
 
-            return m_origin_to_projection +
+            const float distance = m_origin_to_projection +
                 sample_equiangular_distribution(
-                    child_sampling_context.next2<float>(),
+                    m_sampling_context.next2<float>(),
                     m_near_angle,
                     m_far_angle,
                     m_projection_to_light);
+
+            return clamp(distance, 0.0f, m_ray_length);
         }
 
         float evaluate(const float distance_sample) const
@@ -133,6 +136,7 @@ namespace
 
         float                   m_origin_to_projection;
         float                   m_projection_to_light;
+        float                   m_ray_length;
         float                   m_near_angle;
         float                   m_far_angle;
     };
@@ -143,10 +147,10 @@ namespace
 //
 // Call graph:
 //
-//   compute_radiance
+//   compute_radiance_combined_sampling
 //       add_single_distance_sample_contribution
 //
-//   compute_radiance_exponential_sampling_only
+//   compute_radiance_exponential_sampling
 //       add_single_distance_sample_contribution_exponential_only
 //
 //   add_single_distance_sample_contribution
@@ -192,7 +196,7 @@ VolumeLightingIntegrator::VolumeLightingIntegrator(
 void VolumeLightingIntegrator::add_single_distance_sample_contribution(
     const LightSample*          light_sample,
     const Spectrum&             extinction_coef,
-    const SamplingContext&      sampling_context,
+    SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
     ShadingComponents&          radiance,
     const bool                  sample_phasefunction) const
@@ -200,8 +204,8 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution(
     assert (light_sample != nullptr);
 
     // Sample channel uniformly at random.
-    SamplingContext child_sampling_context = sampling_context.split(1, 1);
-    const float s = child_sampling_context.next2<float>();
+    sampling_context.split_in_place(1, 1);
+    const float s = sampling_context.next2<float>();
     const size_t channel = truncate<size_t>(s * Spectrum::size());
 
     // Prepare equiangular sampling.
@@ -209,7 +213,7 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution(
         *light_sample,
         m_volume_ray,
         m_shading_context,
-        child_sampling_context);
+        sampling_context);
 
     //
     // Exponential sampling.
@@ -217,7 +221,7 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution(
     if (extinction_coef[channel] > 0.0f)
     {
         const float exponential_sample = draw_exponential_sample(
-            child_sampling_context, m_volume_ray, extinction_coef[channel]);
+            sampling_context, m_volume_ray, extinction_coef[channel]);
         const float exponential_prob = evaluate_exponential_sample(
             exponential_sample, m_volume_ray, extinction_coef[channel]);
         const float equiangular_prob =
@@ -248,7 +252,7 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution(
         ShadingComponents inscattered;
         take_single_direction_sample(
             sample_phasefunction,
-            child_sampling_context,
+            sampling_context,
             light_sample,
             exponential_sample,
             mis_heuristic,
@@ -283,7 +287,7 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution(
         ShadingComponents inscattered;
         take_single_direction_sample(
             sample_phasefunction,
-            child_sampling_context,
+            sampling_context,
             light_sample,
             equiangular_sample,
             mis_heuristic,
@@ -308,20 +312,20 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution(
 void VolumeLightingIntegrator::add_single_distance_sample_contribution_exponential_only(
     const LightSample*          light_sample,
     const Spectrum&             extinction_coef,
-    const SamplingContext&      sampling_context,
+    SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
     ShadingComponents&          radiance,
     const bool                  sample_phasefunction) const
 {
     // Sample channel uniformly at random.
-    SamplingContext child_sampling_context = sampling_context.split(1, 1);
-    const float s = child_sampling_context.next2<float>();
+    sampling_context.split_in_place(1, 1);
+    const float s = sampling_context.next2<float>();
     const size_t channel = truncate<size_t>(s * Spectrum::size());
     if (extinction_coef[channel] == 0.0f)
         return;
 
     const float exponential_sample = draw_exponential_sample(
-        child_sampling_context, m_volume_ray, extinction_coef[channel]);
+        sampling_context, m_volume_ray, extinction_coef[channel]);
     const float exponential_prob = evaluate_exponential_sample(
         exponential_sample, m_volume_ray, extinction_coef[channel]);
 
@@ -343,7 +347,7 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution_exponenti
     ShadingComponents inscattered;
     take_single_direction_sample(
         sample_phasefunction,
-        child_sampling_context,
+        sampling_context,
         light_sample,
         exponential_sample,
         mis_heuristic,
@@ -404,20 +408,21 @@ void VolumeLightingIntegrator::compute_radiance_combined_sampling(
     // Add contributions from the light set.
     if (m_light_sampler.has_lightset())
     {
-        sampling_context.split_in_place(3, m_distance_sample_count);
+        SamplingContext child_sampling_context =
+            sampling_context.split(3, m_distance_sample_count);
 
         for (size_t i = 0; i < m_distance_sample_count; ++i)
         {
             // Sample the light set.
-            sampling_context.split_in_place(3, 1);
             LightSample light_sample;
             m_light_sampler.sample_lightset(
                 m_time,
-                sampling_context.next2<Vector3f>(),
+                child_sampling_context.next2<Vector3f>(),
                 m_shading_point,
                 light_sample);
 
             for (size_t j = 0; j < m_light_sample_count; ++j)
+            {
                 add_single_distance_sample_contribution(
                     &light_sample,
                     extinction_coef,
@@ -425,8 +430,10 @@ void VolumeLightingIntegrator::compute_radiance_combined_sampling(
                     mis_heuristic,
                     radiance,
                     false);
+            }
 
             if (!ScatteringMode::has_volume(m_scattering_modes))
+            {
                 add_single_distance_sample_contribution(
                     &light_sample,
                     extinction_coef,
@@ -434,6 +441,7 @@ void VolumeLightingIntegrator::compute_radiance_combined_sampling(
                     mis_heuristic,
                     radiance,
                     true);
+            }
         }
     }
 }
@@ -594,7 +602,7 @@ float VolumeLightingIntegrator::evaluate_exponential_sample(
     const float         extinction) const
 {
     if (extinction == 0.0f)
-        return 1.0 / m_volume_ray.get_length();
+        return static_cast<float>(1.0 / m_volume_ray.get_length());
     if (!volume_ray.is_finite())
         return exponential_distribution_pdf(distance, extinction);
     else

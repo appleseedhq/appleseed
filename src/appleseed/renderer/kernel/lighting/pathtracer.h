@@ -491,6 +491,10 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         if (m_volume_bounces >= m_max_volume_bounces)
             vertex.m_scattering_modes &= ~ScatteringMode::Volume;
 
+        // Terminate path if no scattering event is possible.
+        if (vertex.m_scattering_modes == ScatteringMode::None)
+            break;
+
         // In case there is no BSDF, the current ray will be continued without increasing its depth.
         ShadingRay next_ray(
             vertex.get_point(),
