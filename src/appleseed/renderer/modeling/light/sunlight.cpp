@@ -470,7 +470,7 @@ namespace
             const double sun_radius = compute_sun_radius(m_scene_radius) * m_values.m_size_multiplier;
 
             position =
-                  m_scene_center
+                  target_point
                 - m_safe_scene_diameter * basis.get_normal()
                 + sun_radius * p[0] * basis.get_tangent_u()
                 + sun_radius * p[1] * basis.get_tangent_v();
