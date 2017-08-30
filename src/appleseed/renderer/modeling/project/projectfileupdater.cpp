@@ -1462,6 +1462,37 @@ namespace
             }
         }
     };
+
+    //
+    // Update from revision 18 to revision 19.
+    //
+
+    class UpdateFromRevision_18
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_18(Project& project)
+          : Updater(project, 18)
+        {
+        }
+
+        virtual void update() override
+        {
+            if (m_project.get_frame())
+                update_frame(*m_project.get_frame());
+        }
+
+      private:
+        static void update_frame(Frame& frame)
+        {
+            ParamArray& params = frame.get_parameters();
+            params.remove_path("pixel_format");
+            params.remove_path("color_space");
+            params.remove_path("gamma_correction");
+            params.remove_path("clamping");
+            params.remove_path("premultiplied_alpha");
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(
@@ -1512,6 +1543,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(15);
       CASE_UPDATE_FROM_REVISION(16);
       CASE_UPDATE_FROM_REVISION(17);
+      CASE_UPDATE_FROM_REVISION(18);
 
       case ProjectFormatRevision:
         // Project is up-to-date.
