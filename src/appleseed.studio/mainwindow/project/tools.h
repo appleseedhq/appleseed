@@ -117,7 +117,7 @@ class LineEditSliderAdaptor
   public slots:
     void slot_set_line_edit_value(const int value);
     void slot_set_slider_value(const QString& value);
-    void slot_apply_slider_value();
+    void slot_apply_line_edit_value();
 
   private:
     QLineEdit*      m_line_edit;
@@ -143,7 +143,7 @@ class LineEditDoubleSliderAdaptor
   public slots:
     void slot_set_line_edit_value(const double value);
     void slot_set_slider_value(const QString& value);
-    void slot_apply_slider_value();
+    void slot_apply_line_edit_value();
 
   private:
     QLineEdit*      m_line_edit;
