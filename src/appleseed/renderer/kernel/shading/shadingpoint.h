@@ -224,9 +224,6 @@ class ShadingPoint
     // Return the opacity at the intersection point.
     const Alpha& get_alpha() const;
 
-    // Return whether surface shaders should be invoked for fully transparent shading points.
-    bool shade_alpha_cutouts() const;
-
     OSL::ShaderGlobals& get_osl_shader_globals() const;
 
     struct OSLObjectTransformInfo
@@ -339,7 +336,6 @@ class ShadingPoint
     mutable const Material*             m_material;                     // material at intersection point
     mutable const Material*             m_opposite_material;            // opposite material at intersection point
     mutable Alpha                       m_alpha;                        // opacity at intersection point
-    mutable bool                        m_shade_alpha_cutouts;
 
     // Data required to avoid self-intersections.
     mutable foundation::Vector3d        m_asm_geo_normal;               // assembly instance space geometric normal to hit triangle
@@ -867,12 +863,6 @@ inline const Alpha& ShadingPoint::get_alpha() const
     return m_alpha;
 }
 
-inline bool ShadingPoint::shade_alpha_cutouts() const
-{
-    get_material();
-    return m_shade_alpha_cutouts;
-}
-
 inline OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
 {
     assert(hit());
@@ -920,11 +910,6 @@ inline void ShadingPoint::fetch_materials() const
         if (static_cast<size_t>(m_primitive_pa) < opposite_materials->size())
             m_opposite_material = (*opposite_materials)[m_primitive_pa];
     }
-
-    m_shade_alpha_cutouts = m_object->shade_alpha_cutouts();
-
-    if (m_material && m_material->shade_alpha_cutouts())
-        m_shade_alpha_cutouts = true;
 }
 
 }       // namespace renderer

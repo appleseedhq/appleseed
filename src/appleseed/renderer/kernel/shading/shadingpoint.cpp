@@ -1140,7 +1140,6 @@ void PoisonImpl<renderer::ShadingPoint>::do_poison(renderer::ShadingPoint& point
     poison(point.m_material);
     poison(point.m_opposite_material);
     poison(point.m_alpha);
-    poison(point.m_shade_alpha_cutouts);
 
     poison(point.m_asm_geo_normal);
     poison(point.m_front_point);

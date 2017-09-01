@@ -82,7 +82,6 @@ Material::Material(
     const char*             name,
     const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
-  , m_shade_alpha_cutouts(params.get_optional<bool>("shade_alpha_cutouts", false))
   , m_has_render_data(false)
 {
     set_name(name);
