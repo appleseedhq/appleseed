@@ -492,7 +492,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_colormap_input_widgets(const Di
     else
     {
         slider_min = 0.0;
-        validator_min = 0.0;
+        validator_min = -numeric_limits<double>::max();
     }
 
     if (metadata.dictionaries().exist("max"))
@@ -504,7 +504,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_colormap_input_widgets(const Di
     else
     {
         slider_max = 1.0;
-        validator_max = 1.0;
+        validator_max = +numeric_limits<double>::max();
     }
 
     const QString default_value = metadata.strings().exist("default") ? metadata.get<QString>("default") : "";
