@@ -193,39 +193,43 @@ LineEditSliderAdaptor::LineEditSliderAdaptor(
 {
     slot_set_slider_value(m_line_edit->text());
 
-    // Connect the line edit and the slider together.
+    // When the slider is moved, update the line edit's value.
     connect(
         m_slider, SIGNAL(valueChanged(const int)),
         SLOT(slot_set_line_edit_value(const int)));
+
+    // When the line edit value is changed, update the slider's position.
     connect(
         m_line_edit, SIGNAL(textChanged(const QString&)),
         SLOT(slot_set_slider_value(const QString&)));
+
+    // When enter is pressed in the line edit, update the slider's position.
     connect(
         m_line_edit, SIGNAL(editingFinished()),
-        SLOT(slot_apply_slider_value()));
+        SLOT(slot_apply_line_edit_value()));
 }
 
 void LineEditSliderAdaptor::slot_set_line_edit_value(const int value)
 {
+    const QString new_line_edit_value = QString("%1").arg(value);
+
     // Don't block signals here, for live edit to work we want the line edit to signal changes.
-    m_line_edit->setText(QString("%1").arg(value));
+    m_line_edit->setText(new_line_edit_value);
 }
 
 void LineEditSliderAdaptor::slot_set_slider_value(const QString& value)
 {
-    if (!value.isEmpty())
-    {
-        const bool were_signals_blocked = m_slider->blockSignals(true);
-        m_slider->setValue(value.toInt());
-        m_slider->blockSignals(were_signals_blocked);
-    }
+    if (value.isEmpty())
+        return;
+
+    const bool were_signals_blocked = m_slider->blockSignals(true);
+    m_slider->setValue(value.toInt());
+    m_slider->blockSignals(were_signals_blocked);
 }
 
-void LineEditSliderAdaptor::slot_apply_slider_value()
+void LineEditSliderAdaptor::slot_apply_line_edit_value()
 {
-    const bool were_signals_blocked = m_slider->blockSignals(true);
-    m_slider->setValue(m_line_edit->text().toInt());
-    m_slider->blockSignals(were_signals_blocked);
+    slot_set_slider_value(m_line_edit->text());
 }
 
 
@@ -242,16 +246,20 @@ LineEditDoubleSliderAdaptor::LineEditDoubleSliderAdaptor(
 {
     slot_set_slider_value(m_line_edit->text());
 
-    // Connect the line edit and the slider together.
+    // When the slider is moved, update the line edit's value.
     connect(
         m_slider, SIGNAL(valueChanged(const double)),
         SLOT(slot_set_line_edit_value(const double)));
+
+    // When the line edit value is changed, update the slider's position.
     connect(
         m_line_edit, SIGNAL(textChanged(const QString&)),
         SLOT(slot_set_slider_value(const QString&)));
+
+    // When enter is pressed in the line edit, update the slider's position.
     connect(
         m_line_edit, SIGNAL(editingFinished()),
-        SLOT(slot_apply_slider_value()));
+        SLOT(slot_apply_line_edit_value()));
 }
 
 void LineEditDoubleSliderAdaptor::slot_set_line_edit_value(const double value)
@@ -259,31 +267,33 @@ void LineEditDoubleSliderAdaptor::slot_set_line_edit_value(const double value)
     // Format integer values such as 2 as "2.0" instead of "2".
     const bool is_integer = floor(value) == value;
     const QString format_string = is_integer ? "%1.0" : "%1";
+    const QString new_line_edit_value = format_string.arg(value);
 
     // Don't block signals here, for live edit to work we want the line edit to signal changes.
-    m_line_edit->setText(format_string.arg(value));
+    m_line_edit->setText(new_line_edit_value);
 }
 
 void LineEditDoubleSliderAdaptor::slot_set_slider_value(const QString& value)
 {
-    if (!value.isEmpty())
-    {
-        const bool were_signals_blocked = m_slider->blockSignals(true);
+    if (value.isEmpty())
+        return;
 
-        const double new_value = value.toDouble();
+    const bool were_signals_blocked = m_slider->blockSignals(true);
 
-        // Adjust range if the new value is outside the current range.
-        if (new_value < m_slider->minimum() ||
-            new_value > m_slider->maximum())
-            adjust_slider(new_value);
+    const double new_value = value.toDouble();
 
-        m_slider->setValue(new_value);
+    // Adjust range if the new value is outside the current range.
+    // The test is intentionally different than the one in slot_apply_line_edit_value().
+    if (new_value < m_slider->minimum() ||
+        new_value > m_slider->maximum())
+        adjust_slider(new_value);
 
-        m_slider->blockSignals(were_signals_blocked);
-    }
+    m_slider->setValue(new_value);
+
+    m_slider->blockSignals(were_signals_blocked);
 }
 
-void LineEditDoubleSliderAdaptor::slot_apply_slider_value()
+void LineEditDoubleSliderAdaptor::slot_apply_line_edit_value()
 {
     const bool were_signals_blocked = m_slider->blockSignals(true);
 
