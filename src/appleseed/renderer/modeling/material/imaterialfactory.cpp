@@ -70,6 +70,14 @@ void IMaterialFactory::add_alpha_map_metadata(DictionaryArray& metadata)
                 Dictionary()
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
             .insert("use", "optional"));
 }
 
