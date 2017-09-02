@@ -39,7 +39,7 @@
 #include "renderer/kernel/lighting/sppm/sppmpasscallback.h"
 #include "renderer/kernel/lighting/sppm/sppmphoton.h"
 #include "renderer/kernel/lighting/sppm/sppmphotonmap.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -144,11 +144,11 @@ namespace
         }
 
         virtual void compute_lighting(
-            SamplingContext&        sampling_context,
-            const PixelContext&     pixel_context,
-            const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point,
-            ShadingComponents&      radiance) override      // output radiance, in W.sr^-1.m^-2
+            SamplingContext&            sampling_context,
+            const PixelContext&         pixel_context,
+            const ShadingContext&       shading_context,
+            const ShadingPoint&         shading_point,
+            DirectShadingComponents&    radiance) override      // output radiance, in W.sr^-1.m^-2
         {
             if (m_params.m_view_photons)
             {
@@ -219,7 +219,7 @@ namespace
             const ShadingContext&           m_shading_context;
             const EnvironmentEDF*           m_env_edf;
             knn::Answer<float>&             m_answer;
-            ShadingComponents&              m_path_radiance;
+            DirectShadingComponents&        m_path_radiance;
 
             PathVisitor(
                 const SPPMParameters&           params,
@@ -230,7 +230,7 @@ namespace
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
                 knn::Answer<float>&             answer,
-                ShadingComponents&              path_radiance)
+                DirectShadingComponents&        path_radiance)
               : m_params(params)
               , m_pass_callback(pass_callback)
               , m_forward_light_sampler(forward_light_sampler)
@@ -287,7 +287,7 @@ namespace
 
             void on_hit(const PathVertex& vertex)
             {
-                ShadingComponents vertex_radiance;
+                DirectShadingComponents vertex_radiance;
 
                 if (vertex.m_bsdf)
                 {
@@ -325,10 +325,10 @@ namespace
             }
 
             void add_direct_lighting_contribution(
-                const PathVertex&       vertex,
-                ShadingComponents&      vertex_radiance)
+                const PathVertex&           vertex,
+                DirectShadingComponents&    vertex_radiance)
             {
-                ShadingComponents dl_radiance;
+                DirectShadingComponents dl_radiance;
 
                 const size_t light_sample_count =
                     stochastic_cast<size_t>(
@@ -375,8 +375,8 @@ namespace
             }
 
             void add_photon_map_lighting_contribution(
-                const PathVertex&       vertex,
-                ShadingComponents&      vertex_radiance)
+                const PathVertex&           vertex,
+                DirectShadingComponents&    vertex_radiance)
             {
                 const SPPMPhotonMap& photon_map = m_pass_callback.get_photon_map();
 
@@ -479,7 +479,7 @@ namespace
 #endif
 
                     // Evaluate the BSDF for this photon.
-                    ShadingComponents bsdf_value;
+                    DirectShadingComponents bsdf_value;
                     const float bsdf_prob =
                         vertex.m_bsdf->evaluate(
                             vertex.m_bsdf_data,
@@ -551,7 +551,7 @@ namespace
 #endif
 
                     // Evaluate the BSDF for this photon.
-                    ShadingComponents bsdf_value;
+                    DirectShadingComponents bsdf_value;
                     const float bsdf_prob =
                         vertex.m_bsdf->evaluate(
                             vertex.m_bsdf_data,

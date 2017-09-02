@@ -32,7 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 
 // appleseed.foundation headers.
@@ -61,7 +61,7 @@ class BSDFSample
     ScatteringMode::Mode            m_mode;                 // scattering mode
     foundation::Dual3f              m_incoming;             // world space incoming direction, unit-length, defined only if m_mode != None
     float                           m_probability;          // PDF value, defined only if m_mode != None
-    ShadingComponents               m_value;                // BSDF value, defined only if m_mode != None
+    DirectShadingComponents         m_value;                // BSDF value, defined only if m_mode != None
 
     // Constructor.
     BSDFSample(

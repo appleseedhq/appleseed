@@ -44,7 +44,7 @@
 
 // Forward declarations.
 namespace renderer  { class Camera; }
-namespace renderer  { class ShadingComponents; }
+namespace renderer  { class DirectShadingComponents; }
 namespace renderer  { class ShadingPoint; }
 namespace renderer  { class ShadingResult; }
 
@@ -71,14 +71,14 @@ class AOVAccumulator
     // Write a value to the accumulator.
     // Normally, this is used for shading AOVs like diffuse, glossy...
     virtual void write(
-        const ShadingComponents&    shading_components,
-        const float                 multiplier);
+        const DirectShadingComponents&  shading_components,
+        const float                     multiplier);
 
     // Write a value to the accumulator.
     // Normally, this is used for geometry AOVs like normals, velocity...
     virtual void write(
-        const ShadingPoint&         shading_point,
-        const Camera&               camera);
+        const ShadingPoint&             shading_point,
+        const Camera&                   camera);
 
     // Flush the result.
     virtual void flush(ShadingResult& result) = 0;
@@ -111,8 +111,8 @@ class BeautyAOVAccumulator
     virtual void reset() override;
 
     virtual void write(
-        const ShadingComponents&    shading_components,
-        const float                 multiplier) override;
+        const DirectShadingComponents&  shading_components,
+        const float                     multiplier) override;
 
     virtual void flush(ShadingResult& result) override;
 
@@ -168,13 +168,13 @@ class AOVAccumulatorContainer
 
     // Write a sample to all accumulators.
     void write(
-        const ShadingComponents&    shading_components,
-        const float                 multiplier);
+        const DirectShadingComponents&  shading_components,
+        const float                     multiplier);
 
     // Write a sample to all accumulators.
     void write(
-        const ShadingPoint&         shading_point,
-        const Camera&               camera);
+        const ShadingPoint&             shading_point,
+        const Camera&                   camera);
 
     // Flush all the accumulators.
     void flush(ShadingResult& result);

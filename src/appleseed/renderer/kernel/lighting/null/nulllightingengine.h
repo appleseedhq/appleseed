@@ -39,7 +39,7 @@
 
 // Forward declarations.
 namespace renderer  { class PixelContext; }
-namespace renderer  { class ShadingComponents; }
+namespace renderer  { class DirectShadingComponents; }
 namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }
 
@@ -62,11 +62,11 @@ class NullLightingEngine
 
     // Compute the lighting at a given point of the scene.
     virtual void compute_lighting(
-        SamplingContext&        sampling_context,
-        const PixelContext&     pixel_context,
-        const ShadingContext&   shading_context,
-        const ShadingPoint&     shading_point,
-        ShadingComponents&      radiance) override
+        SamplingContext&            sampling_context,
+        const PixelContext&         pixel_context,
+        const ShadingContext&       shading_context,
+        const ShadingPoint&         shading_point,
+        DirectShadingComponents&    radiance) override
     {
     }
 };

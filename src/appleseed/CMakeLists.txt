@@ -1160,6 +1160,8 @@ set (renderer_kernel_shading_sources
     renderer/kernel/shading/ambientocclusion.h
     renderer/kernel/shading/closures.cpp
     renderer/kernel/shading/closures.h
+    renderer/kernel/shading/directshadingcomponents.cpp
+    renderer/kernel/shading/directshadingcomponents.h
     renderer/kernel/shading/fastambientocclusion.cpp
     renderer/kernel/shading/fastambientocclusion.h
     renderer/kernel/shading/oslshadercompiler.cpp
@@ -1168,8 +1170,6 @@ set (renderer_kernel_shading_sources
     renderer/kernel/shading/oslshadergroupexec.h
     renderer/kernel/shading/oslshadingsystem.cpp
     renderer/kernel/shading/oslshadingsystem.h
-    renderer/kernel/shading/shadingcomponents.cpp
-    renderer/kernel/shading/shadingcomponents.h
     renderer/kernel/shading/shadingcontext.cpp
     renderer/kernel/shading/shadingcontext.h
     renderer/kernel/shading/shadingengine.cpp

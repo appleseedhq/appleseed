@@ -31,7 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/fresnel.h"
@@ -90,8 +90,8 @@ namespace
     {
       public:
         PlasticBRDFImpl(
-            const char*             name,
-            const ParamArray&       params)
+            const char*                 name,
+            const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::All, params)
         {
             m_inputs.declare("specular_reflectance", InputFormatSpectralReflectance);
@@ -115,10 +115,10 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&          project,
-            const BaseGroup*        parent,
-            OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch) override
+            const Project&              project,
+            const BaseGroup*            parent,
+            OnFrameBeginRecorder&       recorder,
+            IAbortSwitch*               abort_switch) override
         {
             if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
@@ -150,9 +150,9 @@ namespace
         }
 
         virtual void prepare_inputs(
-            Arena&                  arena,
-            const ShadingPoint&     shading_point,
-            void*                   data) const override
+            Arena&                      arena,
+            const ShadingPoint&         shading_point,
+            void*                       data) const override
         {
             InputValues* values = static_cast<InputValues*>(data);
 
@@ -169,12 +169,12 @@ namespace
         }
 
         virtual void sample(
-            SamplingContext&        sampling_context,
-            const void*             data,
-            const bool              adjoint,
-            const bool              cosine_mult,
-            const int               modes,
-            BSDFSample&             sample) const override
+            SamplingContext&            sampling_context,
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const int                   modes,
+            BSDFSample&                 sample) const override
         {
             const Basis3f& shading_basis(sample.m_shading_basis);
             const Vector3f& n = shading_basis.get_normal();
@@ -261,15 +261,15 @@ namespace
         }
 
         virtual float evaluate(
-            const void*             data,
-            const bool              adjoint,
-            const bool              cosine_mult,
-            const Vector3f&         geometric_normal,
-            const Basis3f&          shading_basis,
-            const Vector3f&         outgoing,
-            const Vector3f&         incoming,
-            const int               modes,
-            ShadingComponents&      value) const override
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes,
+            DirectShadingComponents&    value) const override
         {
             // No reflection below the shading surface.
             const Vector3f& n = shading_basis.get_normal();
@@ -337,12 +337,12 @@ namespace
         }
 
         virtual float evaluate_pdf(
-            const void*             data,
-            const Vector3f&         geometric_normal,
-            const Basis3f&          shading_basis,
-            const Vector3f&         outgoing,
-            const Vector3f&         incoming,
-            const int               modes) const override
+            const void*                 data,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes) const override
         {
             // No reflection below the shading surface.
             const Vector3f& n = shading_basis.get_normal();
@@ -383,8 +383,8 @@ namespace
         typedef PlasticBRDFInputValues InputValues;
 
         static float choose_specular_probability(
-            const InputValues&      values,
-            const float             F)
+            const InputValues&          values,
+            const float                 F)
         {
             const float specular_weight = F * values.m_precomputed.m_specular_weight;
             const float diffuse_weight = (1.0f - F) * values.m_precomputed.m_diffuse_weight;
@@ -399,9 +399,9 @@ namespace
         }
 
         static float fresnel_reflectance(
-            const Vector3f&         w,
-            const Vector3f&         m,
-            const float             eta)
+            const Vector3f&             w,
+            const Vector3f&             m,
+            const float                 eta)
         {
             const float cos_wm(dot(w, m));
 
@@ -417,15 +417,15 @@ namespace
         }
 
         static void evaluate_specular(
-            const Spectrum&         specular_reflectance,
-            const MDF&              mdf,
-            const float             alpha,
-            const float             gamma,
-            const Vector3f&         wi,
-            const Vector3f&         wo,
-            const Vector3f&         m,
-            const float             F,
-            Spectrum&               value)
+            const Spectrum&             specular_reflectance,
+            const MDF&                  mdf,
+            const float                 alpha,
+            const float                 gamma,
+            const Vector3f&             wi,
+            const Vector3f&             wo,
+            const Vector3f&             m,
+            const float                 F,
+            Spectrum&                   value)
         {
             if (alpha == 0.0f)
                 return;
@@ -444,11 +444,11 @@ namespace
         }
 
         static float specular_pdf(
-            const MDF&              mdf,
-            const float             alpha,
-            const float             gamma,
-            const Vector3f&         wo,
-            const Vector3f&         m)
+            const MDF&                  mdf,
+            const float                 alpha,
+            const float                 gamma,
+            const Vector3f&             wo,
+            const Vector3f&             m)
         {
             if (alpha == 0.0f)
                 return 0.0f;
@@ -462,12 +462,12 @@ namespace
         }
 
         static void evaluate_diffuse(
-            const Spectrum&         diffuse_reflectance,
-            const float             eta,
-            const float             internal_scattering,
-            const float             Fo,
-            const float             Fi,
-            Spectrum&               value)
+            const Spectrum&             diffuse_reflectance,
+            const float                 eta,
+            const float                 internal_scattering,
+            const float                 Fo,
+            const float                 Fi,
+            Spectrum&                   value)
         {
             const float eta2 = square(eta);
             const float fdr = fresnel_internal_diffuse_reflectance(1.0f / eta);

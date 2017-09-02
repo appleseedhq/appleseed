@@ -30,7 +30,7 @@
 #include "aovaccumulator.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/shading/shadingcomponents.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
@@ -65,14 +65,14 @@ void AOVAccumulator::release()
 }
 
 void AOVAccumulator::write(
-    const ShadingComponents&    shading_components,
-    const float                 multiplier)
+    const DirectShadingComponents&  shading_components,
+    const float                     multiplier)
 {
 }
 
 void AOVAccumulator::write(
-    const ShadingPoint&         shading_point,
-    const Camera&               camera)
+    const ShadingPoint&             shading_point,
+    const Camera&                   camera)
 {
 }
 
@@ -112,8 +112,8 @@ void BeautyAOVAccumulator::reset()
 }
 
 void BeautyAOVAccumulator::write(
-    const ShadingComponents&    shading_components,
-    const float                 multiplier)
+    const DirectShadingComponents&  shading_components,
+    const float                     multiplier)
 {
     m_color = shading_components.m_beauty.to_rgb(g_std_lighting_conditions);
     m_color *= multiplier;
@@ -193,16 +193,16 @@ void AOVAccumulatorContainer::reset()
 }
 
 void AOVAccumulatorContainer::write(
-    const ShadingComponents&    shading_components,
-    const float                 multiplier)
+    const DirectShadingComponents&  shading_components,
+    const float                     multiplier)
 {
     for (size_t i = 0, e = m_size; i < e; ++i)
         m_accumulators[i]->write(shading_components, multiplier);
 }
 
 void AOVAccumulatorContainer::write(
-    const ShadingPoint&         shading_point,
-    const Camera&               camera)
+    const ShadingPoint&             shading_point,
+    const Camera&                   camera)
 {
     for (size_t i = 0, e = m_size; i < e; ++i)
         m_accumulators[i]->write(shading_point, camera);

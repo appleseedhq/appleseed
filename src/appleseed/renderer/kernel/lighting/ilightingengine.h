@@ -40,7 +40,7 @@
 namespace foundation    { class Dictionary; }
 namespace foundation    { class StatisticsVector; }
 namespace renderer      { class PixelContext; }
-namespace renderer      { class ShadingComponents; }
+namespace renderer      { class DirectShadingComponents; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 
@@ -57,11 +57,11 @@ class ILightingEngine
   public:
     // Compute the lighting at a given point of the scene.
     virtual void compute_lighting(
-        SamplingContext&        sampling_context,
-        const PixelContext&     pixel_context,
-        const ShadingContext&   shading_context,
-        const ShadingPoint&     shading_point,
-        ShadingComponents&      radiance) = 0;      // output radiance, in W.sr^-1.m^-2
+        SamplingContext&          sampling_context,
+        const PixelContext&       pixel_context,
+        const ShadingContext&     shading_context,
+        const ShadingPoint&       shading_point,
+        DirectShadingComponents&  radiance) = 0;      // output radiance, in W.sr^-1.m^-2
 
     // Retrieve performance statistics.
     virtual foundation::StatisticsVector get_statistics() const = 0;
@@ -81,8 +81,8 @@ class ILightingEngineFactory
 
   protected:
     static void add_common_params_metadata(
-        foundation::Dictionary& metadata,
-        const bool              add_lighting_samples);
+        foundation::Dictionary&   metadata,
+        const bool                add_lighting_samples);
 };
 
 }       // namespace renderer

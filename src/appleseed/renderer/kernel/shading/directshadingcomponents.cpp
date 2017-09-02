@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "shadingcomponents.h"
+#include "directshadingcomponents.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/otherwise.h"
@@ -36,15 +36,15 @@ namespace renderer
 {
 
 //
-// ShadingComponents class implementation.
+// DirectShadingComponents class implementation.
 //
 
-ShadingComponents::ShadingComponents()
+DirectShadingComponents::DirectShadingComponents()
 {
     set(0.0f);
 }
 
-void ShadingComponents::set(const float val)
+void DirectShadingComponents::set(const float val)
 {
     m_beauty.set(0.0f);
     m_diffuse.set(0.0f);
@@ -53,9 +53,9 @@ void ShadingComponents::set(const float val)
     m_emission.set(0.0f);
 }
 
-void ShadingComponents::add_to_component(
-    const ScatteringMode::Mode  scattering_mode,
-    const Spectrum&             value)
+void DirectShadingComponents::add_to_component(
+    const ScatteringMode::Mode      scattering_mode,
+    const Spectrum&                 value)
 {
     switch (scattering_mode)
     {
@@ -76,18 +76,18 @@ void ShadingComponents::add_to_component(
     }
 }
 
-void ShadingComponents::add_to_component(
-    const ScatteringMode::Mode  scattering_mode,
-    const ShadingComponents&    value)
+void DirectShadingComponents::add_to_component(
+    const ScatteringMode::Mode      scattering_mode,
+    const DirectShadingComponents&  value)
 {
     m_beauty += value.m_beauty;
     add_to_component(scattering_mode, value.m_beauty);
 }
 
-void ShadingComponents::add_emission(
-    const size_t                path_length,
-    const ScatteringMode::Mode  scattering_mode,
-    const Spectrum&             value)
+void DirectShadingComponents::add_emission(
+    const size_t                    path_length,
+    const ScatteringMode::Mode      scattering_mode,
+    const Spectrum&                 value)
 {
     m_beauty += value;
 
@@ -97,7 +97,7 @@ void ShadingComponents::add_emission(
         add_to_component(scattering_mode, value);
 }
 
-ShadingComponents& operator+=(ShadingComponents& lhs, const ShadingComponents& rhs)
+DirectShadingComponents& operator+=(DirectShadingComponents& lhs, const DirectShadingComponents& rhs)
 {
     lhs.m_beauty += rhs.m_beauty;
     lhs.m_diffuse += rhs.m_diffuse;
@@ -107,7 +107,7 @@ ShadingComponents& operator+=(ShadingComponents& lhs, const ShadingComponents& r
     return lhs;
 }
 
-ShadingComponents& operator*=(ShadingComponents& lhs, const float rhs)
+DirectShadingComponents& operator*=(DirectShadingComponents& lhs, const float rhs)
 {
     lhs.m_beauty *= rhs;
     lhs.m_diffuse *= rhs;
@@ -117,14 +117,14 @@ ShadingComponents& operator*=(ShadingComponents& lhs, const float rhs)
     return lhs;
 }
 
-ShadingComponents& operator/=(ShadingComponents& lhs, const float rhs)
+DirectShadingComponents& operator/=(DirectShadingComponents& lhs, const float rhs)
 {
     const float rcp_rhs = 1.0f / rhs;
     lhs *= rcp_rhs;
     return lhs;
 }
 
-ShadingComponents& operator*=(ShadingComponents& lhs, const Spectrum& rhs)
+DirectShadingComponents& operator*=(DirectShadingComponents& lhs, const Spectrum& rhs)
 {
     lhs.m_beauty *= rhs;
     lhs.m_diffuse *= rhs;
@@ -134,7 +134,7 @@ ShadingComponents& operator*=(ShadingComponents& lhs, const Spectrum& rhs)
     return lhs;
 }
 
-void madd(ShadingComponents& a, const ShadingComponents& b, const float c)
+void madd(DirectShadingComponents& a, const DirectShadingComponents& b, const float c)
 {
     madd(a.m_beauty, b.m_beauty, c);
     madd(a.m_diffuse, b.m_diffuse, c);
@@ -143,7 +143,7 @@ void madd(ShadingComponents& a, const ShadingComponents& b, const float c)
     madd(a.m_emission, b.m_emission, c);
 }
 
-void madd(ShadingComponents& a, const ShadingComponents& b, const Spectrum& c)
+void madd(DirectShadingComponents& a, const DirectShadingComponents& b, const Spectrum& c)
 {
     madd(a.m_beauty, b.m_beauty, c);
     madd(a.m_diffuse, b.m_diffuse, c);

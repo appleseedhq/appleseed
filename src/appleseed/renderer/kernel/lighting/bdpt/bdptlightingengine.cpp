@@ -43,14 +43,13 @@ namespace
     // Bidirectional Path Tracing lighting engine.
     //
 
-    class BDPTLightingEngine 
+    class BDPTLightingEngine
       : public ILightingEngine
     {
       public:
         struct Parameters
         {
-            explicit Parameters(
-                const ParamArray&   params)
+            explicit Parameters(const ParamArray& params)
             {
 
             }
@@ -62,8 +61,7 @@ namespace
             }
         };
 
-        BDPTLightingEngine(
-            const ParamArray&   params)
+        BDPTLightingEngine(const ParamArray& params)
           : m_params(params)
         {
         }
@@ -74,11 +72,11 @@ namespace
         }
 
         virtual void compute_lighting(
-            SamplingContext&        sampling_context,
-            const PixelContext&     pixel_context,
-            const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point,
-            ShadingComponents&      radiance) override      // output radiance, in W.sr^-1.m^-2
+            SamplingContext&            sampling_context,
+            const PixelContext&         pixel_context,
+            const ShadingContext&       shading_context,
+            const ShadingPoint&         shading_point,
+            DirectShadingComponents&    radiance) override      // output radiance, in W.sr^-1.m^-2
         {
         }
 

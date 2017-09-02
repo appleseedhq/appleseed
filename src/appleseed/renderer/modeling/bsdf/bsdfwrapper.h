@@ -32,7 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
 
 // appleseed.foundation headers.
@@ -81,7 +81,7 @@ class BSDFWrapper
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
         const int                       modes,
-        ShadingComponents&              value) const override;
+        DirectShadingComponents&        value) const override;
 
     virtual float evaluate_pdf(
         const void*                     data,
@@ -158,7 +158,7 @@ float BSDFWrapper<BSDFImpl>::evaluate(
     const foundation::Vector3f&         outgoing,
     const foundation::Vector3f&         incoming,
     const int                           modes,
-    ShadingComponents&                  value) const
+    DirectShadingComponents&            value) const
 {
     assert(foundation::is_normalized(geometric_normal));
     assert(foundation::is_normalized(outgoing));
