@@ -159,7 +159,7 @@ void AlphaAOVAccumulator::flush(ShadingResult& result)
 // AOVAccumulatorContainer class implementation.
 //
 
-AOVAccumulatorContainer::AOVAccumulatorContainer(const AOVContainer& aovs)
+AOVAccumulatorContainer::AOVAccumulatorContainer()
   : m_size(0)
 {
     memset(m_accumulators, 0, MaxAovAccumulators * sizeof(AOVAccumulator*));
@@ -167,7 +167,11 @@ AOVAccumulatorContainer::AOVAccumulatorContainer(const AOVContainer& aovs)
     // Create beauty and alpha accumulators.
     insert(auto_release_ptr<AOVAccumulator>(new BeautyAOVAccumulator()));
     insert(auto_release_ptr<AOVAccumulator>(new AlphaAOVAccumulator()));
+}
 
+AOVAccumulatorContainer::AOVAccumulatorContainer(const AOVContainer& aovs)
+  : AOVAccumulatorContainer()
+{
     // Create the remaining accumulators.
     for (size_t i = 0, e = aovs.size(); i < e; ++i)
     {

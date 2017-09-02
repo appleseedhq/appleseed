@@ -155,6 +155,9 @@ class AOVAccumulatorContainer
 {
   public:
     // Constructor.
+    AOVAccumulatorContainer();
+
+    // Constructor.
     explicit AOVAccumulatorContainer(const AOVContainer& aovs);
 
     // Destructor.

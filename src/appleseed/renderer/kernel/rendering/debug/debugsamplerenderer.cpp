@@ -67,10 +67,11 @@ namespace
         }
 
         virtual void render_sample(
-            SamplingContext&    sampling_context,
-            const PixelContext& pixel_context,
-            const Vector2d&     image_point,
-            ShadingResult&      shading_result) override
+            SamplingContext&            sampling_context,
+            const PixelContext&         pixel_context,
+            const Vector2d&             image_point,
+            AOVAccumulatorContainer&    aov_accumulators,
+            ShadingResult&              shading_result) override
         {
             const Vector2d v = Vector2d(0.5) - image_point;
             const double d = norm(v) * 2.0;
