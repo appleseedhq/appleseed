@@ -78,6 +78,31 @@ void AOVAccumulator::write(
 
 
 //
+// ColorAOVAccumulator class implementation.
+//
+
+ColorAOVAccumulator::ColorAOVAccumulator(const size_t index)
+  : AOVAccumulator(index)
+{
+}
+
+ColorAOVAccumulator::~ColorAOVAccumulator()
+{
+}
+
+void ColorAOVAccumulator::reset()
+{
+    m_color.set(0.0f);
+}
+
+void ColorAOVAccumulator::flush(ShadingResult& result)
+{
+    result.m_aovs[m_index].rgb() = m_color;
+    result.m_aovs[m_index].a = result.m_main.a;
+}
+
+
+//
 // BeautyAOVAccumulator class implementation.
 //
 

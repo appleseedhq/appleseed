@@ -63,7 +63,7 @@ class AOVAccumulator
     virtual ~AOVAccumulator();
 
     // Delete this instance.
-    virtual void release();
+    void release();
 
     // Reset the accumulator.
     virtual void reset() = 0;
@@ -88,6 +88,31 @@ class AOVAccumulator
     explicit AOVAccumulator(const size_t index);
 
     const size_t m_index;
+};
+
+
+//
+// Color AOV accumulator base class.
+//
+
+class ColorAOVAccumulator
+  : public AOVAccumulator
+{
+  public:
+    // Destructor.
+    ~ColorAOVAccumulator() override;
+
+    // Reset the accumulator.
+    void reset() override;
+
+    // Flush the result.
+    void flush(ShadingResult& result) override;
+
+  protected:
+    // Constructor.
+    explicit ColorAOVAccumulator(const size_t index);
+
+    foundation::Color3f m_color;
 };
 
 
