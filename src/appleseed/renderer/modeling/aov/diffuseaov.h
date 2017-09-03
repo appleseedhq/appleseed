@@ -75,6 +75,64 @@ class APPLESEED_DLLSYMBOL DiffuseAOVFactory
         const ParamArray&   params);
 };
 
+
+//
+// A factory for direct diffuse AOVs.
+//
+
+class APPLESEED_DLLSYMBOL DirectDiffuseAOVFactory
+  : public IAOVFactory
+{
+  public:
+    // Return a string identifying this AOV model.
+    virtual const char* get_model() const override;
+
+    // Return metadata for this AOV model.
+    virtual foundation::Dictionary get_model_metadata() const override;
+
+    // Return metadata for the inputs of this AOV model.
+    virtual foundation::DictionaryArray get_input_metadata() const override;
+
+    // Create a new AOV instance.
+    virtual foundation::auto_release_ptr<AOV> create(
+        const char*         name,
+        const ParamArray&   params) const override;
+
+    // Static variant of the create() method above.
+    static foundation::auto_release_ptr<AOV> static_create(
+        const char*         name,
+        const ParamArray&   params);
+};
+
+
+//
+// A factory for indirect diffuse AOVs.
+//
+
+class APPLESEED_DLLSYMBOL IndirectDiffuseAOVFactory
+  : public IAOVFactory
+{
+  public:
+    // Return a string identifying this AOV model.
+    virtual const char* get_model() const override;
+
+    // Return metadata for this AOV model.
+    virtual foundation::Dictionary get_model_metadata() const override;
+
+    // Return metadata for the inputs of this AOV model.
+    virtual foundation::DictionaryArray get_input_metadata() const override;
+
+    // Create a new AOV instance.
+    virtual foundation::auto_release_ptr<AOV> create(
+        const char*         name,
+        const ParamArray&   params) const override;
+
+    // Static variant of the create() method above.
+    static foundation::auto_release_ptr<AOV> static_create(
+        const char*         name,
+        const ParamArray&   params);
+};
+
 }       // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_MODELING_AOV_DIFFUSEAOV_H

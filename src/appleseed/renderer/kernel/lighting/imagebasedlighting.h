@@ -42,9 +42,9 @@
 
 // Forward declarations.
 namespace renderer  { class BSDF; }
+namespace renderer  { class DirectShadingComponents; }
 namespace renderer  { class EnvironmentEDF; }
 namespace renderer  { class IMaterialSampler; }
-namespace renderer  { class DirectShadingComponents; }
 namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }
 

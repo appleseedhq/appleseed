@@ -74,7 +74,52 @@ namespace
             m_color += shading_components.m_indirect_glossy.to_rgb(g_std_lighting_conditions);
             m_color *= multiplier;
         }
+    };
 
+
+    //
+    // DirectGlossy AOV accumulator.
+    //
+
+    class DirectGlossyAOVAccumulator
+      : public ColorAOVAccumulator
+    {
+      public:
+        explicit DirectGlossyAOVAccumulator(const size_t index)
+          : ColorAOVAccumulator(index)
+        {
+        }
+
+        virtual void write(
+            const ShadingComponents&    shading_components,
+            const float                 multiplier) override
+        {
+            m_color = shading_components.m_glossy.to_rgb(g_std_lighting_conditions);
+            m_color *= multiplier;
+        }
+    };
+
+
+    //
+    // IndirectGlossy AOV accumulator.
+    //
+
+    class IndirectGlossyAOVAccumulator
+      : public ColorAOVAccumulator
+    {
+      public:
+        explicit IndirectGlossyAOVAccumulator(const size_t index)
+          : ColorAOVAccumulator(index)
+        {
+        }
+
+        virtual void write(
+            const ShadingComponents&    shading_components,
+            const float                 multiplier) override
+        {
+            m_color = shading_components.m_indirect_glossy.to_rgb(g_std_lighting_conditions);
+            m_color *= multiplier;
+        }
     };
 
 
@@ -82,7 +127,7 @@ namespace
     // Glossy AOV.
     //
 
-    const char* Model = "glossy_aov";
+    const char* GlossyModel = "glossy_aov";
 
     class GlossyAOV
       : public ColorAOV
@@ -100,13 +145,79 @@ namespace
 
         virtual const char* get_model() const override
         {
-            return Model;
+            return GlossyModel;
         }
 
         virtual auto_release_ptr<AOVAccumulator> create_accumulator(
             const size_t index) const override
         {
             return auto_release_ptr<AOVAccumulator>(new GlossyAOVAccumulator(index));
+        }
+    };
+
+
+    //
+    // Direct Glossy AOV.
+    //
+
+    const char* DirectGlossyModel = "direct_glossy_aov";
+
+    class DirectGlossyAOV
+      : public ColorAOV
+    {
+      public:
+        DirectGlossyAOV(const char* name, const ParamArray& params)
+          : ColorAOV(name, params)
+        {
+        }
+
+        virtual void release() override
+        {
+            delete this;
+        }
+
+        virtual const char* get_model() const override
+        {
+            return DirectGlossyModel;
+        }
+
+        virtual auto_release_ptr<AOVAccumulator> create_accumulator(
+            const size_t index) const override
+        {
+            return auto_release_ptr<AOVAccumulator>(new DirectGlossyAOVAccumulator(index));
+        }
+    };
+
+
+    //
+    // Indirect Glossy AOV.
+    //
+
+    const char* IndirectGlossyModel = "indirect_glossy_aov";
+
+    class IndirectGlossyAOV
+      : public ColorAOV
+    {
+      public:
+        IndirectGlossyAOV(const char* name, const ParamArray& params)
+          : ColorAOV(name, params)
+        {
+        }
+
+        virtual void release() override
+        {
+            delete this;
+        }
+
+        virtual const char* get_model() const override
+        {
+            return IndirectGlossyModel;
+        }
+
+        virtual auto_release_ptr<AOVAccumulator> create_accumulator(
+            const size_t index) const override
+        {
+            return auto_release_ptr<AOVAccumulator>(new IndirectGlossyAOVAccumulator(index));
         }
     };
 }
@@ -118,14 +229,14 @@ namespace
 
 const char* GlossyAOVFactory::get_model() const
 {
-    return Model;
+    return GlossyModel;
 }
 
 Dictionary GlossyAOVFactory::get_model_metadata() const
 {
     return
         Dictionary()
-            .insert("name", Model)
+            .insert("name", get_model())
             .insert("label", "Glossy")
             .insert("default_model", "false");
 }
@@ -140,18 +251,92 @@ auto_release_ptr<AOV> GlossyAOVFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return
-        auto_release_ptr<AOV>(
-            new GlossyAOV(name, params));
+    return auto_release_ptr<AOV>(new GlossyAOV(name, params));
 }
 
 auto_release_ptr<AOV> GlossyAOVFactory::static_create(
     const char*         name,
     const ParamArray&   params)
 {
+    return auto_release_ptr<AOV>(new GlossyAOV(name, params));
+}
+
+
+//
+// DirectGlossyAOVFactory class implementation.
+//
+
+const char* DirectGlossyAOVFactory::get_model() const
+{
+    return DirectGlossyModel;
+}
+
+Dictionary DirectGlossyAOVFactory::get_model_metadata() const
+{
     return
-        auto_release_ptr<AOV>(
-            new GlossyAOV(name, params));
+        Dictionary()
+            .insert("name", get_model())
+            .insert("label", "Direct Glossy")
+            .insert("default_model", "false");
+}
+
+DictionaryArray DirectGlossyAOVFactory::get_input_metadata() const
+{
+    DictionaryArray metadata;
+    return metadata;
+}
+
+auto_release_ptr<AOV> DirectGlossyAOVFactory::create(
+    const char*         name,
+    const ParamArray&   params) const
+{
+    return auto_release_ptr<AOV>(new DirectGlossyAOV(name, params));
+}
+
+auto_release_ptr<AOV> DirectGlossyAOVFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return auto_release_ptr<AOV>(new DirectGlossyAOV(name, params));
+}
+
+
+//
+// IndirectGlossyAOVFactory class implementation.
+//
+
+const char* IndirectGlossyAOVFactory::get_model() const
+{
+    return IndirectGlossyModel;
+}
+
+Dictionary IndirectGlossyAOVFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", get_model())
+            .insert("label", "Indirect Glossy")
+            .insert("default_model", "false");
+}
+
+DictionaryArray IndirectGlossyAOVFactory::get_input_metadata() const
+{
+    DictionaryArray metadata;
+    return metadata;
+}
+
+auto_release_ptr<AOV> IndirectGlossyAOVFactory::create(
+    const char*         name,
+    const ParamArray&   params) const
+{
+    return auto_release_ptr<AOV>(new IndirectGlossyAOV(name, params));
+}
+
+auto_release_ptr<AOV> IndirectGlossyAOVFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return auto_release_ptr<AOV>(new IndirectGlossyAOV(name, params));
 }
 
 }   // namespace renderer

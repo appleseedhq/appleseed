@@ -1110,13 +1110,9 @@ namespace
                     }
 
                     radiance *= vertex.m_throughput;
-
-                    const float scalar_weight = current_mis_weight /
-                        (distance_sample_count_float * distance_prob);
-                    radiance *= transmission * scalar_weight;
-
-                    m_path_radiance.add(
-                        vertex.m_path_length, vertex.m_aov_mode, radiance);
+                    radiance *= transmission;
+                    radiance *= current_mis_weight / (distance_sample_count_float * distance_prob);
+                    m_path_radiance.add(vertex.m_path_length, vertex.m_aov_mode, radiance);
                 }
             }
         };

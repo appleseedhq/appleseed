@@ -78,10 +78,56 @@ namespace
 
 
     //
+    // DirectDiffuse AOV accumulator.
+    //
+
+    class DirectDiffuseAOVAccumulator
+      : public ColorAOVAccumulator
+    {
+      public:
+        explicit DirectDiffuseAOVAccumulator(const size_t index)
+          : ColorAOVAccumulator(index)
+        {
+        }
+
+        virtual void write(
+            const ShadingComponents&    shading_components,
+            const float                 multiplier) override
+        {
+            m_color = shading_components.m_diffuse.to_rgb(g_std_lighting_conditions);
+            m_color *= multiplier;
+        }
+    };
+
+
+    //
+    // IndirectDiffuse AOV accumulator.
+    //
+
+    class IndirectDiffuseAOVAccumulator
+      : public ColorAOVAccumulator
+    {
+      public:
+        explicit IndirectDiffuseAOVAccumulator(const size_t index)
+          : ColorAOVAccumulator(index)
+        {
+        }
+
+        virtual void write(
+            const ShadingComponents&    shading_components,
+            const float                 multiplier) override
+        {
+            m_color = shading_components.m_indirect_diffuse.to_rgb(g_std_lighting_conditions);
+            m_color *= multiplier;
+        }
+    };
+
+
+    //
     // Diffuse AOV.
     //
 
-    const char* Model = "diffuse_aov";
+    const char* DiffuseModel = "diffuse_aov";
 
     class DiffuseAOV
       : public ColorAOV
@@ -99,13 +145,79 @@ namespace
 
         virtual const char* get_model() const override
         {
-            return Model;
+            return DiffuseModel;
         }
 
         virtual auto_release_ptr<AOVAccumulator> create_accumulator(
             const size_t index) const override
         {
             return auto_release_ptr<AOVAccumulator>(new DiffuseAOVAccumulator(index));
+        }
+    };
+
+
+    //
+    // DirectDiffuse AOV.
+    //
+
+    const char* DirectDiffuseModel = "direct_diffuse_aov";
+
+    class DirectDiffuseAOV
+      : public ColorAOV
+    {
+      public:
+        DirectDiffuseAOV(const char* name, const ParamArray& params)
+          : ColorAOV(name, params)
+        {
+        }
+
+        virtual void release() override
+        {
+            delete this;
+        }
+
+        virtual const char* get_model() const override
+        {
+            return DirectDiffuseModel;
+        }
+
+        virtual auto_release_ptr<AOVAccumulator> create_accumulator(
+            const size_t index) const override
+        {
+            return auto_release_ptr<AOVAccumulator>(new DirectDiffuseAOVAccumulator(index));
+        }
+    };
+
+
+    //
+    // IndirectDiffuse AOV.
+    //
+
+    const char* IndirectDiffuseModel = "indirect_diffuse_aov";
+
+    class IndirectDiffuseAOV
+      : public ColorAOV
+    {
+      public:
+        IndirectDiffuseAOV(const char* name, const ParamArray& params)
+          : ColorAOV(name, params)
+        {
+        }
+
+        virtual void release() override
+        {
+            delete this;
+        }
+
+        virtual const char* get_model() const override
+        {
+            return IndirectDiffuseModel;
+        }
+
+        virtual auto_release_ptr<AOVAccumulator> create_accumulator(
+            const size_t index) const override
+        {
+            return auto_release_ptr<AOVAccumulator>(new IndirectDiffuseAOVAccumulator(index));
         }
     };
 }
@@ -117,14 +229,14 @@ namespace
 
 const char* DiffuseAOVFactory::get_model() const
 {
-    return Model;
+    return DiffuseModel;
 }
 
 Dictionary DiffuseAOVFactory::get_model_metadata() const
 {
     return
         Dictionary()
-            .insert("name", Model)
+            .insert("name", get_model())
             .insert("label", "Diffuse")
             .insert("default_model", "false");
 }
@@ -148,9 +260,85 @@ auto_release_ptr<AOV> DiffuseAOVFactory::static_create(
     const char*         name,
     const ParamArray&   params)
 {
+    return auto_release_ptr<AOV>(new DiffuseAOV(name, params));
+}
+
+
+//
+// DirectDiffuseAOVFactory class implementation.
+//
+
+const char* DirectDiffuseAOVFactory::get_model() const
+{
+    return DirectDiffuseModel;
+}
+
+Dictionary DirectDiffuseAOVFactory::get_model_metadata() const
+{
     return
-        auto_release_ptr<AOV>(
-            new DiffuseAOV(name, params));
+        Dictionary()
+            .insert("name", get_model())
+            .insert("label", "Direct Diffuse")
+            .insert("default_model", "false");
+}
+
+DictionaryArray DirectDiffuseAOVFactory::get_input_metadata() const
+{
+    DictionaryArray metadata;
+    return metadata;
+}
+
+auto_release_ptr<AOV> DirectDiffuseAOVFactory::create(
+    const char*         name,
+    const ParamArray&   params) const
+{
+    return auto_release_ptr<AOV>(new DirectDiffuseAOV(name, params));
+}
+
+auto_release_ptr<AOV> DirectDiffuseAOVFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return auto_release_ptr<AOV>(new DirectDiffuseAOV(name, params));
+}
+
+
+//
+// IndirectDiffuseAOVFactory class implementation.
+//
+
+const char* IndirectDiffuseAOVFactory::get_model() const
+{
+    return IndirectDiffuseModel;
+}
+
+Dictionary IndirectDiffuseAOVFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", get_model())
+            .insert("label", "Indirect Diffuse")
+            .insert("default_model", "false");
+}
+
+DictionaryArray IndirectDiffuseAOVFactory::get_input_metadata() const
+{
+    DictionaryArray metadata;
+    return metadata;
+}
+
+auto_release_ptr<AOV> IndirectDiffuseAOVFactory::create(
+    const char*         name,
+    const ParamArray&   params) const
+{
+    return auto_release_ptr<AOV>(new IndirectDiffuseAOV(name, params));
+}
+
+auto_release_ptr<AOV> IndirectDiffuseAOVFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return auto_release_ptr<AOV>(new IndirectDiffuseAOV(name, params));
 }
 
 }   // namespace renderer
