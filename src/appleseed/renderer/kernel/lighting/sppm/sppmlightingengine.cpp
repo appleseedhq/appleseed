@@ -39,7 +39,7 @@
 #include "renderer/kernel/lighting/sppm/sppmpasscallback.h"
 #include "renderer/kernel/lighting/sppm/sppmphoton.h"
 #include "renderer/kernel/lighting/sppm/sppmphotonmap.h"
-#include "renderer/kernel/shading/directshadingcomponents.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -148,7 +148,7 @@ namespace
             const PixelContext&         pixel_context,
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point,
-            DirectShadingComponents&    radiance) override      // output radiance, in W.sr^-1.m^-2
+            ShadingComponents&          radiance) override      // output radiance, in W.sr^-1.m^-2
         {
             if (m_params.m_view_photons)
             {
@@ -219,7 +219,7 @@ namespace
             const ShadingContext&           m_shading_context;
             const EnvironmentEDF*           m_env_edf;
             knn::Answer<float>&             m_answer;
-            DirectShadingComponents&        m_path_radiance;
+            ShadingComponents&              m_path_radiance;
 
             PathVisitor(
                 const SPPMParameters&           params,
@@ -230,7 +230,7 @@ namespace
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
                 knn::Answer<float>&             answer,
-                DirectShadingComponents&        path_radiance)
+                ShadingComponents&              path_radiance)
               : m_params(params)
               , m_pass_callback(pass_callback)
               , m_forward_light_sampler(forward_light_sampler)
@@ -313,11 +313,7 @@ namespace
 
                 // Update the path radiance.
                 vertex_radiance *= vertex.m_throughput;
-
-                if (vertex.m_path_length == 1)
-                    m_path_radiance += vertex_radiance;
-                else
-                    m_path_radiance.add_to_component(vertex.m_aov_mode, vertex_radiance);
+                m_path_radiance.add(vertex.m_path_length, vertex.m_aov_mode, vertex_radiance);
             }
 
             void on_scatter(const PathVertex& vertex)

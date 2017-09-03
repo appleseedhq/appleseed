@@ -31,7 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovaccumulator.h"
-#include "renderer/kernel/shading/directshadingcomponents.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/color/colorspace.h"
@@ -72,10 +72,11 @@ namespace
         }
 
         virtual void write(
-            const DirectShadingComponents&  shading_components,
-            const float                     multiplier) override
+            const ShadingComponents&    shading_components,
+            const float                 multiplier) override
         {
             m_color = shading_components.m_diffuse.to_rgb(g_std_lighting_conditions);
+            m_color += shading_components.m_indirect_diffuse.to_rgb(g_std_lighting_conditions);
             m_color *= multiplier;
         }
 
@@ -85,8 +86,8 @@ namespace
             result.m_aovs[m_index].a = result.m_main.a;
         }
 
-      private:
-        Color3f m_color;
+        private:
+          Color3f m_color;
     };
 
 

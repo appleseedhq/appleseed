@@ -53,50 +53,6 @@ void DirectShadingComponents::set(const float val)
     m_emission.set(0.0f);
 }
 
-void DirectShadingComponents::add_to_component(
-    const ScatteringMode::Mode      scattering_mode,
-    const Spectrum&                 value)
-{
-    switch (scattering_mode)
-    {
-      case ScatteringMode::Diffuse:
-        m_diffuse += value;
-        break;
-
-      case ScatteringMode::Glossy:
-      case ScatteringMode::Specular:
-        m_glossy += value;
-        break;
-
-      case ScatteringMode::Volumetric:
-        m_volume += value;
-        break;
-
-      assert_otherwise;
-    }
-}
-
-void DirectShadingComponents::add_to_component(
-    const ScatteringMode::Mode      scattering_mode,
-    const DirectShadingComponents&  value)
-{
-    m_beauty += value.m_beauty;
-    add_to_component(scattering_mode, value.m_beauty);
-}
-
-void DirectShadingComponents::add_emission(
-    const size_t                    path_length,
-    const ScatteringMode::Mode      scattering_mode,
-    const Spectrum&                 value)
-{
-    m_beauty += value;
-
-    if (path_length == 1)
-        m_emission += value;
-    else
-        add_to_component(scattering_mode, value);
-}
-
 DirectShadingComponents& operator+=(DirectShadingComponents& lhs, const DirectShadingComponents& rhs)
 {
     lhs.m_beauty += rhs.m_beauty;

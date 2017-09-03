@@ -40,7 +40,7 @@
 namespace foundation    { class Dictionary; }
 namespace foundation    { class StatisticsVector; }
 namespace renderer      { class PixelContext; }
-namespace renderer      { class DirectShadingComponents; }
+namespace renderer      { class ShadingComponents; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 
@@ -61,7 +61,7 @@ class ILightingEngine
         const PixelContext&       pixel_context,
         const ShadingContext&     shading_context,
         const ShadingPoint&       shading_point,
-        DirectShadingComponents&  radiance) = 0;      // output radiance, in W.sr^-1.m^-2
+        ShadingComponents&        radiance) = 0;      // output radiance, in W.sr^-1.m^-2
 
     // Retrieve performance statistics.
     virtual foundation::StatisticsVector get_statistics() const = 0;

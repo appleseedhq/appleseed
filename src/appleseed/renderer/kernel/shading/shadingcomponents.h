@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,50 +26,53 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_NULL_NULLLIGHTINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_NULL_NULLLIGHTINGENGINE_H
+#ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGCOMPONENTS_H
+#define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGCOMPONENTS_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/lighting/ilightingengine.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+// appleseed.renderer headers.
+#include "renderer/kernel/lighting/scatteringmode.h"
 
 // Forward declarations.
-namespace renderer  { class PixelContext; }
-namespace renderer  { class ShadingComponents; }
-namespace renderer  { class ShadingContext; }
-namespace renderer  { class ShadingPoint; }
+namespace renderer    { class DirectShadingComponents; }
 
 namespace renderer
 {
 
-//
-// A lighting engine that always returns zero.
-//
-
-class NullLightingEngine
-  : public ILightingEngine
+class ShadingComponents
 {
   public:
-    // Delete this instance.
-    virtual void release() override
-    {
-        delete this;
-    }
+    // Direct components.
+    Spectrum m_beauty;
+    Spectrum m_diffuse;
+    Spectrum m_glossy;
+    Spectrum m_volume;
+    Spectrum m_emission;
 
-    // Compute the lighting at a given point of the scene.
-    virtual void compute_lighting(
-        SamplingContext&        sampling_context,
-        const PixelContext&     pixel_context,
-        const ShadingContext&   shading_context,
-        const ShadingPoint&     shading_point,
-        ShadingComponents&      radiance) override
-    {
-    }
+    // Indirect components.
+    Spectrum m_indirect_diffuse;
+    Spectrum m_indirect_glossy;
+    Spectrum m_indirect_volume;
+
+    // Constructor. Clears all components to 0.
+    ShadingComponents();
+
+    void add_emission(
+        const size_t                path_length,
+        const ScatteringMode::Mode  scattering_mode,
+        const Spectrum&             value);
+
+    void add(
+        const size_t                    path_length,
+        const ScatteringMode::Mode      scattering_mode,
+        const DirectShadingComponents&  value);
 };
+
+ShadingComponents& operator*=(ShadingComponents& lhs, const float rhs);
+ShadingComponents& operator/=(ShadingComponents& lhs, const float rhs);
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_NULL_NULLLIGHTINGENGINE_H
+#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGCOMPONENTS_H

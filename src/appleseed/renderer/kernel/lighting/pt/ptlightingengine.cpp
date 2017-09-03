@@ -38,7 +38,7 @@
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
-#include "renderer/kernel/shading/directshadingcomponents.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -215,11 +215,11 @@ namespace
         }
 
         virtual void compute_lighting(
-            SamplingContext&            sampling_context,
-            const PixelContext&         pixel_context,
-            const ShadingContext&       shading_context,
-            const ShadingPoint&         shading_point,
-            DirectShadingComponents&    radiance) override      // output radiance, in W.sr^-1.m^-2
+            SamplingContext&        sampling_context,
+            const PixelContext&     pixel_context,
+            const ShadingContext&   shading_context,
+            const ShadingPoint&     shading_point,
+            ShadingComponents&      radiance) override      // output radiance, in W.sr^-1.m^-2
         {
             if (m_params.m_next_event_estimation)
             {
@@ -241,10 +241,10 @@ namespace
 
         template <typename PathVisitor, typename VolumeVisitor>
         void do_compute_lighting(
-            SamplingContext&            sampling_context,
-            const ShadingContext&       shading_context,
-            const ShadingPoint&         shading_point,
-            DirectShadingComponents&    radiance)               // output radiance, in W.sr^-1.m^-2
+            SamplingContext&        sampling_context,
+            const ShadingContext&   shading_context,
+            const ShadingPoint&     shading_point,
+            ShadingComponents&      radiance)               // output radiance, in W.sr^-1.m^-2
         {
             PathVisitor path_visitor(
                 m_params,
@@ -315,7 +315,7 @@ namespace
             SamplingContext&                m_sampling_context;
             const ShadingContext&           m_shading_context;
             const EnvironmentEDF*           m_env_edf;
-            DirectShadingComponents&        m_path_radiance;
+            ShadingComponents&              m_path_radiance;
             bool                            m_omit_emitted_light;
 
             PathVisitorBase(
@@ -324,7 +324,7 @@ namespace
                 SamplingContext&                sampling_context,
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
-                DirectShadingComponents&        path_radiance)
+                ShadingComponents&              path_radiance)
               : m_params(params)
               , m_light_sampler(light_sampler)
               , m_sampling_context(sampling_context)
@@ -371,7 +371,7 @@ namespace
                 SamplingContext&                sampling_context,
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
-                DirectShadingComponents&        path_radiance)
+                ShadingComponents&              path_radiance)
               : PathVisitorBase(
                     params,
                     light_sampler,
@@ -464,7 +464,7 @@ namespace
                 SamplingContext&                sampling_context,
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
-                DirectShadingComponents&        path_radiance)
+                ShadingComponents&              path_radiance)
               : PathVisitorBase(
                     params,
                     light_sampler,
@@ -628,10 +628,7 @@ namespace
                     clamp_contribution(vertex_radiance);
 
                 // Update path radiance.
-                if (vertex.m_path_length == 1)
-                    m_path_radiance += vertex_radiance;
-                else
-                    m_path_radiance.add_to_component(vertex.m_aov_mode, vertex_radiance);
+                m_path_radiance.add(vertex.m_path_length, vertex.m_aov_mode, vertex_radiance);
             }
 
             void add_emitted_light_contribution(
@@ -782,7 +779,7 @@ namespace
             const BackwardLightSampler&     m_light_sampler;
             SamplingContext&                m_sampling_context;
             const ShadingContext&           m_shading_context;
-            DirectShadingComponents&        m_path_radiance;
+            ShadingComponents&              m_path_radiance;
             const EnvironmentEDF*           m_env_edf;
             bool                            m_is_indirect_lighting;
             size_t&                         m_inf_volume_ray_warnings;
@@ -793,7 +790,7 @@ namespace
                 SamplingContext&                sampling_context,
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
-                DirectShadingComponents&        path_radiance,
+                ShadingComponents&              path_radiance,
                 size_t&                         inf_volume_ray_warnings)
               : m_params(params)
               , m_light_sampler(light_sampler)
@@ -837,7 +834,7 @@ namespace
                 SamplingContext&                sampling_context,
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
-                DirectShadingComponents&        path_radiance,
+                ShadingComponents&              path_radiance,
                 size_t&                         inf_volume_ray_warnings)
               : VolumeVisitorBase(
                   params,
@@ -872,7 +869,7 @@ namespace
                 SamplingContext&                sampling_context,
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
-                DirectShadingComponents&        path_radiance,
+                ShadingComponents&              path_radiance,
                 size_t&                         inf_volume_ray_warnings)
               : VolumeVisitorBase(
                   params,
@@ -1113,10 +1110,13 @@ namespace
                     }
 
                     radiance *= vertex.m_throughput;
-                    radiance *= transmission;
+
                     const float scalar_weight = current_mis_weight /
                         (distance_sample_count_float * distance_prob);
-                    madd(m_path_radiance, radiance, scalar_weight);
+                    radiance *= transmission * scalar_weight;
+
+                    m_path_radiance.add(
+                        vertex.m_path_length, vertex.m_aov_mode, radiance);
                 }
             }
         };

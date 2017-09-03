@@ -33,7 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
-#include "renderer/kernel/shading/directshadingcomponents.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/input/inputarray.h"
@@ -113,7 +113,7 @@ namespace
                 &values);
 
             // Compute lighting.
-            DirectShadingComponents radiance;
+            ShadingComponents radiance;
             for (size_t i = 0, e = m_lighting_samples; i < e; ++i)
             {
                 shading_context.get_lighting_engine()->compute_lighting(

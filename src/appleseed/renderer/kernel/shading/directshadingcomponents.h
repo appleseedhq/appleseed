@@ -51,19 +51,6 @@ class DirectShadingComponents
     DirectShadingComponents();
 
     void set(const float val);
-
-    void add_to_component(
-        const ScatteringMode::Mode      scattering_mode,
-        const Spectrum&                 value);
-
-    void add_to_component(
-        const ScatteringMode::Mode      scattering_mode,
-        const DirectShadingComponents&  value);
-
-    void add_emission(
-        const size_t                    path_length,
-        const ScatteringMode::Mode      scattering_mode,
-        const Spectrum&                 value);
 };
 
 DirectShadingComponents& operator+=(DirectShadingComponents& lhs, const DirectShadingComponents& rhs);
