@@ -66,6 +66,7 @@ namespace renderer  { class ShaderParam; }
 namespace renderer  { class SurfaceShader; }
 namespace renderer  { class Texture; }
 namespace renderer  { class TextureInstance; }
+namespace renderer  { class SourceEntity; }
 namespace renderer  { class Volume; }
 
 namespace renderer
@@ -96,6 +97,7 @@ typedef TypedEntityVector<SurfaceShader>        SurfaceShaderContainer;
 typedef TypedEntityVector<Texture>              TextureContainer;
 typedef TypedEntityVector<TextureInstance>      TextureInstanceContainer;
 typedef TypedEntityVector<Volume>               VolumeContainer;
+typedef TypedEntityVector<SourceEntity>         SourceEntityContainer;
 
 
 //

@@ -38,6 +38,7 @@
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/modeling/texture/sourceentity.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -53,6 +54,7 @@ struct BaseGroup::Impl
     ColorContainer              m_colors;
     TextureContainer            m_textures;
     TextureInstanceContainer    m_texture_instances;
+    SourceEntityContainer       m_source_entities;
     ShaderGroupContainer        m_shader_groups;
     AssemblyContainer           m_assemblies;
     AssemblyInstanceContainer   m_assembly_instances;
@@ -64,6 +66,7 @@ struct BaseGroup::Impl
       , m_shader_groups(parent)
       , m_assemblies(parent)
       , m_assembly_instances(parent)
+      , m_source_entities(parent)
     {
     }
 };
@@ -91,6 +94,11 @@ TextureContainer& BaseGroup::textures() const
 TextureInstanceContainer& BaseGroup::texture_instances() const
 {
     return impl->m_texture_instances;
+}
+
+SourceEntityContainer& BaseGroup::source_entities() const
+{
+    return impl->m_source_entities;
 }
 
 ShaderGroupContainer& BaseGroup::shader_groups() const

@@ -68,6 +68,9 @@ class APPLESEED_DLLSYMBOL BaseGroup
     // Access the texture instances.
     TextureInstanceContainer& texture_instances() const;
 
+    // 3ds Max Procedural instances
+    SourceEntityContainer& source_entities() const;
+
     // Access the OSL shader groups.
     ShaderGroupContainer& shader_groups() const;
 

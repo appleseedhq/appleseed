@@ -174,6 +174,15 @@ class InputBinder
         const char*                     entity_name,
         const char*                     param_value,
         InputArray::iterator&           input);
+
+    // Bind a texture instance to a given input.
+    void bind_max_texture_to_input(
+        const SourceEntityContainer&    source_entities,
+        const foundation::UniqueID      assembly_uid,           // unique ID of parent assembly, or ~0 for scene
+        const char*                     entity_type,
+        const char*                     entity_name,
+        const char*                     param_value,
+        InputArray::iterator&           input);
 };
 
 
