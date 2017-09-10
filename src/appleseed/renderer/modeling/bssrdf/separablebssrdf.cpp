@@ -229,13 +229,13 @@ namespace
         const Material* outgoing_material = outgoing_point.get_material();
         assert(outgoing_material != 0);
 
-        const size_t MaxIterations = 16;
-        const size_t MaxSampleCount = 16;
-        ShadingPoint shading_points[MaxSampleCount];
+        const size_t MaxIntersectionCount = 1000;
+        const size_t MaxCandidateCount = 16;
+        ShadingPoint shading_points[MaxCandidateCount];
         size_t sample_count = 0;
 
         // Trace the ray and store all intersections found inside the sphere.
-        for (size_t i = 0; sample_count < MaxSampleCount && i < MaxIterations; ++i)
+        for (size_t i = 0; sample_count < MaxCandidateCount && i < MaxIntersectionCount; ++i)
         {
             // Continue tracing the ray.
             ShadingPoint& incoming_point = shading_points[sample_count];
