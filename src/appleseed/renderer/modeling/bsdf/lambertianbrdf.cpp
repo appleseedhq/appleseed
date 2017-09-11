@@ -32,7 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 
@@ -71,8 +71,8 @@ namespace
     {
       public:
         LambertianBRDFImpl(
-            const char*         name,
-            const ParamArray&   params)
+            const char*                 name,
+            const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Diffuse, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
@@ -90,12 +90,12 @@ namespace
         }
 
         virtual void sample(
-            SamplingContext&    sampling_context,
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            const int           modes,
-            BSDFSample&         sample) const override
+            SamplingContext&            sampling_context,
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const int                   modes,
+            BSDFSample&                 sample) const override
         {
             if (!ScatteringMode::has_diffuse(modes))
                 return;
@@ -125,15 +125,15 @@ namespace
         }
 
         virtual float evaluate(
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            const Vector3f&     geometric_normal,
-            const Basis3f&      shading_basis,
-            const Vector3f&     outgoing,
-            const Vector3f&     incoming,
-            const int           modes,
-            ShadingComponents&  value) const override
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes,
+            DirectShadingComponents&    value) const override
         {
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0f;
@@ -155,12 +155,12 @@ namespace
         }
 
         virtual float evaluate_pdf(
-            const void*         data,
-            const Vector3f&     geometric_normal,
-            const Basis3f&      shading_basis,
-            const Vector3f&     outgoing,
-            const Vector3f&     incoming,
-            const int           modes) const override
+            const void*                 data,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes) const override
         {
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0f;

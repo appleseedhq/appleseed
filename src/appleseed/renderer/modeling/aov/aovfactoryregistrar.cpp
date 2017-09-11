@@ -64,8 +64,12 @@ AOVFactoryRegistrar::AOVFactoryRegistrar()
 {
     register_factory(auto_ptr<FactoryType>(new DepthAOVFactory()));
     register_factory(auto_ptr<FactoryType>(new DiffuseAOVFactory()));
+    register_factory(auto_ptr<FactoryType>(new DirectDiffuseAOVFactory()));
+    register_factory(auto_ptr<FactoryType>(new DirectGlossyAOVFactory()));
     register_factory(auto_ptr<FactoryType>(new EmissionAOVFactory()));
     register_factory(auto_ptr<FactoryType>(new GlossyAOVFactory()));
+    register_factory(auto_ptr<FactoryType>(new IndirectDiffuseAOVFactory()));
+    register_factory(auto_ptr<FactoryType>(new IndirectGlossyAOVFactory()));
     register_factory(auto_ptr<FactoryType>(new NormalAOVFactory()));
     register_factory(auto_ptr<FactoryType>(new UVAOVFactory()));
 }

@@ -31,7 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/modeling/color/colorspace.h"
@@ -336,8 +336,8 @@ namespace
         };
 
         DisneyBRDFImpl(
-            const char*             name,
-            const ParamArray&       params)
+            const char*                 name,
+            const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy, params)
         {
             m_inputs.declare("base_color", InputFormatSpectralReflectance);
@@ -369,9 +369,9 @@ namespace
         }
 
         virtual void prepare_inputs(
-            Arena&                  arena,
-            const ShadingPoint&     shading_point,
-            void*                   data) const override
+            Arena&                      arena,
+            const ShadingPoint&         shading_point,
+            void*                       data) const override
         {
             InputValues* values = static_cast<InputValues*>(data);
 
@@ -391,12 +391,12 @@ namespace
         }
 
         virtual void sample(
-            SamplingContext&        sampling_context,
-            const void*             data,
-            const bool              adjoint,
-            const bool              cosine_mult,
-            const int               modes,
-            BSDFSample&             sample) const override
+            SamplingContext&            sampling_context,
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const int                   modes,
+            BSDFSample&                 sample) const override
         {
             // No reflection below the shading surface.
             const Vector3f& outgoing = sample.m_outgoing.get_value();
@@ -562,15 +562,15 @@ namespace
         }
 
         virtual float evaluate(
-            const void*             data,
-            const bool              adjoint,
-            const bool              cosine_mult,
-            const Vector3f&         geometric_normal,
-            const Basis3f&          shading_basis,
-            const Vector3f&         outgoing,
-            const Vector3f&         incoming,
-            const int               modes,
-            ShadingComponents&      value) const override
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes,
+            DirectShadingComponents&    value) const override
         {
             // No reflection below the shading surface.
             const Vector3f& n = shading_basis.get_normal();
@@ -667,12 +667,12 @@ namespace
         }
 
         virtual float evaluate_pdf(
-            const void*             data,
-            const Vector3f&         geometric_normal,
-            const Basis3f&          shading_basis,
-            const Vector3f&         outgoing,
-            const Vector3f&         incoming,
-            const int               modes) const override
+            const void*                 data,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes) const override
         {
             // No reflection below the shading surface.
             const Vector3f& n = shading_basis.get_normal();
@@ -747,9 +747,9 @@ namespace
         typedef DisneyBRDFInputValues InputValues;
 
         static bool compute_component_weights(
-            const InputValues*      values,
-            const int               modes,
-            float                   weights[NumComponents])
+            const InputValues*          values,
+            const int                   modes,
+            float                       weights[NumComponents])
         {
             if (ScatteringMode::has_diffuse(modes))
             {

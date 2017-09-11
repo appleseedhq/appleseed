@@ -33,7 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 
 // appleseed.foundation headers.
@@ -86,7 +86,7 @@ class NullBSDF
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
         const int                       modes,
-        ShadingComponents&              value) const override
+        DirectShadingComponents&        value) const override
     {
         return 0.0f;
     }

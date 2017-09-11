@@ -144,11 +144,11 @@ namespace
         }
 
         virtual void compute_lighting(
-            SamplingContext&        sampling_context,
-            const PixelContext&     pixel_context,
-            const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point,
-            ShadingComponents&      radiance) override      // output radiance, in W.sr^-1.m^-2
+            SamplingContext&            sampling_context,
+            const PixelContext&         pixel_context,
+            const ShadingContext&       shading_context,
+            const ShadingPoint&         shading_point,
+            ShadingComponents&          radiance) override      // output radiance, in W.sr^-1.m^-2
         {
             if (m_params.m_view_photons)
             {
@@ -287,7 +287,7 @@ namespace
 
             void on_hit(const PathVertex& vertex)
             {
-                ShadingComponents vertex_radiance;
+                DirectShadingComponents vertex_radiance;
 
                 if (vertex.m_bsdf)
                 {
@@ -313,11 +313,7 @@ namespace
 
                 // Update the path radiance.
                 vertex_radiance *= vertex.m_throughput;
-
-                if (vertex.m_path_length == 1)
-                    m_path_radiance += vertex_radiance;
-                else
-                    m_path_radiance.add_to_component(vertex.m_aov_mode, vertex_radiance);
+                m_path_radiance.add(vertex.m_path_length, vertex.m_aov_mode, vertex_radiance);
             }
 
             void on_scatter(const PathVertex& vertex)
@@ -325,10 +321,10 @@ namespace
             }
 
             void add_direct_lighting_contribution(
-                const PathVertex&       vertex,
-                ShadingComponents&      vertex_radiance)
+                const PathVertex&           vertex,
+                DirectShadingComponents&    vertex_radiance)
             {
-                ShadingComponents dl_radiance;
+                DirectShadingComponents dl_radiance;
 
                 const size_t light_sample_count =
                     stochastic_cast<size_t>(
@@ -375,8 +371,8 @@ namespace
             }
 
             void add_photon_map_lighting_contribution(
-                const PathVertex&       vertex,
-                ShadingComponents&      vertex_radiance)
+                const PathVertex&           vertex,
+                DirectShadingComponents&    vertex_radiance)
             {
                 const SPPMPhotonMap& photon_map = m_pass_callback.get_photon_map();
 
@@ -479,7 +475,7 @@ namespace
 #endif
 
                     // Evaluate the BSDF for this photon.
-                    ShadingComponents bsdf_value;
+                    DirectShadingComponents bsdf_value;
                     const float bsdf_prob =
                         vertex.m_bsdf->evaluate(
                             vertex.m_bsdf_data,
@@ -551,7 +547,7 @@ namespace
 #endif
 
                     // Evaluate the BSDF for this photon.
-                    ShadingComponents bsdf_value;
+                    DirectShadingComponents bsdf_value;
                     const float bsdf_prob =
                         vertex.m_bsdf->evaluate(
                             vertex.m_bsdf_data,

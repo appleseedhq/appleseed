@@ -97,7 +97,7 @@ class DisneyLayeredBRDF
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
         const int                       modes,
-        ShadingComponents&              value) const override;
+        DirectShadingComponents&        value) const override;
 
     virtual float evaluate_pdf(
         const void*                     data,

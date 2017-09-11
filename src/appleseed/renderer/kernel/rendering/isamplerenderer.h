@@ -42,6 +42,7 @@
 
 // Forward declarations.
 namespace foundation    { class StatisticsVector; }
+namespace renderer      { class AOVAccumulatorContainer; }
 namespace renderer      { class PixelContext; }
 namespace renderer      { class ShadingResult; }
 
@@ -62,6 +63,7 @@ class ISampleRenderer
         SamplingContext&                sampling_context,
         const PixelContext&             pixel_context,
         const foundation::Vector2d&     image_point,
+        AOVAccumulatorContainer&        aov_accumulators,
         ShadingResult&                  shading_result) = 0;
 
     // Retrieve performance statistics.

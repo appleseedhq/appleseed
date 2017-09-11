@@ -135,8 +135,6 @@ bool MeshObject::on_frame_begin(
         return false;
 
     m_alpha_map = get_uncached_alpha_map();
-    m_shade_alpha_cutouts = m_params.get_optional<bool>("shade_alpha_cutouts", false);
-
     return true;
 }
 
@@ -145,8 +143,6 @@ void MeshObject::on_frame_end(
     const BaseGroup*        parent)
 {
     m_alpha_map = 0;
-    m_shade_alpha_cutouts = false;
-
     Object::on_frame_end(project, parent);
 }
 

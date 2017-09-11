@@ -43,14 +43,6 @@ void IMaterialFactory::add_surface_shader_metadata(DictionaryArray& metadata)
 {
     metadata.push_back(
         Dictionary()
-            .insert("name", "shade_alpha_cutouts")
-            .insert("label", "Shade Alpha Cutouts")
-            .insert("type", "boolean")
-            .insert("use", "optional")
-            .insert("default", "false"));
-
-    metadata.push_back(
-        Dictionary()
             .insert("name", "surface_shader")
             .insert("label", "Surface Shader")
             .insert("type", "entity")

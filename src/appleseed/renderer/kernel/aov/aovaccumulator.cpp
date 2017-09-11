@@ -78,6 +78,31 @@ void AOVAccumulator::write(
 
 
 //
+// ColorAOVAccumulator class implementation.
+//
+
+ColorAOVAccumulator::ColorAOVAccumulator(const size_t index)
+  : AOVAccumulator(index)
+{
+}
+
+ColorAOVAccumulator::~ColorAOVAccumulator()
+{
+}
+
+void ColorAOVAccumulator::reset()
+{
+    m_color.set(0.0f);
+}
+
+void ColorAOVAccumulator::flush(ShadingResult& result)
+{
+    result.m_aovs[m_index].rgb() = m_color;
+    result.m_aovs[m_index].a = result.m_main.a;
+}
+
+
+//
 // BeautyAOVAccumulator class implementation.
 //
 
@@ -159,7 +184,7 @@ void AlphaAOVAccumulator::flush(ShadingResult& result)
 // AOVAccumulatorContainer class implementation.
 //
 
-AOVAccumulatorContainer::AOVAccumulatorContainer(const AOVContainer& aovs)
+AOVAccumulatorContainer::AOVAccumulatorContainer()
   : m_size(0)
 {
     memset(m_accumulators, 0, MaxAovAccumulators * sizeof(AOVAccumulator*));
@@ -167,7 +192,11 @@ AOVAccumulatorContainer::AOVAccumulatorContainer(const AOVContainer& aovs)
     // Create beauty and alpha accumulators.
     insert(auto_release_ptr<AOVAccumulator>(new BeautyAOVAccumulator()));
     insert(auto_release_ptr<AOVAccumulator>(new AlphaAOVAccumulator()));
+}
 
+AOVAccumulatorContainer::AOVAccumulatorContainer(const AOVContainer& aovs)
+  : AOVAccumulatorContainer()
+{
     // Create the remaining accumulators.
     for (size_t i = 0, e = aovs.size(); i < e; ++i)
     {

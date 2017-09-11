@@ -569,7 +569,7 @@ namespace
                 if (vertex.m_scattering_modes == ScatteringMode::None)
                     return;
 
-                ShadingComponents vertex_radiance;
+                DirectShadingComponents vertex_radiance;
 
                 if (vertex.m_bssrdf == 0)
                 {
@@ -628,15 +628,12 @@ namespace
                     clamp_contribution(vertex_radiance);
 
                 // Update path radiance.
-                if (vertex.m_path_length == 1)
-                    m_path_radiance += vertex_radiance;
-                else
-                    m_path_radiance.add_to_component(vertex.m_aov_mode, vertex_radiance);
+                m_path_radiance.add(vertex.m_path_length, vertex.m_aov_mode, vertex_radiance);
             }
 
             void add_emitted_light_contribution(
-                const PathVertex&       vertex,
-                Spectrum&               vertex_radiance)
+                const PathVertex&           vertex,
+                Spectrum&                   vertex_radiance)
             {
                 // Compute the emitted radiance.
                 Spectrum emitted_radiance(Spectrum::Illuminance);
@@ -658,14 +655,14 @@ namespace
             }
 
             void add_direct_lighting_contribution_bsdf(
-                const ShadingPoint&     shading_point,
-                const Dual3d&           outgoing,
-                const BSDF&             bsdf,
-                const void*             bsdf_data,
-                const int               scattering_modes,
-                ShadingComponents&      vertex_radiance)
+                const ShadingPoint&         shading_point,
+                const Dual3d&               outgoing,
+                const BSDF&                 bsdf,
+                const void*                 bsdf_data,
+                const int                   scattering_modes,
+                DirectShadingComponents&    vertex_radiance)
             {
-                ShadingComponents dl_radiance;
+                DirectShadingComponents dl_radiance;
 
                 const size_t light_sample_count =
                     stochastic_cast<size_t>(
@@ -708,14 +705,14 @@ namespace
             }
 
             void add_image_based_lighting_contribution_bsdf(
-                const ShadingPoint&     shading_point,
-                const Dual3d&           outgoing,
-                const BSDF&             bsdf,
-                const void*             bsdf_data,
-                const int               scattering_modes,
-                ShadingComponents&      vertex_radiance)
+                const ShadingPoint&         shading_point,
+                const Dual3d&               outgoing,
+                const BSDF&                 bsdf,
+                const void*                 bsdf_data,
+                const int                   scattering_modes,
+                DirectShadingComponents&    vertex_radiance)
             {
-                ShadingComponents ibl_radiance;
+                DirectShadingComponents ibl_radiance;
 
                 const size_t env_sample_count =
                     stochastic_cast<size_t>(
@@ -756,7 +753,7 @@ namespace
                     radiance *= m_params.m_max_ray_intensity / avg;
             }
 
-            void clamp_contribution(ShadingComponents& radiance) const
+            void clamp_contribution(DirectShadingComponents& radiance) const
             {
                 // Clamp all components.
                 clamp_contribution(radiance.m_diffuse);
@@ -886,9 +883,9 @@ namespace
             }
 
             float sample_distance(
-                const ShadingRay&   volume_ray,
-                const float         extinction,
-                float&              distance)
+                const ShadingRay&           volume_ray,
+                const float                 extinction,
+                float&                      distance)
             {
                 m_sampling_context.split_in_place(1, 1);
 
@@ -915,15 +912,15 @@ namespace
             }
 
             void add_direct_lighting_contribution(
-                const ShadingPoint&     shading_point,
-                const ShadingRay&       volume_ray,
-                const Volume&           volume,
-                const void*             volume_data,
-                const float             distance_sample,
-                const int               scattering_modes,
-                ShadingComponents&      radiance)
+                const ShadingPoint&         shading_point,
+                const ShadingRay&           volume_ray,
+                const Volume&               volume,
+                const void*                 volume_data,
+                const float                 distance_sample,
+                const int                   scattering_modes,
+                DirectShadingComponents&    radiance)
             {
-                ShadingComponents dl_radiance;
+                DirectShadingComponents dl_radiance;
 
                 const size_t light_sample_count =
                     stochastic_cast<size_t>(
@@ -965,11 +962,11 @@ namespace
             }
 
             void add_image_based_lighting_contribution(
-                const ShadingRay&       volume_ray,
-                const Volume&           volume,
-                const void*             volume_data,
-                const float             distance_sample,
-                ShadingComponents&      radiance)
+                const ShadingRay&           volume_ray,
+                const Volume&               volume,
+                const void*                 volume_data,
+                const float                 distance_sample,
+                DirectShadingComponents&    radiance)
             {
                 const VolumeSampler volume_sampler(
                     volume_ray,
@@ -977,7 +974,7 @@ namespace
                     volume_data,
                     distance_sample);
 
-                ShadingComponents ibl_radiance;
+                DirectShadingComponents ibl_radiance;
 
                 const size_t env_sample_count =
                     stochastic_cast<size_t>(
@@ -1063,7 +1060,7 @@ namespace
 
                 for (size_t i = 0; i < distance_sample_count; ++i)
                 {
-                    ShadingComponents radiance;
+                    DirectShadingComponents radiance;
 
                     // Sample channel uniformly at random.
                     m_sampling_context.split_in_place(1, 1);
@@ -1114,9 +1111,8 @@ namespace
 
                     radiance *= vertex.m_throughput;
                     radiance *= transmission;
-                    const float scalar_weight = current_mis_weight /
-                        (distance_sample_count_float * distance_prob);
-                    madd(m_path_radiance, radiance, scalar_weight);
+                    radiance *= current_mis_weight / (distance_sample_count_float * distance_prob);
+                    m_path_radiance.add(vertex.m_path_length, vertex.m_aov_mode, radiance);
                 }
             }
         };

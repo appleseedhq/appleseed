@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGCOMPONENTS_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGCOMPONENTS_H
+#ifndef APPLESEED_RENDERER_KERNEL_SHADING_DIRECTSHADINGCOMPONENTS_H
+#define APPLESEED_RENDERER_KERNEL_SHADING_DIRECTSHADINGCOMPONENTS_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -35,44 +35,34 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
 
-// Forward declarations.
-namespace renderer    { class DirectShadingComponents; }
-
 namespace renderer
 {
 
-class ShadingComponents
+class DirectShadingComponents
 {
   public:
-    // Direct components.
     Spectrum m_beauty;
     Spectrum m_diffuse;
     Spectrum m_glossy;
     Spectrum m_volume;
     Spectrum m_emission;
 
-    // Indirect components.
-    Spectrum m_indirect_diffuse;
-    Spectrum m_indirect_glossy;
-    Spectrum m_indirect_volume;
-
     // Constructor. Clears all components to 0.
-    ShadingComponents();
+    DirectShadingComponents();
 
-    void add_emission(
-        const size_t                path_length,
-        const ScatteringMode::Mode  scattering_mode,
-        const Spectrum&             value);
-
-    void add(
-        const size_t                    path_length,
-        const ScatteringMode::Mode      scattering_mode,
-        const DirectShadingComponents&  value);
+    void set(const float val);
 };
 
-ShadingComponents& operator*=(ShadingComponents& lhs, const float rhs);
-ShadingComponents& operator/=(ShadingComponents& lhs, const float rhs);
+DirectShadingComponents& operator+=(DirectShadingComponents& lhs, const DirectShadingComponents& rhs);
+
+DirectShadingComponents& operator*=(DirectShadingComponents& lhs, const float rhs);
+DirectShadingComponents& operator/=(DirectShadingComponents& lhs, const float rhs);
+
+DirectShadingComponents& operator*=(DirectShadingComponents& lhs, const Spectrum& rhs);
+
+void madd(DirectShadingComponents& a, const DirectShadingComponents& b, const float c);
+void madd(DirectShadingComponents& a, const DirectShadingComponents& b, const Spectrum& c);
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGCOMPONENTS_H
+#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_DIRECTSHADINGCOMPONENTS_H

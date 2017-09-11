@@ -42,9 +42,9 @@
 
 // Forward declarations.
 namespace renderer  { class BSDF; }
+namespace renderer  { class DirectShadingComponents; }
 namespace renderer  { class EnvironmentEDF; }
 namespace renderer  { class IMaterialSampler; }
-namespace renderer  { class ShadingComponents; }
 namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }
 
@@ -65,7 +65,7 @@ void compute_ibl_combined_sampling(
     const int                       env_sampling_modes,     // permitted scattering modes during environment sampling
     const size_t                    material_sample_count,  // number of samples in BSDF sampling
     const size_t                    env_sample_count,       // number of samples in environment sampling
-    ShadingComponents&              radiance);
+    DirectShadingComponents&        radiance);
 
 // Compute outgoing radiance due to image-based lighting via BSDF sampling only.
 void compute_ibl_material_sampling(
@@ -76,7 +76,7 @@ void compute_ibl_material_sampling(
     const IMaterialSampler&         material_sampler,
     const size_t                    material_sample_count,  // number of samples in BSDF sampling
     const size_t                    env_sample_count,       // number of samples in environment sampling
-    ShadingComponents&              radiance);
+    DirectShadingComponents&        radiance);
 
 // Compute outgoing radiance due to image-based lighting via environment sampling only.
 void compute_ibl_environment_sampling(
@@ -88,7 +88,7 @@ void compute_ibl_environment_sampling(
     const int                       env_sampling_modes,     // permitted scattering modes during environment sampling
     const size_t                    material_sample_count,
     const size_t                    env_sample_count,       // number of samples in environment sampling
-    ShadingComponents&              radiance);
+    DirectShadingComponents&        radiance);
 
 }       // namespace renderer
 

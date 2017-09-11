@@ -33,7 +33,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/closures.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/blinnbrdf.h"
@@ -82,8 +82,8 @@ namespace
     {
       public:
         OSLBSDFImpl(
-            const char*             name,
-            const ParamArray&       params)
+            const char*                 name,
+            const ParamArray&           params)
           : BSDF(name, AllBSDFTypes, ScatteringMode::All, params)
         {
             memset(m_all_bsdfs, 0, sizeof(BSDF*) * NumClosuresIDs);
@@ -143,10 +143,10 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&          project,
-            const BaseGroup*        parent,
-            OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch) override
+            const Project&              project,
+            const BaseGroup*            parent,
+            OnFrameBeginRecorder&       recorder,
+            IAbortSwitch*               abort_switch) override
         {
             if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
@@ -164,8 +164,8 @@ namespace
         }
 
         virtual void* evaluate_inputs(
-            const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point) const override
+            const ShadingContext&       shading_context,
+            const ShadingPoint&         shading_point) const override
         {
             Arena& arena = shading_context.get_arena();
 
@@ -190,12 +190,12 @@ namespace
         }
 
         virtual void sample(
-            SamplingContext&        sampling_context,
-            const void*             data,
-            const bool              adjoint,
-            const bool              cosine_mult,
-            const int               modes,
-            BSDFSample&             sample) const override
+            SamplingContext&            sampling_context,
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const int                   modes,
+            BSDFSample&                 sample) const override
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
 
@@ -236,7 +236,7 @@ namespace
             {
                 if (pdfs[i] > 0.0f)
                 {
-                    ShadingComponents s;
+                    DirectShadingComponents s;
                     const float pdf =
                         bsdf_from_closure_id(c->get_closure_type(i))
                             .evaluate(
@@ -260,15 +260,15 @@ namespace
         }
 
         virtual float evaluate(
-            const void*             data,
-            const bool              adjoint,
-            const bool              cosine_mult,
-            const Vector3f&         geometric_normal,
-            const Basis3f&          shading_basis,
-            const Vector3f&         outgoing,
-            const Vector3f&         incoming,
-            const int               modes,
-            ShadingComponents&      value) const override
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes,
+            DirectShadingComponents&    value) const override
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
 
@@ -282,7 +282,7 @@ namespace
             {
                 if (pdfs[i] > 0.0f)
                 {
-                    ShadingComponents s;
+                    DirectShadingComponents s;
                     const float pdf =
                         bsdf_from_closure_id(c->get_closure_type(i))
                             .evaluate(
@@ -308,12 +308,12 @@ namespace
         }
 
         virtual float evaluate_pdf(
-            const void*             data,
-            const Vector3f&         geometric_normal,
-            const Basis3f&          shading_basis,
-            const Vector3f&         outgoing,
-            const Vector3f&         incoming,
-            const int               modes) const override
+            const void*                 data,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes) const override
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
 
@@ -342,8 +342,8 @@ namespace
         }
 
         virtual float sample_ior(
-            SamplingContext&        sampling_context,
-            const void*             data) const override
+            SamplingContext&            sampling_context,
+            const void*                 data) const override
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
             sampling_context.split_in_place(1, 1);
@@ -351,9 +351,9 @@ namespace
         }
 
         virtual void compute_absorption(
-            const void*             data,
-            const float             distance,
-            Spectrum&               absorption) const override
+            const void*                 data,
+            const float                 distance,
+            Spectrum&                   absorption) const override
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
 

@@ -457,7 +457,7 @@ namespace
                         shading_normal);
 
                 // Evaluate the BSDF at the vertex position.
-                ShadingComponents bsdf_value;
+                DirectShadingComponents bsdf_value;
                 const float bsdf_prob =
                     vertex.m_bsdf->evaluate(
                         vertex.m_bsdf_data,

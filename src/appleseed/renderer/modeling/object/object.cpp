@@ -54,7 +54,6 @@ Object::Object(
     const ParamArray&   params)
   : ConnectableEntity(g_class_uid, params)
   , m_alpha_map(0)
-  , m_shade_alpha_cutouts(false)
 {
     set_name(name);
 }

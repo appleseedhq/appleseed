@@ -116,7 +116,7 @@ void ShadingEngine::shade_hit_point(
     }
 
     // Shade the sample if it isn't fully transparent.
-    if (aov_accumulators.alpha().get()[0] > 0.0f || shading_point.shade_alpha_cutouts())
+    if (aov_accumulators.alpha().get()[0] > 0.0f)
     {
         // Use the diagnostic surface shader if there is one.
         const SurfaceShader* surface_shader = m_diagnostic_surface_shader.get();

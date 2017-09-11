@@ -50,7 +50,7 @@
 namespace foundation    { class Arena; }
 namespace renderer      { class BSDFSample; }
 namespace renderer      { class ParamArray; }
-namespace renderer      { class ShadingComponents; }
+namespace renderer      { class DirectShadingComponents; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 
@@ -165,7 +165,7 @@ class APPLESEED_DLLSYMBOL BSDF
         const foundation::Vector3f& outgoing,                   // world space outgoing direction, unit-length
         const foundation::Vector3f& incoming,                   // world space incoming direction, unit-length
         const int                   modes,                      // enabled scattering modes
-        ShadingComponents&          value) const = 0;           // BSDF value, or BSDF value * |cos(incoming, normal)|
+        DirectShadingComponents&    value) const = 0;           // BSDF value, or BSDF value * |cos(incoming, normal)|
 
     // Evaluate the PDF for a given pair of directions.
     virtual float evaluate_pdf(

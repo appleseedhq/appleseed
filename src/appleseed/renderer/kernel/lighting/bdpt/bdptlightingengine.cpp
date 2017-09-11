@@ -43,14 +43,13 @@ namespace
     // Bidirectional Path Tracing lighting engine.
     //
 
-    class BDPTLightingEngine 
+    class BDPTLightingEngine
       : public ILightingEngine
     {
       public:
         struct Parameters
         {
-            explicit Parameters(
-                const ParamArray&   params)
+            explicit Parameters(const ParamArray& params)
             {
 
             }
@@ -62,8 +61,7 @@ namespace
             }
         };
 
-        BDPTLightingEngine(
-            const ParamArray&   params)
+        BDPTLightingEngine(const ParamArray& params)
           : m_params(params)
         {
         }

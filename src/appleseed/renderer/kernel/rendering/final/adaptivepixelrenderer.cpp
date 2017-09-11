@@ -162,6 +162,7 @@ namespace
             const size_t                pass_hash,
             const Vector2i&             pi,
             const Vector2i&             pt,
+            AOVAccumulatorContainer&    aov_accumulators,
             ShadingResultFrameBuffer&   framebuffer) override
         {
             const size_t aov_count = frame.aov_images().size();
@@ -217,6 +218,7 @@ namespace
                         child_sampling_context,
                         pixel_context,
                         sample_position,
+                        aov_accumulators,
                         shading_result);
 
                     // Ignore invalid samples.

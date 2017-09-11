@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/aov/tilestack.h"
 #include "renderer/kernel/rendering/ipixelrenderer.h"
@@ -98,6 +99,7 @@ namespace
             const ParamArray&                   params,
             const size_t                        thread_index)
           : m_pixel_renderer(pixel_renderer_factory->create(thread_index))
+          , m_aov_accumulators(frame.aovs())
           , m_framebuffer_factory(framebuffer_factory)
         {
             compute_tile_margins(frame, thread_index == 0);
@@ -195,6 +197,7 @@ namespace
                     pass_hash,
                     pi,
                     pt,
+                    m_aov_accumulators,
                     *framebuffer);
             }
 
@@ -215,6 +218,7 @@ namespace
 
       protected:
         auto_release_ptr<IPixelRenderer>    m_pixel_renderer;
+        AOVAccumulatorContainer             m_aov_accumulators;
         IShadingResultFrameBufferFactory*   m_framebuffer_factory;
         int                                 m_margin_width;
         int                                 m_margin_height;
