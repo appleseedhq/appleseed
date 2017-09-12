@@ -30,12 +30,7 @@
 #include "bdptlightingengine.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/lighting/forwardlightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"
-#include "renderer/modeling/camera/camera.h"
-#include "renderer/modeling/edf/edf.h"
-#include "renderer/modeling/material/material.h"
-#include "renderer/modeling/project/project.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/statistics.h"
@@ -97,7 +92,7 @@ namespace
             PathVisitor light_path_visitor;
             VolumeVisitor volume_visitor;
 
-            PathTracer<PathVisitor, VolumeVisitor, true> light_path_tracer(     // true = adjoint
+            PathTracer<PathVisitor, VolumeVisitor, false> light_path_tracer(    // false = not adjoint
                 light_path_visitor,
                 volume_visitor,
                 ~0,
@@ -243,37 +238,11 @@ namespace
         }
 
       private:
-        const Parameters            m_params;
-
-        const ForwardLightSampler&  m_light_sampler;
-        //Intersector                 m_intersector;
-
-        float                       m_shutter_open_time;
-        float                       m_shutter_close_time;
+        const Parameters  m_params;
 
         struct PathVisitor
         {
             PathVisitor()
-            {
-            }
-
-            bool accept_scattering(
-                const ScatteringMode::Mode  prev_mode,
-                const ScatteringMode::Mode  next_mode) const
-            {
-                return false;
-            }
-
-            void on_miss(const PathVertex& vertex)
-            {
-
-            }
-
-            void on_hit(const PathVertex& vertex)
-            {
-            }
-
-            void on_scatter(const PathVertex& vertex)
             {
             }
         };
@@ -283,16 +252,6 @@ namespace
             VolumeVisitor()
             {
             }
-
-            bool accept_scattering(
-                const ScatteringMode::Mode  prev_mode)
-            {
-                return true;
-            }
-
-            void on_scatter(PathVertex& vertex) {}
-
-            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray) {}
         };
     };
 }
