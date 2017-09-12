@@ -46,7 +46,7 @@
 #include "renderer/modeling/input/colorsource.h"
 #include "renderer/modeling/input/scalarsource.h"
 #include "renderer/modeling/input/symbol.h"
-#include "renderer/modeling/input/maxsource.h"
+#include "renderer/modeling/input/sourceentity.h"
 #include "renderer/modeling/input/texturesource.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
@@ -57,7 +57,6 @@
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
-#include "renderer/modeling/texture/sourceentity.h"
 #include "renderer/modeling/texture/texture.h"
 #include "renderer/modeling/volume/volume.h"
 #include "renderer/utility/paramarray.h"
@@ -671,25 +670,25 @@ bool InputBinder::try_bind_assembly_entity_to_input(
     {
         switch (assembly_symbols.lookup(param_value))
         {
-          case SymbolTable::SymbolColor:
-            bind_color_to_input(
-                assembly.colors(),
-                param_value,
-                input);
-            return true;
+            case SymbolTable::SymbolColor:
+              bind_color_to_input(
+                  assembly.colors(),
+                  param_value,
+                  input);
+              return true;
 
-          case SymbolTable::SymbolTextureInstance:
-            bind_texture_instance_to_input(
-                assembly.texture_instances(),
-                assembly.get_uid(),
-                entity_type,
-                entity_name,
-                param_value,
-                input);
-            return true;
+            case SymbolTable::SymbolTextureInstance:
+              bind_texture_instance_to_input(
+                  assembly.texture_instances(),
+                  assembly.get_uid(),
+                  entity_type,
+                  entity_name,
+                  param_value,
+                  input);
+              return true;
 
-          case SymbolTable::SymbolSourceEntity:
-              bind_max_texture_to_input(
+            case SymbolTable::SymbolSourceEntity:
+              bind_custom_source_to_input(
                   assembly.source_entities(),
                   assembly.get_uid(),
                   entity_type,
@@ -762,7 +761,7 @@ void InputBinder::bind_texture_instance_to_input(
     }
 }
 
-void InputBinder::bind_max_texture_to_input(
+void InputBinder::bind_custom_source_to_input(
     const SourceEntityContainer&    source_entities,
     const UniqueID                  assembly_uid,
     const char*                     entity_type,

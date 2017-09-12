@@ -3,7 +3,7 @@
 #include "sourceentity.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/input/maxsource.h"
+#include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/makevector.h"
@@ -35,7 +35,7 @@ UniqueID SourceEntity::get_class_uid()
 SourceEntity::SourceEntity(
     const char*         name,
     const ParamArray&   params,
-    MaxSource*          source)
+    Source*             source)
       : Entity(g_class_uid, params)
       , m_source(source)
 {

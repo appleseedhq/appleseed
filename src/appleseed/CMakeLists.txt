@@ -1586,6 +1586,8 @@ set (renderer_modeling_input_sources
     renderer/modeling/input/symbol.h
     renderer/modeling/input/texturesource.cpp
     renderer/modeling/input/texturesource.h
+    renderer/modeling/input/sourceentity.cpp
+    renderer/modeling/input/sourceentity.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_input_sources}

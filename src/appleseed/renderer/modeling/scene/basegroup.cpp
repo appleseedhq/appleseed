@@ -33,12 +33,12 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/modeling/color/colorentity.h"
+//#include "renderer/modeling/input/sourceentity.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #include "renderer/modeling/texture/texture.h"
-#include "renderer/modeling/texture/sourceentity.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"

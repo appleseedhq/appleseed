@@ -18,7 +18,7 @@
 
 // Forward declarations.
 namespace renderer      { class ParamArray; }
-namespace renderer      { class MaxSource; }
+namespace renderer      { class Source; }
 
 namespace renderer
 {
@@ -38,7 +38,7 @@ class APPLESEED_DLLSYMBOL SourceEntity
     SourceEntity(
         const char*         name,
         const ParamArray&   params,
-        MaxSource*          source);
+        Source*             source);
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const;
@@ -48,7 +48,7 @@ class APPLESEED_DLLSYMBOL SourceEntity
 
     void release() override;
 
-    MaxSource* m_source;
+    Source* m_source;
 
 private:
     foundation::ColorSpace  m_color_space;
