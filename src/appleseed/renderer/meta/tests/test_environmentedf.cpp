@@ -45,6 +45,8 @@
 #include "renderer/modeling/environmentedf/gradientenvironmentedf.h"
 #include "renderer/modeling/environmentedf/latlongmapenvironmentedf.h"
 #include "renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h"
+#include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/texturesource.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/texture/texture.h"
@@ -62,6 +64,7 @@
 #include "foundation/utility/arena.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
+#include "foundation/utility/uid.h"
 
 // OSL headers.
 #include "foundation/platform/_beginoslheaders.h"
@@ -126,9 +129,16 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
             return m_props;
         }
 
+        virtual Source* create_source(
+            const UniqueID          assembly_uid,
+            const TextureInstance&  texture_instance) override
+        {
+            return new TextureSource(assembly_uid, texture_instance);
+        }
+
         virtual Tile* load_tile(
-            const size_t    tile_x,
-            const size_t    tile_y) override
+            const size_t            tile_x,
+            const size_t            tile_y) override
         {
             assert(tile_x == 0);
             assert(tile_y == 0);
@@ -137,9 +147,9 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
         }
 
         virtual void unload_tile(
-            const size_t    tile_x,
-            const size_t    tile_y,
-            const Tile*     tile) override
+            const size_t            tile_x,
+            const size_t            tile_y,
+            const Tile*             tile) override
         {
         }
 

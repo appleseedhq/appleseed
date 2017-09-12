@@ -30,6 +30,8 @@
 #include "memorytexture2d.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/texturesource.h"
 #include "renderer/modeling/texture/texture.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
@@ -44,6 +46,7 @@
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
+#include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <cassert>
@@ -126,6 +129,13 @@ namespace
                 m_image.get()
                     ? m_image->properties()
                     : m_dummy_texture->m_props;
+        }
+
+        virtual Source* create_source(
+            const UniqueID          assembly_uid,
+            const TextureInstance&  texture_instance) override
+        {
+            return new TextureSource(assembly_uid, texture_instance);
         }
 
         virtual Tile* load_tile(

@@ -853,6 +853,7 @@ set (renderer_api_sources
     renderer/api/rendering.h
     renderer/api/scene.h
     renderer/api/shadergroup.h
+    renderer/api/source.h
     renderer/api/surfaceshader.h
     renderer/api/texture.h
     renderer/api/trace.h
