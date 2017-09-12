@@ -29,6 +29,9 @@
 // Interface header.
 #include "bdptlightingengine.h"
 
+// appleseed.renderer headers.
+#include "renderer/kernel/lighting/pathtracer.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/statistics.h"
 
@@ -78,6 +81,19 @@ namespace
             const ShadingPoint&     shading_point,
             ShadingComponents&      radiance) override      // output radiance, in W.sr^-1.m^-2
         {
+            PathVisitor light_path_visitor;
+            VolumeVisitor volume_visitor;
+
+            PathTracer<PathVisitor, VolumeVisitor, false> light_path_tracer(    // false = not adjoint
+                light_path_visitor,
+                volume_visitor,
+                ~0,
+                1,
+                ~0,
+                ~0,
+                ~0,
+                ~0,
+                shading_context.get_max_iterations());
         }
 
         StatisticsVector get_statistics() const override
@@ -88,7 +104,21 @@ namespace
         }
 
       private:
-          const Parameters  m_params;
+        const Parameters  m_params;
+
+        struct PathVisitor
+        {
+            PathVisitor()
+            {
+            }
+        };
+
+        struct VolumeVisitor
+        {
+            VolumeVisitor()
+            {
+            }
+        };
     };
 }
 
