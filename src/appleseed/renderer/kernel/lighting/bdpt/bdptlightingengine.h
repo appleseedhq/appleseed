@@ -49,7 +49,7 @@ class BDPTLightingEngineFactory
 {
   public:
     // Constructor.
-    explicit BDPTLightingEngineFactory(
+    BDPTLightingEngineFactory(
         const ForwardLightSampler&  light_sampler,
         const ParamArray&           params);
 
