@@ -169,6 +169,7 @@ bool RendererComponents::create_lighting_engine_factory()
 
         m_lighting_engine_factory.reset(
             new BDPTLightingEngineFactory(
+                m_project,
                 *m_forward_light_sampler,
                 get_child_and_inherit_globals(m_params, "bdpt")));
 

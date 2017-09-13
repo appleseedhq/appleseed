@@ -32,6 +32,8 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/forwardlightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"
+#include "renderer/modeling/camera/camera.h"
+#include "renderer/modeling/project/project.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/statistics.h"
@@ -66,11 +68,16 @@ namespace
         };
 
         BDPTLightingEngine(
+            const Project&              project,
             const ForwardLightSampler&  light_sampler, 
             const ParamArray&           params)
           : m_light_sampler(light_sampler)
           ,  m_params(params)
         {
+            const Camera* camera = project.get_uncached_active_camera();
+
+            m_shutter_open_time = camera->get_shutter_open_time();
+            m_shutter_close_time = camera->get_shutter_close_time();
         }
 
         void release() override
@@ -100,6 +107,47 @@ namespace
                 shading_context.get_max_iterations());
         }
 
+        void trace_light(
+            SamplingContext&        sampling_context,
+            const ShadingContext&   shading_context)
+        {
+            // Sample the light sources.
+            sampling_context.split_in_place(4, 1);
+            const Vector4f s = sampling_context.next2<Vector4f>();
+            LightSample light_sample;
+            m_light_sampler.sample(
+                ShadingRay::Time::create_with_normalized_time(
+                    s[0],
+                    m_shutter_open_time,
+                    m_shutter_close_time),
+                Vector3f(s[1], s[2], s[3]),
+                light_sample);
+
+            light_sample.m_triangle
+                ? trace_emitting_triangle(
+                    sampling_context, 
+                    shading_context, 
+                    light_sample)
+                : trace_non_physical_light(
+                    sampling_context, 
+                    shading_context, 
+                    light_sample);
+        }
+
+        void trace_emitting_triangle(
+            SamplingContext&        sampling_context,
+            const ShadingContext&   shading_context,
+            LightSample&            light_sample)
+        {
+        }
+
+        void trace_non_physical_light(
+            SamplingContext&        sampling_context,
+            const ShadingContext&   shading_context,
+            LightSample&            light_sample)
+        {
+        }
+
         StatisticsVector get_statistics() const override
         {
             Statistics stats;
@@ -111,6 +159,9 @@ namespace
         const Parameters            m_params;
 
         const ForwardLightSampler&  m_light_sampler;
+
+        float                       m_shutter_open_time;
+        float                       m_shutter_close_time;
 
         struct PathVisitor
         {
@@ -129,9 +180,11 @@ namespace
 }
 
 BDPTLightingEngineFactory::BDPTLightingEngineFactory(
+    const Project&              project,
     const ForwardLightSampler&  light_sampler,
     const ParamArray&           params)
-  : m_light_sampler(light_sampler)
+  : m_project(project)
+  , m_light_sampler(light_sampler)
   , m_params(params)
 {
     BDPTLightingEngine::Parameters(params).print();
@@ -144,7 +197,10 @@ void BDPTLightingEngineFactory::release()
 
 ILightingEngine* BDPTLightingEngineFactory::create()
 {
-    return new BDPTLightingEngine(m_light_sampler, m_params);
+    return new BDPTLightingEngine(
+        m_project, 
+        m_light_sampler, 
+        m_params);
 }
 
 Dictionary BDPTLightingEngineFactory::get_params_metadata()
