@@ -162,8 +162,14 @@ bool RendererComponents::create_lighting_engine_factory()
     }
     else if (name == "bdpt")
     {
+        m_forward_light_sampler.reset(
+            new ForwardLightSampler(
+                m_scene,
+                get_child_and_inherit_globals(m_params, "light_sampler")));
+
         m_lighting_engine_factory.reset(
             new BDPTLightingEngineFactory(
+                *m_forward_light_sampler,
                 get_child_and_inherit_globals(m_params, "bdpt")));
 
         return true;

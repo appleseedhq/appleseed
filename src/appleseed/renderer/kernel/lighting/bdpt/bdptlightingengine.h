@@ -34,7 +34,8 @@
 #include "renderer/utility/paramarray.h"
 
 // Forward declarations.
-namespace foundation { class Dictionary; }
+namespace foundation    { class Dictionary; }
+namespace renderer      { class ForwardLightSampler; }
 
 namespace renderer
 {
@@ -48,7 +49,9 @@ class BDPTLightingEngineFactory
 {
   public:
     // Constructor.
-    explicit BDPTLightingEngineFactory(const ParamArray& params);
+    explicit BDPTLightingEngineFactory(
+        const ForwardLightSampler&  light_sampler,
+        const ParamArray&           params);
 
     // Delete this instance.
     void release() override;
@@ -60,7 +63,8 @@ class BDPTLightingEngineFactory
     static foundation::Dictionary get_params_metadata();
 
   private:
-    ParamArray  m_params;
+    const ForwardLightSampler&  m_light_sampler;
+    ParamArray                  m_params;
 };
 
 }       // namespace renderer
