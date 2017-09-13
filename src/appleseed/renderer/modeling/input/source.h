@@ -38,6 +38,9 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Forward declarations.
 namespace renderer      { class TextureCache; }
 
@@ -48,7 +51,7 @@ namespace renderer
 // Source base class.
 //
 
-class Source
+class APPLESEED_DLLSYMBOL Source
 {
   public:
     // Constructor.
