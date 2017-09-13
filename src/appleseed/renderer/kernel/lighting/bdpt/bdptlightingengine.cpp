@@ -30,6 +30,7 @@
 #include "bdptlightingengine.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/lighting/forwardlightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"
 
 // appleseed.foundation headers.
@@ -65,7 +66,10 @@ namespace
         };
 
         BDPTLightingEngine(
+<<<<<<< refs/remotes/appleseedhq/master
             const Project&              project,
+=======
+>>>>>>> Add ForwardLightSampler instance to the bdpt engine
             const ForwardLightSampler&  light_sampler, 
             const ParamArray&           params)
           : m_light_sampler(light_sampler)
@@ -92,7 +96,7 @@ namespace
             PathVisitor light_path_visitor;
             VolumeVisitor volume_visitor;
 
-            PathTracer<PathVisitor, VolumeVisitor, false> light_path_tracer(    // false = not adjoint
+            PathTracer<PathVisitor, VolumeVisitor, true> light_path_tracer(     // true = adjoint
                 light_path_visitor,
                 volume_visitor,
                 ~0,
@@ -238,7 +242,9 @@ namespace
         }
 
       private:
-        const Parameters  m_params;
+        const Parameters            m_params;
+
+        const ForwardLightSampler&  m_light_sampler;
 
         struct PathVisitor
         {
@@ -257,11 +263,17 @@ namespace
 }
 
 BDPTLightingEngineFactory::BDPTLightingEngineFactory(
+<<<<<<< refs/remotes/appleseedhq/master
     const Project&              project,
     const ForwardLightSampler&  light_sampler,
     const ParamArray&           params)
   : m_project(project)
   , m_light_sampler(light_sampler)
+=======
+    const ForwardLightSampler&  light_sampler,
+    const ParamArray&           params)
+  : m_light_sampler(light_sampler)
+>>>>>>> Add ForwardLightSampler instance to the bdpt engine
   , m_params(params)
 {
     BDPTLightingEngine::Parameters(params).print();
@@ -274,10 +286,14 @@ void BDPTLightingEngineFactory::release()
 
 ILightingEngine* BDPTLightingEngineFactory::create()
 {
+<<<<<<< refs/remotes/appleseedhq/master
     return new BDPTLightingEngine(
         m_project, 
         m_light_sampler, 
         m_params);
+=======
+    return new BDPTLightingEngine(m_light_sampler, m_params);
+>>>>>>> Add ForwardLightSampler instance to the bdpt engine
 }
 
 Dictionary BDPTLightingEngineFactory::get_params_metadata()

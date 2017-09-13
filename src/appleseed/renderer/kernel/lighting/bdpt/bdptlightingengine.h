@@ -36,7 +36,6 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace renderer      { class ForwardLightSampler; }
-namespace renderer      { class Project; }
 
 namespace renderer
 {
@@ -50,8 +49,7 @@ class BDPTLightingEngineFactory
 {
   public:
     // Constructor.
-    BDPTLightingEngineFactory(
-        const Project&              project,
+    explicit BDPTLightingEngineFactory(
         const ForwardLightSampler&  light_sampler,
         const ParamArray&           params);
 
@@ -65,7 +63,6 @@ class BDPTLightingEngineFactory
     static foundation::Dictionary get_params_metadata();
 
   private:
-    const Project&              m_project;
     const ForwardLightSampler&  m_light_sampler;
     ParamArray                  m_params;
 };
