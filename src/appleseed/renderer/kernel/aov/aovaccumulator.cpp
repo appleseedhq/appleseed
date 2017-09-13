@@ -195,8 +195,8 @@ AOVAccumulatorContainer::AOVAccumulatorContainer()
 }
 
 AOVAccumulatorContainer::AOVAccumulatorContainer(const AOVContainer& aovs)
-  : AOVAccumulatorContainer()
 {
+    AOVAccumulatorContainer();
     // Create the remaining accumulators.
     for (size_t i = 0, e = aovs.size(); i < e; ++i)
     {
