@@ -77,6 +77,8 @@ class MaterialAssignmentEditorWindow
     void signal_accepted(foundation::Dictionary values);
 
   private:
+    class AssignMaterialsAction;
+
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
     Ui::MaterialAssignmentEditorWindow* m_ui;
 
@@ -141,7 +143,6 @@ class MaterialAssignmentEditorWindow
     SlotValue get_slot_value(const SlotInfo& slot_info) const;
 
     void assign_materials(const SlotValueCollection& slot_values);
-    void assign_material(const SlotValue& slot_value);
 
   private slots:
     void slot_change_back_material_mode(int index);
