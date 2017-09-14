@@ -38,6 +38,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstdlib>
 #include <cstring>
 
 using namespace foundation;
@@ -210,7 +211,6 @@ void AOVAccumulatorContainer::init()
     insert(auto_release_ptr<AOVAccumulator>(new BeautyAOVAccumulator()));
     insert(auto_release_ptr<AOVAccumulator>(new AlphaAOVAccumulator()));
 }
-
 
 AOVAccumulatorContainer::~AOVAccumulatorContainer()
 {
