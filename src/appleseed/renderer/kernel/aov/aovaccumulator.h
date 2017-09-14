@@ -211,6 +211,7 @@ class AOVAccumulatorContainer
     AlphaAOVAccumulator& alpha();
 
   private:
+    void init();
     bool insert(foundation::auto_release_ptr<AOVAccumulator> aov_accum);
 
     enum { MaxAovAccumulators = MaxAOVCount + 2 };  // MaxAOVCount + Beauty + Alpha
