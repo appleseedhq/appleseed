@@ -46,6 +46,7 @@
 #include "renderer/modeling/input/colorsource.h"
 #include "renderer/modeling/input/scalarsource.h"
 #include "renderer/modeling/input/symbol.h"
+#include "renderer/modeling/input/sourceentity.h"
 #include "renderer/modeling/input/texturesource.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
@@ -143,6 +144,7 @@ void InputBinder::build_scene_symbol_table(
         insert_entities(symbols, scene.environment_edfs(), SymbolTable::SymbolEnvironmentEDF);
         insert_entities(symbols, scene.environment_shaders(), SymbolTable::SymbolEnvironmentShader);
         insert_entities(symbols, scene.shader_groups(), SymbolTable::SymbolShaderGroup);
+        insert_entities(symbols, scene.source_entities(), SymbolTable::SymbolSourceEntity);
 
         if (scene.get_environment())
             symbols.insert(scene.get_environment()->get_name(), SymbolTable::SymbolEnvironment);
@@ -176,6 +178,7 @@ void InputBinder::build_assembly_symbol_table(
         insert_entities(symbols, assembly.objects(), SymbolTable::SymbolObject);
         insert_entities(symbols, assembly.object_instances(), SymbolTable::SymbolObjectInstance);
         insert_entities(symbols, assembly.volumes(), SymbolTable::SymbolVolume);
+        insert_entities(symbols, assembly.source_entities(), SymbolTable::SymbolSourceEntity);
     }
     catch (const SymbolTable::ExceptionDuplicateSymbol& e)
     {
@@ -658,6 +661,7 @@ bool InputBinder::try_bind_assembly_entity_to_input(
           BIND(SymbolTable::SymbolObject, assembly.objects());
           BIND(SymbolTable::SymbolObjectInstance, assembly.object_instances());
           BIND(SymbolTable::SymbolVolume, assembly.volumes());
+          BIND(SymbolTable::SymbolSourceEntity, assembly.source_entities());
         }
 
         #undef BIND
@@ -666,22 +670,32 @@ bool InputBinder::try_bind_assembly_entity_to_input(
     {
         switch (assembly_symbols.lookup(param_value))
         {
-          case SymbolTable::SymbolColor:
-            bind_color_to_input(
-                assembly.colors(),
-                param_value,
-                input);
-            return true;
+            case SymbolTable::SymbolColor:
+              bind_color_to_input(
+                  assembly.colors(),
+                  param_value,
+                  input);
+              return true;
 
-          case SymbolTable::SymbolTextureInstance:
-            bind_texture_instance_to_input(
-                assembly.texture_instances(),
-                assembly.get_uid(),
-                entity_type,
-                entity_name,
-                param_value,
-                input);
-            return true;
+            case SymbolTable::SymbolTextureInstance:
+              bind_texture_instance_to_input(
+                  assembly.texture_instances(),
+                  assembly.get_uid(),
+                  entity_type,
+                  entity_name,
+                  param_value,
+                  input);
+              return true;
+
+            case SymbolTable::SymbolSourceEntity:
+              bind_custom_source_to_input(
+                  assembly.source_entities(),
+                  assembly.get_uid(),
+                  entity_type,
+                  entity_name,
+                  param_value,
+                  input);
+              return true;
         }
     }
 
@@ -732,6 +746,35 @@ void InputBinder::bind_texture_instance_to_input(
             texture_instance->get_texture().create_source(
                 assembly_uid,
                 *texture_instance));
+    }
+    catch (const exception& e)
+    {
+        RENDERER_LOG_ERROR(
+            "while defining %s \"%s\", failed to bind \"%s\" to input \"%s\" (%s).",
+            entity_type,
+            entity_name,
+            param_value,
+            input.name(),
+            e.what());
+
+        ++m_error_count;
+    }
+}
+
+void InputBinder::bind_custom_source_to_input(
+    const SourceEntityContainer&    source_entities,
+    const UniqueID                  assembly_uid,
+    const char*                     entity_type,
+    const char*                     entity_name,
+    const char*                     param_value,
+    InputArray::iterator&           input)
+{
+    const SourceEntity* source_entity = source_entities.get_by_name(param_value);
+    assert(source_entity);
+
+    try
+    {
+        input.bind(source_entity->m_source);
     }
     catch (const exception& e)
     {

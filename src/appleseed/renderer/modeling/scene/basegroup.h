@@ -68,6 +68,9 @@ class APPLESEED_DLLSYMBOL BaseGroup
     // Access the texture instances.
     TextureInstanceContainer& texture_instances() const;
 
+    // Access the custom sources.
+    SourceEntityContainer& source_entities() const;
+
     // Access the OSL shader groups.
     ShaderGroupContainer& shader_groups() const;
 

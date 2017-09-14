@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/modeling/color/colorentity.h"
+//#include "renderer/modeling/input/sourceentity.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/textureinstance.h"
@@ -53,6 +54,7 @@ struct BaseGroup::Impl
     ColorContainer              m_colors;
     TextureContainer            m_textures;
     TextureInstanceContainer    m_texture_instances;
+    SourceEntityContainer       m_source_entities;
     ShaderGroupContainer        m_shader_groups;
     AssemblyContainer           m_assemblies;
     AssemblyInstanceContainer   m_assembly_instances;
@@ -64,6 +66,7 @@ struct BaseGroup::Impl
       , m_shader_groups(parent)
       , m_assemblies(parent)
       , m_assembly_instances(parent)
+      , m_source_entities(parent)
     {
     }
 };
@@ -91,6 +94,11 @@ TextureContainer& BaseGroup::textures() const
 TextureInstanceContainer& BaseGroup::texture_instances() const
 {
     return impl->m_texture_instances;
+}
+
+SourceEntityContainer& BaseGroup::source_entities() const
+{
+    return impl->m_source_entities;
 }
 
 ShaderGroupContainer& BaseGroup::shader_groups() const

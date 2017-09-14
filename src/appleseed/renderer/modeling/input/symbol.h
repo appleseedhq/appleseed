@@ -71,7 +71,8 @@ class SymbolTable
         SymbolSurfaceShader,
         SymbolTexture,
         SymbolTextureInstance,
-        SymbolVolume
+        SymbolVolume,
+        SymbolSourceEntity
     };
 
     // Exception thrown when attempting to insert a symbol
@@ -130,7 +131,8 @@ inline const char* SymbolTable::symbol_name(const SymbolID symbol_id)
         { SymbolSurfaceShader,      "surface shader" },
         { SymbolTexture,            "texture" },
         { SymbolTextureInstance,    "texture instance" },
-        { SymbolVolume,             "volume" }
+        { SymbolVolume,             "volume" },
+        { SymbolSourceEntity,       "3dsmax texture" }
     };
 
     const SymbolNameEntry* symbol = LOOKUP_KVPAIR_ARRAY(SymbolNames, symbol_id);
