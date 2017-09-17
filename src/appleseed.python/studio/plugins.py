@@ -57,16 +57,16 @@ def load_plugin(plugin_path):
         file, filename, data = imp.find_module(name, [path])
         plugin_module = imp.load_module(name, file, filename, data)
     except ImportError as e:
-        print "Plugin '{}' could not be imported, exc={}".format(name, e)
+        print "Plugin '{}' could not be imported: {}".format(name, e)
         return
 
     if not hasattr(plugin_module, 'register'):
-        print "Plugin '{}' has no register function".format(name)
+        print "Plugin '{}' has no register function.".format(name)
         return
 
     try:
         plugin_module.register()
     except Exception as e:
-        print "Could not init plugin '{}'".format(plugin_module)
+        print "Could not initialize plugin '{}': {}".format(plugin_module, e)
         traceback.print_exc()
         return
