@@ -306,6 +306,8 @@ void RenderTab::create_toolbar()
     m_picking_mode_combo->setObjectName("picking_mode_combo");
     m_toolbar->addWidget(m_picking_mode_combo);
 
+    m_toolbar->addSeparator();
+
     // Create the label preceding the display combobox.
     QLabel* display_label = new QLabel("Display:");
     display_label->setObjectName("display_label");

@@ -312,13 +312,50 @@ MaterialAssignmentEditorWindow::SlotValue MaterialAssignmentEditorWindow::get_sl
     return slot_value;
 }
 
+class MaterialAssignmentEditorWindow::AssignMaterialsAction
+  : public RenderingManager::IScheduledAction
+{
+  public:
+    AssignMaterialsAction(
+        ObjectInstance&             object_instance,
+        ObjectInstanceItem&         object_instance_item,
+        const SlotValueCollection&  slot_values)
+      : m_object_instance(object_instance)
+      , m_object_instance_item(object_instance_item)
+      , m_slot_values(slot_values)
+    {
+    }
+
+    virtual void operator()(
+        Project&                    project) override
+    {
+        for (const_each<SlotValueCollection> i = m_slot_values; i; ++i)
+        {
+            i->m_material_name.empty()
+                ? m_object_instance.unassign_material(i->m_slot_name.c_str(), i->m_side)
+                : m_object_instance.assign_material(i->m_slot_name.c_str(), i->m_side, i->m_material_name.c_str());
+        }
+
+        m_object_instance_item.update_style();
+    }
+
+  private:
+    ObjectInstance&                 m_object_instance;
+    ObjectInstanceItem&             m_object_instance_item;
+    const SlotValueCollection       m_slot_values;
+};
+
 void MaterialAssignmentEditorWindow::assign_materials(const SlotValueCollection& slot_values)
 {
     const StringDictionary old_front_mappings = m_object_instance.get_front_material_mappings();
     const StringDictionary old_back_mappings = m_object_instance.get_back_material_mappings();
 
-    for (const_each<SlotValueCollection> i = slot_values; i; ++i)
-        assign_material(*i);
+    m_editor_context.m_rendering_manager.schedule_or_execute(
+        auto_ptr<RenderingManager::IScheduledAction>(
+            new AssignMaterialsAction(
+                m_object_instance,
+                m_object_instance_item,
+                slot_values)));
 
     if (old_front_mappings != m_object_instance.get_front_material_mappings() ||
         old_back_mappings != m_object_instance.get_back_material_mappings())
@@ -326,57 +363,6 @@ void MaterialAssignmentEditorWindow::assign_materials(const SlotValueCollection&
 
     if (m_editor_context.m_rendering_manager.is_rendering())
         m_editor_context.m_rendering_manager.reinitialize_rendering();
-}
-
-namespace
-{
-    class AssignMaterialAction
-      : public RenderingManager::IScheduledAction
-    {
-      public:
-        AssignMaterialAction(
-            ObjectInstance&             object_instance,
-            ObjectInstanceItem&         object_instance_item,
-            const string&               slot,
-            const ObjectInstance::Side  side,
-            const string&               name)
-          : m_object_instance(object_instance)
-          , m_object_instance_item(object_instance_item)
-          , m_slot(slot)
-          , m_side(side)
-          , m_name(name)
-        {
-        }
-
-        virtual void operator()(
-            Project&                    project) override
-        {
-            m_name.empty()
-              ? m_object_instance.unassign_material(m_slot.c_str(), m_side)
-              : m_object_instance.assign_material(m_slot.c_str(), m_side, m_name.c_str());
-
-            m_object_instance_item.update_style();
-        }
-
-      private:
-        ObjectInstance&                 m_object_instance;
-        ObjectInstanceItem&             m_object_instance_item;
-        const string                    m_slot;
-        const ObjectInstance::Side      m_side;
-        const string                    m_name;
-    };
-}
-
-void MaterialAssignmentEditorWindow::assign_material(const SlotValue& slot_value)
-{
-    m_editor_context.m_rendering_manager.schedule_or_execute(
-        auto_ptr<RenderingManager::IScheduledAction>(
-            new AssignMaterialAction(
-                m_object_instance,
-                m_object_instance_item,
-                slot_value.m_slot_name,
-                slot_value.m_side,
-                slot_value.m_material_name)));
 }
 
 void MaterialAssignmentEditorWindow::slot_change_back_material_mode(int index)
