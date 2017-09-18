@@ -62,6 +62,14 @@ namespace
         return FrameFactory::create(name.c_str(), bpy_dict_to_param_array(params));
     }
 
+    auto_release_ptr<Frame> create_frame_with_aovs(
+        const string&       name,
+        const bpy::dict&    params,
+        const AOVContainer& aovs)
+    {
+        return FrameFactory::create(name.c_str(), bpy_dict_to_param_array(params), aovs);
+    }
+
     bpy::object archive_frame(const Frame* frame, const char* directory)
     {
         char* output = 0;
@@ -124,6 +132,7 @@ void bind_frame()
 {
     bpy::class_<Frame, auto_release_ptr<Frame>, bpy::bases<Entity>, boost::noncopyable>("Frame", bpy::no_init)
         .def("__init__", bpy::make_constructor(create_frame))
+        .def("__init__", bpy::make_constructor(create_frame_with_aovs))
 
         .def("reset_crop_window", &Frame::reset_crop_window)
         .def("has_crop_window", &Frame::has_crop_window)
@@ -140,8 +149,6 @@ void bind_frame()
         .def("write_image_and_aovs_to_multipart_exr", &Frame::write_image_and_aovs_to_multipart_exr)
         .def("archive", archive_frame)
 
-        .def("add_aov", &Frame::add_aov)
-        .def("transfer_aovs", &Frame::transfer_aovs)
         .def("aovs", &Frame::aovs, bpy::return_value_policy<bpy::reference_existing_object>())
         ;
 }

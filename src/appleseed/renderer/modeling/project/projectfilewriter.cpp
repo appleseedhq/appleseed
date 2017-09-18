@@ -401,12 +401,14 @@ namespace
         // Write an <aovs> element.
         void write_aovs(const Frame& frame)
         {
-            if (!frame.aovs().empty())
+            const AOVContainer& aovs = frame.aovs();
+            if (!aovs.empty())
             {
                 XMLElement element("aovs", m_file, m_indenter);
                 element.write(XMLElement::HasChildElements);
 
-                write_collection(frame.aovs());
+                for (size_t i = 0, e = aovs.size(); i != e; ++i)
+                    write(*aovs.get_by_index(i));
             }
         }
 

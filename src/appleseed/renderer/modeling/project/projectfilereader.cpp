@@ -2565,8 +2565,7 @@ namespace
         {
             ParametrizedElementHandler::end_element();
 
-            m_frame = FrameFactory::create(m_name.c_str(), m_params);
-            m_frame->transfer_aovs(m_aovs);
+            m_frame = FrameFactory::create(m_name.c_str(), m_params, m_aovs);
         }
 
         virtual void start_child_element(
