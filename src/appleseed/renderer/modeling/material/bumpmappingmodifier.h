@@ -35,10 +35,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
-#include "foundation/math/vector.h"
-#include "foundation/platform/compiler.h"
 
 // Forward declarations.
+namespace renderer  { class ShadingPoint; }
 namespace renderer  { class Source; }
 namespace renderer  { class TextureCache; }
 
@@ -50,20 +49,27 @@ class BumpMappingModifier
 {
   public:
     BumpMappingModifier(
-        const Source*                   map,
-        const float                     offset,
-        const float                     amplitude);
+        const Source*               map,
+        const float                 offset,
+        const float                 amplitude);
 
     virtual foundation::Basis3d modify(
-        TextureCache&                   texture_cache,
-        const foundation::Vector2f&     uv,
-        const foundation::Basis3d&      basis) const override;
+        TextureCache&               texture_cache,
+        const foundation::Basis3d&  basis,
+        const ShadingPoint&         shading_point) const override;
 
   private:
-    const Source*   m_map;
-    const float     m_amplitude;
-    float           m_du, m_dv;
-    float           m_rcp_du, m_rcp_dv;
+    const Source*                   m_map;
+    const double                    m_amplitude;
+    float                           m_delta_u;
+    float                           m_delta_v;
+    double                          m_rcp_delta_u;
+    double                          m_rcp_delta_v;
+
+    double evaluate_height(
+        TextureCache&               texture_cache,
+        const float                 u,
+        const float                 v) const;
 };
 
 }       // namespace renderer

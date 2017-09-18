@@ -31,10 +31,12 @@
 #include "normalmappingmodifier.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
+#include "foundation/math/vector.h"
 
 using namespace foundation;
 
@@ -42,29 +44,35 @@ namespace renderer
 {
 
 NormalMappingModifier::NormalMappingModifier(
-    const Source*       map,
-    const UpVector      up_vector)
+    const Source*           map,
+    const UpVector          up_vector)
   : m_map(map)
   , m_y(up_vector == UpVectorY ? 1 : 2)
 {
 }
 
 Basis3d NormalMappingModifier::modify(
-    TextureCache&       texture_cache,
-    const Vector2f&     uv,
-    const Basis3d&      basis) const
+    TextureCache&           texture_cache,
+    const Basis3d&          basis,
+    const ShadingPoint&     shading_point) const
 {
+    const size_t UVSet = 0;
+    const Vector2f& uv = shading_point.get_uv(UVSet);
+
     // Lookup the normal map.
     Color3f normal_rgb;
     m_map->evaluate(texture_cache, uv, normal_rgb);
 
     // Reconstruct the normal from the texel value.
+    const double x = static_cast<double>(normal_rgb[0]);
+    const double y = static_cast<double>(normal_rgb[m_y]);
+    const double z = static_cast<double>(normal_rgb[3 - m_y]);
     const Vector3d normal(
-        static_cast<double>(normal_rgb[0]) * 2.0 - 1.0,
-        static_cast<double>(normal_rgb[m_y]) * 2.0 - 1.0,
-        static_cast<double>(normal_rgb[3 - m_y]) * 2.0 - 1.0);
+        x * 2.0 - 1.0,
+        y * 2.0 - 1.0,
+        z * 2.0 - 1.0);
 
-    // Construct an orthonormal basis around that new normal.
+    // Construct an orthonormal basis around the new normal.
     return Basis3d(
         normalize(basis.transform_to_parent(normal)),
         basis.get_tangent_u());

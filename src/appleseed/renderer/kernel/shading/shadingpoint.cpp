@@ -552,67 +552,82 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
 
 void ShadingPoint::compute_screen_space_partial_derivatives() const
 {
+    //
+    // Reference:
+    //
+    //   Physically Based Rendering, second edition, pp. 506-509
+    //
+
     const ShadingRay& ray = get_ray();
 
-    if (ray.m_has_differentials)
+    if (!ray.m_has_differentials)
     {
-        const Vector3d& p = get_point();
-        const Vector3d& n = get_original_shading_normal();
-
-        double tx, ty;
-        if (!intersect(ray.m_rx, p, n, tx) ||
-            !intersect(ray.m_ry, p, n, ty))
-        {
-            m_dpdx = Vector3d(0.0);
-            m_dpdy = Vector3d(0.0);
-            m_duvdx = Vector2f(0.0f);
-            m_duvdy = Vector2f(0.0f);
-            return;
-        }
-
-        const Vector3d px = ray.m_rx.point_at(tx);
-        m_dpdx = px - p;
-
-        const Vector3d py = ray.m_ry.point_at(ty);
-        m_dpdy = py - p;
-
-        if (get_side() == ObjectInstance::BackSide)
-            m_dpdx = -m_dpdx;
-
-        // Select the two smallest axes.
-        const size_t max_index = max_abs_index(n);
-        const size_t axes[3][2] = {{1, 2}, {0, 2}, {0, 1}};
-
-        const Vector2f dpdu(
-            static_cast<float>(get_dpdu(0)[axes[max_index][0]]),
-            static_cast<float>(get_dpdu(0)[axes[max_index][1]]));
-        const Vector2f dpdv(
-            static_cast<float>(get_dpdv(0)[axes[max_index][0]]),
-            static_cast<float>(get_dpdv(0)[axes[max_index][1]]));
-
-        const float d = det(dpdu, dpdv);
-
-        if (d == 0.0f)
-        {
-            m_duvdx = Vector2f(0.0f);
-            m_duvdy = Vector2f(0.0f);
-            return;
-        }
-
-        const Vector2f dpdx(
-            static_cast<float>(m_dpdx[axes[max_index][0]]),
-            static_cast<float>(m_dpdx[axes[max_index][1]]));
-        const Vector2f dpdy(
-            static_cast<float>(m_dpdy[axes[max_index][0]]),
-            static_cast<float>(m_dpdy[axes[max_index][1]]));
-
-        const float rcp_d = 1.0f / d;
-
-        m_duvdx[0] = (dpdv[1] * dpdx[0] - dpdv[0] * dpdx[1]) * rcp_d;
-        m_duvdx[1] = (dpdu[0] * dpdx[1] - dpdu[1] * dpdx[0]) * rcp_d;
-        m_duvdy[0] = (dpdv[1] * dpdy[0] - dpdv[0] * dpdy[1]) * rcp_d;
-        m_duvdy[1] = (dpdu[0] * dpdy[1] - dpdu[1] * dpdy[0]) * rcp_d;
+        m_dpdx = Vector3d(0.0);
+        m_dpdy = Vector3d(0.0);
+        m_duvdx = Vector2f(0.0f);
+        m_duvdy = Vector2f(0.0f);
+        return;
     }
+
+    const Vector3d& p = get_point();
+    const Vector3d& n = get_original_shading_normal();
+
+    double tx, ty;
+    if (!intersect(ray.m_rx, p, n, tx) ||
+        !intersect(ray.m_ry, p, n, ty))
+    {
+        m_dpdx = Vector3d(0.0);
+        m_dpdy = Vector3d(0.0);
+        m_duvdx = Vector2f(0.0f);
+        m_duvdy = Vector2f(0.0f);
+        return;
+    }
+
+    m_dpdx = ray.m_rx.point_at(tx) - p;
+    m_dpdy = ray.m_ry.point_at(ty) - p;
+
+    if (get_side() == ObjectInstance::BackSide)
+        m_dpdx = -m_dpdx;
+
+    // Select the two axes along which the normal has the smallest components.
+    static const size_t Axes[3][2] = { {1, 2}, {0, 2}, {0, 1} };
+    const size_t max_index = max_abs_index(n);
+    const size_t axis0 = Axes[max_index][0];
+    const size_t axis1 = Axes[max_index][1];
+
+    const Vector3d& dpdu = get_dpdu(0);
+    const Vector3d& dpdv = get_dpdv(0);
+
+    const Vector2f plane_dpdu(
+        static_cast<float>(dpdu[axis0]),
+        static_cast<float>(dpdu[axis1]));
+    const Vector2f plane_dpdv(
+        static_cast<float>(dpdv[axis0]),
+        static_cast<float>(dpdv[axis1]));
+
+    const float d = det(plane_dpdu, plane_dpdv);
+
+    if (d == 0.0f)
+    {
+        m_duvdx = Vector2f(0.0f);
+        m_duvdy = Vector2f(0.0f);
+        return;
+    }
+
+    const Vector2f plane_dpdx(
+        static_cast<float>(m_dpdx[axis0]),
+        static_cast<float>(m_dpdx[axis1]));
+    const Vector2f plane_dpdy(
+        static_cast<float>(m_dpdy[axis0]),
+        static_cast<float>(m_dpdy[axis1]));
+
+    const float rcp_d = 1.0f / d;
+
+    m_duvdx[0] = det(plane_dpdx, plane_dpdv) * rcp_d;   // dudx
+    m_duvdx[1] = det(plane_dpdu, plane_dpdx) * rcp_d;   // dvdx
+    m_duvdy[0] = det(plane_dpdy, plane_dpdv) * rcp_d;   // dudy
+    m_duvdy[1] = det(plane_dpdu, plane_dpdy) * rcp_d;   // dvdy
+
 }
 
 void ShadingPoint::compute_normals() const
@@ -755,8 +770,8 @@ void ShadingPoint::compute_shading_basis() const
                 m_shading_basis =
                     material_data.m_basis_modifier->modify(
                         *m_texture_cache,
-                        get_uv(0),
-                        m_shading_basis);
+                        m_shading_basis,
+                        *this);
             }
         }
     }
