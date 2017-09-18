@@ -66,12 +66,10 @@ class APPLESEED_DLLSYMBOL GlossyAOVFactory
 
     // Create a new AOV instance.
     virtual foundation::auto_release_ptr<AOV> create(
-        const char*         name,
         const ParamArray&   params) const override;
 
     // Static variant of the create() method above.
     static foundation::auto_release_ptr<AOV> static_create(
-        const char*         name,
         const ParamArray&   params);
 };
 
@@ -95,12 +93,10 @@ class APPLESEED_DLLSYMBOL DirectGlossyAOVFactory
 
     // Create a new AOV instance.
     virtual foundation::auto_release_ptr<AOV> create(
-        const char*         name,
         const ParamArray&   params) const override;
 
     // Static variant of the create() method above.
     static foundation::auto_release_ptr<AOV> static_create(
-        const char*         name,
         const ParamArray&   params);
 };
 
@@ -124,12 +120,10 @@ class APPLESEED_DLLSYMBOL IndirectGlossyAOVFactory
 
     // Create a new AOV instance.
     virtual foundation::auto_release_ptr<AOV> create(
-        const char*         name,
         const ParamArray&   params) const override;
 
     // Static variant of the create() method above.
     static foundation::auto_release_ptr<AOV> static_create(
-        const char*         name,
         const ParamArray&   params);
 };
 

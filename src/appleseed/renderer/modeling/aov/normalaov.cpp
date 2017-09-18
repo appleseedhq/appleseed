@@ -103,8 +103,8 @@ namespace
       : public AOV
     {
       public:
-        NormalAOV(const char* name, const ParamArray& params)
-          : AOV(name, params)
+        explicit NormalAOV(const ParamArray& params)
+          : AOV("normal", params)
         {
         }
 
@@ -168,21 +168,15 @@ DictionaryArray NormalAOVFactory::get_input_metadata() const
 }
 
 auto_release_ptr<AOV> NormalAOVFactory::create(
-    const char*         name,
     const ParamArray&   params) const
 {
-    return
-        auto_release_ptr<AOV>(
-            new NormalAOV(name, params));
+    return auto_release_ptr<AOV>(new NormalAOV(params));
 }
 
 auto_release_ptr<AOV> NormalAOVFactory::static_create(
-    const char*         name,
     const ParamArray&   params)
 {
-    return
-        auto_release_ptr<AOV>(
-            new NormalAOV(name, params));
+    return auto_release_ptr<AOV>(new NormalAOV(params));
 }
 
 }   // namespace renderer
