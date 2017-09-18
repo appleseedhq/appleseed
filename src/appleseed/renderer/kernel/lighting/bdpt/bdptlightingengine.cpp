@@ -33,6 +33,8 @@
 #include "renderer/kernel/lighting/forwardlightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/modeling/camera/camera.h"
+#include "renderer/modeling/edf/edf.h"
+#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/project/project.h"
 
 // appleseed.foundation headers.
@@ -139,6 +141,91 @@ namespace
             const ShadingContext&   shading_context,
             LightSample&            light_sample)
         {
+            // Make sure the geometric normal of the light sample is in the same hemisphere as the shading normal.
+            light_sample.m_geometric_normal =
+                flip_to_same_hemisphere(
+                    light_sample.m_geometric_normal,
+                    light_sample.m_shading_normal);
+
+            const Material* material = light_sample.m_triangle->m_material;
+            const Material::RenderData& material_data = material->get_render_data();
+
+            // Build a shading point on the light source.
+            ShadingPoint light_shading_point;
+            light_sample.make_shading_point(
+                light_shading_point,
+                light_sample.m_shading_normal,
+                shading_context.get_intersector());
+
+            if (material_data.m_shader_group)
+            {
+                shading_context.execute_osl_emission(
+                    *material_data.m_shader_group,
+                    light_shading_point);
+            }
+
+            // Sample the EDF.
+            sampling_context.split_in_place(2, 1);
+            Vector3f emission_direction;
+            Spectrum edf_value(Spectrum::Illuminance);
+            float edf_prob;
+            material_data.m_edf->sample(
+                sampling_context,
+                material_data.m_edf->evaluate_inputs(shading_context, light_shading_point),
+                Vector3f(light_sample.m_geometric_normal),
+                Basis3f(Vector3f(light_sample.m_shading_normal)),
+                sampling_context.next2<Vector2f>(),
+                emission_direction,
+                edf_value,
+                edf_prob);
+
+            // Compute the initial particle weight.
+            Spectrum initial_flux = edf_value;
+            initial_flux *=
+                dot(emission_direction, Vector3f(light_sample.m_shading_normal)) /
+                (light_sample.m_probability * edf_prob);
+
+            // Make a shading point that will be used to avoid self-intersections with the light sample.
+            ShadingPoint parent_shading_point;
+            light_sample.make_shading_point(
+                parent_shading_point,
+                Vector3d(emission_direction),
+                shading_context.get_intersector());
+
+            // Build the light ray.
+            sampling_context.split_in_place(1, 1);
+            const ShadingRay::Time time =
+                ShadingRay::Time::create_with_normalized_time(
+                    sampling_context.next2<float>(),
+                    m_shutter_open_time,
+                    m_shutter_close_time);
+            const ShadingRay light_ray(
+                light_sample.m_point,
+                Vector3d(emission_direction),
+                time,
+                VisibilityFlags::LightRay,
+                0);
+
+            // Build the path tracer.
+            PathVisitor path_visitor;
+            VolumeVisitor volume_visitor;
+            PathTracer<PathVisitor, VolumeVisitor, true> path_tracer(
+                path_visitor,
+                volume_visitor,
+                ~0,
+                1,
+                ~0,
+                ~0,
+                ~0,
+                ~0,
+                shading_context.get_max_iterations());   // don't illuminate points closer than the light near start value
+        
+            const size_t path_length =
+                path_tracer.trace(
+                    sampling_context,
+                    shading_context,
+                    light_ray,
+                    &parent_shading_point);
         }
 
         void trace_non_physical_light(
@@ -159,6 +246,7 @@ namespace
         const Parameters            m_params;
 
         const ForwardLightSampler&  m_light_sampler;
+        //Intersector                 m_intersector;
 
         float                       m_shutter_open_time;
         float                       m_shutter_close_time;
@@ -168,6 +256,26 @@ namespace
             PathVisitor()
             {
             }
+
+            bool accept_scattering(
+                const ScatteringMode::Mode  prev_mode,
+                const ScatteringMode::Mode  next_mode) const
+            {
+                return false;
+            }
+
+            void on_miss(const PathVertex& vertex)
+            {
+
+            }
+
+            void on_hit(const PathVertex& vertex)
+            {
+            }
+
+            void on_scatter(const PathVertex& vertex)
+            {
+            }
         };
 
         struct VolumeVisitor
@@ -175,6 +283,16 @@ namespace
             VolumeVisitor()
             {
             }
+
+            bool accept_scattering(
+                const ScatteringMode::Mode  prev_mode)
+            {
+                return true;
+            }
+
+            void on_scatter(PathVertex& vertex) {}
+
+            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray) {}
         };
     };
 }
