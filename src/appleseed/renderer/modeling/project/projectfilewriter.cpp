@@ -313,7 +313,14 @@ namespace
         // Write an <aov> element.
         void write(const AOV& aov)
         {
-            write_entity("aov", aov);
+            XMLElement element("aov", m_file, m_indenter);
+            element.add_attribute("model", aov.get_model());
+            element.write(
+                !aov.get_parameters().empty()
+                    ? XMLElement::HasChildElements
+                    : XMLElement::HasNoContent);
+
+            write_params(aov.get_parameters());
         }
 
         // Write an <assembly> element.
