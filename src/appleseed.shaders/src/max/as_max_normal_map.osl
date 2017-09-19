@@ -28,35 +28,20 @@
 
 shader as_max_normal_map
 (
-    color         Color = color(0),
+    color         Color = color(0.0),
     vector        Normal = N,
-    vector        Tn = 0
+    vector        Tn = 0.0
     [[
-        string help = "Tangent",
-        string label = "Tangent",
         int    lockgeom = 0
     ]],
-    string        UpVector = "Blue"
-    [[
-        string help = "Color channel to use as up direction",
-        string widget = "popup",
-        string options = "Green|Blue"
-    ]],
-    string        Space = "Tangent"
-    [[
-        string widget = "popup",
-        string options = "Tangent|Object|World"
-    ]],
-    float         Amount = 1
-    [[
-        float  min = 0,
-        float  max = 1
-    ]],
-    output vector NormalOut = 0,
-    output vector TangentOut = 0
+    string        UpVector = "Blue",
+    string        Space = "Tangent",
+    float         Amount = 1.0,
+    output vector NormalOut = 0.0,
+    output vector TangentOut = 0.0
 )
 {
-    normal n = (normal) mix(-1, 1, clamp(Color, 0, 1));
+    normal n = (normal) mix(-1.0, 1.0, clamp(Color, 0.0, 1.0));
 
     if (UpVector == "Green")
     {

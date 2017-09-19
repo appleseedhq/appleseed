@@ -130,8 +130,10 @@ void IMaterialFactory::add_displacement_metadata(DictionaryArray& metadata)
                     .insert("value", "10.0")
                     .insert("type", "soft"))
             .insert("use", "optional")
-            .insert("default", "2.0")
-            .insert("visible_if", Dictionary()));   // invisible
+            .insert("default", "0.5")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("displacement_method", "bump")));
 
     metadata.push_back(
         Dictionary()

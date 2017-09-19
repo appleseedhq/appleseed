@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2017 The masked shader writer, The appleseedhq Organization
+// Copyright (c) 2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,92 +30,16 @@ shader as_max_bump_map
 (
     vector        Position = P,
     vector        Normal = N,
-    vector        Tn = 0
-    [[
-        string help = "Tangent",
-        string label = "Tangent",
-        int    lockgeom = 0
-    ]],
-    vector        Bn = 0
-    [[
-        string help = "Bitangent",
-        string label = "Bitangent",
-        int    lockgeom = 0
-    ]],
-    string        Method = "classic"
-    [[
-        string help = "Bump mapping algorithm to use.",
-        string widget = "popup",
-        string options = "classic|surface_gradients"
-    ]],
-    float         Height = 0,
-    float         Amount = 1
-    [[
-        float  min = 0
-    ]],
-    int           PreventNormalFlip = 1
-    [[
-        string help = "Flip NormalOut if not in the same hemisphere as Normal.",
-        string widget = "checkbox"
-    ]],
+    float         Height = 0.0,
+    float         Amount = 1.0,
     output vector NormalOut = Normal
 )
 {
-    if (Amount == 0.0)
-        return;
-
-    vector dpdx = Dx(Position);
-    vector dpdy = Dy(Position);
-
-    float dhx = Dx(Height) * Amount;
-    float dhy = Dy(Height) * Amount;
-
-    if (Method == "classic")
-    {
-        //
-        // Classic Blinn algorithm.
-        //
-        // Reference:
-        //
-        //   Physically Based Rendering, 2nd edition, page 490.
-        //
-
-        vector new_tn = Tn * length(dpdx) + Normal * dhx;
-        vector new_bn = Bn * length(dpdy) + Normal * dhy;
-        NormalOut = cross(new_bn, new_tn);
-    }
-    else
-    {
-        //
-        // Surface gradients.
-        //
-        // Reference:
-        //
-        //   Bump Mapping Unparametrized Surfaces on the GPU
-        //   Morten S. Mikkelsen
-        //   https://dl.dropbox.com/u/55891920/papers/mm_sfgrad_bump.pdf
-        //
-
-        int has_diffs;
-        int get_attr_ok = getattribute("path:ray_has_differentials", has_diffs);
-
-        // dPdx and dPdy are not always defined.
-        if (get_attr_ok && has_diffs)
-        {
-            vector rx = cross(dpdy, Normal);
-            vector ry = cross(Normal, dpdx);
-
-            float det = dot(dpdx, rx);
-            vector surf_grad = sign(det) * (dhx * rx + dhy * ry);
-
-            NormalOut = abs(det) * Normal - surf_grad;
-        }
-    }
-
+    // Compute the perturbed normal.
+    NormalOut = calculatenormal(Position + Amount * Height * Normal);
     NormalOut = normalize(NormalOut);
 
-    // Place the perturbed normal in the same hemisphere
-    // as the original normal.
-    if (PreventNormalFlip && dot(Normal, NormalOut) < 0.0)
+    // Make sure the perturbed normal lies in the same hemisphere as the original one.
+    if (dot(NormalOut, Normal) < 0.0)
         NormalOut = -NormalOut;
 }

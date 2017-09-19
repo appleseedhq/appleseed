@@ -33,9 +33,9 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/basis.h"
-#include "foundation/math/vector.h"
 
 // Forward declarations.
+namespace renderer  { class ShadingPoint; }
 namespace renderer  { class TextureCache; }
 
 namespace renderer
@@ -48,9 +48,9 @@ class IBasisModifier
     virtual ~IBasisModifier() {}
 
     virtual foundation::Basis3d modify(
-        TextureCache&                   texture_cache,
-        const foundation::Vector2f&     uv,
-        const foundation::Basis3d&      basis) const = 0;
+        TextureCache&               texture_cache,
+        const foundation::Basis3d&  basis,
+        const ShadingPoint&         shading_point) const = 0;
 };
 
 }       // namespace renderer
