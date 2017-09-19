@@ -59,6 +59,8 @@ class Arena
     template <typename T> T* allocate();
     template <typename T> T* allocate_noinit();
 
+    const uint8* get_storage() const;
+
   private:
     enum { ArenaSize = 256 * 1024 };    // bytes
 
@@ -110,6 +112,11 @@ template <typename T>
 inline T* Arena::allocate_noinit()
 {
     return static_cast<T*>(allocate(sizeof(T)));
+}
+
+inline const uint8* Arena::get_storage() const
+{
+    return m_storage;
 }
 
 }       // namespace foundation
