@@ -125,7 +125,6 @@ const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingMod
     { "materials",                  "Materials" },
     { "ray_spread",                 "Ray Spread" },
     { "facing_ratio",               "Facing Ratio" }
-
 };
 
 DiagnosticSurfaceShader::DiagnosticSurfaceShader(

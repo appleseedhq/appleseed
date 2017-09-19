@@ -90,8 +90,6 @@ Basis3d BumpMappingModifier::modify(
     const Vector3d& dpdu = shading_point.get_dpdu(UVSet);
     const Vector3d& dpdv = shading_point.get_dpdv(UVSet);
     const Vector3d& n = basis.get_normal();
-    const Vector3d& dndu = shading_point.get_dndu(UVSet);
-    const Vector3d& dndv = shading_point.get_dndv(UVSet);
 
 #ifdef USE_SCREEN_SPACE_UV_DERIVATIVES
     const Vector2f& duvdx = shading_point.get_duvdx(UVSet);
@@ -117,9 +115,20 @@ Basis3d BumpMappingModifier::modify(
     const double dhdv = (hv - h) * m_rcp_delta_v;
 #endif
 
+    //
     // Compute the partial derivatives of the displaced surface p'(u, v) = p(u, v) + amplitude * h(u, v) * n.
-    const Vector3d displaced_dpdu = dpdu + m_amplitude * (dhdu * n + h * dndu);
-    const Vector3d displaced_dpdv = dpdv + m_amplitude * (dhdv * n + h * dndv);
+    //
+    // The rigorous derivatives of the displaced surface wrt. the UV coordinates are
+    //
+    //   dp'du = dpdu + amplitude * (dhdu * n + h * dndu)
+    //   dp'dv = dpdv + amplitude * (dhdv * n + h * dndv)
+    //
+    // Unfortunately, dndu and dndv are constant per triangle and thus introduce artifacts revealing
+    // the tessellation on coarse meshes. Since these terms are negligible, we simply omit them.
+    //
+
+    const Vector3d displaced_dpdu = dpdu + m_amplitude * (dhdu * n);
+    const Vector3d displaced_dpdv = dpdv + m_amplitude * (dhdv * n);
 
     // Compute the perturbed normal.
     Vector3d perturbed_n = normalize(cross(displaced_dpdu, displaced_dpdv));
