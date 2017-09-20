@@ -86,8 +86,8 @@ namespace
       : public ColorAOV
     {
       public:
-        EmissionAOV(const char* name, const ParamArray& params)
-          : ColorAOV(name, params)
+        explicit EmissionAOV(const ParamArray& params)
+          : ColorAOV("emission", params)
         {
         }
 
@@ -135,21 +135,16 @@ DictionaryArray EmissionAOVFactory::get_input_metadata() const
 }
 
 auto_release_ptr<AOV> EmissionAOVFactory::create(
-    const char*         name,
     const ParamArray&   params) const
 {
     return
-        auto_release_ptr<AOV>(
-            new EmissionAOV(name, params));
+        auto_release_ptr<AOV>(new EmissionAOV(params));
 }
 
 auto_release_ptr<AOV> EmissionAOVFactory::static_create(
-    const char*         name,
     const ParamArray&   params)
 {
-    return
-        auto_release_ptr<AOV>(
-            new EmissionAOV(name, params));
+    return auto_release_ptr<AOV>(new EmissionAOV(params));
 }
 
 }   // namespace renderer

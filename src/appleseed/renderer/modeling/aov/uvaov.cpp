@@ -98,8 +98,8 @@ namespace
       : public AOV
     {
       public:
-        UVAOV(const char* name, const ParamArray& params)
-          : AOV(name, params)
+        explicit UVAOV(const ParamArray& params)
+          : AOV("uv", params)
         {
         }
 
@@ -163,21 +163,15 @@ DictionaryArray UVAOVFactory::get_input_metadata() const
 }
 
 auto_release_ptr<AOV> UVAOVFactory::create(
-    const char*         name,
     const ParamArray&   params) const
 {
-    return
-        auto_release_ptr<AOV>(
-            new UVAOV(name, params));
+    return auto_release_ptr<AOV>(new UVAOV(params));
 }
 
 auto_release_ptr<AOV> UVAOVFactory::static_create(
-    const char*         name,
     const ParamArray&   params)
 {
-    return
-        auto_release_ptr<AOV>(
-            new UVAOV(name, params));
+    return auto_release_ptr<AOV>(new UVAOV(params));
 }
 
 }   // namespace renderer

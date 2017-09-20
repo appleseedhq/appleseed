@@ -95,14 +95,8 @@ class APPLESEED_DLLSYMBOL Frame
     // Access the AOV images.
     ImageStack& aov_images() const;
 
-    // Add an AOV if it does not exist.
-    void add_aov(foundation::auto_release_ptr<AOV> aov);
-
-    // Transfer AOVs.
-    void transfer_aovs(AOVContainer& aovs);
-
     // Access the AOVs.
-    AOVContainer& aovs() const;
+    const AOVContainer& aovs() const;
 
     // Create an extra AOV image if it does not exist.
     size_t create_extra_aov_image(const char* name) const;
@@ -164,7 +158,8 @@ class APPLESEED_DLLSYMBOL Frame
     // Constructor.
     Frame(
         const char*         name,
-        const ParamArray&   params);
+        const ParamArray&   params,
+        const AOVContainer& aovs);
 
     // Destructor.
     ~Frame();
@@ -205,6 +200,12 @@ class APPLESEED_DLLSYMBOL FrameFactory
     static foundation::auto_release_ptr<Frame> create(
         const char*         name,
         const ParamArray&   params);
+
+    // Create a new frame.
+    static foundation::auto_release_ptr<Frame> create(
+        const char*         name,
+        const ParamArray&   params,
+        const AOVContainer& aovs);
 };
 
 

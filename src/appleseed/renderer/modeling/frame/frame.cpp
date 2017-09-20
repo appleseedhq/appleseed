@@ -34,6 +34,8 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/aov/aovsettings.h"
 #include "renderer/kernel/aov/imagestack.h"
+#include "renderer/modeling/aov/aovfactoryregistrar.h"
+#include "renderer/modeling/aov/iaovfactory.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -61,6 +63,7 @@
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.
+#include <algorithm>
 #include <cmath>
 #include <memory>
 #include <string>
@@ -103,7 +106,8 @@ struct Frame::Impl
 
 Frame::Frame(
     const char*         name,
-    const ParamArray&   params)
+    const ParamArray&   params,
+    const AOVContainer& aovs)
   : Entity(g_class_uid, params)
   , impl(new Impl())
 {
@@ -131,6 +135,30 @@ Frame::Frame(
             impl->m_frame_height,
             impl->m_tile_width,
             impl->m_tile_height));
+
+    // Copy and add the aovs.
+    if (aovs.size() > MaxAOVCount)
+    {
+        RENDERER_LOG_WARNING(
+            "could not create all aovs, keeping the first (" FMT_SIZE_T ") aovs.",
+            MaxAOVCount);
+    }
+
+    const AOVFactoryRegistrar aov_registrar;
+    for (size_t i = 0, e = min(aovs.size(), MaxAOVCount); i < e; ++i)
+    {
+        const AOV* original_aov = aovs.get_by_index(i);
+        const IAOVFactory* aov_factory = aov_registrar.lookup(original_aov->get_model());
+        assert(aov_factory);
+
+        auto_release_ptr<AOV> aov = aov_factory->create(original_aov->get_parameters());
+
+        aov_images().append(
+            aov->get_name(),
+            4, // TODO: check if we can pass aov->get_channel_count() here.
+            PixelFormatFloat);
+        impl->m_aovs.insert(aov);
+    }
 }
 
 Frame::~Frame()
@@ -191,38 +219,7 @@ ImageStack& Frame::aov_images() const
     return *impl->m_aov_images;
 }
 
-void Frame::add_aov(foundation::auto_release_ptr<AOV> aov)
-{
-    assert(aov.get());
-
-    const size_t aov_index = aov_images().get_index(aov->get_name());
-    if (aov_index == size_t(~0) && aov_images().size() < MaxAOVCount)
-    {
-        aov_images().append(
-            aov->get_name(),
-            4, // aov->get_channel_count(),
-            PixelFormatFloat);
-        aovs().insert(aov);
-    }
-    else
-    {
-        RENDERER_LOG_WARNING(
-            "could not create %s aov, maximum number of aovs (" FMT_SIZE_T ") reached.",
-            aov->get_name(),
-            MaxAOVCount);
-    }
-}
-
-void Frame::transfer_aovs(AOVContainer& aovs)
-{
-    while (!aovs.empty())
-    {
-        auto_release_ptr<AOV> aov = aovs.remove(aovs.get_by_index(0));
-        add_aov(aov);
-    }
-}
-
-AOVContainer& Frame::aovs() const
+const AOVContainer& Frame::aovs() const
 {
     return impl->m_aovs;
 }
@@ -301,7 +298,7 @@ bool Frame::write_aov_images(const char* file_path) const
         const string base_file_name = boost_file_path.stem().string();
         const string extension = boost_file_path.extension().string();
 
-        for (size_t i = 0, e = aovs().size(); i < e; ++i)
+        for (size_t i = 0, e = impl->m_aovs.size(); i < e; ++i)
         {
             const string aov_name = aov_images().get_name(i);
             const string safe_aov_name = make_safe_filename(aov_name);
@@ -320,13 +317,13 @@ bool Frame::write_aov_image(const char* file_path, const size_t aov_index) const
 {
     assert(file_path);
 
-    if (aov_index >= aovs().size())
+    if (aov_index >= impl->m_aovs.size())
         return true;
 
     return write_image(
         file_path,
         aov_images().get_image(aov_index),
-        aovs().get_by_index(aov_index));
+        impl->m_aovs.get_by_index(aov_index));
 }
 
 void Frame::write_image_and_aovs_to_multipart_exr(const char *file_path) const
@@ -349,10 +346,10 @@ void Frame::write_image_and_aovs_to_multipart_exr(const char *file_path) const
         writer.append_part("beauty", images.back(), image_attributes, 4, ChannelNames);
     }
 
-    for (size_t i = 0, e = aovs().size(); i < e; ++i)
+    for (size_t i = 0, e = impl->m_aovs.size(); i < e; ++i)
     {
         const string aov_name = aov_images().get_name(i);
-        const AOV* aov = aovs().get_by_index(i);
+        const AOV* aov = impl->m_aovs.get_by_index(i);
         const Image& image = aov_images().get_image(i);
 
         if (aov->has_color_data())
@@ -689,7 +686,15 @@ auto_release_ptr<Frame> FrameFactory::create(
     const char*         name,
     const ParamArray&   params)
 {
-    return auto_release_ptr<Frame>(new Frame(name, params));
+    return auto_release_ptr<Frame>(new Frame(name, params, AOVContainer()));
+}
+
+auto_release_ptr<Frame> FrameFactory::create(
+    const char*         name,
+    const ParamArray&   params,
+    const AOVContainer& aovs)
+{
+    return auto_release_ptr<Frame>(new Frame(name, params, aovs));
 }
 
 }   // namespace renderer

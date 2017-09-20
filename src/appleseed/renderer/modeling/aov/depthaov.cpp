@@ -99,8 +99,8 @@ namespace
       : public AOV
     {
       public:
-        DepthAOV(const char* name, const ParamArray& params)
-          : AOV(name, params)
+        explicit DepthAOV(const ParamArray& params)
+          : AOV("depth", params)
         {
         }
 
@@ -164,21 +164,15 @@ DictionaryArray DepthAOVFactory::get_input_metadata() const
 }
 
 auto_release_ptr<AOV> DepthAOVFactory::create(
-    const char*         name,
     const ParamArray&   params) const
 {
-    return
-        auto_release_ptr<AOV>(
-            new DepthAOV(name, params));
+    return auto_release_ptr<AOV>(new DepthAOV(params));
 }
 
 auto_release_ptr<AOV> DepthAOVFactory::static_create(
-    const char*         name,
     const ParamArray&   params)
 {
-    return
-        auto_release_ptr<AOV>(
-            new DepthAOV(name, params));
+    return auto_release_ptr<AOV>(new DepthAOV(params));
 }
 
 }   // namespace renderer

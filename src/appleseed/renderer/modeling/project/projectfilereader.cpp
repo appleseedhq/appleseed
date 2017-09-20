@@ -2405,18 +2405,78 @@ namespace
     //
 
     class AOVElementHandler
-      : public EntityElementHandler<
-                   AOV,
-                   AOVFactoryRegistrar,
-                   ParametrizedElementHandler>
+      : public ParametrizedElementHandler
     {
       public:
         explicit AOVElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                AOV,
-                AOVFactoryRegistrar,
-                ParametrizedElementHandler>("AOV", context)
+          : m_context(context)
         {
+        }
+
+        virtual void start_element(const Attributes& attrs) override
+        {
+            ParametrizedElementHandler::start_element(attrs);
+
+            m_aov.reset();
+
+            m_model = ParametrizedElementHandler::get_value(attrs, "model");
+        }
+
+        virtual void end_element() override
+        {
+            ParametrizedElementHandler::end_element();
+
+            m_aov = create_aov();
+        }
+
+        auto_release_ptr<AOV> get_aov()
+        {
+            return m_aov;
+        }
+
+      protected:
+        ParseContext&                   m_context;
+        const AOVFactoryRegistrar       m_registrar;
+        auto_release_ptr<AOV>           m_aov;
+        string                          m_model;
+
+        auto_release_ptr<AOV> create_aov() const
+        {
+            try
+            {
+                const typename AOVFactoryRegistrar::FactoryType* factory =
+                    m_registrar.lookup(m_model.c_str());
+
+                if (factory)
+                {
+                    return factory->create(m_params);
+                }
+                else
+                {
+                    RENDERER_LOG_ERROR(
+                        "while defining AOV: invalid model \"%s\".",
+                        m_model.c_str());
+                    m_context.get_event_counters().signal_error();
+                }
+            }
+            catch (const ExceptionDictionaryKeyNotFound& e)
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining AOV \"%s\": required parameter \"%s\" missing.",
+                    m_model.c_str(),
+                    e.string());
+                m_context.get_event_counters().signal_error();
+            }
+            catch (const ExceptionUnknownEntity& e)
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining AOV \"%s\": unknown entity \"%s\".",
+                    m_model.c_str(),
+                    e.string());
+                m_context.get_event_counters().signal_error();
+            }
+
+            return auto_release_ptr<AOV>(0);
         }
     };
 
@@ -2446,7 +2506,7 @@ namespace
               case ElementAOV:
                 {
                     auto_release_ptr<AOV> aov(
-                        static_cast<AOVElementHandler*>(handler)->get_entity());
+                        static_cast<AOVElementHandler*>(handler)->get_aov());
 
                     if (aov.get() == 0)
                         return;
@@ -2505,8 +2565,7 @@ namespace
         {
             ParametrizedElementHandler::end_element();
 
-            m_frame = FrameFactory::create(m_name.c_str(), m_params);
-            m_frame->transfer_aovs(m_aovs);
+            m_frame = FrameFactory::create(m_name.c_str(), m_params, m_aovs);
         }
 
         virtual void start_child_element(

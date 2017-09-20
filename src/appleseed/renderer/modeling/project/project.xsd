@@ -325,7 +325,6 @@
                                                             <xsd:complexType>
                                                                 <xsd:complexContent>
                                                                     <xsd:extension base="parameterSet">
-                                                                        <xsd:attribute name="name" type="xsd:string" use="required"/>
                                                                         <xsd:attribute name="model" type="xsd:string" use="required"/>
                                                                     </xsd:extension>
                                                                 </xsd:complexContent>

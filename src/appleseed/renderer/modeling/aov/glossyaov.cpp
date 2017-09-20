@@ -133,8 +133,8 @@ namespace
       : public ColorAOV
     {
       public:
-        GlossyAOV(const char* name, const ParamArray& params)
-          : ColorAOV(name, params)
+        explicit GlossyAOV(const ParamArray& params)
+          : ColorAOV("glossy", params)
         {
         }
 
@@ -166,8 +166,8 @@ namespace
       : public ColorAOV
     {
       public:
-        DirectGlossyAOV(const char* name, const ParamArray& params)
-          : ColorAOV(name, params)
+        explicit DirectGlossyAOV(const ParamArray& params)
+          : ColorAOV("direct_glossy", params)
         {
         }
 
@@ -199,8 +199,8 @@ namespace
       : public ColorAOV
     {
       public:
-        IndirectGlossyAOV(const char* name, const ParamArray& params)
-          : ColorAOV(name, params)
+        explicit IndirectGlossyAOV(const ParamArray& params)
+          : ColorAOV("indirect_glossy", params)
         {
         }
 
@@ -248,17 +248,15 @@ DictionaryArray GlossyAOVFactory::get_input_metadata() const
 }
 
 auto_release_ptr<AOV> GlossyAOVFactory::create(
-    const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<AOV>(new GlossyAOV(name, params));
+    return auto_release_ptr<AOV>(new GlossyAOV(params));
 }
 
 auto_release_ptr<AOV> GlossyAOVFactory::static_create(
-    const char*         name,
     const ParamArray&   params)
 {
-    return auto_release_ptr<AOV>(new GlossyAOV(name, params));
+    return auto_release_ptr<AOV>(new GlossyAOV(params));
 }
 
 
@@ -287,17 +285,15 @@ DictionaryArray DirectGlossyAOVFactory::get_input_metadata() const
 }
 
 auto_release_ptr<AOV> DirectGlossyAOVFactory::create(
-    const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<AOV>(new DirectGlossyAOV(name, params));
+    return auto_release_ptr<AOV>(new DirectGlossyAOV(params));
 }
 
 auto_release_ptr<AOV> DirectGlossyAOVFactory::static_create(
-    const char*         name,
     const ParamArray&   params)
 {
-    return auto_release_ptr<AOV>(new DirectGlossyAOV(name, params));
+    return auto_release_ptr<AOV>(new DirectGlossyAOV(params));
 }
 
 
@@ -326,17 +322,15 @@ DictionaryArray IndirectGlossyAOVFactory::get_input_metadata() const
 }
 
 auto_release_ptr<AOV> IndirectGlossyAOVFactory::create(
-    const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<AOV>(new IndirectGlossyAOV(name, params));
+    return auto_release_ptr<AOV>(new IndirectGlossyAOV(params));
 }
 
 auto_release_ptr<AOV> IndirectGlossyAOVFactory::static_create(
-    const char*         name,
     const ParamArray&   params)
 {
-    return auto_release_ptr<AOV>(new IndirectGlossyAOV(name, params));
+    return auto_release_ptr<AOV>(new IndirectGlossyAOV(params));
 }
 
 }   // namespace renderer
