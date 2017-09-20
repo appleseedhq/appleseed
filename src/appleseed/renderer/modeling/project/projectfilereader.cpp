@@ -2454,7 +2454,7 @@ namespace
                 else
                 {
                     RENDERER_LOG_ERROR(
-                        "while defining AOV: invalid model \"%s\".",
+                        "while defining aov: invalid model \"%s\".",
                         m_model.c_str());
                     m_context.get_event_counters().signal_error();
                 }
@@ -2462,7 +2462,7 @@ namespace
             catch (const ExceptionDictionaryKeyNotFound& e)
             {
                 RENDERER_LOG_ERROR(
-                    "while defining AOV \"%s\": required parameter \"%s\" missing.",
+                    "while defining aov \"%s\": required parameter \"%s\" missing.",
                     m_model.c_str(),
                     e.string());
                 m_context.get_event_counters().signal_error();
@@ -2470,7 +2470,7 @@ namespace
             catch (const ExceptionUnknownEntity& e)
             {
                 RENDERER_LOG_ERROR(
-                    "while defining AOV \"%s\": unknown entity \"%s\".",
+                    "while defining aov \"%s\": unknown entity \"%s\".",
                     m_model.c_str(),
                     e.string());
                 m_context.get_event_counters().signal_error();
