@@ -243,8 +243,6 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            value.set(0.0f);
-
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
                 values->m_roughness,

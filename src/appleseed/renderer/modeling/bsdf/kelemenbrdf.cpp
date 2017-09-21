@@ -398,7 +398,6 @@ namespace
             specular_weight *= rcp_total_weight;
 
             float pdf_matte = 0.0f, pdf_specular = 0.0f;
-            value.set(0.0f);
 
             if (ScatteringMode::has_diffuse(modes))
             {

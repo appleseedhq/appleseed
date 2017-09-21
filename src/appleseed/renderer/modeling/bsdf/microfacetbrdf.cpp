@@ -276,7 +276,6 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
             const float glossiness = values->m_glossiness * values->m_glossiness_multiplier;
 
-            value.set(0.0f);
             float pdf = 0.0f;
 
             switch (m_mdf)

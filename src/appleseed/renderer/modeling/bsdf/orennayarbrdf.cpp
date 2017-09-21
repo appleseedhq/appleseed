@@ -181,8 +181,6 @@ namespace
             if (cos_in < 0.0f)
                 return 0.0f;
 
-            value.set(0.0f);
-
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
             if (values->m_roughness != 0.0f)

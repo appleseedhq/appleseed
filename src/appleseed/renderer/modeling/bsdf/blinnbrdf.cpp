@@ -194,7 +194,6 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
             const FresnelFun f(values->m_precomputed.m_outside_ior / values->m_ior);
 
-            value.set(0.0f);
             const float pdf = MicrofacetBRDFHelper::evaluate(
                 m_mdf,
                 values->m_exponent,
