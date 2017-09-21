@@ -301,7 +301,6 @@ namespace
             const float cos_hv = dot(h, shading_basis.get_tangent_v());
 
             float pdf_diffuse = 0.0f, pdf_glossy = 0.0f;
-            value.set(0.0f);
 
             if (ScatteringMode::has_diffuse(modes))
             {

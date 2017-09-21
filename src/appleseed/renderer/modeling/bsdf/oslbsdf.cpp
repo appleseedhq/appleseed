@@ -276,7 +276,6 @@ namespace
             c->compute_pdfs(modes, pdfs);
 
             float prob = 0.0f;
-            value.set(0.0f);
 
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
@@ -417,7 +416,7 @@ namespace
         auto_release_ptr<BSDF> create_and_register_diffuse_btdf()
         {
             auto_release_ptr<BSDF> bsdf =
-                DiffuseBTDFFactory().create_osl("diffuse_btdf", ParamArray());
+                DiffuseBTDFFactory().create("diffuse_btdf", ParamArray());
 
             m_all_bsdfs[TranslucentID] = bsdf.get();
             return bsdf;
@@ -428,7 +427,7 @@ namespace
             const char*             mdf_name)
         {
             auto_release_ptr<BSDF> bsdf =
-                GlassBSDFFactory().create_osl(
+                GlassBSDFFactory().create(
                     "glass_bsdf",
                     ParamArray()
                         .insert("mdf", mdf_name)

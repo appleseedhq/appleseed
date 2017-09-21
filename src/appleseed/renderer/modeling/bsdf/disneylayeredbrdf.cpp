@@ -172,10 +172,7 @@ float DisneyLayeredBRDF::evaluate(
     DirectShadingComponents&    value) const
 {
     if (m_parent->get_layer_count() == 0)
-    {
-        value.set(0.0f);
         return 0.0f;
-    }
 
     return m_brdf->evaluate(
         data,

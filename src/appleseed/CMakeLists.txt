@@ -1312,7 +1312,6 @@ source_group ("renderer\\modeling\\aov" FILES
 set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/ashikhminbrdf.cpp
     renderer/modeling/bsdf/ashikhminbrdf.h
-    renderer/modeling/bsdf/backfacingpolicy.h
     renderer/modeling/bsdf/blinnbrdf.cpp
     renderer/modeling/bsdf/blinnbrdf.h
     renderer/modeling/bsdf/bsdf.cpp

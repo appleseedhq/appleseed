@@ -296,8 +296,6 @@ namespace
 
             float pdf_glossy = 0.0f, pdf_diffuse = 0.0f;
 
-            value.set(0.0f);
-
             if (ScatteringMode::has_glossy(modes))
             {
                 evaluate_specular(

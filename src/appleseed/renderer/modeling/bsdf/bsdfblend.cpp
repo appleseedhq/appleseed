@@ -210,7 +210,6 @@ namespace
                     : 0.0f;
 
             // Blend BSDF values.
-            value.set(0.0f);
             if (bsdf0_prob > 0.0f) madd(value, bsdf0_value, w0);
             if (bsdf1_prob > 0.0f) madd(value, bsdf1_value, w1);
 
