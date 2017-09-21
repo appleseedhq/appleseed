@@ -430,4 +430,35 @@ TEST_SUITE(ImageTools)
     }
 
 #endif
+
+#if 0
+
+    TEST_CASE(GenerateSineBumpMap)
+    {
+        const size_t ImageSize = 512;
+
+        Image image(
+            ImageSize,
+            ImageSize,
+            32,
+            32,
+            4,
+            PixelFormatFloat);
+
+        for (size_t y = 0; y < ImageSize; ++y)
+        {
+            for (size_t x = 0; x < ImageSize; ++x)
+            {
+                const float fx = fit<size_t, float>(x, 0, ImageSize - 1, -1.0f, +1.0f);
+                const float height = 0.5f + 0.5f * cos(fx * TwoPi<float>());
+                const Color4f color(height, height, height, 1.0f);
+                image.set_pixel(x, y, color);
+            }
+        }
+
+        GenericImageFileWriter writer;
+        writer.write("unit tests/outputs/test_imagetools_sinebump.exr", image);
+    }
+
+#endif
 }
