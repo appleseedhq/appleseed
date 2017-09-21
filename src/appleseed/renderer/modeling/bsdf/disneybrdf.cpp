@@ -266,10 +266,10 @@ namespace
                     sample.m_shading_basis,
                     sample.m_outgoing.get_value(),
                     incoming,
-                    sample.m_value.m_diffuse);
+                    sample.m_value.m_glossy);
             assert(sample.m_probability > 0.0f);
 
-            sample.m_mode = ScatteringMode::Diffuse;
+            sample.m_mode = ScatteringMode::Glossy;
             sample.m_incoming = Dual3f(incoming);
             sample.compute_reflected_differentials();
         }
@@ -496,7 +496,6 @@ namespace
 
             if (weights[SheenComponent] > 0.0f)
             {
-                Spectrum sheen;
                 sample.m_probability +=
                     weights[SheenComponent] *
                     DisneySheenComponent().evaluate(
@@ -504,8 +503,7 @@ namespace
                         sample.m_shading_basis,
                         outgoing,
                         incoming,
-                        sheen);
-                sample.m_value.m_diffuse += sheen;
+                        sample.m_value.m_glossy);
             }
 
             if (weights[SpecularComponent] > 0.0f)
@@ -585,7 +583,6 @@ namespace
             float weights[NumComponents];
             compute_component_weights(values, modes, weights);
 
-            value.set(0.0f);
             float pdf = 0.0f;
 
             if (weights[DiffuseComponent] > 0.0f)
@@ -602,7 +599,6 @@ namespace
 
             if (weights[SheenComponent] > 0.0f)
             {
-                Spectrum sheen;
                 pdf +=
                     weights[SheenComponent] *
                     DisneySheenComponent().evaluate(
@@ -610,8 +606,7 @@ namespace
                         shading_basis,
                         outgoing,
                         incoming,
-                        sheen);
-                value.m_diffuse += sheen;
+                        value.m_glossy);
             }
 
             if (weights[SpecularComponent] > 0.0f)
@@ -622,6 +617,8 @@ namespace
                     values->m_anisotropic,
                     alpha_x,
                     alpha_y);
+
+                Spectrum spec;
                 const GGXMDF ggx_mdf;
                 pdf +=
                     weights[SpecularComponent] *
@@ -636,7 +633,8 @@ namespace
                         DisneySpecularFresnelFun(*values),
                         cos_in,
                         cos_on,
-                        value.m_glossy);
+                        spec);
+                value.m_glossy += spec;
             }
 
             if (weights[ClearcoatComponent] > 0.0f)
@@ -752,23 +750,19 @@ namespace
             float                       weights[NumComponents])
         {
             if (ScatteringMode::has_diffuse(modes))
-            {
                 weights[DiffuseComponent] = lerp(values->m_precomputed.m_base_color_luminance, 0.0f, values->m_metallic);
-                weights[SheenComponent] = lerp(values->m_sheen, 0.0f, values->m_metallic);
-            }
             else
-            {
                 weights[DiffuseComponent] = 0.0f;
-                weights[SheenComponent] = 0.0f;
-            }
 
             if (ScatteringMode::has_glossy(modes))
             {
+                weights[SheenComponent] = lerp(values->m_sheen, 0.0f, values->m_metallic);
                 weights[SpecularComponent] = lerp(values->m_specular, 1.0f, values->m_metallic);
                 weights[ClearcoatComponent] = values->m_clearcoat * 0.25f;
             }
             else
             {
+                weights[SheenComponent] = 0.0f;
                 weights[SpecularComponent] = 0.0f;
                 weights[ClearcoatComponent] = 0.0f;
             }
