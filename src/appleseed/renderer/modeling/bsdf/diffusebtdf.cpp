@@ -33,7 +33,6 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
-#include "renderer/modeling/bsdf/backfacingpolicy.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 
@@ -64,7 +63,6 @@ namespace
 
     const char* Model = "diffuse_btdf";
 
-    template <typename BackfacingPolicy>
     class DiffuseBTDFImpl
       : public BSDF
     {
@@ -115,8 +113,13 @@ namespace
                 return;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            const BackfacingPolicy backfacing_policy(sample.m_shading_basis, values->m_precomputed.m_backfacing);
-            const Vector3f wo = backfacing_policy.transform_to_local(sample.m_outgoing.get_value());
+
+            const Basis3f basis(
+                values->m_precomputed.m_backfacing
+                    ? Basis3f(-sample.m_shading_basis.get_normal(), sample.m_shading_basis.get_tangent_u(), -sample.m_shading_basis.get_tangent_v())
+                    : sample.m_shading_basis);
+
+            const Vector3f wo = basis.transform_to_local(sample.m_outgoing.get_value());
 
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
@@ -126,8 +129,8 @@ namespace
             // Transform the incoming direction to parent space.
             sample.m_incoming = Dual3f(
                 wo.y < 0.0f
-                    ?  backfacing_policy.transform_to_parent(wi)
-                    : -backfacing_policy.transform_to_parent(wi));
+                    ?  basis.transform_to_parent(wi)
+                    : -basis.transform_to_parent(wi));
 
             // Compute the BRDF value.
             sample.m_value.m_diffuse = values->m_transmittance;
@@ -157,16 +160,18 @@ namespace
                 return 0.0f;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            const BackfacingPolicy backfacing_policy(shading_basis, values->m_precomputed.m_backfacing);
 
-            const Vector3f& n = backfacing_policy.get_normal();
+            const Vector3f n =
+                values->m_precomputed.m_backfacing
+                    ? -shading_basis.get_normal()
+                    :  shading_basis.get_normal();
+
             const float cos_in = dot(incoming, n);
             const float cos_on = dot(outgoing, n);
 
             if (cos_in * cos_on < 0.0f)
             {
                 // Compute the BRDF value.
-                value.set(0.0f);
                 value.m_diffuse = values->m_transmittance;
                 value.m_diffuse *= values->m_transmittance_multiplier * RcpPi<float>();
                 value.m_beauty = value.m_diffuse;
@@ -193,9 +198,12 @@ namespace
                 return 0.0f;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            const BackfacingPolicy backfacing_policy(shading_basis, values->m_precomputed.m_backfacing);
 
-            const Vector3f& n = backfacing_policy.get_normal();
+            const Vector3f n =
+                values->m_precomputed.m_backfacing
+                    ? -shading_basis.get_normal()
+                    :  shading_basis.get_normal();
+
             const float cos_in = dot(incoming, n);
             const float cos_on = dot(outgoing, n);
 
@@ -212,8 +220,7 @@ namespace
         typedef DiffuseBTDFInputValues InputValues;
     };
 
-    typedef BSDFWrapper<DiffuseBTDFImpl<FlipBackfacingNormalsPolicy>> AppleseedDiffuseBTDF;
-    typedef BSDFWrapper<DiffuseBTDFImpl<UseOriginalNormalsPolicy>> OSLDiffuseBTDF;
+    typedef BSDFWrapper<DiffuseBTDFImpl> DiffuseBTDF;
 }
 
 
@@ -267,21 +274,14 @@ auto_release_ptr<BSDF> DiffuseBTDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<BSDF>(new AppleseedDiffuseBTDF(name, params));
-}
-
-auto_release_ptr<BSDF> DiffuseBTDFFactory::create_osl(
-    const char*         name,
-    const ParamArray&   params) const
-{
-    return auto_release_ptr<BSDF>(new OSLDiffuseBTDF(name, params));
+    return auto_release_ptr<BSDF>(new DiffuseBTDF(name, params));
 }
 
 auto_release_ptr<BSDF> DiffuseBTDFFactory::static_create(
     const char*         name,
     const ParamArray&   params)
 {
-    return auto_release_ptr<BSDF>(new AppleseedDiffuseBTDF(name, params));
+    return auto_release_ptr<BSDF>(new DiffuseBTDF(name, params));
 }
 
 }   // namespace renderer

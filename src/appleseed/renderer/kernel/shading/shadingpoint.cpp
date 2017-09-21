@@ -598,9 +598,6 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
     m_dpdx = ray.m_rx.point_at(tx) - p;
     m_dpdy = ray.m_ry.point_at(ty) - p;
 
-    if (get_side() == ObjectInstance::BackSide)
-        m_dpdx = -m_dpdx;
-
     // Select the two axes along which the normal has the smallest components.
     static const size_t Axes[3][2] = { {1, 2}, {0, 2}, {0, 1} };
     const size_t max_index = max_abs_index(n);
@@ -961,7 +958,7 @@ void ShadingPoint::initialize_osl_shader_globals(
         }
 
         // Shading and geometric normals and backfacing flag.
-        m_shader_globals.N = Vector3f(get_original_shading_normal());
+        m_shader_globals.N = Vector3f(get_shading_normal());
         m_shader_globals.Ng = Vector3f(get_geometric_normal());
         m_shader_globals.backfacing = get_side() == ObjectInstance::FrontSide ? 0 : 1;
 
