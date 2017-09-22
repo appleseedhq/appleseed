@@ -2444,7 +2444,7 @@ namespace
         {
             try
             {
-                const typename AOVFactoryRegistrar::FactoryType* factory =
+                const AOVFactoryRegistrar::FactoryType* factory =
                     m_registrar.lookup(m_model.c_str());
 
                 if (factory)
