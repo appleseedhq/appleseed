@@ -114,23 +114,16 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            const Basis3f basis(
-                values->m_precomputed.m_backfacing
-                    ? Basis3f(-sample.m_shading_basis.get_normal(), sample.m_shading_basis.get_tangent_u(), -sample.m_shading_basis.get_tangent_v())
-                    : sample.m_shading_basis);
-
-            const Vector3f wo = basis.transform_to_local(sample.m_outgoing.get_value());
-
-            // Compute the incoming direction in local space.
+            // Compute the incoming direction.
             sampling_context.split_in_place(2, 1);
             const Vector2f s = sampling_context.next2<Vector2f>();
-            const Vector3f wi = sample_hemisphere_cosine(s);
+            Vector3f wi = sample_hemisphere_cosine(s);
+            const float cos_in = wi.y;
 
-            // Transform the incoming direction to parent space.
-            sample.m_incoming = Dual3f(
-                wo.y < 0.0f
-                    ?  basis.transform_to_parent(wi)
-                    : -basis.transform_to_parent(wi));
+            // Flip the incoming direction to the other side of the surface.
+            wi.y = -wi.y;
+
+            sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
 
             // Compute the BRDF value.
             sample.m_value.m_diffuse = values->m_transmittance;
@@ -138,7 +131,7 @@ namespace
             sample.m_value.m_beauty = sample.m_value.m_diffuse;
 
             // Compute the probability density of the sampled direction.
-            sample.m_probability = abs(wi.y) * RcpPi<float>();
+            sample.m_probability = cos_in * RcpPi<float>();
             assert(sample.m_probability > 0.0f);
 
             // Set the scattering mode.
@@ -159,18 +152,14 @@ namespace
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0f;
 
-            const InputValues* values = static_cast<const InputValues*>(data);
-
-            const Vector3f n =
-                values->m_precomputed.m_backfacing
-                    ? -shading_basis.get_normal()
-                    :  shading_basis.get_normal();
-
+            const Vector3f& n = shading_basis.get_normal();
             const float cos_in = dot(incoming, n);
             const float cos_on = dot(outgoing, n);
 
             if (cos_in * cos_on < 0.0f)
             {
+                const InputValues* values = static_cast<const InputValues*>(data);
+
                 // Compute the BRDF value.
                 value.m_diffuse = values->m_transmittance;
                 value.m_diffuse *= values->m_transmittance_multiplier * RcpPi<float>();
@@ -197,13 +186,7 @@ namespace
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0f;
 
-            const InputValues* values = static_cast<const InputValues*>(data);
-
-            const Vector3f n =
-                values->m_precomputed.m_backfacing
-                    ? -shading_basis.get_normal()
-                    :  shading_basis.get_normal();
-
+            const Vector3f& n = shading_basis.get_normal();
             const float cos_in = dot(incoming, n);
             const float cos_on = dot(outgoing, n);
 
