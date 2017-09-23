@@ -136,8 +136,13 @@ class APPLESEED_DLLSYMBOL Frame
     bool write_aov_images(const char* file_path) const;
     bool write_aov_image(const char* file_path, const size_t aov_index) const;
 
-    // Write the main image and the AOVs as a multipart OpenEXR file.
-    void write_image_and_aovs_to_multipart_exr(const char* file_path) const;
+    // Write the main image and the AOV images to disk.
+    // The images file paths are taken from the frame and AOV "output_filename" parameters.
+    // Return true if successful, false otherwise.
+    bool write_main_and_aov_images() const;
+
+    // Write the main image and the AOVs to a multipart OpenEXR file.
+    void write_main_and_aov_images_to_multipart_exr(const char* file_path) const;
 
     // Archive the frame to a given directory on disk. If output_path is provided,
     // the full path to the output file will be returned. The returned string must
