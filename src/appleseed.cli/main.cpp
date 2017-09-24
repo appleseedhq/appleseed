@@ -608,39 +608,16 @@ namespace
         }
 
         // Write the frame to disk.
+
         if (g_cl.m_output.is_set())
         {
-            LOG_INFO(g_logger, "writing frame to disk...");
             project->get_frame()->write_main_image(g_cl.m_output.value().c_str());
             project->get_frame()->write_aov_images(g_cl.m_output.value().c_str());
         }
         else
         {
             const Frame* frame = project->get_frame();
-
-            // Write the main image.
-            const string output_filename =
-                frame->get_parameters().get_optional<string>("output_filename");
-
-            if (!output_filename.empty())
-            {
-                LOG_INFO(g_logger, "writing frame to disk...");
-                frame->write_main_image(output_filename.c_str());
-            }
-
-            // Write AOVs.
-            for (size_t i = 0, e = frame->aovs().size(); i < e; ++i)
-            {
-                const AOV* aov = frame->aovs().get_by_index(i);
-                const string output_filename =
-                    aov->get_parameters().get_optional<string>("output_filename");
-
-                if (!output_filename.empty())
-                {
-                    LOG_INFO(g_logger, "writing %s aov to disk...", aov->get_model());
-                    frame->write_aov_image(output_filename.c_str(), i);
-                }
-            }
+            frame->write_main_and_aov_images();
         }
 
 #if defined __APPLE__ || defined _WIN32
