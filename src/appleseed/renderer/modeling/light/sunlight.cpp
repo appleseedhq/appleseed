@@ -100,6 +100,7 @@ namespace
             m_inputs.declare("turbidity", InputFormatFloat);
             m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("size_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("distance", InputFormatFloat, "1.0");
         }
 
         virtual void release() override
@@ -251,6 +252,7 @@ namespace
             float           m_turbidity;                // atmosphere turbidity
             float           m_radiance_multiplier;      // emitted radiance multiplier
             float           m_size_multiplier;          // sun size multiplier
+            float           m_distance;                 // distance between sun and earth
         };
 
         Vector3d            m_scene_center;             // world space
@@ -412,12 +414,13 @@ namespace
             }
         }
 
-        static double compute_sun_radius(const double distance)
+        static double compute_sun_radius(const double distance, const double m_safe_scene_radius)
         {
-            // angular diameter = sun diameter / distance -> sun diameter = angular diameter * distance
-            // sun diameter = 0.009301 radians * distance
-            // sun radius = 0.0046505 radians * distance
-            return 0.0046505 * distance;
+            // angular diameter = sun diameter / distance
+            // virtual sun diameter = angular diameter * scene_radius
+            // virtual sun radius = angular diameter * scene_radius / 2 -> (1.3914 * scene_radius) / (distance * 2)
+        
+            return 1.3914 / distance * m_safe_scene_radius / 2;
         }
 
         void sample_disk(
@@ -467,7 +470,7 @@ namespace
 
             const Basis3d basis(outgoing);
             const Vector2d p = sample_disk_uniform(s);
-            const double sun_radius = compute_sun_radius(m_scene_radius) * m_values.m_size_multiplier;
+            const double sun_radius = compute_sun_radius(m_values.m_distance,m_safe_scene_diameter) * m_values.m_size_multiplier;
 
             position =
                   target_point
@@ -582,6 +585,23 @@ DictionaryArray SunLightFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("help", "The size multiplier allows to make the sun bigger or smaller, hence making it cast softer or harder shadows"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "distance")
+            .insert("label", "Distance")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "500.0")
+                    .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", "149.6")
+            .insert("help", "Distance between sun and earth(millions of km)"));
 
     add_common_input_metadata(metadata);
 
