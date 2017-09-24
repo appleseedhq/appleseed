@@ -44,6 +44,8 @@
 
 // Forward declarations.
 namespace renderer  { class Camera; }
+namespace renderer  { class Frame; }
+namespace renderer  { class PixelContext; }
 namespace renderer  { class ShadingComponents; }
 namespace renderer  { class ShadingPoint; }
 namespace renderer  { class ShadingResult; }
@@ -65,20 +67,28 @@ class AOVAccumulator
     // Delete this instance.
     void release();
 
-    // Reset the accumulator.
-    virtual void reset() = 0;
+    virtual void on_tile_begin(
+        const Frame&                frame,
+        const size_t                tile_x,
+        const size_t                tile_y);
+
+    virtual void on_tile_end(
+        const Frame&                frame,
+        const size_t                tile_x,
+        const size_t                tile_y);
+
+    virtual void on_pixel_begin();
+    virtual void on_pixel_end();
+
+    virtual void on_sample_begin();
+    virtual void on_sample_end();
 
     // Write a value to the accumulator.
-    // Normally, this is used for shading AOVs like diffuse, glossy...
     virtual void write(
+        const PixelContext&         pixel_context,
+        const ShadingPoint&         shading_point,
         const ShadingComponents&    shading_components,
         const float                 multiplier);
-
-    // Write a value to the accumulator.
-    // Normally, this is used for geometry AOVs like normals, velocity...
-    virtual void write(
-        const ShadingPoint&         shading_point,
-        const Camera&               camera);
 
     // Flush the result.
     virtual void flush(ShadingResult& result) = 0;
@@ -101,9 +111,6 @@ class ColorAOVAccumulator
   public:
     // Destructor.
     ~ColorAOVAccumulator() override;
-
-    // Reset the accumulator.
-    void reset() override;
 
     // Flush the result.
     void flush(ShadingResult& result) override;
@@ -133,9 +140,9 @@ class BeautyAOVAccumulator
 
     void apply_multiplier(const float multiplier);
 
-    virtual void reset() override;
-
     virtual void write(
+        const PixelContext&         pixel_context,
+        const ShadingPoint&         shading_point,
         const ShadingComponents&    shading_components,
         const float                 multiplier) override;
 
@@ -162,8 +169,6 @@ class AlphaAOVAccumulator
 
     void apply_multiplier(const Alpha& multiplier);
 
-    virtual void reset() override;
-
     virtual void flush(ShadingResult& result) override;
 
   private:
@@ -188,18 +193,28 @@ class AOVAccumulatorContainer
     // Destructor.
     ~AOVAccumulatorContainer();
 
-    // Reset all accumulators.
-    void reset();
+    void on_tile_begin(
+        const Frame&                frame,
+        const size_t                tile_x,
+        const size_t                tile_y);
+
+    void on_tile_end(
+        const Frame&                frame,
+        const size_t                tile_x,
+        const size_t                tile_y);
+
+    void on_pixel_begin();
+    void on_pixel_end();
+
+    void on_sample_begin();
+    void on_sample_end();
 
     // Write a sample to all accumulators.
     void write(
+        const PixelContext&         pixel_context,
+        const ShadingPoint&         shading_point,
         const ShadingComponents&    shading_components,
         const float                 multiplier);
-
-    // Write a sample to all accumulators.
-    void write(
-        const ShadingPoint&         shading_point,
-        const Camera&               camera);
 
     // Flush all the accumulators.
     void flush(ShadingResult& result);

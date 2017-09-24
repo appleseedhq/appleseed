@@ -67,6 +67,8 @@ namespace
         }
 
         virtual void write(
+            const PixelContext&         pixel_context,
+            const ShadingPoint&         shading_point,
             const ShadingComponents&    shading_components,
             const float                 multiplier) override
         {

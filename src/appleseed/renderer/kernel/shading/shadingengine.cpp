@@ -179,7 +179,11 @@ void ShadingEngine::shade_environment(
             alpha);
 
         value.m_beauty = value.m_emission;
-        aov_accumulators.write(value, 1.0f);
+        aov_accumulators.write(
+            pixel_context,
+            shading_point,
+            value,
+            1.0f);
         aov_accumulators.alpha().set(alpha);
     }
 }

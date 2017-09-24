@@ -65,17 +65,16 @@ namespace
         {
         }
 
-        virtual void reset() override
-        {
-            m_uvs = Vector2f(0.0f);
-        }
-
         virtual void write(
-            const ShadingPoint&     shading_point,
-            const Camera&           camera) override
+            const PixelContext&         pixel_context,
+            const ShadingPoint&         shading_point,
+            const ShadingComponents&    shading_components,
+            const float                 multiplier) override
         {
             if (shading_point.hit())
                 m_uvs = shading_point.get_uv(0);
+            else
+                m_uvs = Vector2f(0.0f);
         }
 
         virtual void flush(ShadingResult& result) override

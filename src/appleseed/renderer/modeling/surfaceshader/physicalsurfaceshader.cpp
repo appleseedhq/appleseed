@@ -120,7 +120,11 @@ namespace
                 radiance /= static_cast<float>(m_lighting_samples);
 
             // Accumulate into AOVs.
-            aov_accumulators.write(radiance, 1.0f);
+            aov_accumulators.write(
+                pixel_context,
+                shading_point,
+                radiance,
+                1.0f);
         }
 
       private:

@@ -66,17 +66,16 @@ namespace
         {
         }
 
-        virtual void reset() override
-        {
-            m_depth = numeric_limits<float>::max();
-        }
-
         virtual void write(
-            const ShadingPoint&     shading_point,
-            const Camera&           camera) override
+            const PixelContext&         pixel_context,
+            const ShadingPoint&         shading_point,
+            const ShadingComponents&    shading_components,
+            const float                 multiplier)
         {
             if (shading_point.hit())
                 m_depth = static_cast<float>(shading_point.get_distance());
+            else
+                m_depth = numeric_limits<float>::max();
         }
 
         virtual void flush(ShadingResult& result) override

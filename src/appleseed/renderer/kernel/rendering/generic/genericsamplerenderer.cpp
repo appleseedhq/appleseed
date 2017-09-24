@@ -175,6 +175,8 @@ namespace
             const ShadingPoint* shading_point_ptr = 0;
             size_t iterations = 0;
 
+            aov_accumulators.on_sample_begin();
+
             while (true)
             {
                 // Put a hard limit on the number of iterations.
@@ -199,8 +201,6 @@ namespace
                 shading_point_ptr = &shading_points[shading_point_index];
                 shading_point_index = 1 - shading_point_index;
 
-                aov_accumulators.reset();
-
                 if (iterations == 1)
                 {
                     // Shade the intersection point.
@@ -210,10 +210,6 @@ namespace
                         m_shading_context,
                         *shading_point_ptr,
                         aov_accumulators);
-
-                    aov_accumulators.write(
-                        *shading_point_ptr,
-                        *m_scene.get_active_camera());
 
                     aov_accumulators.flush(shading_result);
 
@@ -231,10 +227,6 @@ namespace
                         m_shading_context,
                         *shading_point_ptr,
                         aov_accumulators);
-
-                    aov_accumulators.write(
-                        *shading_point_ptr,
-                        *m_scene.get_active_camera());
 
                     aov_accumulators.flush(local_result);
 
@@ -263,6 +255,8 @@ namespace
                     primary_ray.m_ry.m_org = primary_ray.m_ry.point_at(t);
                 }
             }
+
+            aov_accumulators.on_sample_end();
 
 #ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
 
