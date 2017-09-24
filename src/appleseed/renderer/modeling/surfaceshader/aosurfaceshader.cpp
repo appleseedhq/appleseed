@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/shading/ambientocclusion.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/input/inputarray.h"
@@ -133,7 +134,13 @@ namespace
 
             const float accessibility = static_cast<float>(1.0 - occlusion);
 
-            aov_accumulators.beauty().set(Color3f(accessibility));
+            ShadingComponents shading_components;
+            result.m_beauty.set(accessibility);
+            aov_accumulators.write(
+                pixel_context,
+                shading_point,
+                shading_components,
+                1.0f);
         }
 
       private:

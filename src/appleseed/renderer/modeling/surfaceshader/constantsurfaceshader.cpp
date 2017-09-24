@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/aov/aovaccumulator.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/input/inputarray.h"
@@ -114,15 +115,18 @@ namespace
                 &values);
 
             // Initialize the shading result.
-            aov_accumulators.beauty().set(values.m_color);
+            ShadingComponents shading_components;
+            shading_components.m_beauty = values.m_color;
+            shading_components.m_beauty *= values.m_color_multiplier;
+            aov_accumulators.write(
+                pixel_context,
+                shading_point,
+                shading_components,
+                1.0f);
 
             // This surface shader can override alpha.
             if (m_alpha_source == AlphaSourceColor)
-                aov_accumulators.alpha().set(values.m_alpha);
-
-            // Apply multipliers.
-            aov_accumulators.beauty().apply_multiplier(values.m_color_multiplier);
-            aov_accumulators.alpha().apply_multiplier(Alpha(values.m_alpha_multiplier));
+                aov_accumulators.alpha().set(values.m_alpha * values.m_alpha_multiplier);
         }
 
       private:
