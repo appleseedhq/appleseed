@@ -68,26 +68,20 @@ namespace
         virtual void write(
             const PixelContext&         pixel_context,
             const ShadingPoint&         shading_point,
-            const ShadingComponents&    shading_components) override
+            const ShadingComponents&    shading_components,
+            ShadingResult&              shading_result) override
         {
             if (shading_point.hit())
-                m_normal = Vector3f(shading_point.get_shading_normal());
-            else
-                m_normal = Vector3f(0.0f);
+            {
+                const Vector3f normal(shading_point.get_shading_normal());
+                shading_result.m_aovs[m_index] =
+                    Color4f(
+                        normal[0] * 0.5f + 0.5f,
+                        normal[1] * 0.5f + 0.5f,
+                        normal[2] * 0.5f + 0.5f,
+                        1.0f);
+            }
         }
-
-        virtual void flush(ShadingResult& result) override
-        {
-            result.m_aovs[m_index] =
-                Color4f(
-                    m_normal[0] * 0.5f + 0.5f,
-                    m_normal[1] * 0.5f + 0.5f,
-                    m_normal[2] * 0.5f + 0.5f,
-                    1.0f);
-        }
-
-      private:
-        Vector3f m_normal;
     };
 
 

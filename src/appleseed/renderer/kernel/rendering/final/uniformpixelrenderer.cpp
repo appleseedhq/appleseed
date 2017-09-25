@@ -33,7 +33,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/rendering/final/pixelsampler.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
@@ -125,7 +124,6 @@ namespace
             const size_t aov_count = frame.aov_images().size();
 
             on_pixel_begin();
-            aov_accumulators.on_pixel_begin();
 
             if (m_params.m_decorrelate)
             {
@@ -239,7 +237,6 @@ namespace
                 }
             }
 
-            aov_accumulators.on_pixel_end();
             on_pixel_end(pi);
         }
 

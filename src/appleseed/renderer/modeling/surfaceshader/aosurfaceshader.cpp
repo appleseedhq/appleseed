@@ -31,11 +31,11 @@
 #include "aosurfaceshader.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/shading/ambientocclusion.h"
 #include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
@@ -105,7 +105,8 @@ namespace
             const PixelContext&         pixel_context,
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point,
-            AOVAccumulatorContainer&    aov_accumulators) const override
+            AOVAccumulatorContainer&    aov_accumulators,
+            ShadingResult&              shading_result) const override
         {
             double occlusion;
 
@@ -133,13 +134,7 @@ namespace
             }
 
             const float accessibility = static_cast<float>(1.0 - occlusion);
-
-            ShadingComponents shading_components;
-            result.m_beauty.set(accessibility);
-            aov_accumulators.write(
-                pixel_context,
-                shading_point,
-                shading_components);
+            shading_result.m_main = Color4f(accessibility, accessibility, accessibility, 1.0f);
         }
 
       private:

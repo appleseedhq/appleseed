@@ -103,7 +103,8 @@ namespace
             const PixelContext&         pixel_context,
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point,
-            AOVAccumulatorContainer&    aov_accumulators) const override
+            AOVAccumulatorContainer&    aov_accumulators,
+            ShadingResult&              shading_result) const override
         {
             // Compute lighting.
             ShadingComponents radiance;
@@ -123,7 +124,8 @@ namespace
             aov_accumulators.write(
                 pixel_context,
                 shading_point,
-                radiance);
+                radiance,
+                shading_result);
         }
 
       private:

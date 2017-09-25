@@ -69,21 +69,15 @@ namespace
         virtual void write(
             const PixelContext&         pixel_context,
             const ShadingPoint&         shading_point,
-            const ShadingComponents&    shading_components)
+            const ShadingComponents&    shading_components,
+            ShadingResult&              shading_result)
         {
-            if (shading_point.hit())
-                m_depth = static_cast<float>(shading_point.get_distance());
-            else
-                m_depth = numeric_limits<float>::max();
-        }
+            const float depth = shading_point.hit()
+                ? static_cast<float>(shading_point.get_distance())
+                : numeric_limits<float>::max();
 
-        virtual void flush(ShadingResult& result) override
-        {
-            result.m_aovs[m_index] = Color4f(m_depth, m_depth, m_depth, 1.0f);
+            shading_result.m_aovs[m_index] = Color4f(depth, depth, depth, 1.0f);
         }
-
-      private:
-        float m_depth;
     };
 
 

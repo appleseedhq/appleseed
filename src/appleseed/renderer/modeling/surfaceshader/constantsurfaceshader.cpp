@@ -32,10 +32,10 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/aov/aovaccumulator.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/shading/shadingresult.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/paramarray.h"
@@ -105,7 +105,8 @@ namespace
             const PixelContext&         pixel_context,
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point,
-            AOVAccumulatorContainer&    aov_accumulators) const override
+            AOVAccumulatorContainer&    aov_accumulators,
+            ShadingResult&              shading_result) const override
         {
             // Evaluate the shader inputs.
             InputValues values;
@@ -115,17 +116,11 @@ namespace
                 &values);
 
             // Initialize the shading result.
-            ShadingComponents shading_components;
-            shading_components.m_beauty = values.m_color;
-            shading_components.m_beauty *= values.m_color_multiplier;
-            aov_accumulators.write(
-                pixel_context,
-                shading_point,
-                shading_components);
+            shading_result.m_main.rgb() = values.m_color.to_rgb(g_std_lighting_conditions);
 
             // This surface shader can override alpha.
             if (m_alpha_source == AlphaSourceColor)
-                aov_accumulators.alpha().set(values.m_alpha * values.m_alpha_multiplier);
+                shading_result.m_main.a = values.m_alpha[0] * values.m_alpha_multiplier;
         }
 
       private:

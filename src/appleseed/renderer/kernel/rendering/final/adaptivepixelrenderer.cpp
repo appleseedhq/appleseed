@@ -33,7 +33,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/aov/aovsettings.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/aov/tilestack.h"
@@ -169,7 +168,6 @@ namespace
             const size_t aov_count = frame.aov_images().size();
 
             on_pixel_begin();
-            aov_accumulators.on_pixel_begin();
 
             m_scratch_fb->clear();
 
@@ -295,7 +293,6 @@ namespace
                 m_diagnostics->set_pixel(pt.x, pt.y, values);
             }
 
-            aov_accumulators.on_pixel_end();
             on_pixel_end(pi);
         }
 

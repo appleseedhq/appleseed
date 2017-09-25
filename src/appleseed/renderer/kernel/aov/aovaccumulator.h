@@ -77,98 +77,18 @@ class AOVAccumulator
         const size_t                tile_x,
         const size_t                tile_y);
 
-    virtual void on_pixel_begin();
-    virtual void on_pixel_end();
-
-    virtual void on_sample_begin();
-    virtual void on_sample_end();
-
     // Write a value to the accumulator.
     virtual void write(
         const PixelContext&         pixel_context,
         const ShadingPoint&         shading_point,
-        const ShadingComponents&    shading_components);
-
-    // Flush the result.
-    virtual void flush(ShadingResult& result) = 0;
+        const ShadingComponents&    shading_components,
+        ShadingResult&              shading_result);
 
   protected:
     // Constructor.
     explicit AOVAccumulator(const size_t index);
 
     const size_t m_index;
-};
-
-
-//
-// Color AOV accumulator base class.
-//
-
-class ColorAOVAccumulator
-  : public AOVAccumulator
-{
-  public:
-    // Destructor.
-    ~ColorAOVAccumulator() override;
-
-    // Flush the result.
-    void flush(ShadingResult& result) override;
-
-  protected:
-    // Constructor.
-    explicit ColorAOVAccumulator(const size_t index);
-
-    foundation::Color3f m_color;
-};
-
-
-//
-// BeautyAOVAccumulator class.
-//
-
-class BeautyAOVAccumulator
-  : public AOVAccumulator
-{
-  public:
-    BeautyAOVAccumulator();
-
-    void set(const Spectrum& value);
-    void set(const foundation::Color3f& color);
-
-    void set_to_pink_linear_rgb();
-
-    virtual void write(
-        const PixelContext&         pixel_context,
-        const ShadingPoint&         shading_point,
-        const ShadingComponents&    shading_components) override;
-
-    virtual void flush(ShadingResult& result) override;
-
-  private:
-    foundation::Color3f m_color;
-};
-
-
-//
-// AlphaAOVAccumulator class.
-//
-
-class AlphaAOVAccumulator
-  : public AOVAccumulator
-{
-  public:
-    AlphaAOVAccumulator();
-
-    const Alpha& get() const;
-
-    void set(const Alpha& alpha);
-
-    void apply_multiplier(const Alpha& multiplier);
-
-    virtual void flush(ShadingResult& result) override;
-
-  private:
-    Alpha m_alpha;
 };
 
 
@@ -202,58 +122,22 @@ class AOVAccumulatorContainer
     void on_pixel_begin();
     void on_pixel_end();
 
-    void on_sample_begin();
-    void on_sample_end();
-
     // Write a sample to all accumulators.
     void write(
         const PixelContext&         pixel_context,
         const ShadingPoint&         shading_point,
-        const ShadingComponents&    shading_components);
-
-    // Flush all the accumulators.
-    void flush(ShadingResult& result);
-
-    // Access the beauty AOV.
-    BeautyAOVAccumulator& beauty();
-
-    // Access the alpha AOV.
-    AlphaAOVAccumulator& alpha();
+        const ShadingComponents&    shading_components,
+        ShadingResult&              shading_result);
 
   private:
     void init();
     bool insert(foundation::auto_release_ptr<AOVAccumulator> aov_accum);
 
-    enum { MaxAovAccumulators = MaxAOVCount + 2 };  // MaxAOVCount + Beauty + Alpha
+    enum { MaxAovAccumulators = MaxAOVCount + 1 };  // MaxAOVCount + Beauty
 
     size_t          m_size;
     AOVAccumulator* m_accumulators[MaxAovAccumulators];
 };
-
-
-//
-// AlphaAOVAccumulator class implementation.
-//
-
-inline const Alpha& AlphaAOVAccumulator::get() const
-{
-    return m_alpha;
-}
-
-
-//
-// AOVAccumulatorContainer class implementation.
-//
-
-inline BeautyAOVAccumulator& AOVAccumulatorContainer::beauty()
-{
-    return static_cast<BeautyAOVAccumulator&>(*m_accumulators[0]);
-}
-
-inline AlphaAOVAccumulator& AOVAccumulatorContainer::alpha()
-{
-    return static_cast<AlphaAOVAccumulator&>(*m_accumulators[1]);
-}
 
 }       // namespace renderer
 

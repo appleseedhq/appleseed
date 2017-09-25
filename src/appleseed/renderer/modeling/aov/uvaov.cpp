@@ -68,21 +68,15 @@ namespace
         virtual void write(
             const PixelContext&         pixel_context,
             const ShadingPoint&         shading_point,
-            const ShadingComponents&    shading_components) override
+            const ShadingComponents&    shading_components,
+            ShadingResult&              shading_result) override
         {
             if (shading_point.hit())
-                m_uvs = shading_point.get_uv(0);
-            else
-                m_uvs = Vector2f(0.0f);
+            {
+                const Vector2f uvs(shading_point.get_uv(0));
+                shading_result.m_aovs[m_index] = Color4f(uvs[0], uvs[1], 0.0f, 1.0f);
+            }
         }
-
-        virtual void flush(ShadingResult& result) override
-        {
-            result.m_aovs[m_index] = Color4f(m_uvs[0], m_uvs[1], 0.0f, 1.0f);
-        }
-
-      private:
-        Vector2f m_uvs;
     };
 
 

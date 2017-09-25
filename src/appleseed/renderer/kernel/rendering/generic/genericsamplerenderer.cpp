@@ -33,7 +33,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
@@ -175,8 +174,6 @@ namespace
             const ShadingPoint* shading_point_ptr = 0;
             size_t iterations = 0;
 
-            aov_accumulators.on_sample_begin();
-
             while (true)
             {
                 // Put a hard limit on the number of iterations.
@@ -209,9 +206,8 @@ namespace
                         pixel_context,
                         m_shading_context,
                         *shading_point_ptr,
-                        aov_accumulators);
-
-                    aov_accumulators.flush(shading_result);
+                        aov_accumulators,
+                        shading_result);
 
                     // Apply alpha premultiplication.
                     if (shading_point_ptr->hit())
@@ -226,9 +222,8 @@ namespace
                         pixel_context,
                         m_shading_context,
                         *shading_point_ptr,
-                        aov_accumulators);
-
-                    aov_accumulators.flush(local_result);
+                        aov_accumulators,
+                        local_result);
 
                     // Apply alpha premultiplication.
                     if (shading_point_ptr->hit())
@@ -255,8 +250,6 @@ namespace
                     primary_ray.m_ry.m_org = primary_ray.m_ry.point_at(t);
                 }
             }
-
-            aov_accumulators.on_sample_end();
 
 #ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
 
