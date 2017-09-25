@@ -69,8 +69,7 @@ namespace
         virtual void write(
             const PixelContext&         pixel_context,
             const ShadingPoint&         shading_point,
-            const ShadingComponents&    shading_components,
-            const float                 multiplier)
+            const ShadingComponents&    shading_components)
         {
             if (shading_point.hit())
                 m_depth = static_cast<float>(shading_point.get_distance());

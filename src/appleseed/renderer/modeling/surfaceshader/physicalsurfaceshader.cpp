@@ -123,8 +123,7 @@ namespace
             aov_accumulators.write(
                 pixel_context,
                 shading_point,
-                radiance,
-                1.0f);
+                radiance);
         }
 
       private:

@@ -148,19 +148,12 @@ void BeautyAOVAccumulator::set_to_pink_linear_rgb()
     set(Color3f(1.0f, 0.0f, 1.0f));
 }
 
-void BeautyAOVAccumulator::apply_multiplier(const float multiplier)
-{
-    m_color *= multiplier;
-}
-
 void BeautyAOVAccumulator::write(
     const PixelContext&         pixel_context,
     const ShadingPoint&         shading_point,
-    const ShadingComponents&    shading_components,
-    const float                 multiplier)
+    const ShadingComponents&    shading_components)
 {
     m_color = shading_components.m_beauty.to_rgb(g_std_lighting_conditions);
-    m_color *= multiplier;
 }
 
 void BeautyAOVAccumulator::flush(ShadingResult& result)
@@ -276,16 +269,14 @@ void AOVAccumulatorContainer::on_sample_end()
 void AOVAccumulatorContainer::write(
     const PixelContext&         pixel_context,
     const ShadingPoint&         shading_point,
-    const ShadingComponents&    shading_components,
-    const float                 multiplier)
+    const ShadingComponents&    shading_components)
 {
     for (size_t i = 0, e = m_size; i < e; ++i)
     {
         m_accumulators[i]->write(
             pixel_context,
             shading_point,
-            shading_components,
-            multiplier);
+            shading_components);
     }
 }
 

@@ -69,8 +69,7 @@ namespace
         virtual void write(
             const PixelContext&         pixel_context,
             const ShadingPoint&         shading_point,
-            const ShadingComponents&    shading_components,
-            const float                 multiplier) override
+            const ShadingComponents&    shading_components) override
         {
             m_color = shading_components.m_diffuse.to_rgb(g_std_lighting_conditions);
             m_color += shading_components.m_indirect_diffuse.to_rgb(g_std_lighting_conditions);
@@ -95,8 +94,7 @@ namespace
         virtual void write(
             const PixelContext&         pixel_context,
             const ShadingPoint&         shading_point,
-            const ShadingComponents&    shading_components,
-            const float                 multiplier) override
+            const ShadingComponents&    shading_components) override
         {
             m_color = shading_components.m_diffuse.to_rgb(g_std_lighting_conditions);
             m_color *= multiplier;
@@ -120,8 +118,7 @@ namespace
         virtual void write(
             const PixelContext&         pixel_context,
             const ShadingPoint&         shading_point,
-            const ShadingComponents&    shading_components,
-            const float                 multiplier) override
+            const ShadingComponents&    shading_components) override
         {
             m_color = shading_components.m_indirect_diffuse.to_rgb(g_std_lighting_conditions);
             m_color *= multiplier;

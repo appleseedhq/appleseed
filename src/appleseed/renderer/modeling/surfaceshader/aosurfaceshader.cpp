@@ -139,8 +139,7 @@ namespace
             aov_accumulators.write(
                 pixel_context,
                 shading_point,
-                shading_components,
-                1.0f);
+                shading_components);
         }
 
       private:

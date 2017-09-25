@@ -121,8 +121,7 @@ namespace
             aov_accumulators.write(
                 pixel_context,
                 shading_point,
-                shading_components,
-                1.0f);
+                shading_components);
 
             // This surface shader can override alpha.
             if (m_alpha_source == AlphaSourceColor)

@@ -68,8 +68,7 @@ namespace
         virtual void write(
             const PixelContext&         pixel_context,
             const ShadingPoint&         shading_point,
-            const ShadingComponents&    shading_components,
-            const float                 multiplier) override
+            const ShadingComponents&    shading_components) override
         {
             if (shading_point.hit())
                 m_normal = Vector3f(shading_point.get_shading_normal());

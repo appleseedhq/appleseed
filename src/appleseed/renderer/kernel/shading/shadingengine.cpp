@@ -182,8 +182,7 @@ void ShadingEngine::shade_environment(
         aov_accumulators.write(
             pixel_context,
             shading_point,
-            value,
-            1.0f);
+            value);
         aov_accumulators.alpha().set(alpha);
     }
 }

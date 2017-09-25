@@ -87,8 +87,7 @@ class AOVAccumulator
     virtual void write(
         const PixelContext&         pixel_context,
         const ShadingPoint&         shading_point,
-        const ShadingComponents&    shading_components,
-        const float                 multiplier);
+        const ShadingComponents&    shading_components);
 
     // Flush the result.
     virtual void flush(ShadingResult& result) = 0;
@@ -138,13 +137,10 @@ class BeautyAOVAccumulator
 
     void set_to_pink_linear_rgb();
 
-    void apply_multiplier(const float multiplier);
-
     virtual void write(
         const PixelContext&         pixel_context,
         const ShadingPoint&         shading_point,
-        const ShadingComponents&    shading_components,
-        const float                 multiplier) override;
+        const ShadingComponents&    shading_components) override;
 
     virtual void flush(ShadingResult& result) override;
 
@@ -213,8 +209,7 @@ class AOVAccumulatorContainer
     void write(
         const PixelContext&         pixel_context,
         const ShadingPoint&         shading_point,
-        const ShadingComponents&    shading_components,
-        const float                 multiplier);
+        const ShadingComponents&    shading_components);
 
     // Flush all the accumulators.
     void flush(ShadingResult& result);
