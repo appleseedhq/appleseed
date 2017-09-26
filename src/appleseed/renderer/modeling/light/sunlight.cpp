@@ -85,7 +85,9 @@ namespace
 
     // Solid angle sustained by the Sun, as seen from Earth (in steradians).
     // Reference: http://en.wikipedia.org/wiki/Solid_angle#Sun_and_Moon
-    const float SunSolidAngle = 6.87e-5f;
+    float SunSolidAngle = 6.87e-5f;
+
+    const float SunRadius = 0.6957; // millions of km
 
     class SunLight
       : public Light
@@ -100,7 +102,7 @@ namespace
             m_inputs.declare("turbidity", InputFormatFloat);
             m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("size_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("distance", InputFormatFloat, "149.0");
+            m_inputs.declare("distance", InputFormatFloat, "149.6");
         }
 
         virtual void release() override
@@ -125,6 +127,23 @@ namespace
             // Evaluate uniform inputs.
             m_inputs.evaluate_uniforms(&m_values);
 
+
+            Source* distance_src = get_inputs().source("distance");
+            assert(distance_src != nullptr);
+            if (distance_src->is_uniform())
+                distance_src->evaluate_uniform(m_values.m_distance);
+            else
+            {
+                RENDERER_LOG_WARNING(
+                    "Distance between Sun and scene \"%s\" is not uniform.",
+                    get_path().c_str());
+            }
+
+            // Compute SunSolidAngle that depends on distance between Sun and scene.
+            // angular_diameter = 2 * arctan(sun_radius / (distance))
+            SunSolidAngle = 2 * M_PI * (1 - cos(atan(SunRadius / m_values.m_distance)));
+
+
             // If the Sun light is bound to an environment EDF, let it override the Sun's direction and turbidity.
             const EnvironmentEDF* env_edf = dynamic_cast<EnvironmentEDF*>(m_inputs.get_entity("environment_edf"));
             if (env_edf)
@@ -140,7 +159,7 @@ namespace
             else
             {
                 RENDERER_LOG_WARNING(
-                    "size multiplier of the sun light \"%s\" is not uniform.",
+                    "size multiplier of the Sun light \"%s\" is not uniform.",
                     get_path().c_str());
             }
 
@@ -418,13 +437,11 @@ namespace
         {
             // sun diameter = 1.3914
             // angular_diameter = 2 * arctan(sun_diameter / (2 * distance))
-            // angular_diameter / 2 = arctan(sun_diameter / (2 * distance))
             // tan(angular_diameter / 2) * distance = sun_radius
             // tan(angular_diameter / 2) * scene_diameter = virtual_sun_radius
+            // -> virtual_sun_radius = sun_radius * scene_diameter / distance
 
-            float angular_diameter = 2 * atan(1.3914 / (2 * distance));
-
-            return tan(angular_diameter / 2 ) * scene_diameter;
+            return SunRadius * scene_diameter / distance;
         }
 
         void sample_disk(
