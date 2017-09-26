@@ -181,8 +181,7 @@ class APPLESEED_DLLSYMBOL Frame
     void write_png_image(
         const char*                         file_path,
         const foundation::Image&            image,
-        const foundation::ImageAttributes&  image_attributes,
-        const AOV*                          aov) const;
+        const foundation::ImageAttributes&  image_attributes) const;
 };
 
 

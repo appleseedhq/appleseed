@@ -61,7 +61,7 @@ namespace
     {
       public:
         explicit UVAOVAccumulator(const size_t index)
-          : AOVAccumulator(index)
+          : m_index(index)
         {
         }
 
@@ -77,6 +77,9 @@ namespace
                 shading_result.m_aovs[m_index] = Color4f(uvs[0], uvs[1], 0.0f, 1.0f);
             }
         }
+
+      private:
+        const size_t m_index;
     };
 
 

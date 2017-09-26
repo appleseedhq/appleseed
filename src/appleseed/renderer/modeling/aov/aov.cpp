@@ -29,6 +29,9 @@
 // Interface header.
 #include "aov.h"
 
+// appleseed.renderer headers.
+#include "renderer/kernel/aov/imagestack.h"
+
 using namespace foundation;
 
 namespace renderer
@@ -52,6 +55,7 @@ AOV::AOV(
     const char*         name,
     const ParamArray&   params)
   : Entity(g_class_uid, params)
+  , m_image(nullptr)
 {
     set_name(name);
 }
@@ -59,6 +63,20 @@ AOV::AOV(
 void AOV::release()
 {
     delete this;
+}
+
+void AOV::create_image(ImageStack& aov_images)
+{
+    const size_t index = aov_images.append(
+        get_name(),
+        4, // TODO: check if we can pass aov->get_channel_count() here.
+        PixelFormatFloat);
+    m_image = &aov_images.get_image(index);
+}
+
+Image& AOV::get_image() const
+{
+    return *m_image;
 }
 
 

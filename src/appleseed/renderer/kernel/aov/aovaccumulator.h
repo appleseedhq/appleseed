@@ -67,11 +67,13 @@ class AOVAccumulator
     // Delete this instance.
     void release();
 
+    // This method is called before a tile gets rendered.
     virtual void on_tile_begin(
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y);
 
+    // This method is called after a tile gets rendered.
     virtual void on_tile_end(
         const Frame&                frame,
         const size_t                tile_x,
@@ -83,12 +85,6 @@ class AOVAccumulator
         const ShadingPoint&         shading_point,
         const ShadingComponents&    shading_components,
         ShadingResult&              shading_result);
-
-  protected:
-    // Constructor.
-    explicit AOVAccumulator(const size_t index);
-
-    const size_t m_index;
 };
 
 
@@ -109,18 +105,17 @@ class AOVAccumulatorContainer
     // Destructor.
     ~AOVAccumulatorContainer();
 
+    // This method is called before a tile gets rendered.
     void on_tile_begin(
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y);
 
+    // This method is called after a tile gets rendered.
     void on_tile_end(
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y);
-
-    void on_pixel_begin();
-    void on_pixel_end();
 
     // Write a sample to all accumulators.
     void write(

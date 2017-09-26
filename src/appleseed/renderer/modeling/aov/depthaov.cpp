@@ -62,7 +62,7 @@ namespace
     {
       public:
         explicit DepthAOVAccumulator(const size_t index)
-          : AOVAccumulator(index)
+          : m_index(index)
         {
         }
 
@@ -78,6 +78,9 @@ namespace
 
             shading_result.m_aovs[m_index] = Color4f(depth, depth, depth, 1.0f);
         }
+
+      private:
+        const size_t m_index;
     };
 
 

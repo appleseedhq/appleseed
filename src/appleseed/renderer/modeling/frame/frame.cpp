@@ -152,11 +152,7 @@ Frame::Frame(
         assert(aov_factory);
 
         auto_release_ptr<AOV> aov = aov_factory->create(original_aov->get_parameters());
-
-        aov_images().append(
-            aov->get_name(),
-            4, // TODO: check if we can pass aov->get_channel_count() here.
-            PixelFormatFloat);
+        aov->create_image(aov_images());
         impl->m_aovs.insert(aov);
     }
 }
@@ -291,21 +287,22 @@ bool Frame::write_aov_images(const char* file_path) const
 
     bool result = true;
 
-    if (!aov_images().empty())
+    if (!aovs().empty())
     {
         const bf::path boost_file_path(file_path);
         const bf::path directory = boost_file_path.parent_path();
         const string base_file_name = boost_file_path.stem().string();
         const string extension = boost_file_path.extension().string();
 
-        for (size_t i = 0, e = impl->m_aovs.size(); i < e; ++i)
+        for (size_t i = 0, e = aovs().size(); i < e; ++i)
         {
-            const string aov_name = aov_images().get_name(i);
+            const AOV* aov = aovs().get_by_index(i);
+            const string aov_name = aov->get_name();
             const string safe_aov_name = make_safe_filename(aov_name);
             const string aov_file_name = base_file_name + "." + safe_aov_name + extension;
             const string aov_file_path = (directory / aov_file_name).string();
 
-            if (!write_aov_image(aov_file_path.c_str(), i))
+            if (!write_image(aov_file_path.c_str(), aov->get_image(), aov))
                 result = false;
         }
     }
@@ -320,10 +317,8 @@ bool Frame::write_aov_image(const char* file_path, const size_t aov_index) const
     if (aov_index >= impl->m_aovs.size())
         return true;
 
-    return write_image(
-        file_path,
-        aov_images().get_image(aov_index),
-        impl->m_aovs.get_by_index(aov_index));
+    const AOV* aov = impl->m_aovs.get_by_index(aov_index);
+    return write_image(file_path, aov->get_image(), aov);
 }
 
 void Frame::write_image_and_aovs_to_multipart_exr(const char *file_path) const
@@ -348,9 +343,9 @@ void Frame::write_image_and_aovs_to_multipart_exr(const char *file_path) const
 
     for (size_t i = 0, e = impl->m_aovs.size(); i < e; ++i)
     {
-        const string aov_name = aov_images().get_name(i);
         const AOV* aov = impl->m_aovs.get_by_index(i);
-        const Image& image = aov_images().get_image(i);
+        const string aov_name = aov->get_name();
+        const Image& image = aov->get_image();
 
         if (aov->has_color_data())
         {
@@ -493,7 +488,7 @@ bool Frame::write_image(
         if (extension == ".exr")
             write_exr_image(file_path, image, image_attributes, aov);
         else if (extension == ".png")
-            write_png_image(file_path, image, image_attributes, aov);
+            write_png_image(file_path, image, image_attributes);
         else if (extension.empty())
         {
             string file_path_with_ext(file_path);
@@ -604,8 +599,7 @@ namespace
 void Frame::write_png_image(
     const char*             file_path,
     const Image&            image,
-    const ImageAttributes&  image_attributes,
-    const AOV*              aov) const
+    const ImageAttributes&  image_attributes) const
 {
     Image transformed_image(image);
     transform_to_srgb(transformed_image);

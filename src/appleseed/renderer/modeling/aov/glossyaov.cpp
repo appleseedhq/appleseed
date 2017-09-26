@@ -62,7 +62,7 @@ namespace
     {
       public:
         explicit GlossyAOVAccumulator(const size_t index)
-          : AOVAccumulator(index)
+          : m_index(index)
         {
         }
 
@@ -80,6 +80,9 @@ namespace
 
             shading_result.m_aovs[m_index].a = shading_result.m_main.a;
         }
+
+      private:
+        const size_t m_index;
     };
 
 
@@ -92,7 +95,7 @@ namespace
     {
       public:
         explicit DirectGlossyAOVAccumulator(const size_t index)
-          : AOVAccumulator(index)
+          : m_index(index)
         {
         }
 
@@ -107,6 +110,9 @@ namespace
 
             shading_result.m_aovs[m_index].a = shading_result.m_main.a;
         }
+
+      private:
+        const size_t m_index;
     };
 
 
@@ -119,7 +125,7 @@ namespace
     {
       public:
         explicit IndirectGlossyAOVAccumulator(const size_t index)
-          : AOVAccumulator(index)
+          : m_index(index)
         {
         }
 
@@ -134,6 +140,9 @@ namespace
 
             shading_result.m_aovs[m_index].a = shading_result.m_main.a;
         }
+
+      private:
+        const size_t m_index;
     };
 
 

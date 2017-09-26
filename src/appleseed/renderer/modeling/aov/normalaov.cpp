@@ -61,7 +61,7 @@ namespace
     {
       public:
         explicit NormalAOVAccumulator(const size_t index)
-          : AOVAccumulator(index)
+          : m_index(index)
         {
         }
 
@@ -82,6 +82,9 @@ namespace
                         1.0f);
             }
         }
+
+      private:
+        const size_t m_index;
     };
 
 

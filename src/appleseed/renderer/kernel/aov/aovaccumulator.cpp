@@ -51,11 +51,6 @@ namespace renderer
 // AOVAccumulator class implementation.
 //
 
-AOVAccumulator::AOVAccumulator(const size_t index)
-  : m_index(index)
-{
-}
-
 AOVAccumulator::~AOVAccumulator()
 {
 }
@@ -97,11 +92,6 @@ namespace
       : public AOVAccumulator
     {
       public:
-        BeautyAOVAccumulator()
-          : AOVAccumulator(~0)
-        {
-        }
-
         virtual void write(
             const PixelContext&         pixel_context,
             const ShadingPoint&         shading_point,
@@ -147,7 +137,7 @@ void AOVAccumulatorContainer::init()
 AOVAccumulatorContainer::~AOVAccumulatorContainer()
 {
     for (size_t i = 0, e = m_size; i < e; ++i)
-        m_accumulators[i]->release();
+        delete m_accumulators[i];
 }
 
 void AOVAccumulatorContainer::on_tile_begin(
@@ -166,14 +156,6 @@ void AOVAccumulatorContainer::on_tile_end(
 {
     for (size_t i = 0, e = m_size; i < e; ++i)
         m_accumulators[i]->on_tile_end(frame, tile_x, tile_y);
-}
-
-void AOVAccumulatorContainer::on_pixel_begin()
-{
-}
-
-void AOVAccumulatorContainer::on_pixel_end()
-{
 }
 
 void AOVAccumulatorContainer::write(

@@ -44,7 +44,10 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace foundation    { class Image; }
 namespace renderer      { class AOVAccumulator; }
+namespace renderer      { class Frame; }
+namespace renderer      { class ImageStack; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer
@@ -79,9 +82,20 @@ class APPLESEED_DLLSYMBOL AOV
     // Return true if this AOV contains color data.
     virtual bool has_color_data() const = 0;
 
+    // Return a reference to the AOV image.
+    foundation::Image& get_image() const;
+
     // Create an accumulator for this AOV.
     virtual foundation::auto_release_ptr<AOVAccumulator> create_accumulator(
         const size_t index) const = 0;
+
+  protected:
+    friend class Frame;
+
+    foundation::Image* m_image;
+
+    // Create an image to store the AOV result.
+    virtual void create_image(ImageStack& aov_images);
 };
 
 
