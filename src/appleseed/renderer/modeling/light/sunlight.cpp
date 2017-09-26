@@ -100,7 +100,7 @@ namespace
             m_inputs.declare("turbidity", InputFormatFloat);
             m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("size_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("distance", InputFormatFloat, "1.0");
+            m_inputs.declare("distance", InputFormatFloat, "149.0");
         }
 
         virtual void release() override
@@ -252,7 +252,7 @@ namespace
             float           m_turbidity;                // atmosphere turbidity
             float           m_radiance_multiplier;      // emitted radiance multiplier
             float           m_size_multiplier;          // sun size multiplier
-            float           m_distance;                 // distance between sun and earth
+            float           m_distance;                 // distance between Sun and scene
         };
 
         Vector3d            m_scene_center;             // world space
@@ -414,13 +414,17 @@ namespace
             }
         }
 
-        static double compute_sun_radius(const double distance, const double m_safe_scene_radius)
+        static double compute_sun_radius(const double distance, const double scene_diameter)
         {
-            // angular diameter = sun diameter / distance
-            // virtual sun diameter = angular diameter * scene_radius
-            // virtual sun radius = angular diameter * scene_radius / 2 -> (1.3914 * scene_radius) / (distance * 2)
-        
-            return 1.3914 / distance * m_safe_scene_radius / 2;
+            // sun diameter = 1.3914
+            // angular_diameter = 2 * arctan(sun_diameter / (2 * distance))
+            // angular_diameter / 2 = arctan(sun_diameter / (2 * distance))
+            // tan(angular_diameter / 2) * distance = sun_radius
+            // tan(angular_diameter / 2) * scene_diameter = virtual_sun_radius
+
+            float angular_diameter = 2 * atan(1.3914 / (2 * distance));
+
+            return tan(angular_diameter / 2 ) * scene_diameter;
         }
 
         void sample_disk(
@@ -470,7 +474,7 @@ namespace
 
             const Basis3d basis(outgoing);
             const Vector2d p = sample_disk_uniform(s);
-            const double sun_radius = compute_sun_radius(m_values.m_distance,m_safe_scene_diameter) * m_values.m_size_multiplier;
+            const double sun_radius = compute_sun_radius(m_values.m_distance, m_safe_scene_diameter) * m_values.m_size_multiplier;
 
             position =
                   target_point
@@ -601,7 +605,7 @@ DictionaryArray SunLightFactory::get_input_metadata() const
                     .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "149.6")
-            .insert("help", "Distance between sun and earth(millions of km)"));
+            .insert("help", "Distance between Sun and scene (millions of km)"));
 
     add_common_input_metadata(metadata);
 
