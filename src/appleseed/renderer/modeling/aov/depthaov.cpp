@@ -81,8 +81,11 @@ namespace
 
             // Clear the tile.
             float* p = reinterpret_cast<float*>(m_tile->pixel(0));
-            for (size_t i = 0, e = m_tile->get_size() / sizeof(float); i < e; ++i)
+            for (size_t i = 0, e = m_tile->get_pixel_count(); i < e; ++i)
+            {
                 *p++ = std::numeric_limits<float>::max();
+                *p++ = std::numeric_limits<float>::max();
+            }
         }
 
         virtual void write(
@@ -161,7 +164,7 @@ namespace
         virtual auto_release_ptr<AOVAccumulator> create_accumulator(
             const size_t index) const override
         {
-            return auto_release_ptr<AOVAccumulator>(new DepthAOVAccumulator(*m_image));
+            return auto_release_ptr<AOVAccumulator>(new DepthAOVAccumulator(get_image()));
         }
     };
 }

@@ -31,12 +31,15 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovaccumulator.h"
+#include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
+#include "foundation/image/image.h"
+#include "foundation/image/tile.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -56,13 +59,33 @@ namespace
     // Normal AOV accumulator.
     //
 
+    const Vector3d zero_normal(0.0, 0.0, 0.0);
+
     class NormalAOVAccumulator
-      : public AOVAccumulator
+      : public UnfilteredAOVAccumulator
     {
       public:
-        explicit NormalAOVAccumulator(const size_t index)
-          : m_index(index)
+        explicit NormalAOVAccumulator(Image& image)
+          : UnfilteredAOVAccumulator(image)
         {
+        }
+
+        virtual void on_tile_begin(
+            const Frame&                frame,
+            const size_t                tile_x,
+            const size_t                tile_y) override
+        {
+            fetch_tile(frame, tile_x, tile_y);
+
+            // Clear the tile.
+            float* p = reinterpret_cast<float*>(m_tile->pixel(0));
+            for (size_t i = 0, e = m_tile->get_pixel_count(); i < e; ++i)
+            {
+                *p++ = 0.0f;
+                *p++ = 0.0f;
+                *p++ = 0.0f;
+                *p++ = std::numeric_limits<float>::max();
+            }
         }
 
         virtual void write(
@@ -71,20 +94,32 @@ namespace
             const ShadingComponents&    shading_components,
             ShadingResult&              shading_result) override
         {
-            if (shading_point.hit())
+            const Vector2i& pi = pixel_context.get_pixel_coords();
+
+            // Ignore samples outside the tile.
+            if (outside_tile(pi))
+                return;
+
+            float* p = reinterpret_cast<float*>(
+                m_tile->pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
+
+            const float min_sample_squared_distance = p[3];
+            const float sample_squared_distance =
+                squared_distace_to_pixel_center(pixel_context.get_sample_position());
+
+            if (sample_squared_distance < min_sample_squared_distance)
             {
-                const Vector3f normal(shading_point.get_shading_normal());
-                shading_result.m_aovs[m_index] =
-                    Color4f(
-                        normal[0] * 0.5f + 0.5f,
-                        normal[1] * 0.5f + 0.5f,
-                        normal[2] * 0.5f + 0.5f,
-                        1.0f);
+                const Vector3d& normal =
+                    shading_point.hit()
+                        ? shading_point.get_shading_normal()
+                        : zero_normal;
+
+                p[0] = static_cast<float>(normal[0]) * 0.5f + 0.5f;
+                p[1] = static_cast<float>(normal[1]) * 0.5f + 0.5f;
+                p[2] = static_cast<float>(normal[2]) * 0.5f + 0.5f;
+                p[3] = sample_squared_distance;
             }
         }
-
-      private:
-        const size_t m_index;
     };
 
 
@@ -95,11 +130,11 @@ namespace
     const char* Model = "normal_aov";
 
     class NormalAOV
-      : public AOV
+      : public UnfilteredAOV
     {
       public:
         explicit NormalAOV(const ParamArray& params)
-          : AOV("normal", params)
+          : UnfilteredAOV("normal", params)
         {
         }
 
@@ -132,7 +167,7 @@ namespace
         virtual auto_release_ptr<AOVAccumulator> create_accumulator(
             const size_t index) const override
         {
-            return auto_release_ptr<AOVAccumulator>(new NormalAOVAccumulator(index));
+            return auto_release_ptr<AOVAccumulator>(new NormalAOVAccumulator(get_image()));
         }
     };
 }
