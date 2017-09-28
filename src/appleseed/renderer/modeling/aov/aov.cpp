@@ -32,6 +32,9 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/imagestack.h"
 
+// appleseed.foundation headers.
+#include "foundation/image/image.h"
+
 using namespace foundation;
 
 namespace renderer
@@ -108,6 +111,42 @@ const char** ColorAOV::get_channel_names() const
 bool ColorAOV::has_color_data() const
 {
     return true;
+}
+
+
+//
+// UnfilteredAOV class implementation.
+//
+
+UnfilteredAOV::UnfilteredAOV(const char* name, const ParamArray& params)
+  : AOV(name, params)
+{
+}
+
+UnfilteredAOV::~UnfilteredAOV()
+{
+    delete m_image;
+}
+
+void UnfilteredAOV::create_image(
+    const size_t canvas_width,
+    const size_t canvas_height,
+    const size_t tile_width,
+    const size_t tile_height,
+    ImageStack& aov_images)
+{
+    // One extra channel to keep track of the distance
+    // to the nearest sample for each pixel.
+    const size_t num_channels = get_channel_count() + 1;
+
+    m_image =
+        new Image(
+            canvas_width,
+            canvas_height,
+            tile_width,
+            tile_height,
+            num_channels,
+            PixelFormatFloat);
 }
 
 }   // namespace renderer

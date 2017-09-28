@@ -64,11 +64,11 @@ namespace
     //
 
     class DepthAOVAccumulator
-      : public AOVAccumulator
+      : public UnfilteredAOVAccumulator
     {
       public:
         explicit DepthAOVAccumulator(Image& image)
-          : m_image(image)
+          : UnfilteredAOVAccumulator(image)
         {
         }
 
@@ -77,17 +77,11 @@ namespace
             const size_t                tile_x,
             const size_t                tile_y) override
         {
-            // Fetch the destination tile.
-            const CanvasProperties& props = frame.image().properties();
-            m_tile = &m_image.tile(tile_x, tile_y);
-            m_tile_origin_x = static_cast<int>(tile_x * props.m_tile_width);
-            m_tile_origin_y = static_cast<int>(tile_y * props.m_tile_height);
-            m_tile_end_x = static_cast<int>(m_tile_origin_x + props.m_tile_width - 1);
-            m_tile_end_y = static_cast<int>(m_tile_origin_y + props.m_tile_height - 1);
+            fetch_tile(frame, tile_x, tile_y);
 
             // Clear the tile.
-            float* p = reinterpret_cast<float*>(m_tile->get_storage());
-            for (size_t i = 0, e = m_tile->get_pixel_count() * props.m_channel_count; i < e; ++i)
+            float* p = reinterpret_cast<float*>(m_tile->pixel(0));
+            for (size_t i = 0, e = m_tile->get_size() / sizeof(float); i < e; ++i)
                 *p++ = std::numeric_limits<float>::max();
         }
 
@@ -106,43 +100,19 @@ namespace
             float* p = reinterpret_cast<float*>(
                 m_tile->pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
 
-            const float min_distance = p[1];
-            const float sample_distance = squared_distace_to_pixel_center(pixel_context.get_sample_position());
+            const float min_sample_squared_distance = p[1];
+            const float sample_squared_distance =
+                squared_distace_to_pixel_center(pixel_context.get_sample_position());
 
-            if (sample_distance > min_distance)
-                return;
-
-            const float depth = shading_point.hit()
-                ? static_cast<float>(shading_point.get_distance())
-                : numeric_limits<float>::max();
-
-            if (sample_distance < min_distance)
+            if (sample_squared_distance < min_sample_squared_distance)
             {
+                const float depth = shading_point.hit()
+                    ? static_cast<float>(shading_point.get_distance())
+                    : numeric_limits<float>::max();
+
                 p[0] = depth;
-                p[1] = sample_distance;
+                p[1] = sample_squared_distance;
             }
-            else
-                p[0] = std::min(p[0], depth);
-        }
-
-      private:
-        Image& m_image;
-        Tile* m_tile;
-        int m_tile_origin_x;
-        int m_tile_origin_y;
-        int m_tile_end_x;
-        int m_tile_end_y;
-
-        bool outside_tile(const Vector2i& pi) const
-        {
-           return
-            pi.x < m_tile_origin_x || pi.y < m_tile_origin_y ||
-            pi.x > m_tile_end_x || pi.y > m_tile_end_y;
-        }
-
-        static float squared_distace_to_pixel_center(const Vector2d& ps)
-        {
-            return static_cast<float>(square(ps.y - 0.5) + square(ps.y - 0.5));
         }
     };
 
@@ -154,11 +124,11 @@ namespace
     const char* Model = "depth_aov";
 
     class DepthAOV
-      : public AOV
+      : public UnfilteredAOV
     {
       public:
         explicit DepthAOV(const ParamArray& params)
-          : AOV("depth", params)
+          : UnfilteredAOV("depth", params)
         {
         }
 
@@ -188,30 +158,11 @@ namespace
             return false;
         }
 
-        virtual void create_image(
-            const size_t    canvas_width,
-            const size_t    canvas_height,
-            const size_t    tile_width,
-            const size_t    tile_height,
-            ImageStack&     aov_images) override
-        {
-            // One channel for depth, another to keep track of the minimum
-            // distance to the pixel center.
-            const size_t num_channels = 2;
-
-            m_image_storage.reset(
-                new Image(canvas_width, canvas_height, tile_width, tile_height, num_channels, PixelFormatFloat));
-            m_image = m_image_storage.get();
-        }
-
         virtual auto_release_ptr<AOVAccumulator> create_accumulator(
             const size_t index) const override
         {
             return auto_release_ptr<AOVAccumulator>(new DepthAOVAccumulator(*m_image));
         }
-
-      private:
-        unique_ptr<Image> m_image_storage;
     };
 }
 

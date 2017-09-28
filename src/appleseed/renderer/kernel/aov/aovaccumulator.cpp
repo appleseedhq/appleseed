@@ -35,6 +35,12 @@
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/color/colorspace.h"
+#include "renderer/modeling/frame/frame.h"
+
+// appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
+#include "foundation/image/tile.h"
 
 // Standard headers.
 #include <cassert>
@@ -103,6 +109,33 @@ namespace
         }
     };
 }
+
+
+//
+// UnfilteredAOVAccumulator class implementation.
+//
+
+UnfilteredAOVAccumulator::UnfilteredAOVAccumulator(Image& image)
+  : m_image(image)
+{
+}
+
+void UnfilteredAOVAccumulator::fetch_tile(
+    const Frame& frame,
+    const size_t tile_x,
+    const size_t tile_y)
+{
+    // Fetch the destination tile.
+    const CanvasProperties& props = frame.image().properties();
+    m_tile = &m_image.tile(tile_x, tile_y);
+
+    // Fetch the tile bounds (inclusive).
+    m_tile_origin_x = static_cast<int>(tile_x * props.m_tile_width);
+    m_tile_origin_y = static_cast<int>(tile_y * props.m_tile_height);
+    m_tile_end_x = static_cast<int>(m_tile_origin_x + m_tile->get_width() - 1);
+    m_tile_end_y = static_cast<int>(m_tile_origin_y + m_tile->get_height() - 1);
+}
+
 
 //
 // AOVAccumulatorContainer class implementation.

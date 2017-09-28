@@ -46,6 +46,7 @@
 // Forward declarations.
 namespace foundation    { class Image; }
 namespace renderer      { class AOVAccumulator; }
+namespace renderer      { class AOVAccumulatorContainer; }
 namespace renderer      { class Frame; }
 namespace renderer      { class ImageStack; }
 namespace renderer      { class ParamArray; }
@@ -85,11 +86,8 @@ class APPLESEED_DLLSYMBOL AOV
     // Return a reference to the AOV image.
     foundation::Image& get_image() const;
 
-    // Create an accumulator for this AOV.
-    virtual foundation::auto_release_ptr<AOVAccumulator> create_accumulator(
-        const size_t        index) const = 0;
-
   protected:
+    friend class AOVAccumulatorContainer;
     friend class Frame;
 
     foundation::Image* m_image;
@@ -101,11 +99,15 @@ class APPLESEED_DLLSYMBOL AOV
             const size_t    tile_width,
             const size_t    tile_height,
             ImageStack&     aov_images);
+
+    // Create an accumulator for this AOV.
+    virtual foundation::auto_release_ptr<AOVAccumulator> create_accumulator(
+        const size_t        index) const = 0;
 };
 
 
 //
-// ColorAOV base class.
+// Color AOV base class.
 //
 
 class ColorAOV
@@ -123,6 +125,30 @@ class ColorAOV
 
     // Return true if this AOV contains color data.
     bool has_color_data() const override;
+};
+
+
+//
+// Unfiltered AOV base class.
+//
+
+class UnfilteredAOV
+  : public AOV
+{
+  public:
+    // Constructor.
+    UnfilteredAOV(const char* name, const ParamArray& params);
+
+    // Destructor.
+    virtual ~UnfilteredAOV() override;
+
+  protected:
+    virtual void create_image(
+            const size_t    canvas_width,
+            const size_t    canvas_height,
+            const size_t    tile_width,
+            const size_t    tile_height,
+            ImageStack&     aov_images) override;
 };
 
 }       // namespace renderer

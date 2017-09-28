@@ -37,18 +37,21 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/color.h"
+#include "foundation/math/vector.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // Standard headers.
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class Camera; }
-namespace renderer  { class Frame; }
-namespace renderer  { class PixelContext; }
-namespace renderer  { class ShadingComponents; }
-namespace renderer  { class ShadingPoint; }
-namespace renderer  { class ShadingResult; }
+namespace foundation    { class Image; }
+namespace foundation    { class Tile; }
+namespace renderer      { class Camera; }
+namespace renderer      { class Frame; }
+namespace renderer      { class PixelContext; }
+namespace renderer      { class ShadingComponents; }
+namespace renderer      { class ShadingPoint; }
+namespace renderer      { class ShadingResult; }
 
 namespace renderer
 {
@@ -86,6 +89,55 @@ class AOVAccumulator
         const ShadingComponents&    shading_components,
         ShadingResult&              shading_result);
 };
+
+
+//
+// Unfiltered AOV accumulator base class.
+//
+
+class UnfilteredAOVAccumulator
+  : public AOVAccumulator
+{
+  public:
+    explicit UnfilteredAOVAccumulator(foundation::Image& image);
+
+  protected:
+    foundation::Image&  m_image;
+    foundation::Tile*   m_tile;
+    int                 m_tile_origin_x;
+    int                 m_tile_origin_y;
+    int                 m_tile_end_x;
+    int                 m_tile_end_y;
+
+    void fetch_tile(
+        const Frame& frame,
+        const size_t tile_x,
+        const size_t tile_y);
+
+    bool outside_tile(const foundation::Vector2i& pi) const;
+
+    static float squared_distace_to_pixel_center(const foundation::Vector2d& ps);
+};
+
+
+//
+// Unfiltered AOV class implementation.
+//
+
+inline bool UnfilteredAOVAccumulator::outside_tile(
+    const foundation::Vector2i& pi) const
+{
+   return
+    pi.x < m_tile_origin_x || pi.y < m_tile_origin_y ||
+    pi.x > m_tile_end_x || pi.y > m_tile_end_y;
+}
+
+inline float UnfilteredAOVAccumulator::squared_distace_to_pixel_center(
+    const foundation::Vector2d& ps)
+{
+    return static_cast<float>(
+        foundation::square(ps.y - 0.5) + foundation::square(ps.y - 0.5));
+}
 
 
 //
