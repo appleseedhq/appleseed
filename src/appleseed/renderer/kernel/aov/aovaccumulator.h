@@ -114,6 +114,8 @@ class UnfilteredAOVAccumulator
         const size_t tile_x,
         const size_t tile_y);
 
+    foundation::Tile& get_tile() const;
+
     bool outside_tile(const foundation::Vector2i& pi) const;
 
     static float squared_distace_to_pixel_center(const foundation::Vector2d& ps);
@@ -123,6 +125,11 @@ class UnfilteredAOVAccumulator
 //
 // Unfiltered AOV class implementation.
 //
+
+inline foundation::Tile& UnfilteredAOVAccumulator::get_tile() const
+{
+    return *m_tile;
+}
 
 inline bool UnfilteredAOVAccumulator::outside_tile(
     const foundation::Vector2i& pi) const

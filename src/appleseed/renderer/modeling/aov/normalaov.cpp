@@ -76,16 +76,8 @@ namespace
             const size_t                tile_y) override
         {
             fetch_tile(frame, tile_x, tile_y);
-
-            // Clear the tile.
-            float* p = reinterpret_cast<float*>(m_tile->pixel(0));
-            for (size_t i = 0, e = m_tile->get_pixel_count(); i < e; ++i)
-            {
-                *p++ = 0.0f;
-                *p++ = 0.0f;
-                *p++ = 0.0f;
-                *p++ = std::numeric_limits<float>::max();
-            }
+            get_tile().clear(
+                Color4f(0.5f, 0.5f, 0.5f, std::numeric_limits<float>::max()));
         }
 
         virtual void write(
@@ -101,7 +93,7 @@ namespace
                 return;
 
             float* p = reinterpret_cast<float*>(
-                m_tile->pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
+                get_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
 
             const float min_sample_squared_distance = p[3];
             const float sample_squared_distance =
@@ -155,7 +147,7 @@ namespace
 
         virtual const char** get_channel_names() const override
         {
-            static const char* ChannelNames[] = {"X", "Y", "Z"};
+            static const char* ChannelNames[] = {"R", "G", "B"};
             return ChannelNames;
         }
 

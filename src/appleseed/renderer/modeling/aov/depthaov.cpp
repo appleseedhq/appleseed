@@ -78,14 +78,7 @@ namespace
             const size_t                tile_y) override
         {
             fetch_tile(frame, tile_x, tile_y);
-
-            // Clear the tile.
-            float* p = reinterpret_cast<float*>(m_tile->pixel(0));
-            for (size_t i = 0, e = m_tile->get_pixel_count(); i < e; ++i)
-            {
-                *p++ = std::numeric_limits<float>::max();
-                *p++ = std::numeric_limits<float>::max();
-            }
+            get_tile().clear(Vector2f(std::numeric_limits<float>::max()));
         }
 
         virtual void write(
@@ -101,7 +94,7 @@ namespace
                 return;
 
             float* p = reinterpret_cast<float*>(
-                m_tile->pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
+                get_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
 
             const float min_sample_squared_distance = p[1];
             const float sample_squared_distance =
