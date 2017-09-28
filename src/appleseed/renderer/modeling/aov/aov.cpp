@@ -65,7 +65,12 @@ void AOV::release()
     delete this;
 }
 
-void AOV::create_image(ImageStack& aov_images)
+void AOV::create_image(
+    const size_t    canvas_width,
+    const size_t    canvas_height,
+    const size_t    tile_width,
+    const size_t    tile_height,
+    ImageStack&     aov_images)
 {
     const size_t index = aov_images.append(
         get_name(),

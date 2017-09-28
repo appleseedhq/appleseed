@@ -87,7 +87,7 @@ class APPLESEED_DLLSYMBOL AOV
 
     // Create an accumulator for this AOV.
     virtual foundation::auto_release_ptr<AOVAccumulator> create_accumulator(
-        const size_t index) const = 0;
+        const size_t        index) const = 0;
 
   protected:
     friend class Frame;
@@ -95,7 +95,12 @@ class APPLESEED_DLLSYMBOL AOV
     foundation::Image* m_image;
 
     // Create an image to store the AOV result.
-    virtual void create_image(ImageStack& aov_images);
+    virtual void create_image(
+            const size_t    canvas_width,
+            const size_t    canvas_height,
+            const size_t    tile_width,
+            const size_t    tile_height,
+            ImageStack&     aov_images);
 };
 
 
