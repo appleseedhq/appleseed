@@ -60,7 +60,7 @@
 #include "foundation/utility/string.h"
 
 // Boost headers.
-#include "boost/filesystem/path.hpp"
+#include "boost/filesystem.hpp"
 
 // Standard headers.
 #include <algorithm>
@@ -71,6 +71,7 @@
 using namespace foundation;
 using namespace std;
 namespace bf = boost::filesystem;
+namespace bsys = boost::system;
 
 namespace renderer
 {
@@ -277,12 +278,31 @@ size_t Frame::get_pixel_count() const
 
 namespace
 {
+    void create_parent_directories(const string& filepath)
+    {
+        const bf::path parent_path = bf::path(filepath).parent_path();
+
+        if (!bf::exists(parent_path))
+        {
+            bsys::error_code ec;
+            if (!bf::create_directories(parent_path, ec))
+            {
+                RENDERER_LOG_ERROR(
+                    "could not create directory %s: %s",
+                    parent_path.string().c_str(),
+                    ec.message().c_str());
+            }
+        }
+    }
+
     void write_exr_image(
         const char*             file_path,
         const Image&            image,
         const ImageAttributes&  image_attributes,
         const AOV*              aov)
     {
+        create_parent_directories(file_path);
+
         EXRImageFileWriter writer;
 
         if (aov)
@@ -345,6 +365,8 @@ namespace
     {
         Image transformed_image(image);
         transform_to_srgb(transformed_image);
+
+        create_parent_directories(file_path);
 
         PNGImageFileWriter writer;
         writer.write(file_path, transformed_image, image_attributes);
@@ -467,8 +489,37 @@ bool Frame::write_aov_image(const char* file_path, const size_t aov_index) const
     return write_image(file_path, aov->get_image(), aov);
 }
 
-void Frame::write_image_and_aovs_to_multipart_exr(const char *file_path) const
+bool Frame::write_main_and_aov_images() const
 {
+    bool result = true;
+
+    // Get the output filename.
+    const string filepath = get_parameters().get_optional<string>("output_filename");
+
+    if (!filepath.empty())
+        result = result && write_main_image(filepath.c_str());
+
+    // Write AOVs.
+    for (size_t i = 0, e = aovs().size(); i < e; ++i)
+    {
+        // Get the output filename.
+        const AOV* aov = aovs().get_by_index(i);
+        const string filepath = aov->get_parameters().get_optional<string>("output_filename");
+
+        if (!filepath.empty())
+            result = result && write_aov_image(filepath.c_str(), i);
+    }
+
+    return result;
+}
+
+void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) const
+{
+    Stopwatch<DefaultWallclockTimer> stopwatch;
+    stopwatch.start();
+
+    create_parent_directories(file_path);
+
     EXRImageFileWriter writer;
 
     ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
@@ -504,7 +555,13 @@ void Frame::write_image_and_aovs_to_multipart_exr(const char *file_path) const
             writer.append_part(aov_name.c_str(), image, image_attributes, aov->get_channel_count(), aov->get_channel_names());
     }
 
+    create_parent_directories(file_path);
     writer.write_multipart_exr(file_path);
+
+    RENDERER_LOG_INFO(
+        "wrote multipart exr image file %s in %s.",
+        file_path,
+        pretty_time(stopwatch.get_seconds()).c_str());
 }
 
 bool Frame::archive(

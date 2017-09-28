@@ -496,6 +496,7 @@ namespace
 
             if (weights[SheenComponent] > 0.0f)
             {
+                Spectrum sheen;
                 sample.m_probability +=
                     weights[SheenComponent] *
                     DisneySheenComponent().evaluate(
@@ -503,7 +504,8 @@ namespace
                         sample.m_shading_basis,
                         outgoing,
                         incoming,
-                        sample.m_value.m_glossy);
+                        sheen);
+                sample.m_value.m_glossy += sheen;
             }
 
             if (weights[SpecularComponent] > 0.0f)
