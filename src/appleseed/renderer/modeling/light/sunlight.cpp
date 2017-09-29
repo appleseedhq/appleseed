@@ -85,7 +85,6 @@ namespace
 
     // Solid angle sustained by the Sun, as seen from Earth (in steradians).
     // Reference: http://en.wikipedia.org/wiki/Solid_angle#Sun_and_Moon
-    float SunSolidAngle = 6.87e-5f;
 
     const float SunRadius = 0.6957; // millions of km
 
@@ -127,7 +126,6 @@ namespace
             // Evaluate uniform inputs.
             m_inputs.evaluate_uniforms(&m_values);
 
-
             Source* distance_src = get_inputs().source("distance");
             assert(distance_src != nullptr);
             if (distance_src->is_uniform())
@@ -135,14 +133,13 @@ namespace
             else
             {
                 RENDERER_LOG_WARNING(
-                    "Distance between Sun and scene \"%s\" is not uniform.",
+                    "distance between sun and scene \"%s\" is not uniform.",
                     get_path().c_str());
             }
 
             // Compute SunSolidAngle that depends on distance between Sun and scene.
             // angular_diameter = 2 * arctan(sun_radius / (distance))
-            SunSolidAngle = 2 * M_PI * (1 - cos(atan(SunRadius / m_values.m_distance)));
-
+            m_sun_solid_angle = TwoPi<float>() * (1 - cos(atan(SunRadius / m_values.m_distance)));
 
             // If the Sun light is bound to an environment EDF, let it override the Sun's direction and turbidity.
             const EnvironmentEDF* env_edf = dynamic_cast<EnvironmentEDF*>(m_inputs.get_entity("environment_edf"));
@@ -159,7 +156,7 @@ namespace
             else
             {
                 RENDERER_LOG_WARNING(
-                    "size multiplier of the Sun light \"%s\" is not uniform.",
+                    "size multiplier of the sun light \"%s\" is not uniform.",
                     get_path().c_str());
             }
 
@@ -167,6 +164,7 @@ namespace
             m_scene_center = Vector3d(scene_data.m_center);
             m_scene_radius = scene_data.m_radius;
             m_safe_scene_diameter = scene_data.m_safe_diameter;
+            m_sun_solid_angle = 6.87e-5f;
 
             precompute_constants();
 
@@ -277,6 +275,7 @@ namespace
         Vector3d            m_scene_center;             // world space
         double              m_scene_radius;             // world space
         double              m_safe_scene_diameter;      // world space
+        float               m_sun_solid_angle;
 
         InputValues         m_values;
 
@@ -475,7 +474,7 @@ namespace
                 radiance);
 
             value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
-            value *= SunSolidAngle;
+            value *= m_sun_solid_angle;
         }
 
         void sample_sun_surface(
@@ -509,7 +508,7 @@ namespace
                 radiance);
 
             value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
-            value *= SunSolidAngle;
+            value *= m_sun_solid_angle;
 
             //
             // The sun is represented by a disk of finite radius. The sun's illumination
