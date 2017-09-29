@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/ashikhminbrdf.h"
+#include "renderer/modeling/bsdf/blinnbrdf.h"
 #include "renderer/modeling/bsdf/bsdfblend.h"
 #include "renderer/modeling/bsdf/bsdfmix.h"
 #include "renderer/modeling/bsdf/diffusebtdf.h"
@@ -73,6 +74,7 @@ BSDFFactoryRegistrar::BSDFFactoryRegistrar()
   : impl(new Impl())
 {
     register_factory(auto_ptr<FactoryType>(new AshikhminBRDFFactory()));
+    register_factory(auto_ptr<FactoryType>(new BlinnBRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new BSDFBlendFactory()));
     register_factory(auto_ptr<FactoryType>(new BSDFMixFactory()));
     register_factory(auto_ptr<FactoryType>(new DiffuseBTDFFactory()));

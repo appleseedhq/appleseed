@@ -148,10 +148,8 @@ namespace
             {
                 mode = ScatteringMode::Diffuse;
 
-                // Compute the incoming direction in local space.
+                // Compute the incoming direction in world space.
                 const Vector3f wi = sample_hemisphere_cosine(Vector2f(s[0], s[1]));
-
-                // Transform the incoming direction to parent space.
                 incoming = sample.m_shading_basis.transform_to_parent(wi);
 
                 // Compute the halfway vector in world space.

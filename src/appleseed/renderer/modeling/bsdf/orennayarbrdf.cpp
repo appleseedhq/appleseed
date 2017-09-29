@@ -106,13 +106,15 @@ namespace
             if (!ScatteringMode::has_diffuse(modes))
                 return;
 
-            // Compute the incoming direction in local space.
+            // Set the scattering mode.
+            sample.m_mode = ScatteringMode::Diffuse;
+
+            // Compute the incoming direction.
             sampling_context.split_in_place(2, 1);
             const Vector2f s = sampling_context.next2<Vector2f>();
             const Vector3f wi = sample_hemisphere_cosine(s);
-
-            // Transform the incoming direction to parent space.
             const Vector3f incoming = sample.m_shading_basis.transform_to_parent(wi);
+            sample.m_incoming = Dual3f(incoming);
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
@@ -147,17 +149,12 @@ namespace
                 sample.m_value.m_diffuse = values->m_reflectance;
                 sample.m_value.m_diffuse *= values->m_reflectance_multiplier * RcpPi<float>();
             }
-
             sample.m_value.m_beauty = sample.m_value.m_diffuse;
 
             // Compute the probability density of the sampled direction.
             sample.m_probability = wi.y * RcpPi<float>();
             assert(sample.m_probability > 0.0f);
 
-            // Set the scattering mode.
-            sample.m_mode = ScatteringMode::Diffuse;
-
-            sample.m_incoming = Dual3f(incoming);
             sample.compute_reflected_differentials();
         }
 
@@ -207,7 +204,6 @@ namespace
                 value.m_diffuse = values->m_reflectance;
                 value.m_diffuse *= values->m_reflectance_multiplier * RcpPi<float>();
             }
-
             value.m_beauty = value.m_diffuse;
 
             // Return the probability density of the sampled direction.

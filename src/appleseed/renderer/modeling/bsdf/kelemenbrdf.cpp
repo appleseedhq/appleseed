@@ -238,11 +238,11 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            // Compute the specular albedo for the outgoing angle.
+            // Compute specular albedo for outgoing angle.
             Spectrum specular_albedo_V;
             evaluate_a_spec(m_a_spec, dot_VN, specular_albedo_V);
 
-            // Compute the matte albedo.
+            // Compute matte albedo.
             Spectrum matte_albedo(1.0f);
             matte_albedo -= specular_albedo_V;
             matte_albedo *= values->m_rm;
@@ -271,10 +271,8 @@ namespace
             {
                 mode = ScatteringMode::Diffuse;
 
-                // Compute the incoming direction in local space.
+                // Compute the incoming direction.
                 const Vector3f wi = sample_hemisphere_cosine(Vector2f(s[0], s[1]));
-
-                // Transform the incoming direction to parent space.
                 incoming = sample.m_shading_basis.transform_to_parent(wi);
 
                 // Compute the halfway vector.
@@ -290,13 +288,10 @@ namespace
 
                 // Sample the microfacet distribution to get an halfway vector H.
                 const Vector3f local_H = m_mdf->sample(Vector2f(s[0], s[1]));
-
-                // Transform the halfway vector to parent space.
                 H = sample.m_shading_basis.transform_to_parent(local_H);
 
-                dot_HV = dot(H, V);
-
                 // The incoming direction is the reflection of V around H.
+                dot_HV = dot(H, V);
                 incoming = (dot_HV + dot_HV) * H - V;
 
                 dot_LN = dot(incoming, N);
@@ -405,7 +400,7 @@ namespace
                 Spectrum specular_albedo_L;
                 evaluate_a_spec(m_a_spec, dot_LN, specular_albedo_L);
 
-                // Compute the matte component (last equation of section 2.2f).
+                // Compute the matte component (last equation of section 2.2).
                 Spectrum matte_comp(1.0f);
                 matte_comp -= specular_albedo_L;
                 matte_comp *= matte_albedo;

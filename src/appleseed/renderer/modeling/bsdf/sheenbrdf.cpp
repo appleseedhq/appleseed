@@ -108,27 +108,29 @@ namespace
             if (cos_on < 0.0f)
                 return;
 
-            // Compute the incoming direction in local space.
+            // Set the scattering mode.
+            sample.m_mode = ScatteringMode::Glossy;
+
+            // Compute the incoming direction.
             sampling_context.split_in_place(2, 1);
             const Vector2f s = sampling_context.next2<Vector2f>();
             const Vector3f wi = sample_hemisphere_uniform(s);
-
-            // Transform the incoming direction to parent space.
             const Vector3f incoming = sample.m_shading_basis.transform_to_parent(wi);
+            sample.m_incoming = Dual3f(incoming);
 
             const Vector3f h = normalize(incoming + sample.m_outgoing.get_value());
             const float cos_ih = dot(incoming, h);
             const float fh = pow_int<5>(saturate(1.0f - cos_ih));
 
+            // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
             sample.m_value.m_glossy = values->m_reflectance;
             sample.m_value.m_glossy *= fh * values->m_reflectance_multiplier;
             sample.m_value.m_beauty = sample.m_value.m_glossy;
 
+            // Compute the probability density of the sampled direction.
             sample.m_probability = RcpTwoPi<float>();
 
-            sample.m_mode = ScatteringMode::Glossy;
-            sample.m_incoming = Dual3f(incoming);
             sample.compute_reflected_differentials();
         }
 
@@ -154,16 +156,16 @@ namespace
                 return 0.0f;
 
             const Vector3f h = normalize(incoming + outgoing);
-
             const float cos_ih = dot(incoming, h);
             const float fh = pow_int<5>(saturate(1.0f - cos_ih));
 
+            // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
-
             value.m_glossy = values->m_reflectance;
             value.m_glossy *= fh * values->m_reflectance_multiplier;
             value.m_beauty = value.m_glossy;
 
+            // Return the probability density of the sampled direction.
             return RcpTwoPi<float>();
         }
 

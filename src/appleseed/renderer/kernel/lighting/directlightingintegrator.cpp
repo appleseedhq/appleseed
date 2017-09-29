@@ -346,6 +346,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     // Compute the incoming direction in world space.
     Vector3d incoming = sample.m_point - m_material_sampler.get_point();
 
+    // Cull samples behind the shading surface.
     if (m_material_sampler.cull_incoming_direction(incoming))
         return;
 
@@ -489,6 +490,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     // Compute the incoming direction in world space.
     const Vector3d incoming = -emission_direction;
 
+    // Cull samples behind the shading surface.
     if (m_material_sampler.cull_incoming_direction(incoming))
         return;
 

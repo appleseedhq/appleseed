@@ -54,16 +54,16 @@ namespace renderer
 // perceptually linear fashion. Refactored from the Disney BRDF implementation.
 //
 
-inline float microfacet_alpha_from_roughness(const float& roughness)
+inline float microfacet_alpha_from_roughness(const float roughness)
 {
     return std::max(0.001f, foundation::square(roughness));
 }
 
 inline void microfacet_alpha_from_roughness(
-    const float&   roughness,
-    const float&   anisotropy,
-    float&         alpha_x,
-    float&         alpha_y)
+    const float     roughness,
+    const float     anisotropy,
+    float&          alpha_x,
+    float&          alpha_y)
 {
     if (anisotropy >= 0.0f)
     {
@@ -87,8 +87,8 @@ inline void microfacet_alpha_from_roughness(
 inline float highlight_falloff_to_gama(const float highlight_falloff)
 {
     const float t = highlight_falloff;
-    const float t2 = foundation::square(t);
-    return foundation::mix(1.51f, 40.0f, foundation::square(t2) * t);
+    const float t2 = t * t;
+    return foundation::mix(1.51f, 40.0f, t2 * t2 * t);
 }
 
 class MicrofacetBRDFHelper
@@ -120,7 +120,6 @@ class MicrofacetBRDFHelper
             return;
 
         const float D = mdf.D(m, alpha_x, alpha_y, gamma);
-
         const float G =
             mdf.G(
                 sample.m_shading_basis.transform_to_local(incoming),
@@ -154,9 +153,9 @@ class MicrofacetBRDFHelper
     {
         const foundation::Vector3f h = foundation::normalize(incoming + outgoing);
         const foundation::Vector3f m = shading_basis.transform_to_local(h);
-        const float D = mdf.D(m, alpha_x, alpha_y, gamma);
-
         const foundation::Vector3f wo = shading_basis.transform_to_local(outgoing);
+
+        const float D = mdf.D(m, alpha_x, alpha_y, gamma);
         const float G =
             mdf.G(
                 shading_basis.transform_to_local(incoming),
