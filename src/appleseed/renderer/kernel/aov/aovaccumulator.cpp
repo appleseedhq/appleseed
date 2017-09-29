@@ -120,7 +120,7 @@ UnfilteredAOVAccumulator::UnfilteredAOVAccumulator(Image& image)
 {
 }
 
-void UnfilteredAOVAccumulator::fetch_tile(
+void UnfilteredAOVAccumulator::on_tile_begin(
     const Frame& frame,
     const size_t tile_x,
     const size_t tile_y)

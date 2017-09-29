@@ -46,7 +46,6 @@
 // Forward declarations.
 namespace foundation    { class Image; }
 namespace foundation    { class Tile; }
-namespace renderer      { class Camera; }
 namespace renderer      { class Frame; }
 namespace renderer      { class PixelContext; }
 namespace renderer      { class ShadingComponents; }
@@ -101,6 +100,11 @@ class UnfilteredAOVAccumulator
   public:
     explicit UnfilteredAOVAccumulator(foundation::Image& image);
 
+    virtual void on_tile_begin(
+        const Frame& frame,
+        const size_t tile_x,
+        const size_t tile_y) override;
+
   protected:
     foundation::Image&  m_image;
     foundation::Tile*   m_tile;
@@ -109,12 +113,8 @@ class UnfilteredAOVAccumulator
     int                 m_tile_end_x;
     int                 m_tile_end_y;
 
-    void fetch_tile(
-        const Frame& frame,
-        const size_t tile_x,
-        const size_t tile_y);
-
     foundation::Tile& get_tile() const;
+
 
     bool outside_tile(const foundation::Vector2i& pi) const;
 

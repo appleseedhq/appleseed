@@ -75,11 +75,9 @@ namespace
             const size_t                tile_x,
             const size_t                tile_y) override
         {
-            fetch_tile(frame, tile_x, tile_y);
+            UnfilteredAOVAccumulator::on_tile_begin(frame, tile_x, tile_y);
 
-            // Clear the tile.
-            get_tile().clear(
-                Color3f(0.0f, 0.0f, std::numeric_limits<float>::max()));
+            get_tile().clear(Color3f(0.0f, 0.0f, std::numeric_limits<float>::max()));
         }
 
         virtual void write(
