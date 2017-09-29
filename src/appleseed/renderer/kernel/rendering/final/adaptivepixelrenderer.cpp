@@ -97,7 +97,7 @@ namespace
                 if ((thread_index == 0) && (m_variation_aov_index == size_t(~0) || m_samples_aov_index == size_t(~0)))
                 {
                     RENDERER_LOG_WARNING(
-                        "could not create some of the diagnostic AOVs, maximum number of AOVs (" FMT_SIZE_T ") reached.",
+                        "could not create some of the diagnostic aovs, maximum number of aovs (" FMT_SIZE_T ") reached.",
                         MaxAOVCount);
                 }
             }
