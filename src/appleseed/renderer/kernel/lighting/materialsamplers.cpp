@@ -155,21 +155,6 @@ void BSDFSampler::trace_between(
         transmission);
 }
 
-bool BSDFSampler::cull_incoming_direction(const Vector3d& incoming) const
-{
-    // Cull light samples behind the shading surface if the BSDF
-    // is either reflective or transmissive, but not both.
-    if (m_bsdf.get_type() != BSDF::AllBSDFTypes)
-    {
-        double cos_in = dot(incoming, m_shading_basis.get_normal());
-        if (m_bsdf.get_type() == BSDF::Transmissive)
-            cos_in = -cos_in;
-        if (cos_in <= 0.0)
-            return true;
-    }
-    return false;
-}
-
 
 //
 // VolumeSampler class implementation.
@@ -279,12 +264,6 @@ void VolumeSampler::trace_between(
         m_volume_ray,
         VisibilityFlags::ShadowRay,
         transmission);
-}
-
-bool VolumeSampler::cull_incoming_direction(const Vector3d& incoming) const
-{
-    // No culling for volume.
-    return false;
 }
 
 }   // namespace renderer

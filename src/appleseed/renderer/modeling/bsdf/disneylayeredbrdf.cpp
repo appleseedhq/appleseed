@@ -188,6 +188,7 @@ float DisneyLayeredBRDF::evaluate(
 
 float DisneyLayeredBRDF::evaluate_pdf(
     const void*                 data,
+    const bool                  adjoint,
     const Vector3f&             geometric_normal,
     const Basis3f&              shading_basis,
     const Vector3f&             outgoing,
@@ -199,6 +200,7 @@ float DisneyLayeredBRDF::evaluate_pdf(
 
     return m_brdf->evaluate_pdf(
         data,
+        adjoint,
         geometric_normal,
         shading_basis,
         outgoing,

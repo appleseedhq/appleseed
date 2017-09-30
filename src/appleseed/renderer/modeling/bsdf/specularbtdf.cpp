@@ -217,6 +217,7 @@ namespace
 
         virtual float evaluate_pdf(
             const void*                 data,
+            const bool                  adjoint,
             const Vector3f&             geometric_normal,
             const Basis3f&              shading_basis,
             const Vector3f&             outgoing,

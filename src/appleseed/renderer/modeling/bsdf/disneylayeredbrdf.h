@@ -101,6 +101,7 @@ class DisneyLayeredBRDF
 
     virtual float evaluate_pdf(
         const void*                     data,
+        const bool                      adjoint,
         const foundation::Vector3f&     geometric_normal,
         const foundation::Basis3f&      shading_basis,
         const foundation::Vector3f&     outgoing,

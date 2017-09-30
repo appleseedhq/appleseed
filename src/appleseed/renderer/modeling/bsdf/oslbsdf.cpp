@@ -285,6 +285,7 @@ namespace
 
         virtual float evaluate_pdf(
             const void*                 data,
+            const bool                  adjoint,
             const Vector3f&             geometric_normal,
             const Basis3f&              shading_basis,
             const Vector3f&             outgoing,
@@ -306,6 +307,7 @@ namespace
                         bsdf_from_closure_id(c->get_closure_type(i))
                             .evaluate_pdf(
                                 c->get_closure_input_values(i),
+                                adjoint,
                                 geometric_normal,
                                 c->get_closure_shading_basis(i),
                                 outgoing,
@@ -441,7 +443,7 @@ namespace
         }
     };
 
-    typedef BSDFWrapper<OSLBSDFImpl> OSLBSDF;
+    typedef BSDFWrapper<OSLBSDFImpl, false> OSLBSDF;
 }
 
 

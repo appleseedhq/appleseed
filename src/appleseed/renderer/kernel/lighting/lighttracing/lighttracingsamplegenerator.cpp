@@ -425,11 +425,6 @@ namespace
                         importance))
                     return;
 
-                // Reject vertices on the back side of the shading surface.
-                const Vector3d& shading_normal = vertex.get_shading_normal();
-                if (dot(camera_outgoing, shading_normal) >= 0.0)
-                    return;
-
                 // Compute the transmission factor between the path vertex and the camera.
                 // Prevent self-intersections by letting the ray originate from the camera.
                 Spectrum transmission;
@@ -454,7 +449,7 @@ namespace
                 const Vector3d geometric_normal =
                     flip_to_same_hemisphere(
                         vertex.get_geometric_normal(),
-                        shading_normal);
+                        vertex.get_shading_normal());
 
                 // Evaluate the BSDF at the vertex position.
                 DirectShadingComponents bsdf_value;

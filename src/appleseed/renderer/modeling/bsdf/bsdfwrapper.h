@@ -55,7 +55,7 @@ namespace renderer
 // and takes care of correcting for the use of shading normals in the adjoint case.
 //
 
-template <typename BSDFImpl>
+template <typename BSDFImpl, bool Cull = true>
 class BSDFWrapper
   : public BSDFImpl
 {
@@ -85,6 +85,7 @@ class BSDFWrapper
 
     virtual float evaluate_pdf(
         const void*                     data,
+        const bool                      adjoint,
         const foundation::Vector3f&     geometric_normal,
         const foundation::Basis3f&      shading_basis,
         const foundation::Vector3f&     outgoing,
@@ -97,16 +98,16 @@ class BSDFWrapper
 // BSDFWrapper class implementation.
 //
 
-template <typename BSDFImpl>
-BSDFWrapper<BSDFImpl>::BSDFWrapper(
+template <typename BSDFImpl, bool Cull>
+BSDFWrapper<BSDFImpl, Cull>::BSDFWrapper(
     const char*                         name,
     const ParamArray&                   params)
   : BSDFImpl(name, params)
 {
 }
 
-template <typename BSDFImpl>
-void BSDFWrapper<BSDFImpl>::sample(
+template <typename BSDFImpl, bool Cull>
+void BSDFWrapper<BSDFImpl, Cull>::sample(
     SamplingContext&                    sampling_context,
     const void*                         data,
     const bool                          adjoint,
@@ -148,8 +149,8 @@ void BSDFWrapper<BSDFImpl>::sample(
     }
 }
 
-template <typename BSDFImpl>
-float BSDFWrapper<BSDFImpl>::evaluate(
+template <typename BSDFImpl, bool Cull>
+float BSDFWrapper<BSDFImpl, Cull>::evaluate(
     const void*                         data,
     const bool                          adjoint,
     const bool                          cosine_mult,
@@ -163,6 +164,26 @@ float BSDFWrapper<BSDFImpl>::evaluate(
     assert(foundation::is_normalized(geometric_normal));
     assert(foundation::is_normalized(outgoing));
     assert(foundation::is_normalized(incoming));
+
+    if (Cull)
+    {
+        if (adjoint)
+        {
+            float cos_on = foundation::dot(outgoing, shading_basis.get_normal());
+            if (get_type() == BSDF::Transmissive)
+                cos_on = -cos_on;
+            if (cos_on < 0.0f)
+                return 0.0f;
+        }
+        else
+        {
+            float cos_in = foundation::dot(incoming, shading_basis.get_normal());
+            if (get_type() == BSDF::Transmissive)
+                cos_in = -cos_in;
+            if (cos_in < 0.0f)
+                return 0.0f;
+        }
+    }
 
     const float probability =
         BSDFImpl::evaluate(
@@ -197,9 +218,10 @@ float BSDFWrapper<BSDFImpl>::evaluate(
     return probability;
 }
 
-template <typename BSDFImpl>
-float BSDFWrapper<BSDFImpl>::evaluate_pdf(
+template <typename BSDFImpl, bool Cull>
+float BSDFWrapper<BSDFImpl, Cull>::evaluate_pdf(
     const void*                         data,
+    const bool                          adjoint,
     const foundation::Vector3f&         geometric_normal,
     const foundation::Basis3f&          shading_basis,
     const foundation::Vector3f&         outgoing,
@@ -210,9 +232,30 @@ float BSDFWrapper<BSDFImpl>::evaluate_pdf(
     assert(foundation::is_normalized(outgoing));
     assert(foundation::is_normalized(incoming));
 
+    if (Cull)
+    {
+        if (adjoint)
+        {
+            float cos_on = foundation::dot(outgoing, shading_basis.get_normal());
+            if (get_type() == BSDF::Transmissive)
+                cos_on = -cos_on;
+            if (cos_on < 0.0f)
+                return 0.0f;
+        }
+        else
+        {
+            float cos_in = foundation::dot(incoming, shading_basis.get_normal());
+            if (get_type() == BSDF::Transmissive)
+                cos_in = -cos_in;
+            if (cos_in < 0.0f)
+                return 0.0f;
+        }
+    }
+
     const float probability =
         BSDFImpl::evaluate_pdf(
             data,
+            adjoint,
             geometric_normal,
             shading_basis,
             outgoing,
