@@ -103,11 +103,6 @@ namespace
             if (!ScatteringMode::has_glossy(modes))
                 return;
 
-            // No reflection below the shading surface.
-            const float cos_on = dot(sample.m_outgoing.get_value(), sample.m_shading_basis.get_normal());
-            if (cos_on < 0.0f)
-                return;
-
             // Set the scattering mode.
             sample.m_mode = ScatteringMode::Glossy;
 
@@ -148,13 +143,6 @@ namespace
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
 
-            // No reflection below the shading surface.
-            const Vector3f& n = shading_basis.get_normal();
-            const float cos_in = dot(incoming, n);
-            const float cos_on = dot(outgoing, n);
-            if (cos_in < 0.0f || cos_on < 0.0f)
-                return 0.0f;
-
             const Vector3f h = normalize(incoming + outgoing);
             const float cos_ih = dot(incoming, h);
             const float fh = pow_int<5>(saturate(1.0f - cos_ih));
@@ -181,13 +169,7 @@ namespace
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
 
-            // No reflection below the shading surface.
-            const Vector3f& n = shading_basis.get_normal();
-            const float cos_in = dot(incoming, n);
-            const float cos_on = dot(outgoing, n);
-            if (cos_in < 0.0f || cos_on < 0.0f)
-                return 0.0f;
-
+            // Return the probability density of the sampled direction.
             return RcpTwoPi<float>();
         }
 
