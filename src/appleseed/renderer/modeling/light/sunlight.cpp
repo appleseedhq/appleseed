@@ -133,8 +133,9 @@ namespace
             else
             {
                 RENDERER_LOG_WARNING(
-                    "distance between sun and scene \"%s\" is not uniform.",
+                    "distance between sun and scene \"%s\" is not uniform, using default value of 149.6 million km.",
                     get_path().c_str());
+                m_values.m_distance = 149.6;
             }
 
             // Compute SunSolidAngle that depends on distance between Sun and scene.
