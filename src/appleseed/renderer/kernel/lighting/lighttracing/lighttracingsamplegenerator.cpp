@@ -76,6 +76,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/arena.h"
+#include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
@@ -234,8 +235,18 @@ namespace
 
             SampleGeneratorBase::generate_samples(sample_count, buffer, abort_switch);
 
-            static_cast<GlobalSampleAccumulationBuffer&>(buffer)
-                .increment_sample_count(m_light_sample_count);
+            if (!abort_switch.is_aborted())
+            {
+                // `GlobalSampleAccumulationBuffer::increment_sample_count()` must only be
+                // called if rendering was not aborted. Indeed, when rendering is aborted,
+                // `GlobalSampleAccumulationBuffer::store_samples()` returns before it has
+                // stored all the samples rendered by this job. In this case, incrementing
+                // the total number of samples would create an imbalance that would darken
+                // the final render. This is still not 100% correct since some samples may
+                // have been stored.
+                static_cast<GlobalSampleAccumulationBuffer&>(buffer)
+                    .increment_sample_count(m_light_sample_count);
+            }
         }
 
         virtual StatisticsVector get_statistics() const override
