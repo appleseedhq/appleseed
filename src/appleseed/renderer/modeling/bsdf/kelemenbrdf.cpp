@@ -227,16 +227,12 @@ namespace
             const int                   modes,
             BSDFSample&                 sample) const override
         {
-            // Define aliases to match the notations in the paper.
+            const InputValues* values = static_cast<const InputValues*>(data);
+
+            // Define aliases to match notations in the paper.
             const Vector3f& V = sample.m_outgoing.get_value();
             const Vector3f& N = sample.m_shading_basis.get_normal();
-
-            // No reflection below the shading surface.
-            const float dot_VN = dot(V, N);
-            if (dot_VN < 0.0f)
-                return;
-
-            const InputValues* values = static_cast<const InputValues*>(data);
+            const float dot_VN = abs(dot(V, N));
 
             // Compute specular albedo for outgoing angle.
             Spectrum specular_albedo_V;
@@ -279,8 +275,8 @@ namespace
                 H = normalize(incoming + V);
 
                 dot_LN = wi.y;
-                dot_HN = dot(H, N);
-                dot_HV = dot(H, V);
+                dot_HN = abs(dot(H, N));
+                dot_HV = abs(dot(H, V));
             }
             else
             {
@@ -296,6 +292,7 @@ namespace
 
                 dot_LN = dot(incoming, N);
                 dot_HN = local_H.y;
+                dot_HV = abs(dot_HV);
 
                 // No reflection below the shading surface.
                 if (dot_LN < 0.0f)
@@ -358,18 +355,14 @@ namespace
             const Vector3f& V = outgoing;
             const Vector3f& L = incoming;
             const Vector3f& N = shading_basis.get_normal();
-
-            // No reflection below the shading surface.
-            const float dot_VN = dot(V, N);
-            const float dot_LN = dot(L, N);
-            if (dot_VN < 0.0f || dot_LN < 0.0f)
-                return 0.0f;
+            const float dot_VN = abs(dot(V, N));
+            const float dot_LN = abs(dot(L, N));
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute the halfway vector.
             const Vector3f H = normalize(L + V);
-            const float dot_HN = dot(H, N);
+            const float dot_HN = abs(dot(H, N));
             const float dot_HL = min(dot(H, L), 1.0f);
 
             // Compute the specular albedo for the outgoing angle.
@@ -443,18 +436,14 @@ namespace
             const Vector3f& V = outgoing;
             const Vector3f& L = incoming;
             const Vector3f& N = shading_basis.get_normal();
-
-            // No reflection below the shading surface.
-            const float dot_VN = dot(V, N);
-            const float dot_LN = dot(L, N);
-            if (dot_VN < 0.0f || dot_LN < 0.0f)
-                return 0.0f;
+            const float dot_VN = abs(dot(V, N));
+            const float dot_LN = abs(dot(L, N));
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute the halfway vector.
             const Vector3f H = normalize(L + V);
-            const float dot_HN = dot(H, N);
+            const float dot_HN = abs(dot(H, N));
             const float dot_HL = dot(H, L);
 
             // Compute the specular albedo for the outgoing angle.
