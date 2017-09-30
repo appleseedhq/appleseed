@@ -136,12 +136,6 @@ namespace
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0f;
 
-            // No reflection below the shading surface.
-            const Vector3f& n = shading_basis.get_normal();
-            const float cos_in = dot(incoming, n);
-            if (cos_in < 0.0f)
-                return 0.0f;
-
             // Compute the BRDF value.
             const LambertianBRDFInputValues* values = static_cast<const LambertianBRDFInputValues*>(data);
             value.m_diffuse = values->m_reflectance;
@@ -149,6 +143,8 @@ namespace
             value.m_beauty = value.m_diffuse;
 
             // Return the probability density of the sampled direction.
+            const Vector3f& n = shading_basis.get_normal();
+            const float cos_in = abs(dot(incoming, n));
             return cos_in * RcpPi<float>();
         }
 
@@ -164,12 +160,9 @@ namespace
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0f;
 
-            // No reflection below the shading surface.
+            // Return the probability density of the sampled direction.
             const Vector3f& n = shading_basis.get_normal();
-            const float cos_in = dot(incoming, n);
-            if (cos_in < 0.0f)
-                return 0.0f;
-
+            const float cos_in = abs(dot(incoming, n));
             return cos_in * RcpPi<float>();
         }
     };
