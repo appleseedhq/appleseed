@@ -112,12 +112,8 @@ class MicrofacetBRDFHelper
         const foundation::Vector3f m = mdf.sample(wo, s, alpha_x, alpha_y, gamma);
         const foundation::Vector3f h = sample.m_shading_basis.transform_to_parent(m);
         const foundation::Vector3f incoming = foundation::reflect(sample.m_outgoing.get_value(), h);
-        const float cos_oh = foundation::dot(sample.m_outgoing.get_value(), h);
-
-        // No reflection below the shading surface.
-        const float cos_in = foundation::dot(incoming, sample.m_shading_basis.get_normal());
-        if (cos_in <= 0.0f)
-            return;
+        const float cos_oh = std::abs(foundation::dot(sample.m_outgoing.get_value(), h));
+        const float cos_in = std::abs(foundation::dot(incoming, sample.m_shading_basis.get_normal()));
 
         const float D = mdf.D(m, alpha_x, alpha_y, gamma);
         const float G =
