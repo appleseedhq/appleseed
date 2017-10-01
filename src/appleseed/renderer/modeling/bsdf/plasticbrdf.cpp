@@ -176,19 +176,13 @@ namespace
             const int                   modes,
             BSDFSample&                 sample) const override
         {
-            const Basis3f& shading_basis(sample.m_shading_basis);
-            const Vector3f& n = shading_basis.get_normal();
-            const Vector3f& outgoing = sample.m_outgoing.get_value();
-            const float cos_on = min(dot(outgoing, n), 1.0f);
-            if (cos_on < 0.0f)
-                return;
-
             const InputValues* values = static_cast<const InputValues*>(data);
             const float alpha = microfacet_alpha_from_roughness(values->m_roughness);
             const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
             // Compute the microfacet normal by sampling the MDF.
-            const Vector3f wo = shading_basis.transform_to_local(outgoing);
+            const Vector3f& outgoing = sample.m_outgoing.get_value();
+            const Vector3f wo = sample.m_shading_basis.transform_to_local(outgoing);
             sampling_context.split_in_place(4, 1);
             const Vector4f s = sampling_context.next2<Vector4f>();
             const Vector3f m =
@@ -259,7 +253,7 @@ namespace
                 sample.m_probability = wi.y * RcpPi<float>() * (1.0f - specular_probability);
             }
 
-            sample.m_incoming = Dual3f(shading_basis.transform_to_parent(wi));
+            sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
             sample.compute_reflected_differentials();
         }
 
@@ -274,13 +268,6 @@ namespace
             const int                   modes,
             DirectShadingComponents&    value) const override
         {
-            // No reflection below the shading surface.
-            const Vector3f& n = shading_basis.get_normal();
-            const float cos_in = dot(incoming, n);
-            const float cos_on = dot(outgoing, n);
-            if (cos_in < 0.0f || cos_on < 0.0f)
-                return 0.0f;
-
             const InputValues* values = static_cast<const InputValues*>(data);
             const float alpha = microfacet_alpha_from_roughness(values->m_roughness);
             const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
@@ -324,7 +311,7 @@ namespace
                     Fi,
                     value.m_diffuse);
 
-                pdf_diffuse = wi.y * RcpPi<float>();
+                pdf_diffuse = abs(wi.y) * RcpPi<float>();
             }
 
             value.m_beauty = value.m_diffuse;
@@ -345,13 +332,6 @@ namespace
             const Vector3f&             incoming,
             const int                   modes) const override
         {
-            // No reflection below the shading surface.
-            const Vector3f& n = shading_basis.get_normal();
-            const float cos_in = dot(incoming, n);
-            const float cos_on = dot(outgoing, n);
-            if (cos_in < 0.0f || cos_on < 0.0f)
-                return 0.0f;
-
             const InputValues* values = static_cast<const InputValues*>(data);
             const float alpha = microfacet_alpha_from_roughness(values->m_roughness);
             const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
@@ -373,7 +353,7 @@ namespace
 
             const float pdf_diffuse =
                 ScatteringMode::has_diffuse(modes)
-                    ? wi.y * RcpPi<float>()
+                    ? abs(wi.y) * RcpPi<float>()
                     : 0.0f;
 
             return
