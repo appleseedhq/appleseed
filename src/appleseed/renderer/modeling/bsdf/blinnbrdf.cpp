@@ -87,7 +87,7 @@ namespace
             const Vector3f& n,
             Spectrum&       value) const
         {
-            const float cos_oh = clamp(dot(o, h), -1.0f, 1.0f);
+            const float cos_oh = abs(dot(o, h));
 
             float f;
             fresnel_reflectance_dielectric(f, m_eta, cos_oh);
@@ -152,9 +152,7 @@ namespace
 
             const Vector3f& n = sample.m_shading_basis.get_normal();
             const Vector3f& outgoing = sample.m_outgoing.get_value();
-            const float cos_on = min(dot(outgoing, n), 1.0f);
-            if (cos_on < 0.0f)
-                return;
+            const float cos_on = abs(dot(outgoing, n));
 
             const InputValues* values = static_cast<const InputValues*>(data);
             const FresnelFun f(values->m_precomputed.m_outside_ior / values->m_ior);
@@ -186,12 +184,9 @@ namespace
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
 
-            // No reflection below the shading surface.
             const Vector3f& n = shading_basis.get_normal();
-            const float cos_in = dot(incoming, n);
-            const float cos_on = dot(outgoing, n);
-            if (cos_in < 0.0f || cos_on < 0.0f)
-                return 0.0f;
+            const float cos_in = abs(dot(incoming, n));
+            const float cos_on = abs(dot(outgoing, n));
 
             const InputValues* values = static_cast<const InputValues*>(data);
             const FresnelFun f(values->m_precomputed.m_outside_ior / values->m_ior);
@@ -225,13 +220,6 @@ namespace
             const int                   modes) const override
         {
             if (!ScatteringMode::has_glossy(modes))
-                return 0.0f;
-
-            // No reflection below the shading surface.
-            const Vector3f& n = shading_basis.get_normal();
-            const float cos_in = dot(incoming, n);
-            const float cos_on = dot(outgoing, n);
-            if (cos_in < 0.0f || cos_on < 0.0f)
                 return 0.0f;
 
             const InputValues* values = static_cast<const InputValues*>(data);
