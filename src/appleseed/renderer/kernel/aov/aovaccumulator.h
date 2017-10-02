@@ -118,7 +118,7 @@ class UnfilteredAOVAccumulator
 
     bool outside_tile(const foundation::Vector2i& pi) const;
 
-    static float squared_distace_to_pixel_center(const foundation::Vector2d& ps);
+    static float square_distance_to_pixel_center(const foundation::Vector2d& ps);
 };
 
 
@@ -135,11 +135,11 @@ inline bool UnfilteredAOVAccumulator::outside_tile(
     const foundation::Vector2i& pi) const
 {
    return
-    pi.x < m_tile_origin_x || pi.y < m_tile_origin_y ||
-    pi.x > m_tile_end_x || pi.y > m_tile_end_y;
+      pi.x < m_tile_origin_x || pi.y < m_tile_origin_y ||
+      pi.x > m_tile_end_x || pi.y > m_tile_end_y;
 }
 
-inline float UnfilteredAOVAccumulator::squared_distace_to_pixel_center(
+inline float UnfilteredAOVAccumulator::square_distance_to_pixel_center(
     const foundation::Vector2d& ps)
 {
     return static_cast<float>(

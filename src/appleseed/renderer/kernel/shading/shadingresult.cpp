@@ -114,7 +114,7 @@ void ShadingResult::apply_alpha_premult()
     }
 }
 
-void ShadingResult::set_to_opaque_pink()
+void ShadingResult::set_main_to_opaque_pink()
 {
     m_main = Color4f(1.0f, 0.0f, 1.0f, 1.0f);
 }

@@ -128,7 +128,7 @@ void ShadingEngine::shade_hit_point(
             if (material == 0)
             {
                 // The intersected surface has no material: return solid pink.
-                shading_result.set_to_opaque_pink();
+                shading_result.set_main_to_opaque_pink();
                 return;
             }
 
@@ -138,7 +138,7 @@ void ShadingEngine::shade_hit_point(
             if (surface_shader == 0)
             {
                 // The intersected surface has no surface shader: return solid pink.
-                shading_result.set_to_opaque_pink();
+                shading_result.set_main_to_opaque_pink();
                 return;
             }
         }
@@ -188,6 +188,8 @@ void ShadingEngine::shade_environment(
             value,
             shading_result);
     }
+    else
+        shading_result.m_main.set(0.0f);
 }
 
 }   // namespace renderer

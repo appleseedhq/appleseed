@@ -227,7 +227,7 @@ void DiagnosticSurfaceShader::evaluate(
     {
       case Color:
         {
-            shading_result.set_to_opaque_pink();
+            shading_result.set_main_to_opaque_pink();
 
             const Material* material = shading_point.get_material();
             if (material)
@@ -491,7 +491,7 @@ void DiagnosticSurfaceShader::evaluate(
             const Material* material = shading_point.get_material();
             if (material)
                 set_result(integer_to_color(material->get_uid()), shading_result);
-            else shading_result.set_to_opaque_pink();
+            else shading_result.set_main_to_opaque_pink();
         }
         break;
 

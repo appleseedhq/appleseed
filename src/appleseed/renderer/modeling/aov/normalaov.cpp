@@ -59,8 +59,6 @@ namespace
     // Normal AOV accumulator.
     //
 
-    const Vector3d zero_normal(0.0, 0.0, 0.0);
-
     class NormalAOVAccumulator
       : public UnfilteredAOVAccumulator
     {
@@ -76,8 +74,7 @@ namespace
             const size_t                tile_y) override
         {
             UnfilteredAOVAccumulator::on_tile_begin(frame, tile_x, tile_y);
-
-            get_tile().clear(Color4f(0.5f, 0.5f, 0.5f, std::numeric_limits<float>::max()));
+            get_tile().clear(Color4f(0.5f, 0.5f, 0.5f, numeric_limits<float>::max()));
         }
 
         virtual void write(
@@ -95,21 +92,27 @@ namespace
             float* p = reinterpret_cast<float*>(
                 get_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
 
-            const float min_sample_squared_distance = p[3];
-            const float sample_squared_distance =
-                squared_distace_to_pixel_center(pixel_context.get_sample_position());
+            const float min_sample_square_distance = p[3];
+            const float sample_square_distance =
+                square_distance_to_pixel_center(pixel_context.get_sample_position());
 
-            if (sample_squared_distance < min_sample_squared_distance)
+            if (sample_square_distance < min_sample_square_distance)
             {
-                const Vector3d& normal =
-                    shading_point.hit()
-                        ? shading_point.get_shading_normal()
-                        : zero_normal;
-
-                p[0] = static_cast<float>(normal[0]) * 0.5f + 0.5f;
-                p[1] = static_cast<float>(normal[1]) * 0.5f + 0.5f;
-                p[2] = static_cast<float>(normal[2]) * 0.5f + 0.5f;
-                p[3] = sample_squared_distance;
+                if (shading_point.hit())
+                {
+                    const Vector3d& n = shading_point.get_shading_normal();
+                    p[0] = static_cast<float>(n[0]) * 0.5f + 0.5f;
+                    p[1] = static_cast<float>(n[1]) * 0.5f + 0.5f;
+                    p[2] = static_cast<float>(n[2]) * 0.5f + 0.5f;
+                    p[3] = sample_square_distance;
+                }
+                else
+                {
+                    p[0] = 0.5f;
+                    p[1] = 0.5f;
+                    p[2] = 0.5f;
+                    p[3] = sample_square_distance;
+                }
             }
         }
     };

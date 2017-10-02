@@ -59,8 +59,6 @@ namespace
     // UV AOV accumulator.
     //
 
-    const Vector2f zero_uvs(0.0f, 0.0f);
-
     class UVAOVAccumulator
       : public UnfilteredAOVAccumulator
     {
@@ -76,8 +74,7 @@ namespace
             const size_t                tile_y) override
         {
             UnfilteredAOVAccumulator::on_tile_begin(frame, tile_x, tile_y);
-
-            get_tile().clear(Color3f(0.0f, 0.0f, std::numeric_limits<float>::max()));
+            get_tile().clear(Color3f(0.0f, 0.0f, numeric_limits<float>::max()));
         }
 
         virtual void write(
@@ -95,21 +92,27 @@ namespace
             float* p = reinterpret_cast<float*>(
                 get_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
 
-            const float min_sample_squared_distance = p[3];
-            const float sample_squared_distance =
-                squared_distace_to_pixel_center(pixel_context.get_sample_position());
+            const float min_sample_square_distance = p[3];
+            const float sample_square_distance =
+                square_distance_to_pixel_center(pixel_context.get_sample_position());
 
-            if (sample_squared_distance < min_sample_squared_distance)
+            if (sample_square_distance < min_sample_square_distance)
             {
-                const Vector2f& uv =
-                    shading_point.hit()
-                        ? shading_point.get_uv(0)
-                        : zero_uvs;
-
-                p[0] = uv[0];
-                p[1] = uv[1];
-                p[2] = 0.0f;
-                p[3] = sample_squared_distance;
+                if (shading_point.hit())
+                {
+                    const Vector2f& uv = shading_point.get_uv(0);
+                    p[0] = uv[0];
+                    p[1] = uv[1];
+                    p[2] = 0.0f;
+                    p[3] = sample_square_distance;
+                }
+                else
+                {
+                    p[0] = 0.0f;
+                    p[1] = 0.0f;
+                    p[2] = 0.0f;
+                    p[3] = sample_square_distance;
+                }
             }
         }
     };

@@ -1510,10 +1510,7 @@ namespace
         virtual void update() override
         {
             if (Scene* scene = m_project.get_scene())
-            {
                 update_material_and_object_inputs(scene->assemblies());
-                update_physical_surface_shader_inputs(scene->assemblies());
-            }
         }
 
       private:
@@ -1541,7 +1538,28 @@ namespace
             ParamArray& params = entity.get_parameters();
             params.remove_path("shade_alpha_cutouts");
         }
+    };
 
+    //
+    // Update from revision 20 to revision 21.
+    //
+
+    class UpdateFromRevision_20
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_20(Project& project)
+            : Updater(project, 20)
+        {
+        }
+
+        virtual void update() override
+        {
+            if (Scene* scene = m_project.get_scene())
+                update_physical_surface_shader_inputs(scene->assemblies());
+        }
+
+      private:
         static void update_physical_surface_shader_inputs(AssemblyContainer& assemblies)
         {
             for (each<AssemblyContainer> i = assemblies; i; ++i)
@@ -1567,7 +1585,6 @@ namespace
             }
         }
     };
-
 }
 
 bool ProjectFileUpdater::update(
@@ -1620,6 +1637,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(17);
       CASE_UPDATE_FROM_REVISION(18);
       CASE_UPDATE_FROM_REVISION(19);
+      CASE_UPDATE_FROM_REVISION(20);
 
       case ProjectFormatRevision:
         // Project is up-to-date.

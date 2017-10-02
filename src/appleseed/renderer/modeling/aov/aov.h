@@ -94,11 +94,11 @@ class APPLESEED_DLLSYMBOL AOV
 
     // Create an image to store the AOV result.
     virtual void create_image(
-            const size_t    canvas_width,
-            const size_t    canvas_height,
-            const size_t    tile_width,
-            const size_t    tile_height,
-            ImageStack&     aov_images);
+        const size_t    canvas_width,
+        const size_t    canvas_height,
+        const size_t    tile_width,
+        const size_t    tile_height,
+        ImageStack&     aov_images);
 
     // Create an accumulator for this AOV.
     virtual foundation::auto_release_ptr<AOVAccumulator> create_accumulator(
@@ -144,11 +144,11 @@ class UnfilteredAOV
 
   protected:
     virtual void create_image(
-            const size_t    canvas_width,
-            const size_t    canvas_height,
-            const size_t    tile_width,
-            const size_t    tile_height,
-            ImageStack&     aov_images) override;
+        const size_t    canvas_width,
+        const size_t    canvas_height,
+        const size_t    tile_width,
+        const size_t    tile_height,
+        ImageStack&     aov_images) override;
 };
 
 }       // namespace renderer

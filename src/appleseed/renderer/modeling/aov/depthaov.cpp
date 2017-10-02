@@ -49,7 +49,6 @@
 // Standard headers.
 #include <cstddef>
 #include <limits>
-#include <memory>
 
 using namespace foundation;
 using namespace std;
@@ -78,8 +77,7 @@ namespace
             const size_t                tile_y) override
         {
             UnfilteredAOVAccumulator::on_tile_begin(frame, tile_x, tile_y);
-
-            get_tile().clear(Vector2f(std::numeric_limits<float>::max()));
+            get_tile().clear(Vector2f(numeric_limits<float>::max()));
         }
 
         virtual void write(
@@ -97,18 +95,18 @@ namespace
             float* p = reinterpret_cast<float*>(
                 get_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
 
-            const float min_sample_squared_distance = p[1];
-            const float sample_squared_distance =
-                squared_distace_to_pixel_center(pixel_context.get_sample_position());
+            const float min_sample_square_distance = p[1];
+            const float sample_square_distance =
+                square_distance_to_pixel_center(pixel_context.get_sample_position());
 
-            if (sample_squared_distance < min_sample_squared_distance)
+            if (sample_square_distance < min_sample_square_distance)
             {
                 const float depth = shading_point.hit()
                     ? static_cast<float>(shading_point.get_distance())
                     : numeric_limits<float>::max();
 
                 p[0] = depth;
-                p[1] = sample_squared_distance;
+                p[1] = sample_square_distance;
             }
         }
     };
