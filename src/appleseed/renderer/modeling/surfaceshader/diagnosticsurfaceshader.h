@@ -113,7 +113,8 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
         const PixelContext&         pixel_context,
         const ShadingContext&       shading_context,
         const ShadingPoint&         shading_point,
-        AOVAccumulatorContainer&    aov_accumulators) const override;
+        AOVAccumulatorContainer&    aov_accumulators,
+        ShadingResult&              shading_result) const override;
 
   private:
     ShadingMode m_shading_mode;
@@ -124,18 +125,15 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
 
     static void set_result(
         const foundation::Color3f&  color,
-        AOVAccumulatorContainer&    aov_accumulators);
+        ShadingResult&              shading_result);
 
     static void set_result(
         const foundation::Color4f&  color,
-        AOVAccumulatorContainer&    aov_accumulators);
+        ShadingResult&              shading_result);
 
     static void set_result(
         const Spectrum&             value,
-        AOVAccumulatorContainer&    aov_accumulators);
-
-    static void set_result_to_opaque_pink(
-        AOVAccumulatorContainer&    aov_accumulators);
+        ShadingResult&              shading_result);
 };
 
 

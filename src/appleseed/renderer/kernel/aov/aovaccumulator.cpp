@@ -35,6 +35,12 @@
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/color/colorspace.h"
+#include "renderer/modeling/frame/frame.h"
+
+// appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
+#include "foundation/image/tile.h"
 
 // Standard headers.
 #include <cassert>
@@ -51,11 +57,6 @@ namespace renderer
 // AOVAccumulator class implementation.
 //
 
-AOVAccumulator::AOVAccumulator(const size_t index)
-  : m_index(index)
-{
-}
-
 AOVAccumulator::~AOVAccumulator()
 {
 }
@@ -65,119 +66,74 @@ void AOVAccumulator::release()
     delete this;
 }
 
-void AOVAccumulator::write(
-    const ShadingComponents&    shading_components,
-    const float                 multiplier)
+void AOVAccumulator::on_tile_begin(
+    const Frame& frame,
+    const size_t tile_x,
+    const size_t tile_y)
+{
+}
+
+void AOVAccumulator::on_tile_end(
+    const Frame& frame,
+    const size_t tile_x,
+    const size_t tile_y)
 {
 }
 
 void AOVAccumulator::write(
+    const PixelContext&         pixel_context,
     const ShadingPoint&         shading_point,
-    const Camera&               camera)
-{
-}
-
-
-//
-// ColorAOVAccumulator class implementation.
-//
-
-ColorAOVAccumulator::ColorAOVAccumulator(const size_t index)
-  : AOVAccumulator(index)
-{
-}
-
-ColorAOVAccumulator::~ColorAOVAccumulator()
-{
-}
-
-void ColorAOVAccumulator::reset()
-{
-    m_color.set(0.0f);
-}
-
-void ColorAOVAccumulator::flush(ShadingResult& result)
-{
-    result.m_aovs[m_index].rgb() = m_color;
-    result.m_aovs[m_index].a = result.m_main.a;
-}
-
-
-//
-// BeautyAOVAccumulator class implementation.
-//
-
-BeautyAOVAccumulator::BeautyAOVAccumulator()
-  : AOVAccumulator(~0)
-{
-}
-
-void BeautyAOVAccumulator::set(const Spectrum& value)
-{
-    m_color = value.to_rgb(g_std_lighting_conditions);
-}
-
-void BeautyAOVAccumulator::set(const Color3f& color)
-{
-    m_color = color;
-}
-
-void BeautyAOVAccumulator::set_to_pink_linear_rgb()
-{
-    set(Color3f(1.0f, 0.0f, 1.0f));
-}
-
-void BeautyAOVAccumulator::apply_multiplier(const float multiplier)
-{
-    m_color *= multiplier;
-}
-
-void BeautyAOVAccumulator::reset()
-{
-    m_color.set(0.0f);
-}
-
-void BeautyAOVAccumulator::write(
     const ShadingComponents&    shading_components,
-    const float                 multiplier)
+    ShadingResult&              shading_result)
 {
-    m_color = shading_components.m_beauty.to_rgb(g_std_lighting_conditions);
-    m_color *= multiplier;
 }
 
-void BeautyAOVAccumulator::flush(ShadingResult& result)
+namespace
 {
-    result.m_main.rgb() = m_color;
+    //
+    // BeautyAOVAccumulator class.
+    //
+
+    class BeautyAOVAccumulator
+      : public AOVAccumulator
+    {
+      public:
+        virtual void write(
+            const PixelContext&         pixel_context,
+            const ShadingPoint&         shading_point,
+            const ShadingComponents&    shading_components,
+            ShadingResult&              shading_result) override
+        {
+            shading_result.m_main.rgb() =
+                shading_components.m_beauty.to_rgb(g_std_lighting_conditions);
+        }
+    };
 }
 
 
 //
-// AlphaAOVAccumulator class implementation.
+// UnfilteredAOVAccumulator class implementation.
 //
 
-AlphaAOVAccumulator::AlphaAOVAccumulator()
-  : AOVAccumulator(~0)
+UnfilteredAOVAccumulator::UnfilteredAOVAccumulator(Image& image)
+  : m_image(image)
 {
 }
 
-void AlphaAOVAccumulator::set(const Alpha& alpha)
+void UnfilteredAOVAccumulator::on_tile_begin(
+    const Frame& frame,
+    const size_t tile_x,
+    const size_t tile_y)
 {
-    m_alpha[0] = alpha[0];
-}
+    // Fetch the destination tile.
+    const CanvasProperties& props = frame.image().properties();
+    m_tile = &m_image.tile(tile_x, tile_y);
 
-void AlphaAOVAccumulator::apply_multiplier(const Alpha& multiplier)
-{
-    m_alpha *= multiplier;
-}
-
-void AlphaAOVAccumulator::reset()
-{
-    m_alpha.set(0.0f);
-}
-
-void AlphaAOVAccumulator::flush(ShadingResult& result)
-{
-    result.m_main.a = m_alpha[0];
+    // Fetch the tile bounds (inclusive).
+    m_tile_origin_x = static_cast<int>(tile_x * props.m_tile_width);
+    m_tile_origin_y = static_cast<int>(tile_y * props.m_tile_height);
+    m_tile_end_x = static_cast<int>(m_tile_origin_x + m_tile->get_width() - 1);
+    m_tile_end_y = static_cast<int>(m_tile_origin_y + m_tile->get_height() - 1);
 }
 
 
@@ -207,43 +163,48 @@ void AOVAccumulatorContainer::init()
     m_size = 0;
     memset(m_accumulators, 0, MaxAovAccumulators * sizeof(AOVAccumulator*));
 
-    // Create beauty and alpha accumulators.
+    // Create beauty accumulator.
     insert(auto_release_ptr<AOVAccumulator>(new BeautyAOVAccumulator()));
-    insert(auto_release_ptr<AOVAccumulator>(new AlphaAOVAccumulator()));
 }
 
 AOVAccumulatorContainer::~AOVAccumulatorContainer()
 {
     for (size_t i = 0, e = m_size; i < e; ++i)
-        m_accumulators[i]->release();
+        delete m_accumulators[i];
 }
 
-void AOVAccumulatorContainer::reset()
+void AOVAccumulatorContainer::on_tile_begin(
+    const Frame&                frame,
+    const size_t                tile_x,
+    const size_t                tile_y)
 {
     for (size_t i = 0, e = m_size; i < e; ++i)
-        m_accumulators[i]->reset();
+        m_accumulators[i]->on_tile_begin(frame, tile_x, tile_y);
+}
+
+void AOVAccumulatorContainer::on_tile_end(
+    const Frame&                frame,
+    const size_t                tile_x,
+    const size_t                tile_y)
+{
+    for (size_t i = 0, e = m_size; i < e; ++i)
+        m_accumulators[i]->on_tile_end(frame, tile_x, tile_y);
 }
 
 void AOVAccumulatorContainer::write(
-    const ShadingComponents&    shading_components,
-    const float                 multiplier)
-{
-    for (size_t i = 0, e = m_size; i < e; ++i)
-        m_accumulators[i]->write(shading_components, multiplier);
-}
-
-void AOVAccumulatorContainer::write(
+    const PixelContext&         pixel_context,
     const ShadingPoint&         shading_point,
-    const Camera&               camera)
+    const ShadingComponents&    shading_components,
+    ShadingResult&              shading_result)
 {
     for (size_t i = 0, e = m_size; i < e; ++i)
-        m_accumulators[i]->write(shading_point, camera);
-}
-
-void AOVAccumulatorContainer::flush(ShadingResult& result)
-{
-    for (size_t i = 0, e = m_size; i < e; ++i)
-        m_accumulators[i]->flush(result);
+    {
+        m_accumulators[i]->write(
+            pixel_context,
+            shading_point,
+            shading_components,
+            shading_result);
+    }
 }
 
 bool AOVAccumulatorContainer::insert(auto_release_ptr<AOVAccumulator> aov_accum)

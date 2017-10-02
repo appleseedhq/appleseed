@@ -170,24 +170,6 @@ class APPLESEED_DLLSYMBOL Frame
     ~Frame();
 
     void extract_parameters();
-
-    // Write an image to disk. Return true if successful, false otherwise.
-    bool write_image(
-        const char*                         file_path,
-        const foundation::Image&            image,
-        const AOV*                          aov) const;
-
-    void write_exr_image(
-        const char*                         file_path,
-        const foundation::Image&            image,
-        const foundation::ImageAttributes&  image_attributes,
-        const AOV*                          aov) const;
-
-    void write_png_image(
-        const char*                         file_path,
-        const foundation::Image&            image,
-        const foundation::ImageAttributes&  image_attributes,
-        const AOV*                          aov) const;
 };
 
 

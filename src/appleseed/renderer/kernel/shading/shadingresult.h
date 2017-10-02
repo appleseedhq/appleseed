@@ -72,6 +72,9 @@ class ShadingResult
 
     // Apply alpha premultiplication to the main output and the AOVs.
     void apply_alpha_premult();
+
+    // Set the main output to opaque pink.
+    void set_main_to_opaque_pink();
 };
 
 

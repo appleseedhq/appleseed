@@ -58,21 +58,28 @@ namespace
     //
 
     class EmissionAOVAccumulator
-      : public ColorAOVAccumulator
+      : public AOVAccumulator
     {
       public:
         explicit EmissionAOVAccumulator(const size_t index)
-          : ColorAOVAccumulator(index)
+          : m_index(index)
         {
         }
 
         virtual void write(
+            const PixelContext&         pixel_context,
+            const ShadingPoint&         shading_point,
             const ShadingComponents&    shading_components,
-            const float                 multiplier) override
+            ShadingResult&              shading_result) override
         {
-            m_color = shading_components.m_emission.to_rgb(g_std_lighting_conditions);
-            m_color *= multiplier;
+            shading_result.m_aovs[m_index].rgb() =
+                shading_components.m_emission.to_rgb(g_std_lighting_conditions);
+
+            shading_result.m_aovs[m_index].a = shading_result.m_main.a;
         }
+
+      private:
+        const size_t m_index;
     };
 
 

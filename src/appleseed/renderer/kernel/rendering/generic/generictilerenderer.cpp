@@ -155,6 +155,9 @@ namespace
             // Inform the pixel renderer that we are about to render a tile.
             m_pixel_renderer->on_tile_begin(frame, tile, aov_tiles);
 
+            // Inform the AOV accumulators that we are about to render a tile.
+            m_aov_accumulators.on_tile_begin(frame, tile_x, tile_y);
+
             // Create the framebuffer into which we will accumulate the samples.
             ShadingResultFrameBuffer* framebuffer =
                 m_framebuffer_factory->create(
