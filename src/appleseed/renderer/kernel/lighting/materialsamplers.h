@@ -82,9 +82,6 @@ class IMaterialSampler
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
         DirectShadingComponents&        value) const = 0;
-
-    virtual bool cull_incoming_direction(
-        const foundation::Vector3d&     incoming) const = 0;
 };
 
 class BSDFSampler
@@ -123,9 +120,6 @@ class BSDFSampler
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
         DirectShadingComponents&        value) const override;
-
-    virtual bool cull_incoming_direction(
-        const foundation::Vector3d&  incoming) const override;
 
   private:
     const BSDF&                         m_bsdf;
@@ -172,9 +166,6 @@ class VolumeSampler
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
         DirectShadingComponents&        value) const override;
-
-    virtual bool cull_incoming_direction(
-        const foundation::Vector3d&     incoming) const override;
 
   private:
     const ShadingRay&               m_volume_ray;

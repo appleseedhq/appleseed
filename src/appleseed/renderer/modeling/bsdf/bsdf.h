@@ -170,6 +170,7 @@ class APPLESEED_DLLSYMBOL BSDF
     // Evaluate the PDF for a given pair of directions.
     virtual float evaluate_pdf(
         const void*                 data,                       // input values
+        const bool                  adjoint,                    // if true, use the adjoint scattering kernel
         const foundation::Vector3f& geometric_normal,           // world space geometric normal, unit-length
         const foundation::Basis3f&  shading_basis,              // world space orthonormal basis around shading normal
         const foundation::Vector3f& outgoing,                   // world space outgoing direction, unit-length

@@ -235,6 +235,7 @@ namespace
 
         virtual float evaluate_pdf(
             const void*                 data,
+            const bool                  adjoint,
             const Vector3f&             geometric_normal,
             const Basis3f&              shading_basis,
             const Vector3f&             outgoing,
@@ -259,6 +260,7 @@ namespace
                 w0 > 0.0f
                     ? m_bsdf[0]->evaluate_pdf(
                           values->m_child_inputs[0],
+                          adjoint,
                           geometric_normal,
                           shading_basis,
                           outgoing,
@@ -271,6 +273,7 @@ namespace
                 w1 > 0.0f
                     ? m_bsdf[1]->evaluate_pdf(
                           values->m_child_inputs[1],
+                          adjoint,
                           geometric_normal,
                           shading_basis,
                           outgoing,
@@ -313,7 +316,7 @@ namespace
         }
     };
 
-    typedef BSDFWrapper<BSDFMixImpl> BSDFMix;
+    typedef BSDFWrapper<BSDFMixImpl, false> BSDFMix;
 }
 
 

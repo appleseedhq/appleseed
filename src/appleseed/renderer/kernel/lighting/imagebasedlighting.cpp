@@ -199,11 +199,7 @@ void compute_ibl_environment_sampling(
             incoming,
             env_value,
             env_prob);
-
-        // Cull samples behind the shading surface.
         assert(is_normalized(incoming));
-        if (material_sampler.cull_incoming_direction(Vector3d(incoming)))
-            continue;
 
         // Discard occluded samples.
         Spectrum transmission;

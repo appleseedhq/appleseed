@@ -126,7 +126,8 @@ namespace
                 value);
             value *= m_values.m_specular * 0.08f;
             mix_spectra(value, m_values.m_base_color, m_values.m_metallic, value);
-            mix_spectra_with_one(value, schlick_fresnel(dot(o, h)), value);
+            const float cos_oh = dot(o, h);
+            mix_spectra_with_one(value, schlick_fresnel(cos_oh), value);
         }
 
         const DisneyBRDFInputValues& m_values;
@@ -145,7 +146,8 @@ namespace
             const Vector3f& n,
             Spectrum&       value) const
         {
-            value.set(mix(0.04f, 1.0f, schlick_fresnel(dot(o, h))) * 0.25f * m_values.m_clearcoat);
+            const float cos_oh = dot(o, h);
+            value.set(mix(0.04f, 1.0f, schlick_fresnel(cos_oh)) * 0.25f * m_values.m_clearcoat);
         }
 
         const DisneyBRDFInputValues& m_values;
@@ -164,14 +166,16 @@ namespace
             const DisneyBRDFInputValues*    values,
             BSDFSample&                     sample) const
         {
-            // Compute the incoming direction in local space.
+            sample.m_mode = ScatteringMode::Diffuse;
+
+            // Compute the incoming direction.
             sampling_context.split_in_place(2, 1);
             const Vector2f s = sampling_context.next2<Vector2f>();
             const Vector3f wi = sample_hemisphere_cosine(s);
-
-            // Transform the incoming direction to parent space.
             const Vector3f incoming = sample.m_shading_basis.transform_to_parent(wi);
+            sample.m_incoming = Dual3f(incoming);
 
+            // Compute the component value and the probability density of the sampled direction.
             sample.m_probability =
                 evaluate(
                     values,
@@ -181,8 +185,6 @@ namespace
                     sample.m_value.m_diffuse);
             assert(sample.m_probability > 0.0f);
 
-            sample.m_mode = ScatteringMode::Diffuse;
-            sample.m_incoming = Dual3f(incoming);
             sample.compute_reflected_differentials();
         }
 
@@ -203,9 +205,9 @@ namespace
             const float cos_in = dot(n, incoming);
             const float cos_ih = dot(incoming, h);
 
-            float fd = 0.0f;
             const float fl = schlick_fresnel(cos_in);
             const float fv = schlick_fresnel(cos_on);
+            float fd = 0.0f;
 
             if (values->m_subsurface != 1.0f)
             {
@@ -216,7 +218,7 @@ namespace
             if (values->m_subsurface > 0.0f)
             {
                 // Based on Hanrahan-Krueger BRDF approximation of isotropic BSRDF.
-                // The 1.25f scale is used to (roughly) preserve albedo.
+                // The 1.25 scaling is used to (roughly) preserve albedo.
                 // Fss90 is used to "flatten" retroreflection based on roughness.
                 const float fss90 = square(cos_ih) * values->m_roughness;
                 const float fss = mix(1.0f, fss90, fl) * mix(1.0f, fss90, fv);
@@ -228,14 +230,16 @@ namespace
             value *= fd * RcpPi<float>() * (1.0f - values->m_metallic);
 
             // Return the probability density of the sampled direction.
-            return evaluate_pdf(shading_basis, incoming);
+            return cos_in * RcpPi<float>();
         }
 
         float evaluate_pdf(
             const Basis3f&                  shading_basis,
             const Vector3f&                 incoming) const
         {
-            return dot(incoming, shading_basis.get_normal()) * RcpPi<float>();
+            const Vector3f& n = shading_basis.get_normal();
+            const float cos_in = dot(incoming, n);
+            return cos_in * RcpPi<float>();
         }
     };
 
@@ -252,14 +256,16 @@ namespace
             const DisneyBRDFInputValues*    values,
             BSDFSample&                     sample) const
         {
-            // Compute the incoming direction in local space.
+            sample.m_mode = ScatteringMode::Glossy;
+
+            // Compute the incoming direction.
             sampling_context.split_in_place(2, 1);
             const Vector2f s = sampling_context.next2<Vector2f>();
             const Vector3f wi = sample_hemisphere_uniform(s);
-
-            // Transform the incoming direction to parent space.
             const Vector3f incoming = sample.m_shading_basis.transform_to_parent(wi);
+            sample.m_incoming = Dual3f(incoming);
 
+            // Compute the component value and the probability density of the sampled direction.
             sample.m_probability =
                 evaluate(
                     values,
@@ -269,8 +275,6 @@ namespace
                     sample.m_value.m_glossy);
             assert(sample.m_probability > 0.0f);
 
-            sample.m_mode = ScatteringMode::Glossy;
-            sample.m_incoming = Dual3f(incoming);
             sample.compute_reflected_differentials();
         }
 
@@ -284,18 +288,18 @@ namespace
             // This code is mostly ported from the GLSL implementation
             // in Disney's BRDF explorer.
 
+            // Compute the component value.
             const Vector3f h(normalize(incoming + outgoing));
             const float cos_ih = dot(incoming, h);
-
+            const float fh = schlick_fresnel(cos_ih);
             mix_one_with_spectra(
                 values->m_precomputed.m_tint_color,
                 values->m_sheen_tint,
                 value);
-            const float fh = schlick_fresnel(cos_ih);
             value *= fh * values->m_sheen * (1.0f - values->m_metallic);
 
             // Return the probability density of the sampled direction.
-            return evaluate_pdf(shading_basis, incoming);
+            return RcpTwoPi<float>();
         }
 
         float evaluate_pdf(
@@ -663,11 +667,13 @@ namespace
 
             value.m_beauty = value.m_diffuse;
             value.m_beauty += value.m_glossy;
+
             return pdf;
         }
 
         virtual float evaluate_pdf(
             const void*                 data,
+            const bool                  adjoint,
             const Vector3f&             geometric_normal,
             const Basis3f&              shading_basis,
             const Vector3f&             outgoing,
@@ -751,10 +757,10 @@ namespace
             const int                   modes,
             float                       weights[NumComponents])
         {
-            if (ScatteringMode::has_diffuse(modes))
-                weights[DiffuseComponent] = lerp(values->m_precomputed.m_base_color_luminance, 0.0f, values->m_metallic);
-            else
-                weights[DiffuseComponent] = 0.0f;
+            weights[DiffuseComponent] =
+                ScatteringMode::has_diffuse(modes)
+                    ? lerp(values->m_precomputed.m_base_color_luminance, 0.0f, values->m_metallic)
+                    : 0.0f;
 
             if (ScatteringMode::has_glossy(modes))
             {

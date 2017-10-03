@@ -193,7 +193,9 @@ namespace
                     values->m_anisotropy,
                     alpha_x,
                     alpha_y);
-                const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
+
+                const float gamma =
+                    highlight_falloff_to_gama(values->m_highlight_falloff);
 
                 MicrofacetBRDFHelper::sample(
                     sampling_context,
@@ -238,7 +240,9 @@ namespace
                 values->m_anisotropy,
                 alpha_x,
                 alpha_y);
-            const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
+
+            const float gamma =
+                highlight_falloff_to_gama(values->m_highlight_falloff);
 
             const FresnelDielectricFun f(
                 values->m_reflectance,
@@ -257,12 +261,15 @@ namespace
                 cos_in,
                 cos_on,
                 value.m_glossy);
+
             value.m_beauty = value.m_glossy;
+
             return pdf;
         }
 
         virtual float evaluate_pdf(
             const void*                 data,
+            const bool                  adjoint,
             const Vector3f&             geometric_normal,
             const Basis3f&              shading_basis,
             const Vector3f&             outgoing,
@@ -287,7 +294,9 @@ namespace
                 values->m_anisotropy,
                 alpha_x,
                 alpha_y);
-            const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
+
+            const float gamma =
+                highlight_falloff_to_gama(values->m_highlight_falloff);
 
             return MicrofacetBRDFHelper::pdf(
                 *m_mdf,

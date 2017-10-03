@@ -346,9 +346,6 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     // Compute the incoming direction in world space.
     Vector3d incoming = sample.m_point - m_material_sampler.get_point();
 
-    if (m_material_sampler.cull_incoming_direction(incoming))
-        return;
-
     // No contribution if the shading point is behind the light.
     double cos_on = dot(-incoming, sample.m_shading_normal);
     if (cos_on <= 0.0)
@@ -488,9 +485,6 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
 
     // Compute the incoming direction in world space.
     const Vector3d incoming = -emission_direction;
-
-    if (m_material_sampler.cull_incoming_direction(incoming))
-        return;
 
     // Compute the transmission factor between the light sample and the shading point.
     Spectrum transmission;

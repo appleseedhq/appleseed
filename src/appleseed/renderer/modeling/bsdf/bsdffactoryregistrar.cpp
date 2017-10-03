@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/ashikhminbrdf.h"
+#include "renderer/modeling/bsdf/blinnbrdf.h"
 #include "renderer/modeling/bsdf/bsdfblend.h"
 #include "renderer/modeling/bsdf/bsdfmix.h"
 #include "renderer/modeling/bsdf/diffusebtdf.h"
@@ -42,7 +43,6 @@
 #include "renderer/modeling/bsdf/kelemenbrdf.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
 #include "renderer/modeling/bsdf/metalbrdf.h"
-#include "renderer/modeling/bsdf/microfacetbrdf.h"
 #include "renderer/modeling/bsdf/orennayarbrdf.h"
 #include "renderer/modeling/bsdf/plasticbrdf.h"
 #include "renderer/modeling/bsdf/sheenbrdf.h"
@@ -74,6 +74,7 @@ BSDFFactoryRegistrar::BSDFFactoryRegistrar()
   : impl(new Impl())
 {
     register_factory(auto_ptr<FactoryType>(new AshikhminBRDFFactory()));
+    register_factory(auto_ptr<FactoryType>(new BlinnBRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new BSDFBlendFactory()));
     register_factory(auto_ptr<FactoryType>(new BSDFMixFactory()));
     register_factory(auto_ptr<FactoryType>(new DiffuseBTDFFactory()));
@@ -83,7 +84,6 @@ BSDFFactoryRegistrar::BSDFFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new KelemenBRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new LambertianBRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new MetalBRDFFactory()));
-    register_factory(auto_ptr<FactoryType>(new MicrofacetBRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new OrenNayarBRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new PlasticBRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new SheenBRDFFactory()));

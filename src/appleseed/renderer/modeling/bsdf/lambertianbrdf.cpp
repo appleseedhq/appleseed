@@ -100,12 +100,13 @@ namespace
             if (!ScatteringMode::has_diffuse(modes))
                 return;
 
-            // Compute the incoming direction in local space.
+            // Set the scattering mode.
+            sample.m_mode = ScatteringMode::Diffuse;
+
+            // Compute the incoming direction.
             sampling_context.split_in_place(2, 1);
             const Vector2f s = sampling_context.next2<Vector2f>();
             const Vector3f wi = sample_hemisphere_cosine(s);
-
-            // Transform the incoming direction to parent space.
             sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
 
             // Compute the BRDF value.
@@ -117,9 +118,6 @@ namespace
             // Compute the probability density of the sampled direction.
             sample.m_probability = wi.y * RcpPi<float>();
             assert(sample.m_probability > 0.0f);
-
-            // Set the scattering mode.
-            sample.m_mode = ScatteringMode::Diffuse;
 
             sample.compute_reflected_differentials();
         }
@@ -156,6 +154,7 @@ namespace
 
         virtual float evaluate_pdf(
             const void*                 data,
+            const bool                  adjoint,
             const Vector3f&             geometric_normal,
             const Basis3f&              shading_basis,
             const Vector3f&             outgoing,

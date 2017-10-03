@@ -61,10 +61,10 @@ namespace
         float&              cos_phi,
         float&              sin_phi)
     {
-        const float two_pi_s = TwoPi<float>() * s;
+        const float phi = TwoPi<float>() * s;
         Vector2f sin_cos_phi(
-            cos(two_pi_s) * alpha_x,
-            sin(two_pi_s) * alpha_y);
+            cos(phi) * alpha_x,
+            sin(phi) * alpha_y);
         sin_cos_phi = normalize(sin_cos_phi);
         cos_phi = sin_cos_phi[0];
         sin_phi = sin_cos_phi[1];
@@ -280,7 +280,6 @@ float BeckmannMDF::D(
     const float         gamma) const
 {
     const float cos_theta = h.y;
-
     if (cos_theta == 0.0f)
         return 0.0f;
 
@@ -289,11 +288,12 @@ float BeckmannMDF::D(
     const float cos_theta_4 = square(cos_theta_2);
     const float tan_theta_2 = (1.0f - cos_theta_2) / cos_theta_2;
 
-    const float A = stretched_roughness(
-        h,
-        sin_theta,
-        alpha_x,
-        alpha_y);
+    const float A =
+        stretched_roughness(
+            h,
+            sin_theta,
+            alpha_x,
+            alpha_y);
 
     return exp(-tan_theta_2 * A) / (Pi<float>() * alpha_x * alpha_y * cos_theta_4);
 }
@@ -326,7 +326,6 @@ float BeckmannMDF::lambda(
     const float         gamma) const
 {
     const float cos_theta = v.y;
-
     if (cos_theta == 0.0f)
         return 0.0f;
 
@@ -372,7 +371,6 @@ Vector3f BeckmannMDF::sample(
             gamma);
 }
 
-
 // This code comes from OpenShadingLanguage test render.
 Vector2f BeckmannMDF::sample11(
     const float         cos_theta,
@@ -417,10 +415,15 @@ Vector2f BeckmannMDF::sample11(
     // This also avoids NaNs as we get close to the root.
     if (abs(value) > threshold)
     {
-        b -= value / (1.0f - inv_erf * tan_theta); // newton step 1
+        // Newton step 1.
+        b -= value / (1.0f - inv_erf * tan_theta);
+
         inv_erf = erf_inv(b);
         value = 1.0f + b + K * exp(-square(inv_erf)) - y_exact;
-        b -= value / (1.0f - inv_erf * tan_theta); // newton step 2
+
+        // Newton step 2.
+        b -= value / (1.0f - inv_erf * tan_theta);
+
         // Compute the slope from the refined value.
         slope[0] = erf_inv(b);
     }
@@ -452,7 +455,6 @@ float GGXMDF::D(
     const float         gamma) const
 {
     const float cos_theta = h.y;
-
     if (cos_theta == 0.0f)
         return square(alpha_x) * RcpPi<float>();
 
@@ -500,12 +502,11 @@ float GGXMDF::lambda(
     const float         gamma) const
 {
     const float cos_theta = v.y;
-
     if (cos_theta == 0.0f)
         return 0.0f;
 
     const float cos_theta_2 = square(cos_theta);
-    const float sin_theta = sqrt(max(0.0f, 1.0f - square(cos_theta)));
+    const float sin_theta = sqrt(max(0.0f, 1.0f - cos_theta_2));
 
     const float alpha =
         projected_roughness(
@@ -548,9 +549,9 @@ Vector2f GGXMDF::sample11(
     if (sin_theta < 1.0e-4f)
     {
         const float r = sqrt(s[0] / (1.0f - s[0]));
-        const float two_pi_s1 = TwoOverPi<float>() * s[1];
-        const float cos_phi = cos(two_pi_s1);
-        const float sin_phi = sin(two_pi_s1);
+        const float phi = TwoOverPi<float>() * s[1];
+        const float cos_phi = cos(phi);
+        const float sin_phi = sin(phi);
         return Vector2f(r * cos_phi, r * sin_phi);
     }
 
@@ -666,7 +667,6 @@ Vector3f WardMDF::sample(
     const float cos_alpha = 1.0f / sqrt(1.0f + tan_alpha_2);
     const float sin_alpha = cos_alpha * sqrt(tan_alpha_2);
     const float phi = TwoPi<float>() * s[1];
-
     return Vector3f::make_unit_vector(cos_alpha, sin_alpha, cos(phi), sin(phi));
 }
 
@@ -726,13 +726,12 @@ float GTR1MDF::lambda(
     const float         gamma) const
 {
     const float cos_theta = v.y;
-
     if (cos_theta == 0.0f)
         return 0.0f;
 
     // [2] section 3.2.
     const float cos_theta_2 = square(cos_theta);
-    const float sin_theta = sqrt(max(0.0f, 1.0f - square(cos_theta)));
+    const float sin_theta = sqrt(max(0.0f, 1.0f - cos_theta_2));
 
     // Normal incidence. No shadowing.
     if (sin_theta == 0.0f)
@@ -759,8 +758,9 @@ Vector3f GTR1MDF::sample(
 {
     const float alpha2 = square(alpha_x);
     const float a = 1.0f - pow(alpha2, 1.0f - s[0]);
-    const float cos_theta = sqrt(a / (1.0f - alpha2));
-    const float sin_theta  = sqrt(max(0.0f, 1.0f - square(cos_theta)));
+    const float cos_theta_2 = a / (1.0f - alpha2);
+    const float cos_theta = sqrt(cos_theta_2);
+    const float sin_theta = sqrt(max(0.0f, 1.0f - cos_theta_2));
 
     float cos_phi, sin_phi;
     sample_phi(s[1], cos_phi, sin_phi);
@@ -789,7 +789,6 @@ float StdMDF::D(
     const float         gamma) const
 {
     const float cos_theta = h.y;
-
     if (cos_theta == 0.0f)
         return 0.0;
 
@@ -798,11 +797,12 @@ float StdMDF::D(
     const float cos_theta_4 = square(cos_theta_2);
     const float tan_theta_2 = (1.0f - cos_theta_2) / cos_theta_2;
 
-    const float A = stretched_roughness(
-        h,
-        sin_theta,
-        alpha_x,
-        alpha_y);
+    const float A =
+        stretched_roughness(
+            h,
+            sin_theta,
+            alpha_x,
+            alpha_y);
 
     // [1] Equation 18.
     const float den = 1.0f + tan_theta_2 * A / (gamma - 1.0f);
@@ -846,7 +846,6 @@ float StdMDF::lambda(
     const float         gamma) const
 {
     const float cos_theta = v.y;
-
     if (cos_theta == 0.0f)
         return 0.0f;
 
@@ -875,7 +874,7 @@ float StdMDF::lambda(
     const float a2 = sqrt(gamma - 1.0f);
     const float a2_sg2 = a2 * Sg2;
     const float gfrac = gamma_fraction(gamma - 0.5f, gamma) / SqrtPi<float>();
-    return ((a1_sg1 + a2_sg2) * gfrac - 0.5f);
+    return (a1_sg1 + a2_sg2) * gfrac - 0.5f;
 }
 
 float StdMDF::pdf(
@@ -895,8 +894,7 @@ Vector3f StdMDF::sample(
     const float         alpha_y,
     const float         gamma) const
 {
-    // todo:
-    // implement the improved sampling strategy in the supplemental material of [1].
+    // todo: implement the improved sampling strategy in the supplemental material of [1].
 
     float theta, phi;
     const float b = pow(1.0f - s[1], 1.0f / (1.0f - gamma)) - 1.0f;

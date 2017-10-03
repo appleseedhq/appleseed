@@ -35,7 +35,6 @@
 #include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
@@ -73,12 +72,27 @@ APPLESEED_DECLARE_INPUT_VALUES(BlinnBRDFInputValues)
 //
 
 class APPLESEED_DLLSYMBOL BlinnBRDFFactory
+  : public IBSDFFactory
 {
   public:
+    // Return a string identifying this BSDF model.
+    virtual const char* get_model() const override;
+
+    // Return metadata for this BSDF model.
+    virtual foundation::Dictionary get_model_metadata() const override;
+
+    // Return metadata for the inputs of this BSDF model.
+    virtual foundation::DictionaryArray get_input_metadata() const override;
+
     // Create a new BSDF instance.
-    foundation::auto_release_ptr<BSDF> create(
+    virtual foundation::auto_release_ptr<BSDF> create(
         const char*         name,
-        const ParamArray&   params) const;
+        const ParamArray&   params) const override;
+
+    // Static variant of the create() method above.
+    static foundation::auto_release_ptr<BSDF> static_create(
+        const char*         name,
+        const ParamArray&   params);
 };
 
 }       // namespace renderer

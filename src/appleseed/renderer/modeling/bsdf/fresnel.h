@@ -85,11 +85,11 @@ class FresnelDielectricFun
         const foundation::Vector3f& n,
         Spectrum&                   value) const
     {
+        const float cos_oh =
+            foundation::clamp(foundation::dot(o, h), -1.0f, 1.0f);
+
         float f;
-        foundation::fresnel_reflectance_dielectric(
-            f,
-            m_eta,
-            foundation::clamp(foundation::dot(o, h), -1.0f, 1.0f));
+        foundation::fresnel_reflectance_dielectric(f, m_eta, cos_oh);
 
         value = m_reflectance;
         value *= f * m_reflectance_multiplier;
@@ -99,6 +99,37 @@ class FresnelDielectricFun
     const Spectrum& m_reflectance;
     const float     m_reflectance_multiplier;
     const float     m_eta;
+};
+
+class FresnelDielectricSchlickFun
+{
+  public:
+    FresnelDielectricSchlickFun(
+        const Spectrum&             reflectance,
+        const float                 fr_multiplier)
+      : m_reflectance(reflectance)
+      , m_fr_multiplier(fr_multiplier)
+    {
+    }
+
+    void operator()(
+        const foundation::Vector3f& o,
+        const foundation::Vector3f& h,
+        const foundation::Vector3f& n,
+        Spectrum&                   value) const
+    {
+        const float cos_on = foundation::dot(o, n);
+
+        foundation::fresnel_reflectance_dielectric_schlick(
+            value,
+            m_reflectance,
+            cos_on,
+            m_fr_multiplier);
+    }
+
+  private:
+    const Spectrum& m_reflectance;
+    const float     m_fr_multiplier;
 };
 
 class FresnelConductorFun
@@ -122,12 +153,10 @@ class FresnelConductorFun
         const foundation::Vector3f& n,
         Spectrum&                   value) const
     {
-        foundation::fresnel_reflectance_conductor(
-            value,
-            m_nt,
-            m_kt,
-            m_ni,
-            foundation::dot(o, h));
+        const float cos_oh = foundation::dot(o, h);
+
+        foundation::fresnel_reflectance_conductor(value, m_nt, m_kt, m_ni, cos_oh);
+
         value *= m_reflectance_multiplier;
     }
 

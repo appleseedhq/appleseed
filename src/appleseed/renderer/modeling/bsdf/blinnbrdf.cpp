@@ -85,19 +85,18 @@ namespace
             const Vector3f& o,
             const Vector3f& h,
             const Vector3f& n,
-            Spectrum&                   value) const
+            Spectrum&       value) const
         {
+            const float cos_oh = clamp(dot(o, h), -1.0f, 1.0f);
+
             float f;
-            fresnel_reflectance_dielectric(
-                f,
-                m_eta,
-                clamp(dot(o, h), -1.0f, 1.0f));
+            fresnel_reflectance_dielectric(f, m_eta, cos_oh);
 
             value.set(f);
         }
 
       private:
-        const float     m_eta;
+        const float m_eta;
     };
 
     const char* Model = "blinn_brdf";
@@ -111,6 +110,8 @@ namespace
             const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Glossy, params)
         {
+            m_inputs.declare("exponent", InputFormatFloat, "0.5");
+            m_inputs.declare("ior", InputFormatFloat, "1.5");
         }
 
         virtual void release() override
@@ -167,6 +168,7 @@ namespace
                 f,
                 cos_on,
                 sample);
+
             sample.m_value.m_beauty = sample.m_value.m_glossy;
         }
 
@@ -194,18 +196,20 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
             const FresnelFun f(values->m_precomputed.m_outside_ior / values->m_ior);
 
-            const float pdf = MicrofacetBRDFHelper::evaluate(
-                m_mdf,
-                values->m_exponent,
-                values->m_exponent,
-                0.0f,
-                shading_basis,
-                outgoing,
-                incoming,
-                f,
-                cos_in,
-                cos_on,
-                value.m_glossy);
+            const float pdf =
+                MicrofacetBRDFHelper::evaluate(
+                    m_mdf,
+                    values->m_exponent,
+                    values->m_exponent,
+                    0.0f,
+                    shading_basis,
+                    outgoing,
+                    incoming,
+                    f,
+                    cos_in,
+                    cos_on,
+                    value.m_glossy);
+
             value.m_beauty = value.m_glossy;
 
             return pdf;
@@ -213,6 +217,7 @@ namespace
 
         virtual float evaluate_pdf(
             const void*                 data,
+            const bool                  adjoint,
             const Vector3f&             geometric_normal,
             const Basis3f&              shading_basis,
             const Vector3f&             outgoing,
@@ -231,14 +236,15 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            return MicrofacetBRDFHelper::pdf(
-                m_mdf,
-                values->m_exponent,
-                values->m_exponent,
-                0.0f,
-                shading_basis,
-                outgoing,
-                incoming);
+            return
+                MicrofacetBRDFHelper::pdf(
+                    m_mdf,
+                    values->m_exponent,
+                    values->m_exponent,
+                    0.0f,
+                    shading_basis,
+                    outgoing,
+                    incoming);
         }
 
       private:
@@ -255,9 +261,62 @@ namespace
 // BlinnBRDFFactory class implementation.
 //
 
+const char* BlinnBRDFFactory::get_model() const
+{
+    return Model;
+}
+
+Dictionary BlinnBRDFFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Blinn BRDF");
+}
+
+DictionaryArray BlinnBRDFFactory::get_input_metadata() const
+{
+    DictionaryArray metadata;
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "exponent")
+            .insert("label", "Exponent")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "required")
+            .insert("default", "0.5"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "ior")
+            .insert("label", "Index of Refraction")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "2.5")
+                    .insert("type", "hard"))
+            .insert("use", "required")
+            .insert("default", "1.5"));
+
+    return metadata;
+}
+
 auto_release_ptr<BSDF> BlinnBRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
+{
+    return auto_release_ptr<BSDF>(new BlinnBRDF(name, params));
+}
+
+auto_release_ptr<BSDF> BlinnBRDFFactory::static_create(
+    const char*         name,
+    const ParamArray&   params)
 {
     return auto_release_ptr<BSDF>(new BlinnBRDF(name, params));
 }
