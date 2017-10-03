@@ -86,7 +86,7 @@ namespace
     // Solid angle sustained by the Sun, as seen from Earth (in steradians).
     // Reference: http://en.wikipedia.org/wiki/Solid_angle#Sun_and_Moon
 
-    const float SunRadius = 0.6957; // millions of km
+    const float SunRadius = 0.6957f; // millions of km
 
     class SunLight
       : public Light
@@ -135,7 +135,7 @@ namespace
                 RENDERER_LOG_WARNING(
                     "distance between sun and scene \"%s\" is not uniform, using default value of 149.6 million km.",
                     get_path().c_str());
-                m_values.m_distance = 149.6;
+                m_values.m_distance = 149.6f;
             }
 
             // Compute SunSolidAngle that depends on distance between Sun and scene.
