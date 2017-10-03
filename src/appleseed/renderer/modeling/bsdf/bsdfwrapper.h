@@ -91,6 +91,13 @@ class BSDFWrapper
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
         const int                       modes) const override;
+
+  private:
+    bool is_culled(
+        const bool                      adjoint,
+        const foundation::Basis3f&      shading_basis,
+        const foundation::Vector3f&     outgoing,
+        const foundation::Vector3f&     incoming) const;
 };
 
 
@@ -165,25 +172,8 @@ float BSDFWrapper<BSDFImpl, Cull>::evaluate(
     assert(foundation::is_normalized(outgoing));
     assert(foundation::is_normalized(incoming));
 
-    if (Cull)
-    {
-        if (adjoint)
-        {
-            float cos_on = foundation::dot(outgoing, shading_basis.get_normal());
-            if (get_type() == BSDF::Transmissive)
-                cos_on = -cos_on;
-            if (cos_on < 0.0f)
-                return 0.0f;
-        }
-        else
-        {
-            float cos_in = foundation::dot(incoming, shading_basis.get_normal());
-            if (get_type() == BSDF::Transmissive)
-                cos_in = -cos_in;
-            if (cos_in < 0.0f)
-                return 0.0f;
-        }
-    }
+    if (Cull && is_culled(adjoint, shading_basis, outgoing, incoming))
+        return 0.0f;
 
     const float probability =
         BSDFImpl::evaluate(
@@ -232,25 +222,8 @@ float BSDFWrapper<BSDFImpl, Cull>::evaluate_pdf(
     assert(foundation::is_normalized(outgoing));
     assert(foundation::is_normalized(incoming));
 
-    if (Cull)
-    {
-        if (adjoint)
-        {
-            float cos_on = foundation::dot(outgoing, shading_basis.get_normal());
-            if (get_type() == BSDF::Transmissive)
-                cos_on = -cos_on;
-            if (cos_on < 0.0f)
-                return 0.0f;
-        }
-        else
-        {
-            float cos_in = foundation::dot(incoming, shading_basis.get_normal());
-            if (get_type() == BSDF::Transmissive)
-                cos_in = -cos_in;
-            if (cos_in < 0.0f)
-                return 0.0f;
-        }
-    }
+    if (Cull && is_culled(adjoint, shading_basis, outgoing, incoming))
+        return 0.0f;
 
     const float probability =
         BSDFImpl::evaluate_pdf(
@@ -265,6 +238,18 @@ float BSDFWrapper<BSDFImpl, Cull>::evaluate_pdf(
     assert(probability >= 0.0f);
 
     return probability;
+}
+
+template <typename BSDFImpl, bool Cull>
+bool BSDFWrapper<BSDFImpl, Cull>::is_culled(
+    const bool                          adjoint,
+    const foundation::Basis3f&          shading_basis,
+    const foundation::Vector3f&         outgoing,
+    const foundation::Vector3f&         incoming) const
+{
+    const foundation::Vector3f& n = shading_basis.get_normal();
+    const float cos_n = foundation::dot(adjoint ? outgoing : incoming, n);
+    return BSDFImpl::get_type() == BSDF::Reflective ? cos_n < 0.0f : cos_n > 0.0f;
 }
 
 }       // namespace renderer
