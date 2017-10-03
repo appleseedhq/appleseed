@@ -35,13 +35,12 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
-#include "foundation/math/vector.h"
-#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cstddef>
 
 // Forward declarations.
+namespace renderer  { class ShadingPoint; }
 namespace renderer  { class Source; }
 namespace renderer  { class TextureCache; }
 
@@ -55,17 +54,17 @@ class NormalMappingModifier
     enum UpVector { UpVectorY, UpVectorZ };
 
     NormalMappingModifier(
-        const Source*                   map,
-        const UpVector                  up_vector);
+        const Source*               map,
+        const UpVector              up_vector);
 
     virtual foundation::Basis3d modify(
-        TextureCache&                   texture_cache,
-        const foundation::Vector2f&     uv,
-        const foundation::Basis3d&      basis) const override;
+        TextureCache&               texture_cache,
+        const foundation::Basis3d&  basis,
+        const ShadingPoint&         shading_point) const override;
 
   private:
-    const Source*   m_map;
-    const size_t    m_y;
+    const Source*                   m_map;
+    const size_t                    m_y;
 };
 
 }       // namespace renderer

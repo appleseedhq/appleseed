@@ -354,7 +354,7 @@ float LightTree::compute_node_probability(
     const ShadingPoint&             shading_point) const
 {
     // Calculate probability of a single node based on its contribution over solid angle.
-    const float r2 = bbox.square_radius();
+    const float r2 = static_cast<float>(bbox.square_radius());
     const float rcp_surface_area = 1.0f / r2;
 
     // Triangle centroid is a more precise position than the center of the bbox.

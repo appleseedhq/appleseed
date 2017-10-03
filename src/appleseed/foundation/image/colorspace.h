@@ -34,6 +34,7 @@
 #include "foundation/image/color.h"
 #include "foundation/image/regularspectrum.h"
 #include "foundation/math/fastmath.h"
+#include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/spline.h"
 #include "foundation/platform/compiler.h"
@@ -236,10 +237,19 @@ Color<T, 3> linear_rgb_to_hsl(const Color<T, 3>& linear_rgb);
 template <typename T>
 Color<T, 3> ciexyz_to_linear_rgb(const Color<T, 3>& xyz);
 
+template <typename T>
+Color<T, 3> ciexyz_to_linear_rgb(
+    const Color<T, 3>&      xyz,
+    const Matrix<T, 3, 3>&  xyz_to_rgb);
+
 // Convert a color from the linear RGB color space to the CIE XYZ color space.
 template <typename T>
 Color<T, 3> linear_rgb_to_ciexyz(const Color<T, 3>& linear_rgb);
 
+template <typename T>
+Color<T, 3> linear_rgb_to_ciexyz(
+    const Color<T, 3>&      linear_rgb,
+    const Matrix<T, 3, 3>&  rgb_to_xyz);
 
 //
 // CIE XYZ <-> CIE xyY transformations.
@@ -597,6 +607,14 @@ inline Color<T, 3> ciexyz_to_linear_rgb(const Color<T, 3>& xyz)
 }
 
 template <typename T>
+inline Color<T, 3> ciexyz_to_linear_rgb(
+    const Color<T, 3>&      xyz,
+    const Matrix<T, 3, 3>&  xyz_to_rgb)
+{
+    return clamp_low(xyz_to_rgb * xyz, T(0.0));
+}
+
+template <typename T>
 inline Color<T, 3> linear_rgb_to_ciexyz(const Color<T, 3>& linear_rgb)
 {
     return
@@ -608,6 +626,13 @@ inline Color<T, 3> linear_rgb_to_ciexyz(const Color<T, 3>& linear_rgb)
             T(0.0));
 }
 
+template <typename T>
+inline Color<T, 3> linear_rgb_to_ciexyz(
+    const Color<T, 3>&      linear_rgb,
+    const Matrix<T, 3, 3>&  rgb_to_xyz)
+{
+    return clamp_low(rgb_to_xyz * linear_rgb, T(0.0));
+}
 
 //
 // CIE XYZ <-> CIE xyY transformations implementation.

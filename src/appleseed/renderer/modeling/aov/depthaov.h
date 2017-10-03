@@ -66,12 +66,10 @@ class APPLESEED_DLLSYMBOL DepthAOVFactory
 
     // Create a new AOV instance.
     virtual foundation::auto_release_ptr<AOV> create(
-        const char*         name,
         const ParamArray&   params) const override;
 
     // Static variant of the create() method above.
     static foundation::auto_release_ptr<AOV> static_create(
-        const char*         name,
         const ParamArray&   params);
 };
 

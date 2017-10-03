@@ -97,7 +97,7 @@ namespace
                 if ((thread_index == 0) && (m_variation_aov_index == size_t(~0) || m_samples_aov_index == size_t(~0)))
                 {
                     RENDERER_LOG_WARNING(
-                        "could not create some of the diagnostic AOVs, maximum number of AOVs (" FMT_SIZE_T ") reached.",
+                        "could not create some of the diagnostic aovs, maximum number of aovs (" FMT_SIZE_T ") reached.",
                         MaxAOVCount);
                 }
             }
@@ -162,6 +162,7 @@ namespace
             const size_t                pass_hash,
             const Vector2i&             pi,
             const Vector2i&             pt,
+            AOVAccumulatorContainer&    aov_accumulators,
             ShadingResultFrameBuffer&   framebuffer) override
         {
             const size_t aov_count = frame.aov_images().size();
@@ -217,6 +218,7 @@ namespace
                         child_sampling_context,
                         pixel_context,
                         sample_position,
+                        aov_accumulators,
                         shading_result);
 
                     // Ignore invalid samples.

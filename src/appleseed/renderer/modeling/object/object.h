@@ -89,12 +89,8 @@ class APPLESEED_DLLSYMBOL Object
     const Source* get_alpha_map() const;
     virtual const Source* get_uncached_alpha_map() const;
 
-    // Return whether surface shaders should be invoked for fully transparent shading points.
-    bool shade_alpha_cutouts() const;
-
   protected:
     const Source* m_alpha_map;
-    bool          m_shade_alpha_cutouts;
 };
 
 
@@ -105,11 +101,6 @@ class APPLESEED_DLLSYMBOL Object
 inline const Source* Object::get_alpha_map() const
 {
     return m_alpha_map;
-}
-
-inline bool Object::shade_alpha_cutouts() const
-{
-    return m_shade_alpha_cutouts;
 }
 
 }       // namespace renderer

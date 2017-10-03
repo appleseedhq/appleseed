@@ -41,6 +41,7 @@
 // Forward declarations.
 namespace foundation    { class StatisticsVector; }
 namespace foundation    { class Tile; }
+namespace renderer      { class AOVAccumulatorContainer; }
 namespace renderer      { class Frame; }
 namespace renderer      { class ShadingResultFrameBuffer; }
 namespace renderer      { class TileStack; }
@@ -75,8 +76,9 @@ class IPixelRenderer
         TileStack&                  aov_tiles,
         const foundation::AABB2i&   tile_bbox,
         const size_t                pass_hash,
-        const foundation::Vector2i& pi,             // image-space pixel coordinates
-        const foundation::Vector2i& pt,             // tile-space pixel coordinates
+        const foundation::Vector2i& pi,               // image-space pixel coordinates
+        const foundation::Vector2i& pt,               // tile-space pixel coordinates
+        AOVAccumulatorContainer&    aov_accumulators,
         ShadingResultFrameBuffer&   framebuffer) = 0;
 
     // Retrieve performance statistics.

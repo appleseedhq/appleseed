@@ -31,7 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 
@@ -74,9 +74,9 @@ namespace
     {
       public:
         SheenBRDFImpl(
-            const char*         name,
-            const ParamArray&   params)
-          : BSDF(name, Reflective, ScatteringMode::Diffuse, params)
+            const char*                 name,
+            const ParamArray&           params)
+          : BSDF(name, Reflective, ScatteringMode::Glossy, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
@@ -93,14 +93,14 @@ namespace
         }
 
         virtual void sample(
-            SamplingContext&    sampling_context,
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            const int           modes,
-            BSDFSample&         sample) const override
+            SamplingContext&            sampling_context,
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const int                   modes,
+            BSDFSample&                 sample) const override
         {
-            if (!ScatteringMode::has_diffuse(modes))
+            if (!ScatteringMode::has_glossy(modes))
                 return;
 
             // No reflection below the shading surface.
@@ -121,29 +121,29 @@ namespace
             const float fh = pow_int<5>(saturate(1.0f - cos_ih));
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            sample.m_value.m_diffuse = values->m_reflectance;
-            sample.m_value.m_diffuse *= fh * values->m_reflectance_multiplier;
-            sample.m_value.m_beauty = sample.m_value.m_diffuse;
+            sample.m_value.m_glossy = values->m_reflectance;
+            sample.m_value.m_glossy *= fh * values->m_reflectance_multiplier;
+            sample.m_value.m_beauty = sample.m_value.m_glossy;
 
             sample.m_probability = RcpTwoPi<float>();
 
-            sample.m_mode = ScatteringMode::Diffuse;
+            sample.m_mode = ScatteringMode::Glossy;
             sample.m_incoming = Dual3f(incoming);
             sample.compute_reflected_differentials();
         }
 
         virtual float evaluate(
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            const Vector3f&     geometric_normal,
-            const Basis3f&      shading_basis,
-            const Vector3f&     outgoing,
-            const Vector3f&     incoming,
-            const int           modes,
-            ShadingComponents&  value) const override
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes,
+            DirectShadingComponents&    value) const override
         {
-            if (!ScatteringMode::has_diffuse(modes))
+            if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
 
             // No reflection below the shading surface.
@@ -160,23 +160,22 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            value.set(0.0f);
-            value.m_diffuse = values->m_reflectance;
-            value.m_diffuse *= fh * values->m_reflectance_multiplier;
-            value.m_beauty = value.m_diffuse;
+            value.m_glossy = values->m_reflectance;
+            value.m_glossy *= fh * values->m_reflectance_multiplier;
+            value.m_beauty = value.m_glossy;
 
             return RcpTwoPi<float>();
         }
 
         virtual float evaluate_pdf(
-            const void*         data,
-            const Vector3f&     geometric_normal,
-            const Basis3f&      shading_basis,
-            const Vector3f&     outgoing,
-            const Vector3f&     incoming,
-            const int           modes) const override
+            const void*                 data,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes) const override
         {
-            if (!ScatteringMode::has_diffuse(modes))
+            if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
 
             // No reflection below the shading surface.

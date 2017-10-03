@@ -66,12 +66,64 @@ class APPLESEED_DLLSYMBOL GlossyAOVFactory
 
     // Create a new AOV instance.
     virtual foundation::auto_release_ptr<AOV> create(
-        const char*         name,
         const ParamArray&   params) const override;
 
     // Static variant of the create() method above.
     static foundation::auto_release_ptr<AOV> static_create(
-        const char*         name,
+        const ParamArray&   params);
+};
+
+
+//
+// A factory for direct glossy AOVs.
+//
+
+class APPLESEED_DLLSYMBOL DirectGlossyAOVFactory
+  : public IAOVFactory
+{
+  public:
+    // Return a string identifying this AOV model.
+    virtual const char* get_model() const override;
+
+    // Return metadata for this AOV model.
+    virtual foundation::Dictionary get_model_metadata() const override;
+
+    // Return metadata for the inputs of this AOV model.
+    virtual foundation::DictionaryArray get_input_metadata() const override;
+
+    // Create a new AOV instance.
+    virtual foundation::auto_release_ptr<AOV> create(
+        const ParamArray&   params) const override;
+
+    // Static variant of the create() method above.
+    static foundation::auto_release_ptr<AOV> static_create(
+        const ParamArray&   params);
+};
+
+
+//
+// A factory for indirect glossy AOVs.
+//
+
+class APPLESEED_DLLSYMBOL IndirectGlossyAOVFactory
+  : public IAOVFactory
+{
+  public:
+    // Return a string identifying this AOV model.
+    virtual const char* get_model() const override;
+
+    // Return metadata for this AOV model.
+    virtual foundation::Dictionary get_model_metadata() const override;
+
+    // Return metadata for the inputs of this AOV model.
+    virtual foundation::DictionaryArray get_input_metadata() const override;
+
+    // Create a new AOV instance.
+    virtual foundation::auto_release_ptr<AOV> create(
+        const ParamArray&   params) const override;
+
+    // Static variant of the create() method above.
+    static foundation::auto_release_ptr<AOV> static_create(
         const ParamArray&   params);
 };
 

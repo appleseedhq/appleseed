@@ -82,7 +82,6 @@ Material::Material(
     const char*             name,
     const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
-  , m_shade_alpha_cutouts(params.get_optional<bool>("shade_alpha_cutouts", false))
   , m_has_render_data(false)
 {
     set_name(name);
@@ -229,32 +228,25 @@ IBasisModifier* Material::create_basis_modifier(const MessageContext& context) c
     const Source* displacement_source = m_inputs.source("displacement_map");
 
     // Nothing to do if there is no displacement source.
-    if (displacement_source == 0)
-        return 0;
+    if (displacement_source == nullptr)
+        return nullptr;
 
-    // Only texture instances can be bound to the displacement map input.
-    if (dynamic_cast<const TextureSource*>(displacement_source) == 0)
+    // Additional checks if a texture instance is used for displacement.
+    const TextureSource* texture_map = dynamic_cast<const TextureSource*>(displacement_source);
+    if (texture_map != nullptr)
     {
-        RENDERER_LOG_ERROR(
-            "%s: a texture instance must be bound to the \"displacement_map\" input.",
-            context.get());
-        return 0;
-    }
-
-    // Retrieve the displacement texture.
-    const TextureSource* displacement_map = static_cast<const TextureSource*>(displacement_source);
-    const Texture& texture = displacement_map->get_texture_instance().get_texture();
-
-    // Print a warning if the displacement texture is not expressed in the linear RGB color space.
-    if (texture.get_color_space() != ColorSpaceLinearRGB)
-    {
-        RENDERER_LOG_WARNING(
-            "%s: color space for displacement map \"%s\" "
-            "should be \"%s\" but is \"%s\" instead; expect artifacts and/or slowdowns.",
-            context.get(),
-            texture.get_path().c_str(),
-            color_space_name(ColorSpaceLinearRGB),
-            color_space_name(texture.get_color_space()));
+        // Print a warning if the displacement texture is not linear.
+        const Texture& texture = texture_map->get_texture_instance().get_texture();
+        if (texture.get_color_space() != ColorSpaceLinearRGB)
+        {
+            RENDERER_LOG_WARNING(
+                "%s: color space for displacement map \"%s\" "
+                "should be \"%s\" but is \"%s\" instead; expect artifacts and/or slowdowns.",
+                context.get(),
+                texture.get_path().c_str(),
+                color_space_name(ColorSpaceLinearRGB),
+                color_space_name(texture.get_color_space()));
+        }
     }
 
     // Retrieve the displacement method.
@@ -268,9 +260,9 @@ IBasisModifier* Material::create_basis_modifier(const MessageContext& context) c
     // Create the basis modifier.
     if (displacement_method == "bump")
     {
-        const float offset = m_params.get_optional<float>("bump_offset", 2.0f);
+        const float offset = m_params.get_optional<float>("bump_offset", 0.5f);
         const float amplitude = m_params.get_optional<float>("bump_amplitude", 1.0f);
-        return new BumpMappingModifier(displacement_map, offset, amplitude);
+        return new BumpMappingModifier(displacement_source, offset, amplitude);
     }
     else
     {
@@ -278,7 +270,7 @@ IBasisModifier* Material::create_basis_modifier(const MessageContext& context) c
             m_params.get_optional<string>("normal_map_up", "z", make_vector("y", "z"), context) == "y"
                 ? NormalMappingModifier::UpVectorY
                 : NormalMappingModifier::UpVectorZ;
-        return new NormalMappingModifier(displacement_map, up_vector);
+        return new NormalMappingModifier(displacement_source, up_vector);
     }
 }
 

@@ -38,6 +38,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstdlib>
 #include <cstring>
 
 using namespace foundation;
@@ -74,6 +75,31 @@ void AOVAccumulator::write(
     const ShadingPoint&         shading_point,
     const Camera&               camera)
 {
+}
+
+
+//
+// ColorAOVAccumulator class implementation.
+//
+
+ColorAOVAccumulator::ColorAOVAccumulator(const size_t index)
+  : AOVAccumulator(index)
+{
+}
+
+ColorAOVAccumulator::~ColorAOVAccumulator()
+{
+}
+
+void ColorAOVAccumulator::reset()
+{
+    m_color.set(0.0f);
+}
+
+void ColorAOVAccumulator::flush(ShadingResult& result)
+{
+    result.m_aovs[m_index].rgb() = m_color;
+    result.m_aovs[m_index].a = result.m_main.a;
 }
 
 
@@ -159,14 +185,14 @@ void AlphaAOVAccumulator::flush(ShadingResult& result)
 // AOVAccumulatorContainer class implementation.
 //
 
-AOVAccumulatorContainer::AOVAccumulatorContainer(const AOVContainer& aovs)
-  : m_size(0)
+AOVAccumulatorContainer::AOVAccumulatorContainer()
 {
-    memset(m_accumulators, 0, MaxAovAccumulators * sizeof(AOVAccumulator*));
+    init();
+}
 
-    // Create beauty and alpha accumulators.
-    insert(auto_release_ptr<AOVAccumulator>(new BeautyAOVAccumulator()));
-    insert(auto_release_ptr<AOVAccumulator>(new AlphaAOVAccumulator()));
+AOVAccumulatorContainer::AOVAccumulatorContainer(const AOVContainer& aovs)
+{
+    init();
 
     // Create the remaining accumulators.
     for (size_t i = 0, e = aovs.size(); i < e; ++i)
@@ -174,6 +200,16 @@ AOVAccumulatorContainer::AOVAccumulatorContainer(const AOVContainer& aovs)
         const AOV* aov = aovs.get_by_index(i);
         insert(aov->create_accumulator(i));
     }
+}
+
+void AOVAccumulatorContainer::init()
+{
+    m_size = 0;
+    memset(m_accumulators, 0, MaxAovAccumulators * sizeof(AOVAccumulator*));
+
+    // Create beauty and alpha accumulators.
+    insert(auto_release_ptr<AOVAccumulator>(new BeautyAOVAccumulator()));
+    insert(auto_release_ptr<AOVAccumulator>(new AlphaAOVAccumulator()));
 }
 
 AOVAccumulatorContainer::~AOVAccumulatorContainer()

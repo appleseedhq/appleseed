@@ -103,8 +103,8 @@ namespace
       : public AOV
     {
       public:
-        NormalAOV(const char* name, const ParamArray& params)
-          : AOV(name, params)
+        explicit NormalAOV(const ParamArray& params)
+          : AOV("normal", params)
         {
         }
 
@@ -123,10 +123,10 @@ namespace
             return 3;
         }
 
-        virtual const char* get_channel_name(const size_t i) const override
+        virtual const char** get_channel_names() const override
         {
-            static const char* channels[] = {"X", "Y", "Z"};
-            return channels[i];
+            static const char* ChannelNames[] = {"X", "Y", "Z"};
+            return ChannelNames;
         }
 
         virtual bool has_color_data() const override
@@ -168,21 +168,15 @@ DictionaryArray NormalAOVFactory::get_input_metadata() const
 }
 
 auto_release_ptr<AOV> NormalAOVFactory::create(
-    const char*         name,
     const ParamArray&   params) const
 {
-    return
-        auto_release_ptr<AOV>(
-            new NormalAOV(name, params));
+    return auto_release_ptr<AOV>(new NormalAOV(params));
 }
 
 auto_release_ptr<AOV> NormalAOVFactory::static_create(
-    const char*         name,
     const ParamArray&   params)
 {
-    return
-        auto_release_ptr<AOV>(
-            new NormalAOV(name, params));
+    return auto_release_ptr<AOV>(new NormalAOV(params));
 }
 
 }   // namespace renderer

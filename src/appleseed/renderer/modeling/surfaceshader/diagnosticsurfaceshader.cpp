@@ -33,7 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/shading/ambientocclusion.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -125,7 +125,6 @@ const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingMod
     { "materials",                  "Materials" },
     { "ray_spread",                 "Ray Spread" },
     { "facing_ratio",               "Facing Ratio" }
-
 };
 
 DiagnosticSurfaceShader::DiagnosticSurfaceShader(
@@ -245,7 +244,7 @@ void DiagnosticSurfaceShader::evaluate(
                 {
                     const Vector3f direction = -normalize(Vector3f(shading_point.get_ray().m_dir));
 
-                    ShadingComponents value;
+                    DirectShadingComponents value;
                     material_data.m_bsdf->evaluate(
                         material_data.m_bsdf->evaluate_inputs(shading_context, shading_point),
                         false,

@@ -132,7 +132,6 @@ namespace
                 m_lighting_engine,
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations)
-          , m_aov_accumulators(frame.aovs())
         {
             // 1/4 of a pixel, like in RenderMan RIS.
             const CanvasProperties& c = frame.image().properties();
@@ -151,10 +150,11 @@ namespace
         }
 
         virtual void render_sample(
-            SamplingContext&        sampling_context,
-            const PixelContext&     pixel_context,
-            const Vector2d&         image_point,
-            ShadingResult&          shading_result) override
+            SamplingContext&            sampling_context,
+            const PixelContext&         pixel_context,
+            const Vector2d&             image_point,
+            AOVAccumulatorContainer&    aov_accumulators,
+            ShadingResult&              shading_result) override
         {
 #ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
 
@@ -199,7 +199,7 @@ namespace
                 shading_point_ptr = &shading_points[shading_point_index];
                 shading_point_index = 1 - shading_point_index;
 
-                m_aov_accumulators.reset();
+                aov_accumulators.reset();
 
                 if (iterations == 1)
                 {
@@ -209,13 +209,13 @@ namespace
                         pixel_context,
                         m_shading_context,
                         *shading_point_ptr,
-                        m_aov_accumulators);
+                        aov_accumulators);
 
-                    m_aov_accumulators.write(
+                    aov_accumulators.write(
                         *shading_point_ptr,
                         *m_scene.get_active_camera());
 
-                    m_aov_accumulators.flush(shading_result);
+                    aov_accumulators.flush(shading_result);
 
                     // Apply alpha premultiplication.
                     if (shading_point_ptr->hit_surface())
@@ -230,13 +230,13 @@ namespace
                         pixel_context,
                         m_shading_context,
                         *shading_point_ptr,
-                        m_aov_accumulators);
+                        aov_accumulators);
 
-                    m_aov_accumulators.write(
+                    aov_accumulators.write(
                         *shading_point_ptr,
                         *m_scene.get_active_camera());
 
-                    m_aov_accumulators.flush(local_result);
+                    aov_accumulators.flush(local_result);
 
                     // Apply alpha premultiplication.
                     if (shading_point_ptr->hit_surface())
@@ -329,8 +329,6 @@ namespace
 
         Vector2d                    m_image_point_dx;
         Vector2d                    m_image_point_dy;
-
-        AOVAccumulatorContainer     m_aov_accumulators;
     };
 }
 

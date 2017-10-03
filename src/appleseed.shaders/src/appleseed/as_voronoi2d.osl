@@ -136,7 +136,8 @@ shader as_voronoi2d
         string options = "Euclidian Distance:0|Sum of Square Difference:1|Tchebychev Distance:2|Sum of Absolute Difference:3|Akritean Distance:4|Minkowski Metric:5|Karlsruhe Metric:6",
         string label = "Metric",
         string page = "Cell Parameters",
-        int divider = 1
+        int divider = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     float in_Minkowski_p = 5.0
     [[
@@ -167,7 +168,8 @@ shader as_voronoi2d
         string widget = "mapper",
         string options = "Feature 1:0|Feature 2:1|Feature 3:2|Feature 4:3|F1 + F2:4|F2 - F1:5|F1 * F2:6|F1 / F2:7|F1 ^ F2:8|Pebbles:9|Cell ID 1:10|Cell ID 2:11|Cell ID 3:12|Cell ID 4:13",
         string label = "Features Mode",
-        string page = "Cell Parameters"
+        string page = "Cell Parameters",
+        int gafferNoduleLayoutVisible = 0
     ]],
 
     MAYA_COLORBALANCE_PARAMETERS,

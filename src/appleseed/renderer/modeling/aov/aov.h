@@ -50,6 +50,10 @@ namespace renderer      { class ParamArray; }
 namespace renderer
 {
 
+//
+// AOV base class.
+//
+
 class APPLESEED_DLLSYMBOL AOV
   : public Entity
 {
@@ -69,8 +73,8 @@ class APPLESEED_DLLSYMBOL AOV
     // Return the number of channels of this AOV.
     virtual size_t get_channel_count() const = 0;
 
-    // Return the ith channel name.
-    virtual const char* get_channel_name(const size_t i) const = 0;
+    // Return the AOV channel names.
+    virtual const char** get_channel_names() const = 0;
 
     // Return true if this AOV contains color data.
     virtual bool has_color_data() const = 0;
@@ -78,6 +82,28 @@ class APPLESEED_DLLSYMBOL AOV
     // Create an accumulator for this AOV.
     virtual foundation::auto_release_ptr<AOVAccumulator> create_accumulator(
         const size_t index) const = 0;
+};
+
+
+//
+// ColorAOV base class.
+//
+
+class ColorAOV
+  : public AOV
+{
+  public:
+    // Constructor.
+    ColorAOV(const char* name, const ParamArray& params);
+
+    // Return the number of channels of this AOV.
+    size_t get_channel_count() const override;
+
+    // Return the AOV channel names.
+    const char** get_channel_names() const override;
+
+    // Return true if this AOV contains color data.
+    bool has_color_data() const override;
 };
 
 }       // namespace renderer

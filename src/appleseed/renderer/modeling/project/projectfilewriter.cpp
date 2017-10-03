@@ -313,7 +313,14 @@ namespace
         // Write an <aov> element.
         void write(const AOV& aov)
         {
-            write_entity("aov", aov);
+            XMLElement element("aov", m_file, m_indenter);
+            element.add_attribute("model", aov.get_model());
+            element.write(
+                !aov.get_parameters().empty()
+                    ? XMLElement::HasChildElements
+                    : XMLElement::HasNoContent);
+
+            write_params(aov.get_parameters());
         }
 
         // Write an <assembly> element.
@@ -394,12 +401,14 @@ namespace
         // Write an <aovs> element.
         void write_aovs(const Frame& frame)
         {
-            if (!frame.aovs().empty())
+            const AOVContainer& aovs = frame.aovs();
+            if (!aovs.empty())
             {
                 XMLElement element("aovs", m_file, m_indenter);
                 element.write(XMLElement::HasChildElements);
 
-                write_collection(frame.aovs());
+                for (size_t i = 0, e = aovs.size(); i != e; ++i)
+                    write(*aovs.get_by_index(i));
             }
         }
 

@@ -29,8 +29,8 @@
 // Interface header.
 #include "shadingcomponents.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/otherwise.h"
+// appleseed.renderer headers.
+#include "renderer/kernel/shading/directshadingcomponents.h"
 
 namespace renderer
 {
@@ -40,48 +40,15 @@ namespace renderer
 //
 
 ShadingComponents::ShadingComponents()
+  : m_beauty(0.0f)
+  , m_diffuse(0.0f)
+  , m_glossy(0.0f)
+  , m_volume(0.0f)
+  , m_emission(0.0f)
+  , m_indirect_diffuse(0.0f)
+  , m_indirect_glossy(0.0f)
+  , m_indirect_volume(0.0f)
 {
-    set(0.0f);
-}
-
-void ShadingComponents::set(const float val)
-{
-    m_beauty.set(0.0f);
-    m_diffuse.set(0.0f);
-    m_glossy.set(0.0f);
-    m_volume.set(0.0f);
-    m_emission.set(0.0f);
-}
-
-void ShadingComponents::add_to_component(
-    const ScatteringMode::Mode  scattering_mode,
-    const Spectrum&             value)
-{
-    switch (scattering_mode)
-    {
-      case ScatteringMode::Diffuse:
-        m_diffuse += value;
-        break;
-
-      case ScatteringMode::Glossy:
-      case ScatteringMode::Specular:
-        m_glossy += value;
-        break;
-
-      case ScatteringMode::Volume:
-        m_volume += value;
-        break;
-
-      assert_otherwise;
-    }
-}
-
-void ShadingComponents::add_to_component(
-    const ScatteringMode::Mode  scattering_mode,
-    const ShadingComponents&    value)
-{
-    m_beauty += value.m_beauty;
-    add_to_component(scattering_mode, value.m_beauty);
 }
 
 void ShadingComponents::add_emission(
@@ -94,18 +61,63 @@ void ShadingComponents::add_emission(
     if (path_length == 1)
         m_emission += value;
     else
-        add_to_component(scattering_mode, value);
+    {
+        switch (scattering_mode)
+        {
+          case ScatteringMode::Diffuse:
+            m_indirect_diffuse += value;
+            break;
+
+          case ScatteringMode::Glossy:
+          case ScatteringMode::Specular:
+            m_indirect_glossy += value;
+            break;
+
+          case ScatteringMode::Volume:
+            m_indirect_volume += value;
+            break;
+
+          assert_otherwise;
+        }
+    }
 }
 
-ShadingComponents& operator+=(ShadingComponents& lhs, const ShadingComponents& rhs)
+void ShadingComponents::add(
+    const size_t                    path_length,
+    const ScatteringMode::Mode      scattering_mode,
+    const DirectShadingComponents&  value)
 {
-    lhs.m_beauty += rhs.m_beauty;
-    lhs.m_diffuse += rhs.m_diffuse;
-    lhs.m_glossy += rhs.m_glossy;
-    lhs.m_volume += rhs.m_volume;
-    lhs.m_emission += rhs.m_emission;
-    return lhs;
+    m_beauty += value.m_beauty;
+
+    if (path_length == 1)
+    {
+        m_diffuse += value.m_diffuse;
+        m_glossy += value.m_glossy;
+        m_volume += value.m_volume;
+        m_emission += value.m_emission;
+    }
+    else
+    {
+        switch (scattering_mode)
+        {
+          case ScatteringMode::Diffuse:
+            m_indirect_diffuse += value.m_beauty;
+            break;
+
+          case ScatteringMode::Glossy:
+          case ScatteringMode::Specular:
+            m_indirect_glossy += value.m_beauty;
+            break;
+
+          case ScatteringMode::Volume:
+            m_indirect_volume += value.m_beauty;
+            break;
+
+          assert_otherwise;
+        }
+    }
 }
+
 
 ShadingComponents& operator*=(ShadingComponents& lhs, const float rhs)
 {
@@ -114,6 +126,9 @@ ShadingComponents& operator*=(ShadingComponents& lhs, const float rhs)
     lhs.m_glossy *= rhs;
     lhs.m_volume *= rhs;
     lhs.m_emission *= rhs;
+    lhs.m_indirect_diffuse *= rhs;
+    lhs.m_indirect_glossy *= rhs;
+    lhs.m_indirect_volume *= rhs;
     return lhs;
 }
 
@@ -122,34 +137,6 @@ ShadingComponents& operator/=(ShadingComponents& lhs, const float rhs)
     const float rcp_rhs = 1.0f / rhs;
     lhs *= rcp_rhs;
     return lhs;
-}
-
-ShadingComponents& operator*=(ShadingComponents& lhs, const Spectrum& rhs)
-{
-    lhs.m_beauty *= rhs;
-    lhs.m_diffuse *= rhs;
-    lhs.m_glossy *= rhs;
-    lhs.m_volume *= rhs;
-    lhs.m_emission *= rhs;
-    return lhs;
-}
-
-void madd(ShadingComponents& a, const ShadingComponents& b, const float c)
-{
-    madd(a.m_beauty, b.m_beauty, c);
-    madd(a.m_diffuse, b.m_diffuse, c);
-    madd(a.m_glossy, b.m_glossy, c);
-    madd(a.m_volume, b.m_volume, c);
-    madd(a.m_emission, b.m_emission, c);
-}
-
-void madd(ShadingComponents& a, const ShadingComponents& b, const Spectrum& c)
-{
-    madd(a.m_beauty, b.m_beauty, c);
-    madd(a.m_diffuse, b.m_diffuse, c);
-    madd(a.m_glossy, b.m_glossy, c);
-    madd(a.m_volume, b.m_volume, c);
-    madd(a.m_emission, b.m_emission, c);
 }
 
 }   // namespace renderer

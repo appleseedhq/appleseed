@@ -42,8 +42,8 @@
 
 // Forward declarations.
 namespace renderer  { class BackwardLightSampler; }
+namespace renderer  { class DirectShadingComponents; }
 namespace renderer  { class LightSample; }
-namespace renderer  { class ShadingComponents; }
 namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }
 namespace renderer  { class ShadingRay; }
@@ -86,14 +86,14 @@ namespace renderer
         void compute_radiance_combined_sampling(
             SamplingContext&                sampling_context,
             const foundation::MISHeuristic  mis_heuristic,
-            ShadingComponents&              radiance) const;
+            DirectShadingComponents&        radiance) const;
 
         // Integrate in-scattered radiance over the given ray
         // using only exponential sampling.
         void compute_radiance_exponential_sampling(
             SamplingContext&                sampling_context,
             const foundation::MISHeuristic  mis_heuristic,
-            ShadingComponents&              radiance) const;
+            DirectShadingComponents&        radiance) const;
 
       private:
         const ShadingContext&               m_shading_context;
@@ -116,7 +116,7 @@ namespace renderer
             const Spectrum&                 extinction_coef,
             SamplingContext&                sampling_context,
             const foundation::MISHeuristic  mis_heuristic,
-            ShadingComponents&              radiance,
+            DirectShadingComponents&        radiance,
             const bool                      sample_phase_function) const;
 
         // Sample distance and integrate in-scattered lighting at this distance.
@@ -126,7 +126,7 @@ namespace renderer
             const Spectrum&                 extinction_coef,
             SamplingContext&                sampling_context,
             const foundation::MISHeuristic  mis_heuristic,
-            ShadingComponents&              radiance,
+            DirectShadingComponents&        radiance,
             const bool                      sample_phasefunction) const;
 
         float draw_exponential_sample(
@@ -149,7 +149,7 @@ namespace renderer
             const LightSample*              light_sample,
             const float                     distance_sample,
             const foundation::MISHeuristic  mis_heuristic,
-            ShadingComponents&              radiance) const;
+            DirectShadingComponents&        radiance) const;
     };
 }
 

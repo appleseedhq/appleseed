@@ -67,7 +67,6 @@ class APPLESEED_DLLSYMBOL IAOVFactory
 
     // Create a new AOV instance.
     virtual foundation::auto_release_ptr<AOV> create(
-        const char*         name,
         const ParamArray&   params) const = 0;
 };
 

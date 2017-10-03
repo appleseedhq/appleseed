@@ -83,14 +83,6 @@ class LocalSampleAccumulationBuffer
         foundation::IAbortSwitch&           abort_switch) override;
 
     // Exposed for tests and benchmarks.
-    static void develop_to_tile_undo_premult_alpha(
-        foundation::Tile&                   color_tile,
-        const size_t                        image_width,
-        const size_t                        image_height,
-        const foundation::FilteredTile&     level,
-        const size_t                        origin_x,
-        const size_t                        origin_y,
-        const foundation::AABB2u&           rect);
     static void develop_to_tile(
         foundation::Tile&                   color_tile,
         const size_t                        image_width,

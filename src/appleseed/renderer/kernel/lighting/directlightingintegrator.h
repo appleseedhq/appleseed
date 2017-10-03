@@ -47,7 +47,7 @@
 // Forward declarations.
 namespace renderer  { class BackwardLightSampler; }
 namespace renderer  { class LightSample; }
-namespace renderer  { class ShadingComponents; }
+namespace renderer  { class DirectShadingComponents; }
 namespace renderer  { class ShadingContext; }
 
 namespace renderer
@@ -87,21 +87,21 @@ class DirectLightingIntegrator
     void compute_outgoing_radiance_combined_sampling_low_variance(
         SamplingContext&                sampling_context,
         const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
-        ShadingComponents&              radiance) const;
+        DirectShadingComponents&        radiance) const;
 
     // Compute outgoing radiance due to direct lighting via BSDF sampling only.
     void compute_outgoing_radiance_material_sampling(
         SamplingContext&                sampling_context,
         const foundation::MISHeuristic  mis_heuristic,
         const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
-        ShadingComponents&              radiance) const;
+        DirectShadingComponents&        radiance) const;
 
     // Compute outgoing radiance due to direct lighting via light sampling only.
     void compute_outgoing_radiance_light_sampling_low_variance(
         SamplingContext&                sampling_context,
         const foundation::MISHeuristic  mis_heuristic,
         const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
-        ShadingComponents&              radiance) const;
+        DirectShadingComponents&        radiance) const;
 
   private:
     friend class VolumeLightingIntegrator;
@@ -120,20 +120,20 @@ class DirectLightingIntegrator
         SamplingContext&                sampling_context,
         const foundation::MISHeuristic  mis_heuristic,
         const foundation::Dual3d&       outgoing,
-        ShadingComponents&              radiance) const;
+        DirectShadingComponents&        radiance) const;
 
     void add_emitting_triangle_sample_contribution(
         SamplingContext&                sampling_context,
         const LightSample&              sample,
         const foundation::MISHeuristic  mis_heuristic,
         const foundation::Dual3d&       outgoing,
-        ShadingComponents&              radiance) const;
+        DirectShadingComponents&        radiance) const;
 
     void add_non_physical_light_sample_contribution(
         SamplingContext&                sampling_context,
         const LightSample&              sample,
         const foundation::Dual3d&       outgoing,
-        ShadingComponents&              radiance) const;
+        DirectShadingComponents&        radiance) const;
 };
 
 }       // namespace renderer

@@ -1485,7 +1485,7 @@ void spectrum_to_ciexyz_standard(
     const float                 spectrum[],
     float                       ciexyz[3])
 {
-    const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg);
+    const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE19312Deg);
 
     const Color3f c =
         spectrum_to_ciexyz<float, RegularSpectrum31f>(

@@ -26,4 +26,10 @@
 # THE SOFTWARE.
 #
 
+import os
+
+# Prevent Qt.py importing PySide2 and PyQt5.
+if not os.getenv("QT_PREFERRED_BINDING"):
+    os.environ["QT_PREFERRED_BINDING"] = os.pathsep.join(["PySide", "PyQt4"])
+
 from _appleseedstudio import *

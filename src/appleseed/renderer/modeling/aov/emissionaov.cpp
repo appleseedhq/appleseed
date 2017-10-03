@@ -58,17 +58,12 @@ namespace
     //
 
     class EmissionAOVAccumulator
-      : public AOVAccumulator
+      : public ColorAOVAccumulator
     {
       public:
         explicit EmissionAOVAccumulator(const size_t index)
-          : AOVAccumulator(index)
+          : ColorAOVAccumulator(index)
         {
-        }
-
-        virtual void reset() override
-        {
-            m_color.set(0.0f);
         }
 
         virtual void write(
@@ -78,15 +73,6 @@ namespace
             m_color = shading_components.m_emission.to_rgb(g_std_lighting_conditions);
             m_color *= multiplier;
         }
-
-        virtual void flush(ShadingResult& result) override
-        {
-            result.m_aovs[m_index].rgb() = m_color;
-            result.m_aovs[m_index].a = result.m_main.a;
-        }
-
-      private:
-        Color3f m_color;
     };
 
 
@@ -97,11 +83,11 @@ namespace
     const char* Model = "emission_aov";
 
     class EmissionAOV
-      : public AOV
+      : public ColorAOV
     {
       public:
-        EmissionAOV(const char* name, const ParamArray& params)
-          : AOV(name, params)
+        explicit EmissionAOV(const ParamArray& params)
+          : ColorAOV("emission", params)
         {
         }
 
@@ -113,22 +99,6 @@ namespace
         virtual const char* get_model() const override
         {
             return Model;
-        }
-
-        virtual size_t get_channel_count() const override
-        {
-            return 3;
-        }
-
-        virtual const char* get_channel_name(const size_t i) const override
-        {
-            static const char* channels[] = {"R", "G", "B"};
-            return channels[i];
-        }
-
-        virtual bool has_color_data() const override
-        {
-            return true;
         }
 
         virtual auto_release_ptr<AOVAccumulator> create_accumulator(
@@ -165,21 +135,16 @@ DictionaryArray EmissionAOVFactory::get_input_metadata() const
 }
 
 auto_release_ptr<AOV> EmissionAOVFactory::create(
-    const char*         name,
     const ParamArray&   params) const
 {
     return
-        auto_release_ptr<AOV>(
-            new EmissionAOV(name, params));
+        auto_release_ptr<AOV>(new EmissionAOV(params));
 }
 
 auto_release_ptr<AOV> EmissionAOVFactory::static_create(
-    const char*         name,
     const ParamArray&   params)
 {
-    return
-        auto_release_ptr<AOV>(
-            new EmissionAOV(name, params));
+    return auto_release_ptr<AOV>(new EmissionAOV(params));
 }
 
 }   // namespace renderer

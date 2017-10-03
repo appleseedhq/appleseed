@@ -47,6 +47,8 @@
 namespace foundation    { class CanvasProperties; }
 namespace foundation    { class Tile; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class Source; }
+namespace renderer      { class TextureInstance; }
 
 namespace renderer
 {
@@ -75,6 +77,11 @@ class APPLESEED_DLLSYMBOL Texture
 
     // Access canvas properties.
     virtual const foundation::CanvasProperties& properties() = 0;
+
+    // Create and return a new source that allows to bind this texture to an entity's input.
+    virtual Source* create_source(
+        const foundation::UniqueID  assembly_uid,
+        const TextureInstance&      texture_instance) = 0;
 
     // Load a given tile.
     virtual foundation::Tile* load_tile(

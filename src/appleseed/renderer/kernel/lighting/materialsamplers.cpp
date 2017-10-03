@@ -31,7 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/tracer.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -49,10 +49,10 @@ namespace renderer
 //
 
 BSDFSampler::BSDFSampler(
-    const BSDF&             bsdf,
-    const void*             bsdf_data,
-    const int               bsdf_sampling_modes,
-    const ShadingPoint&     shading_point)
+    const BSDF&                 bsdf,
+    const void*                 bsdf_data,
+    const int                   bsdf_sampling_modes,
+    const ShadingPoint&         shading_point)
   : m_bsdf(bsdf)
   , m_bsdf_data(bsdf_data)
   , m_bsdf_sampling_modes(bsdf_sampling_modes)
@@ -79,11 +79,11 @@ bool BSDFSampler::contributes_to_light_sampling() const
 }
 
 bool BSDFSampler::sample(
-    SamplingContext&        sampling_context,
-    const Dual3d&           outgoing,
-    Dual3f&                 incoming,
-    ShadingComponents&      value,
-    float&                  pdf) const
+    SamplingContext&            sampling_context,
+    const Dual3d&               outgoing,
+    Dual3f&                     incoming,
+    DirectShadingComponents&    value,
+    float&                      pdf) const
 {
     BSDFSample sample(&m_shading_point, Dual3f(outgoing));
     m_bsdf.sample(
@@ -105,10 +105,10 @@ bool BSDFSampler::sample(
 }
 
 float BSDFSampler::evaluate(
-    const int               light_sampling_modes,
-    const Vector3f&         outgoing,
-    const Vector3f&         incoming,
-    ShadingComponents&      value) const
+    const int                   light_sampling_modes,
+    const Vector3f&             outgoing,
+    const Vector3f&             incoming,
+    DirectShadingComponents&    value) const
 {
     return
         m_bsdf.evaluate(
@@ -124,9 +124,9 @@ float BSDFSampler::evaluate(
 }
 
 const ShadingPoint& BSDFSampler::trace(
-    const ShadingContext&   shading_context,
-    const Vector3f&         direction,
-    Spectrum&               transmission) const
+    const ShadingContext&       shading_context,
+    const Vector3f&             direction,
+    Spectrum&                   transmission) const
 {
     ShadingRay ray(
         m_shading_point.get_point(),
@@ -147,9 +147,9 @@ const ShadingPoint& BSDFSampler::trace(
 }
 
 void BSDFSampler::trace_between(
-    const ShadingContext&   shading_context,
-    const Vector3d&         target_position,
-    Spectrum&               transmission) const
+    const ShadingContext&       shading_context,
+    const Vector3d&             target_position,
+    Spectrum&                   transmission) const
 {
     shading_context.get_tracer().trace_between_simple(
         shading_context,
@@ -211,11 +211,11 @@ bool VolumeSampler::contributes_to_light_sampling() const
 }
 
 bool VolumeSampler::sample(
-    SamplingContext&        sampling_context,
-    const Dual3d&           outgoing,
-    Dual3f&                 incoming,
-    ShadingComponents&      value,
-    float&                  pdf) const
+    SamplingContext&            sampling_context,
+    const Dual3d&               outgoing,
+    Dual3f&                     incoming,
+    DirectShadingComponents&    value,
+    float&                      pdf) const
 {
     Vector3f incoming_direction;
 
@@ -238,10 +238,10 @@ bool VolumeSampler::sample(
 }
 
 float VolumeSampler::evaluate(
-    const int               light_sampling_modes,
-    const Vector3f&         outgoing,
-    const Vector3f&         incoming,
-    ShadingComponents&      value) const
+    const int                   light_sampling_modes,
+    const Vector3f&             outgoing,
+    const Vector3f&             incoming,
+    DirectShadingComponents&    value) const
 {
     const float pdf =
         m_volume.evaluate(
@@ -259,9 +259,9 @@ float VolumeSampler::evaluate(
 }
 
 const ShadingPoint& VolumeSampler::trace(
-    const ShadingContext&   shading_context,
-    const Vector3f&         direction,
-    Spectrum&               transmission) const
+    const ShadingContext&       shading_context,
+    const Vector3f&             direction,
+    Spectrum&                   transmission) const
 {
     ShadingRay ray(
         m_point,
@@ -281,9 +281,9 @@ const ShadingPoint& VolumeSampler::trace(
 }
 
 void VolumeSampler::trace_between(
-    const ShadingContext&   shading_context,
-    const Vector3d&         target_position,
-    Spectrum&               transmission) const
+    const ShadingContext&       shading_context,
+    const Vector3d&             target_position,
+    Spectrum&                   transmission) const
 {
     shading_context.get_tracer().trace_between_simple(
         shading_context,

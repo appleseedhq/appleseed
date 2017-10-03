@@ -74,10 +74,10 @@ class APPLESEED_DLLSYMBOL PNGImageFileWriter
     struct ExceptionMemoryError : public Exception {};
 
     // Write a PNG image file.
-    virtual void write(
+    void write(
         const char*             filename,
         const ICanvas&          image,
-        const ImageAttributes&  image_attributes = ImageAttributes());
+        const ImageAttributes&  image_attributes = ImageAttributes()) override;
 };
 
 }       // namespace foundation

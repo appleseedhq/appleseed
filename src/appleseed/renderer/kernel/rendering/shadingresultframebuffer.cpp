@@ -130,7 +130,7 @@ void ShadingResultFrameBuffer::merge(
         dest_ptr[i] += source_ptr[i] * scaling;
 }
 
-void ShadingResultFrameBuffer::develop_to_tile_premult_alpha(
+void ShadingResultFrameBuffer::develop_to_tile(
     Tile&                           tile,
     TileStack&                      aov_tiles) const
 {
@@ -151,39 +151,6 @@ void ShadingResultFrameBuffer::develop_to_tile_premult_alpha(
             {
                 const Color4f aov(ptr[0], ptr[1], ptr[2], ptr[3]);
                 aov_tiles.set_pixel(x, y, i, aov * rcp_weight);
-                ptr += 4;
-            }
-        }
-    }
-}
-
-void ShadingResultFrameBuffer::develop_to_tile_straight_alpha(
-    Tile&                           tile,
-    TileStack&                      aov_tiles) const
-{
-    const float* ptr = pixel(0);
-
-    for (size_t y = 0, h = m_height; y < h; ++y)
-    {
-        for (size_t x = 0, w = m_width; x < w; ++x)
-        {
-            const float weight = *ptr++;
-            const float rcp_weight = weight == 0.0f ? 0.0f : 1.0f / weight;
-
-            Color4f color(ptr[0], ptr[1], ptr[2], ptr[3]);
-            const float rcp_weight_alpha = ptr[3] == 0.0f ? 0.0f : 1.0f / ptr[3];
-            color.rgb() *= rcp_weight_alpha;
-            color.a *= rcp_weight;
-            tile.set_pixel(x, y, color);
-            ptr += 4;
-
-            for (size_t i = 0; i < m_aov_count; ++i)
-            {
-                Color4f aov(ptr[0], ptr[1], ptr[2], ptr[3]);
-                const float rcp_weight_alpha = ptr[3] == 0.0f ? 0.0f : 1.0f / ptr[3];
-                aov.rgb() *= rcp_weight_alpha;
-                aov.a *= rcp_weight;
-                aov_tiles.set_pixel(x, y, i, aov);
                 ptr += 4;
             }
         }

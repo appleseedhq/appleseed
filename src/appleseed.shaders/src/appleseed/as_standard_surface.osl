@@ -33,7 +33,7 @@ shader as_standard_surface
 [[
     string as_maya_node_name = "asStandardSurface",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string help = "Primaries and illuminants aware relative luminance node",
+    string help = "Standard Surface Shader",
     int as_maya_type_id = 1210836
 ]]
 (
@@ -90,7 +90,8 @@ shader as_standard_surface
         string page = "Subsurface Parameters",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
-        int as_maya_attribute_hidden = 1
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     float in_translucency_weight = 0.0
     [[
@@ -146,7 +147,8 @@ shader as_standard_surface
         string help = "In dielectric mode, set IOR explicitly, and in conductor mode, set face and edge refletance.",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     float in_ior = 1.37
     [[
@@ -160,7 +162,8 @@ shader as_standard_surface
         string help = "IOR, only active if Fresnel is set to dielectric.",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
-        int as_maya_attribute_hidden = 1
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     color in_face_tint = color(0.85, 0.21, 0.05)
     [[
@@ -171,7 +174,8 @@ shader as_standard_surface
         string help = "Reflectance at facing angle, for conductor Fresnel.",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     color in_edge_tint = color(1)
     [[
@@ -183,7 +187,8 @@ shader as_standard_surface
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
-        int divider = 1
+        int divider = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     float in_anisotropy_amount = 0.0
     [[
@@ -241,7 +246,8 @@ shader as_standard_surface
         string page = "Refraction Parameters",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     color in_absorption_color = color(1)
     [[
@@ -282,7 +288,8 @@ shader as_standard_surface
         int divider = 1,
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
-        int as_maya_attribute_hidden = 1
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     float in_coating_depth = 0.0
     [[
@@ -323,7 +330,8 @@ shader as_standard_surface
         int divider = 1,
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     color in_incandescence_color = color(0)
     [[
@@ -347,7 +355,8 @@ shader as_standard_surface
         int divider = 1,
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
 
     int in_area_normalize_edf = 0
@@ -359,7 +368,8 @@ shader as_standard_surface
         string page = "Incandescence Parameters",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     int in_tonemap_edf = 1
     [[
@@ -371,7 +381,8 @@ shader as_standard_surface
         string help = "Tonemap incandescence, only valid for physically based mode",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     color in_transparency = color(0)
     [[
@@ -406,7 +417,8 @@ shader as_standard_surface
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
-        int divider = 1
+        int divider = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     float in_matte_opacity = 0.0
     [[
@@ -415,14 +427,16 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1.0,
         string label = "Matte Opacity",
-        string page = "Matte Opacity Parameters"
+        string page = "Matte Opacity Parameters",
+        int gafferNoduleLayoutVisible = 0
     ]],
     color in_matte_opacity_color = color(1,0.5,0)
     [[
         string as_maya_attribute_name = "matteOpacityColor",
         string as_maya_attribute_short_name = "mac",
         string label = "Matte Opacity Color",
-        string page = "Matte Opacity Parameters"
+        string page = "Matte Opacity Parameters",
+        int gafferNoduleLayoutVisible = 0
     ]],
     int in_sss_maximum_ray_depth = 2
     [[
@@ -435,7 +449,8 @@ shader as_standard_surface
         string page = "Advanced Parameters",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     float in_sss_threshold = 0.001
     [[
@@ -449,7 +464,8 @@ shader as_standard_surface
         string help = "Threshold at which SSS is replaced by a diffuse term",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     int in_maximum_ray_depth = 8
     [[
@@ -462,19 +478,22 @@ shader as_standard_surface
         string page = "Advanced Parameters",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     vector Tn = vector(0)
     [[
         int lockgeom = 0,
         int as_maya_attribute_hidden = 1,
-        string widget = "null"
+        string widget = "null",
+        int gafferNoduleLayoutVisible = 0
     ]],
     vector Bn = vector(0)
     [[
         int lockgeom = 0,
         int as_maya_attribute_hidden = 1,
-        string widget = "null"
+        string widget = "null",
+        int gafferNoduleLayoutVisible = 0
     ]],
     output closure color out_outColor = 0
     [[
@@ -493,7 +512,8 @@ shader as_standard_surface
         string as_maya_attribute_name = "outMatteOpacity",
         string as_maya_attribute_short_name = "om",
         string widget = "null",
-        int as_maya_attribute_hidden = 1
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
     ]]
 )
 {

@@ -32,8 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
-#include "renderer/modeling/bsdf/backfacingpolicy.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 
@@ -64,14 +63,13 @@ namespace
 
     const char* Model = "diffuse_btdf";
 
-    template <typename BackfacingPolicy>
     class DiffuseBTDFImpl
       : public BSDF
     {
       public:
         DiffuseBTDFImpl(
-            const char*             name,
-            const ParamArray&       params)
+            const char*                 name,
+            const ParamArray&           params)
           : BSDF(name, Transmissive, ScatteringMode::Diffuse, params)
         {
             m_inputs.declare("transmittance", InputFormatSpectralReflectance);
@@ -94,9 +92,9 @@ namespace
         }
 
         virtual void prepare_inputs(
-            Arena&                  arena,
-            const ShadingPoint&     shading_point,
-            void*                   data) const override
+            Arena&                      arena,
+            const ShadingPoint&         shading_point,
+            void*                       data) const override
         {
             InputValues* values = static_cast<InputValues*>(data);
             new (&values->m_precomputed) InputValues::Precomputed();
@@ -104,30 +102,28 @@ namespace
         }
 
         virtual void sample(
-            SamplingContext&        sampling_context,
-            const void*             data,
-            const bool              adjoint,
-            const bool              cosine_mult,
-            const int               modes,
-            BSDFSample&             sample) const override
+            SamplingContext&            sampling_context,
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const int                   modes,
+            BSDFSample&                 sample) const override
         {
             if (!ScatteringMode::has_diffuse(modes))
                 return;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            const BackfacingPolicy backfacing_policy(sample.m_shading_basis, values->m_precomputed.m_backfacing);
-            const Vector3f wo = backfacing_policy.transform_to_local(sample.m_outgoing.get_value());
 
-            // Compute the incoming direction in local space.
+            // Compute the incoming direction.
             sampling_context.split_in_place(2, 1);
             const Vector2f s = sampling_context.next2<Vector2f>();
-            const Vector3f wi = sample_hemisphere_cosine(s);
+            Vector3f wi = sample_hemisphere_cosine(s);
+            const float cos_in = wi.y;
 
-            // Transform the incoming direction to parent space.
-            sample.m_incoming = Dual3f(
-                wo.y < 0.0f
-                    ?  backfacing_policy.transform_to_parent(wi)
-                    : -backfacing_policy.transform_to_parent(wi));
+            // Flip the incoming direction to the other side of the surface.
+            wi.y = -wi.y;
+
+            sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
 
             // Compute the BRDF value.
             sample.m_value.m_diffuse = values->m_transmittance;
@@ -135,7 +131,7 @@ namespace
             sample.m_value.m_beauty = sample.m_value.m_diffuse;
 
             // Compute the probability density of the sampled direction.
-            sample.m_probability = abs(wi.y) * RcpPi<float>();
+            sample.m_probability = cos_in * RcpPi<float>();
             assert(sample.m_probability > 0.0f);
 
             // Set the scattering mode.
@@ -143,30 +139,28 @@ namespace
         }
 
         virtual float evaluate(
-            const void*             data,
-            const bool              adjoint,
-            const bool              cosine_mult,
-            const Vector3f&         geometric_normal,
-            const Basis3f&          shading_basis,
-            const Vector3f&         outgoing,
-            const Vector3f&         incoming,
-            const int               modes,
-            ShadingComponents&      value) const override
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes,
+            DirectShadingComponents&    value) const override
         {
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0f;
 
-            const InputValues* values = static_cast<const InputValues*>(data);
-            const BackfacingPolicy backfacing_policy(shading_basis, values->m_precomputed.m_backfacing);
-
-            const Vector3f& n = backfacing_policy.get_normal();
+            const Vector3f& n = shading_basis.get_normal();
             const float cos_in = dot(incoming, n);
             const float cos_on = dot(outgoing, n);
 
             if (cos_in * cos_on < 0.0f)
             {
+                const InputValues* values = static_cast<const InputValues*>(data);
+
                 // Compute the BRDF value.
-                value.set(0.0f);
                 value.m_diffuse = values->m_transmittance;
                 value.m_diffuse *= values->m_transmittance_multiplier * RcpPi<float>();
                 value.m_beauty = value.m_diffuse;
@@ -182,20 +176,17 @@ namespace
         }
 
         virtual float evaluate_pdf(
-            const void*             data,
-            const Vector3f&         geometric_normal,
-            const Basis3f&          shading_basis,
-            const Vector3f&         outgoing,
-            const Vector3f&         incoming,
-            const int               modes) const override
+            const void*                 data,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes) const override
         {
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0f;
 
-            const InputValues* values = static_cast<const InputValues*>(data);
-            const BackfacingPolicy backfacing_policy(shading_basis, values->m_precomputed.m_backfacing);
-
-            const Vector3f& n = backfacing_policy.get_normal();
+            const Vector3f& n = shading_basis.get_normal();
             const float cos_in = dot(incoming, n);
             const float cos_on = dot(outgoing, n);
 
@@ -212,8 +203,7 @@ namespace
         typedef DiffuseBTDFInputValues InputValues;
     };
 
-    typedef BSDFWrapper<DiffuseBTDFImpl<FlipBackfacingNormalsPolicy>> AppleseedDiffuseBTDF;
-    typedef BSDFWrapper<DiffuseBTDFImpl<UseOriginalNormalsPolicy>> OSLDiffuseBTDF;
+    typedef BSDFWrapper<DiffuseBTDFImpl> DiffuseBTDF;
 }
 
 
@@ -267,21 +257,14 @@ auto_release_ptr<BSDF> DiffuseBTDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<BSDF>(new AppleseedDiffuseBTDF(name, params));
-}
-
-auto_release_ptr<BSDF> DiffuseBTDFFactory::create_osl(
-    const char*         name,
-    const ParamArray&   params) const
-{
-    return auto_release_ptr<BSDF>(new OSLDiffuseBTDF(name, params));
+    return auto_release_ptr<BSDF>(new DiffuseBTDF(name, params));
 }
 
 auto_release_ptr<BSDF> DiffuseBTDFFactory::static_create(
     const char*         name,
     const ParamArray&   params)
 {
-    return auto_release_ptr<BSDF>(new AppleseedDiffuseBTDF(name, params));
+    return auto_release_ptr<BSDF>(new DiffuseBTDF(name, params));
 }
 
 }   // namespace renderer

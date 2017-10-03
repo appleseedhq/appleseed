@@ -77,11 +77,7 @@ class ShadingResultFrameBuffer
         const size_t                    source_y,
         const float                     scaling);
 
-    void develop_to_tile_premult_alpha(
-        foundation::Tile&               tile,
-        TileStack&                      aov_tiles) const;
-
-    void develop_to_tile_straight_alpha(
+    void develop_to_tile(
         foundation::Tile&               tile,
         TileStack&                      aov_tiles) const;
 

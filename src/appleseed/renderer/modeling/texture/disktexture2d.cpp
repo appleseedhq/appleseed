@@ -32,6 +32,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/texturesource.h"
 #include "renderer/modeling/texture/texture.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
@@ -47,6 +49,7 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/searchpaths.h"
+#include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <cstddef>
@@ -71,9 +74,9 @@ namespace
     {
       public:
         DiskTexture2d(
-            const char*         name,
-            const ParamArray&   params,
-            const SearchPaths&  search_paths)
+            const char*             name,
+            const ParamArray&       params,
+            const SearchPaths&      search_paths)
           : Texture(name, params)
           , m_reader(&global_logger())
         {
@@ -107,8 +110,8 @@ namespace
         }
 
         virtual void on_frame_end(
-            const Project&      project,
-            const BaseGroup*    parent) override
+            const Project&          project,
+            const BaseGroup*        parent) override
         {
             if (m_reader.is_open())
                 m_reader.close();
@@ -137,9 +140,16 @@ namespace
             return m_props;
         }
 
+        virtual Source* create_source(
+            const UniqueID          assembly_uid,
+            const TextureInstance&  texture_instance) override
+        {
+            return new TextureSource(assembly_uid, texture_instance);
+        }
+
         virtual Tile* load_tile(
-            const size_t        tile_x,
-            const size_t        tile_y) override
+            const size_t            tile_x,
+            const size_t            tile_y) override
         {
             boost::mutex::scoped_lock lock(m_mutex);
             open_image_file();
@@ -147,9 +157,9 @@ namespace
         }
 
         virtual void unload_tile(
-            const size_t        tile_x,
-            const size_t        tile_y,
-            const Tile*         tile) override
+            const size_t            tile_x,
+            const size_t            tile_y,
+            const Tile*             tile) override
         {
             delete tile;
         }

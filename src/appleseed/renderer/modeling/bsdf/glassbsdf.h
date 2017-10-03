@@ -106,11 +106,6 @@ class APPLESEED_DLLSYMBOL GlassBSDFFactory
         const char*         name,
         const ParamArray&   params) const override;
 
-    // Create a new BSDF instance for use with OSL.
-    foundation::auto_release_ptr<BSDF> create_osl(
-        const char*         name,
-        const ParamArray&   params) const;
-
     // Static variant of the create() method above.
     static foundation::auto_release_ptr<BSDF> static_create(
         const char*         name,

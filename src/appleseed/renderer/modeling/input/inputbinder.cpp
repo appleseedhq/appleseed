@@ -729,7 +729,7 @@ void InputBinder::bind_texture_instance_to_input(
     try
     {
         input.bind(
-            new TextureSource(
+            texture_instance->get_texture().create_source(
                 assembly_uid,
                 *texture_instance));
     }

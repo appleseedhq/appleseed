@@ -44,6 +44,10 @@
 #include "utility/scrollareapanhandler.h"
 #include "utility/widgetzoomhandler.h"
 
+// OpenColorIO headers.
+#include<OpenColorIO/OpenColorIO.h>
+namespace OCIO = OCIO_NAMESPACE;
+
 // Qt headers.
 #include <QObject>
 #include <QTextEdit>
@@ -80,7 +84,8 @@ class RenderTab
   public:
     RenderTab(
         ProjectExplorer&                    project_explorer,
-        renderer::Project&                  project);
+        renderer::Project&                  project,
+        OCIO::ConstConfigRcPtr              ocio_config);
 
     RenderWidget* get_render_widget() const;
     CameraController* get_camera_controller() const;
@@ -138,6 +143,7 @@ class RenderTab
     QToolButton*                            m_pixel_inspector_button;
     QToolButton*                            m_clear_frame_button;
     QComboBox*                              m_picking_mode_combo;
+    QComboBox*                              m_display_transform_combo;
     QWidget*                                m_spacer;
     QLabel*                                 m_info_label;
     QLabel*                                 m_r_label;
@@ -157,6 +163,8 @@ class RenderTab
     std::auto_ptr<ScenePickingHandler>      m_scene_picking_handler;
     std::auto_ptr<RenderRegionHandler>      m_render_region_handler;
     std::auto_ptr<RenderClipboardHandler>   m_clipboard_handler;
+
+    OCIO::ConstConfigRcPtr                  m_ocio_config;
 
     void create_render_widget();
     void create_toolbar();

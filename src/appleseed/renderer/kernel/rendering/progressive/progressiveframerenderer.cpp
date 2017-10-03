@@ -649,12 +649,9 @@ namespace
 
                 string output;
 
-                Image current_image(m_project.get_frame()->image());
-                m_project.get_frame()->transform_to_output_color_space(current_image);
-
                 if (m_luminance_stats)
                 {
-                    const double avg_lum = compute_average_luminance(current_image);
+                    const double avg_lum = compute_average_luminance(m_project.get_frame()->image());
                     output += "average luminance " + pretty_scalar(avg_lum, 6);
 
                     if (m_ref_image)
@@ -669,7 +666,7 @@ namespace
                 if (m_ref_image)
                 {
                     const double samples_per_pixel = m_buffer.get_sample_count() * m_rcp_pixel_count;
-                    const double rmsd = compute_rms_deviation(current_image, *m_ref_image);
+                    const double rmsd = compute_rms_deviation(m_project.get_frame()->image(), *m_ref_image);
                     m_rmsd_records.push_back(Vector2d(samples_per_pixel, rmsd));
 
                     if (m_luminance_stats)

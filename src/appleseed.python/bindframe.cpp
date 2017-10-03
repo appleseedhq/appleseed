@@ -62,14 +62,12 @@ namespace
         return FrameFactory::create(name.c_str(), bpy_dict_to_param_array(params));
     }
 
-    void transform_tile_to_output_color_space(const Frame* frame, Tile* tile)
+    auto_release_ptr<Frame> create_frame_with_aovs(
+        const string&       name,
+        const bpy::dict&    params,
+        const AOVContainer& aovs)
     {
-        frame->transform_to_output_color_space(*tile);
-    }
-
-    void transform_image_to_output_color_space(const Frame* frame, Image* image)
-    {
-        frame->transform_to_output_color_space(*image);
+        return FrameFactory::create(name.c_str(), bpy_dict_to_param_array(params), aovs);
     }
 
     bpy::object archive_frame(const Frame* frame, const char* directory)
@@ -134,6 +132,7 @@ void bind_frame()
 {
     bpy::class_<Frame, auto_release_ptr<Frame>, bpy::bases<Entity>, boost::noncopyable>("Frame", bpy::no_init)
         .def("__init__", bpy::make_constructor(create_frame))
+        .def("__init__", bpy::make_constructor(create_frame_with_aovs))
 
         .def("reset_crop_window", &Frame::reset_crop_window)
         .def("has_crop_window", &Frame::has_crop_window)
@@ -143,16 +142,13 @@ void bind_frame()
         .def("image", &Frame::image, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("aov_images", &Frame::aov_images, bpy::return_value_policy<bpy::reference_existing_object>())
 
-        .def("transform_tile_to_output_color_space", transform_tile_to_output_color_space)
-        .def("transform_image_to_output_color_space", transform_image_to_output_color_space)
-
         .def("clear_main_image", &Frame::clear_main_image)
         .def("write_main_image", &Frame::write_main_image)
         .def("write_aov_images", &Frame::write_aov_images)
+        .def("write_aov_image", &Frame::write_aov_image)
+        .def("write_main_and_aov_images_to_multipart_exr", &Frame::write_main_and_aov_images_to_multipart_exr)
         .def("archive", archive_frame)
 
-        .def("add_aov", &Frame::add_aov)
-        .def("transfer_aovs", &Frame::transfer_aovs)
         .def("aovs", &Frame::aovs, bpy::return_value_policy<bpy::reference_existing_object>())
         ;
 }

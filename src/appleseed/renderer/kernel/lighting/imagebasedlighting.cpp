@@ -33,7 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/materialsamplers.h"
 #include "renderer/kernel/lighting/tracer.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -62,7 +62,7 @@ void compute_ibl_combined_sampling(
     const int                   env_sampling_modes,
     const size_t                material_sample_count,
     const size_t                env_sample_count,
-    ShadingComponents&          radiance)
+    DirectShadingComponents&    radiance)
 {
     assert(is_normalized(outgoing.get_value()));
 
@@ -78,7 +78,7 @@ void compute_ibl_combined_sampling(
         radiance);
 
     // Compute IBL by sampling the environment.
-    ShadingComponents radiance_env_sampling;
+    DirectShadingComponents radiance_env_sampling;
     compute_ibl_environment_sampling(
         sampling_context,
         shading_context,
@@ -100,7 +100,7 @@ void compute_ibl_material_sampling(
     const IMaterialSampler&     material_sampler,
     const size_t                bsdf_sample_count,
     const size_t                env_sample_count,
-    ShadingComponents&          radiance)
+    DirectShadingComponents&    radiance)
 {
     assert(is_normalized(outgoing.get_value()));
 
@@ -114,7 +114,7 @@ void compute_ibl_material_sampling(
         // afterward. We need a mechanism to indicate that we want the contribution of some of
         // the components only.
         Dual3f incoming;
-        ShadingComponents material_value;
+        DirectShadingComponents material_value;
         float material_prob;
         if (!material_sampler.sample(
                 sampling_context,
@@ -176,7 +176,7 @@ void compute_ibl_environment_sampling(
     const int                   env_sampling_modes,
     const size_t                material_sample_count,
     const size_t                env_sample_count,
-    ShadingComponents&          radiance)
+    DirectShadingComponents&    radiance)
 {
     assert(is_normalized(outgoing.get_value()));
 
@@ -223,7 +223,7 @@ void compute_ibl_environment_sampling(
             continue;
 
         // Evaluate the BSDF.
-        ShadingComponents material_value;
+        DirectShadingComponents material_value;
         const float material_prob = material_sampler.evaluate(
             env_sampling_modes,
             Vector3f(outgoing.get_value()),

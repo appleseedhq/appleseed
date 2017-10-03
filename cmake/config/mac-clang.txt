@@ -176,6 +176,10 @@ macro (link_against_xercesc target)
     endif ()
 endmacro ()
 
+macro (link_against_ocio target)
+    target_link_libraries (${target} ${OPENCOLORIO_LIBRARIES})
+endmacro ()
+
 macro (link_against_oiio target)
     target_link_libraries (${target} ${OPENIMAGEIO_LIBRARIES})
 endmacro ()

@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
 #include "renderer/kernel/rendering/localsampleaccumulationbuffer.h"
 #include "renderer/kernel/rendering/pixelcontext.h"
@@ -139,6 +140,8 @@ namespace
 
         Population<uint64>                  m_total_sampling_dim;
 
+        AOVAccumulatorContainer             m_aov_accumulators;
+
         virtual size_t generate_samples(
             const size_t                    sequence_index,
             SampleVector&                   samples) override
@@ -182,6 +185,7 @@ namespace
                 sampling_context,
                 pixel_context,
                 sample_position,
+                m_aov_accumulators,
                 shading_result);
 
             // Update sampling statistics.

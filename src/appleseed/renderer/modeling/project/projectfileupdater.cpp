@@ -1462,6 +1462,84 @@ namespace
             }
         }
     };
+
+    //
+    // Update from revision 18 to revision 19.
+    //
+
+    class UpdateFromRevision_18
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_18(Project& project)
+          : Updater(project, 18)
+        {
+        }
+
+        virtual void update() override
+        {
+            if (m_project.get_frame())
+                update_frame(*m_project.get_frame());
+        }
+
+      private:
+        static void update_frame(Frame& frame)
+        {
+            ParamArray& params = frame.get_parameters();
+            params.remove_path("pixel_format");
+            params.remove_path("color_space");
+            params.remove_path("gamma_correction");
+            params.remove_path("clamping");
+            params.remove_path("premultiplied_alpha");
+        }
+    };
+
+    //
+    // Update from revision 19 to revision 20.
+    //
+
+    class UpdateFromRevision_19
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_19(Project& project)
+            : Updater(project, 19)
+        {
+        }
+
+        virtual void update() override
+        {
+            if (Scene* scene = m_project.get_scene())
+                update_material_and_object_inputs(scene->assemblies());
+        }
+
+      private:
+        static void update_material_and_object_inputs(AssemblyContainer& assemblies)
+        {
+            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            {
+                update_material_and_object_inputs(*i);
+                update_material_and_object_inputs(i->assemblies());
+            }
+        }
+
+        static void update_material_and_object_inputs(Assembly& assembly)
+        {
+            for (each<MaterialContainer> i = assembly.materials(); i; ++i)
+                remove_shade_alpha_cutouts(*i);
+
+            for (each<ObjectContainer> i = assembly.objects(); i; ++i)
+                remove_shade_alpha_cutouts(*i);
+        }
+
+        template <typename EntityType>
+        static void remove_shade_alpha_cutouts(EntityType& entity)
+        {
+            ParamArray& params = entity.get_parameters();
+            params.remove_path("shade_alpha_cutouts");
+        }
+    };
+
 }
 
 bool ProjectFileUpdater::update(
@@ -1512,6 +1590,8 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(15);
       CASE_UPDATE_FROM_REVISION(16);
       CASE_UPDATE_FROM_REVISION(17);
+      CASE_UPDATE_FROM_REVISION(18);
+      CASE_UPDATE_FROM_REVISION(19);
 
       case ProjectFormatRevision:
         // Project is up-to-date.

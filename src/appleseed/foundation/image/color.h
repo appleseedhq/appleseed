@@ -32,6 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/fp.h"
+#include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/poison.h"
@@ -219,6 +220,16 @@ class Color<T, 3>
     const ValueType& operator[](const size_t i) const;
 };
 
+// Matrix-color multiplication.
+template <typename T>
+Color<T, 3> operator*(
+    const Matrix<T, 3, 3>&  m,
+    const Color<T, 3>&      c);
+
+template <typename T>
+Color<T, 3> operator*(
+    const Color<T, 3>&      c,
+    const Matrix<T, 3, 3>&  m);
 
 //
 // RGBA color class of arbitrary type.
@@ -275,6 +286,10 @@ class Color<T, 4>
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
     const ValueType& operator[](const size_t i) const;
+
+    // Apply/undo alpha premultiplication.
+    void premultiply();
+    void unpremultiply();
 };
 
 
@@ -927,6 +942,33 @@ inline const T& Color<T, 3>::operator[](const size_t i) const
     return (&r)[i];
 }
 
+template <typename T>
+inline Color<T, 3> operator*(
+    const Matrix<T, 3, 3>&  m,
+    const Color<T, 3>&      c)
+{
+    Color<T, 3> res;
+
+    res[0] = m[0] * c[0] + m[1] * c[1] + m[2] * c[2];
+    res[1] = m[3] * c[0] + m[4] * c[1] + m[5] * c[2];
+    res[2] = m[6] * c[0] + m[7] * c[1] + m[8] * c[2];
+
+    return res;
+}
+
+template <typename T>
+inline Color<T, 3> operator*(
+    const Color<T, 3>&      c,
+    const Matrix<T, 3, 3>&  m)
+{
+    Color<T, 3> res;
+
+    res[0] = c[0] * m[0] + c[1] * m[3] + c[2] * m[6];
+    res[1] = c[0] * m[1] + c[1] * m[4] + c[2] * m[7];
+    res[2] = c[0] * m[2] + c[1] * m[5] + c[2] * m[8];
+
+    return res;
+}
 
 //
 // RGBA color implementation.
@@ -1042,6 +1084,26 @@ inline const T& Color<T, 4>::operator[](const size_t i) const
 {
     assert(i < Components);
     return (&r)[i];
+}
+
+template <typename T>
+inline void Color<T, 4>::premultiply()
+{
+    r *= a;
+    g *= a;
+    b *= a;
+}
+
+template <typename T>
+inline void Color<T, 4>::unpremultiply()
+{
+    if (a > T(0.0))
+    {
+        const T rcp_a = T(1.0) / a;
+        r *= rcp_a;
+        g *= rcp_a;
+        b *= rcp_a;
+    }
 }
 
 }       // namespace foundation

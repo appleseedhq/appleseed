@@ -60,26 +60,6 @@ BENCHMARK_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
         }
     };
 
-    BENCHMARK_CASE_F(DevelopToTileUndoPremultipledAlpha_FastPath, Fixture)
-    {
-        LocalSampleAccumulationBuffer::develop_to_tile_undo_premult_alpha(
-            m_color_tile,
-            1024, 1024,
-            m_level,
-            0, 0,
-            m_rect);
-    }
-
-    BENCHMARK_CASE_F(DevelopToTileUndoPremultipledAlpha_SlowPath, Fixture)
-    {
-        LocalSampleAccumulationBuffer::develop_to_tile_undo_premult_alpha(
-            m_color_tile,
-            1025, 1025,
-            m_level,
-            0, 0,
-            m_rect);
-    }
-
     BENCHMARK_CASE_F(DevelopToTile_FastPath, Fixture)
     {
         LocalSampleAccumulationBuffer::develop_to_tile(

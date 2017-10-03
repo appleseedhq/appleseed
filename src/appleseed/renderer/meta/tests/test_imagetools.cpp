@@ -37,6 +37,7 @@
 #include "foundation/image/pixel.h"
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/mersennetwister.h"
+#include "foundation/math/scalar.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/test.h"
 
@@ -390,6 +391,73 @@ TEST_SUITE(ImageTools)
         avg /= static_cast<double>(props.m_pixel_count);
 
         cerr << "Average: " << avg[0] << " " << avg[1] << " " << avg[2] << endl;
+    }
+
+#endif
+
+#if 0
+
+    TEST_CASE(GenerateSphereBumpMap)
+    {
+        const size_t ImageSize = 512;
+
+        Image image(
+            ImageSize,
+            ImageSize,
+            32,
+            32,
+            4,
+            PixelFormatFloat);
+
+        for (size_t y = 0; y < ImageSize; ++y)
+        {
+            for (size_t x = 0; x < ImageSize; ++x)
+            {
+                const float fx = fit<size_t, float>(x, 0, ImageSize - 1, -1.0f, +1.0f);
+                const float fy = fit<size_t, float>(y, 0, ImageSize - 1, -1.0f, +1.0f);
+                const float dist = sqrt(fx * fx + fy * fy);
+                const float height =
+                    dist < 0.5f
+                        ? 0.5f + sqrt(1.0f - square(dist / 0.5f)) / 2.0f
+                        : 0.5f;
+                const Color4f color(height, height, height, 1.0f);
+                image.set_pixel(x, y, color);
+            }
+        }
+
+        GenericImageFileWriter writer;
+        writer.write("unit tests/outputs/test_imagetools_spherebump.exr", image);
+    }
+
+#endif
+
+#if 0
+
+    TEST_CASE(GenerateSineBumpMap)
+    {
+        const size_t ImageSize = 512;
+
+        Image image(
+            ImageSize,
+            ImageSize,
+            32,
+            32,
+            4,
+            PixelFormatFloat);
+
+        for (size_t y = 0; y < ImageSize; ++y)
+        {
+            for (size_t x = 0; x < ImageSize; ++x)
+            {
+                const float fx = fit<size_t, float>(x, 0, ImageSize - 1, -1.0f, +1.0f);
+                const float height = 0.5f + 0.5f * cos(fx * TwoPi<float>());
+                const Color4f color(height, height, height, 1.0f);
+                image.set_pixel(x, y, color);
+            }
+        }
+
+        GenericImageFileWriter writer;
+        writer.write("unit tests/outputs/test_imagetools_sinebump.exr", image);
     }
 
 #endif

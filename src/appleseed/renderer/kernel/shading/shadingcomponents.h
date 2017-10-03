@@ -35,46 +35,43 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
 
+// Forward declarations.
+namespace renderer    { class DirectShadingComponents; }
+
 namespace renderer
 {
 
 class ShadingComponents
 {
   public:
+    // Direct components.
     Spectrum m_beauty;
     Spectrum m_diffuse;
     Spectrum m_glossy;
     Spectrum m_volume;
     Spectrum m_emission;
 
+    // Indirect components.
+    Spectrum m_indirect_diffuse;
+    Spectrum m_indirect_glossy;
+    Spectrum m_indirect_volume;
+
     // Constructor. Clears all components to 0.
     ShadingComponents();
-
-    void set(const float val);
-
-    void add_to_component(
-        const ScatteringMode::Mode  scattering_mode,
-        const Spectrum&             value);
-
-    void add_to_component(
-        const ScatteringMode::Mode  scattering_mode,
-        const ShadingComponents&    value);
 
     void add_emission(
         const size_t                path_length,
         const ScatteringMode::Mode  scattering_mode,
         const Spectrum&             value);
-};
 
-ShadingComponents& operator+=(ShadingComponents& lhs, const ShadingComponents& rhs);
+    void add(
+        const size_t                    path_length,
+        const ScatteringMode::Mode      scattering_mode,
+        const DirectShadingComponents&  value);
+};
 
 ShadingComponents& operator*=(ShadingComponents& lhs, const float rhs);
 ShadingComponents& operator/=(ShadingComponents& lhs, const float rhs);
-
-ShadingComponents& operator*=(ShadingComponents& lhs, const Spectrum& rhs);
-
-void madd(ShadingComponents& a, const ShadingComponents& b, const float c);
-void madd(ShadingComponents& a, const ShadingComponents& b, const Spectrum& c);
 
 }       // namespace renderer
 

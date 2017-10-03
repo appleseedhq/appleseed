@@ -77,9 +77,6 @@ class APPLESEED_DLLSYMBOL Material
     // Return a string identifying the model of this material.
     virtual const char* get_model() const = 0;
 
-    // Return whether surface shaders should be invoked for fully transparent shading points.
-    bool shade_alpha_cutouts() const;
-
     // Return true if this material has an alpha map.
     bool has_alpha_map() const;
 
@@ -155,7 +152,6 @@ class APPLESEED_DLLSYMBOL Material
     const RenderData& get_render_data() const;
 
   protected:
-    bool        m_shade_alpha_cutouts;
     bool        m_has_render_data;
     RenderData  m_render_data;
 
@@ -173,11 +169,6 @@ class APPLESEED_DLLSYMBOL Material
 //
 // Material class implementation.
 //
-
-inline bool Material::shade_alpha_cutouts() const
-{
-    return m_shade_alpha_cutouts;
-}
 
 inline const Material::RenderData& Material::get_render_data() const
 {

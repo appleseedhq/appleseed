@@ -33,7 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
@@ -76,8 +76,8 @@ namespace
     {
       public:
         BSDFMixImpl(
-            const char*             name,
-            const ParamArray&       params)
+            const char*                 name,
+            const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::All, params)
         {
             m_inputs.declare("weight0", InputFormatFloat);
@@ -95,10 +95,10 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&          project,
-            const BaseGroup*        parent,
-            OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch) override
+            const Project&              project,
+            const BaseGroup*            parent,
+            OnFrameBeginRecorder&       recorder,
+            IAbortSwitch*               abort_switch) override
         {
             if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
@@ -115,8 +115,8 @@ namespace
         }
 
         virtual void* evaluate_inputs(
-            const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point) const override
+            const ShadingContext&       shading_context,
+            const ShadingPoint&         shading_point) const override
         {
             assert(m_bsdf[0] && m_bsdf[1]);
 
@@ -133,12 +133,12 @@ namespace
         }
 
         virtual void sample(
-            SamplingContext&        sampling_context,
-            const void*             data,
-            const bool              adjoint,
-            const bool              cosine_mult,
-            const int               modes,
-            BSDFSample&             sample) const override
+            SamplingContext&            sampling_context,
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const int                   modes,
+            BSDFSample&                 sample) const override
         {
             assert(m_bsdf[0] && m_bsdf[1]);
 
@@ -165,15 +165,15 @@ namespace
         }
 
         virtual float evaluate(
-            const void*             data,
-            const bool              adjoint,
-            const bool              cosine_mult,
-            const Vector3f&         geometric_normal,
-            const Basis3f&          shading_basis,
-            const Vector3f&         outgoing,
-            const Vector3f&         incoming,
-            const int               modes,
-            ShadingComponents&      value) const override
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes,
+            DirectShadingComponents&    value) const override
         {
             assert(m_bsdf[0] && m_bsdf[1]);
 
@@ -194,7 +194,7 @@ namespace
             w1 *= rcp_total_weight;
 
             // Evaluate the first BSDF.
-            ShadingComponents bsdf0_value;
+            DirectShadingComponents bsdf0_value;
             const float bsdf0_prob =
                 w0 > 0.0f
                     ? m_bsdf[0]->evaluate(
@@ -210,7 +210,7 @@ namespace
                     : 0.0f;
 
             // Evaluate the second BSDF.
-            ShadingComponents bsdf1_value;
+            DirectShadingComponents bsdf1_value;
             const float bsdf1_prob =
                 w1 > 0.0f
                     ? m_bsdf[1]->evaluate(
@@ -226,7 +226,6 @@ namespace
                     : 0.0f;
 
             // Blend BSDF values.
-            value.set(0.0f);
             if (bsdf0_prob > 0.0f) madd(value, bsdf0_value, w0);
             if (bsdf1_prob > 0.0f) madd(value, bsdf1_value, w1);
 
@@ -235,12 +234,12 @@ namespace
         }
 
         virtual float evaluate_pdf(
-            const void*             data,
-            const Vector3f&         geometric_normal,
-            const Basis3f&          shading_basis,
-            const Vector3f&         outgoing,
-            const Vector3f&         incoming,
-            const int               modes) const override
+            const void*                 data,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes) const override
         {
             assert(m_bsdf[0] && m_bsdf[1]);
 

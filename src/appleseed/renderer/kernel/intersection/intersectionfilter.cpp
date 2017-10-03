@@ -160,11 +160,6 @@ void IntersectionFilter::do_update(
     IntersectionFilter::AlphaMask*& mask,
     uint64&                         signature)
 {
-    // Intersection filters would prevent shading fully transparent shading points,
-    // so don't create one if shading fully transparent shading points is enabled.
-    if (entity.shade_alpha_cutouts())
-        delete_and_clear(mask);
-
     // Use the uncached version of get_alpha_map() since at this point
     // on_frame_begin() hasn't been called on the materials, when
     // intersection filters are updated on existing triangle trees

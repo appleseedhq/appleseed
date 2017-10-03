@@ -85,7 +85,8 @@ namespace
 
     // Solid angle sustained by the Sun, as seen from Earth (in steradians).
     // Reference: http://en.wikipedia.org/wiki/Solid_angle#Sun_and_Moon
-    const float SunSolidAngle = 6.87e-5f;
+
+    const float SunRadius = 0.6957; // millions of km
 
     class SunLight
       : public Light
@@ -100,6 +101,7 @@ namespace
             m_inputs.declare("turbidity", InputFormatFloat);
             m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("size_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("distance", InputFormatFloat, "149.6");
         }
 
         virtual void release() override
@@ -124,6 +126,22 @@ namespace
             // Evaluate uniform inputs.
             m_inputs.evaluate_uniforms(&m_values);
 
+            Source* distance_src = get_inputs().source("distance");
+            assert(distance_src != nullptr);
+            if (distance_src->is_uniform())
+                distance_src->evaluate_uniform(m_values.m_distance);
+            else
+            {
+                RENDERER_LOG_WARNING(
+                    "distance between sun and scene \"%s\" is not uniform, using default value of 149.6 million km.",
+                    get_path().c_str());
+                m_values.m_distance = 149.6;
+            }
+
+            // Compute SunSolidAngle that depends on distance between Sun and scene.
+            // angular_diameter = 2 * arctan(sun_radius / (distance))
+            m_sun_solid_angle = TwoPi<float>() * (1 - cos(atan(SunRadius / m_values.m_distance)));
+
             // If the Sun light is bound to an environment EDF, let it override the Sun's direction and turbidity.
             const EnvironmentEDF* env_edf = dynamic_cast<EnvironmentEDF*>(m_inputs.get_entity("environment_edf"));
             if (env_edf)
@@ -147,6 +165,7 @@ namespace
             m_scene_center = Vector3d(scene_data.m_center);
             m_scene_radius = scene_data.m_radius;
             m_safe_scene_diameter = scene_data.m_safe_diameter;
+            m_sun_solid_angle = 6.87e-5f;
 
             precompute_constants();
 
@@ -248,19 +267,21 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            float       m_turbidity;                // atmosphere turbidity
-            float       m_radiance_multiplier;      // emitted radiance multiplier
-            float       m_size_multiplier;          // sun size multiplier
+            float           m_turbidity;                // atmosphere turbidity
+            float           m_radiance_multiplier;      // emitted radiance multiplier
+            float           m_size_multiplier;          // sun size multiplier
+            float           m_distance;                 // distance between Sun and scene
         };
 
-        Vector3d        m_scene_center;             // world space
-        double          m_scene_radius;             // world space
-        double          m_safe_scene_diameter;      // world space
+        Vector3d            m_scene_center;             // world space
+        double              m_scene_radius;             // world space
+        double              m_safe_scene_diameter;      // world space
+        float               m_sun_solid_angle;
 
-        InputValues     m_values;
+        InputValues         m_values;
 
-        Spectrum        m_k1;
-        Spectrum        m_k2;
+        RegularSpectrum31f  m_k1;
+        RegularSpectrum31f  m_k2;
 
         void apply_env_edf_overrides(const EnvironmentEDF* env_edf)
         {
@@ -412,12 +433,15 @@ namespace
             }
         }
 
-        static double compute_sun_radius(const double distance)
+        static double compute_sun_radius(const double distance, const double scene_diameter)
         {
-            // angular diameter = sun diameter / distance -> sun diameter = angular diameter * distance
-            // sun diameter = 0.009301 radians * distance
-            // sun radius = 0.0046505 radians * distance
-            return 0.0046505 * distance;
+            // sun diameter = 1.3914
+            // angular_diameter = 2 * arctan(sun_diameter / (2 * distance))
+            // tan(angular_diameter / 2) * distance = sun_radius
+            // tan(angular_diameter / 2) * scene_diameter = virtual_sun_radius
+            // -> virtual_sun_radius = sun_radius * scene_diameter / distance
+
+            return SunRadius * scene_diameter / distance;
         }
 
         void sample_disk(
@@ -451,7 +475,7 @@ namespace
                 radiance);
 
             value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
-            value *= SunSolidAngle;
+            value *= m_sun_solid_angle;
         }
 
         void sample_sun_surface(
@@ -467,10 +491,10 @@ namespace
 
             const Basis3d basis(outgoing);
             const Vector2d p = sample_disk_uniform(s);
-            const double sun_radius = compute_sun_radius(m_scene_radius) * m_values.m_size_multiplier;
+            const double sun_radius = compute_sun_radius(m_values.m_distance, m_safe_scene_diameter) * m_values.m_size_multiplier;
 
             position =
-                  m_scene_center
+                  target_point
                 - m_safe_scene_diameter * basis.get_normal()
                 + sun_radius * p[0] * basis.get_tangent_u()
                 + sun_radius * p[1] * basis.get_tangent_v();
@@ -485,7 +509,7 @@ namespace
                 radiance);
 
             value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
-            value *= SunSolidAngle;
+            value *= m_sun_solid_angle;
 
             //
             // The sun is represented by a disk of finite radius. The sun's illumination
@@ -582,6 +606,23 @@ DictionaryArray SunLightFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("help", "The size multiplier allows to make the sun bigger or smaller, hence making it cast softer or harder shadows"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "distance")
+            .insert("label", "Distance")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "500.0")
+                    .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", "149.6")
+            .insert("help", "Distance between Sun and scene (millions of km)"));
 
     add_common_input_metadata(metadata);
 

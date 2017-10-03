@@ -54,14 +54,13 @@ namespace
 {
     auto_release_ptr<AOV> create_aov(
         const string&      model,
-        const string&      name,
         const bpy::dict&   params)
     {
         AOVFactoryRegistrar factories;
         const IAOVFactory* factory = factories.lookup(model.c_str());
 
         if (factory)
-            return factory->create(name.c_str(), bpy_dict_to_param_array(params));
+            return factory->create(bpy_dict_to_param_array(params));
         else
         {
             PyErr_SetString(PyExc_RuntimeError, "AOV model not found");

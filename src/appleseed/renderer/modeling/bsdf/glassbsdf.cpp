@@ -31,8 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
-#include "renderer/modeling/bsdf/backfacingpolicy.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
@@ -84,14 +83,13 @@ namespace
 
     const char* Model = "glass_bsdf";
 
-    template <typename BackfacingPolicy>
     class GlassBSDFImpl
       : public BSDF
     {
       public:
         GlassBSDFImpl(
-            const char*             name,
-            const ParamArray&       params)
+            const char*                 name,
+            const ParamArray&           params)
           : BSDF(name, AllBSDFTypes, ScatteringMode::Glossy, params)
         {
             m_inputs.declare("surface_transmittance", InputFormatSpectralReflectance);
@@ -125,10 +123,10 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&          project,
-            const BaseGroup*        parent,
-            OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch) override
+            const Project&              project,
+            const BaseGroup*            parent,
+            OnFrameBeginRecorder&       recorder,
+            IAbortSwitch*               abort_switch) override
         {
             if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
@@ -167,9 +165,9 @@ namespace
         }
 
         virtual void prepare_inputs(
-            Arena&                  arena,
-            const ShadingPoint&     shading_point,
-            void*                   data) const override
+            Arena&                      arena,
+            const ShadingPoint&         shading_point,
+            void*                       data) const override
         {
             InputValues* values = static_cast<InputValues*>(data);
 
@@ -202,18 +200,22 @@ namespace
         }
 
         virtual void sample(
-            SamplingContext&        sampling_context,
-            const void*             data,
-            const bool              adjoint,
-            const bool              cosine_mult,
-            const int               modes,
-            BSDFSample&             sample) const override
+            SamplingContext&            sampling_context,
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const int                   modes,
+            BSDFSample&                 sample) const override
         {
             if (!ScatteringMode::has_glossy(modes))
                 return;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            const BackfacingPolicy backfacing_policy(sample.m_shading_basis, values->m_precomputed.m_backfacing);
+
+            const Basis3f basis(
+                values->m_precomputed.m_backfacing
+                    ? Basis3f(-sample.m_shading_basis.get_normal(), sample.m_shading_basis.get_tangent_u(), -sample.m_shading_basis.get_tangent_v())
+                    : sample.m_shading_basis);
 
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
@@ -223,7 +225,7 @@ namespace
                 alpha_y);
             const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
-            const Vector3f wo = backfacing_policy.transform_to_local(sample.m_outgoing.get_value());
+            const Vector3f wo = basis.transform_to_local(sample.m_outgoing.get_value());
 
             // Compute the microfacet normal by sampling the MDF.
             sampling_context.split_in_place(4, 1);
@@ -308,7 +310,7 @@ namespace
             sample.m_value.m_beauty = sample.m_value.m_glossy;
 
             sample.m_mode = ScatteringMode::Glossy;
-            sample.m_incoming = Dual3f(backfacing_policy.transform_to_parent(wi));
+            sample.m_incoming = Dual3f(basis.transform_to_parent(wi));
 
             if (is_refraction)
                 sample.compute_transmitted_differentials(values->m_precomputed.m_eta);
@@ -316,23 +318,25 @@ namespace
         }
 
         virtual float evaluate(
-            const void*             data,
-            const bool              adjoint,
-            const bool              cosine_mult,
-            const Vector3f&         geometric_normal,
-            const Basis3f&          shading_basis,
-            const Vector3f&         outgoing,
-            const Vector3f&         incoming,
-            const int               modes,
-            ShadingComponents&      value) const override
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes,
+            DirectShadingComponents&    value) const override
         {
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            const BackfacingPolicy backfacing_policy(shading_basis, values->m_precomputed.m_backfacing);
 
-            value.set(0.0f);
+            const Basis3f basis(
+                values->m_precomputed.m_backfacing
+                    ? Basis3f(-shading_basis.get_normal(), shading_basis.get_tangent_u(), -shading_basis.get_tangent_v())
+                    : shading_basis);
 
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
@@ -342,8 +346,8 @@ namespace
                 alpha_y);
             const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
-            const Vector3f wi = backfacing_policy.transform_to_local(incoming);
-            const Vector3f wo = backfacing_policy.transform_to_local(outgoing);
+            const Vector3f wi = basis.transform_to_local(incoming);
+            const Vector3f wo = basis.transform_to_local(outgoing);
 
             float pdf;
 
@@ -399,18 +403,22 @@ namespace
         }
 
         virtual float evaluate_pdf(
-            const void*             data,
-            const Vector3f&         geometric_normal,
-            const Basis3f&          shading_basis,
-            const Vector3f&         outgoing,
-            const Vector3f&         incoming,
-            const int               modes) const override
+            const void*                 data,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes) const override
         {
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            const BackfacingPolicy backfacing_policy(shading_basis, values->m_precomputed.m_backfacing);
+
+            const Basis3f basis(
+                values->m_precomputed.m_backfacing
+                    ? Basis3f(-shading_basis.get_normal(), shading_basis.get_tangent_u(), -shading_basis.get_tangent_v())
+                    : shading_basis);
 
             float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
@@ -420,8 +428,8 @@ namespace
                 alpha_y);
             const float gamma = highlight_falloff_to_gama(values->m_highlight_falloff);
 
-            const Vector3f wi = backfacing_policy.transform_to_local(incoming);
-            const Vector3f wo = backfacing_policy.transform_to_local(outgoing);
+            const Vector3f wi = basis.transform_to_local(incoming);
+            const Vector3f wo = basis.transform_to_local(outgoing);
 
             if (wi.y * wo.y >= 0.0f)
             {
@@ -448,16 +456,16 @@ namespace
         }
 
         virtual float sample_ior(
-            SamplingContext&        sampling_context,
-            const void*             data) const override
+            SamplingContext&            sampling_context,
+            const void*                 data) const override
         {
             return static_cast<const InputValues*>(data)->m_ior;
         }
 
         virtual void compute_absorption(
-            const void*             data,
-            const float             distance,
-            Spectrum&               absorption) const override
+            const void*                 data,
+            const float                 distance,
+            Spectrum&                   absorption) const override
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -670,8 +678,7 @@ namespace
         }
     };
 
-    typedef BSDFWrapper<GlassBSDFImpl<FlipBackfacingNormalsPolicy>> AppleseedGlassBSDF;
-    typedef BSDFWrapper<GlassBSDFImpl<UseOriginalNormalsPolicy>> OSLGlassBSDF;
+    typedef BSDFWrapper<GlassBSDFImpl> GlassBSDF;
 }
 
 
@@ -939,21 +946,14 @@ auto_release_ptr<BSDF> GlassBSDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<BSDF>(new AppleseedGlassBSDF(name, params));
-}
-
-auto_release_ptr<BSDF> GlassBSDFFactory::create_osl(
-    const char*         name,
-    const ParamArray&   params) const
-{
-    return auto_release_ptr<BSDF>(new OSLGlassBSDF(name, params));
+    return auto_release_ptr<BSDF>(new GlassBSDF(name, params));
 }
 
 auto_release_ptr<BSDF> GlassBSDFFactory::static_create(
     const char*         name,
     const ParamArray&   params)
 {
-    return auto_release_ptr<BSDF>(new AppleseedGlassBSDF(name, params));
+    return auto_release_ptr<BSDF>(new GlassBSDF(name, params));
 }
 
 }   // namespace renderer

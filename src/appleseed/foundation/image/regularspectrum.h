@@ -181,8 +181,10 @@ typedef RegularSpectrum<double, 31> RegularSpectrum31d;
 template <typename T, size_t N>
 inline RegularSpectrum<T, N>::RegularSpectrum()
 {
+#ifdef APPLESEED_USE_SSE
     for (size_t i = N; i < StoredSamples; ++i)
         m_samples[i] = T(0.0);
+#endif
 }
 
 template <typename T, size_t N>
@@ -190,8 +192,10 @@ inline RegularSpectrum<T, N>::RegularSpectrum(const ValueType val)
 {
     set(val);
 
+#ifdef APPLESEED_USE_SSE
     for (size_t i = N; i < StoredSamples; ++i)
         m_samples[i] = T(0.0);
+#endif
 }
 
 template <typename T, size_t N>
@@ -201,8 +205,10 @@ inline RegularSpectrum<T, N>::RegularSpectrum(const RegularSpectrum<U, N>& rhs)
     for (size_t i = 0; i < N; ++i)
         m_samples[i] = static_cast<ValueType>(rhs[i]);
 
+#ifdef APPLESEED_USE_SSE
     for (size_t i = N; i < StoredSamples; ++i)
         m_samples[i] = T(0.0);
+#endif
 }
 
 template <typename T, size_t N>

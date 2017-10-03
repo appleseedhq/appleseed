@@ -97,6 +97,7 @@
 // Standard headers.
 #include <algorithm>
 #include <cassert>
+#include <cstdlib>
 
 using namespace appleseed::shared;
 using namespace foundation;
@@ -124,6 +125,8 @@ MainWindow::MainWindow(QWidget* parent)
   , m_attribute_editor(0)
   , m_project_file_watcher(0)
 {
+    initialize_ocio();
+
     m_ui->setupUi(this);
 
     statusBar()->addWidget(&m_status_bar);
@@ -917,7 +920,8 @@ void MainWindow::add_render_widget(const QString& label)
     RenderTab* render_tab =
         new RenderTab(
             *m_project_explorer,
-            *m_project_manager.get_project());
+            *m_project_manager.get_project(),
+            m_ocio_config);
     connect(
         render_tab, SIGNAL(signal_render_widget_context_menu(const QPoint&)),
         SLOT(slot_render_widget_context_menu(const QPoint&)));
@@ -1430,6 +1434,42 @@ QString MainWindow::get_filter_string(const int filter)
         filters << "All Files (*.*)";
 
     return filters.join(";;");
+}
+
+void MainWindow::initialize_ocio()
+{
+    // Try first a user specified OCIO config.
+    if (getenv("OCIO"))
+    {
+        try
+        {
+            m_ocio_config = OCIO::GetCurrentConfig();
+            RENDERER_LOG_INFO("using ocio configuration: %s", getenv("OCIO"));
+            return;
+        }
+        catch (const OCIO::Exception&)
+        {
+        }
+    }
+
+    // Try the bundled default OCIO config.
+    const bf::path root_path(Application::get_root_path());
+    const string default_ocio_config = (root_path / "ocio" / "config.ocio").string();
+
+    try
+    {
+        m_ocio_config = OCIO::Config::CreateFromFile(default_ocio_config.c_str());
+        RENDERER_LOG_INFO("using ocio configuration: %s", default_ocio_config.c_str());
+        OCIO::SetCurrentConfig(m_ocio_config);
+        return;
+    }
+    catch (const OCIO::Exception&)
+    {
+    }
+
+    // Default to an empty OCIO config if everything else fails.
+    m_ocio_config = OCIO::GetCurrentConfig();
+    RENDERER_LOG_ERROR("Could not initialize OCIO config.");
 }
 
 void MainWindow::slot_project_modified()

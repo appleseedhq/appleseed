@@ -853,6 +853,7 @@ set (renderer_api_sources
     renderer/api/rendering.h
     renderer/api/scene.h
     renderer/api/shadergroup.h
+    renderer/api/source.h
     renderer/api/surfaceshader.h
     renderer/api/texture.h
     renderer/api/trace.h
@@ -1162,6 +1163,8 @@ set (renderer_kernel_shading_sources
     renderer/kernel/shading/ambientocclusion.h
     renderer/kernel/shading/closures.cpp
     renderer/kernel/shading/closures.h
+    renderer/kernel/shading/directshadingcomponents.cpp
+    renderer/kernel/shading/directshadingcomponents.h
     renderer/kernel/shading/fastambientocclusion.cpp
     renderer/kernel/shading/fastambientocclusion.h
     renderer/kernel/shading/oslshadercompiler.cpp
@@ -1311,7 +1314,6 @@ source_group ("renderer\\modeling\\aov" FILES
 set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/ashikhminbrdf.cpp
     renderer/modeling/bsdf/ashikhminbrdf.h
-    renderer/modeling/bsdf/backfacingpolicy.h
     renderer/modeling/bsdf/blinnbrdf.cpp
     renderer/modeling/bsdf/blinnbrdf.h
     renderer/modeling/bsdf/bsdf.cpp

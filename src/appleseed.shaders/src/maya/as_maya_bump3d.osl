@@ -94,8 +94,6 @@ shader as_maya_bump3d
 
         normal surface_normal = normalize(in_normalCamera);
 
-        bump_offset /= length(transform("world", surface_normal));
-
         out_outNormal = normalize(calculatenormal(
             in_pointCamera + (vector) surface_normal * bump_offset));
     }

@@ -61,4 +61,30 @@ void AOV::release()
     delete this;
 }
 
+
+//
+// ColorAOV class implementation.
+//
+
+ColorAOV::ColorAOV(const char* name, const ParamArray& params)
+  : AOV(name, params)
+{
+}
+
+size_t ColorAOV::get_channel_count() const
+{
+    return 3;
+}
+
+const char** ColorAOV::get_channel_names() const
+{
+    static const char* ChannelNames[] = {"R", "G", "B"};
+    return ChannelNames;
+}
+
+bool ColorAOV::has_color_data() const
+{
+    return true;
+}
+
 }   // namespace renderer

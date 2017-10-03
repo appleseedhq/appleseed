@@ -32,7 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/backwardlightsampler.h"
 #include "renderer/kernel/lighting/directlightingintegrator.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/light/light.h"
@@ -198,7 +198,7 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution(
     const Spectrum&             extinction_coef,
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
-    ShadingComponents&          radiance,
+    DirectShadingComponents&    radiance,
     const bool                  sample_phasefunction) const
 {
     assert (light_sample != nullptr);
@@ -249,7 +249,7 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution(
         const float mis_weight_distance = mis(
             mis_heuristic, exponential_prob, equiangular_prob);
 
-        ShadingComponents inscattered;
+        DirectShadingComponents inscattered;
         take_single_direction_sample(
             sample_phasefunction,
             sampling_context,
@@ -284,7 +284,7 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution(
         const float exponential_prob = evaluate_exponential_sample(
             equiangular_sample, m_volume_ray, extinction_coef[channel]);
 
-        ShadingComponents inscattered;
+        DirectShadingComponents inscattered;
         take_single_direction_sample(
             sample_phasefunction,
             sampling_context,
@@ -314,7 +314,7 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution_exponenti
     const Spectrum&             extinction_coef,
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
-    ShadingComponents&          radiance,
+    DirectShadingComponents&    radiance,
     const bool                  sample_phasefunction) const
 {
     // Sample channel uniformly at random.
@@ -344,7 +344,7 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution_exponenti
         foundation::square(exponential_prob) /
         mis_weights_sum;
 
-    ShadingComponents inscattered;
+    DirectShadingComponents inscattered;
     take_single_direction_sample(
         sample_phasefunction,
         sampling_context,
@@ -371,7 +371,7 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution_exponenti
 void VolumeLightingIntegrator::compute_radiance_combined_sampling(
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
-    ShadingComponents&          radiance) const
+    DirectShadingComponents&    radiance) const
 {
     radiance.set(0.0f);
 
@@ -449,7 +449,7 @@ void VolumeLightingIntegrator::compute_radiance_combined_sampling(
 void VolumeLightingIntegrator::compute_radiance_exponential_sampling(
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
-    ShadingComponents&          radiance) const
+    DirectShadingComponents&    radiance) const
 {
     radiance.set(0.0f);
 
@@ -519,7 +519,7 @@ void VolumeLightingIntegrator::take_single_direction_sample(
     const LightSample*          light_sample,
     const float                 distance_sample,
     const MISHeuristic          mis_heuristic,
-    ShadingComponents&          radiance) const
+    DirectShadingComponents&    radiance) const
 {
     radiance.set(0.0f);
 

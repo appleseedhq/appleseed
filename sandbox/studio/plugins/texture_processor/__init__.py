@@ -7,15 +7,18 @@ from appleseed.textureconverter import *
 import os
 import sys
 import logging
+
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
+
 def register():
-    menu = ui.find_or_create_menu("Utils")
+    menu = ui.find_or_create_menu("Plugins")
 
     act = QtWidgets.QAction("Convert textures", menu)
     act.triggered.connect(convert_all_textures_to_tx)
 
     menu.addAction(act)
+
 
 def convert_all_textures_to_tx():
     def _find_maketx():
@@ -28,6 +31,10 @@ def convert_all_textures_to_tx():
             raise Exception('maketx binary is not found')
 
     project = studio.current_project()
+
+    if project is None:
+        return
+
     scene = project.get_scene()
     textures = get_textures(scene)
 
@@ -56,7 +63,9 @@ def convert_all_textures_to_tx():
 
             texture_parameters['filename'] = new_texture_path
             texture.set_parameters(texture_parameters)
+            studio.set_project_dirty()
             logging.info('{} converted to {}'.format(texture_path, new_texture_path))
+
 
 def get_textures(container):
     assert isinstance(container, asr.BaseGroup)
@@ -68,6 +77,7 @@ def get_textures(container):
         textures += get_textures(assemblies[key])
 
     return textures
+
 
 def get_full_path(texture_path, project):
     if os.path.isabs(texture_path):

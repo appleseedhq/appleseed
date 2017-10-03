@@ -63,7 +63,7 @@ class AOVAccumulator
     virtual ~AOVAccumulator();
 
     // Delete this instance.
-    virtual void release();
+    void release();
 
     // Reset the accumulator.
     virtual void reset() = 0;
@@ -88,6 +88,31 @@ class AOVAccumulator
     explicit AOVAccumulator(const size_t index);
 
     const size_t m_index;
+};
+
+
+//
+// Color AOV accumulator base class.
+//
+
+class ColorAOVAccumulator
+  : public AOVAccumulator
+{
+  public:
+    // Destructor.
+    ~ColorAOVAccumulator() override;
+
+    // Reset the accumulator.
+    void reset() override;
+
+    // Flush the result.
+    void flush(ShadingResult& result) override;
+
+  protected:
+    // Constructor.
+    explicit ColorAOVAccumulator(const size_t index);
+
+    foundation::Color3f m_color;
 };
 
 
@@ -155,6 +180,9 @@ class AOVAccumulatorContainer
 {
   public:
     // Constructor.
+    AOVAccumulatorContainer();
+
+    // Constructor.
     explicit AOVAccumulatorContainer(const AOVContainer& aovs);
 
     // Destructor.
@@ -183,6 +211,7 @@ class AOVAccumulatorContainer
     AlphaAOVAccumulator& alpha();
 
   private:
+    void init();
     bool insert(foundation::auto_release_ptr<AOVAccumulator> aov_accum);
 
     enum { MaxAovAccumulators = MaxAOVCount + 2 };  // MaxAOVCount + Beauty + Alpha

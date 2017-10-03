@@ -43,14 +43,6 @@ void IMaterialFactory::add_surface_shader_metadata(DictionaryArray& metadata)
 {
     metadata.push_back(
         Dictionary()
-            .insert("name", "shade_alpha_cutouts")
-            .insert("label", "Shade Alpha Cutouts")
-            .insert("type", "boolean")
-            .insert("use", "optional")
-            .insert("default", "false"));
-
-    metadata.push_back(
-        Dictionary()
             .insert("name", "surface_shader")
             .insert("label", "Surface Shader")
             .insert("type", "entity")
@@ -70,6 +62,14 @@ void IMaterialFactory::add_alpha_map_metadata(DictionaryArray& metadata)
                 Dictionary()
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
             .insert("use", "optional"));
 }
 
@@ -130,8 +130,10 @@ void IMaterialFactory::add_displacement_metadata(DictionaryArray& metadata)
                     .insert("value", "10.0")
                     .insert("type", "soft"))
             .insert("use", "optional")
-            .insert("default", "2.0")
-            .insert("visible_if", Dictionary()));   // invisible
+            .insert("default", "0.5")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("displacement_method", "bump")));
 
     metadata.push_back(
         Dictionary()

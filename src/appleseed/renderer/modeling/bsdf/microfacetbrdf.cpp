@@ -33,7 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
-#include "renderer/kernel/shading/shadingcomponents.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
@@ -111,8 +111,8 @@ namespace
     {
       public:
         MicrofacetBRDFImpl(
-            const char*             name,
-            const ParamArray&       params)
+            const char*                 name,
+            const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Glossy, params)
         {
             m_inputs.declare("glossiness", InputFormatFloat);
@@ -133,10 +133,10 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&          project,
-            const BaseGroup*        parent,
-            OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch) override
+            const Project&              project,
+            const BaseGroup*            parent,
+            OnFrameBeginRecorder&       recorder,
+            IAbortSwitch*               abort_switch) override
         {
             if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
@@ -161,12 +161,12 @@ namespace
         }
 
         virtual void sample(
-            SamplingContext&        sampling_context,
-            const void*             data,
-            const bool              adjoint,
-            const bool              cosine_mult,
-            const int               modes,
-            BSDFSample&             sample) const override
+            SamplingContext&            sampling_context,
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const int                   modes,
+            BSDFSample&                 sample) const override
         {
             if (!ScatteringMode::has_glossy(modes))
                 return;
@@ -253,15 +253,15 @@ namespace
         }
 
         virtual float evaluate(
-            const void*             data,
-            const bool              adjoint,
-            const bool              cosine_mult,
-            const Vector3f&         geometric_normal,
-            const Basis3f&          shading_basis,
-            const Vector3f&         outgoing,
-            const Vector3f&         incoming,
-            const int               modes,
-            ShadingComponents&      value) const override
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes,
+            DirectShadingComponents&    value) const override
         {
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
@@ -276,7 +276,6 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
             const float glossiness = values->m_glossiness * values->m_glossiness_multiplier;
 
-            value.set(0.0f);
             float pdf = 0.0f;
 
             switch (m_mdf)
@@ -366,12 +365,12 @@ namespace
         }
 
         virtual float evaluate_pdf(
-            const void*             data,
-            const Vector3f&         geometric_normal,
-            const Basis3f&          shading_basis,
-            const Vector3f&         outgoing,
-            const Vector3f&         incoming,
-            const int               modes) const override
+            const void*                 data,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes) const override
         {
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
