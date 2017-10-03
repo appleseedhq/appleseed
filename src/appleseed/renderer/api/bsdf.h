@@ -45,7 +45,6 @@
 #include "renderer/modeling/bsdf/kelemenbrdf.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
 #include "renderer/modeling/bsdf/metalbrdf.h"
-#include "renderer/modeling/bsdf/microfacetbrdf.h"
 #include "renderer/modeling/bsdf/nullbsdf.h"
 #include "renderer/modeling/bsdf/orennayarbrdf.h"
 #include "renderer/modeling/bsdf/sheenbrdf.h"
