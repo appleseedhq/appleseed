@@ -1540,6 +1540,51 @@ namespace
         }
     };
 
+    //
+    // Update from revision 20 to revision 21.
+    //
+
+    class UpdateFromRevision_20
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_20(Project& project)
+            : Updater(project, 20)
+        {
+        }
+
+        virtual void update() override
+        {
+            if (Scene* scene = m_project.get_scene())
+                update_physical_surface_shader_inputs(scene->assemblies());
+        }
+
+      private:
+        static void update_physical_surface_shader_inputs(AssemblyContainer& assemblies)
+        {
+            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            {
+                update_physical_surface_shader_inputs(*i);
+                update_physical_surface_shader_inputs(i->assemblies());
+            }
+        }
+
+        static void update_physical_surface_shader_inputs(Assembly& assembly)
+        {
+            for (each<SurfaceShaderContainer> i = assembly.surface_shaders(); i; ++i)
+                update_physical_surface_shader_inputs(*i);
+        }
+
+        static void update_physical_surface_shader_inputs(SurfaceShader& surface_shader)
+        {
+            if (strcmp(surface_shader.get_model(), PhysicalSurfaceShaderFactory().get_model()) == 0)
+            {
+                ParamArray& params = surface_shader.get_parameters();
+                params.strings().remove("color_multiplier");
+                params.strings().remove("alpha_multiplier");
+            }
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(
@@ -1592,6 +1637,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(17);
       CASE_UPDATE_FROM_REVISION(18);
       CASE_UPDATE_FROM_REVISION(19);
+      CASE_UPDATE_FROM_REVISION(20);
 
       case ProjectFormatRevision:
         // Project is up-to-date.

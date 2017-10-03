@@ -47,6 +47,7 @@ namespace renderer      { class ParamArray; }
 namespace renderer      { class PixelContext; }
 namespace renderer      { class Project; }
 namespace renderer      { class ShadingContext; }
+namespace renderer      { class ShadingResult; }
 
 namespace renderer
 {
@@ -75,7 +76,8 @@ class ShadingEngine
         const PixelContext&         pixel_context,
         const ShadingContext&       shading_context,
         const ShadingPoint&         shading_point,
-        AOVAccumulatorContainer&    aov_accumulators) const;
+        AOVAccumulatorContainer&    aov_accumulators,
+        ShadingResult&              shading_result) const;
 
   private:
     foundation::auto_release_ptr<SurfaceShader> m_diagnostic_surface_shader;
@@ -87,14 +89,16 @@ class ShadingEngine
         const PixelContext&         pixel_context,
         const ShadingContext&       shading_context,
         const ShadingPoint&         shading_point,
-        AOVAccumulatorContainer&    aov_accumulators) const;
+        AOVAccumulatorContainer&    aov_accumulators,
+        ShadingResult&              shading_result) const;
 
     void shade_environment(
         SamplingContext&            sampling_context,
         const PixelContext&         pixel_context,
         const ShadingContext&       shading_context,
         const ShadingPoint&         shading_point,
-        AOVAccumulatorContainer&    aov_accumulators) const;
+        AOVAccumulatorContainer&    aov_accumulators,
+        ShadingResult&              shading_result) const;
 };
 
 
@@ -107,7 +111,8 @@ inline void ShadingEngine::shade(
     const PixelContext&         pixel_context,
     const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point,
-    AOVAccumulatorContainer&    aov_accumulators) const
+    AOVAccumulatorContainer&    aov_accumulators,
+    ShadingResult&              shading_result) const
 {
     if (shading_point.hit_surface())
     {
@@ -117,7 +122,8 @@ inline void ShadingEngine::shade(
                 pixel_context,
                 shading_context,
                 shading_point,
-                aov_accumulators);
+                aov_accumulators,
+                shading_result);
     }
     else
     {
@@ -127,7 +133,8 @@ inline void ShadingEngine::shade(
                 pixel_context,
                 shading_context,
                 shading_point,
-                aov_accumulators);
+                aov_accumulators,
+                shading_result);
     }
 }
 

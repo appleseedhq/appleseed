@@ -31,12 +31,17 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovaccumulator.h"
+#include "renderer/kernel/aov/imagestack.h"
+#include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
+#include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
+#include "foundation/image/image.h"
+#include "foundation/image/tile.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -58,34 +63,52 @@ namespace
     //
 
     class DepthAOVAccumulator
-      : public AOVAccumulator
+      : public UnfilteredAOVAccumulator
     {
       public:
-        explicit DepthAOVAccumulator(const size_t index)
-          : AOVAccumulator(index)
+        explicit DepthAOVAccumulator(Image& image)
+          : UnfilteredAOVAccumulator(image)
         {
         }
 
-        virtual void reset() override
+        virtual void on_tile_begin(
+            const Frame&                frame,
+            const size_t                tile_x,
+            const size_t                tile_y) override
         {
-            m_depth = numeric_limits<float>::max();
+            UnfilteredAOVAccumulator::on_tile_begin(frame, tile_x, tile_y);
+            get_tile().clear(Vector2f(numeric_limits<float>::max()));
         }
 
         virtual void write(
-            const ShadingPoint&     shading_point,
-            const Camera&           camera) override
+            const PixelContext&         pixel_context,
+            const ShadingPoint&         shading_point,
+            const ShadingComponents&    shading_components,
+            ShadingResult&              shading_result) override
         {
-            if (shading_point.hit_surface())
-                m_depth = static_cast<float>(shading_point.get_distance());
-        }
+            const Vector2i& pi = pixel_context.get_pixel_coords();
 
-        virtual void flush(ShadingResult& result) override
-        {
-            result.m_aovs[m_index] = Color4f(m_depth, m_depth, m_depth, 1.0f);
-        }
+            // Ignore samples outside the tile.
+            if (outside_tile(pi))
+                return;
 
-      private:
-        float m_depth;
+            float* p = reinterpret_cast<float*>(
+                get_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
+
+            const float min_sample_square_distance = p[1];
+            const float sample_square_distance =
+                square_distance_to_pixel_center(pixel_context.get_sample_position());
+
+            if (sample_square_distance < min_sample_square_distance)
+            {
+                const float depth = shading_point.hit_surface()
+                    ? static_cast<float>(shading_point.get_distance())
+                    : numeric_limits<float>::max();
+
+                p[0] = depth;
+                p[1] = sample_square_distance;
+            }
+        }
     };
 
 
@@ -96,11 +119,11 @@ namespace
     const char* Model = "depth_aov";
 
     class DepthAOV
-      : public AOV
+      : public UnfilteredAOV
     {
       public:
         explicit DepthAOV(const ParamArray& params)
-          : AOV("depth", params)
+          : UnfilteredAOV("depth", params)
         {
         }
 
@@ -133,7 +156,7 @@ namespace
         virtual auto_release_ptr<AOVAccumulator> create_accumulator(
             const size_t index) const override
         {
-            return auto_release_ptr<AOVAccumulator>(new DepthAOVAccumulator(index));
+            return auto_release_ptr<AOVAccumulator>(new DepthAOVAccumulator(get_image()));
         }
     };
 }

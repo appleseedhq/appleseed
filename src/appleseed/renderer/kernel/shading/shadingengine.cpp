@@ -35,6 +35,7 @@
 #include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingray.h"
+#include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/input/source.h"
@@ -94,10 +95,11 @@ void ShadingEngine::shade_hit_point(
     const PixelContext&         pixel_context,
     const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point,
-    AOVAccumulatorContainer&    aov_accumulators) const
+    AOVAccumulatorContainer&    aov_accumulators,
+    ShadingResult&              shading_result) const
 {
     // Compute the alpha channel of the main output.
-    aov_accumulators.alpha().set(shading_point.get_alpha());
+    shading_result.m_main.a = shading_point.get_alpha()[0];
 
     // Retrieve the material of the intersected surface.
     const Material* material = shading_point.get_material();
@@ -112,11 +114,11 @@ void ShadingEngine::shade_hit_point(
             *material->get_render_data().m_shader_group,
             shading_point,
             alpha);
-        aov_accumulators.alpha().apply_multiplier(alpha);
+        shading_result.m_main.a *= alpha[0];
     }
 
     // Shade the sample if it isn't fully transparent.
-    if (aov_accumulators.alpha().get()[0] > 0.0f)
+    if (shading_result.m_main.a > 0.0f)
     {
         // Use the diagnostic surface shader if there is one.
         const SurfaceShader* surface_shader = m_diagnostic_surface_shader.get();
@@ -126,8 +128,7 @@ void ShadingEngine::shade_hit_point(
             if (material == 0)
             {
                 // The intersected surface has no material: return solid pink.
-                aov_accumulators.beauty().set_to_pink_linear_rgb();
-                aov_accumulators.alpha().set(Alpha(1.0f));
+                shading_result.set_main_to_opaque_pink();
                 return;
             }
 
@@ -137,8 +138,7 @@ void ShadingEngine::shade_hit_point(
             if (surface_shader == 0)
             {
                 // The intersected surface has no surface shader: return solid pink.
-                aov_accumulators.beauty().set_to_pink_linear_rgb();
-                aov_accumulators.alpha().set(Alpha(1.0f));
+                shading_result.set_main_to_opaque_pink();
                 return;
             }
         }
@@ -149,7 +149,8 @@ void ShadingEngine::shade_hit_point(
             pixel_context,
             shading_context,
             shading_point,
-            aov_accumulators);
+            aov_accumulators,
+            shading_result);
     }
 }
 
@@ -158,7 +159,8 @@ void ShadingEngine::shade_environment(
     const PixelContext&         pixel_context,
     const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point,
-    AOVAccumulatorContainer&    aov_accumulators) const
+    AOVAccumulatorContainer&    aov_accumulators,
+    ShadingResult&              shading_result) const
 {
     // Retrieve the environment shader of the scene.
     const EnvironmentShader* environment_shader =
@@ -178,10 +180,16 @@ void ShadingEngine::shade_environment(
             value.m_emission,
             alpha);
 
+        shading_result.m_main.a = alpha[0];
         value.m_beauty = value.m_emission;
-        aov_accumulators.write(value, 1.0f);
-        aov_accumulators.alpha().set(alpha);
+        aov_accumulators.write(
+            pixel_context,
+            shading_point,
+            value,
+            shading_result);
     }
+    else
+        shading_result.m_main.set(0.0f);
 }
 
 }   // namespace renderer

@@ -33,7 +33,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
@@ -199,8 +198,6 @@ namespace
                 shading_point_ptr = &shading_points[shading_point_index];
                 shading_point_index = 1 - shading_point_index;
 
-                aov_accumulators.reset();
-
                 if (iterations == 1)
                 {
                     // Shade the intersection point.
@@ -209,13 +206,8 @@ namespace
                         pixel_context,
                         m_shading_context,
                         *shading_point_ptr,
-                        aov_accumulators);
-
-                    aov_accumulators.write(
-                        *shading_point_ptr,
-                        *m_scene.get_active_camera());
-
-                    aov_accumulators.flush(shading_result);
+                        aov_accumulators,
+                        shading_result);
 
                     // Apply alpha premultiplication.
                     if (shading_point_ptr->hit_surface())
@@ -230,13 +222,8 @@ namespace
                         pixel_context,
                         m_shading_context,
                         *shading_point_ptr,
-                        aov_accumulators);
-
-                    aov_accumulators.write(
-                        *shading_point_ptr,
-                        *m_scene.get_active_camera());
-
-                    aov_accumulators.flush(local_result);
+                        aov_accumulators,
+                        local_result);
 
                     // Apply alpha premultiplication.
                     if (shading_point_ptr->hit_surface())

@@ -31,12 +31,15 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/aovaccumulator.h"
+#include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
+#include "foundation/image/image.h"
+#include "foundation/image/tile.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -57,39 +60,61 @@ namespace
     //
 
     class NormalAOVAccumulator
-      : public AOVAccumulator
+      : public UnfilteredAOVAccumulator
     {
       public:
-        explicit NormalAOVAccumulator(const size_t index)
-          : AOVAccumulator(index)
+        explicit NormalAOVAccumulator(Image& image)
+          : UnfilteredAOVAccumulator(image)
         {
         }
 
-        virtual void reset() override
+        virtual void on_tile_begin(
+            const Frame&                frame,
+            const size_t                tile_x,
+            const size_t                tile_y) override
         {
-            m_normal = Vector3f(0.0f);
+            UnfilteredAOVAccumulator::on_tile_begin(frame, tile_x, tile_y);
+            get_tile().clear(Color4f(0.5f, 0.5f, 0.5f, numeric_limits<float>::max()));
         }
 
         virtual void write(
-            const ShadingPoint&     shading_point,
-            const Camera&           camera) override
+            const PixelContext&         pixel_context,
+            const ShadingPoint&         shading_point,
+            const ShadingComponents&    shading_components,
+            ShadingResult&              shading_result) override
         {
-            if (shading_point.hit_surface())
-                m_normal = Vector3f(shading_point.get_shading_normal());
-        }
+            const Vector2i& pi = pixel_context.get_pixel_coords();
 
-        virtual void flush(ShadingResult& result) override
-        {
-            result.m_aovs[m_index] =
-                Color4f(
-                    m_normal[0] * 0.5f + 0.5f,
-                    m_normal[1] * 0.5f + 0.5f,
-                    m_normal[2] * 0.5f + 0.5f,
-                    1.0f);
-        }
+            // Ignore samples outside the tile.
+            if (outside_tile(pi))
+                return;
 
-      private:
-        Vector3f m_normal;
+            float* p = reinterpret_cast<float*>(
+                get_tile().pixel(pi.x - m_tile_origin_x, pi.y - m_tile_origin_y));
+
+            const float min_sample_square_distance = p[3];
+            const float sample_square_distance =
+                square_distance_to_pixel_center(pixel_context.get_sample_position());
+
+            if (sample_square_distance < min_sample_square_distance)
+            {
+                if (shading_point.hit_surface())
+                {
+                    const Vector3d& n = shading_point.get_shading_normal();
+                    p[0] = static_cast<float>(n[0]) * 0.5f + 0.5f;
+                    p[1] = static_cast<float>(n[1]) * 0.5f + 0.5f;
+                    p[2] = static_cast<float>(n[2]) * 0.5f + 0.5f;
+                    p[3] = sample_square_distance;
+                }
+                else
+                {
+                    p[0] = 0.5f;
+                    p[1] = 0.5f;
+                    p[2] = 0.5f;
+                    p[3] = sample_square_distance;
+                }
+            }
+        }
     };
 
 
@@ -100,11 +125,11 @@ namespace
     const char* Model = "normal_aov";
 
     class NormalAOV
-      : public AOV
+      : public UnfilteredAOV
     {
       public:
         explicit NormalAOV(const ParamArray& params)
-          : AOV("normal", params)
+          : UnfilteredAOV("normal", params)
         {
         }
 
@@ -125,7 +150,7 @@ namespace
 
         virtual const char** get_channel_names() const override
         {
-            static const char* ChannelNames[] = {"X", "Y", "Z"};
+            static const char* ChannelNames[] = {"R", "G", "B"};
             return ChannelNames;
         }
 
@@ -137,7 +162,7 @@ namespace
         virtual auto_release_ptr<AOVAccumulator> create_accumulator(
             const size_t index) const override
         {
-            return auto_release_ptr<AOVAccumulator>(new NormalAOVAccumulator(index));
+            return auto_release_ptr<AOVAccumulator>(new NormalAOVAccumulator(get_image()));
         }
     };
 }

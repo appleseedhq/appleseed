@@ -58,22 +58,29 @@ namespace
     //
 
     class GlossyAOVAccumulator
-      : public ColorAOVAccumulator
+      : public AOVAccumulator
     {
       public:
         explicit GlossyAOVAccumulator(const size_t index)
-          : ColorAOVAccumulator(index)
+          : m_index(index)
         {
         }
 
         virtual void write(
+            const PixelContext&         pixel_context,
+            const ShadingPoint&         shading_point,
             const ShadingComponents&    shading_components,
-            const float                 multiplier) override
+            ShadingResult&              shading_result) override
         {
-            m_color = shading_components.m_glossy.to_rgb(g_std_lighting_conditions);
-            m_color += shading_components.m_indirect_glossy.to_rgb(g_std_lighting_conditions);
-            m_color *= multiplier;
+            shading_result.m_aovs[m_index].rgb() =
+                shading_components.m_glossy.to_rgb(g_std_lighting_conditions) +
+                shading_components.m_indirect_glossy.to_rgb(g_std_lighting_conditions);
+
+            shading_result.m_aovs[m_index].a = shading_result.m_main.a;
         }
+
+      private:
+        const size_t m_index;
     };
 
 
@@ -82,21 +89,28 @@ namespace
     //
 
     class DirectGlossyAOVAccumulator
-      : public ColorAOVAccumulator
+      : public AOVAccumulator
     {
       public:
         explicit DirectGlossyAOVAccumulator(const size_t index)
-          : ColorAOVAccumulator(index)
+          : m_index(index)
         {
         }
 
         virtual void write(
+            const PixelContext&         pixel_context,
+            const ShadingPoint&         shading_point,
             const ShadingComponents&    shading_components,
-            const float                 multiplier) override
+            ShadingResult&              shading_result) override
         {
-            m_color = shading_components.m_glossy.to_rgb(g_std_lighting_conditions);
-            m_color *= multiplier;
+            shading_result.m_aovs[m_index].rgb() =
+                shading_components.m_glossy.to_rgb(g_std_lighting_conditions);
+
+            shading_result.m_aovs[m_index].a = shading_result.m_main.a;
         }
+
+      private:
+        const size_t m_index;
     };
 
 
@@ -105,21 +119,28 @@ namespace
     //
 
     class IndirectGlossyAOVAccumulator
-      : public ColorAOVAccumulator
+      : public AOVAccumulator
     {
       public:
         explicit IndirectGlossyAOVAccumulator(const size_t index)
-          : ColorAOVAccumulator(index)
+          : m_index(index)
         {
         }
 
         virtual void write(
+            const PixelContext&         pixel_context,
+            const ShadingPoint&         shading_point,
             const ShadingComponents&    shading_components,
-            const float                 multiplier) override
+            ShadingResult&              shading_result) override
         {
-            m_color = shading_components.m_indirect_glossy.to_rgb(g_std_lighting_conditions);
-            m_color *= multiplier;
+            shading_result.m_aovs[m_index].rgb() =
+                shading_components.m_indirect_glossy.to_rgb(g_std_lighting_conditions);
+
+            shading_result.m_aovs[m_index].a = shading_result.m_main.a;
         }
+
+      private:
+        const size_t m_index;
     };
 
 

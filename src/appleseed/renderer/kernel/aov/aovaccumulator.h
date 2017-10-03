@@ -37,16 +37,20 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/color.h"
+#include "foundation/math/vector.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // Standard headers.
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class Camera; }
-namespace renderer  { class ShadingComponents; }
-namespace renderer  { class ShadingPoint; }
-namespace renderer  { class ShadingResult; }
+namespace foundation    { class Image; }
+namespace foundation    { class Tile; }
+namespace renderer      { class Frame; }
+namespace renderer      { class PixelContext; }
+namespace renderer      { class ShadingComponents; }
+namespace renderer      { class ShadingPoint; }
+namespace renderer      { class ShadingResult; }
 
 namespace renderer
 {
@@ -65,110 +69,82 @@ class AOVAccumulator
     // Delete this instance.
     void release();
 
-    // Reset the accumulator.
-    virtual void reset() = 0;
+    // This method is called before a tile gets rendered.
+    virtual void on_tile_begin(
+        const Frame&                frame,
+        const size_t                tile_x,
+        const size_t                tile_y);
+
+    // This method is called after a tile gets rendered.
+    virtual void on_tile_end(
+        const Frame&                frame,
+        const size_t                tile_x,
+        const size_t                tile_y);
 
     // Write a value to the accumulator.
-    // Normally, this is used for shading AOVs like diffuse, glossy...
     virtual void write(
-        const ShadingComponents&    shading_components,
-        const float                 multiplier);
-
-    // Write a value to the accumulator.
-    // Normally, this is used for geometry AOVs like normals, velocity...
-    virtual void write(
+        const PixelContext&         pixel_context,
         const ShadingPoint&         shading_point,
-        const Camera&               camera);
-
-    // Flush the result.
-    virtual void flush(ShadingResult& result) = 0;
-
-  protected:
-    // Constructor.
-    explicit AOVAccumulator(const size_t index);
-
-    const size_t m_index;
-};
-
-
-//
-// Color AOV accumulator base class.
-//
-
-class ColorAOVAccumulator
-  : public AOVAccumulator
-{
-  public:
-    // Destructor.
-    ~ColorAOVAccumulator() override;
-
-    // Reset the accumulator.
-    void reset() override;
-
-    // Flush the result.
-    void flush(ShadingResult& result) override;
-
-  protected:
-    // Constructor.
-    explicit ColorAOVAccumulator(const size_t index);
-
-    foundation::Color3f m_color;
-};
-
-
-//
-// BeautyAOVAccumulator class.
-//
-
-class BeautyAOVAccumulator
-  : public AOVAccumulator
-{
-  public:
-    BeautyAOVAccumulator();
-
-    void set(const Spectrum& value);
-    void set(const foundation::Color3f& color);
-
-    void set_to_pink_linear_rgb();
-
-    void apply_multiplier(const float multiplier);
-
-    virtual void reset() override;
-
-    virtual void write(
         const ShadingComponents&    shading_components,
-        const float                 multiplier) override;
-
-    virtual void flush(ShadingResult& result) override;
-
-  private:
-    foundation::Color3f m_color;
+        ShadingResult&              shading_result);
 };
 
 
 //
-// AlphaAOVAccumulator class.
+// Unfiltered AOV accumulator base class.
 //
 
-class AlphaAOVAccumulator
+class UnfilteredAOVAccumulator
   : public AOVAccumulator
 {
   public:
-    AlphaAOVAccumulator();
+    explicit UnfilteredAOVAccumulator(foundation::Image& image);
 
-    const Alpha& get() const;
+    virtual void on_tile_begin(
+        const Frame& frame,
+        const size_t tile_x,
+        const size_t tile_y) override;
 
-    void set(const Alpha& alpha);
+  protected:
+    foundation::Image&  m_image;
+    foundation::Tile*   m_tile;
+    int                 m_tile_origin_x;
+    int                 m_tile_origin_y;
+    int                 m_tile_end_x;
+    int                 m_tile_end_y;
 
-    void apply_multiplier(const Alpha& multiplier);
+    foundation::Tile& get_tile() const;
 
-    virtual void reset() override;
 
-    virtual void flush(ShadingResult& result) override;
+    bool outside_tile(const foundation::Vector2i& pi) const;
 
-  private:
-    Alpha m_alpha;
+    static float square_distance_to_pixel_center(const foundation::Vector2d& ps);
 };
+
+
+//
+// Unfiltered AOV class implementation.
+//
+
+inline foundation::Tile& UnfilteredAOVAccumulator::get_tile() const
+{
+    return *m_tile;
+}
+
+inline bool UnfilteredAOVAccumulator::outside_tile(
+    const foundation::Vector2i& pi) const
+{
+   return
+      pi.x < m_tile_origin_x || pi.y < m_tile_origin_y ||
+      pi.x > m_tile_end_x || pi.y > m_tile_end_y;
+}
+
+inline float UnfilteredAOVAccumulator::square_distance_to_pixel_center(
+    const foundation::Vector2d& ps)
+{
+    return static_cast<float>(
+        foundation::square(ps.y - 0.5) + foundation::square(ps.y - 0.5));
+}
 
 
 //
@@ -188,62 +164,34 @@ class AOVAccumulatorContainer
     // Destructor.
     ~AOVAccumulatorContainer();
 
-    // Reset all accumulators.
-    void reset();
+    // This method is called before a tile gets rendered.
+    void on_tile_begin(
+        const Frame&                frame,
+        const size_t                tile_x,
+        const size_t                tile_y);
+
+    // This method is called after a tile gets rendered.
+    void on_tile_end(
+        const Frame&                frame,
+        const size_t                tile_x,
+        const size_t                tile_y);
 
     // Write a sample to all accumulators.
     void write(
-        const ShadingComponents&    shading_components,
-        const float                 multiplier);
-
-    // Write a sample to all accumulators.
-    void write(
+        const PixelContext&         pixel_context,
         const ShadingPoint&         shading_point,
-        const Camera&               camera);
-
-    // Flush all the accumulators.
-    void flush(ShadingResult& result);
-
-    // Access the beauty AOV.
-    BeautyAOVAccumulator& beauty();
-
-    // Access the alpha AOV.
-    AlphaAOVAccumulator& alpha();
+        const ShadingComponents&    shading_components,
+        ShadingResult&              shading_result);
 
   private:
     void init();
     bool insert(foundation::auto_release_ptr<AOVAccumulator> aov_accum);
 
-    enum { MaxAovAccumulators = MaxAOVCount + 2 };  // MaxAOVCount + Beauty + Alpha
+    enum { MaxAovAccumulators = MaxAOVCount + 1 };  // MaxAOVCount + Beauty
 
     size_t          m_size;
     AOVAccumulator* m_accumulators[MaxAovAccumulators];
 };
-
-
-//
-// AlphaAOVAccumulator class implementation.
-//
-
-inline const Alpha& AlphaAOVAccumulator::get() const
-{
-    return m_alpha;
-}
-
-
-//
-// AOVAccumulatorContainer class implementation.
-//
-
-inline BeautyAOVAccumulator& AOVAccumulatorContainer::beauty()
-{
-    return static_cast<BeautyAOVAccumulator&>(*m_accumulators[0]);
-}
-
-inline AlphaAOVAccumulator& AOVAccumulatorContainer::alpha()
-{
-    return static_cast<AlphaAOVAccumulator&>(*m_accumulators[1]);
-}
 
 }       // namespace renderer
 

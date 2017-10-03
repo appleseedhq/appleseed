@@ -103,15 +103,9 @@ namespace
             const PixelContext&         pixel_context,
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point,
-            AOVAccumulatorContainer&    aov_accumulators) const override
+            AOVAccumulatorContainer&    aov_accumulators,
+            ShadingResult&              shading_result) const override
         {
-            // Evaluate the shader inputs.
-            InputValues values;
-            m_inputs.evaluate(
-                shading_context.get_texture_cache(),
-                shading_point.get_uv(0),
-                &values);
-
             // Compute lighting.
             ShadingComponents radiance;
             for (size_t i = 0, e = m_lighting_samples; i < e; ++i)
@@ -127,19 +121,14 @@ namespace
                 radiance /= static_cast<float>(m_lighting_samples);
 
             // Accumulate into AOVs.
-            aov_accumulators.write(radiance, values.m_color_multiplier);
-
-            // Apply alpha multiplier.
-            aov_accumulators.alpha().apply_multiplier(Alpha(values.m_alpha_multiplier));
+            aov_accumulators.write(
+                pixel_context,
+                shading_point,
+                radiance,
+                shading_result);
         }
 
       private:
-        APPLESEED_DECLARE_INPUT_VALUES(InputValues)
-        {
-            float   m_color_multiplier;
-            float   m_alpha_multiplier;
-        };
-
         size_t      m_lighting_samples;
     };
 }
@@ -166,26 +155,6 @@ Dictionary PhysicalSurfaceShaderFactory::get_model_metadata() const
 DictionaryArray PhysicalSurfaceShaderFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "color_multiplier")
-            .insert("label", "Color Multiplier")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
-            .insert("default", "1.0")
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "alpha_multiplier")
-            .insert("label", "Alpha Multiplier")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
-            .insert("default", "1.0")
-            .insert("use", "optional"));
 
     metadata.push_back(
         Dictionary()

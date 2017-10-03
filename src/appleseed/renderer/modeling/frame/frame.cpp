@@ -153,11 +153,12 @@ Frame::Frame(
         assert(aov_factory);
 
         auto_release_ptr<AOV> aov = aov_factory->create(original_aov->get_parameters());
-
-        aov_images().append(
-            aov->get_name(),
-            4, // TODO: check if we can pass aov->get_channel_count() here.
-            PixelFormatFloat);
+        aov->create_image(
+            impl->m_frame_width,
+            impl->m_frame_height,
+            impl->m_tile_width,
+            impl->m_tile_height,
+            aov_images());
         impl->m_aovs.insert(aov);
     }
 }
@@ -293,6 +294,148 @@ namespace
             }
         }
     }
+
+    void write_exr_image(
+        const char*             file_path,
+        const Image&            image,
+        const ImageAttributes&  image_attributes,
+        const AOV*              aov)
+    {
+        create_parent_directories(file_path);
+
+        EXRImageFileWriter writer;
+
+        if (aov)
+        {
+            if (aov->has_color_data())
+            {
+                // If the AOV has color data, assume we can save it as half floats.
+                const CanvasProperties& props = image.properties();
+                const Image half_image(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
+                writer.write(file_path, half_image, image_attributes, aov->get_channel_count(), aov->get_channel_names());
+            }
+            else
+                writer.write(file_path, image, image_attributes, aov->get_channel_count(), aov->get_channel_names());
+        }
+        else
+            writer.write(file_path, image, image_attributes);
+    }
+
+    void transform_to_srgb(Tile& tile)
+    {
+        assert(tile.get_channel_count() == 4);
+        assert(tile.get_pixel_format() == PixelFormatHalf);
+
+        typedef Color<half, 4> Color4h;
+
+        Color4h* pixel_ptr = reinterpret_cast<Color4h*>(tile.pixel(0));
+        Color4h* pixel_end = pixel_ptr + tile.get_pixel_count();
+
+        for (; pixel_ptr < pixel_end; ++pixel_ptr)
+        {
+            // Load the pixel color.
+            Color4f color(*pixel_ptr);
+
+            // Apply color space conversion and clamping.
+            color.unpremultiply();
+            color.rgb() = fast_linear_rgb_to_srgb(color.rgb());
+            color = saturate(color);
+            color.premultiply();
+
+            // Store the pixel color.
+            *pixel_ptr = color;
+        }
+    }
+
+    void transform_to_srgb(Image& image)
+    {
+        const CanvasProperties& image_props = image.properties();
+
+        for (size_t ty = 0; ty < image_props.m_tile_count_y; ++ty)
+        {
+            for (size_t tx = 0; tx < image_props.m_tile_count_x; ++tx)
+                transform_to_srgb(image.tile(tx, ty));
+        }
+    }
+
+    void write_png_image(
+        const char*             file_path,
+        const Image&            image,
+        const ImageAttributes&  image_attributes)
+    {
+        Image transformed_image(image);
+        transform_to_srgb(transformed_image);
+
+        create_parent_directories(file_path);
+
+        PNGImageFileWriter writer;
+        writer.write(file_path, transformed_image, image_attributes);
+    }
+
+    bool write_image(
+        const char*             file_path,
+        const Image&            image,
+        const AOV*              aov)
+    {
+        assert(file_path);
+
+        Stopwatch<DefaultWallclockTimer> stopwatch;
+        stopwatch.start();
+
+        const bf::path filepath(file_path);
+        const string extension = lower_case(filepath.extension().string());
+
+        ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
+        // todo: add chromaticity attributes here...
+
+        try
+        {
+            if (extension == ".exr")
+                write_exr_image(file_path, image, image_attributes, aov);
+            else if (extension == ".png")
+                write_png_image(file_path, image, image_attributes);
+            else if (extension.empty())
+            {
+                string file_path_with_ext(file_path);
+                file_path_with_ext += ".exr";
+                write_exr_image(file_path_with_ext.c_str(), image, image_attributes, aov);
+            }
+            else
+            {
+                RENDERER_LOG_ERROR(
+                    "failed to write image file %s: unsupported image format.",
+                    file_path);
+
+                return false;
+            }
+        }
+        catch (const ExceptionIOError&)
+        {
+            RENDERER_LOG_ERROR(
+                "failed to write image file %s: i/o error.",
+                file_path);
+
+            return false;
+        }
+        catch (const Exception& e)
+        {
+            RENDERER_LOG_ERROR(
+                "failed to write image file %s: %s.",
+                file_path,
+                e.what());
+
+            return false;
+        }
+
+        stopwatch.measure();
+
+        RENDERER_LOG_INFO(
+            "wrote image file %s in %s.",
+            file_path,
+            pretty_time(stopwatch.get_seconds()).c_str());
+
+        return true;
+    }
 }
 
 bool Frame::write_main_image(const char* file_path) const
@@ -312,21 +455,22 @@ bool Frame::write_aov_images(const char* file_path) const
 
     bool result = true;
 
-    if (!aov_images().empty())
+    if (!aovs().empty())
     {
         const bf::path boost_file_path(file_path);
         const bf::path directory = boost_file_path.parent_path();
         const string base_file_name = boost_file_path.stem().string();
         const string extension = boost_file_path.extension().string();
 
-        for (size_t i = 0, e = impl->m_aovs.size(); i < e; ++i)
+        for (size_t i = 0, e = aovs().size(); i < e; ++i)
         {
-            const string aov_name = aov_images().get_name(i);
+            const AOV* aov = aovs().get_by_index(i);
+            const string aov_name = aov->get_name();
             const string safe_aov_name = make_safe_filename(aov_name);
             const string aov_file_name = base_file_name + "." + safe_aov_name + extension;
             const string aov_file_path = (directory / aov_file_name).string();
 
-            if (!write_aov_image(aov_file_path.c_str(), i))
+            if (!write_image(aov_file_path.c_str(), aov->get_image(), aov))
                 result = false;
         }
     }
@@ -341,10 +485,8 @@ bool Frame::write_aov_image(const char* file_path, const size_t aov_index) const
     if (aov_index >= impl->m_aovs.size())
         return true;
 
-    return write_image(
-        file_path,
-        aov_images().get_image(aov_index),
-        impl->m_aovs.get_by_index(aov_index));
+    const AOV* aov = impl->m_aovs.get_by_index(aov_index);
+    return write_image(file_path, aov->get_image(), aov);
 }
 
 bool Frame::write_main_and_aov_images() const
@@ -376,6 +518,8 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();
 
+    create_parent_directories(file_path);
+
     EXRImageFileWriter writer;
 
     ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
@@ -396,9 +540,9 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
 
     for (size_t i = 0, e = impl->m_aovs.size(); i < e; ++i)
     {
-        const string aov_name = aov_images().get_name(i);
         const AOV* aov = impl->m_aovs.get_by_index(i);
-        const Image& image = aov_images().get_image(i);
+        const string aov_name = aov->get_name();
+        const Image& image = aov->get_image();
 
         if (aov->has_color_data())
         {
@@ -524,152 +668,6 @@ void Frame::extract_parameters()
         Vector2u(0, 0),
         Vector2u(impl->m_frame_width - 1, impl->m_frame_height - 1));
     impl->m_crop_window = m_params.get_optional<AABB2u>("crop_window", default_crop_window);
-}
-
-bool Frame::write_image(
-    const char*             file_path,
-    const Image&            image,
-    const AOV*              aov) const
-{
-    assert(file_path);
-
-    Stopwatch<DefaultWallclockTimer> stopwatch;
-    stopwatch.start();
-
-    const bf::path filepath(file_path);
-    const string extension = lower_case(filepath.extension().string());
-
-    ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
-    // todo: add chromaticity attributes here...
-
-    try
-    {
-        if (extension == ".exr")
-            write_exr_image(file_path, image, image_attributes, aov);
-        else if (extension == ".png")
-            write_png_image(file_path, image, image_attributes, aov);
-        else if (extension.empty())
-        {
-            string file_path_with_ext(file_path);
-            file_path_with_ext += ".exr";
-            write_exr_image(file_path_with_ext.c_str(), image, image_attributes, aov);
-        }
-        else
-        {
-            RENDERER_LOG_ERROR(
-                "failed to write image file %s: unsupported image format.",
-                file_path);
-
-            return false;
-        }
-    }
-    catch (const ExceptionIOError&)
-    {
-        RENDERER_LOG_ERROR(
-            "failed to write image file %s: i/o error.",
-            file_path);
-
-        return false;
-    }
-    catch (const Exception& e)
-    {
-        RENDERER_LOG_ERROR(
-            "failed to write image file %s: %s.",
-            file_path,
-            e.what());
-
-        return false;
-    }
-
-    stopwatch.measure();
-
-    RENDERER_LOG_INFO(
-        "wrote image file %s in %s.",
-        file_path,
-        pretty_time(stopwatch.get_seconds()).c_str());
-
-    return true;
-}
-
-void Frame::write_exr_image(
-    const char*             file_path,
-    const Image&            image,
-    const ImageAttributes&  image_attributes,
-    const AOV*              aov) const
-{
-    create_parent_directories(file_path);
-
-    EXRImageFileWriter writer;
-
-    if (aov)
-    {
-        if (aov->has_color_data())
-        {
-            // If the AOV has color data, assume we can save it as half floats.
-            const CanvasProperties& props = image.properties();
-            const Image half_image(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
-            writer.write(file_path, half_image, image_attributes, aov->get_channel_count(), aov->get_channel_names());
-        }
-        else
-            writer.write(file_path, image, image_attributes, aov->get_channel_count(), aov->get_channel_names());
-    }
-    else
-        writer.write(file_path, image, image_attributes);
-}
-
-namespace
-{
-    void transform_to_srgb(Tile& tile)
-    {
-        assert(tile.get_channel_count() == 4);
-        assert(tile.get_pixel_format() == PixelFormatHalf);
-
-        typedef Color<half, 4> Color4h;
-
-        Color4h* pixel_ptr = reinterpret_cast<Color4h*>(tile.pixel(0));
-        Color4h* pixel_end = pixel_ptr + tile.get_pixel_count();
-
-        for (; pixel_ptr < pixel_end; ++pixel_ptr)
-        {
-            // Load the pixel color.
-            Color4f color(*pixel_ptr);
-
-            // Apply color space conversion and clamping.
-            color.unpremultiply();
-            color.rgb() = fast_linear_rgb_to_srgb(color.rgb());
-            color = saturate(color);
-            color.premultiply();
-
-            // Store the pixel color.
-            *pixel_ptr = color;
-        }
-    }
-
-    void transform_to_srgb(Image& image)
-    {
-        const CanvasProperties& image_props = image.properties();
-
-        for (size_t ty = 0; ty < image_props.m_tile_count_y; ++ty)
-        {
-            for (size_t tx = 0; tx < image_props.m_tile_count_x; ++tx)
-                transform_to_srgb(image.tile(tx, ty));
-        }
-    }
-}
-
-void Frame::write_png_image(
-    const char*             file_path,
-    const Image&            image,
-    const ImageAttributes&  image_attributes,
-    const AOV*              aov) const
-{
-    create_parent_directories(file_path);
-
-    Image transformed_image(image);
-    transform_to_srgb(transformed_image);
-
-    PNGImageFileWriter writer;
-    writer.write(file_path, transformed_image, image_attributes);
 }
 
 

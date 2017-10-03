@@ -29,6 +29,12 @@
 // Interface header.
 #include "aov.h"
 
+// appleseed.renderer headers.
+#include "renderer/kernel/aov/imagestack.h"
+
+// appleseed.foundation headers.
+#include "foundation/image/image.h"
+
 using namespace foundation;
 
 namespace renderer
@@ -52,6 +58,7 @@ AOV::AOV(
     const char*         name,
     const ParamArray&   params)
   : Entity(g_class_uid, params)
+  , m_image(nullptr)
 {
     set_name(name);
 }
@@ -59,6 +66,25 @@ AOV::AOV(
 void AOV::release()
 {
     delete this;
+}
+
+void AOV::create_image(
+    const size_t    canvas_width,
+    const size_t    canvas_height,
+    const size_t    tile_width,
+    const size_t    tile_height,
+    ImageStack&     aov_images)
+{
+    const size_t index = aov_images.append(
+        get_name(),
+        4, // TODO: check if we can pass aov->get_channel_count() here.
+        PixelFormatFloat);
+    m_image = &aov_images.get_image(index);
+}
+
+Image& AOV::get_image() const
+{
+    return *m_image;
 }
 
 
@@ -85,6 +111,42 @@ const char** ColorAOV::get_channel_names() const
 bool ColorAOV::has_color_data() const
 {
     return true;
+}
+
+
+//
+// UnfilteredAOV class implementation.
+//
+
+UnfilteredAOV::UnfilteredAOV(const char* name, const ParamArray& params)
+  : AOV(name, params)
+{
+}
+
+UnfilteredAOV::~UnfilteredAOV()
+{
+    delete m_image;
+}
+
+void UnfilteredAOV::create_image(
+    const size_t canvas_width,
+    const size_t canvas_height,
+    const size_t tile_width,
+    const size_t tile_height,
+    ImageStack& aov_images)
+{
+    // One extra channel to keep track of the distance
+    // to the nearest sample for each pixel.
+    const size_t num_channels = get_channel_count() + 1;
+
+    m_image =
+        new Image(
+            canvas_width,
+            canvas_height,
+            tile_width,
+            tile_height,
+            num_channels,
+            PixelFormatFloat);
 }
 
 }   // namespace renderer
