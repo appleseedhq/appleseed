@@ -237,9 +237,9 @@ namespace
 }
 
 bool Intersector::trace(
-    const ShadingRay&               ray,
-    ShadingPoint&                   shading_point,
-    const ShadingPoint*             parent_shading_point) const
+    const ShadingRay&                   ray,
+    ShadingPoint&                       shading_point,
+    const ShadingPoint*                 parent_shading_point) const
 {
     assert(is_normalized(ray.m_dir));
     assert(shading_point.m_scene == nullptr);
@@ -304,8 +304,8 @@ bool Intersector::trace(
 }
 
 bool Intersector::trace_probe(
-    const ShadingRay&               ray,
-    const ShadingPoint*             parent_shading_point) const
+    const ShadingRay&                   ray,
+    const ShadingPoint*                 parent_shading_point) const
 {
     assert(is_normalized(ray.m_dir));
     assert(parent_shading_point == 0 || parent_shading_point->hit_surface());
@@ -364,7 +364,7 @@ void Intersector::make_surface_shading_point(
 {
 #ifdef DEBUG
     // This helps finding bugs if make_surface_shading_point()
-    // is called on a previously usedshading point.
+    // is called on a previously used shading point.
     poison(shading_point);
 #endif
 
@@ -391,9 +391,9 @@ void Intersector::make_surface_shading_point(
 }
 
 void Intersector::make_volume_shading_point(
-    ShadingPoint&           shading_point,
-    const ShadingRay&       volume_ray,
-    const double            distance) const
+    ShadingPoint&                       shading_point,
+    const ShadingRay&                   volume_ray,
+    const double                        distance) const
 {
 #ifdef DEBUG
     // This helps finding bugs if manufacture_hit()
