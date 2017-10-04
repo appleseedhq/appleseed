@@ -436,6 +436,11 @@ namespace
                         importance))
                     return;
 
+                // Reject vertices on the back side of the geometric surface.
+                const Vector3d& shading_normal = vertex.get_geometric_normal();
+                if (dot(camera_outgoing, shading_normal) >= 0.0)
+                    return;
+
                 // Compute the transmission factor between the path vertex and the camera.
                 // Prevent self-intersections by letting the ray originate from the camera.
                 Spectrum transmission;
