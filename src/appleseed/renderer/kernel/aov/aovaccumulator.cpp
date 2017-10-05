@@ -69,7 +69,8 @@ void AOVAccumulator::release()
 void AOVAccumulator::on_tile_begin(
     const Frame& frame,
     const size_t tile_x,
-    const size_t tile_y)
+    const size_t tile_y,
+    const size_t max_spp)
 {
 }
 
@@ -131,7 +132,8 @@ UnfilteredAOVAccumulator::UnfilteredAOVAccumulator(Image& image)
 void UnfilteredAOVAccumulator::on_tile_begin(
     const Frame& frame,
     const size_t tile_x,
-    const size_t tile_y)
+    const size_t tile_y,
+    const size_t max_spp)
 {
     // Fetch the destination tile.
     const CanvasProperties& props = frame.image().properties();
@@ -184,10 +186,11 @@ AOVAccumulatorContainer::~AOVAccumulatorContainer()
 void AOVAccumulatorContainer::on_tile_begin(
     const Frame&                frame,
     const size_t                tile_x,
-    const size_t                tile_y)
+    const size_t                tile_y,
+    const size_t                max_spp)
 {
     for (size_t i = 0, e = m_size; i < e; ++i)
-        m_accumulators[i]->on_tile_begin(frame, tile_x, tile_y);
+        m_accumulators[i]->on_tile_begin(frame, tile_x, tile_y, max_spp);
 }
 
 void AOVAccumulatorContainer::on_tile_end(

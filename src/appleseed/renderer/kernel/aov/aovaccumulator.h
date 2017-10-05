@@ -73,7 +73,8 @@ class AOVAccumulator
     virtual void on_tile_begin(
         const Frame&                frame,
         const size_t                tile_x,
-        const size_t                tile_y);
+        const size_t                tile_y,
+        const size_t                max_spp);
 
     // This method is called after a tile gets rendered.
     virtual void on_tile_end(
@@ -109,7 +110,8 @@ class UnfilteredAOVAccumulator
     virtual void on_tile_begin(
         const Frame& frame,
         const size_t tile_x,
-        const size_t tile_y) override;
+        const size_t tile_y,
+        const size_t max_spp) override;
 
   protected:
     foundation::Image&  m_image;
@@ -174,7 +176,8 @@ class AOVAccumulatorContainer
     void on_tile_begin(
         const Frame&                frame,
         const size_t                tile_x,
-        const size_t                tile_y);
+        const size_t                tile_y,
+        const size_t                max_spp);
 
     // This method is called after a tile gets rendered.
     void on_tile_end(
