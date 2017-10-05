@@ -105,11 +105,10 @@ namespace
     {
         // Preconditions.
         assert(is_normalized(v));
-        assert(v.y >= 0.0f);
 
         const Vector3f hm(-h[0], h[1], -h[2]);
-        const float dot_vh  = max(dot(v, h), 0.0f);
-        const float dot_vhm = max(dot(v, hm), 0.0f);
+        const float dot_vh = abs(dot(v, h));
+        const float dot_vhm = abs(dot(v, hm));
 
         if (dot_vhm == 0.0f)
             return h;
@@ -203,7 +202,7 @@ float BlinnMDF::D(
     const float         alpha_y,
     const float         gamma) const
 {
-    return (alpha_x + 2.0f) * RcpTwoPi<float>() * pow(h.y, alpha_x);
+    return (alpha_x + 2.0f) * RcpTwoPi<float>() * pow(abs(h.y), alpha_x);
 }
 
 float BlinnMDF::G(
@@ -226,17 +225,11 @@ float BlinnMDF::G1(
     const float         alpha_y,
     const float         gamma) const
 {
-    if (v.y <= 0.0f)
-        return 0.0f;
-
-    if (dot(v, m) <= 0.0f)
-        return 0.0f;
-
-    const float cos_vh = abs(dot(v, m));
+    const float cos_vh = dot(v, m);
     if (cos_vh == 0.0f)
         return 0.0f;
 
-    return min(1.0f, 2.0f * abs(m.y * v.y) / cos_vh);
+    return min(1.0f, 2.0f * abs(m.y * v.y / cos_vh));
 }
 
 Vector3f BlinnMDF::sample(

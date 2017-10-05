@@ -126,7 +126,7 @@ namespace
                 value);
             value *= m_values.m_specular * 0.08f;
             mix_spectra(value, m_values.m_base_color, m_values.m_metallic, value);
-            const float cos_oh = dot(o, h);
+            const float cos_oh = abs(dot(o, h));
             mix_spectra_with_one(value, schlick_fresnel(cos_oh), value);
         }
 
@@ -146,7 +146,7 @@ namespace
             const Vector3f& n,
             Spectrum&       value) const
         {
-            const float cos_oh = dot(o, h);
+            const float cos_oh = abs(dot(o, h));
             value.set(mix(0.04f, 1.0f, schlick_fresnel(cos_oh)) * 0.25f * m_values.m_clearcoat);
         }
 
@@ -201,6 +201,7 @@ namespace
             const Vector3f n(shading_basis.get_normal());
             const Vector3f h(normalize(incoming + outgoing));
 
+            // Using the absolute values of cos_on and cos_in creates discontinuities.
             const float cos_on = dot(n, outgoing);
             const float cos_in = dot(n, incoming);
             const float cos_ih = dot(incoming, h);
@@ -218,11 +219,11 @@ namespace
             if (values->m_subsurface > 0.0f)
             {
                 // Based on Hanrahan-Krueger BRDF approximation of isotropic BSRDF.
-                // The 1.25 scaling is used to (roughly) preserve albedo.
+                // The 1.25 scale is used to (roughly) preserve albedo.
                 // Fss90 is used to "flatten" retroreflection based on roughness.
                 const float fss90 = square(cos_ih) * values->m_roughness;
                 const float fss = mix(1.0f, fss90, fl) * mix(1.0f, fss90, fv);
-                const float ss = 1.25f * (fss * (1.0f / (cos_on + cos_in) - 0.5f) + 0.5f);
+                const float ss = 1.25f * (fss * (1.0f / (abs(cos_on) + abs(cos_in)) - 0.5f) + 0.5f);
                 fd = mix(fd, ss, values->m_subsurface);
             }
 
@@ -230,7 +231,7 @@ namespace
             value *= fd * RcpPi<float>() * (1.0f - values->m_metallic);
 
             // Return the probability density of the sampled direction.
-            return cos_in * RcpPi<float>();
+            return abs(cos_in) * RcpPi<float>();
         }
 
         float evaluate_pdf(
@@ -238,7 +239,7 @@ namespace
             const Vector3f&                 incoming) const
         {
             const Vector3f& n = shading_basis.get_normal();
-            const float cos_in = dot(incoming, n);
+            const float cos_in = abs(dot(incoming, n));
             return cos_in * RcpPi<float>();
         }
     };
@@ -402,12 +403,9 @@ namespace
             const int                   modes,
             BSDFSample&                 sample) const override
         {
-            // No reflection below the shading surface.
             const Vector3f& outgoing = sample.m_outgoing.get_value();
             const Vector3f& n = sample.m_shading_basis.get_normal();
-            const float cos_on = dot(outgoing, n);
-            if (cos_on < 0.0f)
-                return;
+            const float cos_on = abs(dot(outgoing, n));
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -478,11 +476,8 @@ namespace
                 weights[ClearcoatComponent] = 0.0f;
             }
 
-            // No reflection below the shading surface.
             const Vector3f& incoming = sample.m_incoming.get_value();
-            const float cos_in = dot(incoming, n);
-            if (cos_in <= 0.0f)
-                return;
+            const float cos_in = abs(dot(incoming, n));
 
             if (weights[DiffuseComponent] > 0.0f)
             {
@@ -576,12 +571,9 @@ namespace
             const int                   modes,
             DirectShadingComponents&    value) const override
         {
-            // No reflection below the shading surface.
             const Vector3f& n = shading_basis.get_normal();
-            const float cos_in = dot(incoming, n);
-            const float cos_on = dot(outgoing, n);
-            if (cos_in <= 0.0f || cos_on <= 0.0f)
-                return 0.0f;
+            const float cos_in = abs(dot(incoming, n));
+            const float cos_on = abs(dot(outgoing, n));
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -680,13 +672,6 @@ namespace
             const Vector3f&             incoming,
             const int                   modes) const override
         {
-            // No reflection below the shading surface.
-            const Vector3f& n = shading_basis.get_normal();
-            const float cos_in = dot(incoming, n);
-            const float cos_on = dot(outgoing, n);
-            if (cos_in < 0.0f || cos_on < 0.0f)
-                return 0.0f;
-
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute component weights.

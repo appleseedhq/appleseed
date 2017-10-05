@@ -164,9 +164,7 @@ namespace
         {
             const Vector3f& n = sample.m_shading_basis.get_normal();
             const Vector3f& outgoing = sample.m_outgoing.get_value();
-            const float cos_on = min(dot(outgoing, n), 1.0f);
-            if (cos_on < 0.0f)
-                return;
+            const float cos_on = abs(dot(outgoing, n));
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -225,12 +223,20 @@ namespace
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
 
-            // No reflection below the shading surface.
             const Vector3f& n = shading_basis.get_normal();
-            const float cos_in = dot(incoming, n);
-            const float cos_on = dot(outgoing, n);
-            if (cos_in < 0.0f || cos_on < 0.0f)
-                return 0.0f;
+
+            const Vector3f flipped_incoming =
+                dot(incoming, n) < 0.0f
+                    ? incoming - 2.0f * dot(incoming, n) * n
+                    : incoming;
+
+            const Vector3f flipped_outgoing =
+                dot(outgoing, n) < 0.0f
+                    ? outgoing - 2.0f * dot(outgoing, n) * n
+                    : outgoing;
+
+            const float cos_in = dot(flipped_incoming, n);
+            const float cos_on = dot(flipped_outgoing, n);
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -249,18 +255,19 @@ namespace
                 values->m_reflectance_multiplier,
                 values->m_precomputed.m_outside_ior / values->m_ior);
 
-            const float pdf = MicrofacetBRDFHelper::evaluate(
-                *m_mdf,
-                alpha_x,
-                alpha_y,
-                gamma,
-                shading_basis,
-                outgoing,
-                incoming,
-                f,
-                cos_in,
-                cos_on,
-                value.m_glossy);
+            const float pdf =
+                MicrofacetBRDFHelper::evaluate(
+                    *m_mdf,
+                    alpha_x,
+                    alpha_y,
+                    gamma,
+                    shading_basis,
+                    flipped_outgoing,
+                    flipped_incoming,
+                    f,
+                    cos_in,
+                    cos_on,
+                    value.m_glossy);
 
             value.m_beauty = value.m_glossy;
 
@@ -279,12 +286,17 @@ namespace
             if (!ScatteringMode::has_glossy(modes))
                 return 0.0f;
 
-            // No reflection below the shading surface.
             const Vector3f& n = shading_basis.get_normal();
-            const float cos_in = dot(incoming, n);
-            const float cos_on = dot(outgoing, n);
-            if (cos_in < 0.0f || cos_on < 0.0f)
-                return 0.0f;
+
+            const Vector3f flipped_incoming =
+                dot(incoming, n) < 0.0f
+                    ? incoming - 2.0f * dot(incoming, n) * n
+                    : incoming;
+
+            const Vector3f flipped_outgoing =
+                dot(outgoing, n) < 0.0f
+                    ? outgoing - 2.0f * dot(outgoing, n) * n
+                    : outgoing;
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -298,14 +310,15 @@ namespace
             const float gamma =
                 highlight_falloff_to_gama(values->m_highlight_falloff);
 
-            return MicrofacetBRDFHelper::pdf(
-                *m_mdf,
-                alpha_x,
-                alpha_y,
-                gamma,
-                shading_basis,
-                outgoing,
-                incoming);
+            return
+                MicrofacetBRDFHelper::pdf(
+                    *m_mdf,
+                    alpha_x,
+                    alpha_y,
+                    gamma,
+                    shading_basis,
+                    flipped_outgoing,
+                    flipped_incoming);
         }
 
       private:

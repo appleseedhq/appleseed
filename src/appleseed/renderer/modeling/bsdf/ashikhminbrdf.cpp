@@ -109,11 +109,6 @@ namespace
             const int                   modes,
             BSDFSample&                 sample) const override
         {
-            // No reflection below the shading surface.
-            const float cos_on = dot(sample.m_outgoing.get_value(), sample.m_shading_basis.get_normal());
-            if (cos_on < 0.0f)
-                return;
-
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute reflectance-related values.
@@ -205,14 +200,12 @@ namespace
                         reflect(sample.m_outgoing.get_value(), h), sample.m_geometric_normal);
             }
 
-            // No reflection below the shading surface.
-            const float cos_in = dot(incoming, sample.m_shading_basis.get_normal());
-            if (cos_in < 0.0f)
-                return;
-
             // Compute dot products.
+            const Vector3f& shading_normal = sample.m_shading_basis.get_normal();
+            const float cos_in = abs(dot(incoming, shading_normal));
+            const float cos_on = abs(dot(sample.m_outgoing.get_value(), shading_normal));
             const float cos_oh = min(abs(dot(sample.m_outgoing.get_value(), h)), 1.0f);
-            const float cos_hn = dot(h, sample.m_shading_basis.get_normal());
+            const float cos_hn = abs(dot(h, shading_normal));
 
             float pdf_diffuse = 0.0f, pdf_glossy = 0.0f;
 
@@ -261,13 +254,6 @@ namespace
             const int                   modes,
             DirectShadingComponents&    value) const override
         {
-            // No reflection below the shading surface.
-            const Vector3f& shading_normal = shading_basis.get_normal();
-            const float cos_in = dot(incoming, shading_normal);
-            const float cos_on = dot(outgoing, shading_normal);
-            if (cos_in < 0.0f || cos_on < 0.0f)
-                return 0.0f;
-
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute reflectance-related values.
@@ -293,10 +279,13 @@ namespace
             const Vector3f h = normalize(incoming + outgoing);
 
             // Compute dot products.
-            const float cos_oh = dot(outgoing, h);
-            const float cos_hn = dot(h, shading_normal);
-            const float cos_hu = dot(h, shading_basis.get_tangent_u());
-            const float cos_hv = dot(h, shading_basis.get_tangent_v());
+            const Vector3f& shading_normal = shading_basis.get_normal();
+            const float cos_in = abs(dot(incoming, shading_normal));
+            const float cos_on = abs(dot(outgoing, shading_normal));
+            const float cos_oh = abs(dot(outgoing, h));
+            const float cos_hn = abs(dot(h, shading_normal));
+            const float cos_hu = abs(dot(h, shading_basis.get_tangent_u()));
+            const float cos_hv = abs(dot(h, shading_basis.get_tangent_v()));
 
             float pdf_diffuse = 0.0f, pdf_glossy = 0.0f;
 
@@ -344,13 +333,6 @@ namespace
             const Vector3f&             incoming,
             const int                   modes) const override
         {
-            // No reflection below the shading surface.
-            const Vector3f& shading_normal = shading_basis.get_normal();
-            const float cos_in = dot(incoming, shading_normal);
-            const float cos_on = dot(outgoing, shading_normal);
-            if (cos_in < 0.0f || cos_on < 0.0f)
-                return 0.0f;
-
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute (or retrieve precomputed) reflectance-related values.
@@ -375,17 +357,12 @@ namespace
             // Compute the halfway vector in world space.
             const Vector3f h = normalize(incoming + outgoing);
 
-            // Compute dot products.
-            const float cos_oh = dot(outgoing, h);
-            const float cos_hn = dot(h, shading_normal);
-            const float cos_hu = dot(h, shading_basis.get_tangent_u());
-            const float cos_hv = dot(h, shading_basis.get_tangent_v());
-
             float pdf_diffuse = 0.0f, pdf_glossy = 0.0f;
 
             if (ScatteringMode::has_diffuse(modes))
             {
                 // Evaluate the PDF of the diffuse component.
+                const float cos_in = abs(dot(incoming, shading_basis.get_normal()));
                 pdf_diffuse = cos_in * RcpPi<float>();
                 assert(pdf_diffuse >= 0.0f);
             }
@@ -393,6 +370,10 @@ namespace
             if (ScatteringMode::has_glossy(modes))
             {
                 // Evaluate the PDF for the halfway vector (equation 6).
+                const float cos_oh = abs(dot(outgoing, h));
+                const float cos_hn = abs(dot(h, shading_basis.get_normal()));
+                const float cos_hu = dot(h, shading_basis.get_tangent_u());
+                const float cos_hv = dot(h, shading_basis.get_tangent_v());
                 const float exp_num_u = values->m_nu * cos_hu * cos_hu;
                 const float exp_num_v = values->m_nv * cos_hv * cos_hv;
                 const float exp_den = 1.0f - cos_hn * cos_hn;

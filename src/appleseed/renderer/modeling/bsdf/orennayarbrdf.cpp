@@ -123,22 +123,19 @@ namespace
                 const Vector3f& n = sample.m_shading_basis.get_normal();
 
                 // No reflection below the shading surface.
-                const float cos_on = dot(sample.m_outgoing.get_value(), n);
-                if (cos_on < 0.0f)
-                    return;
-
-                // No reflection below the shading surface.
                 const float cos_in = dot(incoming, n);
                 if (cos_in < 0.0f)
                     return;
 
+                const Vector3f& outgoing = sample.m_outgoing.get_value();
+                const float cos_on = abs(dot(outgoing, n));
                 oren_nayar_qualitative(
                     cos_on,
                     cos_in,
                     values->m_roughness,
                     values->m_reflectance,
                     values->m_reflectance_multiplier,
-                    sample.m_outgoing.get_value(),
+                    outgoing,
                     incoming,
                     n,
                     sample.m_value.m_diffuse);
@@ -172,21 +169,14 @@ namespace
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0f;
 
-            // No reflection below the shading surface.
             const Vector3f& n = shading_basis.get_normal();
-            const float cos_in = dot(incoming, n);
-            if (cos_in < 0.0f)
-                return 0.0f;
+            const float cos_in = abs(dot(incoming, n));
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
             if (values->m_roughness != 0.0f)
             {
-                // No reflection below the shading surface.
-                const float cos_on = dot(outgoing, n);
-                if (cos_on < 0.0f)
-                    return 0.0f;
-
+                const float cos_on = abs(dot(outgoing, n));
                 oren_nayar_qualitative(
                     cos_on,
                     cos_in,
@@ -222,21 +212,9 @@ namespace
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0f;
 
-            // No reflection below the shading surface.
+            // Return the probability density of the sampled direction.
             const Vector3f& n = shading_basis.get_normal();
-            const float cos_in = dot(incoming, n);
-            if (cos_in < 0.0f)
-                return 0.0f;
-
-            const InputValues* values = static_cast<const InputValues*>(data);
-            if (values->m_roughness != 0.0f)
-            {
-                // No reflection below the shading surface.
-                const float cos_on = dot(outgoing, n);
-                if (cos_on < 0.0f)
-                    return 0.0f;
-            }
-
+            const float cos_in = abs(dot(incoming, n));
             return cos_in * RcpPi<float>();
         }
 
