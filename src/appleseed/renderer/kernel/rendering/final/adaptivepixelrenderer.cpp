@@ -301,6 +301,11 @@ namespace
             return m_sample_renderer->get_statistics();
         }
 
+        virtual size_t get_max_samples_per_pixel() const override
+        {
+            return m_params.m_max_samples;
+        }
+
       private:
         struct Parameters
         {

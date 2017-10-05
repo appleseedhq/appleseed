@@ -83,6 +83,9 @@ class IPixelRenderer
 
     // Retrieve performance statistics.
     virtual foundation::StatisticsVector get_statistics() const = 0;
+
+    // Return the maximum number of samples per pixel.
+    virtual size_t get_max_samples_per_pixel() const = 0;
 };
 
 
