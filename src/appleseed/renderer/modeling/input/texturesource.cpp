@@ -289,6 +289,8 @@ void TextureSource::get_texels_2x2(
 
     if (tile_x_mask | tile_y_mask)
     {
+        // Not all four texels are part of the same tile.
+
         // Compute the tile space coordinates of each texel.
         const size_t pixel_x_00 = p00.x - tile_x_00 * m_texture_props.m_tile_width;
         const size_t pixel_y_00 = p00.y - tile_y_00 * m_texture_props.m_tile_height;
@@ -303,6 +305,8 @@ void TextureSource::get_texels_2x2(
     }
     else
     {
+        // All four texels are part of the same tile.
+
         // Compute the tile space coordinates of each texel.
         const size_t org_x = tile_x_00 * m_texture_props.m_tile_width;
         const size_t org_y = tile_y_00 * m_texture_props.m_tile_height;

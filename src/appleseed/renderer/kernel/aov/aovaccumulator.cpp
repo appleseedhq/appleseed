@@ -121,9 +121,9 @@ UnfilteredAOVAccumulator::UnfilteredAOVAccumulator(Image& image)
 }
 
 void UnfilteredAOVAccumulator::on_tile_begin(
-    const Frame& frame,
-    const size_t tile_x,
-    const size_t tile_y)
+    const Frame&                frame,
+    const size_t                tile_x,
+    const size_t                tile_y)
 {
     // Fetch the destination tile.
     const CanvasProperties& props = frame.image().properties();
