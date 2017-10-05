@@ -42,12 +42,13 @@
                 $("ul.commands").empty();
                 $(".result").each(function () {
                     var result = $(this);
-                    var checkbox = result.find(".update-checkbox");
+                    var checkbox = result.find("input.update-checkbox");
                     if (checkbox.is(":checked")) {
                         var command = result.find(".command").text();
                         $("ul.commands").append("<li>" + command + "</li>");
                     }
                 });
+                $("ul.commands").append("<li></li>")
             }
 
             $(document).ready(function () {
@@ -92,9 +93,11 @@
                     }
                 });
 
-                $(".result").on("click", ".update-checkbox", function () {
+                $(".result").on("click", "input.update-checkbox", function () {
                     gatherUpdateCommands();
                 });
+
+                gatherUpdateCommands();
             });
         </script>
         <style type="text/css">
@@ -251,6 +254,12 @@
             .result .diff img
             {
                 max-width: 500px;
+            }
+
+            label.update-checkbox
+            {
+                display: block;
+                margin-top: 20px;
             }
 
             .result .details td
