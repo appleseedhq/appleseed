@@ -1503,7 +1503,7 @@ namespace
     {
       public:
         explicit UpdateFromRevision_19(Project& project)
-            : Updater(project, 19)
+          : Updater(project, 19)
         {
         }
 
@@ -1549,7 +1549,7 @@ namespace
     {
       public:
         explicit UpdateFromRevision_20(Project& project)
-            : Updater(project, 20)
+          : Updater(project, 20)
         {
         }
 
