@@ -101,9 +101,9 @@ class UnfilteredAOVAccumulator
     explicit UnfilteredAOVAccumulator(foundation::Image& image);
 
     virtual void on_tile_begin(
-        const Frame& frame,
-        const size_t tile_x,
-        const size_t tile_y) override;
+        const Frame&                frame,
+        const size_t                tile_x,
+        const size_t                tile_y) override;
 
   protected:
     foundation::Image&  m_image;
@@ -115,36 +115,10 @@ class UnfilteredAOVAccumulator
 
     foundation::Tile& get_tile() const;
 
-
     bool outside_tile(const foundation::Vector2i& pi) const;
 
     static float square_distance_to_pixel_center(const foundation::Vector2d& ps);
 };
-
-
-//
-// Unfiltered AOV class implementation.
-//
-
-inline foundation::Tile& UnfilteredAOVAccumulator::get_tile() const
-{
-    return *m_tile;
-}
-
-inline bool UnfilteredAOVAccumulator::outside_tile(
-    const foundation::Vector2i& pi) const
-{
-   return
-      pi.x < m_tile_origin_x || pi.y < m_tile_origin_y ||
-      pi.x > m_tile_end_x || pi.y > m_tile_end_y;
-}
-
-inline float UnfilteredAOVAccumulator::square_distance_to_pixel_center(
-    const foundation::Vector2d& ps)
-{
-    return static_cast<float>(
-        foundation::square(ps.y - 0.5) + foundation::square(ps.y - 0.5));
-}
 
 
 //
@@ -192,6 +166,33 @@ class AOVAccumulatorContainer
     size_t          m_size;
     AOVAccumulator* m_accumulators[MaxAovAccumulators];
 };
+
+
+//
+// UnfilteredAOVAccumulator class implementation.
+//
+
+inline foundation::Tile& UnfilteredAOVAccumulator::get_tile() const
+{
+    return *m_tile;
+}
+
+inline bool UnfilteredAOVAccumulator::outside_tile(
+    const foundation::Vector2i&     pi) const
+{
+    return
+        pi.x < m_tile_origin_x ||
+        pi.y < m_tile_origin_y ||
+        pi.x > m_tile_end_x ||
+        pi.y > m_tile_end_y;
+}
+
+inline float UnfilteredAOVAccumulator::square_distance_to_pixel_center(
+    const foundation::Vector2d&     ps)
+{
+    return static_cast<float>(
+        foundation::square(ps.y - 0.5) + foundation::square(ps.y - 0.5));
+}
 
 }       // namespace renderer
 
