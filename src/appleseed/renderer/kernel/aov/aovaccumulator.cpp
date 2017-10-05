@@ -80,6 +80,14 @@ void AOVAccumulator::on_tile_end(
 {
 }
 
+void AOVAccumulator::on_sample_begin()
+{
+}
+
+void AOVAccumulator::on_sample_end()
+{
+}
+
 void AOVAccumulator::write(
     const PixelContext&         pixel_context,
     const ShadingPoint&         shading_point,
@@ -189,6 +197,18 @@ void AOVAccumulatorContainer::on_tile_end(
 {
     for (size_t i = 0, e = m_size; i < e; ++i)
         m_accumulators[i]->on_tile_end(frame, tile_x, tile_y);
+}
+
+void AOVAccumulatorContainer::on_sample_begin()
+{
+    for (size_t i = 0, e = m_size; i < e; ++i)
+        m_accumulators[i]->on_sample_begin();
+}
+
+void AOVAccumulatorContainer::on_sample_end()
+{
+    for (size_t i = 0, e = m_size; i < e; ++i)
+        m_accumulators[i]->on_sample_end();
 }
 
 void AOVAccumulatorContainer::write(
