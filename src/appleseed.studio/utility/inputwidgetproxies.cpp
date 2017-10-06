@@ -418,8 +418,8 @@ void InputWidgetProxyCollection::clear()
 }
 
 void InputWidgetProxyCollection::insert(
-    const string&               key,
-    auto_ptr<IInputWidgetProxy> proxy)
+    const string&                   key,
+    unique_ptr<IInputWidgetProxy>   proxy)
 {
     m_proxies[key] = proxy.release();
 }

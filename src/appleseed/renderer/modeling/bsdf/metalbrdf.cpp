@@ -312,7 +312,7 @@ namespace
       private:
         typedef MetalBRDFInputValues InputValues;
 
-        auto_ptr<MDF> m_mdf;
+        unique_ptr<MDF> m_mdf;
     };
 
     typedef BSDFWrapper<MetalBRDFImpl> MetalBRDF;

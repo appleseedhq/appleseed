@@ -113,54 +113,54 @@ class MainWindow
     void signal_refresh_attribute_editor(const foundation::Dictionary& values) const;
 
   private:
-    // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
-    Ui::MainWindow*                         m_ui;
+    // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
+    Ui::MainWindow*                           m_ui;
 
-    QAction*                                m_action_new_project;
-    QAction*                                m_action_open_project;
-    QAction*                                m_action_save_project;
-    QAction*                                m_action_reload_project;
-    QAction*                                m_action_monitor_project_file;
+    QAction*                                  m_action_new_project;
+    QAction*                                  m_action_open_project;
+    QAction*                                  m_action_save_project;
+    QAction*                                  m_action_reload_project;
+    QAction*                                  m_action_monitor_project_file;
 
-    QAction*                                m_action_start_interactive_rendering;
-    QAction*                                m_action_start_final_rendering;
-    QAction*                                m_action_stop_rendering;
-    QAction*                                m_action_rendering_settings;
+    QAction*                                  m_action_start_interactive_rendering;
+    QAction*                                  m_action_start_final_rendering;
+    QAction*                                  m_action_stop_rendering;
+    QAction*                                  m_action_rendering_settings;
 
-    std::vector<QAction*>                   m_recently_opened;
-    std::vector<MinimizeButton*>            m_minimize_buttons;
+    std::vector<QAction*>                     m_recently_opened;
+    std::vector<MinimizeButton*>              m_minimize_buttons;
 
-    StatusBar                               m_status_bar;
-    std::auto_ptr<QtLogTarget>              m_log_target;
+    StatusBar                                 m_status_bar;
+    std::unique_ptr<QtLogTarget>              m_log_target;
 
-    renderer::ParamArray                    m_settings;
+    renderer::ParamArray                      m_settings;
 
-    std::auto_ptr<RenderingSettingsWindow>  m_rendering_settings_window;
-    std::auto_ptr<TestWindow>               m_test_window;
-    std::auto_ptr<BenchmarkWindow>          m_benchmark_window;
+    std::unique_ptr<RenderingSettingsWindow>  m_rendering_settings_window;
+    std::unique_ptr<TestWindow>               m_test_window;
+    std::unique_ptr<BenchmarkWindow>          m_benchmark_window;
 
-    ProjectManager                          m_project_manager;
-    ProjectExplorer*                        m_project_explorer;
-    QFileSystemWatcher*                     m_project_file_watcher;
-    AttributeEditor*                        m_attribute_editor;
-    RenderingManager                        m_rendering_manager;
+    ProjectManager                            m_project_manager;
+    ProjectExplorer*                          m_project_explorer;
+    QFileSystemWatcher*                       m_project_file_watcher;
+    AttributeEditor*                          m_attribute_editor;
+    RenderingManager                          m_rendering_manager;
 
     typedef std::map<std::string, RenderTab*> RenderTabCollection;
     typedef std::map<std::string, RenderTab::State> RenderTabStateCollection;
 
-    RenderTabCollection                     m_render_tabs;
-    std::map<int, RenderTab*>               m_tab_index_to_render_tab;
+    RenderTabCollection                       m_render_tabs;
+    std::map<int, RenderTab*>                 m_tab_index_to_render_tab;
 
     struct StateBeforeProjectOpen
     {
-        bool                                m_is_rendering;
-        RenderTabStateCollection            m_render_tab_states;
+        bool                                  m_is_rendering;
+        RenderTabStateCollection              m_render_tab_states;
     };
 
-    std::auto_ptr<StateBeforeProjectOpen>   m_state_before_project_open;
+    std::unique_ptr<StateBeforeProjectOpen>   m_state_before_project_open;
 
-    bool                                    m_fullscreen;
-    OCIO::ConstConfigRcPtr                  m_ocio_config;
+    bool                                      m_fullscreen;
+    OCIO::ConstConfigRcPtr                    m_ocio_config;
 
     // Menus.
     void build_menus();

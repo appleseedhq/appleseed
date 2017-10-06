@@ -33,6 +33,7 @@
 
 // Standard headers.
 #include <memory>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -60,9 +61,9 @@ namespace
         {
         }
 
-        virtual auto_ptr<Object> create()
+        virtual unique_ptr<Object> create()
         {
-            return auto_ptr<Object>(new Object(m_value));
+            return unique_ptr<Object>(new Object(m_value));
         }
     };
 }
@@ -71,8 +72,8 @@ TEST_SUITE(Foundation_Utility_Lazy_Access)
 {
     TEST_CASE(Get_GivenAccessBoundToNonNullObject_ReturnsNonNullPointer)
     {
-        auto_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
-        Lazy<Object> object(factory);
+        unique_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
+        Lazy<Object> object(move(factory));
 
         Access<Object> access(&object);
 
@@ -81,8 +82,8 @@ TEST_SUITE(Foundation_Utility_Lazy_Access)
 
     TEST_CASE(OperatorArrow_GivenAccessBoundToNonNullObject_GivesAccessToObject)
     {
-        auto_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
-        Lazy<Object> object(factory);
+        unique_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
+        Lazy<Object> object(move(factory));
 
         Access<Object> access(&object);
 
@@ -91,8 +92,8 @@ TEST_SUITE(Foundation_Utility_Lazy_Access)
 
     TEST_CASE(OperatorStar_GivenAccessBoundToNonNullObject_GivesAccessToObject)
     {
-        auto_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
-        Lazy<Object> object(factory);
+        unique_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
+        Lazy<Object> object(move(factory));
 
         Access<Object> access(&object);
 
@@ -101,16 +102,16 @@ TEST_SUITE(Foundation_Utility_Lazy_Access)
 
     struct NullObjectFactory : public ObjectFactory
     {
-        virtual auto_ptr<Object> create()
+        virtual unique_ptr<Object> create()
         {
-            return auto_ptr<Object>(0);
+            return unique_ptr<Object>(nullptr);
         }
     };
 
     TEST_CASE(Get_GivenAccessBoundToNullObject_ReturnsNullPointer)
     {
-        auto_ptr<ObjectFactory> factory(new NullObjectFactory());
-        Lazy<Object> object(factory);
+        unique_ptr<ObjectFactory> factory(new NullObjectFactory());
+        Lazy<Object> object(move(factory));
 
         Access<Object> access(&object);
 

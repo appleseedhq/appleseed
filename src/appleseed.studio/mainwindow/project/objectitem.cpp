@@ -150,7 +150,7 @@ void ObjectItem::slot_instantiate()
     if (!instance_name.empty())
     {
         m_editor_context.m_rendering_manager.schedule_or_execute(
-            auto_ptr<RenderingManager::IScheduledAction>(
+            unique_ptr<RenderingManager::IScheduledAction>(
                 new EntityInstantiationAction<ObjectItem>(this, instance_name)));
     }
 }
@@ -175,7 +175,7 @@ void ObjectItem::do_instantiate(const string& name)
 void ObjectItem::delete_multiple(const QList<ItemBase*>& items)
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        auto_ptr<RenderingManager::IScheduledAction>(
+        unique_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<ObjectItem>(
                 qlist_static_cast<ObjectItem*>(items))));
 }

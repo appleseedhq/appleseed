@@ -74,7 +74,7 @@ struct FluidChannels
 //
 
 // Read a fluid file created by 3Delight for Maya.
-std::auto_ptr<VoxelGrid> read_fluid_file(
+std::unique_ptr<VoxelGrid> read_fluid_file(
     const char*         filename,
     FluidChannels&      channels);
 

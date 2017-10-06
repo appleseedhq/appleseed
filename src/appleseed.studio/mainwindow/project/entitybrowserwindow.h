@@ -75,7 +75,7 @@ class EntityBrowserWindow
         QListWidget*    m_list_widget;
     };
 
-    // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
+    // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
     Ui::EntityBrowserWindow*    m_ui;
 
     std::map<int, Page>         m_pages;

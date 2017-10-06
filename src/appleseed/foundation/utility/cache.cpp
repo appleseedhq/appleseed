@@ -50,9 +50,9 @@ namespace cache_impl
         m_miss_count = miss_count;
     }
 
-    auto_ptr<Statistics::Entry> CacheStatisticsEntry::clone() const
+    unique_ptr<Statistics::Entry> CacheStatisticsEntry::clone() const
     {
-        return auto_ptr<Entry>(new CacheStatisticsEntry(*this));
+        return unique_ptr<Entry>(new CacheStatisticsEntry(*this));
     }
 
     void CacheStatisticsEntry::merge(const Entry* other)

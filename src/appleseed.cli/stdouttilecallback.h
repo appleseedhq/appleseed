@@ -49,7 +49,7 @@ class StdOutTileCallbackFactory
     virtual renderer::ITileCallback* create() override;
 
   private:
-    std::auto_ptr<renderer::ITileCallback> m_callback;
+    std::unique_ptr<renderer::ITileCallback> m_callback;
 };
 
 }       // namespace cli

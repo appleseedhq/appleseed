@@ -360,7 +360,7 @@ namespace
         const Parameters            m_params;
 
         JobQueue                    m_job_queue;
-        auto_ptr<JobManager>        m_job_manager;
+        unique_ptr<JobManager>      m_job_manager;
         AbortSwitch                 m_abort_switch;
 
         vector<ITileRenderer*>      m_tile_renderers;   // tile renderers, one per thread
@@ -370,8 +370,8 @@ namespace
         TileJobFactory              m_tile_job_factory;
 
         bool                        m_is_rendering;
-        auto_ptr<PassManagerFunc>   m_pass_manager_func;
-        auto_ptr<boost::thread>     m_pass_manager_thread;
+        unique_ptr<PassManagerFunc> m_pass_manager_func;
+        unique_ptr<boost::thread>   m_pass_manager_thread;
 
         void print_tile_renderers_stats() const
         {

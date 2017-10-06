@@ -62,6 +62,7 @@
 // Standard headers.
 #include <memory>
 #include <string>
+#include <utility>
 
 using namespace appleseed::studio;
 using namespace foundation;
@@ -252,7 +253,7 @@ void ObjectInstanceItem::slot_assign_new_disney_material()
 {
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        auto_ptr<RenderingManager::IScheduledAction>(
+        unique_ptr<RenderingManager::IScheduledAction>(
             new AssignNewDisneyMaterialAction(
                 m_editor_context,
                 get_action_items<ObjectInstanceItem>())));
@@ -373,7 +374,7 @@ namespace
 void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QString entity_name, QVariant data)
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        auto_ptr<RenderingManager::IScheduledAction>(
+        unique_ptr<RenderingManager::IScheduledAction>(
             new AssignMaterialAction(this, page_name, entity_name, data)));
 
     qobject_cast<QWidget*>(sender()->parent())->close();
@@ -430,7 +431,7 @@ void ObjectInstanceItem::slot_clear_material()
     const QVariant data = qobject_cast<QAction*>(sender())->data();
 
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        auto_ptr<RenderingManager::IScheduledAction>(
+        unique_ptr<RenderingManager::IScheduledAction>(
             new ClearMaterialAction(this, data)));
 }
 
@@ -453,7 +454,7 @@ void ObjectInstanceItem::clear_material(const QVariant& untyped_data)
 void ObjectInstanceItem::delete_multiple(const QList<ItemBase*>& items)
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        auto_ptr<RenderingManager::IScheduledAction>(
+        unique_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<ObjectInstanceItem>(
                 qlist_static_cast<ObjectInstanceItem*>(items))));
 }

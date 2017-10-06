@@ -138,7 +138,7 @@ void ObjectCollectionItem::slot_import_objects()
         return;
 
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        auto_ptr<RenderingManager::IScheduledAction>(
+        unique_ptr<RenderingManager::IScheduledAction>(
             new ImportObjectsAction(this, filepaths)));
 }
 

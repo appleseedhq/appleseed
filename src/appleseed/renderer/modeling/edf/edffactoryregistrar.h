@@ -71,7 +71,7 @@ class APPLESEED_DLLSYMBOL EDFFactoryRegistrar
     ~EDFFactoryRegistrar();
 
     // Register an EDF factory.
-    void register_factory(std::auto_ptr<FactoryType> factory);
+    void register_factory(std::unique_ptr<FactoryType> factory);
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;

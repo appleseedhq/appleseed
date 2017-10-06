@@ -186,11 +186,11 @@ class Builder
 
     // Build a BSP tree for a given root leaf.
     void build(
-        TreeType&               tree,
-        std::auto_ptr<LeafType> root_leaf,
-        LeafFactory&            factory,
-        LeafSplitter&           splitter,
-        const double            max_duplication_rate = 2.0);
+        TreeType&                   tree,
+        std::unique_ptr<LeafType>   root_leaf,
+        LeafFactory&                factory,
+        LeafSplitter&               splitter,
+        const double                max_duplication_rate = 2.0);
 
     // Return the construction time.
     double get_build_time() const;
@@ -205,24 +205,24 @@ class Builder
 
     // Insert a leaf into a leaf queue.
     static void insert_leaf_record(
-        TreeType&               tree,
-        LeafSplitter&           splitter,
-        LeafQueue&              leaf_queue,
-        const LeafInfoType&     leaf_info,
-        const size_t            leaf_index,
-        const size_t            node_index);
+        TreeType&                   tree,
+        LeafSplitter&               splitter,
+        LeafQueue&                  leaf_queue,
+        const LeafInfoType&         leaf_info,
+        const size_t                leaf_index,
+        const size_t                node_index);
 
     // Create the root of the tree.
     void create_root(
-        TreeType&               tree,
-        std::auto_ptr<LeafType> root_leaf);
+        TreeType&                   tree,
+        std::unique_ptr<LeafType>   root_leaf);
 
     // Subdivide the tree.
     void subdivide(
-        TreeType&               tree,
-        LeafFactory&            factory,
-        LeafSplitter&           splitter,
-        const double            max_duplication_rate);
+        TreeType&                   tree,
+        LeafFactory&                factory,
+        LeafSplitter&               splitter,
+        const double                max_duplication_rate);
 };
 
 
@@ -313,11 +313,11 @@ template <
     typename Timer
 >
 void Builder<Tree, LeafFactory, LeafSplitter, Timer>::build(
-    TreeType&               tree,
-    std::auto_ptr<LeafType> root_leaf,
-    LeafFactory&            factory,
-    LeafSplitter&           splitter,
-    const double            max_duplication_rate)
+    TreeType&                   tree,
+    std::unique_ptr<LeafType>   root_leaf,
+    LeafFactory&                factory,
+    LeafSplitter&               splitter,
+    const double                max_duplication_rate)
 {
     // Start stopwatch.
     Stopwatch<Timer> stopwatch;
@@ -339,7 +339,7 @@ void Builder<Tree, LeafFactory, LeafSplitter, Timer>::build(
     }
 
     // Create the root of the tree.
-    create_root(tree, root_leaf);
+    create_root(tree, std::move(root_leaf));
 
     // Subdivide the tree.
     subdivide(tree, factory, splitter, max_duplication_rate);
@@ -367,12 +367,12 @@ template <
     typename Timer
 >
 void Builder<Tree, LeafFactory, LeafSplitter, Timer>::insert_leaf_record(
-    TreeType&               tree,
-    LeafSplitter&           splitter,
-    LeafQueue&              leaf_queue,
-    const LeafInfoType&     leaf_info,
-    const size_t            leaf_index,
-    const size_t            node_index)
+    TreeType&                   tree,
+    LeafSplitter&               splitter,
+    LeafQueue&                  leaf_queue,
+    const LeafInfoType&         leaf_info,
+    const size_t                leaf_index,
+    const size_t                node_index)
 {
     // Compute the splitting priority of the leaf.
     const LeafType& leaf = *tree.m_leaves[leaf_index];
@@ -396,8 +396,8 @@ template <
     typename Timer
 >
 void Builder<Tree, LeafFactory, LeafSplitter, Timer>::create_root(
-    TreeType&               tree,
-    std::auto_ptr<LeafType> root_leaf)
+    TreeType&                   tree,
+    std::unique_ptr<LeafType>   root_leaf)
 {
     assert(tree.m_leaves.empty());
     assert(tree.m_nodes.empty());
@@ -420,10 +420,10 @@ template <
     typename Timer
 >
 void Builder<Tree, LeafFactory, LeafSplitter, Timer>::subdivide(
-    TreeType&               tree,
-    LeafFactory&            factory,
-    LeafSplitter&           splitter,
-    const double            max_duplication_rate)
+    TreeType&                   tree,
+    LeafFactory&                factory,
+    LeafSplitter&               splitter,
+    const double                max_duplication_rate)
 {
     // Create the leaf queue, keeping track of leaves that needs
     // splitting, and ordering them by splitting priority.

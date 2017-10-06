@@ -174,7 +174,7 @@ class TriangleTreeFactory
         const TriangleTree::Arguments& arguments);
 
     // Create the triangle tree.
-    virtual std::auto_ptr<TriangleTree> create();
+    virtual std::unique_ptr<TriangleTree> create();
 
   private:
     TriangleTree::Arguments m_arguments;

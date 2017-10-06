@@ -155,7 +155,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
 
       private:
         const CanvasProperties  m_props;
-        auto_ptr<Tile>          m_tile;
+        unique_ptr<Tile>        m_tile;
 
         void create_horizontal_gradient()
         {

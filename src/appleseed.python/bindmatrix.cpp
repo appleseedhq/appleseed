@@ -52,7 +52,7 @@ namespace
             bpy::throw_error_already_set();
         }
 
-        auto_ptr<UnalignedMatrix44<T>> r(new UnalignedMatrix44<T>());
+        unique_ptr<UnalignedMatrix44<T>> r(new UnalignedMatrix44<T>());
 
         for (size_t i = 0; i < 4 * 4; ++i)
         {

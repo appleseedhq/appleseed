@@ -58,7 +58,7 @@ class Registrar
     ~Registrar();
 
     // Insert an item, replacing any existing item with the same name.
-    void insert(const std::string& name, std::auto_ptr<T> item);
+    void insert(const std::string& name, std::unique_ptr<T> item);
 
     // Lookup an item. Returns 0 if the item could not be found.
     T* lookup(const std::string& name) const;
@@ -83,7 +83,7 @@ Registrar<T>::~Registrar()
 }
 
 template <typename T>
-void Registrar<T>::insert(const std::string& name, std::auto_ptr<T> item)
+void Registrar<T>::insert(const std::string& name, std::unique_ptr<T> item)
 {
     const typename Items::iterator i = m_items.find(name);
 

@@ -101,9 +101,9 @@ class EntityEditor
     EntityEditor(
         QWidget*                            parent,
         const renderer::Project&            project,
-        std::auto_ptr<IFormFactory>         form_factory,
-        std::auto_ptr<IEntityBrowser>       entity_browser,
-        std::auto_ptr<CustomEntityUI>       custom_ui,
+        std::unique_ptr<IFormFactory>       form_factory,
+        std::unique_ptr<IEntityBrowser>     entity_browser,
+        std::unique_ptr<CustomEntityUI>     custom_ui,
         const foundation::Dictionary&       values = foundation::Dictionary());
 
     foundation::Dictionary get_values() const;
@@ -116,9 +116,9 @@ class EntityEditor
   private:
     QWidget*                                m_parent;
     const renderer::Project&                m_project;
-    std::auto_ptr<IFormFactory>             m_form_factory;
-    std::auto_ptr<IEntityBrowser>           m_entity_browser;
-    std::auto_ptr<CustomEntityUI>           m_custom_ui;
+    std::unique_ptr<IFormFactory>           m_form_factory;
+    std::unique_ptr<IEntityBrowser>         m_entity_browser;
+    std::unique_ptr<CustomEntityUI>         m_custom_ui;
 
     QVBoxLayout*                            m_top_layout;
     QFormLayout*                            m_form_layout;
@@ -142,15 +142,15 @@ class EntityEditor
     // Create one or multiple widgets given the definition of one input.
     void create_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
 
-    std::auto_ptr<IInputWidgetProxy> create_text_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
-    std::auto_ptr<IInputWidgetProxy> create_numeric_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
-    std::auto_ptr<IInputWidgetProxy> create_integer_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
-    std::auto_ptr<IInputWidgetProxy> create_boolean_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
-    std::auto_ptr<IInputWidgetProxy> create_enumeration_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
-    std::auto_ptr<IInputWidgetProxy> create_color_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
-    std::auto_ptr<IInputWidgetProxy> create_colormap_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
-    std::auto_ptr<IInputWidgetProxy> create_entity_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
-    std::auto_ptr<IInputWidgetProxy> create_file_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
+    std::unique_ptr<IInputWidgetProxy> create_text_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
+    std::unique_ptr<IInputWidgetProxy> create_numeric_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
+    std::unique_ptr<IInputWidgetProxy> create_integer_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
+    std::unique_ptr<IInputWidgetProxy> create_boolean_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
+    std::unique_ptr<IInputWidgetProxy> create_enumeration_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
+    std::unique_ptr<IInputWidgetProxy> create_color_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
+    std::unique_ptr<IInputWidgetProxy> create_colormap_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
+    std::unique_ptr<IInputWidgetProxy> create_entity_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
+    std::unique_ptr<IInputWidgetProxy> create_file_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
 
   private slots:
     void slot_rebuild_form();

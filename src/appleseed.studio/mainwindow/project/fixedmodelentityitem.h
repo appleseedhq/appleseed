@@ -122,21 +122,21 @@ void FixedModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attri
     if (!Base::allows_edition())
         return;
 
-    std::auto_ptr<EntityEditor::IFormFactory> form_factory(
+    std::unique_ptr<EntityEditor::IFormFactory> form_factory(
         new FixedModelEntityEditorFormFactoryType(
             Base::m_editor_context.m_project_builder.template get_factory_registrar<Entity>(),
             Base::m_entity->get_name(),
             Base::m_entity->get_model()));
 
-    std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
+    std::unique_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<ParentEntity>(Base::m_parent));
 
     if (attribute_editor)
     {
         attribute_editor->edit(
-            form_factory,
-            entity_browser,
-            std::auto_ptr<CustomEntityUI>(),
+            std::move(form_factory),
+            std::move(entity_browser),
+            std::unique_ptr<CustomEntityUI>(),
             get_values(),
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)));
@@ -151,8 +151,8 @@ void FixedModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attri
             QTreeWidgetItem::treeWidget(),
             window_title,
             Base::m_editor_context.m_project,
-            form_factory,
-            entity_browser,
+            std::move(form_factory),
+            std::move(entity_browser),
             get_values(),
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)),

@@ -42,7 +42,7 @@ TEST_SUITE(Foundation_Utility_Registrar)
     TEST_CASE(Lookup_GivenNameOfRegisteredItem_ReturnsItem)
     {
         Registrar<int> registrar;
-        registrar.insert("x", auto_ptr<int>(new int(42)));
+        registrar.insert("x", unique_ptr<int>(new int(42)));
 
         const int* x = registrar.lookup("x");
 
@@ -62,8 +62,8 @@ TEST_SUITE(Foundation_Utility_Registrar)
     TEST_CASE(Insert_GivenNameOfAlreadyRegisteredItem_ReplacesItem)
     {
         Registrar<int> registrar;
-        registrar.insert("x", auto_ptr<int>(new int(42)));
-        registrar.insert("x", auto_ptr<int>(new int(66)));
+        registrar.insert("x", unique_ptr<int>(new int(42)));
+        registrar.insert("x", unique_ptr<int>(new int(66)));
 
         const int* x = registrar.lookup("x");
 
@@ -92,8 +92,8 @@ TEST_SUITE(Foundation_Utility_Registrar)
         bool destructed = false;
 
         Registrar<Item> registrar;
-        registrar.insert("x", auto_ptr<Item>(new Item(&destructed)));
-        registrar.insert("x", auto_ptr<Item>(new Item()));
+        registrar.insert("x", unique_ptr<Item>(new Item(&destructed)));
+        registrar.insert("x", unique_ptr<Item>(new Item()));
 
         EXPECT_TRUE(destructed);
     }
@@ -104,7 +104,7 @@ TEST_SUITE(Foundation_Utility_Registrar)
 
         {
             Registrar<Item> registrar;
-            registrar.insert("x", auto_ptr<Item>(new Item(&destructed)));
+            registrar.insert("x", unique_ptr<Item>(new Item(&destructed)));
         }
 
         EXPECT_TRUE(destructed);

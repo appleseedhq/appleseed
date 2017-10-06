@@ -61,9 +61,9 @@ class EntityEditorWindow
         QWidget*                                        parent,
         const std::string&                              window_title,
         const renderer::Project&                        project,
-        std::auto_ptr<EntityEditor::IFormFactory>       form_factory,
-        std::auto_ptr<EntityEditor::IEntityBrowser>     entity_browser,
-        std::auto_ptr<CustomEntityUI>                   custom_entity_ui,
+        std::unique_ptr<EntityEditor::IFormFactory>     form_factory,
+        std::unique_ptr<EntityEditor::IEntityBrowser>   entity_browser,
+        std::unique_ptr<CustomEntityUI>                 custom_entity_ui,
         const foundation::Dictionary&                   values = foundation::Dictionary());
 
     ~EntityEditorWindow();
@@ -74,11 +74,11 @@ class EntityEditorWindow
     void signal_canceled(foundation::Dictionary values);
 
   private:
-    // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
-    Ui::EntityEditorWindow*     m_ui;
+    // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
+    Ui::EntityEditorWindow*       m_ui;
 
-    std::auto_ptr<EntityEditor> m_entity_editor;
-    foundation::Dictionary      m_initial_values;
+    std::unique_ptr<EntityEditor> m_entity_editor;
+    foundation::Dictionary        m_initial_values;
 
     void create_connections();
 

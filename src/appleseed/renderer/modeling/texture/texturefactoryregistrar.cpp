@@ -42,6 +42,7 @@
 // Standard headers.
 #include <cassert>
 #include <string>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -59,8 +60,8 @@ struct TextureFactoryRegistrar::Impl
 TextureFactoryRegistrar::TextureFactoryRegistrar()
   : impl(new Impl())
 {
-    register_factory(auto_ptr<FactoryType>(new DiskTexture2dFactory()));
-    register_factory(auto_ptr<FactoryType>(new MemoryTexture2dFactory()));
+    register_factory(unique_ptr<FactoryType>(new DiskTexture2dFactory()));
+    register_factory(unique_ptr<FactoryType>(new MemoryTexture2dFactory()));
 }
 
 TextureFactoryRegistrar::~TextureFactoryRegistrar()
@@ -68,10 +69,10 @@ TextureFactoryRegistrar::~TextureFactoryRegistrar()
     delete impl;
 }
 
-void TextureFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+void TextureFactoryRegistrar::register_factory(unique_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();
-    impl->m_registrar.insert(model, factory);
+    impl->m_registrar.insert(model, move(factory));
 }
 
 TextureFactoryArray TextureFactoryRegistrar::get_factories() const

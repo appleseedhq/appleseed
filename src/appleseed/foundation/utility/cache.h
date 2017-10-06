@@ -1105,7 +1105,7 @@ namespace cache_impl
             const uint64        hit_count,
             const uint64        miss_count);
 
-        virtual std::auto_ptr<Entry> clone() const override;
+        virtual std::unique_ptr<Entry> clone() const override;
         virtual void merge(const Entry* other) override;
         virtual std::string to_string() const override;
     };
@@ -1117,7 +1117,7 @@ Statistics make_single_stage_cache_stats(const Cache& cache)
     Statistics stats;
 
     stats.insert(
-        std::auto_ptr<cache_impl::CacheStatisticsEntry>(
+        std::unique_ptr<cache_impl::CacheStatisticsEntry>(
             new cache_impl::CacheStatisticsEntry(
                 "performances",
                 cache.get_hit_count(),
@@ -1132,21 +1132,21 @@ Statistics make_dual_stage_cache_stats(const Cache& cache)
     Statistics stats;
 
     stats.insert(
-        std::auto_ptr<cache_impl::CacheStatisticsEntry>(
+        std::unique_ptr<cache_impl::CacheStatisticsEntry>(
             new cache_impl::CacheStatisticsEntry(
                 "combined",
                 cache.get_stage0_hit_count() + cache.get_stage1_hit_count(),
                 cache.get_stage1_miss_count())));
 
     stats.insert(
-        std::auto_ptr<cache_impl::CacheStatisticsEntry>(
+        std::unique_ptr<cache_impl::CacheStatisticsEntry>(
             new cache_impl::CacheStatisticsEntry(
                 "stage-0",
                 cache.get_stage0_hit_count(),
                 cache.get_stage0_miss_count())));
 
     stats.insert(
-        std::auto_ptr<cache_impl::CacheStatisticsEntry>(
+        std::unique_ptr<cache_impl::CacheStatisticsEntry>(
             new cache_impl::CacheStatisticsEntry(
                 "stage-1",
                 cache.get_stage1_hit_count(),

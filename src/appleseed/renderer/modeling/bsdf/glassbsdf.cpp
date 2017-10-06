@@ -508,7 +508,7 @@ namespace
       private:
         typedef GlassBSDFInputValues InputValues;
 
-        auto_ptr<MDF>   m_mdf;
+        unique_ptr<MDF> m_mdf;
 
         enum VolumeParameterization
         {

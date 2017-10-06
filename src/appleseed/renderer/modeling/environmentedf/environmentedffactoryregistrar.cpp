@@ -48,6 +48,7 @@
 // Standard headers.
 #include <cassert>
 #include <string>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -65,14 +66,14 @@ struct EnvironmentEDFFactoryRegistrar::Impl
 EnvironmentEDFFactoryRegistrar::EnvironmentEDFFactoryRegistrar()
   : impl(new Impl())
 {
-    register_factory(auto_ptr<FactoryType>(new ConstantEnvironmentEDFFactory()));
-    register_factory(auto_ptr<FactoryType>(new ConstantHemisphereEnvironmentEDFFactory()));
-    register_factory(auto_ptr<FactoryType>(new GradientEnvironmentEDFFactory()));
-    register_factory(auto_ptr<FactoryType>(new HosekEnvironmentEDFFactory()));
-    register_factory(auto_ptr<FactoryType>(new LatLongMapEnvironmentEDFFactory()));
-    register_factory(auto_ptr<FactoryType>(new MirrorBallMapEnvironmentEDFFactory()));
-    register_factory(auto_ptr<FactoryType>(new OSLEnvironmentEDFFactory()));
-    register_factory(auto_ptr<FactoryType>(new PreethamEnvironmentEDFFactory()));
+    register_factory(unique_ptr<FactoryType>(new ConstantEnvironmentEDFFactory()));
+    register_factory(unique_ptr<FactoryType>(new ConstantHemisphereEnvironmentEDFFactory()));
+    register_factory(unique_ptr<FactoryType>(new GradientEnvironmentEDFFactory()));
+    register_factory(unique_ptr<FactoryType>(new HosekEnvironmentEDFFactory()));
+    register_factory(unique_ptr<FactoryType>(new LatLongMapEnvironmentEDFFactory()));
+    register_factory(unique_ptr<FactoryType>(new MirrorBallMapEnvironmentEDFFactory()));
+    register_factory(unique_ptr<FactoryType>(new OSLEnvironmentEDFFactory()));
+    register_factory(unique_ptr<FactoryType>(new PreethamEnvironmentEDFFactory()));
 }
 
 EnvironmentEDFFactoryRegistrar::~EnvironmentEDFFactoryRegistrar()
@@ -80,10 +81,10 @@ EnvironmentEDFFactoryRegistrar::~EnvironmentEDFFactoryRegistrar()
     delete impl;
 }
 
-void EnvironmentEDFFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+void EnvironmentEDFFactoryRegistrar::register_factory(unique_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();
-    impl->m_registrar.insert(model, factory);
+    impl->m_registrar.insert(model, move(factory));
 }
 
 EnvironmentEDFFactoryArray EnvironmentEDFFactoryRegistrar::get_factories() const

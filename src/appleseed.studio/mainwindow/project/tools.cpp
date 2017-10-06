@@ -47,6 +47,7 @@
 
 // Standard headers.
 #include <cmath>
+#include <utility>
 
 using namespace foundation;
 using namespace renderer;
@@ -80,26 +81,26 @@ string get_entity_name_dialog(
 }
 
 void open_entity_editor(
-    QWidget*                                parent,
-    const string&                           window_title,
-    const Project&                          project,
-    auto_ptr<EntityEditor::IFormFactory>    form_factory,
-    auto_ptr<EntityEditor::IEntityBrowser>  entity_browser,
-    auto_ptr<CustomEntityUI>                custom_entity_ui,
-    const Dictionary&                       values,
-    QObject*                                receiver,
-    const char*                             slot_apply,
-    const char*                             slot_accept,
-    const char*                             slot_cancel)
+    QWidget*                                    parent,
+    const string&                               window_title,
+    const Project&                              project,
+    unique_ptr<EntityEditor::IFormFactory>      form_factory,
+    unique_ptr<EntityEditor::IEntityBrowser>    entity_browser,
+    unique_ptr<CustomEntityUI>                  custom_entity_ui,
+    const Dictionary&                           values,
+    QObject*                                    receiver,
+    const char*                                 slot_apply,
+    const char*                                 slot_accept,
+    const char*                                 slot_cancel)
 {
     EntityEditorWindow* editor_window =
         new EntityEditorWindow(
             parent,
             window_title,
             project,
-            form_factory,
-            entity_browser,
-            custom_entity_ui,
+            move(form_factory),
+            move(entity_browser),
+            move(custom_entity_ui),
             values);
 
     QObject::connect(
@@ -119,24 +120,24 @@ void open_entity_editor(
 }
 
 void open_entity_editor(
-    QWidget*                                parent,
-    const string&                           window_title,
-    const Project&                          project,
-    auto_ptr<EntityEditor::IFormFactory>    form_factory,
-    auto_ptr<EntityEditor::IEntityBrowser>  entity_browser,
-    const Dictionary&                       values,
-    QObject*                                receiver,
-    const char*                             slot_apply,
-    const char*                             slot_accept,
-    const char*                             slot_cancel)
+    QWidget*                                    parent,
+    const string&                               window_title,
+    const Project&                              project,
+    unique_ptr<EntityEditor::IFormFactory>      form_factory,
+    unique_ptr<EntityEditor::IEntityBrowser>    entity_browser,
+    const Dictionary&                           values,
+    QObject*                                    receiver,
+    const char*                                 slot_apply,
+    const char*                                 slot_accept,
+    const char*                                 slot_cancel)
 {
     open_entity_editor(
         parent,
         window_title,
         project,
-        form_factory,
-        entity_browser,
-        auto_ptr<CustomEntityUI>(),
+        move(form_factory),
+        move(entity_browser),
+        unique_ptr<CustomEntityUI>(),
         values,
         receiver,
         slot_apply,
@@ -145,23 +146,23 @@ void open_entity_editor(
 }
 
 void open_entity_editor(
-    QWidget*                                parent,
-    const string&                           window_title,
-    const Project&                          project,
-    auto_ptr<EntityEditor::IFormFactory>    form_factory,
-    auto_ptr<EntityEditor::IEntityBrowser>  entity_browser,
-    QObject*                                receiver,
-    const char*                             slot_apply,
-    const char*                             slot_accept,
-    const char*                             slot_cancel)
+    QWidget*                                    parent,
+    const string&                               window_title,
+    const Project&                              project,
+    unique_ptr<EntityEditor::IFormFactory>      form_factory,
+    unique_ptr<EntityEditor::IEntityBrowser>    entity_browser,
+    QObject*                                    receiver,
+    const char*                                 slot_apply,
+    const char*                                 slot_accept,
+    const char*                                 slot_cancel)
 {
     open_entity_editor(
         parent,
         window_title,
         project,
-        form_factory,
-        entity_browser,
-        auto_ptr<CustomEntityUI>(),
+        move(form_factory),
+        move(entity_browser),
+        unique_ptr<CustomEntityUI>(),
         Dictionary(),
         receiver,
         slot_apply,

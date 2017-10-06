@@ -98,10 +98,10 @@ struct Frame::Impl
     size_t                  m_tile_height;
     string                  m_filter_name;
     float                   m_filter_radius;
-    auto_ptr<Filter2f>      m_filter;
+    unique_ptr<Filter2f>    m_filter;
     AABB2u                  m_crop_window;
-    auto_ptr<Image>         m_image;
-    auto_ptr<ImageStack>    m_aov_images;
+    unique_ptr<Image>       m_image;
+    unique_ptr<ImageStack>  m_aov_images;
     AOVContainer            m_aovs;
 };
 

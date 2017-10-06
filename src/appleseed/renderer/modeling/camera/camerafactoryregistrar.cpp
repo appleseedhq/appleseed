@@ -44,6 +44,7 @@
 // Standard headers.
 #include <cassert>
 #include <string>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -61,10 +62,10 @@ struct CameraFactoryRegistrar::Impl
 CameraFactoryRegistrar::CameraFactoryRegistrar()
   : impl(new Impl())
 {
-    register_factory(auto_ptr<FactoryType>(new OrthographicCameraFactory()));
-    register_factory(auto_ptr<FactoryType>(new PinholeCameraFactory()));
-    register_factory(auto_ptr<FactoryType>(new SphericalCameraFactory()));
-    register_factory(auto_ptr<FactoryType>(new ThinLensCameraFactory()));
+    register_factory(unique_ptr<FactoryType>(new OrthographicCameraFactory()));
+    register_factory(unique_ptr<FactoryType>(new PinholeCameraFactory()));
+    register_factory(unique_ptr<FactoryType>(new SphericalCameraFactory()));
+    register_factory(unique_ptr<FactoryType>(new ThinLensCameraFactory()));
 }
 
 CameraFactoryRegistrar::~CameraFactoryRegistrar()
@@ -72,10 +73,10 @@ CameraFactoryRegistrar::~CameraFactoryRegistrar()
     delete impl;
 }
 
-void CameraFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+void CameraFactoryRegistrar::register_factory(unique_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();
-    impl->m_registrar.insert(model, factory);
+    impl->m_registrar.insert(model, move(factory));
 }
 
 CameraFactoryArray CameraFactoryRegistrar::get_factories() const

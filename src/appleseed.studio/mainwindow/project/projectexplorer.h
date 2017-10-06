@@ -93,7 +93,7 @@ class ProjectExplorer
     ProjectBuilder              m_project_builder;
     ItemRegistry                m_item_registry;
     EntityEditorContext         m_editor_context;
-    std::auto_ptr<QShortcut>    m_delete_shortcut;
+    std::unique_ptr<QShortcut>  m_delete_shortcut;
 
     QMenu* build_single_item_context_menu(QTreeWidgetItem* item) const;
     QMenu* build_multiple_items_context_menu(const QList<QTreeWidgetItem*>& item_widgets) const;

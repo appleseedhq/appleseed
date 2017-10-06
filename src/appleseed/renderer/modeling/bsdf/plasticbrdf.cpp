@@ -365,7 +365,7 @@ namespace
       private:
         typedef PlasticBRDFInputValues InputValues;
 
-        auto_ptr<MDF> m_mdf;
+        unique_ptr<MDF> m_mdf;
 
         static float choose_specular_probability(
             const InputValues&          values,

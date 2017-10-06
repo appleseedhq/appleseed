@@ -223,7 +223,7 @@ Tile* GenericProgressiveImageFileReader::read_tile(
         // the correct dimensions, at some expenses.
         //
 
-        auto_ptr<Tile> source_tile(
+        unique_ptr<Tile> source_tile(
             new Tile(
                 impl->m_props.m_tile_width,
                 impl->m_props.m_tile_height,
@@ -247,7 +247,7 @@ Tile* GenericProgressiveImageFileReader::read_tile(
         if (tile_width == impl->m_props.m_tile_width && tile_height == impl->m_props.m_tile_height)
             return source_tile.release();
 
-        auto_ptr<Tile> shrunk_tile(
+        unique_ptr<Tile> shrunk_tile(
             new Tile(
                 tile_width,
                 tile_height,
@@ -270,7 +270,7 @@ Tile* GenericProgressiveImageFileReader::read_tile(
         // Scanline image.
         //
 
-        auto_ptr<Tile> tile(
+        unique_ptr<Tile> tile(
             new Tile(
                 impl->m_props.m_canvas_width,
                 impl->m_props.m_canvas_height,

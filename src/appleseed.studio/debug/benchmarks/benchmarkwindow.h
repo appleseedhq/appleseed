@@ -69,7 +69,7 @@ class BenchmarkWindow
     virtual void closeEvent(QCloseEvent* event) override;
 
   private:
-    // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
+    // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
     Ui::BenchmarkWindow*                m_ui;
 
     ChartWidget                         m_chart_widget;
@@ -85,7 +85,7 @@ class BenchmarkWindow
 
     void enable_widgets(const bool enabled);
 
-    std::auto_ptr<ChartBase> create_chart(
+    std::unique_ptr<ChartBase> create_chart(
         const foundation::UniqueID      case_uid,
         const size_t                    chart_index) const;
 

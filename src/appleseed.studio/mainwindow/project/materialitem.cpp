@@ -53,6 +53,9 @@
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 
+// Standard headers.
+#include <utility>
+
 using namespace foundation;
 using namespace renderer;
 using namespace std;
@@ -91,22 +94,22 @@ QMenu* MaterialItem::get_single_item_context_menu() const
 
 void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
 {
-    auto_ptr<EntityEditor::IFormFactory> form_factory(
+    unique_ptr<EntityEditor::IFormFactory> form_factory(
         new FixedModelEntityEditorFormFactoryType(
             m_editor_context.m_project_builder.get_factory_registrar<Material>(),
             m_entity->get_name(),
             m_entity->get_model()));
 
-    auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
+    unique_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<Assembly>(m_parent));
 
-    auto_ptr<CustomEntityUI> custom_entity_ui;
+    unique_ptr<CustomEntityUI> custom_entity_ui;
 
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
     if (strcmp(m_entity->get_model(), "disney_material") == 0)
     {
         custom_entity_ui =
-            auto_ptr<CustomEntityUI>(
+            unique_ptr<CustomEntityUI>(
                 new DisneyMaterialCustomUI(
                     m_editor_context.m_project,
                     m_editor_context.m_settings));
@@ -118,9 +121,9 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
     if (attribute_editor)
     {
         attribute_editor->edit(
-            form_factory,
-            entity_browser,
-            custom_entity_ui,
+            move(form_factory),
+            move(entity_browser),
+            move(custom_entity_ui),
             values,
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)));
@@ -135,9 +138,9 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
             QTreeWidgetItem::treeWidget(),
             window_title,
             m_editor_context.m_project,
-            form_factory,
-            entity_browser,
-            custom_entity_ui,
+            move(form_factory),
+            move(entity_browser),
+            move(custom_entity_ui),
             values,
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)),

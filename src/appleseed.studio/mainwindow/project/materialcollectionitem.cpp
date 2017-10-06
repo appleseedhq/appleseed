@@ -66,6 +66,7 @@
 #include <cstring>
 #include <memory>
 #include <string>
+#include <utility>
 
 using namespace appleseed::shared;
 using namespace foundation;
@@ -250,16 +251,16 @@ void MaterialCollectionItem::do_create_material(const char* model)
 
     typedef EntityTraits::FactoryRegistrarType FactoryRegistrarType;
 
-    auto_ptr<EntityEditor::IFormFactory> form_factory(
+    unique_ptr<EntityEditor::IFormFactory> form_factory(
         new FixedModelEntityEditorFormFactory<FactoryRegistrarType>(
             m_editor_context.m_project_builder.get_factory_registrar<Material>(),
             name_suggestion,
             model));
 
-    auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
+    unique_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<Assembly>(Base::m_parent));
 
-    auto_ptr<CustomEntityUI> custom_entity_ui;
+    unique_ptr<CustomEntityUI> custom_entity_ui;
 
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
     if (strcmp(model, "disney_material") == 0)
@@ -275,9 +276,9 @@ void MaterialCollectionItem::do_create_material(const char* model)
         QTreeWidgetItem::treeWidget(),
         window_title,
         m_editor_context.m_project,
-        form_factory,
-        entity_browser,
-        custom_entity_ui,
+        move(form_factory),
+        move(entity_browser),
+        move(custom_entity_ui),
         Dictionary(),
         this,
         SLOT(slot_create_applied(foundation::Dictionary)),

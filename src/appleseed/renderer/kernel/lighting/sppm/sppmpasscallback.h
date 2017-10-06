@@ -105,15 +105,15 @@ class SPPMPassCallback
     float get_lookup_radius() const;
 
   private:
-    const SPPMParameters            m_params;
-    SPPMPhotonTracer                m_photon_tracer;
-    foundation::uint32              m_pass_number;
-    SPPMPhotonVector                m_photons;
-    std::auto_ptr<SPPMPhotonMap>    m_photon_map;
-    float                           m_initial_lookup_radius;
-    float                           m_lookup_radius;
+    const SPPMParameters                m_params;
+    SPPMPhotonTracer                    m_photon_tracer;
+    foundation::uint32                  m_pass_number;
+    SPPMPhotonVector                    m_photons;
+    std::unique_ptr<SPPMPhotonMap>      m_photon_map;
+    float                               m_initial_lookup_radius;
+    float                               m_lookup_radius;
     foundation::Stopwatch<foundation::DefaultWallclockTimer>
-                                    m_stopwatch;
+                                        m_stopwatch;
 };
 
 

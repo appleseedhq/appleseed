@@ -57,7 +57,7 @@ class ConfigurationManagerWindow
     ~ConfigurationManagerWindow();
 
   private:
-    // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
+    // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
     Ui::ConfigurationManagerWindow* m_ui;
 
   private slots:

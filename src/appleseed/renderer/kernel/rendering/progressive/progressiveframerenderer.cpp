@@ -682,33 +682,33 @@ namespace
         // Progressive frame renderer implementation details.
         //
 
-        const Project&                      m_project;
-        const Parameters                    m_params;
-        SampleCounter                       m_sample_counter;
+        const Project&                          m_project;
+        const Parameters                        m_params;
+        SampleCounter                           m_sample_counter;
 
-        auto_ptr<SampleAccumulationBuffer>  m_buffer;
+        unique_ptr<SampleAccumulationBuffer>    m_buffer;
 
-        JobQueue                            m_job_queue;
-        auto_ptr<JobManager>                m_job_manager;
-        AbortSwitch                         m_abort_switch;
+        JobQueue                                m_job_queue;
+        unique_ptr<JobManager>                  m_job_manager;
+        AbortSwitch                             m_abort_switch;
 
         typedef vector<ISampleGenerator*> SampleGeneratorVector;
-        SampleGeneratorVector               m_sample_generators;
+        SampleGeneratorVector                   m_sample_generators;
 
         typedef vector<SampleGeneratorJob*> SampleGeneratorJobVector;
-        SampleGeneratorJobVector            m_sample_generator_jobs;
+        SampleGeneratorJobVector                m_sample_generator_jobs;
 
-        auto_release_ptr<ITileCallback>     m_tile_callback;
+        auto_release_ptr<ITileCallback>         m_tile_callback;
 
-        auto_ptr<Image>                     m_ref_image;
-        double                              m_ref_image_avg_lum;
+        unique_ptr<Image>                       m_ref_image;
+        double                                  m_ref_image_avg_lum;
 
-        auto_ptr<DisplayFunc>               m_display_func;
-        auto_ptr<boost::thread>             m_display_thread;
-        AbortSwitch                         m_display_thread_abort_switch;
+        unique_ptr<DisplayFunc>                 m_display_func;
+        unique_ptr<boost::thread>               m_display_thread;
+        AbortSwitch                             m_display_thread_abort_switch;
 
-        auto_ptr<StatisticsFunc>            m_statistics_func;
-        auto_ptr<boost::thread>             m_statistics_thread;
+        unique_ptr<StatisticsFunc>              m_statistics_func;
+        unique_ptr<boost::thread>               m_statistics_thread;
 
         void print_sample_generators_stats() const
         {

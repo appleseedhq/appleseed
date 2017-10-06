@@ -161,7 +161,7 @@ struct BenchmarkSuite::Impl
         StopwatchType&          stopwatch,
         const size_t            measurement_count)
     {
-        auto_ptr<IBenchmarkCase> empty_case(new EmptyBenchmarkCase());
+        unique_ptr<IBenchmarkCase> empty_case(new EmptyBenchmarkCase());
         return
             measure_runtime(
                 empty_case.get(),
@@ -224,7 +224,7 @@ void BenchmarkSuite::run(
         }
 
         // Instantiate the benchmark case.
-        auto_ptr<IBenchmarkCase> benchmark(factory->create());
+        unique_ptr<IBenchmarkCase> benchmark(factory->create());
 
         // Recreate the stopwatch (and the underlying timer) for every benchmark
         // case, since the CPU frequency will fluctuate quite a bit depending on

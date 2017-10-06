@@ -94,7 +94,7 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
         const size_t    sample_count)
     {
         GenericImageFileReader reader;
-        auto_ptr<Image> image(reader.read(input_filename));
+        unique_ptr<Image> image(reader.read(input_filename));
 
         const size_t width = image->properties().m_canvas_width;
         const size_t height = image->properties().m_canvas_height;
@@ -213,7 +213,7 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
         // the CDF to be smaller than 1 while corresponding to items with null importance.
 
         GenericImageFileReader reader;
-        auto_ptr<Image> image(reader.read("unit tests/inputs/test_imageimportancesampler_doge2.exr"));
+        unique_ptr<Image> image(reader.read("unit tests/inputs/test_imageimportancesampler_doge2.exr"));
 
         const size_t width = image->properties().m_canvas_width;
         const size_t height = image->properties().m_canvas_height;

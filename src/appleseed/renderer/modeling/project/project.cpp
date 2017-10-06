@@ -93,7 +93,7 @@ struct Project::Impl
     auto_release_ptr<Display>   m_display;
     ConfigurationContainer      m_configurations;
     SearchPaths                 m_search_paths;
-    auto_ptr<TraceContext>      m_trace_context;
+    unique_ptr<TraceContext>    m_trace_context;
 
     Impl()
       : m_format_revision(ProjectFormatRevision)

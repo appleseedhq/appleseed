@@ -79,7 +79,7 @@ class MaterialAssignmentEditorWindow
   private:
     class AssignMaterialsAction;
 
-    // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
+    // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
     Ui::MaterialAssignmentEditorWindow* m_ui;
 
     renderer::ObjectInstance&           m_object_instance;

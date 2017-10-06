@@ -403,9 +403,9 @@ namespace
         {
         }
 
-        virtual auto_ptr<Entry> clone() const override
+        virtual unique_ptr<Entry> clone() const override
         {
-            return auto_ptr<Entry>(new RayCountStatisticsEntry(*this));
+            return unique_ptr<Entry>(new RayCountStatisticsEntry(*this));
         }
 
         virtual void merge(const Entry* other) override
@@ -431,13 +431,13 @@ StatisticsVector Intersector::get_statistics() const
     Statistics intersection_stats;
     intersection_stats.insert("total rays", total_ray_count);
     intersection_stats.insert(
-        auto_ptr<RayCountStatisticsEntry>(
+        unique_ptr<RayCountStatisticsEntry>(
             new RayCountStatisticsEntry(
                 "shading rays",
                 m_shading_ray_count,
                 total_ray_count)));
     intersection_stats.insert(
-        auto_ptr<RayCountStatisticsEntry>(
+        unique_ptr<RayCountStatisticsEntry>(
             new RayCountStatisticsEntry(
                 "probe rays",
                 m_probe_ray_count,

@@ -64,6 +64,7 @@
 
 // Standard headers.
 #include <string>
+#include <utility>
 
 using namespace appleseed::shared;
 using namespace boost;
@@ -222,11 +223,11 @@ namespace
     };
 }
 
-auto_ptr<ChartBase> BenchmarkWindow::create_chart(
+unique_ptr<ChartBase> BenchmarkWindow::create_chart(
     const UniqueID      case_uid,
     const size_t        chart_index) const
 {
-    auto_ptr<LineChart> chart(new LineChart());
+    unique_ptr<LineChart> chart(new LineChart());
 
     chart->set_equidistant(m_ui->checkbox_equidistant->isChecked());
 
@@ -246,8 +247,8 @@ auto_ptr<ChartBase> BenchmarkWindow::create_chart(
 
     chart->set_curve_brush(QBrush(CurveColors[chart_index % COUNT_OF(CurveColors)]));
 
-    auto_ptr<IToolTipFormatter> formatter(new ToolTipFormatter());
-    chart->set_tooltip_formatter(formatter);
+    unique_ptr<IToolTipFormatter> formatter(new ToolTipFormatter());
+    chart->set_tooltip_formatter(std::move(formatter));
 
     const BenchmarkSerie serie = m_benchmark_aggregator.get_serie(case_uid);
 
@@ -262,7 +263,7 @@ auto_ptr<ChartBase> BenchmarkWindow::create_chart(
         chart->add_point(x, point.get_ticks());
     }
 
-    return auto_ptr<ChartBase>(chart);
+    return unique_ptr<ChartBase>(std::move(chart));
 }
 
 void BenchmarkWindow::slot_run_benchmarks()

@@ -526,7 +526,7 @@ namespace
             return false;
 
         // Create the tile callback factory.
-        auto_ptr<ITileCallbackFactory> tile_callback_factory;
+        unique_ptr<ITileCallbackFactory> tile_callback_factory;
         if (g_cl.m_send_to_mplay.is_set())
         {
             tile_callback_factory.reset(

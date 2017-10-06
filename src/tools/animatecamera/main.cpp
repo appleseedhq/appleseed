@@ -556,7 +556,7 @@ int main(int argc, const char* argv[])
     const string base_output_filename =
         bf::path(g_cl.m_filenames.values()[1]).stem().string();
 
-    auto_ptr<AnimationGenerator> generator;
+    unique_ptr<AnimationGenerator> generator;
 
     if (g_cl.m_animation_path.is_set())
         generator.reset(new PathAnimationGenerator(base_output_filename, logger));

@@ -140,6 +140,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 using namespace foundation;
@@ -3092,10 +3093,10 @@ namespace
             register_factory_helper<ValuesElementHandler>("values", ElementValues);
             register_factory_helper<VolumeElementHandler>("volume", ElementVolume);
 
-            auto_ptr<IElementHandlerFactory<ProjectElementID>> factory(
+            unique_ptr<IElementHandlerFactory<ProjectElementID>> factory(
                 new ProjectElementHandlerFactory(m_context, project));
 
-            register_factory("project", ElementProject, factory);
+            register_factory("project", ElementProject, move(factory));
         }
 
       private:
@@ -3113,9 +3114,9 @@ namespace
             {
             }
 
-            virtual auto_ptr<ElementHandlerType> create() override
+            virtual unique_ptr<ElementHandlerType> create() override
             {
-                return auto_ptr<ElementHandlerType>(
+                return unique_ptr<ElementHandlerType>(
                     new ProjectElementHandler(m_context, m_project));
             }
         };
@@ -3131,19 +3132,19 @@ namespace
             {
             }
 
-            virtual auto_ptr<ElementHandlerType> create() override
+            virtual unique_ptr<ElementHandlerType> create() override
             {
-                return auto_ptr<ElementHandlerType>(new ElementHandler(m_context));
+                return unique_ptr<ElementHandlerType>(new ElementHandler(m_context));
             }
         };
 
         template <typename ElementHandler>
         void register_factory_helper(const string& name, const ProjectElementID id)
         {
-            auto_ptr<IElementHandlerFactory<ProjectElementID>> factory(
+            unique_ptr<IElementHandlerFactory<ProjectElementID>> factory(
                 new GenericElementHandlerFactory<ElementHandler>(m_context));
 
-            register_factory(name, id, factory);
+            register_factory(name, id, move(factory));
         }
     };
 }
@@ -3398,20 +3399,20 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
     }
 
     // Create the error handler.
-    auto_ptr<ErrorLogger> error_handler(
+    unique_ptr<ErrorLogger> error_handler(
         new ErrorLoggerAndCounter(
             project_filepath,
             event_counters));
 
     // Create the content handler.
     ParseContext context(project.ref(), options, event_counters);
-    auto_ptr<ContentHandler> content_handler(
+    unique_ptr<ContentHandler> content_handler(
         new ContentHandler(
             project.get(),
             context));
 
     // Create the parser.
-    auto_ptr<SAX2XMLReader> parser(XMLReaderFactory::createXMLReader());
+    unique_ptr<SAX2XMLReader> parser(XMLReaderFactory::createXMLReader());
     parser->setFeature(XMLUni::fgSAX2CoreNameSpaces, true);         // perform namespace processing
 
     if ((options & OmitProjectSchemaValidation) == false)

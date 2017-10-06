@@ -580,7 +580,7 @@ struct DisneyMaterial::Impl
     static const size_t MaxThreadCount = 256;
 
     DisneyMaterialLayerContainer                m_layers;
-    auto_ptr<DisneyLayeredBRDF>                 m_brdf;
+    unique_ptr<DisneyLayeredBRDF>               m_brdf;
     mutable TLS<DisneyMaterialLayerContainer*>  m_per_thread_layers;
 
     explicit Impl(const DisneyMaterial* parent)

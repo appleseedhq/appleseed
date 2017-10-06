@@ -48,6 +48,7 @@
 // Standard headers.
 #include <cassert>
 #include <limits>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -76,9 +77,9 @@ void ChartBase::set_grid_brush(const QBrush& brush)
     m_grid_brush = brush;
 }
 
-void ChartBase::set_tooltip_formatter(auto_ptr<IToolTipFormatter> formatter)
+void ChartBase::set_tooltip_formatter(unique_ptr<IToolTipFormatter> formatter)
 {
-    m_tooltip_formatter = formatter;
+    m_tooltip_formatter = move(formatter);
 }
 
 void ChartBase::add_point(const Vector2d& p)
@@ -385,7 +386,7 @@ void ChartWidget::clear()
     m_charts.clear();
 }
 
-void ChartWidget::add_chart(auto_ptr<ChartBase> chart)
+void ChartWidget::add_chart(unique_ptr<ChartBase> chart)
 {
     assert(chart.get());
 
