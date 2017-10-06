@@ -268,10 +268,9 @@ void BenchmarkSuite::run(
                         stopwatch,
                         BenchmarkSuite::Impl::measure_runtime_ticks,
                         max<size_t>(1, measurement_count / 100));
-                points.push_back(
-                    Vector2d(
-                        static_cast<double>(j),
-                        ticks > overhead_ticks ? ticks - overhead_ticks : 0.0));
+                points.emplace_back(
+                    static_cast<double>(j),
+                    ticks > overhead_ticks ? ticks - overhead_ticks : 0.0);
             }
 
             stringstream sstr;

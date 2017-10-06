@@ -66,7 +66,7 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileWriter)
 
         virtual void begin_mesh(const char* name) override
         {
-            m_meshes.push_back(Mesh());
+            m_meshes.emplace_back();
             m_meshes.back().m_name = name;
         }
 
@@ -79,7 +79,7 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileWriter)
         virtual void begin_face(const size_t vertex_count) override
         {
             assert(vertex_count == 3);
-            m_meshes.back().m_faces.push_back(Face());
+            m_meshes.back().m_faces.emplace_back();
         }
 
         virtual void set_face_vertices(const size_t vertices[]) override
@@ -183,9 +183,9 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileWriter)
         Mesh mesh;
         mesh.m_name = name;
 
-        mesh.m_vertices.push_back(Vector3d(0.0, 0.0, 0.0));
-        mesh.m_vertices.push_back(Vector3d(1.0, 0.0, 0.0));
-        mesh.m_vertices.push_back(Vector3d(1.0, 1.0, 0.0));
+        mesh.m_vertices.emplace_back(0.0, 0.0, 0.0);
+        mesh.m_vertices.emplace_back(1.0, 0.0, 0.0);
+        mesh.m_vertices.emplace_back(1.0, 1.0, 0.0);
 
         Face face;
         face.m_v0 = 0;

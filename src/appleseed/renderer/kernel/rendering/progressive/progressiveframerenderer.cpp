@@ -640,7 +640,7 @@ namespace
                     pretty_uint(samples_per_second).c_str());
 
                 if (m_perf_stats)
-                    m_sample_count_records.push_back(Vector2d(time, static_cast<double>(samples)));
+                    m_sample_count_records.emplace_back(time, static_cast<double>(samples));
             }
 
             void record_and_print_convergence_stats()
@@ -667,7 +667,7 @@ namespace
                 {
                     const double samples_per_pixel = m_buffer.get_sample_count() * m_rcp_pixel_count;
                     const double rmsd = compute_rms_deviation(m_project.get_frame()->image(), *m_ref_image);
-                    m_rmsd_records.push_back(Vector2d(samples_per_pixel, rmsd));
+                    m_rmsd_records.emplace_back(samples_per_pixel, rmsd);
 
                     if (m_luminance_stats)
                         output += ", ";

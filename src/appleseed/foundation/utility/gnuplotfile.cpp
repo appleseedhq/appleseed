@@ -101,7 +101,7 @@ GnuplotFile& GnuplotFile::set_logscale_y()
 
 GnuplotFile::Plot& GnuplotFile::new_plot()
 {
-    m_plots.push_back(Plot());
+    m_plots.emplace_back();
     return m_plots.back();
 }
 

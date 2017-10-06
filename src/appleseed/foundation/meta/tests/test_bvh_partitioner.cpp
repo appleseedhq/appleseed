@@ -53,9 +53,9 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
     TEST_CASE(Partition_BBoxesOrderedAlongLongestDimension_ReturnsFirstElementAfterCenter)
     {
         AABB2dVector bboxes;
-        bboxes.push_back(AABB2d(Vector2d(-10.0, -1.0 ), Vector2d( -9.0,  0.0 )));
-        bboxes.push_back(AABB2d(Vector2d( -2.0,  0.0 ), Vector2d( -1.0,  1.0 )));
-        bboxes.push_back(AABB2d(Vector2d(  1.0, -1.0 ), Vector2d(  2.0,  0.0 )));
+        bboxes.emplace_back(Vector2d(-10.0, -1.0 ), Vector2d( -9.0,  0.0 ));
+        bboxes.emplace_back(Vector2d( -2.0,  0.0 ), Vector2d( -1.0,  1.0 ));
+        bboxes.emplace_back(Vector2d(  1.0, -1.0 ), Vector2d(  2.0,  0.0 ));
 
         MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
         const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
@@ -77,9 +77,9 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
     TEST_CASE(Partition_BBoxesUnorderedAlongAllDimensions_ReturnsFirstElementAfterCenter)
     {
         AABB2dVector bboxes;
-        bboxes.push_back(AABB2d(Vector2d( -2.0,  0.0 ), Vector2d( -1.0,  1.0 )));
-        bboxes.push_back(AABB2d(Vector2d(-10.0, -1.0 ), Vector2d( -9.0,  0.0 )));
-        bboxes.push_back(AABB2d(Vector2d(  1.0,  1.0 ), Vector2d(  2.0,  2.0 )));
+        bboxes.emplace_back(Vector2d( -2.0,  0.0 ), Vector2d( -1.0,  1.0 ));
+        bboxes.emplace_back(Vector2d(-10.0, -1.0 ), Vector2d( -9.0,  0.0 ));
+        bboxes.emplace_back(Vector2d(  1.0,  1.0 ), Vector2d(  2.0,  2.0 ));
 
         MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
         const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
@@ -102,10 +102,10 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
     TEST_CASE(Partition_BBoxesFormingRectangle_ReturnsFirstElementAfterCenter)
     {
         AABB2dVector bboxes;
-        bboxes.push_back(AABB2d(Vector2d(-2.0, 1.0 ), Vector2d(-1.0, 2.0 )));
-        bboxes.push_back(AABB2d(Vector2d(-2.0,-2.0 ), Vector2d(-1.0,-1.0 )));
-        bboxes.push_back(AABB2d(Vector2d( 1.0, 1.0 ), Vector2d( 2.0, 2.0 )));
-        bboxes.push_back(AABB2d(Vector2d( 1.0,-2.0 ), Vector2d( 2.0,-1.0 )));
+        bboxes.emplace_back(Vector2d(-2.0, 1.0 ), Vector2d(-1.0, 2.0 ));
+        bboxes.emplace_back(Vector2d(-2.0,-2.0 ), Vector2d(-1.0,-1.0 ));
+        bboxes.emplace_back(Vector2d( 1.0, 1.0 ), Vector2d( 2.0, 2.0 ));
+        bboxes.emplace_back(Vector2d( 1.0,-2.0 ), Vector2d( 2.0,-1.0 ));
 
         MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
         const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
@@ -128,9 +128,9 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
     TEST_CASE(Partition_BBoxesFormingEvenTriangle_ReturnsMiddleElement)
     {
         AABB2dVector bboxes;
-        bboxes.push_back(AABB2d(Vector2d(-2.0, 1.0 ), Vector2d(-1.0, 2.0 )));
-        bboxes.push_back(AABB2d(Vector2d(-1.0,-2.0 ), Vector2d( 1.0,-1.0 )));
-        bboxes.push_back(AABB2d(Vector2d( 1.0, 1.0 ), Vector2d( 2.0, 2.0 )));
+        bboxes.emplace_back(Vector2d(-2.0, 1.0 ), Vector2d(-1.0, 2.0 ));
+        bboxes.emplace_back(Vector2d(-1.0,-2.0 ), Vector2d( 1.0,-1.0 ));
+        bboxes.emplace_back(Vector2d( 1.0, 1.0 ), Vector2d( 2.0, 2.0 ));
 
         MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
         const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));
@@ -143,10 +143,10 @@ TEST_SUITE(Foundation_Math_BVH_MiddlePartitioner)
     TEST_CASE(Partition_BBoxesOverlapping_ReturnMiddleElement)
     {
         AABB2dVector bboxes;
-        bboxes.push_back(AABB2d(Vector2d(-1.0,-1.0 ), Vector2d( 1.0, 1.0 )));
-        bboxes.push_back(AABB2d(Vector2d(-1.0,-1.0 ), Vector2d( 1.0, 1.0 )));
-        bboxes.push_back(AABB2d(Vector2d(-1.0,-1.0 ), Vector2d( 1.0, 1.0 )));
-        bboxes.push_back(AABB2d(Vector2d(-1.0,-1.0 ), Vector2d( 1.0, 1.0 )));
+        bboxes.emplace_back(Vector2d(-1.0,-1.0 ), Vector2d( 1.0, 1.0 ));
+        bboxes.emplace_back(Vector2d(-1.0,-1.0 ), Vector2d( 1.0, 1.0 ));
+        bboxes.emplace_back(Vector2d(-1.0,-1.0 ), Vector2d( 1.0, 1.0 ));
+        bboxes.emplace_back(Vector2d(-1.0,-1.0 ), Vector2d( 1.0, 1.0 ));
 
         MiddlePartitioner<AABB2dVector> partitioner(bboxes, 1);
         const AABB2d root_bbox(partitioner.compute_bbox(0, bboxes.size()));

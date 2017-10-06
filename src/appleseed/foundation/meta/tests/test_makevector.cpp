@@ -62,9 +62,9 @@ TEST_SUITE(Foundation_Utility_MakeVector)
     TEST_CASE(TestMakeVectorWithMultipleStringValues)
     {
         vector<string> expected_vector;
-        expected_vector.push_back("hello");
-        expected_vector.push_back("world");
-        expected_vector.push_back("bunny");
+        expected_vector.emplace_back("hello");
+        expected_vector.emplace_back("world");
+        expected_vector.emplace_back("bunny");
 
         EXPECT_EQ(expected_vector, make_vector("hello", "world", "bunny"));
     }

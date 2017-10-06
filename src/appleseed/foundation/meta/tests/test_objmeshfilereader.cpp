@@ -62,7 +62,7 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileReader)
 
         virtual void begin_mesh(const char* name) override
         {
-            m_meshes.push_back(Mesh());
+            m_meshes.emplace_back();
             m_meshes.back().m_name = name;
         }
 
@@ -86,7 +86,7 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileReader)
 
         virtual void begin_face(const size_t vertex_count) override
         {
-            m_meshes.back().m_faces.push_back(Face());
+            m_meshes.back().m_faces.emplace_back();
         }
     };
 

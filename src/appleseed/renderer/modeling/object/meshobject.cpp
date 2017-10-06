@@ -372,7 +372,7 @@ void MeshObject::reserve_material_slots(const size_t count)
 size_t MeshObject::push_material_slot(const char* name)
 {
     const size_t index = impl->m_material_slots.size();
-    impl->m_material_slots.push_back(name);
+    impl->m_material_slots.emplace_back(name);
     return index;
 }
 

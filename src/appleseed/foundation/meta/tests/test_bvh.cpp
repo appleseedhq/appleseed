@@ -109,7 +109,7 @@ TEST_SUITE(Foundation_Math_BVH_SpatialBuilder)
         typedef bvh::SBVHPartitioner<ItemHandler, AABBVector> Partitioner;
 
         AABBVector bboxes;
-        bboxes.push_back(AABB3d(Vector3d(0.0), Vector3d(1.0)));
+        bboxes.emplace_back(Vector3d(0.0), Vector3d(1.0));
 
         ItemHandler item_handler;
         Partitioner partitioner(item_handler, bboxes);

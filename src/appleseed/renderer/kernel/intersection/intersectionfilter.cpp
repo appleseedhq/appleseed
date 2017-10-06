@@ -86,15 +86,15 @@ namespace
                 const Vector2f uv1(tess.get_tex_coords(i->m_a1));
                 const Vector2f uv2(tess.get_tex_coords(i->m_a2));
 
-                uv.push_back(Vector2f(uv0[0], 1.0f - uv0[1]));
-                uv.push_back(Vector2f(uv1[0], 1.0f - uv1[1]));
-                uv.push_back(Vector2f(uv2[0], 1.0f - uv2[1]));
+                uv.emplace_back(uv0[0], 1.0f - uv0[1]);
+                uv.emplace_back(uv1[0], 1.0f - uv1[1]);
+                uv.emplace_back(uv2[0], 1.0f - uv2[1]);
             }
             else
             {
-                uv.push_back(Vector2f(0.0f));
-                uv.push_back(Vector2f(0.0f));
-                uv.push_back(Vector2f(0.0f));
+                uv.emplace_back(0.0f);
+                uv.emplace_back(0.0f);
+                uv.emplace_back(0.0f);
             }
         }
     }

@@ -401,7 +401,7 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
         vector<BezierCurve3f> curves;
 
         for (size_t i = 0, e = new_points.size(); i + 3 < e; i += 3)
-            curves.push_back(BezierCurve3f(&new_points[i], 0.05f));
+            curves.emplace_back(&new_points[i], 0.05f);
 
         render_curves_to_image(&curves[0], curves.size(), "unit tests/outputs/test_beziercurveintersector_multiplebezier3curves.png", false);
     }

@@ -137,11 +137,10 @@ void AssemblyTree::collect_assembly_instances(
             continue;
 
         // Create and store an item for this assembly instance.
-        m_items.push_back(
-            Item(
-                &assembly,
-                &assembly_instance,
-                cumulated_transform_seq));
+        m_items.emplace_back(
+            &assembly,
+            &assembly_instance,
+            cumulated_transform_seq);
 
         // Compute and store the assembly instance bounding box.
         AABB3d assembly_instance_bbox(
@@ -393,11 +392,10 @@ namespace
                 const GAABB3 region_bbox =
                     transform.to_parent(region->compute_local_bbox());
 
-                regions.push_back(
-                    RegionInfo(
-                        obj_inst_index,
-                        region_index,
-                        region_bbox));
+                regions.emplace_back(
+                    obj_inst_index,
+                    region_index,
+                    region_bbox);
             }
         }
     }
