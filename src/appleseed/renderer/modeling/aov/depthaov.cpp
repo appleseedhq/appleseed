@@ -74,9 +74,10 @@ namespace
         virtual void on_tile_begin(
             const Frame&                frame,
             const size_t                tile_x,
-            const size_t                tile_y) override
+            const size_t                tile_y,
+            const size_t                max_spp) override
         {
-            UnfilteredAOVAccumulator::on_tile_begin(frame, tile_x, tile_y);
+            UnfilteredAOVAccumulator::on_tile_begin(frame, tile_x, tile_y, max_spp);
             get_tile().clear(Vector2f(numeric_limits<float>::max()));
         }
 

@@ -69,7 +69,8 @@ void AOVAccumulator::release()
 void AOVAccumulator::on_tile_begin(
     const Frame& frame,
     const size_t tile_x,
-    const size_t tile_y)
+    const size_t tile_y,
+    const size_t max_spp)
 {
 }
 
@@ -77,6 +78,14 @@ void AOVAccumulator::on_tile_end(
     const Frame& frame,
     const size_t tile_x,
     const size_t tile_y)
+{
+}
+
+void AOVAccumulator::on_sample_begin()
+{
+}
+
+void AOVAccumulator::on_sample_end()
 {
 }
 
@@ -123,7 +132,8 @@ UnfilteredAOVAccumulator::UnfilteredAOVAccumulator(Image& image)
 void UnfilteredAOVAccumulator::on_tile_begin(
     const Frame&                frame,
     const size_t                tile_x,
-    const size_t                tile_y)
+    const size_t                tile_y,
+    const size_t                max_spp)
 {
     // Fetch the destination tile.
     const CanvasProperties& props = frame.image().properties();
@@ -176,10 +186,11 @@ AOVAccumulatorContainer::~AOVAccumulatorContainer()
 void AOVAccumulatorContainer::on_tile_begin(
     const Frame&                frame,
     const size_t                tile_x,
-    const size_t                tile_y)
+    const size_t                tile_y,
+    const size_t                max_spp)
 {
     for (size_t i = 0, e = m_size; i < e; ++i)
-        m_accumulators[i]->on_tile_begin(frame, tile_x, tile_y);
+        m_accumulators[i]->on_tile_begin(frame, tile_x, tile_y, max_spp);
 }
 
 void AOVAccumulatorContainer::on_tile_end(
@@ -189,6 +200,18 @@ void AOVAccumulatorContainer::on_tile_end(
 {
     for (size_t i = 0, e = m_size; i < e; ++i)
         m_accumulators[i]->on_tile_end(frame, tile_x, tile_y);
+}
+
+void AOVAccumulatorContainer::on_sample_begin()
+{
+    for (size_t i = 0, e = m_size; i < e; ++i)
+        m_accumulators[i]->on_sample_begin();
+}
+
+void AOVAccumulatorContainer::on_sample_end()
+{
+    for (size_t i = 0, e = m_size; i < e; ++i)
+        m_accumulators[i]->on_sample_end();
 }
 
 void AOVAccumulatorContainer::write(

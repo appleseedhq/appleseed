@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
@@ -106,8 +107,8 @@ namespace
           , m_lighting_engine(lighting_engine_factory->create())
           , m_shading_engine(shading_engine)
           , m_oiio_texture_system(oiio_texture_system)
-          , m_shadergroup_exec(shading_system, m_arena)
           , m_thread_index(thread_index)
+          , m_shadergroup_exec(shading_system, m_arena)
           , m_intersector(
                 trace_context,
                 m_texture_cache,
@@ -173,6 +174,9 @@ namespace
             size_t shading_point_index = 0;
             const ShadingPoint* shading_point_ptr = 0;
             size_t iterations = 0;
+
+            // Inform the AOV accumulators that we are about to render a sample.
+            aov_accumulators.on_sample_begin();
 
             while (true)
             {
@@ -250,6 +254,9 @@ namespace
                     primary_ray.m_ry.m_org = primary_ray.m_ry.point_at(t);
                 }
             }
+
+            // Inform the AOV accumulators that we are done rendering a sample.
+            aov_accumulators.on_sample_end();
 
 #ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
 

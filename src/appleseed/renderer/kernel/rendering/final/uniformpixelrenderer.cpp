@@ -252,6 +252,11 @@ namespace
             return vec;
         }
 
+        virtual size_t get_max_samples_per_pixel() const override
+        {
+            return m_sample_count;
+        }
+
       private:
         struct Parameters
         {

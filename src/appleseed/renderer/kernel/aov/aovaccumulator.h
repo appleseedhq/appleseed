@@ -73,13 +73,20 @@ class AOVAccumulator
     virtual void on_tile_begin(
         const Frame&                frame,
         const size_t                tile_x,
-        const size_t                tile_y);
+        const size_t                tile_y,
+        const size_t                max_spp);
 
     // This method is called after a tile gets rendered.
     virtual void on_tile_end(
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y);
+
+    // This method is called before a sample gets rendered.
+    virtual void on_sample_begin();
+
+    // This method is called after a sample gets rendered.
+    virtual void on_sample_end();
 
     // Write a value to the accumulator.
     virtual void write(
@@ -103,7 +110,8 @@ class UnfilteredAOVAccumulator
     virtual void on_tile_begin(
         const Frame&                frame,
         const size_t                tile_x,
-        const size_t                tile_y) override;
+        const size_t                tile_y,
+        const size_t                max_spp) override;
 
   protected:
     foundation::Image&  m_image;
@@ -142,13 +150,20 @@ class AOVAccumulatorContainer
     void on_tile_begin(
         const Frame&                frame,
         const size_t                tile_x,
-        const size_t                tile_y);
+        const size_t                tile_y,
+        const size_t                max_spp);
 
     // This method is called after a tile gets rendered.
     void on_tile_end(
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y);
+
+    // This method is called before a sample gets rendered.
+    void on_sample_begin();
+
+    // This method is called after a sample gets rendered.
+    void on_sample_end();
 
     // Write a sample to all accumulators.
     void write(
