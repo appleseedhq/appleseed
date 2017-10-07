@@ -302,6 +302,11 @@ bool Assembly::on_frame_begin(
 // AssemblyFactory class implementation.
 //
 
+void AssemblyFactory::release()
+{
+    delete this;
+}
+
 const char* AssemblyFactory::get_model() const
 {
     return Model;

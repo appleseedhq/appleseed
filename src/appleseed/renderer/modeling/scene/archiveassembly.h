@@ -61,7 +61,7 @@ class APPLESEED_DLLSYMBOL ArchiveAssembly
 {
   public:
     // Return a string identifying the model of this entity.
-    virtual const char* get_model() const;
+    virtual const char* get_model() const override;
 
     // Delete this instance.
     virtual void release() override;
@@ -95,6 +95,9 @@ class APPLESEED_DLLSYMBOL ArchiveAssemblyFactory
   : public IAssemblyFactory
 {
   public:
+    // Delete this instance.
+    virtual void release() override;
+
     // Return a string identifying this assembly model.
     virtual const char* get_model() const override;
 

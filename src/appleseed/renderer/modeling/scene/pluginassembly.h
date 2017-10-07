@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016-2017 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,15 +26,17 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SCENE_PROCEDURALASSEMBLY_H
-#define APPLESEED_RENDERER_MODELING_SCENE_PROCEDURALASSEMBLY_H
+#ifndef APPLESEED_RENDERER_MODELING_SCENE_PLUGINASSEMBLY_H
+#define APPLESEED_RENDERER_MODELING_SCENE_PLUGINASSEMBLY_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
-#include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/basegroup.h"
+#include "renderer/modeling/scene/iassemblyfactory.h"
+#include "renderer/modeling/scene/proceduralassembly.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -42,34 +44,69 @@
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class Project; }
 
 namespace renderer
 {
 
 //
-// An assembly that generates its contents procedurally.
+// An assembly that generates its contents procedurally
+// by loading and executing the code in a plugin.
 //
 
-class APPLESEED_DLLSYMBOL ProceduralAssembly
-  : public Assembly
+class APPLESEED_DLLSYMBOL PluginAssembly
+  : public ProceduralAssembly
 {
   public:
-    // Expand the contents of the assembly.
+    // Return a string identifying the model of this entity.
+    virtual const char* get_model() const override;
+
+    // Delete this instance.
+    virtual void release() override;
+
     virtual bool expand_contents(
         const Project&              project,
         const Assembly*             parent,
-        foundation::IAbortSwitch*   abort_switch = 0) = 0;
+        foundation::IAbortSwitch*   abort_switch = 0) override;
 
   protected:
+    friend class PluginAssemblyFactory;
+
     // Constructor.
-    ProceduralAssembly(
+    PluginAssembly(
         const char*                 name,
         const ParamArray&           params);
 
-    // Swap the contents of this assembly with another assembly.
-    void swap_contents(Assembly& assembly);
+  private:
+    foundation::auto_release_ptr<Assembly> m_plugin_assembly;
+};
+
+
+//
+// PluginAssembly factory.
+//
+
+class APPLESEED_DLLSYMBOL PluginAssemblyFactory
+  : public IAssemblyFactory
+{
+  public:
+    // Delete this instance.
+    virtual void release() override;
+
+    // Return a string identifying this assembly model.
+    virtual const char* get_model() const override;
+
+    // Create a new assembly.
+    virtual foundation::auto_release_ptr<Assembly> create(
+        const char*         name,
+        const ParamArray&   params = ParamArray()) const override;
+
+    // Static variant of the create() method above.
+    static foundation::auto_release_ptr<Assembly> static_create(
+        const char*         name,
+        const ParamArray&   params = ParamArray());
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_SCENE_PROCEDURALASSEMBLY_H
+#endif  // !APPLESEED_RENDERER_MODELING_SCENE_PLUGINASSEMBLY_H
