@@ -420,7 +420,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_mitsuba_curve_file(
             return object;
         }
 
-        vertices.push_back(GVector3(x, yz[0], yz[1]));
+        vertices.emplace_back(x, yz[0], yz[1]);
         ++vertex_index;
     }
 

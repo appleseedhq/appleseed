@@ -164,7 +164,7 @@ TEST_SUITE(Foundation_Math_Quaternion)
             const Quaterniond q_slerp = slerp(q1, q2, t);
             const Quaterniond q_fast_slerp = fast_slerp(q1, q2, t);
             const double e = 2.0 * abs(acos(q_slerp.s) - acos(q_fast_slerp.s));
-            points.push_back(Vector2d(t, e));
+            points.emplace_back(t, e);
         }
 
         plotfile

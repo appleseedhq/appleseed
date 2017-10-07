@@ -102,8 +102,8 @@ SearchPaths::SearchPaths(const char* envvar, const char separator)
 
             if (!i->empty())
             {
-                impl->m_environment_paths.push_back(i->c_str());
-                impl->m_all_paths.push_back(i->c_str());
+                impl->m_environment_paths.emplace_back(i->c_str());
+                impl->m_all_paths.emplace_back(i->c_str());
             }
         }
     }
@@ -179,8 +179,8 @@ const char* SearchPaths::operator[](const size_t i) const
 void SearchPaths::push_back(const char* path)
 {
     assert(path);
-    impl->m_explicit_paths.push_back(path);
-    impl->m_all_paths.push_back(path);
+    impl->m_explicit_paths.emplace_back(path);
+    impl->m_all_paths.emplace_back(path);
 }
 
 void SearchPaths::split_and_push_back(const char* paths, const char separator)
@@ -298,7 +298,7 @@ APIString SearchPaths::do_to_string(const char separator, const bool reversed) c
     const bool root_path = has_root_path();
 
     if (root_path)
-        paths.push_back(impl->m_root_path.string().c_str());
+        paths.emplace_back(impl->m_root_path.string().c_str());
 
     copy(impl->m_all_paths.begin(), impl->m_all_paths.end(), back_inserter(paths));
 

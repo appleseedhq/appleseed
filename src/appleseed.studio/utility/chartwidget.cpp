@@ -89,7 +89,7 @@ void ChartBase::add_point(const Vector2d& p)
 
 void ChartBase::add_point(const double x, const double y)
 {
-    m_original_points.push_back(Vector2d(x, y));
+    m_original_points.emplace_back(x, y);
 }
 
 void ChartBase::prepare_drawing(QPainter& painter)

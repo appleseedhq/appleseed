@@ -125,8 +125,8 @@ TEST_SUITE(Renderer_Kernel_Rendering_Final_VariationTracker)
 
             const float s = static_cast<float>(i);
 
-            mean.push_back(Vector2f(s, tracker.get_mean()));
-            variation.push_back(Vector2f(s, tracker.get_variation()));
+            mean.emplace_back(s, tracker.get_mean());
+            variation.emplace_back(s, tracker.get_variation());
         }
 
         GnuplotFile plotfile;

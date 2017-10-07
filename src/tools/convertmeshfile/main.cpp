@@ -114,7 +114,7 @@ namespace
 
         virtual size_t push_material_slot(const char* name) override
         {
-            m_current_mesh.m_material_slots.push_back(name);
+            m_current_mesh.m_material_slots.emplace_back(name);
             return m_current_mesh.m_material_slots.size() - 1;
         }
 

@@ -389,15 +389,13 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const float rd = fit<size_t, float>(i, 0, PointCount - 1, 0.0f, 1.0f);
 
-            std_points.push_back(
-                Vector2d(
-                    rd,
-                    compute_alpha_prime(std_rd_fun, rd)));
+            std_points.emplace_back(
+                rd,
+                compute_alpha_prime(std_rd_fun, rd));
 
-            better_points.push_back(
-                Vector2d(
-                    rd,
-                    compute_alpha_prime(better_rd_fun, rd)));
+            better_points.emplace_back(
+                rd,
+                compute_alpha_prime(better_rd_fun, rd));
         }
 
         plotfile
@@ -435,7 +433,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
             // Analytical integration.
             const float rd_a = rd_fun(alpha_prime);
-            ai_points.push_back(Vector2d(alpha_prime, rd_a));
+            ai_points.emplace_back(alpha_prime, rd_a);
 
             // Numerical integration.
             const float sigma_s_prime = alpha_prime;
@@ -443,7 +441,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             BSSRDFEvaluator<StandardDipoleBSSRDFFactory, DipoleBSSRDFInputValues> bssrdf_eval;
             bssrdf_eval.set_values_from_sigmas(sigma_a, sigma_s_prime);
             const float rd_n = integrate_bssrdf(bssrdf_eval, SampleCount);
-            ni_points.push_back(Vector2d(alpha_prime, rd_n));
+            ni_points.emplace_back(alpha_prime, rd_n);
         }
 
         plotfile
@@ -481,7 +479,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
             // Analytical integration.
             const float rd_a = rd_fun(alpha_prime);
-            ai_points.push_back(Vector2d(alpha_prime, rd_a));
+            ai_points.emplace_back(alpha_prime, rd_a);
 
             // Numerical integration.
             const float sigma_s_prime = alpha_prime;
@@ -489,7 +487,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             BSSRDFEvaluator<BetterDipoleBSSRDFFactory, DipoleBSSRDFInputValues> bssrdf_eval;
             bssrdf_eval.set_values_from_sigmas(sigma_a, sigma_s_prime);
             const float rd_n = integrate_bssrdf(bssrdf_eval, SampleCount);
-            ni_points.push_back(Vector2d(alpha_prime, rd_n));
+            ni_points.emplace_back(alpha_prime, rd_n);
         }
 
         plotfile
@@ -545,7 +543,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const float a = fit<size_t, float>(i, 0, N - 1, 0.0f, 1.0f);
             const float s = normalized_diffusion_s_mfp(a);
-            points.push_back(Vector2d(a, s));
+            points.emplace_back(a, s);
         }
 
         plotfile.new_plot().set_points(points);
@@ -568,7 +566,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const float a = fit<size_t, float>(i, 0, N - 1, 0.0f, 1.0f);
             const float s = normalized_diffusion_s_dmfp(a);
-            points.push_back(Vector2d(a, s));
+            points.emplace_back(a, s);
         }
 
         plotfile.new_plot().set_points(points);
@@ -597,7 +595,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             {
                 const float r = max(fit<size_t, float>(j, 0, N - 1, 0.0f, 8.0f), 0.0001f);
                 const float y = r * normalized_diffusion_profile(r, 1.0f, s, a);
-                points.push_back(Vector2d(r, y));
+                points.emplace_back(r, y);
             }
 
             static const char* Colors[9] =
@@ -645,7 +643,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             {
                 const float r = max(fit<size_t, float>(j, 0, N - 1, 0.0f, 8.0f), 0.0001f);
                 const float y = r * normalized_diffusion_profile(r, 1.0f, s, a);
-                points.push_back(Vector2d(r, y));
+                points.emplace_back(r, y);
             }
 
             static const char* Colors[9] =
@@ -687,7 +685,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const float r = fit<size_t, float>(i, 0, N - 1, 0.0f, 40.0f);
             const float u = normalized_diffusion_cdf(r, 1.0f);
-            points.push_back(Vector2d(r, u));
+            points.emplace_back(r, u);
         }
 
         plotfile.new_plot().set_points(points);
@@ -783,7 +781,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             bssrdf_eval.set_values_from_rd_mfp(rd, 1.0f);
 
             const float integral = integrate_bssrdf(bssrdf_eval, 1000);
-            points.push_back(Vector2d(rd, integral));
+            points.emplace_back(rd, integral);
         }
 
         plotfile.new_plot().set_points(points);
@@ -848,7 +846,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             bssrdf_eval.set_values_from_rd_mfp(rd, 1.0f);
 
             const float integral = integrate_bssrdf(bssrdf_eval, 1000);
-            points.push_back(Vector2d(rd, integral));
+            points.emplace_back(rd, integral);
         }
 
         plotfile.new_plot().set_points(points);
@@ -917,7 +915,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const float r = fit<size_t, float>(i, 0, N - 1, -16.0f, 16.0f);
             const float rd = bssrdf_eval.evaluate(r);   // integral of Lambertian BRDF equals 1
-            points.push_back(Vector2d(r, rd));
+            points.emplace_back(r, rd);
         }
 
         plotfile

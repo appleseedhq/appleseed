@@ -96,7 +96,7 @@ vector<size_t> LightTree::build()
                                             position[2] + BboxSize));
         light_bboxes.push_back(bbox);
 
-        m_items.push_back(Item(bbox, i, NonPhysicalLightType));
+        m_items.emplace_back(bbox, i, NonPhysicalLightType);
     }
 
     // Collect emitting triangles.
@@ -111,7 +111,7 @@ vector<size_t> LightTree::build()
 
         light_bboxes.push_back(bbox);
 
-        m_items.push_back(Item(bbox, i, EmittingTriangleType));
+        m_items.emplace_back(bbox, i, EmittingTriangleType);
     }
 
     // Create the partitioner.

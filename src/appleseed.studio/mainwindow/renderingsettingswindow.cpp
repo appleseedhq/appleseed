@@ -1295,7 +1295,7 @@ void RenderingSettingsWindow::reload()
     for (const_each<ConfigurationContainer> i = m_project_manager.get_project()->configurations(); i; ++i)
     {
         if (!BaseConfigurationFactory::is_base_configuration(i->get_name()))
-            configs.push_back(i->get_name());
+            configs.emplace_back(i->get_name());
     }
 
     // Sort configuration names alphabetically.

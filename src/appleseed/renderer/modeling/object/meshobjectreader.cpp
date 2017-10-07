@@ -229,10 +229,7 @@ namespace
 
                 // Create the polygon to triangulate.
                 for (size_t i = 0; i < m_vertex_count; ++i)
-                {
-                    m_polygon.push_back(
-                        Vector3d(m_objects.back()->get_vertex(m_face_vertices[i])));
-                }
+                    m_polygon.emplace_back(m_objects.back()->get_vertex(m_face_vertices[i]));
 
                 // Triangulate the polygon.
                 if (m_triangulator.triangulate(m_polygon, m_triangles))
@@ -725,7 +722,7 @@ namespace
         {
             const double key = from_string<double>(i->key());
             const string filename = i->value<string>();
-            key_frames.push_back(MeshObjectKeyFrame(key, filename));
+            key_frames.emplace_back(key, filename);
         }
 
         sort(key_frames.begin(), key_frames.end());

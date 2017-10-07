@@ -55,10 +55,9 @@ TEST_SUITE(Renderer_Kernel_Rendering_Progressive_SampleGeneratorJob)
         for (uint64 x = 0; x < N; x += 100)
         {
             const uint64 y = SampleGeneratorJob::samples_to_samples_per_job(x);
-            points.push_back(
-                Vector2d(
-                    static_cast<double>(x),
-                    static_cast<double>(y)));
+            points.emplace_back(
+                static_cast<double>(x),
+                static_cast<double>(y));
         }
 
         GnuplotFile plotfile;
