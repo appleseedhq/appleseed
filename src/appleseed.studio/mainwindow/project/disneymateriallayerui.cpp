@@ -70,6 +70,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <utility>
 
 using namespace boost;
 using namespace foundation;
@@ -185,19 +186,19 @@ void DisneyMaterialLayerUI::create_input_widgets(const Dictionary& values)
             im.strings().exist("default") ? im.get<string>("default") :
             "");
 
-        auto_ptr<IInputWidgetProxy> widget_proxy =
+        unique_ptr<IInputWidgetProxy> widget_proxy =
             input_type == "colormap" ?
                 im.dictionaries().exist("entity_types") &&
                 im.dictionaries().get("entity_types").strings().exist("color")
                     ? create_color_input_widgets(im)
                     : create_colormap_input_widgets(im) :
             input_type == "text" ? create_text_input_widgets(im) :
-            auto_ptr<IInputWidgetProxy>(0);
+            unique_ptr<IInputWidgetProxy>(nullptr);
 
         assert(widget_proxy.get());
         connect(widget_proxy.get(), SIGNAL(signal_changed()), SIGNAL(signal_apply()));
 
-        m_widget_proxies.insert(input_name, widget_proxy);
+        m_widget_proxies.insert(input_name, std::move(widget_proxy));
     }
 }
 
@@ -417,7 +418,7 @@ namespace
     }
 }
 
-auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_text_input_widgets(const Dictionary& metadata)
+unique_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_text_input_widgets(const Dictionary& metadata)
 {
     QLineEdit* line_edit = new QLineEdit(m_content_widget);
 
@@ -429,13 +430,13 @@ auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_text_input_widgets(con
 
     m_content_layout->addRow(create_label(metadata), line_edit);
 
-    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
+    unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
     widget_proxy->set(metadata.strings().get<string>("value"));
 
-    return widget_proxy;
+    return std::move(widget_proxy);
 }
 
-auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_color_input_widgets(const Dictionary& metadata)
+unique_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_color_input_widgets(const Dictionary& metadata)
 {
     QLineEdit* line_edit = new QLineEdit(m_content_widget);
 
@@ -460,13 +461,13 @@ auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_color_input_widgets(co
     layout->addWidget(create_expression_button(name));
     m_content_layout->addRow(create_label(metadata), layout);
 
-    auto_ptr<IInputWidgetProxy> widget_proxy(new ColorExpressionProxy(line_edit, picker_button));
+    unique_ptr<IInputWidgetProxy> widget_proxy(new ColorExpressionProxy(line_edit, picker_button));
     widget_proxy->set(metadata.strings().get<string>("value"));
 
-    return widget_proxy;
+    return std::move(widget_proxy);
 }
 
-auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_colormap_input_widgets(const Dictionary& metadata)
+unique_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_colormap_input_widgets(const Dictionary& metadata)
 {
     QLineEdit* line_edit = new QLineEdit(m_content_widget);
     line_edit->setMaximumWidth(120);
@@ -494,10 +495,10 @@ auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_colormap_input_widgets
     layout->addWidget(create_expression_button(name));
     m_content_layout->addRow(create_label(metadata), layout);
 
-    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
+    unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
     widget_proxy->set(metadata.strings().get<string>("value"));
 
-    return widget_proxy;
+    return std::move(widget_proxy);
 }
 
 QWidget* DisneyMaterialLayerUI::create_texture_button(const string& name)

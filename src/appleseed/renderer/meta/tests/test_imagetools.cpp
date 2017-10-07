@@ -46,6 +46,7 @@
 #include <cstddef>
 #include <iostream>
 #include <memory>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -62,7 +63,7 @@ TEST_SUITE(ImageTools)
         const size_t W = 256;
         const size_t H = 256;
 
-        auto_ptr<Image> output(new Image(W, H, 32, 32, 3, PixelFormatFloat));
+        unique_ptr<Image> output(new Image(W, H, 32, 32, 3, PixelFormatFloat));
 
         MersenneTwister rng;
 
@@ -196,14 +197,14 @@ TEST_SUITE(ImageTools)
         }
     };
 
-    auto_ptr<Image> apply(const Image& image, const IOnePixelOp& op)
+    unique_ptr<Image> apply(const Image& image, const IOnePixelOp& op)
     {
         const CanvasProperties& props = image.properties();
 
         if (props.m_channel_count != 4)
             throw ExceptionUnsupportedChannelCount();
 
-        auto_ptr<Image> output(new Image(props));
+        unique_ptr<Image> output(new Image(props));
 
         for (size_t y = 0; y < props.m_canvas_height; ++y)
         {
@@ -220,10 +221,10 @@ TEST_SUITE(ImageTools)
             }
         }
 
-        return output;
+        return move(output);
     }
 
-    auto_ptr<Image> apply(const Image& lhs, const Image& rhs, const ITwoPixelOp& op)
+    unique_ptr<Image> apply(const Image& lhs, const Image& rhs, const ITwoPixelOp& op)
     {
         const CanvasProperties& lhs_props = lhs.properties();
         const CanvasProperties& rhs_props = rhs.properties();
@@ -236,7 +237,7 @@ TEST_SUITE(ImageTools)
         if (lhs_props.m_channel_count != 4)
             throw ExceptionUnsupportedChannelCount();
 
-        auto_ptr<Image> output(new Image(lhs));
+        unique_ptr<Image> output(new Image(lhs));
 
         for (size_t y = 0; y < lhs_props.m_canvas_height; ++y)
         {
@@ -262,7 +263,7 @@ TEST_SUITE(ImageTools)
             }
         }
 
-        return output;
+        return move(output);
     }
 
 #if 0
@@ -270,8 +271,8 @@ TEST_SUITE(ImageTools)
     TEST_CASE(CompareImages)
     {
         GenericImageFileReader reader;
-        auto_ptr<Image> left_image(reader.read("left.exr"));
-        auto_ptr<Image> right_image(reader.read("right.exr"));
+        unique_ptr<Image> left_image(reader.read("left.exr"));
+        unique_ptr<Image> right_image(reader.read("right.exr"));
 
         ASSERT_TRUE(left_image.get());
         ASSERT_TRUE(right_image.get());
@@ -283,7 +284,7 @@ TEST_SUITE(ImageTools)
         // LuminanceDifferenceSign op(1.0e-9f);
         MaximumComponentDifferenceSign op(1.0e-9f);
 
-        auto_ptr<Image> result =
+        unique_ptr<Image> result =
             apply(
                 *apply(*left_image.get(), *right_image.get(), op).get(),
                 ColorMultiply(1.0f));
@@ -304,7 +305,7 @@ TEST_SUITE(ImageTools)
         const float DarksGammaCorrection = 10.0f;
 
         GenericImageFileReader reader;
-        auto_ptr<Image> input_image(reader.read("input.exr"));
+        unique_ptr<Image> input_image(reader.read("input.exr"));
 
         ASSERT_TRUE(input_image.get());
 
@@ -371,7 +372,7 @@ TEST_SUITE(ImageTools)
     TEST_CASE(ComputeAverageImageValue)
     {
         GenericImageFileReader reader;
-        auto_ptr<Image> input_image(reader.read("input.exr"));
+        unique_ptr<Image> input_image(reader.read("input.exr"));
 
         ASSERT_TRUE(input_image.get());
 

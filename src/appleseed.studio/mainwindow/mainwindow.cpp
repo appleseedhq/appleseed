@@ -1651,7 +1651,7 @@ void MainWindow::slot_clear_shading_override()
 {
     m_rendering_manager.set_sticky_action(
         "override_shading",
-        auto_ptr<RenderingManager::IStickyAction>(
+        unique_ptr<RenderingManager::IStickyAction>(
             new ClearShadingOverrideAction()));
 
     m_rendering_manager.reinitialize_rendering();
@@ -1664,7 +1664,7 @@ void MainWindow::slot_set_shading_override()
 
     m_rendering_manager.set_sticky_action(
         "override_shading",
-        auto_ptr<RenderingManager::IStickyAction>(
+        unique_ptr<RenderingManager::IStickyAction>(
             new SetShadingOverrideAction(shading_mode)));
 
     m_rendering_manager.reinitialize_rendering();
@@ -1736,11 +1736,11 @@ namespace
 
 void MainWindow::slot_clear_render_region()
 {
-    auto_ptr<RenderingManager::IScheduledAction> clear_render_region_action(
+    unique_ptr<RenderingManager::IScheduledAction> clear_render_region_action(
         new ClearRenderRegionAction(m_attribute_editor));
 
     if (m_rendering_manager.is_rendering())
-        m_rendering_manager.schedule(clear_render_region_action);
+        m_rendering_manager.schedule(std::move(clear_render_region_action));
     else clear_render_region_action.get()->operator()(
         *m_project_manager.get_project());
 
@@ -1749,7 +1749,7 @@ void MainWindow::slot_clear_render_region()
 
 void MainWindow::slot_set_render_region(const QRect& rect)
 {
-    auto_ptr<RenderingManager::IScheduledAction> set_render_region_action(
+    unique_ptr<RenderingManager::IScheduledAction> set_render_region_action(
         new SetRenderRegionAction(rect, m_attribute_editor));
 
     if (!m_rendering_manager.is_rendering())
@@ -1762,7 +1762,7 @@ void MainWindow::slot_set_render_region(const QRect& rect)
     }
     else
     {
-        m_rendering_manager.schedule(set_render_region_action);
+        m_rendering_manager.schedule(std::move(set_render_region_action));
         m_rendering_manager.reinitialize_rendering();
     }
 }

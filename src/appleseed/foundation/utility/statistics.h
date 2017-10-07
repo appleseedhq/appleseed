@@ -86,7 +86,7 @@ class Statistics
         template <typename T>
         const T* cast(const Entry* entry);
 
-        virtual std::auto_ptr<Entry> clone() const = 0;
+        virtual std::unique_ptr<Entry> clone() const = 0;
         virtual void merge(const Entry* other) = 0;
         virtual std::string to_string() const = 0;
     };
@@ -101,7 +101,7 @@ class Statistics
             const std::string&          unit,
             const int64                 value);
 
-        virtual std::auto_ptr<Entry> clone() const override;
+        virtual std::unique_ptr<Entry> clone() const override;
         virtual void merge(const Entry* other) override;
         virtual std::string to_string() const override;
     };
@@ -116,7 +116,7 @@ class Statistics
             const std::string&          unit,
             const uint64                value);
 
-        virtual std::auto_ptr<Entry> clone() const override;
+        virtual std::unique_ptr<Entry> clone() const override;
         virtual void merge(const Entry* other) override;
         virtual std::string to_string() const override;
     };
@@ -131,7 +131,7 @@ class Statistics
             const std::string&          unit,
             const double                value);
 
-        virtual std::auto_ptr<Entry> clone() const override;
+        virtual std::unique_ptr<Entry> clone() const override;
         virtual void merge(const Entry* other) override;
         virtual std::string to_string() const override;
     };
@@ -146,7 +146,7 @@ class Statistics
             const std::string&          unit,
             const std::string&          value);
 
-        virtual std::auto_ptr<Entry> clone() const override;
+        virtual std::unique_ptr<Entry> clone() const override;
         virtual void merge(const Entry* other) override;
         virtual std::string to_string() const override;
     };
@@ -162,7 +162,7 @@ class Statistics
             const std::string&          unit,
             const Population<T>&        value);
 
-        virtual std::auto_ptr<Entry> clone() const override;
+        virtual std::unique_ptr<Entry> clone() const override;
         virtual void merge(const Entry* other) override;
         virtual std::string to_string() const override;
     };
@@ -177,7 +177,7 @@ class Statistics
     void clear();
 
     template <typename T>
-    void insert(std::auto_ptr<T> entry);
+    void insert(std::unique_ptr<T> entry);
 
     template <typename T>
     void insert(
@@ -270,7 +270,7 @@ class StatisticsVector
 //
 
 template <typename T>
-void Statistics::insert(std::auto_ptr<T> entry)
+void Statistics::insert(std::unique_ptr<T> entry)
 {
     if (m_index.find(entry->m_name) != m_index.end())
         throw ExceptionDuplicateName(entry->m_name.c_str());
@@ -297,7 +297,7 @@ inline void Statistics::insert<int32>(
     const std::string&                  unit)
 {
     insert(
-        std::auto_ptr<IntegerEntry>(
+        std::unique_ptr<IntegerEntry>(
             new IntegerEntry(name, unit, value)));
 }
 
@@ -308,7 +308,7 @@ inline void Statistics::insert<uint32>(
     const std::string&                  unit)
 {
     insert(
-        std::auto_ptr<UnsignedIntegerEntry>(
+        std::unique_ptr<UnsignedIntegerEntry>(
             new UnsignedIntegerEntry(name, unit, value)));
 }
 
@@ -319,7 +319,7 @@ inline void Statistics::insert<int64>(
     const std::string&                  unit)
 {
     insert(
-        std::auto_ptr<IntegerEntry>(
+        std::unique_ptr<IntegerEntry>(
             new IntegerEntry(name, unit, value)));
 }
 
@@ -330,7 +330,7 @@ inline void Statistics::insert<uint64>(
     const std::string&                  unit)
 {
     insert(
-        std::auto_ptr<UnsignedIntegerEntry>(
+        std::unique_ptr<UnsignedIntegerEntry>(
             new UnsignedIntegerEntry(name, unit, value)));
 }
 
@@ -341,7 +341,7 @@ inline void Statistics::insert<double>(
     const std::string&                  unit)
 {
     insert(
-        std::auto_ptr<FloatingPointEntry>(
+        std::unique_ptr<FloatingPointEntry>(
             new FloatingPointEntry(name, unit, value)));
 }
 
@@ -352,7 +352,7 @@ inline void Statistics::insert<std::string>(
     const std::string&                  unit)
 {
     insert(
-        std::auto_ptr<StringEntry>(
+        std::unique_ptr<StringEntry>(
             new StringEntry(name, unit, value)));
 }
 
@@ -363,7 +363,7 @@ inline void Statistics::insert(
     const std::string&                  unit)
 {
     insert(
-        std::auto_ptr<PopulationEntry<T>>(
+        std::unique_ptr<PopulationEntry<T>>(
             new PopulationEntry<T>(name, unit, value)));
 }
 
@@ -427,9 +427,9 @@ Statistics::PopulationEntry<T>::PopulationEntry(
 }
 
 template <typename T>
-std::auto_ptr<Statistics::Entry> Statistics::PopulationEntry<T>::clone() const
+std::unique_ptr<Statistics::Entry> Statistics::PopulationEntry<T>::clone() const
 {
-    return std::auto_ptr<Statistics::Entry>(new PopulationEntry(*this));
+    return std::unique_ptr<Statistics::Entry>(new PopulationEntry(*this));
 }
 
 template <typename T>

@@ -60,9 +60,9 @@ class AttributeEditor
     void clear();
 
     void edit(
-        std::auto_ptr<EntityEditor::IFormFactory>       form_factory,
-        std::auto_ptr<EntityEditor::IEntityBrowser>     entity_browser,
-        std::auto_ptr<CustomEntityUI>                   custom_ui,
+        std::unique_ptr<EntityEditor::IFormFactory>     form_factory,
+        std::unique_ptr<EntityEditor::IEntityBrowser>   entity_browser,
+        std::unique_ptr<CustomEntityUI>                 custom_ui,
         const foundation::Dictionary&                   values,
         QObject*                                        receiver,
         const char*                                     slot_apply);
@@ -70,10 +70,10 @@ class AttributeEditor
     void refresh() const;
 
   private:
-    QWidget*                    m_parent;
-    IEntityValueProvider*       m_value_provider;
-    renderer::Project&          m_project;
-    std::auto_ptr<EntityEditor> m_entity_editor;
+    QWidget*                      m_parent;
+    IEntityValueProvider*         m_value_provider;
+    renderer::Project&            m_project;
+    std::unique_ptr<EntityEditor> m_entity_editor;
 };
 
 }       // namespace studio

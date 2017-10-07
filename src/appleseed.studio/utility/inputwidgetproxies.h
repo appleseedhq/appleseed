@@ -271,7 +271,7 @@ class InputWidgetProxyCollection
 
     void insert(
         const std::string&                  key,
-        std::auto_ptr<IInputWidgetProxy>    proxy);
+        std::unique_ptr<IInputWidgetProxy>  proxy);
 
     IInputWidgetProxy* get(const std::string& key) const;
 

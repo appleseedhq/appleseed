@@ -117,11 +117,11 @@ class RenderingManager
     // Schedule an action for execution.
     // Actions are executed once, right before rendering begins, in the order in which
     // they were scheduled. They are then deleted.
-    void schedule(std::auto_ptr<IScheduledAction> action);
+    void schedule(std::unique_ptr<IScheduledAction> action);
 
     // Schedule an action for execution if currently rendering, or execute the action
     // right away if not.
-    void schedule_or_execute(std::auto_ptr<IScheduledAction> action);
+    void schedule_or_execute(std::unique_ptr<IScheduledAction> action);
 
     // Remove all actions scheduled since rendering has begun.
     void clear_scheduled_actions();
@@ -143,7 +143,7 @@ class RenderingManager
     // There are no guarantees regarding the order of execution of sticky actions.
     void set_sticky_action(
         const std::string&              key,
-        std::auto_ptr<IStickyAction>    action);
+        std::unique_ptr<IStickyAction>  action);
 
     // Remove all sticky actions.
     void clear_sticky_actions();
@@ -166,9 +166,9 @@ class RenderingManager
     RenderingMode                               m_rendering_mode;
     RenderTab*                                  m_render_tab;
 
-    std::auto_ptr<QtTileCallbackFactory>        m_tile_callback_factory;
-    std::auto_ptr<renderer::MasterRenderer>     m_master_renderer;
-    std::auto_ptr<QThread>                      m_master_renderer_thread;
+    std::unique_ptr<QtTileCallbackFactory>      m_tile_callback_factory;
+    std::unique_ptr<renderer::MasterRenderer>   m_master_renderer;
+    std::unique_ptr<QThread>                    m_master_renderer_thread;
 
     RenderingTimer                              m_rendering_timer;
 

@@ -39,6 +39,7 @@
 // Standard headers.
 #include <cassert>
 #include <string>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -56,7 +57,7 @@ struct VolumeFactoryRegistrar::Impl
 VolumeFactoryRegistrar::VolumeFactoryRegistrar()
   : impl(new Impl())
 {
-    register_factory(auto_ptr<FactoryType>(new GenericVolumeFactory()));
+    register_factory(unique_ptr<FactoryType>(new GenericVolumeFactory()));
 }
 
 VolumeFactoryRegistrar::~VolumeFactoryRegistrar()
@@ -64,10 +65,10 @@ VolumeFactoryRegistrar::~VolumeFactoryRegistrar()
     delete impl;
 }
 
-void VolumeFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+void VolumeFactoryRegistrar::register_factory(unique_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();
-    impl->m_registrar.insert(model, factory);
+    impl->m_registrar.insert(model, move(factory));
 }
 
 VolumeFactoryArray VolumeFactoryRegistrar::get_factories() const

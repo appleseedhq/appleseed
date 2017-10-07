@@ -72,14 +72,14 @@ class TestWindow
     virtual void closeEvent(QCloseEvent* event) override;
 
   private:
-    // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
+    // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
     Ui::TestWindow*                             m_ui;
 
-    std::auto_ptr<TestOutputWidgetDecorator>    m_output_widget;
-    std::auto_ptr<TestResultWidgetDecorator>    m_result_widget;
+    std::unique_ptr<TestOutputWidgetDecorator>  m_output_widget;
+    std::unique_ptr<TestResultWidgetDecorator>  m_result_widget;
 
     AutoDeleteTestSuiteRepository               m_test_suite_repository;
-    std::auto_ptr<TestRunnerThread>             m_test_runner_thread;
+    std::unique_ptr<TestRunnerThread>           m_test_runner_thread;
 
     void create_test_runner_thread();
 

@@ -64,7 +64,7 @@ TEST_SUITE(Foundation_Image_EXRImageFileWriter)
 
         GenericProgressiveImageFileReader reader;
         reader.open(Filename);
-        auto_ptr<Tile> tile(reader.read_tile(0, 0));
+        unique_ptr<Tile> tile(reader.read_tile(0, 0));
 
         for (size_t i = 0; i < 4; ++i)
         {

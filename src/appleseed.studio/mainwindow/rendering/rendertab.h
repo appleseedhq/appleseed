@@ -132,39 +132,39 @@ class RenderTab
     void slot_toggle_pixel_inspector(const bool checked);
 
   private:
-    RenderWidget*                           m_render_widget;
-    QScrollArea*                            m_scroll_area;
-    QToolBar*                               m_toolbar;
-    QToolButton*                            m_save_aovs_button;
-    QToolButton*                            m_quick_save_aovs_button;
-    QToolButton*                            m_set_render_region_button;
-    QToolButton*                            m_clear_render_region_button;
-    QToolButton*                            m_reset_zoom_button;
-    QToolButton*                            m_pixel_inspector_button;
-    QToolButton*                            m_clear_frame_button;
-    QComboBox*                              m_picking_mode_combo;
-    QComboBox*                              m_display_transform_combo;
-    QWidget*                                m_spacer;
-    QLabel*                                 m_info_label;
-    QLabel*                                 m_r_label;
-    QLabel*                                 m_g_label;
-    QLabel*                                 m_b_label;
-    QLabel*                                 m_a_label;
+    RenderWidget*                             m_render_widget;
+    QScrollArea*                              m_scroll_area;
+    QToolBar*                                 m_toolbar;
+    QToolButton*                              m_save_aovs_button;
+    QToolButton*                              m_quick_save_aovs_button;
+    QToolButton*                              m_set_render_region_button;
+    QToolButton*                              m_clear_render_region_button;
+    QToolButton*                              m_reset_zoom_button;
+    QToolButton*                              m_pixel_inspector_button;
+    QToolButton*                              m_clear_frame_button;
+    QComboBox*                                m_picking_mode_combo;
+    QComboBox*                                m_display_transform_combo;
+    QWidget*                                  m_spacer;
+    QLabel*                                   m_info_label;
+    QLabel*                                   m_r_label;
+    QLabel*                                   m_g_label;
+    QLabel*                                   m_b_label;
+    QLabel*                                   m_a_label;
 
-    ProjectExplorer&                        m_project_explorer;
-    renderer::Project&                      m_project;
+    ProjectExplorer&                          m_project_explorer;
+    renderer::Project&                        m_project;
 
-    std::auto_ptr<WidgetZoomHandler>        m_zoom_handler;
-    std::auto_ptr<ScrollAreaPanHandler>     m_pan_handler;
-    std::auto_ptr<MouseCoordinatesTracker>  m_mouse_tracker;
-    std::auto_ptr<PixelColorTracker>        m_pixel_color_tracker;
-    std::auto_ptr<PixelInspectorHandler>    m_pixel_inspector_handler;
-    std::auto_ptr<CameraController>         m_camera_controller;
-    std::auto_ptr<ScenePickingHandler>      m_scene_picking_handler;
-    std::auto_ptr<RenderRegionHandler>      m_render_region_handler;
-    std::auto_ptr<RenderClipboardHandler>   m_clipboard_handler;
+    std::unique_ptr<WidgetZoomHandler>        m_zoom_handler;
+    std::unique_ptr<ScrollAreaPanHandler>     m_pan_handler;
+    std::unique_ptr<MouseCoordinatesTracker>  m_mouse_tracker;
+    std::unique_ptr<PixelColorTracker>        m_pixel_color_tracker;
+    std::unique_ptr<PixelInspectorHandler>    m_pixel_inspector_handler;
+    std::unique_ptr<CameraController>         m_camera_controller;
+    std::unique_ptr<ScenePickingHandler>      m_scene_picking_handler;
+    std::unique_ptr<RenderRegionHandler>      m_render_region_handler;
+    std::unique_ptr<RenderClipboardHandler>   m_clipboard_handler;
 
-    OCIO::ConstConfigRcPtr                  m_ocio_config;
+    OCIO::ConstConfigRcPtr                    m_ocio_config;
 
     void create_render_widget();
     void create_toolbar();

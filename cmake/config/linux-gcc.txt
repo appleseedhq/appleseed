@@ -98,7 +98,6 @@ endif ()
 set (cxx_compiler_flags_common
     ${cxx_compiler_flags_common}
     -std=c++11                                          # enable C++11
-    -Wno-deprecated-declarations                        # remove when C++11 support improves
 )
 if (is_x86)
     if (USE_SSE)

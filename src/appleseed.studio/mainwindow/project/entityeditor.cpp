@@ -81,6 +81,7 @@
 #include <cassert>
 #include <cmath>
 #include <limits>
+#include <utility>
 
 using namespace foundation;
 using namespace renderer;
@@ -93,16 +94,16 @@ namespace studio {
 EntityEditor::EntityEditor(
     QWidget*                        parent,
     const Project&                  project,
-    auto_ptr<IFormFactory>          form_factory,
-    auto_ptr<IEntityBrowser>        entity_browser,
-    auto_ptr<CustomEntityUI>        custom_ui,
+    unique_ptr<IFormFactory>        form_factory,
+    unique_ptr<IEntityBrowser>      entity_browser,
+    unique_ptr<CustomEntityUI>      custom_ui,
     const Dictionary&               values)
   : QObject(parent)
   , m_parent(parent)
   , m_project(project)
-  , m_form_factory(form_factory)
-  , m_entity_browser(entity_browser)
-  , m_custom_ui(custom_ui)
+  , m_form_factory(move(form_factory))
+  , m_entity_browser(move(entity_browser))
+  , m_custom_ui(move(custom_ui))
   , m_entity_picker_bind_signal_mapper(new QSignalMapper(this))
   , m_color_picker_signal_mapper(new QSignalMapper(this))
   , m_file_picker_signal_mapper(new QSignalMapper(this))
@@ -218,7 +219,7 @@ void EntityEditor::create_input_widgets(const Dictionary& metadata, const bool i
     const string input_name = metadata.get<string>("name");
     const string input_type = metadata.get<string>("type");
 
-    auto_ptr<IInputWidgetProxy> widget_proxy =
+    unique_ptr<IInputWidgetProxy> widget_proxy =
         input_type == "text" ? create_text_input_widgets(metadata, input_widget_visible) :
         input_type == "numeric" ? create_numeric_input_widgets(metadata, input_widget_visible) :
         input_type == "integer" ? create_integer_input_widgets(metadata, input_widget_visible) :
@@ -228,7 +229,7 @@ void EntityEditor::create_input_widgets(const Dictionary& metadata, const bool i
         input_type == "colormap" ? create_colormap_input_widgets(metadata, input_widget_visible) :
         input_type == "entity" ? create_entity_input_widgets(metadata, input_widget_visible) :
         input_type == "file" ? create_file_input_widgets(metadata, input_widget_visible) :
-        auto_ptr<IInputWidgetProxy>(0);
+        unique_ptr<IInputWidgetProxy>(nullptr);
 
     assert(widget_proxy.get());
 
@@ -241,7 +242,7 @@ void EntityEditor::create_input_widgets(const Dictionary& metadata, const bool i
         SIGNAL(signal_changed()),
         rebuild_form ? SLOT(slot_rebuild_form()) : SLOT(slot_apply()));
 
-    m_widget_proxies.insert(input_name, widget_proxy);
+    m_widget_proxies.insert(input_name, move(widget_proxy));
 }
 
 namespace
@@ -268,7 +269,7 @@ namespace
     }
 }
 
-auto_ptr<IInputWidgetProxy> EntityEditor::create_text_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
+unique_ptr<IInputWidgetProxy> EntityEditor::create_text_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     QLineEdit* line_edit = new QLineEdit(m_parent);
 
@@ -282,13 +283,13 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_text_input_widgets(const Dictio
         m_form_layout->addRow(create_label(metadata), line_edit);
     else line_edit->hide();
 
-    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
+    unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
     widget_proxy->set(metadata.strings().get<string>("value"));
 
-    return widget_proxy;
+    return move(widget_proxy);
 }
 
-auto_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
+unique_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     const Dictionary& min = metadata.dictionary("min");
     const Dictionary& max = metadata.dictionary("max");
@@ -334,12 +335,12 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dic
     if (!value.empty())
         adaptor->slot_set_line_edit_value(from_string<double>(value));
 
-    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
+    unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
 
-    return widget_proxy;
+    return move(widget_proxy);
 }
 
-auto_ptr<IInputWidgetProxy> EntityEditor::create_integer_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
+unique_ptr<IInputWidgetProxy> EntityEditor::create_integer_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     const Dictionary& min = metadata.dictionary("min");
     const Dictionary& max = metadata.dictionary("max");
@@ -380,13 +381,13 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_integer_input_widgets(const Dic
         slider->hide();
     }
 
-    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
+    unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
     widget_proxy->set(metadata.strings().get<string>("value"));
 
-    return widget_proxy;
+    return move(widget_proxy);
 }
 
-auto_ptr<IInputWidgetProxy> EntityEditor::create_boolean_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
+unique_ptr<IInputWidgetProxy> EntityEditor::create_boolean_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     QCheckBox* checkbox = new QCheckBox(m_parent);
 
@@ -397,13 +398,13 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_boolean_input_widgets(const Dic
         m_form_layout->addRow(create_label(metadata), checkbox);
     else checkbox->hide();
 
-    auto_ptr<IInputWidgetProxy> widget_proxy(new CheckBoxProxy(checkbox));
+    unique_ptr<IInputWidgetProxy> widget_proxy(new CheckBoxProxy(checkbox));
     widget_proxy->set(metadata.strings().get<string>("value"));
 
-    return widget_proxy;
+    return move(widget_proxy);
 }
 
-auto_ptr<IInputWidgetProxy> EntityEditor::create_enumeration_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
+unique_ptr<IInputWidgetProxy> EntityEditor::create_enumeration_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     QComboBox* combo_box = new QComboBox(m_parent);
     combo_box->setEditable(false);
@@ -423,12 +424,12 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_enumeration_input_widgets(const
         m_form_layout->addRow(create_label(metadata), combo_box);
     else combo_box->hide();
 
-    auto_ptr<IInputWidgetProxy> widget_proxy(new ComboBoxProxy(combo_box));
+    unique_ptr<IInputWidgetProxy> widget_proxy(new ComboBoxProxy(combo_box));
 
-    return widget_proxy;
+    return move(widget_proxy);
 }
 
-auto_ptr<IInputWidgetProxy> EntityEditor::create_color_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
+unique_ptr<IInputWidgetProxy> EntityEditor::create_color_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     QLineEdit* line_edit = new QLineEdit(m_parent);
 
@@ -459,7 +460,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_color_input_widgets(const Dicti
         picker_button->hide();
     }
 
-    auto_ptr<ColorPickerProxy> widget_proxy(new ColorPickerProxy(line_edit, picker_button));
+    unique_ptr<ColorPickerProxy> widget_proxy(new ColorPickerProxy(line_edit, picker_button));
 
     if (metadata.strings().exist("value") &&
         metadata.strings().exist("wavelength_range_widget"))
@@ -473,10 +474,10 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_color_input_widgets(const Dicti
     }
     else widget_proxy->set("0.0 0.0 0.0");
 
-    return auto_ptr<IInputWidgetProxy>(widget_proxy);
+    return unique_ptr<IInputWidgetProxy>(move(widget_proxy));
 }
 
-auto_ptr<IInputWidgetProxy> EntityEditor::create_colormap_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
+unique_ptr<IInputWidgetProxy> EntityEditor::create_colormap_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     const string name = metadata.get<string>("name");
 
@@ -523,13 +524,13 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_colormap_input_widgets(const Di
         m_form_layout->addRow(create_label(metadata), input_widget);
     else input_widget->hide();
 
-    auto_ptr<IInputWidgetProxy> widget_proxy(new ColorMapInputProxy(input_widget));
+    unique_ptr<IInputWidgetProxy> widget_proxy(new ColorMapInputProxy(input_widget));
     widget_proxy->set(metadata.strings().get<string>("value"));
 
-    return widget_proxy;
+    return move(widget_proxy);
 }
 
-auto_ptr<IInputWidgetProxy> EntityEditor::create_entity_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
+unique_ptr<IInputWidgetProxy> EntityEditor::create_entity_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     const string name = metadata.get<string>("name");
 
@@ -544,13 +545,13 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_entity_input_widgets(const Dict
         m_form_layout->addRow(create_label(metadata), input_widget);
     else input_widget->hide();
 
-    auto_ptr<IInputWidgetProxy> widget_proxy(new EntityInputProxy(input_widget));
+    unique_ptr<IInputWidgetProxy> widget_proxy(new EntityInputProxy(input_widget));
     widget_proxy->set(metadata.strings().get<string>("value"));
 
-    return widget_proxy;
+    return move(widget_proxy);
 }
 
-auto_ptr<IInputWidgetProxy> EntityEditor::create_file_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
+unique_ptr<IInputWidgetProxy> EntityEditor::create_file_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     const string name = metadata.get<string>("name");
 
@@ -582,10 +583,10 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_file_input_widgets(const Dictio
         browse_button->hide();
     }
 
-    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
+    unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
     widget_proxy->set(metadata.strings().get<string>("value"));
 
-    return widget_proxy;
+    return move(widget_proxy);
 }
 
 void EntityEditor::slot_rebuild_form()

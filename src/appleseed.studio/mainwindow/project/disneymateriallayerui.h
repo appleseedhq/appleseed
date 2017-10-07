@@ -121,9 +121,9 @@ class DisneyMaterialLayerUI
     void create_layer_ui();
     void create_input_widgets(const foundation::Dictionary& values);
 
-    std::auto_ptr<IInputWidgetProxy> create_text_input_widgets(const foundation::Dictionary& metadata);
-    std::auto_ptr<IInputWidgetProxy> create_color_input_widgets(const foundation::Dictionary& metadata);
-    std::auto_ptr<IInputWidgetProxy> create_colormap_input_widgets(const foundation::Dictionary& metadata);
+    std::unique_ptr<IInputWidgetProxy> create_text_input_widgets(const foundation::Dictionary& metadata);
+    std::unique_ptr<IInputWidgetProxy> create_color_input_widgets(const foundation::Dictionary& metadata);
+    std::unique_ptr<IInputWidgetProxy> create_colormap_input_widgets(const foundation::Dictionary& metadata);
 
     QWidget* create_texture_button(const std::string& name);
     QWidget* create_expression_button(const std::string& name);

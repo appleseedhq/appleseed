@@ -51,7 +51,7 @@ BENCHMARK_SUITE(Renderer_Modeling_Frame)
     struct Fixture
     {
         auto_release_ptr<Frame> m_frame;
-        auto_ptr<Tile>          m_tile;
+        unique_ptr<Tile>        m_tile;
 
         Fixture()
           : m_frame(

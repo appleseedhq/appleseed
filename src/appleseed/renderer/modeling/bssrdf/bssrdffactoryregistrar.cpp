@@ -44,6 +44,7 @@
 // Standard headers.
 #include <cassert>
 #include <string>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -61,11 +62,11 @@ struct BSSRDFFactoryRegistrar::Impl
 BSSRDFFactoryRegistrar::BSSRDFFactoryRegistrar()
   : impl(new Impl())
 {
-    register_factory(auto_ptr<FactoryType>(new BetterDipoleBSSRDFFactory()));
-    register_factory(auto_ptr<FactoryType>(new DirectionalDipoleBSSRDFFactory()));
-    register_factory(auto_ptr<FactoryType>(new GaussianBSSRDFFactory()));
-    register_factory(auto_ptr<FactoryType>(new NormalizedDiffusionBSSRDFFactory()));
-    register_factory(auto_ptr<FactoryType>(new StandardDipoleBSSRDFFactory()));
+    register_factory(unique_ptr<FactoryType>(new BetterDipoleBSSRDFFactory()));
+    register_factory(unique_ptr<FactoryType>(new DirectionalDipoleBSSRDFFactory()));
+    register_factory(unique_ptr<FactoryType>(new GaussianBSSRDFFactory()));
+    register_factory(unique_ptr<FactoryType>(new NormalizedDiffusionBSSRDFFactory()));
+    register_factory(unique_ptr<FactoryType>(new StandardDipoleBSSRDFFactory()));
 }
 
 BSSRDFFactoryRegistrar::~BSSRDFFactoryRegistrar()
@@ -73,10 +74,10 @@ BSSRDFFactoryRegistrar::~BSSRDFFactoryRegistrar()
     delete impl;
 }
 
-void BSSRDFFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+void BSSRDFFactoryRegistrar::register_factory(unique_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();
-    impl->m_registrar.insert(model, factory);
+    impl->m_registrar.insert(model, move(factory));
 }
 
 BSSRDFFactoryArray BSSRDFFactoryRegistrar::get_factories() const

@@ -325,14 +325,14 @@ namespace
             }
         };
 
-        const Parameters                    m_params;
-        auto_release_ptr<ISampleRenderer>   m_sample_renderer;
-        size_t                              m_variation_aov_index;
-        size_t                              m_samples_aov_index;
-        int                                 m_scratch_fb_half_width;
-        int                                 m_scratch_fb_half_height;
-        auto_ptr<ShadingResultFrameBuffer>  m_scratch_fb;
-        auto_ptr<Tile>                      m_diagnostics;
+        const Parameters                        m_params;
+        auto_release_ptr<ISampleRenderer>       m_sample_renderer;
+        size_t                                  m_variation_aov_index;
+        size_t                                  m_samples_aov_index;
+        int                                     m_scratch_fb_half_width;
+        int                                     m_scratch_fb_half_height;
+        unique_ptr<ShadingResultFrameBuffer>    m_scratch_fb;
+        unique_ptr<Tile>                        m_diagnostics;
 
         static Color4f scalar_to_color(const float value)
         {

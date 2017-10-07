@@ -211,7 +211,7 @@ class IElementHandlerFactory
     virtual ~IElementHandlerFactory() {}
 
     // Create a new instance of the element handler.
-    virtual std::auto_ptr<ElementHandlerType> create() = 0;
+    virtual std::unique_ptr<ElementHandlerType> create() = 0;
 };
 
 
@@ -236,7 +236,7 @@ class SAX2ContentHandler
     void register_factory(
         const std::string&                          name,
         const ElementID                             id,
-        std::auto_ptr<ElementHandlerFactoryType>    handler_factory);
+        std::unique_ptr<ElementHandlerFactoryType>  handler_factory);
 
     // Receive notification of the start of an element.
     virtual void startElement(
@@ -424,7 +424,7 @@ template <typename ElementID>
 void SAX2ContentHandler<ElementID>::register_factory(
     const std::string&                          name,
     const ElementID                             id,
-    std::auto_ptr<ElementHandlerFactoryType>    handler_factory)
+    std::unique_ptr<ElementHandlerFactoryType>  handler_factory)
 {
     FactoryInfo info;
     info.m_id = id;

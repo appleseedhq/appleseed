@@ -121,14 +121,14 @@ bool SettingsFileReader::read(
         return false;
 
     // Create the DOM parser.
-    auto_ptr<XercesDOMParser> parser(new XercesDOMParser());
+    unique_ptr<XercesDOMParser> parser(new XercesDOMParser());
     parser->setValidationScheme(XercesDOMParser::Val_Always);
     parser->setDoNamespaces(true);
     parser->setDoSchema(true);
     parser->setExternalNoNamespaceSchemaLocation(schema_filename);
 
     // Create the error handler.
-    auto_ptr<ErrorLogger> error_handler(new ErrorLogger(m_logger, settings_filename));
+    unique_ptr<ErrorLogger> error_handler(new ErrorLogger(m_logger, settings_filename));
     parser->setErrorHandler(error_handler.get());
 
     // Parse the settings file.

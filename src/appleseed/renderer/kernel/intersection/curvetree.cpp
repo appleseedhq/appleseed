@@ -312,9 +312,9 @@ CurveTreeFactory::CurveTreeFactory(const CurveTree::Arguments& arguments)
 {
 }
 
-auto_ptr<CurveTree> CurveTreeFactory::create()
+unique_ptr<CurveTree> CurveTreeFactory::create()
 {
-    return auto_ptr<CurveTree>(new CurveTree(m_arguments));
+    return unique_ptr<CurveTree>(new CurveTree(m_arguments));
 }
 
 }   // namespace renderer

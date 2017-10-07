@@ -76,7 +76,7 @@ class RenderingSettingsWindow
   private:
     typedef std::vector<RenderSettingsPanel*> PanelCollection;
 
-    // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
+    // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
     Ui::RenderingSettingsWindow*        m_ui;
 
     ProjectManager&                     m_project_manager;

@@ -63,7 +63,7 @@ class ILazyFactory
     virtual ~ILazyFactory() {}
 
     // Create the object.
-    virtual std::auto_ptr<Object> create() = 0;
+    virtual std::unique_ptr<Object> create() = 0;
 };
 
 
@@ -83,7 +83,7 @@ class Lazy
 
     // Construct a lazy object with a factory to create the actual
     // object the first time it is accessed.
-    explicit Lazy(std::auto_ptr<FactoryType> factory);
+    explicit Lazy(std::unique_ptr<FactoryType> factory);
 
     // Construct a lazy object that simply wraps an existing source object,
     // effectively bypassing lazy object construction altogether.
@@ -342,7 +342,7 @@ class AccessCacheMap
 //
 
 template <typename Object>
-Lazy<Object>::Lazy(std::auto_ptr<FactoryType> factory)
+Lazy<Object>::Lazy(std::unique_ptr<FactoryType> factory)
   : m_reference_count(0)
   , m_factory(factory.release())
   , m_source_object(0)

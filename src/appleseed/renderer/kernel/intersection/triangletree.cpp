@@ -1165,7 +1165,7 @@ namespace
             }
 
             // Create an intersection filter for this key.
-            auto_ptr<IntersectionFilter> intersection_filter(
+            unique_ptr<IntersectionFilter> intersection_filter(
                 new IntersectionFilter(
                     *filter_key.m_object,
                     filter_key.m_materials,
@@ -1306,9 +1306,9 @@ TriangleTreeFactory::TriangleTreeFactory(const TriangleTree::Arguments& argument
 {
 }
 
-auto_ptr<TriangleTree> TriangleTreeFactory::create()
+unique_ptr<TriangleTree> TriangleTreeFactory::create()
 {
-    return auto_ptr<TriangleTree>(new TriangleTree(m_arguments));
+    return unique_ptr<TriangleTree>(new TriangleTree(m_arguments));
 }
 
 

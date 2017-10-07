@@ -86,7 +86,7 @@ class ChartBase
 
     void set_grid_brush(const QBrush& brush);
 
-    void set_tooltip_formatter(std::auto_ptr<IToolTipFormatter> formatter);
+    void set_tooltip_formatter(std::unique_ptr<IToolTipFormatter> formatter);
 
     void add_point(const foundation::Vector2d& p);
 
@@ -114,7 +114,7 @@ class ChartBase
     bool                                m_equidistant;
     foundation::Vector2d                m_margin;
     QBrush                              m_grid_brush;
-    std::auto_ptr<IToolTipFormatter>    m_tooltip_formatter;
+    std::unique_ptr<IToolTipFormatter>  m_tooltip_formatter;
 
     std::vector<foundation::Vector2d>   m_original_points;
     std::vector<foundation::Vector2d>   m_points;
@@ -188,7 +188,7 @@ class ChartWidget
 
     void clear();
 
-    void add_chart(std::auto_ptr<ChartBase> chart);
+    void add_chart(std::unique_ptr<ChartBase> chart);
 
   private:
     typedef std::vector<ChartBase*> ChartCollection;

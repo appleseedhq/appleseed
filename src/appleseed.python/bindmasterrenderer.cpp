@@ -36,6 +36,7 @@
 #include "renderer/api/rendering.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/python.h"
 
 // Standard headers.
@@ -50,8 +51,10 @@ namespace
     // A class that wraps MasterRenderer and keeps a Python
     // reference to the project object to prevent it being
     // destroyed by Python before the MasterRenderer is destroyed.
-    struct MasterRendererWrapper
+    class MasterRendererWrapper
+      : public NonCopyable
     {
+      public:
         MasterRendererWrapper(
             bpy::object                 project,
             const ParamArray&           params,
@@ -85,35 +88,33 @@ namespace
         }
 
         bpy::object                     m_project;
-        std::auto_ptr<MasterRenderer>   m_renderer;
+        std::unique_ptr<MasterRenderer> m_renderer;
     };
 
-    std::auto_ptr<MasterRendererWrapper> create_master_renderer(
+    std::shared_ptr<MasterRendererWrapper> create_master_renderer(
         bpy::object             project,
         const bpy::dict&        params,
         IRendererController*    renderer_controller)
     {
         return
-            std::auto_ptr<MasterRendererWrapper>(
-                new MasterRendererWrapper(
+            std::make_shared<MasterRendererWrapper>(
                     *project,
                     bpy_dict_to_param_array(params),
-                    renderer_controller));
+                    renderer_controller);
     }
 
-    std::auto_ptr<MasterRendererWrapper> create_master_renderer_with_tile_callback(
+    std::shared_ptr<MasterRendererWrapper> create_master_renderer_with_tile_callback(
         bpy::object             project,
         const bpy::dict&        params,
         IRendererController*    renderer_controller,
         ITileCallback*          tile_callback)
     {
         return
-            std::auto_ptr<MasterRendererWrapper>(
-                new MasterRendererWrapper(
+            std::make_shared<MasterRendererWrapper>(
                     *project,
                     bpy_dict_to_param_array(params),
                     renderer_controller,
-                    tile_callback));
+                    tile_callback);
     }
 
     bpy::dict master_renderer_get_parameters(const MasterRendererWrapper* m)
@@ -140,7 +141,7 @@ namespace
 
 void bind_master_renderer()
 {
-    bpy::class_<MasterRendererWrapper, std::auto_ptr<MasterRendererWrapper>, boost::noncopyable>("MasterRenderer", bpy::no_init)
+    bpy::class_<MasterRendererWrapper, std::shared_ptr<MasterRendererWrapper>, boost::noncopyable>("MasterRenderer", bpy::no_init)
         .def("__init__", bpy::make_constructor(create_master_renderer))
         .def("__init__", bpy::make_constructor(create_master_renderer_with_tile_callback))
         .def("get_parameters", master_renderer_get_parameters)

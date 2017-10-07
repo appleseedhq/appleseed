@@ -45,6 +45,7 @@
 // Standard headers.
 #include <cassert>
 #include <string>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -62,16 +63,16 @@ struct AOVFactoryRegistrar::Impl
 AOVFactoryRegistrar::AOVFactoryRegistrar()
   : impl(new Impl())
 {
-    register_factory(auto_ptr<FactoryType>(new DepthAOVFactory()));
-    register_factory(auto_ptr<FactoryType>(new DiffuseAOVFactory()));
-    register_factory(auto_ptr<FactoryType>(new DirectDiffuseAOVFactory()));
-    register_factory(auto_ptr<FactoryType>(new DirectGlossyAOVFactory()));
-    register_factory(auto_ptr<FactoryType>(new EmissionAOVFactory()));
-    register_factory(auto_ptr<FactoryType>(new GlossyAOVFactory()));
-    register_factory(auto_ptr<FactoryType>(new IndirectDiffuseAOVFactory()));
-    register_factory(auto_ptr<FactoryType>(new IndirectGlossyAOVFactory()));
-    register_factory(auto_ptr<FactoryType>(new NormalAOVFactory()));
-    register_factory(auto_ptr<FactoryType>(new UVAOVFactory()));
+    register_factory(unique_ptr<FactoryType>(new DepthAOVFactory()));
+    register_factory(unique_ptr<FactoryType>(new DiffuseAOVFactory()));
+    register_factory(unique_ptr<FactoryType>(new DirectDiffuseAOVFactory()));
+    register_factory(unique_ptr<FactoryType>(new DirectGlossyAOVFactory()));
+    register_factory(unique_ptr<FactoryType>(new EmissionAOVFactory()));
+    register_factory(unique_ptr<FactoryType>(new GlossyAOVFactory()));
+    register_factory(unique_ptr<FactoryType>(new IndirectDiffuseAOVFactory()));
+    register_factory(unique_ptr<FactoryType>(new IndirectGlossyAOVFactory()));
+    register_factory(unique_ptr<FactoryType>(new NormalAOVFactory()));
+    register_factory(unique_ptr<FactoryType>(new UVAOVFactory()));
 }
 
 AOVFactoryRegistrar::~AOVFactoryRegistrar()
@@ -79,10 +80,10 @@ AOVFactoryRegistrar::~AOVFactoryRegistrar()
     delete impl;
 }
 
-void AOVFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+void AOVFactoryRegistrar::register_factory(unique_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();
-    impl->m_registrar.insert(model, factory);
+    impl->m_registrar.insert(model, move(factory));
 }
 
 AOVFactoryArray AOVFactoryRegistrar::get_factories() const

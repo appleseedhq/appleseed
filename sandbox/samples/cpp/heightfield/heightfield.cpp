@@ -80,7 +80,7 @@ class ProjectBuilder
     auto_release_ptr<Project> build_project()
     {
         GenericImageFileReader reader;
-        auto_ptr<Image> image(reader.read("data/heightfield.png"));
+        unique_ptr<Image> image(reader.read("data/heightfield.png"));
         const size_t image_width = image->properties().m_canvas_width;
         const size_t image_height = image->properties().m_canvas_height;
 
@@ -564,7 +564,7 @@ class InstancesProjectBuilder
 int main()
 {
     // Create a log target that outputs to stderr, and binds it to the renderer's global logger.
-    auto_ptr<ILogTarget> log_target(create_console_log_target(stderr));
+    unique_ptr<ILogTarget> log_target(create_console_log_target(stderr));
     global_logger().add_target(log_target.get());
 
     //SingleBakedMeshProjectBuilder project_builder;

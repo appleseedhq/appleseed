@@ -52,6 +52,7 @@
 
 // Standard headers.
 #include <memory>
+#include <utility>
 
 using namespace foundation;
 using namespace renderer;
@@ -81,21 +82,21 @@ Dictionary FrameItem::get_values() const
 
 void FrameItem::slot_edit(AttributeEditor* attribute_editor)
 {
-    auto_ptr<EntityEditor::IFormFactory> form_factory(
+    unique_ptr<EntityEditor::IFormFactory> form_factory(
         new SingleModelEntityEditorFormFactory(
             m_frame->get_name(),
             FrameFactory::get_input_metadata()));
 
     const Scene& scene = *m_editor_context.m_project.get_scene();
-    std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
+    std::unique_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<Scene>(scene));
 
     if (attribute_editor)
     {
         attribute_editor->edit(
-            form_factory,
-            entity_browser,
-            auto_ptr<CustomEntityUI>(),
+            move(form_factory),
+            move(entity_browser),
+            unique_ptr<CustomEntityUI>(),
             m_frame->get_parameters(),
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)));
@@ -106,8 +107,8 @@ void FrameItem::slot_edit(AttributeEditor* attribute_editor)
             treeWidget(),
             "Edit Frame",
             m_editor_context.m_project,
-            form_factory,
-            entity_browser,
+            move(form_factory),
+            move(entity_browser),
             m_frame->get_parameters(),
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)),
@@ -121,7 +122,7 @@ void FrameItem::slot_edit_accepted(Dictionary values)
     if (m_editor_context.m_rendering_manager.is_rendering())
     {
         m_editor_context.m_rendering_manager.schedule(
-            auto_ptr<RenderingManager::IScheduledAction>(
+            unique_ptr<RenderingManager::IScheduledAction>(
                 new EntityEditionAction<FrameItem>(this, values)));
 
         m_editor_context.m_rendering_manager.reinitialize_rendering();

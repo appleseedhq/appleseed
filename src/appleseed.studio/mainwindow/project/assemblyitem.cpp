@@ -246,7 +246,7 @@ AssemblyItem::ObjectInstanceCollectionItem& AssemblyItem::get_object_instance_co
 void AssemblyItem::instantiate(const string& name)
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        auto_ptr<RenderingManager::IScheduledAction>(
+        unique_ptr<RenderingManager::IScheduledAction>(
             new EntityInstantiationAction<AssemblyItem>(this, name)));
 }
 
@@ -377,7 +377,7 @@ namespace
 void AssemblyItem::delete_multiple(const QList<ItemBase*>& items)
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        auto_ptr<RenderingManager::IScheduledAction>(
+        unique_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<AssemblyItem>(
                 qlist_static_cast<AssemblyItem*>(items))));
 }

@@ -190,7 +190,7 @@ void TestSuite::run_case(
 
     try
     {
-        auto_ptr<ITestCase> test_case(test_case_factory.create());
+        unique_ptr<ITestCase> test_case(test_case_factory.create());
 
         test_case->run(test_listener, test_case_result);
 

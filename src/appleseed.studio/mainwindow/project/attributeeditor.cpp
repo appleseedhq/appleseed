@@ -37,6 +37,9 @@
 // Qt headers.
 #include <QLayout>
 
+// Standard headers.
+#include <utility>
+
 using namespace foundation;
 using namespace renderer;
 using namespace std;
@@ -64,12 +67,12 @@ void AttributeEditor::clear()
 }
 
 void AttributeEditor::edit(
-    auto_ptr<EntityEditor::IFormFactory>    form_factory,
-    auto_ptr<EntityEditor::IEntityBrowser>  entity_browser,
-    auto_ptr<CustomEntityUI>                custom_ui,
-    const Dictionary&                       values,
-    QObject*                                receiver,
-    const char*                             slot_apply)
+    unique_ptr<EntityEditor::IFormFactory>      form_factory,
+    unique_ptr<EntityEditor::IEntityBrowser>    entity_browser,
+    unique_ptr<CustomEntityUI>                  custom_ui,
+    const Dictionary&                           values,
+    QObject*                                    receiver,
+    const char*                                 slot_apply)
 {
     IEntityValueProvider* value_provider = dynamic_cast<IEntityValueProvider*>(receiver);
     if (value_provider)
@@ -79,9 +82,9 @@ void AttributeEditor::edit(
         new EntityEditor(
             m_parent,
             m_project,
-            form_factory,
-            entity_browser,
-            custom_ui,
+            move(form_factory),
+            move(entity_browser),
+            move(custom_ui),
             values));
 
     QObject::connect(

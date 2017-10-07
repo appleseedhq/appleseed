@@ -351,7 +351,7 @@ void MaterialAssignmentEditorWindow::assign_materials(const SlotValueCollection&
     const StringDictionary old_back_mappings = m_object_instance.get_back_material_mappings();
 
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        auto_ptr<RenderingManager::IScheduledAction>(
+        unique_ptr<RenderingManager::IScheduledAction>(
             new AssignMaterialsAction(
                 m_object_instance,
                 m_object_instance_item,

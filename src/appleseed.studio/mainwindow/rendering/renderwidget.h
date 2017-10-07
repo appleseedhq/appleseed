@@ -32,6 +32,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/image/image.h"
+#include "foundation/image/tile.h"
 
 // OpenColorIO headers.
 #include <OpenColorIO/OpenColorIO.h>
@@ -49,8 +51,6 @@ namespace OCIO = OCIO_NAMESPACE;
 
 // Forward declarations.
 namespace foundation    { class CanvasProperties; }
-namespace foundation    { class Image; }
-namespace foundation    { class Tile; }
 namespace renderer      { class Frame; }
 class QPaintEvent;
 
@@ -117,9 +117,9 @@ class RenderWidget
     mutable QMutex                      m_mutex;
     QImage                              m_image;
     QPainter                            m_painter;
-    std::auto_ptr<foundation::Tile>     m_float_tile_storage;
-    std::auto_ptr<foundation::Tile>     m_uint8_tile_storage;
-    std::auto_ptr<foundation::Image>    m_image_storage;
+    std::unique_ptr<foundation::Tile>   m_float_tile_storage;
+    std::unique_ptr<foundation::Tile>   m_uint8_tile_storage;
+    std::unique_ptr<foundation::Image>  m_image_storage;
 
     OCIO::ConstConfigRcPtr              m_ocio_config;
     OCIO::ConstProcessorRcPtr           m_ocio_processor;

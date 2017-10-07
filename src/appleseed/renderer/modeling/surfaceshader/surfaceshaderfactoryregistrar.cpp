@@ -44,6 +44,7 @@
 // Standard headers.
 #include <cassert>
 #include <string>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -61,10 +62,10 @@ struct SurfaceShaderFactoryRegistrar::Impl
 SurfaceShaderFactoryRegistrar::SurfaceShaderFactoryRegistrar()
   : impl(new Impl())
 {
-    register_factory(auto_ptr<FactoryType>(new AOSurfaceShaderFactory()));
-    register_factory(auto_ptr<FactoryType>(new ConstantSurfaceShaderFactory()));
-    register_factory(auto_ptr<FactoryType>(new DiagnosticSurfaceShaderFactory()));
-    register_factory(auto_ptr<FactoryType>(new PhysicalSurfaceShaderFactory()));
+    register_factory(unique_ptr<FactoryType>(new AOSurfaceShaderFactory()));
+    register_factory(unique_ptr<FactoryType>(new ConstantSurfaceShaderFactory()));
+    register_factory(unique_ptr<FactoryType>(new DiagnosticSurfaceShaderFactory()));
+    register_factory(unique_ptr<FactoryType>(new PhysicalSurfaceShaderFactory()));
 }
 
 SurfaceShaderFactoryRegistrar::~SurfaceShaderFactoryRegistrar()
@@ -72,10 +73,10 @@ SurfaceShaderFactoryRegistrar::~SurfaceShaderFactoryRegistrar()
     delete impl;
 }
 
-void SurfaceShaderFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+void SurfaceShaderFactoryRegistrar::register_factory(unique_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();
-    impl->m_registrar.insert(model, factory);
+    impl->m_registrar.insert(model, move(factory));
 }
 
 SurfaceShaderFactoryArray SurfaceShaderFactoryRegistrar::get_factories() const

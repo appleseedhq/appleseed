@@ -235,12 +235,12 @@ void RenderingManager::resume_rendering()
     m_renderer_controller.set_status(IRendererController::ContinueRendering);
 }
 
-void RenderingManager::schedule(auto_ptr<IScheduledAction> action)
+void RenderingManager::schedule(unique_ptr<IScheduledAction> action)
 {
     m_scheduled_actions.push_back(action.release());
 }
 
-void RenderingManager::schedule_or_execute(auto_ptr<IScheduledAction> action)
+void RenderingManager::schedule_or_execute(unique_ptr<IScheduledAction> action)
 {
     if (is_rendering())
     {
@@ -273,7 +273,7 @@ void RenderingManager::clear_scheduled_actions()
 
 void RenderingManager::set_sticky_action(
     const string&               key,
-    auto_ptr<IStickyAction>     action)
+    unique_ptr<IStickyAction>   action)
 {
     m_sticky_actions[key] = action.release();
 }

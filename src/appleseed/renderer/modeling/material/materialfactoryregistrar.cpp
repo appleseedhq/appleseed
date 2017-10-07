@@ -45,6 +45,7 @@
 // Standard headers.
 #include <cassert>
 #include <string>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -63,10 +64,10 @@ MaterialFactoryRegistrar::MaterialFactoryRegistrar()
   : impl(new Impl())
 {
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
-    register_factory(auto_ptr<FactoryType>(new DisneyMaterialFactory()));
+    register_factory(unique_ptr<FactoryType>(new DisneyMaterialFactory()));
 #endif
-    register_factory(auto_ptr<FactoryType>(new GenericMaterialFactory()));
-    register_factory(auto_ptr<FactoryType>(new OSLMaterialFactory()));
+    register_factory(unique_ptr<FactoryType>(new GenericMaterialFactory()));
+    register_factory(unique_ptr<FactoryType>(new OSLMaterialFactory()));
 }
 
 MaterialFactoryRegistrar::~MaterialFactoryRegistrar()
@@ -74,10 +75,10 @@ MaterialFactoryRegistrar::~MaterialFactoryRegistrar()
     delete impl;
 }
 
-void MaterialFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+void MaterialFactoryRegistrar::register_factory(unique_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();
-    impl->m_registrar.insert(model, factory);
+    impl->m_registrar.insert(model, move(factory));
 }
 
 MaterialFactoryArray MaterialFactoryRegistrar::get_factories() const

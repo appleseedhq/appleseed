@@ -437,7 +437,7 @@ namespace
         vector<Vector2d>    m_diaphragm_vertices;
 
         // Importance sampler to sample the diaphragm map.
-        auto_ptr<ImageImportanceSamplerType>
+        unique_ptr<ImageImportanceSamplerType>
                             m_importance_sampler;
         string              m_diaphragm_map_name;
 

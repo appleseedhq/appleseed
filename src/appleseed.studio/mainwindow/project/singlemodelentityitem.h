@@ -109,20 +109,20 @@ void SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attr
 
     typedef typename EntityTraitsType::FactoryType FactoryType;
 
-    std::auto_ptr<EntityEditor::IFormFactory> form_factory(
+    std::unique_ptr<EntityEditor::IFormFactory> form_factory(
         new SingleModelEntityEditorFormFactory(
             Base::m_entity->get_name(),
             FactoryType::get_input_metadata()));
 
-    std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
+    std::unique_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<ParentEntity>(Base::m_parent));
 
     if (attribute_editor)
     {
         attribute_editor->edit(
-            form_factory,
-            entity_browser,
-            std::auto_ptr<CustomEntityUI>(),
+            std::move(form_factory),
+            std::move(entity_browser),
+            std::unique_ptr<CustomEntityUI>(),
             get_values(),
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)));
@@ -137,8 +137,8 @@ void SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attr
             QTreeWidgetItem::treeWidget(),
             window_title,
             Base::m_editor_context.m_project,
-            form_factory,
-            entity_browser,
+            std::move(form_factory),
+            std::move(entity_browser),
             get_values(),
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)),

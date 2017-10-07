@@ -98,7 +98,7 @@ void BinaryMeshFileReader::read(IMeshBuilder& builder)
     uint16 version;
     checked_read(file, version);
 
-    auto_ptr<ReaderAdapter> reader;
+    unique_ptr<ReaderAdapter> reader;
 
     switch (version)
     {

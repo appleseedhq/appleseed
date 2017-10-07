@@ -41,6 +41,7 @@
 // Standard headers.
 #include <cassert>
 #include <string>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -58,8 +59,8 @@ struct AssemblyFactoryRegistrar::Impl
 AssemblyFactoryRegistrar::AssemblyFactoryRegistrar()
   : impl(new Impl())
 {
-    register_factory(auto_ptr<FactoryType>(new ArchiveAssemblyFactory()));
-    register_factory(auto_ptr<FactoryType>(new AssemblyFactory()));
+    register_factory(unique_ptr<FactoryType>(new ArchiveAssemblyFactory()));
+    register_factory(unique_ptr<FactoryType>(new AssemblyFactory()));
 }
 
 AssemblyFactoryRegistrar::~AssemblyFactoryRegistrar()
@@ -67,10 +68,10 @@ AssemblyFactoryRegistrar::~AssemblyFactoryRegistrar()
     delete impl;
 }
 
-void AssemblyFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+void AssemblyFactoryRegistrar::register_factory(unique_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();
-    impl->m_registrar.insert(model, factory);
+    impl->m_registrar.insert(model, move(factory));
 }
 
 AssemblyFactoryArray AssemblyFactoryRegistrar::get_factories() const

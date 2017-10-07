@@ -170,9 +170,9 @@ namespace
             }
         };
 
-        auto_ptr<DummyTexture>  m_dummy_texture;
-        auto_release_ptr<Image> m_image;
-        ColorSpace              m_color_space;
+        unique_ptr<DummyTexture>    m_dummy_texture;
+        auto_release_ptr<Image>     m_image;
+        ColorSpace                  m_color_space;
 
         void extract_parameters()
         {

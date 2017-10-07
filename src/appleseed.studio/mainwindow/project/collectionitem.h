@@ -148,7 +148,7 @@ void CollectionItem<Entity, ParentEntity, ParentItem>::slot_create_accepted(foun
     if (rendering_manager.is_rendering())
     {
         rendering_manager.schedule(
-            std::auto_ptr<RenderingManager::IScheduledAction>(
+            std::unique_ptr<RenderingManager::IScheduledAction>(
                 new EntityCreationAction<CollectionItem>(this, values)));
 
         rendering_manager.reinitialize_rendering();

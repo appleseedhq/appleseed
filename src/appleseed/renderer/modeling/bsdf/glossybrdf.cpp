@@ -324,7 +324,7 @@ namespace
       private:
         typedef GlossyBRDFInputValues InputValues;
 
-        auto_ptr<MDF> m_mdf;
+        unique_ptr<MDF> m_mdf;
     };
 
     typedef BSDFWrapper<GlossyBRDFImpl> GlossyBRDF;

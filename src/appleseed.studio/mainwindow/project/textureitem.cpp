@@ -53,6 +53,7 @@
 
 // Standard headers.
 #include <memory>
+#include <utility>
 #include <vector>
 
 using namespace foundation;
@@ -120,7 +121,7 @@ namespace
 void TextureItem::delete_multiple(const QList<ItemBase*>& items)
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        auto_ptr<RenderingManager::IScheduledAction>(
+        unique_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<TextureItem>(
                 qlist_static_cast<TextureItem*>(items))));
 }

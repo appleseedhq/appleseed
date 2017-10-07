@@ -51,7 +51,7 @@ namespace
             bpy::throw_error_already_set();
         }
 
-        auto_ptr<Vector<T, N>> r(new Vector<T, N>());
+        unique_ptr<Vector<T, N>> r(new Vector<T, N>());
 
         for (size_t i = 0; i < N; ++i)
         {

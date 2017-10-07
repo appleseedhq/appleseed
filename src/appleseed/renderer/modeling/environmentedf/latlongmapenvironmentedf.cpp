@@ -373,7 +373,7 @@ namespace
         float   m_rcp_importance_map_height;
         float   m_probability_scale;
 
-        auto_ptr<ImageImportanceSamplerType> m_importance_sampler;
+        unique_ptr<ImageImportanceSamplerType> m_importance_sampler;
 
         void build_importance_map(const Scene& scene, IAbortSwitch*abort_switch)
         {

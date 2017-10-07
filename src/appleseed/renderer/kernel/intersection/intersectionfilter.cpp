@@ -179,7 +179,7 @@ void IntersectionFilter::do_update(
 
     // Build the alpha mask.
     double transparency;
-    auto_ptr<AlphaMask> alpha_mask(
+    unique_ptr<AlphaMask> alpha_mask(
         create_alpha_mask(
             alpha_map,
             texture_cache,

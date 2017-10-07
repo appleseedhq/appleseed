@@ -55,7 +55,7 @@ class MPlayTileCallbackFactory
     virtual renderer::ITileCallback* create() override;
 
   private:
-    std::auto_ptr<renderer::ITileCallback> m_callback;
+    std::unique_ptr<renderer::ITileCallback> m_callback;
 };
 
 class HRmanPipeTileCallbackFactory
@@ -72,7 +72,7 @@ class HRmanPipeTileCallbackFactory
     virtual renderer::ITileCallback* create() override;
 
   private:
-    std::auto_ptr<renderer::ITileCallback> m_callback;
+    std::unique_ptr<renderer::ITileCallback> m_callback;
 };
 
 }       // namespace cli

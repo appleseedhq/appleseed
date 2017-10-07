@@ -141,7 +141,7 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::slot_edit_accepted(founda
     if (Base::m_editor_context.m_rendering_manager.is_rendering())
     {
         Base::m_editor_context.m_rendering_manager.schedule(
-            std::auto_ptr<RenderingManager::IScheduledAction>(
+            std::unique_ptr<RenderingManager::IScheduledAction>(
                 new EntityEditionAction<EntityItem>(this, values)));
 
         Base::m_editor_context.m_rendering_manager.reinitialize_rendering();
@@ -184,7 +184,7 @@ template <typename Entity, typename ParentEntity, typename CollectionItem>
 void EntityItem<Entity, ParentEntity, CollectionItem>::delete_multiple(const QList<ItemBase*>& items)
 {
     Base::m_editor_context.m_rendering_manager.schedule_or_execute(
-        std::auto_ptr<RenderingManager::IScheduledAction>(
+        std::unique_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<EntityItem>(
                 qlist_static_cast<EntityItem*>(items))));
 }

@@ -498,7 +498,7 @@ namespace
 
         typedef WardMDFAdapter MDFType;
 
-        auto_ptr<MDFType>       m_mdf;                          // Microfacet Distribution Function
+        unique_ptr<MDFType>     m_mdf;                          // Microfacet Distribution Function
         Spectrum                m_a_spec[AlbedoTableSize];      // albedo of the specular component as V varies
         Spectrum                m_s;                            // normalization constant for the matte component
 

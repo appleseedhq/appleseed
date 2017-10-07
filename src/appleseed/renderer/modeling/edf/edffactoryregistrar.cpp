@@ -42,6 +42,7 @@
 // Standard headers.
 #include <cassert>
 #include <string>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -59,8 +60,8 @@ struct EDFFactoryRegistrar::Impl
 EDFFactoryRegistrar::EDFFactoryRegistrar()
   : impl(new Impl())
 {
-    register_factory(auto_ptr<FactoryType>(new ConeEDFFactory()));
-    register_factory(auto_ptr<FactoryType>(new DiffuseEDFFactory()));
+    register_factory(unique_ptr<FactoryType>(new ConeEDFFactory()));
+    register_factory(unique_ptr<FactoryType>(new DiffuseEDFFactory()));
 }
 
 EDFFactoryRegistrar::~EDFFactoryRegistrar()
@@ -68,10 +69,10 @@ EDFFactoryRegistrar::~EDFFactoryRegistrar()
     delete impl;
 }
 
-void EDFFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+void EDFFactoryRegistrar::register_factory(unique_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();
-    impl->m_registrar.insert(model, factory);
+    impl->m_registrar.insert(model, move(factory));
 }
 
 EDFFactoryArray EDFFactoryRegistrar::get_factories() const

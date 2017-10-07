@@ -173,9 +173,9 @@ Statistics::IntegerEntry::IntegerEntry(
 {
 }
 
-auto_ptr<Statistics::Entry> Statistics::IntegerEntry::clone() const
+unique_ptr<Statistics::Entry> Statistics::IntegerEntry::clone() const
 {
-    return auto_ptr<Entry>(new IntegerEntry(*this));
+    return unique_ptr<Entry>(new IntegerEntry(*this));
 }
 
 void Statistics::IntegerEntry::merge(const Entry* other)
@@ -202,9 +202,9 @@ Statistics::UnsignedIntegerEntry::UnsignedIntegerEntry(
 {
 }
 
-auto_ptr<Statistics::Entry> Statistics::UnsignedIntegerEntry::clone() const
+unique_ptr<Statistics::Entry> Statistics::UnsignedIntegerEntry::clone() const
 {
-    return auto_ptr<Entry>(new UnsignedIntegerEntry(*this));
+    return unique_ptr<Entry>(new UnsignedIntegerEntry(*this));
 }
 
 void Statistics::UnsignedIntegerEntry::merge(const Entry* other)
@@ -231,9 +231,9 @@ Statistics::FloatingPointEntry::FloatingPointEntry(
 {
 }
 
-auto_ptr<Statistics::Entry> Statistics::FloatingPointEntry::clone() const
+unique_ptr<Statistics::Entry> Statistics::FloatingPointEntry::clone() const
 {
-    return auto_ptr<Entry>(new FloatingPointEntry(*this));
+    return unique_ptr<Entry>(new FloatingPointEntry(*this));
 }
 
 void Statistics::FloatingPointEntry::merge(const Entry* other)
@@ -260,9 +260,9 @@ Statistics::StringEntry::StringEntry(
 {
 }
 
-auto_ptr<Statistics::Entry> Statistics::StringEntry::clone() const
+unique_ptr<Statistics::Entry> Statistics::StringEntry::clone() const
 {
-    return auto_ptr<Entry>(new StringEntry(*this));
+    return unique_ptr<Entry>(new StringEntry(*this));
 }
 
 void Statistics::StringEntry::merge(const Entry* other)

@@ -86,28 +86,28 @@ class RendererComponents
     IFrameRenderer& get_frame_renderer();
 
   private:
-    const Project&              m_project;
-    const ParamArray&           m_params;
-    ITileCallbackFactory*       m_tile_callback_factory;
-    const Scene&                m_scene;
-    const Frame&                m_frame;
-    const TraceContext&         m_trace_context;
+    const Project&                                      m_project;
+    const ParamArray&                                   m_params;
+    ITileCallbackFactory*                               m_tile_callback_factory;
+    const Scene&                                        m_scene;
+    const Frame&                                        m_frame;
+    const TraceContext&                                 m_trace_context;
     std::unique_ptr<ForwardLightSampler>
-                                m_forward_light_sampler;
+                                                        m_forward_light_sampler;
     std::unique_ptr<BackwardLightSampler>
-                                m_backward_light_sampler;
-    ShadingEngine               m_shading_engine;
-    TextureStore&               m_texture_store;
-    OIIOTextureSystem&          m_texture_system;
-    OSLShadingSystem&           m_shading_system;
+                                                        m_backward_light_sampler;
+    ShadingEngine                                       m_shading_engine;
+    TextureStore&                                       m_texture_store;
+    OIIOTextureSystem&                                  m_texture_system;
+    OSLShadingSystem&                                   m_shading_system;
 
-    std::auto_ptr<ILightingEngineFactory>               m_lighting_engine_factory;
-    std::auto_ptr<ISampleRendererFactory>               m_sample_renderer_factory;
-    std::auto_ptr<ISampleGeneratorFactory>              m_sample_generator_factory;
-    std::auto_ptr<IPixelRendererFactory>                m_pixel_renderer_factory;
-    std::auto_ptr<IShadingResultFrameBufferFactory>     m_shading_result_framebuffer_factory;
-    std::auto_ptr<ITileRendererFactory>                 m_tile_renderer_factory;
-    std::auto_ptr<IPassCallback>                        m_pass_callback;
+    std::unique_ptr<ILightingEngineFactory>             m_lighting_engine_factory;
+    std::unique_ptr<ISampleRendererFactory>             m_sample_renderer_factory;
+    std::unique_ptr<ISampleGeneratorFactory>            m_sample_generator_factory;
+    std::unique_ptr<IPixelRendererFactory>              m_pixel_renderer_factory;
+    std::unique_ptr<IShadingResultFrameBufferFactory>   m_shading_result_framebuffer_factory;
+    std::unique_ptr<ITileRendererFactory>               m_tile_renderer_factory;
+    std::unique_ptr<IPassCallback>                      m_pass_callback;
     foundation::auto_release_ptr<IFrameRenderer>        m_frame_renderer;
 
     bool create_lighting_engine_factory();
