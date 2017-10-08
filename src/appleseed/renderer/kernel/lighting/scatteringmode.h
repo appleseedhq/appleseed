@@ -70,7 +70,7 @@ class ScatteringMode
     static bool has_volume(const int modes);
     static bool has_diffuse_or_glossy_or_volume(const int modes);
     static bool has_diffuse_and_glossy(const int modes);
-    static bool has_diffuse_or_Volume(const int modes);
+    static bool has_diffuse_or_volume(const int modes);
     static bool has_glossy_or_specular(const int modes);
 
     // Determine the appropriate visibility type for a given scattering mode.
@@ -112,7 +112,7 @@ inline bool ScatteringMode::has_diffuse_and_glossy(const int modes)
     return (modes & (Diffuse | Glossy)) == (Diffuse | Glossy);
 }
 
-inline bool ScatteringMode::has_diffuse_or_Volume(const int modes)
+inline bool ScatteringMode::has_diffuse_or_volume(const int modes)
 {
     return (modes & (Diffuse | Volume)) == (Diffuse | Volume);
 }

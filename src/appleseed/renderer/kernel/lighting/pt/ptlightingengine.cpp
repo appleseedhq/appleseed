@@ -349,7 +349,7 @@ namespace
                 if (!m_params.m_enable_caustics)
                 {
                     // Don't follow paths leading to caustics.
-                    if (ScatteringMode::has_diffuse_or_Volume(prev_mode) &&
+                    if (ScatteringMode::has_diffuse_or_volume(prev_mode) &&
                         ScatteringMode::has_glossy_or_specular(next_mode))
                         return false;
 
