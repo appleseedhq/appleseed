@@ -199,7 +199,7 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution(
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
     DirectShadingComponents&    radiance,
-    const bool                  sample_phasefunction) const
+    const bool                  sample_phase_function) const
 {
     assert (light_sample != nullptr);
 
@@ -230,19 +230,19 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution(
         // Calculate MIS weight for spectral channel sampling (power heuristic).
         // One-sample estimator is used (Veach: 9.2.4 eq. 9.15).
         float mis_weights_sum = 0.0f;
-        for (size_t i = 0; i < Spectrum::size(); ++i)
+        for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
         {
             if (extinction_coef[i] > 0.0f)
             {
                 const float probability =
                     evaluate_exponential_sample(
                         exponential_sample, m_volume_ray, extinction_coef[i]);
-                mis_weights_sum += foundation::square(probability);
+                mis_weights_sum += square(probability);
             }
         }
         const float mis_weight_channel =
             Spectrum::size() *
-            foundation::square(exponential_prob) /
+            square(exponential_prob) /
             mis_weights_sum;
 
         // Calculate MIS weight for distance sampling.
@@ -251,7 +251,7 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution(
 
         DirectShadingComponents inscattered;
         take_single_direction_sample(
-            sample_phasefunction,
+            sample_phase_function,
             sampling_context,
             light_sample,
             exponential_sample,
@@ -286,7 +286,7 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution(
 
         DirectShadingComponents inscattered;
         take_single_direction_sample(
-            sample_phasefunction,
+            sample_phase_function,
             sampling_context,
             light_sample,
             equiangular_sample,
@@ -315,7 +315,7 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution_exponenti
     SamplingContext&            sampling_context,
     const MISHeuristic          mis_heuristic,
     DirectShadingComponents&    radiance,
-    const bool                  sample_phasefunction) const
+    const bool                  sample_phase_function) const
 {
     // Sample channel uniformly at random.
     sampling_context.split_in_place(1, 1);
@@ -332,21 +332,21 @@ void VolumeLightingIntegrator::add_single_distance_sample_contribution_exponenti
     // Calculate MIS weight for spectral channel sampling (balance heuristic).
     // One-sample estimator is used (Veach: 9.2.4 eq. 9.15).
     float mis_weights_sum = 0.0f;
-    for (size_t i = 0; i < Spectrum::size(); ++i)
+    for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
     {
         const float probability =
             evaluate_exponential_sample(
                 exponential_sample, m_volume_ray, extinction_coef[i]);
-        mis_weights_sum += foundation::square(probability);
+        mis_weights_sum += square(probability);
     }
     const float mis_weight_channel =
         Spectrum::size() *
-        foundation::square(exponential_prob) /
+        square(exponential_prob) /
         mis_weights_sum;
 
     DirectShadingComponents inscattered;
     take_single_direction_sample(
-        sample_phasefunction,
+        sample_phase_function,
         sampling_context,
         light_sample,
         exponential_sample,
@@ -457,7 +457,7 @@ void VolumeLightingIntegrator::compute_radiance_exponential_sampling(
     if (!m_light_sampler.has_lights())
         return;
 
-    Spectrum extinction_coef = m_volume.extinction_coefficient(
+    const Spectrum& extinction_coef = m_volume.extinction_coefficient(
         m_volume_data, m_volume_ray);
 
     if (m_distance_sample_count > 0)
@@ -563,7 +563,7 @@ void VolumeLightingIntegrator::take_single_direction_sample(
             sampling_context,
             light_sample,
             mis_heuristic,
-            foundation::Dual3d(m_volume_ray.m_dir),
+            Dual3d(m_volume_ray.m_dir),
             radiance);
     }
     else
@@ -571,7 +571,7 @@ void VolumeLightingIntegrator::take_single_direction_sample(
         integrator.add_non_physical_light_sample_contribution(
             sampling_context,
             *light_sample,
-            foundation::Dual3d(m_volume_ray.m_dir),
+            Dual3d(m_volume_ray.m_dir),
             radiance);
     }
 }
