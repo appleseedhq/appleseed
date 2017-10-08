@@ -384,7 +384,7 @@ inline T pow_int(const T x, size_t p)
 {
     // todo: implement exponentiation by squaring.
     // Reference: http://en.wikipedia.org/wiki/Exponentiation_by_squaring.
-
+ 
     T y = T(1);
 
     while (p--)
