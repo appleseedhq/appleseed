@@ -63,7 +63,7 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_FEQ_EPS(45.0L, rad_to_deg(static_cast<long double>(Pi<double>() / 4.0)), 1.0e-14L);
     }
 
-    TEST_CASE(PowInt)
+    TEST_CASE(PowInt_CompileTimeExponent)
     {
         EXPECT_EQ(1, (pow_int<0, int>(0)));
         EXPECT_EQ(0, (pow_int<1, int>(0)));
@@ -84,26 +84,31 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_FEQ(1.0, (pow_int<0, double>(2.0)));
         EXPECT_FEQ(2.0, (pow_int<1, double>(2.0)));
         EXPECT_FEQ(4.0, (pow_int<2, double>(2.0)));
+        EXPECT_FEQ(8.0, (pow_int<3, double>(2.0)));
+    }
 
-        EXPECT_EQ(1, (pow_int<int>(0,0)));
-        EXPECT_EQ(0, (pow_int<int>(0,1)));
-        EXPECT_EQ(0, (pow_int<int>(0,2)));
+    TEST_CASE(PowInt_RunTimeExponent)
+    {
+        EXPECT_EQ(1, (pow_int<int>(0, 0)));
+        EXPECT_EQ(0, (pow_int<int>(0, 1)));
+        EXPECT_EQ(0, (pow_int<int>(0, 2)));
 
-        EXPECT_EQ(1, (pow_int<int>(1,0)));
-        EXPECT_EQ(1, (pow_int<int>(1,1)));
-        EXPECT_EQ(1, (pow_int<int>(1,2)));
+        EXPECT_EQ(1, (pow_int<int>(1, 0)));
+        EXPECT_EQ(1, (pow_int<int>(1, 1)));
+        EXPECT_EQ(1, (pow_int<int>(1, 2)));
 
-        EXPECT_EQ(1, (pow_int<int>(2,0)));
-        EXPECT_EQ(2, (pow_int<int>(2,1)));
-        EXPECT_EQ(4, (pow_int<int>(2,2)));
+        EXPECT_EQ(1, (pow_int<int>(2, 0)));
+        EXPECT_EQ(2, (pow_int<int>(2, 1)));
+        EXPECT_EQ(4, (pow_int<int>(2, 2)));
 
-        EXPECT_EQ(1, (pow_int<unsigned int>(2,0)));
-        EXPECT_EQ(2, (pow_int<unsigned int>(2,1)));
-        EXPECT_EQ(4, (pow_int<unsigned int>(2,2)));
+        EXPECT_EQ(1, (pow_int<unsigned int>(2, 0)));
+        EXPECT_EQ(2, (pow_int<unsigned int>(2, 1)));
+        EXPECT_EQ(4, (pow_int<unsigned int>(2, 2)));
 
-        EXPECT_FEQ(1.0, (pow_int<double>(2.0,0)));
-        EXPECT_FEQ(2.0, (pow_int<double>(2.0,1)));
-        EXPECT_FEQ(4.0, (pow_int<double>(2.0,2)));
+        EXPECT_FEQ(1.0, (pow_int<double>(2.0, 0)));
+        EXPECT_FEQ(2.0, (pow_int<double>(2.0, 1)));
+        EXPECT_FEQ(4.0, (pow_int<double>(2.0, 2)));
+        EXPECT_FEQ(8.0, (pow_int<double>(2.0, 3)));
     }
 
     TEST_CASE(NextPow2)
