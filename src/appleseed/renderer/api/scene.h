@@ -39,6 +39,7 @@
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/objectinstancetraits.h"
+#include "renderer/modeling/scene/pluginassembly.h"
 #include "renderer/modeling/scene/proceduralassembly.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"

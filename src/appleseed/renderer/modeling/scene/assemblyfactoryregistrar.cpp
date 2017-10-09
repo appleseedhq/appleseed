@@ -33,6 +33,7 @@
 #include "renderer/modeling/scene/archiveassembly.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/iassemblyfactory.h"
+#include "renderer/modeling/scene/pluginassembly.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -61,6 +62,7 @@ AssemblyFactoryRegistrar::AssemblyFactoryRegistrar()
 {
     register_factory(unique_ptr<FactoryType>(new ArchiveAssemblyFactory()));
     register_factory(unique_ptr<FactoryType>(new AssemblyFactory()));
+    register_factory(unique_ptr<FactoryType>(new PluginAssemblyFactory()));
 }
 
 AssemblyFactoryRegistrar::~AssemblyFactoryRegistrar()

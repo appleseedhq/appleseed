@@ -115,21 +115,7 @@ bool ArchiveAssembly::expand_contents(
 
         if (assembly.get())
         {
-            assemblies().swap(assembly->assemblies());
-            assembly_instances().swap(assembly->assembly_instances());
-            bsdfs().swap(assembly->bsdfs());
-            bssrdfs().swap(assembly->bssrdfs());
-            colors().swap(assembly->colors());
-            edfs().swap(assembly->edfs());
-            lights().swap(assembly->lights());
-            materials().swap(assembly->materials());
-            objects().swap(assembly->objects());
-            object_instances().swap(assembly->object_instances());
-            volumes().swap(assembly->volumes());
-            shader_groups().swap(assembly->shader_groups());
-            surface_shaders().swap(assembly->surface_shaders());
-            textures().swap(assembly->textures());
-            texture_instances().swap(assembly->texture_instances());
+            swap_contents(*assembly);
             m_archive_opened = true;
         }
     }
@@ -141,6 +127,11 @@ bool ArchiveAssembly::expand_contents(
 //
 // ArchiveAssemblyFactory class implementation.
 //
+
+void ArchiveAssemblyFactory::release()
+{
+    delete this;
+}
 
 const char* ArchiveAssemblyFactory::get_model() const
 {
