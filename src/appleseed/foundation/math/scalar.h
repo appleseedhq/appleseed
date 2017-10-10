@@ -358,11 +358,11 @@ struct PowIntHelper
 {
     static T eval(const T x)
     {
+        // Reference: http://en.wikipedia.org/wiki/Exponentiation_by_squaring
         if (P % 2 == 0)
             return PowIntHelper<T, P / 2>::eval(x * x);
         else
             return x * PowIntHelper<T, (P - 1) / 2>::eval(x * x);
-
     }
 };
 
@@ -378,14 +378,13 @@ struct PowIntHelper<T, 0>
 template <size_t P, typename T>
 inline T pow_int(const T x)
 {
-    // Reference: http://en.wikipedia.org/wiki/Exponentiation_by_squaring.
     return PowIntHelper<T, P>::eval(x);
 }
 
 template <typename T>
 inline T pow_int(T x, size_t p)
 {
-    // Reference: http://en.wikipedia.org/wiki/Exponentiation_by_squaring.
+    // Reference: http://en.wikipedia.org/wiki/Exponentiation_by_squaring
 
     T y = T(1);
 
@@ -403,6 +402,7 @@ inline T pow_int(T x, size_t p)
             p = (p - 1) / 2;
         }
     }
+
     return y;
 }
 
