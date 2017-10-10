@@ -70,7 +70,14 @@ PluginAssembly::PluginAssembly(
     const char*         name,
     const ParamArray&   params)
   : ProceduralAssembly(name, params)
+  , m_plugin_assembly(nullptr)
 {
+}
+
+PluginAssembly::~PluginAssembly()
+{
+    if (m_plugin_assembly)
+        m_plugin_assembly->release();
 }
 
 void PluginAssembly::release()
@@ -89,7 +96,7 @@ bool PluginAssembly::expand_contents(
     IAbortSwitch*       abort_switch)
 {
     // Skip already expanded procedurals.
-    if (m_plugin_assembly.get())
+    if (m_plugin_assembly)
         return true;
 
     string plugin_path;
@@ -160,7 +167,7 @@ bool PluginAssembly::expand_contents(
 
         // Keep the plugin assembly alive, in case it contains state
         // that could be needed by children procedural assemblies.
-        m_plugin_assembly = plugin_assembly;
+        m_plugin_assembly = plugin_assembly.release();
     }
 
     return success;

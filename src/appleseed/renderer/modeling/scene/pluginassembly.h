@@ -58,6 +58,9 @@ class APPLESEED_DLLSYMBOL PluginAssembly
   : public ProceduralAssembly
 {
   public:
+    // Destructor.
+    virtual ~PluginAssembly() override;
+
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const override;
 
@@ -78,7 +81,7 @@ class APPLESEED_DLLSYMBOL PluginAssembly
         const ParamArray&           params);
 
   private:
-    foundation::auto_release_ptr<Assembly> m_plugin_assembly;
+    Assembly* m_plugin_assembly;
 };
 
 
