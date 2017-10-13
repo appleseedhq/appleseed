@@ -89,7 +89,8 @@ class ShadingPoint
         PrimitiveTriangle   = 1 << 1,
         PrimitiveCurve      = 1 << 2,
         PrimitiveCurve1     = PrimitiveCurve | 0,
-        PrimitiveCurve3     = PrimitiveCurve | 1
+        PrimitiveCurve3     = PrimitiveCurve | 1,
+        PrimitiveVolume     = 1 << 3
     };
 
     // Constructor, calls clear().
@@ -104,6 +105,13 @@ class ShadingPoint
     // Reset the shading point to its initial state (no intersection).
     void clear();
 
+    // Initialize this shading point as a point in participating media,
+    // given a ray through volume and a distance from origin.
+    void create_volume_shading_point(
+        const ShadingPoint&     prev_shading_point,
+        const ShadingRay&       volume_ray,
+        const float             distance);
+
     // Return the scene that was tested for intersection.
     const Scene& get_scene() const;
 
@@ -114,8 +122,15 @@ class ShadingPoint
     // Return the time stored in the ray.
     const ShadingRay::Time& get_time() const;
 
-    // Return true if an intersection was found, false otherwise.
-    bool hit() const;
+    // Return true if the shading point is either
+    // a surface point or a volume point and can be shaded.
+    bool is_valid() const;
+
+    // Return true if an intersection with some surface was found, false otherwise.
+    bool hit_surface() const;
+
+    // Return true if the shading point is located inside a participating medium.
+    bool hit_volume() const;
 
     // Return the type of the hit primitive.
     PrimitiveType get_primitive_type() const;
@@ -465,9 +480,19 @@ inline const ShadingRay::Time& ShadingPoint::get_time() const
     return m_ray.m_time;
 }
 
-inline bool ShadingPoint::hit() const
+inline bool ShadingPoint::is_valid() const
 {
     return m_primitive_type != PrimitiveNone;
+}
+
+inline bool ShadingPoint::hit_surface() const
+{
+    return is_valid() && !hit_volume();
+}
+
+inline bool ShadingPoint::hit_volume() const
+{
+    return m_primitive_type == PrimitiveVolume;
 }
 
 inline ShadingPoint::PrimitiveType ShadingPoint::get_primitive_type() const
@@ -487,19 +512,19 @@ inline bool ShadingPoint::is_curve_primitive() const
 
 inline double ShadingPoint::get_distance() const
 {
-    assert(hit());
+    assert(is_valid());
     return m_ray.m_tmax;
 }
 
 inline const foundation::Vector2f& ShadingPoint::get_bary() const
 {
-    assert(hit());
+    assert(hit_surface());
     return m_bary;
 }
 
 inline const foundation::Vector2f& ShadingPoint::get_uv(const size_t uvset) const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(uvset == 0);     // todo: support multiple UV sets
 
     if (!(m_members & HasUV0))
@@ -529,7 +554,7 @@ inline const foundation::Vector2f& ShadingPoint::get_uv(const size_t uvset) cons
 
 inline const foundation::Vector2f& ShadingPoint::get_duvdx(const size_t uvset) const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(uvset == 0);     // todo: support multiple UV sets
 
     if (!(m_members & HasScreenSpaceDerivatives))
@@ -543,7 +568,7 @@ inline const foundation::Vector2f& ShadingPoint::get_duvdx(const size_t uvset) c
 
 inline const foundation::Vector2f& ShadingPoint::get_duvdy(const size_t uvset) const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(uvset == 0);     // todo: support multiple UV sets
 
     if (!(m_members & HasScreenSpaceDerivatives))
@@ -557,7 +582,7 @@ inline const foundation::Vector2f& ShadingPoint::get_duvdy(const size_t uvset) c
 
 inline const foundation::Vector3d& ShadingPoint::get_point() const
 {
-    assert(hit());
+    assert(is_valid());
 
     if (!(m_members & HasPoint))
     {
@@ -570,7 +595,7 @@ inline const foundation::Vector3d& ShadingPoint::get_point() const
 
 inline const foundation::Vector3d& ShadingPoint::get_offset_point(const foundation::Vector3d& direction) const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(m_members & HasRefinedPoints);
 
     return
@@ -581,7 +606,7 @@ inline const foundation::Vector3d& ShadingPoint::get_offset_point(const foundati
 
 inline const foundation::Vector3d& ShadingPoint::get_dpdu(const size_t uvset) const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(uvset == 0);     // todo: support multiple UV sets
 
     if (!(m_members & HasWorldSpaceDerivatives))
@@ -595,7 +620,7 @@ inline const foundation::Vector3d& ShadingPoint::get_dpdu(const size_t uvset) co
 
 inline const foundation::Vector3d& ShadingPoint::get_dpdv(const size_t uvset) const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(uvset == 0);     // todo: support multiple UV sets
 
     if (!(m_members & HasWorldSpaceDerivatives))
@@ -609,7 +634,7 @@ inline const foundation::Vector3d& ShadingPoint::get_dpdv(const size_t uvset) co
 
 inline const foundation::Vector3d& ShadingPoint::get_dndu(const size_t uvset) const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(uvset == 0);     // todo: support multiple UV sets
 
     if (!(m_members & HasWorldSpaceDerivatives))
@@ -623,7 +648,7 @@ inline const foundation::Vector3d& ShadingPoint::get_dndu(const size_t uvset) co
 
 inline const foundation::Vector3d& ShadingPoint::get_dndv(const size_t uvset) const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(uvset == 0);     // todo: support multiple UV sets
 
     if (!(m_members & HasWorldSpaceDerivatives))
@@ -637,7 +662,7 @@ inline const foundation::Vector3d& ShadingPoint::get_dndv(const size_t uvset) co
 
 inline const foundation::Vector3d& ShadingPoint::get_dpdx() const
 {
-    assert(hit());
+    assert(hit_surface());
 
     if (!(m_members & HasScreenSpaceDerivatives))
     {
@@ -650,7 +675,7 @@ inline const foundation::Vector3d& ShadingPoint::get_dpdx() const
 
 inline const foundation::Vector3d& ShadingPoint::get_dpdy() const
 {
-    assert(hit());
+    assert(hit_surface());
 
     if (!(m_members & HasScreenSpaceDerivatives))
     {
@@ -663,7 +688,7 @@ inline const foundation::Vector3d& ShadingPoint::get_dpdy() const
 
 inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
 {
-    assert(hit());
+    assert(hit_surface());
 
     if (!(m_members & HasGeometricNormal))
     {
@@ -676,7 +701,7 @@ inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
 
 inline const foundation::Vector3d& ShadingPoint::get_original_shading_normal() const
 {
-    assert(hit());
+    assert(hit_surface());
 
     if (!(m_members & HasOriginalShadingNormal))
     {
@@ -694,7 +719,7 @@ inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
 
 inline void ShadingPoint::set_shading_basis(const foundation::Basis3d& basis) const
 {
-    assert(hit());
+    assert(hit_surface());
     m_shading_basis = basis;
     m_members |= HasShadingBasis;
     m_members &= ~HasScreenSpaceDerivatives;
@@ -702,7 +727,7 @@ inline void ShadingPoint::set_shading_basis(const foundation::Basis3d& basis) co
 
 inline const foundation::Basis3d& ShadingPoint::get_shading_basis() const
 {
-    assert(hit());
+    assert(hit_surface());
 
     if (!(m_members & HasShadingBasis))
     {
@@ -715,7 +740,7 @@ inline const foundation::Basis3d& ShadingPoint::get_shading_basis() const
 
 inline ObjectInstance::Side ShadingPoint::get_side() const
 {
-    assert(hit());
+    assert(hit_surface());
 
     if (!(m_members & HasGeometricNormal))
     {
@@ -738,7 +763,7 @@ inline bool ShadingPoint::is_leaving() const
 
 inline const foundation::Vector3d& ShadingPoint::get_vertex(const size_t i) const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(m_primitive_type == PrimitiveTriangle);
     assert(i < 3);
 
@@ -753,7 +778,7 @@ inline const foundation::Vector3d& ShadingPoint::get_vertex(const size_t i) cons
 
 inline const foundation::Vector3d& ShadingPoint::get_world_space_point_velocity() const
 {
-    assert(hit());
+    assert(hit_surface());
 
     if (!(m_members & HasWorldSpacePointVelocity))
     {
@@ -766,11 +791,17 @@ inline const foundation::Vector3d& ShadingPoint::get_world_space_point_velocity(
 
 inline const Material* ShadingPoint::get_material() const
 {
-    assert(hit());
+    assert(is_valid());
 
     if (!(m_members & HasMaterials))
     {
-        fetch_materials();
+        if (hit_volume())
+        {
+            m_material = m_ray.get_current_medium()->m_material;
+            m_opposite_material = m_ray.get_current_medium()->m_material;
+        }
+        else
+            fetch_materials();
 
         // The material at the intersection point is now available.
         m_members |= HasMaterials;
@@ -781,11 +812,17 @@ inline const Material* ShadingPoint::get_material() const
 
 inline const Material* ShadingPoint::get_opposite_material() const
 {
-    assert(hit());
+    assert(is_valid());
 
     if (!(m_members & HasMaterials))
     {
-        fetch_materials();
+        if (hit_volume())
+        {
+            m_material = m_ray.get_current_medium()->m_material;
+            m_opposite_material = m_ray.get_current_medium()->m_material;
+        }
+        else
+            fetch_materials();
 
         // The material at the intersection point is now available.
         m_members |= HasMaterials;
@@ -796,58 +833,58 @@ inline const Material* ShadingPoint::get_opposite_material() const
 
 inline const AssemblyInstance& ShadingPoint::get_assembly_instance() const
 {
-    assert(hit());
+    assert(hit_surface());
     return *m_assembly_instance;
 }
 
 inline const foundation::Transformd& ShadingPoint::get_assembly_instance_transform() const
 {
-    assert(hit());
+    assert(hit_surface());
     return m_assembly_instance_transform;
 }
 
 inline const Assembly& ShadingPoint::get_assembly() const
 {
-    assert(hit());
+    assert(hit_surface());
     cache_source_geometry();
     return *m_assembly;
 }
 
 inline const ObjectInstance& ShadingPoint::get_object_instance() const
 {
-    assert(hit());
+    assert(hit_surface());
     cache_source_geometry();
     return *m_object_instance;
 }
 
 inline const Object& ShadingPoint::get_object() const
 {
-    assert(hit());
+    assert(hit_surface());
     cache_source_geometry();
     return *m_object;
 }
 
 inline size_t ShadingPoint::get_object_instance_index() const
 {
-    assert(hit());
+    assert(hit_surface());
     return m_object_instance_index;
 }
 
 inline size_t ShadingPoint::get_region_index() const
 {
-    assert(hit());
+    assert(hit_surface());
     return m_region_index;
 }
 
 inline size_t ShadingPoint::get_primitive_index() const
 {
-    assert(hit());
+    assert(hit_surface());
     return m_primitive_index;
 }
 
 inline size_t ShadingPoint::get_primitive_attribute_index() const
 {
-    assert(hit());
+    assert(hit_surface());
     cache_source_geometry();
     return static_cast<size_t>(m_primitive_pa);
 }
@@ -865,7 +902,7 @@ inline const Alpha& ShadingPoint::get_alpha() const
 
 inline OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(m_members & HasOSLShaderGlobals);
     return m_shader_globals;
 }

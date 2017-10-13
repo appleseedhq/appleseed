@@ -282,7 +282,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 ray,
                 transmission);
 
-        EXPECT_FALSE(shading_point.hit());
+        EXPECT_FALSE(shading_point.hit_surface());
         EXPECT_EQ(Spectrum(1.0f), transmission);
     }
 
@@ -316,7 +316,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 0,
                 transmission);
 
-        EXPECT_FALSE(shading_point.hit());
+        EXPECT_FALSE(shading_point.hit_surface());
         EXPECT_EQ(Spectrum(1.0f), transmission);
     }
 
@@ -359,7 +359,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 ray,
                 transmission);
 
-        ASSERT_TRUE(shading_point.hit());
+        ASSERT_TRUE(shading_point.hit_surface());
         EXPECT_FEQ(Vector3d(2.0, 0.0, 0.0), shading_point.get_point());
         EXPECT_EQ(Spectrum(1.0f), transmission);
     }
@@ -394,7 +394,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 0,
                 transmission);
 
-        ASSERT_TRUE(shading_point.hit());
+        ASSERT_TRUE(shading_point.hit_surface());
         EXPECT_FEQ(Vector3d(2.0, 0.0, 0.0), shading_point.get_point());
         EXPECT_EQ(Spectrum(1.0f), transmission);
     }
@@ -438,7 +438,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 ray,
                 transmission);
 
-        ASSERT_FALSE(shading_point.hit());
+        ASSERT_FALSE(shading_point.hit_surface());
         EXPECT_FEQ(Spectrum(0.5f), transmission);
     }
 
@@ -472,7 +472,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 0,
                 transmission);
 
-        ASSERT_FALSE(shading_point.hit());
+        ASSERT_FALSE(shading_point.hit_surface());
         EXPECT_FEQ(Spectrum(0.5f), transmission);
     }
 
@@ -516,7 +516,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 ray,
                 transmission);
 
-        ASSERT_TRUE(shading_point.hit());
+        ASSERT_TRUE(shading_point.hit_surface());
         EXPECT_FEQ(Vector3d(4.0, 0.0, 0.0), shading_point.get_point());
         EXPECT_FEQ(Spectrum(0.5f), transmission);
     }
@@ -551,7 +551,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 0,
                 transmission);
 
-        ASSERT_TRUE(shading_point.hit());
+        ASSERT_TRUE(shading_point.hit_surface());
         EXPECT_FEQ(Vector3d(4.0, 0.0, 0.0), shading_point.get_point());
         EXPECT_FEQ(Spectrum(0.5f), transmission);
     }
@@ -584,7 +584,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 0,
                 transmission);
 
-        ASSERT_FALSE(shading_point.hit());
+        ASSERT_FALSE(shading_point.hit_surface());
         EXPECT_FEQ(Spectrum(0.5f), transmission);
     }
 
@@ -628,7 +628,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 ray,
                 parent_transmission);
 
-        ASSERT_TRUE(parent_shading_point.hit());
+        ASSERT_TRUE(parent_shading_point.hit_surface());
         ASSERT_FEQ(2.0, parent_shading_point.get_distance());
 
         Spectrum transmission;
@@ -669,7 +669,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 ray,
                 parent_transmission);
 
-        ASSERT_TRUE(parent_shading_point.hit());
+        ASSERT_TRUE(parent_shading_point.hit_surface());
         ASSERT_FEQ(1.0, parent_shading_point.get_distance());
 
         Spectrum transmission;

@@ -214,7 +214,7 @@ inline void Tracer::trace_simple(
                 ray,
                 transmission);
 
-        if (shading_point.hit())
+        if (shading_point.hit_surface())
             transmission.set(0.0f);
     }
 }
@@ -236,7 +236,7 @@ inline void Tracer::trace_simple(
                 ray,
                 transmission);
 
-        if (shading_point.hit())
+        if (shading_point.hit_surface())
             transmission.set(0.0f);
     }
 }
@@ -274,7 +274,7 @@ inline void Tracer::trace_between_simple(
                 ray_flags,
                 transmission);
 
-        if (shading_point.hit())
+        if (shading_point.hit_surface())
             transmission.set(0.0f);
     }
 }
@@ -314,7 +314,7 @@ inline void Tracer::trace_between_simple(
                 ray_flags,
                 transmission);
 
-        if (shading_point.hit())
+        if (shading_point.hit_surface())
             transmission.set(0.0f);
     }
 }
@@ -354,7 +354,7 @@ inline void Tracer::trace_between_simple(
                 ray_flags,
                 transmission);
 
-        if (shading_point.hit())
+        if (shading_point.hit_surface())
             transmission.set(0.0f);
     }
 }
@@ -396,7 +396,7 @@ inline void Tracer::trace_between_simple(
                 ray_depth,
                 transmission);
 
-        if (shading_point.hit())
+        if (shading_point.hit_surface())
             transmission.set(0.0f);
     }
 }

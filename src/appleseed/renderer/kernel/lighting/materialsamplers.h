@@ -58,6 +58,8 @@ class IMaterialSampler
   public:
     virtual const foundation::Vector3d& get_point() const = 0;
 
+    virtual const ShadingPoint& get_shading_point() const = 0;
+
     virtual bool contributes_to_light_sampling() const = 0;
 
     virtual const ShadingPoint& trace(
@@ -95,6 +97,8 @@ class BSDFSampler
         const ShadingPoint&             shading_point);
 
     virtual const foundation::Vector3d& get_point() const override;
+
+    virtual const ShadingPoint& get_shading_point() const override;
 
     virtual bool contributes_to_light_sampling() const override;
 
@@ -138,9 +142,12 @@ class VolumeSampler
         const ShadingRay&               volume_ray,
         const Volume&                   volume,
         const void*                     volume_data,
-        const float                     distance);
+        const float                     distance,
+        const ShadingPoint&             shading_point);
 
     virtual const foundation::Vector3d& get_point() const override;
+
+    virtual const ShadingPoint& get_shading_point() const override;
 
     virtual bool contributes_to_light_sampling() const override;
 
@@ -172,6 +179,7 @@ class VolumeSampler
     const Volume&                   m_volume;
     const void*                     m_volume_data;
     const float                     m_distance;
+    const ShadingPoint&             m_shading_point;
     const foundation::Vector3d      m_point;
 };
 

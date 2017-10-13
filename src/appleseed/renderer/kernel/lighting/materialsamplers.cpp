@@ -67,6 +67,11 @@ const Vector3d& BSDFSampler::get_point() const
     return m_shading_point.get_point();
 }
 
+const ShadingPoint& BSDFSampler::get_shading_point() const
+{
+    return m_shading_point;
+}
+
 bool BSDFSampler::contributes_to_light_sampling() const
 {
     // There cannot be any contribution for purely specular BSDFs.
@@ -137,7 +142,7 @@ const ShadingPoint& BSDFSampler::trace(
             m_shading_point,
             ray,
             transmission);
-    if (shading_point.hit()) transmission.set(0.0f);
+
     return shading_point;
 }
 
@@ -161,14 +166,16 @@ void BSDFSampler::trace_between(
 //
 
 VolumeSampler::VolumeSampler(
-    const ShadingRay&           volume_ray,
-    const Volume&               volume,
-    const void*                 volume_data,
-    const float                 distance)
+    const ShadingRay&       volume_ray,
+    const Volume&           volume,
+    const void*             volume_data,
+    const float             distance,
+    const ShadingPoint&     shading_point)
   : m_volume_ray(volume_ray)
   , m_volume(volume)
   , m_volume_data(volume_data)
   , m_distance(distance)
+  , m_shading_point(shading_point)
   , m_point(m_volume_ray.point_at(distance))
 {
 }
@@ -176,6 +183,11 @@ VolumeSampler::VolumeSampler(
 const Vector3d& VolumeSampler::get_point() const
 {
     return m_point;
+}
+
+const ShadingPoint& VolumeSampler::get_shading_point() const
+{
+    return m_shading_point;
 }
 
 bool VolumeSampler::contributes_to_light_sampling() const
@@ -204,6 +216,7 @@ bool VolumeSampler::sample(
 
     m_volume.scattering_coefficient(
         m_volume_data, m_volume_ray, m_distance, value.m_volume);
+    value.m_volume *= pdf;
     value.m_beauty = value.m_volume;
 
     return true;
@@ -248,7 +261,7 @@ const ShadingPoint& VolumeSampler::trace(
             shading_context,
             ray,
             transmission);
-    if (shading_point.hit()) transmission.set(0.0f);
+
     return shading_point;
 }
 

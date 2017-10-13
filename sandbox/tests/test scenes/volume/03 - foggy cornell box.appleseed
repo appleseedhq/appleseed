@@ -395,14 +395,9 @@
                 <parameter name="absorption" value="1.0" />
                 <parameter name="absorption_multiplier" value="0.5" />
                 <parameter name="average_cosine" value="0.5" />
-                <parameter name="mfp" value="0.5" />
-                <parameter name="mfp_multiplier" value="1.0" />
-                <parameter name="phase_function_model" value="henyey" />
-                <parameter name="reflectance" value="0.5" />
-                <parameter name="reflectance_multiplier" value="1.0" />
+                <parameter name="phase_function_model" value="isotropic" />
                 <parameter name="scattering" value="1.0" />
                 <parameter name="scattering_multiplier" value="2.0" />
-                <parameter name="volume_parameterization" value="default" />
             </volume>
         </assembly>
         <assembly_instance name="assembly_inst" assembly="assembly">
@@ -438,6 +433,8 @@
                 <parameter name="enable_caustics" value="false" />
                 <parameter name="enable_dl" value="true" />
                 <parameter name="enable_ibl" value="true" />
+                <parameter name="equiangular_distance_samples" value="2" />
+                <parameter name="exponential_distance_samples" value="2" />
                 <parameter name="ibl_env_samples" value="1.000000" />
                 <parameter name="max_bounces" value="-1" />
                 <parameter name="max_diffuse_bounces" value="-1" />
@@ -445,8 +442,9 @@
                 <parameter name="max_specular_bounces" value="-1" />
                 <parameter name="max_volume_bounces" value="0" />
                 <parameter name="next_event_estimation" value="true" />
+                <parameter name="optimize_for_lights_outside_volumes" value="false" />
                 <parameter name="rr_min_path_length" value="6" />
-                <parameter name="volume_distance_samples" value="4" />
+                <parameter name="volume_distance_samples" value="2" />
             </parameters>
             <parameters name="sppm">
                 <parameter name="alpha" value="0.700000" />
@@ -466,7 +464,7 @@
             <parameters name="uniform_pixel_renderer">
                 <parameter name="decorrelate_pixels" value="true" />
                 <parameter name="force_antialiasing" value="false" />
-                <parameter name="samples" value="64" />
+                <parameter name="samples" value="8" />
             </parameters>
         </configuration>
         <configuration name="interactive" base="base_interactive">
@@ -481,6 +479,8 @@
                 <parameter name="enable_caustics" value="false" />
                 <parameter name="enable_dl" value="true" />
                 <parameter name="enable_ibl" value="true" />
+                <parameter name="equiangular_distance_samples" value="2" />
+                <parameter name="exponential_distance_samples" value="2" />
                 <parameter name="ibl_env_samples" value="1.000000" />
                 <parameter name="max_bounces" value="-1" />
                 <parameter name="max_diffuse_bounces" value="-1" />
@@ -488,8 +488,9 @@
                 <parameter name="max_specular_bounces" value="-1" />
                 <parameter name="max_volume_bounces" value="0" />
                 <parameter name="next_event_estimation" value="true" />
+                <parameter name="optimize_for_lights_outside_volumes" value="false" />
                 <parameter name="rr_min_path_length" value="6" />
-                <parameter name="volume_distance_samples" value="4" />
+                <parameter name="volume_distance_samples" value="2" />
             </parameters>
         </configuration>
     </configurations>

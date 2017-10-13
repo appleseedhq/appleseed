@@ -189,7 +189,7 @@ class GenericVolume
         const ShadingRay&   volume_ray,
         Spectrum&           spectrum) const override
     {
-        if (volume_ray.m_tmax == std::numeric_limits<ShadingRay::ValueType>().max())
+        if (!volume_ray.is_finite())
             spectrum.set(0.0f);
         else
         {

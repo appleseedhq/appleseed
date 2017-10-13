@@ -209,8 +209,8 @@ namespace
         const ShadingPoint&         lhs,
         const ShadingPoint&         rhs)
     {
-        assert(lhs.hit());
-        assert(rhs.hit());
+        assert(lhs.hit_surface());
+        assert(rhs.hit_surface());
 
         return
             lhs.get_primitive_type() == rhs.get_primitive_type() &&
@@ -225,7 +225,7 @@ namespace
         const ShadingPoint&         shading_point,
         const ShadingPoint*         parent_shading_point)
     {
-        if (shading_point.hit() &&
+        if (shading_point.hit_surface() &&
             parent_shading_point &&
             same_triangle(*parent_shading_point, shading_point))
         {
@@ -237,15 +237,15 @@ namespace
 }
 
 bool Intersector::trace(
-    const ShadingRay&               ray,
-    ShadingPoint&                   shading_point,
-    const ShadingPoint*             parent_shading_point) const
+    const ShadingRay&                   ray,
+    ShadingPoint&                       shading_point,
+    const ShadingPoint*                 parent_shading_point) const
 {
     assert(is_normalized(ray.m_dir));
-    assert(shading_point.m_scene == 0);
-    assert(shading_point.hit() == false);
-    assert(parent_shading_point == 0 || parent_shading_point != &shading_point);
-    assert(parent_shading_point == 0 || parent_shading_point->hit());
+    assert(shading_point.m_scene == nullptr);
+    assert(shading_point.is_valid() == false);
+    assert(parent_shading_point == nullptr || parent_shading_point != &shading_point);
+    assert(parent_shading_point == nullptr || parent_shading_point->is_valid());
 
     // Update ray casting statistics.
     ++m_shading_ray_count;
@@ -262,7 +262,7 @@ bool Intersector::trace(
 
     // Refine and offset the previous intersection point.
     if (parent_shading_point &&
-        parent_shading_point->hit() &&
+        parent_shading_point->hit_surface() &&
         !(parent_shading_point->m_members & ShadingPoint::HasRefinedPoints))
         parent_shading_point->refine_and_offset();
 
@@ -296,15 +296,19 @@ bool Intersector::trace(
     if (m_report_self_intersections)
         report_self_intersection(shading_point, parent_shading_point);
 
-    return shading_point.hit();
+    const ShadingRay::Medium* medium = ray.get_current_medium();
+    if (!shading_point.hit_surface() && medium != nullptr && medium->get_volume() != nullptr)
+        shading_point.m_primitive_type = ShadingPoint::PrimitiveVolume;
+
+    return shading_point.hit_surface();
 }
 
 bool Intersector::trace_probe(
-    const ShadingRay&               ray,
-    const ShadingPoint*             parent_shading_point) const
+    const ShadingRay&                   ray,
+    const ShadingPoint*                 parent_shading_point) const
 {
     assert(is_normalized(ray.m_dir));
-    assert(parent_shading_point == 0 || parent_shading_point->hit());
+    assert(parent_shading_point == 0 || parent_shading_point->hit_surface());
 
     // Update ray casting statistics.
     ++m_probe_ray_count;
@@ -314,7 +318,7 @@ bool Intersector::trace_probe(
 
     // Refine and offset the previous intersection point.
     if (parent_shading_point &&
-        parent_shading_point->hit() &&
+        parent_shading_point->hit_surface() &&
         !(parent_shading_point->m_members & ShadingPoint::HasRefinedPoints))
         parent_shading_point->refine_and_offset();
 
@@ -346,7 +350,7 @@ bool Intersector::trace_probe(
     return visitor.hit();
 }
 
-void Intersector::manufacture_hit(
+void Intersector::make_surface_shading_point(
     ShadingPoint&                       shading_point,
     const ShadingRay&                   shading_ray,
     const ShadingPoint::PrimitiveType   primitive_type,
@@ -359,7 +363,8 @@ void Intersector::manufacture_hit(
     const TriangleSupportPlaneType&     triangle_support_plane) const
 {
 #ifdef DEBUG
-    // This helps finding bugs if manufacture_hit() is called on a previously used shading point.
+    // This helps finding bugs if make_surface_shading_point()
+    // is called on a previously used shading point.
     poison(shading_point);
 #endif
 
@@ -380,6 +385,35 @@ void Intersector::manufacture_hit(
     shading_point.m_region_index = region_index;
     shading_point.m_primitive_index = primitive_index;
     shading_point.m_triangle_support_plane = triangle_support_plane;
+
+    // Available on-demand results: none.
+    shading_point.m_members = 0;
+}
+
+void Intersector::make_volume_shading_point(
+    ShadingPoint&                       shading_point,
+    const ShadingRay&                   volume_ray,
+    const double                        distance) const
+{
+#ifdef DEBUG
+    // This helps finding bugs if manufacture_hit()
+    // is called on a previously used shading point.
+    poison(shading_point);
+#endif
+
+    assert(is_normalized(volume_ray.m_dir));
+    assert(volume_ray.get_current_medium() != nullptr);
+
+    // Context.
+    shading_point.m_region_kit_cache = &m_region_kit_cache;
+    shading_point.m_tess_cache = &m_tess_cache;
+    shading_point.m_texture_cache = &m_texture_cache;
+    shading_point.m_scene = &m_trace_context.get_scene();
+
+    // Primary data.
+    shading_point.m_ray = volume_ray;
+    shading_point.m_ray.m_tmax = distance;
+    shading_point.m_primitive_type = ShadingPoint::PrimitiveVolume;
 
     // Available on-demand results: none.
     shading_point.m_members = 0;

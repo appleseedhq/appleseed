@@ -1021,6 +1021,8 @@ set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/scatteringmode.h
     renderer/kernel/lighting/tracer.cpp
     renderer/kernel/lighting/tracer.h
+    renderer/kernel/lighting/volumelightingintegrator.cpp
+    renderer/kernel/lighting/volumelightingintegrator.h
 )
 list (APPEND appleseed_sources
     ${renderer_kernel_lighting_sources}

@@ -185,7 +185,7 @@ T exponential_distribution_pdf(
     const T x,
     const T a);
 
-// Map a uniform random sample in [0,1) to an exponential distribution on segment [l, r).
+// Map a uniform random sample in [0,1) to an exponential distribution on segment [l, r].
 // of the form exp(-a*(x - l)) - exp(-a*(x - r)).
 template <typename T>
 T sample_exponential_distribution_on_segment(
@@ -558,7 +558,7 @@ inline T exponential_distribution_on_segment_pdf(
     const T l,
     const T r)
 {
-    assert (x >= l && x < r);
+    assert (x >= l && x <= r);
     const T left = std::exp(a * (x - l));
     const T right = std::exp(a * (x - r));
     return a / (left - right);

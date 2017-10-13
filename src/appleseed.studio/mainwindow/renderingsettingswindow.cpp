@@ -854,16 +854,17 @@ namespace
             create_pt_volume_settings(layout);
             create_pt_advanced_settings(layout);
 
-            create_direct_link("lighting_components.dl",            "pt.enable_dl");
-            create_direct_link("lighting_components.ibl",           "pt.enable_ibl");
-            create_direct_link("lighting_components.caustics",      "pt.enable_caustics");
-            create_direct_link("pt.bounces.rr_start_bounce",        "pt.rr_min_path_length");
-            create_direct_link("advanced.next_event_estimation",    "pt.next_event_estimation");
-            create_direct_link("advanced.dl.light_samples",         "pt.dl_light_samples");
-            create_direct_link("advanced.dl.low_light_threshold",   "pt.dl_low_light_threshold");
-            create_direct_link("advanced.ibl.env_samples",          "pt.ibl_env_samples");
-            create_direct_link("advanced.volume_distance_samples",  "pt.volume_distance_samples");
-            create_direct_link("advanced.light_sampler.algorithm",  "light_sampler.algorithm");
+            create_direct_link("lighting_components.dl",                    "pt.enable_dl");
+            create_direct_link("lighting_components.ibl",                   "pt.enable_ibl");
+            create_direct_link("lighting_components.caustics",              "pt.enable_caustics");
+            create_direct_link("pt.bounces.rr_start_bounce",                "pt.rr_min_path_length");
+            create_direct_link("advanced.next_event_estimation",            "pt.next_event_estimation");
+            create_direct_link("advanced.dl.light_samples",                 "pt.dl_light_samples");
+            create_direct_link("advanced.dl.low_light_threshold",           "pt.dl_low_light_threshold");
+            create_direct_link("advanced.ibl.env_samples",                  "pt.ibl_env_samples");
+            create_direct_link("volume.distance_samples",                   "pt.volume_distance_samples");
+            create_direct_link("volume.optimize_for_lights_outside_volumes","pt.optimize_for_lights_outside_volumes");
+            create_direct_link("advanced.light_sampler.algorithm",          "light_sampler.algorithm");
 
             load_directly_linked_values(config);
 
@@ -928,10 +929,14 @@ namespace
             layout->addLayout(sublayout);
 
             QSpinBox* volume_distance_samples =
-                create_integer_input("advanced.volume_distance_samples", 1, 1000, 1);
+                create_integer_input("volume.distance_samples", 1, 1000, 1);
             volume_distance_samples->setToolTip(
                 m_params_metadata.get_path("pt.volume_distance_samples.help"));
-            sublayout->addRow("Distance Samples:", volume_distance_samples);
+            sublayout->addRow("Volume Distance Samples:", volume_distance_samples);
+
+            QCheckBox* optimize_for_lights_outside_volumes =
+                create_checkbox("volume.optimize_for_lights_outside_volumes", "Optimize for Lights Outside Volumes");
+            sublayout->addRow(optimize_for_lights_outside_volumes);
         }
 
         void create_pt_advanced_lightsampler_settings(QVBoxLayout* parent)

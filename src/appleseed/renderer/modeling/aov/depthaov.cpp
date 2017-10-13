@@ -102,7 +102,7 @@ namespace
 
             if (sample_square_distance < min_sample_square_distance)
             {
-                const float depth = shading_point.hit()
+                const float depth = shading_point.hit_surface()
                     ? static_cast<float>(shading_point.get_distance())
                     : numeric_limits<float>::max();
 

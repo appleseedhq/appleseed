@@ -55,7 +55,7 @@ void LightSample::make_shading_point(
 {
     assert(m_triangle && !m_light);
 
-    intersector.manufacture_hit(
+    intersector.make_surface_shading_point(
         shading_point,
         ShadingRay(
             m_point,

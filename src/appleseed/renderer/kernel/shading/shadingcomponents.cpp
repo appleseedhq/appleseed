@@ -73,7 +73,7 @@ void ShadingComponents::add_emission(
             m_indirect_glossy += value;
             break;
 
-          case ScatteringMode::Volumetric:
+          case ScatteringMode::Volume:
             m_indirect_volume += value;
             break;
 
@@ -109,7 +109,7 @@ void ShadingComponents::add(
             m_indirect_glossy += value.m_beauty;
             break;
 
-          case ScatteringMode::Volumetric:
+          case ScatteringMode::Volume:
             m_indirect_volume += value.m_beauty;
             break;
 

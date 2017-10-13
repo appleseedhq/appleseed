@@ -120,7 +120,7 @@ const ShadingPoint& Tracer::do_trace(
         const Volume* volume = medium == nullptr ? nullptr : medium->get_volume();
 
         // Stop if the ray escaped the scene.
-        if (!shading_point_ptr->hit())
+        if (!shading_point_ptr->hit_surface())
         {
             if (volume != nullptr)
             {
@@ -255,7 +255,7 @@ const ShadingPoint& Tracer::do_trace_between(
         }
 
         // Stop if the ray hit the target.
-        if (!shading_point_ptr->hit())
+        if (!shading_point_ptr->hit_surface())
             break;
 
         // Retrieve the material at the shading point.

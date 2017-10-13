@@ -126,10 +126,14 @@ void compute_ibl_material_sampling(
 
         // Discard occluded samples.
         Spectrum transmission;
-        material_sampler.trace(
+        const ShadingPoint& shading_point = material_sampler.trace(
             shading_context,
             incoming.get_value(),
             transmission);
+
+        if (shading_point.hit_surface())
+            continue;
+
         if (max_value(transmission) == 0.0f)
             continue;
 
@@ -203,7 +207,14 @@ void compute_ibl_environment_sampling(
 
         // Discard occluded samples.
         Spectrum transmission;
-        material_sampler.trace(shading_context, incoming, transmission);
+        const ShadingPoint& shading_point = material_sampler.trace(
+            shading_context,
+            incoming,
+            transmission);
+
+        if (shading_point.hit_surface())
+            continue;
+        
         if (max_value(transmission) == 0.0f)
             continue;
 

@@ -99,7 +99,7 @@ namespace
 
             if (sample_square_distance < min_sample_square_distance)
             {
-                if (shading_point.hit())
+                if (shading_point.hit_surface())
                 {
                     const Vector2f& uv = shading_point.get_uv(0);
                     p[0] = uv[0];

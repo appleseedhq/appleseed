@@ -214,7 +214,7 @@ namespace
                         shading_result);
 
                     // Apply alpha premultiplication.
-                    if (shading_point_ptr->hit())
+                    if (shading_point_ptr->hit_surface())
                         shading_result.apply_alpha_premult();
                 }
                 else
@@ -230,7 +230,7 @@ namespace
                         local_result);
 
                     // Apply alpha premultiplication.
-                    if (shading_point_ptr->hit())
+                    if (shading_point_ptr->hit_surface())
                         local_result.apply_alpha_premult();
 
                     // Compositing.
@@ -238,7 +238,7 @@ namespace
                 }
 
                 // Stop once we hit the environment.
-                if (!shading_point_ptr->hit())
+                if (!shading_point_ptr->hit_surface())
                     break;
 
                 // Stop once we hit full opacity.

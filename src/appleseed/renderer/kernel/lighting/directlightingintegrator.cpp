@@ -76,7 +76,6 @@ namespace renderer
 DirectLightingIntegrator::DirectLightingIntegrator(
     const ShadingContext&           shading_context,
     const BackwardLightSampler&     light_sampler,
-    const ShadingPoint&             shading_point,
     const IMaterialSampler&         material_sampler,
     const ShadingRay::Time&         time,
     const int                       light_sampling_modes,
@@ -86,7 +85,6 @@ DirectLightingIntegrator::DirectLightingIntegrator(
     const bool                      indirect)
   : m_shading_context(shading_context)
   , m_light_sampler(light_sampler)
-  , m_shading_point(shading_point)
   , m_material_sampler(material_sampler)
   , m_time(time)
   , m_light_sampling_modes(light_sampling_modes)
@@ -169,7 +167,7 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
             m_light_sampler.sample_lightset(
                 m_time,
                 sampling_context.next2<Vector3f>(),
-                m_shading_point,
+                m_material_sampler.get_shading_point(),
                 sample);
 
             // Add the contribution of the chosen light.
@@ -249,7 +247,7 @@ void DirectLightingIntegrator::take_single_material_sample(
             weight);
 
     // todo: wouldn't it be more efficient to look the environment up at this point?
-    if (!light_shading_point.hit())
+    if (!light_shading_point.hit_surface())
         return;
 
     // Retrieve the material at the intersection point.
@@ -307,7 +305,8 @@ void DirectLightingIntegrator::take_single_material_sample(
             const float material_prob_area = sample_probability * cos_on / static_cast<float>(square_distance);
 
             // Compute the probability density wrt. surface area mesure of the light sample.
-            const float light_prob_area = m_light_sampler.evaluate_pdf(light_shading_point, m_shading_point);
+            const float light_prob_area = m_light_sampler.evaluate_pdf(
+                light_shading_point, m_material_sampler.get_shading_point());
 
             // Apply the weighting function.
             weight *=

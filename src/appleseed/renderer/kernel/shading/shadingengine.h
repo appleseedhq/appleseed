@@ -114,7 +114,7 @@ inline void ShadingEngine::shade(
     AOVAccumulatorContainer&    aov_accumulators,
     ShadingResult&              shading_result) const
 {
-    if (shading_point.hit())
+    if (shading_point.hit_surface())
     {
         return
             shade_hit_point(

@@ -99,7 +99,7 @@ namespace
 
             if (sample_square_distance < min_sample_square_distance)
             {
-                if (shading_point.hit())
+                if (shading_point.hit_surface())
                 {
                     const Vector3d& n = shading_point.get_shading_normal();
                     p[0] = static_cast<float>(n[0]) * 0.5f + 0.5f;
