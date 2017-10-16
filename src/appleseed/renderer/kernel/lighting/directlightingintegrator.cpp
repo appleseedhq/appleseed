@@ -304,7 +304,7 @@ void DirectLightingIntegrator::take_single_material_sample(
             // Transform material_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
             const float material_prob_area = sample_probability * cos_on / static_cast<float>(square_distance);
 
-            // Compute the probability density wrt. surface area mesure of the light sample.
+            // Compute the probability density wrt. surface area measure of the light sample.
             const float light_prob_area = m_light_sampler.evaluate_pdf(
                 light_shading_point, m_material_sampler.get_shading_point());
 
