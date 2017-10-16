@@ -60,7 +60,8 @@ class APPLESEED_DLLSYMBOL ProjectFileWriter
     static bool write(
         const Project&  project,
         const char*     filepath,
-        const int       options = Defaults);
+        const int       options = Defaults,
+        const char*     extra_comments = nullptr);
 
   private:
     // Write a project to disk as a plain project file.
@@ -68,14 +69,16 @@ class APPLESEED_DLLSYMBOL ProjectFileWriter
     static bool write_plain_project_file(
         const Project&  project,
         const char*     filepath,
-        const int       options);
+        const int       options,
+        const char*     comments);
 
     // Write a project file to disk as a packed project file.
     // Returns true on success, false otherwise.
     static bool write_packed_project_file(
         const Project&  project,
         const char*     filepath,
-        const int       options);
+        const int       options,
+        const char*     extra_comments);
 };
 
 }       // namespace renderer
