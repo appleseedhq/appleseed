@@ -756,7 +756,7 @@ void ShadingPoint::compute_shading_basis() const
         (m_members & HasTriangleVertexTangents) != 0
             ? m_assembly_instance_transform.vector_to_parent(
                   m_object_instance->get_transform().vector_to_parent(
-                        Vector3d(m_t0) * static_cast<double>(1.0 - m_bary[0] - m_bary[1])
+                        Vector3d(m_t0) * static_cast<double>(1.0f - m_bary[0] - m_bary[1])
                       + Vector3d(m_t1) * static_cast<double>(m_bary[0])
                       + Vector3d(m_t2) * static_cast<double>(m_bary[1])))
             : get_dpdu(0);
