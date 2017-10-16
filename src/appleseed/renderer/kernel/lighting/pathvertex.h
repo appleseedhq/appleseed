@@ -110,10 +110,10 @@ class PathVertex
         const ShadingContext&   shading_context,
         Spectrum&               radiance) const;
 
-    // Return the probability density wrt. surface area mesure of reaching this vertex via BSDF sampling.
+    // Return the probability density wrt. surface area measure of reaching this vertex via BSDF sampling.
     float get_bsdf_prob_area() const;
 
-    // Return the probability density wrt. surface area mesure of reaching this vertex via light sampling.
+    // Return the probability density wrt. surface area measure of reaching this vertex via light sampling.
     float get_light_prob_area(const BackwardLightSampler& light_sampler) const;
 };
 
