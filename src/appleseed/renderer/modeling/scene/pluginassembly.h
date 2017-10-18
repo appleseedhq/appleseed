@@ -67,6 +67,7 @@ class APPLESEED_DLLSYMBOL PluginAssembly
     // Delete this instance.
     void release() override;
 
+    // Expand the contents of the assembly.
     bool expand_contents(
         const Project&              project,
         const Assembly*             parent,

@@ -70,7 +70,7 @@ class APPLESEED_DLLSYMBOL TextureFactoryRegistrar
     // Destructor.
     ~TextureFactoryRegistrar();
 
-    // Register a texture factory.
+    // Register a factory.
     void register_factory(std::unique_ptr<FactoryType> factory);
 
     // Retrieve the registered factories.

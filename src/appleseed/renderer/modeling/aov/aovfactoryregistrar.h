@@ -69,7 +69,7 @@ class APPLESEED_DLLSYMBOL AOVFactoryRegistrar
     // Destructor.
     ~AOVFactoryRegistrar();
 
-    // Register a render layer rule factory.
+    // Register a factory.
     void register_factory(std::unique_ptr<FactoryType> factory);
 
     // Retrieve the registered factories.

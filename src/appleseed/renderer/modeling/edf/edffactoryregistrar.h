@@ -70,7 +70,7 @@ class APPLESEED_DLLSYMBOL EDFFactoryRegistrar
     // Destructor.
     ~EDFFactoryRegistrar();
 
-    // Register an EDF factory.
+    // Register a factory.
     void register_factory(std::unique_ptr<FactoryType> factory);
 
     // Retrieve the registered factories.

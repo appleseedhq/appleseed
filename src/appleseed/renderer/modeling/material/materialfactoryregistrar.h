@@ -70,7 +70,7 @@ class APPLESEED_DLLSYMBOL MaterialFactoryRegistrar
     // Destructor.
     ~MaterialFactoryRegistrar();
 
-    // Register a material factory.
+    // Register a factory.
     void register_factory(std::unique_ptr<FactoryType> factory);
 
     // Retrieve the registered factories.

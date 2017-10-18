@@ -29,9 +29,6 @@
 // Interface header.
 #include "pluginassembly.h"
 
-// Standard headers.
-#include <string>
-
 // appleseed.renderer headers.
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
@@ -129,9 +126,10 @@ bool PluginAssembly::expand_contents(
         auto_release_ptr<IAssemblyFactory> assembly_factory(create_fn());
 
         // Create the plugin assembly.
-        plugin_assembly = assembly_factory->create(
-            get_name(),
-            get_parameters().child("parameters"));
+        plugin_assembly =
+            assembly_factory->create(
+                get_name(),
+                get_parameters().child("parameters"));
     }
     catch (const ExceptionCannotLoadSharedLib& e)
     {
@@ -155,10 +153,11 @@ bool PluginAssembly::expand_contents(
     }
 
     // Expand contents of the plugin assembly.
-    const bool success = static_cast<PluginAssembly*>(plugin_assembly.get())->expand_contents(
-        project,
-        parent,
-        abort_switch);
+    const bool success =
+        static_cast<PluginAssembly*>(plugin_assembly.get())->expand_contents(
+            project,
+            parent,
+            abort_switch);
 
     if (success)
     {

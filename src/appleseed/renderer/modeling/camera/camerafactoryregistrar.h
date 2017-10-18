@@ -70,7 +70,7 @@ class APPLESEED_DLLSYMBOL CameraFactoryRegistrar
     // Destructor.
     ~CameraFactoryRegistrar();
 
-    // Register a camera factory.
+    // Register a factory.
     void register_factory(std::unique_ptr<FactoryType> factory);
 
     // Retrieve the registered factories.
