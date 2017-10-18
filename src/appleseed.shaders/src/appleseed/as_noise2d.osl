@@ -69,7 +69,7 @@ shader as_noise2d
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         string widget = "mapper",
-        string options = "Perlin:0|Unsigned Perlin:1|Cell:2|Hash:3|Simplex:4|Unsigned Simplex:5|Gabor:6",
+        string options = "Perlin:0|Unsigned Perlin:1|Simplex:2|Unsigned Simplex:3|Value:4|Unsigned Value:5|Voronoise:6|Unsigned Voronoise:7|Gabor:8|Unsigned Gabor:9",
         string label = "Noise Type",
         string page = "Noise",
         int gafferNoduleLayoutVisible = 0
@@ -188,7 +188,24 @@ shader as_noise2d
         string label = "Noise Period Y",
         string page = "Noise.Periodic"
     ]],
-
+    float in_smoothness = 0.0
+    [[
+        string as_maya_attribute_name = "smoothness",
+        string as_maya_attribute_short_name = "smt",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Smoothness",
+        string page = "Noise.Voronoise"
+    ]],
+    float in_jittering = 0.0
+    [[
+        string as_maya_attribute_name = "jittering",
+        string as_maya_attribute_short_name = "jtr",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Jittering",
+        string page = "Noise.Voronoise"
+    ]],
     int in_anisotropy = 0
     [[
         string as_maya_attribute_name = "anisotropy",
@@ -285,7 +302,7 @@ shader as_noise2d
         string as_maya_attribute_name = "offset",
         string as_maya_attribute_short_name = "oft",
         string widget = "slider",
-        float min = 0.0,
+        float min = -1.0,
         float softmax = 1.0,
         string label = "Offset",
         string page = "Recursion",
@@ -377,7 +394,8 @@ shader as_noise2d
 
     string noisetype = get_noise_type(in_type);
 
-    color out_color = color(0), weight = color(1);
+    color out_color = color(0);
+    float weight = 1.0;
     
 #ifdef DEBUG
     warning("[DEBUG]: Filter Width = %.3f\n", filter_width);
@@ -402,76 +420,79 @@ shader as_noise2d
         }
 
         point coords = point(
-            new_st[0] + distortion[1],
+            new_st[0] + distortion[0],
             new_st[1] + distortion[1],
             current_time);
 
-        color signal;
+        float signal = 0;
 
-        if (in_greyscale)
+        if (noisetype == "ugabor")
         {
-            if (noisetype == "gabor")
-            {
-                signal = (float) noise(
-                    noisetype,
-                    coords,
-                    "anisotropic", in_anisotropy,
-                    "direction", in_direction,
-                    "bandwidth", in_bandwidth,
-                    "impulses", in_impulses,
-                    "do_filter", in_filter_noise);
-            }
-            else if (noisetype == "voronoise")
-            {
-                //signal = voronoise(new_st, x, y);
-            }
-            else if (in_periodic)
-            {
-                signal = (float) pnoise(
-                    noisetype,
-                    coords,
-                    point(in_period_x, in_period_y, 1.0));
-            }
-            else
-            {
-                signal = (float) noise(noisetype, coords);
-            }
+            signal = (float) noise(
+                "gabor",
+                coords[0],
+                coords[1],
+                "anisotropic", in_anisotropy,
+                "direction", in_direction,
+                "bandwidth", in_bandwidth,
+                "impulses", in_impulses,
+                "do_filter", in_filter_noise) * 0.5 + 0.5;
+        }
+        else if (noisetype == "gabor")
+        {
+            signal = (float) noise(
+                noisetype,
+                coords[0],
+                coords[1],
+                "anisotropic", in_anisotropy,
+                "direction", in_direction,
+                "bandwidth", in_bandwidth,
+                "impulses", in_impulses,
+                "do_filter", in_filter_noise);
+        }
+        else if (noisetype == "uvoronoise")
+        {
+            signal = voronoise2d(
+                coords[0],
+                coords[1],
+                in_jittering,
+                in_smoothness);
+        }
+        else if (noisetype == "voronoise")
+        {
+            signal = voronoise2d(
+                coords[0],
+                coords[1],
+                in_jittering,
+                in_smoothness) * 2.0 - 1.0;
+        }
+        else if (noisetype == "uvalue")
+        {
+            signal = value_noise2d(coords[0], coords[1]);
+        }
+        else if (noisetype == "value")
+        {
+            signal = value_noise2d(coords[0], coords[1]) * 2.0 - 1.0;
+        }
+        else if (in_periodic)
+        {
+            signal = (float) pnoise(
+                noisetype,
+                coords[0],
+                coords[1],
+                in_period_x,
+                in_period_y);
         }
         else
         {
-            if (noisetype == "gabor")
-            {
-                signal = (color) noise(
-                    noisetype,
-                    coords,
-                    "anisotropic", in_anisotropy,
-                    "direction", in_direction,
-                    "bandwidth", in_bandwidth,
-                    "impulses", in_impulses,
-                    "do_filter", in_filter_noise);
-            }
-            else if (noisetype == "voronoise")
-            {
-                //signal = voronoise(new_st, x, y);
-            }
-            else if (in_periodic)
-            {
-                signal = (color) pnoise(
-                    noisetype,
-                    coords,
-                    point(in_period_x, in_period_y, 1.0));
-            }
-            else
-            {
-                signal = (color) noise(noisetype, coords);
-            }
+            signal = (float) noise(noisetype, coords[0], coords[1]);
         }
-        
+
         if (in_inflection)
         {
             signal = abs(signal);
         }
-
+        
         if (in_ridges)
         {
             signal = in_offset - signal;
