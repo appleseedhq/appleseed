@@ -55,6 +55,16 @@ void ShadingPointBuilder::set_primitive_type(const ShadingPoint::PrimitiveType p
     m_shading_point.m_primitive_type = primitive_type;
 }
 
+void ShadingPointBuilder::set_distance(const double distance)
+{
+    m_shading_point.m_ray.m_tmax = distance;
+}
+
+void ShadingPointBuilder::set_bary(const foundation::Vector2f& bary)
+{
+    m_shading_point.m_bary = bary;
+}
+
 void ShadingPointBuilder::set_point(const Vector3d& point)
 {
     m_shading_point.m_point = point;

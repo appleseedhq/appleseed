@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,50 +26,57 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGPOINTBUILDER_H
-#define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGPOINTBUILDER_H
+#ifndef APPLESEED_RENDERER_MODELING_OBJECT_PROCEDURALOBJECT_H
+#define APPLESEED_RENDERER_MODELING_OBJECT_PROCEDURALOBJECT_H
 
 // appleseed.renderer headers.
-#include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/object/object.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/basis.h"
+#include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Forward declarations.
-namespace renderer  { class Scene; }
+namespace renderer  { class ShadingPoint; }
 namespace renderer  { class ShadingRay; }
 
 namespace renderer
 {
 
 //
-// Utility class to initialize a renderer::ShadingPoint by hand.
-// This is used to handcraft shading points in unit tests.
+// An object whose surface is defined procedurally.
 //
 
-class ShadingPointBuilder
-  : public foundation::NonCopyable
+class APPLESEED_DLLSYMBOL ProceduralObject
+  : public Object
 {
   public:
-    explicit ShadingPointBuilder(ShadingPoint& shading_point);
+    struct IntersectionResult
+    {
+        bool                    m_hit;
+        double                  m_distance;
+        foundation::Vector3d    m_geometric_normal;
+        foundation::Basis3d     m_shading_basis;
+        foundation::Vector2f    m_uv;
+    };
 
-    void set_scene(const Scene* scene);
-    void set_ray(const ShadingRay& ray);
-    void set_primitive_type(const ShadingPoint::PrimitiveType primitive_type);
-    void set_distance(const double distance);
-    void set_bary(const foundation::Vector2f& bary);
-    void set_point(const foundation::Vector3d& point);
-    void set_geometric_normal(const foundation::Vector3d& n);
-    void set_side(const ObjectInstance::Side side);
-    void set_shading_basis(const foundation::Basis3d& basis);
-    void set_uvs(const foundation::Vector2f& uv);
+    // Compute the intersection between a ray and the surface of this object.
+    virtual void intersect(
+        const ShadingRay&               ray,
+        const foundation::RayInfo3d&    ray_info,
+        IntersectionResult&             result) const = 0;
 
-  private:
-    ShadingPoint& m_shading_point;
+  protected:
+    // Constructor.
+    ProceduralObject(
+        const char*                     name,
+        const ParamArray&               params);
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGPOINTBUILDER_H
+#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_PROCEDURALOBJECT_H
