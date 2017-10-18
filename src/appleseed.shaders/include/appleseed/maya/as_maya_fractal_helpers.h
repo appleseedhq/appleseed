@@ -308,10 +308,6 @@ float billow_noise_2d(
     float jittering = 0.5 * randomness, inv_spottyness = 1.0 - spottyness;
     float blob_density = min(density, 2.0 - randomness), falloff;
 
-    if (density < blob_density)
-    {
-        blob_density = density;
-    }
     if (blob_density < 1.0e-4)
     {
         return 0.0;
@@ -436,10 +432,6 @@ float billow_noise_3d(
     float jittering = 0.5 * randomness, inv_spottyness = 1.0 - spottyness;
     float blob_density = min(density, 2.0 - randomness), falloff;
 
-    if (density < blob_density)
-    {
-        blob_density = density;
-    }
     if (blob_density < 1.0e-4)
     {
         return 0.0;

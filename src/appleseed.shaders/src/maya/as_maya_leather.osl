@@ -1,0 +1,244 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/leather.html
+
+#include "appleseed/maya/as_maya_fractal_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/maya/as_maya_transform_helpers.h"
+
+shader as_maya_leather
+[[
+    string as_maya_node_name = "leather",
+]]
+(
+    color in_cellColor = color(0.373, 0.157, 0.059)
+    [[
+        string as_maya_attribute_name = "cellColor",
+        string label = "Cell Color",
+        string page = "Leather Attributes"
+    ]],
+    color in_creaseColor = color(0.235, 0.118, 0.0)
+    [[
+        string as_maya_attribute_name = "creaseColor",
+        string label = "Crease Color",
+        string page = "Leather Attributes"
+    ]],
+    float in_cellSize = 0.5
+    [[
+        string as_maya_attribute_name = "cellSize",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Cell Size",
+        string page = "Leather Attributes"
+    ]],
+    float in_density = 1.0
+    [[
+        string as_maya_attribute_name = "density",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Density",
+        string page = "Leather Attributes"
+    ]],
+    float in_spottyness = 0.1
+    [[
+        string as_maya_attribute_name = "spottyness",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Spottyness",
+        string page = "Leather Attributes"
+    ]],
+    float in_randomness = 0.5
+    [[
+        string as_maya_attribute_name = "randomness",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Randomness",
+        string page = "Leather Attributes"
+    ]],
+    float in_threshold = 0.83
+    [[
+        string as_maya_attribute_name = "threshold",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Threshold",
+        string page = "Leather Attributes"
+    ]],
+    int in_creases = 0
+    [[
+        string as_maya_attribute_name = "creases",
+        string widget = "checkBox",
+        string page = "Leather Attributes",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    point in_refPointCamera = P
+    [[
+        string as_maya_attribute_name = "refPointCamera",
+        string label = "Surface Point",
+        string widget = "null",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    matrix in_placementMatrix = matrix(1)
+    [[
+        string as_maya_attribute_name = "placementMatrix",
+        string label = "Placement Matrix",
+        string widget = "null"
+    ]],
+
+    MAYA_COLORBALANCE_PARAMETERS,
+    MAYA_EFFECTS_PARAMETERS,
+    MAYA_EFFECTS_3DTEX_PARAMETERS,
+    
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]]
+)
+{
+    matrix placement = (in_local)
+        ? matrix("common", "object") * in_placementMatrix
+        : in_placementMatrix;
+
+    point Pp = transform(placement, in_refPointCamera);
+
+    float box_blending = 0.0;
+
+    int outside_box = outside_place3d_volume(
+        Pp,
+        in_wrap,
+        in_blend,
+        box_blending);
+
+    if (outside_box)
+    {
+        out_outColor = in_defaultColor;
+        out_outAlpha = maya_luminance(out_outColor);
+        return;
+    }
+    else
+    {
+        float blob_density = min(in_density, 2.0 - in_randomness);
+
+        if (blob_density < 1.0e-4)
+        {
+            return;
+        }
+
+        float filter_width = 0.0;
+
+        if (in_filter > 0.0)
+        {
+            filter_width = in_filter * max(EPS, sqrt(area(Pp)));
+            filter_width += in_filterOffset;
+        }
+
+        Pp = 4.95 * Pp / max(EPS, in_cellSize);
+
+        float jittering = 0.5 * in_randomness;
+        float inv_spottyness = 1.0 - in_spottyness;
+        float blob_size = 2.0 / blob_density;
+        float sum = 0.0, falloff = 0.0;
+
+        point this_cell = point(floor(Pp) + 0.5);
+
+        for (int i = -1; i <= 1; ++i)
+        {
+            for (int j = -1; j <= 1; ++j)
+            {
+                for (int k = -1; k <= 1; ++k)
+                {
+                    point test_cell = this_cell + vector(i, j, k);
+
+                    point position1 = test_cell +
+                        in_randomness * ((vector) cellnoise(test_cell) - 0.5);
+
+                    float cell_dist = blob_size * distance(position1, Pp);
+
+                    if (cell_dist < 1.0)
+                    {
+                        falloff = 1.0 - cell_dist;
+                    }
+                    if (in_spottyness > 0.0)
+                    {
+                        falloff *= in_spottyness *
+                            (float) cellnoise(test_cell) + inv_spottyness;
+                    }
+                    sum += falloff;
+                }
+            }
+        }
+
+        //feature1 = sqr(feature1);
+
+        //float value = clamp(feature1, 0.0, 1.0);
+
+        float value = sum;
+
+        float threshold = (in_creases) ? 0.525 : in_threshold / 2.0;
+
+        value = smoothstep(
+            0.0 + threshold + EPS,
+            (1.0 - threshold) + EPS,
+            value);
+
+        value = sum;
+
+
+
+        out_outAlpha = value;
+        out_outColor = mix(in_creaseColor, in_cellColor, out_outAlpha);
+
+
+        
+        if (!in_wrap && in_blend)
+        {
+            out_outColor = mix(in_defaultColor, out_outColor, box_blending);
+            out_outAlpha *= box_blending;
+        }
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha
+            );
+    }
+}

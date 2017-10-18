@@ -410,4 +410,42 @@ void voronoi_3D(
     }
 }
 
+// 
+// Reference:
+//
+//      Generalized Voronoi, aka "Voronoise", based on Inigo Quilez "Voronoise"
+//      http://www.iquilezles.org/www/articles/voronoise/voronoise.htm
+//
+
+float voronoise(float st[2], float jittering, float metric)
+{
+    vector p = vector(floor(st[0]), floor(st[1]), 0);
+    vector f = vector(st[0] - p[0], st[1] - p[1], 0);
+
+    float k = 1.0 + 63.0 * pow(1.0 - metric, 4.0);
+
+    float va = 0.0, wt = 0.0;
+
+    for (int i = -2; i <= 2; ++i)
+    {
+        for (int j = -2; j <= 2; ++j)
+        {
+            vector g = vector(i, j, 0.0);
+
+            vector hash_value = hashnoise(p + g);
+            hash_value *= vector(jittering, metric, 1.0);
+
+            vector r = g - f + hash_value;
+            r[2] = 0.0;
+
+            float len = dot(r, r);
+            float ww = pow(1.0 - smoothstep(0.0, M_SQRT2, sqrt(len)), k);
+
+            va += hash_value[2] * ww;
+            wt += ww;
+        }
+    }
+    return va / wt;
+}
+
 #endif // !AS_FRACTAL_HELPERS_H

@@ -350,6 +350,7 @@ set (src_maya_sources
      src/maya/as_maya_hsvToRgb.osl
      src/maya/as_maya_lambert.osl
      src/maya/as_maya_layeredTexture.osl
+     src/maya/as_maya_leather.osl
      src/maya/as_maya_luminance.osl
      src/maya/as_maya_mandelbrot.osl
      src/maya/as_maya_marble.osl
@@ -376,6 +377,7 @@ set (src_maya_sources
      src/maya/as_maya_rock.osl
      src/maya/as_maya_samplerInfo.osl
      src/maya/as_maya_setRange.osl
+     src/maya/as_maya_simplexNoise.osl
      src/maya/as_maya_singleShadingSwitch.osl
      src/maya/as_maya_snow.osl
      src/maya/as_maya_solidFractal.osl
@@ -404,6 +406,7 @@ set (src_appleseed_sources
      src/appleseed/as_disney_material.osl
      src/appleseed/as_glass.osl
      src/appleseed/as_luminance.osl
+     src/appleseed/as_noise2d.osl
      src/appleseed/as_standard_surface.osl
      src/appleseed/as_voronoi2d.osl
      src/appleseed/as_voronoi3d.osl
