@@ -53,7 +53,7 @@ class PythonEditor
     Q_OBJECT
 
   public:
-    explicit PythonEditor(QWidget* parent = 0);
+    explicit PythonEditor(QWidget* parent = nullptr);
 
   protected:
     // Event used to update line number area.

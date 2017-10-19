@@ -153,7 +153,7 @@ namespace
 QMenu* ObjectInstanceItem::get_multiple_items_context_menu(const QList<ItemBase*>& items) const
 {
     if (!are_in_same_assembly(items, m_parent.get_uid()))
-        return 0;
+        return nullptr;
 
     QMenu* menu = ItemBase::get_multiple_items_context_menu(items);
 

@@ -405,7 +405,7 @@ const T* Statistics::Entry::cast(const Entry* entry)
 
     const T* typed_entry = dynamic_cast<const T*>(entry);
 
-    if (typed_entry == 0)
+    if (typed_entry == nullptr)
         throw ExceptionTypeMismatch(entry->m_name.c_str());
 
     return typed_entry;

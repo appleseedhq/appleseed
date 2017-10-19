@@ -1006,7 +1006,7 @@ void ShadingPoint::initialize_osl_shader_globals(
         m_shader_globals.renderstate = const_cast<ShadingPoint*>(this);
         memset(&m_osl_trace_data, 0, sizeof(OSLTraceData));
         m_shader_globals.tracedata = &m_osl_trace_data;
-        m_shader_globals.objdata = 0;
+        m_shader_globals.objdata = nullptr;
 
         // Pointer to the RendererServices object.
         m_shader_globals.renderer = renderer;
@@ -1015,7 +1015,7 @@ void ShadingPoint::initialize_osl_shader_globals(
         m_obj_transform_info.m_assembly_instance_transform = m_assembly_instance_transform_seq;
         m_obj_transform_info.m_object_instance_transform = &m_object_instance->get_transform();
         m_shader_globals.object2common = reinterpret_cast<OSL::TransformationPtr>(&m_obj_transform_info);
-        m_shader_globals.shader2common = 0;
+        m_shader_globals.shader2common = nullptr;
 
         m_members |= HasOSLShaderGlobals;
     }
@@ -1030,7 +1030,7 @@ void ShadingPoint::initialize_osl_shader_globals(
             : 0.0f;
 
     // Output closure.
-    m_shader_globals.Ci = 0;
+    m_shader_globals.Ci = nullptr;
 }
 
 

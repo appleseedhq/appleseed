@@ -116,9 +116,9 @@ namespace impl
 
         // Constructor.
         Pool()
-          : m_page(0)
+          : m_page(nullptr)
           , m_page_index(ItemsPerPage)
-          , m_free_head(0)
+          , m_free_head(nullptr)
         {
         }
     };
@@ -185,7 +185,7 @@ class PoolAllocator
         return &x;
     }
 
-    pointer allocate(size_type n, const_pointer hint = 0)
+    pointer allocate(size_type n, const_pointer hint = nullptr)
     {
         return n == 1
             ? static_cast<pointer>(m_pool.allocate())

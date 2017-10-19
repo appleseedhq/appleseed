@@ -167,7 +167,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, 0, 0);
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
 
             g_closure_convert_funs[id()] = &convert_closure;
             g_closure_get_modes_funs[id()] = &modes;
@@ -224,7 +224,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, 0, 0);
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
         }
     };
 
@@ -262,7 +262,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, 0, 0);
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
 
             g_closure_convert_funs[id()] = &convert_closure;
             g_closure_get_modes_funs[id()] = &modes;
@@ -315,7 +315,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, 0, 0);
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
         }
     };
 
@@ -349,7 +349,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, 0, 0);
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
 
             g_closure_convert_funs[id()] = &convert_closure;
             g_closure_get_modes_funs[id()] = &modes;
@@ -432,7 +432,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, 0, 0);
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
 
             g_closure_convert_funs[id()] = &convert_closure;
             g_closure_get_modes_funs[id()] = &modes;
@@ -493,7 +493,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, 0, 0);
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
         }
 
         static void convert_closure(
@@ -568,7 +568,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, 0, 0);
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
 
             g_closure_convert_funs[id()] = &convert_closure;
 
@@ -668,7 +668,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, 0, 0);
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
 
             g_closure_convert_funs[id()] = &convert_closure;
 
@@ -744,7 +744,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, 0, 0);
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
         }
     };
 
@@ -792,7 +792,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, 0, 0);
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
 
             g_closure_convert_funs[id()] = &convert_closure;
 
@@ -877,7 +877,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, 0, 0);
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
 
             g_closure_convert_funs[id()] = &convert_closure;
             g_closure_get_modes_funs[id()] = &modes;
@@ -938,7 +938,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, 0, 0);
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
 
             g_closure_convert_funs[id()] = &convert_closure;
             g_closure_get_modes_funs[id()] = &modes;
@@ -1003,7 +1003,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, 0, 0);
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
 
             g_closure_convert_funs[id()] = &convert_closure;
             g_closure_get_modes_funs[id()] = &modes;
@@ -1064,7 +1064,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, 0, 0);
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
 
             g_closure_convert_funs[id()] = &convert_closure;
             g_closure_get_modes_funs[id()] = &modes;
@@ -1137,7 +1137,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, &prepare_closure, 0);
+            shading_system.register_closure(name(), id(), params, &prepare_closure, nullptr);
         }
 
         static void convert_closure(
@@ -1263,7 +1263,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, 0, 0);
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
 
             g_closure_convert_funs[id()] = &convert_closure;
             g_closure_get_modes_funs[id()] = &modes;
@@ -1314,7 +1314,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, 0, 0);
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
         }
     };
 }
@@ -1590,7 +1590,7 @@ void CompositeSurfaceClosure::process_closure_tree(
     const Color3f&              weight,
     Arena&                      arena)
 {
-    if (closure == 0)
+    if (closure == nullptr)
         return;
 
     switch (closure->id)
@@ -1649,7 +1649,7 @@ void CompositeSubsurfaceClosure::process_closure_tree(
     const foundation::Color3f&  weight,
     Arena&                      arena)
 {
-    if (closure == 0)
+    if (closure == nullptr)
         return;
 
     switch (closure->id)
@@ -1741,7 +1741,7 @@ void CompositeEmissionClosure::process_closure_tree(
     const Color3f&              weight,
     Arena&                      arena)
 {
-    if (closure == 0)
+    if (closure == nullptr)
         return;
 
     switch (closure->id)

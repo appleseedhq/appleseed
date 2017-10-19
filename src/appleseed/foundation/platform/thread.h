@@ -184,7 +184,7 @@ class APPLESEED_DLLSYMBOL ProcessPriorityContext
     // The constructor sets the priority of the current process.
     ProcessPriorityContext(
         const ProcessPriority   priority,
-        Logger*                 logger = 0);
+        Logger*                 logger = nullptr);
 
     // The destructor restores previous settings.
     ~ProcessPriorityContext();
@@ -206,7 +206,7 @@ class APPLESEED_DLLSYMBOL ThreadPriorityContext
     // The constructor sets the priority of the current thread.
     ThreadPriorityContext(
         const ProcessPriority   priority,
-        Logger*                 logger = 0);
+        Logger*                 logger = nullptr);
 
     // The destructor restores previous settings.
     ~ThreadPriorityContext();
@@ -226,7 +226,7 @@ class APPLESEED_DLLSYMBOL BenchmarkingThreadContext
 {
   public:
     // The constructor enables the benchmarking mode.
-    explicit BenchmarkingThreadContext(Logger* logger = 0);
+    explicit BenchmarkingThreadContext(Logger* logger = nullptr);
 
     // The destructor restores previous settings.
     ~BenchmarkingThreadContext();

@@ -96,7 +96,7 @@ namespace
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch = 0) override
+            IAbortSwitch*           abort_switch = nullptr) override
         {
             if (!Material::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
@@ -111,9 +111,9 @@ namespace
                 return false;
 
             m_render_data.m_shader_group = get_uncached_osl_surface();
-            m_render_data.m_bsdf = 0;
-            m_render_data.m_bssrdf = 0;
-            m_render_data.m_edf = 0;
+            m_render_data.m_bsdf = nullptr;
+            m_render_data.m_bssrdf = nullptr;
+            m_render_data.m_edf = nullptr;
 
             if (m_render_data.m_shader_group)
             {
@@ -140,7 +140,7 @@ namespace
             const ShaderGroup* sg =
                 static_cast<const ShaderGroup*>(m_inputs.get_entity("osl_surface"));
 
-            return sg && sg->is_valid() ? sg : 0;
+            return sg && sg->is_valid() ? sg : nullptr;
         }
     };
 }

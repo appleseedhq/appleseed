@@ -104,8 +104,8 @@ namespace
 
 RenderingManager::RenderingManager(StatusBar& status_bar)
   : m_status_bar(status_bar)
-  , m_project(0)
-  , m_render_tab(0)
+  , m_project(nullptr)
+  , m_render_tab(nullptr)
 {
     //
     // The connections below are using the Qt::BlockingQueuedConnection connection type.
@@ -199,7 +199,7 @@ void RenderingManager::start_rendering(
 
 bool RenderingManager::is_rendering() const
 {
-    return m_master_renderer.get() != 0;
+    return m_master_renderer.get() != nullptr;
 }
 
 void RenderingManager::wait_until_rendering_end()

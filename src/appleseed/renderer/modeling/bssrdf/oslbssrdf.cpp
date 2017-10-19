@@ -112,7 +112,7 @@ namespace
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch = 0) override
+            IAbortSwitch*           abort_switch = nullptr) override
         {
             if (!BSSRDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;

@@ -427,7 +427,7 @@ void InputWidgetProxyCollection::insert(
 IInputWidgetProxy* InputWidgetProxyCollection::get(const string& key) const
 {
     const ProxyCollection::const_iterator i = m_proxies.find(key);
-    return i != m_proxies.end() ? i->second : 0;
+    return i != m_proxies.end() ? i->second : nullptr;
 }
 
 Dictionary InputWidgetProxyCollection::get_values() const

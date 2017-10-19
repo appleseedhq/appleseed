@@ -68,7 +68,7 @@ class ShadingEngine
     bool on_frame_begin(
         const Project&              project,
         OnFrameBeginRecorder&       recorder,
-        foundation::IAbortSwitch*   abort_switch = 0);
+        foundation::IAbortSwitch*   abort_switch = nullptr);
 
     // Shade a given intersection point.
     void shade(

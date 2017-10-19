@@ -197,7 +197,7 @@ namespace
                 m_shadergroup_exec,
                 m_arena,
                 generator_index,
-                0,
+                nullptr,
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations)
           , m_light_sample_count(0)
@@ -420,7 +420,7 @@ namespace
             void on_hit(const PathVertex& vertex)
             {
                 // Don't process this vertex if there is no BSDF.
-                if (vertex.m_bsdf == 0)
+                if (vertex.m_bsdf == nullptr)
                     return;
 
                 // Connect the path vertex with the camera.

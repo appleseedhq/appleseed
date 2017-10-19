@@ -76,7 +76,7 @@ class TextureSeExprFunc
   public:
     TextureSeExprFunc()
       : SeExprFuncX(true)   // true = thread-safe
-      , m_texture_system(0)
+      , m_texture_system(nullptr)
       , m_texture_is_srgb(true)
     {
         m_texture_options.swrap = OIIO::TextureOpt::WrapPeriodic;

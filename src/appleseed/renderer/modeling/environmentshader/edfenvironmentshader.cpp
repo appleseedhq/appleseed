@@ -75,7 +75,7 @@ namespace
             const char*             name,
             const ParamArray&       params)
           : EnvironmentShader(name, params)
-          , m_env_edf(0)
+          , m_env_edf(nullptr)
         {
             m_inputs.declare("alpha_value", InputFormatFloat, "1.0");
         }
@@ -103,7 +103,7 @@ namespace
             const string name = m_params.get_required<string>("environment_edf", "");
             m_env_edf = project.get_scene()->environment_edfs().get_by_name(name.c_str());
 
-            if (m_env_edf == 0)
+            if (m_env_edf == nullptr)
             {
                 RENDERER_LOG_ERROR(
                     "while preparing environment shader \"%s\": "

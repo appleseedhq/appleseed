@@ -114,7 +114,7 @@ namespace
     string read_filename(unzFile& zip_file)
     {
         unz_file_info zip_file_info;
-        unzGetCurrentFileInfo(zip_file, &zip_file_info, 0, 0, 0, 0, 0, 0);
+        unzGetCurrentFileInfo(zip_file, &zip_file_info, nullptr, 0, nullptr, 0, nullptr, 0);
 
         vector<char> filename(zip_file_info.size_filename + 1);
         unzGetCurrentFileInfo(
@@ -122,8 +122,8 @@ namespace
             &zip_file_info,
             &filename[0],
             static_cast<uLong>(filename.size()),
-            0, 0,
-            0, 0);
+            nullptr, 0,
+            nullptr, 0);
         filename[filename.size() - 1] = '\0';
 
         return string(&filename[0]);
@@ -197,7 +197,7 @@ namespace
                 zip_file,
                 filename_in_zip.c_str(),
                 &zip_file_info,
-                0, 0, 0, 0, 0,
+                nullptr, 0, nullptr, 0, nullptr,
                 Z_DEFLATED,
                 Z_DEFAULT_COMPRESSION);
 
@@ -259,7 +259,7 @@ void unzip(const string& zip_filename, const string& unzipped_dir)
         bf::create_directories(unzipped_dir);
 
         unzFile zip_file = unzOpen(zip_filename.c_str());
-        if (zip_file == 0)
+        if (zip_file == nullptr)
             throw ZipException(("can't open file " + zip_filename).c_str());
 
         unzGoToFirstFile(zip_file);
@@ -287,7 +287,7 @@ void zip(const string& zip_filename, const string& directory_to_zip)
         set<string> files_to_zip = recursive_ls(directory_to_zip);
 
         zipFile zip_file = zipOpen(zip_filename.c_str(), 0);
-        if (zip_file == 0)
+        if (zip_file == nullptr)
             throw ZipException(("can't open file " + zip_filename).c_str());
 
         for (set<string>::iterator it = files_to_zip.begin();
@@ -297,7 +297,7 @@ void zip(const string& zip_filename, const string& directory_to_zip)
             zip_current_file(zip_file, filename_to_zip, directory_to_zip);
         }
 
-        zipClose(zip_file, NULL);
+        zipClose(zip_file, nullptr);
     }
     catch (const exception& e)
     {
@@ -310,7 +310,7 @@ bool is_zip_file(const char* filename)
 {
     unzFile zip_file = unzOpen(filename);
 
-    if (zip_file == 0)
+    if (zip_file == nullptr)
         return false;
     else
     {
@@ -324,7 +324,7 @@ vector<string> get_filenames_with_extension_from_zip(const string& zip_filename,
     vector<string> filenames;
 
     unzFile zip_file = unzOpen(zip_filename.c_str());
-    if (zip_file == 0)
+    if (zip_file == nullptr)
         throw ZipException(("can't open file " + zip_filename).c_str());
 
     unzGoToFirstFile(zip_file);

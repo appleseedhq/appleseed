@@ -148,7 +148,7 @@ namespace
             if (vertex.m_path_length > 1 || m_store_direct)
             {
                 // Don't store photons on surfaces without a BSDF.
-                if (vertex.m_bsdf == 0)
+                if (vertex.m_bsdf == nullptr)
                     return;
 
                 // Don't store photons on purely specular surfaces.

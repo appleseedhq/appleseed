@@ -221,7 +221,7 @@ namespace
         }
     }
 
-    QtMsgHandler g_previous_message_handler = 0;
+    QtMsgHandler g_previous_message_handler = nullptr;
 
     void message_handler(QtMsgType type, const char* msg)
     {
@@ -238,7 +238,7 @@ namespace
 #endif
 
         // On Windows, there is a default message handler.
-        if (g_previous_message_handler != 0)
+        if (g_previous_message_handler != nullptr)
         {
             g_previous_message_handler(type, msg);
             return;

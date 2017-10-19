@@ -411,7 +411,7 @@ inline const ShadingPoint& Tracer::trace_full(
             shading_context,
             ray,
             transmission,
-            0);
+            nullptr);
 }
 
 inline const ShadingPoint& Tracer::trace_full(

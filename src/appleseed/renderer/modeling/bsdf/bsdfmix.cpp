@@ -108,7 +108,7 @@ namespace
             m_bsdf[0] = retrieve_bsdf(*assembly, "bsdf0");
             m_bsdf[1] = retrieve_bsdf(*assembly, "bsdf1");
 
-            if (m_bsdf[0] == 0 || m_bsdf[1] == 0)
+            if (m_bsdf[0] == nullptr || m_bsdf[1] == nullptr)
                 return false;
 
             return true;
@@ -305,11 +305,11 @@ namespace
             if (bsdf_name.empty())
             {
                 RENDERER_LOG_ERROR("while preparing bsdf \"%s\": no bsdf bound to \"%s\".", get_path().c_str(), param_name);
-                return 0;
+                return nullptr;
             }
 
             const BSDF* bsdf = assembly.bsdfs().get_by_name(bsdf_name.c_str());
-            if (bsdf == 0)
+            if (bsdf == nullptr)
                 RENDERER_LOG_ERROR("while preparing bsdf \"%s\": cannot find bsdf \"%s\".", get_path().c_str(), bsdf_name.c_str());
 
             return bsdf;

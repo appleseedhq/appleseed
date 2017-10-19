@@ -61,7 +61,7 @@ class BenchmarkWindow
 
   public:
     // Constructor.
-    explicit BenchmarkWindow(QWidget* parent = 0);
+    explicit BenchmarkWindow(QWidget* parent = nullptr);
 
     // Destructor.
     ~BenchmarkWindow();

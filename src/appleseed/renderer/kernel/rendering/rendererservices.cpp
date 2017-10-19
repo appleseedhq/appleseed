@@ -96,7 +96,7 @@ RendererServices::RendererServices(
   : OSL::RendererServices(&texture_sys)
   , m_texture_sys(texture_sys)
   , m_project(project)
-  , m_texture_store(0)
+  , m_texture_store(nullptr)
 {
     // Set up attribute getters.
     m_global_attr_getters[OIIO::ustring("object:object_instance_id")] = &RendererServices::get_attr_object_instance_id;
@@ -415,7 +415,7 @@ bool RendererServices::trace(
     else
     {
         pos = Vector3d(P);
-        origin_shading_point = 0;
+        origin_shading_point = nullptr;
     }
 
     const Vector3d dir(R);

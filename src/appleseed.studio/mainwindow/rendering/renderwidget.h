@@ -72,7 +72,7 @@ class RenderWidget
         const size_t            width,
         const size_t            height,
         OCIO::ConstConfigRcPtr  ocio_config,
-        QWidget*                parent = 0);
+        QWidget*                parent = nullptr);
 
     // Thread-safe.
     QImage get_image_copy() const;

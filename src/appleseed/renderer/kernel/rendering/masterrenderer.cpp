@@ -75,18 +75,18 @@ MasterRenderer::MasterRenderer(
   : BaseRenderer(project, params)
   , m_renderer_controller(renderer_controller)
   , m_tile_callback_factory(tile_callback_factory)
-  , m_serial_renderer_controller(0)
-  , m_serial_tile_callback_factory(0)
-  , m_display(0)
+  , m_serial_renderer_controller(nullptr)
+  , m_serial_tile_callback_factory(nullptr)
+  , m_display(nullptr)
 {
-    if (m_tile_callback_factory == 0)
+    if (m_tile_callback_factory == nullptr)
     {
         // Try to use the display if there is one in the project
         // and no tile callback factory was specified.
         m_display = m_project.get_display();
         if (m_display && m_display->open(m_project))
             m_tile_callback_factory = m_display->get_tile_callback_factory();
-        else m_display = 0;
+        else m_display = nullptr;
     }
 }
 
@@ -100,7 +100,7 @@ MasterRenderer::MasterRenderer(
         new SerialRendererController(renderer_controller, tile_callback))
   , m_serial_tile_callback_factory(
         new SerialTileCallbackFactory(m_serial_renderer_controller))
-  , m_display(0)
+  , m_display(nullptr)
 {
     m_renderer_controller = m_serial_renderer_controller;
     m_tile_callback_factory = m_serial_tile_callback_factory;
@@ -120,19 +120,19 @@ bool MasterRenderer::render()
     // Initialize thread-local variables.
     Spectrum::set_mode(get_spectrum_mode(m_params));
 
-    if (m_project.get_scene() == 0)
+    if (m_project.get_scene() == nullptr)
     {
         RENDERER_LOG_ERROR("project does not contain a scene.");
         return false;
     }
 
-    if (m_project.get_frame() == 0)
+    if (m_project.get_frame() == nullptr)
     {
         RENDERER_LOG_ERROR("project does not contain a frame.");
         return false;
     }
 
-    if (m_project.get_uncached_active_camera() == 0)
+    if (m_project.get_uncached_active_camera() == nullptr)
     {
         RENDERER_LOG_ERROR("no active camera in project.");
         return false;
@@ -289,7 +289,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
         // Perform pre-frame rendering actions. Don't proceed if that failed.
         OnFrameBeginRecorder recorder;
         if (!components.get_shading_engine().on_frame_begin(m_project, recorder, &abort_switch) ||
-            !m_project.get_scene()->on_frame_begin(m_project, 0, recorder, &abort_switch))
+            !m_project.get_scene()->on_frame_begin(m_project, nullptr, recorder, &abort_switch))
         {
             recorder.on_frame_end(m_project);
             m_renderer_controller->on_frame_end();

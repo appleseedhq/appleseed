@@ -36,7 +36,7 @@ namespace foundation
 {
 
 APIString::APIString()
-  : m_s(0)
+  : m_s(nullptr)
 {
 }
 
@@ -46,7 +46,7 @@ APIString::APIString(const char* s)
 }
 
 APIString::APIString(const APIString& rhs)
-  : m_s(rhs.m_s ? duplicate_string(rhs.m_s) : 0)
+  : m_s(rhs.m_s ? duplicate_string(rhs.m_s) : nullptr)
 {
 }
 
@@ -58,7 +58,7 @@ APIString::~APIString()
 APIString& APIString::operator=(const APIString& rhs)
 {
     free_string(m_s);
-    m_s = rhs.m_s ? duplicate_string(rhs.m_s) : 0;
+    m_s = rhs.m_s ? duplicate_string(rhs.m_s) : nullptr;
     return *this;
 }
 

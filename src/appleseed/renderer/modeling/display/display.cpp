@@ -87,7 +87,7 @@ Display::Display(
     const char*         name,
     const ParamArray&   params)
   : Entity(g_class_uid, params)
-  , impl(0)
+  , impl(nullptr)
 {
     set_name(name);
 }
@@ -144,7 +144,7 @@ bool Display::open(const Project& project)
 void Display::close()
 {
     delete impl;
-    impl = 0;
+    impl = nullptr;
 }
 
 ITileCallbackFactory* Display::get_tile_callback_factory() const
@@ -152,7 +152,7 @@ ITileCallbackFactory* Display::get_tile_callback_factory() const
     if (impl)
         return impl->m_tile_callback_factory.get();
 
-    return 0;
+    return nullptr;
 }
 
 

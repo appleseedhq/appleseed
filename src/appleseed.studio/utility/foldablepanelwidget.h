@@ -48,7 +48,7 @@ class FoldablePanelWidget
     Q_OBJECT
 
   public:
-    FoldablePanelWidget(const QString& title, QWidget* parent = 0);
+    FoldablePanelWidget(const QString& title, QWidget* parent = nullptr);
 
     QFrame* container();
 

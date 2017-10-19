@@ -63,7 +63,7 @@ namespace
 
     void copy_tile_data_to_py_buffer(const Tile& tile, bpy::object& buffer)
     {
-        void* array = 0;
+        void* array = nullptr;
         Py_ssize_t len;
 
         const int success = PyObject_AsWriteBuffer(buffer.ptr(), &array, &len);

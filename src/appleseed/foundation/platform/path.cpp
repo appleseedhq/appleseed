@@ -159,7 +159,7 @@ const char* get_home_directory()
 
         const char* home_dir = getenv("HOME");
 
-        if (home_dir == 0)
+        if (home_dir == nullptr)
             home_dir = getpwuid(getuid())->pw_dir;
 
         strncpy(path, home_dir, FOUNDATION_MAX_PATH_LENGTH);

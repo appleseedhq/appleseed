@@ -85,7 +85,7 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Create internal OSL shader group.
     bool create_optimized_osl_shader_group(
         OSLShadingSystem&           shading_system,
-        foundation::IAbortSwitch*   abort_switch = 0);
+        foundation::IAbortSwitch*   abort_switch = nullptr);
 
     // Release internal OSL shader group.
     void release_optimized_osl_shader_group();

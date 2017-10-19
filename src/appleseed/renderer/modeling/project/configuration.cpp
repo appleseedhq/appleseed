@@ -70,7 +70,7 @@ UniqueID Configuration::get_class_uid()
 
 Configuration::Configuration(const char* name)
   : Entity(g_class_uid)
-  , m_base(0)
+  , m_base(nullptr)
 {
     set_name(name);
 }

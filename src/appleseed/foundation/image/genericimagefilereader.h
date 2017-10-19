@@ -54,7 +54,7 @@ class APPLESEED_DLLSYMBOL GenericImageFileReader
     // Read an image file.
     virtual Image* read(
         const char*         filename,
-        ImageAttributes*    image_attributes = 0);
+        ImageAttributes*    image_attributes = nullptr);
 };
 
 }       // namespace foundation

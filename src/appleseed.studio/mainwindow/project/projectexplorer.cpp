@@ -208,7 +208,7 @@ QMenu* ProjectExplorer::build_multiple_items_context_menu(const QList<QTreeWidge
     return
         are_same_class_uid(items)
             ? items.first()->get_multiple_items_context_menu(items)
-            : 0;
+            : nullptr;
 }
 
 void ProjectExplorer::slot_context_menu(const QPoint& point)

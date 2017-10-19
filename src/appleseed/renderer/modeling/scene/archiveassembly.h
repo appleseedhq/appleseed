@@ -73,7 +73,7 @@ class APPLESEED_DLLSYMBOL ArchiveAssembly
     virtual bool expand_contents(
         const Project&              project,
         const Assembly*             parent,
-        foundation::IAbortSwitch*   abort_switch = 0) override;
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
   private:
     friend class ArchiveAssemblyFactory;

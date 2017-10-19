@@ -197,7 +197,7 @@ Camera* Project::get_uncached_active_camera() const
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 ConfigurationContainer& Project::configurations() const
@@ -213,12 +213,12 @@ void Project::add_default_configurations()
 
 bool Project::has_trace_context() const
 {
-    return impl->m_trace_context.get() != 0;
+    return impl->m_trace_context.get() != nullptr;
 }
 
 const TraceContext& Project::get_trace_context() const
 {
-    if (impl->m_trace_context.get() == 0)
+    if (impl->m_trace_context.get() == nullptr)
     {
         assert(impl->m_scene.get());
         impl->m_trace_context.reset(new TraceContext(*impl->m_scene));

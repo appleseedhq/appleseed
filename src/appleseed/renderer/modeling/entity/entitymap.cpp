@@ -305,14 +305,14 @@ auto_release_ptr<Entity> EntityMap::remove(const UniqueID id)
 Entity* EntityMap::get_by_uid(const UniqueID id) const
 {
     const Impl::Storage::iterator it = impl->m_storage.find(id);
-    return it == impl->m_storage.end() ? 0 : it->second;
+    return it == impl->m_storage.end() ? nullptr : it->second;
 }
 
 Entity* EntityMap::get_by_name(const char* name) const
 {
     assert(name);
     const Impl::Index::iterator it = impl->m_index.find(name);
-    return it == impl->m_index.end() ? 0 : it->second;
+    return it == impl->m_index.end() ? nullptr : it->second;
 }
 
 EntityMap::iterator EntityMap::begin()

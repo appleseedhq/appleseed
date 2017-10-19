@@ -305,7 +305,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_mitsuba_curve_file(
     const string filepath = to_string(search_paths.qualify(params.get("filepath")));
 
     FILE* file = fopen(filepath.c_str(), "rb");
-    if (file == 0)
+    if (file == nullptr)
     {
         RENDERER_LOG_ERROR("failed to open curve file %s.", filepath.c_str());
         return object;

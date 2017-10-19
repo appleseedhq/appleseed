@@ -72,7 +72,7 @@ struct GenericProgressiveImageFileReader::Impl
     {
         m_input = OIIO::ImageInput::open(m_filename);
 
-        if (m_input == 0)
+        if (m_input == nullptr)
             throw ExceptionIOError(OIIO::geterror().c_str());
 
         m_supports_random_access = m_input->supports("random_access") != 0;
@@ -143,7 +143,7 @@ GenericProgressiveImageFileReader::GenericProgressiveImageFileReader(Logger* log
   : impl(new Impl())
 {
     impl->m_logger = logger;
-    impl->m_input = 0;
+    impl->m_input = nullptr;
     impl->m_supports_random_access = false;
     impl->m_is_tiled = false;
 }
@@ -177,12 +177,12 @@ void GenericProgressiveImageFileReader::close()
     // OpenImageIO statically, this should be safe anyway.
     delete impl->m_input;
 
-    impl->m_input = 0;
+    impl->m_input = nullptr;
 }
 
 bool GenericProgressiveImageFileReader::is_open() const
 {
-    return impl->m_input != 0;
+    return impl->m_input != nullptr;
 }
 
 void GenericProgressiveImageFileReader::read_canvas_properties(

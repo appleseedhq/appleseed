@@ -115,17 +115,17 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
     result.m_side = ObjectInstance::FrontSide;
 
     result.m_camera = impl->m_project.get_uncached_active_camera();
-    result.m_assembly_instance = 0;
-    result.m_assembly = 0;
-    result.m_object_instance = 0;
-    result.m_object = 0;
-    result.m_material = 0;
-    result.m_surface_shader = 0;
-    result.m_bsdf = 0;
-    result.m_bssrdf = 0;
-    result.m_edf = 0;
+    result.m_assembly_instance = nullptr;
+    result.m_assembly = nullptr;
+    result.m_object_instance = nullptr;
+    result.m_object = nullptr;
+    result.m_material = nullptr;
+    result.m_surface_shader = nullptr;
+    result.m_bsdf = nullptr;
+    result.m_bssrdf = nullptr;
+    result.m_edf = nullptr;
 
-    if (result.m_camera == 0)
+    if (result.m_camera == nullptr)
         return result;
 
     SamplingContext::RNGType rng;
@@ -194,16 +194,16 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
         const Entity* parent = result.m_material->get_parent();
 
         const char* ss_name = result.m_material->get_surface_shader_name();
-        result.m_surface_shader = ss_name ? InputBinder::find_entity<SurfaceShader>(ss_name, parent) : 0;
+        result.m_surface_shader = ss_name ? InputBinder::find_entity<SurfaceShader>(ss_name, parent) : nullptr;
 
         const char* bsdf_name = result.m_material->get_bsdf_name();
-        result.m_bsdf = bsdf_name ? InputBinder::find_entity<BSDF>(bsdf_name, parent) : 0;
+        result.m_bsdf = bsdf_name ? InputBinder::find_entity<BSDF>(bsdf_name, parent) : nullptr;
 
         const char* bssrdf_name = result.m_material->get_bssrdf_name();
-        result.m_bssrdf = bssrdf_name ? InputBinder::find_entity<BSSRDF>(bssrdf_name, parent) : 0;
+        result.m_bssrdf = bssrdf_name ? InputBinder::find_entity<BSSRDF>(bssrdf_name, parent) : nullptr;
 
         const char* edf = result.m_material->get_edf_name();
-        result.m_edf = edf ? InputBinder::find_entity<EDF>(edf, parent) : 0;
+        result.m_edf = edf ? InputBinder::find_entity<EDF>(edf, parent) : nullptr;
     }
 
     return result;

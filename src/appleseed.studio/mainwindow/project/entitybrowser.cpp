@@ -79,7 +79,7 @@ namespace
     {
         assert(entity);
 
-        while (dynamic_cast<const Scene*>(entity) == 0)
+        while (dynamic_cast<const Scene*>(entity) == nullptr)
             entity = entity->get_parent();
 
         return static_cast<const Scene*>(entity);

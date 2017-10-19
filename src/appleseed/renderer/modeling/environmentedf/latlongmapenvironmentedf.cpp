@@ -116,7 +116,7 @@ namespace
 
         void sample(const size_t x, const size_t y, Color3f& payload, float& importance)
         {
-            if (m_radiance_source == 0)
+            if (m_radiance_source == nullptr)
             {
                 payload.set(0.0f);
                 importance = 0.0f;
@@ -203,7 +203,7 @@ namespace
             {
                 check_non_zero_emission("radiance", "radiance_multiplier");
 
-                if (m_importance_sampler.get() == 0)
+                if (m_importance_sampler.get() == nullptr)
                     build_importance_map(*project.get_scene(), abort_switch);
             }
 
@@ -217,7 +217,7 @@ namespace
             Spectrum&               value,
             float&                  probability) const override
         {
-            if (m_importance_sampler.get() == 0)
+            if (m_importance_sampler.get() == nullptr)
             {
                 RENDERER_LOG_WARNING(
                     "cannot sample environment edf \"%s\" because it is not bound to the environment.",
@@ -295,7 +295,7 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            if (m_importance_sampler.get() == 0)
+            if (m_importance_sampler.get() == nullptr)
             {
                 RENDERER_LOG_WARNING(
                     "cannot compute pdf for environment edf \"%s\" because it is not bound to the environment.",
@@ -329,7 +329,7 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            if (m_importance_sampler.get() == 0)
+            if (m_importance_sampler.get() == nullptr)
             {
                 RENDERER_LOG_WARNING(
                     "cannot compute pdf for environment edf \"%s\" because it is not bound to the environment.",

@@ -75,7 +75,7 @@ bool ShadingEngine::on_frame_begin(
 {
     return
         m_diagnostic_surface_shader.get()
-            ? m_diagnostic_surface_shader->on_frame_begin(project, 0, recorder, abort_switch)
+            ? m_diagnostic_surface_shader->on_frame_begin(project, nullptr, recorder, abort_switch)
             : true;
 }
 
@@ -123,9 +123,9 @@ void ShadingEngine::shade_hit_point(
         // Use the diagnostic surface shader if there is one.
         const SurfaceShader* surface_shader = m_diagnostic_surface_shader.get();
 
-        if (surface_shader == 0)
+        if (surface_shader == nullptr)
         {
-            if (material == 0)
+            if (material == nullptr)
             {
                 // The intersected surface has no material: return solid pink.
                 shading_result.set_main_to_opaque_pink();
@@ -135,7 +135,7 @@ void ShadingEngine::shade_hit_point(
             // Use the surface shader of the intersected surface.
             surface_shader = material->get_render_data().m_surface_shader;
 
-            if (surface_shader == 0)
+            if (surface_shader == nullptr)
             {
                 // The intersected surface has no surface shader: return solid pink.
                 shading_result.set_main_to_opaque_pink();

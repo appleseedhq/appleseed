@@ -122,7 +122,7 @@ bool BufferedFile::open(
 
     m_file = fopen(path, mode_string.c_str());
 
-    if (m_file == 0)
+    if (m_file == nullptr)
         return false;
 
     m_file_mode = mode;
@@ -157,15 +157,15 @@ bool BufferedFile::close()
 
 bool BufferedFile::is_open() const
 {
-    return m_file != 0;
+    return m_file != nullptr;
 }
 
 void BufferedFile::reset()
 {
-    m_file = 0;
+    m_file = nullptr;
     m_file_mode = ReadMode;
     m_file_index = 0;
-    m_buffer = 0;
+    m_buffer = nullptr;
     m_buffer_size = 0;
     m_buffer_end = 0;
     m_buffer_index = 0;

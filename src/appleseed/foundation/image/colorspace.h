@@ -421,7 +421,7 @@ void spectrum_to_spectrum(
     const size_t                output_count,
     const T                     output_wavelength[],
     T                           output_spectrum[],
-    T                           working_storage[] = 0);
+    T                           working_storage[] = nullptr);
 
 
 //
@@ -1141,7 +1141,7 @@ void spectrum_to_spectrum(
     T                           output_spectrum[],
     T                           working_storage[])
 {
-    const bool own_memory = (working_storage == 0);
+    const bool own_memory = (working_storage == nullptr);
 
     if (own_memory)
         working_storage = new T[input_count];

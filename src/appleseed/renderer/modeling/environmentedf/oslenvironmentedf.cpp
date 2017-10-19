@@ -113,7 +113,7 @@ namespace
             const Project&          project,
             const BaseGroup*        parent) override
         {
-            m_shader_group = 0;
+            m_shader_group = nullptr;
 
             EnvironmentEDF::on_frame_end(project, parent);
         }

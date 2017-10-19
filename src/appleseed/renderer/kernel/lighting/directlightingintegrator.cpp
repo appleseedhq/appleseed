@@ -252,13 +252,13 @@ void DirectLightingIntegrator::take_single_material_sample(
 
     // Retrieve the material at the intersection point.
     const Material* material = light_shading_point.get_material();
-    if (material == 0)
+    if (material == nullptr)
         return;
     const Material::RenderData& material_data = material->get_render_data();
 
     // Retrieve the EDF at the intersection point.
     const EDF* edf = material_data.m_edf;
-    if (edf == 0)
+    if (edf == nullptr)
         return;
 
     // No contribution if we are computing indirect lighting but this light does not cast indirect light.

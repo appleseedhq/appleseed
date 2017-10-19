@@ -172,7 +172,7 @@ namespace
 
             ShadingPoint shading_points[2];
             size_t shading_point_index = 0;
-            const ShadingPoint* shading_point_ptr = 0;
+            const ShadingPoint* shading_point_ptr = nullptr;
             size_t iterations = 0;
 
             // Inform the AOV accumulators that we are about to render a sample.

@@ -92,7 +92,7 @@ bool AnimationPath::load(const char* filename, const Format format)
 
     AutoClosingFile file(filename, "rt");
 
-    if (file == 0)
+    if (file == nullptr)
     {
         LOG_ERROR(m_logger, "could not read animation path file %s.", filename);
         return false;
@@ -100,7 +100,7 @@ bool AnimationPath::load(const char* filename, const Format format)
 
     char header[1000];
 
-    if (fgets(header, sizeof(header), file) == 0)
+    if (fgets(header, sizeof(header), file) == nullptr)
     {
         LOG_ERROR(m_logger, "could not read animation path file %s.", filename);
         return false;

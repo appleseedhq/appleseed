@@ -828,7 +828,7 @@ bool MeshObjectReader::read(
     if (params.strings().exist("primitive"))
     {
         auto_release_ptr<MeshObject> mesh = create_primitive_mesh(base_object_name, params);
-        if (mesh.get() == 0)
+        if (mesh.get() == nullptr)
             return false;
 
         objects.push_back(mesh.release());

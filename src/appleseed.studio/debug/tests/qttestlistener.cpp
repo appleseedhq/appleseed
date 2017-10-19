@@ -58,8 +58,8 @@ namespace studio {
 QtTestListener::QtTestListener(
     TestOutputWidgetDecorator*  output_widget,
     TestResultWidgetDecorator*  result_widget)
-  : m_suite_item(0)
-  , m_case_item(0)
+  : m_suite_item(nullptr)
+  , m_case_item(nullptr)
 {
     connect(
         this, SIGNAL(signal_add_top_level_item(TestOutputItem*)),
@@ -97,7 +97,7 @@ void QtTestListener::end_suite(
 
     emit signal_add_top_level_item(m_suite_item);
 
-    m_suite_item = 0;
+    m_suite_item = nullptr;
 }
 
 void QtTestListener::begin_case(
@@ -125,7 +125,7 @@ void QtTestListener::end_case(
 
     m_suite_item->addChild(m_case_item);
 
-    m_case_item = 0;
+    m_case_item = nullptr;
 
     const int failed_count = static_cast<int>(cumulated_result.get_case_failure_count());
     const int passed_count = static_cast<int>(cumulated_result.get_case_execution_count()) - failed_count;

@@ -142,7 +142,7 @@ void MeshObject::on_frame_end(
     const Project&          project,
     const BaseGroup*        parent)
 {
-    m_alpha_map = 0;
+    m_alpha_map = nullptr;
     Object::on_frame_end(project, parent);
 }
 

@@ -184,13 +184,13 @@ void LightSamplerBase::collect_emitting_triangles(
                 // Fetch the materials assigned to this triangle.
                 const size_t pa_index = static_cast<size_t>(triangle.m_pa);
                 const Material* front_material =
-                    pa_index < front_materials.size() ? front_materials[pa_index] : 0;
+                    pa_index < front_materials.size() ? front_materials[pa_index] : nullptr;
                 const Material* back_material =
-                    pa_index < back_materials.size() ? back_materials[pa_index] : 0;
+                    pa_index < back_materials.size() ? back_materials[pa_index] : nullptr;
 
                 // Skip triangles that don't emit light.
-                if ((front_material == 0 || front_material->has_emission() == false) &&
-                    (back_material == 0 || back_material->has_emission() == false))
+                if ((front_material == nullptr || front_material->has_emission() == false) &&
+                    (back_material == nullptr || back_material->has_emission() == false))
                     continue;
 
                 // Retrieve object instance space vertices of the triangle.
@@ -257,7 +257,7 @@ void LightSamplerBase::collect_emitting_triangles(
                 {
                     // Retrieve the material; skip sides without a material or without emission.
                     const Material* material = side == 0 ? front_material : back_material;
-                    if (material == 0 || material->has_emission() == false)
+                    if (material == nullptr || material->has_emission() == false)
                         continue;
 
                     // Accumulate the object area for OSL shaders.
@@ -429,7 +429,7 @@ void LightSamplerBase::sample_emitting_triangles(
     const size_t emitter_index = result.first;
     const float emitter_prob = result.second;
 
-    light_sample.m_light = 0;
+    light_sample.m_light = nullptr;
     sample_emitting_triangle(
         time,
         Vector2f(s[1], s[2]),

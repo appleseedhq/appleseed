@@ -468,7 +468,7 @@ namespace
 
         unique_ptr<ParametricSurface> surface = ParametricSurface::create(res_u, res_v, params);
 
-        if (surface.get() == 0)
+        if (surface.get() == nullptr)
             return auto_release_ptr<MeshObject>();
 
         auto_release_ptr<MeshObject> mesh = MeshObjectFactory::create(name, params);

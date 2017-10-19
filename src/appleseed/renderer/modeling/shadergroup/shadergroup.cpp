@@ -168,7 +168,7 @@ bool ShaderGroup::create_optimized_osl_shader_group(
     {
         OSL::ShaderGroupRef shader_group_ref = shading_system.ShaderGroupBegin(get_name());
 
-        if (shader_group_ref.get() == 0)
+        if (shader_group_ref.get() == nullptr)
         {
             RENDERER_LOG_ERROR("failed to setup shader group \"%s\": ShaderGroupBegin() call failed.", get_path().c_str());
             return false;
@@ -243,7 +243,7 @@ const ShaderConnectionContainer& ShaderGroup::shader_connections() const
 
 bool ShaderGroup::is_valid() const
 {
-    return impl->m_shader_group_ref.get() != 0;
+    return impl->m_shader_group_ref.get() != nullptr;
 }
 
 float ShaderGroup::get_surface_area(
@@ -300,7 +300,7 @@ void ShaderGroup::get_shadergroup_closures_info(OSLShadingSystem& shading_system
 
     if (num_closures != 0)
     {
-        OIIO::ustring* closures = 0;
+        OIIO::ustring* closures = nullptr;
         if (!shading_system.getattribute(
                 impl->m_shader_group_ref.get(),
                 "closures_needed",
@@ -379,7 +379,7 @@ void ShaderGroup::get_shadergroup_globals_info(OSLShadingSystem& shading_system)
 
     if (num_globals != 0)
     {
-        OIIO::ustring* globals = 0;
+        OIIO::ustring* globals = nullptr;
         if (!shading_system.getattribute(
                 impl->m_shader_group_ref.get(),
                 "globals_needed",

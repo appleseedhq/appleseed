@@ -57,7 +57,7 @@ class APPLESEED_DLLSYMBOL GenericProgressiveImageFileReader
 {
   public:
     // Constructor.
-    explicit GenericProgressiveImageFileReader(Logger* logger = 0);
+    explicit GenericProgressiveImageFileReader(Logger* logger = nullptr);
 
     // Destructor.
     ~GenericProgressiveImageFileReader();

@@ -421,7 +421,7 @@ void AssemblyTree::create_region_tree(const Assembly& assembly)
     const uint64 hash = hash_assembly_geometry(assembly, MeshObjectFactory::get_model());
     Lazy<RegionTree>* tree = m_region_tree_repository.acquire(hash);
 
-    if (tree == 0)
+    if (tree == nullptr)
     {
         unique_ptr<ILazyFactory<RegionTree>> region_tree_factory(
             new RegionTreeFactory(
@@ -442,7 +442,7 @@ void AssemblyTree::create_triangle_tree(const Assembly& assembly)
     const uint64 hash = hash_assembly_geometry(assembly, MeshObjectFactory::get_model());
     Lazy<TriangleTree>* tree = m_triangle_tree_repository.acquire(hash);
 
-    if (tree == 0)
+    if (tree == nullptr)
     {
         // Compute the assembly space bounding box of the assembly.
         const GAABB3 assembly_bbox =
@@ -474,7 +474,7 @@ void AssemblyTree::create_curve_tree(const Assembly& assembly)
     const uint64 hash = hash_assembly_geometry(assembly, CurveObjectFactory::get_model());
     Lazy<CurveTree>* tree = m_curve_tree_repository.acquire(hash);
 
-    if (tree == 0)
+    if (tree == nullptr)
     {
         // Compute the assembly space bounding box of the assembly.
         const GAABB3 assembly_bbox =

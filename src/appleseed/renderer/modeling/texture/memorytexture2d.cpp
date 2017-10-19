@@ -117,7 +117,7 @@ namespace
 
             assert(m_image.get() != 0 || m_dummy_texture.get() != 0);
 
-            if (m_image.get() == 0)
+            if (m_image.get() == nullptr)
                 RENDERER_LOG_WARNING("in-memory 2d texture \"%s\" has no texture data.", get_path().c_str());
 
             return true;

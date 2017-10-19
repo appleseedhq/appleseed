@@ -123,7 +123,7 @@ class APPLESEED_DLLSYMBOL Assembly
         const Project&              project,
         const BaseGroup*            parent,
         OnFrameBeginRecorder&       recorder,
-        foundation::IAbortSwitch*   abort_switch = 0) override;
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
   protected:
     // Constructor.

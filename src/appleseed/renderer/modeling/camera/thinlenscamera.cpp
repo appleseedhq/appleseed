@@ -471,7 +471,7 @@ namespace
             const TextureSource* diaphragm_map_source =
                 dynamic_cast<const TextureSource*>(m_inputs.source("diaphragm_map"));
 
-            if (diaphragm_map_source == 0)
+            if (diaphragm_map_source == nullptr)
                 return false;
 
             const TextureInstance& texture_instance = diaphragm_map_source->get_texture_instance();

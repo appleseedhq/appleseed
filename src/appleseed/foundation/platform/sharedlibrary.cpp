@@ -100,7 +100,7 @@ SharedLibrary::SharedLibrary(const char* path)
     m_handle = dlopen(path, RTLD_NOW | RTLD_GLOBAL);
 #endif
 
-    if (m_handle == 0)
+    if (m_handle == nullptr)
     {
         throw ExceptionCannotLoadSharedLib(
             path,
@@ -125,7 +125,7 @@ void* SharedLibrary::get_symbol(const char* name, const bool no_throw) const
     void* symbol = dlsym(m_handle, name);
 #endif
 
-    if (symbol == 0 && !no_throw)
+    if (symbol == nullptr && !no_throw)
     {
         throw ExceptionSharedLibCannotGetSymbol(
             name,

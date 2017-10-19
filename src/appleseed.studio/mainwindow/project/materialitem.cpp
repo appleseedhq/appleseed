@@ -158,7 +158,7 @@ void MaterialItem::slot_export()
 
     QString filepath =
         get_save_filename(
-            0,
+            nullptr,
             "Export...",
             "Disney Materials (*.dmt)",
             m_editor_context.m_settings,

@@ -751,7 +751,7 @@ namespace
         {
             XMLElement element("output", m_file, m_indenter);
             element.write(
-                project.get_frame() != 0
+                project.get_frame() != nullptr
                     ? XMLElement::HasChildElements
                     : XMLElement::HasNoContent);
 
@@ -770,7 +770,7 @@ namespace
                 !scene.texture_instances().empty() ||
                 !scene.environment_edfs().empty() ||
                 !scene.environment_shaders().empty() ||
-                scene.get_environment() != 0 ||
+                scene.get_environment() != nullptr ||
                 !scene.shader_groups().empty() ||
                 !scene.assemblies().empty() ||
                 !scene.assembly_instances().empty()
@@ -929,7 +929,7 @@ bool ProjectFileWriter::write_plain_project_file(
 
     // Open the file for writing.
     FILE* file = fopen(filepath, "wt");
-    if (file == 0)
+    if (file == nullptr)
     {
         RENDERER_LOG_ERROR("failed to write project file %s: i/o error.", filepath);
         return false;

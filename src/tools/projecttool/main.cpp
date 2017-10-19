@@ -92,7 +92,7 @@ bool update_project()
 
     // Read the input project from disk.
     auto_release_ptr<Project> project(load_project(input_filepath));
-    if (project.get() == 0)
+    if (project.get() == nullptr)
         return false;
 
     // Update the project file to the desired revision.
@@ -124,7 +124,7 @@ bool pack_project()
 
     // Read the input project from disk.
     auto_release_ptr<Project> project(load_project(input_filepath));
-    if (project.get() == 0)
+    if (project.get() == nullptr)
         return false;
 
     // Build the path of the output project.
@@ -147,7 +147,7 @@ bool unpack_project()
 
     // Read the input project from disk.
     auto_release_ptr<Project> project(load_project(input_filepath));
-    if (project.get() == 0)
+    if (project.get() == nullptr)
         return false;
 
     // Build the path of the output project.

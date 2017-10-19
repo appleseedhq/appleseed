@@ -70,7 +70,7 @@ class APPLESEED_DLLSYMBOL PluginAssembly
     virtual bool expand_contents(
         const Project&              project,
         const Assembly*             parent,
-        foundation::IAbortSwitch*   abort_switch = 0) override;
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
   protected:
     friend class PluginAssemblyFactory;

@@ -90,7 +90,7 @@ class OSLShaderGroupExec
         const ShaderGroup&              shader_group,
         const ShadingPoint&             shading_point,
         Alpha&                          alpha,
-        float*                          holdout = 0) const;
+        float*                          holdout = nullptr) const;
 
     void execute_shadow(
         const ShaderGroup&              shader_group,

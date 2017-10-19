@@ -364,7 +364,7 @@ namespace
             context.get_event_counters().signal_error();
         }
 
-        return auto_release_ptr<Entity>(0);
+        return auto_release_ptr<Entity>(nullptr);
     }
 
 
@@ -2044,10 +2044,10 @@ namespace
         template <typename Container, typename Entity>
         void insert(Container& container, auto_release_ptr<Entity> entity)
         {
-            if (entity.get() == 0)
+            if (entity.get() == nullptr)
                 return;
 
-            if (container.get_by_name(entity->get_name()) != 0)
+            if (container.get_by_name(entity->get_name()) != nullptr)
             {
                 RENDERER_LOG_ERROR(
                     "an entity with the path \"%s\" already exists.",
@@ -2477,7 +2477,7 @@ namespace
                 m_context.get_event_counters().signal_error();
             }
 
-            return auto_release_ptr<AOV>(0);
+            return auto_release_ptr<AOV>(nullptr);
         }
     };
 
@@ -2492,7 +2492,7 @@ namespace
       public:
         explicit AOVsElementHandler(ParseContext& context)
           : m_context(context)
-          , m_aovs(0)
+          , m_aovs(nullptr)
         {
         }
 
@@ -2509,10 +2509,10 @@ namespace
                     auto_release_ptr<AOV> aov(
                         static_cast<AOVElementHandler*>(handler)->get_aov());
 
-                    if (aov.get() == 0)
+                    if (aov.get() == nullptr)
                         return;
 
-                    if (m_aovs->get_by_name(aov->get_name()) != 0)
+                    if (m_aovs->get_by_name(aov->get_name()) != nullptr)
                     {
                         RENDERER_LOG_ERROR(
                             "an aov with the path \"%s\" already exists.",
@@ -2621,7 +2621,7 @@ namespace
       public:
         explicit OutputElementHandler(ParseContext& context)
           : m_context(context)
-          , m_project(0)
+          , m_project(nullptr)
         {
         }
 
@@ -2666,7 +2666,7 @@ namespace
       public:
         explicit ConfigurationElementHandler(ParseContext& context)
           : m_context(context)
-          , m_project(0)
+          , m_project(nullptr)
         {
         }
 
@@ -2740,7 +2740,7 @@ namespace
       public:
         explicit ConfigurationsElementHandler(ParseContext& context)
           : m_context(context)
-          , m_project(0)
+          , m_project(nullptr)
         {
         }
 
@@ -2838,7 +2838,7 @@ namespace
       public:
         explicit SearchPathsElementHandler(ParseContext& context)
           : m_context(context)
-          , m_project(0)
+          , m_project(nullptr)
         {
         }
 
@@ -3209,7 +3209,7 @@ auto_release_ptr<Project> ProjectFileReader::read(
             RENDERER_LOG_ERROR(
                 "%s looks like a packed project file, but it should contain a single *.appleseed file in order to be valid.",
                 project_filepath);
-            return auto_release_ptr<Project>(0);
+            return auto_release_ptr<Project>(nullptr);
         }
 
         const string unpacked_project_directory =
@@ -3230,13 +3230,13 @@ auto_release_ptr<Project> ProjectFileReader::read(
 
     XercesCContext xerces_context(global_logger());
     if (!xerces_context.is_initialized())
-        return auto_release_ptr<Project>(0);
+        return auto_release_ptr<Project>(nullptr);
 
-    if ((options & OmitProjectSchemaValidation) == false && schema_filepath == 0)
+    if ((options & OmitProjectSchemaValidation) == false && schema_filepath == nullptr)
     {
         RENDERER_LOG_ERROR(
             "project schema validation enabled, but no schema filepath provided.");
-        return auto_release_ptr<Project>(0);
+        return auto_release_ptr<Project>(nullptr);
     }
 
     Stopwatch<DefaultWallclockTimer> stopwatch;
@@ -3261,7 +3261,7 @@ auto_release_ptr<Project> ProjectFileReader::read(
         event_counters,
         stopwatch.get_seconds());
 
-    return event_counters.has_errors() ? auto_release_ptr<Project>(0) : project;
+    return event_counters.has_errors() ? auto_release_ptr<Project>(nullptr) : project;
 }
 
 auto_release_ptr<Assembly> ProjectFileReader::read_archive(
@@ -3282,7 +3282,7 @@ auto_release_ptr<Assembly> ProjectFileReader::read_archive(
             RENDERER_LOG_ERROR(
                 "%s looks like a packed archive file, but it should contain a single *.appleseed file in order to be valid.",
                 archive_filepath);
-            return auto_release_ptr<Assembly>(0);
+            return auto_release_ptr<Assembly>(nullptr);
         }
 
         const string unpacked_archive_directory =
@@ -3298,13 +3298,13 @@ auto_release_ptr<Assembly> ProjectFileReader::read_archive(
 
     XercesCContext xerces_context(global_logger());
     if (!xerces_context.is_initialized())
-        return auto_release_ptr<Assembly>(0);
+        return auto_release_ptr<Assembly>(nullptr);
 
-    if ((options & OmitProjectSchemaValidation) == false && schema_filepath == 0)
+    if ((options & OmitProjectSchemaValidation) == false && schema_filepath == nullptr)
     {
         RENDERER_LOG_ERROR(
             "archive schema validation enabled, but no schema filepath provided.");
-        return auto_release_ptr<Assembly>(0);
+        return auto_release_ptr<Assembly>(nullptr);
     }
 
     Stopwatch<DefaultWallclockTimer> stopwatch;
@@ -3336,7 +3336,7 @@ auto_release_ptr<Assembly> ProjectFileReader::read_archive(
         stopwatch.get_seconds());
 
     if (event_counters.has_errors())
-        return auto_release_ptr<Assembly>(0);
+        return auto_release_ptr<Assembly>(nullptr);
 
     if (project->get_scene())
     {
@@ -3347,7 +3347,7 @@ auto_release_ptr<Assembly> ProjectFileReader::read_archive(
         }
     }
 
-    return auto_release_ptr<Assembly>(0);
+    return auto_release_ptr<Assembly>(nullptr);
 }
 
 auto_release_ptr<Project> ProjectFileReader::load_builtin(
@@ -3373,7 +3373,7 @@ auto_release_ptr<Project> ProjectFileReader::load_builtin(
         event_counters,
         stopwatch.get_seconds());
 
-    return event_counters.has_errors() ? auto_release_ptr<Project>(0) : project;
+    return event_counters.has_errors() ? auto_release_ptr<Project>(nullptr) : project;
 }
 
 auto_release_ptr<Project> ProjectFileReader::load_project_file(
@@ -3443,18 +3443,18 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
     }
     catch (const XMLException&)
     {
-        return auto_release_ptr<Project>(0);
+        return auto_release_ptr<Project>(nullptr);
     }
     catch (const SAXParseException&)
     {
-        return auto_release_ptr<Project>(0);
+        return auto_release_ptr<Project>(nullptr);
     }
 
     // Report a failure in case of warnings or errors.
     if (error_handler->get_warning_count() > 0 ||
         error_handler->get_error_count() > 0 ||
         error_handler->get_fatal_error_count() > 0)
-        return auto_release_ptr<Project>(0);
+        return auto_release_ptr<Project>(nullptr);
 
     return project;
 }
@@ -3475,7 +3475,7 @@ auto_release_ptr<Project> ProjectFileReader::construct_builtin_project(
     {
         RENDERER_LOG_ERROR("unknown built-in project %s.", project_name);
         event_counters.signal_error();
-        return auto_release_ptr<Project>(0);
+        return auto_release_ptr<Project>(nullptr);
     }
 }
 
@@ -3517,19 +3517,19 @@ void ProjectFileReader::validate_project(
     }
 
     // Make sure the project contains at least one output frame.
-    if (project.get_frame() == 0)
+    if (project.get_frame() == nullptr)
     {
         RENDERER_LOG_ERROR("the project does not define any frame.");
         event_counters.signal_error();
     }
 
     // Make sure the project contains the required configurations.
-    if (project.configurations().get_by_name("final") == 0)
+    if (project.configurations().get_by_name("final") == nullptr)
     {
         RENDERER_LOG_ERROR("the project must define a \"final\" configuration.");
         event_counters.signal_error();
     }
-    if (project.configurations().get_by_name("interactive") == 0)
+    if (project.configurations().get_by_name("interactive") == nullptr)
     {
         RENDERER_LOG_ERROR("the project must define an \"interactive\" configuration.");
         event_counters.signal_error();
@@ -3541,7 +3541,7 @@ void ProjectFileReader::complete_project(
     EventCounters&          event_counters) const
 {
     // Add a default environment if the project doesn't define any.
-    if (project.get_scene()->get_environment() == 0)
+    if (project.get_scene()->get_environment() == nullptr)
     {
         auto_release_ptr<Environment> environment(
             EnvironmentFactory::create("environment", ParamArray()));

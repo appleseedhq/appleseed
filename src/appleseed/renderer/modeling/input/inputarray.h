@@ -188,7 +188,7 @@ class APPLESEED_DLLSYMBOL InputArray
     void declare(
         const char*                 name,
         const InputFormat           format,
-        const char*                 default_value = 0);
+        const char*                 default_value = nullptr);
 
     // Return mutable begin and end input iterators.
     iterator begin();

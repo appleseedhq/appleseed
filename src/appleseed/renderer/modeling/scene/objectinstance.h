@@ -193,7 +193,7 @@ class APPLESEED_DLLSYMBOL ObjectInstance
         const Project&              project,
         const BaseGroup*            parent,
         OnFrameBeginRecorder&       recorder,
-        foundation::IAbortSwitch*   abort_switch = 0) override;
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
   private:
     friend class ObjectInstanceFactory;

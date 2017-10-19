@@ -44,7 +44,7 @@ namespace studio {
 //
 
 StatusBar::StatusBar()
-  : m_rendering_timer(0)
+  : m_rendering_timer(nullptr)
   , m_timer_id(-1)
 {
 }
@@ -72,7 +72,7 @@ void StatusBar::stop_rendering_time_display()
 
     killTimer(m_timer_id);
 
-    m_rendering_timer = 0;
+    m_rendering_timer = nullptr;
     m_timer_id = -1;
 }
 

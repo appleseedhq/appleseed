@@ -54,7 +54,7 @@ class APPLESEED_DLLSYMBOL BaseGroup
 {
   public:
     // Constructor.
-    explicit BaseGroup(Entity* parent = 0);
+    explicit BaseGroup(Entity* parent = nullptr);
 
     // Destructor.
     ~BaseGroup();
@@ -74,7 +74,7 @@ class APPLESEED_DLLSYMBOL BaseGroup
     // Create OSL shader groups and optimize them.
     bool create_optimized_osl_shader_groups(
         OSLShadingSystem&           shading_system,
-        foundation::IAbortSwitch*   abort_switch = 0);
+        foundation::IAbortSwitch*   abort_switch = nullptr);
 
     // Release internal OSL shader groups.
     void release_optimized_osl_shader_groups();

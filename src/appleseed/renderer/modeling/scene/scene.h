@@ -115,7 +115,7 @@ class APPLESEED_DLLSYMBOL Scene
     // Returns true on success, false otherwise.
     bool on_render_begin(
         const Project&              project,
-        foundation::IAbortSwitch*   abort_switch = 0);
+        foundation::IAbortSwitch*   abort_switch = nullptr);
 
     // Perform post-render rendering actions.
     void on_render_end(const Project& project);
@@ -123,7 +123,7 @@ class APPLESEED_DLLSYMBOL Scene
     // Expand all procedural assemblies in the scene.
     virtual bool expand_procedural_assemblies(
         const Project&              project,
-        foundation::IAbortSwitch*   abort_switch = 0);
+        foundation::IAbortSwitch*   abort_switch = nullptr);
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
@@ -131,7 +131,7 @@ class APPLESEED_DLLSYMBOL Scene
         const Project&              project,
         const BaseGroup*            parent,
         OnFrameBeginRecorder&       recorder,
-        foundation::IAbortSwitch*   abort_switch = 0) override;
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
     // This method is called once after rendering each frame (only if on_frame_begin() was called).
     virtual void on_frame_end(

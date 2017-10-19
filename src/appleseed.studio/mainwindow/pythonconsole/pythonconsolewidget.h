@@ -54,7 +54,7 @@ class PythonConsoleWidget
   Q_OBJECT
 
   public:
-    explicit PythonConsoleWidget(QWidget* parent = 0);
+    explicit PythonConsoleWidget(QWidget* parent = nullptr);
 
   protected:
     void wheelEvent(QWheelEvent* event);

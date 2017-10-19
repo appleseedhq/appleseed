@@ -154,8 +154,8 @@ inline bool DipoleBSSRDF::on_frame_begin(
     foundation::IAbortSwitch*       abort_switch)
 {
     m_has_sigma_sources =
-        m_inputs.source("sigma_a") != 0 &&
-        m_inputs.source("sigma_s") != 0;
+        m_inputs.source("sigma_a") != nullptr &&
+        m_inputs.source("sigma_s") != nullptr;
 
     return true;
 }

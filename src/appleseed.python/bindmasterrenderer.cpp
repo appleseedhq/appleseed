@@ -59,7 +59,7 @@ namespace
             bpy::object                 project,
             const ParamArray&           params,
             IRendererController*        renderer_controller,
-            ITileCallbackFactory*       tile_callback_factory = 0)
+            ITileCallbackFactory*       tile_callback_factory = nullptr)
           : m_project(project)
         {
             Project* proj = bpy::extract<Project*>(project);

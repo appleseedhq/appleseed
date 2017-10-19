@@ -75,7 +75,7 @@ TEST_SUITE(Foundation_Utility_Registrar)
     {
         bool* m_destructed;
 
-        explicit Item(bool* destructed = 0)
+        explicit Item(bool* destructed = nullptr)
           : m_destructed(destructed)
         {
         }

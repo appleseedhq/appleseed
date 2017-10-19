@@ -74,7 +74,7 @@ TEST_SUITE(Foundation_Utility_Poison)
 
     TEST_CASE(Poison_VoidPointer)
     {
-        void* p = 0;
+        void* p = nullptr;
 
         poison(p);
 
@@ -87,7 +87,7 @@ TEST_SUITE(Foundation_Utility_Poison)
 
     TEST_CASE(Poison_IntPointer)
     {
-        int* p = 0;
+        int* p = nullptr;
 
         poison(p);
 

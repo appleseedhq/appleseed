@@ -61,7 +61,7 @@ WorkerThread::WorkerThread(
   , m_job_queue(job_queue)
   , m_flags(flags)
   , m_thread_func(*this)
-  , m_thread(0)
+  , m_thread(nullptr)
 {
 }
 
@@ -101,7 +101,7 @@ void WorkerThread::stop()
 
     // Delete the thread object.
     delete m_thread;
-    m_thread = 0;
+    m_thread = nullptr;
 }
 
 void WorkerThread::pause()
@@ -151,7 +151,7 @@ void WorkerThread::run()
             m_job_queue.wait_for_scheduled_job(m_abort_switch);
 
         // Handle the case where the job queue is empty.
-        if (running_job_info.first.m_job == 0)
+        if (running_job_info.first.m_job == nullptr)
         {
             if (m_flags & JobManager::KeepRunningOnEmptyQueue)
             {

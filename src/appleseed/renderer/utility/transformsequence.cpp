@@ -51,8 +51,8 @@ namespace renderer
 TransformSequence::TransformSequence()
   : m_capacity(0)
   , m_size(0)
-  , m_keys(0)
-  , m_interpolators(0)
+  , m_keys(nullptr)
+  , m_interpolators(nullptr)
   , m_can_swap_handedness(false)
   , m_all_swap_handedness(false)
 {
@@ -80,10 +80,10 @@ void TransformSequence::clear()
     m_size = 0;
 
     delete [] m_keys;
-    m_keys = 0;
+    m_keys = nullptr;
 
     delete [] m_interpolators;
-    m_interpolators = 0;
+    m_interpolators = nullptr;
 
     m_can_swap_handedness = false;
     m_all_swap_handedness = false;
@@ -182,7 +182,7 @@ void TransformSequence::optimize()
 bool TransformSequence::prepare()
 {
     delete [] m_interpolators;
-    m_interpolators = 0;
+    m_interpolators = nullptr;
 
     bool success = true;
 
@@ -290,7 +290,7 @@ void TransformSequence::copy_from(const TransformSequence& rhs)
         for (size_t i = 0; i < m_size; ++i)
             m_keys[i] = rhs.m_keys[i];
     }
-    else m_keys = 0;
+    else m_keys = nullptr;
 
     if (rhs.m_interpolators)
     {
@@ -299,7 +299,7 @@ void TransformSequence::copy_from(const TransformSequence& rhs)
         for (size_t i = 0; i < m_size - 1; ++i)
             m_interpolators[i] = rhs.m_interpolators[i];
     }
-    else m_interpolators = 0;
+    else m_interpolators = nullptr;
 
     m_can_swap_handedness = rhs.m_can_swap_handedness;
     m_all_swap_handedness = rhs.m_all_swap_handedness;

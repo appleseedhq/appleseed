@@ -64,7 +64,7 @@ class APPLESEED_DLLSYMBOL MasterRenderer
         Project&                    project,
         const ParamArray&           params,
         IRendererController*        renderer_controller,
-        ITileCallbackFactory*       tile_callback_factory = 0);
+        ITileCallbackFactory*       tile_callback_factory = nullptr);
 
     // Constructor for serial tile callbacks.
     MasterRenderer(

@@ -470,7 +470,7 @@ bool Preprocessor::failed() const
 
 const char* Preprocessor::get_error_message() const
 {
-    return failed() ? impl->m_error_message.c_str() : 0;
+    return failed() ? impl->m_error_message.c_str() : nullptr;
 }
 
 size_t Preprocessor::get_error_location() const

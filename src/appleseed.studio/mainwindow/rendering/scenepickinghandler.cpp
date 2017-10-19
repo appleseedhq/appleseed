@@ -219,7 +219,7 @@ namespace
         else
         {
             assert(!"Invalid picking mode.");
-            return 0;
+            return nullptr;
         }
     }
 }
@@ -229,7 +229,7 @@ ItemBase* ScenePickingHandler::pick(const QPoint& point)
     if (!m_project.has_trace_context())
     {
         RENDERER_LOG_INFO("the scene must be rendering or must have been rendered at least once for picking to be available.");
-        return 0;
+        return nullptr;
     }
 
     const Vector2i pix = m_mouse_tracker.widget_to_pixel(point);
@@ -290,7 +290,7 @@ ItemBase* ScenePickingHandler::pick(const QPoint& point)
     else
     {
         m_project_explorer.clear_selection();
-        item = 0;
+        item = nullptr;
     }
 
     m_widget->setFocus();

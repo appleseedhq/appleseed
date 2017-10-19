@@ -57,7 +57,7 @@ class APPLESEED_DLLSYMBOL IImageFileReader
     // Read an image file. Returns a newly allocated image.
     virtual Image* read(
         const char*         filename,
-        ImageAttributes*    image_attributes = 0) = 0;
+        ImageAttributes*    image_attributes = nullptr) = 0;
 };
 
 }       // namespace foundation

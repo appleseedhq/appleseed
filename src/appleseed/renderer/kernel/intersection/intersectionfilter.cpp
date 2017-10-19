@@ -117,12 +117,12 @@ IntersectionFilter::IntersectionFilter(
     Object&                 object,
     const MaterialArray&    materials,
     TextureCache&           texture_cache)
-  : m_obj_alpha_mask(0)
+  : m_obj_alpha_mask(nullptr)
   , m_obj_alpha_map_signature(0)
 {
     // Initialize the material -> alpha mask mapping.
     m_material_alpha_map_signatures.assign(materials.size(), 0);
-    m_material_alpha_masks.assign(materials.size(), 0);
+    m_material_alpha_masks.assign(materials.size(), nullptr);
 
     // Create alpha masks.
     update(object, materials, texture_cache);
@@ -149,7 +149,7 @@ namespace
     void delete_and_clear(T*& ptr)
     {
         delete ptr;
-        ptr = 0;
+        ptr = nullptr;
     }
 }
 
@@ -166,7 +166,7 @@ void IntersectionFilter::do_update(
     // prior to rendering.
     const Source* alpha_map = entity.get_uncached_alpha_map();
 
-    if (alpha_map == 0)
+    if (alpha_map == nullptr)
     {
         delete_and_clear(mask);
         return;
@@ -174,7 +174,7 @@ void IntersectionFilter::do_update(
 
     // Don't do anything if there is already an alpha mask and it is up-to-date.
     const uint64 alpha_map_sig = alpha_map->compute_signature();
-    if (mask != 0 && alpha_map_sig == signature)
+    if (mask != nullptr && alpha_map_sig == signature)
         return;
 
     // Build the alpha mask.

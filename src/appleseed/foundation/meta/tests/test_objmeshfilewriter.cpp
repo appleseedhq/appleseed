@@ -143,7 +143,7 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileWriter)
 
         virtual const char* get_material_slot(const size_t i) const override
         {
-            return 0;
+            return nullptr;
         }
 
         virtual size_t get_face_count() const override

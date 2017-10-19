@@ -184,7 +184,7 @@ JobQueue::RunningJobInfo JobQueue::acquire_scheduled_job_unlocked()
 {
     // Bail out if there is no scheduled job.
     if (impl->m_scheduled_jobs.empty())
-        return RunningJobInfo(JobInfo(0, false), impl->m_running_jobs.end());
+        return RunningJobInfo(JobInfo(nullptr, false), impl->m_running_jobs.end());
 
     // Move the next scheduled job to the end of the queue of running jobs.
     const JobInfo job_info = impl->m_scheduled_jobs.front();

@@ -236,7 +236,7 @@ bool SearchPaths::exist(const char* filepath) const
 APIString SearchPaths::qualify(const char* filepath) const
 {
     APIString qualified_filepath;
-    qualify(filepath, &qualified_filepath, 0);
+    qualify(filepath, &qualified_filepath, nullptr);
     return qualified_filepath;
 }
 

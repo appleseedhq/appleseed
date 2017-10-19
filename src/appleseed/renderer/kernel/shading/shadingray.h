@@ -198,12 +198,12 @@ inline ShadingRay::ShadingRay(
 
 inline const ShadingRay::Medium* ShadingRay::get_current_medium() const
 {
-    return m_medium_count > 0 ? &m_media[0] : 0;
+    return m_medium_count > 0 ? &m_media[0] : nullptr;
 }
 
 inline const ShadingRay::Medium* ShadingRay::get_previous_medium() const
 {
-    return m_medium_count > 1 ? &m_media[1] : 0;
+    return m_medium_count > 1 ? &m_media[1] : nullptr;
 }
 
 inline float ShadingRay::get_current_ior() const

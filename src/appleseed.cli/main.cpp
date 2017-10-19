@@ -482,7 +482,7 @@ namespace
         // Retrieve the configuration.
         const Configuration* configuration =
             project.configurations().get_by_name(config_name.c_str());
-        if (configuration == 0)
+        if (configuration == nullptr)
         {
             LOG_ERROR(
                 g_logger,
@@ -517,7 +517,7 @@ namespace
     {
         // Load the project.
         auto_release_ptr<Project> project = load_project(project_filename);
-        if (project.get() == 0)
+        if (project.get() == nullptr)
             return false;
 
         // Retrieve the rendering parameters.
@@ -592,7 +592,7 @@ namespace
             pretty_time(seconds, 3).c_str());
 
         // Archive the frame to disk.
-        char* archive_path = 0;
+        char* archive_path = nullptr;
         if (params.get_optional<bool>("autosave", true))
         {
             // Construct the path to the archive directory.
@@ -656,7 +656,7 @@ namespace
 
         // Load the project.
         auto_release_ptr<Project> project = load_project(project_filename);
-        if (project.get() == 0)
+        if (project.get() == nullptr)
             return false;
 
         // Figure out the rendering parameters.

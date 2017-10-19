@@ -58,7 +58,7 @@ class EntityInputWidget
     Q_OBJECT
 
   public:
-    explicit EntityInputWidget(QWidget* parent = 0);
+    explicit EntityInputWidget(QWidget* parent = nullptr);
 
     void set_focus();
 
@@ -104,7 +104,7 @@ class ColorMapInputWidget
     Q_OBJECT
 
   public:
-    explicit ColorMapInputWidget(QWidget* parent = 0);
+    explicit ColorMapInputWidget(QWidget* parent = nullptr);
 
     void set_validator(QValidator* validator);
     void set_default_value(const QString& default_value);

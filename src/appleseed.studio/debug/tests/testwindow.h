@@ -64,7 +64,7 @@ class TestWindow
 
   public:
     // Constructor.
-    explicit TestWindow(QWidget* parent = 0);
+    explicit TestWindow(QWidget* parent = nullptr);
 
     // Destructor.
     ~TestWindow();

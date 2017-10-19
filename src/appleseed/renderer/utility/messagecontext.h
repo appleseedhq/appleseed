@@ -87,7 +87,7 @@ class APPLESEED_DLLSYMBOL EntityDefMessageContext
 //
 
 inline MessageContext::MessageContext(const std::string& message)
-  : impl(0)
+  : impl(nullptr)
 {
     set_message(message);
 }

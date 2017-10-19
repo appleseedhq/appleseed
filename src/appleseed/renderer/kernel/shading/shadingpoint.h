@@ -450,10 +450,10 @@ inline ShadingPoint& ShadingPoint::operator=(const ShadingPoint& rhs)
 
 APPLESEED_FORCE_INLINE void ShadingPoint::clear()
 {
-    m_region_kit_cache = 0;
-    m_tess_cache = 0;
-    m_texture_cache = 0;
-    m_scene = 0;
+    m_region_kit_cache = nullptr;
+    m_tess_cache = nullptr;
+    m_texture_cache = nullptr;
+    m_scene = nullptr;
     m_primitive_type = PrimitiveNone;
     m_members = 0;
 }
@@ -920,8 +920,8 @@ inline void ShadingPoint::fetch_materials() const
 {
     cache_source_geometry();
 
-    m_material = 0;
-    m_opposite_material = 0;
+    m_material = nullptr;
+    m_opposite_material = nullptr;
 
     // Proceed with retrieving the material only if the hit primitive has one.
     if (m_primitive_pa != Triangle::None)

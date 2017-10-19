@@ -136,7 +136,7 @@ void MaterialAssignmentEditorWindow::create_widgets()
     layout->setAlignment(Qt::AlignTop);
     layout->setSpacing(20);
 
-    if (m_object == 0)
+    if (m_object == nullptr)
     {
         QHBoxLayout* row_layout = new QHBoxLayout();
         row_layout->addWidget(new QLabel(QString("Object \"%1\" not found.").arg(m_object_instance.get_object_name())));
@@ -194,7 +194,7 @@ void MaterialAssignmentEditorWindow::create_widgets_for_side(
     group->setLayout(new QHBoxLayout());
     group->layout()->setContentsMargins(0, 0, 0, 0);
 
-    QComboBox* combo_box = 0;
+    QComboBox* combo_box = nullptr;
 
     if (side == ObjectInstance::BackSide)
     {

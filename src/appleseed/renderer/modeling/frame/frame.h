@@ -150,7 +150,7 @@ class APPLESEED_DLLSYMBOL Frame
     // Return true if successful, false otherwise.
     bool archive(
         const char*     directory,
-        char**          output_path = 0) const;
+        char**          output_path = nullptr) const;
 
   private:
     friend class FrameFactory;

@@ -192,7 +192,7 @@ EntityType* InputBinder::find_entity(
     {
         const Assembly* assembly = dynamic_cast<const Assembly*>(parent);
 
-        if (assembly == 0)
+        if (assembly == nullptr)
             break;
 
         EntityType* entity =
@@ -204,7 +204,7 @@ EntityType* InputBinder::find_entity(
         parent = parent->get_parent();
     }
 
-    return 0;
+    return nullptr;
 }
 
 }       // namespace renderer

@@ -121,9 +121,9 @@ MainWindow::MainWindow(QWidget* parent)
   : QMainWindow(parent)
   , m_ui(new Ui::MainWindow())
   , m_rendering_manager(m_status_bar)
-  , m_project_explorer(0)
-  , m_attribute_editor(0)
-  , m_project_file_watcher(0)
+  , m_project_explorer(nullptr)
+  , m_attribute_editor(nullptr)
+  , m_project_file_watcher(nullptr)
 {
     initialize_ocio();
 
@@ -455,7 +455,7 @@ void MainWindow::build_override_shading_menu_item()
             QApplication::translate(
                 objectName().toAscii().constData(),
                 shading_mode_name,
-                0,
+                nullptr,
                 QApplication::UnicodeUTF8));
 
         const int shortcut_number = i + 1;
@@ -466,7 +466,7 @@ void MainWindow::build_override_shading_menu_item()
                 QApplication::translate(
                     objectName().toAscii().constData(),
                     QString::fromAscii("Ctrl+Shift+%1").arg(shortcut_number).toAscii().constData(),
-                    0,
+                    nullptr,
                     QApplication::UnicodeUTF8);
 
             action->setShortcut(shortcut);
@@ -717,10 +717,10 @@ void MainWindow::update_workspace()
 void MainWindow::update_project_explorer()
 {
     delete m_project_explorer;
-    m_project_explorer = 0;
+    m_project_explorer = nullptr;
 
     delete m_attribute_editor;
-    m_attribute_editor = 0;
+    m_attribute_editor = nullptr;
 
     if (m_project_manager.is_project_open())
     {
@@ -974,7 +974,7 @@ ParamArray MainWindow::get_project_params(const char* configuration_name) const
     Configuration* configuration =
         m_project_manager.is_project_open()
             ? m_project_manager.get_project()->configurations().get_by_name(configuration_name)
-            : 0;
+            : nullptr;
 
     if (configuration && configuration->get_base())
         params = configuration->get_base()->get_parameters();
@@ -1057,7 +1057,7 @@ void MainWindow::on_project_change()
 
 void MainWindow::enable_project_file_monitoring()
 {
-    if (m_project_file_watcher == 0)
+    if (m_project_file_watcher == nullptr)
     {
         m_project_file_watcher = new QFileSystemWatcher(this);
 
@@ -1077,7 +1077,7 @@ void MainWindow::disable_project_file_monitoring()
     if (m_project_file_watcher)
     {
         delete m_project_file_watcher;
-        m_project_file_watcher = 0;
+        m_project_file_watcher = nullptr;
 
         RENDERER_LOG_INFO("project file monitoring is now disabled.");
     }
@@ -1489,7 +1489,7 @@ void MainWindow::slot_toggle_project_file_monitoring(const bool checked)
 
     m_settings.insert_path(
         SETTINGS_WATCH_FILE_CHANGES,
-        m_project_file_watcher != 0);
+        m_project_file_watcher != nullptr);
 }
 
 void MainWindow::slot_project_file_changed(const QString& filepath)
@@ -1955,7 +1955,7 @@ void MainWindow::slot_show_rendering_settings_window()
 
 void MainWindow::slot_show_test_window()
 {
-    if (m_test_window.get() == 0)
+    if (m_test_window.get() == nullptr)
         m_test_window.reset(new TestWindow(this));
 
     m_test_window->showNormal();
@@ -1964,7 +1964,7 @@ void MainWindow::slot_show_test_window()
 
 void MainWindow::slot_show_benchmark_window()
 {
-    if (m_benchmark_window.get() == 0)
+    if (m_benchmark_window.get() == nullptr)
         m_benchmark_window.reset(new BenchmarkWindow(this));
 
     m_benchmark_window->showNormal();

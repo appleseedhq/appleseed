@@ -112,14 +112,14 @@ class AlignedAllocator
         return &x;
     }
 
-    pointer allocate(size_type n, const_pointer hint = 0)
+    pointer allocate(size_type n, const_pointer hint = nullptr)
     {
         if (n == 0)
-            return 0;
+            return nullptr;
 
         pointer p = static_cast<pointer>(aligned_malloc(n * sizeof(T), m_alignment));
 
-        if (p == 0)
+        if (p == nullptr)
              throw std::bad_alloc();
 
         return p;

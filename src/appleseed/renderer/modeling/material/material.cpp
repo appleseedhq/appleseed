@@ -91,7 +91,7 @@ Material::Material(
 
 bool Material::has_alpha_map() const
 {
-    return get_non_empty(m_params, "alpha_map") != 0;
+    return get_non_empty(m_params, "alpha_map") != nullptr;
 }
 
 bool Material::has_uniform_alpha_map_value_of_one() const
@@ -165,7 +165,7 @@ const Source* Material::get_uncached_alpha_map() const
 
 const ShaderGroup* Material::get_uncached_osl_surface() const
 {
-    return 0;
+    return nullptr;
 }
 
 bool Material::on_frame_begin(
@@ -180,15 +180,15 @@ bool Material::on_frame_begin(
         return false;
 
     m_render_data.m_surface_shader = get_uncached_surface_shader();
-    if (m_render_data.m_surface_shader == 0)
+    if (m_render_data.m_surface_shader == nullptr)
         m_render_data.m_surface_shader = project.get_scene()->get_default_surface_shader();
-    m_render_data.m_bsdf = 0;
-    m_render_data.m_bssrdf = 0;
-    m_render_data.m_edf = 0;
+    m_render_data.m_bsdf = nullptr;
+    m_render_data.m_bssrdf = nullptr;
+    m_render_data.m_edf = nullptr;
     m_render_data.m_alpha_map = get_uncached_alpha_map();
-    m_render_data.m_shader_group = 0;
-    m_render_data.m_basis_modifier = 0;
-    m_render_data.m_volume = 0;
+    m_render_data.m_shader_group = nullptr;
+    m_render_data.m_basis_modifier = nullptr;
+    m_render_data.m_volume = nullptr;
     m_has_render_data = true;
 
     return true;
@@ -209,17 +209,17 @@ void Material::on_frame_end(
 
 bool Material::has_emission() const
 {
-    return get_uncached_edf() != 0;
+    return get_uncached_edf() != nullptr;
 }
 
 const char* Material::get_non_empty(const ParamArray& params, const char* name) const
 {
     if (!params.strings().exist(name))
-        return 0;
+        return nullptr;
 
     const char* value = params.strings().get(name);
 
-    return is_empty_string(value) ? 0 : value;
+    return is_empty_string(value) ? nullptr : value;
 }
 
 IBasisModifier* Material::create_basis_modifier(const MessageContext& context) const

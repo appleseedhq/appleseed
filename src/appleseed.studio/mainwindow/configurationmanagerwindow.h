@@ -51,7 +51,7 @@ class ConfigurationManagerWindow
 
   public:
     // Constructor.
-    explicit ConfigurationManagerWindow(QWidget* parent = 0);
+    explicit ConfigurationManagerWindow(QWidget* parent = nullptr);
 
     // Destructor.
     ~ConfigurationManagerWindow();

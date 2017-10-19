@@ -96,7 +96,7 @@ class APPLESEED_DLLSYMBOL Camera
     // Returns true on success, false otherwise.
     virtual bool on_render_begin(
         const Project&                  project,
-        foundation::IAbortSwitch*       abort_switch = 0);
+        foundation::IAbortSwitch*       abort_switch = nullptr);
 
     // This method is called once after rendering.
     virtual void on_render_end(const Project& project);
@@ -107,7 +107,7 @@ class APPLESEED_DLLSYMBOL Camera
         const Project&                  project,
         const BaseGroup*                parent,
         OnFrameBeginRecorder&           recorder,
-        foundation::IAbortSwitch*       abort_switch = 0) override;
+        foundation::IAbortSwitch*       abort_switch = nullptr) override;
 
     // Generate a ray directed toward a given point on the film plane,
     // expressed in normalized device coordinates

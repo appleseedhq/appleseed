@@ -89,7 +89,7 @@ void TileJob::execute(const size_t thread_index)
     ITileCallback* tile_callback =
         m_tile_callbacks.size() == m_tile_renderers.size()
             ? m_tile_callbacks[thread_index]
-            : 0;
+            : nullptr;
 
     // Call the pre-render tile callback.
     if (tile_callback)

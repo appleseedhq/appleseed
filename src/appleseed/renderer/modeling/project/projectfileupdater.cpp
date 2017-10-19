@@ -612,7 +612,7 @@ namespace
                     return &*i;
             }
 
-            return 0;
+            return nullptr;
         }
 
         static bool mdf_param_to_glossiness(const string& mdf, const float mdf_param, float& glossiness)
@@ -900,7 +900,7 @@ namespace
                 const string bsdf_name = material_params.get<string>("bsdf");
                 BSDF* bsdf = assembly.bsdfs().get_by_name(bsdf_name.c_str());
 
-                if (bsdf == 0)
+                if (bsdf == nullptr)
                     continue;
 
                 if (strcmp(bsdf->get_model(), "specular_btdf"))
@@ -1114,7 +1114,7 @@ namespace
             Frame* frame = m_project.get_frame();
             const Scene* scene = m_project.get_scene();
 
-            if (frame == 0 || scene == 0 || scene->cameras().empty())
+            if (frame == nullptr || scene == nullptr || scene->cameras().empty())
                 return;
 
             ParamArray& frame_params = frame->get_parameters();
@@ -1129,7 +1129,7 @@ namespace
             else
             {
                 const char* camera_name = frame_params.strings().get("camera");
-                if (scene->cameras().get_by_name(camera_name) == 0)
+                if (scene->cameras().get_by_name(camera_name) == nullptr)
                 {
                     // The frame references a non-existing camera: use the first camera.
                     frame_params.insert(

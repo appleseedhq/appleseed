@@ -209,7 +209,7 @@ namespace
                     schema_filepath.string().c_str()));
 
             // Bail out if the master project file couldn't be read.
-            if (project.get() == 0)
+            if (project.get() == nullptr)
                 LOG_FATAL(m_logger, "failed to load master project file %s", project_filepath);
 
             return project;
@@ -251,7 +251,7 @@ namespace
 
             FILE* script_file = fopen(script_filename.c_str(), "wt");
 
-            if (script_file == 0)
+            if (script_file == nullptr)
                 LOG_FATAL(m_logger, "could not write to %s.", script_filename.c_str());
 
             fprintf(

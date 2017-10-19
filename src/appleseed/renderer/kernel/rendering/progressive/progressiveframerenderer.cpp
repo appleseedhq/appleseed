@@ -268,7 +268,7 @@ namespace
                     ThreadFunctionWrapper<StatisticsFunc>(m_statistics_func.get())));
 
             // Create and start the display thread.
-            if (m_tile_callback.get() != 0 && m_display_thread.get() == 0)
+            if (m_tile_callback.get() != nullptr && m_display_thread.get() == nullptr)
             {
                 m_display_func.reset(
                     new DisplayFunc(

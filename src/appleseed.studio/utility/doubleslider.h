@@ -81,8 +81,8 @@ class DoubleSlider
     Q_OBJECT
 
   public:
-    explicit DoubleSlider(QWidget* parent = 0);
-    DoubleSlider(const Qt::Orientation orientation, QWidget* parent = 0);
+    explicit DoubleSlider(QWidget* parent = nullptr);
+    DoubleSlider(const Qt::Orientation orientation, QWidget* parent = nullptr);
 
     void setRange(const double min, const double max);
     void setMinimum(const double min);

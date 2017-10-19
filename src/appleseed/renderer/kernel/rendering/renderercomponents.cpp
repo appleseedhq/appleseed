@@ -265,7 +265,7 @@ bool RendererComponents::create_sample_generator_factory()
     }
     else if (name == "generic")
     {
-        if (m_sample_renderer_factory.get() == 0)
+        if (m_sample_renderer_factory.get() == nullptr)
         {
             RENDERER_LOG_ERROR("cannot use the generic sample generator without a sample renderer.");
             return false;
@@ -318,7 +318,7 @@ bool RendererComponents::create_pixel_renderer_factory()
     }
     else if (name == "uniform")
     {
-        if (m_sample_renderer_factory.get() == 0)
+        if (m_sample_renderer_factory.get() == nullptr)
         {
             RENDERER_LOG_ERROR("cannot use the uniform pixel renderer without a sample renderer.");
             return false;
@@ -335,7 +335,7 @@ bool RendererComponents::create_pixel_renderer_factory()
     }
     else if (name == "adaptive")
     {
-        if (m_sample_renderer_factory.get() == 0)
+        if (m_sample_renderer_factory.get() == nullptr)
         {
             RENDERER_LOG_ERROR("cannot use the adaptive pixel renderer without a sample renderer.");
             return false;
@@ -397,13 +397,13 @@ bool RendererComponents::create_tile_renderer_factory()
     }
     else if (name == "generic")
     {
-        if (m_pixel_renderer_factory.get() == 0)
+        if (m_pixel_renderer_factory.get() == nullptr)
         {
             RENDERER_LOG_ERROR("cannot use the generic tile renderer without a pixel renderer.");
             return false;
         }
 
-        if (m_shading_result_framebuffer_factory.get() == 0)
+        if (m_shading_result_framebuffer_factory.get() == nullptr)
         {
             RENDERER_LOG_ERROR("cannot use the generic tile renderer without a shading result framebuffer.");
             return false;
@@ -447,7 +447,7 @@ bool RendererComponents::create_frame_renderer_factory()
     }
     else if (name == "generic")
     {
-        if (m_tile_renderer_factory.get() == 0)
+        if (m_tile_renderer_factory.get() == nullptr)
         {
             RENDERER_LOG_ERROR("cannot use the generic frame renderer without a tile renderer.");
             return false;
@@ -465,7 +465,7 @@ bool RendererComponents::create_frame_renderer_factory()
     }
     else if (name == "progressive")
     {
-        if (m_sample_generator_factory.get() == 0)
+        if (m_sample_generator_factory.get() == nullptr)
         {
             RENDERER_LOG_ERROR("cannot use the progressive frame renderer without a sample generator.");
             return false;
