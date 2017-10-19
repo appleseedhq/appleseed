@@ -91,7 +91,7 @@ class MainWindow
     explicit MainWindow(QWidget* parent = nullptr);
 
     // Destructor.
-    ~MainWindow();
+    ~MainWindow() override;
 
     // Project file handling.
     void new_project();
@@ -211,15 +211,15 @@ class MainWindow
     void stop_monitoring_project_file();
 
     // Drag-and-drop.
-    void dragEnterEvent(QDragEnterEvent* event);
-    void dropEvent(QDropEvent* event);
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
 
     // Rendering.
     void start_rendering(const RenderingMode rendering_mode);
 
     // Miscellaneous.
     void print_startup_information();
-    virtual void closeEvent(QCloseEvent* event);
+    void closeEvent(QCloseEvent* event) override;
     static QString get_filter_string(const int filter);
 
     // Enum of filters for save project dialog.

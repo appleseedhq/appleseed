@@ -52,9 +52,9 @@ class APPLESEED_DLLSYMBOL GenericImageFileReader
 {
   public:
     // Read an image file.
-    virtual Image* read(
+    Image* read(
         const char*         filename,
-        ImageAttributes*    image_attributes = nullptr);
+        ImageAttributes*    image_attributes = nullptr) override;
 };
 
 }       // namespace foundation

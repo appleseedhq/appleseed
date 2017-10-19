@@ -88,7 +88,7 @@ class TextureSeExprFunc
         m_texture_system = texture_system;
     }
 
-    virtual bool prep(
+    bool prep(
         SeExprFuncNode*         node,
         bool                    /*wantVec*/) override
     {
@@ -119,7 +119,7 @@ class TextureSeExprFunc
         return true;
     }
 
-    virtual void eval(
+    void eval(
         const SeExprFuncNode*   node,
         SeVec3d&                result) const override
     {
@@ -252,7 +252,7 @@ class SeAppleseedExpr
         {
         }
 
-        virtual void eval(const SeExprVarNode* /*node*/, SeVec3d& result) override
+        void eval(const SeExprVarNode* /*node*/, SeVec3d& result) override
         {
             result[0] = m_val;
         }

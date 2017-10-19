@@ -61,10 +61,10 @@ class UniformPixelRendererFactory
         const ParamArray&           params);
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Return a new uniform pixel renderer instance.
-    virtual IPixelRenderer* create(
+    IPixelRenderer* create(
         const size_t                thread_index) override;
 
     // Return the metadata of the uniform pixel renderer parameters.

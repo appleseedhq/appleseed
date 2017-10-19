@@ -54,7 +54,7 @@ class APPLESEED_DLLSYMBOL ShaderConnection
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Return the source layer name.
     const char* get_src_layer() const;
@@ -82,7 +82,7 @@ class APPLESEED_DLLSYMBOL ShaderConnection
         const char* dst_param);
 
     // Destructor.
-    ~ShaderConnection();
+    ~ShaderConnection() override;
 
     // Add this connection to OSL's shading system.
     bool add(OSLShadingSystem& shading_system);

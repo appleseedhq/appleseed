@@ -76,7 +76,7 @@ class AssemblyItem
         renderer::BaseGroup&        parent,
         BaseGroupItem*              parent_item);
 
-    virtual QMenu* get_single_item_context_menu() const override;
+    QMenu* get_single_item_context_menu() const override;
 
     void add_item(renderer::BSDF* bsdf);
     void add_item(renderer::BSSRDF* bssrdf);
@@ -121,10 +121,10 @@ class AssemblyItem
     ObjectInstanceCollectionItem*   m_object_instance_collection_item;
     VolumeCollectionItem*           m_volume_collection_item;
 
-    virtual void slot_instantiate() override;
+    void slot_instantiate() override;
     void do_instantiate(const std::string& name);
 
-    virtual void delete_multiple(const QList<ItemBase*>& items) override;
+    void delete_multiple(const QList<ItemBase*>& items) override;
     void do_delete();
 
     template <typename Entity, typename EntityContainer>

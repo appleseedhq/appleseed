@@ -74,7 +74,7 @@ class DisneyMaterialLayerUI
 
     foundation::Dictionary get_values() const;
 
-    virtual void mouseDoubleClickEvent(QMouseEvent* event) override;
+    void mouseDoubleClickEvent(QMouseEvent* event) override;
 
   signals:
     void signal_move_layer_up(QWidget* layer_widget);

@@ -64,7 +64,7 @@ class BSDFWrapper
         const char*                     name,
         const ParamArray&               params);
 
-    virtual void sample(
+    void sample(
         SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
@@ -72,7 +72,7 @@ class BSDFWrapper
         const int                       modes,
         BSDFSample&                     sample) const override;
 
-    virtual float evaluate(
+    float evaluate(
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
@@ -83,7 +83,7 @@ class BSDFWrapper
         const int                       modes,
         DirectShadingComponents&        value) const override;
 
-    virtual float evaluate_pdf(
+    float evaluate_pdf(
         const void*                     data,
         const bool                      adjoint,
         const foundation::Vector3f&     geometric_normal,

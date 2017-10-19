@@ -49,7 +49,7 @@ class APPLESEED_DLLSYMBOL DipoleBSSRDFFactory
   : public IBSSRDFFactory
 {
   public:
-    virtual foundation::DictionaryArray get_input_metadata() const override;
+    foundation::DictionaryArray get_input_metadata() const override;
 };
 
 }       // namespace renderer

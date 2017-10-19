@@ -57,17 +57,17 @@ class NullBSDF
     {
     }
 
-    virtual void release() override
+    void release() override
     {
         delete this;
     }
 
-    virtual const char* get_model() const override
+    const char* get_model() const override
     {
         return "null_bsdf";
     }
 
-    virtual void sample(
+    void sample(
         SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
@@ -77,7 +77,7 @@ class NullBSDF
     {
     }
 
-    virtual float evaluate(
+    float evaluate(
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
@@ -91,7 +91,7 @@ class NullBSDF
         return 0.0f;
     }
 
-    virtual float evaluate_pdf(
+    float evaluate_pdf(
         const void*                     data,
         const bool                      adjoint,
         const foundation::Vector3f&     geometric_normal,

@@ -63,7 +63,7 @@ class ObjectItem
         renderer::Assembly&     parent,
         AssemblyItem*           parent_item);
 
-    virtual QMenu* get_single_item_context_menu() const override;
+    QMenu* get_single_item_context_menu() const override;
 
   private:
     friend class EntityInstantiationAction<ObjectItem>;
@@ -72,10 +72,10 @@ class ObjectItem
     renderer::Assembly&         m_parent;
     AssemblyItem*               m_parent_item;
 
-    virtual void slot_instantiate() override;
+    void slot_instantiate() override;
     void do_instantiate(const std::string& name);
 
-    virtual void delete_multiple(const QList<ItemBase*>& items) override;
+    void delete_multiple(const QList<ItemBase*>& items) override;
     void do_delete();
 };
 

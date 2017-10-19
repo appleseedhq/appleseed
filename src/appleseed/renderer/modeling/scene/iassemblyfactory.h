@@ -52,7 +52,7 @@ class APPLESEED_DLLSYMBOL IAssemblyFactory
 {
   public:
     // Destructor.
-    virtual ~IAssemblyFactory() {}
+    ~IAssemblyFactory() override {}
 
     // Return a string identifying this assembly model.
     virtual const char* get_model() const = 0;

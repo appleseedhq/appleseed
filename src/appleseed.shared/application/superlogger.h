@@ -50,7 +50,7 @@ class SHAREDDLL SuperLogger
     SuperLogger();
 
     // Destructor.
-    virtual ~SuperLogger();
+    ~SuperLogger() override;
 
     // Retrieve the current log target.
     foundation::ILogTarget& get_log_target() const;

@@ -57,9 +57,9 @@ class PythonEditor
 
   protected:
     // Event used to update line number area.
-    void resizeEvent(QResizeEvent* event);
+    void resizeEvent(QResizeEvent* event) override;
 
-    void keyPressEvent(QKeyEvent* event);
+    void keyPressEvent(QKeyEvent* event) override;
 
   private slots:
     void slot_highlight_current_line();

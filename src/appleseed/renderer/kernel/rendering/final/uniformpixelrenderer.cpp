@@ -105,12 +105,12 @@ namespace
             }
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual void render_pixel(
+        void render_pixel(
             const Frame&                frame,
             Tile&                       tile,
             TileStack&                  aov_tiles,
@@ -240,7 +240,7 @@ namespace
             on_pixel_end(pi);
         }
 
-        virtual StatisticsVector get_statistics() const override
+        StatisticsVector get_statistics() const override
         {
             Statistics stats;
             stats.insert("max sampling dimension", m_total_sampling_dim);
@@ -252,7 +252,7 @@ namespace
             return vec;
         }
 
-        virtual size_t get_max_samples_per_pixel() const override
+        size_t get_max_samples_per_pixel() const override
         {
             return m_sample_count;
         }

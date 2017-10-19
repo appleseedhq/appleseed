@@ -148,22 +148,22 @@ namespace
             m_inputs.declare("roughness", InputFormatFloat);
         }
 
-        ~KelemenBRDFImpl()
+        ~KelemenBRDFImpl() override
         {
             assert(m_mdf.get() == 0);
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
+        bool on_frame_begin(
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
@@ -210,7 +210,7 @@ namespace
             return true;
         }
 
-        virtual void on_frame_end(
+        void on_frame_end(
             const Project&              project,
             const BaseGroup*            parent) override
         {
@@ -219,7 +219,7 @@ namespace
             BSDF::on_frame_end(project, parent);
         }
 
-        virtual void sample(
+        void sample(
             SamplingContext&            sampling_context,
             const void*                 data,
             const bool                  adjoint,
@@ -340,7 +340,7 @@ namespace
             sample.compute_reflected_differentials();
         }
 
-        virtual float evaluate(
+        float evaluate(
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
@@ -423,7 +423,7 @@ namespace
             return matte_weight * pdf_matte + specular_weight * pdf_specular;
         }
 
-        virtual float evaluate_pdf(
+        float evaluate_pdf(
             const void*                 data,
             const bool                  adjoint,
             const Vector3f&             geometric_normal,

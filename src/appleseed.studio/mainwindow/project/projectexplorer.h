@@ -76,7 +76,7 @@ class ProjectExplorer
         RenderingManager&       rendering_manager,
         renderer::ParamArray&   settings);
 
-    ~ProjectExplorer();
+    ~ProjectExplorer() override;
 
     void filter_items(const QString& pattern) const;
 

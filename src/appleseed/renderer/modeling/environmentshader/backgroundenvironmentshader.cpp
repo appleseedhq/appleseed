@@ -66,17 +66,17 @@ namespace
             m_inputs.declare("alpha", InputFormatFloat, "1.0");
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual void evaluate(
+        void evaluate(
             const ShadingContext&   shading_context,
             const PixelContext&     pixel_context,
             const Vector3d&         direction,

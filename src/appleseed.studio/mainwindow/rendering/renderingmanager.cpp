@@ -93,7 +93,7 @@ namespace
         MasterRenderer* m_master_renderer;
 
         // The starting point for the thread.
-        virtual void run() override
+        void run() override
         {
             set_current_thread_name("master_renderer");
 

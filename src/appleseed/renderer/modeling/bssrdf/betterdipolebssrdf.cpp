@@ -78,17 +78,17 @@ namespace
         {
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual void prepare_inputs(
+        void prepare_inputs(
             Arena&                  arena,
             const ShadingPoint&     shading_point,
             void*                   data) const override
@@ -99,7 +99,7 @@ namespace
             do_prepare_inputs<ComputeRdBetterDipole>(shading_point, values);
         }
 
-        virtual void evaluate_profile(
+        void evaluate_profile(
             const void*             data,
             const ShadingPoint&     outgoing_point,
             const Vector3f&         outgoing_dir,

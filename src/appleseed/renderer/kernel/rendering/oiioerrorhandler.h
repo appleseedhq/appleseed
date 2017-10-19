@@ -51,7 +51,7 @@ class OIIOErrorHandler
   : public OIIO::ErrorHandler
 {
   public:
-    virtual void operator()(int errcode, const std::string& msg) override;
+    void operator()(int errcode, const std::string& msg) override;
 };
 
 }       // namespace renderer

@@ -66,12 +66,12 @@ namespace
         {
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual void compute_lighting(
+        void compute_lighting(
             SamplingContext&        sampling_context,
             const PixelContext&     pixel_context,
             const ShadingContext&   shading_context,
@@ -80,7 +80,7 @@ namespace
         {
         }
 
-        virtual StatisticsVector get_statistics() const override
+        StatisticsVector get_statistics() const override
         {
             Statistics stats;
 

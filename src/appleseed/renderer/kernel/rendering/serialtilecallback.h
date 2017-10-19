@@ -52,9 +52,9 @@ class SerialTileCallbackFactory
   public:
     explicit SerialTileCallbackFactory(SerialRendererController* controller);
 
-    virtual void release() override;
+    void release() override;
 
-    virtual ITileCallback* create() override;
+    ITileCallback* create() override;
 
   private:
     SerialRendererController* m_controller;

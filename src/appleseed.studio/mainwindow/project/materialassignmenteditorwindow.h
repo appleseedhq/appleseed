@@ -71,7 +71,7 @@ class MaterialAssignmentEditorWindow
         ObjectInstanceItem&             object_istance_item,
         EntityEditorContext&            editor_context);
 
-    ~MaterialAssignmentEditorWindow();
+    ~MaterialAssignmentEditorWindow() override;
 
   signals:
     void signal_accepted(foundation::Dictionary values);

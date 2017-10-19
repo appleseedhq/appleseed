@@ -72,17 +72,17 @@ namespace
             m_diffuse_edf = DiffuseEDFFactory().create("osl_diff_edf", ParamArray());
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual void* evaluate_inputs(
+        void* evaluate_inputs(
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point) const override
         {
@@ -96,7 +96,7 @@ namespace
             return c;
         }
 
-        virtual void sample(
+        void sample(
             SamplingContext&        sampling_context,
             const void*             data,
             const Vector3f&         geometric_normal,
@@ -128,7 +128,7 @@ namespace
             }
         }
 
-        virtual void evaluate(
+        void evaluate(
             const void*             data,
             const Vector3f&         geometric_normal,
             const Basis3f&          shading_basis,
@@ -156,7 +156,7 @@ namespace
             }
         }
 
-        virtual void evaluate(
+        void evaluate(
             const void*             data,
             const Vector3f&         geometric_normal,
             const Basis3f&          shading_basis,
@@ -192,7 +192,7 @@ namespace
             }
         }
 
-        virtual float evaluate_pdf(
+        float evaluate_pdf(
             const void*             data,
             const Vector3f&         geometric_normal,
             const Basis3f&          shading_basis,
@@ -220,7 +220,7 @@ namespace
             return probability;
         }
 
-        virtual float get_uncached_max_contribution() const override
+        float get_uncached_max_contribution() const override
         {
             // We can't know the max contribution of OSL EDFs.
             return numeric_limits<float>::max();

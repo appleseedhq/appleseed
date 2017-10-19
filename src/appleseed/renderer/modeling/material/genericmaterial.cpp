@@ -67,17 +67,17 @@ namespace
             m_inputs.declare("volume", InputFormatEntity, "");
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
+        bool on_frame_begin(
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,

@@ -73,7 +73,7 @@ class APPLESEED_DLLSYMBOL Scene
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Access the active camera.
     // Return 0 if the camera does not exist.
@@ -108,8 +108,8 @@ class APPLESEED_DLLSYMBOL Scene
     bool has_participating_media() const;
 
     // Expose asset file paths referenced by this entity to the outside.
-    virtual void collect_asset_paths(foundation::StringArray& paths) const override;
-    virtual void update_asset_paths(const foundation::StringDictionary& mappings) override;
+    void collect_asset_paths(foundation::StringArray& paths) const override;
+    void update_asset_paths(const foundation::StringDictionary& mappings) override;
 
     // Perform pre-render rendering actions.
     // Returns true on success, false otherwise.
@@ -127,14 +127,14 @@ class APPLESEED_DLLSYMBOL Scene
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
+    bool on_frame_begin(
         const Project&              project,
         const BaseGroup*            parent,
         OnFrameBeginRecorder&       recorder,
         foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
     // This method is called once after rendering each frame (only if on_frame_begin() was called).
-    virtual void on_frame_end(
+    void on_frame_end(
         const Project&              project,
         const BaseGroup*            parent) override;
 
@@ -165,7 +165,7 @@ class APPLESEED_DLLSYMBOL Scene
     Scene();
 
     // Destructor.
-    ~Scene();
+    ~Scene() override;
 
     // Create render data, which are then available through get_render_data().
     void create_render_data();

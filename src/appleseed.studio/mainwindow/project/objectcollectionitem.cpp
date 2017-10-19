@@ -112,7 +112,7 @@ namespace
         {
         }
 
-        virtual void operator()(
+        void operator()(
             Project&                project) override
         {
             m_parent->import_objects(m_filepaths);

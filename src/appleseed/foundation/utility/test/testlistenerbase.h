@@ -57,13 +57,13 @@ class APPLESEED_DLLSYMBOL TestListenerBase
 {
   public:
     // Called before each test suite is run.
-    virtual void begin_suite(
+    void begin_suite(
         const TestSuite&        test_suite) override
     {
     }
 
     // Called after each test suite is run.
-    virtual void end_suite(
+    void end_suite(
         const TestSuite&        test_suite,
         const TestResult&       test_suite_result,
         const TestResult&       cumulated_result) override
@@ -71,14 +71,14 @@ class APPLESEED_DLLSYMBOL TestListenerBase
     }
 
     // Called before each test case is run.
-    virtual void begin_case(
+    void begin_case(
         const TestSuite&        test_suite,
         const char*             test_case_name) override
     {
     }
 
     // Called after each test case is run.
-    virtual void end_case(
+    void end_case(
         const TestSuite&        test_suite,
         const char*             test_case_name,
         const TestResult&       test_suite_result,
@@ -88,7 +88,7 @@ class APPLESEED_DLLSYMBOL TestListenerBase
     }
 
     // Write a message.
-    virtual void write(
+    void write(
         const TestSuite&        test_suite,
         const char*             test_case_name,
         const char*             file,

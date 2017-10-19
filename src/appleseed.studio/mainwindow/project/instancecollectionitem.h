@@ -65,7 +65,7 @@ class InstanceCollectionItem
 
     ParentEntity& m_parent;
 
-    virtual ItemBase* create_item(Entity* entity) override;
+    ItemBase* create_item(Entity* entity) override;
 };
 
 

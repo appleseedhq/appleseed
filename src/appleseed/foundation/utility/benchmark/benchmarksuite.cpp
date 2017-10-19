@@ -73,12 +73,12 @@ namespace
     struct EmptyBenchmarkCase
       : public IBenchmarkCase
     {
-        virtual const char* get_name() const override
+        const char* get_name() const override
         {
             return "Empty";
         }
 
-        APPLESEED_NO_INLINE virtual void run() override
+        APPLESEED_NO_INLINE void run() override
         {
         }
     };

@@ -57,7 +57,7 @@ class PythonConsoleWidget
     explicit PythonConsoleWidget(QWidget* parent = nullptr);
 
   protected:
-    void wheelEvent(QWheelEvent* event);
+    void wheelEvent(QWheelEvent* event) override;
 
   public slots:
     void slot_execute_selection();

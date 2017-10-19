@@ -178,17 +178,17 @@ namespace
             m_theta_shift = deg_to_rad(m_params.get_optional<float>("vertical_shift", 0.0f));
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
+        bool on_frame_begin(
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
@@ -210,7 +210,7 @@ namespace
             return true;
         }
 
-        virtual void sample(
+        void sample(
             const ShadingContext&   shading_context,
             const Vector2f&         s,
             Vector3f&               outgoing,
@@ -262,7 +262,7 @@ namespace
             probability = prob_xy * m_probability_scale / sin_theta;
         }
 
-        virtual void evaluate(
+        void evaluate(
             const ShadingContext&   shading_context,
             const Vector3f&         outgoing,
             Spectrum&               value) const override
@@ -287,7 +287,7 @@ namespace
             lookup_environment_map(shading_context, u, v, value);
         }
 
-        virtual void evaluate(
+        void evaluate(
             const ShadingContext&   shading_context,
             const Vector3f&         outgoing,
             Spectrum&               value,
@@ -324,7 +324,7 @@ namespace
             probability = compute_pdf(u, v, theta);
         }
 
-        virtual float evaluate_pdf(
+        float evaluate_pdf(
             const Vector3f&         outgoing) const override
         {
             assert(is_normalized(outgoing));

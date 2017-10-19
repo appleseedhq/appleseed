@@ -64,25 +64,25 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileWriter)
     {
         vector<Mesh> m_meshes;
 
-        virtual void begin_mesh(const char* name) override
+        void begin_mesh(const char* name) override
         {
             m_meshes.emplace_back();
             m_meshes.back().m_name = name;
         }
 
-        virtual size_t push_vertex(const Vector3d& v) override
+        size_t push_vertex(const Vector3d& v) override
         {
             m_meshes.back().m_vertices.push_back(v);
             return m_meshes.back().m_vertices.size() - 1;
         }
 
-        virtual void begin_face(const size_t vertex_count) override
+        void begin_face(const size_t vertex_count) override
         {
             assert(vertex_count == 3);
             m_meshes.back().m_faces.emplace_back();
         }
 
-        virtual void set_face_vertices(const size_t vertices[]) override
+        void set_face_vertices(const size_t vertices[]) override
         {
             Face& face = m_meshes.back().m_faces.back();
             face.m_v0 = vertices[0];
@@ -101,78 +101,78 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileWriter)
         {
         }
 
-        virtual const char* get_name() const override
+        const char* get_name() const override
         {
             return m_mesh.m_name.c_str();
         }
 
-        virtual size_t get_vertex_count() const override
+        size_t get_vertex_count() const override
         {
             return m_mesh.m_vertices.size();
         }
 
-        virtual Vector3d get_vertex(const size_t i) const override
+        Vector3d get_vertex(const size_t i) const override
         {
             return m_mesh.m_vertices[i];
         }
 
-        virtual size_t get_vertex_normal_count() const override
+        size_t get_vertex_normal_count() const override
         {
             return 0;
         }
 
-        virtual Vector3d get_vertex_normal(const size_t i) const override
+        Vector3d get_vertex_normal(const size_t i) const override
         {
             return Vector3d();
         }
 
-        virtual size_t get_tex_coords_count() const override
+        size_t get_tex_coords_count() const override
         {
             return 0;
         }
 
-        virtual Vector2d get_tex_coords(const size_t i) const override
+        Vector2d get_tex_coords(const size_t i) const override
         {
             return Vector2d();
         }
 
-        virtual size_t get_material_slot_count() const override
+        size_t get_material_slot_count() const override
         {
             return 0;
         }
 
-        virtual const char* get_material_slot(const size_t i) const override
+        const char* get_material_slot(const size_t i) const override
         {
             return nullptr;
         }
 
-        virtual size_t get_face_count() const override
+        size_t get_face_count() const override
         {
             return m_mesh.m_faces.size();
         }
 
-        virtual size_t get_face_vertex_count(const size_t face_index) const override
+        size_t get_face_vertex_count(const size_t face_index) const override
         {
             return 3;
         }
 
-        virtual size_t get_face_vertex(const size_t face_index, const size_t vertex_index) const override
+        size_t get_face_vertex(const size_t face_index, const size_t vertex_index) const override
         {
             assert(vertex_index < 3);
             return (&m_mesh.m_faces[face_index].m_v0)[vertex_index];
         }
 
-        virtual size_t get_face_vertex_normal(const size_t face_index, const size_t vertex_index) const override
+        size_t get_face_vertex_normal(const size_t face_index, const size_t vertex_index) const override
         {
             return None;
         }
 
-        virtual size_t get_face_tex_coords(const size_t face_index, const size_t vertex_index) const override
+        size_t get_face_tex_coords(const size_t face_index, const size_t vertex_index) const override
         {
             return None;
         }
 
-        virtual size_t get_face_material(const size_t face_index) const override
+        size_t get_face_material(const size_t face_index) const override
         {
             return None;
         }

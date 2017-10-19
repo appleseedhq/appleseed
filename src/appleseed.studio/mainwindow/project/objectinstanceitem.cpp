@@ -184,7 +184,7 @@ class AssignNewDisneyMaterialAction
     {
     }
 
-    virtual void operator()(Project& project) override
+    void operator()(Project& project) override
     {
         for (int i = 0; i < m_items.size(); ++i)
         {
@@ -357,7 +357,7 @@ namespace
         {
         }
 
-        virtual void operator()(
+        void operator()(
             Project&                project) override
         {
             m_parent->assign_material(m_page_name, m_entity_name, m_data);
@@ -414,7 +414,7 @@ namespace
         {
         }
 
-        virtual void operator()(
+        void operator()(
             Project&                project) override
         {
             m_parent->clear_material(m_data);

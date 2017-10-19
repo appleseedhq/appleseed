@@ -48,7 +48,7 @@ class TestOutputItem
     static const int StatusColumnIndex = 1;
     static const int TimeColumnIndex = 2;
 
-    virtual bool operator<(const QTreeWidgetItem& rhs) const;
+    bool operator<(const QTreeWidgetItem& rhs) const override;
 
     void set_passed(const bool passed);
     bool get_passed() const;

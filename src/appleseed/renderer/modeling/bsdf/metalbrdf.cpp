@@ -105,22 +105,22 @@ namespace
             m_inputs.declare("anisotropy", InputFormatFloat, "0.0");
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual size_t compute_input_data_size() const override
+        size_t compute_input_data_size() const override
         {
             return sizeof(InputValues);
         }
 
-        virtual void prepare_inputs(
+        void prepare_inputs(
             Arena&                      arena,
             const ShadingPoint&         shading_point,
             void*                       data) const override
@@ -136,7 +136,7 @@ namespace
             values->m_precomputed.m_outside_ior = shading_point.get_ray().get_current_ior();
         }
 
-        virtual bool on_frame_begin(
+        bool on_frame_begin(
             const Project&              project,
             const BaseGroup*            parent,
             OnFrameBeginRecorder&       recorder,
@@ -164,7 +164,7 @@ namespace
             return true;
         }
 
-        virtual void sample(
+        void sample(
             SamplingContext&            sampling_context,
             const void*                 data,
             const bool                  adjoint,
@@ -220,7 +220,7 @@ namespace
             }
         }
 
-        virtual float evaluate(
+        float evaluate(
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
@@ -275,7 +275,7 @@ namespace
             return pdf;
         }
 
-        virtual float evaluate_pdf(
+        float evaluate_pdf(
             const void*                 data,
             const bool                  adjoint,
             const Vector3f&             geometric_normal,

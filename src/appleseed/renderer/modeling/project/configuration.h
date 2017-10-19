@@ -61,7 +61,7 @@ class APPLESEED_DLLSYMBOL Configuration
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Set the base configuration.
     // A null pointer is a valid value.

@@ -138,7 +138,7 @@ class APPLESEED_DLLSYMBOL Entity
     ParamArray                          m_params;
 
     // Destructor.
-    ~Entity();
+    ~Entity() override;
 };
 
 

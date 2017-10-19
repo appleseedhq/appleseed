@@ -91,22 +91,22 @@ namespace
             extract_parameters();
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual ColorSpace get_color_space() const override
+        ColorSpace get_color_space() const override
         {
             return m_color_space;
         }
 
-        virtual bool on_frame_begin(
+        bool on_frame_begin(
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
@@ -123,7 +123,7 @@ namespace
             return true;
         }
 
-        virtual const CanvasProperties& properties() override
+        const CanvasProperties& properties() override
         {
             return
                 m_image.get()
@@ -131,14 +131,14 @@ namespace
                     : m_dummy_texture->m_props;
         }
 
-        virtual Source* create_source(
+        Source* create_source(
             const UniqueID          assembly_uid,
             const TextureInstance&  texture_instance) override
         {
             return new TextureSource(assembly_uid, texture_instance);
         }
 
-        virtual Tile* load_tile(
+        Tile* load_tile(
             const size_t            tile_x,
             const size_t            tile_y) override
         {
@@ -148,7 +148,7 @@ namespace
                     : &m_dummy_texture->m_tile;
         }
 
-        virtual void unload_tile(
+        void unload_tile(
             const size_t            tile_x,
             const size_t            tile_y,
             const Tile*             tile) override

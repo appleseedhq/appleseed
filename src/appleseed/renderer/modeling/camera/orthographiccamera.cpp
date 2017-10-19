@@ -83,17 +83,17 @@ namespace
         {
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_render_begin(
+        bool on_render_begin(
             const Project&      project,
             IAbortSwitch*       abort_switch) override
         {
@@ -122,7 +122,7 @@ namespace
             return true;
         }
 
-        virtual void spawn_ray(
+        void spawn_ray(
             SamplingContext&    sampling_context,
             const Dual2d&       ndc,
             ShadingRay&         ray) const override
@@ -155,7 +155,7 @@ namespace
             }
         }
 
-        virtual bool connect_vertex(
+        bool connect_vertex(
             SamplingContext&    sampling_context,
             const float         time,
             const Vector3d&     point,
@@ -189,7 +189,7 @@ namespace
             return true;
         }
 
-        virtual bool project_camera_space_point(
+        bool project_camera_space_point(
             const Vector3d&     point,
             Vector2d&           ndc) const override
         {
@@ -204,7 +204,7 @@ namespace
             return true;
         }
 
-        virtual bool project_segment(
+        bool project_segment(
             const float         time,
             const Vector3d&     a,
             const Vector3d&     b,

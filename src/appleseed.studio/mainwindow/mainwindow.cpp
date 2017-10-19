@@ -1613,7 +1613,7 @@ namespace
       : public RenderingManager::IStickyAction
     {
       public:
-        virtual void operator()(
+        void operator()(
             MasterRenderer& master_renderer,
             Project&        project) override
         {
@@ -1632,7 +1632,7 @@ namespace
         {
         }
 
-        virtual void operator()(
+        void operator()(
             MasterRenderer& master_renderer,
             Project&        project) override
         {
@@ -1681,7 +1681,7 @@ namespace
         {
         }
 
-        virtual void operator()(
+        void operator()(
             Project&        project) override
         {
             project.get_frame()->reset_crop_window();
@@ -1705,7 +1705,7 @@ namespace
         {
         }
 
-        virtual void operator()(
+        void operator()(
             Project&        project) override
         {
             const int w = m_rect.width();

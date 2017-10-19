@@ -44,7 +44,7 @@ class RejectAllFilter
   : public IFilter
 {
   public:
-    virtual bool accepts(const char*) const
+    bool accepts(const char*) const override
     {
         return false;
     }

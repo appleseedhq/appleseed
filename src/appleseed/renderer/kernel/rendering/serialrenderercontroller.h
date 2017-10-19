@@ -61,13 +61,13 @@ class SerialRendererController
         IRendererController*    controller,
         ITileCallback*          tile_callback);
 
-    virtual void on_rendering_begin() override;
-    virtual void on_rendering_success() override;
-    virtual void on_rendering_abort() override;
-    virtual void on_frame_begin() override;
-    virtual void on_frame_end() override;
-    virtual void on_progress() override;
-    virtual Status get_status() const override;
+    void on_rendering_begin() override;
+    void on_rendering_success() override;
+    void on_rendering_abort() override;
+    void on_frame_begin() override;
+    void on_frame_end() override;
+    void on_progress() override;
+    Status get_status() const override;
 
     void add_on_tiled_frame_begin_callback(
         const Frame*            frame);

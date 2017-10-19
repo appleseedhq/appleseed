@@ -139,17 +139,17 @@ namespace
             m_image_point_dy = Vector2d(0.0, -1.0 / (4.0 * c.m_canvas_height));
         }
 
-        ~GenericSampleRenderer()
+        ~GenericSampleRenderer() override
         {
             m_lighting_engine->release();
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual void render_sample(
+        void render_sample(
             SamplingContext&            sampling_context,
             const PixelContext&         pixel_context,
             const Vector2d&             image_point,
@@ -282,7 +282,7 @@ namespace
 #endif
         }
 
-        virtual StatisticsVector get_statistics() const override
+        StatisticsVector get_statistics() const override
         {
             StatisticsVector stats;
             stats.merge(m_texture_cache.get_statistics());

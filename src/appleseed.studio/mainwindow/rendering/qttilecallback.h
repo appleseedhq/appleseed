@@ -50,10 +50,10 @@ class QtTileCallbackFactory
     explicit QtTileCallbackFactory(RenderWidget* render_widget);
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Return a new instance of the class.
-    virtual renderer::ITileCallback* create() override;
+    renderer::ITileCallback* create() override;
 
   private:
     RenderWidget* m_render_widget;

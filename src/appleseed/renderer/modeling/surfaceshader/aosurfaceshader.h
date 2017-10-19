@@ -57,16 +57,16 @@ class APPLESEED_DLLSYMBOL AOSurfaceShaderFactory
 {
   public:
     // Return a string identifying this surface shader model.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Return metadata for this surface shader model.
-    virtual foundation::Dictionary get_model_metadata() const override;
+    foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this surface shader model.
-    virtual foundation::DictionaryArray get_input_metadata() const override;
+    foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new surface shader instance.
-    virtual foundation::auto_release_ptr<SurfaceShader> create(
+    foundation::auto_release_ptr<SurfaceShader> create(
         const char*         name,
         const ParamArray&   params) const override;
 

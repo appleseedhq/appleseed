@@ -61,12 +61,12 @@ namespace
       : public ISampleRenderer
     {
       public:
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual void render_sample(
+        void render_sample(
             SamplingContext&            sampling_context,
             const PixelContext&         pixel_context,
             const Vector2d&             image_point,
@@ -83,7 +83,7 @@ namespace
             shading_result.m_main = Color4f(c, c, c, 1.0f);
         }
 
-        virtual StatisticsVector get_statistics() const override
+        StatisticsVector get_statistics() const override
         {
             return StatisticsVector();
         }

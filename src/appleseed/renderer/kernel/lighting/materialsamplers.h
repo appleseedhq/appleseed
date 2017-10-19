@@ -96,30 +96,30 @@ class BSDFSampler
         const int                       bsdf_sampling_modes,
         const ShadingPoint&             shading_point);
 
-    virtual const foundation::Vector3d& get_point() const override;
+    const foundation::Vector3d& get_point() const override;
 
-    virtual const ShadingPoint& get_shading_point() const override;
+    const ShadingPoint& get_shading_point() const override;
 
-    virtual bool contributes_to_light_sampling() const override;
+    bool contributes_to_light_sampling() const override;
 
-    virtual const ShadingPoint& trace(
+    const ShadingPoint& trace(
         const ShadingContext&           shading_context,
         const foundation::Vector3f&     direction,
         Spectrum&                       transmission) const override;
 
-    virtual void trace_between(
+    void trace_between(
         const ShadingContext&           shading_context,
         const foundation::Vector3d&     target_position,
         Spectrum&                       transmission) const override;
 
-    virtual bool sample(
+    bool sample(
         SamplingContext&                sampling_context,
         const foundation::Dual3d&       outgoing,
         foundation::Dual3f&             incoming,
         DirectShadingComponents&        value,
         float&                          pdf) const override;
 
-    virtual float evaluate(
+    float evaluate(
         const int                       light_sampling_modes,
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
@@ -145,30 +145,30 @@ class VolumeSampler
         const float                     distance,
         const ShadingPoint&             shading_point);
 
-    virtual const foundation::Vector3d& get_point() const override;
+    const foundation::Vector3d& get_point() const override;
 
-    virtual const ShadingPoint& get_shading_point() const override;
+    const ShadingPoint& get_shading_point() const override;
 
-    virtual bool contributes_to_light_sampling() const override;
+    bool contributes_to_light_sampling() const override;
 
-    virtual const ShadingPoint& trace(
+    const ShadingPoint& trace(
         const ShadingContext&           shading_context,
         const foundation::Vector3f&     direction,
         Spectrum&                       transmission) const override;
 
-    virtual void trace_between(
+    void trace_between(
         const ShadingContext&           shading_context,
         const foundation::Vector3d&     target_position,
         Spectrum&                       transmission) const override;
 
-    virtual bool sample(
+    bool sample(
         SamplingContext&                sampling_context,
         const foundation::Dual3d&       outgoing,
         foundation::Dual3f&             incoming,
         DirectShadingComponents&        value,
         float&                          pdf) const override;
 
-    virtual float evaluate(
+    float evaluate(
         const int                       light_sampling_modes,
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,

@@ -56,13 +56,13 @@ class APPLESEED_DLLSYMBOL BetterDipoleBSSRDFFactory
 {
   public:
     // Return a string identifying this BSSRDF model.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Return metadata for this BSSRDF model.
-    virtual foundation::Dictionary get_model_metadata() const override;
+    foundation::Dictionary get_model_metadata() const override;
 
     // Create a new BSSRDF instance.
-    virtual foundation::auto_release_ptr<BSSRDF> create(
+    foundation::auto_release_ptr<BSSRDF> create(
         const char*         name,
         const ParamArray&   params) const override;
 

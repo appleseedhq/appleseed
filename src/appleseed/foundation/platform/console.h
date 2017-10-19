@@ -102,7 +102,7 @@ class APPLESEED_DLLSYMBOL Console
     Console();
 
     // Destructor.
-    ~Console();
+    ~Console() override;
 };
 
 APPLESEED_DLLSYMBOL Console& console();

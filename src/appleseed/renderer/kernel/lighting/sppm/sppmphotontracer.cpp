@@ -264,7 +264,7 @@ namespace
             m_shutter_close_time = camera->get_shutter_close_time();
         }
 
-        virtual void execute(const size_t thread_index) override
+        void execute(const size_t thread_index) override
         {
             // Initialize thread-local variables.
             Spectrum::set_mode(m_params.m_spectrum_mode);
@@ -566,7 +566,7 @@ namespace
             m_shutter_close_time = camera->get_shutter_close_time();
         }
 
-        virtual void execute(const size_t thread_index) override
+        void execute(const size_t thread_index) override
         {
             // Initialize thread-local variables.
             Spectrum::set_mode(m_params.m_spectrum_mode);

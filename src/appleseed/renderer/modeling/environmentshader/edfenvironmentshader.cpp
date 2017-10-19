@@ -80,17 +80,17 @@ namespace
             m_inputs.declare("alpha_value", InputFormatFloat, "1.0");
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
+        bool on_frame_begin(
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
@@ -121,7 +121,7 @@ namespace
             return true;
         }
 
-        virtual void evaluate(
+        void evaluate(
             const ShadingContext&   shading_context,
             const PixelContext&     pixel_context,
             const Vector3d&         direction,

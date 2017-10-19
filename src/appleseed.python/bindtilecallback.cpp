@@ -49,12 +49,12 @@ namespace
       , public bpy::wrapper<ITileCallback>
     {
       public:
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual void on_tiled_frame_begin(const Frame* frame) override
+        void on_tiled_frame_begin(const Frame* frame) override
         {
             // Lock Python's global interpreter lock (it was released in MasterRenderer.render).
             ScopedGILLock lock;
@@ -67,7 +67,7 @@ namespace
         {
         }
 
-        virtual void on_tiled_frame_end(const Frame* frame) override
+        void on_tiled_frame_end(const Frame* frame) override
         {
             // Lock Python's global interpreter lock (it was released in MasterRenderer.render).
             ScopedGILLock lock;
@@ -80,7 +80,7 @@ namespace
         {
         }
 
-        virtual void on_tile_begin(
+        void on_tile_begin(
             const Frame*    frame,
             const size_t    tile_x,
             const size_t    tile_y) override
@@ -99,7 +99,7 @@ namespace
         {
         }
 
-        virtual void on_tile_end(
+        void on_tile_end(
             const Frame*    frame,
             const size_t    tile_x,
             const size_t    tile_y) override
@@ -118,7 +118,7 @@ namespace
         {
         }
 
-        virtual void on_progressive_frame_begin(const Frame* frame) override
+        void on_progressive_frame_begin(const Frame* frame) override
         {
             // Lock Python's global interpreter lock (it was released in MasterRenderer.render).
             ScopedGILLock lock;
@@ -131,7 +131,7 @@ namespace
         {
         }
 
-        virtual void on_progressive_frame_end(const Frame* frame) override
+        void on_progressive_frame_end(const Frame* frame) override
         {
             // Lock Python's global interpreter lock (it was released in MasterRenderer.render).
             ScopedGILLock lock;

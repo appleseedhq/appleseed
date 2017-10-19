@@ -59,17 +59,17 @@ class APPLESEED_DLLSYMBOL MemoryTexture2dFactory
 {
   public:
     // Return a string identifying this texture model.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Return metadata for this texture model.
-    virtual foundation::Dictionary get_model_metadata() const override;
+    foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this texture model.
-    virtual foundation::DictionaryArray get_input_metadata() const override;
+    foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new dummy 1x1 blank texture.
     // This method does not allow to pass texture data.
-    virtual foundation::auto_release_ptr<Texture> create(
+    foundation::auto_release_ptr<Texture> create(
         const char*                                     name,
         const ParamArray&                               params,
         const foundation::SearchPaths&                  search_paths) const override;

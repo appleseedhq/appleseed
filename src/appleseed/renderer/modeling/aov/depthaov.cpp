@@ -71,7 +71,7 @@ namespace
         {
         }
 
-        virtual void on_tile_begin(
+        void on_tile_begin(
             const Frame&                frame,
             const size_t                tile_x,
             const size_t                tile_y,
@@ -81,7 +81,7 @@ namespace
             get_tile().clear(Vector2f(numeric_limits<float>::max()));
         }
 
-        virtual void write(
+        void write(
             const PixelContext&         pixel_context,
             const ShadingPoint&         shading_point,
             const ShadingComponents&    shading_components,
@@ -128,33 +128,33 @@ namespace
         {
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual size_t get_channel_count() const override
+        size_t get_channel_count() const override
         {
             return 1;
         }
 
-        virtual const char** get_channel_names() const override
+        const char** get_channel_names() const override
         {
             static const char* ChannelNames[] = {"Z"};
             return ChannelNames;
         }
 
-        virtual bool has_color_data() const override
+        bool has_color_data() const override
         {
             return false;
         }
 
-        virtual auto_release_ptr<AOVAccumulator> create_accumulator(
+        auto_release_ptr<AOVAccumulator> create_accumulator(
             const size_t index) const override
         {
             return auto_release_ptr<AOVAccumulator>(new DepthAOVAccumulator(get_image()));

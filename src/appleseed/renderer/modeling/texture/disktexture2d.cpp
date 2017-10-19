@@ -99,17 +99,17 @@ namespace
             else m_color_space = ColorSpaceCIEXYZ;
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual void on_frame_end(
+        void on_frame_end(
             const Project&          project,
             const BaseGroup*        parent) override
         {
@@ -117,37 +117,37 @@ namespace
                 m_reader.close();
         }
 
-        virtual ColorSpace get_color_space() const override
+        ColorSpace get_color_space() const override
         {
             return m_color_space;
         }
 
-        virtual void collect_asset_paths(StringArray& paths) const override
+        void collect_asset_paths(StringArray& paths) const override
         {
             if (m_params.strings().exist("filename"))
                 paths.push_back(m_params.get("filename"));
         }
 
-        virtual void update_asset_paths(const StringDictionary& mappings) override
+        void update_asset_paths(const StringDictionary& mappings) override
         {
             m_params.set("filename", mappings.get(m_params.get("filename")));
         }
 
-        virtual const CanvasProperties& properties() override
+        const CanvasProperties& properties() override
         {
             boost::mutex::scoped_lock lock(m_mutex);
             open_image_file();
             return m_props;
         }
 
-        virtual Source* create_source(
+        Source* create_source(
             const UniqueID          assembly_uid,
             const TextureInstance&  texture_instance) override
         {
             return new TextureSource(assembly_uid, texture_instance);
         }
 
-        virtual Tile* load_tile(
+        Tile* load_tile(
             const size_t            tile_x,
             const size_t            tile_y) override
         {
@@ -156,7 +156,7 @@ namespace
             return m_reader.read_tile(tile_x, tile_y);
         }
 
-        virtual void unload_tile(
+        void unload_tile(
             const size_t            tile_x,
             const size_t            tile_y,
             const Tile*             tile) override

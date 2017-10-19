@@ -88,10 +88,10 @@ class EntityItem
     ParentEntity&               m_parent;
     CollectionItem*             m_collection_item;
 
-    virtual void slot_edit_accepted(foundation::Dictionary values) override;
+    void slot_edit_accepted(foundation::Dictionary values) override;
     void edit(const foundation::Dictionary& values);
 
-    virtual void delete_multiple(const QList<ItemBase*>& items) override;
+    void delete_multiple(const QList<ItemBase*>& items) override;
     void do_delete();
 
   private:

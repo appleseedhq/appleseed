@@ -326,7 +326,7 @@ class MaterialAssignmentEditorWindow::AssignMaterialsAction
     {
     }
 
-    virtual void operator()(
+    void operator()(
         Project&                    project) override
     {
         for (const_each<SlotValueCollection> i = m_slot_values; i; ++i)

@@ -74,17 +74,17 @@ namespace
             m_osl_edf = OSLEDFFactory().create();
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool has_emission() const override
+        bool has_emission() const override
         {
             if (const ShaderGroup* sg = get_uncached_osl_surface())
                 return sg->has_emission();
@@ -92,7 +92,7 @@ namespace
             return false;
         }
 
-        virtual bool on_frame_begin(
+        bool on_frame_begin(
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
@@ -135,7 +135,7 @@ namespace
         auto_release_ptr<BSSRDF>    m_osl_bssrdf;
         auto_release_ptr<EDF>       m_osl_edf;
 
-        virtual const ShaderGroup* get_uncached_osl_surface() const override
+        const ShaderGroup* get_uncached_osl_surface() const override
         {
             const ShaderGroup* sg =
                 static_cast<const ShaderGroup*>(m_inputs.get_entity("osl_surface"));

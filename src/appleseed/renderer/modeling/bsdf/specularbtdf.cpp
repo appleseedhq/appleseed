@@ -81,22 +81,22 @@ namespace
             m_inputs.declare("volume_scale", InputFormatFloat, "1.0");
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual size_t compute_input_data_size() const override
+        size_t compute_input_data_size() const override
         {
             return sizeof(InputValues);
         }
 
-        virtual void prepare_inputs(
+        void prepare_inputs(
             Arena&                      arena,
             const ShadingPoint&         shading_point,
             void*                       data) const override
@@ -109,7 +109,7 @@ namespace
                     : values->m_ior / shading_point.get_ray().get_previous_ior();
         }
 
-        virtual void sample(
+        void sample(
             SamplingContext&            sampling_context,
             const void*                 data,
             const bool                  adjoint,
@@ -201,7 +201,7 @@ namespace
             else sample.compute_reflected_differentials();
         }
 
-        virtual float evaluate(
+        float evaluate(
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
@@ -215,7 +215,7 @@ namespace
             return 0.0f;
         }
 
-        virtual float evaluate_pdf(
+        float evaluate_pdf(
             const void*                 data,
             const bool                  adjoint,
             const Vector3f&             geometric_normal,
@@ -227,7 +227,7 @@ namespace
             return 0.0f;
         }
 
-        virtual float sample_ior(
+        float sample_ior(
             SamplingContext&            sampling_context,
             const void*                 data) const override
         {

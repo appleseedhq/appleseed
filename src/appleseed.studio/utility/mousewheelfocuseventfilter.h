@@ -57,9 +57,9 @@ class MouseWheelFocusEventFilter
   public:
     explicit MouseWheelFocusEventFilter(QWidget* parent);
 
-    ~MouseWheelFocusEventFilter();
+    ~MouseWheelFocusEventFilter() override;
 
-    virtual bool eventFilter(QObject* object, QEvent* event);
+    bool eventFilter(QObject* object, QEvent* event) override;
 
   private:
     const Qt::FocusPolicy m_old_focus_policy;

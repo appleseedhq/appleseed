@@ -169,7 +169,7 @@ class QDoubleValidatorWithDefault
         const QString&  default_value,
         QObject*        parent = nullptr);
 
-    virtual QValidator::State validate(QString& input, int& pos) const override;
+    QValidator::State validate(QString& input, int& pos) const override;
 
   private:
     const QString m_default_value;

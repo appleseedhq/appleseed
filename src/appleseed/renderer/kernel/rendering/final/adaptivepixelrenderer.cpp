@@ -103,12 +103,12 @@ namespace
             }
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual void on_tile_begin(
+        void on_tile_begin(
             const Frame&                frame,
             Tile&                       tile,
             TileStack&                  aov_tiles) override
@@ -127,7 +127,7 @@ namespace
                 m_diagnostics.reset(new Tile(tile.get_width(), tile.get_height(), 2, PixelFormatFloat));
         }
 
-        virtual void on_tile_end(
+        void on_tile_end(
             const Frame&                frame,
             Tile&                       tile,
             TileStack&                  aov_tiles) override
@@ -154,7 +154,7 @@ namespace
             }
         }
 
-        virtual void render_pixel(
+        void render_pixel(
             const Frame&                frame,
             Tile&                       tile,
             TileStack&                  aov_tiles,
@@ -296,12 +296,12 @@ namespace
             on_pixel_end(pi);
         }
 
-        virtual StatisticsVector get_statistics() const override
+        StatisticsVector get_statistics() const override
         {
             return m_sample_renderer->get_statistics();
         }
 
-        virtual size_t get_max_samples_per_pixel() const override
+        size_t get_max_samples_per_pixel() const override
         {
             return m_params.m_max_samples;
         }

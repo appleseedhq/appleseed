@@ -83,17 +83,17 @@ namespace
             m_inputs.declare("weight", InputFormatFloat);
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
+        bool on_frame_begin(
             const Project&              project,
             const BaseGroup*            parent,
             OnFrameBeginRecorder&       recorder,
@@ -113,7 +113,7 @@ namespace
             return true;
         }
 
-        virtual void* evaluate_inputs(
+        void* evaluate_inputs(
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point) const override
         {
@@ -131,7 +131,7 @@ namespace
             return values;
         }
 
-        virtual void sample(
+        void sample(
             SamplingContext&            sampling_context,
             const void*                 data,
             const bool                  adjoint,
@@ -158,7 +158,7 @@ namespace
                 sample);
         }
 
-        virtual float evaluate(
+        float evaluate(
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
@@ -217,7 +217,7 @@ namespace
             return bsdf0_prob * w0 + bsdf1_prob * w1;
         }
 
-        virtual float evaluate_pdf(
+        float evaluate_pdf(
             const void*                 data,
             const bool                  adjoint,
             const Vector3f&             geometric_normal,

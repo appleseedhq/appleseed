@@ -64,9 +64,9 @@ class BenchmarkWindow
     explicit BenchmarkWindow(QWidget* parent = nullptr);
 
     // Destructor.
-    ~BenchmarkWindow();
+    ~BenchmarkWindow() override;
 
-    virtual void closeEvent(QCloseEvent* event) override;
+    void closeEvent(QCloseEvent* event) override;
 
   private:
     // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.

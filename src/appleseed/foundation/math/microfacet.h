@@ -107,13 +107,13 @@ class BlinnMDF
   public:
     BlinnMDF() {}
 
-    virtual float D(
+    float D(
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual float G(
+    float G(
         const Vector3f&     incoming,
         const Vector3f&     outgoing,
         const Vector3f&     h,
@@ -128,14 +128,14 @@ class BlinnMDF
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual Vector3f sample(
+    Vector3f sample(
         const Vector3f&     v,
         const Vector3f&     s,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual float pdf(
+    float pdf(
         const Vector3f&     v,
         const Vector3f&     h,
         const float         alpha_x,
@@ -173,13 +173,13 @@ class BeckmannMDF
   public:
     BeckmannMDF() {}
 
-    virtual float D(
+    float D(
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual float G(
+    float G(
         const Vector3f&     incoming,
         const Vector3f&     outgoing,
         const Vector3f&     h,
@@ -187,21 +187,21 @@ class BeckmannMDF
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual float G1(
+    float G1(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual Vector3f sample(
+    Vector3f sample(
         const Vector3f&     v,
         const Vector3f&     s,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual float pdf(
+    float pdf(
         const Vector3f&     v,
         const Vector3f&     h,
         const float         alpha_x,
@@ -242,13 +242,13 @@ class GGXMDF
   public:
     GGXMDF() {}
 
-    virtual float D(
+    float D(
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual float G(
+    float G(
         const Vector3f&     incoming,
         const Vector3f&     outgoing,
         const Vector3f&     h,
@@ -256,21 +256,21 @@ class GGXMDF
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual float G1(
+    float G1(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual Vector3f sample(
+    Vector3f sample(
         const Vector3f&     v,
         const Vector3f&     s,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual float pdf(
+    float pdf(
         const Vector3f&     v,
         const Vector3f&     h,
         const float         alpha_x,
@@ -307,13 +307,13 @@ class WardMDF
   public:
     WardMDF() {}
 
-    virtual float D(
+    float D(
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual float G(
+    float G(
         const Vector3f&     incoming,
         const Vector3f&     outgoing,
         const Vector3f&     h,
@@ -321,21 +321,21 @@ class WardMDF
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual float G1(
+    float G1(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual Vector3f sample(
+    Vector3f sample(
         const Vector3f&     v,
         const Vector3f&     s,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual float pdf(
+    float pdf(
         const Vector3f&     v,
         const Vector3f&     h,
         const float         alpha_x,
@@ -362,13 +362,13 @@ class GTR1MDF
   public:
     GTR1MDF() {}
 
-    virtual float D(
+    float D(
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual float G(
+    float G(
         const Vector3f&     incoming,
         const Vector3f&     outgoing,
         const Vector3f&     h,
@@ -376,21 +376,21 @@ class GTR1MDF
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual float G1(
+    float G1(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual Vector3f sample(
+    Vector3f sample(
         const Vector3f&     v,
         const Vector3f&     s,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual float pdf(
+    float pdf(
         const Vector3f&     v,
         const Vector3f&     h,
         const float         alpha_x,
@@ -420,13 +420,13 @@ class StdMDF
   public:
     StdMDF() {}
 
-    virtual float D(
+    float D(
         const Vector3f&     h,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual float G(
+    float G(
         const Vector3f&     incoming,
         const Vector3f&     outgoing,
         const Vector3f&     h,
@@ -434,21 +434,21 @@ class StdMDF
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual float G1(
+    float G1(
         const Vector3f&     v,
         const Vector3f&     m,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual Vector3f sample(
+    Vector3f sample(
         const Vector3f&     v,
         const Vector3f&     s,
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
 
-    virtual float pdf(
+    float pdf(
         const Vector3f&     v,
         const Vector3f&     h,
         const float         alpha_x,

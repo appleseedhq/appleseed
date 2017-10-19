@@ -358,7 +358,7 @@ namespace
         }
 
       private:
-        virtual vector<size_t> do_generate()
+        vector<size_t> do_generate() override
         {
             typedef pair<Transformd, Transformd> TransformPair;
             typedef map<TransformPair, size_t, TransformPairComparer<double>> TransformMap;
@@ -447,7 +447,7 @@ namespace
         }
 
       private:
-        virtual vector<size_t> do_generate()
+        vector<size_t> do_generate() override
         {
             vector<size_t> frames;
 

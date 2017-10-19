@@ -69,7 +69,7 @@ class APPLESEED_DLLSYMBOL AOV
     AOV(const char* name, const ParamArray& params);
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
@@ -140,10 +140,10 @@ class UnfilteredAOV
     UnfilteredAOV(const char* name, const ParamArray& params);
 
     // Destructor.
-    virtual ~UnfilteredAOV() override;
+    ~UnfilteredAOV() override;
 
   protected:
-    virtual void create_image(
+    void create_image(
         const size_t    canvas_width,
         const size_t    canvas_height,
         const size_t    tile_width,

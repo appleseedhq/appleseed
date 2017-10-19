@@ -431,7 +431,7 @@ namespace
             load_directly_linked_values(config);
         }
 
-        virtual void save_config(Configuration& config) const override
+        void save_config(Configuration& config) const override
         {
             save_directly_linked_values(config);
         }
@@ -472,7 +472,7 @@ namespace
             load_directly_linked_values(config);
         }
 
-        virtual void save_config(Configuration& config) const override
+        void save_config(Configuration& config) const override
         {
             save_directly_linked_values(config);
 
@@ -624,7 +624,7 @@ namespace
         {
         }
 
-        virtual void save_config(Configuration& config) const override
+        void save_config(Configuration& config) const override
         {
             save_directly_linked_values(config);
         }
@@ -878,7 +878,7 @@ namespace
             set_widget("advanced.max_ray_intensity", get_config<double>(config, "pt.max_ray_intensity", 1.0));
         }
 
-        virtual void save_config(Configuration& config) const override
+        void save_config(Configuration& config) const override
         {
             save_directly_linked_values(config);
 
@@ -1048,7 +1048,7 @@ namespace
             else set_widget("photon_type.poly", true);
         }
 
-        virtual void save_config(Configuration& config) const override
+        void save_config(Configuration& config) const override
         {
             save_directly_linked_values(config);
 
@@ -1200,7 +1200,7 @@ namespace
             set_widget("tile_ordering.value", get_config<string>(config, "generic_frame_renderer.tile_ordering", "spiral"));
         }
 
-        virtual void save_config(Configuration& config) const override
+        void save_config(Configuration& config) const override
         {
             save_directly_linked_values(config);
 

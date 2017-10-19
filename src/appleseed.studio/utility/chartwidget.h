@@ -149,15 +149,15 @@ class LineChart
 
     void set_curve_brush(const QBrush& brush);
 
-    virtual void draw_chart(QPainter& painter) const;
+    void draw_chart(QPainter& painter) const override;
 
-    virtual void draw_highlight(
+    void draw_highlight(
         QPainter&       painter,
-        const QPoint&   mouse_position) const;
+        const QPoint&   mouse_position) const override;
 
-    virtual bool on_chart(
+    bool on_chart(
         const QPoint&   mouse_position,
-        size_t&         point_index) const;
+        size_t&         point_index) const override;
 
   private:
     QBrush  m_curve_brush;
@@ -184,7 +184,7 @@ class ChartWidget
   public:
     explicit ChartWidget(QWidget* parent);
 
-    ~ChartWidget();
+    ~ChartWidget() override;
 
     void clear();
 
@@ -197,10 +197,10 @@ class ChartWidget
     bool                m_mouse_inside_widget;
     QPoint              m_mouse_position;
 
-    virtual void mouseMoveEvent(QMouseEvent* event);
-    virtual void leaveEvent(QEvent* event);
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void leaveEvent(QEvent* event) override;
 
-    virtual void paintEvent(QPaintEvent* event);
+    void paintEvent(QPaintEvent* event) override;
 
     void draw_charts(QPainter& painter) const;
     void draw_highlights(QPainter& painter) const;

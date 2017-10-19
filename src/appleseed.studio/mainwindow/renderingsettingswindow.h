@@ -65,7 +65,7 @@ class RenderingSettingsWindow
         QWidget*                        parent = nullptr);
 
     // Destructor.
-    ~RenderingSettingsWindow();
+    ~RenderingSettingsWindow() override;
 
     // Load the configurations of the currently open project.
     void reload();

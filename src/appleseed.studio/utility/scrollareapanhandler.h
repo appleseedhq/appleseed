@@ -50,7 +50,7 @@ class ScrollAreaPanHandler
   public:
     explicit ScrollAreaPanHandler(QScrollArea* scroll_area);
 
-    ~ScrollAreaPanHandler();
+    ~ScrollAreaPanHandler() override;
 
     struct State
     {
@@ -69,7 +69,7 @@ class ScrollAreaPanHandler
     int             m_initial_vbar_value;
     State           m_state;
 
-    virtual bool eventFilter(QObject* object, QEvent* event);
+    bool eventFilter(QObject* object, QEvent* event) override;
 
     bool handle_mouse_button_press_event(QMouseEvent* event);
     bool handle_mouse_button_release_event(QMouseEvent* event);

@@ -67,9 +67,9 @@ class TestWindow
     explicit TestWindow(QWidget* parent = nullptr);
 
     // Destructor.
-    ~TestWindow();
+    ~TestWindow() override;
 
-    virtual void closeEvent(QCloseEvent* event) override;
+    void closeEvent(QCloseEvent* event) override;
 
   private:
     // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.

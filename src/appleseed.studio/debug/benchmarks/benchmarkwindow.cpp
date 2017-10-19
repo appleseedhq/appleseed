@@ -203,7 +203,7 @@ namespace
     struct ToolTipFormatter
       : public IToolTipFormatter
     {
-        virtual QString format(const Vector2d& point) const
+        QString format(const Vector2d& point) const override
         {
             const uint64 date_microseconds = static_cast<uint64>(point.x);
             const posix_time::ptime date =

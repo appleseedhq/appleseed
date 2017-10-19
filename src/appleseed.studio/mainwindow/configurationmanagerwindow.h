@@ -54,7 +54,7 @@ class ConfigurationManagerWindow
     explicit ConfigurationManagerWindow(QWidget* parent = nullptr);
 
     // Destructor.
-    ~ConfigurationManagerWindow();
+    ~ConfigurationManagerWindow() override;
 
   private:
     // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.

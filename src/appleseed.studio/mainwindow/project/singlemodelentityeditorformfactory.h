@@ -53,9 +53,9 @@ class SingleModelEntityEditorFormFactory
         const std::string&                  entity_name,
         const foundation::DictionaryArray&  entity_widgets);
 
-    virtual void update(
+    void update(
         const foundation::Dictionary&       values,
-        InputMetadataCollection&            metadata) const;
+        InputMetadataCollection&            metadata) const override;
 
   private:
     const foundation::DictionaryArray       m_entity_widgets;

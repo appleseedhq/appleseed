@@ -67,7 +67,7 @@ class EntityBrowser<renderer::Project>
   public:
     explicit EntityBrowser(const renderer::Project& scene);
 
-    virtual foundation::StringDictionary get_entities(const std::string& type) const override;
+    foundation::StringDictionary get_entities(const std::string& type) const override;
 
   private:
     const renderer::Project& m_project;
@@ -85,7 +85,7 @@ class EntityBrowser<renderer::BaseGroup>
   public:
     explicit EntityBrowser(const renderer::BaseGroup& base_group);
 
-    virtual foundation::StringDictionary get_entities(const std::string& type) const override;
+    foundation::StringDictionary get_entities(const std::string& type) const override;
 
   private:
     const renderer::BaseGroup& m_base_group;
@@ -103,7 +103,7 @@ class EntityBrowser<renderer::Scene>
   public:
     explicit EntityBrowser(const renderer::Scene& scene);
 
-    virtual foundation::StringDictionary get_entities(const std::string& type) const override;
+    foundation::StringDictionary get_entities(const std::string& type) const override;
 
   private:
     const renderer::Scene& m_scene;
@@ -121,7 +121,7 @@ class EntityBrowser<renderer::Assembly>
   public:
     explicit EntityBrowser(const renderer::Assembly& assembly);
 
-    virtual foundation::StringDictionary get_entities(const std::string& type) const override;
+    foundation::StringDictionary get_entities(const std::string& type) const override;
 
   private:
     const renderer::Assembly& m_assembly;

@@ -60,31 +60,31 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileReader)
     {
         vector<Mesh>        m_meshes;
 
-        virtual void begin_mesh(const char* name) override
+        void begin_mesh(const char* name) override
         {
             m_meshes.emplace_back();
             m_meshes.back().m_name = name;
         }
 
-        virtual size_t push_vertex(const Vector3d& v) override
+        size_t push_vertex(const Vector3d& v) override
         {
             m_meshes.back().m_vertices.push_back(v);
             return m_meshes.back().m_vertices.size() - 1;
         }
 
-        virtual size_t push_vertex_normal(const Vector3d& v) override
+        size_t push_vertex_normal(const Vector3d& v) override
         {
             m_meshes.back().m_vertex_normals.push_back(safe_normalize(v));
             return m_meshes.back().m_vertex_normals.size() - 1;
         }
 
-        virtual size_t push_tex_coords(const Vector2d& v) override
+        size_t push_tex_coords(const Vector2d& v) override
         {
             m_meshes.back().m_tex_coords.push_back(v);
             return m_meshes.back().m_tex_coords.size() - 1;
         }
 
-        virtual void begin_face(const size_t vertex_count) override
+        void begin_face(const size_t vertex_count) override
         {
             m_meshes.back().m_faces.emplace_back();
         }

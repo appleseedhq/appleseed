@@ -57,16 +57,16 @@ class APPLESEED_DLLSYMBOL OrthographicCameraFactory
 {
   public:
     // Return a string identifying this camera model.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Return metadata for this camera model.
-    virtual foundation::Dictionary get_model_metadata() const override;
+    foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this camera model.
-    virtual foundation::DictionaryArray get_input_metadata() const override;
+    foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new camera instance.
-    virtual foundation::auto_release_ptr<Camera> create(
+    foundation::auto_release_ptr<Camera> create(
         const char*         name,
         const ParamArray&   params) const override;
 

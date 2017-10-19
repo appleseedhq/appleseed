@@ -140,7 +140,7 @@ class CurveTreeFactory
         const CurveTree::Arguments&  arguments);
 
     // Create the curve tree.
-    virtual std::unique_ptr<CurveTree> create();
+    std::unique_ptr<CurveTree> create() override;
 
   private:
     const CurveTree::Arguments       m_arguments;

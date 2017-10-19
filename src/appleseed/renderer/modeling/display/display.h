@@ -60,7 +60,7 @@ class APPLESEED_DLLSYMBOL Display
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     bool open(const Project& project);
     void close();
@@ -80,7 +80,7 @@ class APPLESEED_DLLSYMBOL Display
         const ParamArray&   params);
 
     // Destructor.
-    ~Display();
+    ~Display() override;
 };
 
 

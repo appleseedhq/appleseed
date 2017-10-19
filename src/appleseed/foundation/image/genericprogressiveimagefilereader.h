@@ -60,30 +60,30 @@ class APPLESEED_DLLSYMBOL GenericProgressiveImageFileReader
     explicit GenericProgressiveImageFileReader(Logger* logger = nullptr);
 
     // Destructor.
-    ~GenericProgressiveImageFileReader();
+    ~GenericProgressiveImageFileReader() override;
 
     // Open an image file.
-    virtual void open(
-        const char*         filename);
+    void open(
+        const char*         filename) override;
 
     // Close the image file.
-    virtual void close();
+    void close() override;
 
     // Return true if an image file is currently open.
-    virtual bool is_open() const;
+    bool is_open() const override;
 
     // Read canvas properties.
-    virtual void read_canvas_properties(
-        CanvasProperties&   props);
+    void read_canvas_properties(
+        CanvasProperties&   props) override;
 
     // Read image attributes.
-    virtual void read_image_attributes(
-        ImageAttributes&    attrs);
+    void read_image_attributes(
+        ImageAttributes&    attrs) override;
 
     // Read an image tile. Returns a newly allocated tile.
-    virtual Tile* read_tile(
+    Tile* read_tile(
         const size_t        tile_x,
-        const size_t        tile_y);
+        const size_t        tile_y) override;
 
   private:
     struct Impl;

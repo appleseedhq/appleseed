@@ -203,7 +203,7 @@ namespace
         {
         }
 
-        virtual void update() override
+        void update() override
         {
             // Nothing to do.
         }
@@ -223,7 +223,7 @@ namespace
         {
         }
 
-        virtual void update() override
+        void update() override
         {
             // Nothing to do.
         }
@@ -243,7 +243,7 @@ namespace
         {
         }
 
-        virtual void update() override
+        void update() override
         {
             introduce_pixel_renderers();
             move_filter_parameters_from_configurations_to_frame();
@@ -334,7 +334,7 @@ namespace
         {
         }
 
-        virtual void update() override
+        void update() override
         {
             if (Scene* scene = m_project.get_scene())
             {
@@ -427,7 +427,7 @@ namespace
         {
         }
 
-        virtual void update() override
+        void update() override
         {
             for (each<ConfigurationContainer> i = m_project.configurations(); i; ++i)
             {
@@ -451,7 +451,7 @@ namespace
         {
         }
 
-        virtual void update() override
+        void update() override
         {
             if (Scene* scene = m_project.get_scene())
                 update_assemblies(scene->assemblies());
@@ -644,7 +644,7 @@ namespace
         {
         }
 
-        virtual void update() override
+        void update() override
         {
             // Here, we used to update render layer rules
             // but render layers were removed in appleseed 1.7.0-beta.
@@ -665,7 +665,7 @@ namespace
         {
         }
 
-        virtual void update() override
+        void update() override
         {
             if (Scene* scene = m_project.get_scene())
                 update_collection(scene->assemblies());
@@ -724,7 +724,7 @@ namespace
         {
         }
 
-        virtual void update() override
+        void update() override
         {
             if (Scene* scene = m_project.get_scene())
                 rename_radiance_inputs(scene->assemblies());
@@ -776,7 +776,7 @@ namespace
         {
         }
 
-        virtual void update() override
+        void update() override
         {
             if (Scene* scene = m_project.get_scene())
                 visit(scene->assemblies());
@@ -1025,7 +1025,7 @@ namespace
         {
         }
 
-        virtual void update() override
+        void update() override
         {
             if (Scene* scene = m_project.get_scene())
                 update_bssrdf_ior_inputs(scene->assemblies());
@@ -1067,7 +1067,7 @@ namespace
         {
         }
 
-        virtual void update() override
+        void update() override
         {
             if (Scene* scene = m_project.get_scene())
                 update_bssrdf_mfp_inputs(scene->assemblies());
@@ -1109,7 +1109,7 @@ namespace
         {
         }
 
-        virtual void update() override
+        void update() override
         {
             Frame* frame = m_project.get_frame();
             const Scene* scene = m_project.get_scene();
@@ -1153,7 +1153,7 @@ namespace
         {
         }
 
-        virtual void update() override
+        void update() override
         {
             if (Scene* scene = m_project.get_scene())
             {
@@ -1248,7 +1248,7 @@ namespace
         {
         }
 
-        virtual void update() override
+        void update() override
         {
             if (Scene* scene = m_project.get_scene())
                 update_entities(scene->assemblies());
@@ -1318,7 +1318,7 @@ namespace
         {
         }
 
-        virtual void update() override
+        void update() override
         {
             if (Scene* scene = m_project.get_scene())
                 update_physical_surface_shader_inputs(scene->assemblies());
@@ -1370,7 +1370,7 @@ namespace
         {
         }
 
-        virtual void update() override
+        void update() override
         {
             for (each<ConfigurationContainer> i = m_project.configurations(); i; ++i)
                 update(*i);
@@ -1413,7 +1413,7 @@ namespace
         {
         }
 
-        virtual void update() override
+        void update() override
         {
             for (each<ConfigurationContainer> i = m_project.configurations(); i; ++i)
                 update(*i);
@@ -1476,7 +1476,7 @@ namespace
         {
         }
 
-        virtual void update() override
+        void update() override
         {
             if (m_project.get_frame())
                 update_frame(*m_project.get_frame());
@@ -1507,7 +1507,7 @@ namespace
         {
         }
 
-        virtual void update() override
+        void update() override
         {
             if (Scene* scene = m_project.get_scene())
                 update_material_and_object_inputs(scene->assemblies());
@@ -1553,7 +1553,7 @@ namespace
         {
         }
 
-        virtual void update() override
+        void update() override
         {
             if (Scene* scene = m_project.get_scene())
                 update_physical_surface_shader_inputs(scene->assemblies());

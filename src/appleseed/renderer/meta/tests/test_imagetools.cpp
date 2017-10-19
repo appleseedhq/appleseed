@@ -106,7 +106,7 @@ TEST_SUITE(ImageTools)
         {
         }
 
-        virtual Color3f operator()(const Color3f& c) const override
+        Color3f operator()(const Color3f& c) const override
         {
             return c * m_multiplier;
         }
@@ -119,7 +119,7 @@ TEST_SUITE(ImageTools)
 
     struct ColorDifference : public ITwoPixelOp
     {
-        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const override
+        Color3f operator()(const Color3f& lhs, const Color3f& rhs) const override
         {
             return abs_diff(lhs, rhs);
         }
@@ -127,7 +127,7 @@ TEST_SUITE(ImageTools)
 
     struct ColorRatio : public ITwoPixelOp
     {
-        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const override
+        Color3f operator()(const Color3f& lhs, const Color3f& rhs) const override
         {
             Color3f result;
 
@@ -140,7 +140,7 @@ TEST_SUITE(ImageTools)
 
     struct LuminanceDifference : public ITwoPixelOp
     {
-        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const override
+        Color3f operator()(const Color3f& lhs, const Color3f& rhs) const override
         {
             const float result = luminance(lhs) - luminance(rhs);
             return result > 0.0f ? IsoLumRed : IsoLumBlue;
@@ -149,7 +149,7 @@ TEST_SUITE(ImageTools)
 
     struct LuminanceRatio : public ITwoPixelOp
     {
-        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const override
+        Color3f operator()(const Color3f& lhs, const Color3f& rhs) const override
         {
             const float lhs_lum = luminance(lhs);
             const float rhs_lum = luminance(rhs);
@@ -167,7 +167,7 @@ TEST_SUITE(ImageTools)
         {
         }
 
-        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const override
+        Color3f operator()(const Color3f& lhs, const Color3f& rhs) const override
         {
             const float diff = luminance(lhs) - luminance(rhs);
             return
@@ -186,7 +186,7 @@ TEST_SUITE(ImageTools)
         {
         }
 
-        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const override
+        Color3f operator()(const Color3f& lhs, const Color3f& rhs) const override
         {
             const Color3f delta = lhs - rhs;
             const float diff = delta[max_abs_index(delta)];

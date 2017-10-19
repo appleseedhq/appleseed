@@ -58,16 +58,16 @@ class APPLESEED_DLLSYMBOL GenericMaterialFactory
 {
   public:
     // Return a string identifying this material model.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Return metadata for this material model.
-    virtual foundation::Dictionary get_model_metadata() const override;
+    foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this material model.
-    virtual foundation::DictionaryArray get_input_metadata() const override;
+    foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new material instance.
-    virtual foundation::auto_release_ptr<Material> create(
+    foundation::auto_release_ptr<Material> create(
         const char*         name,
         const ParamArray&   params) const override;
 

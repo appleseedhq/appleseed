@@ -48,7 +48,7 @@ class AutoDeleteTestSuiteRepository
 {
   public:
     // Destructor.
-    ~AutoDeleteTestSuiteRepository()
+    ~AutoDeleteTestSuiteRepository() override
     {
         clear();
     }

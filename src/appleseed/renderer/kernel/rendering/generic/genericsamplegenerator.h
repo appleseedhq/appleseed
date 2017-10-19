@@ -59,15 +59,15 @@ class GenericSampleGeneratorFactory
         const ParamArray&       params);
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Return a new sample generator instance.
-    virtual ISampleGenerator* create(
+    ISampleGenerator* create(
         const size_t            generator_index,
         const size_t            generator_count) override;
 
     // Create an accumulation buffer for this sample generator.
-    virtual SampleAccumulationBuffer* create_sample_accumulation_buffer() override;
+    SampleAccumulationBuffer* create_sample_accumulation_buffer() override;
 
   private:
     const Frame&                m_frame;

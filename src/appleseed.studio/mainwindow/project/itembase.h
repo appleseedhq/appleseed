@@ -68,7 +68,7 @@ class ItemBase
         const foundation::UniqueID  class_uid,
         const QString&              title);
 
-    virtual ~ItemBase() {}
+    ~ItemBase() override {}
 
     foundation::UniqueID get_class_uid() const;
 

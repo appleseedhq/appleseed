@@ -54,16 +54,16 @@ class FlagOptionHandler
 {
   private:
     // Return the maximum number of values this option can handle.
-    virtual size_t get_max_value_count() const override;
+    size_t get_max_value_count() const override;
 
     // Parse a vector of values.
-    virtual void parse(
+    void parse(
         const std::string&      name,
         const StringVector&     values,
         ParseResults&           results) override;
 
     // Print this option to a string.
-    virtual void print(std::string& s) const override;
+    void print(std::string& s) const override;
 };
 
 

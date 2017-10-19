@@ -215,18 +215,18 @@ namespace
             m_shutter_close_time = camera->get_shutter_close_time();
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual void reset() override
+        void reset() override
         {
             SampleGeneratorBase::reset();
             m_rng = SamplingContext::RNGType();
         }
 
-        virtual void generate_samples(
+        void generate_samples(
             const size_t                sample_count,
             SampleAccumulationBuffer&   buffer,
             IAbortSwitch&               abort_switch) override
@@ -249,7 +249,7 @@ namespace
             }
         }
 
-        virtual StatisticsVector get_statistics() const override
+        StatisticsVector get_statistics() const override
         {
             Statistics stats;
             stats.insert("path count", m_path_count);
@@ -544,7 +544,7 @@ namespace
         float                           m_shutter_open_time;
         float                           m_shutter_close_time;
 
-        virtual size_t generate_samples(
+        size_t generate_samples(
             const size_t                sequence_index,
             SampleVector&               samples) override
         {

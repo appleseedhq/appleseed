@@ -69,7 +69,7 @@ class APPLESEED_DLLSYMBOL SeparableBSSRDF
         const ParamArray&           params);
 
     // Destructor.
-    ~SeparableBSSRDF();
+    ~SeparableBSSRDF() override;
 
     // Sample the radially-symmetric profile and return a radius value.
     virtual float sample_profile(

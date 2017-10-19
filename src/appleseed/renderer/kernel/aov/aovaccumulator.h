@@ -107,7 +107,7 @@ class UnfilteredAOVAccumulator
   public:
     explicit UnfilteredAOVAccumulator(foundation::Image& image);
 
-    virtual void on_tile_begin(
+    void on_tile_begin(
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y,

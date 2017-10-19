@@ -52,9 +52,9 @@ class MultiModelEntityEditorFormFactory
         const FactoryRegistrar&         factory_registrar,
         const std::string&              entity_name);
 
-    virtual void update(
+    void update(
         const foundation::Dictionary&   values,
-        InputMetadataCollection&        metadata) const;
+        InputMetadataCollection&        metadata) const override;
 
   private:
     const FactoryRegistrar&     m_factory_registrar;

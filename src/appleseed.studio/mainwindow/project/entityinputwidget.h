@@ -86,8 +86,8 @@ class EntityInputProxy
   public:
     explicit EntityInputProxy(EntityInputWidget* input_widget);
 
-    virtual void set(const std::string& value) override;
-    virtual std::string get() const override;
+    void set(const std::string& value) override;
+    std::string get() const override;
 
   private:
     EntityInputWidget* m_input_widget;
@@ -138,8 +138,8 @@ class ColorMapInputProxy
   public:
     explicit ColorMapInputProxy(ColorMapInputWidget* input_widget);
 
-    virtual void set(const std::string& value) override;
-    virtual std::string get() const override;
+    void set(const std::string& value) override;
+    std::string get() const override;
 
   private:
     ColorMapInputWidget* m_input_widget;

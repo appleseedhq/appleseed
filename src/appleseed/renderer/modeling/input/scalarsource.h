@@ -55,21 +55,21 @@ class ScalarSource
     explicit ScalarSource(const float scalar);
 
     // Compute a signature unique to this source.
-    virtual foundation::uint64 compute_signature() const override;
+    foundation::uint64 compute_signature() const override;
 
     // Evaluate the source.
-    virtual void evaluate_uniform(
+    void evaluate_uniform(
         float&                      scalar) const override;
-    virtual void evaluate_uniform(
+    void evaluate_uniform(
         foundation::Color3f&        linear_rgb) const override;
-    virtual void evaluate_uniform(
+    void evaluate_uniform(
         Spectrum&                   spectrum) const override;
-    virtual void evaluate_uniform(
+    void evaluate_uniform(
         Alpha&                      alpha) const override;
-    virtual void evaluate_uniform(
+    void evaluate_uniform(
         foundation::Color3f&        linear_rgb,
         Alpha&                      alpha) const override;
-    virtual void evaluate_uniform(
+    void evaluate_uniform(
         Spectrum&                   spectrum,
         Alpha&                      alpha) const override;
 

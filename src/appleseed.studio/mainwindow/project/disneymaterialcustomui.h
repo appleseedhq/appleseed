@@ -65,11 +65,11 @@ class DisneyMaterialCustomUI
         const renderer::Project&        project,
         renderer::ParamArray&           settings);
 
-    virtual void create_widgets(
+    void create_widgets(
         QVBoxLayout*                    layout,
         const foundation::Dictionary&   values) override;
 
-    virtual foundation::Dictionary get_values() const override;
+    foundation::Dictionary get_values() const override;
 
   private slots:
     void slot_add_layer();

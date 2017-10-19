@@ -57,8 +57,8 @@ class HenyeyPhaseFunction
   public:
     explicit HenyeyPhaseFunction(const float g);
 
-    virtual float evaluate(const Vector3f& outgoing, const Vector3f& incoming) const override;
-    virtual float sample(const Vector3f& outgoing, const Vector2f& s, Vector3f& incoming) const override;
+    float evaluate(const Vector3f& outgoing, const Vector3f& incoming) const override;
+    float sample(const Vector3f& outgoing, const Vector2f& s, Vector3f& incoming) const override;
 
   private:
     const float m_g;
@@ -73,8 +73,8 @@ class IsotropicPhaseFunction
   : public PhaseFunction
 {
   public:
-    virtual float evaluate(const Vector3f& outgoing, const Vector3f& incoming) const override;
-    virtual float sample(const Vector3f& outgoing, const Vector2f& s, Vector3f& incoming) const override;
+    float evaluate(const Vector3f& outgoing, const Vector3f& incoming) const override;
+    float sample(const Vector3f& outgoing, const Vector2f& s, Vector3f& incoming) const override;
 };
 
 }       // namespace foundation

@@ -61,7 +61,7 @@ class SceneItem
 
     void expand();
 
-    virtual QMenu* get_single_item_context_menu() const override;
+    QMenu* get_single_item_context_menu() const override;
 
     void add_item(renderer::Camera* camera);
     void add_item(renderer::EnvironmentEDF* environment_edf);

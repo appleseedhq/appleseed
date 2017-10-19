@@ -66,7 +66,7 @@ namespace
         {
         }
 
-        virtual void write(
+        void write(
             const PixelContext&         pixel_context,
             const ShadingPoint&         shading_point,
             const ShadingComponents&    shading_components,
@@ -98,17 +98,17 @@ namespace
         {
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual auto_release_ptr<AOVAccumulator> create_accumulator(
+        auto_release_ptr<AOVAccumulator> create_accumulator(
             const size_t index) const override
         {
             return auto_release_ptr<AOVAccumulator>(new EmissionAOVAccumulator(index));

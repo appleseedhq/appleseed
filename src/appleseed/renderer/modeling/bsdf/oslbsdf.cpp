@@ -109,17 +109,17 @@ namespace
             m_sheen_brdf = create_and_register_bsdf(SheenID, "sheen_brdf");
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return "osl_bsdf";
         }
 
-        virtual bool on_frame_begin(
+        bool on_frame_begin(
             const Project&              project,
             const BaseGroup*            parent,
             OnFrameBeginRecorder&       recorder,
@@ -140,7 +140,7 @@ namespace
             return true;
         }
 
-        virtual void* evaluate_inputs(
+        void* evaluate_inputs(
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point) const override
         {
@@ -166,7 +166,7 @@ namespace
             return c;
         }
 
-        virtual void sample(
+        void sample(
             SamplingContext&            sampling_context,
             const void*                 data,
             const bool                  adjoint,
@@ -236,7 +236,7 @@ namespace
             }
         }
 
-        virtual float evaluate(
+        float evaluate(
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
@@ -283,7 +283,7 @@ namespace
             return prob;
         }
 
-        virtual float evaluate_pdf(
+        float evaluate_pdf(
             const void*                 data,
             const bool                  adjoint,
             const Vector3f&             geometric_normal,
@@ -319,7 +319,7 @@ namespace
             return prob;
         }
 
-        virtual float sample_ior(
+        float sample_ior(
             SamplingContext&            sampling_context,
             const void*                 data) const override
         {
@@ -328,7 +328,7 @@ namespace
             return c->choose_ior(sampling_context.next2<float>());
         }
 
-        virtual void compute_absorption(
+        void compute_absorption(
             const void*                 data,
             const float                 distance,
             Spectrum&                   absorption) const override

@@ -88,37 +88,37 @@ namespace
             return m_meshes;
         }
 
-        virtual void begin_mesh(const char* name) override
+        void begin_mesh(const char* name) override
         {
             m_current_mesh = Mesh();
             m_current_mesh.m_name = name;
         }
 
-        virtual size_t push_vertex(const Vector3d& v) override
+        size_t push_vertex(const Vector3d& v) override
         {
             m_current_mesh.m_vertices.push_back(v);
             return m_current_mesh.m_vertices.size() - 1;
         }
 
-        virtual size_t push_vertex_normal(const Vector3d& v) override
+        size_t push_vertex_normal(const Vector3d& v) override
         {
             m_current_mesh.m_vertex_normals.push_back(safe_normalize(v));
             return m_current_mesh.m_vertex_normals.size() - 1;
         }
 
-        virtual size_t push_tex_coords(const Vector2d& v) override
+        size_t push_tex_coords(const Vector2d& v) override
         {
             m_current_mesh.m_tex_coords.push_back(v);
             return m_current_mesh.m_tex_coords.size() - 1;
         }
 
-        virtual size_t push_material_slot(const char* name) override
+        size_t push_material_slot(const char* name) override
         {
             m_current_mesh.m_material_slots.emplace_back(name);
             return m_current_mesh.m_material_slots.size() - 1;
         }
 
-        virtual void begin_face(const size_t vertex_count) override
+        void begin_face(const size_t vertex_count) override
         {
             m_current_face = Face();
             m_current_face.m_vertices.resize(vertex_count);
@@ -127,35 +127,35 @@ namespace
             m_current_face.m_material = 0;
         }
 
-        virtual void set_face_vertices(const size_t vertices[]) override
+        void set_face_vertices(const size_t vertices[]) override
         {
             for (size_t i = 0; i < m_current_face.m_vertices.size(); ++i)
                 m_current_face.m_vertices[i] = vertices[i];
         }
 
-        virtual void set_face_vertex_normals(const size_t vertex_normals[]) override
+        void set_face_vertex_normals(const size_t vertex_normals[]) override
         {
             for (size_t i = 0; i < m_current_face.m_vertex_normals.size(); ++i)
                 m_current_face.m_vertex_normals[i] = vertex_normals[i];
         }
 
-        virtual void set_face_vertex_tex_coords(const size_t tex_coords[]) override
+        void set_face_vertex_tex_coords(const size_t tex_coords[]) override
         {
             for (size_t i = 0; i < m_current_face.m_vertex_tex_coords.size(); ++i)
                 m_current_face.m_vertex_tex_coords[i] = tex_coords[i];
         }
 
-        virtual void set_face_material(const size_t material) override
+        void set_face_material(const size_t material) override
         {
             m_current_face.m_material = material;
         }
 
-        virtual void end_face() override
+        void end_face() override
         {
             m_current_mesh.m_faces.push_back(m_current_face);
         }
 
-        virtual void end_mesh() override
+        void end_mesh() override
         {
             m_meshes.push_back(m_current_mesh);
         }
@@ -175,77 +175,77 @@ namespace
         {
         }
 
-        virtual const char* get_name() const override
+        const char* get_name() const override
         {
             return m_mesh.m_name.c_str();
         }
 
-        virtual size_t get_vertex_count() const override
+        size_t get_vertex_count() const override
         {
             return m_mesh.m_vertices.size();
         }
 
-        virtual Vector3d get_vertex(const size_t i) const override
+        Vector3d get_vertex(const size_t i) const override
         {
             return m_mesh.m_vertices[i];
         }
 
-        virtual size_t get_vertex_normal_count() const override
+        size_t get_vertex_normal_count() const override
         {
             return m_mesh.m_vertex_normals.size();
         }
 
-        virtual Vector3d get_vertex_normal(const size_t i) const override
+        Vector3d get_vertex_normal(const size_t i) const override
         {
             return m_mesh.m_vertex_normals[i];
         }
 
-        virtual size_t get_tex_coords_count() const override
+        size_t get_tex_coords_count() const override
         {
             return m_mesh.m_tex_coords.size();
         }
 
-        virtual Vector2d get_tex_coords(const size_t i) const override
+        Vector2d get_tex_coords(const size_t i) const override
         {
             return m_mesh.m_tex_coords[i];
         }
 
-        virtual size_t get_material_slot_count() const override
+        size_t get_material_slot_count() const override
         {
             return m_mesh.m_material_slots.size();
         }
 
-        virtual const char* get_material_slot(const size_t i) const override
+        const char* get_material_slot(const size_t i) const override
         {
             return m_mesh.m_material_slots[i].c_str();
         }
 
-        virtual size_t get_face_count() const
+        size_t get_face_count() const override
         {
             return m_mesh.m_faces.size();
         }
 
-        virtual size_t get_face_vertex_count(const size_t face_index) const
+        size_t get_face_vertex_count(const size_t face_index) const override
         {
             return m_mesh.m_faces[face_index].m_vertices.size();
         }
 
-        virtual size_t get_face_vertex(const size_t face_index, const size_t vertex_index) const
+        size_t get_face_vertex(const size_t face_index, const size_t vertex_index) const override
         {
             return m_mesh.m_faces[face_index].m_vertices[vertex_index];
         }
 
-        virtual size_t get_face_vertex_normal(const size_t face_index, const size_t vertex_index) const
+        size_t get_face_vertex_normal(const size_t face_index, const size_t vertex_index) const override
         {
             return m_mesh.m_faces[face_index].m_vertex_normals[vertex_index];
         }
 
-        virtual size_t get_face_tex_coords(const size_t face_index, const size_t vertex_index) const
+        size_t get_face_tex_coords(const size_t face_index, const size_t vertex_index) const override
         {
             return m_mesh.m_faces[face_index].m_vertex_tex_coords[vertex_index];
         }
 
-        virtual size_t get_face_material(const size_t face_index) const
+        size_t get_face_material(const size_t face_index) const override
         {
             return m_mesh.m_faces[face_index].m_material;
         }

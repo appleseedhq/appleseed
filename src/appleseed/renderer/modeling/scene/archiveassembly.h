@@ -61,16 +61,16 @@ class APPLESEED_DLLSYMBOL ArchiveAssembly
 {
   public:
     // Return a string identifying the model of this entity.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Expose asset file paths referenced by this entity to the outside.
-    virtual void collect_asset_paths(foundation::StringArray& paths) const override;
-    virtual void update_asset_paths(const foundation::StringDictionary& mappings) override;
+    void collect_asset_paths(foundation::StringArray& paths) const override;
+    void update_asset_paths(const foundation::StringDictionary& mappings) override;
 
-    virtual bool expand_contents(
+    bool expand_contents(
         const Project&              project,
         const Assembly*             parent,
         foundation::IAbortSwitch*   abort_switch = nullptr) override;
@@ -96,13 +96,13 @@ class APPLESEED_DLLSYMBOL ArchiveAssemblyFactory
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Return a string identifying this assembly model.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Create a new assembly.
-    virtual foundation::auto_release_ptr<Assembly> create(
+    foundation::auto_release_ptr<Assembly> create(
         const char*         name,
         const ParamArray&   params = ParamArray()) const override;
 

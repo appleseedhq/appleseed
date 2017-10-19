@@ -55,10 +55,10 @@ class APPLESEED_DLLSYMBOL GenericMeshFileWriter
     explicit GenericMeshFileWriter(const char* filename);
 
     // Destructor.
-    virtual ~GenericMeshFileWriter();
+    ~GenericMeshFileWriter() override;
 
     // Write a mesh.
-    virtual void write(const IMeshWalker& walker) override;
+    void write(const IMeshWalker& walker) override;
 
   private:
     IMeshFileWriter* m_writer;

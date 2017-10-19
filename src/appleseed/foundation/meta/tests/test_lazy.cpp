@@ -61,7 +61,7 @@ namespace
         {
         }
 
-        virtual unique_ptr<Object> create()
+        unique_ptr<Object> create() override
         {
             return unique_ptr<Object>(new Object(m_value));
         }
@@ -102,7 +102,7 @@ TEST_SUITE(Foundation_Utility_Lazy_Access)
 
     struct NullObjectFactory : public ObjectFactory
     {
-        virtual unique_ptr<Object> create()
+        unique_ptr<Object> create() override
         {
             return unique_ptr<Object>(nullptr);
         }

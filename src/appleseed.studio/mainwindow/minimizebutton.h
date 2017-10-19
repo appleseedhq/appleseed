@@ -51,7 +51,7 @@ class MinimizeButton
     void set_fullscreen(const bool on);
 
   protected:
-    void mousePressEvent(QMouseEvent* event);
+    void mousePressEvent(QMouseEvent* event) override;
 
   private:
     QDockWidget*    m_dock_widget;

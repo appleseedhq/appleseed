@@ -62,12 +62,12 @@ namespace
       : public ITileRenderer
     {
       public:
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual void render_tile(
+        void render_tile(
             const Frame&    frame,
             const size_t    tile_x,
             const size_t    tile_y,
@@ -85,7 +85,7 @@ namespace
             tile.clear(Color4f(0.0f, 0.0f, 0.0f, 1.0f));
         }
 
-        virtual StatisticsVector get_statistics() const override
+        StatisticsVector get_statistics() const override
         {
             return StatisticsVector();
         }

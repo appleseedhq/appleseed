@@ -98,17 +98,17 @@ namespace
                     "standard_dipole");
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return "osl_bssrdf";
         }
 
-        virtual bool on_frame_begin(
+        bool on_frame_begin(
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
@@ -129,7 +129,7 @@ namespace
             return true;
         }
 
-        virtual void* evaluate_inputs(
+        void* evaluate_inputs(
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point) const override
         {
@@ -153,7 +153,7 @@ namespace
             return c;
         }
 
-        virtual bool sample(
+        bool sample(
             const ShadingContext&   shading_context,
             SamplingContext&        sampling_context,
             const void*             data,
@@ -198,7 +198,7 @@ namespace
             return false;
         }
 
-        virtual void evaluate(
+        void evaluate(
             const void*             data,
             const ShadingPoint&     outgoing_point,
             const Vector3f&         outgoing_dir,

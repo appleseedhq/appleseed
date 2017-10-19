@@ -83,7 +83,7 @@ class APPLESEED_DLLSYMBOL EnvironmentEDF
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
+    bool on_frame_begin(
         const Project&              project,
         const BaseGroup*            parent,
         OnFrameBeginRecorder&       recorder,

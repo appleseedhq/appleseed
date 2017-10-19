@@ -69,7 +69,7 @@ class APPLESEED_DLLSYMBOL Project
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Set/get the format revision of the project.
     // The default value is renderer::ProjectFormatRevision (see projectformatrevision.h).
@@ -138,7 +138,7 @@ class APPLESEED_DLLSYMBOL Project
     explicit Project(const char* name);
 
     // Destructor.
-    ~Project();
+    ~Project() override;
 
     void add_base_configurations();
     void add_default_configuration(const char* name, const char* base_name);

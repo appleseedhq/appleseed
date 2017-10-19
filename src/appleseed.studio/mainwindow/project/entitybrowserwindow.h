@@ -58,7 +58,7 @@ class EntityBrowserWindow
         QWidget*                            parent,
         const std::string&                  window_title);
 
-    ~EntityBrowserWindow();
+    ~EntityBrowserWindow() override;
 
     void add_items_page(
         const std::string&                  page_name,

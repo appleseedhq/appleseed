@@ -72,7 +72,7 @@ class APPLESEED_DLLSYMBOL Light
         const ParamArray&               params);
 
     // Destructor.
-    ~Light();
+    ~Light() override;
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
@@ -97,7 +97,7 @@ class APPLESEED_DLLSYMBOL Light
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
+    bool on_frame_begin(
         const Project&                  project,
         const BaseGroup*                parent,
         OnFrameBeginRecorder&           recorder,

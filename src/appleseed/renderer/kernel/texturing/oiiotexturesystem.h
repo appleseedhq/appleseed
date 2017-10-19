@@ -44,7 +44,7 @@ class OIIOTextureSystem
     void release();
 
   private:
-    virtual ~OIIOTextureSystem();
+    ~OIIOTextureSystem() override;
 };
 
 class OIIOTextureSystemFactory

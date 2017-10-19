@@ -52,55 +52,55 @@ class APPLESEED_DLLSYMBOL MeshBuilderBase
   : public IMeshBuilder
 {
   public:
-    virtual void begin_mesh(const char* name) override
+    void begin_mesh(const char* name) override
     {
     }
 
-    virtual size_t push_vertex(const Vector3d& v) override
-    {
-        return 0;
-    }
-
-    virtual size_t push_vertex_normal(const Vector3d& v) override
+    size_t push_vertex(const Vector3d& v) override
     {
         return 0;
     }
 
-    virtual size_t push_tex_coords(const Vector2d& v) override
+    size_t push_vertex_normal(const Vector3d& v) override
     {
         return 0;
     }
 
-    virtual size_t push_material_slot(const char* name) override
+    size_t push_tex_coords(const Vector2d& v) override
     {
         return 0;
     }
 
-    virtual void begin_face(const size_t vertex_count) override
+    size_t push_material_slot(const char* name) override
+    {
+        return 0;
+    }
+
+    void begin_face(const size_t vertex_count) override
     {
     }
 
-    virtual void set_face_vertices(const size_t vertices[]) override
+    void set_face_vertices(const size_t vertices[]) override
     {
     }
 
-    virtual void set_face_vertex_normals(const size_t vertex_normals[]) override
+    void set_face_vertex_normals(const size_t vertex_normals[]) override
     {
     }
 
-    virtual void set_face_vertex_tex_coords(const size_t tex_coords[]) override
+    void set_face_vertex_tex_coords(const size_t tex_coords[]) override
     {
     }
 
-    virtual void set_face_material(const size_t material) override
+    void set_face_material(const size_t material) override
     {
     }
 
-    virtual void end_face() override
+    void end_face() override
     {
     }
 
-    virtual void end_mesh() override
+    void end_mesh() override
     {
     }
 };

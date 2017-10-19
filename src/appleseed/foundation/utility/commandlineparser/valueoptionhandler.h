@@ -97,7 +97,7 @@ class ValueOptionHandler
     const ValueVectorType& values() const;
 
     // Return true if this option is set.
-    virtual bool is_set() const override;
+    bool is_set() const override;
 
   private:
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_CommandLineParser_ValueOptionHandler, Parse_GivenMultipleInvocations_AccumulateValues);
@@ -108,19 +108,19 @@ class ValueOptionHandler
     ValueVectorType     m_values;
 
     // Return a description of this option.
-    virtual std::string get_description() const override;
+    std::string get_description() const override;
 
     // Return the maximum number of values this option can handle.
-    virtual size_t get_max_value_count() const override;
+    size_t get_max_value_count() const override;
 
     // Parse a vector of values.
-    virtual void parse(
+    void parse(
         const std::string&  name,
         const StringVector& vals,
         ParseResults&       results) override;
 
     // Print this option to a string.
-    virtual void print(std::string& s) const override;
+    void print(std::string& s) const override;
 };
 
 

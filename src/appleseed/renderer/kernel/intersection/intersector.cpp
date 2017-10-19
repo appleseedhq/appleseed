@@ -437,12 +437,12 @@ namespace
         {
         }
 
-        virtual unique_ptr<Entry> clone() const override
+        unique_ptr<Entry> clone() const override
         {
             return unique_ptr<Entry>(new RayCountStatisticsEntry(*this));
         }
 
-        virtual void merge(const Entry* other) override
+        void merge(const Entry* other) override
         {
             const RayCountStatisticsEntry* typed_other =
                 cast<RayCountStatisticsEntry>(other);
@@ -451,7 +451,7 @@ namespace
             m_total_ray_count += typed_other->m_total_ray_count;
         }
 
-        virtual string to_string() const override
+        string to_string() const override
         {
             return pretty_uint(m_ray_count) + " (" + pretty_percent(m_ray_count, m_total_ray_count) + ")";
         }

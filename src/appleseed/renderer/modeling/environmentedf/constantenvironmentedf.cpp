@@ -77,17 +77,17 @@ namespace
             m_inputs.declare("radiance", InputFormatSpectralIlluminance);
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
+        bool on_frame_begin(
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
@@ -106,7 +106,7 @@ namespace
             return true;
         }
 
-        virtual void sample(
+        void sample(
             const ShadingContext&   shading_context,
             const Vector2f&         s,
             Vector3f&               outgoing,
@@ -118,7 +118,7 @@ namespace
             probability = RcpFourPi<float>();
         }
 
-        virtual void evaluate(
+        void evaluate(
             const ShadingContext&   shading_context,
             const Vector3f&         outgoing,
             Spectrum&               value) const override
@@ -127,7 +127,7 @@ namespace
             value = m_values.m_radiance;
         }
 
-        virtual void evaluate(
+        void evaluate(
             const ShadingContext&   shading_context,
             const Vector3f&         outgoing,
             Spectrum&               value,
@@ -138,7 +138,7 @@ namespace
             probability = RcpFourPi<float>();
         }
 
-        virtual float evaluate_pdf(
+        float evaluate_pdf(
             const Vector3f&         outgoing) const override
         {
             assert(is_normalized(outgoing));

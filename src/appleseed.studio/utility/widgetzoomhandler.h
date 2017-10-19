@@ -54,7 +54,7 @@ class WidgetZoomHandler
         QScrollArea*    scroll_area,
         QWidget*        content_widget);
 
-    ~WidgetZoomHandler();
+    ~WidgetZoomHandler() override;
 
     struct State
     {
@@ -74,7 +74,7 @@ class WidgetZoomHandler
     double              m_max_scale_factor;
     State               m_state;
 
-    virtual bool eventFilter(QObject* object, QEvent* event);
+    bool eventFilter(QObject* object, QEvent* event) override;
 
     bool handle_key_press_event(QKeyEvent* event);
     bool handle_wheel_event(QWheelEvent* event);

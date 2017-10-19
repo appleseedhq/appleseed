@@ -61,7 +61,7 @@ class PythonSyntaxHighlighter
     PythonSyntaxHighlighter(QTextDocument* parent = nullptr);
 
   protected:
-    void highlightBlock(const QString& text);
+    void highlightBlock(const QString& text) override;
 
   private:
     QStringList keywords;
