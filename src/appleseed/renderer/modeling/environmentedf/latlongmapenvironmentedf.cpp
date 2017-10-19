@@ -583,13 +583,4 @@ auto_release_ptr<EnvironmentEDF> LatLongMapEnvironmentEDFFactory::create(
             new LatLongMapEnvironmentEDF(name, params));
 }
 
-auto_release_ptr<EnvironmentEDF> LatLongMapEnvironmentEDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return
-        auto_release_ptr<EnvironmentEDF>(
-            new LatLongMapEnvironmentEDF(name, params));
-}
-
 }   // namespace renderer

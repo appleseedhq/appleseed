@@ -67,10 +67,6 @@ class APPLESEED_DLLSYMBOL EmissionAOVFactory
     // Create a new AOV instance.
     foundation::auto_release_ptr<AOV> create(
         const ParamArray&   params) const override;
-
-    // Static variant of the create() method above.
-    static foundation::auto_release_ptr<AOV> static_create(
-        const ParamArray&   params);
 };
 
 }       // namespace renderer

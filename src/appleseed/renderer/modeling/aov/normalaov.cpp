@@ -199,10 +199,4 @@ auto_release_ptr<AOV> NormalAOVFactory::create(
     return auto_release_ptr<AOV>(new NormalAOV(params));
 }
 
-auto_release_ptr<AOV> NormalAOVFactory::static_create(
-    const ParamArray&   params)
-{
-    return auto_release_ptr<AOV>(new NormalAOV(params));
-}
-
 }   // namespace renderer

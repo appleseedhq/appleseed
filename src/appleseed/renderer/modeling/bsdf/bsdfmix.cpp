@@ -389,11 +389,4 @@ auto_release_ptr<BSDF> BSDFMixFactory::create(
     return auto_release_ptr<BSDF>(new BSDFMix(name, params));
 }
 
-auto_release_ptr<BSDF> BSDFMixFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<BSDF>(new BSDFMix(name, params));
-}
-
 }   // namespace renderer

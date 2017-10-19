@@ -297,11 +297,4 @@ auto_release_ptr<EDF> ConeEDFFactory::create(
     return auto_release_ptr<EDF>(new ConeEDF(name, params));
 }
 
-auto_release_ptr<EDF> ConeEDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<EDF>(new ConeEDF(name, params));
-}
-
 }   // namespace renderer

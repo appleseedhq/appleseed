@@ -838,11 +838,4 @@ auto_release_ptr<Material> DisneyMaterialFactory::create(
     return auto_release_ptr<Material>(new DisneyMaterial(name, params));
 }
 
-auto_release_ptr<Material> DisneyMaterialFactory::static_create(
-    const char*             name,
-    const ParamArray&       params)
-{
-    return auto_release_ptr<Material>(new DisneyMaterial(name, params));
-}
-
 }   // namespace renderer

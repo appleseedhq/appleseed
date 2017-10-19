@@ -604,11 +604,4 @@ auto_release_ptr<BSDF> AshikhminBRDFFactory::create(
     return auto_release_ptr<BSDF>(new AshikhminBRDF(name, params));
 }
 
-auto_release_ptr<BSDF> AshikhminBRDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<BSDF>(new AshikhminBRDF(name, params));
-}
-
 }   // namespace renderer

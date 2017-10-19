@@ -333,7 +333,7 @@ SeparableBSSRDF::SeparableBSSRDF(
   : BSSRDF(name, params)
 {
     const string brdf_name = string(name) + "_brdf";
-    m_brdf = LambertianBRDFFactory::static_create(brdf_name.c_str(), ParamArray()).release();
+    m_brdf = LambertianBRDFFactory().create(brdf_name.c_str(), ParamArray()).release();
     m_brdf_data.m_reflectance.set(1.0f);
     m_brdf_data.m_reflectance_multiplier = 1.0f;
 }

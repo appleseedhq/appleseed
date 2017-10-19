@@ -177,11 +177,4 @@ auto_release_ptr<BSSRDF> BetterDipoleBSSRDFFactory::create(
     return auto_release_ptr<BSSRDF>(new BetterDipoleBSSRDF(name, params));
 }
 
-auto_release_ptr<BSSRDF> BetterDipoleBSSRDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<BSSRDF>(new BetterDipoleBSSRDF(name, params));
-}
-
 }   // namespace renderer

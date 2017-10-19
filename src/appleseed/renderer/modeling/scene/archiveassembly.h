@@ -105,11 +105,6 @@ class APPLESEED_DLLSYMBOL ArchiveAssemblyFactory
     foundation::auto_release_ptr<Assembly> create(
         const char*         name,
         const ParamArray&   params = ParamArray()) const override;
-
-    // Static variant of the create() method above.
-    static foundation::auto_release_ptr<Assembly> static_create(
-        const char*         name,
-        const ParamArray&   params = ParamArray());
 };
 
 }       // namespace renderer

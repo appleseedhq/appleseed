@@ -224,11 +224,4 @@ auto_release_ptr<BSDF> LambertianBRDFFactory::create(
     return auto_release_ptr<BSDF>(new LambertianBRDF(name, params));
 }
 
-auto_release_ptr<BSDF> LambertianBRDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<BSDF>(new LambertianBRDF(name, params));
-}
-
 }   // namespace renderer

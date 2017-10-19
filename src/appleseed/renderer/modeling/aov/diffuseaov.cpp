@@ -274,12 +274,6 @@ auto_release_ptr<AOV> DiffuseAOVFactory::create(
     return auto_release_ptr<AOV>(new DiffuseAOV(params));
 }
 
-auto_release_ptr<AOV> DiffuseAOVFactory::static_create(
-    const ParamArray&   params)
-{
-    return auto_release_ptr<AOV>(new DiffuseAOV(params));
-}
-
 
 //
 // DirectDiffuseAOVFactory class implementation.
@@ -311,12 +305,6 @@ auto_release_ptr<AOV> DirectDiffuseAOVFactory::create(
     return auto_release_ptr<AOV>(new DirectDiffuseAOV(params));
 }
 
-auto_release_ptr<AOV> DirectDiffuseAOVFactory::static_create(
-    const ParamArray&   params)
-{
-    return auto_release_ptr<AOV>(new DirectDiffuseAOV(params));
-}
-
 
 //
 // IndirectDiffuseAOVFactory class implementation.
@@ -344,12 +332,6 @@ DictionaryArray IndirectDiffuseAOVFactory::get_input_metadata() const
 
 auto_release_ptr<AOV> IndirectDiffuseAOVFactory::create(
     const ParamArray&   params) const
-{
-    return auto_release_ptr<AOV>(new IndirectDiffuseAOV(params));
-}
-
-auto_release_ptr<AOV> IndirectDiffuseAOVFactory::static_create(
-    const ParamArray&   params)
 {
     return auto_release_ptr<AOV>(new IndirectDiffuseAOV(params));
 }

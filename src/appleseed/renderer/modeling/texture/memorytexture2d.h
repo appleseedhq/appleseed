@@ -73,12 +73,6 @@ class APPLESEED_DLLSYMBOL MemoryTexture2dFactory
         const char*                                     name,
         const ParamArray&                               params,
         const foundation::SearchPaths&                  search_paths) const override;
-
-    // Static variant of the create() method above.
-    static foundation::auto_release_ptr<Texture> static_create(
-        const char*                                     name,
-        const ParamArray&                               params,
-        foundation::auto_release_ptr<foundation::Image> image);
 };
 
 }       // namespace renderer

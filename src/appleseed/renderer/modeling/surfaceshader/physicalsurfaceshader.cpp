@@ -182,11 +182,4 @@ auto_release_ptr<SurfaceShader> PhysicalSurfaceShaderFactory::create(
     return auto_release_ptr<SurfaceShader>(new PhysicalSurfaceShader(name, params));
 }
 
-auto_release_ptr<SurfaceShader> PhysicalSurfaceShaderFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<SurfaceShader>(new PhysicalSurfaceShader(name, params));
-}
-
 }   // namespace renderer

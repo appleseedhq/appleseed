@@ -358,11 +358,4 @@ auto_release_ptr<BSDF> BSDFBlendFactory::create(
     return auto_release_ptr<BSDF>(new BSDFBlend(name, params));
 }
 
-auto_release_ptr<BSDF> BSDFBlendFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<BSDF>(new BSDFBlend(name, params));
-}
-
 }   // namespace renderer

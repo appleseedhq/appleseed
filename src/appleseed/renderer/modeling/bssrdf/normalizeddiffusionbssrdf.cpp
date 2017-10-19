@@ -375,11 +375,4 @@ auto_release_ptr<BSSRDF> NormalizedDiffusionBSSRDFFactory::create(
     return auto_release_ptr<BSSRDF>(new NormalizedDiffusionBSSRDF(name, params));
 }
 
-auto_release_ptr<BSSRDF> NormalizedDiffusionBSSRDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<BSSRDF>(new NormalizedDiffusionBSSRDF(name, params));
-}
-
 }   // namespace renderer

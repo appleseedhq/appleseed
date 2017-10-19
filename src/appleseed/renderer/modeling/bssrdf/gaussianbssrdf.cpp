@@ -441,11 +441,4 @@ auto_release_ptr<BSSRDF> GaussianBSSRDFFactory::create(
     return auto_release_ptr<BSSRDF>(new GaussianBSSRDF(name, params));
 }
 
-auto_release_ptr<BSSRDF> GaussianBSSRDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<BSSRDF>(new GaussianBSSRDF(name, params));
-}
-
 }   // namespace renderer

@@ -177,11 +177,4 @@ auto_release_ptr<Material> GenericMaterialFactory::create(
     return auto_release_ptr<Material>(new GenericMaterial(name, params));
 }
 
-auto_release_ptr<Material> GenericMaterialFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<Material>(new GenericMaterial(name, params));
-}
-
 }   // namespace renderer

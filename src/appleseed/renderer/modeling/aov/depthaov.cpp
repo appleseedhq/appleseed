@@ -193,10 +193,4 @@ auto_release_ptr<AOV> DepthAOVFactory::create(
     return auto_release_ptr<AOV>(new DepthAOV(params));
 }
 
-auto_release_ptr<AOV> DepthAOVFactory::static_create(
-    const ParamArray&   params)
-{
-    return auto_release_ptr<AOV>(new DepthAOV(params));
-}
-
 }   // namespace renderer

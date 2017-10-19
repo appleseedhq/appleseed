@@ -349,11 +349,4 @@ auto_release_ptr<Light> SpotLightFactory::create(
     return auto_release_ptr<Light>(new SpotLight(name, params));
 }
 
-auto_release_ptr<Light> SpotLightFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<Light>(new SpotLight(name, params));
-}
-
 }   // namespace renderer

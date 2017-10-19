@@ -302,11 +302,4 @@ auto_release_ptr<BSDF> BlinnBRDFFactory::create(
     return auto_release_ptr<BSDF>(new BlinnBRDF(name, params));
 }
 
-auto_release_ptr<BSDF> BlinnBRDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<BSDF>(new BlinnBRDF(name, params));
-}
-
 }   // namespace renderer

@@ -194,11 +194,4 @@ auto_release_ptr<Assembly> PluginAssemblyFactory::create(
     return auto_release_ptr<Assembly>(new PluginAssembly(name, params));
 }
 
-auto_release_ptr<Assembly> PluginAssemblyFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<Assembly>(new PluginAssembly(name, params));
-}
-
 }   // namespace renderer
