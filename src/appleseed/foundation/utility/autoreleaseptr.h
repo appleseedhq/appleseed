@@ -126,14 +126,14 @@ class auto_release_ptr
     template <typename U>
     operator auto_release_ptr_ref<U>() throw()
     {
-        return auto_release_ptr_ref<U>(release());
+        return auto_release_ptr_ref<U>(static_cast<U*>(release()));
     }
 
     // Automatic conversion to an auto_release_ptr of a different type.
     template <typename U>
     operator auto_release_ptr<U>() throw()
     {
-        return auto_release_ptr<U>(release());
+        return auto_release_ptr<U>(static_cast<U*>(release()));
     }
 
     // Dereference the wrapped pointer.
