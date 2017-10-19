@@ -68,7 +68,7 @@ void* aligned_malloc(const size_t size, size_t alignment)
     if (!unaligned_ptr)
     {
         log_allocation_failure(total_size);
-        return 0;
+        return nullptr;
     }
 
     // Compute the next aligned address.

@@ -65,7 +65,7 @@ class CameraController
         renderer::Project&  project);
 
     // Destructor.
-    ~CameraController();
+    ~CameraController() override;
 
     // When enabled, the camera controller will track mouse movements and emit signals.
     void set_enabled(const bool enabled);
@@ -96,7 +96,7 @@ class CameraController
 
     void configure_controller();
 
-    virtual bool eventFilter(QObject* object, QEvent* event) override;
+    bool eventFilter(QObject* object, QEvent* event) override;
 
     bool handle_mouse_button_press_event(const QMouseEvent* event);
     bool handle_mouse_button_release_event(const QMouseEvent* event);

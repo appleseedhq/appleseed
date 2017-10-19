@@ -71,7 +71,7 @@ struct EntityTraits<Environment>
         Environment*                                entity,
         ParentEntity&                               parent)
     {
-        parent.set_environment(foundation::auto_release_ptr<Environment>(0));
+        parent.set_environment(foundation::auto_release_ptr<Environment>(nullptr));
     }
 };
 

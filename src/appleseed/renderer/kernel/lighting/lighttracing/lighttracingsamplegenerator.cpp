@@ -197,7 +197,7 @@ namespace
                 m_shadergroup_exec,
                 m_arena,
                 generator_index,
-                0,
+                nullptr,
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations)
           , m_light_sample_count(0)
@@ -215,18 +215,18 @@ namespace
             m_shutter_close_time = camera->get_shutter_close_time();
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual void reset() override
+        void reset() override
         {
             SampleGeneratorBase::reset();
             m_rng = SamplingContext::RNGType();
         }
 
-        virtual void generate_samples(
+        void generate_samples(
             const size_t                sample_count,
             SampleAccumulationBuffer&   buffer,
             IAbortSwitch&               abort_switch) override
@@ -249,7 +249,7 @@ namespace
             }
         }
 
-        virtual StatisticsVector get_statistics() const override
+        StatisticsVector get_statistics() const override
         {
             Statistics stats;
             stats.insert("path count", m_path_count);
@@ -420,7 +420,7 @@ namespace
             void on_hit(const PathVertex& vertex)
             {
                 // Don't process this vertex if there is no BSDF.
-                if (vertex.m_bsdf == 0)
+                if (vertex.m_bsdf == nullptr)
                     return;
 
                 // Connect the path vertex with the camera.
@@ -544,7 +544,7 @@ namespace
         float                           m_shutter_open_time;
         float                           m_shutter_close_time;
 
-        virtual size_t generate_samples(
+        size_t generate_samples(
             const size_t                sequence_index,
             SampleVector&               samples) override
         {

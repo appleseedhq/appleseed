@@ -114,22 +114,22 @@ namespace
             m_inputs.declare("ior", InputFormatFloat, "1.5");
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual size_t compute_input_data_size() const override
+        size_t compute_input_data_size() const override
         {
             return sizeof(InputValues);
         }
 
-        virtual void prepare_inputs(
+        void prepare_inputs(
             Arena&                      arena,
             const ShadingPoint&         shading_point,
             void*                       data) const override
@@ -139,7 +139,7 @@ namespace
             values->m_precomputed.m_outside_ior = shading_point.get_ray().get_current_ior();
         }
 
-        virtual void sample(
+        void sample(
             SamplingContext&            sampling_context,
             const void*                 data,
             const bool                  adjoint,
@@ -170,7 +170,7 @@ namespace
             sample.m_value.m_beauty = sample.m_value.m_glossy;
         }
 
-        virtual float evaluate(
+        float evaluate(
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
@@ -210,7 +210,7 @@ namespace
             return pdf;
         }
 
-        virtual float evaluate_pdf(
+        float evaluate_pdf(
             const void*                 data,
             const bool                  adjoint,
             const Vector3f&             geometric_normal,

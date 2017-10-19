@@ -71,7 +71,7 @@ class TileJob
         foundation::IAbortSwitch&   abort_switch);
 
     // Execute the job.
-    virtual void execute(const size_t thread_index);
+    void execute(const size_t thread_index) override;
 
   private:
     const TileRendererVector&       m_tile_renderers;

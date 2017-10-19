@@ -83,7 +83,7 @@ AssemblyInstance::AssemblyInstance(
     m_vis_flags = VisibilityFlags::parse(params.child("visibility"), message_context);
 
     // No bound assembly yet.
-    m_assembly = 0;
+    m_assembly = nullptr;
 }
 
 AssemblyInstance::~AssemblyInstance()
@@ -119,7 +119,7 @@ Assembly* AssemblyInstance::find_assembly() const
         parent = parent->get_parent();
     }
 
-    return 0;
+    return nullptr;
 }
 
 GAABB3 AssemblyInstance::compute_parent_bbox() const
@@ -139,18 +139,18 @@ GAABB3 AssemblyInstance::compute_parent_bbox() const
 
 void AssemblyInstance::unbind_assembly()
 {
-    m_assembly = 0;
+    m_assembly = nullptr;
 }
 
 void AssemblyInstance::bind_assembly(const AssemblyContainer& assemblies)
 {
-    if (m_assembly == 0)
+    if (m_assembly == nullptr)
         m_assembly = assemblies.get_by_name(impl->m_assembly_name.c_str());
 }
 
 void AssemblyInstance::check_assembly() const
 {
-    if (m_assembly == 0)
+    if (m_assembly == nullptr)
         throw ExceptionUnknownEntity(impl->m_assembly_name.c_str(), this);
 }
 

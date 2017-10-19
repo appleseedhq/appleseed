@@ -138,12 +138,12 @@ namespace
         {
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual void compute_lighting(
+        void compute_lighting(
             SamplingContext&            sampling_context,
             const PixelContext&         pixel_context,
             const ShadingContext&       shading_context,
@@ -191,7 +191,7 @@ namespace
             m_path_length.insert(path_length);
         }
 
-        virtual StatisticsVector get_statistics() const override
+        StatisticsVector get_statistics() const override
         {
             Statistics stats;
             stats.insert("path count", m_path_count);
@@ -261,7 +261,7 @@ namespace
                 assert(vertex.m_prev_mode != ScatteringMode::None);
 
                 // Can't look up the environment if there's no environment EDF.
-                if (m_env_edf == 0)
+                if (m_env_edf == nullptr)
                     return;
 
                 // When IBL is disabled, only specular reflections should contribute here.

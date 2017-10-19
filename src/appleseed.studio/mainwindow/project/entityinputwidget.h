@@ -58,7 +58,7 @@ class EntityInputWidget
     Q_OBJECT
 
   public:
-    explicit EntityInputWidget(QWidget* parent = 0);
+    explicit EntityInputWidget(QWidget* parent = nullptr);
 
     void set_focus();
 
@@ -86,8 +86,8 @@ class EntityInputProxy
   public:
     explicit EntityInputProxy(EntityInputWidget* input_widget);
 
-    virtual void set(const std::string& value) override;
-    virtual std::string get() const override;
+    void set(const std::string& value) override;
+    std::string get() const override;
 
   private:
     EntityInputWidget* m_input_widget;
@@ -104,7 +104,7 @@ class ColorMapInputWidget
     Q_OBJECT
 
   public:
-    explicit ColorMapInputWidget(QWidget* parent = 0);
+    explicit ColorMapInputWidget(QWidget* parent = nullptr);
 
     void set_validator(QValidator* validator);
     void set_default_value(const QString& default_value);
@@ -138,8 +138,8 @@ class ColorMapInputProxy
   public:
     explicit ColorMapInputProxy(ColorMapInputWidget* input_widget);
 
-    virtual void set(const std::string& value) override;
-    virtual std::string get() const override;
+    void set(const std::string& value) override;
+    std::string get() const override;
 
   private:
     ColorMapInputWidget* m_input_widget;

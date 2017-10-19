@@ -78,12 +78,12 @@ class RendererServices
     void initialize(TextureStore& texture_store);
 
     // Return a pointer to the texture system.
-    virtual OIIO::TextureSystem* texturesys() const override;
+    OIIO::TextureSystem* texturesys() const override;
 
     // Get the 4x4 matrix that transforms by the specified
     // transformation at the given time.  Return true if ok, false
     // on error.
-    virtual bool get_matrix(
+    bool get_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
         OSL::TransformationPtr      xform,
@@ -94,7 +94,7 @@ class RendererServices
     // error.  The default implementation is to use get_matrix and
     // invert it, but a particular renderer may have a better technique
     // and overload the implementation.
-    virtual bool get_inverse_matrix(
+    bool get_inverse_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
         OSL::TransformationPtr      xform,
@@ -104,7 +104,7 @@ class RendererServices
     // transformation.  Return true if ok, false on error.  Since no
     // time value is given, also return false if the transformation may
     // be time-varying.
-    virtual bool get_matrix(
+    bool get_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
         OSL::TransformationPtr      xform) override;
@@ -115,7 +115,7 @@ class RendererServices
     // be time-varying.  The default implementation is to use
     // get_matrix and invert it, but a particular renderer may have a
     // better technique and overload the implementation.
-    virtual bool get_inverse_matrix(
+    bool get_inverse_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
         OSL::TransformationPtr      xform) override;
@@ -123,7 +123,7 @@ class RendererServices
     // Get the 4x4 matrix that transforms points from the named
     // 'from' coordinate system to "common" space at the given time.
     // Returns true if ok, false if the named matrix is not known.
-    virtual bool get_matrix(
+    bool get_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
         OIIO::ustring               from,
@@ -134,7 +134,7 @@ class RendererServices
     // default implementation is to use get_matrix and invert it, but a
     // particular renderer may have a better technique and overload the
     // implementation.
-    virtual bool get_inverse_matrix(
+    bool get_inverse_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
         OSL::ustring                to,
@@ -144,7 +144,7 @@ class RendererServices
     // Since there is no time value passed, return false if the
     // transformation may be time-varying(as well as if it's not found
     // at all).
-    virtual bool get_matrix(
+    bool get_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
         OIIO::ustring               from) override;
@@ -156,7 +156,7 @@ class RendererServices
     // implementation is to use get_matrix and invert it, but a
     // particular renderer may have a better technique and overload the
     // implementation.
-    virtual bool get_inverse_matrix(
+    bool get_inverse_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
         OSL::ustring                to) override;
@@ -184,7 +184,7 @@ class RendererServices
     // Note to RendererServices implementations: just return 'false'
     // if there isn't a special nonlinear transformation between the
     // two spaces.
-    virtual bool transform_points(
+    bool transform_points(
         OSL::ShaderGlobals*         sg,
         OSL::ustring                from,
         OSL::ustring                to,
@@ -229,7 +229,7 @@ class RendererServices
     // run on. Be robust to this situation, return 'true' (retrieve the
     // attribute) if you can (known object and attribute name), but
     // otherwise just fail by returning 'false'.
-    virtual bool get_attribute(
+    bool get_attribute(
         OSL::ShaderGlobals*         sg,
         bool                        derivatives,
         OIIO::ustring               object,
@@ -239,7 +239,7 @@ class RendererServices
 
     // Similar to get_attribute();  this method will return the 'index'
     // element of an attribute array.
-    virtual bool get_array_attribute(
+    bool get_array_attribute(
         OSL::ShaderGlobals*         sg,
         bool                        derivatives,
         OIIO::ustring               object,
@@ -251,7 +251,7 @@ class RendererServices
     // Get the named user-data from the current object and write it into
     // 'val'. If derivatives is true, the derivatives should be written into val
     // as well. Return false if no user-data with the given name and type was found.
-    virtual bool get_userdata(
+    bool get_userdata(
         bool                        derivatives,
         OIIO::ustring               name,
         OIIO::TypeDesc              type,

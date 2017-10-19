@@ -71,13 +71,13 @@ class SingleModelEntityItem
         ParentEntity&           parent,
         CollectionItem*         collection_item);
 
-    virtual foundation::Dictionary get_values() const override;
+    foundation::Dictionary get_values() const override;
 
   private:
     typedef EntityItem<Entity, ParentEntity, CollectionItem> Base;
     typedef typename renderer::EntityTraits<Entity> EntityTraitsType;
 
-    virtual void slot_edit(AttributeEditor* attribute_editor) override;
+    void slot_edit(AttributeEditor* attribute_editor) override;
 };
 
 

@@ -71,31 +71,31 @@ class TextureSource
     const TextureInstance& get_texture_instance() const;
 
     // Compute a signature unique to this source.
-    virtual foundation::uint64 compute_signature() const override;
+    foundation::uint64 compute_signature() const override;
 
     // Evaluate the source at a given shading point.
-    virtual void evaluate(
+    void evaluate(
         TextureCache&                       texture_cache,
         const foundation::Vector2f&         uv,
         float&                              scalar) const override;
-    virtual void evaluate(
+    void evaluate(
         TextureCache&                       texture_cache,
         const foundation::Vector2f&         uv,
         foundation::Color3f&                linear_rgb) const override;
-    virtual void evaluate(
+    void evaluate(
         TextureCache&                       texture_cache,
         const foundation::Vector2f&         uv,
         Spectrum&                           spectrum) const override;
-    virtual void evaluate(
+    void evaluate(
         TextureCache&                       texture_cache,
         const foundation::Vector2f&         uv,
         Alpha&                              alpha) const override;
-    virtual void evaluate(
+    void evaluate(
         TextureCache&                       texture_cache,
         const foundation::Vector2f&         uv,
         foundation::Color3f&                linear_rgb,
         Alpha&                              alpha) const override;
-    virtual void evaluate(
+    void evaluate(
         TextureCache&                       texture_cache,
         const foundation::Vector2f&         uv,
         Spectrum&                           spectrum,

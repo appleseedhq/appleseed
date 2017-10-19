@@ -70,7 +70,7 @@ class ShadingContext
         OSLShaderGroupExec&         osl_shadergroup_exec,
         foundation::Arena&          arena,
         const size_t                thread_index,
-        ILightingEngine*            lighting_engine = 0,
+        ILightingEngine*            lighting_engine = nullptr,
         const float                 transparency_threshold = 0.001f,
         const size_t                max_iterations = 1000);
 
@@ -110,7 +110,7 @@ class ShadingContext
         const ShaderGroup&          shader_group,
         const ShadingPoint&         shading_point,
         Alpha&                      alpha,
-        float*                      holdout = 0) const;
+        float*                      holdout = nullptr) const;
 
     void execute_osl_emission(
         const ShaderGroup&  shader_group,

@@ -61,13 +61,13 @@ class SampleGeneratorBase
         const size_t                generator_count);
 
     // Reset the sample generator to its initial state.
-    virtual void reset();
+    void reset() override;
 
     // Generate a given number of samples and accumulate them into a buffer.
-    virtual void generate_samples(
+    void generate_samples(
         const size_t                sample_count,
         SampleAccumulationBuffer&   buffer,
-        foundation::IAbortSwitch&   abort_switch);
+        foundation::IAbortSwitch&   abort_switch) override;
 
   protected:
     typedef std::vector<Sample> SampleVector;

@@ -181,7 +181,7 @@ bool Tree<T, N>::dump_solid_leaves_to_disk(const std::string& filename) const
     // Open the file for writing.
     // todo: switch to use foundation::BufferedFile.
     std::FILE* file = std::fopen(filename.c_str(), "wt");
-    if (file == 0)
+    if (file == nullptr)
         return false;
 
     // Recursively dump the tree to disk.

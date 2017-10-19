@@ -51,7 +51,7 @@ class BenchmarkRunnerThread
 
   private:
     // The starting point for the thread.
-    virtual void run() override;
+    void run() override;
 };
 
 }       // namespace studio

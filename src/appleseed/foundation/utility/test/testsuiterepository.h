@@ -60,7 +60,7 @@ class APPLESEED_DLLSYMBOL TestSuiteRepository
     TestSuiteRepository();
 
     // Destructor (kept public for the unit tests).
-    ~TestSuiteRepository();
+    ~TestSuiteRepository() override;
 
     // Remove all test suites.
     void clear();

@@ -73,7 +73,7 @@ class APPLESEED_DLLSYMBOL BenchmarkSuiteRepository
     BenchmarkSuiteRepository();
 
     // Destructor.
-    ~BenchmarkSuiteRepository();
+    ~BenchmarkSuiteRepository() override;
 };
 
 }       // namespace foundation

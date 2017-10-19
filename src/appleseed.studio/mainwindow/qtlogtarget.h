@@ -63,10 +63,10 @@ class QtLogTarget
     explicit QtLogTarget(LogWidget* log_widget);
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Write a message.
-    virtual void write(
+    void write(
         const foundation::LogMessage::Category  category,
         const char*                             file,
         const size_t                            line,

@@ -84,17 +84,17 @@ namespace
             m_inputs.declare("osl_background", InputFormatEntity, "");
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
+        bool on_frame_begin(
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
@@ -109,16 +109,16 @@ namespace
             return true;
         }
 
-        virtual void on_frame_end(
+        void on_frame_end(
             const Project&          project,
             const BaseGroup*        parent) override
         {
-            m_shader_group = 0;
+            m_shader_group = nullptr;
 
             EnvironmentEDF::on_frame_end(project, parent);
         }
 
-        virtual void sample(
+        void sample(
             const ShadingContext&   shading_context,
             const Vector2f&         s,
             Vector3f&               outgoing,
@@ -135,7 +135,7 @@ namespace
             evaluate_osl_background(shading_context, local_outgoing, value);
         }
 
-        virtual void evaluate(
+        void evaluate(
             const ShadingContext&   shading_context,
             const Vector3f&         outgoing,
             Spectrum&               value) const override
@@ -149,7 +149,7 @@ namespace
             evaluate_osl_background(shading_context, local_outgoing, value);
         }
 
-        virtual void evaluate(
+        void evaluate(
             const ShadingContext&   shading_context,
             const Vector3f&         outgoing,
             Spectrum&               value,
@@ -165,7 +165,7 @@ namespace
             probability = RcpFourPi<float>();
         }
 
-        virtual float evaluate_pdf(
+        float evaluate_pdf(
             const Vector3f&         outgoing) const override
         {
             assert(is_normalized(outgoing));

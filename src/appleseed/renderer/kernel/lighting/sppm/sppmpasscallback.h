@@ -80,16 +80,16 @@ class SPPMPassCallback
         const SPPMParameters&           params);
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // This method is called at the beginning of a pass.
-    virtual void on_pass_begin(
+    void on_pass_begin(
         const Frame&                frame,
         foundation::JobQueue&       job_queue,
         foundation::IAbortSwitch&   abort_switch) override;
 
     // This method is called at the end of a pass.
-    virtual void on_pass_end(
+    void on_pass_end(
         const Frame&                frame,
         foundation::JobQueue&       job_queue,
         foundation::IAbortSwitch&   abort_switch) override;

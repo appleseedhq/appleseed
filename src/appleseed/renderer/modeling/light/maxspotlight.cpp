@@ -82,17 +82,17 @@ namespace
             m_inputs.declare("intensity_multiplier", InputFormatFloat, "1.0");
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
+        bool on_frame_begin(
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
@@ -120,7 +120,7 @@ namespace
             return true;
         }
 
-        virtual void sample(
+        void sample(
             const ShadingContext&   shading_context,
             const Transformd&       light_transform,
             const Vector3d&         target_point,
@@ -142,7 +142,7 @@ namespace
             probability = 1.0f;
         }
 
-        virtual void sample(
+        void sample(
             const ShadingContext&   shading_context,
             const Transformd&       light_transform,
             const Vector2d&         s,

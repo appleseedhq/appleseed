@@ -61,7 +61,7 @@ TEST_SUITE(Foundation_Utility_Memory)
 
     TEST_CASE(Align_GivenNullPointer_ReturnsNullPointer)
     {
-        EXPECT_EQ((void*)0, align((void*)0, 4));
+        EXPECT_EQ((void*)nullptr, align((void*)nullptr, 4));
     }
 
     TEST_CASE(Align_GivenUnalignedPointer_ReturnsAlignedPointer)
@@ -91,7 +91,7 @@ TEST_SUITE(Foundation_Utility_Memory)
 
     TEST_CASE(Alignment_GivenNullPointer_ReturnsMaxAlignment)
     {
-        EXPECT_EQ(32, alignment((void*)0, 32));
+        EXPECT_EQ(32, alignment((void*)nullptr, 32));
     }
 
     TEST_CASE(Alignment_GivenAlignedPointer_ReturnsAlignment)
@@ -121,7 +121,7 @@ TEST_SUITE(Foundation_Utility_Memory)
 
     TEST_CASE(IsAligned_GivenNullPointer_ReturnsTrue)
     {
-        EXPECT_TRUE(is_aligned((void*)0, 32));
+        EXPECT_TRUE(is_aligned((void*)nullptr, 32));
     }
 
     TEST_CASE(IsAligned_GivenAlignedPointer_ReturnsTrue)

@@ -111,7 +111,7 @@ class DummyEntity
 {
   public:
     explicit DummyEntity(const char* name);
-    virtual void release() override;
+    void release() override;
 };
 
 class DummyEntityReleaseCheck
@@ -121,7 +121,7 @@ class DummyEntityReleaseCheck
     bool& m_release_was_called;
 
     DummyEntityReleaseCheck(const char* name, bool& release_was_called);
-    virtual void release() override;
+    void release() override;
 };
 
 class BoundingBoxObject
@@ -132,16 +132,16 @@ class BoundingBoxObject
         const char*                 name,
         const GAABB3&               bbox);
 
-    virtual void release() override;
+    void release() override;
 
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
-    virtual GAABB3 compute_local_bbox() const override;
+    GAABB3 compute_local_bbox() const override;
 
-    virtual foundation::Lazy<RegionKit>& get_region_kit() override;
+    foundation::Lazy<RegionKit>& get_region_kit() override;
 
-    virtual size_t get_material_slot_count() const override;
-    virtual const char* get_material_slot(const size_t index) const override;
+    size_t get_material_slot_count() const override;
+    const char* get_material_slot(const size_t index) const override;
 
   private:
     GAABB3                          m_bbox;

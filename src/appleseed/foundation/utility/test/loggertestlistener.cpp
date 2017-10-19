@@ -69,25 +69,25 @@ namespace
         {
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual void begin_suite(
+        void begin_suite(
             const TestSuite&        test_suite) override
         {
             m_suite_name_printed = false;
         }
 
-        virtual void begin_case(
+        void begin_case(
             const TestSuite&        test_suite,
             const char*             test_case_name) override
         {
             m_case_name_printed = false;
         }
 
-        virtual void end_case(
+        void end_case(
             const TestSuite&        test_suite,
             const char*             test_case_name,
             const TestResult&       test_suite_result,
@@ -110,7 +110,7 @@ namespace
             }
         }
 
-        virtual void write(
+        void write(
             const TestSuite&        test_suite,
             const char*             test_case_name,
             const char*             file,

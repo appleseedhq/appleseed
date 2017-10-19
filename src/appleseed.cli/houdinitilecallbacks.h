@@ -50,9 +50,9 @@ class MPlayTileCallbackFactory
         const bool          progressive_mode,
         foundation::Logger& logger);
 
-    virtual void release() override;
+    void release() override;
 
-    virtual renderer::ITileCallback* create() override;
+    renderer::ITileCallback* create() override;
 
   private:
     std::unique_ptr<renderer::ITileCallback> m_callback;
@@ -67,9 +67,9 @@ class HRmanPipeTileCallbackFactory
         const bool          progressive_mode,
         foundation::Logger& logger);
 
-    virtual void release() override;
+    void release() override;
 
-    virtual renderer::ITileCallback* create() override;
+    renderer::ITileCallback* create() override;
 
   private:
     std::unique_ptr<renderer::ITileCallback> m_callback;

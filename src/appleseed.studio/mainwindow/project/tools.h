@@ -161,15 +161,15 @@ class QDoubleValidatorWithDefault
   : public QDoubleValidator
 {
   public:
-    explicit QDoubleValidatorWithDefault(const QString& default_value, QObject* parent = 0);
+    explicit QDoubleValidatorWithDefault(const QString& default_value, QObject* parent = nullptr);
     QDoubleValidatorWithDefault(
         const double    bottom,
         const double    top,
         const int       decimals,
         const QString&  default_value,
-        QObject*        parent = 0);
+        QObject*        parent = nullptr);
 
-    virtual QValidator::State validate(QString& input, int& pos) const override;
+    QValidator::State validate(QString& input, int& pos) const override;
 
   private:
     const QString m_default_value;

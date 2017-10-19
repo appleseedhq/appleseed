@@ -75,14 +75,14 @@ class CollectionItem
     void set_allow_creation(const bool allow);
     bool allows_creation() const;
 
-    virtual QMenu* get_single_item_context_menu() const override;
+    QMenu* get_single_item_context_menu() const override;
 
   protected:
     ParentEntity&       m_parent;
     ParentItem*         m_parent_item;
     bool                m_allow_creation;
 
-    virtual void slot_create_accepted(foundation::Dictionary values) override;
+    void slot_create_accepted(foundation::Dictionary values) override;
     void create(const foundation::Dictionary& values);
 
   private:

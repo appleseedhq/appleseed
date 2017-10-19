@@ -49,7 +49,7 @@ namespace appleseed {
 namespace shared {
 
 SuperLogger::SuperLogger()
-  : m_log_target(0)
+  : m_log_target(nullptr)
 {
     set_log_target(create_open_file_log_target(stderr));
 }

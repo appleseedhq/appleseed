@@ -252,7 +252,7 @@ namespace
 
             // Find the object referenced by this instance.
             const Object* object = object_instance.find_object();
-            if (object == 0)
+            if (object == nullptr)
                 continue;
 
             // Skip non-mesh objects.
@@ -358,7 +358,7 @@ int main(int argc, const char* argv[])
             schema_filepath.string().c_str()));
 
     // Bail out if the project couldn't be loaded.
-    if (project.get() == 0)
+    if (project.get() == nullptr)
         return 1;
 
     // Fluffify the project.

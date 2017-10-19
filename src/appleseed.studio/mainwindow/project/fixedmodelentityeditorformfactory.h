@@ -52,9 +52,9 @@ class FixedModelEntityEditorFormFactory
         const std::string&              entity_name,
         const std::string&              model);
 
-    virtual void update(
+    void update(
         const foundation::Dictionary&   values,
-        InputMetadataCollection&        metadata) const;
+        InputMetadataCollection&        metadata) const override;
 
   private:
     const FactoryRegistrar&     m_factory_registrar;

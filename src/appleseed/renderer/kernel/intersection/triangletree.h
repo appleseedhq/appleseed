@@ -174,7 +174,7 @@ class TriangleTreeFactory
         const TriangleTree::Arguments& arguments);
 
     // Create the triangle tree.
-    virtual std::unique_ptr<TriangleTree> create();
+    std::unique_ptr<TriangleTree> create() override;
 
   private:
     TriangleTree::Arguments m_arguments;
@@ -317,7 +317,7 @@ inline TriangleLeafVisitor::TriangleLeafVisitor(
   : m_tree(tree)
   , m_has_intersection_filters(!tree.m_intersection_filters.empty())
   , m_shading_point(shading_point)
-  , m_hit_triangle(0)
+  , m_hit_triangle(nullptr)
 {
 }
 

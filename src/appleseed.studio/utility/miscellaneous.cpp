@@ -316,8 +316,8 @@ QShortcut* create_window_local_shortcut(QWidget* parent, const int key)
         new QShortcut(
             QKeySequence(key),
             parent,
-            0,
-            0,
+            nullptr,
+            nullptr,
             Qt::WidgetWithChildrenShortcut);
 }
 

@@ -97,8 +97,8 @@ DisneyMaterialCustomUI::DisneyMaterialCustomUI(
     ParamArray&         settings)
   : m_project(project)
   , m_settings(settings)
-  , m_parent(0)
-  , m_layout(0)
+  , m_parent(nullptr)
+  , m_layout(nullptr)
 {
 }
 

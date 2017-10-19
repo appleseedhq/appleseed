@@ -253,7 +253,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                     m_arena,
                     0));
 
-            Base::m_scene->on_frame_begin(Base::m_project.ref(), 0, m_recorder);
+            Base::m_scene->on_frame_begin(Base::m_project.ref(), nullptr, m_recorder);
         }
 
         ~Fixture()

@@ -66,7 +66,7 @@ namespace
         {
         }
 
-        virtual void write(
+        void write(
             const PixelContext&         pixel_context,
             const ShadingPoint&         shading_point,
             const ShadingComponents&    shading_components,
@@ -97,7 +97,7 @@ namespace
         {
         }
 
-        virtual void write(
+        void write(
             const PixelContext&         pixel_context,
             const ShadingPoint&         shading_point,
             const ShadingComponents&    shading_components,
@@ -127,7 +127,7 @@ namespace
         {
         }
 
-        virtual void write(
+        void write(
             const PixelContext&         pixel_context,
             const ShadingPoint&         shading_point,
             const ShadingComponents&    shading_components,
@@ -159,17 +159,17 @@ namespace
         {
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return DiffuseModel;
         }
 
-        virtual auto_release_ptr<AOVAccumulator> create_accumulator(
+        auto_release_ptr<AOVAccumulator> create_accumulator(
             const size_t index) const override
         {
             return auto_release_ptr<AOVAccumulator>(new DiffuseAOVAccumulator(index));
@@ -192,17 +192,17 @@ namespace
         {
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return DirectDiffuseModel;
         }
 
-        virtual auto_release_ptr<AOVAccumulator> create_accumulator(
+        auto_release_ptr<AOVAccumulator> create_accumulator(
             const size_t index) const override
         {
             return auto_release_ptr<AOVAccumulator>(new DirectDiffuseAOVAccumulator(index));
@@ -225,17 +225,17 @@ namespace
         {
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return IndirectDiffuseModel;
         }
 
-        virtual auto_release_ptr<AOVAccumulator> create_accumulator(
+        auto_release_ptr<AOVAccumulator> create_accumulator(
             const size_t index) const override
         {
             return auto_release_ptr<AOVAccumulator>(new IndirectDiffuseAOVAccumulator(index));

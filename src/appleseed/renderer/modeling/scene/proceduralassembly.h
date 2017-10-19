@@ -58,7 +58,7 @@ class APPLESEED_DLLSYMBOL ProceduralAssembly
     virtual bool expand_contents(
         const Project&              project,
         const Assembly*             parent,
-        foundation::IAbortSwitch*   abort_switch = 0) = 0;
+        foundation::IAbortSwitch*   abort_switch = nullptr) = 0;
 
   protected:
     // Constructor.

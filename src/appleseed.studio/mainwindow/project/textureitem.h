@@ -69,7 +69,7 @@ class TextureItem
 
     BaseGroupItem* m_base_group_item;
 
-    virtual void delete_multiple(const QList<ItemBase*>& items) override;
+    void delete_multiple(const QList<ItemBase*>& items) override;
     void do_delete();
 };
 

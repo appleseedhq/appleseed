@@ -44,9 +44,9 @@ class StdOutTileCallbackFactory
   public:
     StdOutTileCallbackFactory();
 
-    virtual void release() override;
+    void release() override;
 
-    virtual renderer::ITileCallback* create() override;
+    renderer::ITileCallback* create() override;
 
   private:
     std::unique_ptr<renderer::ITileCallback> m_callback;

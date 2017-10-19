@@ -81,16 +81,16 @@ class APPLESEED_DLLSYMBOL GenericVolumeFactory
 {
   public:
     // Return a string identifying this volume model.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Return metadata for this volume model.
-    virtual foundation::Dictionary get_model_metadata() const override;
+    foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this volume model.
-    virtual foundation::DictionaryArray get_input_metadata() const override;
+    foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new volume instance.
-    virtual foundation::auto_release_ptr<Volume> create(
+    foundation::auto_release_ptr<Volume> create(
         const char*         name,
         const ParamArray&   params) const override;
 };

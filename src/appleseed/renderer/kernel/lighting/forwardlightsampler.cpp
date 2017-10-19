@@ -165,7 +165,7 @@ void ForwardLightSampler::sample_non_physical_lights(
     const size_t light_index = result.first;
     const float light_prob = result.second;
 
-    light_sample.m_triangle = 0;
+    light_sample.m_triangle = nullptr;
     sample_non_physical_light(
         time,
         light_index,

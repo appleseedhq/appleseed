@@ -57,16 +57,16 @@ class APPLESEED_DLLSYMBOL MaxOmniLightFactory
 {
   public:
     // Return a string identifying this light model.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Return metadata for this light model.
-    virtual foundation::Dictionary get_model_metadata() const override;
+    foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this light model.
-    virtual foundation::DictionaryArray get_input_metadata() const override;
+    foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new light instance.
-    virtual foundation::auto_release_ptr<Light> create(
+    foundation::auto_release_ptr<Light> create(
         const char*         name,
         const ParamArray&   params) const override;
 

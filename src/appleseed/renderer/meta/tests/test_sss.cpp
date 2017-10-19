@@ -106,7 +106,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             m_bssrdf->get_inputs().find("sigma_a").bind(new ScalarSource(sigma_a));
             m_bssrdf->get_inputs().find("sigma_s").bind(new ScalarSource(sigma_s));
 
-            m_bssrdf->on_frame_begin(m_project.ref(), 0, m_recorder);
+            m_bssrdf->on_frame_begin(m_project.ref(), nullptr, m_recorder);
 
             m_values.m_weight = 1.0f;
             poison(m_values.m_reflectance);
@@ -126,7 +126,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const float     rd,
             const float     mfp)
         {
-            m_bssrdf->on_frame_begin(m_project.ref(), 0, m_recorder);
+            m_bssrdf->on_frame_begin(m_project.ref(), nullptr, m_recorder);
 
             do_set_values_from_rd_mfp(m_values, rd, mfp);
 

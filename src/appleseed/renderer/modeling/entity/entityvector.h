@@ -148,7 +148,7 @@ class APPLESEED_DLLSYMBOL EntityVector
     };
 
     // Constructor.
-    explicit EntityVector(Entity* parent = 0);
+    explicit EntityVector(Entity* parent = nullptr);
 
     // Destructor.
     ~EntityVector();
@@ -249,7 +249,7 @@ class TypedEntityVector
     };
 
     // Constructor.
-    explicit TypedEntityVector(Entity* parent = 0);
+    explicit TypedEntityVector(Entity* parent = nullptr);
 
     // Insert an entity into the container and return its index.
     size_t insert(foundation::auto_release_ptr<T> entity);

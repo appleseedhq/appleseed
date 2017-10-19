@@ -54,7 +54,7 @@ class PixelInspectorHandler
         const ProjectExplorer&              project_explorer,
         const renderer::Project&            project);
 
-    ~PixelInspectorHandler();
+    ~PixelInspectorHandler() override;
 
     void set_enabled(const bool enabled);
 
@@ -67,7 +67,7 @@ class PixelInspectorHandler
     const renderer::Project&                m_project;
     bool                                    m_enabled;
 
-    virtual bool eventFilter(QObject* object, QEvent* event);
+    bool eventFilter(QObject* object, QEvent* event) override;
 
     void show_tooltip();
 };

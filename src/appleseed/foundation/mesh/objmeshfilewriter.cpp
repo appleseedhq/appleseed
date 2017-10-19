@@ -49,7 +49,7 @@ namespace foundation
 
 OBJMeshFileWriter::OBJMeshFileWriter(const string& filename)
   : m_filename(filename)
-  , m_file(0)
+  , m_file(nullptr)
   , m_base_vertex_index(1)
   , m_base_vertex_normal_index(1)
   , m_base_tex_coords_index(1)
@@ -63,11 +63,11 @@ OBJMeshFileWriter::~OBJMeshFileWriter()
 
 void OBJMeshFileWriter::write(const IMeshWalker& walker)
 {
-    if (m_file == 0)
+    if (m_file == nullptr)
     {
         // Open the file for writing.
         m_file = fopen(m_filename.c_str(), "wt");
-        if (m_file == 0)
+        if (m_file == nullptr)
             throw ExceptionIOError();
 
         // Write the file header.
@@ -97,7 +97,7 @@ void OBJMeshFileWriter::close()
     if (m_file)
     {
         fclose(m_file);
-        m_file = 0;
+        m_file = nullptr;
     }
 }
 

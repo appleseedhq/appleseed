@@ -109,7 +109,7 @@ bool ArchiveAssembly::expand_contents(
         auto_release_ptr<Assembly> assembly =
             reader.read_archive(
                 filepath.c_str(),
-                0,  // for now, we don't validate archives
+                nullptr,  // for now, we don't validate archives
                 search_paths,
                 ProjectFileReader::OmitProjectSchemaValidation);
 

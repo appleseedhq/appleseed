@@ -110,7 +110,7 @@ typename TreeRepository<TreeType>::LazyTreeType* TreeRepository<TreeType>::acqui
     const typename TreeContainer::iterator i = m_trees.find(key);
 
     if (i == m_trees.end())
-        return 0;
+        return nullptr;
 
     ++i->second.m_ref;
     return i->second.m_tree;

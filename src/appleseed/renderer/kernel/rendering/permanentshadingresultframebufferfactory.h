@@ -57,18 +57,18 @@ class PermanentShadingResultFrameBufferFactory
         const Frame&                frame);
 
     // Destructor.
-    ~PermanentShadingResultFrameBufferFactory();
+    ~PermanentShadingResultFrameBufferFactory() override;
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
-    virtual ShadingResultFrameBuffer* create(
+    ShadingResultFrameBuffer* create(
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y,
         const foundation::AABB2u&   tile_bbox) override;
 
-    virtual void destroy(
+    void destroy(
         ShadingResultFrameBuffer*   framebuffer) override;
 
   private:

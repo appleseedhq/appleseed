@@ -83,19 +83,19 @@ class APPLESEED_DLLSYMBOL Image
         const PixelFormat   pixel_format);
 
     // Destructor.
-    virtual ~Image();
+    ~Image() override;
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Access canvas properties.
-    virtual const CanvasProperties& properties() const override;
+    const CanvasProperties& properties() const override;
 
     // Direct access to a given tile.
-    virtual Tile& tile(
+    Tile& tile(
         const size_t        tile_x,
         const size_t        tile_y) override;
-    virtual const Tile& tile(
+    const Tile& tile(
         const size_t        tile_x,
         const size_t        tile_y) const override;
 

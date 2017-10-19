@@ -136,7 +136,7 @@ class RegionTreeFactory
         const RegionTree::Arguments& arguments);
 
     // Create the region tree.
-    virtual std::unique_ptr<RegionTree> create();
+    std::unique_ptr<RegionTree> create() override;
 
   private:
     RegionTree::Arguments m_arguments;

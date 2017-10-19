@@ -101,9 +101,9 @@ class Statistics
             const std::string&          unit,
             const int64                 value);
 
-        virtual std::unique_ptr<Entry> clone() const override;
-        virtual void merge(const Entry* other) override;
-        virtual std::string to_string() const override;
+        std::unique_ptr<Entry> clone() const override;
+        void merge(const Entry* other) override;
+        std::string to_string() const override;
     };
 
     struct UnsignedIntegerEntry
@@ -116,9 +116,9 @@ class Statistics
             const std::string&          unit,
             const uint64                value);
 
-        virtual std::unique_ptr<Entry> clone() const override;
-        virtual void merge(const Entry* other) override;
-        virtual std::string to_string() const override;
+        std::unique_ptr<Entry> clone() const override;
+        void merge(const Entry* other) override;
+        std::string to_string() const override;
     };
 
     struct FloatingPointEntry
@@ -131,9 +131,9 @@ class Statistics
             const std::string&          unit,
             const double                value);
 
-        virtual std::unique_ptr<Entry> clone() const override;
-        virtual void merge(const Entry* other) override;
-        virtual std::string to_string() const override;
+        std::unique_ptr<Entry> clone() const override;
+        void merge(const Entry* other) override;
+        std::string to_string() const override;
     };
 
     struct StringEntry
@@ -146,9 +146,9 @@ class Statistics
             const std::string&          unit,
             const std::string&          value);
 
-        virtual std::unique_ptr<Entry> clone() const override;
-        virtual void merge(const Entry* other) override;
-        virtual std::string to_string() const override;
+        std::unique_ptr<Entry> clone() const override;
+        void merge(const Entry* other) override;
+        std::string to_string() const override;
     };
 
     template <typename T>
@@ -162,9 +162,9 @@ class Statistics
             const std::string&          unit,
             const Population<T>&        value);
 
-        virtual std::unique_ptr<Entry> clone() const override;
-        virtual void merge(const Entry* other) override;
-        virtual std::string to_string() const override;
+        std::unique_ptr<Entry> clone() const override;
+        void merge(const Entry* other) override;
+        std::string to_string() const override;
     };
 
     Statistics();
@@ -405,7 +405,7 @@ const T* Statistics::Entry::cast(const Entry* entry)
 
     const T* typed_entry = dynamic_cast<const T*>(entry);
 
-    if (typed_entry == 0)
+    if (typed_entry == nullptr)
         throw ExceptionTypeMismatch(entry->m_name.c_str());
 
     return typed_entry;

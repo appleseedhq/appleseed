@@ -188,7 +188,7 @@ namespace
                 pretty_int(m_params.m_thread_count).c_str());
         }
 
-        virtual ~ProgressiveFrameRenderer()
+        ~ProgressiveFrameRenderer() override
         {
             // Stop the statistics thread.
             m_abort_switch.abort();
@@ -212,24 +212,24 @@ namespace
                 (*i)->release();
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual void render() override
+        void render() override
         {
             start_rendering();
 
             m_job_queue.wait_until_completion();
         }
 
-        virtual bool is_rendering() const override
+        bool is_rendering() const override
         {
             return m_job_queue.has_scheduled_or_running_jobs();
         }
 
-        virtual void start_rendering() override
+        void start_rendering() override
         {
             assert(!is_rendering());
             assert(!m_job_queue.has_scheduled_or_running_jobs());
@@ -268,7 +268,7 @@ namespace
                     ThreadFunctionWrapper<StatisticsFunc>(m_statistics_func.get())));
 
             // Create and start the display thread.
-            if (m_tile_callback.get() != 0 && m_display_thread.get() == 0)
+            if (m_tile_callback.get() != nullptr && m_display_thread.get() == nullptr)
             {
                 m_display_func.reset(
                     new DisplayFunc(
@@ -287,7 +287,7 @@ namespace
             resume_rendering();
         }
 
-        virtual void stop_rendering() override
+        void stop_rendering() override
         {
             // First, delete scheduled jobs to prevent worker threads from picking them up.
             m_job_queue.clear_scheduled_jobs();
@@ -302,7 +302,7 @@ namespace
             m_statistics_thread->join();
         }
 
-        virtual void pause_rendering() override
+        void pause_rendering() override
         {
             m_job_manager->pause();
 
@@ -312,7 +312,7 @@ namespace
             m_statistics_func->pause();
         }
 
-        virtual void resume_rendering() override
+        void resume_rendering() override
         {
             m_statistics_func->resume();
 
@@ -322,7 +322,7 @@ namespace
             m_job_manager->resume();
         }
 
-        virtual void terminate_rendering() override
+        void terminate_rendering() override
         {
             // Completely stop rendering.
             stop_rendering();

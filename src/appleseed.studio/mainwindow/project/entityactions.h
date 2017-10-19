@@ -67,7 +67,7 @@ class EntityCreationAction
     {
     }
 
-    virtual void operator()(
+    void operator()(
         renderer::Project&              project) override
     {
         m_item->create(m_values);
@@ -91,7 +91,7 @@ class EntityEditionAction
     {
     }
 
-    virtual void operator()(
+    void operator()(
         renderer::Project&              project) override
     {
         m_item->edit(m_values);
@@ -115,7 +115,7 @@ class EntityInstantiationAction
     {
     }
 
-    virtual void operator()(
+    void operator()(
         renderer::Project&              project) override
     {
         m_item->do_instantiate(m_name);
@@ -143,7 +143,7 @@ class EntityDeletionAction
     {
     }
 
-    virtual void operator()(
+    void operator()(
         renderer::Project&              project) override
     {
         for (int i = 0; i < m_items.size(); ++i)

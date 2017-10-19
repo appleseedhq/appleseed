@@ -126,7 +126,7 @@ namespace impl
         static No is_base(...);
 
       public:
-        typedef typename test_result<sizeof(is_base((Derived*)0))>::type type;
+        typedef typename test_result<sizeof(is_base((Derived*)nullptr))>::type type;
     };
 
     template <typename Base, typename Derived>
@@ -137,7 +137,7 @@ namespace impl
         static Yes is_not_base(...);
 
       public:
-        typedef typename test_result<sizeof(is_not_base((Derived*)0))>::type type;
+        typedef typename test_result<sizeof(is_not_base((Derived*)nullptr))>::type type;
     };
 }
 

@@ -50,7 +50,7 @@ class LogWidget
     Q_OBJECT
 
   public:
-    explicit LogWidget(QWidget* parent = 0);
+    explicit LogWidget(QWidget* parent = nullptr);
 
   public slots:
     void slot_append_item(const QColor& color, const QString& text);
@@ -59,7 +59,7 @@ class LogWidget
   private:
     QAction* m_action_clear_all;
 
-    virtual void contextMenuEvent(QContextMenuEvent* event);
+    void contextMenuEvent(QContextMenuEvent* event) override;
 };
 
 }       // namespace studio

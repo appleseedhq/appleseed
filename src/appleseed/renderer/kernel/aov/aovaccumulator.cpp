@@ -107,7 +107,7 @@ namespace
       : public AOVAccumulator
     {
       public:
-        virtual void write(
+        void write(
             const PixelContext&         pixel_context,
             const ShadingPoint&         shading_point,
             const ShadingComponents&    shading_components,

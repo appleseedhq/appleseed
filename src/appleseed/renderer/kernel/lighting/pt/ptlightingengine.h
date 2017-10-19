@@ -58,10 +58,10 @@ class PTLightingEngineFactory
         const ParamArray&               params);
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Return a new path tracing lighting engine instance.
-    virtual ILightingEngine* create() override;
+    ILightingEngine* create() override;
 
     // Return the metadata of the PT lighting engine parameters.
     static foundation::Dictionary get_params_metadata();

@@ -52,14 +52,14 @@ struct ILogTargetWrap
   , public bpy::wrapper<ILogTarget>
 {
     ILogTargetWrap() {}
-    ~ILogTargetWrap() {}
+    ~ILogTargetWrap() override {}
 
-    virtual void release() override
+    void release() override
     {
         delete this;
     }
 
-    virtual void write(
+    void write(
         const LogMessage::Category  category,
         const char*                 file,
         const size_t                line,

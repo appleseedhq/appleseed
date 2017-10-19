@@ -82,7 +82,7 @@ class RenderingManager
     explicit RenderingManager(StatusBar& status_bar);
 
     // Destructor.
-    ~RenderingManager();
+    ~RenderingManager() override;
 
     // Start rendering.
     void start_rendering(

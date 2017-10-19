@@ -588,7 +588,7 @@ struct DisneyMaterial::Impl
       , m_per_thread_layers(MaxThreadCount)
     {
         for (size_t i = 0; i < MaxThreadCount; ++i)
-            m_per_thread_layers[i] = 0;
+            m_per_thread_layers[i] = nullptr;
     }
 
     ~Impl()
@@ -604,7 +604,7 @@ struct DisneyMaterial::Impl
             if (m_per_thread_layers[i])
             {
                 delete m_per_thread_layers[i];
-                m_per_thread_layers[i] = 0;
+                m_per_thread_layers[i] = nullptr;
             }
         }
 
@@ -749,7 +749,7 @@ const DisneyMaterialLayer& DisneyMaterial::get_layer(
     vector<DisneyMaterialLayer>* layers =
         impl->m_per_thread_layers[thread_index];
 
-    if (layers == 0)
+    if (layers == nullptr)
     {
         layers = new vector<DisneyMaterialLayer>(impl->m_layers);
 

@@ -52,8 +52,8 @@ class ZoomablePlainTextEdit
     void fontChanged(QFont);
 
   protected:
-    void keyPressEvent(QKeyEvent* event);
-    void wheelEvent(QWheelEvent* event);
+    void keyPressEvent(QKeyEvent* event) override;
+    void wheelEvent(QWheelEvent* event) override;
 
   private:
     void change_font_size(const int delta);

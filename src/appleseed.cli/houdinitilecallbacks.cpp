@@ -111,19 +111,19 @@ namespace
             return new HoudiniTileCallback(true, fp, logger);
         }
 
-        ~HoudiniTileCallback()
+        ~HoudiniTileCallback() override
         {
             if (m_fp)
                 close_pipe(m_fp);
         }
 
-        virtual void release() override
+        void release() override
         {
             // The factory always return the same tile callback instance.
             // Prevent this instance from being destroyed by doing nothing here.
         }
 
-        virtual void on_tile_end(
+        void on_tile_end(
             const Frame*            frame,
             const size_t            tile_x,
             const size_t            tile_y) override
@@ -134,7 +134,7 @@ namespace
             send_tile(*frame, tile_x, tile_y);
         }
 
-        virtual void on_progressive_frame_end(const Frame* frame) override
+        void on_progressive_frame_end(const Frame* frame) override
         {
             boost::mutex::scoped_lock lock(m_mutex);
 

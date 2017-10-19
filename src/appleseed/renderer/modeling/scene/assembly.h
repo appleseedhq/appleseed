@@ -73,7 +73,7 @@ class APPLESEED_DLLSYMBOL Assembly
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Access the BSDFs.
     BSDFContainer& bsdfs() const;
@@ -114,16 +114,16 @@ class APPLESEED_DLLSYMBOL Assembly
     GAABB3 compute_non_hierarchical_local_bbox() const;
 
     // Expose asset file paths referenced by this entity to the outside.
-    virtual void collect_asset_paths(foundation::StringArray& paths) const override;
-    virtual void update_asset_paths(const foundation::StringDictionary& mappings) override;
+    void collect_asset_paths(foundation::StringArray& paths) const override;
+    void update_asset_paths(const foundation::StringDictionary& mappings) override;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
+    bool on_frame_begin(
         const Project&              project,
         const BaseGroup*            parent,
         OnFrameBeginRecorder&       recorder,
-        foundation::IAbortSwitch*   abort_switch = 0) override;
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
   protected:
     // Constructor.
@@ -132,7 +132,7 @@ class APPLESEED_DLLSYMBOL Assembly
         const ParamArray&           params);
 
     // Destructor.
-    ~Assembly();
+    ~Assembly() override;
 
   private:
     friend class AssemblyFactory;
@@ -155,13 +155,13 @@ class APPLESEED_DLLSYMBOL AssemblyFactory
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Return a string identifying this assembly model.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Create a new assembly.
-    virtual foundation::auto_release_ptr<Assembly> create(
+    foundation::auto_release_ptr<Assembly> create(
         const char*         name,
         const ParamArray&   params = ParamArray()) const override;
 

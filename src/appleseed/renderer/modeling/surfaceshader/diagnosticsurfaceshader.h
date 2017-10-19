@@ -102,13 +102,13 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
         const ParamArray&           params);
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Return a string identifying the model of this surface shader.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Evaluate the shading at a given point.
-    virtual void evaluate(
+    void evaluate(
         SamplingContext&            sampling_context,
         const PixelContext&         pixel_context,
         const ShadingContext&       shading_context,
@@ -146,16 +146,16 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShaderFactory
 {
   public:
     // Return a string identifying this surface shader model.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Return metadata for this surface shader model.
-    virtual foundation::Dictionary get_model_metadata() const override;
+    foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this surface shader model.
-    virtual foundation::DictionaryArray get_input_metadata() const override;
+    foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new surface shader instance.
-    virtual foundation::auto_release_ptr<SurfaceShader> create(
+    foundation::auto_release_ptr<SurfaceShader> create(
         const char*         name,
         const ParamArray&   params) const override;
 

@@ -60,13 +60,13 @@ namespace
         }
 
         // Delete this instance.
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
         // Write a message.
-        virtual void write(
+        void write(
             const LogMessage::Category  category,
             const char*                 file,
             const size_t                line,

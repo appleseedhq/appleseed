@@ -107,11 +107,11 @@ class APPLESEED_DLLSYMBOL EDF
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
+    bool on_frame_begin(
         const Project&              project,
         const BaseGroup*            parent,
         OnFrameBeginRecorder&       recorder,
-        foundation::IAbortSwitch*   abort_switch = 0) override;
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
     // Evaluate the inputs of this EDF.
     virtual void* evaluate_inputs(

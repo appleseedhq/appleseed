@@ -54,13 +54,13 @@ class APPLESEED_DLLSYMBOL TimedRendererController
     explicit TimedRendererController(const double seconds);
 
     // Destructor.
-    ~TimedRendererController();
+    ~TimedRendererController() override;
 
     // This method is called before rendering a single frame.
-    virtual void on_frame_begin() override;
+    void on_frame_begin() override;
 
     // Return the current rendering status.
-    virtual Status get_status() const override;
+    Status get_status() const override;
 
   private:
     struct Impl;

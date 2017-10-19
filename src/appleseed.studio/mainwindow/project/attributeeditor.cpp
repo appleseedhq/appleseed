@@ -62,7 +62,7 @@ void AttributeEditor::clear()
         clear_layout(m_parent->layout());
         delete m_parent->layout();
         m_entity_editor.reset();
-        m_value_provider = 0;
+        m_value_provider = nullptr;
     }
 }
 

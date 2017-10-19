@@ -46,9 +46,9 @@ class AboutWindow
     Q_OBJECT
 
   public:
-    explicit AboutWindow(QWidget* parent = 0);
+    explicit AboutWindow(QWidget* parent = nullptr);
 
-    ~AboutWindow();
+    ~AboutWindow() override;
 
   private:
     // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.

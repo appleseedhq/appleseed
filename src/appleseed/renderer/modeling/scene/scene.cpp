@@ -104,7 +104,7 @@ Scene::Scene()
   , BaseGroup(this)
   , impl(new Impl(this))
   , m_has_render_data(false)
-  , m_camera(0)
+  , m_camera(nullptr)
 {
     set_name("scene");
 }
@@ -373,7 +373,7 @@ bool Scene::expand_procedural_assemblies(
 {
     for (each<AssemblyContainer> i = assemblies(); i; ++i)
     {
-        if (!invoke_procedural_expand(*i, project, 0, abort_switch))
+        if (!invoke_procedural_expand(*i, project, nullptr, abort_switch))
             return false;
     }
 
@@ -416,7 +416,7 @@ bool Scene::on_frame_begin(
     m_camera = project.get_uncached_active_camera();
 
     // Fail if we don't have a camera.
-    if (m_camera == 0)
+    if (m_camera == nullptr)
     {
         RENDERER_LOG_ERROR("no cameras in scene or no camera specified in the frame entity.");
         return false;
@@ -448,7 +448,7 @@ void Scene::on_frame_end(
     const Project&          project,
     const BaseGroup*        parent)
 {
-    m_camera = 0;
+    m_camera = nullptr;
 
     Entity::on_frame_end(project, parent);
 }

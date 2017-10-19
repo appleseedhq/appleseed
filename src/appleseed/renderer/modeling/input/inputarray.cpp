@@ -363,8 +363,8 @@ void InputArray::declare(
     if (default_value)
         input.m_default_value = default_value;
 
-    input.m_source = 0;
-    input.m_entity = 0;
+    input.m_source = nullptr;
+    input.m_entity = nullptr;
 
     impl->m_inputs.push_back(input);
 }
@@ -429,7 +429,7 @@ Source* InputArray::source(const char* name) const
             return i->m_source;
     }
 
-    return 0;
+    return nullptr;
 }
 
 Entity* InputArray::get_entity(const char* name) const
@@ -442,7 +442,7 @@ Entity* InputArray::get_entity(const char* name) const
             return i->m_entity;
     }
 
-    return 0;
+    return nullptr;
 }
 
 size_t InputArray::compute_data_size() const

@@ -62,10 +62,10 @@ class OBJMeshFileWriter
     explicit OBJMeshFileWriter(const std::string& filename);
 
     // Destructor, closes the file.
-    virtual ~OBJMeshFileWriter();
+    ~OBJMeshFileWriter() override;
 
     // Write a mesh.
-    virtual void write(const IMeshWalker& walker) override;
+    void write(const IMeshWalker& walker) override;
 
     // Close the file.
     void close();

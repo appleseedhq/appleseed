@@ -43,7 +43,7 @@ namespace foundation
 //
 
 FileLogTarget::FileLogTarget()
-  : m_file(0)
+  : m_file(nullptr)
 {
 }
 
@@ -76,7 +76,7 @@ bool FileLogTarget::open(const char* filename)
 
     m_file = fopen(filename, "wt");
 
-    return m_file != 0;
+    return m_file != nullptr;
 }
 
 void FileLogTarget::close()
@@ -84,13 +84,13 @@ void FileLogTarget::close()
     if (m_file)
     {
         fclose(m_file);
-        m_file = 0;
+        m_file = nullptr;
     }
 }
 
 bool FileLogTarget::is_open() const
 {
-    return m_file != 0;
+    return m_file != nullptr;
 }
 
 FileLogTarget* create_file_log_target()

@@ -45,13 +45,13 @@ class MinimizeButton
     Q_OBJECT
 
   public:
-    MinimizeButton(QDockWidget* dock_widget, QWidget* parent = 0);
+    MinimizeButton(QDockWidget* dock_widget, QWidget* parent = nullptr);
 
     bool is_on() const;
     void set_fullscreen(const bool on);
 
   protected:
-    void mousePressEvent(QMouseEvent* event);
+    void mousePressEvent(QMouseEvent* event) override;
 
   private:
     QDockWidget*    m_dock_widget;

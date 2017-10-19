@@ -53,10 +53,10 @@ class BlankSampleRendererFactory
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Return a new blank sample renderer instance.
-    virtual ISampleRenderer* create(const size_t thread_index) override;
+    ISampleRenderer* create(const size_t thread_index) override;
 };
 
 }       // namespace renderer

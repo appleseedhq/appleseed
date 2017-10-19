@@ -78,7 +78,7 @@ class ExpressionEditorWindow
     void signal_editor_closed();
 
   protected:
-    virtual void closeEvent(QCloseEvent* e);
+    void closeEvent(QCloseEvent* e) override;
 
   private:
     Ui::ExpressionEditorWindow*     m_ui;

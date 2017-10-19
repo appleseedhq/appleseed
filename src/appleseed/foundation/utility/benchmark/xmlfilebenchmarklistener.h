@@ -56,41 +56,41 @@ class APPLESEED_DLLSYMBOL XMLFileBenchmarkListener
 {
   public:
     // Delete this instance.
-    virtual void release();
+    void release() override;
 
     // Called before each benchmark suite is run.
-    virtual void begin_suite(
-        const BenchmarkSuite&   benchmark_suite);
+    void begin_suite(
+        const BenchmarkSuite&   benchmark_suite) override;
 
     // Called after each benchmark suite is run.
-    virtual void end_suite(
-        const BenchmarkSuite&   benchmark_suite);
+    void end_suite(
+        const BenchmarkSuite&   benchmark_suite) override;
 
     // Called before each benchmark case is run.
-    virtual void begin_case(
+    void begin_case(
         const BenchmarkSuite&   benchmark_suite,
-        const IBenchmarkCase&   benchmark_case);
+        const IBenchmarkCase&   benchmark_case) override;
 
     // Called after each benchmark case is run.
-    virtual void end_case(
+    void end_case(
         const BenchmarkSuite&   benchmark_suite,
-        const IBenchmarkCase&   benchmark_case);
+        const IBenchmarkCase&   benchmark_case) override;
 
     // Write a message.
-    virtual void write(
+    void write(
         const BenchmarkSuite&   benchmark_suite,
         const IBenchmarkCase&   benchmark_case,
         const char*             file,
         const size_t            line,
-        const char*             message);
+        const char*             message) override;
 
     // Write a timing result.
-    virtual void write(
+    void write(
         const BenchmarkSuite&   benchmark_suite,
         const IBenchmarkCase&   benchmark_case,
         const char*             file,
         const size_t            line,
-        const TimingResult&     timing_result);
+        const TimingResult&     timing_result) override;
 
     bool open(const char* filename);
 
@@ -108,7 +108,7 @@ class APPLESEED_DLLSYMBOL XMLFileBenchmarkListener
     XMLFileBenchmarkListener();
 
     // Destructor.
-    ~XMLFileBenchmarkListener();
+    ~XMLFileBenchmarkListener() override;
 
     void write_file_header();
     void write_file_footer();

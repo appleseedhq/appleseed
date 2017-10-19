@@ -58,16 +58,16 @@ class APPLESEED_DLLSYMBOL LatLongMapEnvironmentEDFFactory
 {
   public:
     // Return a string identifying this environment EDF model.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Return metadata for this environment EDF model.
-    virtual foundation::Dictionary get_model_metadata() const override;
+    foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this environment EDF model.
-    virtual foundation::DictionaryArray get_input_metadata() const override;
+    foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new environment EDF instance.
-    virtual foundation::auto_release_ptr<EnvironmentEDF> create(
+    foundation::auto_release_ptr<EnvironmentEDF> create(
         const char*         name,
         const ParamArray&   params) const override;
 

@@ -51,10 +51,10 @@ class DebugSampleRendererFactory
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Return a new debug sample renderer instance.
-    virtual ISampleRenderer* create(const size_t thread_index) override;
+    ISampleRenderer* create(const size_t thread_index) override;
 };
 
 }       // namespace renderer

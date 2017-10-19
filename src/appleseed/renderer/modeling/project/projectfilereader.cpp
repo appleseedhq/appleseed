@@ -174,25 +174,25 @@ namespace
         {
         }
 
-        virtual void resetErrors() override
+        void resetErrors() override
         {
             m_event_counters.clear();
         }
 
-        virtual void warning(const SAXParseException& e) override
+        void warning(const SAXParseException& e) override
         {
             ErrorLogger::warning(e);
             m_event_counters.signal_warning();
         }
 
-        virtual void error(const SAXParseException& e) override
+        void error(const SAXParseException& e) override
         {
             ErrorLogger::error(e);
             m_event_counters.signal_error();
             throw e;    // terminate parsing
         }
 
-        virtual void fatalError(const SAXParseException& e) override
+        void fatalError(const SAXParseException& e) override
         {
             ErrorLogger::fatalError(e);
             m_event_counters.signal_error();
@@ -364,7 +364,7 @@ namespace
             context.get_event_counters().signal_error();
         }
 
-        return auto_release_ptr<Entity>(0);
+        return auto_release_ptr<Entity>(nullptr);
     }
 
 
@@ -436,13 +436,13 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             m_name = ElementHandlerBase::get_value(attrs, "name");
             m_value = ElementHandlerBase::get_value(attrs, "value");
         }
 
-        virtual void characters(
+        void characters(
             const XMLCh* const  chars,
             const XMLSize_t     length) override
         {
@@ -484,9 +484,9 @@ namespace
       : public ElementHandlerBase
     {
       public:
-        virtual void start_element(const Attributes& attrs) override;
+        void start_element(const Attributes& attrs) override;
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override;
 
@@ -508,7 +508,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -586,7 +586,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             m_matrix = Matrix4d::identity();
 
@@ -639,13 +639,13 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             m_matrix = Matrix4d::identity();
             clear_keep_memory(m_values);
         }
 
-        virtual void end_element() override
+        void end_element() override
         {
             if (m_values.size() == 16)
             {
@@ -661,7 +661,7 @@ namespace
             }
         }
 
-        virtual void characters(
+        void characters(
             const XMLCh* const  chars,
             const XMLSize_t     length) override
         {
@@ -693,7 +693,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             m_matrix = Matrix4d::identity();
 
@@ -735,7 +735,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             const Vector3d value = get_vector3(get_value(attrs, "value"), m_context);
             m_matrix = Matrix4d::make_scaling(value);
@@ -765,7 +765,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             const Vector3d value = get_vector3(get_value(attrs, "value"), m_context);
             m_matrix = Matrix4d::make_translation(value);
@@ -795,13 +795,13 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             m_time = get_scalar<float>(get_value(attrs, "time", "0.0"), m_context);
             m_matrix = Matrix4d::identity();
         }
 
-        virtual void end_element() override
+        void end_element() override
         {
             try
             {
@@ -815,7 +815,7 @@ namespace
             }
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
         {
@@ -892,12 +892,12 @@ namespace
       : public Base
     {
       public:
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             Base::start_element(attrs);
         }
 
-        virtual void end_element() override
+        void end_element() override
         {
             if (m_transforms.size() > 1)
                 collapse_transforms();
@@ -906,7 +906,7 @@ namespace
                 m_transforms[0.0f] = Transformd::identity();
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
         {
@@ -982,12 +982,12 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             m_values.clear();
         }
 
-        virtual void characters(
+        void characters(
             const XMLCh* const  chars,
             const XMLSize_t     length) override
         {
@@ -1018,7 +1018,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -1029,7 +1029,7 @@ namespace
             m_name = get_value(attrs, "name");
         }
 
-        virtual void end_element() override
+        void end_element() override
         {
             ParametrizedElementHandler::end_element();
 
@@ -1057,7 +1057,7 @@ namespace
             }
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
         {
@@ -1106,7 +1106,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             Base::start_element(attrs);
 
@@ -1116,7 +1116,7 @@ namespace
             m_model = Base::get_value(attrs, "model");
         }
 
-        virtual void end_element() override
+        void end_element() override
         {
             Base::end_element();
 
@@ -1158,7 +1158,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -1168,7 +1168,7 @@ namespace
             m_model = get_value(attrs, "model");
         }
 
-        virtual void end_element() override
+        void end_element() override
         {
             ParametrizedElementHandler::end_element();
 
@@ -1231,7 +1231,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             Base::start_element(attrs);
 
@@ -1241,7 +1241,7 @@ namespace
             m_texture = get_value(attrs, "texture");
         }
 
-        virtual void end_element() override
+        void end_element() override
         {
             Base::end_element();
 
@@ -1399,7 +1399,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -1409,7 +1409,7 @@ namespace
             m_model = get_value(attrs, "model");
         }
 
-        virtual void end_element() override
+        void end_element() override
         {
             ParametrizedElementHandler::end_element();
 
@@ -1454,7 +1454,7 @@ namespace
         {
         }
 
-        virtual void end_element() override
+        void end_element() override
         {
             Base::end_element();
 
@@ -1508,7 +1508,7 @@ namespace
         {
         }
 
-        virtual void end_element() override
+        void end_element() override
         {
             Base::end_element();
 
@@ -1562,7 +1562,7 @@ namespace
         {
         }
 
-        virtual void end_element() override
+        void end_element() override
         {
             Base::end_element();
 
@@ -1594,7 +1594,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -1604,7 +1604,7 @@ namespace
             m_model = get_value(attrs, "model");
         }
 
-        virtual void end_element() override
+        void end_element() override
         {
             ParametrizedElementHandler::end_element();
 
@@ -1684,7 +1684,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             m_slot = get_value(attrs, "slot");
             m_side = get_value(attrs, "side", "front");
@@ -1736,7 +1736,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             Base::start_element(attrs);
 
@@ -1748,7 +1748,7 @@ namespace
             m_object = get_value(attrs, "object");
         }
 
-        virtual void end_element() override
+        void end_element() override
         {
             Base::end_element();
 
@@ -1762,7 +1762,7 @@ namespace
                     m_back_material_mappings);
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID          element,
             ElementHandlerType*             handler) override
         {
@@ -1825,7 +1825,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             Base::start_element(attrs);
 
@@ -1835,7 +1835,7 @@ namespace
             m_assembly = get_value(attrs, "assembly");
         }
 
-        virtual void end_element() override
+        void end_element() override
         {
             Base::end_element();
 
@@ -1876,7 +1876,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
             m_type = get_value(attrs, "type");
@@ -1925,7 +1925,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             m_src_layer = get_value(attrs, "src_layer");
             m_src_param = get_value(attrs, "src_param");
@@ -1975,13 +1975,13 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             m_name = get_value(attrs, "name");
             m_shader_group = ShaderGroupFactory::create(m_name.c_str());
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
         {
@@ -2044,10 +2044,10 @@ namespace
         template <typename Container, typename Entity>
         void insert(Container& container, auto_release_ptr<Entity> entity)
         {
-            if (entity.get() == 0)
+            if (entity.get() == nullptr)
                 return;
 
-            if (container.get_by_name(entity->get_name()) != 0)
+            if (container.get_by_name(entity->get_name()) != nullptr)
             {
                 RENDERER_LOG_ERROR(
                     "an entity with the path \"%s\" already exists.",
@@ -2074,7 +2074,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -2100,7 +2100,7 @@ namespace
             m_model = get_value(attrs, "model", AssemblyFactory().get_model());
         }
 
-        virtual void end_element() override
+        void end_element() override
         {
             ParametrizedElementHandler::end_element();
 
@@ -2137,7 +2137,7 @@ namespace
             }
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
         {
@@ -2279,14 +2279,14 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
 
             m_scene = SceneFactory::create();
         }
 
-        virtual void end_element() override
+        void end_element() override
         {
             ParametrizedElementHandler::end_element();
 
@@ -2304,7 +2304,7 @@ namespace
                 scene_bbox.diameter());
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
         {
@@ -2414,7 +2414,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -2423,7 +2423,7 @@ namespace
             m_model = ParametrizedElementHandler::get_value(attrs, "model");
         }
 
-        virtual void end_element() override
+        void end_element() override
         {
             ParametrizedElementHandler::end_element();
 
@@ -2477,7 +2477,7 @@ namespace
                 m_context.get_event_counters().signal_error();
             }
 
-            return auto_release_ptr<AOV>(0);
+            return auto_release_ptr<AOV>(nullptr);
         }
     };
 
@@ -2492,11 +2492,11 @@ namespace
       public:
         explicit AOVsElementHandler(ParseContext& context)
           : m_context(context)
-          , m_aovs(0)
+          , m_aovs(nullptr)
         {
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
         {
@@ -2509,10 +2509,10 @@ namespace
                     auto_release_ptr<AOV> aov(
                         static_cast<AOVElementHandler*>(handler)->get_aov());
 
-                    if (aov.get() == 0)
+                    if (aov.get() == nullptr)
                         return;
 
-                    if (m_aovs->get_by_name(aov->get_name()) != 0)
+                    if (m_aovs->get_by_name(aov->get_name()) != nullptr)
                     {
                         RENDERER_LOG_ERROR(
                             "an aov with the path \"%s\" already exists.",
@@ -2553,7 +2553,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -2562,14 +2562,14 @@ namespace
             m_name = get_value(attrs, "name");
         }
 
-        virtual void end_element() override
+        void end_element() override
         {
             ParametrizedElementHandler::end_element();
 
             m_frame = FrameFactory::create(m_name.c_str(), m_params, m_aovs);
         }
 
-        virtual void start_child_element(
+        void start_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
         {
@@ -2588,7 +2588,7 @@ namespace
             }
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
         {
@@ -2621,7 +2621,7 @@ namespace
       public:
         explicit OutputElementHandler(ParseContext& context)
           : m_context(context)
-          , m_project(0)
+          , m_project(nullptr)
         {
         }
 
@@ -2630,7 +2630,7 @@ namespace
             m_project = project;
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
         {
@@ -2666,7 +2666,7 @@ namespace
       public:
         explicit ConfigurationElementHandler(ParseContext& context)
           : m_context(context)
-          , m_project(0)
+          , m_project(nullptr)
         {
         }
 
@@ -2675,7 +2675,7 @@ namespace
             m_project = project;
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -2685,7 +2685,7 @@ namespace
             m_base_name = get_value(attrs, "base");
         }
 
-        virtual void end_element() override
+        void end_element() override
         {
             ParametrizedElementHandler::end_element();
 
@@ -2740,7 +2740,7 @@ namespace
       public:
         explicit ConfigurationsElementHandler(ParseContext& context)
           : m_context(context)
-          , m_project(0)
+          , m_project(nullptr)
         {
         }
 
@@ -2749,7 +2749,7 @@ namespace
             m_project = project;
         }
 
-        virtual void start_child_element(
+        void start_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
         {
@@ -2769,7 +2769,7 @@ namespace
             }
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
         {
@@ -2810,7 +2810,7 @@ namespace
         {
         }
 
-        virtual void characters(
+        void characters(
             const XMLCh* const  chars,
             const XMLSize_t     length) override
         {
@@ -2838,11 +2838,11 @@ namespace
       public:
         explicit SearchPathsElementHandler(ParseContext& context)
           : m_context(context)
-          , m_project(0)
+          , m_project(nullptr)
         {
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
         {
@@ -2892,13 +2892,13 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
             m_name = get_value(attrs, "name");
         }
 
-        virtual void end_element() override
+        void end_element() override
         {
             ParametrizedElementHandler::end_element();
             m_project->set_display(DisplayFactory::create(m_name.c_str(), m_params));
@@ -2930,7 +2930,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) override
+        void start_element(const Attributes& attrs) override
         {
             ElementHandlerBase::start_element(attrs);
 
@@ -2948,7 +2948,7 @@ namespace
             m_project->set_format_revision(format_revision);
         }
 
-        virtual void start_child_element(
+        void start_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
         {
@@ -2995,7 +2995,7 @@ namespace
             }
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
             ElementHandlerType*         handler) override
         {
@@ -3114,7 +3114,7 @@ namespace
             {
             }
 
-            virtual unique_ptr<ElementHandlerType> create() override
+            unique_ptr<ElementHandlerType> create() override
             {
                 return unique_ptr<ElementHandlerType>(
                     new ProjectElementHandler(m_context, m_project));
@@ -3132,7 +3132,7 @@ namespace
             {
             }
 
-            virtual unique_ptr<ElementHandlerType> create() override
+            unique_ptr<ElementHandlerType> create() override
             {
                 return unique_ptr<ElementHandlerType>(new ElementHandler(m_context));
             }
@@ -3209,7 +3209,7 @@ auto_release_ptr<Project> ProjectFileReader::read(
             RENDERER_LOG_ERROR(
                 "%s looks like a packed project file, but it should contain a single *.appleseed file in order to be valid.",
                 project_filepath);
-            return auto_release_ptr<Project>(0);
+            return auto_release_ptr<Project>(nullptr);
         }
 
         const string unpacked_project_directory =
@@ -3230,13 +3230,13 @@ auto_release_ptr<Project> ProjectFileReader::read(
 
     XercesCContext xerces_context(global_logger());
     if (!xerces_context.is_initialized())
-        return auto_release_ptr<Project>(0);
+        return auto_release_ptr<Project>(nullptr);
 
-    if ((options & OmitProjectSchemaValidation) == false && schema_filepath == 0)
+    if ((options & OmitProjectSchemaValidation) == false && schema_filepath == nullptr)
     {
         RENDERER_LOG_ERROR(
             "project schema validation enabled, but no schema filepath provided.");
-        return auto_release_ptr<Project>(0);
+        return auto_release_ptr<Project>(nullptr);
     }
 
     Stopwatch<DefaultWallclockTimer> stopwatch;
@@ -3261,7 +3261,7 @@ auto_release_ptr<Project> ProjectFileReader::read(
         event_counters,
         stopwatch.get_seconds());
 
-    return event_counters.has_errors() ? auto_release_ptr<Project>(0) : project;
+    return event_counters.has_errors() ? auto_release_ptr<Project>(nullptr) : project;
 }
 
 auto_release_ptr<Assembly> ProjectFileReader::read_archive(
@@ -3282,7 +3282,7 @@ auto_release_ptr<Assembly> ProjectFileReader::read_archive(
             RENDERER_LOG_ERROR(
                 "%s looks like a packed archive file, but it should contain a single *.appleseed file in order to be valid.",
                 archive_filepath);
-            return auto_release_ptr<Assembly>(0);
+            return auto_release_ptr<Assembly>(nullptr);
         }
 
         const string unpacked_archive_directory =
@@ -3298,13 +3298,13 @@ auto_release_ptr<Assembly> ProjectFileReader::read_archive(
 
     XercesCContext xerces_context(global_logger());
     if (!xerces_context.is_initialized())
-        return auto_release_ptr<Assembly>(0);
+        return auto_release_ptr<Assembly>(nullptr);
 
-    if ((options & OmitProjectSchemaValidation) == false && schema_filepath == 0)
+    if ((options & OmitProjectSchemaValidation) == false && schema_filepath == nullptr)
     {
         RENDERER_LOG_ERROR(
             "archive schema validation enabled, but no schema filepath provided.");
-        return auto_release_ptr<Assembly>(0);
+        return auto_release_ptr<Assembly>(nullptr);
     }
 
     Stopwatch<DefaultWallclockTimer> stopwatch;
@@ -3336,7 +3336,7 @@ auto_release_ptr<Assembly> ProjectFileReader::read_archive(
         stopwatch.get_seconds());
 
     if (event_counters.has_errors())
-        return auto_release_ptr<Assembly>(0);
+        return auto_release_ptr<Assembly>(nullptr);
 
     if (project->get_scene())
     {
@@ -3347,7 +3347,7 @@ auto_release_ptr<Assembly> ProjectFileReader::read_archive(
         }
     }
 
-    return auto_release_ptr<Assembly>(0);
+    return auto_release_ptr<Assembly>(nullptr);
 }
 
 auto_release_ptr<Project> ProjectFileReader::load_builtin(
@@ -3373,7 +3373,7 @@ auto_release_ptr<Project> ProjectFileReader::load_builtin(
         event_counters,
         stopwatch.get_seconds());
 
-    return event_counters.has_errors() ? auto_release_ptr<Project>(0) : project;
+    return event_counters.has_errors() ? auto_release_ptr<Project>(nullptr) : project;
 }
 
 auto_release_ptr<Project> ProjectFileReader::load_project_file(
@@ -3443,18 +3443,18 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
     }
     catch (const XMLException&)
     {
-        return auto_release_ptr<Project>(0);
+        return auto_release_ptr<Project>(nullptr);
     }
     catch (const SAXParseException&)
     {
-        return auto_release_ptr<Project>(0);
+        return auto_release_ptr<Project>(nullptr);
     }
 
     // Report a failure in case of warnings or errors.
     if (error_handler->get_warning_count() > 0 ||
         error_handler->get_error_count() > 0 ||
         error_handler->get_fatal_error_count() > 0)
-        return auto_release_ptr<Project>(0);
+        return auto_release_ptr<Project>(nullptr);
 
     return project;
 }
@@ -3475,7 +3475,7 @@ auto_release_ptr<Project> ProjectFileReader::construct_builtin_project(
     {
         RENDERER_LOG_ERROR("unknown built-in project %s.", project_name);
         event_counters.signal_error();
-        return auto_release_ptr<Project>(0);
+        return auto_release_ptr<Project>(nullptr);
     }
 }
 
@@ -3517,19 +3517,19 @@ void ProjectFileReader::validate_project(
     }
 
     // Make sure the project contains at least one output frame.
-    if (project.get_frame() == 0)
+    if (project.get_frame() == nullptr)
     {
         RENDERER_LOG_ERROR("the project does not define any frame.");
         event_counters.signal_error();
     }
 
     // Make sure the project contains the required configurations.
-    if (project.configurations().get_by_name("final") == 0)
+    if (project.configurations().get_by_name("final") == nullptr)
     {
         RENDERER_LOG_ERROR("the project must define a \"final\" configuration.");
         event_counters.signal_error();
     }
-    if (project.configurations().get_by_name("interactive") == 0)
+    if (project.configurations().get_by_name("interactive") == nullptr)
     {
         RENDERER_LOG_ERROR("the project must define an \"interactive\" configuration.");
         event_counters.signal_error();
@@ -3541,7 +3541,7 @@ void ProjectFileReader::complete_project(
     EventCounters&          event_counters) const
 {
     // Add a default environment if the project doesn't define any.
-    if (project.get_scene()->get_environment() == 0)
+    if (project.get_scene()->get_environment() == nullptr)
     {
         auto_release_ptr<Environment> environment(
             EnvironmentFactory::create("environment", ParamArray()));

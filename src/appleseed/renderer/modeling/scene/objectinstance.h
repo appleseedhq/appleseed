@@ -89,10 +89,10 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Compute and return the unique signature of this instance.
-    virtual foundation::uint64 compute_signature() const;
+    foundation::uint64 compute_signature() const override;
 
     // Return the name of the instantiated object.
     const char* get_object_name() const;
@@ -189,11 +189,11 @@ class APPLESEED_DLLSYMBOL ObjectInstance
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
+    bool on_frame_begin(
         const Project&              project,
         const BaseGroup*            parent,
         OnFrameBeginRecorder&       recorder,
-        foundation::IAbortSwitch*   abort_switch = 0) override;
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
   private:
     friend class ObjectInstanceFactory;
@@ -222,7 +222,7 @@ class APPLESEED_DLLSYMBOL ObjectInstance
         const foundation::StringDictionary& back_material_mappings);
 
     // Destructor.
-    ~ObjectInstance();
+    ~ObjectInstance() override;
 };
 
 

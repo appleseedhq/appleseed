@@ -56,16 +56,16 @@ class APPLESEED_DLLSYMBOL DiffuseAOVFactory
 {
   public:
     // Return a string identifying this AOV model.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Return metadata for this AOV model.
-    virtual foundation::Dictionary get_model_metadata() const override;
+    foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this AOV model.
-    virtual foundation::DictionaryArray get_input_metadata() const override;
+    foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new AOV instance.
-    virtual foundation::auto_release_ptr<AOV> create(
+    foundation::auto_release_ptr<AOV> create(
         const ParamArray&   params) const override;
 
     // Static variant of the create() method above.
@@ -83,16 +83,16 @@ class APPLESEED_DLLSYMBOL DirectDiffuseAOVFactory
 {
   public:
     // Return a string identifying this AOV model.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Return metadata for this AOV model.
-    virtual foundation::Dictionary get_model_metadata() const override;
+    foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this AOV model.
-    virtual foundation::DictionaryArray get_input_metadata() const override;
+    foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new AOV instance.
-    virtual foundation::auto_release_ptr<AOV> create(
+    foundation::auto_release_ptr<AOV> create(
         const ParamArray&   params) const override;
 
     // Static variant of the create() method above.
@@ -110,16 +110,16 @@ class APPLESEED_DLLSYMBOL IndirectDiffuseAOVFactory
 {
   public:
     // Return a string identifying this AOV model.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Return metadata for this AOV model.
-    virtual foundation::Dictionary get_model_metadata() const override;
+    foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this AOV model.
-    virtual foundation::DictionaryArray get_input_metadata() const override;
+    foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new AOV instance.
-    virtual foundation::auto_release_ptr<AOV> create(
+    foundation::auto_release_ptr<AOV> create(
         const ParamArray&   params) const override;
 
     // Static variant of the create() method above.

@@ -48,12 +48,12 @@ class RenderClipboardHandler
   public:
     explicit RenderClipboardHandler(RenderWidget* widget);
 
-    ~RenderClipboardHandler();
+    ~RenderClipboardHandler() override;
 
   private:
     RenderWidget* m_widget;
 
-    virtual bool eventFilter(QObject* object, QEvent* event);
+    bool eventFilter(QObject* object, QEvent* event) override;
 };
 
 }       // namespace studio

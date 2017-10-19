@@ -125,7 +125,7 @@ unique_ptr<VoxelGrid> read_fluid_file(
 
     FILE* file = fopen(filename, "rb");
 
-    if (file == 0)
+    if (file == nullptr)
         return unique_ptr<VoxelGrid>(nullptr);
 
     // Read the file header.
@@ -287,7 +287,7 @@ void write_voxel_grid(
 {
     FILE* file = fopen(filename, "wt");
 
-    if (file == 0)
+    if (file == nullptr)
         return;
 
     const size_t xres = grid.get_xres();

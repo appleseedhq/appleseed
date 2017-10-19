@@ -53,7 +53,7 @@ Object::Object(
     const char*         name,
     const ParamArray&   params)
   : ConnectableEntity(g_class_uid, params)
-  , m_alpha_map(0)
+  , m_alpha_map(nullptr)
 {
     set_name(name);
 }
@@ -65,7 +65,7 @@ bool Object::has_alpha_map() const
 
 const Source* Object::get_uncached_alpha_map() const
 {
-    return 0;
+    return nullptr;
 }
 
 }   // namespace renderer

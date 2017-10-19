@@ -128,7 +128,7 @@ bool SphericalImportanceSampler<T>::dump_as_obj(const char* filepath) const
 {
     std::FILE* file = std::fopen(filepath, "wt");
 
-    if (file == 0)
+    if (file == nullptr)
         return false;
 
     for (size_t i = 0; i < m_verts.size(); ++i)

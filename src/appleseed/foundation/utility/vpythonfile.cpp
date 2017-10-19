@@ -50,7 +50,7 @@ VPythonFile::VPythonFile(const string& filename)
 {
     m_file = fopen(filename.c_str(), "wt");
 
-    if (m_file == 0)
+    if (m_file == nullptr)
         throw ExceptionIOError();
 
     fprintf(m_file, "from __future__ import division\n");
@@ -67,7 +67,7 @@ void VPythonFile::close()
     if (m_file)
     {
         fclose(m_file);
-        m_file = 0;
+        m_file = nullptr;
     }
 }
 

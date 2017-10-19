@@ -60,7 +60,7 @@ class APPLESEED_DLLSYMBOL ShaderGroup
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Return a string identifying the model of this shader group.
     const char* get_model() const;
@@ -85,7 +85,7 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Create internal OSL shader group.
     bool create_optimized_osl_shader_group(
         OSLShadingSystem&           shading_system,
-        foundation::IAbortSwitch*   abort_switch = 0);
+        foundation::IAbortSwitch*   abort_switch = nullptr);
 
     // Release internal OSL shader group.
     void release_optimized_osl_shader_group();
@@ -163,7 +163,7 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     explicit ShaderGroup(const char* name);
 
     // Destructor.
-    ~ShaderGroup();
+    ~ShaderGroup() override;
 
     void get_shadergroup_closures_info(OSLShadingSystem& shading_system);
     void report_has_closure(const char* closure_name, const Flags flag) const;

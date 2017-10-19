@@ -72,7 +72,7 @@ namespace
 
     bpy::object archive_frame(const Frame* frame, const char* directory)
     {
-        char* output = 0;
+        char* output = nullptr;
 
         if (frame->archive(directory, &output))
         {

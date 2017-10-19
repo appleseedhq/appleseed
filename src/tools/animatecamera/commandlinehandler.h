@@ -68,9 +68,9 @@ class CommandLineHandler
 
   private:
     // Emit usage instructions to the logger.
-    virtual void print_program_usage(
+    void print_program_usage(
         const char*             executable_name,
-        shared::SuperLogger&    logger) const;
+        shared::SuperLogger&    logger) const override;
 };
 
 }       // namespace animatecamera

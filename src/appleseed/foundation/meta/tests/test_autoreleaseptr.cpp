@@ -52,7 +52,7 @@ TEST_SUITE(Foundation_Utility_AutoReleasePtr)
         {
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
@@ -68,7 +68,7 @@ TEST_SUITE(Foundation_Utility_AutoReleasePtr)
         {
         }
 
-        virtual void release() override
+        void release() override
         {
             m_release_was_called = true;
             delete this;
@@ -84,7 +84,7 @@ TEST_SUITE(Foundation_Utility_AutoReleasePtr)
 
     TEST_CASE(ConstructFromNullPointer)
     {
-        auto_release_ptr<Derived> ptr(0);
+        auto_release_ptr<Derived> ptr(nullptr);
 
         EXPECT_EQ(0, ptr.get());
     }
@@ -170,7 +170,7 @@ TEST_SUITE(Foundation_Utility_AutoReleasePtr)
         auto_release_ptr<DerivedWithReleaseCheck> ptr(
             new DerivedWithReleaseCheck(release_was_called));
 
-        ptr.reset(0);
+        ptr.reset(nullptr);
 
         EXPECT_TRUE(release_was_called);
     }

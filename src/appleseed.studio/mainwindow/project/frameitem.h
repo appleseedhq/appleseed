@@ -63,7 +63,7 @@ class FrameItem
         EntityEditorContext&    editor_context,
         renderer::Frame*        frame);
 
-  virtual foundation::Dictionary get_values() const override;
+  foundation::Dictionary get_values() const override;
 
   private slots:
     void slot_edit_accepted(foundation::Dictionary values);
@@ -73,7 +73,7 @@ class FrameItem
 
     renderer::Frame* m_frame;
 
-    virtual void slot_edit(AttributeEditor* attribute_editor) override;
+    void slot_edit(AttributeEditor* attribute_editor) override;
     void edit(const foundation::Dictionary& values);
 };
 

@@ -62,10 +62,10 @@ class SPPMLightingEngineFactory
         const SPPMParameters&           params);
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Return a new SPPM lighting engine instance.
-    virtual ILightingEngine* create() override;
+    ILightingEngine* create() override;
 
     // Return the metadata of the SPPM lighting engine parameters.
     static foundation::Dictionary get_params_metadata();

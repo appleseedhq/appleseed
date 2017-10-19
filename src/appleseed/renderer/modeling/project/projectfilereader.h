@@ -87,7 +87,7 @@ class APPLESEED_DLLSYMBOL ProjectFileReader
         const char*                     schema_filepath,
         const int                       options,
         EventCounters&                  event_counters,
-        const foundation::SearchPaths*  search_paths = 0) const;
+        const foundation::SearchPaths*  search_paths = nullptr) const;
 
     foundation::auto_release_ptr<Project> construct_builtin_project(
         const char*                     project_name,

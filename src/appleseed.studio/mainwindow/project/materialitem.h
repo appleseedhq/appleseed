@@ -53,13 +53,13 @@ class MaterialItem
         renderer::Assembly&         parent,
         MaterialCollectionItem*     collection_item);
 
-    virtual QMenu* get_single_item_context_menu() const override;
+    QMenu* get_single_item_context_menu() const override;
 
   public slots:
     void slot_export();
 
   private:
-    virtual void slot_edit(AttributeEditor* attribute_editor) override;
+    void slot_edit(AttributeEditor* attribute_editor) override;
 };
 
 }       // namespace studio

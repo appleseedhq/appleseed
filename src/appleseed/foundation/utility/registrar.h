@@ -101,7 +101,7 @@ T* Registrar<T>::lookup(const std::string& name) const
 {
     const typename Items::const_iterator i = m_items.find(name);
 
-    return i == m_items.end() ? 0 : i->second;
+    return i == m_items.end() ? nullptr : i->second;
 }
 
 template <typename T>

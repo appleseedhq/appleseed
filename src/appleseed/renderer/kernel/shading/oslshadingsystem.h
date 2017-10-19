@@ -53,18 +53,18 @@ class OSLShadingSystem
     friend class OSLShadingSystemFactory;
 
     OSLShadingSystem(
-        RendererServices* renderer = 0,
-        OIIOTextureSystem* texturesystem = 0,
-        OIIOErrorHandler* err = 0);
+        RendererServices* renderer = nullptr,
+        OIIOTextureSystem* texturesystem = nullptr,
+        OIIOErrorHandler* err = nullptr);
 };
 
 class OSLShadingSystemFactory
 {
   public:
     static OSLShadingSystem* create(
-        RendererServices* renderer = 0,
-        OIIOTextureSystem* texturesystem = 0,
-        OIIOErrorHandler* err = 0);
+        RendererServices* renderer = nullptr,
+        OIIOTextureSystem* texturesystem = nullptr,
+        OIIOErrorHandler* err = nullptr);
 };
 
 }       // namespace renderer

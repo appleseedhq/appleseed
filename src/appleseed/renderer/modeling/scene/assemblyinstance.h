@@ -71,7 +71,7 @@ class APPLESEED_DLLSYMBOL AssemblyInstance
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Return the name of the instantiated assembly.
     const char* get_assembly_name() const;
@@ -99,11 +99,11 @@ class APPLESEED_DLLSYMBOL AssemblyInstance
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
+    bool on_frame_begin(
         const Project&              project,
         const BaseGroup*            parent,
         OnFrameBeginRecorder&       recorder,
-        foundation::IAbortSwitch*   abort_switch = 0) override;
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
   private:
     friend class AssemblyInstanceFactory;
@@ -122,7 +122,7 @@ class APPLESEED_DLLSYMBOL AssemblyInstance
         const char*                 assembly_name);
 
     // Destructor.
-    ~AssemblyInstance();
+    ~AssemblyInstance() override;
 };
 
 

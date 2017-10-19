@@ -59,7 +59,7 @@ class BinaryMeshFileReader
     explicit BinaryMeshFileReader(const std::string& filename);
 
     // Read a mesh.
-    virtual void read(IMeshBuilder& builder) override;
+    void read(IMeshBuilder& builder) override;
 
   private:
     const std::string       m_filename;

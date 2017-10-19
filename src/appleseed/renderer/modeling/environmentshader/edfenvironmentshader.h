@@ -59,16 +59,16 @@ class APPLESEED_DLLSYMBOL EDFEnvironmentShaderFactory
 {
   public:
     // Return a string identifying this environment shader model.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Return metadata for this environment shader model.
-    virtual foundation::Dictionary get_model_metadata() const override;
+    foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this environment shader model.
-    virtual foundation::DictionaryArray get_input_metadata() const override;
+    foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new environment shader instance.
-    virtual foundation::auto_release_ptr<EnvironmentShader> create(
+    foundation::auto_release_ptr<EnvironmentShader> create(
         const char*         name,
         const ParamArray&   params) const override;
 

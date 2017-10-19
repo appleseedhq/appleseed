@@ -53,7 +53,7 @@ namespace
     struct EmptyJob
       : public IJob
     {
-        virtual void execute(const size_t thread_index) override
+        void execute(const size_t thread_index) override
         {
         }
     };
@@ -67,7 +67,7 @@ namespace
         {
         }
 
-        virtual void execute(const size_t thread_index) override
+        void execute(const size_t thread_index) override
         {
             atomic_inc(m_execution_count);
         }
@@ -117,12 +117,12 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
         {
         }
 
-        ~JobNotifyingAboutDestruction()
+        ~JobNotifyingAboutDestruction() override
         {
             atomic_inc(m_destruction_count);
         }
 
-        virtual void execute(const size_t thread_index) override
+        void execute(const size_t thread_index) override
         {
         }
 
@@ -323,7 +323,7 @@ TEST_SUITE(Foundation_Utility_Job_JobManager)
         {
         }
 
-        virtual void execute(const size_t thread_index) override
+        void execute(const size_t thread_index) override
         {
             m_job_queue.schedule(
                 new JobNotifyingAboutExecution(m_execution_count));
@@ -408,7 +408,7 @@ TEST_SUITE(Foundation_Utility_Job_WorkerThread)
     struct JobThrowingBadAllocException
       : public IJob
     {
-        virtual void execute(const size_t thread_index) override
+        void execute(const size_t thread_index) override
         {
             throw bad_alloc();
         }

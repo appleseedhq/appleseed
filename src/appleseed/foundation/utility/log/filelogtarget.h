@@ -54,10 +54,10 @@ class APPLESEED_DLLSYMBOL FileLogTarget
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Write a message.
-    virtual void write(
+    void write(
         const LogMessage::Category  category,
         const char*                 file,
         const size_t                line,
@@ -79,7 +79,7 @@ class APPLESEED_DLLSYMBOL FileLogTarget
     FileLogTarget();
 
     // Destructor.
-    ~FileLogTarget();
+    ~FileLogTarget() override;
 };
 
 // Create an instance of a log target that outputs to a file.

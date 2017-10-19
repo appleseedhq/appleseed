@@ -104,17 +104,17 @@ namespace
             m_inputs.declare("internal_scattering", InputFormatFloat, "1.0");
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
+        bool on_frame_begin(
             const Project&              project,
             const BaseGroup*            parent,
             OnFrameBeginRecorder&       recorder,
@@ -144,12 +144,12 @@ namespace
             return true;
         }
 
-        virtual size_t compute_input_data_size() const override
+        size_t compute_input_data_size() const override
         {
             return sizeof(InputValues);
         }
 
-        virtual void prepare_inputs(
+        void prepare_inputs(
             Arena&                      arena,
             const ShadingPoint&         shading_point,
             void*                       data) const override
@@ -168,7 +168,7 @@ namespace
             values->m_precomputed.m_diffuse_weight = max(max_value(values->m_diffuse_reflectance), 0.0f);
         }
 
-        virtual void sample(
+        void sample(
             SamplingContext&            sampling_context,
             const void*                 data,
             const bool                  adjoint,
@@ -257,7 +257,7 @@ namespace
             sample.compute_reflected_differentials();
         }
 
-        virtual float evaluate(
+        float evaluate(
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
@@ -323,7 +323,7 @@ namespace
                 ScatteringMode::has_glossy(modes) ? pdf_glossy : 0.0f;
         }
 
-        virtual float evaluate_pdf(
+        float evaluate_pdf(
             const void*                 data,
             const bool                  adjoint,
             const Vector3f&             geometric_normal,

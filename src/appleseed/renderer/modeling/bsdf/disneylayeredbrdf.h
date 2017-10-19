@@ -64,23 +64,23 @@ class DisneyLayeredBRDF
   : public BSDF
 {
   public:
-    virtual void release() override;
+    void release() override;
 
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
-    virtual bool on_frame_begin(
+    bool on_frame_begin(
         const Project&                  project,
         const BaseGroup*                parent,
         OnFrameBeginRecorder&           recorder,
-        foundation::IAbortSwitch*       abort_switch = 0) override;
+        foundation::IAbortSwitch*       abort_switch = nullptr) override;
 
-    virtual size_t compute_input_data_size() const override;
+    size_t compute_input_data_size() const override;
 
-    virtual void* evaluate_inputs(
+    void* evaluate_inputs(
         const ShadingContext&           shading_context,
         const ShadingPoint&             shading_point) const override;
 
-    virtual void sample(
+    void sample(
         SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
@@ -88,7 +88,7 @@ class DisneyLayeredBRDF
         const int                       modes,
         BSDFSample&                     sample) const override;
 
-    virtual float evaluate(
+    float evaluate(
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
@@ -99,7 +99,7 @@ class DisneyLayeredBRDF
         const int                       modes,
         DirectShadingComponents&        value) const override;
 
-    virtual float evaluate_pdf(
+    float evaluate_pdf(
         const void*                     data,
         const bool                      adjoint,
         const foundation::Vector3f&     geometric_normal,

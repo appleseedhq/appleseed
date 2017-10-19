@@ -148,7 +148,7 @@ class APPLESEED_DLLSYMBOL EntityMap
     };
 
     // Constructor.
-    explicit EntityMap(Entity* parent = 0);
+    explicit EntityMap(Entity* parent = nullptr);
 
     // Destructor.
     ~EntityMap();
@@ -249,7 +249,7 @@ class TypedEntityMap
     };
 
     // Constructor.
-    explicit TypedEntityMap(Entity* parent = 0);
+    explicit TypedEntityMap(Entity* parent = nullptr);
 
     // Insert an entity into the container and return its index.
     void insert(foundation::auto_release_ptr<T> entity);

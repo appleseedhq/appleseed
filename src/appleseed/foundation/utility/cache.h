@@ -172,7 +172,7 @@ namespace cache_impl
                     return &m_entries[i];
             }
 
-            return 0;
+            return nullptr;
         }
 
         // Update the timestamp of a given entry in this cache line.
@@ -239,7 +239,7 @@ namespace cache_impl
         // Return a pointer to the entry corresponding to a given key, or 0 if this key was not found.
         EntryType* find_entry(const KeyType& key)
         {
-            return m_entry.m_key == key ? &m_entry : 0;
+            return m_entry.m_key == key ? &m_entry : nullptr;
         }
 
         // Update the timestamp of a given entry in this cache line.
@@ -297,7 +297,7 @@ namespace cache_impl
         {
             return
                 m_entries[0].m_key == key ? &m_entries[0] :
-                m_entries[1].m_key == key ? &m_entries[1] : 0;
+                m_entries[1].m_key == key ? &m_entries[1] : nullptr;
         }
 
         // Update the timestamp of a given entry in this cache line.
@@ -1105,9 +1105,9 @@ namespace cache_impl
             const uint64        hit_count,
             const uint64        miss_count);
 
-        virtual std::unique_ptr<Entry> clone() const override;
-        virtual void merge(const Entry* other) override;
-        virtual std::string to_string() const override;
+        std::unique_ptr<Entry> clone() const override;
+        void merge(const Entry* other) override;
+        std::string to_string() const override;
     };
 }
 

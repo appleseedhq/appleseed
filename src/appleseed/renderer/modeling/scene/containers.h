@@ -108,9 +108,9 @@ class ExceptionUnknownEntity
   public:
     explicit ExceptionUnknownEntity(
         const char*         entity_name,
-        const Entity*       context = 0);
+        const Entity*       context = nullptr);
 
-    virtual ~ExceptionUnknownEntity() throw() {}
+    ~ExceptionUnknownEntity() throw() override {}
 
     const std::string& get_context_path() const;
 

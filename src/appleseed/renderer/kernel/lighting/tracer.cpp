@@ -132,7 +132,7 @@ const ShadingPoint& Tracer::do_trace(
 
         // Retrieve the material at the shading point.
         const Material* material = shading_point_ptr->get_material();
-        if (material == 0)
+        if (material == nullptr)
             break;
 
         const Material::RenderData& render_data = material->get_render_data();

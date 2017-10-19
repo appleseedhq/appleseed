@@ -78,7 +78,7 @@ class APPLESEED_DLLSYMBOL Frame
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Print frame settings to the renderer's global logger.
     void print_settings();
@@ -150,7 +150,7 @@ class APPLESEED_DLLSYMBOL Frame
     // Return true if successful, false otherwise.
     bool archive(
         const char*     directory,
-        char**          output_path = 0) const;
+        char**          output_path = nullptr) const;
 
   private:
     friend class FrameFactory;
@@ -167,7 +167,7 @@ class APPLESEED_DLLSYMBOL Frame
         const AOVContainer& aovs);
 
     // Destructor.
-    ~Frame();
+    ~Frame() override;
 
     void extract_parameters();
 };

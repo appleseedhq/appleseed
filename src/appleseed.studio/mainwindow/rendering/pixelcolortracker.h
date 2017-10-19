@@ -61,7 +61,7 @@ class PixelColorTracker
         const MouseCoordinatesTracker&      mouse_tracker,
         const renderer::Project&            project);
 
-    ~PixelColorTracker();
+    ~PixelColorTracker() override;
 
     void set_enabled(const bool enabled);
 
@@ -75,7 +75,7 @@ class PixelColorTracker
     const renderer::Project&                m_project;
     bool                                    m_enabled;
 
-    virtual bool eventFilter(QObject* object, QEvent* event) override;
+    bool eventFilter(QObject* object, QEvent* event) override;
 
     void clear_rgba_labels() const;
     void set_rgba_labels(const QPoint& point) const;

@@ -151,7 +151,7 @@ uint64 DefaultWallclockTimer::read()
 #if defined __GNUC__
 
     timeval tv;
-    gettimeofday(&tv, 0);
+    gettimeofday(&tv, nullptr);
     return static_cast<uint64>(tv.tv_sec) * 1000000 + static_cast<uint64>(tv.tv_usec);
 
 // Windows.

@@ -203,7 +203,7 @@ const char* Frame::get_active_camera_name() const
     if (m_params.strings().exist("camera"))
         return m_params.strings().get("camera");
 
-    return 0;
+    return nullptr;
 }
 
 Image& Frame::image() const

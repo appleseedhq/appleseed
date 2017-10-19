@@ -63,8 +63,8 @@ Environment::Environment(
     const char*             name,
     const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
-  , m_environment_edf(0)
-  , m_environment_shader(0)
+  , m_environment_edf(nullptr)
+  , m_environment_shader(nullptr)
 {
     set_name(name);
 
@@ -101,8 +101,8 @@ void Environment::on_frame_end(
     const Project&          project,
     const BaseGroup*        parent)
 {
-    m_environment_edf = 0;
-    m_environment_shader = 0;
+    m_environment_edf = nullptr;
+    m_environment_shader = nullptr;
 
     ConnectableEntity::on_frame_end(project, parent);
 }

@@ -63,16 +63,16 @@ class APPLESEED_DLLSYMBOL CurveObject
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Return a string identifying the model of this object.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Compute the local space bounding box of the object over the shutter interval.
-    virtual GAABB3 compute_local_bbox() const override;
+    GAABB3 compute_local_bbox() const override;
 
     // Return the region kit of the object.
-    virtual foundation::Lazy<RegionKit>& get_region_kit() override;
+    foundation::Lazy<RegionKit>& get_region_kit() override;
 
     // Insert and access curves.
     void reserve_curves1(const size_t count);
@@ -85,12 +85,12 @@ class APPLESEED_DLLSYMBOL CurveObject
     const Curve3Type& get_curve3(const size_t index) const;
 
     // Insert and access material slots.
-    virtual size_t get_material_slot_count() const override;
-    virtual const char* get_material_slot(const size_t index) const override;
+    size_t get_material_slot_count() const override;
+    const char* get_material_slot(const size_t index) const override;
 
     // Expose asset file paths referenced by this entity to the outside.
-    virtual void collect_asset_paths(foundation::StringArray& paths) const override;
-    virtual void update_asset_paths(const foundation::StringDictionary& mappings) override;
+    void collect_asset_paths(foundation::StringArray& paths) const override;
+    void update_asset_paths(const foundation::StringDictionary& mappings) override;
 
   private:
     friend class CurveObjectFactory;
@@ -104,7 +104,7 @@ class APPLESEED_DLLSYMBOL CurveObject
         const ParamArray&   params);
 
     // Destructor.
-    ~CurveObject();
+    ~CurveObject() override;
 };
 
 

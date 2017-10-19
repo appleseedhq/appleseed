@@ -59,43 +59,43 @@ class APPLESEED_DLLSYMBOL TestListenerCollection
     TestListenerCollection();
 
     // Destructor.
-    ~TestListenerCollection();
+    ~TestListenerCollection() override;
 
     // Insert a test listener into the collection.
     void insert(
         ITestListener*          listener);
 
     // Called before each test suite is run.
-    virtual void begin_suite(
-        const TestSuite&        test_suite);
+    void begin_suite(
+        const TestSuite&        test_suite) override;
 
     // Called after each test suite is run.
-    virtual void end_suite(
+    void end_suite(
         const TestSuite&        test_suite,
         const TestResult&       test_suite_result,
-        const TestResult&       cumulated_result);
+        const TestResult&       cumulated_result) override;
 
     // Called before each test case is run.
-    virtual void begin_case(
+    void begin_case(
         const TestSuite&        test_suite,
-        const char*             test_case_name);
+        const char*             test_case_name) override;
 
     // Called after each test case is run.
-    virtual void end_case(
+    void end_case(
         const TestSuite&        test_suite,
         const char*             test_case_name,
         const TestResult&       test_suite_result,
         const TestResult&       test_case_result,
-        const TestResult&       cumulated_result);
+        const TestResult&       cumulated_result) override;
 
     // Write a message.
-    virtual void write(
+    void write(
         const TestSuite&        test_suite,
         const char*             test_case_name,
         const char*             file,
         const size_t            line,
         const TestMessage::Type message_type,
-        const char*             message);
+        const char*             message) override;
 
   private:
     struct Impl;

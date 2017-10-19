@@ -62,7 +62,7 @@ class auto_release_ptr
     typedef T element_type;
 
     // Construct from a raw pointer.
-    explicit auto_release_ptr(T* ptr = 0) throw()
+    explicit auto_release_ptr(T* ptr = nullptr) throw()
       : m_ptr(ptr)
     {
     }
@@ -163,12 +163,12 @@ class auto_release_ptr
     T* release() throw()
     {
         T* rv = m_ptr;
-        m_ptr = 0;
+        m_ptr = nullptr;
         return rv;
     }
 
     // Delete the owned pointer and replace it with the provided raw pointer.
-    void reset(T* ptr = 0) throw()
+    void reset(T* ptr = nullptr) throw()
     {
         if (m_ptr != ptr)
         {

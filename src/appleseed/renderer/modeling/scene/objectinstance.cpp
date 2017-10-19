@@ -185,7 +185,7 @@ ObjectInstance::ObjectInstance(
     m_flip_normals = params.get_optional<bool>("flip_normals");
 
     // No bound object yet.
-    m_object = 0;
+    m_object = nullptr;
 }
 
 ObjectInstance::~ObjectInstance()
@@ -235,7 +235,7 @@ Object* ObjectInstance::find_object() const
 
     while (parent)
     {
-        if (dynamic_cast<const Assembly*>(parent) == 0)
+        if (dynamic_cast<const Assembly*>(parent) == nullptr)
             break;
 
         Object* object =
@@ -248,7 +248,7 @@ Object* ObjectInstance::find_object() const
         parent = parent->get_parent();
     }
 
-    return 0;
+    return nullptr;
 }
 
 GAABB3 ObjectInstance::compute_parent_bbox() const
@@ -323,8 +323,8 @@ const char* ObjectInstance::get_material_name(const size_t pa_index, const Side 
 {
     const Object* object = find_object();
 
-    if (object == 0)
-        return 0;
+    if (object == nullptr)
+        return nullptr;
 
     const StringDictionary& material_mappings =
         side == FrontSide
@@ -334,28 +334,28 @@ const char* ObjectInstance::get_material_name(const size_t pa_index, const Side 
     if (object->get_material_slot_count() > 0)
     {
         const char* slot_name = object->get_material_slot(pa_index);
-        return material_mappings.exist(slot_name) ? material_mappings.get(slot_name) : 0;
+        return material_mappings.exist(slot_name) ? material_mappings.get(slot_name) : nullptr;
     }
     else
     {
-        return material_mappings.empty() ? 0 : material_mappings.begin().value();
+        return material_mappings.empty() ? nullptr : material_mappings.begin().value();
     }
 }
 
 void ObjectInstance::unbind_object()
 {
-    m_object = 0;
+    m_object = nullptr;
 }
 
 void ObjectInstance::bind_object(const ObjectContainer& objects)
 {
-    if (m_object == 0)
+    if (m_object == nullptr)
         m_object = objects.get_by_name(impl->m_object_name.c_str());
 }
 
 void ObjectInstance::check_object() const
 {
-    if (m_object == 0)
+    if (m_object == nullptr)
         throw ExceptionUnknownEntity(impl->m_object_name.c_str(), this);
 }
 
@@ -369,7 +369,7 @@ namespace
     {
         for (size_t i = 0; i < material_array.size(); ++i)
         {
-            if (material_array[i] == 0)
+            if (material_array[i] == nullptr)
             {
                 if (object.get_material_slot_count() > 0)
                 {
@@ -398,7 +398,7 @@ namespace
     {
         for (size_t i = 0; i < material_array.size(); ++i)
         {
-            if (material_array[i] == 0)
+            if (material_array[i] == nullptr)
             {
                 if (object.get_material_slot_count() > 0)
                 {

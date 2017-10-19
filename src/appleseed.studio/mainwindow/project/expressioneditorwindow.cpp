@@ -159,7 +159,7 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     left_layout->addWidget(m_error);
 
     // Expression browser.
-    m_browser = new SeExprEdBrowser(0, m_editor);
+    m_browser = new SeExprEdBrowser(nullptr, m_editor);
     const bf::path root_path(Application::get_root_path());
     const string scripts_path = (root_path / "seexpr").string();
     m_browser->addPath("Examples", scripts_path);

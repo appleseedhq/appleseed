@@ -244,7 +244,7 @@ class PassthroughWriterAdapter
   public:
     explicit PassthroughWriterAdapter(BufferedFile& file);
 
-    virtual size_t write(
+    size_t write(
         const void*         inbuf,
         const size_t        size) override;
 
@@ -258,7 +258,7 @@ class PassthroughReaderAdapter
   public:
     explicit PassthroughReaderAdapter(BufferedFile& file);
 
-    virtual size_t read(
+    size_t read(
         void*               outbuf,
         const size_t        size) override;
 
@@ -279,9 +279,9 @@ class CompressedWriterAdapter
         BufferedFile&       file,
         const size_t        buffer_size = 64 * 1024);   // compression buffer size, in bytes
 
-    virtual ~CompressedWriterAdapter();
+    ~CompressedWriterAdapter() override;
 
-    virtual size_t write(
+    size_t write(
         const void*         inbuf,
         const size_t        size) override;
 
@@ -300,7 +300,7 @@ class CompressedReaderAdapter
   public:
     explicit CompressedReaderAdapter(BufferedFile& file);
 
-    virtual size_t read(
+    size_t read(
         void*               outbuf,
         const size_t        size) override;
 
@@ -328,12 +328,12 @@ class LZ4CompressedWriterAdapter
         BufferedFile&       file,
         const size_t        buffer_size);               // compression buffer size, in bytes
 
-    virtual ~LZ4CompressedWriterAdapter();
+    ~LZ4CompressedWriterAdapter() override;
 
   private:
     std::vector<uint8>      m_compressed_buffer;
 
-    virtual void flush_buffer() override;
+    void flush_buffer() override;
 };
 
 class LZ4CompressedReaderAdapter
@@ -345,7 +345,7 @@ class LZ4CompressedReaderAdapter
   private:
     std::vector<uint8>      m_compressed_buffer;
 
-    virtual bool fill_buffer() override;
+    bool fill_buffer() override;
 };
 
 

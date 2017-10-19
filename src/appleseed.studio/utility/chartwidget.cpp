@@ -141,7 +141,7 @@ void ChartBase::draw_tooltip(QPainter& painter, const QPoint& mouse_position) co
     const QColor BorderColor(40, 40, 40, Opacity);
     const QColor BackgroundColor(80, 80, 80, Opacity);
 
-    if (m_tooltip_formatter.get() == 0)
+    if (m_tooltip_formatter.get() == nullptr)
         return;
 
     const Vector2d& point = m_original_points[point_index];

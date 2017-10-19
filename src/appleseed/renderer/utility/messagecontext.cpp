@@ -52,12 +52,12 @@ struct MessageContext::Impl
 };
 
 MessageContext::MessageContext()
-  : impl(0)
+  : impl(nullptr)
 {
 }
 
 MessageContext::MessageContext(const char* message)
-  : impl(0)
+  : impl(nullptr)
 {
     set_message(message);
 }
@@ -69,7 +69,7 @@ MessageContext::~MessageContext()
 
 bool MessageContext::empty() const
 {
-    return impl == 0 || impl->m_message.empty();
+    return impl == nullptr || impl->m_message.empty();
 }
 
 const char* MessageContext::get() const
@@ -79,7 +79,7 @@ const char* MessageContext::get() const
 
 void MessageContext::set_message(const char* message)
 {
-    if (impl == 0)
+    if (impl == nullptr)
         impl = new Impl();
 
     impl->m_message = message;

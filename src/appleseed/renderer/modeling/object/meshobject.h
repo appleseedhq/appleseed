@@ -71,35 +71,35 @@ class APPLESEED_DLLSYMBOL MeshObject
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Return a string identifying the model of this object.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
+    bool on_frame_begin(
         const Project&              project,
         const BaseGroup*            parent,
         OnFrameBeginRecorder&       recorder,
-        foundation::IAbortSwitch*   abort_switch = 0) override;
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
     // This method is called once after rendering each frame (only if on_frame_begin() was called).
-    virtual void on_frame_end(
+    void on_frame_end(
         const Project&              project,
         const BaseGroup*            parent) override;
 
     // Return true if this object has an alpha map.
-    virtual bool has_alpha_map() const override;
+    bool has_alpha_map() const override;
 
     // Return the source bound to the alpha map input, or 0 if the object doesn't have an alpha map.
-    virtual const Source* get_uncached_alpha_map() const override;
+    const Source* get_uncached_alpha_map() const override;
 
     // Compute the local space bounding box of the object over the shutter interval.
-    virtual GAABB3 compute_local_bbox() const override;
+    GAABB3 compute_local_bbox() const override;
 
     // Return the region kit of the object.
-    virtual foundation::Lazy<RegionKit>& get_region_kit() override;
+    foundation::Lazy<RegionKit>& get_region_kit() override;
 
     // Insert and access vertices.
     void reserve_vertices(const size_t count);
@@ -183,12 +183,12 @@ class APPLESEED_DLLSYMBOL MeshObject
     // Insert and access material slots.
     void reserve_material_slots(const size_t count);
     size_t push_material_slot(const char* name);
-    virtual size_t get_material_slot_count() const override;
-    virtual const char* get_material_slot(const size_t index) const override;
+    size_t get_material_slot_count() const override;
+    const char* get_material_slot(const size_t index) const override;
 
     // Expose asset file paths referenced by this entity to the outside.
-    virtual void collect_asset_paths(foundation::StringArray& paths) const override;
-    virtual void update_asset_paths(const foundation::StringDictionary& mappings) override;
+    void collect_asset_paths(foundation::StringArray& paths) const override;
+    void update_asset_paths(const foundation::StringDictionary& mappings) override;
 
   private:
     friend class MeshObjectFactory;
@@ -202,7 +202,7 @@ class APPLESEED_DLLSYMBOL MeshObject
         const ParamArray&   params);
 
     // Destructor.
-    ~MeshObject();
+    ~MeshObject() override;
 };
 
 

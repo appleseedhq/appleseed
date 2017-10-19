@@ -57,7 +57,7 @@ class BinaryMeshFileWriter
     explicit BinaryMeshFileWriter(const std::string& filename);
 
     // Write a mesh.
-    virtual void write(const IMeshWalker& walker) override;
+    void write(const IMeshWalker& walker) override;
 
   private:
     const std::string           m_filename;

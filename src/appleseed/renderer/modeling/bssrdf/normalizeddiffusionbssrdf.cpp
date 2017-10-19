@@ -86,22 +86,22 @@ namespace
             m_inputs.declare("fresnel_weight", InputFormatFloat, "1.0");
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual size_t compute_input_data_size() const override
+        size_t compute_input_data_size() const override
         {
             return sizeof(NormalizedDiffusionBSSRDFInputValues);
         }
 
-        virtual void prepare_inputs(
+        void prepare_inputs(
             Arena&                  arena,
             const ShadingPoint&     shading_point,
             void*                   data) const override
@@ -150,7 +150,7 @@ namespace
             values->m_base_values.m_max_disk_radius = max_radius;
         }
 
-        virtual bool sample(
+        bool sample(
             const ShadingContext&   shading_context,
             SamplingContext&        sampling_context,
             const void*             data,
@@ -173,7 +173,7 @@ namespace
                 bsdf_sample);
         }
 
-        virtual float sample_profile(
+        float sample_profile(
             const void*             data,
             const size_t            channel,
             const float             u) const override
@@ -187,7 +187,7 @@ namespace
             return normalized_diffusion_sample(u, l, s);
         }
 
-        virtual float evaluate_profile_pdf(
+        float evaluate_profile_pdf(
             const void*             data,
             const float             disk_radius) const override
         {
@@ -210,7 +210,7 @@ namespace
             return pdf;
         }
 
-        virtual void evaluate_profile(
+        void evaluate_profile(
             const void*             data,
             const ShadingPoint&     outgoing_point,
             const Vector3f&         outgoing_dir,
@@ -234,7 +234,7 @@ namespace
             }
         }
 
-        virtual void evaluate(
+        void evaluate(
             const void*             data,
             const ShadingPoint&     outgoing_point,
             const Vector3f&         outgoing_dir,

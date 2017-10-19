@@ -43,7 +43,7 @@ BENCHMARK_SUITE(Foundation_Utility_Job)
     struct EmptyJob
       : public IJob
     {
-        virtual void execute(const size_t thread_index)
+        void execute(const size_t thread_index) override
         {
         }
     };

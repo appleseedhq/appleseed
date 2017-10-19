@@ -90,7 +90,7 @@ TextureInstance::TextureInstance(
     impl->m_texture_name = texture_name;
 
     // No bound texture yet.
-    m_texture = 0;
+    m_texture = nullptr;
 
     const EntityDefMessageContext message_context("texture instance", this);
 
@@ -167,12 +167,12 @@ Texture* TextureInstance::find_texture() const
         parent = parent->get_parent();
     }
 
-    return 0;
+    return nullptr;
 }
 
 void TextureInstance::unbind_texture()
 {
-    m_texture = 0;
+    m_texture = nullptr;
 }
 
 namespace
@@ -214,7 +214,7 @@ namespace
 
 void TextureInstance::bind_texture(const TextureContainer& textures)
 {
-    if (m_texture == 0)
+    if (m_texture == nullptr)
     {
         m_texture = textures.get_by_name(impl->m_texture_name.c_str());
 
@@ -236,7 +236,7 @@ void TextureInstance::bind_texture(const TextureContainer& textures)
 
 void TextureInstance::check_texture() const
 {
-    if (m_texture == 0)
+    if (m_texture == nullptr)
         throw ExceptionUnknownEntity(impl->m_texture_name.c_str(), this);
 }
 

@@ -58,7 +58,7 @@ class APPLESEED_DLLSYMBOL RegExFilter
         const char*         pattern,
         const CaseSensivity case_sensivity = CaseSensitive);
 
-    ~RegExFilter();
+    ~RegExFilter() override;
 
     void set_pattern(
         const char*         pattern,
@@ -66,7 +66,7 @@ class APPLESEED_DLLSYMBOL RegExFilter
 
     bool is_valid() const;
 
-    virtual bool accepts(const char* name) const;
+    bool accepts(const char* name) const override;
 
   private:
     struct Impl;

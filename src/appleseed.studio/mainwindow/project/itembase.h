@@ -68,7 +68,7 @@ class ItemBase
         const foundation::UniqueID  class_uid,
         const QString&              title);
 
-    virtual ~ItemBase() {}
+    ~ItemBase() override {}
 
     foundation::UniqueID get_class_uid() const;
 
@@ -86,7 +86,7 @@ class ItemBase
     virtual void delete_multiple(const QList<ItemBase*>& items);
 
   public slots:
-    virtual void slot_edit(AttributeEditor* attribute_editor = 0);
+    virtual void slot_edit(AttributeEditor* attribute_editor = nullptr);
     virtual void slot_instantiate();
     void slot_delete_multiple();
 

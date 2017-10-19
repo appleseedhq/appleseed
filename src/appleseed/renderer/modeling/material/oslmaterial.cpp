@@ -74,17 +74,17 @@ namespace
             m_osl_edf = OSLEDFFactory().create();
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool has_emission() const override
+        bool has_emission() const override
         {
             if (const ShaderGroup* sg = get_uncached_osl_surface())
                 return sg->has_emission();
@@ -92,11 +92,11 @@ namespace
             return false;
         }
 
-        virtual bool on_frame_begin(
+        bool on_frame_begin(
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch = 0) override
+            IAbortSwitch*           abort_switch = nullptr) override
         {
             if (!Material::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
@@ -111,9 +111,9 @@ namespace
                 return false;
 
             m_render_data.m_shader_group = get_uncached_osl_surface();
-            m_render_data.m_bsdf = 0;
-            m_render_data.m_bssrdf = 0;
-            m_render_data.m_edf = 0;
+            m_render_data.m_bsdf = nullptr;
+            m_render_data.m_bssrdf = nullptr;
+            m_render_data.m_edf = nullptr;
 
             if (m_render_data.m_shader_group)
             {
@@ -135,12 +135,12 @@ namespace
         auto_release_ptr<BSSRDF>    m_osl_bssrdf;
         auto_release_ptr<EDF>       m_osl_edf;
 
-        virtual const ShaderGroup* get_uncached_osl_surface() const override
+        const ShaderGroup* get_uncached_osl_surface() const override
         {
             const ShaderGroup* sg =
                 static_cast<const ShaderGroup*>(m_inputs.get_entity("osl_surface"));
 
-            return sg && sg->is_valid() ? sg : 0;
+            return sg && sg->is_valid() ? sg : nullptr;
         }
     };
 }

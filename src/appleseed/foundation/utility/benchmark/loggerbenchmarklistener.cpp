@@ -132,23 +132,23 @@ namespace
         {
         }
 
-        virtual void release()
+        void release() override
         {
             delete this;
         }
 
-        virtual void begin_suite(
-            const BenchmarkSuite&   benchmark_suite)
+        void begin_suite(
+            const BenchmarkSuite&   benchmark_suite) override
         {
             m_suite_name_printed = false;
         }
 
-        virtual void write(
+        void write(
             const BenchmarkSuite&   benchmark_suite,
             const IBenchmarkCase&   benchmark_case,
             const char*             file,
             const size_t            line,
-            const char*             message)
+            const char*             message) override
         {
             print_suite_name(benchmark_suite);
 
@@ -170,12 +170,12 @@ namespace
                 LOG_ERROR(m_logger, "    %s", i->c_str());
         }
 
-        virtual void write(
+        void write(
             const BenchmarkSuite&   benchmark_suite,
             const IBenchmarkCase&   benchmark_case,
             const char*             file,
             const size_t            line,
-            const TimingResult&     timing_result)
+            const TimingResult&     timing_result) override
         {
             string callrate_string;
 

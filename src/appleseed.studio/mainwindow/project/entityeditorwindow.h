@@ -66,7 +66,7 @@ class EntityEditorWindow
         std::unique_ptr<CustomEntityUI>                 custom_entity_ui,
         const foundation::Dictionary&                   values = foundation::Dictionary());
 
-    ~EntityEditorWindow();
+    ~EntityEditorWindow() override;
 
   signals:
     void signal_applied(foundation::Dictionary values);

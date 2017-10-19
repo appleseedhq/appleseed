@@ -165,7 +165,7 @@ void MaterialCollectionItem::slot_import_disney()
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
     QString filepath =
         get_open_filename(
-            0,
+            nullptr,
             "Import...",
             "Disney Material (*.dmt);;All Files (*.*)",
             m_editor_context.m_settings,

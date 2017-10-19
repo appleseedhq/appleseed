@@ -54,7 +54,7 @@ class RenderRegionHandler
         QWidget*                            widget,
         const MouseCoordinatesTracker&      mouse_tracker);
 
-    ~RenderRegionHandler();
+    ~RenderRegionHandler() override;
 
     void set_enabled(const bool enabled);
 
@@ -68,7 +68,7 @@ class RenderRegionHandler
     QRubberBand*                            m_rubber_band;
     QPoint                                  m_origin;
 
-    virtual bool eventFilter(QObject* object, QEvent* event);
+    bool eventFilter(QObject* object, QEvent* event) override;
 };
 
 }       // namespace studio

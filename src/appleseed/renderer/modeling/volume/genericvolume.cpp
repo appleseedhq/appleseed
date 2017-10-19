@@ -78,17 +78,17 @@ class GenericVolume
         m_inputs.declare("average_cosine", InputFormatFloat, "0.0");
     }
 
-    virtual void release() override
+    void release() override
     {
         delete this;
     }
 
-    virtual const char* get_model() const override
+    const char* get_model() const override
     {
         return Model;
     }
 
-    virtual bool on_frame_begin(
+    bool on_frame_begin(
         const Project&          project,
         const BaseGroup*        parent,
         OnFrameBeginRecorder&   recorder,
@@ -120,17 +120,17 @@ class GenericVolume
         return true;
     }
 
-    virtual bool is_homogeneous() const override
+    bool is_homogeneous() const override
     {
         return true;
     }
 
-    virtual size_t compute_input_data_size() const override
+    size_t compute_input_data_size() const override
     {
         return sizeof(InputValues);
     }
 
-    virtual void prepare_inputs(
+    void prepare_inputs(
         Arena&              arena,
         const ShadingRay&   volume_ray,
         void*               data) const override
@@ -144,7 +144,7 @@ class GenericVolume
         values->m_precomputed.m_extinction = values->m_absorption + values->m_scattering;
     }
 
-    virtual float sample(
+    float sample(
         SamplingContext&    sampling_context,
         const void*         data,
         const ShadingRay&   volume_ray,
@@ -158,7 +158,7 @@ class GenericVolume
         return m_phase_function->sample(outgoing, s, incoming);
     }
 
-    virtual float evaluate(
+    float evaluate(
         const void*         data,
         const ShadingRay&   volume_ray,
         const float         distance,
@@ -168,7 +168,7 @@ class GenericVolume
         return m_phase_function->evaluate(outgoing, incoming);
     }
 
-    virtual void evaluate_transmission(
+    void evaluate_transmission(
         const void*         data,
         const ShadingRay&   volume_ray,
         const float         distance,
@@ -184,7 +184,7 @@ class GenericVolume
         }
     }
 
-    virtual void evaluate_transmission(
+    void evaluate_transmission(
         const void*         data,
         const ShadingRay&   volume_ray,
         Spectrum&           spectrum) const override
@@ -198,7 +198,7 @@ class GenericVolume
         }
     }
 
-    virtual void scattering_coefficient(
+    void scattering_coefficient(
         const void*         data,
         const ShadingRay&   volume_ray,
         const float         distance,
@@ -208,7 +208,7 @@ class GenericVolume
         spectrum = values->m_scattering;
     }
 
-    virtual const Spectrum& scattering_coefficient(
+    const Spectrum& scattering_coefficient(
         const void*         data,
         const ShadingRay&   volume_ray) const override
     {
@@ -216,7 +216,7 @@ class GenericVolume
         return values->m_scattering;
     }
 
-    virtual void absorption_coefficient(
+    void absorption_coefficient(
         const void*         data,
         const ShadingRay&   volume_ray,
         const float         distance,
@@ -226,7 +226,7 @@ class GenericVolume
         spectrum = values->m_absorption;
     }
 
-    virtual const Spectrum& absorption_coefficient(
+    const Spectrum& absorption_coefficient(
         const void*         data,
         const ShadingRay&   volume_ray) const override
     {
@@ -234,7 +234,7 @@ class GenericVolume
         return values->m_absorption;
     }
 
-    virtual void extinction_coefficient(
+    void extinction_coefficient(
         const void*         data,
         const ShadingRay&   volume_ray,
         const float         distance,
@@ -244,7 +244,7 @@ class GenericVolume
         spectrum = values->m_precomputed.m_extinction;
     }
 
-    virtual const Spectrum& extinction_coefficient(
+    const Spectrum& extinction_coefficient(
         const void*         data,
         const ShadingRay&   volume_ray) const override
     {

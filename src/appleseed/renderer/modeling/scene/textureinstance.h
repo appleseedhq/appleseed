@@ -96,10 +96,10 @@ class APPLESEED_DLLSYMBOL TextureInstance
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Compute and return the unique signature of this instance.
-    virtual foundation::uint64 compute_signature() const;
+    foundation::uint64 compute_signature() const override;
 
     // Return the name of the instantiated texture.
     const char* get_texture_name() const;
@@ -147,7 +147,7 @@ class APPLESEED_DLLSYMBOL TextureInstance
         const foundation::Transformf&   transform);
 
     // Destructor.
-    ~TextureInstance();
+    ~TextureInstance() override;
 };
 
 

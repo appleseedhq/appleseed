@@ -207,7 +207,7 @@ namespace
 }
 
 Console::Console()
-  : impl(0)
+  : impl(nullptr)
 {
 }
 

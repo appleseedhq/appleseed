@@ -91,7 +91,7 @@ ItemBase* ItemRegistry::get_item(const UniqueID uid) const
 
     const RegistryType::const_iterator i = m_registry.find(uid);
 
-    return i == m_registry.end() ? 0 : i->second;
+    return i == m_registry.end() ? nullptr : i->second;
 }
 
 ItemBase* ItemRegistry::get_item(const Entity& entity) const

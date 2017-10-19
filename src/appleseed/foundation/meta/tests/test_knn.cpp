@@ -65,7 +65,7 @@ TEST_SUITE(Foundation_Math_Knn_Builder)
         knn::Tree3d tree;
 
         knn::Builder3d builder(tree);
-        builder.build<DefaultWallclockTimer>(0, 0);
+        builder.build<DefaultWallclockTimer>(nullptr, 0);
 
         EXPECT_TRUE(tree.empty());
 

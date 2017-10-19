@@ -123,7 +123,7 @@ Project* ProjectManager::get_project() const
 
 bool ProjectManager::is_project_open() const
 {
-    return m_project.get() != 0;
+    return m_project.get() != nullptr;
 }
 
 bool ProjectManager::is_project_loading() const
@@ -190,7 +190,7 @@ bool ProjectManager::do_load_project(const string& filepath)
     auto_release_ptr<Project> loaded_project(
         reader.read(filepath.c_str(), schema_filepath.c_str()));
 
-    if (loaded_project.get() == 0)
+    if (loaded_project.get() == nullptr)
         return false;
 
     m_project = loaded_project;

@@ -56,13 +56,13 @@ class APPLESEED_DLLSYMBOL StringLogTarget
     StringLogTarget();
 
     // Destructor.
-    ~StringLogTarget();
+    ~StringLogTarget() override;
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Write a message.
-    virtual void write(
+    void write(
         const LogMessage::Category  category,
         const char*                 file,
         const size_t                line,

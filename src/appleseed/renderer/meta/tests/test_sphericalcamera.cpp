@@ -67,7 +67,7 @@ TEST_SUITE(Renderer_Modeling_Camera_SphericalCamera)
         ASSERT_TRUE(success);
 
         OnFrameBeginRecorder recorder;
-        success = project->get_scene()->on_frame_begin(project.ref(), 0, recorder);
+        success = project->get_scene()->on_frame_begin(project.ref(), nullptr, recorder);
         ASSERT_TRUE(success);
 
         const Camera* camera = project->get_scene()->get_active_camera();

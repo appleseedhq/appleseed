@@ -96,12 +96,12 @@ class Intersector
     bool trace(
         const ShadingRay&                   ray,
         ShadingPoint&                       shading_point,
-        const ShadingPoint*                 parent_shading_point = 0) const;
+        const ShadingPoint*                 parent_shading_point = nullptr) const;
 
     // Trace a world space probe ray through the scene.
     bool trace_probe(
         const ShadingRay&                   ray,
-        const ShadingPoint*                 parent_shading_point = 0) const;
+        const ShadingPoint*                 parent_shading_point = nullptr) const;
 
     // Manufacture a hit "by hand".
     // There is no restriction placed on the shading point passed to this method.

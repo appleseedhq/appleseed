@@ -116,7 +116,7 @@ namespace
 
         void sample(const size_t x, const size_t y, Color3f& payload, float& importance)
         {
-            if (m_radiance_source == 0)
+            if (m_radiance_source == nullptr)
             {
                 payload.set(0.0f);
                 importance = 0.0f;
@@ -178,17 +178,17 @@ namespace
             m_theta_shift = deg_to_rad(m_params.get_optional<float>("vertical_shift", 0.0f));
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
+        bool on_frame_begin(
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
@@ -203,21 +203,21 @@ namespace
             {
                 check_non_zero_emission("radiance", "radiance_multiplier");
 
-                if (m_importance_sampler.get() == 0)
+                if (m_importance_sampler.get() == nullptr)
                     build_importance_map(*project.get_scene(), abort_switch);
             }
 
             return true;
         }
 
-        virtual void sample(
+        void sample(
             const ShadingContext&   shading_context,
             const Vector2f&         s,
             Vector3f&               outgoing,
             Spectrum&               value,
             float&                  probability) const override
         {
-            if (m_importance_sampler.get() == 0)
+            if (m_importance_sampler.get() == nullptr)
             {
                 RENDERER_LOG_WARNING(
                     "cannot sample environment edf \"%s\" because it is not bound to the environment.",
@@ -262,7 +262,7 @@ namespace
             probability = prob_xy * m_probability_scale / sin_theta;
         }
 
-        virtual void evaluate(
+        void evaluate(
             const ShadingContext&   shading_context,
             const Vector3f&         outgoing,
             Spectrum&               value) const override
@@ -287,7 +287,7 @@ namespace
             lookup_environment_map(shading_context, u, v, value);
         }
 
-        virtual void evaluate(
+        void evaluate(
             const ShadingContext&   shading_context,
             const Vector3f&         outgoing,
             Spectrum&               value,
@@ -295,7 +295,7 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            if (m_importance_sampler.get() == 0)
+            if (m_importance_sampler.get() == nullptr)
             {
                 RENDERER_LOG_WARNING(
                     "cannot compute pdf for environment edf \"%s\" because it is not bound to the environment.",
@@ -324,12 +324,12 @@ namespace
             probability = compute_pdf(u, v, theta);
         }
 
-        virtual float evaluate_pdf(
+        float evaluate_pdf(
             const Vector3f&         outgoing) const override
         {
             assert(is_normalized(outgoing));
 
-            if (m_importance_sampler.get() == 0)
+            if (m_importance_sampler.get() == nullptr)
             {
                 RENDERER_LOG_WARNING(
                     "cannot compute pdf for environment edf \"%s\" because it is not bound to the environment.",

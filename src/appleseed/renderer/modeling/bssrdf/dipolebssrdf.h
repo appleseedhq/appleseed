@@ -98,24 +98,24 @@ class DipoleBSSRDF
         const char*                 name,
         const ParamArray&           params);
 
-    virtual bool on_frame_begin(
+    bool on_frame_begin(
         const Project&              project,
         const BaseGroup*            parent,
         OnFrameBeginRecorder&       recorder,
         foundation::IAbortSwitch*   abort_switch) override;
 
-    virtual size_t compute_input_data_size() const override;
+    size_t compute_input_data_size() const override;
 
-    virtual float sample_profile(
+    float sample_profile(
         const void*                 data,
         const size_t                channel,
         const float                 u) const override;
 
-    virtual float evaluate_profile_pdf(
+    float evaluate_profile_pdf(
         const void*                 data,
         const float                 disk_radius) const override;
 
-    virtual bool sample(
+    bool sample(
         const ShadingContext&       shading_context,
         SamplingContext&            sampling_context,
         const void*                 data,
@@ -124,7 +124,7 @@ class DipoleBSSRDF
         BSSRDFSample&               bssrdf_sample,
         BSDFSample&                 bsdf_sample) const override;
 
-    virtual void evaluate(
+    void evaluate(
         const void*                 data,
         const ShadingPoint&         outgoing_point,
         const foundation::Vector3f& outgoing_dir,
@@ -154,8 +154,8 @@ inline bool DipoleBSSRDF::on_frame_begin(
     foundation::IAbortSwitch*       abort_switch)
 {
     m_has_sigma_sources =
-        m_inputs.source("sigma_a") != 0 &&
-        m_inputs.source("sigma_s") != 0;
+        m_inputs.source("sigma_a") != nullptr &&
+        m_inputs.source("sigma_s") != nullptr;
 
     return true;
 }

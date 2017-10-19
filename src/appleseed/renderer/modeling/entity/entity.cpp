@@ -57,7 +57,7 @@ Entity::Entity(
     const UniqueID          class_uid)
   : impl(new Impl())
   , m_class_uid(class_uid)
-  , m_parent(0)
+  , m_parent(nullptr)
 {
 }
 
@@ -75,7 +75,7 @@ Entity::Entity(
     const ParamArray&       params)
   : impl(new Impl())
   , m_class_uid(class_uid)
-  , m_parent(0)
+  , m_parent(nullptr)
   , m_params(params)
 {
 }

@@ -93,7 +93,7 @@ class BoxFilter2
   public:
     BoxFilter2(const T xradius, const T yradius);
 
-    virtual T evaluate(const T x, const T y) const override;
+    T evaluate(const T x, const T y) const override;
 };
 
 
@@ -108,7 +108,7 @@ class TriangleFilter2
   public:
     TriangleFilter2(const T xradius, const T yradius);
 
-    virtual T evaluate(const T x, const T y) const override;
+    T evaluate(const T x, const T y) const override;
 };
 
 
@@ -126,7 +126,7 @@ class GaussianFilter2
         const T yradius,
         const T alpha);
 
-    virtual T evaluate(const T x, const T y) const override;
+    T evaluate(const T x, const T y) const override;
 
   private:
     const T m_alpha;
@@ -145,7 +145,7 @@ class FastGaussianFilter2
         const T yradius,
         const T alpha);
 
-    virtual T evaluate(const T x, const T y) const override;
+    T evaluate(const T x, const T y) const override;
 
   private:
     const T m_alpha;
@@ -174,7 +174,7 @@ class MitchellFilter2
         const T b,
         const T c);
 
-    virtual T evaluate(const T x, const T y) const override;
+    T evaluate(const T x, const T y) const override;
 
   private:
     T m_a3, m_a2, m_a0;
@@ -196,7 +196,7 @@ class LanczosFilter2
         const T yradius,
         const T tau);
 
-    virtual T evaluate(const T x, const T y) const override;
+    T evaluate(const T x, const T y) const override;
 
   private:
     const T m_rcp_tau;
@@ -221,7 +221,7 @@ class BlackmanHarrisFilter2
   public:
     BlackmanHarrisFilter2(const T xradius, const T yradius);
 
-    virtual T evaluate(const T x, const T y) const override;
+    T evaluate(const T x, const T y) const override;
 
   private:
     static T blackman(const T x);
@@ -234,7 +234,7 @@ class FastBlackmanHarrisFilter2
   public:
     FastBlackmanHarrisFilter2(const T xradius, const T yradius);
 
-    virtual T evaluate(const T x, const T y) const override;
+    T evaluate(const T x, const T y) const override;
 
   private:
     static T blackman(const T x);

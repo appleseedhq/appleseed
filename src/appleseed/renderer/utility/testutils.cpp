@@ -197,7 +197,7 @@ size_t BoundingBoxObject::get_material_slot_count() const
 
 const char* BoundingBoxObject::get_material_slot(const size_t index) const
 {
-    return 0;
+    return nullptr;
 }
 
 }   // namespace renderer

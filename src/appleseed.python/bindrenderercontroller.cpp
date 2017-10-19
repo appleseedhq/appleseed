@@ -49,7 +49,7 @@ namespace
       , public bpy::wrapper<IRendererController>
     {
       public:
-        virtual void on_rendering_begin() override
+        void on_rendering_begin() override
         {
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
@@ -65,7 +65,7 @@ namespace
             }
         }
 
-        virtual void on_rendering_success() override
+        void on_rendering_success() override
         {
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
@@ -81,7 +81,7 @@ namespace
             }
         }
 
-        virtual void on_rendering_abort() override
+        void on_rendering_abort() override
         {
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
@@ -97,7 +97,7 @@ namespace
             }
         }
 
-        virtual void on_frame_begin() override
+        void on_frame_begin() override
         {
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
@@ -113,7 +113,7 @@ namespace
             }
         }
 
-        virtual void on_frame_end() override
+        void on_frame_end() override
         {
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
@@ -129,7 +129,7 @@ namespace
             }
         }
 
-        virtual void on_progress() override
+        void on_progress() override
         {
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
@@ -145,7 +145,7 @@ namespace
             }
         }
 
-        virtual Status get_status() const override
+        Status get_status() const override
         {
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.

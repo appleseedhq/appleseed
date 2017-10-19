@@ -80,7 +80,7 @@ class ImageImportanceSampler
     template <typename ImageSampler>
     void rebuild(
         ImageSampler&       sampler,
-        IAbortSwitch*       abort_switch = 0);
+        IAbortSwitch*       abort_switch = nullptr);
 
     // Sample the image and return the coordinates of the chosen pixel
     // and its probability density.

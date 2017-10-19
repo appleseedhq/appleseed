@@ -79,8 +79,8 @@ class ObjectInstanceItem
 
     const renderer::Assembly& get_assembly() const;
 
-    virtual QMenu* get_single_item_context_menu() const override;
-    virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const override;
+    QMenu* get_single_item_context_menu() const override;
+    QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const override;
 
     void assign_material(
         const QString&                  page_name,
@@ -104,7 +104,7 @@ class ObjectInstanceItem
 
     typedef SingleModelEntityItem<renderer::ObjectInstance, renderer::Assembly, ObjectInstanceCollectionItem> Base;
 
-    virtual void delete_multiple(const QList<ItemBase*>& items) override;
+    void delete_multiple(const QList<ItemBase*>& items) override;
     void do_delete();
 
     void add_material_assignment_menu_actions(

@@ -48,10 +48,10 @@ class LineNumberArea
     Q_OBJECT
 
   public:
-    explicit LineNumberArea(PythonEditor* parent = 0);
+    explicit LineNumberArea(PythonEditor* parent = nullptr);
 
   protected:
-    void paintEvent(QPaintEvent* event);
+    void paintEvent(QPaintEvent* event) override;
 
   private slots:
     void slot_update_area_width();

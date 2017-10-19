@@ -63,7 +63,7 @@ class APPLESEED_DLLSYMBOL Shader
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     const char* get_type() const;
     const char* get_shader() const;
@@ -85,7 +85,7 @@ class APPLESEED_DLLSYMBOL Shader
         const ParamArray&   params);
 
     // Destructor.
-    ~Shader();
+    ~Shader() override;
 
     bool add(OSLShadingSystem& shading_system);
 };

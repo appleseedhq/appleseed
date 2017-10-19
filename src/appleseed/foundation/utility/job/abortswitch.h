@@ -56,7 +56,7 @@ class APPLESEED_DLLSYMBOL AbortSwitch
     void abort();
 
     // Check whether the abort flag is set.
-    virtual bool is_aborted() const override;
+    bool is_aborted() const override;
 
   private:
     ThreadFlag m_abort_flag;

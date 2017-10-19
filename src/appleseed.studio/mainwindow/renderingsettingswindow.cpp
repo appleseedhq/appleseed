@@ -116,7 +116,7 @@ namespace
         return layout;
     }
 
-    QWidget* create_horizontal_group(QWidget* widget1, QWidget* widget2 = 0, QWidget* widget3 = 0)
+    QWidget* create_horizontal_group(QWidget* widget1, QWidget* widget2 = nullptr, QWidget* widget3 = nullptr)
     {
         QWidget* group = new QWidget();
 
@@ -173,7 +173,7 @@ class RenderSettingsPanel
   : public FoldablePanelWidget
 {
   public:
-    RenderSettingsPanel(const QString& title, QWidget* parent = 0)
+    RenderSettingsPanel(const QString& title, QWidget* parent = nullptr)
       : FoldablePanelWidget(title, parent)
       , m_params_metadata(Configuration::get_metadata())
     {
@@ -414,7 +414,7 @@ namespace
         Q_OBJECT
 
       public:
-        GeneralSettingsPanel(const Configuration& config, QWidget* parent = 0)
+        GeneralSettingsPanel(const Configuration& config, QWidget* parent = nullptr)
           : RenderSettingsPanel("General Settings", parent)
         {
             QFormLayout* layout = create_form_layout();
@@ -431,7 +431,7 @@ namespace
             load_directly_linked_values(config);
         }
 
-        virtual void save_config(Configuration& config) const override
+        void save_config(Configuration& config) const override
         {
             save_directly_linked_values(config);
         }
@@ -447,7 +447,7 @@ namespace
         Q_OBJECT
 
       public:
-        ImagePlaneSamplingPanel(const Configuration& config, QWidget* parent = 0)
+        ImagePlaneSamplingPanel(const Configuration& config, QWidget* parent = nullptr)
           : RenderSettingsPanel("Image Plane Sampling", parent)
         {
             QVBoxLayout* layout = new QVBoxLayout();
@@ -472,7 +472,7 @@ namespace
             load_directly_linked_values(config);
         }
 
-        virtual void save_config(Configuration& config) const override
+        void save_config(Configuration& config) const override
         {
             save_directly_linked_values(config);
 
@@ -619,12 +619,12 @@ namespace
       : public RenderSettingsPanel
     {
       public:
-        LightingPanel(const Configuration& config, QWidget* parent = 0)
+        LightingPanel(const Configuration& config, QWidget* parent = nullptr)
           : RenderSettingsPanel("Lighting", parent)
         {
         }
 
-        virtual void save_config(Configuration& config) const override
+        void save_config(Configuration& config) const override
         {
             save_directly_linked_values(config);
         }
@@ -647,7 +647,7 @@ namespace
       : public LightingPanel
     {
       public:
-        FinalConfigurationLightingPanel(const Configuration& config, QWidget* parent = 0)
+        FinalConfigurationLightingPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingPanel(config, parent)
         {
             QComboBox* combobox = create_combobox("engine");
@@ -663,7 +663,7 @@ namespace
       : public LightingPanel
     {
       public:
-        InteractiveConfigurationLightingPanel(const Configuration& config, QWidget* parent = 0)
+        InteractiveConfigurationLightingPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingPanel(config, parent)
         {
             QComboBox* combobox = create_combobox("engine");
@@ -682,7 +682,7 @@ namespace
       : public RenderSettingsPanel
     {
       public:
-        LightingEnginePanel(const QString& title, QWidget* parent = 0)
+        LightingEnginePanel(const QString& title, QWidget* parent = nullptr)
           : RenderSettingsPanel(title, parent)
         {
         }
@@ -832,7 +832,7 @@ namespace
       : public LightingEnginePanel
     {
       public:
-        UnidirectionalPathTracerPanel(const Configuration& config, QWidget* parent = 0)
+        UnidirectionalPathTracerPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingEnginePanel("Unidirectional Path Tracer", parent)
         {
             fold();
@@ -878,7 +878,7 @@ namespace
             set_widget("advanced.max_ray_intensity", get_config<double>(config, "pt.max_ray_intensity", 1.0));
         }
 
-        virtual void save_config(Configuration& config) const override
+        void save_config(Configuration& config) const override
         {
             save_directly_linked_values(config);
 
@@ -1007,7 +1007,7 @@ namespace
       : public LightingEnginePanel
     {
       public:
-        SPPMPanel(const Configuration& config, QWidget* parent = 0)
+        SPPMPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingEnginePanel("Stochastic Progressive Photon Mapping", parent)
         {
             fold();
@@ -1048,7 +1048,7 @@ namespace
             else set_widget("photon_type.poly", true);
         }
 
-        virtual void save_config(Configuration& config) const override
+        void save_config(Configuration& config) const override
         {
             save_directly_linked_values(config);
 
@@ -1170,7 +1170,7 @@ namespace
       : public LightingEnginePanel
     {
       public:
-        SystemPanel(const Configuration& config, QWidget* parent = 0)
+        SystemPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingEnginePanel("System", parent)
         {
             fold();
@@ -1200,7 +1200,7 @@ namespace
             set_widget("tile_ordering.value", get_config<string>(config, "generic_frame_renderer.tile_ordering", "spiral"));
         }
 
-        virtual void save_config(Configuration& config) const override
+        void save_config(Configuration& config) const override
         {
             save_directly_linked_values(config);
 
@@ -1348,7 +1348,7 @@ namespace
 
         const Configuration* base_config = config.get_base();
 
-        if (base_config == 0)
+        if (base_config == nullptr)
             return false;
 
         return is_interactive_configuration(*base_config);

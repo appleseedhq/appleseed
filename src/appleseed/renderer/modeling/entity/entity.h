@@ -122,7 +122,7 @@ class APPLESEED_DLLSYMBOL Entity
         const Project&                  project,
         const BaseGroup*                parent,
         OnFrameBeginRecorder&           recorder,
-        foundation::IAbortSwitch*       abort_switch = 0);
+        foundation::IAbortSwitch*       abort_switch = nullptr);
 
     // This method is called once after rendering each frame (only if on_frame_begin() was called).
     virtual void on_frame_end(
@@ -138,7 +138,7 @@ class APPLESEED_DLLSYMBOL Entity
     ParamArray                          m_params;
 
     // Destructor.
-    ~Entity();
+    ~Entity() override;
 };
 
 

@@ -65,7 +65,7 @@ const KeyValuePairType* lookup_kvpair_array(
             return &kvpairs[i];
     }
 
-    return 0;
+    return nullptr;
 }
 
 #define LOOKUP_KVPAIR_ARRAY(kvpairs, key) \

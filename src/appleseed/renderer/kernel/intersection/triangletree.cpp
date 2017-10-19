@@ -532,7 +532,7 @@ void TriangleTree::build_bvh(
         save_memory,
         &triangle_keys,
         &triangle_vertex_infos,
-        0,
+        nullptr,
         &triangle_bboxes);
     const double collection_time = stopwatch.measure().get_seconds();
 
@@ -584,10 +584,10 @@ void TriangleTree::build_bvh(
         m_arguments,
         time,
         save_memory,
-        0,
-        0,
+        nullptr,
+        nullptr,
         &triangle_vertices,
-        0);
+        nullptr);
 
     // Compute and propagate motion bounding boxes.
     compute_motion_bboxes(
@@ -936,7 +936,7 @@ void TriangleTree::store_triangles(
     m_triangle_keys.reserve(triangle_indices.size());
     m_leaf_data.resize(leaf_data_size);
 
-    MemoryWriter leaf_data_writer(m_leaf_data.empty() ? 0 : &m_leaf_data[0]);
+    MemoryWriter leaf_data_writer(m_leaf_data.empty() ? nullptr : &m_leaf_data[0]);
 
     for (size_t i = 0; i < node_count; ++i)
     {
@@ -1231,7 +1231,7 @@ namespace
             const size_t max_object_instance_index =
                 *max_element(object_instances.begin(), object_instances.end());
 
-            filters.assign(max_object_instance_index + 1, 0);
+            filters.assign(max_object_instance_index + 1, nullptr);
 
             if (!repository.empty())
             {

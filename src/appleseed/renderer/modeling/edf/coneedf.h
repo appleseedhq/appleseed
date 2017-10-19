@@ -73,16 +73,16 @@ class APPLESEED_DLLSYMBOL ConeEDFFactory
 {
   public:
     // Return a string identifying this EDF model.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Return metadata for this EDF model.
-    virtual foundation::Dictionary get_model_metadata() const override;
+    foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this EDF model.
-    virtual foundation::DictionaryArray get_input_metadata() const override;
+    foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new EDF instance.
-    virtual foundation::auto_release_ptr<EDF> create(
+    foundation::auto_release_ptr<EDF> create(
         const char*         name,
         const ParamArray&   params) const override;
 

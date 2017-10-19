@@ -45,7 +45,7 @@ TEST_SUITE(Foundation_Image_FilteredTile)
     {
         FILE* file = fopen(filepath, "wt");
 
-        if (file == 0)
+        if (file == nullptr)
             return;
 
         for (size_t y = 0; y < tile.get_height(); ++y)

@@ -53,13 +53,13 @@ class PythonEditor
     Q_OBJECT
 
   public:
-    explicit PythonEditor(QWidget* parent = 0);
+    explicit PythonEditor(QWidget* parent = nullptr);
 
   protected:
     // Event used to update line number area.
-    void resizeEvent(QResizeEvent* event);
+    void resizeEvent(QResizeEvent* event) override;
 
-    void keyPressEvent(QKeyEvent* event);
+    void keyPressEvent(QKeyEvent* event) override;
 
   private slots:
     void slot_highlight_current_line();

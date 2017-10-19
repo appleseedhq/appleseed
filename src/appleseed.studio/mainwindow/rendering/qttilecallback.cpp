@@ -68,12 +68,12 @@ namespace
                 Qt::QueuedConnection);
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual void on_tile_begin(
+        void on_tile_begin(
             const Frame*    frame,
             const size_t    tile_x,
             const size_t    tile_y) override
@@ -83,7 +83,7 @@ namespace
             emit signal_update();
         }
 
-        virtual void on_tile_end(
+        void on_tile_end(
             const Frame*    frame,
             const size_t    tile_x,
             const size_t    tile_y) override
@@ -93,7 +93,7 @@ namespace
             emit signal_update();
         }
 
-        virtual void on_progressive_frame_end(
+        void on_progressive_frame_end(
             const Frame*    frame) override
         {
             assert(m_render_widget);

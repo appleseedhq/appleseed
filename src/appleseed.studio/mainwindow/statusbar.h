@@ -64,7 +64,7 @@ class StatusBar
     RenderingTimer* m_rendering_timer;
     int             m_timer_id;
 
-    virtual void timerEvent(QTimerEvent* event);
+    void timerEvent(QTimerEvent* event) override;
 };
 
 }       // namespace studio

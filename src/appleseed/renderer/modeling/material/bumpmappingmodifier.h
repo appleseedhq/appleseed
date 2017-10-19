@@ -53,7 +53,7 @@ class BumpMappingModifier
         const float                 offset,
         const float                 amplitude);
 
-    virtual foundation::Basis3d modify(
+    foundation::Basis3d modify(
         TextureCache&               texture_cache,
         const foundation::Basis3d&  basis,
         const ShadingPoint&         shading_point) const override;

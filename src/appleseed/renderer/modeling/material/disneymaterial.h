@@ -69,10 +69,10 @@ class APPLESEED_DLLSYMBOL DisneyMaterialLayer
     DisneyMaterialLayer(const DisneyMaterialLayer& other);
 
     // Destructor.
-    ~DisneyMaterialLayer();
+    ~DisneyMaterialLayer() override;
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     DisneyMaterialLayer& operator=(const DisneyMaterialLayer& other);
 
@@ -113,25 +113,25 @@ class APPLESEED_DLLSYMBOL DisneyMaterial
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Return a string identifying the model of this material.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Expose asset file paths referenced by this entity to the outside.
-    virtual void collect_asset_paths(foundation::StringArray& paths) const override;
-    virtual void update_asset_paths(const foundation::StringDictionary& mappings) override;
+    void collect_asset_paths(foundation::StringArray& paths) const override;
+    void update_asset_paths(const foundation::StringDictionary& mappings) override;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
+    bool on_frame_begin(
         const Project&              project,
         const BaseGroup*            parent,
         OnFrameBeginRecorder&       recorder,
-        foundation::IAbortSwitch*   abort_switch = 0) override;
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
     // This method is called once after rendering each frame (only if on_frame_begin() was called).
-    virtual void on_frame_end(
+    void on_frame_end(
         const Project&              project,
         const BaseGroup*            parent) override;
 
@@ -164,7 +164,7 @@ class APPLESEED_DLLSYMBOL DisneyMaterial
         const ParamArray&   params);
 
     // Destructor.
-    ~DisneyMaterial();
+    ~DisneyMaterial() override;
 
     // Prepare all layers for rendering. Returns true on success.
     bool prepare_layers(const MessageContext& context);
@@ -180,16 +180,16 @@ class APPLESEED_DLLSYMBOL DisneyMaterialFactory
 {
   public:
     // Return a string identifying this material model.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Return metadata for this material model.
-    virtual foundation::Dictionary get_model_metadata() const override;
+    foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this material model.
-    virtual foundation::DictionaryArray get_input_metadata() const override;
+    foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new material instance.
-    virtual foundation::auto_release_ptr<Material> create(
+    foundation::auto_release_ptr<Material> create(
         const char*         name,
         const ParamArray&   params) const override;
 

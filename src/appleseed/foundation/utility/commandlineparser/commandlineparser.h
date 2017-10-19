@@ -124,7 +124,7 @@ class CommandLineParser
 inline CommandLineParser::CommandLineParser()
 {
     // No default option handler.
-    m_default_option.m_handler = 0;
+    m_default_option.m_handler = nullptr;
 }
 
 inline void CommandLineParser::add_option_handler(OptionHandler* handler)
@@ -263,7 +263,7 @@ inline OptionHandler* CommandLineParser::find_option_handler(const std::string& 
     }
 
     // No handler found for this argument.
-    return 0;
+    return nullptr;
 }
 
 inline bool CommandLineParser::is_handler_used(const OptionHandler* handler) const
@@ -305,7 +305,7 @@ inline void CommandLineParser::collect_options(
             if (m_options.empty() ||
                 m_options.back().m_values.size() >= m_options.back().m_handler->get_max_value_count())
             {
-                if (m_default_option.m_handler == 0 ||
+                if (m_default_option.m_handler == nullptr ||
                     m_default_option.m_values.size() >= m_default_option.m_handler->get_max_value_count())
                 {
                     // Error: unknown option.

@@ -55,7 +55,7 @@ class Exception
     explicit Exception(const char* what);
 
     // Returns a generic, implementation-defined description of the exception.
-    virtual const char* what() const throw() override;
+    const char* what() const throw() override;
 
   protected:
     // Copy a string to another, ensuring that no overflow occurs and that the

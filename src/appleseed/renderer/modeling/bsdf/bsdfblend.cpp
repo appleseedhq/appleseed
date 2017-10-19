@@ -83,17 +83,17 @@ namespace
             m_inputs.declare("weight", InputFormatFloat);
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
+        bool on_frame_begin(
             const Project&              project,
             const BaseGroup*            parent,
             OnFrameBeginRecorder&       recorder,
@@ -107,13 +107,13 @@ namespace
             m_bsdf[0] = retrieve_bsdf(*assembly, "bsdf0");
             m_bsdf[1] = retrieve_bsdf(*assembly, "bsdf1");
 
-            if (m_bsdf[0] == 0 || m_bsdf[1] == 0)
+            if (m_bsdf[0] == nullptr || m_bsdf[1] == nullptr)
                 return false;
 
             return true;
         }
 
-        virtual void* evaluate_inputs(
+        void* evaluate_inputs(
             const ShadingContext&       shading_context,
             const ShadingPoint&         shading_point) const override
         {
@@ -131,7 +131,7 @@ namespace
             return values;
         }
 
-        virtual void sample(
+        void sample(
             SamplingContext&            sampling_context,
             const void*                 data,
             const bool                  adjoint,
@@ -158,7 +158,7 @@ namespace
                 sample);
         }
 
-        virtual float evaluate(
+        float evaluate(
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
@@ -217,7 +217,7 @@ namespace
             return bsdf0_prob * w0 + bsdf1_prob * w1;
         }
 
-        virtual float evaluate_pdf(
+        float evaluate_pdf(
             const void*                 data,
             const bool                  adjoint,
             const Vector3f&             geometric_normal,
@@ -284,11 +284,11 @@ namespace
             if (bsdf_name.empty())
             {
                 RENDERER_LOG_ERROR("while preparing bsdf \"%s\": no bsdf bound to \"%s\".", get_path().c_str(), param_name);
-                return 0;
+                return nullptr;
             }
 
             const BSDF* bsdf = assembly.bsdfs().get_by_name(bsdf_name.c_str());
-            if (bsdf == 0)
+            if (bsdf == nullptr)
                 RENDERER_LOG_ERROR("while preparing bsdf \"%s\": cannot find bsdf \"%s\".", get_path().c_str(), bsdf_name.c_str());
 
             return bsdf;

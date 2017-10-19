@@ -59,18 +59,18 @@ class APPLESEED_DLLSYMBOL PluginAssembly
 {
   public:
     // Destructor.
-    virtual ~PluginAssembly() override;
+    ~PluginAssembly() override;
 
     // Return a string identifying the model of this entity.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
-    virtual bool expand_contents(
+    bool expand_contents(
         const Project&              project,
         const Assembly*             parent,
-        foundation::IAbortSwitch*   abort_switch = 0) override;
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
   protected:
     friend class PluginAssemblyFactory;
@@ -94,13 +94,13 @@ class APPLESEED_DLLSYMBOL PluginAssemblyFactory
 {
   public:
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Return a string identifying this assembly model.
-    virtual const char* get_model() const override;
+    const char* get_model() const override;
 
     // Create a new assembly.
-    virtual foundation::auto_release_ptr<Assembly> create(
+    foundation::auto_release_ptr<Assembly> create(
         const char*         name,
         const ParamArray&   params = ParamArray()) const override;
 

@@ -69,7 +69,7 @@ class ScenePickingHandler
         const ProjectExplorer&              project_explorer,
         const renderer::Project&            project);
 
-    ~ScenePickingHandler();
+    ~ScenePickingHandler() override;
 
     void set_enabled(const bool enabled);
 
@@ -84,7 +84,7 @@ class ScenePickingHandler
     const renderer::Project&                m_project;
     bool                                    m_enabled;
 
-    virtual bool eventFilter(QObject* object, QEvent* event) override;
+    bool eventFilter(QObject* object, QEvent* event) override;
 
     ItemBase* pick(const QPoint& point);
 };

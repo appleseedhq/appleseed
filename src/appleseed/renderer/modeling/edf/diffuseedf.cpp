@@ -79,17 +79,17 @@ namespace
             m_inputs.declare("exposure", InputFormatFloat, "0.0");
         }
 
-        virtual void release() override
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const override
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
+        bool on_frame_begin(
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
@@ -103,7 +103,7 @@ namespace
             return true;
         }
 
-        virtual void sample(
+        void sample(
             SamplingContext&        sampling_context,
             const void*             data,
             const Vector3f&         geometric_normal,
@@ -126,7 +126,7 @@ namespace
             assert(probability > 0.0f);
         }
 
-        virtual void evaluate(
+        void evaluate(
             const void*             data,
             const Vector3f&         geometric_normal,
             const Basis3f&          shading_basis,
@@ -150,7 +150,7 @@ namespace
             value *= values->m_radiance_multiplier * pow(2.0f, values->m_exposure);
         }
 
-        virtual void evaluate(
+        void evaluate(
             const void*             data,
             const Vector3f&         geometric_normal,
             const Basis3f&          shading_basis,
@@ -178,7 +178,7 @@ namespace
             probability = cos_on * RcpPi<float>();
         }
 
-        virtual float evaluate_pdf(
+        float evaluate_pdf(
             const void*             data,
             const Vector3f&         geometric_normal,
             const Basis3f&          shading_basis,
@@ -196,7 +196,7 @@ namespace
             return cos_on * RcpPi<float>();
         }
 
-        virtual float get_uncached_max_contribution() const override
+        float get_uncached_max_contribution() const override
         {
             return get_max_contribution("radiance", "radiance_multiplier", "exposure");
         }

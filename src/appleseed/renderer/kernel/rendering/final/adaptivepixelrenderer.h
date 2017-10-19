@@ -63,10 +63,10 @@ class AdaptivePixelRendererFactory
         const ParamArray&           params);
 
     // Delete this instance.
-    virtual void release() override;
+    void release() override;
 
     // Return a new adaptive pixel renderer instance.
-    virtual IPixelRenderer* create(
+    IPixelRenderer* create(
         const size_t                thread_index) override;
 
     // Return the metadata of the adaptive pixel renderer parameters.
