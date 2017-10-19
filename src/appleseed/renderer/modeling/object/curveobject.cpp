@@ -49,6 +49,11 @@ namespace renderer
 // CurveObject class implementation.
 //
 
+namespace
+{
+    const char* Model = "curve_object";
+}
+
 struct CurveObject::Impl
 {
     RegionKit           m_region_kit;
@@ -100,7 +105,7 @@ void CurveObject::release()
 
 const char* CurveObject::get_model() const
 {
-    return CurveObjectFactory::get_model();
+    return Model;
 }
 
 GAABB3 CurveObject::compute_local_bbox() const
@@ -190,16 +195,30 @@ void CurveObject::update_asset_paths(const StringDictionary& mappings)
 // CurveObjectFactory class implementation.
 //
 
-const char* CurveObjectFactory::get_model()
+const char* CurveObjectFactory::get_model() const
 {
-    return "curve_object";
+    return Model;
 }
 
-auto_release_ptr<CurveObject> CurveObjectFactory::create(
-    const char*         name,
-    const ParamArray&   params)
+Dictionary CurveObjectFactory::get_model_metadata() const
 {
-    return auto_release_ptr<CurveObject>(new CurveObject(name, params));
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Curve Object");
+}
+
+DictionaryArray CurveObjectFactory::get_input_metadata() const
+{
+    DictionaryArray metadata;
+    return metadata;
+}
+
+auto_release_ptr<Object> CurveObjectFactory::create(
+    const char*             name,
+    const ParamArray&       params) const
+{
+    return auto_release_ptr<Object>(new CurveObject(name, params));
 }
 
 }   // namespace renderer

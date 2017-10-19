@@ -405,7 +405,7 @@ namespace
 void AssemblyTree::create_child_trees(const Assembly& assembly)
 {
     // Create a region or a triangle tree if there are mesh objects.
-    if (has_object_instances_of_type(assembly, MeshObjectFactory::get_model()))
+    if (has_object_instances_of_type(assembly, MeshObjectFactory().get_model()))
     {
         assembly.is_flushable()
             ? create_region_tree(assembly)
@@ -413,13 +413,13 @@ void AssemblyTree::create_child_trees(const Assembly& assembly)
     }
 
     // Create a curve tree if there are curve objects.
-    if (has_object_instances_of_type(assembly, CurveObjectFactory::get_model()))
+    if (has_object_instances_of_type(assembly, CurveObjectFactory().get_model()))
         create_curve_tree(assembly);
 }
 
 void AssemblyTree::create_region_tree(const Assembly& assembly)
 {
-    const uint64 hash = hash_assembly_geometry(assembly, MeshObjectFactory::get_model());
+    const uint64 hash = hash_assembly_geometry(assembly, MeshObjectFactory().get_model());
     Lazy<RegionTree>* tree = m_region_tree_repository.acquire(hash);
 
     if (tree == nullptr)
@@ -440,7 +440,7 @@ void AssemblyTree::create_region_tree(const Assembly& assembly)
 
 void AssemblyTree::create_triangle_tree(const Assembly& assembly)
 {
-    const uint64 hash = hash_assembly_geometry(assembly, MeshObjectFactory::get_model());
+    const uint64 hash = hash_assembly_geometry(assembly, MeshObjectFactory().get_model());
     Lazy<TriangleTree>* tree = m_triangle_tree_repository.acquire(hash);
 
     if (tree == nullptr)
@@ -472,7 +472,7 @@ void AssemblyTree::create_triangle_tree(const Assembly& assembly)
 
 void AssemblyTree::create_curve_tree(const Assembly& assembly)
 {
-    const uint64 hash = hash_assembly_geometry(assembly, CurveObjectFactory::get_model());
+    const uint64 hash = hash_assembly_geometry(assembly, CurveObjectFactory().get_model());
     Lazy<CurveTree>* tree = m_curve_tree_repository.acquire(hash);
 
     if (tree == nullptr)

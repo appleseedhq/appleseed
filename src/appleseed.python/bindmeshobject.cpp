@@ -61,7 +61,9 @@ namespace
         const string&       name,
         const bpy::dict&    params)
     {
-        return MeshObjectFactory::create(name.c_str(), bpy_dict_to_param_array(params));
+        return
+            auto_release_ptr<MeshObject>(
+                MeshObjectFactory().create(name.c_str(), bpy_dict_to_param_array(params)));
     }
 
     const Triangle& get_triangle(const MeshObject* object, const size_t index)

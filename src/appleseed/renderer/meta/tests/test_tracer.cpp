@@ -168,8 +168,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
         void create_plane_object()
         {
-            auto_release_ptr<MeshObject> mesh_object =
-                MeshObjectFactory::create("plane", ParamArray());
+            auto_release_ptr<MeshObject> mesh_object(
+                MeshObjectFactory().create("plane", ParamArray()));
 
             mesh_object->push_vertex(GVector3(0.0f, -0.5f, -0.5f));
             mesh_object->push_vertex(GVector3(0.0f, +0.5f, -0.5f));

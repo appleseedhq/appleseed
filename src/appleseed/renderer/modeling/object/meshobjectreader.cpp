@@ -132,9 +132,8 @@ namespace
 
             // Create an empty mesh object.
             m_objects.push_back(
-                MeshObjectFactory::create(
-                    object_name.c_str(),
-                    m_params).release());
+                static_cast<MeshObject*>(
+                    MeshObjectFactory().create(object_name.c_str(), m_params).release()));
 
             // Reset mesh statistics.
             reset_mesh_stats();

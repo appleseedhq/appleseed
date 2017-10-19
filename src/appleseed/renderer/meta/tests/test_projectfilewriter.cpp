@@ -104,7 +104,7 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
         {
             get_assembly()->objects().insert(
                 auto_release_ptr<Object>(
-                    MeshObjectFactory::create(
+                    MeshObjectFactory().create(
                         object_name,
                         ParamArray().insert("filename", filename))));
         }
@@ -122,7 +122,7 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
         void create_curve_object(const char* object_name)
         {
             auto_release_ptr<CurveObject> curve_object(
-                CurveObjectFactory::create(object_name, ParamArray()));
+                CurveObjectFactory().create(object_name, ParamArray()));
 
             static const GVector3 ControlPoints[] = { GVector3(0.0, 0.0, 0.0), GVector3(0.0, 1.0, 0.0) };
             curve_object->push_curve1(Curve1Type(ControlPoints, GScalar(0.1)));

@@ -116,7 +116,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_hair_ball(
     const char*             name,
     const ParamArray&       params)
 {
-    auto_release_ptr<CurveObject> object = CurveObjectFactory::create(name, params);
+    auto_release_ptr<CurveObject> object(CurveObjectFactory().create(name, params));
 
     const size_t ControlPointCount = 4;
     const size_t curve_count = params.get_optional<size_t>("curves", 100);
@@ -150,7 +150,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_furry_ball(
     const char*             name,
     const ParamArray&       params)
 {
-    auto_release_ptr<CurveObject> object = CurveObjectFactory::create(name, params);
+    auto_release_ptr<CurveObject> object(CurveObjectFactory().create(name, params));
 
     const size_t ControlPointCount = 4;
     const size_t curve_count = params.get_optional<size_t>("curves", 100);
@@ -200,7 +200,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_text_curve_file(
     const char*             name,
     const ParamArray&       params)
 {
-    auto_release_ptr<CurveObject> object = CurveObjectFactory::create(name, params);
+    auto_release_ptr<CurveObject> object(CurveObjectFactory().create(name, params));
 
     const string filepath = to_string(search_paths.qualify(params.get("filepath")));
     const size_t split_count = params.get_optional<size_t>("presplits", 0);
@@ -300,7 +300,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_mitsuba_curve_file(
 {
     // todo: fix for big endian CPUs.
 
-    auto_release_ptr<CurveObject> object = CurveObjectFactory::create(name, params);
+    auto_release_ptr<CurveObject> object(CurveObjectFactory().create(name, params));
 
     const string filepath = to_string(search_paths.qualify(params.get("filepath")));
 

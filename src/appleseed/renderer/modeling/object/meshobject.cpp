@@ -58,6 +58,8 @@ namespace renderer
 
 namespace
 {
+    const char* Model = "mesh_object";
+
     // A region that simply wraps a static tessellation.
     class MeshRegion
       : public IRegion
@@ -122,7 +124,7 @@ void MeshObject::release()
 
 const char* MeshObject::get_model() const
 {
-    return MeshObjectFactory::get_model();
+    return Model;
 }
 
 bool MeshObject::on_frame_begin(
@@ -415,16 +417,50 @@ void MeshObject::update_asset_paths(const StringDictionary& mappings)
 // MeshObjectFactory class implementation.
 //
 
-const char* MeshObjectFactory::get_model()
+const char* MeshObjectFactory::get_model() const
 {
-    return "mesh_object";
+    return Model;
 }
 
-auto_release_ptr<MeshObject> MeshObjectFactory::create(
-    const char*             name,
-    const ParamArray&       params)
+Dictionary MeshObjectFactory::get_model_metadata() const
 {
-    return auto_release_ptr<MeshObject>(new MeshObject(name, params));
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Mesh Object");
+}
+
+DictionaryArray MeshObjectFactory::get_input_metadata() const
+{
+    DictionaryArray metadata;
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "alpha_map")
+            .insert("label", "Alpha Map")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
+            .insert("use", "optional"));
+
+    return metadata;
+}
+
+auto_release_ptr<Object> MeshObjectFactory::create(
+    const char*             name,
+    const ParamArray&       params) const
+{
+    return auto_release_ptr<Object>(new MeshObject(name, params));
 }
 
 }   // namespace renderer

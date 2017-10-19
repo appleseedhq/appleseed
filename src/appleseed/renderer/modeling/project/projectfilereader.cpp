@@ -1610,12 +1610,12 @@ namespace
 
             try
             {
-                if (m_model == MeshObjectFactory::get_model())
+                if (m_model == MeshObjectFactory().get_model())
                 {
                     if (m_context.get_options() & ProjectFileReader::OmitReadingMeshFiles)
                     {
                         m_objects.push_back(
-                            MeshObjectFactory::create(
+                            MeshObjectFactory().create(
                                 m_name.c_str(),
                                 m_params).release());
                     }
@@ -1631,7 +1631,7 @@ namespace
                         else m_context.get_event_counters().signal_error();
                     }
                 }
-                else if (m_model == CurveObjectFactory::get_model())
+                else if (m_model == CurveObjectFactory().get_model())
                 {
                     m_objects.push_back(
                         CurveObjectReader::read(

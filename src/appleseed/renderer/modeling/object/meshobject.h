@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/modeling/object/iobjectfactory.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/regionkit.h"
 
@@ -211,15 +212,22 @@ class APPLESEED_DLLSYMBOL MeshObject
 //
 
 class APPLESEED_DLLSYMBOL MeshObjectFactory
+  : public IObjectFactory
 {
   public:
     // Return a string identifying this object model.
-    static const char* get_model();
+    const char* get_model() const override;
 
-    // Create a new mesh object.
-    static foundation::auto_release_ptr<MeshObject> create(
+    // Return metadata for this object model.
+    foundation::Dictionary get_model_metadata() const override;
+
+    // Return metadata for the inputs of this object model.
+    foundation::DictionaryArray get_input_metadata() const override;
+
+    // Create a new object instance.
+    foundation::auto_release_ptr<Object> create(
         const char*         name,
-        const ParamArray&   params);
+        const ParamArray&   params) const override;
 };
 
 }       // namespace renderer
