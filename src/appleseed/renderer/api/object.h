@@ -41,6 +41,7 @@
 #include "renderer/modeling/object/meshobjectreader.h"
 #include "renderer/modeling/object/meshobjectwriter.h"
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/object/objectfactoryregistrar.h"
 #include "renderer/modeling/object/proceduralobject.h"
 #include "renderer/modeling/object/triangle.h"
 
