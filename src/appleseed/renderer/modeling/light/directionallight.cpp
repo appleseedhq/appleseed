@@ -331,11 +331,4 @@ auto_release_ptr<Light> DirectionalLightFactory::create(
     return auto_release_ptr<Light>(new DirectionalLight(name, params));
 }
 
-auto_release_ptr<Light> DirectionalLightFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<Light>(new DirectionalLight(name, params));
-}
-
 }   // namespace renderer

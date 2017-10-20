@@ -49,6 +49,7 @@
 #include "boost/filesystem/operations.hpp"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 #include <vector>
 
@@ -169,6 +170,7 @@ bool AssetHandler::handle_assets() const
     for (size_t i = 0, e = unique_paths.size(); i < e; ++i)
     {
         string asset_path = unique_paths[i];
+        assert(!asset_path.empty());
 
         if (!handle_asset(asset_path))
             success = false;

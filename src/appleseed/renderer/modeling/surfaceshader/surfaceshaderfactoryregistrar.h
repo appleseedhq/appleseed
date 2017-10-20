@@ -70,7 +70,7 @@ class APPLESEED_DLLSYMBOL SurfaceShaderFactoryRegistrar
     // Destructor.
     ~SurfaceShaderFactoryRegistrar();
 
-    // Register a surface shader factory.
+    // Register a factory.
     void register_factory(std::unique_ptr<FactoryType> factory);
 
     // Retrieve the registered factories.

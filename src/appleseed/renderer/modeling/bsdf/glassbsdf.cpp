@@ -950,11 +950,4 @@ auto_release_ptr<BSDF> GlassBSDFFactory::create(
     return auto_release_ptr<BSDF>(new GlassBSDF(name, params));
 }
 
-auto_release_ptr<BSDF> GlassBSDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<BSDF>(new GlassBSDF(name, params));
-}
-
 }   // namespace renderer

@@ -201,13 +201,4 @@ auto_release_ptr<EnvironmentEDF> ConstantEnvironmentEDFFactory::create(
             new ConstantEnvironmentEDF(name, params));
 }
 
-auto_release_ptr<EnvironmentEDF> ConstantEnvironmentEDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return
-        auto_release_ptr<EnvironmentEDF>(
-            new ConstantEnvironmentEDF(name, params));
-}
-
 }   // namespace renderer

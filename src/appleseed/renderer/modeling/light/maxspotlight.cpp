@@ -378,11 +378,4 @@ auto_release_ptr<Light> MaxSpotLightFactory::create(
     return auto_release_ptr<Light>(new MaxSpotLight(name, params));
 }
 
-auto_release_ptr<Light> MaxSpotLightFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<Light>(new MaxSpotLight(name, params));
-}
-
 }   // namespace renderer

@@ -823,11 +823,4 @@ auto_release_ptr<BSDF> KelemenBRDFFactory::create(
     return auto_release_ptr<BSDF>(new KelemenBRDF(name, params));
 }
 
-auto_release_ptr<BSDF> KelemenBRDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<BSDF>(new KelemenBRDF(name, params));
-}
-
 }   // namespace renderer

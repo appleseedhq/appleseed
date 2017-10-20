@@ -354,11 +354,4 @@ auto_release_ptr<BSDF> OrenNayarBRDFFactory::create(
     return auto_release_ptr<BSDF>(new OrenNayarBRDF(name, params));
 }
 
-auto_release_ptr<BSDF> OrenNayarBRDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<BSDF>(new OrenNayarBRDF(name, params));
-}
-
 }   // namespace renderer

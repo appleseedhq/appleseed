@@ -407,11 +407,4 @@ auto_release_ptr<Camera> PinholeCameraFactory::create(
     return auto_release_ptr<Camera>(new PinholeCamera(name, params));
 }
 
-auto_release_ptr<Camera> PinholeCameraFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<Camera>(new PinholeCamera(name, params));
-}
-
 }   // namespace renderer

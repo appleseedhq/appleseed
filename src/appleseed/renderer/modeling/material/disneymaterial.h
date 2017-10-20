@@ -192,11 +192,6 @@ class APPLESEED_DLLSYMBOL DisneyMaterialFactory
     foundation::auto_release_ptr<Material> create(
         const char*         name,
         const ParamArray&   params) const override;
-
-    // Static variant of the create() method above.
-    static foundation::auto_release_ptr<Material> static_create(
-        const char*         name,
-        const ParamArray&   params);
 };
 
 }       // namespace renderer

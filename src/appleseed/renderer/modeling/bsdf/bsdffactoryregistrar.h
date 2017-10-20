@@ -70,7 +70,7 @@ class APPLESEED_DLLSYMBOL BSDFFactoryRegistrar
     // Destructor.
     ~BSDFFactoryRegistrar();
 
-    // Register a BSDF factory.
+    // Register a factory.
     void register_factory(std::unique_ptr<FactoryType> factory);
 
     // Retrieve the registered factories.

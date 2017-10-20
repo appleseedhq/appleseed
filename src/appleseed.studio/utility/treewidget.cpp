@@ -89,6 +89,8 @@ void move_to_sorted_position(QTreeWidgetItem* item)
 {
     assert(item);
 
+    const bool was_selected = item->isSelected();
+
     if (item->parent())
     {
         QTreeWidgetItem* parent = item->parent();
@@ -101,6 +103,8 @@ void move_to_sorted_position(QTreeWidgetItem* item)
         parent->takeTopLevelItem(parent->indexOfTopLevelItem(item));
         parent->insertTopLevelItem(find_sorted_position(parent, item->text(0)), item);
     }
+
+    item->setSelected(was_selected);
 }
 
 }   // namespace studio

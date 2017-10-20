@@ -231,13 +231,4 @@ auto_release_ptr<EnvironmentEDF> OSLEnvironmentEDFFactory::create(
             new OSLEnvironmentEDF(name, params));
 }
 
-auto_release_ptr<EnvironmentEDF> OSLEnvironmentEDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return
-        auto_release_ptr<EnvironmentEDF>(
-            new OSLEnvironmentEDF(name, params));
-}
-
 }   // namespace renderer

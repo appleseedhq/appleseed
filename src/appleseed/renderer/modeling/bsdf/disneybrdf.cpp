@@ -952,11 +952,4 @@ auto_release_ptr<BSDF> DisneyBRDFFactory::create(
     return auto_release_ptr<BSDF>(new DisneyBRDF(name, params));
 }
 
-auto_release_ptr<BSDF> DisneyBRDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<BSDF>(new DisneyBRDF(name, params));
-}
-
 }   // namespace renderer

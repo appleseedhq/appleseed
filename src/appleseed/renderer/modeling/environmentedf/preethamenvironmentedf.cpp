@@ -494,13 +494,4 @@ auto_release_ptr<EnvironmentEDF> PreethamEnvironmentEDFFactory::create(
             new PreethamEnvironmentEDF(name, params));
 }
 
-auto_release_ptr<EnvironmentEDF> PreethamEnvironmentEDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return
-        auto_release_ptr<EnvironmentEDF>(
-            new PreethamEnvironmentEDF(name, params));
-}
-
 }   // namespace renderer

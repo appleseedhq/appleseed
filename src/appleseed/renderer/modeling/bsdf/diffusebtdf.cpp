@@ -261,11 +261,4 @@ auto_release_ptr<BSDF> DiffuseBTDFFactory::create(
     return auto_release_ptr<BSDF>(new DiffuseBTDF(name, params));
 }
 
-auto_release_ptr<BSDF> DiffuseBTDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<BSDF>(new DiffuseBTDF(name, params));
-}
-
 }   // namespace renderer

@@ -348,11 +348,4 @@ auto_release_ptr<Camera> OrthographicCameraFactory::create(
     return auto_release_ptr<Camera>(new OrthographicCamera(name, params));
 }
 
-auto_release_ptr<Camera> OrthographicCameraFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<Camera>(new OrthographicCamera(name, params));
-}
-
 }   // namespace renderer

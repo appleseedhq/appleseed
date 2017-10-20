@@ -812,11 +812,4 @@ auto_release_ptr<Camera> ThinLensCameraFactory::create(
     return auto_release_ptr<Camera>(new ThinLensCamera(name, params));
 }
 
-auto_release_ptr<Camera> ThinLensCameraFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<Camera>(new ThinLensCamera(name, params));
-}
-
 }   // namespace renderer

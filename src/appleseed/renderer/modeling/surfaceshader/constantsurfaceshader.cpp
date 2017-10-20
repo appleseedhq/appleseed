@@ -218,11 +218,4 @@ auto_release_ptr<SurfaceShader> ConstantSurfaceShaderFactory::create(
     return auto_release_ptr<SurfaceShader>(new ConstantSurfaceShader(name, params));
 }
 
-auto_release_ptr<SurfaceShader> ConstantSurfaceShaderFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<SurfaceShader>(new ConstantSurfaceShader(name, params));
-}
-
 }   // namespace renderer

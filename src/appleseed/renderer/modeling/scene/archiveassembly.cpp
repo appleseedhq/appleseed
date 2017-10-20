@@ -145,11 +145,4 @@ auto_release_ptr<Assembly> ArchiveAssemblyFactory::create(
     return auto_release_ptr<Assembly>(new ArchiveAssembly(name, params));
 }
 
-auto_release_ptr<Assembly> ArchiveAssemblyFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<Assembly>(new ArchiveAssembly(name, params));
-}
-
 }   // namespace renderer

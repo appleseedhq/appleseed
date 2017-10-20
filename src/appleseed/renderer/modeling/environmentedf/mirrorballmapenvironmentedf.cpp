@@ -255,13 +255,4 @@ auto_release_ptr<EnvironmentEDF> MirrorBallMapEnvironmentEDFFactory::create(
             new MirrorBallMapEnvironmentEDF(name, params));
 }
 
-auto_release_ptr<EnvironmentEDF> MirrorBallMapEnvironmentEDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return
-        auto_release_ptr<EnvironmentEDF>(
-            new MirrorBallMapEnvironmentEDF(name, params));
-}
-
 }   // namespace renderer

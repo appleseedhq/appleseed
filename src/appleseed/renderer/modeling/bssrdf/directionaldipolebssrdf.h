@@ -65,11 +65,6 @@ class APPLESEED_DLLSYMBOL DirectionalDipoleBSSRDFFactory
     foundation::auto_release_ptr<BSSRDF> create(
         const char*         name,
         const ParamArray&   params) const override;
-
-    // Static variant of the create() method above.
-    static foundation::auto_release_ptr<BSSRDF> static_create(
-        const char*         name,
-        const ParamArray&   params);
 };
 
 }       // namespace renderer

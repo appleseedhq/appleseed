@@ -166,13 +166,4 @@ auto_release_ptr<EnvironmentShader> BackgroundEnvironmentShaderFactory::create(
             new BackgroundEnvironmentShader(name, params));
 }
 
-auto_release_ptr<EnvironmentShader> BackgroundEnvironmentShaderFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return
-        auto_release_ptr<EnvironmentShader>(
-            new BackgroundEnvironmentShader(name, params));
-}
-
 }   // namespace renderer

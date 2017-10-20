@@ -258,13 +258,4 @@ auto_release_ptr<EnvironmentEDF> GradientEnvironmentEDFFactory::create(
             new GradientEnvironmentEDF(name, params));
 }
 
-auto_release_ptr<EnvironmentEDF> GradientEnvironmentEDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return
-        auto_release_ptr<EnvironmentEDF>(
-            new GradientEnvironmentEDF(name, params));
-}
-
 }   // namespace renderer

@@ -270,11 +270,4 @@ auto_release_ptr<Camera> SphericalCameraFactory::create(
     return auto_release_ptr<Camera>(new SphericalCamera(name, params));
 }
 
-auto_release_ptr<Camera> SphericalCameraFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<Camera>(new SphericalCamera(name, params));
-}
-
 }   // namespace renderer

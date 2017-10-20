@@ -199,10 +199,4 @@ auto_release_ptr<AOV> UVAOVFactory::create(
     return auto_release_ptr<AOV>(new UVAOV(params));
 }
 
-auto_release_ptr<AOV> UVAOVFactory::static_create(
-    const ParamArray&   params)
-{
-    return auto_release_ptr<AOV>(new UVAOV(params));
-}
-
 }   // namespace renderer

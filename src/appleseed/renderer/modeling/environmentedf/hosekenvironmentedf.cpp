@@ -524,13 +524,4 @@ auto_release_ptr<EnvironmentEDF> HosekEnvironmentEDFFactory::create(
             new HosekEnvironmentEDF(name, params));
 }
 
-auto_release_ptr<EnvironmentEDF> HosekEnvironmentEDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return
-        auto_release_ptr<EnvironmentEDF>(
-            new HosekEnvironmentEDF(name, params));
-}
-
 }   // namespace renderer

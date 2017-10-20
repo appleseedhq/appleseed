@@ -125,7 +125,11 @@ namespace
         void collect_asset_paths(StringArray& paths) const override
         {
             if (m_params.strings().exist("filename"))
-                paths.push_back(m_params.get("filename"));
+            {
+                const char* filename = m_params.get("filename");
+                if (filename[0] != '\0')
+                    paths.push_back(filename);
+            }
         }
 
         void update_asset_paths(const StringDictionary& mappings) override
@@ -239,14 +243,6 @@ auto_release_ptr<Texture> DiskTexture2dFactory::create(
     const char*         name,
     const ParamArray&   params,
     const SearchPaths&  search_paths) const
-{
-    return auto_release_ptr<Texture>(new DiskTexture2d(name, params, search_paths));
-}
-
-auto_release_ptr<Texture> DiskTexture2dFactory::static_create(
-    const char*         name,
-    const ParamArray&   params,
-    const SearchPaths&  search_paths)
 {
     return auto_release_ptr<Texture>(new DiskTexture2d(name, params, search_paths));
 }

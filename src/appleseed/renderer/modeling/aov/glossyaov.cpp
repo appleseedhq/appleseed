@@ -274,12 +274,6 @@ auto_release_ptr<AOV> GlossyAOVFactory::create(
     return auto_release_ptr<AOV>(new GlossyAOV(params));
 }
 
-auto_release_ptr<AOV> GlossyAOVFactory::static_create(
-    const ParamArray&   params)
-{
-    return auto_release_ptr<AOV>(new GlossyAOV(params));
-}
-
 
 //
 // DirectGlossyAOVFactory class implementation.
@@ -311,12 +305,6 @@ auto_release_ptr<AOV> DirectGlossyAOVFactory::create(
     return auto_release_ptr<AOV>(new DirectGlossyAOV(params));
 }
 
-auto_release_ptr<AOV> DirectGlossyAOVFactory::static_create(
-    const ParamArray&   params)
-{
-    return auto_release_ptr<AOV>(new DirectGlossyAOV(params));
-}
-
 
 //
 // IndirectGlossyAOVFactory class implementation.
@@ -344,12 +332,6 @@ DictionaryArray IndirectGlossyAOVFactory::get_input_metadata() const
 
 auto_release_ptr<AOV> IndirectGlossyAOVFactory::create(
     const ParamArray&   params) const
-{
-    return auto_release_ptr<AOV>(new IndirectGlossyAOV(params));
-}
-
-auto_release_ptr<AOV> IndirectGlossyAOVFactory::static_create(
-    const ParamArray&   params)
 {
     return auto_release_ptr<AOV>(new IndirectGlossyAOV(params));
 }
