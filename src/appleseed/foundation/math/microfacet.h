@@ -208,7 +208,7 @@ class BeckmannMDF
         const float         alpha_y,
         const float         gamma) const override;
 
-    Vector2f sample11(
+    Vector2f sample_slope(
         const float         cos_theta,
         const Vector3f&     s,
         const float         gamma) const;
@@ -234,6 +234,9 @@ class BeckmannMDF
 //
 //   [3] Importance Sampling Microfacet-Based BSDFs using the Distribution of Visible Normals.
 //       https://hal.inria.fr/hal-00996995/en
+//
+//   [4] A Simpler and Exact Sampling Routine for the GGX Distribution of Visible Normals.
+//       https://hal.archives-ouvertes.fr/hal-01509746
 //
 
 class GGXMDF
@@ -276,11 +279,6 @@ class GGXMDF
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
-
-    Vector2f sample11(
-        const float         cos_theta,
-        const Vector3f&     s,
-        const float         gamma) const;
 
     float lambda(
         const Vector3f&     v,
