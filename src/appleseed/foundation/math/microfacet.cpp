@@ -118,49 +118,6 @@ namespace
     }
 
     template <typename Distribution>
-    Vector3f sample_visible_normals(
-        const Distribution& mdf,
-        const Vector3f&     v,
-        const Vector3f&     s,
-        const float         alpha_x,
-        const float         alpha_y,
-        const float         gamma)
-    {
-        // Preconditions.
-        assert(is_normalized(v));
-
-        // Stretch incident.
-        const float sign_cos_vn = v.y < 0.0f ? -1.0f : 1.0f;
-        Vector3f stretched(
-            sign_cos_vn * v[0] * alpha_x,
-            sign_cos_vn * v[1],
-            sign_cos_vn * v[2] * alpha_y);
-
-        stretched = normalize(stretched);
-
-        const float cos_theta = stretched[1];
-        const float phi =
-            stretched[1] < 0.99999f ? atan2(stretched[2], stretched[0]) : 0.0f;
-
-        // Sample slope.
-        Vector2f slope = mdf.sample11(cos_theta, s, gamma);
-
-        // Rotate.
-        const float cos_phi = cos(phi);
-        const float sin_phi = sin(phi);
-        slope = Vector2f(
-            cos_phi * slope[0] - sin_phi * slope[1],
-            sin_phi * slope[0] + cos_phi * slope[1]);
-
-        // Stretch and normalize.
-        const Vector3f m(
-            -slope[0] * alpha_x,
-            1.0f,
-            -slope[1] * alpha_y);
-        return normalize(m);
-    }
-
-    template <typename Distribution>
     float pdf_visible_normals(
         const Distribution& mdf,
         const Vector3f&     v,
@@ -354,18 +311,41 @@ Vector3f BeckmannMDF::sample(
     const float         alpha_y,
     const float         gamma) const
 {
-    return
-        sample_visible_normals(
-            *this,
-            v,
-            s,
-            alpha_x,
-            alpha_y,
-            gamma);
+    // Preconditions.
+    assert(is_normalized(v));
+
+    // Stretch incident.
+    const float sign_cos_vn = v.y < 0.0f ? -1.0f : 1.0f;
+    Vector3f stretched(
+        sign_cos_vn * v[0] * alpha_x,
+        sign_cos_vn * v[1],
+        sign_cos_vn * v[2] * alpha_y);
+
+    stretched = normalize(stretched);
+
+    const float cos_theta = stretched[1];
+    const float phi =
+        stretched[1] < 0.99999f ? atan2(stretched[2], stretched[0]) : 0.0f;
+
+    Vector2f slope = sample_slope(cos_theta, s, gamma);
+
+    // Rotate.
+    const float cos_phi = cos(phi);
+    const float sin_phi = sin(phi);
+    slope = Vector2f(
+        cos_phi * slope[0] - sin_phi * slope[1],
+        sin_phi * slope[0] + cos_phi * slope[1]);
+
+    // Unstretch and normalize.
+    const Vector3f m(
+        -slope[0] * alpha_x,
+        1.0f,
+        -slope[1] * alpha_y);
+    return normalize(m);
 }
 
 // This code comes from OpenShadingLanguage test render.
-Vector2f BeckmannMDF::sample11(
+Vector2f BeckmannMDF::sample_slope(
     const float         cos_theta,
     const Vector3f&     s,
     const float         gamma) const
@@ -520,64 +500,45 @@ Vector3f GGXMDF::sample(
     const float         alpha_y,
     const float         gamma) const
 {
-    return
-        sample_visible_normals(
-            *this,
-            v,
-            s,
-            alpha_x,
-            alpha_y,
-            gamma);
-}
+    // Preconditions.
+    assert(is_normalized(v));
 
-// Adapted from the sample code provided in [3].
-Vector2f GGXMDF::sample11(
-    const float         cos_theta,
-    const Vector3f&     s,
-    const float         gamma) const
-{
-    const float sin_theta = sqrt(max(0.0f, 1.0f - square(cos_theta)));
+    // Stretch incident.
+    const float sign_cos_vn = v.y < 0.0f ? -1.0f : 1.0f;
+    Vector3f stretched(
+        sign_cos_vn * v[0] * alpha_x,
+        sign_cos_vn * v[1],
+        sign_cos_vn * v[2] * alpha_y);
+    stretched = normalize(stretched);
 
-    // Special case (normal incidence).
-    if (sin_theta < 1.0e-4f)
-    {
-        const float r = sqrt(s[0] / (1.0f - s[0]));
-        const float phi = TwoOverPi<float>() * s[1];
-        const float cos_phi = cos(phi);
-        const float sin_phi = sin(phi);
-        return Vector2f(r * cos_phi, r * sin_phi);
-    }
+    // Build an orthonormal basis.
+    const Vector3f t1 =
+        (v.y < 0.9999f)
+            ? normalize(cross(stretched, Vector3f(0.0f, 1.0f, 0.0f)))
+            : Vector3f(1.0f, 0.0f, 0.0f);
+    const Vector3f t2 = cross(t1, stretched);
 
-    Vector2f slope;
+    // Sample point with polar coordinates (r, phi)
+    const float a = 1.0f / (1.0f + stretched.y);
+    const float r = sqrt(s[0]);
+    const float phi =
+        (s[1] < a)
+            ? s[1] / a * Pi<float>()
+            : Pi<float>() + (s[1] - a) / (1.0f - a) * Pi<float>();
 
-    // Precomputations.
-    const float tan_theta = sin_theta / cos_theta;
-    const float tan_theta2 = square(tan_theta);
-    const float cot_theta = 1.0f / tan_theta;
-    const float G1 = 2.0f / (1.0f + sqrt(1.0f + tan_theta2));
+    const float p1 = r * cos(phi);
+    const float p2 = r * sin(phi) * ((s[1] < a) ? 1.0f : stretched.y);
 
-    // Sample slope x.
-    const float A = 2.0f * s[0] / G1 - 1.0f;
-    const float A2 = square(A);
-    const float rcp_A2_minus_one = min(1.0f / (A2 - 1.0f), 1.0e10f);
-    const float B = tan_theta;
-    const float B2 = square(B);
-    const float D = sqrt(max(B2 * square(rcp_A2_minus_one) - (A2 - B2) * rcp_A2_minus_one, 0.0f));
-    const float slope_x_1 = B * rcp_A2_minus_one - D;
-    const float slope_x_2 = B * rcp_A2_minus_one + D;
-    slope[0] =
-        A < 0.0f || slope_x_2 > cot_theta
-            ? slope_x_1
-            : slope_x_2;
+    // Compute normal
+    const Vector3f h =
+        p1 * t1 + p2 * t2 + sqrt(max(0.0f, 1.0f - p1 * p1 - p2 * p2)) * stretched;
 
-    // Sample slope y.
-    const float z =
-        (s[1] * (s[1] * (s[1] * 0.27385f - 0.73369f) + 0.46341f)) /
-        (s[1] * (s[1] * (s[1] * 0.093073f + 0.309420f) - 1.0f) + 0.597999f);
-    const float S = s[2] < 0.5f ? 1.0f : -1.0f;
-    slope[1] = S * z * sqrt(1.0f + square(slope[0]));
-
-    return slope;
+    // Unstretch and normalize.
+    const Vector3f m(
+        h.x * alpha_x,
+        max(0.0f, h.y),
+        h.z * alpha_y);
+    return normalize(m);
 }
 
 float GGXMDF::pdf(
