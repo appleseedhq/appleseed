@@ -37,8 +37,8 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer      { class Assembly; }
-namespace renderer      { class ParamArray; }
+namespace renderer  { class Assembly; }
+namespace renderer  { class ParamArray; }
 
 namespace renderer
 {
