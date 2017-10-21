@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
@@ -39,11 +40,19 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
+namespace foundation    { class SearchPaths; }
 namespace renderer      { class Object; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
+
+//
+// An array of objects.
+//
+
+APPLESEED_DECLARE_APIARRAY(ObjectArray, Object*);
+
 
 //
 // Object factory interface.
@@ -65,10 +74,18 @@ class APPLESEED_DLLSYMBOL IObjectFactory
     // Return metadata for the inputs of this object model.
     virtual foundation::DictionaryArray get_input_metadata() const = 0;
 
-    // Create a new object instance.
+    // Create a new single empty object.
     virtual foundation::auto_release_ptr<Object> create(
-        const char*         name,
-        const ParamArray&   params) const = 0;
+        const char*                     name,
+        const ParamArray&               params) const = 0;
+
+    // Create objects, potentially from external assets.
+    virtual bool create(
+        const char*                     name,
+        const ParamArray&               params,
+        const foundation::SearchPaths&  search_paths,
+        const bool                      omit_loading_assets,
+        ObjectArray&                    objects) const = 0;
 };
 
 }       // namespace renderer

@@ -64,11 +64,9 @@
 #include "renderer/modeling/material/imaterialfactory.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/material/materialfactoryregistrar.h"
-#include "renderer/modeling/object/curveobject.h"
-#include "renderer/modeling/object/curveobjectreader.h"
-#include "renderer/modeling/object/meshobject.h"
-#include "renderer/modeling/object/meshobjectreader.h"
+#include "renderer/modeling/object/iobjectfactory.h"
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/object/objectfactoryregistrar.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
 #include "renderer/modeling/project/eventcounters.h"
@@ -108,6 +106,7 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
@@ -1610,34 +1609,20 @@ namespace
 
             try
             {
-                if (m_model == MeshObjectFactory().get_model())
+                const IObjectFactory* factory = m_registrar.lookup(m_model.c_str());
+
+                if (factory)
                 {
-                    if (m_context.get_options() & ProjectFileReader::OmitReadingMeshFiles)
-                    {
-                        m_objects.push_back(
-                            MeshObjectFactory().create(
-                                m_name.c_str(),
-                                m_params).release());
-                    }
-                    else
-                    {
-                        MeshObjectArray object_array;
-                        if (MeshObjectReader::read(
-                                m_context.get_project().search_paths(),
-                                m_name.c_str(),
-                                m_params,
-                                object_array))
-                            m_objects = array_vector<ObjectVector>(object_array);
-                        else m_context.get_event_counters().signal_error();
-                    }
-                }
-                else if (m_model == CurveObjectFactory().get_model())
-                {
-                    m_objects.push_back(
-                        CurveObjectReader::read(
-                            m_context.get_project().search_paths(),
+                    ObjectArray objects;
+                    if (!factory->create(
                             m_name.c_str(),
-                            m_params).release());
+                            m_params,
+                            m_context.get_project().search_paths(),
+                            m_context.get_options() & ProjectFileReader::OmitReadingMeshFiles,
+                            objects))
+                        m_context.get_event_counters().signal_error();
+
+                    m_objects = array_vector<ObjectVector>(objects);
                 }
                 else
                 {
@@ -1656,6 +1641,14 @@ namespace
                     e.string());
                 m_context.get_event_counters().signal_error();
             }
+            catch (const ExceptionUnknownEntity& e)
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining object \"%s\": unknown entity \"%s\".",
+                    m_name.c_str(),
+                    e.string());
+                m_context.get_event_counters().signal_error();
+            }
         }
 
         const ObjectVector& get_objects() const
@@ -1664,10 +1657,11 @@ namespace
         }
 
       private:
-        ParseContext&   m_context;
-        ObjectVector    m_objects;
-        string          m_name;
-        string          m_model;
+        ParseContext&                   m_context;
+        const ObjectFactoryRegistrar    m_registrar;
+        ObjectVector                    m_objects;
+        string                          m_name;
+        string                          m_model;
     };
 
 

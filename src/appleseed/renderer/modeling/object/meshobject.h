@@ -48,7 +48,10 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace foundation    { class Dictionary; }
+namespace foundation    { class DictionaryArray; }
 namespace foundation    { class IAbortSwitch; }
+namespace foundation    { class SearchPaths; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
 namespace renderer      { class BaseGroup; }
@@ -224,10 +227,18 @@ class APPLESEED_DLLSYMBOL MeshObjectFactory
     // Return metadata for the inputs of this object model.
     foundation::DictionaryArray get_input_metadata() const override;
 
-    // Create a new object instance.
+    // Create a new single empty object.
     foundation::auto_release_ptr<Object> create(
-        const char*         name,
-        const ParamArray&   params) const override;
+        const char*                     name,
+        const ParamArray&               params) const override;
+
+    // Create objects, potentially from external assets.
+    bool create(
+        const char*                     name,
+        const ParamArray&               params,
+        const foundation::SearchPaths&  search_paths,
+        const bool                      omit_loading_assets,
+        ObjectArray&                    objects) const override;
 };
 
 }       // namespace renderer

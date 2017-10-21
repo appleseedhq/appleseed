@@ -35,7 +35,6 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/meshobjectoperations.h"
-#include "renderer/modeling/object/meshobjectprimitives.h"
 #include "renderer/modeling/object/triangle.h"
 #include "renderer/utility/paramarray.h"
 
@@ -823,18 +822,7 @@ bool MeshObjectReader::read(
 {
     assert(base_object_name);
 
-    // Handle built-in primitives.
-    if (params.strings().exist("primitive"))
-    {
-        auto_release_ptr<MeshObject> mesh = create_primitive_mesh(base_object_name, params);
-        if (mesh.get() == nullptr)
-            return false;
-
-        objects.push_back(mesh.release());
-        return true;
-    }
-
-    // Tag objects with the name of their parent.
+    // Objects will be tagged with the name of their parent.
     ParamArray completed_params(params);
     completed_params.insert("__base_object_name", base_object_name);
 
@@ -909,20 +897,12 @@ bool MeshObjectReader::read(
             break;
         }
     }
-    else
-    {
-        RENDERER_LOG_ERROR(
-            "while reading geometry for object \"%s\": no \"filename\" parameter or "
-            "\"filename\" parameter group found.",
-            base_object_name);
-        return false;
-    }
 
     // Compute smooth normals.
     if (params.strings().exist("compute_smooth_normals"))
     {
         const RegExFilter filter(params.get("compute_smooth_normals"));
-        for (size_t i = 0; i < objects.size(); ++i)
+        for (size_t i = 0, e = objects.size(); i < e; ++i)
         {
             MeshObject& object = *objects[i];
             if (filter.accepts(object.get_name()))
@@ -934,7 +914,7 @@ bool MeshObjectReader::read(
     if (params.strings().exist("compute_smooth_tangents"))
     {
         const RegExFilter filter(params.get("compute_smooth_tangents"));
-        for (size_t i = 0; i < objects.size(); ++i)
+        for (size_t i = 0, e = objects.size(); i < e; ++i)
         {
             MeshObject& object = *objects[i];
             if (filter.accepts(object.get_name()))

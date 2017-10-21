@@ -29,6 +29,9 @@
 // Interface header.
 #include "curveobject.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/object/curveobjectreader.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -86,8 +89,8 @@ struct CurveObject::Impl
 };
 
 CurveObject::CurveObject(
-    const char*         name,
-    const ParamArray&   params)
+    const char*             name,
+    const ParamArray&       params)
   : Object(name, params)
   , impl(new Impl())
 {
@@ -219,6 +222,21 @@ auto_release_ptr<Object> CurveObjectFactory::create(
     const ParamArray&       params) const
 {
     return auto_release_ptr<Object>(new CurveObject(name, params));
+}
+
+bool CurveObjectFactory::create(
+    const char*             name,
+    const ParamArray&       params,
+    const SearchPaths&      search_paths,
+    const bool              omit_loading_assets,
+    ObjectArray&            objects) const
+{
+    objects.push_back(
+        omit_loading_assets
+            ? create(name, params).release()
+            : CurveObjectReader::read(search_paths, name, params).release());
+
+    return true;
 }
 
 }   // namespace renderer

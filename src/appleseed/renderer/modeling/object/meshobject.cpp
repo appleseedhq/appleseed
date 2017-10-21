@@ -33,9 +33,12 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/object/iregion.h"
+#include "renderer/modeling/object/meshobjectprimitives.h"
+#include "renderer/modeling/object/meshobjectreader.h"
 #include "renderer/modeling/object/triangle.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
@@ -461,6 +464,41 @@ auto_release_ptr<Object> MeshObjectFactory::create(
     const ParamArray&       params) const
 {
     return auto_release_ptr<Object>(new MeshObject(name, params));
+}
+
+bool MeshObjectFactory::create(
+    const char*             name,
+    const ParamArray&       params,
+    const SearchPaths&      search_paths,
+    const bool              omit_loading_assets,
+    ObjectArray&            objects) const
+{
+    if (params.strings().exist("primitive"))
+    {
+        auto_release_ptr<MeshObject> mesh = create_primitive_mesh(name, params);
+        if (mesh.get() == nullptr)
+            return false;
+
+        objects.push_back(mesh.release());
+        return true;
+    }
+
+    if (omit_loading_assets)
+    {
+        objects.push_back(create(name, params).release());
+        return true;
+    }
+
+    MeshObjectArray object_array;
+    if (!MeshObjectReader::read(
+            search_paths,
+            name,
+            params,
+            object_array))
+        return false;
+
+    objects = array_vector<ObjectArray>(object_array);
+    return true;
 }
 
 }   // namespace renderer
