@@ -186,7 +186,7 @@ if (USE_STATIC_BOOST)
     set (Boost_USE_STATIC_LIBS TRUE)
 endif ()
 
-set (BOOST_NEEDED_LIBS chrono date_time filesystem regex system thread wave)
+set (BOOST_NEEDED_LIBS atomic chrono date_time filesystem regex system thread wave)
 
 find_package (Boost 1.55 REQUIRED ${BOOST_NEEDED_LIBS})
 
