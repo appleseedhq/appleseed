@@ -80,14 +80,14 @@ ExceptionSharedLibCannotGetSymbol::ExceptionSharedLibCannotGetSymbol(
 
 namespace
 {
-
-string get_last_error_message()
-{
+    string get_last_error_message()
+    {
 #ifdef _WIN32
-    return get_windows_last_error_message();
+        return get_windows_last_error_message();
 #else
-    return dlerror();
+        return dlerror();
 #endif
+    }
 }
 
 const char* SharedLibrary::get_default_file_extension()

@@ -51,9 +51,6 @@ class APPLESEED_DLLSYMBOL IAssemblyFactory
   : public foundation::IUnknown
 {
   public:
-    // Destructor.
-    ~IAssemblyFactory() override {}
-
     // Return a string identifying this assembly model.
     virtual const char* get_model() const = 0;
 

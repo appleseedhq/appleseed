@@ -58,14 +58,11 @@ class APPLESEED_DLLSYMBOL PluginAssembly
   : public ProceduralAssembly
 {
   public:
-    // Destructor.
-    ~PluginAssembly() override;
+    // Delete this instance.
+    void release() override;
 
     // Return a string identifying the model of this entity.
     const char* get_model() const override;
-
-    // Delete this instance.
-    void release() override;
 
     // Expand the contents of the assembly.
     bool expand_contents(
@@ -80,6 +77,9 @@ class APPLESEED_DLLSYMBOL PluginAssembly
     PluginAssembly(
         const char*                 name,
         const ParamArray&           params);
+
+    // Destructor.
+    ~PluginAssembly() override;
 
   private:
     Assembly* m_plugin_assembly;

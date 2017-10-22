@@ -119,7 +119,7 @@ bool PluginAssembly::expand_contents(
         auto_release_ptr<Plugin> plugin(PluginCache::load(plugin_path.c_str()));
 
         // Create the plugin assembly factory.
-        typedef IAssemblyFactory*(*CreateFnType)();
+        typedef IAssemblyFactory* (*CreateFnType)();
         CreateFnType create_fn =
             reinterpret_cast<CreateFnType>(plugin->get_symbol("create_assembly_factory", false));
 

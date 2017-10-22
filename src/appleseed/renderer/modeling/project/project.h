@@ -44,7 +44,6 @@
 
 // Standard headers.
 #include <cstddef>
-#include <string>
 
 // Forward declarations.
 namespace foundation    { class SearchPaths; }
@@ -83,9 +82,6 @@ class APPLESEED_DLLSYMBOL Project
 
     // Access the search paths.
     foundation::SearchPaths& search_paths() const;
-
-    // Return the search paths as a string, in reverse order (for OIIO/OSL).
-    std::string make_search_path_string() const;
 
     // Set the scene, replacing the existing scene.
     void set_scene(foundation::auto_release_ptr<Scene> scene);
