@@ -40,6 +40,9 @@
 #include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/string.h"
 
+// appleseed.main headers.
+#include "main/dllvisibility.h"
+
 // Sphereflake headers.
 #include "sphereflakedata.h"
 
@@ -178,7 +181,7 @@ namespace
 
 extern "C"
 {
-    asr::IAssemblyFactory* create_assembly_factory()
+    APPLESEED_DLL_EXPORT asr::IAssemblyFactory* create_assembly_factory()
     {
         return new SphereFlakeAssemblyFactory();
     }
