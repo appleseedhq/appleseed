@@ -40,7 +40,8 @@
 #include <memory>
 
 // Forward declarations.
-namespace renderer  { class IObjectFactory; }
+namespace foundation    { class SearchPaths; }
+namespace renderer      { class IObjectFactory; }
 
 namespace renderer
 {
@@ -64,7 +65,7 @@ class APPLESEED_DLLSYMBOL ObjectFactoryRegistrar
     typedef ObjectFactoryArray FactoryArrayType;
 
     // Constructor.
-    ObjectFactoryRegistrar();
+    explicit ObjectFactoryRegistrar(const foundation::SearchPaths& search_paths);
 
     // Destructor.
     ~ObjectFactoryRegistrar();
@@ -81,6 +82,8 @@ class APPLESEED_DLLSYMBOL ObjectFactoryRegistrar
   private:
     struct Impl;
     Impl* impl;
+
+    void load_plugins(const foundation::SearchPaths& search_paths);
 };
 
 }       // namespace renderer
