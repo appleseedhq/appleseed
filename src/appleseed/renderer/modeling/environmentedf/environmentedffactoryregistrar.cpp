@@ -33,9 +33,9 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/environmentedf/constantenvironmentedf.h"
 #include "renderer/modeling/environmentedf/constanthemisphereenvironmentedf.h"
+#include "renderer/modeling/environmentedf/environmentedftraits.h"
 #include "renderer/modeling/environmentedf/gradientenvironmentedf.h"
 #include "renderer/modeling/environmentedf/hosekenvironmentedf.h"
-#include "renderer/modeling/environmentedf/ienvironmentedffactory.h"
 #include "renderer/modeling/environmentedf/latlongmapenvironmentedf.h"
 #include "renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h"
 #include "renderer/modeling/environmentedf/oslenvironmentedf.h"
@@ -63,9 +63,24 @@ struct EnvironmentEDFFactoryRegistrar::Impl
     Registrar<IEnvironmentEDFFactory> m_registrar;
 };
 
-EnvironmentEDFFactoryRegistrar::EnvironmentEDFFactoryRegistrar()
+EnvironmentEDFFactoryRegistrar::EnvironmentEDFFactoryRegistrar(const SearchPaths& search_paths)
   : impl(new Impl())
 {
+    reinitialize(search_paths);
+}
+
+EnvironmentEDFFactoryRegistrar::~EnvironmentEDFFactoryRegistrar()
+{
+    delete impl;
+}
+
+void EnvironmentEDFFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
+{
+    // The registrar must be cleared before the plugins are unloaded.
+    impl->m_registrar.clear();
+    unload_all_plugins();
+
+    // Register built-in factories.
     register_factory(auto_release_ptr<FactoryType>(new ConstantEnvironmentEDFFactory()));
     register_factory(auto_release_ptr<FactoryType>(new ConstantHemisphereEnvironmentEDFFactory()));
     register_factory(auto_release_ptr<FactoryType>(new GradientEnvironmentEDFFactory()));
@@ -74,17 +89,15 @@ EnvironmentEDFFactoryRegistrar::EnvironmentEDFFactoryRegistrar()
     register_factory(auto_release_ptr<FactoryType>(new MirrorBallMapEnvironmentEDFFactory()));
     register_factory(auto_release_ptr<FactoryType>(new OSLEnvironmentEDFFactory()));
     register_factory(auto_release_ptr<FactoryType>(new PreethamEnvironmentEDFFactory()));
-}
 
-EnvironmentEDFFactoryRegistrar::~EnvironmentEDFFactoryRegistrar()
-{
-    delete impl;
-}
-
-void EnvironmentEDFFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
-{
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, move(factory));
+    // Register factories defined in plugins.
+    register_factories_from_plugins<EnvironmentEDF>(
+        search_paths,
+        [this](void* plugin_entry_point)
+        {
+            auto create_fn = reinterpret_cast<IEnvironmentEDFFactory* (*)()>(plugin_entry_point);
+            register_factory(foundation::auto_release_ptr<IEnvironmentEDFFactory>(create_fn()));
+        });
 }
 
 EnvironmentEDFFactoryArray EnvironmentEDFFactoryRegistrar::get_factories() const
@@ -101,8 +114,13 @@ const EnvironmentEDFFactoryRegistrar::FactoryType*
 EnvironmentEDFFactoryRegistrar::lookup(const char* name) const
 {
     assert(name);
-
     return impl->m_registrar.lookup(name);
+}
+
+void EnvironmentEDFFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
+{
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, move(factory));
 }
 
 }   // namespace renderer

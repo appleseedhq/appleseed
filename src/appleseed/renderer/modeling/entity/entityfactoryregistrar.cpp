@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,45 +26,54 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALITEM_H
+// Interface header.
+#include "entityfactoryregistrar.h"
 
-// appleseed.studio headers.
-#include "mainwindow/project/fixedmodelentityitem.h"
+// Standard headers.
+#include <vector>
 
-// appleseed.renderer headers.
-#include "renderer/api/material.h"
+using namespace renderer;
+using namespace std;
 
-// Forward declarations.
-namespace appleseed { namespace studio { class EntityEditorContext; } }
-namespace appleseed { namespace studio { class MaterialCollectionItem; } }
-namespace renderer  { class Assembly; }
-
-namespace appleseed {
-namespace studio {
-
-class MaterialItem
-  : public FixedModelEntityItem<renderer::Material, renderer::Assembly, MaterialCollectionItem>
+namespace renderer
 {
-    Q_OBJECT
 
-  public:
-    MaterialItem(
-        EntityEditorContext&        editor_context,
-        renderer::Material*         entity,
-        renderer::Assembly&         parent,
-        MaterialCollectionItem*     collection_item);
+struct EntityFactoryRegistrar::Impl
+{
+    vector<Plugin*> m_plugins;
 
-    QMenu* get_single_item_context_menu() const override;
+    ~Impl()
+    {
+        clear();
+    }
 
-  public slots:
-    void slot_export();
+    void clear()
+    {
+        for (Plugin* plugin : m_plugins)
+            plugin->release();
 
-  private:
-    void slot_edit(AttributeEditor* attribute_editor) override;
+        m_plugins.clear();
+    }
 };
 
-}       // namespace studio
-}       // namespace appleseed
+EntityFactoryRegistrar::EntityFactoryRegistrar()
+  : impl(new Impl())
+{
+}
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALITEM_H
+EntityFactoryRegistrar::~EntityFactoryRegistrar()
+{
+    delete impl;
+}
+
+void EntityFactoryRegistrar::unload_all_plugins()
+{
+    impl->clear();
+}
+
+void EntityFactoryRegistrar::store_plugin(Plugin* plugin)
+{
+    impl->m_plugins.push_back(plugin);
+}
+
+}   // namespace renderer

@@ -104,7 +104,19 @@ struct Project::Impl
 Project::Project(const char* name)
   : Entity(g_class_uid)
   , impl(new Impl())
+  , m_aov_factory_registrar(impl->m_search_paths)
+  , m_bsdf_factory_registrar(impl->m_search_paths)
+  , m_bssrdf_factory_registrar(impl->m_search_paths)
+  , m_camera_factory_registrar(impl->m_search_paths)
+  , m_edf_factory_registrar(impl->m_search_paths)
+  , m_environment_edf_factory_registrar(impl->m_search_paths)
+  , m_environment_shader_factory_registrar(impl->m_search_paths)
+  , m_light_factory_registrar(impl->m_search_paths)
+  , m_material_factory_registrar(impl->m_search_paths)
   , m_object_factory_registrar(impl->m_search_paths)
+  , m_surface_shader_factory_registrar(impl->m_search_paths)
+  , m_texture_factory_registrar(impl->m_search_paths)
+  , m_volume_factory_registrar(impl->m_search_paths)
 {
     set_name(name);
     add_base_configurations();

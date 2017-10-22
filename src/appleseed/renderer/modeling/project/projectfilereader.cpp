@@ -2356,30 +2356,14 @@ namespace
         {
             ParametrizedElementHandler::end_element();
 
-            m_aov = create_aov();
-        }
-
-        auto_release_ptr<AOV> get_aov()
-        {
-            return m_aov;
-        }
-
-      protected:
-        ParseContext&                   m_context;
-        const AOVFactoryRegistrar       m_registrar;
-        auto_release_ptr<AOV>           m_aov;
-        string                          m_model;
-
-        auto_release_ptr<AOV> create_aov() const
-        {
             try
             {
-                const AOVFactoryRegistrar::FactoryType* factory =
-                    m_registrar.lookup(m_model.c_str());
+                const IAOVFactory* factory =
+                    m_context.get_project().get_factory_registrar<AOV>().lookup(m_model.c_str());
 
                 if (factory)
                 {
-                    return factory->create(m_params);
+                    m_aov = factory->create(m_params);
                 }
                 else
                 {
@@ -2405,9 +2389,17 @@ namespace
                     e.string());
                 m_context.get_event_counters().signal_error();
             }
-
-            return auto_release_ptr<AOV>(nullptr);
         }
+
+        auto_release_ptr<AOV> get_aov()
+        {
+            return m_aov;
+        }
+
+      protected:
+        ParseContext&           m_context;
+        auto_release_ptr<AOV>   m_aov;
+        string                  m_model;
     };
 
 

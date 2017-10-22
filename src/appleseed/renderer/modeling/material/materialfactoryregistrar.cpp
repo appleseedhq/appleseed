@@ -35,7 +35,7 @@
 #include "renderer/modeling/material/disneymaterial.h"
 #endif
 #include "renderer/modeling/material/genericmaterial.h"
-#include "renderer/modeling/material/material.h"
+#include "renderer/modeling/material/materialtraits.h"
 #include "renderer/modeling/material/oslmaterial.h"
 
 // appleseed.foundation headers.
@@ -60,14 +60,10 @@ struct MaterialFactoryRegistrar::Impl
     Registrar<IMaterialFactory> m_registrar;
 };
 
-MaterialFactoryRegistrar::MaterialFactoryRegistrar()
+MaterialFactoryRegistrar::MaterialFactoryRegistrar(const SearchPaths& search_paths)
   : impl(new Impl())
 {
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-    register_factory(auto_release_ptr<FactoryType>(new DisneyMaterialFactory()));
-#endif
-    register_factory(auto_release_ptr<FactoryType>(new GenericMaterialFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new OSLMaterialFactory()));
+    reinitialize(search_paths);
 }
 
 MaterialFactoryRegistrar::~MaterialFactoryRegistrar()
@@ -75,10 +71,27 @@ MaterialFactoryRegistrar::~MaterialFactoryRegistrar()
     delete impl;
 }
 
-void MaterialFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
+void MaterialFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 {
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, move(factory));
+    // The registrar must be cleared before the plugins are unloaded.
+    impl->m_registrar.clear();
+    unload_all_plugins();
+
+    // Register built-in factories.
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
+    register_factory(auto_release_ptr<FactoryType>(new DisneyMaterialFactory()));
+#endif
+    register_factory(auto_release_ptr<FactoryType>(new GenericMaterialFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new OSLMaterialFactory()));
+
+    // Register factories defined in plugins.
+    register_factories_from_plugins<Material>(
+        search_paths,
+        [this](void* plugin_entry_point)
+        {
+            auto create_fn = reinterpret_cast<IMaterialFactory* (*)()>(plugin_entry_point);
+            register_factory(foundation::auto_release_ptr<IMaterialFactory>(create_fn()));
+        });
 }
 
 MaterialFactoryArray MaterialFactoryRegistrar::get_factories() const
@@ -94,8 +107,13 @@ MaterialFactoryArray MaterialFactoryRegistrar::get_factories() const
 const MaterialFactoryRegistrar::FactoryType* MaterialFactoryRegistrar::lookup(const char* name) const
 {
     assert(name);
-
     return impl->m_registrar.lookup(name);
+}
+
+void MaterialFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
+{
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, move(factory));
 }
 
 }   // namespace renderer

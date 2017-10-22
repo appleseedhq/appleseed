@@ -1485,6 +1485,8 @@ set (renderer_modeling_entity_sources
     renderer/modeling/entity/connectableentity.h
     renderer/modeling/entity/entity.cpp
     renderer/modeling/entity/entity.h
+    renderer/modeling/entity/entityfactoryregistrar.cpp
+    renderer/modeling/entity/entityfactoryregistrar.h
     renderer/modeling/entity/entitymap.cpp
     renderer/modeling/entity/entitymap.h
     renderer/modeling/entity/entitytraits.h

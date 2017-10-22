@@ -31,27 +31,18 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/object/curveobject.h"
-#include "renderer/modeling/object/iobjectfactory.h"
 #include "renderer/modeling/object/meshobject.h"
-#include "renderer/utility/plugin.h"
+#include "renderer/modeling/object/objecttraits.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/sharedlibrary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/registrar.h"
-#include "foundation/utility/searchpaths.h"
-
-// Boost headers.
-#include "boost/filesystem.hpp"
 
 // Standard headers.
 #include <cassert>
-#include <cstddef>
 #include <string>
 #include <utility>
-#include <vector>
 
-namespace bf = boost::filesystem;
 using namespace foundation;
 using namespace std;
 
@@ -62,24 +53,7 @@ APPLESEED_DEFINE_APIARRAY(ObjectFactoryArray);
 
 struct ObjectFactoryRegistrar::Impl
 {
-    Registrar<IObjectFactory>   m_registrar;
-    vector<Plugin*>             m_plugins;
-
-    ~Impl()
-    {
-        clear();
-    }
-
-    void clear()
-    {
-        // The registrar must be cleared before the plugins are unloaded.
-        m_registrar.clear();
-
-        for (Plugin* plugin : m_plugins)
-            plugin->release();
-
-        m_plugins.clear();
-    }
+    Registrar<IObjectFactory> m_registrar;
 };
 
 ObjectFactoryRegistrar::ObjectFactoryRegistrar(const SearchPaths& search_paths)
@@ -95,12 +69,22 @@ ObjectFactoryRegistrar::~ObjectFactoryRegistrar()
 
 void ObjectFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 {
-    impl->clear();
+    // The registrar must be cleared before the plugins are unloaded.
+    impl->m_registrar.clear();
+    unload_all_plugins();
 
+    // Register built-in factories.
     register_factory(auto_release_ptr<FactoryType>(new CurveObjectFactory()));
     register_factory(auto_release_ptr<FactoryType>(new MeshObjectFactory()));
 
-    load_plugins(search_paths);
+    // Register factories defined in plugins.
+    register_factories_from_plugins<Object>(
+        search_paths,
+        [this](void* plugin_entry_point)
+        {
+            auto create_fn = reinterpret_cast<IObjectFactory* (*)()>(plugin_entry_point);
+            register_factory(foundation::auto_release_ptr<IObjectFactory>(create_fn()));
+        });
 }
 
 ObjectFactoryArray ObjectFactoryRegistrar::get_factories() const
@@ -123,56 +107,6 @@ void ObjectFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> fact
 {
     const string model = factory->get_model();
     impl->m_registrar.insert(model, move(factory));
-}
-
-void ObjectFactoryRegistrar::load_plugins(const SearchPaths& search_paths)
-{
-    // Iterate over all known search paths.
-    for (size_t i = 0, e = search_paths.size(); i < e; ++i)
-    {
-        bf::path search_path(search_paths[i]);
-
-        // Make the search path absolute if it isn't already.
-        if (!search_path.is_absolute() && search_paths.has_root_path())
-            search_path = search_paths.get_root_path().c_str() / search_path;
-
-        // Only consider directories.
-        if (!bf::exists(search_path) || !bf::is_directory(search_path))
-            continue;
-
-        // Iterate over all files in this directory.
-        RENDERER_LOG_DEBUG("scanning %s in search of object plugins...", search_path.string().c_str());
-        for (bf::directory_iterator i(search_path), e; i != e; ++i)
-        {
-            const bf::path lib_path(*i);
-
-            // Only consider shared library files.
-            if (!bf::is_regular_file(lib_path) ||
-                lib_path.extension() != SharedLibrary::get_default_file_extension())
-                continue;
-
-            // Only consider valid plugins.
-            if (SharedLibrary(lib_path.string().c_str()).get_symbol("appleseed_create_object_factory") == nullptr)
-                continue;
-
-            // Load the plugin into the cache.
-            auto_release_ptr<Plugin> plugin(PluginCache::load(lib_path.string().c_str()));
-
-            // Retrieve the plugin's entry point.
-            typedef IObjectFactory* (*CreateFnType)();
-            CreateFnType create_fn =
-                reinterpret_cast<CreateFnType>(plugin->get_symbol("appleseed_create_object_factory"));
-            if (create_fn == nullptr)
-                continue;
-
-            // Register the factory provided by the plugin.
-            RENDERER_LOG_INFO("registering object plugin %s...", lib_path.string().c_str());
-            register_factory(auto_release_ptr<IObjectFactory>(create_fn()));
-
-            // todo: temporarily keep plugins alive.
-            impl->m_plugins.push_back(plugin.release());
-        }
-    }
 }
 
 }   // namespace renderer

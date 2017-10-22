@@ -30,11 +30,11 @@
 #include "aovfactoryregistrar.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/aov/aovtraits.h"
 #include "renderer/modeling/aov/depthaov.h"
 #include "renderer/modeling/aov/diffuseaov.h"
 #include "renderer/modeling/aov/emissionaov.h"
 #include "renderer/modeling/aov/glossyaov.h"
-#include "renderer/modeling/aov/iaovfactory.h"
 #include "renderer/modeling/aov/normalaov.h"
 #include "renderer/modeling/aov/uvaov.h"
 
@@ -60,9 +60,24 @@ struct AOVFactoryRegistrar::Impl
     Registrar<IAOVFactory> m_registrar;
 };
 
-AOVFactoryRegistrar::AOVFactoryRegistrar()
+AOVFactoryRegistrar::AOVFactoryRegistrar(const SearchPaths& search_paths)
   : impl(new Impl())
 {
+    reinitialize(search_paths);
+}
+
+AOVFactoryRegistrar::~AOVFactoryRegistrar()
+{
+    delete impl;
+}
+
+void AOVFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
+{
+    // The registrar must be cleared before the plugins are unloaded.
+    impl->m_registrar.clear();
+    unload_all_plugins();
+
+    // Register built-in factories.
     register_factory(auto_release_ptr<FactoryType>(new DepthAOVFactory()));
     register_factory(auto_release_ptr<FactoryType>(new DiffuseAOVFactory()));
     register_factory(auto_release_ptr<FactoryType>(new DirectDiffuseAOVFactory()));
@@ -73,17 +88,15 @@ AOVFactoryRegistrar::AOVFactoryRegistrar()
     register_factory(auto_release_ptr<FactoryType>(new IndirectGlossyAOVFactory()));
     register_factory(auto_release_ptr<FactoryType>(new NormalAOVFactory()));
     register_factory(auto_release_ptr<FactoryType>(new UVAOVFactory()));
-}
 
-AOVFactoryRegistrar::~AOVFactoryRegistrar()
-{
-    delete impl;
-}
-
-void AOVFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
-{
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, move(factory));
+    // Register factories defined in plugins.
+    register_factories_from_plugins<AOV>(
+        search_paths,
+        [this](void* plugin_entry_point)
+        {
+            auto create_fn = reinterpret_cast<IAOVFactory* (*)()>(plugin_entry_point);
+            register_factory(foundation::auto_release_ptr<IAOVFactory>(create_fn()));
+        });
 }
 
 AOVFactoryArray AOVFactoryRegistrar::get_factories() const
@@ -99,8 +112,13 @@ AOVFactoryArray AOVFactoryRegistrar::get_factories() const
 const AOVFactoryRegistrar::FactoryType* AOVFactoryRegistrar::lookup(const char* name) const
 {
     assert(name);
-
     return impl->m_registrar.lookup(name);
+}
+
+void AOVFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
+{
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, move(factory));
 }
 
 }   // namespace renderer

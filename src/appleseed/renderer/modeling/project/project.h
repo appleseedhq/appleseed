@@ -31,6 +31,8 @@
 #define APPLESEED_RENDERER_MODELING_PROJECT_PROJECT_H
 
 // appleseed.renderer headers.
+#include "renderer/modeling/aov/aovfactoryregistrar.h"
+#include "renderer/modeling/aov/aovtraits.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bsdf/bsdftraits.h"
 #include "renderer/modeling/bssrdf/bssrdffactoryregistrar.h"
@@ -174,6 +176,7 @@ class APPLESEED_DLLSYMBOL Project
     struct Impl;
     Impl* impl;
 
+    AOVFactoryRegistrar                 m_aov_factory_registrar;
     BSDFFactoryRegistrar                m_bsdf_factory_registrar;
     BSSRDFFactoryRegistrar              m_bssrdf_factory_registrar;
     CameraFactoryRegistrar              m_camera_factory_registrar;
@@ -213,6 +216,12 @@ class APPLESEED_DLLSYMBOL ProjectFactory
 //
 // Project class implementation.
 //
+
+template <>
+inline const EntityTraits<AOV>::FactoryRegistrarType& Project::get_factory_registrar<AOV>() const
+{
+    return m_aov_factory_registrar;
+}
 
 template <>
 inline const EntityTraits<BSDF>::FactoryRegistrarType& Project::get_factory_registrar<BSDF>() const

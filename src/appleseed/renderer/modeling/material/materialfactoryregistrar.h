@@ -31,15 +31,18 @@
 #define APPLESEED_RENDERER_MODELING_MATERIAL_MATERIALFACTORYREGISTRAR_H
 
 // appleseed.renderer headers.
-#include "renderer/api/material.h"
+#include "renderer/modeling/entity/entityfactoryregistrar.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
+
+// Forward declarations.
+namespace foundation    { class SearchPaths; }
+namespace renderer      { class IMaterialFactory; }
 
 namespace renderer
 {
@@ -56,20 +59,21 @@ APPLESEED_DECLARE_APIARRAY(MaterialFactoryArray, IMaterialFactory*);
 //
 
 class APPLESEED_DLLSYMBOL MaterialFactoryRegistrar
-  : public foundation::NonCopyable
+  : public EntityFactoryRegistrar
 {
   public:
     typedef IMaterialFactory FactoryType;
     typedef MaterialFactoryArray FactoryArrayType;
 
     // Constructor.
-    MaterialFactoryRegistrar();
+    explicit MaterialFactoryRegistrar(
+        const foundation::SearchPaths& search_paths = foundation::SearchPaths());
 
     // Destructor.
     ~MaterialFactoryRegistrar();
 
-    // Register a factory.
-    void register_factory(foundation::auto_release_ptr<FactoryType> factory);
+    // Reinitialize the registrar; load plugins found in provided search paths.
+    void reinitialize(const foundation::SearchPaths& search_paths);
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;
@@ -80,6 +84,9 @@ class APPLESEED_DLLSYMBOL MaterialFactoryRegistrar
   private:
     struct Impl;
     Impl* impl;
+
+    // Register a factory.
+    void register_factory(foundation::auto_release_ptr<FactoryType> factory);
 };
 
 }       // namespace renderer

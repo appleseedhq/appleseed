@@ -29,8 +29,10 @@
 #ifndef APPLESEED_RENDERER_MODELING_VOLUME_VOLUMEFACTORYREGISTRAR_H
 #define APPLESEED_RENDERER_MODELING_VOLUME_VOLUMEFACTORYREGISTRAR_H
 
+// appleseed.renderer headers.
+#include "renderer/modeling/entity/entityfactoryregistrar.h"
+
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/autoreleaseptr.h"
 
@@ -38,7 +40,8 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer  { class IVolumeFactory; }
+namespace foundation    { class SearchPaths; }
+namespace renderer      { class IVolumeFactory; }
 
 namespace renderer
 {
@@ -55,20 +58,21 @@ APPLESEED_DECLARE_APIARRAY(VolumeFactoryArray, IVolumeFactory*);
 //
 
 class APPLESEED_DLLSYMBOL VolumeFactoryRegistrar
-  : public foundation::NonCopyable
+  : public EntityFactoryRegistrar
 {
   public:
     typedef IVolumeFactory FactoryType;
     typedef VolumeFactoryArray FactoryArrayType;
 
     // Constructor.
-    VolumeFactoryRegistrar();
+    explicit VolumeFactoryRegistrar(
+        const foundation::SearchPaths& search_paths = foundation::SearchPaths());
 
     // Destructor.
     ~VolumeFactoryRegistrar();
 
-    // Register a factory.
-    void register_factory(foundation::auto_release_ptr<FactoryType> factory);
+    // Reinitialize the registrar; load plugins found in provided search paths.
+    void reinitialize(const foundation::SearchPaths& search_paths);
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;
@@ -79,6 +83,9 @@ class APPLESEED_DLLSYMBOL VolumeFactoryRegistrar
   private:
     struct Impl;
     Impl* impl;
+
+    // Register a factory.
+    void register_factory(foundation::auto_release_ptr<FactoryType> factory);
 };
 
 }       // namespace renderer

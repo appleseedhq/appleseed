@@ -31,7 +31,7 @@
 #include "camerafactoryregistrar.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/camera/icamerafactory.h"
+#include "renderer/modeling/camera/cameratraits.h"
 #include "renderer/modeling/camera/orthographiccamera.h"
 #include "renderer/modeling/camera/pinholecamera.h"
 #include "renderer/modeling/camera/sphericalcamera.h"
@@ -59,13 +59,10 @@ struct CameraFactoryRegistrar::Impl
     Registrar<ICameraFactory> m_registrar;
 };
 
-CameraFactoryRegistrar::CameraFactoryRegistrar()
+CameraFactoryRegistrar::CameraFactoryRegistrar(const SearchPaths& search_paths)
   : impl(new Impl())
 {
-    register_factory(auto_release_ptr<FactoryType>(new OrthographicCameraFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new PinholeCameraFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new SphericalCameraFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new ThinLensCameraFactory()));
+    reinitialize(search_paths);
 }
 
 CameraFactoryRegistrar::~CameraFactoryRegistrar()
@@ -73,10 +70,26 @@ CameraFactoryRegistrar::~CameraFactoryRegistrar()
     delete impl;
 }
 
-void CameraFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
+void CameraFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 {
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, move(factory));
+    // The registrar must be cleared before the plugins are unloaded.
+    impl->m_registrar.clear();
+    unload_all_plugins();
+
+    // Register built-in factories.
+    register_factory(auto_release_ptr<FactoryType>(new OrthographicCameraFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new PinholeCameraFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new SphericalCameraFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new ThinLensCameraFactory()));
+
+    // Register factories defined in plugins.
+    register_factories_from_plugins<Camera>(
+        search_paths,
+        [this](void* plugin_entry_point)
+        {
+            auto create_fn = reinterpret_cast<ICameraFactory* (*)()>(plugin_entry_point);
+            register_factory(foundation::auto_release_ptr<ICameraFactory>(create_fn()));
+        });
 }
 
 CameraFactoryArray CameraFactoryRegistrar::get_factories() const
@@ -92,8 +105,13 @@ CameraFactoryArray CameraFactoryRegistrar::get_factories() const
 const CameraFactoryRegistrar::FactoryType* CameraFactoryRegistrar::lookup(const char* name) const
 {
     assert(name);
-
     return impl->m_registrar.lookup(name);
+}
+
+void CameraFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
+{
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, move(factory));
 }
 
 }   // namespace renderer

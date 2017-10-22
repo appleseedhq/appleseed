@@ -30,8 +30,10 @@
 #ifndef APPLESEED_RENDERER_MODELING_CAMERA_CAMERAFACTORYREGISTRAR_H
 #define APPLESEED_RENDERER_MODELING_CAMERA_CAMERAFACTORYREGISTRAR_H
 
+// appleseed.renderer headers.
+#include "renderer/modeling/entity/entityfactoryregistrar.h"
+
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/autoreleaseptr.h"
 
@@ -39,7 +41,8 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer  { class ICameraFactory; }
+namespace foundation    { class SearchPaths; }
+namespace renderer      { class ICameraFactory; }
 
 namespace renderer
 {
@@ -56,20 +59,21 @@ APPLESEED_DECLARE_APIARRAY(CameraFactoryArray, ICameraFactory*);
 //
 
 class APPLESEED_DLLSYMBOL CameraFactoryRegistrar
-  : public foundation::NonCopyable
+  : public EntityFactoryRegistrar
 {
   public:
     typedef ICameraFactory FactoryType;
     typedef CameraFactoryArray FactoryArrayType;
 
     // Constructor.
-    CameraFactoryRegistrar();
+    explicit CameraFactoryRegistrar(
+        const foundation::SearchPaths& search_paths = foundation::SearchPaths());
 
     // Destructor.
     ~CameraFactoryRegistrar();
 
-    // Register a factory.
-    void register_factory(foundation::auto_release_ptr<FactoryType> factory);
+    // Reinitialize the registrar; load plugins found in provided search paths.
+    void reinitialize(const foundation::SearchPaths& search_paths);
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;
@@ -80,6 +84,9 @@ class APPLESEED_DLLSYMBOL CameraFactoryRegistrar
   private:
     struct Impl;
     Impl* impl;
+
+    // Register a factory.
+    void register_factory(foundation::auto_release_ptr<FactoryType> factory);
 };
 
 }       // namespace renderer

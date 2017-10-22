@@ -29,8 +29,10 @@
 #ifndef APPLESEED_RENDERER_MODELING_OBJECT_OBJECTFACTORYREGISTRAR_H
 #define APPLESEED_RENDERER_MODELING_OBJECT_OBJECTFACTORYREGISTRAR_H
 
+// appleseed.renderer headers.
+#include "renderer/modeling/entity/entityfactoryregistrar.h"
+
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/autoreleaseptr.h"
 
@@ -56,17 +58,18 @@ APPLESEED_DECLARE_APIARRAY(ObjectFactoryArray, IObjectFactory*);
 //
 
 class APPLESEED_DLLSYMBOL ObjectFactoryRegistrar
-  : public foundation::NonCopyable
+  : public EntityFactoryRegistrar
 {
   public:
     typedef IObjectFactory FactoryType;
     typedef ObjectFactoryArray FactoryArrayType;
 
     // Constructor.
-    explicit ObjectFactoryRegistrar(const foundation::SearchPaths& search_paths);
+    explicit ObjectFactoryRegistrar(
+        const foundation::SearchPaths& search_paths = foundation::SearchPaths());
 
     // Destructor.
-    ~ObjectFactoryRegistrar();
+    ~ObjectFactoryRegistrar() override;
 
     // Reinitialize the registrar; load plugins found in provided search paths.
     void reinitialize(const foundation::SearchPaths& search_paths);
@@ -83,9 +86,6 @@ class APPLESEED_DLLSYMBOL ObjectFactoryRegistrar
 
     // Register a factory.
     void register_factory(foundation::auto_release_ptr<FactoryType> factory);
-
-    // Register factories from plugins found in search paths.
-    void load_plugins(const foundation::SearchPaths& search_paths);
 };
 
 }       // namespace renderer

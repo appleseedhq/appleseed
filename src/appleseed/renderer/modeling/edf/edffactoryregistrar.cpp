@@ -33,7 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/edf/coneedf.h"
 #include "renderer/modeling/edf/diffuseedf.h"
-#include "renderer/modeling/edf/iedffactory.h"
+#include "renderer/modeling/edf/edftraits.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -57,11 +57,10 @@ struct EDFFactoryRegistrar::Impl
     Registrar<IEDFFactory> m_registrar;
 };
 
-EDFFactoryRegistrar::EDFFactoryRegistrar()
+EDFFactoryRegistrar::EDFFactoryRegistrar(const SearchPaths& search_paths)
   : impl(new Impl())
 {
-    register_factory(auto_release_ptr<FactoryType>(new ConeEDFFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new DiffuseEDFFactory()));
+    reinitialize(search_paths);
 }
 
 EDFFactoryRegistrar::~EDFFactoryRegistrar()
@@ -69,10 +68,24 @@ EDFFactoryRegistrar::~EDFFactoryRegistrar()
     delete impl;
 }
 
-void EDFFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
+void EDFFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 {
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, move(factory));
+    // The registrar must be cleared before the plugins are unloaded.
+    impl->m_registrar.clear();
+    unload_all_plugins();
+
+    // Register built-in factories.
+    register_factory(auto_release_ptr<FactoryType>(new ConeEDFFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new DiffuseEDFFactory()));
+
+    // Register factories defined in plugins.
+    register_factories_from_plugins<EDF>(
+        search_paths,
+        [this](void* plugin_entry_point)
+        {
+            auto create_fn = reinterpret_cast<IEDFFactory* (*)()>(plugin_entry_point);
+            register_factory(foundation::auto_release_ptr<IEDFFactory>(create_fn()));
+        });
 }
 
 EDFFactoryArray EDFFactoryRegistrar::get_factories() const
@@ -88,8 +101,13 @@ EDFFactoryArray EDFFactoryRegistrar::get_factories() const
 const EDFFactoryRegistrar::FactoryType* EDFFactoryRegistrar::lookup(const char* name) const
 {
     assert(name);
-
     return impl->m_registrar.lookup(name);
+}
+
+void EDFFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
+{
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, move(factory));
 }
 
 }   // namespace renderer
