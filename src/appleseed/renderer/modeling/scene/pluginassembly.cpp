@@ -102,7 +102,7 @@ bool PluginAssembly::expand_contents(
     {
         // Qualify the plugin path.
         plugin_path = m_params.get("plugin_name");
-        plugin_path += Plugin::get_default_file_extension();
+        plugin_path += SharedLibrary::get_default_file_extension();
         plugin_path = to_string(project.search_paths().qualify(plugin_path));
     }
     catch (const ExceptionDictionaryKeyNotFound&)

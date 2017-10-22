@@ -109,7 +109,7 @@ bool Display::open(const Project& project)
     try
     {
         plugin = m_params.get("plugin_name");
-        plugin += Plugin::get_default_file_extension();
+        plugin += SharedLibrary::get_default_file_extension();
         plugin = to_string(project.search_paths().qualify(plugin));
     }
     catch (const ExceptionDictionaryKeyNotFound&)

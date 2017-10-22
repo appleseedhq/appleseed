@@ -95,15 +95,6 @@ void* Plugin::get_symbol(const char* name, const bool no_throw) const
     return impl->m_library->get_symbol(name, no_throw);
 }
 
-const char* Plugin::get_default_file_extension()
-{
-#ifdef _WIN32
-    return ".dll";
-#else
-    return ".so";
-#endif
-}
-
 
 //
 // PluginCache class implementation.

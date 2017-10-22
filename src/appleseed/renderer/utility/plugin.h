@@ -67,9 +67,6 @@ class Plugin
     // Get a symbol from the plugin.
     void* get_symbol(const char* name, const bool no_throw = true) const;
 
-    // Return the OS default file extension for plugins.
-    static const char* get_default_file_extension();
-
   private:
     friend class PluginCache;
 

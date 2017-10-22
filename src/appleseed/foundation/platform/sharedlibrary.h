@@ -77,6 +77,9 @@ class SharedLibrary
   : public NonCopyable
 {
   public:
+    // Return the OS' default file extension for shared libraries.
+    static const char* get_default_file_extension();
+
     // Constructor.
     explicit SharedLibrary(const char* path);
 

@@ -90,6 +90,13 @@ string get_last_error_message()
 #endif
 }
 
+const char* SharedLibrary::get_default_file_extension()
+{
+#ifdef _WIN32
+    return ".dll";
+#else
+    return ".so";
+#endif
 }
 
 SharedLibrary::SharedLibrary(const char* path)
