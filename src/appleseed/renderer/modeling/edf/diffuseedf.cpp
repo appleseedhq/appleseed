@@ -211,6 +211,11 @@ namespace
 // DiffuseEDFFactory class implementation.
 //
 
+void DiffuseEDFFactory::release()
+{
+    delete this;
+}
+
 const char* DiffuseEDFFactory::get_model() const
 {
     return Model;

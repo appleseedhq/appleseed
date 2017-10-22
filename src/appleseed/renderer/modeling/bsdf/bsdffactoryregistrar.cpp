@@ -74,22 +74,22 @@ struct BSDFFactoryRegistrar::Impl
 BSDFFactoryRegistrar::BSDFFactoryRegistrar()
   : impl(new Impl())
 {
-    register_factory(unique_ptr<FactoryType>(new AshikhminBRDFFactory()));
-    register_factory(unique_ptr<FactoryType>(new BlinnBRDFFactory()));
-    register_factory(unique_ptr<FactoryType>(new BSDFBlendFactory()));
-    register_factory(unique_ptr<FactoryType>(new BSDFMixFactory()));
-    register_factory(unique_ptr<FactoryType>(new DiffuseBTDFFactory()));
-    register_factory(unique_ptr<FactoryType>(new DisneyBRDFFactory()));
-    register_factory(unique_ptr<FactoryType>(new GlassBSDFFactory()));
-    register_factory(unique_ptr<FactoryType>(new GlossyBRDFFactory()));
-    register_factory(unique_ptr<FactoryType>(new KelemenBRDFFactory()));
-    register_factory(unique_ptr<FactoryType>(new LambertianBRDFFactory()));
-    register_factory(unique_ptr<FactoryType>(new MetalBRDFFactory()));
-    register_factory(unique_ptr<FactoryType>(new OrenNayarBRDFFactory()));
-    register_factory(unique_ptr<FactoryType>(new PlasticBRDFFactory()));
-    register_factory(unique_ptr<FactoryType>(new SheenBRDFFactory()));
-    register_factory(unique_ptr<FactoryType>(new SpecularBRDFFactory()));
-    register_factory(unique_ptr<FactoryType>(new SpecularBTDFFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new AshikhminBRDFFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new BlinnBRDFFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new BSDFBlendFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new BSDFMixFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new DiffuseBTDFFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new DisneyBRDFFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new GlassBSDFFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new GlossyBRDFFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new KelemenBRDFFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new LambertianBRDFFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new MetalBRDFFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new OrenNayarBRDFFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new PlasticBRDFFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new SheenBRDFFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new SpecularBRDFFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new SpecularBTDFFactory()));
 }
 
 BSDFFactoryRegistrar::~BSDFFactoryRegistrar()
@@ -97,7 +97,7 @@ BSDFFactoryRegistrar::~BSDFFactoryRegistrar()
     delete impl;
 }
 
-void BSDFFactoryRegistrar::register_factory(unique_ptr<FactoryType> factory)
+void BSDFFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();
     impl->m_registrar.insert(model, move(factory));

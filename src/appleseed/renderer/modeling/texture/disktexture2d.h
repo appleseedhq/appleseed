@@ -58,6 +58,9 @@ class APPLESEED_DLLSYMBOL DiskTexture2dFactory
   : public ITextureFactory
 {
   public:
+    // Delete this instance.
+    void release() override;
+
     // Return a string identifying this texture model.
     const char* get_model() const override;
 

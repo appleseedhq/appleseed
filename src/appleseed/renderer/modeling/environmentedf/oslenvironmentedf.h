@@ -56,6 +56,9 @@ class APPLESEED_DLLSYMBOL OSLEnvironmentEDFFactory
   : public IEnvironmentEDFFactory
 {
   public:
+    // Delete this instance.
+    void release() override;
+
     // Return a string identifying this environment EDF model.
     const char* get_model() const override;
 

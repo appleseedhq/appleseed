@@ -32,11 +32,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/foreach.h"
 
 // Standard headers.
 #include <map>
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -58,7 +58,7 @@ class Registrar
     ~Registrar();
 
     // Insert an item, replacing any existing item with the same name.
-    void insert(const std::string& name, std::unique_ptr<T> item);
+    void insert(const std::string& name, auto_release_ptr<T> item);
 
     // Lookup an item. Returns 0 if the item could not be found.
     T* lookup(const std::string& name) const;
@@ -79,17 +79,17 @@ template <typename T>
 Registrar<T>::~Registrar()
 {
     for (const_each<Items> i = m_items; i; ++i)
-        delete i->second;
+        i->second->release();
 }
 
 template <typename T>
-void Registrar<T>::insert(const std::string& name, std::unique_ptr<T> item)
+void Registrar<T>::insert(const std::string& name, auto_release_ptr<T> item)
 {
     const typename Items::iterator i = m_items.find(name);
 
     if (i != m_items.end())
     {
-        delete i->second;
+        i->second->release();
         m_items.erase(i);
     }
 

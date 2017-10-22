@@ -149,6 +149,11 @@ namespace
 // EDFEnvironmentShaderFactory class implementation.
 //
 
+void EDFEnvironmentShaderFactory::release()
+{
+    delete this;
+}
+
 const char* EDFEnvironmentShaderFactory::get_model() const
 {
     return Model;

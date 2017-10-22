@@ -157,6 +157,11 @@ namespace
 // BetterDipoleBSSRDFFactory class implementation.
 //
 
+void BetterDipoleBSSRDFFactory::release()
+{
+    delete this;
+}
+
 const char* BetterDipoleBSSRDFFactory::get_model() const
 {
     return Model;

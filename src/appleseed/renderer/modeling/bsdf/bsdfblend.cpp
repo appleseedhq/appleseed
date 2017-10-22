@@ -303,6 +303,11 @@ namespace
 // BSDFBlendFactory class implementation.
 //
 
+void BSDFBlendFactory::release()
+{
+    delete this;
+}
+
 const char* BSDFBlendFactory::get_model() const
 {
     return Model;

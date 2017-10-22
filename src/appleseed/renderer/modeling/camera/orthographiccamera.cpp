@@ -285,6 +285,11 @@ namespace
 // OrthographicCameraFactory class implementation.
 //
 
+void OrthographicCameraFactory::release()
+{
+    delete this;
+}
+
 const char* OrthographicCameraFactory::get_model() const
 {
     return Model;

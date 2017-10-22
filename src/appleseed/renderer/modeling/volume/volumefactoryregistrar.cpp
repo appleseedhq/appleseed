@@ -57,7 +57,7 @@ struct VolumeFactoryRegistrar::Impl
 VolumeFactoryRegistrar::VolumeFactoryRegistrar()
   : impl(new Impl())
 {
-    register_factory(unique_ptr<FactoryType>(new GenericVolumeFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new GenericVolumeFactory()));
 }
 
 VolumeFactoryRegistrar::~VolumeFactoryRegistrar()
@@ -65,7 +65,7 @@ VolumeFactoryRegistrar::~VolumeFactoryRegistrar()
     delete impl;
 }
 
-void VolumeFactoryRegistrar::register_factory(unique_ptr<FactoryType> factory)
+void VolumeFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();
     impl->m_registrar.insert(model, move(factory));

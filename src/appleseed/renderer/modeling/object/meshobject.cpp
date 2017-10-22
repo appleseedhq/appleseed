@@ -420,6 +420,11 @@ void MeshObject::update_asset_paths(const StringDictionary& mappings)
 // MeshObjectFactory class implementation.
 //
 
+void MeshObjectFactory::release()
+{
+    delete this;
+}
+
 const char* MeshObjectFactory::get_model() const
 {
     return Model;

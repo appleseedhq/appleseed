@@ -55,6 +55,9 @@ class APPLESEED_DLLSYMBOL DiffuseAOVFactory
   : public IAOVFactory
 {
   public:
+    // Delete this instance.
+    void release() override;
+
     // Return a string identifying this AOV model.
     const char* get_model() const override;
 
@@ -78,6 +81,9 @@ class APPLESEED_DLLSYMBOL DirectDiffuseAOVFactory
   : public IAOVFactory
 {
   public:
+    // Delete this instance.
+    void release() override;
+
     // Return a string identifying this AOV model.
     const char* get_model() const override;
 
@@ -101,6 +107,9 @@ class APPLESEED_DLLSYMBOL IndirectDiffuseAOVFactory
   : public IAOVFactory
 {
   public:
+    // Delete this instance.
+    void release() override;
+
     // Return a string identifying this AOV model.
     const char* get_model() const override;
 

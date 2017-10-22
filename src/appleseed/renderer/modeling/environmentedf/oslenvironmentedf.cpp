@@ -192,6 +192,11 @@ namespace
 // OSLEnvironmentEDFFactory class implementation.
 //
 
+void OSLEnvironmentEDFFactory::release()
+{
+    delete this;
+}
+
 const char* OSLEnvironmentEDFFactory::get_model() const
 {
     return Model;

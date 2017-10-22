@@ -31,7 +31,7 @@
 #define APPLESEED_RENDERER_MODELING_TEXTURE_ITEXTUREFACTORY_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/core/concepts/iunknown.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
@@ -52,7 +52,7 @@ namespace renderer
 //
 
 class APPLESEED_DLLSYMBOL ITextureFactory
-  : public foundation::NonCopyable
+  : public foundation::IUnknown
 {
   public:
     // Destructor.

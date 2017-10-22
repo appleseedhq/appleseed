@@ -56,6 +56,9 @@ class APPLESEED_DLLSYMBOL AOSurfaceShaderFactory
   : public ISurfaceShaderFactory
 {
   public:
+    // Delete this instance.
+    void release() override;
+
     // Return a string identifying this surface shader model.
     const char* get_model() const override;
 

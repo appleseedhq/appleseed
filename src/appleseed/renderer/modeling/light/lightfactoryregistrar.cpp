@@ -64,12 +64,12 @@ struct LightFactoryRegistrar::Impl
 LightFactoryRegistrar::LightFactoryRegistrar()
   : impl(new Impl())
 {
-    register_factory(unique_ptr<FactoryType>(new DirectionalLightFactory()));
-    register_factory(unique_ptr<FactoryType>(new MaxOmniLightFactory()));
-    register_factory(unique_ptr<FactoryType>(new MaxSpotLightFactory()));
-    register_factory(unique_ptr<FactoryType>(new PointLightFactory()));
-    register_factory(unique_ptr<FactoryType>(new SpotLightFactory()));
-    register_factory(unique_ptr<FactoryType>(new SunLightFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new DirectionalLightFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new MaxOmniLightFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new MaxSpotLightFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new PointLightFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new SpotLightFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new SunLightFactory()));
 }
 
 LightFactoryRegistrar::~LightFactoryRegistrar()
@@ -77,7 +77,7 @@ LightFactoryRegistrar::~LightFactoryRegistrar()
     delete impl;
 }
 
-void LightFactoryRegistrar::register_factory(unique_ptr<FactoryType> factory)
+void LightFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();
     impl->m_registrar.insert(model, move(factory));

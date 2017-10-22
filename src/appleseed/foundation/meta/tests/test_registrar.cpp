@@ -28,85 +28,103 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/core/concepts/iunknown.h"
+#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/registrar.h"
 #include "foundation/utility/test.h"
-
-// Standard headers.
-#include <memory>
 
 using namespace foundation;
 using namespace std;
 
 TEST_SUITE(Foundation_Utility_Registrar)
 {
+    struct Item
+      : public IUnknown
+    {
+        int m_value;
+
+        explicit Item(const int value)
+          : m_value(value)
+        {
+        }
+
+        void release() override
+        {
+            delete this;
+        }
+    };
+
     TEST_CASE(Lookup_GivenNameOfRegisteredItem_ReturnsItem)
     {
-        Registrar<int> registrar;
-        registrar.insert("x", unique_ptr<int>(new int(42)));
+        Registrar<Item> registrar;
+        registrar.insert("key", auto_release_ptr<Item>(new Item(42)));
 
-        const int* x = registrar.lookup("x");
+        const Item* item = registrar.lookup("key");
 
-        ASSERT_NEQ(0, x);
-        EXPECT_EQ(42, *x);
+        ASSERT_NEQ(0, item);
+        EXPECT_EQ(42, item->m_value);
     }
 
     TEST_CASE(Lookup_GivenNameOfNonRegisteredItem_ReturnsZero)
     {
-        Registrar<int> registrar;
+        Registrar<Item> registrar;
 
-        const int* x = registrar.lookup("x");
+        const Item* item = registrar.lookup("key");
 
-        EXPECT_EQ(0, x);
+        EXPECT_EQ(0, item);
     }
 
     TEST_CASE(Insert_GivenNameOfAlreadyRegisteredItem_ReplacesItem)
     {
-        Registrar<int> registrar;
-        registrar.insert("x", unique_ptr<int>(new int(42)));
-        registrar.insert("x", unique_ptr<int>(new int(66)));
+        Registrar<Item> registrar;
+        registrar.insert("key", auto_release_ptr<Item>(new Item(42)));
+        registrar.insert("key", auto_release_ptr<Item>(new Item(66)));
 
-        const int* x = registrar.lookup("x");
+        const Item* item = registrar.lookup("key");
 
-        ASSERT_NEQ(0, x);
-        EXPECT_EQ(66, *x);
+        ASSERT_NEQ(0, item);
+        EXPECT_EQ(66, item->m_value);
     }
 
-    struct Item
+    struct ItemWithReleaseCheck
+      : public IUnknown
     {
-        bool* m_destructed;
+        bool* m_release_was_called;
 
-        explicit Item(bool* destructed = nullptr)
-          : m_destructed(destructed)
+        explicit ItemWithReleaseCheck(bool* release_was_called = nullptr)
+          : m_release_was_called(release_was_called)
         {
         }
 
-        ~Item()
+        void release() override
         {
-            if (m_destructed)
-                *m_destructed = true;
+            if (m_release_was_called != nullptr)
+                *m_release_was_called = true;
+
+            delete this;
         }
     };
 
     TEST_CASE(Insert_GivenNameOfAlreadyRegisteredItem_DestructsPreviousItem)
     {
-        bool destructed = false;
+        bool release_was_called = false;
 
-        Registrar<Item> registrar;
-        registrar.insert("x", unique_ptr<Item>(new Item(&destructed)));
-        registrar.insert("x", unique_ptr<Item>(new Item()));
+        Registrar<ItemWithReleaseCheck> registrar;
+        registrar.insert("key", auto_release_ptr<ItemWithReleaseCheck>(new ItemWithReleaseCheck(&release_was_called)));
+        registrar.insert("key", auto_release_ptr<ItemWithReleaseCheck>(new ItemWithReleaseCheck()));
 
-        EXPECT_TRUE(destructed);
+        EXPECT_TRUE(release_was_called);
     }
 
     TEST_CASE(Destructor_DestructsItems)
     {
-        bool destructed = false;
+        bool release_was_called = false;
 
         {
-            Registrar<Item> registrar;
-            registrar.insert("x", unique_ptr<Item>(new Item(&destructed)));
+            Registrar<ItemWithReleaseCheck> registrar;
+            registrar.insert("key", auto_release_ptr<ItemWithReleaseCheck>(new ItemWithReleaseCheck(&release_was_called)));
         }
 
-        EXPECT_TRUE(destructed);
+        EXPECT_TRUE(release_was_called);
     }
 }

@@ -58,6 +58,9 @@ class APPLESEED_DLLSYMBOL EDFEnvironmentShaderFactory
   : public IEnvironmentShaderFactory
 {
   public:
+    // Delete this instance.
+    void release() override;
+
     // Return a string identifying this environment shader model.
     const char* get_model() const override;
 

@@ -201,6 +201,11 @@ namespace
 // MirrorBallMapEnvironmentEDFFactory class implementation.
 //
 
+void MirrorBallMapEnvironmentEDFFactory::release()
+{
+    delete this;
+}
+
 const char* MirrorBallMapEnvironmentEDFFactory::get_model() const
 {
     return Model;

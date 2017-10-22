@@ -233,6 +233,11 @@ namespace
 // SpotLightFactory class implementation.
 //
 
+void SpotLightFactory::release()
+{
+    delete this;
+}
+
 const char* SpotLightFactory::get_model() const
 {
     return Model;

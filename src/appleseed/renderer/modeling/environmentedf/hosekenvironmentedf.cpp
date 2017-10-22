@@ -474,6 +474,11 @@ namespace
 // HosekEnvironmentEDFFactory class implementation.
 //
 
+void HosekEnvironmentEDFFactory::release()
+{
+    delete this;
+}
+
 const char* HosekEnvironmentEDFFactory::get_model() const
 {
     return Model;

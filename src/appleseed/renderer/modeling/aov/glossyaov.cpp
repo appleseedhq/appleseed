@@ -248,6 +248,11 @@ namespace
 // GlossyAOVFactory class implementation.
 //
 
+void GlossyAOVFactory::release()
+{
+    delete this;
+}
+
 const char* GlossyAOVFactory::get_model() const
 {
     return GlossyModel;
@@ -279,6 +284,11 @@ auto_release_ptr<AOV> GlossyAOVFactory::create(
 // DirectGlossyAOVFactory class implementation.
 //
 
+void DirectGlossyAOVFactory::release()
+{
+    delete this;
+}
+
 const char* DirectGlossyAOVFactory::get_model() const
 {
     return DirectGlossyModel;
@@ -309,6 +319,11 @@ auto_release_ptr<AOV> DirectGlossyAOVFactory::create(
 //
 // IndirectGlossyAOVFactory class implementation.
 //
+
+void IndirectGlossyAOVFactory::release()
+{
+    delete this;
+}
 
 const char* IndirectGlossyAOVFactory::get_model() const
 {

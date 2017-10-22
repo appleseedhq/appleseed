@@ -175,6 +175,11 @@ namespace
 // MaxOmniLightFactory class implementation.
 //
 
+void MaxOmniLightFactory::release()
+{
+    delete this;
+}
+
 const char* MaxOmniLightFactory::get_model() const
 {
     return Model;

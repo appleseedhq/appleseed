@@ -75,8 +75,8 @@ struct ObjectFactoryRegistrar::Impl
 ObjectFactoryRegistrar::ObjectFactoryRegistrar(const SearchPaths& search_paths)
   : impl(new Impl())
 {
-    register_factory(unique_ptr<FactoryType>(new CurveObjectFactory()));
-    register_factory(unique_ptr<FactoryType>(new MeshObjectFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new CurveObjectFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new MeshObjectFactory()));
 
     load_plugins(search_paths);
 }
@@ -86,7 +86,7 @@ ObjectFactoryRegistrar::~ObjectFactoryRegistrar()
     delete impl;
 }
 
-void ObjectFactoryRegistrar::register_factory(unique_ptr<FactoryType> factory)
+void ObjectFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();
     impl->m_registrar.insert(model, move(factory));
@@ -149,7 +149,7 @@ void ObjectFactoryRegistrar::load_plugins(const SearchPaths& search_paths)
                 continue;
 
             // Register the factory provided by the plugin.
-            register_factory(unique_ptr<IObjectFactory>(create_fn()));
+            register_factory(auto_release_ptr<IObjectFactory>(create_fn()));
 
             // todo: temporarily keep plugins alive.
             impl->m_plugins.push_back(plugin.release());

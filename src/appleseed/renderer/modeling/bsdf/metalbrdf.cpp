@@ -323,6 +323,11 @@ namespace
 // MetalBRDFFactory class implementation.
 //
 
+void MetalBRDFFactory::release()
+{
+    delete this;
+}
+
 const char* MetalBRDFFactory::get_model() const
 {
     return Model;

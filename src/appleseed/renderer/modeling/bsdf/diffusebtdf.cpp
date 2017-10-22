@@ -212,6 +212,11 @@ namespace
 // DiffuseBTDFFactory class implementation.
 //
 
+void DiffuseBTDFFactory::release()
+{
+    delete this;
+}
+
 const char* DiffuseBTDFFactory::get_model() const
 {
     return Model;

@@ -732,6 +732,11 @@ namespace
 // KelemenBRDFFactory class implementation.
 //
 
+void KelemenBRDFFactory::release()
+{
+    delete this;
+}
+
 const char* KelemenBRDFFactory::get_model() const
 {
     return Model;

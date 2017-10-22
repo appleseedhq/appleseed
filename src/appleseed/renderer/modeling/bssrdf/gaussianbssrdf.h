@@ -83,6 +83,9 @@ class APPLESEED_DLLSYMBOL GaussianBSSRDFFactory
   : public IBSSRDFFactory
 {
   public:
+    // Delete this instance.
+    void release() override;
+
     // Return a string identifying this BSSRDF model.
     const char* get_model() const override;
 

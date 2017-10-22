@@ -32,6 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/api/apiarray.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -70,7 +71,7 @@ class APPLESEED_DLLSYMBOL AOVFactoryRegistrar
     ~AOVFactoryRegistrar();
 
     // Register a factory.
-    void register_factory(std::unique_ptr<FactoryType> factory);
+    void register_factory(foundation::auto_release_ptr<FactoryType> factory);
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;

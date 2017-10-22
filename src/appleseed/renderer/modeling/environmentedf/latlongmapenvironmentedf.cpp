@@ -485,6 +485,11 @@ namespace
 // LatLongMapEnvironmentEDFFactory class implementation.
 //
 
+void LatLongMapEnvironmentEDFFactory::release()
+{
+    delete this;
+}
+
 const char* LatLongMapEnvironmentEDFFactory::get_model() const
 {
     return Model;

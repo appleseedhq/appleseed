@@ -120,6 +120,9 @@ class APPLESEED_DLLSYMBOL CurveObjectFactory
   : public IObjectFactory
 {
   public:
+    // Delete this instance.
+    void release() override;
+
     // Return a string identifying this object model.
     const char* get_model() const override;
 

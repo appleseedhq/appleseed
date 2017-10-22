@@ -173,6 +173,11 @@ namespace
 // NormalAOVFactory class implementation.
 //
 
+void NormalAOVFactory::release()
+{
+    delete this;
+}
+
 const char* NormalAOVFactory::get_model() const
 {
     return Model;

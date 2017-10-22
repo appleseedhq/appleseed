@@ -204,6 +204,11 @@ namespace
 // StandardDipoleBSSRDFFactory class implementation.
 //
 
+void StandardDipoleBSSRDFFactory::release()
+{
+    delete this;
+}
+
 const char* StandardDipoleBSSRDFFactory::get_model() const
 {
     return Model;

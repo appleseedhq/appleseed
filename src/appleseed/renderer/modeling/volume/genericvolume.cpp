@@ -263,6 +263,11 @@ class GenericVolume
 // GenericVolumeFactory class implementation.
 //
 
+void GenericVolumeFactory::release()
+{
+    delete this;
+}
+
 const char* GenericVolumeFactory::get_model() const
 {
     return Model;

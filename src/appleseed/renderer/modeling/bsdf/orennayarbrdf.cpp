@@ -295,6 +295,11 @@ namespace
 // OrenNayarBRDFFactory class implementation.
 //
 
+void OrenNayarBRDFFactory::release()
+{
+    delete this;
+}
+
 const char* OrenNayarBRDFFactory::get_model() const
 {
     return Model;

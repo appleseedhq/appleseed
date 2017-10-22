@@ -172,6 +172,11 @@ namespace
 // PointLightFactory class implementation.
 //
 
+void PointLightFactory::release()
+{
+    delete this;
+}
+
 const char* PointLightFactory::get_model() const
 {
     return Model;

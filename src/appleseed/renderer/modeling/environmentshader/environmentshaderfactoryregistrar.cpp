@@ -60,8 +60,8 @@ struct EnvironmentShaderFactoryRegistrar::Impl
 EnvironmentShaderFactoryRegistrar::EnvironmentShaderFactoryRegistrar()
   : impl(new Impl())
 {
-    register_factory(unique_ptr<FactoryType>(new BackgroundEnvironmentShaderFactory()));
-    register_factory(unique_ptr<FactoryType>(new EDFEnvironmentShaderFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new BackgroundEnvironmentShaderFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new EDFEnvironmentShaderFactory()));
 }
 
 EnvironmentShaderFactoryRegistrar::~EnvironmentShaderFactoryRegistrar()
@@ -69,7 +69,7 @@ EnvironmentShaderFactoryRegistrar::~EnvironmentShaderFactoryRegistrar()
     delete impl;
 }
 
-void EnvironmentShaderFactoryRegistrar::register_factory(unique_ptr<FactoryType> factory)
+void EnvironmentShaderFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();
     impl->m_registrar.insert(model, move(factory));

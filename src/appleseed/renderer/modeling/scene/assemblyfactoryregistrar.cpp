@@ -60,9 +60,9 @@ struct AssemblyFactoryRegistrar::Impl
 AssemblyFactoryRegistrar::AssemblyFactoryRegistrar()
   : impl(new Impl())
 {
-    register_factory(unique_ptr<FactoryType>(new ArchiveAssemblyFactory()));
-    register_factory(unique_ptr<FactoryType>(new AssemblyFactory()));
-    register_factory(unique_ptr<FactoryType>(new PluginAssemblyFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new ArchiveAssemblyFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new AssemblyFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new PluginAssemblyFactory()));
 }
 
 AssemblyFactoryRegistrar::~AssemblyFactoryRegistrar()
@@ -70,7 +70,7 @@ AssemblyFactoryRegistrar::~AssemblyFactoryRegistrar()
     delete impl;
 }
 
-void AssemblyFactoryRegistrar::register_factory(unique_ptr<FactoryType> factory)
+void AssemblyFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
 {
     const string model = factory->get_model();
     impl->m_registrar.insert(model, move(factory));

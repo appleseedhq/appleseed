@@ -112,6 +112,11 @@ namespace
 // GenericMaterialFactory class implementation.
 //
 
+void GenericMaterialFactory::release()
+{
+    delete this;
+}
+
 const char* GenericMaterialFactory::get_model() const
 {
     return Model;

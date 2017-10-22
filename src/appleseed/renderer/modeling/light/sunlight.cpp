@@ -534,6 +534,11 @@ namespace
 // SunLightFactory class implementation.
 //
 
+void SunLightFactory::release()
+{
+    delete this;
+}
+
 const char* SunLightFactory::get_model() const
 {
     return Model;

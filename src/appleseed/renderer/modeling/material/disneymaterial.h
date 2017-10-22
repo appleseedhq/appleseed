@@ -179,6 +179,9 @@ class APPLESEED_DLLSYMBOL DisneyMaterialFactory
   : public IMaterialFactory
 {
   public:
+    // Delete this instance.
+    void release() override;
+
     // Return a string identifying this material model.
     const char* get_model() const override;
 

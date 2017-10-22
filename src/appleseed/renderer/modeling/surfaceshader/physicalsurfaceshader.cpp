@@ -138,6 +138,11 @@ namespace
 // PhysicalSurfaceShaderFactory class implementation.
 //
 
+void PhysicalSurfaceShaderFactory::release()
+{
+    delete this;
+}
+
 const char* PhysicalSurfaceShaderFactory::get_model() const
 {
     return Model;

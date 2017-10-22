@@ -198,6 +198,11 @@ void CurveObject::update_asset_paths(const StringDictionary& mappings)
 // CurveObjectFactory class implementation.
 //
 
+void CurveObjectFactory::release()
+{
+    delete this;
+}
+
 const char* CurveObjectFactory::get_model() const
 {
     return Model;

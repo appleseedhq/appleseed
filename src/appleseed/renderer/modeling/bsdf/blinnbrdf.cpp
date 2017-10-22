@@ -249,6 +249,11 @@ namespace
 // BlinnBRDFFactory class implementation.
 //
 
+void BlinnBRDFFactory::release()
+{
+    delete this;
+}
+
 const char* BlinnBRDFFactory::get_model() const
 {
     return Model;

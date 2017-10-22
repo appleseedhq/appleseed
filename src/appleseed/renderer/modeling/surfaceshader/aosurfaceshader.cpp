@@ -155,6 +155,11 @@ namespace
 // AOSurfaceShaderFactory class implementation.
 //
 
+void AOSurfaceShaderFactory::release()
+{
+    delete this;
+}
+
 const char* AOSurfaceShaderFactory::get_model() const
 {
     return Model;

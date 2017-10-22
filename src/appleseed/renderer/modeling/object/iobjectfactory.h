@@ -30,7 +30,7 @@
 #define APPLESEED_RENDERER_MODELING_OBJECT_IOBJECTFACTORY_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/core/concepts/iunknown.h"
 #include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/autoreleaseptr.h"
 
@@ -59,7 +59,7 @@ APPLESEED_DECLARE_APIARRAY(ObjectArray, Object*);
 //
 
 class APPLESEED_DLLSYMBOL IObjectFactory
-  : public foundation::NonCopyable
+  : public foundation::IUnknown
 {
   public:
     // Destructor.
