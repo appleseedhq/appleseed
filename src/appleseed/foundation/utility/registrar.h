@@ -57,6 +57,9 @@ class Registrar
     // Destructor.
     ~Registrar();
 
+    // Remove all items.
+    void clear();
+
     // Insert an item, replacing any existing item with the same name.
     void insert(const std::string& name, auto_release_ptr<T> item);
 
@@ -78,8 +81,16 @@ class Registrar
 template <typename T>
 Registrar<T>::~Registrar()
 {
+    clear();
+}
+
+template <typename T>
+void Registrar<T>::clear()
+{
     for (const_each<Items> i = m_items; i; ++i)
         i->second->release();
+
+    m_items.clear();
 }
 
 template <typename T>

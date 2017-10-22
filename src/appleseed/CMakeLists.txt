@@ -1681,6 +1681,7 @@ set (renderer_modeling_object_sources
     renderer/modeling/object/object.h
     renderer/modeling/object/objectfactoryregistrar.cpp
     renderer/modeling/object/objectfactoryregistrar.h
+    renderer/modeling/object/objecttraits.h
     renderer/modeling/object/proceduralobject.cpp
     renderer/modeling/object/proceduralobject.h
     renderer/modeling/object/regionkit.h

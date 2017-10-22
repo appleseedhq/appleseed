@@ -253,7 +253,7 @@ void MaterialCollectionItem::do_create_material(const char* model)
 
     unique_ptr<EntityEditor::IFormFactory> form_factory(
         new FixedModelEntityEditorFormFactory<FactoryRegistrarType>(
-            m_editor_context.m_project_builder.get_factory_registrar<Material>(),
+            m_editor_context.m_project.get_factory_registrar<Material>(),
             name_suggestion,
             model));
 

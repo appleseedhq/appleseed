@@ -1094,7 +1094,7 @@ namespace
     // Handle an element defining an entity.
     //
 
-    template <typename Entity, typename EntityFactoryRegistrar, typename Base>
+    template <typename Entity, typename Base>
     class EntityElementHandler
       : public Base
     {
@@ -1121,7 +1121,7 @@ namespace
 
             m_entity =
                 create_entity<Entity>(
-                    m_registrar,
+                    m_context.get_project().get_factory_registrar<Entity>(),
                     m_entity_type,
                     m_model,
                     m_name,
@@ -1136,7 +1136,6 @@ namespace
 
       protected:
         ParseContext&                   m_context;
-        const EntityFactoryRegistrar    m_registrar;
         const string                    m_entity_type;
         auto_release_ptr<Entity>        m_entity;
         string                          m_name;
@@ -1285,17 +1284,11 @@ namespace
     //
 
     class BSDFElementHandler
-      : public EntityElementHandler<
-                   BSDF,
-                   BSDFFactoryRegistrar,
-                   ParametrizedElementHandler>
+      : public EntityElementHandler<BSDF, ParametrizedElementHandler>
     {
       public:
         explicit BSDFElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                BSDF,
-                BSDFFactoryRegistrar,
-                ParametrizedElementHandler>("bsdf", context)
+          : EntityElementHandler<BSDF, ParametrizedElementHandler>("bsdf", context)
         {
         }
     };
@@ -1306,17 +1299,11 @@ namespace
     //
 
     class BSSRDFElementHandler
-      : public EntityElementHandler<
-                   BSSRDF,
-                   BSSRDFFactoryRegistrar,
-                   ParametrizedElementHandler>
+      : public EntityElementHandler<BSSRDF, ParametrizedElementHandler>
     {
       public:
         explicit BSSRDFElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                BSSRDF,
-                BSSRDFFactoryRegistrar,
-                ParametrizedElementHandler>("bssrdf", context)
+          : EntityElementHandler<BSSRDF, ParametrizedElementHandler>("bssrdf", context)
         {
         }
     };
@@ -1327,17 +1314,11 @@ namespace
     //
 
     class EDFElementHandler
-      : public EntityElementHandler<
-                   EDF,
-                   EDFFactoryRegistrar,
-                   ParametrizedElementHandler>
+      : public EntityElementHandler<EDF, ParametrizedElementHandler>
     {
       public:
         explicit EDFElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                EDF,
-                EDFFactoryRegistrar,
-                ParametrizedElementHandler>("edf", context)
+          : EntityElementHandler<EDF, ParametrizedElementHandler>("edf", context)
         {
         }
     };
@@ -1348,17 +1329,11 @@ namespace
     //
 
     class VolumeElementHandler
-      : public EntityElementHandler<
-                   Volume,
-                   VolumeFactoryRegistrar,
-                   ParametrizedElementHandler>
+      : public EntityElementHandler<Volume, ParametrizedElementHandler>
     {
       public:
         explicit VolumeElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                Volume,
-                VolumeFactoryRegistrar,
-                ParametrizedElementHandler>("volume", context)
+          : EntityElementHandler<Volume, ParametrizedElementHandler>("volume", context)
         {
         }
     };
@@ -1369,17 +1344,11 @@ namespace
     //
 
     class SurfaceShaderElementHandler
-      : public EntityElementHandler<
-                   SurfaceShader,
-                   SurfaceShaderFactoryRegistrar,
-                   ParametrizedElementHandler>
+      : public EntityElementHandler<SurfaceShader, ParametrizedElementHandler>
     {
       public:
         explicit SurfaceShaderElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                SurfaceShader,
-                SurfaceShaderFactoryRegistrar,
-                ParametrizedElementHandler>("surface shader", context)
+          : EntityElementHandler< SurfaceShader, ParametrizedElementHandler>("surface shader", context)
         {
         }
     };
@@ -1442,10 +1411,7 @@ namespace
     //
 
     class EnvironmentEDFElementHandler
-      : public EntityElementHandler<
-                   EnvironmentEDF,
-                   EnvironmentEDFFactoryRegistrar,
-                   TransformSequenceElementHandler<ParametrizedElementHandler>>
+      : public EntityElementHandler<EnvironmentEDF, TransformSequenceElementHandler<ParametrizedElementHandler>>
     {
       public:
         explicit EnvironmentEDFElementHandler(ParseContext& context)
@@ -1462,11 +1428,7 @@ namespace
         }
 
       private:
-        typedef EntityElementHandler<
-            EnvironmentEDF,
-            EnvironmentEDFFactoryRegistrar,
-            TransformSequenceElementHandler<ParametrizedElementHandler>
-        > Base;
+        typedef EntityElementHandler<EnvironmentEDF, TransformSequenceElementHandler<ParametrizedElementHandler>> Base;
     };
 
 
@@ -1475,17 +1437,11 @@ namespace
     //
 
     class EnvironmentShaderElementHandler
-      : public EntityElementHandler<
-                   EnvironmentShader,
-                   EnvironmentShaderFactoryRegistrar,
-                   ParametrizedElementHandler>
+      : public EntityElementHandler<EnvironmentShader, ParametrizedElementHandler>
     {
       public:
         explicit EnvironmentShaderElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                EnvironmentShader,
-                EnvironmentShaderFactoryRegistrar,
-                ParametrizedElementHandler>("environment shader", context)
+          : EntityElementHandler<EnvironmentShader, ParametrizedElementHandler>("environment shader", context)
         {
         }
     };
@@ -1496,10 +1452,7 @@ namespace
     //
 
     class LightElementHandler
-      : public EntityElementHandler<
-                   Light,
-                   LightFactoryRegistrar,
-                   TransformSequenceElementHandler<ParametrizedElementHandler>>
+      : public EntityElementHandler<Light, TransformSequenceElementHandler<ParametrizedElementHandler>>
     {
       public:
         explicit LightElementHandler(ParseContext& context)
@@ -1516,11 +1469,7 @@ namespace
         }
 
       private:
-        typedef EntityElementHandler<
-            Light,
-            LightFactoryRegistrar,
-            TransformSequenceElementHandler<ParametrizedElementHandler>
-        > Base;
+        typedef EntityElementHandler<Light, TransformSequenceElementHandler<ParametrizedElementHandler>> Base;
     };
 
 
@@ -1529,17 +1478,11 @@ namespace
     //
 
     class MaterialElementHandler
-      : public EntityElementHandler<
-                   Material,
-                   MaterialFactoryRegistrar,
-                   ParametrizedElementHandler>
+      : public EntityElementHandler<Material, ParametrizedElementHandler>
     {
       public:
         explicit MaterialElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                Material,
-                MaterialFactoryRegistrar,
-                ParametrizedElementHandler>("material", context)
+          : EntityElementHandler<Material, ParametrizedElementHandler>("material", context)
         {
         }
     };
@@ -1550,10 +1493,7 @@ namespace
     //
 
     class CameraElementHandler
-      : public EntityElementHandler<
-                   Camera,
-                   CameraFactoryRegistrar,
-                   TransformSequenceElementHandler<ParametrizedElementHandler>>
+      : public EntityElementHandler<Camera, TransformSequenceElementHandler<ParametrizedElementHandler>>
     {
       public:
         explicit CameraElementHandler(ParseContext& context)
@@ -1570,11 +1510,7 @@ namespace
         }
 
       private:
-        typedef EntityElementHandler<
-            Camera,
-            CameraFactoryRegistrar,
-            TransformSequenceElementHandler<ParametrizedElementHandler>
-        > Base;
+        typedef EntityElementHandler<Camera, TransformSequenceElementHandler<ParametrizedElementHandler>> Base;
     };
 
 
@@ -1590,7 +1526,6 @@ namespace
 
         explicit ObjectElementHandler(ParseContext& context)
           : m_context(context)
-          , m_registrar(context.get_project().search_paths())
         {
         }
 
@@ -1610,7 +1545,8 @@ namespace
 
             try
             {
-                const IObjectFactory* factory = m_registrar.lookup(m_model.c_str());
+                const IObjectFactory* factory =
+                    m_context.get_project().get_factory_registrar<Object>().lookup(m_model.c_str());
 
                 if (factory)
                 {
@@ -1658,11 +1594,10 @@ namespace
         }
 
       private:
-        ParseContext&                   m_context;
-        const ObjectFactoryRegistrar    m_registrar;
-        ObjectVector                    m_objects;
-        string                          m_name;
-        string                          m_model;
+        ParseContext&   m_context;
+        ObjectVector    m_objects;
+        string          m_name;
+        string          m_model;
     };
 
 
@@ -2839,6 +2774,11 @@ namespace
         void set_project(Project* project)
         {
             m_project = project;
+        }
+
+        void end_element() override
+        {
+            m_project->reinitialize_factory_registrars();
         }
 
         void end_child_element(

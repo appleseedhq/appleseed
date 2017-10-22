@@ -96,7 +96,7 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
 {
     unique_ptr<EntityEditor::IFormFactory> form_factory(
         new FixedModelEntityEditorFormFactoryType(
-            m_editor_context.m_project_builder.get_factory_registrar<Material>(),
+            m_editor_context.m_project.get_factory_registrar<Material>(),
             m_entity->get_name(),
             m_entity->get_model()));
 

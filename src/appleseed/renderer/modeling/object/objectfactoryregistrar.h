@@ -37,9 +37,6 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Standard headers.
-#include <memory>
-
 // Forward declarations.
 namespace foundation    { class SearchPaths; }
 namespace renderer      { class IObjectFactory; }
@@ -71,8 +68,8 @@ class APPLESEED_DLLSYMBOL ObjectFactoryRegistrar
     // Destructor.
     ~ObjectFactoryRegistrar();
 
-    // Register a factory.
-    void register_factory(foundation::auto_release_ptr<FactoryType> factory);
+    // Reinitialize the registrar; load plugins found in provided search paths.
+    void reinitialize(const foundation::SearchPaths& search_paths);
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;
@@ -84,6 +81,10 @@ class APPLESEED_DLLSYMBOL ObjectFactoryRegistrar
     struct Impl;
     Impl* impl;
 
+    // Register a factory.
+    void register_factory(foundation::auto_release_ptr<FactoryType> factory);
+
+    // Register factories from plugins found in search paths.
     void load_plugins(const foundation::SearchPaths& search_paths);
 };
 

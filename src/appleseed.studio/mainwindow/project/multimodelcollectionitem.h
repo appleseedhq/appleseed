@@ -137,7 +137,7 @@ void MultiModelCollectionItem<Entity, ParentEntity, ParentItem>::slot_create()
 
     std::unique_ptr<EntityEditor::IFormFactory> form_factory(
         new MultiModelEntityEditorFormFactory<FactoryRegistrarType>(
-            Base::m_editor_context.m_project_builder.template get_factory_registrar<Entity>(),
+            Base::m_editor_context.m_project.template get_factory_registrar<Entity>(),
             name_suggestion));
 
     std::unique_ptr<EntityEditor::IEntityBrowser> entity_browser(

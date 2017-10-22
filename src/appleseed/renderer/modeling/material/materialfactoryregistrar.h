@@ -30,6 +30,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_MATERIAL_MATERIALFACTORYREGISTRAR_H
 #define APPLESEED_RENDERER_MODELING_MATERIAL_MATERIALFACTORYREGISTRAR_H
 
+// appleseed.renderer headers.
+#include "renderer/api/material.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/api/apiarray.h"
@@ -37,12 +40,6 @@
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
-
-// Standard headers.
-#include <memory>
-
-// Forward declarations.
-namespace renderer  { class IMaterialFactory; }
 
 namespace renderer
 {

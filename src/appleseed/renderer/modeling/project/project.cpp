@@ -104,6 +104,7 @@ struct Project::Impl
 Project::Project(const char* name)
   : Entity(g_class_uid)
   , impl(new Impl())
+  , m_object_factory_registrar(impl->m_search_paths)
 {
     set_name(name);
     add_base_configurations();
@@ -203,6 +204,11 @@ void Project::add_default_configurations()
 {
     add_default_configuration("final", "base_final");
     add_default_configuration("interactive", "base_interactive");
+}
+
+void Project::reinitialize_factory_registrars()
+{
+    m_object_factory_registrar.reinitialize(impl->m_search_paths);
 }
 
 bool Project::has_trace_context() const

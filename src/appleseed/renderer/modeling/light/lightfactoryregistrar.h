@@ -38,9 +38,6 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Standard headers.
-#include <memory>
-
 // Forward declarations.
 namespace renderer  { class ILightFactory; }
 

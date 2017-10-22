@@ -67,18 +67,25 @@ struct ObjectFactoryRegistrar::Impl
 
     ~Impl()
     {
+        clear();
+    }
+
+    void clear()
+    {
+        // The registrar must be cleared before the plugins are unloaded.
+        m_registrar.clear();
+
         for (Plugin* plugin : m_plugins)
             plugin->release();
+
+        m_plugins.clear();
     }
 };
 
 ObjectFactoryRegistrar::ObjectFactoryRegistrar(const SearchPaths& search_paths)
   : impl(new Impl())
 {
-    register_factory(auto_release_ptr<FactoryType>(new CurveObjectFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new MeshObjectFactory()));
-
-    load_plugins(search_paths);
+    reinitialize(search_paths);
 }
 
 ObjectFactoryRegistrar::~ObjectFactoryRegistrar()
@@ -86,10 +93,14 @@ ObjectFactoryRegistrar::~ObjectFactoryRegistrar()
     delete impl;
 }
 
-void ObjectFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
+void ObjectFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 {
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, move(factory));
+    impl->clear();
+
+    register_factory(auto_release_ptr<FactoryType>(new CurveObjectFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new MeshObjectFactory()));
+
+    load_plugins(search_paths);
 }
 
 ObjectFactoryArray ObjectFactoryRegistrar::get_factories() const
@@ -105,8 +116,13 @@ ObjectFactoryArray ObjectFactoryRegistrar::get_factories() const
 const ObjectFactoryRegistrar::FactoryType* ObjectFactoryRegistrar::lookup(const char* name) const
 {
     assert(name);
-
     return impl->m_registrar.lookup(name);
+}
+
+void ObjectFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
+{
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, move(factory));
 }
 
 void ObjectFactoryRegistrar::load_plugins(const SearchPaths& search_paths)
@@ -125,6 +141,7 @@ void ObjectFactoryRegistrar::load_plugins(const SearchPaths& search_paths)
             continue;
 
         // Iterate over all files in this directory.
+        RENDERER_LOG_DEBUG("scanning %s in search of object plugins...", search_path.string().c_str());
         for (bf::directory_iterator i(search_path), e; i != e; ++i)
         {
             const bf::path lib_path(*i);
@@ -149,6 +166,7 @@ void ObjectFactoryRegistrar::load_plugins(const SearchPaths& search_paths)
                 continue;
 
             // Register the factory provided by the plugin.
+            RENDERER_LOG_INFO("registering object plugin %s...", lib_path.string().c_str());
             register_factory(auto_release_ptr<IObjectFactory>(create_fn()));
 
             // todo: temporarily keep plugins alive.
