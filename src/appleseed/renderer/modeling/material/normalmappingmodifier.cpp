@@ -56,12 +56,9 @@ Basis3d NormalMappingModifier::modify(
     const Basis3d&          basis,
     const ShadingPoint&     shading_point) const
 {
-    const size_t UVSet = 0;
-    const Vector2f& uv = shading_point.get_uv(UVSet);
-
     // Lookup the normal map.
     Color3f normal_rgb;
-    m_map->evaluate(texture_cache, uv, normal_rgb);
+    m_map->evaluate(texture_cache, shading_point, normal_rgb);
 
     // Reconstruct the normal from the texel value.
     const double x = static_cast<double>(normal_rgb[0]);

@@ -895,7 +895,7 @@ void ShadingPoint::compute_alpha() const
         if (const Source* alpha_map = get_object().get_alpha_map())
         {
             Alpha a;
-            alpha_map->evaluate(*m_texture_cache, get_uv(0), a);
+            alpha_map->evaluate(*m_texture_cache, *this, a);
             m_alpha *= a;
         }
 
@@ -905,7 +905,7 @@ void ShadingPoint::compute_alpha() const
             if (material_data.m_alpha_map)
             {
                 Alpha a;
-                material_data.m_alpha_map->evaluate(*m_texture_cache, get_uv(0), a);
+                material_data.m_alpha_map->evaluate(*m_texture_cache, *this, a);
                 m_alpha *= a;
             }
         }
