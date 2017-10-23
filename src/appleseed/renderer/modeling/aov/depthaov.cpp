@@ -167,6 +167,11 @@ namespace
 // DepthAOVFactory class implementation.
 //
 
+void DepthAOVFactory::release()
+{
+    delete this;
+}
+
 const char* DepthAOVFactory::get_model() const
 {
     return Model;

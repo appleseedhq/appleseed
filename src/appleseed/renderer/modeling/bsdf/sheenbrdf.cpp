@@ -185,6 +185,11 @@ namespace
 // SheenBRDFFactory class implementation.
 //
 
+void SheenBRDFFactory::release()
+{
+    delete this;
+}
+
 const char* SheenBRDFFactory::get_model() const
 {
     return Model;

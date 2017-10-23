@@ -609,9 +609,9 @@ namespace
             {
                 Object& object = **i;
 
-                if (strcmp(object.get_model(), MeshObjectFactory::get_model()) == 0)
+                if (strcmp(object.get_model(), MeshObjectFactory().get_model()) == 0)
                     write_mesh_object(static_cast<MeshObject&>(object), groups);
-                else if (strcmp(object.get_model(), CurveObjectFactory::get_model()) == 0)
+                else if (strcmp(object.get_model(), CurveObjectFactory().get_model()) == 0)
                     write_curve_object(static_cast<CurveObject&>(object));
                 else write(object);
             }
@@ -627,7 +627,7 @@ namespace
             {
                 XMLElement element("object", m_file, m_indenter);
                 element.add_attribute("name", object.get_name());
-                element.add_attribute("model", MeshObjectFactory::get_model());
+                element.add_attribute("model", MeshObjectFactory().get_model());
                 element.write(XMLElement::HasChildElements);
                 write_params(params);
                 return;
@@ -688,7 +688,7 @@ namespace
             // Write the <object> element.
             XMLElement element("object", m_file, m_indenter);
             element.add_attribute("name", object_name);
-            element.add_attribute("model", MeshObjectFactory::get_model());
+            element.add_attribute("model", MeshObjectFactory().get_model());
             element.write(XMLElement::HasChildElements);
 
             // Output a "filename" parameter but don't add it to the object.

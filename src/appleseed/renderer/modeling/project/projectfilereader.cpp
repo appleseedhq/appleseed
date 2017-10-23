@@ -64,11 +64,9 @@
 #include "renderer/modeling/material/imaterialfactory.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/material/materialfactoryregistrar.h"
-#include "renderer/modeling/object/curveobject.h"
-#include "renderer/modeling/object/curveobjectreader.h"
-#include "renderer/modeling/object/meshobject.h"
-#include "renderer/modeling/object/meshobjectreader.h"
+#include "renderer/modeling/object/iobjectfactory.h"
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/object/objectfactoryregistrar.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
 #include "renderer/modeling/project/eventcounters.h"
@@ -108,6 +106,7 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
@@ -420,7 +419,7 @@ namespace
     };
 
     typedef IElementHandler<ProjectElementID> ElementHandlerType;
-    typedef ElementHandlerBase<ProjectElementID> ElementHandlerBase;
+    typedef ElementHandlerBase<ProjectElementID> ElementHandlerBaseType;
 
 
     //
@@ -428,7 +427,7 @@ namespace
     //
 
     class ParameterElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit ParameterElementHandler(ParseContext& context)
@@ -438,8 +437,8 @@ namespace
 
         void start_element(const Attributes& attrs) override
         {
-            m_name = ElementHandlerBase::get_value(attrs, "name");
-            m_value = ElementHandlerBase::get_value(attrs, "value");
+            m_name = ElementHandlerBaseType::get_value(attrs, "name");
+            m_value = ElementHandlerBaseType::get_value(attrs, "value");
         }
 
         void characters(
@@ -481,7 +480,7 @@ namespace
     //
 
     class ParametrizedElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         void start_element(const Attributes& attrs) override;
@@ -578,7 +577,7 @@ namespace
     //
 
     class LookAtElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit LookAtElementHandler(ParseContext& context)
@@ -631,7 +630,7 @@ namespace
     //
 
     class MatrixElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit MatrixElementHandler(ParseContext& context)
@@ -685,7 +684,7 @@ namespace
     //
 
     class RotationElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit RotationElementHandler(ParseContext& context)
@@ -727,7 +726,7 @@ namespace
     //
 
     class ScalingElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit ScalingElementHandler(ParseContext& context)
@@ -757,7 +756,7 @@ namespace
     //
 
     class TranslationElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit TranslationElementHandler(ParseContext& context)
@@ -787,7 +786,7 @@ namespace
     //
 
     class TransformElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit TransformElementHandler(ParseContext& context)
@@ -974,7 +973,7 @@ namespace
     //
 
     class ValuesElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit ValuesElementHandler(ParseContext& context)
@@ -1095,7 +1094,7 @@ namespace
     // Handle an element defining an entity.
     //
 
-    template <typename Entity, typename EntityFactoryRegistrar, typename Base>
+    template <typename Entity, typename Base>
     class EntityElementHandler
       : public Base
     {
@@ -1122,7 +1121,7 @@ namespace
 
             m_entity =
                 create_entity<Entity>(
-                    m_registrar,
+                    m_context.get_project().get_factory_registrar<Entity>(),
                     m_entity_type,
                     m_model,
                     m_name,
@@ -1137,7 +1136,6 @@ namespace
 
       protected:
         ParseContext&                   m_context;
-        const EntityFactoryRegistrar    m_registrar;
         const string                    m_entity_type;
         auto_release_ptr<Entity>        m_entity;
         string                          m_name;
@@ -1286,17 +1284,11 @@ namespace
     //
 
     class BSDFElementHandler
-      : public EntityElementHandler<
-                   BSDF,
-                   BSDFFactoryRegistrar,
-                   ParametrizedElementHandler>
+      : public EntityElementHandler<BSDF, ParametrizedElementHandler>
     {
       public:
         explicit BSDFElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                BSDF,
-                BSDFFactoryRegistrar,
-                ParametrizedElementHandler>("bsdf", context)
+          : EntityElementHandler<BSDF, ParametrizedElementHandler>("bsdf", context)
         {
         }
     };
@@ -1307,17 +1299,11 @@ namespace
     //
 
     class BSSRDFElementHandler
-      : public EntityElementHandler<
-                   BSSRDF,
-                   BSSRDFFactoryRegistrar,
-                   ParametrizedElementHandler>
+      : public EntityElementHandler<BSSRDF, ParametrizedElementHandler>
     {
       public:
         explicit BSSRDFElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                BSSRDF,
-                BSSRDFFactoryRegistrar,
-                ParametrizedElementHandler>("bssrdf", context)
+          : EntityElementHandler<BSSRDF, ParametrizedElementHandler>("bssrdf", context)
         {
         }
     };
@@ -1328,17 +1314,11 @@ namespace
     //
 
     class EDFElementHandler
-      : public EntityElementHandler<
-                   EDF,
-                   EDFFactoryRegistrar,
-                   ParametrizedElementHandler>
+      : public EntityElementHandler<EDF, ParametrizedElementHandler>
     {
       public:
         explicit EDFElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                EDF,
-                EDFFactoryRegistrar,
-                ParametrizedElementHandler>("edf", context)
+          : EntityElementHandler<EDF, ParametrizedElementHandler>("edf", context)
         {
         }
     };
@@ -1349,17 +1329,11 @@ namespace
     //
 
     class VolumeElementHandler
-      : public EntityElementHandler<
-                   Volume,
-                   VolumeFactoryRegistrar,
-                   ParametrizedElementHandler>
+      : public EntityElementHandler<Volume, ParametrizedElementHandler>
     {
       public:
         explicit VolumeElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                Volume,
-                VolumeFactoryRegistrar,
-                ParametrizedElementHandler>("volume", context)
+          : EntityElementHandler<Volume, ParametrizedElementHandler>("volume", context)
         {
         }
     };
@@ -1370,17 +1344,11 @@ namespace
     //
 
     class SurfaceShaderElementHandler
-      : public EntityElementHandler<
-                   SurfaceShader,
-                   SurfaceShaderFactoryRegistrar,
-                   ParametrizedElementHandler>
+      : public EntityElementHandler<SurfaceShader, ParametrizedElementHandler>
     {
       public:
         explicit SurfaceShaderElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                SurfaceShader,
-                SurfaceShaderFactoryRegistrar,
-                ParametrizedElementHandler>("surface shader", context)
+          : EntityElementHandler< SurfaceShader, ParametrizedElementHandler>("surface shader", context)
         {
         }
     };
@@ -1443,10 +1411,7 @@ namespace
     //
 
     class EnvironmentEDFElementHandler
-      : public EntityElementHandler<
-                   EnvironmentEDF,
-                   EnvironmentEDFFactoryRegistrar,
-                   TransformSequenceElementHandler<ParametrizedElementHandler>>
+      : public EntityElementHandler<EnvironmentEDF, TransformSequenceElementHandler<ParametrizedElementHandler>>
     {
       public:
         explicit EnvironmentEDFElementHandler(ParseContext& context)
@@ -1463,11 +1428,7 @@ namespace
         }
 
       private:
-        typedef EntityElementHandler<
-            EnvironmentEDF,
-            EnvironmentEDFFactoryRegistrar,
-            TransformSequenceElementHandler<ParametrizedElementHandler>
-        > Base;
+        typedef EntityElementHandler<EnvironmentEDF, TransformSequenceElementHandler<ParametrizedElementHandler>> Base;
     };
 
 
@@ -1476,17 +1437,11 @@ namespace
     //
 
     class EnvironmentShaderElementHandler
-      : public EntityElementHandler<
-                   EnvironmentShader,
-                   EnvironmentShaderFactoryRegistrar,
-                   ParametrizedElementHandler>
+      : public EntityElementHandler<EnvironmentShader, ParametrizedElementHandler>
     {
       public:
         explicit EnvironmentShaderElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                EnvironmentShader,
-                EnvironmentShaderFactoryRegistrar,
-                ParametrizedElementHandler>("environment shader", context)
+          : EntityElementHandler<EnvironmentShader, ParametrizedElementHandler>("environment shader", context)
         {
         }
     };
@@ -1497,10 +1452,7 @@ namespace
     //
 
     class LightElementHandler
-      : public EntityElementHandler<
-                   Light,
-                   LightFactoryRegistrar,
-                   TransformSequenceElementHandler<ParametrizedElementHandler>>
+      : public EntityElementHandler<Light, TransformSequenceElementHandler<ParametrizedElementHandler>>
     {
       public:
         explicit LightElementHandler(ParseContext& context)
@@ -1517,11 +1469,7 @@ namespace
         }
 
       private:
-        typedef EntityElementHandler<
-            Light,
-            LightFactoryRegistrar,
-            TransformSequenceElementHandler<ParametrizedElementHandler>
-        > Base;
+        typedef EntityElementHandler<Light, TransformSequenceElementHandler<ParametrizedElementHandler>> Base;
     };
 
 
@@ -1530,17 +1478,11 @@ namespace
     //
 
     class MaterialElementHandler
-      : public EntityElementHandler<
-                   Material,
-                   MaterialFactoryRegistrar,
-                   ParametrizedElementHandler>
+      : public EntityElementHandler<Material, ParametrizedElementHandler>
     {
       public:
         explicit MaterialElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                Material,
-                MaterialFactoryRegistrar,
-                ParametrizedElementHandler>("material", context)
+          : EntityElementHandler<Material, ParametrizedElementHandler>("material", context)
         {
         }
     };
@@ -1551,10 +1493,7 @@ namespace
     //
 
     class CameraElementHandler
-      : public EntityElementHandler<
-                   Camera,
-                   CameraFactoryRegistrar,
-                   TransformSequenceElementHandler<ParametrizedElementHandler>>
+      : public EntityElementHandler<Camera, TransformSequenceElementHandler<ParametrizedElementHandler>>
     {
       public:
         explicit CameraElementHandler(ParseContext& context)
@@ -1571,11 +1510,7 @@ namespace
         }
 
       private:
-        typedef EntityElementHandler<
-            Camera,
-            CameraFactoryRegistrar,
-            TransformSequenceElementHandler<ParametrizedElementHandler>
-        > Base;
+        typedef EntityElementHandler<Camera, TransformSequenceElementHandler<ParametrizedElementHandler>> Base;
     };
 
 
@@ -1610,34 +1545,21 @@ namespace
 
             try
             {
-                if (m_model == MeshObjectFactory::get_model())
+                const IObjectFactory* factory =
+                    m_context.get_project().get_factory_registrar<Object>().lookup(m_model.c_str());
+
+                if (factory)
                 {
-                    if (m_context.get_options() & ProjectFileReader::OmitReadingMeshFiles)
-                    {
-                        m_objects.push_back(
-                            MeshObjectFactory::create(
-                                m_name.c_str(),
-                                m_params).release());
-                    }
-                    else
-                    {
-                        MeshObjectArray object_array;
-                        if (MeshObjectReader::read(
-                                m_context.get_project().search_paths(),
-                                m_name.c_str(),
-                                m_params,
-                                object_array))
-                            m_objects = array_vector<ObjectVector>(object_array);
-                        else m_context.get_event_counters().signal_error();
-                    }
-                }
-                else if (m_model == CurveObjectFactory::get_model())
-                {
-                    m_objects.push_back(
-                        CurveObjectReader::read(
-                            m_context.get_project().search_paths(),
+                    ObjectArray objects;
+                    if (!factory->create(
                             m_name.c_str(),
-                            m_params).release());
+                            m_params,
+                            m_context.get_project().search_paths(),
+                            m_context.get_options() & ProjectFileReader::OmitReadingMeshFiles,
+                            objects))
+                        m_context.get_event_counters().signal_error();
+
+                    m_objects = array_vector<ObjectVector>(objects);
                 }
                 else
                 {
@@ -1652,6 +1574,14 @@ namespace
             {
                 RENDERER_LOG_ERROR(
                     "while defining object \"%s\": required parameter \"%s\" missing.",
+                    m_name.c_str(),
+                    e.string());
+                m_context.get_event_counters().signal_error();
+            }
+            catch (const ExceptionUnknownEntity& e)
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining object \"%s\": unknown entity \"%s\".",
                     m_name.c_str(),
                     e.string());
                 m_context.get_event_counters().signal_error();
@@ -1676,7 +1606,7 @@ namespace
     //
 
     class AssignMaterialElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit AssignMaterialElementHandler(ParseContext& context)
@@ -1917,7 +1847,7 @@ namespace
     //
 
     class ShaderConnectionElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit ShaderConnectionElementHandler(ParseContext& context)
@@ -1967,7 +1897,7 @@ namespace
     //
 
     class ShaderGroupElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit ShaderGroupElementHandler(ParseContext& context)
@@ -2105,7 +2035,7 @@ namespace
             ParametrizedElementHandler::end_element();
 
             const AssemblyFactoryRegistrar factories;
-            const IAssemblyFactory *factory = factories.lookup(m_model.c_str());
+            const IAssemblyFactory* factory = factories.lookup(m_model.c_str());
 
             if (factory)
             {
@@ -2192,9 +2122,8 @@ namespace
                 break;
 
               case ElementObject:
-                for (const_each<ObjectElementHandler::ObjectVector> i =
-                        static_cast<ObjectElementHandler*>(handler)->get_objects(); i; ++i)
-                    insert(m_objects, auto_release_ptr<Object>(*i));
+                for (Object* object : static_cast<ObjectElementHandler*>(handler)->get_objects())
+                    insert(m_objects, auto_release_ptr<Object>(object));
                 break;
 
               case ElementObjectInstance:
@@ -2427,30 +2356,14 @@ namespace
         {
             ParametrizedElementHandler::end_element();
 
-            m_aov = create_aov();
-        }
-
-        auto_release_ptr<AOV> get_aov()
-        {
-            return m_aov;
-        }
-
-      protected:
-        ParseContext&                   m_context;
-        const AOVFactoryRegistrar       m_registrar;
-        auto_release_ptr<AOV>           m_aov;
-        string                          m_model;
-
-        auto_release_ptr<AOV> create_aov() const
-        {
             try
             {
-                const AOVFactoryRegistrar::FactoryType* factory =
-                    m_registrar.lookup(m_model.c_str());
+                const IAOVFactory* factory =
+                    m_context.get_project().get_factory_registrar<AOV>().lookup(m_model.c_str());
 
                 if (factory)
                 {
-                    return factory->create(m_params);
+                    m_aov = factory->create(m_params);
                 }
                 else
                 {
@@ -2476,9 +2389,17 @@ namespace
                     e.string());
                 m_context.get_event_counters().signal_error();
             }
-
-            return auto_release_ptr<AOV>(nullptr);
         }
+
+        auto_release_ptr<AOV> get_aov()
+        {
+            return m_aov;
+        }
+
+      protected:
+        ParseContext&           m_context;
+        auto_release_ptr<AOV>   m_aov;
+        string                  m_model;
     };
 
 
@@ -2487,7 +2408,7 @@ namespace
     //
 
     class AOVsElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit AOVsElementHandler(ParseContext& context)
@@ -2616,7 +2537,7 @@ namespace
     //
 
     class OutputElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit OutputElementHandler(ParseContext& context)
@@ -2735,7 +2656,7 @@ namespace
     //
 
     class ConfigurationsElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit ConfigurationsElementHandler(ParseContext& context)
@@ -2802,7 +2723,7 @@ namespace
     //
 
     class SearchPathElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit SearchPathElementHandler(ParseContext& context)
@@ -2833,13 +2754,23 @@ namespace
     //
 
     class SearchPathsElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit SearchPathsElementHandler(ParseContext& context)
           : m_context(context)
           , m_project(nullptr)
         {
+        }
+
+        void set_project(Project* project)
+        {
+            m_project = project;
+        }
+
+        void end_element() override
+        {
+            m_project->reinitialize_factory_registrars();
         }
 
         void end_child_element(
@@ -2868,11 +2799,6 @@ namespace
             }
         }
 
-        void set_project(Project* project)
-        {
-            m_project = project;
-        }
-
       private:
         ParseContext&   m_context;
         Project*        m_project;
@@ -2889,7 +2815,13 @@ namespace
       public:
         explicit DisplayElementHandler(ParseContext& context)
           : m_context(context)
+          , m_project(nullptr)
         {
+        }
+
+        void set_project(Project* project)
+        {
+            m_project = project;
         }
 
         void start_element(const Attributes& attrs) override
@@ -2904,15 +2836,10 @@ namespace
             m_project->set_display(DisplayFactory::create(m_name.c_str(), m_params));
         }
 
-        void set_project(Project* project)
-        {
-            m_project = project;
-        }
-
       private:
         ParseContext&   m_context;
-        string          m_name;
         Project*        m_project;
+        string          m_name;
     };
 
 
@@ -2921,7 +2848,7 @@ namespace
     //
 
     class ProjectElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         ProjectElementHandler(ParseContext& context, Project* project)
@@ -2932,11 +2859,11 @@ namespace
 
         void start_element(const Attributes& attrs) override
         {
-            ElementHandlerBase::start_element(attrs);
+            ElementHandlerBaseType::start_element(attrs);
 
             const size_t format_revision =
                 from_string<size_t>(
-                    ElementHandlerBase::get_value(attrs, "format_revision", "2"));
+                    ElementHandlerBaseType::get_value(attrs, "format_revision", "2"));
 
             if (format_revision > ProjectFormatRevision)
             {

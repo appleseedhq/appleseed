@@ -245,6 +245,11 @@ namespace
 // SphericalCameraFactory class implementation.
 //
 
+void SphericalCameraFactory::release()
+{
+    delete this;
+}
+
 const char* SphericalCameraFactory::get_model() const
 {
     return Model;

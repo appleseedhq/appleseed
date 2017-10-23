@@ -321,6 +321,11 @@ namespace
 // PinholeCameraFactory class implementation.
 //
 
+void PinholeCameraFactory::release()
+{
+    delete this;
+}
+
 const char* PinholeCameraFactory::get_model() const
 {
     return Model;

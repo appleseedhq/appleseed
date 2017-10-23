@@ -34,12 +34,15 @@
 #include "renderer/modeling/object/curveobject.h"
 #include "renderer/modeling/object/curveobjectreader.h"
 #include "renderer/modeling/object/curveobjectwriter.h"
+#include "renderer/modeling/object/iobjectfactory.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/meshobjectoperations.h"
 #include "renderer/modeling/object/meshobjectprimitives.h"
 #include "renderer/modeling/object/meshobjectreader.h"
 #include "renderer/modeling/object/meshobjectwriter.h"
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/object/objectfactoryregistrar.h"
+#include "renderer/modeling/object/proceduralobject.h"
 #include "renderer/modeling/object/triangle.h"
 
 #endif  // !APPLESEED_RENDERER_API_OBJECT_H

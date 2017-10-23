@@ -92,6 +92,9 @@ class APPLESEED_DLLSYMBOL GlassBSDFFactory
   : public IBSDFFactory
 {
   public:
+    // Delete this instance.
+    void release() override;
+
     // Return a string identifying this BSDF model.
     const char* get_model() const override;
 

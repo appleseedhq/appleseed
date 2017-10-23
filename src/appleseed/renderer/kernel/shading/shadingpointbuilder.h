@@ -59,6 +59,8 @@ class ShadingPointBuilder
     void set_scene(const Scene* scene);
     void set_ray(const ShadingRay& ray);
     void set_primitive_type(const ShadingPoint::PrimitiveType primitive_type);
+    void set_distance(const double distance);
+    void set_bary(const foundation::Vector2f& bary);
     void set_point(const foundation::Vector3d& point);
     void set_geometric_normal(const foundation::Vector3d& n);
     void set_side(const ObjectInstance::Side side);

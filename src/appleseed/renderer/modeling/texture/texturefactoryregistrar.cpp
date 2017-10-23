@@ -32,8 +32,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/texture/disktexture2d.h"
-#include "renderer/modeling/texture/itexturefactory.h"
 #include "renderer/modeling/texture/memorytexture2d.h"
+#include "renderer/modeling/texture/texturetraits.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -57,11 +57,10 @@ struct TextureFactoryRegistrar::Impl
     Registrar<ITextureFactory> m_registrar;
 };
 
-TextureFactoryRegistrar::TextureFactoryRegistrar()
+TextureFactoryRegistrar::TextureFactoryRegistrar(const SearchPaths& search_paths)
   : impl(new Impl())
 {
-    register_factory(unique_ptr<FactoryType>(new DiskTexture2dFactory()));
-    register_factory(unique_ptr<FactoryType>(new MemoryTexture2dFactory()));
+    reinitialize(search_paths);
 }
 
 TextureFactoryRegistrar::~TextureFactoryRegistrar()
@@ -69,10 +68,24 @@ TextureFactoryRegistrar::~TextureFactoryRegistrar()
     delete impl;
 }
 
-void TextureFactoryRegistrar::register_factory(unique_ptr<FactoryType> factory)
+void TextureFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 {
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, move(factory));
+    // The registrar must be cleared before the plugins are unloaded.
+    impl->m_registrar.clear();
+    unload_all_plugins();
+
+    // Register built-in factories.
+    register_factory(auto_release_ptr<FactoryType>(new DiskTexture2dFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new MemoryTexture2dFactory()));
+
+    // Register factories defined in plugins.
+    register_factories_from_plugins<Texture>(
+        search_paths,
+        [this](void* plugin_entry_point)
+        {
+            auto create_fn = reinterpret_cast<ITextureFactory* (*)()>(plugin_entry_point);
+            register_factory(foundation::auto_release_ptr<ITextureFactory>(create_fn()));
+        });
 }
 
 TextureFactoryArray TextureFactoryRegistrar::get_factories() const
@@ -88,8 +101,13 @@ TextureFactoryArray TextureFactoryRegistrar::get_factories() const
 const TextureFactoryRegistrar::FactoryType* TextureFactoryRegistrar::lookup(const char* name) const
 {
     assert(name);
-
     return impl->m_registrar.lookup(name);
+}
+
+void TextureFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
+{
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, move(factory));
 }
 
 }   // namespace renderer

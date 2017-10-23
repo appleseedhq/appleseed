@@ -57,6 +57,9 @@ class APPLESEED_DLLSYMBOL ThinLensCameraFactory
   : public ICameraFactory
 {
   public:
+    // Delete this instance.
+    void release() override;
+
     // Return a string identifying this camera model.
     const char* get_model() const override;
 

@@ -166,12 +166,20 @@ void ShadingPoint::fetch_source_geometry() const
     m_object = &m_object_instance->get_object();
 
     // Fetch primitive-specific geometry.
-    if (m_primitive_type == PrimitiveTriangle)
-        fetch_triangle_source_geometry();
-    else
+    switch (m_primitive_type)
     {
-        assert(is_curve_primitive());
+      case PrimitiveTriangle:
+        fetch_triangle_source_geometry();
+        break;
+
+      case PrimitiveProceduralSurface:
+        // Nothing to do.
+        break;
+
+      case PrimitiveCurve1:
+      case PrimitiveCurve3:
         fetch_curve_source_geometry();
+        break;
     }
 }
 
@@ -372,47 +380,58 @@ void ShadingPoint::refine_and_offset() const
     ShadingRay::RayType local_ray = m_assembly_instance_transform.to_local(m_ray);
     local_ray.m_org += local_ray.m_tmax * local_ray.m_dir;
 
-    if (m_primitive_type == PrimitiveTriangle)
+    switch (m_primitive_type)
     {
-        // Refine the location of the intersection point.
-        local_ray.m_org =
-            Intersector::refine(
+      case PrimitiveTriangle:
+        {
+            // Refine the location of the intersection point.
+            local_ray.m_org =
+                Intersector::refine(
+                    m_triangle_support_plane,
+                    local_ray.m_org,
+                    local_ray.m_dir);
+
+            // Compute the geometric normal to the hit triangle in assembly instance space.
+            // Note that it doesn't need to be normalized at this point.
+            m_asm_geo_normal = Vector3d(compute_triangle_normal(m_v0, m_v1, m_v2));
+            m_asm_geo_normal = m_object_instance->get_transform().normal_to_parent(m_asm_geo_normal);
+            m_asm_geo_normal = faceforward(m_asm_geo_normal, local_ray.m_dir);
+
+            // Compute the offset points in assembly instance space.
+    #ifdef RENDERER_ADAPTIVE_OFFSET
+            Intersector::adaptive_offset(
                 m_triangle_support_plane,
                 local_ray.m_org,
-                local_ray.m_dir);
+                m_asm_geo_normal,
+                m_front_point,
+                m_back_point);
+    #else
+            Intersector::offset(
+                local_ray.m_org,
+                m_asm_geo_normal,
+                m_front_point,
+                m_back_point);
+    #endif
+        }
+        break;
 
-        // Compute the geometric normal to the hit triangle in assembly instance space.
-        // Note that it doesn't need to be normalized at this point.
-        m_asm_geo_normal = Vector3d(compute_triangle_normal(m_v0, m_v1, m_v2));
-        m_asm_geo_normal = m_object_instance->get_transform().normal_to_parent(m_asm_geo_normal);
-        m_asm_geo_normal = faceforward(m_asm_geo_normal, local_ray.m_dir);
+      case PrimitiveCurve1:
+      case PrimitiveCurve3:
+        {
+            assert(is_curve_primitive());
 
-        // Compute the offset points in assembly instance space.
-#ifdef RENDERER_ADAPTIVE_OFFSET
-        Intersector::adaptive_offset(
-            m_triangle_support_plane,
-            local_ray.m_org,
-            m_asm_geo_normal,
-            m_front_point,
-            m_back_point);
-#else
-        Intersector::offset(
-            local_ray.m_org,
-            m_asm_geo_normal,
-            m_front_point,
-            m_back_point);
-#endif
-    }
-    else
-    {
-        assert(is_curve_primitive());
+            m_asm_geo_normal = normalize(-local_ray.m_dir);
 
-        m_asm_geo_normal = normalize(-local_ray.m_dir);
+            // todo: this does not look correct, considering the flat ribbon nature of curves.
+            const double Eps = 1.0e-6;
+            m_front_point = local_ray.m_org + Eps * m_asm_geo_normal;
+            m_back_point = local_ray.m_org - Eps * m_asm_geo_normal;
+        }
+        break;
 
-        // todo: this does not look correct, considering the flat ribbon nature of curves.
-        const double Eps = 1.0e-6;
-        m_front_point = local_ray.m_org + Eps * m_asm_geo_normal;
-        m_back_point = local_ray.m_org - Eps * m_asm_geo_normal;
+      default:
+        m_front_point = m_back_point = local_ray.m_org;
+        break;
     }
 
     // The refined intersection points are now available.
@@ -640,12 +659,20 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
 
 void ShadingPoint::compute_normals() const
 {
-    if (m_primitive_type == PrimitiveTriangle)
-        compute_triangle_normals();
-    else
+    switch (m_primitive_type)
     {
-        assert(is_curve_primitive());
+      case PrimitiveTriangle:
+        compute_triangle_normals();
+        break;
+
+      case PrimitiveProceduralSurface:
+        // Nothing to do.
+        break;
+
+      case PrimitiveCurve1:
+      case PrimitiveCurve3:
         compute_curve_normals();
+        break;
     }
 }
 
@@ -890,31 +917,35 @@ void ShadingPoint::compute_alpha() const
 {
     m_alpha.set(1.0f);
 
-    if (m_primitive_type == PrimitiveTriangle)
+    switch (m_primitive_type)
     {
-        if (const Source* alpha_map = get_object().get_alpha_map())
+      case PrimitiveTriangle:
+      case PrimitiveProceduralSurface:
         {
-            Alpha a;
-            alpha_map->evaluate(*m_texture_cache, get_uv(0), a);
-            m_alpha *= a;
-        }
-
-        if (const Material* material = get_material())
-        {
-            const Material::RenderData& material_data = material->get_render_data();
-            if (material_data.m_alpha_map)
+            if (const Source* alpha_map = get_object().get_alpha_map())
             {
                 Alpha a;
-                material_data.m_alpha_map->evaluate(*m_texture_cache, get_uv(0), a);
+                alpha_map->evaluate(*m_texture_cache, get_uv(0), a);
                 m_alpha *= a;
             }
-        }
-    }
-    else
-    {
-        assert(is_curve_primitive());
 
+            if (const Material* material = get_material())
+            {
+                const Material::RenderData& material_data = material->get_render_data();
+                if (material_data.m_alpha_map)
+                {
+                    Alpha a;
+                    material_data.m_alpha_map->evaluate(*m_texture_cache, get_uv(0), a);
+                    m_alpha *= a;
+                }
+            }
+        }
+        break;
+
+      case PrimitiveCurve1:
+      case PrimitiveCurve3:
         // todo: interpolate per vertex alpha for curves here...
+        break;
     }
 }
 

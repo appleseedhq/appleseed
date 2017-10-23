@@ -160,6 +160,11 @@ namespace
 // ConstantEnvironmentEDFFactory class implementation.
 //
 
+void ConstantEnvironmentEDFFactory::release()
+{
+    delete this;
+}
+
 const char* ConstantEnvironmentEDFFactory::get_model() const
 {
     return Model;

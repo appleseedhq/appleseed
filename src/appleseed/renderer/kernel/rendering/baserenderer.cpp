@@ -43,6 +43,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/searchpaths.h"
 
 // Standard headers.
 #include <string>
@@ -140,6 +141,14 @@ bool BaseRenderer::initialize_shading_system(
     return initialize_osl(texture_store, abort_switch);
 }
 
+namespace
+{
+    string make_search_path_string(const SearchPaths& search_paths)
+    {
+        return search_paths.to_string_reversed(SearchPaths::osl_path_separator()).c_str();
+    }
+}
+
 void BaseRenderer::initialize_oiio()
 {
     const ParamArray& params = m_params.child("texture_store");
@@ -158,7 +167,7 @@ void BaseRenderer::initialize_oiio()
     string prev_search_path;
     m_texture_system->getattribute("searchpath", prev_search_path);
 
-    const string new_search_path = m_project.make_search_path_string();
+    const string new_search_path = make_search_path_string(m_project.search_paths());
     if (new_search_path != prev_search_path)
     {
         RENDERER_LOG_INFO("setting oiio search path to %s", new_search_path.c_str());
@@ -174,7 +183,7 @@ bool BaseRenderer::initialize_osl(TextureStore& texture_store, IAbortSwitch& abo
     string prev_search_path;
     m_shading_system->getattribute("searchpath:shader", prev_search_path);
 
-    const string new_search_path = m_project.make_search_path_string();
+    const string new_search_path = make_search_path_string(m_project.search_paths());
     if (new_search_path != prev_search_path)
     {
         RENDERER_LOG_INFO("setting osl shader search path to %s", new_search_path.c_str());

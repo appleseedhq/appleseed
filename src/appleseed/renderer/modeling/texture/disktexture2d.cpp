@@ -196,6 +196,11 @@ namespace
 // DiskTexture2dFactory class implementation.
 //
 
+void DiskTexture2dFactory::release()
+{
+    delete this;
+}
+
 const char* DiskTexture2dFactory::get_model() const
 {
     return Model;

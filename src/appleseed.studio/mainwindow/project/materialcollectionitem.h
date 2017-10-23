@@ -33,10 +33,12 @@
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/collectionitem.h"
 
+// appleseed.renderer headers.
+#include "renderer/api/material.h"
+
 // Forward declarations.
 namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace renderer  { class Assembly; }
-namespace renderer  { class Material; }
 
 namespace appleseed {
 namespace studio {

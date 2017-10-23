@@ -213,6 +213,11 @@ namespace
 // ConeEDFFactory class implementation.
 //
 
+void ConeEDFFactory::release()
+{
+    delete this;
+}
+
 const char* ConeEDFFactory::get_model() const
 {
     return Model;

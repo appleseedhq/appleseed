@@ -33,9 +33,12 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/object/iregion.h"
+#include "renderer/modeling/object/meshobjectprimitives.h"
+#include "renderer/modeling/object/meshobjectreader.h"
 #include "renderer/modeling/object/triangle.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
@@ -58,6 +61,8 @@ namespace renderer
 
 namespace
 {
+    const char* Model = "mesh_object";
+
     // A region that simply wraps a static tessellation.
     class MeshRegion
       : public IRegion
@@ -122,7 +127,7 @@ void MeshObject::release()
 
 const char* MeshObject::get_model() const
 {
-    return MeshObjectFactory::get_model();
+    return Model;
 }
 
 bool MeshObject::on_frame_begin(
@@ -415,16 +420,90 @@ void MeshObject::update_asset_paths(const StringDictionary& mappings)
 // MeshObjectFactory class implementation.
 //
 
-const char* MeshObjectFactory::get_model()
+void MeshObjectFactory::release()
 {
-    return "mesh_object";
+    delete this;
 }
 
-auto_release_ptr<MeshObject> MeshObjectFactory::create(
-    const char*             name,
-    const ParamArray&       params)
+const char* MeshObjectFactory::get_model() const
 {
-    return auto_release_ptr<MeshObject>(new MeshObject(name, params));
+    return Model;
+}
+
+Dictionary MeshObjectFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Mesh Object");
+}
+
+DictionaryArray MeshObjectFactory::get_input_metadata() const
+{
+    DictionaryArray metadata;
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "alpha_map")
+            .insert("label", "Alpha Map")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
+            .insert("use", "optional"));
+
+    return metadata;
+}
+
+auto_release_ptr<Object> MeshObjectFactory::create(
+    const char*             name,
+    const ParamArray&       params) const
+{
+    return auto_release_ptr<Object>(new MeshObject(name, params));
+}
+
+bool MeshObjectFactory::create(
+    const char*             name,
+    const ParamArray&       params,
+    const SearchPaths&      search_paths,
+    const bool              omit_loading_assets,
+    ObjectArray&            objects) const
+{
+    if (params.strings().exist("primitive"))
+    {
+        auto_release_ptr<MeshObject> mesh = create_primitive_mesh(name, params);
+        if (mesh.get() == nullptr)
+            return false;
+
+        objects.push_back(mesh.release());
+        return true;
+    }
+
+    if (omit_loading_assets)
+    {
+        objects.push_back(create(name, params).release());
+        return true;
+    }
+
+    MeshObjectArray object_array;
+    if (!MeshObjectReader::read(
+            search_paths,
+            name,
+            params,
+            object_array))
+        return false;
+
+    objects = array_vector<ObjectArray>(object_array);
+    return true;
 }
 
 }   // namespace renderer

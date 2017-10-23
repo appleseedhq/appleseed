@@ -250,6 +250,11 @@ namespace
 // DirectionalDipoleBSSRDFFactory class implementation.
 //
 
+void DirectionalDipoleBSSRDFFactory::release()
+{
+    delete this;
+}
+
 const char* DirectionalDipoleBSSRDFFactory::get_model() const
 {
     return Model;

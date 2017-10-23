@@ -85,12 +85,16 @@ class ShadingPoint
     // The type of the primitive at the shading point.
     enum PrimitiveType
     {
-        PrimitiveNone       = 0,
-        PrimitiveTriangle   = 1 << 1,
-        PrimitiveCurve      = 1 << 2,
-        PrimitiveCurve1     = PrimitiveCurve | 0,
-        PrimitiveCurve3     = PrimitiveCurve | 1,
-        PrimitiveVolume     = 1 << 3
+        PrimitiveNone               = 0,
+
+        PrimitiveTriangle           = 1 << 1,
+        PrimitiveProceduralSurface  = 1 << 2,
+
+        PrimitiveCurve              = 1 << 3,
+        PrimitiveCurve1             = PrimitiveCurve | 0,
+        PrimitiveCurve3             = PrimitiveCurve | 1,
+
+        PrimitiveVolume             = 1 << 4
     };
 
     // Constructor, calls clear().

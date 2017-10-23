@@ -248,6 +248,11 @@ namespace
 // DiffuseAOVFactory class implementation.
 //
 
+void DiffuseAOVFactory::release()
+{
+    delete this;
+}
+
 const char* DiffuseAOVFactory::get_model() const
 {
     return DiffuseModel;
@@ -279,6 +284,11 @@ auto_release_ptr<AOV> DiffuseAOVFactory::create(
 // DirectDiffuseAOVFactory class implementation.
 //
 
+void DirectDiffuseAOVFactory::release()
+{
+    delete this;
+}
+
 const char* DirectDiffuseAOVFactory::get_model() const
 {
     return DirectDiffuseModel;
@@ -309,6 +319,11 @@ auto_release_ptr<AOV> DirectDiffuseAOVFactory::create(
 //
 // IndirectDiffuseAOVFactory class implementation.
 //
+
+void IndirectDiffuseAOVFactory::release()
+{
+    delete this;
+}
 
 const char* IndirectDiffuseAOVFactory::get_model() const
 {

@@ -56,6 +56,9 @@ class APPLESEED_DLLSYMBOL MaxOmniLightFactory
   : public ILightFactory
 {
   public:
+    // Delete this instance.
+    void release() override;
+
     // Return a string identifying this light model.
     const char* get_model() const override;
 

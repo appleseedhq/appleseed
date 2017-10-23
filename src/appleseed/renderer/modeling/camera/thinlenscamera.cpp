@@ -653,6 +653,11 @@ namespace
 // ThinLensCameraFactory class implementation.
 //
 
+void ThinLensCameraFactory::release()
+{
+    delete this;
+}
+
 const char* ThinLensCameraFactory::get_model() const
 {
     return Model;

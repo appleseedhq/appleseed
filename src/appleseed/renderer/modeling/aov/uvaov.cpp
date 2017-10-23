@@ -173,6 +173,11 @@ namespace
 // UVAOVFactory class implementation.
 //
 
+void UVAOVFactory::release()
+{
+    delete this;
+}
+
 const char* UVAOVFactory::get_model() const
 {
     return Model;

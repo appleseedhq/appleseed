@@ -255,6 +255,11 @@ namespace
 // DirectionalLightFactory class implementation.
 //
 
+void DirectionalLightFactory::release()
+{
+    delete this;
+}
+
 const char* DirectionalLightFactory::get_model() const
 {
     return Model;

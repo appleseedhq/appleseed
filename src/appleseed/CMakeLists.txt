@@ -1485,6 +1485,8 @@ set (renderer_modeling_entity_sources
     renderer/modeling/entity/connectableentity.h
     renderer/modeling/entity/entity.cpp
     renderer/modeling/entity/entity.h
+    renderer/modeling/entity/entityfactoryregistrar.cpp
+    renderer/modeling/entity/entityfactoryregistrar.h
     renderer/modeling/entity/entitymap.cpp
     renderer/modeling/entity/entitymap.h
     renderer/modeling/entity/entitytraits.h
@@ -1664,6 +1666,8 @@ set (renderer_modeling_object_sources
     renderer/modeling/object/curveobjectreader.h
     renderer/modeling/object/curveobjectwriter.cpp
     renderer/modeling/object/curveobjectwriter.h
+    renderer/modeling/object/iobjectfactory.cpp
+    renderer/modeling/object/iobjectfactory.h
     renderer/modeling/object/iregion.h
     renderer/modeling/object/meshobject.cpp
     renderer/modeling/object/meshobject.h
@@ -1677,6 +1681,11 @@ set (renderer_modeling_object_sources
     renderer/modeling/object/meshobjectwriter.h
     renderer/modeling/object/object.cpp
     renderer/modeling/object/object.h
+    renderer/modeling/object/objectfactoryregistrar.cpp
+    renderer/modeling/object/objectfactoryregistrar.h
+    renderer/modeling/object/objecttraits.h
+    renderer/modeling/object/proceduralobject.cpp
+    renderer/modeling/object/proceduralobject.h
     renderer/modeling/object/regionkit.h
     renderer/modeling/object/triangle.h
 )

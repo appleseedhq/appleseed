@@ -687,6 +687,11 @@ namespace
 // GlassBSDFFactory class implementation.
 //
 
+void GlassBSDFFactory::release()
+{
+    delete this;
+}
+
 const char* GlassBSDFFactory::get_model() const
 {
     return Model;

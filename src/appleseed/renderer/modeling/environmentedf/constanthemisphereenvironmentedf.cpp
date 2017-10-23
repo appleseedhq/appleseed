@@ -198,6 +198,11 @@ namespace
 // ConstantHemisphereEnvironmentEDFFactory class implementation.
 //
 
+void ConstantHemisphereEnvironmentEDFFactory::release()
+{
+    delete this;
+}
+
 const char* ConstantHemisphereEnvironmentEDFFactory::get_model() const
 {
     return Model;

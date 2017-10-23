@@ -269,6 +269,11 @@ namespace
 // SpecularBTDFFactory class implementation.
 //
 
+void SpecularBTDFFactory::release()
+{
+    delete this;
+}
+
 const char* SpecularBTDFFactory::get_model() const
 {
     return Model;

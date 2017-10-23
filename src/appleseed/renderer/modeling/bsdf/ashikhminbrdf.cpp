@@ -503,6 +503,11 @@ namespace
 // AshikhminBRDFFactory class implementation.
 //
 
+void AshikhminBRDFFactory::release()
+{
+    delete this;
+}
+
 const char* AshikhminBRDFFactory::get_model() const
 {
     return Model;

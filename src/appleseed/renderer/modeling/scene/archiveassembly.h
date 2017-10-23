@@ -60,11 +60,11 @@ class APPLESEED_DLLSYMBOL ArchiveAssembly
   : public ProceduralAssembly
 {
   public:
-    // Return a string identifying the model of this entity.
-    const char* get_model() const override;
-
     // Delete this instance.
     void release() override;
+
+    // Return a string identifying the model of this entity.
+    const char* get_model() const override;
 
     // Expose asset file paths referenced by this entity to the outside.
     void collect_asset_paths(foundation::StringArray& paths) const override;

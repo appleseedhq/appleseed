@@ -102,7 +102,7 @@ bool PluginAssembly::expand_contents(
     {
         // Qualify the plugin path.
         plugin_path = m_params.get("plugin_name");
-        plugin_path += Plugin::get_default_file_extension();
+        plugin_path += SharedLibrary::get_default_file_extension();
         plugin_path = to_string(project.search_paths().qualify(plugin_path));
     }
     catch (const ExceptionDictionaryKeyNotFound&)
@@ -119,7 +119,7 @@ bool PluginAssembly::expand_contents(
         auto_release_ptr<Plugin> plugin(PluginCache::load(plugin_path.c_str()));
 
         // Create the plugin assembly factory.
-        typedef IAssemblyFactory*(*CreateFnType)();
+        typedef IAssemblyFactory* (*CreateFnType)();
         CreateFnType create_fn =
             reinterpret_cast<CreateFnType>(plugin->get_symbol("create_assembly_factory", false));
 

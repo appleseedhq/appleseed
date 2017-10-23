@@ -41,6 +41,7 @@
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/object/proceduralobject.h"
 #include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
@@ -404,7 +405,7 @@ namespace
 void AssemblyTree::create_child_trees(const Assembly& assembly)
 {
     // Create a region or a triangle tree if there are mesh objects.
-    if (has_object_instances_of_type(assembly, MeshObjectFactory::get_model()))
+    if (has_object_instances_of_type(assembly, MeshObjectFactory().get_model()))
     {
         assembly.is_flushable()
             ? create_region_tree(assembly)
@@ -412,13 +413,13 @@ void AssemblyTree::create_child_trees(const Assembly& assembly)
     }
 
     // Create a curve tree if there are curve objects.
-    if (has_object_instances_of_type(assembly, CurveObjectFactory::get_model()))
+    if (has_object_instances_of_type(assembly, CurveObjectFactory().get_model()))
         create_curve_tree(assembly);
 }
 
 void AssemblyTree::create_region_tree(const Assembly& assembly)
 {
-    const uint64 hash = hash_assembly_geometry(assembly, MeshObjectFactory::get_model());
+    const uint64 hash = hash_assembly_geometry(assembly, MeshObjectFactory().get_model());
     Lazy<RegionTree>* tree = m_region_tree_repository.acquire(hash);
 
     if (tree == nullptr)
@@ -439,7 +440,7 @@ void AssemblyTree::create_region_tree(const Assembly& assembly)
 
 void AssemblyTree::create_triangle_tree(const Assembly& assembly)
 {
-    const uint64 hash = hash_assembly_geometry(assembly, MeshObjectFactory::get_model());
+    const uint64 hash = hash_assembly_geometry(assembly, MeshObjectFactory().get_model());
     Lazy<TriangleTree>* tree = m_triangle_tree_repository.acquire(hash);
 
     if (tree == nullptr)
@@ -471,7 +472,7 @@ void AssemblyTree::create_triangle_tree(const Assembly& assembly)
 
 void AssemblyTree::create_curve_tree(const Assembly& assembly)
 {
-    const uint64 hash = hash_assembly_geometry(assembly, CurveObjectFactory::get_model());
+    const uint64 hash = hash_assembly_geometry(assembly, CurveObjectFactory().get_model());
     Lazy<CurveTree>* tree = m_curve_tree_repository.acquire(hash);
 
     if (tree == nullptr)
@@ -767,6 +768,47 @@ bool AssemblyLeafVisitor::visit(
             m_shading_point.m_region_index = local_shading_point.m_region_index;
             m_shading_point.m_primitive_index = local_shading_point.m_primitive_index;
             m_shading_point.m_triangle_support_plane = local_shading_point.m_triangle_support_plane;
+        }
+
+        // Check the intersection between the ray and procedural objects.
+        for (size_t j = 0, e = item.m_assembly->object_instances().size(); j < e; ++j)
+        {
+            // Retrieve the object and object instance.
+            const ObjectInstance* object_instance = item.m_assembly->object_instances().get_by_index(j);
+            const Object& object = object_instance->get_object();
+
+            // Skip non-procedural objects.
+            // todo: don't rely on RTTI to identify procedural objects.
+            const ProceduralObject* proc_object = dynamic_cast<const ProceduralObject*>(&object);
+            if (proc_object == nullptr)
+                continue;
+
+            // Ask the procedural object to intersect itself against the ray.
+            ProceduralObject::IntersectionResult result;
+            proc_object->intersect(ray, ray_info, result);
+
+            // Keep track of the closest hit.
+            if (result.m_hit && result.m_distance < m_shading_point.m_ray.m_tmax)
+            {
+                m_shading_point.m_ray.m_tmax = result.m_distance;
+                m_shading_point.m_primitive_type = ShadingPoint::PrimitiveProceduralSurface;
+
+                m_shading_point.m_assembly_instance = item.m_assembly_instance;
+                m_shading_point.m_assembly_instance_transform = assembly_instance_transform;
+                m_shading_point.m_assembly_instance_transform_seq = assembly_instance_transform_seq;
+                m_shading_point.m_object_instance_index = j;
+                m_shading_point.m_region_index = 0;
+                m_shading_point.m_primitive_index = 0;
+
+                m_shading_point.m_geometric_normal = result.m_geometric_normal;
+                m_shading_point.m_members |= ShadingPoint::HasGeometricNormal;
+
+                m_shading_point.m_shading_basis = result.m_shading_basis;
+                m_shading_point.m_members |= ShadingPoint::HasShadingBasis;
+
+                m_shading_point.m_uv = result.m_uv;
+                m_shading_point.m_members |= ShadingPoint::HasUV0;
+            }
         }
     }
 

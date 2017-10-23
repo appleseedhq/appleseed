@@ -29,6 +29,9 @@
 // Interface header.
 #include "curveobject.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/object/curveobjectreader.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -48,6 +51,11 @@ namespace renderer
 //
 // CurveObject class implementation.
 //
+
+namespace
+{
+    const char* Model = "curve_object";
+}
 
 struct CurveObject::Impl
 {
@@ -81,8 +89,8 @@ struct CurveObject::Impl
 };
 
 CurveObject::CurveObject(
-    const char*         name,
-    const ParamArray&   params)
+    const char*             name,
+    const ParamArray&       params)
   : Object(name, params)
   , impl(new Impl())
 {
@@ -100,7 +108,7 @@ void CurveObject::release()
 
 const char* CurveObject::get_model() const
 {
-    return CurveObjectFactory::get_model();
+    return Model;
 }
 
 GAABB3 CurveObject::compute_local_bbox() const
@@ -190,16 +198,50 @@ void CurveObject::update_asset_paths(const StringDictionary& mappings)
 // CurveObjectFactory class implementation.
 //
 
-const char* CurveObjectFactory::get_model()
+void CurveObjectFactory::release()
 {
-    return "curve_object";
+    delete this;
 }
 
-auto_release_ptr<CurveObject> CurveObjectFactory::create(
-    const char*         name,
-    const ParamArray&   params)
+const char* CurveObjectFactory::get_model() const
 {
-    return auto_release_ptr<CurveObject>(new CurveObject(name, params));
+    return Model;
+}
+
+Dictionary CurveObjectFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Curve Object");
+}
+
+DictionaryArray CurveObjectFactory::get_input_metadata() const
+{
+    DictionaryArray metadata;
+    return metadata;
+}
+
+auto_release_ptr<Object> CurveObjectFactory::create(
+    const char*             name,
+    const ParamArray&       params) const
+{
+    return auto_release_ptr<Object>(new CurveObject(name, params));
+}
+
+bool CurveObjectFactory::create(
+    const char*             name,
+    const ParamArray&       params,
+    const SearchPaths&      search_paths,
+    const bool              omit_loading_assets,
+    ObjectArray&            objects) const
+{
+    objects.push_back(
+        omit_loading_assets
+            ? create(name, params).release()
+            : CurveObjectReader::read(search_paths, name, params).release());
+
+    return true;
 }
 
 }   // namespace renderer

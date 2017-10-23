@@ -30,18 +30,19 @@
 #ifndef APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADERFACTORYREGISTRAR_H
 #define APPLESEED_RENDERER_MODELING_SURFACESHADER_SURFACESHADERFACTORYREGISTRAR_H
 
+// appleseed.renderer headers.
+#include "renderer/modeling/entity/entityfactoryregistrar.h"
+
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/api/apiarray.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Standard headers.
-#include <memory>
-
 // Forward declarations.
-namespace renderer  { class ISurfaceShaderFactory; }
+namespace foundation    { class SearchPaths; }
+namespace renderer      { class ISurfaceShaderFactory; }
 
 namespace renderer
 {
@@ -58,20 +59,21 @@ APPLESEED_DECLARE_APIARRAY(SurfaceShaderFactoryArray, ISurfaceShaderFactory*);
 //
 
 class APPLESEED_DLLSYMBOL SurfaceShaderFactoryRegistrar
-  : public foundation::NonCopyable
+  : public EntityFactoryRegistrar
 {
   public:
     typedef ISurfaceShaderFactory FactoryType;
     typedef SurfaceShaderFactoryArray FactoryArrayType;
 
     // Constructor.
-    SurfaceShaderFactoryRegistrar();
+    explicit SurfaceShaderFactoryRegistrar(
+        const foundation::SearchPaths& search_paths = foundation::SearchPaths());
 
     // Destructor.
     ~SurfaceShaderFactoryRegistrar();
 
-    // Register a factory.
-    void register_factory(std::unique_ptr<FactoryType> factory);
+    // Reinitialize the registrar; load plugins found in provided search paths.
+    void reinitialize(const foundation::SearchPaths& search_paths);
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;
@@ -82,6 +84,9 @@ class APPLESEED_DLLSYMBOL SurfaceShaderFactoryRegistrar
   private:
     struct Impl;
     Impl* impl;
+
+    // Register a factory.
+    void register_factory(foundation::auto_release_ptr<FactoryType> factory);
 };
 
 }       // namespace renderer

@@ -262,6 +262,11 @@ namespace
 // NormalizedDiffusionBSSRDFFactory class implementation.
 //
 
+void NormalizedDiffusionBSSRDFFactory::release()
+{
+    delete this;
+}
+
 const char* NormalizedDiffusionBSSRDFFactory::get_model() const
 {
     return Model;

@@ -109,6 +109,11 @@ namespace
 // BackgroundEnvironmentShaderFactory class implementation.
 //
 
+void BackgroundEnvironmentShaderFactory::release()
+{
+    delete this;
+}
+
 const char* BackgroundEnvironmentShaderFactory::get_model() const
 {
     return Model;

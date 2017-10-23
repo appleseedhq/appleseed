@@ -55,7 +55,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
-#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/searchpaths.h"
 
@@ -105,6 +104,19 @@ struct Project::Impl
 Project::Project(const char* name)
   : Entity(g_class_uid)
   , impl(new Impl())
+  , m_aov_factory_registrar(impl->m_search_paths)
+  , m_bsdf_factory_registrar(impl->m_search_paths)
+  , m_bssrdf_factory_registrar(impl->m_search_paths)
+  , m_camera_factory_registrar(impl->m_search_paths)
+  , m_edf_factory_registrar(impl->m_search_paths)
+  , m_environment_edf_factory_registrar(impl->m_search_paths)
+  , m_environment_shader_factory_registrar(impl->m_search_paths)
+  , m_light_factory_registrar(impl->m_search_paths)
+  , m_material_factory_registrar(impl->m_search_paths)
+  , m_object_factory_registrar(impl->m_search_paths)
+  , m_surface_shader_factory_registrar(impl->m_search_paths)
+  , m_texture_factory_registrar(impl->m_search_paths)
+  , m_volume_factory_registrar(impl->m_search_paths)
 {
     set_name(name);
     add_base_configurations();
@@ -149,11 +161,6 @@ const char* Project::get_path() const
 SearchPaths& Project::search_paths() const
 {
     return impl->m_search_paths;
-}
-
-string Project::make_search_path_string() const
-{
-    return to_string(impl->m_search_paths.to_string_reversed(SearchPaths::osl_path_separator()));
 }
 
 void Project::set_scene(auto_release_ptr<Scene> scene)
@@ -209,6 +216,11 @@ void Project::add_default_configurations()
 {
     add_default_configuration("final", "base_final");
     add_default_configuration("interactive", "base_interactive");
+}
+
+void Project::reinitialize_factory_registrars()
+{
+    m_object_factory_registrar.reinitialize(impl->m_search_paths);
 }
 
 bool Project::has_trace_context() const

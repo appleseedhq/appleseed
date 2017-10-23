@@ -32,11 +32,13 @@
 // appleseed.studio headers.
 #include "mainwindow/project/fixedmodelentityitem.h"
 
+// appleseed.renderer headers.
+#include "renderer/api/material.h"
+
 // Forward declarations.
 namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { class MaterialCollectionItem; } }
 namespace renderer  { class Assembly; }
-namespace renderer  { class Material; }
 
 namespace appleseed {
 namespace studio {

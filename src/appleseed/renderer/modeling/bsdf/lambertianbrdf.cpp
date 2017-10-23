@@ -175,6 +175,11 @@ namespace
 // LambertianBRDFFactory class implementation.
 //
 
+void LambertianBRDFFactory::release()
+{
+    delete this;
+}
+
 const char* LambertianBRDFFactory::get_model() const
 {
     return Model;

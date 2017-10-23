@@ -146,6 +146,11 @@ namespace
 // SpecularBRDFFactory class implementation.
 //
 
+void SpecularBRDFFactory::release()
+{
+    delete this;
+}
+
 const char* SpecularBRDFFactory::get_model() const
 {
     return Model;

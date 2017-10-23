@@ -797,6 +797,11 @@ bool DisneyMaterial::prepare_layers(const MessageContext& context)
 // DisneyMaterialFactory class implementation.
 //
 
+void DisneyMaterialFactory::release()
+{
+    delete this;
+}
+
 const char* DisneyMaterialFactory::get_model() const
 {
     return Model;

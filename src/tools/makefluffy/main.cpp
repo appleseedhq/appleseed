@@ -188,10 +188,10 @@ namespace
         extract_support_triangles(support_object, support_triangles, cdf);
 
         const string curve_object_name = string(support_object.get_name()) + "_curves";
-        auto_release_ptr<CurveObject> curve_object =
-            CurveObjectFactory::create(
+        auto_release_ptr<CurveObject> curve_object(
+            CurveObjectFactory().create(
                 curve_object_name.c_str(),
-                ParamArray());
+                ParamArray()));
 
         curve_object->reserve_curves3(params.m_curve_count);
 
@@ -256,7 +256,7 @@ namespace
                 continue;
 
             // Skip non-mesh objects.
-            if (strcmp(object->get_model(), MeshObjectFactory::get_model()) != 0)
+            if (strcmp(object->get_model(), MeshObjectFactory().get_model()) != 0)
                 continue;
 
             // Insert the (object, instance) pair into the mapping.

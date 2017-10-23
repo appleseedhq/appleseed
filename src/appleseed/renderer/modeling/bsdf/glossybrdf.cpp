@@ -335,6 +335,11 @@ namespace
 // GlossyBRDFFactory class implementation.
 //
 
+void GlossyBRDFFactory::release()
+{
+    delete this;
+}
+
 const char* GlossyBRDFFactory::get_model() const
 {
     return Model;

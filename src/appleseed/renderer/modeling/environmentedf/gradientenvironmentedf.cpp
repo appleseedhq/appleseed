@@ -204,6 +204,11 @@ namespace
 // GradientEnvironmentEDFFactory class implementation.
 //
 
+void GradientEnvironmentEDFFactory::release()
+{
+    delete this;
+}
+
 const char* GradientEnvironmentEDFFactory::get_model() const
 {
     return Model;

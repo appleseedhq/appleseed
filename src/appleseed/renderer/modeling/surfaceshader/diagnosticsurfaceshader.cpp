@@ -617,6 +617,11 @@ void DiagnosticSurfaceShader::set_result(
 // DiagnosticSurfaceShaderFactory class implementation.
 //
 
+void DiagnosticSurfaceShaderFactory::release()
+{
+    delete this;
+}
+
 const char* DiagnosticSurfaceShaderFactory::get_model() const
 {
     return Model;

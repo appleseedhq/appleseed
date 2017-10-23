@@ -120,7 +120,7 @@ void MultiModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attri
 
     std::unique_ptr<EntityEditor::IFormFactory> form_factory(
         new MultiModelEntityEditorFormFactoryType(
-            Base::m_editor_context.m_project_builder.template get_factory_registrar<Entity>(),
+            Base::m_editor_context.m_project.template get_factory_registrar<Entity>(),
             Base::m_entity->get_name()));
 
     std::unique_ptr<EntityEditor::IEntityBrowser> entity_browser(

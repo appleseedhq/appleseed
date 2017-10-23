@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/volume/genericvolume.h"
+#include "renderer/modeling/volume/volumetraits.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -54,10 +55,10 @@ struct VolumeFactoryRegistrar::Impl
     Registrar<IVolumeFactory> m_registrar;
 };
 
-VolumeFactoryRegistrar::VolumeFactoryRegistrar()
+VolumeFactoryRegistrar::VolumeFactoryRegistrar(const SearchPaths& search_paths)
   : impl(new Impl())
 {
-    register_factory(unique_ptr<FactoryType>(new GenericVolumeFactory()));
+    reinitialize(search_paths);
 }
 
 VolumeFactoryRegistrar::~VolumeFactoryRegistrar()
@@ -65,10 +66,23 @@ VolumeFactoryRegistrar::~VolumeFactoryRegistrar()
     delete impl;
 }
 
-void VolumeFactoryRegistrar::register_factory(unique_ptr<FactoryType> factory)
+void VolumeFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 {
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, move(factory));
+    // The registrar must be cleared before the plugins are unloaded.
+    impl->m_registrar.clear();
+    unload_all_plugins();
+
+    // Register built-in factories.
+    register_factory(auto_release_ptr<FactoryType>(new GenericVolumeFactory()));
+
+    // Register factories defined in plugins.
+    register_factories_from_plugins<Volume>(
+        search_paths,
+        [this](void* plugin_entry_point)
+        {
+            auto create_fn = reinterpret_cast<IVolumeFactory* (*)()>(plugin_entry_point);
+            register_factory(foundation::auto_release_ptr<IVolumeFactory>(create_fn()));
+        });
 }
 
 VolumeFactoryArray VolumeFactoryRegistrar::get_factories() const
@@ -81,12 +95,16 @@ VolumeFactoryArray VolumeFactoryRegistrar::get_factories() const
     return factories;
 }
 
-const VolumeFactoryRegistrar::FactoryType*
-    VolumeFactoryRegistrar::lookup(const char* name) const
+const VolumeFactoryRegistrar::FactoryType* VolumeFactoryRegistrar::lookup(const char* name) const
 {
     assert(name);
-
     return impl->m_registrar.lookup(name);
+}
+
+void VolumeFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
+{
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, move(factory));
 }
 
 }   // namespace renderer

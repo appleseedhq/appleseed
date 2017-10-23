@@ -471,7 +471,7 @@ namespace
         if (surface.get() == nullptr)
             return auto_release_ptr<MeshObject>();
 
-        auto_release_ptr<MeshObject> mesh = MeshObjectFactory::create(name, params);
+        auto_release_ptr<MeshObject> mesh(MeshObjectFactory().create(name, params));
 
         create_vertices(mesh.ref(), *surface.get(), res_u, res_v);
         create_triangles(mesh.ref(), res_u, res_v);
@@ -487,7 +487,7 @@ namespace
 
     auto_release_ptr<MeshObject> create_cube(const char* name, const ParamArray& params)
     {
-        auto_release_ptr<MeshObject> mesh = MeshObjectFactory::create(name, params);
+        auto_release_ptr<MeshObject> mesh(MeshObjectFactory().create(name, params));
 
         mesh->reserve_vertices(8);
         mesh->push_vertex(GVector3(-1.0f, -1.0f,  1.0f));

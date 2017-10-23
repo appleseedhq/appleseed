@@ -239,6 +239,11 @@ namespace
 // MaxSpotLightFactory class implementation.
 //
 
+void MaxSpotLightFactory::release()
+{
+    delete this;
+}
+
 const char* MaxSpotLightFactory::get_model() const
 {
     return Model;

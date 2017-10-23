@@ -30,18 +30,19 @@
 #ifndef APPLESEED_RENDERER_MODELING_LIGHT_LIGHTFACTORYREGISTRAR_H
 #define APPLESEED_RENDERER_MODELING_LIGHT_LIGHTFACTORYREGISTRAR_H
 
+// appleseed.renderer headers.
+#include "renderer/modeling/entity/entityfactoryregistrar.h"
+
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/api/apiarray.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Standard headers.
-#include <memory>
-
 // Forward declarations.
-namespace renderer  { class ILightFactory; }
+namespace foundation    { class SearchPaths; }
+namespace renderer      { class ILightFactory; }
 
 namespace renderer
 {
@@ -58,20 +59,21 @@ APPLESEED_DECLARE_APIARRAY(LightFactoryArray, ILightFactory*);
 //
 
 class APPLESEED_DLLSYMBOL LightFactoryRegistrar
-  : public foundation::NonCopyable
+  : public EntityFactoryRegistrar
 {
   public:
     typedef ILightFactory FactoryType;
     typedef LightFactoryArray FactoryArrayType;
 
     // Constructor.
-    LightFactoryRegistrar();
+    explicit LightFactoryRegistrar(
+        const foundation::SearchPaths& search_paths = foundation::SearchPaths());
 
     // Destructor.
     ~LightFactoryRegistrar();
 
-    // Register a factory.
-    void register_factory(std::unique_ptr<FactoryType> factory);
+    // Reinitialize the registrar; load plugins found in provided search paths.
+    void reinitialize(const foundation::SearchPaths& search_paths);
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;
@@ -82,6 +84,9 @@ class APPLESEED_DLLSYMBOL LightFactoryRegistrar
   private:
     struct Impl;
     Impl* impl;
+
+    // Register a factory.
+    void register_factory(foundation::auto_release_ptr<FactoryType> factory);
 };
 
 }       // namespace renderer

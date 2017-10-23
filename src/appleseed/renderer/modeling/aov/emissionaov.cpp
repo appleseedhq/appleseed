@@ -121,6 +121,11 @@ namespace
 // EmissionAOVFactory class implementation.
 //
 
+void EmissionAOVFactory::release()
+{
+    delete this;
+}
+
 const char* EmissionAOVFactory::get_model() const
 {
     return Model;

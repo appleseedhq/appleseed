@@ -23,6 +23,7 @@ cmake \
     -D Boost_USE_STATIC_LIBS=OFF \
     -D BOOST_INCLUDEDIR=$APPLESEED_DEPENDENCIES/include/boost_1_61_0 \
     -D BOOST_LIBRARYDIR=$APPLESEED_DEPENDENCIES/lib/ \
+    -D Boost_ATOMIC_LIBRARY_DEBUG=$APPLESEED_DEPENDENCIES/lib/libboost_atomic-gcc48-mt-1_61.so.1.61.0 \
     -D Boost_CHRONO_LIBRARY_DEBUG=$APPLESEED_DEPENDENCIES/lib/libboost_chrono-gcc48-mt-1_61.so.1.61.0 \
     -D Boost_DATE_TIME_LIBRARY_DEBUG=$APPLESEED_DEPENDENCIES/lib/libboost_date_time-gcc48-mt-1_61.so.1.61.0 \
     -D Boost_FILESYSTEM_LIBRARY_DEBUG=$APPLESEED_DEPENDENCIES/lib/libboost_filesystem-gcc48-mt-1_61.so.1.61.0 \

@@ -29,18 +29,19 @@
 #ifndef APPLESEED_RENDERER_MODELING_AOV_AOVFACTORYREGISTRAR_H
 #define APPLESEED_RENDERER_MODELING_AOV_AOVFACTORYREGISTRAR_H
 
+// appleseed.renderer headers.
+#include "renderer/modeling/entity/entityfactoryregistrar.h"
+
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/api/apiarray.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Standard headers.
-#include <memory>
-
 // Forward declarations.
-namespace renderer  { class IAOVFactory; }
+namespace foundation    { class SearchPaths; }
+namespace renderer      { class IAOVFactory; }
 
 namespace renderer
 {
@@ -57,20 +58,21 @@ APPLESEED_DECLARE_APIARRAY(AOVFactoryArray, IAOVFactory*);
 //
 
 class APPLESEED_DLLSYMBOL AOVFactoryRegistrar
-  : public foundation::NonCopyable
+  : public EntityFactoryRegistrar
 {
   public:
     typedef IAOVFactory FactoryType;
     typedef AOVFactoryArray FactoryArrayType;
 
     // Constructor.
-    AOVFactoryRegistrar();
+    explicit AOVFactoryRegistrar(
+        const foundation::SearchPaths& search_paths = foundation::SearchPaths());
 
     // Destructor.
     ~AOVFactoryRegistrar();
 
-    // Register a factory.
-    void register_factory(std::unique_ptr<FactoryType> factory);
+    // Reinitialize the registrar; load plugins found in provided search paths.
+    void reinitialize(const foundation::SearchPaths& search_paths);
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;
@@ -81,6 +83,9 @@ class APPLESEED_DLLSYMBOL AOVFactoryRegistrar
   private:
     struct Impl;
     Impl* impl;
+
+    // Register a factory.
+    void register_factory(foundation::auto_release_ptr<FactoryType> factory);
 };
 
 }       // namespace renderer

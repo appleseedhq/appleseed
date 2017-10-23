@@ -32,12 +32,10 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/api/apiarray.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
-
-// Standard headers.
-#include <memory>
 
 // Forward declarations.
 namespace renderer  { class IAssemblyFactory; }
@@ -70,7 +68,7 @@ class APPLESEED_DLLSYMBOL AssemblyFactoryRegistrar
     ~AssemblyFactoryRegistrar();
 
     // Register a factory.
-    void register_factory(std::unique_ptr<FactoryType> factory);
+    void register_factory(foundation::auto_release_ptr<FactoryType> factory);
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;

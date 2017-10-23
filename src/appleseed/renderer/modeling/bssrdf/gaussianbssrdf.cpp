@@ -328,6 +328,11 @@ namespace
 // GaussianBSSRDFFactory class implementation.
 //
 
+void GaussianBSSRDFFactory::release()
+{
+    delete this;
+}
+
 const char* GaussianBSSRDFFactory::get_model() const
 {
     return Model;

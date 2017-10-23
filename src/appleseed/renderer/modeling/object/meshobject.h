@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/modeling/object/iobjectfactory.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/regionkit.h"
 
@@ -47,7 +48,10 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace foundation    { class Dictionary; }
+namespace foundation    { class DictionaryArray; }
 namespace foundation    { class IAbortSwitch; }
+namespace foundation    { class SearchPaths; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
 namespace renderer      { class BaseGroup; }
@@ -211,15 +215,33 @@ class APPLESEED_DLLSYMBOL MeshObject
 //
 
 class APPLESEED_DLLSYMBOL MeshObjectFactory
+  : public IObjectFactory
 {
   public:
-    // Return a string identifying this object model.
-    static const char* get_model();
+    // Delete this instance.
+    void release() override;
 
-    // Create a new mesh object.
-    static foundation::auto_release_ptr<MeshObject> create(
-        const char*         name,
-        const ParamArray&   params);
+    // Return a string identifying this object model.
+    const char* get_model() const override;
+
+    // Return metadata for this object model.
+    foundation::Dictionary get_model_metadata() const override;
+
+    // Return metadata for the inputs of this object model.
+    foundation::DictionaryArray get_input_metadata() const override;
+
+    // Create a new single empty object.
+    foundation::auto_release_ptr<Object> create(
+        const char*                     name,
+        const ParamArray&               params) const override;
+
+    // Create objects, potentially from external assets.
+    bool create(
+        const char*                     name,
+        const ParamArray&               params,
+        const foundation::SearchPaths&  search_paths,
+        const bool                      omit_loading_assets,
+        ObjectArray&                    objects) const override;
 };
 
 }       // namespace renderer

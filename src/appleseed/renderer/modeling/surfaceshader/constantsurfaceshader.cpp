@@ -147,6 +147,11 @@ namespace
 // ConstantSurfaceShaderFactory class implementation.
 //
 
+void ConstantSurfaceShaderFactory::release()
+{
+    delete this;
+}
+
 const char* ConstantSurfaceShaderFactory::get_model() const
 {
     return Model;

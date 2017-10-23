@@ -150,6 +150,11 @@ namespace
 // OSLMaterialFactory class implementation.
 //
 
+void OSLMaterialFactory::release()
+{
+    delete this;
+}
+
 const char* OSLMaterialFactory::get_model() const
 {
     return "osl_material";

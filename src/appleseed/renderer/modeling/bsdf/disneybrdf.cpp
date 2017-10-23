@@ -792,6 +792,11 @@ namespace
 // DisneyBRDFFactory class implementation.
 //
 
+void DisneyBRDFFactory::release()
+{
+    delete this;
+}
+
 const char* DisneyBRDFFactory::get_model() const
 {
     return Model;

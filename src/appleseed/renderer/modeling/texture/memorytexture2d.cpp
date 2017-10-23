@@ -199,6 +199,11 @@ namespace
 // MemoryTexture2dFactory class implementation.
 //
 
+void MemoryTexture2dFactory::release()
+{
+    delete this;
+}
+
 const char* MemoryTexture2dFactory::get_model() const
 {
     return Model;

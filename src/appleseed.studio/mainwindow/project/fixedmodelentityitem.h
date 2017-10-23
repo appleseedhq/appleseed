@@ -124,7 +124,7 @@ void FixedModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attri
 
     std::unique_ptr<EntityEditor::IFormFactory> form_factory(
         new FixedModelEntityEditorFormFactoryType(
-            Base::m_editor_context.m_project_builder.template get_factory_registrar<Entity>(),
+            Base::m_editor_context.m_project.template get_factory_registrar<Entity>(),
             Base::m_entity->get_name(),
             Base::m_entity->get_model()));
 

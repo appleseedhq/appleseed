@@ -324,6 +324,11 @@ namespace
 // BSDFMixFactory class implementation.
 //
 
+void BSDFMixFactory::release()
+{
+    delete this;
+}
+
 const char* BSDFMixFactory::get_model() const
 {
     return Model;

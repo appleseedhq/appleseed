@@ -469,6 +469,11 @@ namespace
 // PlasticBRDFFactory class implementation.
 //
 
+void PlasticBRDFFactory::release()
+{
+    delete this;
+}
+
 const char* PlasticBRDFFactory::get_model() const
 {
     return Model;

@@ -37,8 +37,8 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer      { class Assembly; }
-namespace renderer      { class ParamArray; }
+namespace renderer  { class Assembly; }
+namespace renderer  { class ParamArray; }
 
 namespace renderer
 {
@@ -51,9 +51,6 @@ class APPLESEED_DLLSYMBOL IAssemblyFactory
   : public foundation::IUnknown
 {
   public:
-    // Destructor.
-    ~IAssemblyFactory() override {}
-
     // Return a string identifying this assembly model.
     virtual const char* get_model() const = 0;
 

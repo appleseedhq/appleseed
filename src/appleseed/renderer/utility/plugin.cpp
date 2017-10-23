@@ -95,15 +95,6 @@ void* Plugin::get_symbol(const char* name, const bool no_throw) const
     return impl->m_library->get_symbol(name, no_throw);
 }
 
-const char* Plugin::get_default_file_extension()
-{
-#ifdef _WIN32
-    return ".dll";
-#else
-    return ".so";
-#endif
-}
-
 
 //
 // PluginCache class implementation.
@@ -114,22 +105,22 @@ namespace
     typedef map<string, std::weak_ptr<SharedLibrary>> PluginCacheType;
 
     PluginCacheType g_plugin_cache;
-    boost::mutex g_plugin_cache_mutex;
+    boost::mutex    g_plugin_cache_mutex;
 
     struct PluginDeleter
     {
-        void operator()(SharedLibrary* p)
+        void operator()(SharedLibrary* lib)
         {
             boost::lock_guard<boost::mutex> lock(g_plugin_cache_mutex);
 
-            // Try to call the plugin uninitialize function if defined.
+            // Try to call the plugin's uninitialization function if defined.
             Plugin::UnInitPluginFnType uninit_fn =
                 reinterpret_cast<Plugin::UnInitPluginFnType>(
-                    p->get_symbol("uninitialize_plugin"));
+                    lib->get_symbol("uninitialize_plugin"));
             if (uninit_fn)
                 uninit_fn();
 
-            delete p;
+            delete lib;
         }
     };
 }
@@ -152,7 +143,7 @@ auto_release_ptr<Plugin> PluginCache::load(const char* path)
     // If this plugin is not in the cache, load the shared lib.
     std::shared_ptr<SharedLibrary> lib(new SharedLibrary(path), PluginDeleter());
 
-    // Try to call the initialization function if defined.
+    // Try to call the plugin's initialization function if defined.
     Plugin::InitPluginFnType init_fn =
         reinterpret_cast<Plugin::InitPluginFnType>(
             lib->get_symbol("initialize_plugin"));

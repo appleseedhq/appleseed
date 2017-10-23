@@ -462,6 +462,11 @@ namespace
 // PreethamEnvironmentEDFFactory class implementation.
 //
 
+void PreethamEnvironmentEDFFactory::release()
+{
+    delete this;
+}
+
 const char* PreethamEnvironmentEDFFactory::get_model() const
 {
     return Model;

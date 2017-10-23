@@ -46,12 +46,12 @@ set (CMAKE_MODULE_PATH
 # Build options.
 #--------------------------------------------------------------------------------------------------
 
-option (USE_EXTERNAL_OIIO                   "Use external OpenImageIO library"                      OFF)
-option (USE_EXTERNAL_OSL                    "Use external OpenShadingLanguage library"              OFF)
+option (USE_EXTERNAL_OIIO   "Use external OpenImageIO library"          OFF)
+option (USE_EXTERNAL_OSL    "Use external OpenShadingLanguage library"  OFF)
 
-option (USE_STATIC_BOOST                    "Use static Boost libraries"                            ON)
-option (USE_STATIC_OIIO                     "Use static OpenImageIO libraries"                      ON)
-option (USE_STATIC_OSL                      "Use static OpenShadingLanguage libraries"              ON)
+option (USE_STATIC_BOOST    "Use static Boost libraries"                ON)
+option (USE_STATIC_OIIO     "Use static OpenImageIO libraries"          ON)
+option (USE_STATIC_OSL      "Use static OpenShadingLanguage libraries"  ON)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -66,9 +66,15 @@ endif ()
 
 set (BOOST_NEEDED_LIBS )
 
-find_package (Boost 1.47 REQUIRED ${BOOST_NEEDED_LIBS})
+find_package (Boost 1.55 REQUIRED ${BOOST_NEEDED_LIBS})
 
 add_definitions (-DBOOST_FILESYSTEM_VERSION=3 -DBOOST_FILESYSTEM_NO_DEPRECATED)
+
+if (NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    # Workaround for undefined reference to boost::filesystem::detail::copy_file link error
+    # on Linux and macOS if Boost is built in C++03 mode.
+    add_definitions (-DBOOST_NO_CXX11_SCOPED_ENUMS)
+endif ()
 
 include_directories (${Boost_INCLUDE_DIRS})
 link_directories (${Boost_LIBRARY_DIRS})
