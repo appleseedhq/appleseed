@@ -54,6 +54,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -428,16 +429,42 @@ namespace
         widget->blockSignals(were_signals_blocked);
     }
 
-    void check_visible_child_items(
+    struct CheckVisibleChildItemsResult
+    {
+        bool m_any_visible;
+        bool m_all_visible;
+    };
+
+    CheckVisibleChildItemsResult check_visible_child_items(
         QTreeWidgetItem*        parent,
         const int               column)
     {
+        CheckVisibleChildItemsResult result;
+        result.m_any_visible = false;
+        result.m_all_visible = true;
+
         for (int i = 0, e = parent->childCount(); i < e; ++i)
         {
             QTreeWidgetItem* item = parent->child(i);
-            item->setCheckState(column, item->isHidden() ? Qt::Unchecked : Qt::Checked);
-            check_visible_child_items(item, column);
+
+            if (item->isHidden())
+            {
+                item->setCheckState(column, Qt::Unchecked);
+                result.m_all_visible = false;
+            }
+            else
+            {
+                item->setCheckState(column, Qt::Checked);
+                result.m_any_visible = true;
+            }
+
+            const auto child_result = check_visible_child_items(item, column);
+
+            result.m_any_visible |= child_result.m_any_visible;
+            result.m_all_visible &= child_result.m_all_visible;
         }
+
+        return result;
     }
 
     void check_visible_items(
@@ -449,8 +476,31 @@ namespace
         for (int i = 0, e = widget->topLevelItemCount(); i < e; ++i)
         {
             QTreeWidgetItem* item = widget->topLevelItem(i);
-            item->setCheckState(column, item->isHidden() ? Qt::Unchecked : Qt::Checked);
-            check_visible_child_items(item, column);
+            if (item->isHidden())
+            {
+                // This item is hidden: visit its children.
+                item->setCheckState(column, Qt::Unchecked);
+                check_visible_child_items(item, column);
+            }
+            else
+            {
+                const auto result = check_visible_child_items(item, column);
+                if (result.m_any_visible)
+                {
+                    // This item is visible and some of its children are too:
+                    // set the check status of this item according to whether
+                    // all or only a subset of its children are visible.
+                    item->setCheckState(column,
+                        result.m_all_visible ? Qt::Checked : Qt::PartiallyChecked);
+                }
+                else
+                {
+                    // This item is visible, but none of its children are:
+                    // check this item and all its children.
+                    set_child_items_check_state(item, column, Qt::Checked);
+                }
+                update_parent_items_check_state(item, column);
+            }
         }
 
         widget->blockSignals(were_signals_blocked);
