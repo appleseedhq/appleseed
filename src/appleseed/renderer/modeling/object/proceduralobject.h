@@ -33,15 +33,14 @@
 #include "renderer/modeling/object/object.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/basis.h"
-#include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/types.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer  { class ShadingPoint; }
+namespace renderer  { class ParamArray; }
 namespace renderer  { class ShadingRay; }
 
 namespace renderer
@@ -60,21 +59,27 @@ class APPLESEED_DLLSYMBOL ProceduralObject
         bool                    m_hit;
         double                  m_distance;
         foundation::Vector3d    m_geometric_normal;
-        foundation::Basis3d     m_shading_basis;
+        foundation::Vector3d    m_shading_normal;
         foundation::Vector2f    m_uv;
+        foundation::uint32      m_material_slot;
     };
 
-    // Compute the intersection between a ray and the surface of this object.
+    // Compute the intersection between a ray expressed in object space and
+    // the surface of this object and return detailed intersection results.
     virtual void intersect(
-        const ShadingRay&               ray,
-        const foundation::RayInfo3d&    ray_info,
-        IntersectionResult&             result) const = 0;
+        const ShadingRay&       ray,
+        IntersectionResult&     result) const = 0;
+
+    // Compute the intersection between a ray expressed in object space and
+    // the surface of this object and simply return whether there was a hit.
+    virtual bool intersect(
+        const ShadingRay&       ray) const = 0;
 
   protected:
     // Constructor.
     ProceduralObject(
-        const char*                     name,
-        const ParamArray&               params);
+        const char*             name,
+        const ParamArray&       params);
 };
 
 }       // namespace renderer

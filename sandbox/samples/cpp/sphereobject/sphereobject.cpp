@@ -28,17 +28,21 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/object.h"
+#include "renderer/api/project.h"
 #include "renderer/api/rendering.h"
+#include "renderer/api/scene.h"
 #include "renderer/api/types.h"
 
+// todo: fix.
 #include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/basis.h"
 #include "foundation/math/ray.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"
 
@@ -46,8 +50,8 @@
 #include "main/dllvisibility.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cmath>
-#include <vector>
 
 namespace asf = foundation;
 namespace asr = renderer;
@@ -65,8 +69,10 @@ namespace
     {
       public:
         // Constructor.
-        explicit SphereObject(const char* name)
-          : asr::ProceduralObject(name, asr::ParamArray())
+        SphereObject(
+            const char*                 name,
+            const asr::ParamArray&      params)
+          : asr::ProceduralObject(name, params)
           , m_lazy_region_kit(&m_region_kit)
         {
         }
@@ -83,10 +89,26 @@ namespace
             return Model;
         }
 
+        virtual bool on_frame_begin(
+            const asr::Project&         project,
+            const asr::BaseGroup*       parent,
+            asr::OnFrameBeginRecorder&  recorder,
+            asf::IAbortSwitch*          abort_switch) override
+        {
+            if (!asr::ProceduralObject::on_frame_begin(project, parent, recorder, abort_switch))
+                return false;
+
+            m_radius = get_uncached_radius();
+            m_rcp_radius = 1.0 / m_radius;
+
+            return true;
+        }
+
         // Compute the local space bounding box of the object over the shutter interval.
         asr::GAABB3 compute_local_bbox() const override
         {
-            return asr::GAABB3(asr::GVector3(-0.5f), asr::GVector3(0.5f));
+            const auto r = static_cast<asr::GScalar>(get_uncached_radius());
+            return asr::GAABB3(asr::GVector3(-r), asr::GVector3(r));
         }
 
         // Return the region kit of the object.
@@ -105,18 +127,18 @@ namespace
             return "default";
         }
 
-        // Compute the intersection between a ray and the surface of this object.
+        // Compute the intersection between a ray expressed in object space and
+        // the surface of this object and return detailed intersection results.
         void intersect(
             const asr::ShadingRay&  ray,
-            const asf::RayInfo3d&   ray_info,
             IntersectionResult&     result) const override
         {
-            const asf::Vector3d SphereCenter(0.0, 0.0, 0.0);
-            const double SphereRadius = 0.05;
+            // The sphere is assumed to be centered at the origin.
 
-            const asf::Vector3d v = SphereCenter - ray.m_org;
-            const double a = asf::dot(v, ray.m_dir);
-            const double b = a * a - dot(v, v) + asf::square(SphereRadius);
+            const double Epsilon = 1.0e-6;
+
+            const double a = asf::dot(ray.m_org, ray.m_dir);
+            const double b = asf::square(a) - dot(ray.m_org, ray.m_org) + asf::square(m_radius);
 
             if (b < 0.0)
             {
@@ -125,30 +147,70 @@ namespace
             }
 
             const double c = std::sqrt(b);
-            double t = a - c;
 
-            if (t < 0.0)
+            double t = -a - c;
+            if (t < std::max(ray.m_tmin, Epsilon) || t >= ray.m_tmax)
             {
-                t = a + c;
-                if (t < 0.0)
+                t = -a + c;
+                if (t < std::max(ray.m_tmin, Epsilon) || t >= ray.m_tmax)
                 {
                     result.m_hit = false;
                     return;
                 }
             }
 
-            const asf::Vector3d n = asf::normalize(ray.point_at(t) - SphereCenter);
-
             result.m_hit = true;
             result.m_distance = t;
+
+            const asf::Vector3d n = asf::normalize(ray.point_at(t));
             result.m_geometric_normal = n;
-            result.m_shading_basis.build(n);
-            result.m_uv = asf::Vector2f(0.0f);
+            result.m_shading_normal = n;
+
+            const asf::Vector3f p(ray.point_at(t) * m_rcp_radius);
+            result.m_uv[0] = std::acos(p.y) * asf::RcpPi<float>();
+            result.m_uv[1] = std::atan2(-p.z, p.x) * asf::RcpTwoPi<float>();
+
+            result.m_material_slot = 0;
+        }
+
+        // Compute the intersection between a ray expressed in object space and
+        // the surface of this object and simply return whether there was a hit.
+        bool intersect(
+            const asr::ShadingRay&  ray) const override
+        {
+            // The sphere is assumed to be centered at the origin.
+
+            const double Epsilon = 1.0e-6;
+
+            const double a = asf::dot(ray.m_org, ray.m_dir);
+            const double b = asf::square(a) - dot(ray.m_org, ray.m_org) + asf::square(m_radius);
+
+            if (b < 0.0)
+                return false;
+
+            const double c = std::sqrt(b);
+
+            const double t1 = -a - c;
+            if (t1 >= std::max(ray.m_tmin, Epsilon) && t1 < ray.m_tmax)
+                return true;
+
+            const double t2 = -a + c;
+            if (t2 >= std::max(ray.m_tmin, Epsilon) && t2 < ray.m_tmax)
+                return true;
+
+            return false;
         }
 
       private:
         asr::RegionKit              m_region_kit;
         asf::Lazy<asr::RegionKit>   m_lazy_region_kit;
+        double                      m_radius;
+        double                      m_rcp_radius;
+
+        double get_uncached_radius() const
+        {
+            return m_params.get_optional<double>("radius");
+        }
     };
 
 
@@ -185,6 +247,23 @@ namespace
         asf::DictionaryArray get_input_metadata() const override
         {
             asf::DictionaryArray metadata;
+
+            metadata.push_back(
+                asf::Dictionary()
+                    .insert("name", "radius")
+                    .insert("label", "Radius")
+                    .insert("type", "numeric")
+                    .insert("min",
+                        asf::Dictionary()
+                            .insert("value", "0.0")
+                            .insert("type", "hard"))
+                    .insert("max",
+                        asf::Dictionary()
+                            .insert("value", "10.0")
+                            .insert("type", "soft"))
+                    .insert("use", "optional")
+                    .insert("default", "1.0"));
+
             return metadata;
         }
 
@@ -193,7 +272,7 @@ namespace
             const char*                 name,
             const asr::ParamArray&      params) const override
         {
-            return asf::auto_release_ptr<asr::Object>(new SphereObject(name));
+            return asf::auto_release_ptr<asr::Object>(new SphereObject(name, params));
         }
 
         // Create objects, potentially from external assets.

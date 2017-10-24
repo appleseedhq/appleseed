@@ -535,18 +535,26 @@ inline const foundation::Vector2f& ShadingPoint::get_uv(const size_t uvset) cons
     {
         cache_source_geometry();
 
-        if (m_primitive_type == PrimitiveTriangle)
+        switch (m_primitive_type)
         {
-            // Compute the texture coordinates.
+          case PrimitiveTriangle:
+            // Compute texture coordinates.
             m_uv =
                   m_v0_uv * (1.0f - m_bary[0] - m_bary[1])
                 + m_v1_uv * m_bary[0]
                 + m_v2_uv * m_bary[1];
-        }
-        else
-        {
-            assert(is_curve_primitive());
+            break;
+
+          case PrimitiveProceduralSurface:
+            // Nothing to do.
+            break;
+
+          case PrimitiveCurve1:
+          case PrimitiveCurve3:
             m_uv = m_bary;
+            break;
+
+          assert_otherwise;
         }
 
         // Texture coordinates from UV set #0 are now available.

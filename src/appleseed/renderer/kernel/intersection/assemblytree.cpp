@@ -775,6 +775,7 @@ bool AssemblyLeafVisitor::visit(
         {
             // Retrieve the object and object instance.
             const ObjectInstance* object_instance = item.m_assembly->object_instances().get_by_index(j);
+            const Transformd& object_instance_transform = object_instance->get_transform();
             const Object& object = object_instance->get_object();
 
             // Skip non-procedural objects.
@@ -783,31 +784,39 @@ bool AssemblyLeafVisitor::visit(
             if (proc_object == nullptr)
                 continue;
 
+            // Transform the ray to object instance space.
+            // todo: transform ray differentials.
+            ShadingRay instance_local_ray;
+            instance_local_ray.m_org = object_instance_transform.point_to_local(local_shading_point.m_ray.m_org);
+            instance_local_ray.m_dir = object_instance_transform.vector_to_local(local_shading_point.m_ray.m_dir);
+            instance_local_ray.m_has_differentials = false;
+            instance_local_ray.m_tmin = local_shading_point.m_ray.m_tmin;
+            instance_local_ray.m_tmax = local_shading_point.m_ray.m_tmax;
+            instance_local_ray.m_time = local_shading_point.m_ray.m_time;
+            instance_local_ray.m_flags = local_shading_point.m_ray.m_flags;
+            instance_local_ray.m_depth = local_shading_point.m_ray.m_depth;
+            instance_local_ray.m_medium_count = local_shading_point.m_ray.m_medium_count;
+
             // Ask the procedural object to intersect itself against the ray.
             ProceduralObject::IntersectionResult result;
-            proc_object->intersect(ray, ray_info, result);
+            proc_object->intersect(instance_local_ray, result);
 
             // Keep track of the closest hit.
             if (result.m_hit && result.m_distance < m_shading_point.m_ray.m_tmax)
             {
                 m_shading_point.m_ray.m_tmax = result.m_distance;
                 m_shading_point.m_primitive_type = ShadingPoint::PrimitiveProceduralSurface;
-
+                m_shading_point.m_bary = result.m_uv;
                 m_shading_point.m_assembly_instance = item.m_assembly_instance;
                 m_shading_point.m_assembly_instance_transform = assembly_instance_transform;
                 m_shading_point.m_assembly_instance_transform_seq = assembly_instance_transform_seq;
                 m_shading_point.m_object_instance_index = j;
                 m_shading_point.m_region_index = 0;
                 m_shading_point.m_primitive_index = 0;
-
-                m_shading_point.m_geometric_normal = result.m_geometric_normal;
-                m_shading_point.m_members |= ShadingPoint::HasGeometricNormal;
-
-                m_shading_point.m_shading_basis = result.m_shading_basis;
-                m_shading_point.m_members |= ShadingPoint::HasShadingBasis;
-
+                m_shading_point.m_primitive_pa = result.m_material_slot;
+                m_shading_point.m_geometric_normal = object_instance_transform.normal_to_parent(result.m_geometric_normal);
+                m_shading_point.m_original_shading_normal = object_instance_transform.normal_to_parent(result.m_shading_normal);
                 m_shading_point.m_uv = result.m_uv;
-                m_shading_point.m_members |= ShadingPoint::HasUV0;
             }
         }
     }
@@ -970,6 +979,41 @@ bool AssemblyLeafProbeVisitor::visit(
 
             // Terminate traversal if there was a hit.
             if (visitor.hit())
+            {
+                m_hit = true;
+                return false;
+            }
+        }
+
+        // Check the intersection between the ray and procedural objects.
+        for (size_t j = 0, e = item.m_assembly->object_instances().size(); j < e; ++j)
+        {
+            // Retrieve the object and object instance.
+            const ObjectInstance* object_instance = item.m_assembly->object_instances().get_by_index(j);
+            const Transformd& object_instance_transform = object_instance->get_transform();
+            const Object& object = object_instance->get_object();
+
+            // Skip non-procedural objects.
+            // todo: don't rely on RTTI to identify procedural objects.
+            const ProceduralObject* proc_object = dynamic_cast<const ProceduralObject*>(&object);
+            if (proc_object == nullptr)
+                continue;
+
+            // Transform the ray to object instance space.
+            // todo: transform ray differentials.
+            ShadingRay instance_local_ray;
+            instance_local_ray.m_org = object_instance_transform.point_to_local(local_ray.m_org);
+            instance_local_ray.m_dir = object_instance_transform.vector_to_local(local_ray.m_dir);
+            instance_local_ray.m_has_differentials = false;
+            instance_local_ray.m_tmin = local_ray.m_tmin;
+            instance_local_ray.m_tmax = local_ray.m_tmax;
+            instance_local_ray.m_time = local_ray.m_time;
+            instance_local_ray.m_flags = local_ray.m_flags;
+            instance_local_ray.m_depth = local_ray.m_depth;
+            instance_local_ray.m_medium_count = local_ray.m_medium_count;
+
+            // Ask the procedural object to intersect itself against the ray.
+            if (proc_object->intersect(instance_local_ray))
             {
                 m_hit = true;
                 return false;
