@@ -135,7 +135,11 @@ void EntityFactoryRegistrar::register_factories_from_plugins(
             {
                 foundation::SharedLibrary library(plugin_path.c_str());
                 if (library.get_symbol(entry_point_name.c_str()) == nullptr)
+                {
+                    RENDERER_LOG_DEBUG("shared library %s is not an appleseed %s plugin because it does not export a %s() function.",
+                        plugin_path.c_str(), entity_type_name.c_str(), entry_point_name.c_str());
                     continue;
+                }
             }
 
             // Load the plugin into the cache and retrieve its entry point.

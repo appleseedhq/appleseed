@@ -2034,8 +2034,8 @@ namespace
         {
             ParametrizedElementHandler::end_element();
 
-            const AssemblyFactoryRegistrar factories;
-            const IAssemblyFactory* factory = factories.lookup(m_model.c_str());
+            const IAssemblyFactory* factory =
+                m_context.get_project().get_factory_registrar<Assembly>().lookup(m_model.c_str());
 
             if (factory)
             {

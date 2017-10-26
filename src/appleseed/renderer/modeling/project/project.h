@@ -54,6 +54,8 @@
 #include "renderer/modeling/object/objectfactoryregistrar.h"
 #include "renderer/modeling/object/objecttraits.h"
 #include "renderer/modeling/project/configurationcontainer.h"
+#include "renderer/modeling/scene/assemblyfactoryregistrar.h"
+#include "renderer/modeling/scene/assemblytraits.h"
 #include "renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.h"
 #include "renderer/modeling/surfaceshader/surfaceshadertraits.h"
 #include "renderer/modeling/texture/texturefactoryregistrar.h"
@@ -74,6 +76,7 @@
 
 // Forward declarations.
 namespace foundation    { class SearchPaths; }
+namespace renderer      { class Assembly; }
 namespace renderer      { class BSDF; }
 namespace renderer      { class BSSRDF; }
 namespace renderer      { class Camera; }
@@ -177,6 +180,7 @@ class APPLESEED_DLLSYMBOL Project
     Impl* impl;
 
     AOVFactoryRegistrar                 m_aov_factory_registrar;
+    AssemblyFactoryRegistrar            m_assembly_factory_registrar;
     BSDFFactoryRegistrar                m_bsdf_factory_registrar;
     BSSRDFFactoryRegistrar              m_bssrdf_factory_registrar;
     CameraFactoryRegistrar              m_camera_factory_registrar;
@@ -221,6 +225,12 @@ template <>
 inline const EntityTraits<AOV>::FactoryRegistrarType& Project::get_factory_registrar<AOV>() const
 {
     return m_aov_factory_registrar;
+}
+
+template <>
+inline const EntityTraits<Assembly>::FactoryRegistrarType& Project::get_factory_registrar<Assembly>() const
+{
+    return m_assembly_factory_registrar;
 }
 
 template <>

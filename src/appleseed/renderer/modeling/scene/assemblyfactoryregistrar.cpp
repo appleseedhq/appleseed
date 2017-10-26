@@ -32,8 +32,8 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/scene/archiveassembly.h"
 #include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/assemblytraits.h"
 #include "renderer/modeling/scene/iassemblyfactory.h"
-#include "renderer/modeling/scene/pluginassembly.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -57,12 +57,10 @@ struct AssemblyFactoryRegistrar::Impl
     Registrar<IAssemblyFactory> m_registrar;
 };
 
-AssemblyFactoryRegistrar::AssemblyFactoryRegistrar()
+AssemblyFactoryRegistrar::AssemblyFactoryRegistrar(const SearchPaths& search_paths)
   : impl(new Impl())
 {
-    register_factory(auto_release_ptr<FactoryType>(new ArchiveAssemblyFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new AssemblyFactory()));
-    register_factory(auto_release_ptr<FactoryType>(new PluginAssemblyFactory()));
+    reinitialize(search_paths);
 }
 
 AssemblyFactoryRegistrar::~AssemblyFactoryRegistrar()
@@ -70,10 +68,24 @@ AssemblyFactoryRegistrar::~AssemblyFactoryRegistrar()
     delete impl;
 }
 
-void AssemblyFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
+void AssemblyFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 {
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, move(factory));
+    // The registrar must be cleared before the plugins are unloaded.
+    impl->m_registrar.clear();
+    unload_all_plugins();
+
+    // Register built-in factories.
+    register_factory(auto_release_ptr<FactoryType>(new ArchiveAssemblyFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new AssemblyFactory()));
+
+    // Register factories defined in plugins.
+    register_factories_from_plugins<Assembly>(
+        search_paths,
+        [this](void* plugin_entry_point)
+        {
+            auto create_fn = reinterpret_cast<IAssemblyFactory* (*)()>(plugin_entry_point);
+            register_factory(foundation::auto_release_ptr<IAssemblyFactory>(create_fn()));
+        });
 }
 
 AssemblyFactoryArray AssemblyFactoryRegistrar::get_factories() const
@@ -90,8 +102,13 @@ const AssemblyFactoryRegistrar::FactoryType*
 AssemblyFactoryRegistrar::lookup(const char* name) const
 {
     assert(name);
-
     return impl->m_registrar.lookup(name);
+}
+
+void AssemblyFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
+{
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, move(factory));
 }
 
 }   // namespace renderer
