@@ -59,15 +59,17 @@ namespace
     // New assembly model.
     //
 
+    const char* Model = "sphereflake_assembly";
+
     class SphereFlakeAssembly
-      : public asr::PluginAssembly
+      : public asr::ProceduralAssembly
     {
       public:
         // Constructor.
         SphereFlakeAssembly(
             const char*             name,
             const asr::ParamArray&  params)
-          : asr::PluginAssembly(name, params)
+          : asr::ProceduralAssembly(name, params)
         {
         }
 
@@ -75,6 +77,12 @@ namespace
         void release() override
         {
             delete this;
+        }
+
+        // Return a string identifying the model of this entity.
+        const char* get_model() const override
+        {
+            return Model;
         }
 
         // Expand the contents of the assembly.
@@ -154,13 +162,19 @@ namespace
     //
 
     class SphereFlakeAssemblyFactory
-      : public asr::PluginAssemblyFactory
+      : public asr::AssemblyFactory
     {
       public:
         // Delete this instance.
         void release() override
         {
             delete this;
+        }
+
+        // Return a string identifying this assembly model.
+        const char* get_model() const override
+        {
+            return Model;
         }
 
         // Create a new assembly.
@@ -181,7 +195,7 @@ namespace
 
 extern "C"
 {
-    APPLESEED_DLL_EXPORT asr::IAssemblyFactory* create_assembly_factory()
+    APPLESEED_DLL_EXPORT asr::IAssemblyFactory* appleseed_create_assembly_factory()
     {
         return new SphereFlakeAssemblyFactory();
     }

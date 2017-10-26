@@ -57,13 +57,11 @@
                 <parameter name="displacement_method" value="bump" />
                 <parameter name="normal_map_up" value="z" />
             </material>
-            <assembly name="sphereflake_assembly" model="plugin_assembly">
+            <assembly name="sphereflake_assembly" model="sphereflake_assembly">
                 <parameter name="plugin_name" value="sphereflake" />
-                <parameters name="parameters">
-                    <parameter name="material" value="mirror_material" />
-                    <parameter name="resolution_u" value="32" />
-                    <parameter name="resolution_v" value="32" />
-                </parameters>
+                <parameter name="material" value="mirror_material" />
+                <parameter name="resolution_u" value="32" />
+                <parameter name="resolution_v" value="32" />
             </assembly>
             <assembly_instance name="sphereflake_assembly_instance" assembly="sphereflake_assembly">
             </assembly_instance>
