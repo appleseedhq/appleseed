@@ -114,11 +114,20 @@ inline void Node<T>::make_interior()
         m_info &= 0xFFFFFFFCUL;
 }
 
-template <typename T>
-inline void Node<T>::make_leaf()
-{
-    m_info |= 0x00000003UL;
-}
+#if __GNUC__ >= 7
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
+    template <typename T>
+    inline void Node<T>::make_leaf()
+    {
+        m_info |= 0x00000003UL;
+    }
+
+#if __GNUC__ >= 7
+#pragma GCC diagnostic pop
+#endif
 
 template <typename T>
 inline bool Node<T>::is_interior() const
