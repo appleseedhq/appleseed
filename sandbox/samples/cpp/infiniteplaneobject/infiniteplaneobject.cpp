@@ -62,14 +62,14 @@ namespace
     // New object model.
     //
 
-    const char* Model = "sphere_object";
+    const char* Model = "infinite_plane_object";
 
-    class SphereObject
+    class InfinitePlaneObject
       : public asr::ProceduralObject
     {
       public:
         // Constructor.
-        SphereObject(
+        InfinitePlaneObject(
             const char*                 name,
             const asr::ParamArray&      params)
           : asr::ProceduralObject(name, params)
@@ -133,43 +133,28 @@ namespace
             const asr::ShadingRay&  ray,
             IntersectionResult&     result) const override
         {
-            // The sphere is assumed to be centered at the origin.
+            // The plane is assumed to be the X-Z plane.
 
             const double Epsilon = 1.0e-6;
 
-            const double a = asf::dot(ray.m_org, ray.m_dir);
-            const double b = asf::square(a) - dot(ray.m_org, ray.m_org) + asf::square(m_radius);
-
-            if (b < 0.0)
+            if (ray.m_dir.y == 0.0)
             {
                 result.m_hit = false;
                 return;
             }
 
-            const double c = std::sqrt(b);
-
-            double t = -a - c;
+            const double t = -ray.m_org.y / ray.m_dir.y;
             if (t < std::max(ray.m_tmin, Epsilon) || t >= ray.m_tmax)
             {
-                t = -a + c;
-                if (t < std::max(ray.m_tmin, Epsilon) || t >= ray.m_tmax)
-                {
-                    result.m_hit = false;
-                    return;
-                }
+                result.m_hit = false;
+                return;
             }
 
             result.m_hit = true;
             result.m_distance = t;
-
-            const asf::Vector3d n = asf::normalize(ray.point_at(t));
-            result.m_geometric_normal = n;
-            result.m_shading_normal = n;
-
-            const asf::Vector3f p(ray.point_at(t) * m_rcp_radius);
-            result.m_uv[0] = std::acos(p.y) * asf::RcpPi<float>();
-            result.m_uv[1] = std::atan2(-p.z, p.x) * asf::RcpTwoPi<float>();
-
+            result.m_geometric_normal = asf::Vector3d(0.0, 1.0, 0.0);
+            result.m_shading_normal = asf::Vector3d(0.0, 1.0, 0.0);
+            result.m_uv = asf::Vector2f(0.0f);
             result.m_material_slot = 0;
         }
 
@@ -178,27 +163,18 @@ namespace
         bool intersect(
             const asr::ShadingRay&  ray) const override
         {
-            // The sphere is assumed to be centered at the origin.
+            // The plane is assumed to be the X-Z plane.
 
             const double Epsilon = 1.0e-6;
 
-            const double a = asf::dot(ray.m_org, ray.m_dir);
-            const double b = asf::square(a) - dot(ray.m_org, ray.m_org) + asf::square(m_radius);
-
-            if (b < 0.0)
+            if (ray.m_dir.y == 0.0)
                 return false;
 
-            const double c = std::sqrt(b);
+            const double t = -ray.m_org.y / ray.m_dir.y;
+            if (t < std::max(ray.m_tmin, Epsilon) || t >= ray.m_tmax)
+                return false;
 
-            const double t1 = -a - c;
-            if (t1 >= std::max(ray.m_tmin, Epsilon) && t1 < ray.m_tmax)
-                return true;
-
-            const double t2 = -a + c;
-            if (t2 >= std::max(ray.m_tmin, Epsilon) && t2 < ray.m_tmax)
-                return true;
-
-            return false;
+            return true;
         }
 
       private:
@@ -218,7 +194,7 @@ namespace
     // Factory for the new object model.
     //
 
-    class SphereObjectFactory
+    class InfinitePlaneObjectFactory
       : public asr::IObjectFactory
     {
       public:
@@ -240,30 +216,13 @@ namespace
             return
                 asf::Dictionary()
                     .insert("name", Model)
-                    .insert("label", "Sphere Object");
+                    .insert("label", "Infinite Plane Object");
         }
 
         // Return metadata for the inputs of this object model.
         asf::DictionaryArray get_input_metadata() const override
         {
             asf::DictionaryArray metadata;
-
-            metadata.push_back(
-                asf::Dictionary()
-                    .insert("name", "radius")
-                    .insert("label", "Radius")
-                    .insert("type", "numeric")
-                    .insert("min",
-                        asf::Dictionary()
-                            .insert("value", "0.0")
-                            .insert("type", "hard"))
-                    .insert("max",
-                        asf::Dictionary()
-                            .insert("value", "10.0")
-                            .insert("type", "soft"))
-                    .insert("use", "optional")
-                    .insert("default", "1.0"));
-
             return metadata;
         }
 
@@ -272,7 +231,7 @@ namespace
             const char*                 name,
             const asr::ParamArray&      params) const override
         {
-            return asf::auto_release_ptr<asr::Object>(new SphereObject(name, params));
+            return asf::auto_release_ptr<asr::Object>(new InfinitePlaneObject(name, params));
         }
 
         // Create objects, potentially from external assets.
@@ -298,6 +257,6 @@ extern "C"
 {
     APPLESEED_DLL_EXPORT asr::IObjectFactory* appleseed_create_object_factory()
     {
-        return new SphereObjectFactory();
+        return new InfinitePlaneObjectFactory();
     }
 }

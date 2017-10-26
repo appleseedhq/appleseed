@@ -180,6 +180,8 @@ void ShadingPoint::fetch_source_geometry() const
       case PrimitiveCurve3:
         fetch_curve_source_geometry();
         break;
+
+      assert_otherwise;
     }
 }
 
@@ -415,6 +417,10 @@ void ShadingPoint::refine_and_offset() const
         }
         break;
 
+      case PrimitiveProceduralSurface:
+        m_front_point = m_back_point = local_ray.m_org;
+        break;
+
       case PrimitiveCurve1:
       case PrimitiveCurve3:
         {
@@ -429,9 +435,7 @@ void ShadingPoint::refine_and_offset() const
         }
         break;
 
-      default:
-        m_front_point = m_back_point = local_ray.m_org;
-        break;
+      assert_otherwise;
     }
 
     // The refined intersection points are now available.
@@ -490,94 +494,113 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
 {
     cache_source_geometry();
 
-    if (m_primitive_type == PrimitiveTriangle)
+    switch (m_primitive_type)
     {
-        //
-        // Reference:
-        //
-        //   Physically Based Rendering, first edition, pp. 128-129
-        //
-
-        const Vector3d& n = get_original_shading_normal();
-
-        const double du0 = static_cast<double>(m_v0_uv[0] - m_v2_uv[0]);
-        const double dv0 = static_cast<double>(m_v0_uv[1] - m_v2_uv[1]);
-        const double du1 = static_cast<double>(m_v1_uv[0] - m_v2_uv[0]);
-        const double dv1 = static_cast<double>(m_v1_uv[1] - m_v2_uv[1]);
-        const double det = du0 * dv1 - dv0 * du1;
-
-        if (det != 0.0)
+      case PrimitiveTriangle:
         {
-            const Vector3d& v2 = get_vertex(2);
-            const Vector3d dp0 = get_vertex(0) - v2;
-            const Vector3d dp1 = get_vertex(1) - v2;
-
-            const double rcp_det = 1.0 / det;
-
-            m_dpdu = (dv1 * dp0 - dv0 * dp1) * rcp_det;
-            m_dpdv = (du0 * dp1 - du1 * dp0) * rcp_det;
-
             //
-            // Substract the component of dPdu (resp. dPdv) that is not orthogonal to the shading normal.
-            // Assuming that the geometric and shading normals don't differ excessively, this leads to a
-            // very negligible shortening of dPdu (resp. dPdv).
+            // Reference:
             //
-            // A length-preserving but more costly approach is as follow:
-            //
-            //   m_dpdu = normalize(cross(n, cross(m_dpdu, n))) * norm(m_dpdu);
-            //   m_dpdv = normalize(cross(n, cross(m_dpdv, n))) * norm(m_dpdv);
+            //   Physically Based Rendering, first edition, pp. 128-129
             //
 
-            m_dpdu -= dot(m_dpdu, n) * n;
-            m_dpdv -= dot(m_dpdv, n) * n;
+            const Vector3d& n = get_original_shading_normal();
 
-            if (m_members & HasTriangleVertexNormals)
+            const double du0 = static_cast<double>(m_v0_uv[0] - m_v2_uv[0]);
+            const double dv0 = static_cast<double>(m_v0_uv[1] - m_v2_uv[1]);
+            const double du1 = static_cast<double>(m_v1_uv[0] - m_v2_uv[0]);
+            const double dv1 = static_cast<double>(m_v1_uv[1] - m_v2_uv[1]);
+            const double det = du0 * dv1 - dv0 * du1;
+
+            if (det != 0.0)
             {
-                const Vector3d dn0(m_n0 - m_n2);
-                const Vector3d dn1(m_n1 - m_n2);
+                const Vector3d& v2 = get_vertex(2);
+                const Vector3d dp0 = get_vertex(0) - v2;
+                const Vector3d dp1 = get_vertex(1) - v2;
 
-                m_dndu = (dv1 * dn0 - dv0 * dn1) * rcp_det;
-                m_dndv = (du0 * dn1 - du1 * dn0) * rcp_det;
+                const double rcp_det = 1.0 / det;
 
-                // Transform the normal derivatives to world space.
-                const Transformd& obj_instance_transform = m_object_instance->get_transform();
-                m_dndu =
-                    m_assembly_instance_transform.normal_to_parent(
-                        obj_instance_transform.normal_to_parent(m_dndu));
-                m_dndv =
-                    m_assembly_instance_transform.normal_to_parent(
-                        obj_instance_transform.normal_to_parent(m_dndv));
+                m_dpdu = (dv1 * dp0 - dv0 * dp1) * rcp_det;
+                m_dpdv = (du0 * dp1 - du1 * dp0) * rcp_det;
+
+                //
+                // Substract the component of dPdu (resp. dPdv) that is not orthogonal to the shading normal.
+                // Assuming that the geometric and shading normals don't differ excessively, this leads to a
+                // very negligible shortening of dPdu (resp. dPdv).
+                //
+                // A length-preserving but more costly approach is as follow:
+                //
+                //   m_dpdu = normalize(cross(n, cross(m_dpdu, n))) * norm(m_dpdu);
+                //   m_dpdv = normalize(cross(n, cross(m_dpdv, n))) * norm(m_dpdv);
+                //
+
+                m_dpdu -= dot(m_dpdu, n) * n;
+                m_dpdv -= dot(m_dpdv, n) * n;
+
+                if (m_members & HasTriangleVertexNormals)
+                {
+                    const Vector3d dn0(m_n0 - m_n2);
+                    const Vector3d dn1(m_n1 - m_n2);
+
+                    m_dndu = (dv1 * dn0 - dv0 * dn1) * rcp_det;
+                    m_dndv = (du0 * dn1 - du1 * dn0) * rcp_det;
+
+                    // Transform the normal derivatives to world space.
+                    const Transformd& obj_instance_transform = m_object_instance->get_transform();
+                    m_dndu =
+                        m_assembly_instance_transform.normal_to_parent(
+                            obj_instance_transform.normal_to_parent(m_dndu));
+                    m_dndv =
+                        m_assembly_instance_transform.normal_to_parent(
+                            obj_instance_transform.normal_to_parent(m_dndv));
+                }
+                else
+                {
+                    m_dndu = m_dndv = Vector3d(0.0);
+                }
             }
             else
             {
+                const Basis3d basis(n);
+                m_dpdu = basis.get_tangent_u();
+                m_dpdv = basis.get_tangent_v();
                 m_dndu = m_dndv = Vector3d(0.0);
             }
         }
-        else
+        break;
+
+      case PrimitiveProceduralSurface:
         {
-            const Basis3d basis(n);
+            // todo: fix.
+            const Basis3d basis(m_original_shading_normal);
             m_dpdu = basis.get_tangent_u();
             m_dpdv = basis.get_tangent_v();
             m_dndu = m_dndv = Vector3d(0.0);
         }
-    }
-    else
-    {
-        assert(is_curve_primitive());
+        break;
 
-        const GScalar v = m_bary[1];
+      case PrimitiveCurve1:
+      case PrimitiveCurve3:
+        {
+            assert(is_curve_primitive());
 
-        const CurveObject* curves = static_cast<const CurveObject*>(m_object);
-        const GVector3 tangent =
-            m_primitive_type == PrimitiveCurve1
-                ? curves->get_curve1(m_primitive_index).evaluate_tangent(v)
-                : curves->get_curve3(m_primitive_index).evaluate_tangent(v);
+            const GScalar v = m_bary[1];
 
-        const Vector3d& sn = get_original_shading_normal();
+            const CurveObject* curves = static_cast<const CurveObject*>(m_object);
+            const GVector3 tangent =
+                m_primitive_type == PrimitiveCurve1
+                    ? curves->get_curve1(m_primitive_index).evaluate_tangent(v)
+                    : curves->get_curve3(m_primitive_index).evaluate_tangent(v);
 
-        m_dpdu = normalize(Vector3d(tangent));
-        m_dpdv = normalize(cross(sn, m_dpdu));
-        m_dndu = m_dndv = Vector3d(0.0);
+            const Vector3d& sn = get_original_shading_normal();
+
+            m_dpdu = normalize(Vector3d(tangent));
+            m_dpdv = normalize(cross(sn, m_dpdu));
+            m_dndu = m_dndv = Vector3d(0.0);
+        }
+        break;
+
+      assert_otherwise;
     }
 }
 
@@ -673,7 +696,38 @@ void ShadingPoint::compute_normals() const
       case PrimitiveCurve3:
         compute_curve_normals();
         break;
+
+      assert_otherwise;
     }
+
+    //
+    // Determine which side of the geometric surface we hit, and flip the normals.
+    //
+    // In order to shade front and back sides indifferently, we need the geometric
+    // normal to be facing the incoming ray and the shading normals (original and
+    // modified) to be in the same hemisphere as the geometric normal.
+    //
+
+    // If we have per-vertex normals, the shading normal decides which side is front.
+    // Since we must compute which side we hit by checking the geometric normal,
+    // place the geometric normal in the same hemisphere as the shading normal.
+    if ((m_members & HasTriangleVertexNormals) &&
+        dot(m_geometric_normal, m_original_shading_normal) < 0.0)
+        m_geometric_normal = -m_geometric_normal;
+
+    // Store which side of the geometric surface we hit.
+    const bool back = dot(m_ray.m_dir, m_geometric_normal) > 0.0;
+    m_side = back ^ m_object_instance->flip_normals()
+        ? ObjectInstance::BackSide
+        : ObjectInstance::FrontSide;
+
+    // Make the geometric normal face the direction of the incoming ray.
+    if (back)
+        m_geometric_normal = -m_geometric_normal;
+
+    // Place the unperturbed shading normal in the same hemisphere as the geometric normal.
+    if (dot(m_original_shading_normal, m_geometric_normal) < 0.0)
+        m_original_shading_normal = -m_original_shading_normal;
 }
 
 void ShadingPoint::compute_triangle_normals() const
@@ -730,35 +784,6 @@ void ShadingPoint::compute_triangle_normals() const
         // Use the geometric normal if per-vertex normals are absent.
         m_original_shading_normal = m_geometric_normal;
     }
-
-    //
-    // Determine which side of the geometric surface we hit, and flip the normals.
-    //
-    // In order to shade front and back sides indifferently, we need the geometric
-    // normal to be facing the incoming ray and the shading normals (original and
-    // modified) to be in the same hemisphere as the geometric normal.
-    //
-
-    // If we have per-vertex normals, the shading normal decides which side is front.
-    // Since we must compute which side we hit by checking the geometric normal,
-    // place the geometric normal in the same hemisphere as the shading normal.
-    if ((m_members & HasTriangleVertexNormals) &&
-        dot(m_geometric_normal, m_original_shading_normal) < 0.0)
-        m_geometric_normal = -m_geometric_normal;
-
-    // Store which side of the geometric surface we hit.
-    const bool back = dot(m_ray.m_dir, m_geometric_normal) > 0.0;
-    m_side = back ^ m_object_instance->flip_normals()
-        ? ObjectInstance::BackSide
-        : ObjectInstance::FrontSide;
-
-    // Make the geometric normal face the direction of the incoming ray.
-    if (back)
-        m_geometric_normal = -m_geometric_normal;
-
-    // Place the unperturbed shading normal in the same hemisphere as the geometric normal.
-    if (dot(m_original_shading_normal, m_geometric_normal) < 0.0)
-        m_original_shading_normal = -m_original_shading_normal;
 }
 
 void ShadingPoint::compute_curve_normals() const
@@ -766,10 +791,6 @@ void ShadingPoint::compute_curve_normals() const
     // We assume flat ribbons facing incoming rays.
 
     m_geometric_normal = m_original_shading_normal = -m_ray.m_dir;
-
-    m_side = m_object_instance->flip_normals()
-        ? ObjectInstance::BackSide
-        : ObjectInstance::FrontSide;
 }
 
 void ShadingPoint::compute_shading_basis() const
@@ -944,8 +965,10 @@ void ShadingPoint::compute_alpha() const
 
       case PrimitiveCurve1:
       case PrimitiveCurve3:
-        // todo: interpolate per vertex alpha for curves here...
+        // todo: interpolate per vertex alpha for curves here.
         break;
+
+      assert_otherwise;
     }
 }
 
