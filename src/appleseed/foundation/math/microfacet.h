@@ -201,6 +201,10 @@ class BeckmannMDF
         const float         alpha_y,
         const float         gamma) const override;
 
+    Vector3f sample(
+        const Vector2f&     s,
+        const float         alpha) const;
+
     float pdf(
         const Vector3f&     v,
         const Vector3f&     h,
@@ -272,6 +276,10 @@ class GGXMDF
         const float         alpha_x,
         const float         alpha_y,
         const float         gamma) const override;
+
+    Vector3f sample(
+        const Vector2f&     s,
+        const float         alpha) const;
 
     float pdf(
         const Vector3f&     v,

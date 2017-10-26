@@ -62,10 +62,13 @@ APPLESEED_DECLARE_INPUT_VALUES(GlossyBRDFInputValues)
     float       m_highlight_falloff;
     float       m_anisotropy;
     float       m_ior;
+    float       m_fresnel_weight;
+    float       m_energy_compensation;
 
     struct Precomputed
     {
         float   m_outside_ior;
+        float   m_fresnel_average;
     };
 
     Precomputed m_precomputed;

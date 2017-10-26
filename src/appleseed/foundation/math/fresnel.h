@@ -210,6 +210,9 @@ void artist_friendly_fresnel_reflectance_conductor(
 //   Diffuse Fresnel Reflectance
 //   http://photorealizer.blogspot.fr/2012/05/diffuse-fresnel-reflectance.html
 //
+//   Revisiting Physically Based Shading at Imageworks
+//   http://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_slides.pdf
+//
 
 // Compute 2 * C1(eta) where C1(eta) is the first moment of the Fresnel equation.
 template <typename T>
@@ -222,6 +225,18 @@ T fresnel_second_moment_x3(const T eta);
 // Compute the internal diffuse reflectance of a dielectric.
 template <typename T>
 T fresnel_internal_diffuse_reflectance(const T eta);
+
+// Compute the average Fresnel reflectance for a dielectric for unpolarized light.
+template <typename T>
+T average_fresnel_reflectance_dielectric(const T eta);
+
+// Compute the average Fresnel reflectance for a conductor for unpolarized light.
+// This approximation assumes an air - conductor interface.
+template <typename SpectrumType>
+void average_artist_friendly_fresnel_reflectance_conductor(
+    const SpectrumType&     normal_reflectance,
+    const SpectrumType&     edge_tint,
+    SpectrumType&           reflectance);
 
 
 //
@@ -623,6 +638,44 @@ inline T fresnel_internal_diffuse_reflectance(const T eta)
         eta < T(1.0)
             ? T(-0.4399) + T(0.7099) * rcp_eta - T(0.3319) * rcp_eta2 + T(0.0636) * rcp_eta * rcp_eta2
             : T(-1.4399) * rcp_eta2 + T(0.7099) * rcp_eta + T(0.6681) + T(0.0636) * eta;
+}
+
+template <typename T>
+T average_fresnel_reflectance_dielectric(const T eta)
+{
+    if (eta >= T(1.0))
+        return (eta - T(1.0)) / (T(4.08567) + T(1.00071) * eta);
+
+    const T eta2 = eta * eta;
+    return T(0.997118) + T(0.1014) * eta - T(0.965241) * eta2 - T(0.130607) * eta * eta2;
+}
+
+template <typename SpectrumType>
+inline void average_artist_friendly_fresnel_reflectance_conductor(
+    const SpectrumType&     normal_reflectance,
+    const SpectrumType&     edge_tint,
+    SpectrumType&           reflectance)
+{
+    typedef typename impl::GetValueType<SpectrumType>::ValueType ValueType;
+
+    SpectrumType edge_tint2 = edge_tint * edge_tint;
+    SpectrumType edge_tint3 = edge_tint * edge_tint2;
+
+    reflectance  = SpectrumType(ValueType(0.087237));
+    reflectance += edge_tint  * ValueType(0.0230685);
+    reflectance -= edge_tint2 * ValueType(0.0864902);
+    reflectance += edge_tint3 * ValueType(0.0774594);
+
+    SpectrumType normal_reflectance2 = normal_reflectance * normal_reflectance;
+    SpectrumType normal_reflectance3 = normal_reflectance * normal_reflectance2;
+
+    reflectance += normal_reflectance  * ValueType(0.782654);
+    reflectance -= normal_reflectance2 * ValueType(0.136432);
+    reflectance += normal_reflectance3 * ValueType(0.278708);
+
+    reflectance += normal_reflectance  * edge_tint  * ValueType(0.1974400);
+    reflectance += normal_reflectance  * edge_tint2 * ValueType(0.0360605);
+    reflectance -= normal_reflectance2 * edge_tint  * ValueType(0.2586000);
 }
 
 }       // namespace foundation

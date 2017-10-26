@@ -62,11 +62,13 @@ APPLESEED_DECLARE_INPUT_VALUES(MetalBRDFInputValues)
     float       m_roughness;
     float       m_highlight_falloff;
     float       m_anisotropy;
+    float       m_energy_compensation;
 
     struct Precomputed
     {
         Spectrum m_n;
         Spectrum m_k;
+        Spectrum m_fresnel_average;
         float    m_outside_ior;
     };
 
