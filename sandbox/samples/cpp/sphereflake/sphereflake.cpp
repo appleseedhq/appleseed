@@ -162,7 +162,7 @@ namespace
     //
 
     class SphereFlakeAssemblyFactory
-      : public asr::AssemblyFactory
+      : public asr::IAssemblyFactory
     {
       public:
         // Delete this instance.
