@@ -320,7 +320,7 @@ auto_release_ptr<Entity> EntityVector::remove(Entity* entity)
     }
 
     // Remove the entity from the vector.
-    impl->m_storage.resize(impl->m_storage.size() - 1);
+    impl->m_storage.pop_back();
     impl->m_id_index.erase(id_it);
     impl->m_name_index.erase(name_it);
 

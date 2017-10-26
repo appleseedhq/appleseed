@@ -111,7 +111,7 @@ size_t get_rendering_thread_count(const ParamArray& params)
         return core_count;
 
     bool conversion_failed = false;
-    size_t thread_count;
+    size_t thread_count = 0; // zero is assigned to suppress -Wunitialized
 
     try
     {
