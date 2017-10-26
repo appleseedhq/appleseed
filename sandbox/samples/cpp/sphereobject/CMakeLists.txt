@@ -37,7 +37,7 @@ project (sphereobject)
 
 set (CMAKE_MODULE_PATH
     ${PROJECT_SOURCE_DIR}/../../../share/cmake/Modules
-    ${PROJECT_SOURCE_DIR}/../../../../src/cmake/Modules
+    ${PROJECT_SOURCE_DIR}/../../../../cmake/modules
 )
 
 
@@ -46,6 +46,18 @@ set (CMAKE_MODULE_PATH
 #--------------------------------------------------------------------------------------------------
 
 option (USE_STATIC_BOOST    "Use static Boost libraries"    ON)
+
+
+#--------------------------------------------------------------------------------------------------
+# Compile flags.
+#--------------------------------------------------------------------------------------------------
+
+if (UNIX)
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
+    # Remove when C++11 support improves.
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
+endif ()
 
 
 #--------------------------------------------------------------------------------------------------
