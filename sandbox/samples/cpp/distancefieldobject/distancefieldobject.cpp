@@ -99,7 +99,7 @@ namespace
         // Compute the local space bounding box of the object over the shutter interval.
         asr::GAABB3 compute_local_bbox() const override
         {
-            return asr::GAABB3(asr::GVector3(-1.0f), asr::GVector3(1.0f));
+            return asr::GAABB3(asr::GVector3(-2.0f), asr::GVector3(2.0f));
         }
 
         // Return the region kit of the object.
@@ -126,7 +126,7 @@ namespace
         {
             double t;
             asf::Vector3d p;
-            result.m_hit = raymarch(ray, 4, t, p);
+            result.m_hit = raymarch(ray, t, p);
 
             if (result.m_hit)
             {
@@ -155,12 +155,120 @@ namespace
         {
             double t;
             asf::Vector3d p;
-            return raymarch(ray, 1, t, p);
+            return raymarch(ray, t, p);
         }
 
       private:
         asr::RegionKit              m_region_kit;
         asf::Lazy<asr::RegionKit>   m_lazy_region_kit;
+
+        //
+        // Signed distance function.
+        //
+        // References:
+        //
+        //   http://iquilezles.org/www/articles/distfunctions/distfunctions.htm
+        //
+        //   http://blog.hvidtfeldts.net/index.php/2011/09/distance-estimated-3d-fractals-v-the-mandelbulb-different-de-approximations/
+        //
+
+        static float compute_distance(asf::Vector3f p)
+        {
+            /*return
+                op_substraction(
+                    prim_cube(p + asf::Vector3f(0.5f, 0.0f, 0.0f), 0.5f),
+                    prim_sphere(p, 0.5f));*/
+
+            return prim_mandelbulb(p);
+        }
+
+        //
+        // Modeling utilities.
+        //
+
+        static asf::Xoroshiro128plus make_rng(const asr::ShadingRay& ray)
+        {
+            return
+                asf::Xoroshiro128plus(
+                    asf::hash_uint64(asf::binary_cast<asf::uint64>(ray.m_org.x)) ^
+                    asf::hash_uint64(asf::binary_cast<asf::uint64>(ray.m_org.y)) ^
+                    asf::hash_uint64(asf::binary_cast<asf::uint64>(ray.m_org.z)),
+                    asf::hash_uint64(asf::binary_cast<asf::uint64>(ray.m_dir.x)) ^
+                    asf::hash_uint64(asf::binary_cast<asf::uint64>(ray.m_dir.y)) ^
+                    asf::hash_uint64(asf::binary_cast<asf::uint64>(ray.m_dir.z)));
+        }
+
+        static float op_union(const float a, const float b)
+        {
+            return std::min(a, b);
+        }
+
+        static float op_substraction(const float a, const float b)
+        {
+            return std::max(a, -b);
+        }
+
+        static float op_intersection(const float a, const float b)
+        {
+            return std::max(a, b);
+        }
+
+        static float prim_sphere(const asf::Vector3f& p, const float radius)
+        {
+            return asf::norm(p) - radius;
+        }
+
+        static float prim_cube(asf::Vector3f p, const float half_size)
+        {
+            p.x = std::max(abs(p.x) - half_size, 0.0f);
+            p.y = std::max(abs(p.y) - half_size, 0.0f);
+            p.z = std::max(abs(p.z) - half_size, 0.0f);
+            return asf::norm(p);
+        }
+
+        static float prim_mandelbulb(const asf::Vector3f& p)
+        {
+            const float Power = 8.0f;
+            const float Bailout = 4.0f;
+            const size_t Iterations = 20;
+
+            asf::Vector3f z = p;
+            float dr = 1.0f;
+            float r = 0.0f;
+
+            for (size_t i = 0; i < Iterations; ++i)
+            {
+                r = asf::norm(z);
+                if (r > Bailout)
+                    break;
+
+                // Convert to polar coordinates.
+                float theta = std::acos(z.z / r);
+                float phi = std::atan2(z.y, z.x);
+                dr = std::pow(r, Power - 1.0f) * Power * dr + 1.0f;
+
+                // Scale and rotate the point.
+                float zr = std::pow(r, Power);
+                theta *= Power;
+                phi *= Power;
+
+                // convert back to cartesian coordinates
+                z = zr * asf::Vector3f(sin(theta)*cos(phi), sin(phi)*sin(theta), cos(theta));
+                z += p;
+            }
+
+            return 0.5f * std::log(r) * r / dr;
+        }
+
+        //
+        // Raymarcher.
+        //
+        // References:
+        //
+        //   http://jamie-wong.com/2016/07/15/ray-marching-signed-distance-functions/
+        //
+        //   http://erleuchtet.org/~cupe/permanent/enhanced_sphere_tracing.pdf
+        //
 
         static float compute_distance(const double x, const double y, const double z)
         {
@@ -172,18 +280,8 @@ namespace
             return compute_distance(asf::Vector3f(p));
         }
 
-        static float compute_distance(asf::Vector3f p)
-        {
-            float d = asf::norm(p);
-
-            d += 0.08f * sin(20.0f * p.x) * sin(20.0f * p.y) * sin(20.0f * p.z);
-
-            return d - 0.5f;
-        }
-
         bool raymarch(
             const asr::ShadingRay&  ray,
-            const size_t            max_refinement_level,
             double&                 t_out,
             asf::Vector3d&          p_out) const
         {
@@ -195,47 +293,23 @@ namespace
             if (!asf::clip(clipped_ray, clipped_ray_info, bbox))
                 return false;
 
-            asf::Xoroshiro128plus rng(
-                asf::hash_uint64(asf::binary_cast<asf::uint64>(ray.m_org.x)) ^
-                asf::hash_uint64(asf::binary_cast<asf::uint64>(ray.m_org.y)) ^
-                asf::hash_uint64(asf::binary_cast<asf::uint64>(ray.m_org.z)),
-                asf::hash_uint64(asf::binary_cast<asf::uint64>(ray.m_dir.x)) ^
-                asf::hash_uint64(asf::binary_cast<asf::uint64>(ray.m_dir.y)) ^
-                asf::hash_uint64(asf::binary_cast<asf::uint64>(ray.m_dir.z)));
-
-            const size_t InitialStepCount = 100;
-
-            size_t level = 1;
-            double step_size = (clipped_ray.m_tmax - clipped_ray.m_tmin) / InitialStepCount;
-            const double Epsilon = step_size;
+            const double Epsilon = 1.0e-3;
 
             auto t = std::max(clipped_ray.m_tmin, Epsilon);
-            const auto outside_sign = compute_distance(ray.point_at(t)) > 0;
 
-            t += asf::rand_double1(rng, 0.0, step_size);
-
-            while (t < clipped_ray.m_tmax)
+            for (size_t i = 0; t < clipped_ray.m_tmax; ++i)
             {
                 const auto p = clipped_ray.point_at(t);
-                const auto sign = compute_distance(p) > 0;
+                const auto d = compute_distance(p);
 
-                if (sign != outside_sign)
+                if (d < 0.0001 || i == 64)
                 {
-                    if (level == max_refinement_level)
-                    {
-                        t_out = t;
-                        p_out = p;
-                        return true;
-                    }
-                    else
-                    {
-                        t -= step_size;
-                        step_size /= 10;
-                        ++level;
-                    }
+                    t_out = t;
+                    p_out = p;
+                    return true;
                 }
 
-                t += step_size;
+                t += d;
             }
 
             return false;
