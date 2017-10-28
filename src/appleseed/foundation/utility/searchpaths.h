@@ -98,10 +98,22 @@ class APPLESEED_DLLSYMBOL SearchPaths
     bool empty() const;
 
     // Return the number of search paths.
-    size_t size() const;
+    size_t get_path_count() const;
 
     // Return the i'th path.
-    const char* operator[](const size_t i) const;
+    const char* get_path(const size_t i) const;
+
+    // Return the number of explicit search paths.
+    size_t get_explicit_path_count() const;
+
+    // Return the i'th explicit path.
+    const char* get_explicit_path(const size_t i) const;
+
+    // Return the number of environment search paths.
+    size_t get_environment_path_count() const;
+
+    // Return the i'th environment path.
+    const char* get_environment_path(const size_t i) const;
 
     // Insert a search path at the end of the collection.
     void push_back(const char* path);

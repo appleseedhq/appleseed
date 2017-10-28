@@ -102,9 +102,9 @@ void EntityFactoryRegistrar::register_factories_from_plugins(
         foundation::format("appleseed_create_{0}_factory", EntityTraits<Entity>::get_entity_type_name());
 
     // Iterate over all search paths.
-    for (size_t i = 0, e = search_paths.size(); i < e; ++i)
+    for (size_t i = 0, e = search_paths.get_path_count(); i < e; ++i)
     {
-        bf::path search_path(search_paths[i]);
+        bf::path search_path(search_paths.get_path(i));
 
         // Make the search path absolute if it isn't already.
         if (!search_path.is_absolute() && search_paths.has_root_path())
@@ -131,15 +131,23 @@ void EntityFactoryRegistrar::register_factories_from_plugins(
 
             const std::string plugin_path = i->path().string();
 
-            // Only consider library that define the right magic symbol.
+            // Only consider libraries that can be loaded and define the right magic symbol.
+            try
             {
                 foundation::SharedLibrary library(plugin_path.c_str());
-                if (library.get_symbol(entry_point_name.c_str()) == nullptr)
-                {
-                    RENDERER_LOG_DEBUG("shared library %s is not an appleseed %s plugin because it does not export a %s() function.",
-                        plugin_path.c_str(), entity_type_name.c_str(), entry_point_name.c_str());
-                    continue;
-                }
+                library.get_symbol(entry_point_name.c_str(), false);
+            }
+            catch (const foundation::ExceptionCannotLoadSharedLib& e)
+            {
+                RENDERER_LOG_DEBUG("could not open shared library %s, error = %s.",
+                    plugin_path.c_str(), e.what());
+                continue;
+            }
+            catch (const foundation::ExceptionSharedLibCannotGetSymbol&)
+            {
+                RENDERER_LOG_DEBUG("shared library %s is not an appleseed %s plugin because it does not export a %s() function.",
+                    plugin_path.c_str(), entity_type_name.c_str(), entry_point_name.c_str());
+                continue;
             }
 
             // Load the plugin into the cache and retrieve its entry point.

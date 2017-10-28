@@ -297,10 +297,11 @@ namespace
         const QFileInfo file_info(filename);
         assert(file_info.isAbsolute());
 
-        for (size_t i = 0; i < s.size(); ++i)
+        for (size_t i = 0; i < s.get_explicit_path_count(); ++i)
         {
             // Iterate in reverse order, to match search paths priorities.
-            QString search_path(QString::fromStdString(s[s.size() - 1 - i]));
+            QString search_path(QString::fromStdString(
+                s.get_explicit_path(s.get_explicit_path_count() - 1 - i)));
             const QFileInfo search_path_info(search_path);
 
             if (search_path_info.isRelative())

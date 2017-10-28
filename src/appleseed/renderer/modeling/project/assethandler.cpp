@@ -123,9 +123,9 @@ namespace
 
     void remove_absolute_search_paths(SearchPaths& search_paths)
     {
-        for (size_t i = 0; i < search_paths.size(); ++i)    // must evaluate size() at each iteration
+        for (size_t i = 0; i < search_paths.get_explicit_path_count(); ++i)    // must evaluate size() at each iteration
         {
-            if (path(search_paths[i]).is_absolute())
+            if (path(search_paths.get_explicit_path(i)).is_absolute())
                 search_paths.remove(i);
         }
     }

@@ -84,8 +84,8 @@ namespace
 
         const SearchPaths& search_paths = project->search_paths();
 
-        for (size_t i = 0; i < search_paths.size(); ++i)
-            paths.append(search_paths[i]);
+        for (size_t i = 0; i < search_paths.get_explicit_path_count(); ++i)
+            paths.append(search_paths.get_explicit_path(i));
 
         return paths;
     }

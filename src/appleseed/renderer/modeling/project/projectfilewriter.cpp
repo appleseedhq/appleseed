@@ -813,8 +813,8 @@ namespace
                 XMLElement element("search_paths", m_file, m_indenter);
                 element.write(XMLElement::HasChildElements);
 
-                for (size_t i = 0; i < search_paths.size(); ++i)
-                    write_search_path(search_paths[i]);
+                for (size_t i = 0; i < search_paths.get_explicit_path_count(); ++i)
+                    write_search_path(search_paths.get_explicit_path(i));
             }
         }
 
