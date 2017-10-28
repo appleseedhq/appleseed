@@ -168,9 +168,9 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
         ASSERT_TRUE(success);
 
         // Check the search paths.
-        EXPECT_EQ(2, m_project->search_paths().size());
-        EXPECT_EQ(string("subdirectory"), m_project->search_paths()[0]);
-        EXPECT_EQ(canonical(m_input_directory / "setup/alternate/subdirectory").string(), m_project->search_paths()[1]);
+        EXPECT_EQ(2, m_project->search_paths().get_explicit_path_count());
+        EXPECT_EQ(string("subdirectory"), m_project->search_paths().get_explicit_path(0));
+        EXPECT_EQ(canonical(m_input_directory / "setup/alternate/subdirectory").string(), m_project->search_paths().get_explicit_path(1));
 
         // Check the asset paths.
         EXPECT_EQ(string("asset1.obj"),                                        get_mesh_object_filename("asset1"));
@@ -213,8 +213,8 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
         ASSERT_TRUE(success);
 
         // Check the search paths.
-        EXPECT_EQ(1, m_project->search_paths().size());
-        EXPECT_EQ(string("subdirectory"), m_project->search_paths()[0]);
+        EXPECT_EQ(1, m_project->search_paths().get_explicit_path_count());
+        EXPECT_EQ(string("subdirectory"), m_project->search_paths().get_explicit_path(0));
 
         // Check the asset paths.
         EXPECT_EQ(string("asset1.obj"),              get_mesh_object_filename("asset1"));
