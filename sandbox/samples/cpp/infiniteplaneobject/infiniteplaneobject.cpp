@@ -37,6 +37,7 @@
 #include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/fp.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -59,7 +60,7 @@ namespace asr = renderer;
 namespace
 {
     //
-    // New object model.
+    // An infinite plane in the X-Z plane.
     //
 
     const char* Model = "infinite_plane_object";
@@ -89,26 +90,15 @@ namespace
             return Model;
         }
 
-        virtual bool on_frame_begin(
-            const asr::Project&         project,
-            const asr::BaseGroup*       parent,
-            asr::OnFrameBeginRecorder&  recorder,
-            asf::IAbortSwitch*          abort_switch) override
-        {
-            if (!asr::ProceduralObject::on_frame_begin(project, parent, recorder, abort_switch))
-                return false;
-
-            m_radius = get_uncached_radius();
-            m_rcp_radius = 1.0 / m_radius;
-
-            return true;
-        }
-
         // Compute the local space bounding box of the object over the shutter interval.
         asr::GAABB3 compute_local_bbox() const override
         {
-            const auto r = static_cast<asr::GScalar>(get_uncached_radius());
-            return asr::GAABB3(asr::GVector3(-r), asr::GVector3(r));
+            const asr::GScalar Eps = 1.0e-4f;
+            const auto Inf = asf::FP<asr::GScalar>::pos_inf();
+            return
+                asr::GAABB3(
+                    asr::GVector3(-Inf, -Eps, -Inf),
+                    asr::GVector3(+Inf, +Eps, +Inf));
         }
 
         // Return the region kit of the object.
@@ -133,8 +123,6 @@ namespace
             const asr::ShadingRay&  ray,
             IntersectionResult&     result) const override
         {
-            // The plane is assumed to be the X-Z plane.
-
             const double Epsilon = 1.0e-6;
 
             if (ray.m_dir.y == 0.0)
@@ -163,8 +151,6 @@ namespace
         bool intersect(
             const asr::ShadingRay&  ray) const override
         {
-            // The plane is assumed to be the X-Z plane.
-
             const double Epsilon = 1.0e-6;
 
             if (ray.m_dir.y == 0.0)
@@ -180,13 +166,6 @@ namespace
       private:
         asr::RegionKit              m_region_kit;
         asf::Lazy<asr::RegionKit>   m_lazy_region_kit;
-        double                      m_radius;
-        double                      m_rcp_radius;
-
-        double get_uncached_radius() const
-        {
-            return m_params.get_optional<double>("radius");
-        }
     };
 
 

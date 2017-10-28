@@ -59,7 +59,9 @@ namespace asr = renderer;
 namespace
 {
     //
-    // New object model.
+    // A sphere object.
+    //
+    // The sphere is assumed to be centered at the origin.
     //
 
     const char* Model = "sphere_object";
@@ -89,6 +91,8 @@ namespace
             return Model;
         }
 
+        // This method is called once before rendering each frame.
+        // Returns true on success, false otherwise.
         virtual bool on_frame_begin(
             const asr::Project&         project,
             const asr::BaseGroup*       parent,
@@ -133,8 +137,6 @@ namespace
             const asr::ShadingRay&  ray,
             IntersectionResult&     result) const override
         {
-            // The sphere is assumed to be centered at the origin.
-
             const double Epsilon = 1.0e-6;
 
             const double a = asf::dot(ray.m_org, ray.m_dir);
@@ -178,8 +180,6 @@ namespace
         bool intersect(
             const asr::ShadingRay&  ray) const override
         {
-            // The sphere is assumed to be centered at the origin.
-
             const double Epsilon = 1.0e-6;
 
             const double a = asf::dot(ray.m_org, ray.m_dir);

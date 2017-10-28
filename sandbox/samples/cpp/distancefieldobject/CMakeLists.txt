@@ -33,7 +33,7 @@
 
 cmake_minimum_required (VERSION 2.8 FATAL_ERROR)
 
-project (sphereflake)
+project (distancefieldobject)
 
 set (CMAKE_MODULE_PATH
     ${PROJECT_SOURCE_DIR}/../../../share/cmake/Modules
@@ -114,10 +114,9 @@ endif ()
 # Product.
 #--------------------------------------------------------------------------------------------------
 
-add_library (sphereflake SHARED sphereflake.cpp)
-set_target_properties (sphereflake PROPERTIES PREFIX "")
+add_library (distancefieldobject SHARED distancefieldobject.cpp)
+set_target_properties (distancefieldobject PROPERTIES PREFIX "")
 
-target_link_libraries (sphereflake
+target_link_libraries (distancefieldobject
     ${APPLESEED_LIBRARIES}
-    ${Boost_LIBRARIES}
 )

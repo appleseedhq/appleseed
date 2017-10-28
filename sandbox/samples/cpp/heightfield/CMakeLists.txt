@@ -38,7 +38,7 @@ project (heightfield)
 
 set (CMAKE_MODULE_PATH
     ${PROJECT_SOURCE_DIR}/../../../share/cmake/Modules
-    ${PROJECT_SOURCE_DIR}/../../../../src/cmake/Modules
+    ${PROJECT_SOURCE_DIR}/../../../../cmake/modules
 )
 
 
@@ -52,6 +52,18 @@ option (USE_EXTERNAL_OSL    "Use external OpenShadingLanguage library"  OFF)
 option (USE_STATIC_BOOST    "Use static Boost libraries"                ON)
 option (USE_STATIC_OIIO     "Use static OpenImageIO libraries"          ON)
 option (USE_STATIC_OSL      "Use static OpenShadingLanguage libraries"  ON)
+
+
+#--------------------------------------------------------------------------------------------------
+# Compile flags.
+#--------------------------------------------------------------------------------------------------
+
+if (UNIX)
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
+    # Remove when C++11 support improves.
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
+endif ()
 
 
 #--------------------------------------------------------------------------------------------------
@@ -87,7 +99,6 @@ link_directories (${Boost_LIBRARY_DIRS})
 find_package (Appleseed)
 find_package (Imath)
 find_package (OpenEXR)
-
 
 if (USE_STATIC_OIIO)
     add_definitions (-DOIIO_STATIC_BUILD)
