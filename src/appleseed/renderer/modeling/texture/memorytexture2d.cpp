@@ -245,4 +245,12 @@ auto_release_ptr<Texture> MemoryTexture2dFactory::create(
     return auto_release_ptr<Texture>(new MemoryTexture2d(name, params));
 }
 
+auto_release_ptr<Texture> MemoryTexture2dFactory::create(
+    const char*             name,
+    const ParamArray&       params,
+    auto_release_ptr<Image> image) const
+{
+    return auto_release_ptr<Texture>(new MemoryTexture2d(name, params, image));
+}
+
 }   // namespace renderer
