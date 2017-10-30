@@ -70,11 +70,6 @@ class APPLESEED_DLLSYMBOL ArchiveAssembly
     void collect_asset_paths(foundation::StringArray& paths) const override;
     void update_asset_paths(const foundation::StringDictionary& mappings) override;
 
-    bool expand_contents(
-        const Project&              project,
-        const Assembly*             parent,
-        foundation::IAbortSwitch*   abort_switch = nullptr) override;
-
   private:
     friend class ArchiveAssemblyFactory;
 
@@ -82,6 +77,12 @@ class APPLESEED_DLLSYMBOL ArchiveAssembly
     ArchiveAssembly(
         const char*                 name,
         const ParamArray&           params);
+
+    // Expand the contents of the assembly.
+    bool do_expand_contents(
+        const Project&              project,
+        const Assembly*             parent,
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
     bool m_archive_opened;
 };
