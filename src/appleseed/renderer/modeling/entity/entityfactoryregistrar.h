@@ -139,7 +139,7 @@ void EntityFactoryRegistrar::register_factories_from_plugins(
             }
             catch (const foundation::ExceptionCannotLoadSharedLib& e)
             {
-                RENDERER_LOG_DEBUG("could not open shared library %s, error = %s.",
+                RENDERER_LOG_DEBUG("could not open shared library %s: %s.",
                     plugin_path.c_str(), e.what());
                 continue;
             }
