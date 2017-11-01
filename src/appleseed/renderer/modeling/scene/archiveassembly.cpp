@@ -93,7 +93,7 @@ void ArchiveAssembly::update_asset_paths(const StringDictionary& mappings)
     m_params.set("filename", mappings.get(m_params.get("filename")));
 }
 
-bool ArchiveAssembly::expand_contents(
+bool ArchiveAssembly::do_expand_contents(
     const Project&      project,
     const Assembly*     parent,
     IAbortSwitch*       abort_switch)

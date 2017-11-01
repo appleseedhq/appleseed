@@ -58,9 +58,8 @@
                 <parameter name="normal_map_up" value="z" />
             </material>
             <assembly name="sphereflake_assembly" model="sphereflake_assembly">
-                <parameter name="material" value="mirror_material" />
-                <parameter name="plugin_name" value="sphereflake" />
                 <parameter name="primitive" value="sphere" />
+                <parameter name="material" value="mirror_material" />
                 <parameter name="resolution_u" value="32" />
                 <parameter name="resolution_v" value="32" />
             </assembly>

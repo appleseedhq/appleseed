@@ -33,9 +33,6 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/scene/assembly.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
@@ -54,11 +51,11 @@ class APPLESEED_DLLSYMBOL ProceduralAssembly
   : public Assembly
 {
   public:
-    // Expand the contents of the assembly.
-    virtual bool expand_contents(
+    // Expand the contents of the assembly the first time it is called.
+    bool expand_contents(
         const Project&              project,
         const Assembly*             parent,
-        foundation::IAbortSwitch*   abort_switch = nullptr) = 0;
+        foundation::IAbortSwitch*   abort_switch = nullptr);
 
   protected:
     // Constructor.
@@ -66,8 +63,17 @@ class APPLESEED_DLLSYMBOL ProceduralAssembly
         const char*                 name,
         const ParamArray&           params);
 
+    // Expand the contents of the assembly.
+    virtual bool do_expand_contents(
+        const Project&              project,
+        const Assembly*             parent,
+        foundation::IAbortSwitch*   abort_switch = nullptr) = 0;
+
     // Swap the contents of this assembly with another assembly.
     void swap_contents(Assembly& assembly);
+
+  private:
+    bool m_expanded;
 };
 
 }       // namespace renderer
