@@ -1,0 +1,13 @@
+# Possible parameters
+
+fps
+frame
+shutter_open (relative to frame)
+shutter_close (relative to frame)
+file_path (/path/to/foo.abc)
+shape_path (/path/to/myShape)
+clash_prefix (str)
+
+## References
+
+https://github.com/BlueBolt/bb_arnoldAlembicProcedural
