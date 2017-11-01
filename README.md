@@ -13,7 +13,7 @@ Over the years appleseed has been used on several projects including [TV documen
 
 appleseed is available as a portable C++ library with C++ and Python APIs, as a set of standalone applications for Windows, Linux and macOS, and as native plugins for content creation applications. [Downloads &rarr;](http://appleseedhq.net/download.html)
 
-[More&hellip;](http://appleseedhq.net/about.html)
+[Read more&hellip;](http://appleseedhq.net/about.html)
 
 ## On the Web
 
