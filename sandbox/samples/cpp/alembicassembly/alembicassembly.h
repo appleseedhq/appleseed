@@ -86,22 +86,23 @@ class AlembicAssembly
         foundation::IAbortSwitch*       abort_switch = nullptr) override;*/
 
     // Expand the contents of the assembly.
-    bool expand_contents(
+    bool do_expand_contents(
         const asr::Project&     project,
         const asr::Assembly*    parent,
         asf::IAbortSwitch*      abort_switch = 0) override;
 
   private:
 
+    // retrieve and store assembly parameters
+    void retrieve_params(const asr::Project& project);
+
     void foo(const asr::Assembly* assembly, Alembic::Abc::IObject o);
 
     static const char* Model;
 
     std::string m_file_path;
-    float m_fps;
-    float m_frame;
-    float m_shutter_open;
-    float m_shutter_close;
+    float m_shutter_open_time;
+    float m_shutter_close_time;
     std::vector<asf::Matrix4d> m_mtx_stack;
     std::vector<asr::TransformSequence> m_xform_seq_stack;
 };

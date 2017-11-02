@@ -64,6 +64,45 @@ namespace asr = renderer;
 namespace
 {
 
+// roll into given matrix stack and return the flatten one
+asf::Matrix4d flatten_xform(std::vector<asf::Matrix4d> mtx_stack)
+{
+    // the matrix we will return
+    auto out_mtx = asf::Matrix4d::identity();
+
+    // mutiply the each matrix of the stack from bottom to top
+    for(auto mtx : mtx_stack)
+    {
+        out_mtx = mtx * out_mtx;
+    }
+
+    return out_mtx;
+}
+
+// roll into given xform sequence stack and return the flatten one
+asr::TransformSequence flatten_xform_seq(const std::vector<asr::TransformSequence> xform_seq_stack)
+{
+
+    auto out_xform_seq = asr::TransformSequence();
+
+    if(xform_seq_stack.size() == 1)
+    {
+        // we don't need to flatten anything
+        out_xform_seq = xform_seq_stack.back();
+    }
+    else
+    {
+        for(auto xform_seq : xform_seq_stack)
+        {
+            out_xform_seq = xform_seq * out_xform_seq;
+        }
+    }
+    out_xform_seq.optimize();
+    out_xform_seq.prepare();
+
+    return out_xform_seq;
+}
+
 
 const char* AlembicAssembly::Model = "alembic_assembly";
 
@@ -72,9 +111,12 @@ AlembicAssembly::AlembicAssembly(
     const char*             name,
     const asr::ParamArray&  params)
   : asr::ProceduralAssembly(name, params)
+{}
+
+void AlembicAssembly::retrieve_params(const asr::Project& project)
 {
     // retrieve assembly parameters
-    //const auto params = get_parameters();
+    const auto params = get_parameters();
 
     // file path
     m_file_path = params.get<std::string>("file_path");
@@ -85,26 +127,21 @@ AlembicAssembly::AlembicAssembly(
         //return false;
     }
 
-    // camera values
-    //const auto& cam = project.get_uncached_active_camera();
-
-    m_fps = params.get<float>("fps");
-    m_frame = 2.0f;//cam->get_shutter_middle_time();
-    m_shutter_open = -0.5f;//cam->get_shutter_open_time();
-    m_shutter_close = 0.5f;//cam->get_shutter_close_time();
+    m_shutter_open_time = 1.2/24.0;//params.get_optional<float>("shutter_open_time", 0.0f);
+    m_shutter_close_time = 2.2/24.0;//params.get_optional<float>("shutter_close_time", 0.0f);
 
     std::cout << "file_path: " << m_file_path << std::endl;
-    std::cout << "fps: " << m_fps << std::endl;
-    std::cout << "frame: " << m_frame << std::endl;
-    std::cout << "shutter_open: " << m_shutter_open << std::endl;
-    std::cout << "shutter_close: " << m_shutter_close << std::endl;
+    std::cout << "shutter_open_time: " << m_shutter_open_time << std::endl;
+    std::cout << "shutter_close_time: " << m_shutter_close_time << std::endl;
 }
 
-bool AlembicAssembly::expand_contents(
+bool AlembicAssembly::do_expand_contents(
     const asr::Project&     project,
     const asr::Assembly*    parent,
     asf::IAbortSwitch*      abort_switch)
 {
+    retrieve_params(project);
+
     /*{
         // Create a new BSDF.
         asr::ParamArray params;
@@ -124,18 +161,21 @@ bool AlembicAssembly::expand_contents(
     std::cout << "Assembly name: " << get_name() << std::endl;
 
     Alembic::AbcCoreFactory::IFactory factory;
-    Alembic::AbcCoreFactory::IFactory::CoreType coreType;
+    Alembic::AbcCoreFactory::IFactory::CoreType core_type;
 
-    //auto archive = factory.getArchive("/home/narann/storage/alembic_octopus.abc", coreType);
-    //auto archive = factory.getArchive("/home/narann/Desktop/abc_axis.abc", coreType);
-    //auto archive = factory.getArchive("/home/narann/storage/room_geo.abc", coreType);
-    auto archive = factory.getArchive(m_file_path, coreType);
+    //auto archive = factory.getArchive("/home/narann/storage/alembic_octopus.abc", core_type);
+    //auto archive = factory.getArchive("/home/narann/Desktop/abc_axis.abc", core_type);
+    //auto archive = factory.getArchive("/home/narann/storage/room_geo.abc", core_type);
+    auto archive = factory.getArchive(m_file_path, core_type);
 
     if (!archive.valid())
     {
         std::cout << "Invalid archive" << std::endl;
         return false;
     }
+
+
+    std::cout << "Current time is: " << (m_shutter_open_time+m_shutter_close_time)*0.5 << std::endl;
 
     std::cout << "Archive name: " << archive.getName() << std::endl;
     std::cout << "Number TimeSampling: " << archive.getNumTimeSamplings() << std::endl;
@@ -218,12 +258,9 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
             }
             else  // more than 1 sample
             {
-                // absolute open/close times
-                const auto t_open = (m_frame + m_shutter_open) / m_fps;
-                const auto t_close = (m_frame + m_shutter_close) / m_fps;;
-
-                const auto open_pair = time_sampling->getFloorIndex(t_open, num_samples);
-                const auto close_pair = time_sampling->getCeilIndex(t_close, num_samples);
+                // get floor and ceil samples to don't miss any
+                const auto open_pair = time_sampling->getFloorIndex(m_shutter_open_time, num_samples);
+                const auto close_pair = time_sampling->getCeilIndex(m_shutter_close_time, num_samples);
 
                 std::cout << "open_pair.first " << open_pair.first << std::endl;
                 std::cout << "close_pair.first " << close_pair.first << std::endl;
@@ -240,29 +277,23 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
 
             asr::TransformSequence xform_seq;
 
+            // put every xform samples found into the TransformSequence
             for (const auto t : sample_set)
             {
-                std::cout << "t: " << t << " - frame: " << t * m_fps << std::endl;
+                std::cout << "t: " << t << " - frame: " << t * 24.0f << std::endl;
 
                 const auto sample_sel = Alembic::Abc::ISampleSelector(t);
 
                 const auto xform_sample = xform_schema.getValue(sample_sel);
                 const auto xform_mtx = xform_sample.getMatrix();
                 const auto mtx = asf::Matrix4d(xform_mtx);
-
-                //mtx_time_map[t] = mtx;
-                auto xform = asf::Transformd::from_local_to_parent(mtx);
+                const auto xform = asf::Transformd::from_local_to_parent(mtx);
 
                 xform_seq.set_transform(t, xform);
             }
 
+            // and put our filled xform sequence to the main xform stack
             m_xform_seq_stack.push_back(xform_seq);
-
-            /*auto sample = Alembic::Abc::ISampleSelector(0.0f);
-            auto xform_sample = xform_schema.getValue(sample);
-            auto xform_mtx = xform_sample.getMatrix();
-            auto mtx = asf::Matrix4d(xform_mtx);
-            m_mtx_stack.push_back(mtx);*/
         }
 
     }
@@ -287,25 +318,13 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
 
         //getVelocities()
 
-        /*for(auto i = 0; i < pos_size; i += 3)
-        {
-            //std::cout << "pos!!!" << (*pos)[i] << std::endl;
-            const asf::Vector3d center(pos[i][0], pos[i][1], pos[i][2]);
-            const double radius = 0.1;
-            output_sphere_instance(center, radius);
-        }*/
-
-        // flatten transforms
-        //auto mtx = flatten_xform(m_mtx_stack);
-
-        //mtx = asf::Matrix4d::make_scaling(asf::Vector3d(50.0f)) * mtx;
-
-
         //auto xform = asf::Transformd::from_local_to_parent(mtx);
 
 
         auto xform = asf::Transformd::from_local_to_parent(asf::Matrix4d::identity());
-        //auto xform_seq = m_xform_seq_stack.pop_back();
+        auto xform_seq = flatten_xform_seq(m_xform_seq_stack);
+
+        std::cout << "xform_seq_stack " << m_xform_seq_stack.size() << std::endl;
 
         // Create a new mesh object.
         auto object = asf::auto_release_ptr<asr::MeshObject>(asr::MeshObjectFactory().create(name.c_str(), asr::ParamArray()));
@@ -603,23 +622,21 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
         std::cout << "n_i: " << n_i << std::endl;
         std::cout << "uv_i: " << uv_i << std::endl;
 
-        //const auto local_bbox = object->compute_local_bbox();
-        //const auto world_bbox = object_instance->get_transform()->to_parent(local_bbox);
-        // Insert the object into the assembly.
-        assembly->objects().insert(asf::auto_release_ptr<asr::Object>(object));
-
-        /*std::cout << "xform " << std::endl;
-        for(auto i = 0; i < 16; i++)
-        {
-            std::cout << mtx[i] << " ";
-        }
-        std::cout << std::endl;*/
-
         auto front_material_mappings = asf::StringDictionary();
                     /*.insert("white_material", "white_material")*/
 
+
+        // Create an instance of the assembly.
+        asf::auto_release_ptr<asr::Assembly> xform_assembly(
+            asr::AssemblyFactory().create(  // TODO: Do I really have to instanciate AssemblyFactory?
+                (name+"_assembly").c_str(),  // assembly instance
+                asr::ParamArray()));
+
+        // Insert the object into the assembly.
+        xform_assembly->objects().insert(asf::auto_release_ptr<asr::Object>(object));
+
         // Create an instance of this object and insert it into the assembly.
-        assembly->object_instances().insert(
+        xform_assembly->object_instances().insert(
             asr::ObjectInstanceFactory::create(
                 (name+"_inst").c_str(), // instance name
                 asr::ParamArray(),
@@ -629,6 +646,17 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
                 //xform_seq,
                 front_material_mappings));
 
+        // Create an instance of the assembly.
+        asf::auto_release_ptr<asr::AssemblyInstance> xform_assembly_inst(
+            asr::AssemblyInstanceFactory::create(
+                (name+"_assembly_inst").c_str(),  // assembly instance
+                asr::ParamArray(),
+                (name+"_assembly").c_str()));
+
+        xform_assembly_inst->transform_sequence() = xform_seq;
+
+        assembly->assemblies().insert(xform_assembly);
+        assembly->assembly_instances().insert(xform_assembly_inst);
     }
 
     // iterate over children
@@ -640,21 +668,6 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
 
     // remove the bottom matrix as we move up
     m_mtx_stack.pop_back();
-}
-
-// roll into given matrix stack and return the flatten one
-asf::Matrix4d flatten_xform(std::vector<asf::Matrix4d> mtx_stack)
-{
-    // the matrix we will return
-    auto out_mtx = asf::Matrix4d::identity();
-
-    // mutiply the each matrix of the stack from bottom to top
-    for(auto mtx : mtx_stack)
-    {
-        out_mtx = mtx * out_mtx;
-    }
-
-    return out_mtx;
 }
 
 

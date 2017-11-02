@@ -8,12 +8,11 @@
     </search_paths>
     <scene>
         <camera name="perspShape" model="pinhole_camera">
-            <parameter name="controller_target" value="15.9933 -18.0798 -0.386349" />
             <parameter name="film_dimensions" value="0.0359999 0.0359999" />
             <parameter name="focal_length" value="0.035" />
             <parameter name="near_z" value="-0.001" />
             <parameter name="shutter_close_time" value="0.0" />
-            <parameter name="shutter_open_time" value="0.0" />
+            <parameter name="shutter_open_time" value="-0.2" />
             <transform time="0">
                 <matrix>
                     0.604105712522011 -0.187216870022344 0.774600627212056 190.895476234216204
@@ -63,8 +62,7 @@
                 <parameter name="normal_map_up" value="z" />
             </material>
             <assembly name="alembic_assembly" model="alembic_assembly">
-                <parameter name="file_path" value="/home/narann/storage/alembic/room_geo.abc" />
-                <!--<parameter name="file_path" value="/home/narann/storage/alembic/001_xform_ogawa.abc" />-->
+                <parameter name="file_path" value="/home/narann/storage/alembic/001_xform_ogawa.abc" />
                 <parameter name="fps" value="24" />
             </assembly>
             <assembly_instance name="alembic_assembly_instance" assembly="alembic_assembly">
