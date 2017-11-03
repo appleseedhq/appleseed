@@ -305,6 +305,7 @@ set (src_max_sources
      src/max/as_max_disney_material.osl
      src/max/as_max_float_texture.osl
      src/max/as_max_normal_map.osl
+     src/max/as_max_srgb_to_linear_rgb.osl
 )
 list (APPEND osl_sources
     ${src_max_sources}
