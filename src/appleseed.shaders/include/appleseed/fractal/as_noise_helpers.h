@@ -243,43 +243,23 @@ string get_noise_type(int type)
 
     if (type == 0)
     {
-        noise_type = "perlin";
+        noise_type = "uperlin";
     }
     else if (type == 1)
     {
-        noise_type = "uperlin";
+        noise_type = "usimplex";
     }
     else if (type == 2)
     {
-        noise_type = "simplex";
+        noise_type = "value";
     }
     else if (type == 3)
     {
-        noise_type = "usimplex";
+        noise_type = "voronoise";
     }
     else if (type == 4)
     {
-        noise_type = "value";
-    }
-    else if (type == 5)
-    {
-        noise_type = "uvalue";
-    }
-    else if (type == 6)
-    {
-        noise_type = "voronoise";
-    }
-    else if (type == 7)
-    {
-        noise_type = "uvoronoise";
-    }
-    else if (type == 8)
-    {
         noise_type = "gabor";
-    }
-    else if (type == 9)
-    {
-        noise_type = "ugabor";
     }
     else
     {

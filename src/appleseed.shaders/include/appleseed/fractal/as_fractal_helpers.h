@@ -451,8 +451,8 @@ float voronoise2d(float x, float y, float jittering, float smoothness)
 color voronoise2d(float x, float y, float jittering, float smoothness)
 {
     float r = (float) voronoise2d(x, y, jittering, smoothness);
-    float g = (float) voronoise2d(x + 0.33, y + 0.33, jittering, smoothness);
-    float b = (float) voronoise2d(x + 0.66, y + 0.66, jittering, smoothness);
+    float g = (float) voronoise2d(x + 12.0, y + 12.0, jittering, smoothness);
+    float b = (float) voronoise2d(x + 24.0, y + 24.0, jittering, smoothness);
 
     return color(r, g, b);
 }
@@ -494,8 +494,8 @@ color voronoise3d(point Pp, float jittering, float smoothness)
 {
     return color(
         (float) voronoise3d(Pp, jittering, smoothness),
-        (float) voronoise3d(Pp + 23.0, jittering, smoothness),
-        (float) voronoise3d(Pp + 42.0, jittering, smoothness));
+        (float) voronoise3d(Pp + 12.0, jittering, smoothness),
+        (float) voronoise3d(Pp + 24.0, jittering, smoothness));
 }
 
 //
@@ -529,8 +529,8 @@ float value_noise2d(float x, float y)
 color value_noise2d(float x, float y)
 {
     float r = (float) value_noise2d(x, y);
-    float g = (float) value_noise2d(x + 0.33, y + 0.33);
-    float b = (float) value_noise2d(x + 0.66, y + 0.66);
+    float g = (float) value_noise2d(x + 12.0, y + 12.0);
+    float b = (float) value_noise2d(x + 24.0, y + 24.0);
 
     return color(r, g, b);
 }
@@ -574,8 +574,8 @@ color value_noise3d(point Pp)
 {
     return color(
         (float) value_noise3d(Pp),
-        (float) value_noise3d(Pp + 23.0),
-        (float) value_noise3d(Pp + 17.0));
+        (float) value_noise3d(Pp + 12.0),
+        (float) value_noise3d(Pp + 24.0));
 }
 
 #endif // !AS_FRACTAL_HELPERS_H
