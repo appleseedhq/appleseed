@@ -444,12 +444,12 @@ color AdobeRGB_OETF(color value)
 
 color DCIP3_EOTF(color XYZ)
 {
-    return 4096 * gamma_CCTF(XYZ / 52.37, 1.0 / DCIP3_GAMMA);
+    return gamma_CCTF(XYZ, 1.0 / DCIP3_GAMMA);
 }
 
 color DCIP3_OETF(color XYZ)
 {
-    return 52.37 * gamma_CCTF(XYZ / 4095, DCIP3_GAMMA);
+    return gamma_CCTF(XYZ, DCIP3_GAMMA);
 }
 
 #endif // !AS_TRANSFER_FUNCTIONS_H
