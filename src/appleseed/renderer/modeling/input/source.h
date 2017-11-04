@@ -41,6 +41,9 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// Standard headers.
+#include <cstddef>
+
 // Forward declarations.
 namespace renderer      { class TextureCache; }
 
@@ -65,6 +68,16 @@ class APPLESEED_DLLSYMBOL Source
 
     // Return true if the source is uniform, false if it is varying.
     bool is_uniform() const;
+
+    struct Hints
+    {
+        // Allow treating this source as a 2D texture map with the following dimensions in pixels.
+        size_t  m_width;
+        size_t  m_height;
+    };
+
+    // Return hints allowing to treat this source as one of another type.
+    virtual Hints get_hints() const = 0;
 
     // Evaluate the source at a given shading point.
     virtual void evaluate(

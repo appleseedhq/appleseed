@@ -62,6 +62,9 @@ class ColorSource
     // Compute a signature unique to this source.
     foundation::uint64 compute_signature() const override;
 
+    // Return hints allowing to treat this source as one of another type.
+    Hints get_hints() const override;
+
     // Evaluate the source.
     void evaluate_uniform(
         float&                      scalar) const override;

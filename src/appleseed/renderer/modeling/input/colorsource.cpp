@@ -79,6 +79,14 @@ uint64 ColorSource::compute_signature() const
     return m_color_entity.compute_signature();
 }
 
+ColorSource::Hints ColorSource::get_hints() const
+{
+    Hints hints;
+    hints.m_width = 1;
+    hints.m_height = 1;
+    return hints;
+}
+
 void ColorSource::initialize_from_spectrum(const ColorEntity& color_entity)
 {
     const ColorValueArray& values = color_entity.get_values();

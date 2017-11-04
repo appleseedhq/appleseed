@@ -33,12 +33,8 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/input/source.h"
-#include "renderer/modeling/input/texturesource.h"
-#include "renderer/modeling/scene/textureinstance.h"
-#include "renderer/modeling/texture/texture.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/canvasproperties.h"
 #include "foundation/math/vector.h"
 
 // Standard headers.
@@ -60,20 +56,10 @@ BumpMappingModifier::BumpMappingModifier(
   , m_amplitude(static_cast<double>(amplitude))
 {
 #ifndef USE_SCREEN_SPACE_UV_DERIVATIVES
-    const TextureSource* texture_map = dynamic_cast<const TextureSource*>(map);
+    const Source::Hints map_hints = map->get_hints();
 
-    if (texture_map != nullptr)
-    {
-        Texture& texture = texture_map->get_texture_instance().get_texture();
-        const CanvasProperties& props = texture.properties();
-
-        m_delta_u = offset / props.m_canvas_width;
-        m_delta_v = offset / props.m_canvas_height;
-    }
-    else
-    {
-        m_delta_u = m_delta_v = offset;
-    }
+    m_delta_u = offset / map_hints.m_width;
+    m_delta_v = offset / map_hints.m_height;
 
     m_rcp_delta_u = 1.0 / static_cast<double>(m_delta_u);
     m_rcp_delta_v = 1.0 / static_cast<double>(m_delta_v);
