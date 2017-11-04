@@ -80,14 +80,14 @@ asf::Matrix4d flatten_xform(std::vector<asf::Matrix4d> mtx_stack)
 }
 
 // roll into given xform sequence stack and return the flatten one
-asr::TransformSequence flatten_xform_seq(const std::vector<asr::TransformSequence> xform_seq_stack)
+asr::TransformSequence flatten_xform_seq(const std::vector<asr::TransformSequence>& xform_seq_stack)
 {
-
     auto out_xform_seq = asr::TransformSequence();
 
     if(xform_seq_stack.size() == 1)
     {
         // we don't need to flatten anything
+        // TODO: Maybe we can return here?
         out_xform_seq = xform_seq_stack.back();
     }
     else
@@ -101,6 +101,37 @@ asr::TransformSequence flatten_xform_seq(const std::vector<asr::TransformSequenc
     out_xform_seq.prepare();
 
     return out_xform_seq;
+}
+
+// return if given time samples are linearly time spaced
+bool linearly_sampled(const Alembic::Abc::chrono_t start_time,
+                      const Alembic::Abc::chrono_t end_time,
+                      std::vector<Alembic::Abc::chrono_t> samples)
+{
+    assert(samples.size() > 1);
+
+    // compute time supposed to be between each samples if samples are linearly
+    // sampled.
+    const auto increm = (end_time - start_time) / (samples.size()-1);
+    std::cout << "increm " << increm << std::endl;
+
+    // start sample
+    auto t_accum = samples[0];
+
+    const Alembic::Abc::chrono_t epsilon = 1.0 / 10000.0;
+
+    // get each sample time and compare with a linearly sampled time
+    for(const auto t : samples)
+    {
+        std::cout << t << " " << t-t_accum << " " << (std::fabs(t-t_accum) > epsilon) << std::endl;
+        if (std::fabs(t-t_accum) > epsilon)
+        {
+            return false;
+        }
+
+        t_accum += increm;
+    }
+    return true;
 }
 
 
@@ -128,8 +159,10 @@ void AlembicAssembly::retrieve_params(const asr::Project& project)
     }
 
     // shutters
-    m_shutter_open_time = 1.2/24.0;//params.get_optional<float>("shutter_open_time", 0.0f);
-    m_shutter_close_time = 2.2/24.0;//params.get_optional<float>("shutter_close_time", 0.0f);
+    //m_shutter_open_time = 1.2/24.0;//params.get_optional<float>("shutter_open_time", 0.0f);
+    //m_shutter_close_time = 2.2/24.0;//params.get_optional<float>("shutter_close_time", 0.0f);
+    m_shutter_open_time = 1.0/24.0;
+    m_shutter_close_time = 3.0/24.0;
 
     std::cout << "file_path: " << m_file_path << std::endl;
     std::cout << "shutter_open_time: " << m_shutter_open_time << std::endl;
@@ -214,11 +247,13 @@ bool AlembicAssembly::do_expand_contents(
     // xform stack
     //std::vector<asf::Matrix4d> mtx_stack;
 
-    // child
+    m_xform_seq_stack.push_back(asr::TransformSequence());
+
+    // top children
     for(auto i = 0; i < top.getNumChildren(); i++)
     {
         auto child = top.getChild(i);
-        std::cout << "child name: " << child.getFullName() << std::endl;
+        std::cout << std::endl << "child name: " << child.getFullName() << std::endl;
         foo(this, child);
     }
 
@@ -231,11 +266,13 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
 {
     const auto name = o.getFullName();
 
-    // Create a new mesh object.
-    auto object = asr::MeshObjectFactory().create(name.c_str(), asr::ParamArray());
     std::cout << "full name: " << o.getFullName() << std::endl;
 
     auto h = o.getHeader();
+
+    // we track if a transform sequence has been generated or not to remove it
+    // after we reached every children.
+    bool gen_xform = false;
 
     if (Alembic::AbcGeom::IXform::matches(h))
     {
@@ -248,18 +285,15 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
 
         if (xform_schema.getNumOps() > 0)
         {
-            const auto time_sampling = xform_schema.getTimeSampling();
             const auto num_samples = xform_schema.getNumSamples();
-
-            std::cout << "time_sampling " << time_sampling << std::endl;
             std::cout << "num_samples " << num_samples << std::endl;
 
-            std::set<Alembic::Abc::chrono_t> sample_set;
+            std::vector<Alembic::Abc::chrono_t> sample_times;
 
             if (num_samples < 2)
             {
                 std::cout << "No sampling " << std::endl;
-                sample_set.insert(0.0f);
+                sample_times.push_back(0.0f);
             }
             else  // more than 1 sample
             {
@@ -267,18 +301,22 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
                 const auto t_open = m_shutter_open_time+m_time_offset;
                 const auto t_close = m_shutter_close_time+m_time_offset;
 
-                // get floor and ceil samples to don't miss any
+                const auto time_sampling = xform_schema.getTimeSampling();
+
+                // get floor and ceil sample idss to don't miss any
                 const auto open_pair = time_sampling->getFloorIndex(t_open, num_samples);
                 const auto close_pair = time_sampling->getCeilIndex(t_close, num_samples);
 
                 std::cout << "open_pair.first " << open_pair.first << std::endl;
                 std::cout << "close_pair.first " << close_pair.first << std::endl;
 
+                sample_times.reserve(close_pair.first-open_pair.first+1);
+
                 // get _every_ sample times between open and close
                 for (auto i = open_pair.first; i <= close_pair.first; i++)
                 {
                     const auto t = time_sampling->getSampleTime(i);
-                    sample_set.insert(t);
+                    sample_times.push_back(t);
                 }
             }
 
@@ -287,7 +325,7 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
             asr::TransformSequence xform_seq;
 
             // put every xform samples founds into the TransformSequence
-            for (const auto t : sample_set)
+            for (const auto t : sample_times)
             {
                 std::cout << "t: " << t << " - frame: " << t * 24.0f << std::endl;
 
@@ -304,6 +342,8 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
 
             // and put our filled xform sequence to the main xform stack
             m_xform_seq_stack.push_back(xform_seq);
+
+            gen_xform = true;
         }
 
     }
@@ -311,56 +351,121 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
     {
         std::cout << "poly!!!" << std::endl;
 
-        auto polymesh = Alembic::AbcGeom::IPolyMesh(o);
+        const auto polymesh = Alembic::AbcGeom::IPolyMesh(o);
 
-        auto &schema = polymesh.getSchema();
+        const auto &schema = polymesh.getSchema();
 
-        if (schema.getTopologyVariance() == Alembic::AbcGeom::kHeterogenousTopology)
+        switch(schema.getTopologyVariance())
         {
-            std::cout << "isTopologyConstant false" << std::endl;
+            case Alembic::AbcGeom::kConstantTopology:
+                // non deformed
+                std::cout << "Constant topology" << std::endl;
+                break;
+            case Alembic::AbcGeom::kHomogeneousTopology:
+                // deformed but no topology change
+                std::cout << "Homogeneous topology variance" << std::endl;
+                break;
+            case Alembic::AbcGeom::kHeterogeneousTopology:
+                // fluid geos (realflow bins, etc.)
+                std::cout << "Heterogeneous topology variance" << std::endl;
+                break;
+            default:
+                std::cout << "Unknown topology variance type" << std::endl;
+                break;
         }
 
-        std::cout << "schema!!!" << schema.getTopologyVariance() << std::endl;
-
-        const auto time_sampling = schema.getTimeSampling();
+        auto motion_segment_count = 0;
         const auto num_samples = schema.getNumSamples();
-
-        std::cout << "time_sampling " << time_sampling << std::endl;
         std::cout << "num_samples " << num_samples << std::endl;
 
-        // we don't support deformed geo yet
-        const auto sample_sel = Alembic::AbcGeom::ISampleSelector(0.0f);
+        std::vector<Alembic::Abc::chrono_t> sample_times;
 
-        // Alembic::AbcGeom::IPolyMeshSchema::Sample
-        const auto sample = schema.getValue(sample_sel);
+        if (num_samples < 2)
+        {
+            std::cout << "No sampling " << std::endl;
+            sample_times.push_back(0.0f);
+        }
+        else  // more than 1 sample
+        {
+            // generate offsetted times to get samples
+            const auto t_open = m_shutter_open_time+m_time_offset;
+            const auto t_close = m_shutter_close_time+m_time_offset;
+
+            const auto time_sampling = schema.getTimeSampling();
+
+            // get floor and ceil sample ids to don't miss any
+            const auto open_pair = time_sampling->getFloorIndex(t_open, num_samples);
+            const auto close_pair = time_sampling->getCeilIndex(t_close, num_samples);
+
+            std::cout << "open_pair.first " << open_pair.first << std::endl;
+            std::cout << "close_pair.first " << close_pair.first << std::endl;
+
+            sample_times.reserve(close_pair.first-open_pair.first+1);
+
+            // get _every_ sample times between open and close
+            for (auto i = open_pair.first; i <= close_pair.first; i++)
+            {
+                const auto t = time_sampling->getSampleTime(i);
+                sample_times.push_back(t);
+            }
+
+            // compute appleseed number of motion segment
+            motion_segment_count = sample_times.size() - 1;
+
+            if(!linearly_sampled(m_shutter_open_time, m_shutter_close_time, sample_times))
+            {
+                std::cout << "not linearly sampled!" << std::endl;
+            }
+        }
+
+        std::cout << "sample_times.size() " << sample_times.size() << std::endl;
+        for(const auto t : sample_times)
+        {
+            std::cout << "  t: " << t << " - frame: " << t * 24.0f << std::endl;
+        }
 
         //getVelocities()
 
-        //auto xform = asf::Transformd::from_local_to_parent(mtx);
+        // Create a new mesh object
+        auto object = asf::auto_release_ptr<asr::MeshObject>(
+            asr::MeshObjectFactory().create(
+                name.c_str(),
+                asr::ParamArray()));
 
-
-        auto xform = asf::Transformd::from_local_to_parent(asf::Matrix4d::identity());
-        auto xform_seq = flatten_xform_seq(m_xform_seq_stack);
-
-        std::cout << "xform_seq_stack " << m_xform_seq_stack.size() << std::endl;
-
-        // Create a new mesh object.
-        auto object = asf::auto_release_ptr<asr::MeshObject>(asr::MeshObjectFactory().create(name.c_str(), asr::ParamArray()));
+        object->set_motion_segment_count(motion_segment_count);
 
         ///////////////////////////////////////////////////////////////
         // vertex positions
         ///////////////////////////////////////////////////////////////
-        const auto pos = sample.getPositions()->get();
-        const auto pos_count = sample.getPositions()->size();
-        std::cout << "pos_count " << pos_count << std::endl;
-
-        // reserve space to optimize allocation
-        object->reserve_vertices(pos_count);
-
-        for(auto i = 0; i < pos_count; i++)
+        auto sample_id = 0;
+        for(const auto sample_time : sample_times)
         {
-            auto v = asr::GVector3(pos[i][0], pos[i][1], pos[i][2]);
-            object->push_vertex(v);
+            const auto sample_sel = Alembic::AbcGeom::ISampleSelector(sample_time);
+
+            const auto sample = schema.getValue(sample_sel);
+
+            const auto pos = sample.getPositions()->get();
+            const auto pos_count = sample.getPositions()->size();
+            std::cout << "pos_count " << pos_count << std::endl;
+
+            // reserve space to optimize allocation
+            object->reserve_vertices(pos_count);
+
+            for(auto i = 0; i < pos_count; i++)
+            {
+                const auto v = asr::GVector3(pos[i][0], pos[i][1], pos[i][2]);
+
+                if(sample_id == 0)  // first sample
+                {
+                    object->push_vertex(v);
+                }
+                else  // all other samples
+                {
+                    object->set_vertex_pose(i, sample_id-1, v);
+                }
+            }
+
+            sample_id++;
         }
 
         ///////////////////////////////////////////////////////////////
@@ -450,6 +555,8 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
         ///////////////////////////////////////////////////////////////
         // triangles
         ///////////////////////////////////////////////////////////////
+        const auto sample_sel = Alembic::AbcGeom::ISampleSelector(0.0);
+        const auto sample = schema.getValue(sample_sel);
         const auto face_sizes = sample.getFaceCounts()->get();  // [3,4,4,3,...]
         const auto face_count = sample.getFaceCounts()->size();
         const auto face_indices = sample.getFaceIndices()->get();
@@ -659,9 +766,7 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
                 (name+"_inst").c_str(), // instance name
                 asr::ParamArray(),
                 name.c_str(), // object name
-                //asf::Transformd::from_local_to_parent(asf::Matrix4d::make_scaling(asf::Vector3d(1.0f))),
-                xform,
-                //xform_seq,
+                asf::Transformd::identity(),
                 front_material_mappings));
 
         // Create an instance of the assembly.
@@ -671,7 +776,14 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
                 asr::ParamArray(),
                 (name+"_assembly").c_str()));
 
-        xform_assembly_inst->transform_sequence() = xform_seq;
+        std::cout << "xform_seq_stack " << m_xform_seq_stack.size() << std::endl;
+
+        if(m_xform_seq_stack.size())
+        {
+            auto xform_seq = flatten_xform_seq(m_xform_seq_stack);
+
+            xform_assembly_inst->transform_sequence() = xform_seq;
+        }
 
         assembly->assemblies().insert(xform_assembly);
         assembly->assembly_instances().insert(xform_assembly_inst);
@@ -684,8 +796,13 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
         foo(assembly, child);
     }
 
-    // remove the bottom matrix as we move up
-    m_mtx_stack.pop_back();
+    std::cout << "gen_xform " << gen_xform << std::endl;
+    std::cout << "end xform_seq_stack " << m_xform_seq_stack.size() << std::endl;
+    if(gen_xform)
+    {
+        // remove the bottom transform as we move up
+        m_xform_seq_stack.pop_back();
+    }
 }
 
 
