@@ -103,6 +103,7 @@ class AlembicAssembly
     std::string m_file_path;
     float m_shutter_open_time;
     float m_shutter_close_time;
+    float m_time_offset;
     std::vector<asf::Matrix4d> m_mtx_stack;
     std::vector<asr::TransformSequence> m_xform_seq_stack;
 };

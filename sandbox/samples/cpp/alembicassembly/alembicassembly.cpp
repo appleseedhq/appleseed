@@ -127,12 +127,16 @@ void AlembicAssembly::retrieve_params(const asr::Project& project)
         //return false;
     }
 
+    // shutters
     m_shutter_open_time = 1.2/24.0;//params.get_optional<float>("shutter_open_time", 0.0f);
     m_shutter_close_time = 2.2/24.0;//params.get_optional<float>("shutter_close_time", 0.0f);
 
     std::cout << "file_path: " << m_file_path << std::endl;
     std::cout << "shutter_open_time: " << m_shutter_open_time << std::endl;
     std::cout << "shutter_close_time: " << m_shutter_close_time << std::endl;
+
+    // time offset
+    m_time_offset = params.get_optional<float>("time_offset", 0.0f);
 }
 
 bool AlembicAssembly::do_expand_contents(
@@ -175,7 +179,7 @@ bool AlembicAssembly::do_expand_contents(
     }
 
 
-    std::cout << "Current time is: " << (m_shutter_open_time+m_shutter_close_time)*0.5 << std::endl;
+    std::cout << "Current time is: " << m_time_offset+(m_shutter_open_time+m_shutter_close_time)*0.5 << std::endl;
 
     std::cout << "Archive name: " << archive.getName() << std::endl;
     std::cout << "Number TimeSampling: " << archive.getNumTimeSamplings() << std::endl;
@@ -247,6 +251,7 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
             const auto time_sampling = xform_schema.getTimeSampling();
             const auto num_samples = xform_schema.getNumSamples();
 
+            std::cout << "time_sampling " << time_sampling << std::endl;
             std::cout << "num_samples " << num_samples << std::endl;
 
             std::set<Alembic::Abc::chrono_t> sample_set;
@@ -258,9 +263,13 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
             }
             else  // more than 1 sample
             {
+                // generate offsetted times to get samples
+                const auto t_open = m_shutter_open_time+m_time_offset;
+                const auto t_close = m_shutter_close_time+m_time_offset;
+
                 // get floor and ceil samples to don't miss any
-                const auto open_pair = time_sampling->getFloorIndex(m_shutter_open_time, num_samples);
-                const auto close_pair = time_sampling->getCeilIndex(m_shutter_close_time, num_samples);
+                const auto open_pair = time_sampling->getFloorIndex(t_open, num_samples);
+                const auto close_pair = time_sampling->getCeilIndex(t_close, num_samples);
 
                 std::cout << "open_pair.first " << open_pair.first << std::endl;
                 std::cout << "close_pair.first " << close_pair.first << std::endl;
@@ -277,7 +286,7 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
 
             asr::TransformSequence xform_seq;
 
-            // put every xform samples found into the TransformSequence
+            // put every xform samples founds into the TransformSequence
             for (const auto t : sample_set)
             {
                 std::cout << "t: " << t << " - frame: " << t * 24.0f << std::endl;
@@ -289,7 +298,8 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
                 const auto mtx = asf::Matrix4d(xform_mtx);
                 const auto xform = asf::Transformd::from_local_to_parent(mtx);
 
-                xform_seq.set_transform(t, xform);
+                // as all samples are time offsetted, we offset them back
+                xform_seq.set_transform(t-m_time_offset, xform);
             }
 
             // and put our filled xform sequence to the main xform stack
@@ -304,6 +314,7 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
         auto polymesh = Alembic::AbcGeom::IPolyMesh(o);
 
         auto &schema = polymesh.getSchema();
+
         if (schema.getTopologyVariance() == Alembic::AbcGeom::kHeterogenousTopology)
         {
             std::cout << "isTopologyConstant false" << std::endl;
@@ -311,10 +322,17 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
 
         std::cout << "schema!!!" << schema.getTopologyVariance() << std::endl;
 
-        auto sample_sel = Alembic::AbcGeom::ISampleSelector(0.0f);
+        const auto time_sampling = schema.getTimeSampling();
+        const auto num_samples = schema.getNumSamples();
+
+        std::cout << "time_sampling " << time_sampling << std::endl;
+        std::cout << "num_samples " << num_samples << std::endl;
+
+        // we don't support deformed geo yet
+        const auto sample_sel = Alembic::AbcGeom::ISampleSelector(0.0f);
 
         // Alembic::AbcGeom::IPolyMeshSchema::Sample
-        auto sample = schema.getValue(sample_sel);
+        const auto sample = schema.getValue(sample_sel);
 
         //getVelocities()
 
