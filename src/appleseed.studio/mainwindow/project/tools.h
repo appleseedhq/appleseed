@@ -45,6 +45,7 @@
 // Forward declarations.
 namespace appleseed     { namespace studio { class DoubleSlider; } }
 namespace foundation    { class Dictionary; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 class QColor;
 class QLineEdit;
@@ -64,6 +65,7 @@ void open_entity_editor(
     QWidget*                                        parent,
     const std::string&                              window_title,
     const renderer::Project&                        project,
+    renderer::ParamArray&                           settings,
     std::unique_ptr<EntityEditor::IFormFactory>     form_factory,
     std::unique_ptr<EntityEditor::IEntityBrowser>   entity_browser,
     std::unique_ptr<CustomEntityUI>                 custom_entity_ui,
@@ -77,6 +79,7 @@ void open_entity_editor(
     QWidget*                                        parent,
     const std::string&                              window_title,
     const renderer::Project&                        project,
+    renderer::ParamArray&                           settings,
     std::unique_ptr<EntityEditor::IFormFactory>     form_factory,
     std::unique_ptr<EntityEditor::IEntityBrowser>   entity_browser,
     const foundation::Dictionary&                   values,
@@ -89,6 +92,7 @@ void open_entity_editor(
     QWidget*                                        parent,
     const std::string&                              window_title,
     const renderer::Project&                        project,
+    renderer::ParamArray&                           settings,
     std::unique_ptr<EntityEditor::IFormFactory>     form_factory,
     std::unique_ptr<EntityEditor::IEntityBrowser>   entity_browser,
     QObject*                                        receiver,

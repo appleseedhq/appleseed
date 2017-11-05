@@ -146,6 +146,7 @@ void MultiModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attri
             QTreeWidgetItem::treeWidget(),
             window_title,
             Base::m_editor_context.m_project,
+            Base::m_editor_context.m_settings,
             std::move(form_factory),
             std::move(entity_browser),
             get_values(),
