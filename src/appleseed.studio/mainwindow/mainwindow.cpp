@@ -727,7 +727,8 @@ void MainWindow::update_project_explorer()
         m_attribute_editor =
             new AttributeEditor(
                 m_ui->attribute_editor_scrollarea_contents,
-                *m_project_manager.get_project());
+                *m_project_manager.get_project(),
+                m_settings);
 
         m_project_explorer =
             new ProjectExplorer(

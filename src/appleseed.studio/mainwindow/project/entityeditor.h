@@ -48,7 +48,8 @@
 #include <vector>
 
 // Forward declarations.
-namespace renderer  { class Project; }
+namespace renderer { class ParamArray; }
+namespace renderer { class Project; }
 class QColor;
 class QVBoxLayout;
 class QFormLayout;
@@ -101,6 +102,7 @@ class EntityEditor
     EntityEditor(
         QWidget*                            parent,
         const renderer::Project&            project,
+        renderer::ParamArray&               settings,
         std::unique_ptr<IFormFactory>       form_factory,
         std::unique_ptr<IEntityBrowser>     entity_browser,
         std::unique_ptr<CustomEntityUI>     custom_ui,
@@ -116,6 +118,7 @@ class EntityEditor
   private:
     QWidget*                                m_parent;
     const renderer::Project&                m_project;
+    renderer::ParamArray&                   m_settings;
     std::unique_ptr<IFormFactory>           m_form_factory;
     std::unique_ptr<IEntityBrowser>         m_entity_browser;
     std::unique_ptr<CustomEntityUI>         m_custom_ui;

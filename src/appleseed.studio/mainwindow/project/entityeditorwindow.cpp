@@ -56,6 +56,7 @@ EntityEditorWindow::EntityEditorWindow(
     QWidget*                                    parent,
     const string&                               window_title,
     const Project&                              project,
+    ParamArray&                                 settings,
     unique_ptr<EntityEditor::IFormFactory>      form_factory,
     unique_ptr<EntityEditor::IEntityBrowser>    entity_browser,
     unique_ptr<CustomEntityUI>                  custom_entity_ui,
@@ -74,6 +75,7 @@ EntityEditorWindow::EntityEditorWindow(
         new EntityEditor(
             m_ui->scrollarea_contents,
             project,
+            settings,
             std::move(form_factory),
             std::move(entity_browser),
             std::move(custom_entity_ui),
