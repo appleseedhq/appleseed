@@ -73,6 +73,9 @@ class TextureSource
     // Compute a signature unique to this source.
     foundation::uint64 compute_signature() const override;
 
+    // Return hints allowing to treat this source as one of another type.
+    Hints get_hints() const override;
+
     // Evaluate the source at a given shading point.
     void evaluate(
         TextureCache&                       texture_cache,

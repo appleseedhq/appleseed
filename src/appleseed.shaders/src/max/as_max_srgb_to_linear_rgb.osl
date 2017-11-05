@@ -26,12 +26,7 @@
 // THE SOFTWARE.
 //
 
-float srgb_to_linear_rgb(float c)
-{
-    return c <= 0.04045
-        ? (1.0 / 12.92) * c
-        : pow((c + 0.055) * (1.0 / 1.055), 2.4);
-}
+#include "appleseed/color/as_transfer_functions.h"
 
 shader as_max_srgb_to_linear_rgb
 (
@@ -39,7 +34,5 @@ shader as_max_srgb_to_linear_rgb
     output color    ColorOut = color(0.0)
 )
 {
-    ColorOut[0] = srgb_to_linear_rgb(ColorIn[0]);
-    ColorOut[1] = srgb_to_linear_rgb(ColorIn[1]);
-    ColorOut[2] = srgb_to_linear_rgb(ColorIn[2]);
+    ColorOut = sRGB_EOTF(ColorIn);
 }

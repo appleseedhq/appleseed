@@ -190,6 +190,14 @@ uint64 TextureSource::compute_signature() const
     return m_texture_instance.compute_signature();
 }
 
+TextureSource::Hints TextureSource::get_hints() const
+{
+    Hints hints;
+    hints.m_width = m_texture_props.m_canvas_width;
+    hints.m_height = m_texture_props.m_canvas_height;
+    return hints;
+}
+
 Vector2f TextureSource::apply_transform(const Vector2f& uv) const
 {
     // Convert to 3D coordinates.
