@@ -38,6 +38,7 @@
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
 #include "utility/mousewheelfocuseventfilter.h"
+#include "utility/settingskeys.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/project.h"
@@ -94,6 +95,7 @@ namespace studio {
 EntityEditor::EntityEditor(
     QWidget*                        parent,
     const Project&                  project,
+    ParamArray&                     settings,
     unique_ptr<IFormFactory>        form_factory,
     unique_ptr<IEntityBrowser>      entity_browser,
     unique_ptr<CustomEntityUI>      custom_ui,
@@ -101,6 +103,7 @@ EntityEditor::EntityEditor(
   : QObject(parent)
   , m_parent(parent)
   , m_project(project)
+  , m_settings(settings)
   , m_form_factory(move(form_factory))
   , m_entity_browser(move(entity_browser))
   , m_custom_ui(move(custom_ui))
@@ -728,20 +731,23 @@ void EntityEditor::slot_open_file_picker(const QString& widget_name)
             file_picker_type == "image" ? get_oiio_image_files_filter() :
             QString();
 
+        const QString settings_key =
+            file_picker_type == "image" ? SETTINGS_FILE_DIALOG_OIIO_TEXTURES :
+            SETTINGS_FILE_DIALOG_ENTITIES;
+
         const bf::path project_root_path = bf::path(m_project.get_path()).parent_path();
         const bf::path file_path = absolute(widget_proxy->get(), project_root_path);
         const bf::path file_root_path = file_path.parent_path();
 
         QFileDialog::Options options;
-        QString selected_filter;
 
         QString filepath =
-            QFileDialog::getOpenFileName(
+            get_open_filename(
                 m_parent,
                 "Open...",
-                QString::fromStdString(file_root_path.string()),
                 filter,
-                &selected_filter,
+                m_settings,
+                settings_key,
                 options);
 
         if (!filepath.isEmpty())

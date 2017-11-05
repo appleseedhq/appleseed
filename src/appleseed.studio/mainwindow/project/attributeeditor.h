@@ -42,6 +42,7 @@
 // Forward declarations.
 namespace appleseed     { namespace studio { class IEntityValueProvider; } }
 namespace foundation    { class Dictionary; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 class QObject;
 class QWidget;
@@ -55,7 +56,8 @@ class AttributeEditor
   public:
     AttributeEditor(
         QWidget*                parent,
-        renderer::Project&      project);
+        renderer::Project&      project,
+        renderer::ParamArray&   settings);
 
     void clear();
 
@@ -73,6 +75,7 @@ class AttributeEditor
     QWidget*                      m_parent;
     IEntityValueProvider*         m_value_provider;
     renderer::Project&            m_project;
+    renderer::ParamArray&         m_settings;
     std::unique_ptr<EntityEditor> m_entity_editor;
 };
 
