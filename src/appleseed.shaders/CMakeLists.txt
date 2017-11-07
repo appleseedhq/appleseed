@@ -407,6 +407,7 @@ set (src_appleseed_sources
      src/appleseed/as_glass.osl
      src/appleseed/as_luminance.osl
      src/appleseed/as_noise2d.osl
+     src/appleseed/as_noise3d.osl
      src/appleseed/as_standard_surface.osl
      src/appleseed/as_voronoi2d.osl
      src/appleseed/as_voronoi3d.osl

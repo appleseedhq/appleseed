@@ -32,11 +32,11 @@
 #include "appleseed/maya/as_maya_helpers.h"
 #include "appleseed/maya/as_maya_transform_helpers.h"
 
-shader as_noise2d
+shader as_noise3d
 [[
-    string as_maya_node_name = "asNoise2D",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/2d:swatch/AppleseedRenderSwatch:texture",
-    int as_maya_type_id = 0x001279cb,
+    string as_maya_node_name = "asNoise3D",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/3d:swatch/AppleseedRenderSwatch:texture",
+    int as_maya_type_id = 0x001279ca,
     string URL = "http://appleseedhq.net/"
 ]]
 (
@@ -89,26 +89,13 @@ shader as_noise2d
         string help = "Global noise intensity.",
         string page = "Noise"
     ]],
-    float in_frequency_x = 1.0
+    vector in_frequency = vector(1)
     [[
-        string as_maya_attribute_name = "frequencyX",
-        string as_maya_attribute_short_name = "frx",
-        float min = 0.0,
-        float softmax = 8.0,
-        string label = "X Frequency",
+        string as_maya_attribute_name = "frequency",
+        string as_maya_attribute_short_name = "frq",
+        string label = "XYZ Frequency",
         string help = "Higher values increase the noise density",
         string page = "Noise"
-    ]],
-    float in_frequency_y = 1.0
-    [[
-        string as_maya_attribute_name = "frequencyY",
-        string as_maya_attribute_short_name = "fry",
-        float min = 0.0,
-        float softmax = 8.0,
-        string label = "Y Frequency",
-        string help = "Higher values increase the noise density",
-        string page = "Noise",
-        int divider = 1
     ]],
     int in_ridges = 0
     [[
@@ -189,22 +176,11 @@ shader as_noise2d
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
-    float in_period_x = 4.0
+    vector in_period = vector(4)
     [[
-        string as_maya_attribute_name = "periodX",
-        string as_maya_attribute_short_name = "prx",
-        float min = 0.0,
-        float softmax = 16.0,
-        string label = "X Period",
-        string page = "Noise.Periodic"
-    ]],
-    float in_period_y = 4.0
-    [[
-        string as_maya_attribute_name = "periodY",
-        string as_maya_attribute_short_name = "pry",
-        float min = 0.0,
-        float softmax = 16.0,
-        string label = "Y Period",
+        string as_maya_attribute_name = "period",
+        string as_maya_attribute_short_name = "prd",
+        string label = "Period",
         string page = "Noise.Periodic"
     ]],
     float in_period_time = 4.0
@@ -286,7 +262,7 @@ shader as_noise2d
         string label = "Filter",
         string page = "Noise.Gabor",
         int gafferNoduleLayoutVisible = 0
-    ]],  
+    ]],
     float in_amplitude = 1.0
     [[
         string as_maya_attribute_name = "amplitude",
@@ -374,8 +350,21 @@ shader as_noise2d
         string page = "Recursion",
         string help = "Distors the domain of the coordinates for each frequency."
     ]],
+    point in_refPointCamera = P
+    [[
+        string as_maya_attribute_name = "refPointCamera",
+        string as_maya_attribute_short_name = "rpc",
+        string label = "Surface Point",
+        string widget = "null"
+    ]],
+    matrix in_placementMatrix = matrix(1)
+    [[
+        string as_maya_attribute_name = "placementMatrix",
+        string label = "Placement Matrix",
+        string widget = "null"
+    ]],
 
-    MAYA_UV_PARAMETERS,
+    MAYA_EFFECTS_3DTEX_PARAMETERS,
 
     output color out_outColor = color(0)
     [[
@@ -391,7 +380,21 @@ shader as_noise2d
     ]]
 )
 {
-    if (in_uvCoord[0] == OUTSIDE_UVFRAME || in_uvCoord[1] == OUTSIDE_UVFRAME)
+    matrix placement = (in_local)
+        ? matrix("common", "object") * in_placementMatrix
+        : in_placementMatrix;
+
+    point Pp = transform(placement, in_refPointCamera);
+
+    float box_blending = 0.0;
+
+    int outside_box = outside_place3d_volume(
+        Pp,
+        in_wrap,
+        in_blend,
+        box_blending);
+
+    if (outside_box)
     {
         out_outColor = color(0);
         out_outAlpha = 0.0;
@@ -405,11 +408,7 @@ shader as_noise2d
         return;
     }
 
-    vector new_st = vector(
-        mod(in_uvCoord[0], UVWRAP),
-        mod(in_uvCoord[1], UVWRAP),
-        in_frame_time) *
-        vector(in_frequency_x, in_frequency_y, in_time_scale);
+    point new_p = vector(Pp) * in_frequency;
 
     float lacunarity = in_lacunarity, amplitude = in_amplitude;
     float weight = 1.0, norm = 0.0, result = (in_cascade_mode) ? 1.0 : 0.0;
@@ -418,6 +417,8 @@ shader as_noise2d
 
     if (in_animated_noise)
     {
+        float frequency_time = in_frame_time * in_time_scale;
+
         for (int i = 0; i < in_octaves; ++i)
         {
             if (amplitude == 0.0)
@@ -425,12 +426,97 @@ shader as_noise2d
                 break;
             }
 
-            point coords = (point) new_st;
+            point coords = new_p;
 
             if (in_distortion > 0.0)
             {
                 vector distortion = in_distortion * (vector)
-                    noise("perlin", new_st);
+                    noise("perlin", new_p);
+
+                coords += distortion;
+            }
+
+            float signal = 0.0;
+
+            if (noisetype == "gabor")
+            {
+                signal = (float) noise(
+                    "gabor",
+                    coords,
+                    frequency_time,
+                    "anisotropic", in_anisotropy,
+                    "direction", in_direction,
+                    "bandwidth", in_bandwidth,
+                    "impulses", in_impulses,
+                    "do_filter", in_filter_noise) * 0.5 + 0.5;
+            }
+            else if (noisetype == "voronoise")
+            {
+                signal = voronoise3d(
+                    coords + vector(frequency_time),
+                    in_jittering,
+                    in_smoothness);
+            }
+            else if (noisetype == "value")
+            {
+                signal = value_noise3d(coords + vector(frequency_time));
+            }
+            else if (in_periodic)
+            {
+                signal = (float) pnoise(
+                    noisetype,
+                    coords,
+                    frequency_time,
+                    in_period,
+                    in_period_time);
+            }
+            else
+            {
+                signal = (float) noise(noisetype, coords, frequency_time);
+            }
+
+            if (in_signed_noise)
+            {
+                signal = signal * 2.0 - 1.0;
+            }
+
+            if (in_inflection)
+            {
+                signal = abs(signal);
+            }
+
+            if (in_ridges)
+            {
+                signal = in_offset - signal;
+                signal *= signal;
+                signal *= weight;
+                weight = clamp(signal * 2.0, 0.0, 1.0);
+            }
+
+            result = (in_cascade_mode)
+                ? result * amplitude * signal
+                : result + amplitude * signal;
+
+            new_p *= lacunarity;
+            amplitude *= in_noise_gain;
+            norm += amplitude;
+        }
+    }
+    else
+    {
+        for (int i = 0; i < in_octaves; ++i)
+        {
+            if (amplitude == 0.0)
+            {
+                break;
+            }
+
+            point coords = new_p;
+
+            if (in_distortion > 0.0)
+            {
+                vector distortion = in_distortion * (vector)
+                    noise("perlin", new_p);
 
                 coords += distortion;
             }
@@ -464,7 +550,7 @@ shader as_noise2d
                 signal = (float) pnoise(
                     noisetype,
                     coords,
-                    point(in_period_x, in_period_y, in_period_time)) ;
+                    in_period);
             }
             else
             {
@@ -493,94 +579,7 @@ shader as_noise2d
                 ? result * amplitude * signal
                 : result + amplitude * signal;
 
-            new_st *= lacunarity;
-            amplitude *= in_noise_gain;
-            norm += amplitude;
-        }
-    }
-    else
-    {
-        for (int i = 0; i < in_octaves; ++i)
-        {
-            if (amplitude == 0.0)
-            {
-                break;
-            }
-
-            point coords = (point) new_st;
-
-            if (in_distortion > 0.0)
-            {
-                vector distortion = in_distortion * (vector)
-                    noise("perlin", new_st);
-
-                coords += distortion;
-            }
-
-            float signal = 0.0;
-
-            if (noisetype == "gabor")
-            {
-                signal = (float) noise(
-                    "gabor",
-                    coords[0],
-                    coords[1],
-                    "anisotropic", in_anisotropy,
-                    "direction", in_direction,
-                    "bandwidth", in_bandwidth,
-                    "impulses", in_impulses,
-                    "do_filter", in_filter_noise) * 0.5 + 0.5;
-            }
-            else if (noisetype == "voronoise")
-            {
-                signal = voronoise2d(
-                    coords[0],
-                    coords[1],
-                    in_jittering,
-                    in_smoothness);
-            }
-            else if (noisetype == "value")
-            {
-                signal = value_noise2d(coords[0], coords[1]);
-            }
-            else if (in_periodic)
-            {
-                signal = (float) pnoise(
-                    noisetype,
-                    coords[0],
-                    coords[1],
-                    in_period_x,
-                    in_period_y);
-            }
-            else
-            {
-                signal = (float) noise(
-                    noisetype, coords[0], coords[1]);
-            }
-
-            if (in_signed_noise)
-            {
-                signal = signal * 2.0 - 1.0;
-            }
-
-            if (in_inflection)
-            {
-                signal = abs(signal);
-            }
-
-            if (in_ridges)
-            {
-                signal = in_offset - signal;
-                signal *= signal;
-                signal *= weight;
-                weight = clamp(signal * 2.0, 0.0, 1.0);
-            }
-
-            result = (in_cascade_mode)
-                ? result * amplitude * signal
-                : result + amplitude * signal;
-
-            new_st *= lacunarity;
+            new_p *= lacunarity;
             amplitude *= in_noise_gain;
             norm += amplitude;
         }

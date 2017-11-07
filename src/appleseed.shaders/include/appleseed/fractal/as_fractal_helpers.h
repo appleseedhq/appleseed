@@ -445,57 +445,40 @@ float voronoise2d(float x, float y, float jittering, float smoothness)
             normalization += weighted_dist;
         }
     }
-    return distance_avg / normalization;
-}
-
-color voronoise2d(float x, float y, float jittering, float smoothness)
-{
-    float r = (float) voronoise2d(x, y, jittering, smoothness);
-    float g = (float) voronoise2d(x + 12.0, y + 12.0, jittering, smoothness);
-    float b = (float) voronoise2d(x + 24.0, y + 24.0, jittering, smoothness);
-
-    return color(r, g, b);
+    return (normalization > 0.0) ? distance_avg / normalization : 0.0;
 }
 
 float voronoise3d(point Pp, float jittering, float smoothness)
 {
-    vector p = floor(Pp);
-    vector f = Pp - p;
+    point po = Pp + vector(0.5);
+    vector p = floor(po);
+    vector f = po - p;
 
-    float m = 1.0 + 31.0 * pow(1.0 - smoothness, 4.0);
+    float m = 1.0 + 63.0 * pow(1.0 - smoothness, 4.0);
 
     float distance_avg = 0.0, normalization = 0.0;
 
-    for (int i = -2; i <= 2; ++i)
+    for (int i = -2; i < 2; ++i)
     {
-        for (int j = -2; j <= 2; ++j)
+        for (int j = -2; j < 2; ++j)
         {
-            for (int k = -2; k <= 2; ++k)
+            for (int k = -2; k < 2; ++k)
             {
                 vector g = vector(i, j, k);
-
                 vector hash_value = (vector) hashnoise(p + g);
-                hash_value *= vector(jittering, smoothness, 1.0);
 
-                vector r = g - f + hash_value;
-                
+                vector r = g - f + vector(jittering) * hash_value;
+                r += vector(0.5);
+
                 float weighted_dist =
                     pow(1.0 - smoothstep(0.0, M_SQRT2, length(r)), m);
 
-                distance_avg += hash_value[2] * weighted_dist;
+                distance_avg += hash_value[0] * weighted_dist;
                 normalization += weighted_dist;
             }
         }
     }
-    return distance_avg / normalization;
-}
-
-color voronoise3d(point Pp, float jittering, float smoothness)
-{
-    return color(
-        (float) voronoise3d(Pp, jittering, smoothness),
-        (float) voronoise3d(Pp + 12.0, jittering, smoothness),
-        (float) voronoise3d(Pp + 24.0, jittering, smoothness));
+    return (normalization > 0.0) ? distance_avg / normalization : 0.0;
 }
 
 //
@@ -524,15 +507,6 @@ float value_noise2d(float x, float y)
         uu[0]);
 
     return mix(a, b, uu[1]);
-}
-
-color value_noise2d(float x, float y)
-{
-    float r = (float) value_noise2d(x, y);
-    float g = (float) value_noise2d(x + 12.0, y + 12.0);
-    float b = (float) value_noise2d(x + 24.0, y + 24.0);
-
-    return color(r, g, b);
 }
 
 //
@@ -568,14 +542,6 @@ float value_noise3d(point Pp)
     float y = mix(c, d, f[1]);
 
     return mix(x, y, f[2]);
-}
-
-color value_noise3d(point Pp)
-{
-    return color(
-        (float) value_noise3d(Pp),
-        (float) value_noise3d(Pp + 12.0),
-        (float) value_noise3d(Pp + 24.0));
 }
 
 #endif // !AS_FRACTAL_HELPERS_H
