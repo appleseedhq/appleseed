@@ -26,6 +26,9 @@
 // THE SOFTWARE.
 //
 #define APPLESEED_ENABLE_IMATH_INTEROP
+
+#include "renderer/global/globallogger.h"
+
 // appleseed.renderer headers.
 //#include "renderer/api/bsdf.h"
 #include "renderer/api/object.h"
@@ -33,6 +36,7 @@
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
 #include "renderer/api/utility.h"
+//#include "renderer/api/log.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
@@ -108,6 +112,7 @@ bool linearly_sampled(const Alembic::Abc::chrono_t start_time,
                       const Alembic::Abc::chrono_t end_time,
                       std::vector<Alembic::Abc::chrono_t> samples)
 {
+    std::cout << "samples.size() " << samples.size() << std::endl;
     assert(samples.size() > 1);
 
     // compute time supposed to be between each samples if samples are linearly
@@ -412,9 +417,13 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
             // compute appleseed number of motion segment
             motion_segment_count = sample_times.size() - 1;
 
-            if(!linearly_sampled(m_shutter_open_time, m_shutter_close_time, sample_times))
+            if(motion_segment_count)
             {
-                std::cout << "not linearly sampled!" << std::endl;
+                if(!linearly_sampled(m_shutter_open_time, m_shutter_close_time, sample_times))
+                {
+                    std::cout << "not linearly sampled!" << std::endl;
+                    RENDERER_LOG_WARNING("Motion samples are not matching shutters.");  // TODO: logs doesn't work.
+                }
             }
         }
 
