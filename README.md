@@ -21,7 +21,7 @@ appleseed is available as a portable C++ library with C++ and Python APIs, as a 
 * Twitter: [twitter.com/appleseedhq](https://twitter.com/appleseedhq)
 * Vimeo: [vimeo.com/appleseedhq](https://vimeo.com/appleseedhq)
 * Users Forum: [forum.appleseedhq.net](https://forum.appleseedhq.net/)
-* Developers Mailing List: [appleseed-dev](http://groups.google.com/group/appleseed-dev)
+* Developers Slack Team: [appleseedhq.slack.com](https://slackin-pohcdrcgcs.now.sh/)
 
 ## Contributing
 
