@@ -503,42 +503,84 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
         std::vector<size_t> n_idxs;  // normal indices
 
         const auto normal_param = schema.getNormalsParam();
-        if (normal_param.valid())
+
+        if(normal_param.valid())
         {
-            std::cout << "normal!!! " << std::endl;
-            auto normal_sample = normal_param.getIndexedValue();
-            //auto normal_sample = normal_param.getExpandedValue();
-            if (normal_sample.valid())
+            auto sample_id = 0;
+            for(const auto sample_time : sample_times)
             {
-                // retrieve normal indices
-                const auto abc_n_idxs = normal_sample.getIndices()->get();
-                const auto n_idxs_count = normal_sample.getIndices()->size();
+                const auto sample_sel = Alembic::AbcGeom::ISampleSelector(sample_time);
 
-                n_idxs.reserve(n_idxs_count);
+                const auto sample = schema.getValue(sample_sel);
 
-                for(auto i = 0; i < n_idxs_count; i++)
+                switch(normal_param.getScope())
                 {
-                    n_idxs.push_back(abc_n_idxs[i]);
+                    case Alembic::AbcGeom::kConstantScope:
+                        std::cout << "normal kConstantScope" << std::endl;
+                        break;
+                    case Alembic::AbcGeom::kUniformScope:
+                        std::cout << "normal kUniformScope" << std::endl;
+                        break;
+                    case Alembic::AbcGeom::kVaryingScope:
+                        std::cout << "normal kVaryingScope" << std::endl;
+                        break;
+                    case Alembic::AbcGeom::kVertexScope:
+                        // normal indices match vertex one
+                        std::cout << "normal kVertexScope" << std::endl;
+                        break;
+                    case Alembic::AbcGeom::kFacevaryingScope:
+                        // normals have their own indices
+                        std::cout << "normal kFacevaryingScope" << std::endl;
+                        break;
+                    case Alembic::AbcGeom::kUnknownScope:
+                        std::cout << "normal kUnknownScope" << std::endl;
+                        break;
+                    default:
+                        std::cout << "invalid scope" << std::endl;
+                        break;
                 }
 
-                // normal vectors
-                const auto normals = normal_sample.getVals()->get();
-                const auto normal_count = normal_sample.getVals()->size();
-
-                std::cout << "normal_count: " << normal_count << std::endl;
-                std::cout << "n_idxs_count: " << normal_count << std::endl;
-
-                // reserve space to optimize allocation
-                object->reserve_vertex_normals(normal_count);
-
-                for (auto i = 0; i < normal_count; ++i)
+                auto normal_sample = normal_param.getIndexedValue();
+                //auto sample = normal_param.getExpandedValue();  // todo use this depending on the scope
+                if(normal_sample.valid())
                 {
-                    //const asf::Vector3f n(normals[i]);       // todo: transform to world space using matrix stack
-                    //auto n_xformed = xform.normal_to_local(n);
-                    //object->push_vertex_normal(n_xformed);
-                    //object->push_vertex_normal(n);
-                    object->push_vertex_normal(normals[i]);
+                    // retrieve normal indices
+                    const auto abc_n_idxs = normal_sample.getIndices()->get();
+                    const auto n_idxs_count = normal_sample.getIndices()->size();
+
+                    n_idxs.reserve(n_idxs_count);  // should be same size as vertices
+
+                    for(auto i = 0; i < n_idxs_count; i++)
+                    {
+                        n_idxs.push_back(abc_n_idxs[i]);
+                    }
+
+                    // normal vectors
+                    const auto normals = normal_sample.getVals()->get();
+                    const auto normal_count = normal_sample.getVals()->size();
+
+                    std::cout << "normal_count: " << normal_count << std::endl;
+                    std::cout << "n_idxs_count: " << normal_count << std::endl;
+
+                    // reserve space to optimize allocation
+                    object->reserve_vertex_normals(normal_count);
+
+                    if(sample_id == 0)  // first sample
+                    {
+                        for (auto i = 0; i < normal_count; ++i)
+                        {
+                            object->push_vertex_normal(normals[i]);
+                        }
+                    }
+                    else  // other samples are put in motion poses
+                    {
+                        for (auto i = 0; i < normal_count; ++i)
+                        {
+                            object->set_vertex_normal_pose(i, sample_id-1, normals[i]);
+                        }
+                    }
                 }
+                sample_id++;
             }
         }
 
