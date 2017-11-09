@@ -139,6 +139,47 @@ bool linearly_sampled(const Alembic::Abc::chrono_t start_time,
     return true;
 }
 
+// return sample times (with border samples) in given shutter for given schema
+// returned samples  ------|-----------|---------|--------->
+//                   ---------|--------------|------------->
+// shutter times             open          close
+std::vector<Alembic::Abc::chrono_t> schema_to_sample_times(const float shutter_open_time,
+                                                           const float shutter_close_time,
+                                                           //const Alembic::AbcGeom::IPolyMeshSchema schema,
+                                                           const size_t num_samples,
+                                                           const Alembic::AbcCoreAbstract::TimeSamplingPtr time_sampling)
+{
+    std::cout << "schema num_samples " << num_samples << std::endl;
+
+    std::vector<Alembic::Abc::chrono_t> sample_times;
+
+    if (num_samples < 2)
+    {
+        std::cout << "No sampling " << std::endl;
+        sample_times.push_back(0.0f);
+    }
+    else  // more than 1 sample
+    {
+        // get floor and ceil sample idss to don't miss any
+        const auto open_pair = time_sampling->getFloorIndex(shutter_open_time, num_samples);
+        const auto close_pair = time_sampling->getCeilIndex(shutter_close_time, num_samples);
+
+        std::cout << "open_pair.first " << open_pair.first << std::endl;
+        std::cout << "close_pair.first " << close_pair.first << std::endl;
+
+        sample_times.reserve(close_pair.first-open_pair.first+1);
+
+        // get _every_ sample times between open and close
+        for (auto i = open_pair.first; i <= close_pair.first; i++)
+        {
+            const auto t = time_sampling->getSampleTime(i);
+            sample_times.push_back(t);
+        }
+    }
+    return sample_times;
+}
+
+
 
 const char* AlembicAssembly::Model = "alembic_assembly";
 
@@ -291,39 +332,10 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
         if (xform_schema.getNumOps() > 0)
         {
             const auto num_samples = xform_schema.getNumSamples();
-            std::cout << "num_samples " << num_samples << std::endl;
-
-            std::vector<Alembic::Abc::chrono_t> sample_times;
-
-            if (num_samples < 2)
-            {
-                std::cout << "No sampling " << std::endl;
-                sample_times.push_back(0.0f);
-            }
-            else  // more than 1 sample
-            {
-                // generate offsetted times to get samples
-                const auto t_open = m_shutter_open_time+m_time_offset;
-                const auto t_close = m_shutter_close_time+m_time_offset;
-
-                const auto time_sampling = xform_schema.getTimeSampling();
-
-                // get floor and ceil sample idss to don't miss any
-                const auto open_pair = time_sampling->getFloorIndex(t_open, num_samples);
-                const auto close_pair = time_sampling->getCeilIndex(t_close, num_samples);
-
-                std::cout << "open_pair.first " << open_pair.first << std::endl;
-                std::cout << "close_pair.first " << close_pair.first << std::endl;
-
-                sample_times.reserve(close_pair.first-open_pair.first+1);
-
-                // get _every_ sample times between open and close
-                for (auto i = open_pair.first; i <= close_pair.first; i++)
-                {
-                    const auto t = time_sampling->getSampleTime(i);
-                    sample_times.push_back(t);
-                }
-            }
+            const auto sample_times = schema_to_sample_times(m_shutter_open_time+m_time_offset,
+                                                             m_shutter_close_time+m_time_offset,
+                                                             num_samples,
+                                                             xform_schema.getTimeSampling());
 
             //std::map<Alembic::Abc::chrono_t, asf::Matrix4d> mtx_time_map;
 
@@ -379,51 +391,20 @@ void AlembicAssembly::foo(const asr::Assembly* assembly, Alembic::Abc::IObject o
                 break;
         }
 
-        auto motion_segment_count = 0;
-        const auto num_samples = schema.getNumSamples();
-        std::cout << "num_samples " << num_samples << std::endl;
+        const auto sample_times = schema_to_sample_times(m_shutter_open_time+m_time_offset,
+                                                         m_shutter_close_time+m_time_offset,
+                                                         schema.getNumSamples(),
+                                                         schema.getTimeSampling());
 
-        std::vector<Alembic::Abc::chrono_t> sample_times;
+        // compute appleseed number of motion segment
+        const auto motion_segment_count = sample_times.size() - 1;
 
-        if (num_samples < 2)
+        if(motion_segment_count)
         {
-            std::cout << "No sampling " << std::endl;
-            sample_times.push_back(0.0f);
-        }
-        else  // more than 1 sample
-        {
-            // generate offsetted times to get samples
-            const auto t_open = m_shutter_open_time+m_time_offset;
-            const auto t_close = m_shutter_close_time+m_time_offset;
-
-            const auto time_sampling = schema.getTimeSampling();
-
-            // get floor and ceil sample ids to don't miss any
-            const auto open_pair = time_sampling->getFloorIndex(t_open, num_samples);
-            const auto close_pair = time_sampling->getCeilIndex(t_close, num_samples);
-
-            std::cout << "open_pair.first " << open_pair.first << std::endl;
-            std::cout << "close_pair.first " << close_pair.first << std::endl;
-
-            sample_times.reserve(close_pair.first-open_pair.first+1);
-
-            // get _every_ sample times between open and close
-            for (auto i = open_pair.first; i <= close_pair.first; i++)
+            if(!linearly_sampled(m_shutter_open_time, m_shutter_close_time, sample_times))
             {
-                const auto t = time_sampling->getSampleTime(i);
-                sample_times.push_back(t);
-            }
-
-            // compute appleseed number of motion segment
-            motion_segment_count = sample_times.size() - 1;
-
-            if(motion_segment_count)
-            {
-                if(!linearly_sampled(m_shutter_open_time, m_shutter_close_time, sample_times))
-                {
-                    std::cout << "not linearly sampled!" << std::endl;
-                    RENDERER_LOG_WARNING("Motion samples are not matching shutters.");  // TODO: logs doesn't work.
-                }
+                std::cout << "not linearly sampled!" << std::endl;
+                RENDERER_LOG_WARNING("Motion samples are not matching shutters.");  // TODO: logs doesn't work.
             }
         }
 
