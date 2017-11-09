@@ -395,8 +395,8 @@ namespace
                 if (m_env_edf == nullptr)
                     return;
 
-                // When IBL is disabled, only specular reflections should contribute here.
-                if (!m_params.m_enable_ibl && vertex.m_prev_mode != ScatteringMode::Specular)
+                // When IBL is disabled, the environment should still be reflected by glossy and specular surfaces.
+                if (!m_params.m_enable_ibl && vertex.m_prev_mode == ScatteringMode::Diffuse)
                     return;
 
                 // Evaluate the environment EDF.
