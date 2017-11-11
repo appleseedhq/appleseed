@@ -386,7 +386,12 @@ namespace
         const string extension = lower_case(filepath.extension().string());
 
         ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
-        // todo: add chromaticity attributes here...
+
+        // Scene linear sRGB Rec 709 chromaticities.
+        image_attributes.insert("white_xy_chromaticity", Vector2f(0.3127f, 0.3290f));
+        image_attributes.insert("red_xy_chromaticity", Vector2f(0.64f, 0.33f));
+        image_attributes.insert("green_xy_chromaticity", Vector2f(0.30f, 0.60f));
+        image_attributes.insert("blue_xy_chromaticity",  Vector2f(0.15f, 0.06f));
 
         try
         {

@@ -89,6 +89,14 @@ namespace
 
         return auto_release_ptr<SurfaceShader>();
     }
+
+    auto_release_ptr<SurfaceShader> factory_create_surface_shader(
+        const ISurfaceShaderFactory*    factory,
+        const char*                     name,
+        const bpy::dict&                params)
+    {
+        return factory->create(name, bpy_dict_to_param_array(params));
+    }
 }
 
 void bind_surface_shader()
@@ -98,8 +106,13 @@ void bind_surface_shader()
         .def("get_input_metadata", &detail::get_entity_input_metadata<SurfaceShaderFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_surface_shader))
         .def("__init__", bpy::make_constructor(create_surface_shader_with_params))
-        .def("get_model", &SurfaceShader::get_model)
-        ;
+        .def("get_model", &SurfaceShader::get_model);
 
     bind_typed_entity_vector<SurfaceShader>("SurfaceShaderContainer");
+
+    bpy::class_<ISurfaceShaderFactory, boost::noncopyable>("ISurfaceShaderFactory", bpy::no_init)
+        .def("create", &factory_create_surface_shader);
+
+    bpy::class_<SurfaceShaderFactoryRegistrar, boost::noncopyable>("SurfaceShaderFactoryRegistrar", bpy::no_init)
+        .def("lookup", &SurfaceShaderFactoryRegistrar::lookup, bpy::return_value_policy<bpy::reference_existing_object>());
 }

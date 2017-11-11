@@ -74,6 +74,14 @@ namespace
 
         return auto_release_ptr<BSDF>();
     }
+
+    auto_release_ptr<BSDF> factory_create_bsdf(
+        const IBSDFFactory*     factory,
+        const char*             name,
+        const bpy::dict&        params)
+    {
+        return factory->create(name, bpy_dict_to_param_array(params));
+    }
 }
 
 void bind_bsdf()
@@ -82,8 +90,13 @@ void bind_bsdf()
         .def("get_model_metadata", &detail::get_entity_model_metadata<BSDFFactoryRegistrar>).staticmethod("get_model_metadata")
         .def("get_input_metadata", &detail::get_entity_input_metadata<BSDFFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_bsdf))
-        .def("get_model", &BSDF::get_model)
-        ;
+        .def("get_model", &BSDF::get_model);
 
     bind_typed_entity_vector<BSDF>("BSDFContainer");
+
+    bpy::class_<IBSDFFactory, boost::noncopyable>("IBSDFFactory", bpy::no_init)
+        .def("create", &factory_create_bsdf);
+
+    bpy::class_<BSDFFactoryRegistrar, boost::noncopyable>("BSDFFactoryRegistrar", bpy::no_init)
+        .def("lookup", &BSDFFactoryRegistrar::lookup, bpy::return_value_policy<bpy::reference_existing_object>());
 }
