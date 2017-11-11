@@ -350,7 +350,6 @@ set (src_maya_sources
      src/maya/as_maya_hsvToRgb.osl
      src/maya/as_maya_lambert.osl
      src/maya/as_maya_layeredTexture.osl
-     src/maya/as_maya_leather.osl
      src/maya/as_maya_luminance.osl
      src/maya/as_maya_mandelbrot.osl
      src/maya/as_maya_marble.osl

@@ -413,7 +413,7 @@ void voronoi_3D(
 // 
 // Reference:
 //
-//      Generalized Voronoi, aka "Voronoise", based on Inigo Quilez "Voronoise"
+//      Generalized Voronoi, based on Inigo Quilez "Voronoise"
 //      http://www.iquilezles.org/www/articles/voronoise/voronoise.htm
 //
 

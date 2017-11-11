@@ -588,10 +588,7 @@ shader as_noise2d
     result /= norm;
     result *= in_intensity;
 
-    // TODO: we need to add the rendering/working space and whitepoint set
-    //       in the scene, to be retrieved via getattribute().
-    //       This is DCC app dependent.
-    //
+    // TODO: get the working/rendering space via getattribute()
     out_outAlpha = as_luminance(result, "Rec.709", "D65");
 
     color blendc = mix(in_color2, in_color1, in_contrast);
