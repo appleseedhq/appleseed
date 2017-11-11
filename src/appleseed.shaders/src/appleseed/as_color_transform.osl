@@ -34,7 +34,7 @@ shader as_color_transform
     string as_maya_node_name = "asColorTransform",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility:swatch/AppleseedRenderSwatch",
     string help = "Transforms a color to another color model. Input color MUST be linearized.",
-    int as_maya_type_id = 1210824
+    int as_maya_type_id = 0x001279c8
 ]]
 (
     color in_color = color(0.5)
@@ -42,7 +42,7 @@ shader as_color_transform
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Input Color",
-        string page = "Color Attributes",
+        string page = "Color",
         int divider = 1
     ]],
     int in_inputSpace = 0
@@ -53,7 +53,7 @@ shader as_color_transform
         string widget = "mapper",
         string options = "RGB:0|HSV:1|HSL:2|XYZ:3|xyY:4|CIE 1976 L*a*b*:5|CIE 1976 L*u*v*:6|CIE 1976 LCh_ab:7|CIE 1976 LCh_uv:8",
         string label = "Input Space",
-        string page = "Color Attributes"
+        string page = "Color"
     ]],
     int in_outputSpace = 0
     [[
@@ -61,9 +61,9 @@ shader as_color_transform
         string as_maya_attribute_short_name = "os",
         int as_maya_attribute_keyable = 0,
         string widget = "mapper",
-        string options = "RGB:0|HSV:1|HSL:2|XYZ:3|xyY:4|CIE 1976 L*a*b*:5|CIE 1976 L*u*v*:6|CIE 1976 LCh_ab:7|CIE 1976 LCh_uv:8",
+        string options = "RGB:0|HSV:1|HSL:2|CIE XYZ:3|CIE xyY:4|CIE 1976 L*a*b*:5|CIE 1976 L*u*v*:6|CIE 1976 LCh_ab:7|CIE 1976 LCh_uv:8",
         string label = "Output Space",
-        string page = "Color Attributes"
+        string page = "Color"
     ]],
 
     MAYA_COLORMANAGEMENT_PARAMETERS,

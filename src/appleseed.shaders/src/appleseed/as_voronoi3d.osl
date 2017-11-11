@@ -43,13 +43,13 @@ shader as_voronoi3d
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Color 1",
-        string page = "Color Parameters"
+        string page = "Color"
     ]],
     color in_color2 = color(0.1, 0.3, 0.9)
     [[
         string as_maya_attribute_name = "color2",
         string label = "Color 2",
-        string page = "Color Parameters"
+        string page = "Color"
     ]],
     float in_contrast = 0.5
     [[
@@ -58,53 +58,7 @@ shader as_voronoi3d
         float min = 0.0,
         float max = 1.0,
         string label = "Contrast",
-        string page = "Color Parameters"
-    ]],
-    float in_amplitude = 1.0
-    [[
-        string as_maya_attribute_name = "amplitude",
-        string widget = "slider",
-        float min = -10.0,
-        float max = 10.0,
-        float softmin = 0.0,
-        float softmax = 1.0,
-        string label = "Amplitude",
-        string page = "Recursion Parameters"
-    ]],
-    int in_octaves = 3
-    [[
-        string as_maya_attribute_name = "octaves",
-        int as_maya_attribute_connectable = 0,
-        string widget = "slider",
-        int min = 1,
-        int max = 6,
-        int softmin = 1,
-        int softmax = 4,
-        string label = "Octaves",
-        string page = "Recursion Parameters"
-    ]],
-    float in_lacunarity = 2.217
-    [[
-        string as_maya_attribute_name = "lacunarity",
-        string widget = "slider",
-        float min = 0.01,
-        float max = 100.0,
-        float softmin = 0.1,
-        float softmax = 10.0,
-        string label = "Lacunarity",
-        string page = "Recursion Parameters",
-        int as_maya_attribute_connectable = 0
-    ]],
-    float in_persistence = 1.0
-    [[
-        string as_maya_attribute_name = "persistence",
-        string widget = "slider",
-        float min = 0.0,
-        float max = 10.0,
-        float softmin = 0.0,
-        float softmax = 1.0,
-        string label = "Persistence",
-        string page = "Recursion Parameters"
+        string page = "Color"
     ]],
     float in_density = 1.0
     [[
@@ -115,7 +69,7 @@ shader as_voronoi3d
         float softmin = 1.0,
         float softmax = 3.0,
         string label = "Initial Density",
-        string page = "Cell Parameters"
+        string page = "Cell"
     ]],
     float in_jittering = 1.0
     [[
@@ -124,7 +78,7 @@ shader as_voronoi3d
         float min = 0.0,
         float max = 1.0,
         string label = "Jittering",
-        string page = "Cell Parameters",
+        string page = "Cell",
         int divider = 1
     ]],
     int in_metric = 0
@@ -135,7 +89,7 @@ shader as_voronoi3d
         string widget = "mapper",
         string options = "Euclidian Distance:0|Sum of Square Difference:1|Tchebychev Distance:2|Sum of Absolute Difference:3|Akritean Distance:4|Minkowski Metric:5|Karlsruhe Metric:6",
         string label = "Metric",
-        string page = "Cell Parameters",
+        string page = "Cell",
         int divider = 1,
         int gafferNoduleLayoutVisible = 0
     ]],
@@ -148,7 +102,7 @@ shader as_voronoi3d
         float softmin = 0.1,
         float softmax = 10.0,
         string label = "Minkowski Parameter",
-        string page = "Cell Parameters"
+        string page = "Cell"
     ]],
     float in_coverage = 0.5
     [[
@@ -157,7 +111,7 @@ shader as_voronoi3d
         float min = 0.0,
         float max = 1.0,
         string label = "Akritean Coverage",
-        string page = "Cell Parameters",
+        string page = "Cell",
         int divider = 1
     ]],
     int in_featuresMode = 0
@@ -168,8 +122,57 @@ shader as_voronoi3d
         string widget = "mapper",
         string options = "Feature 1:0|Feature 2:1|Feature 3:2|Feature 4:3|F1 + F2:4|F2 - F1:5|F1 * F2:6|F1 / F2:7|F1 ^ F2:8|Pebbles:9|Cell ID 1:10|Cell ID 2:11|Cell ID 3:12|Cell ID 4:13",
         string label = "Features Mode",
-        string page = "Cell Parameters",
+        string page = "Cell",
         int gafferNoduleLayoutVisible = 0
+    ]],
+    float in_amplitude = 1.0
+    [[
+        string as_maya_attribute_name = "amplitude",
+        string widget = "slider",
+        float min = -10.0,
+        float max = 10.0,
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Amplitude",
+        string page = "Recursion",
+        int divider = 1
+    ]],
+    int in_octaves = 3
+    [[
+        string as_maya_attribute_name = "octaves",
+        int as_maya_attribute_connectable = 0,
+        string widget = "slider",
+        int min = 1,
+        int max = 6,
+        int softmin = 1,
+        int softmax = 4,
+        string label = "Octaves",
+        string page = "Recursion",
+        int divider = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    float in_lacunarity = 2.217
+    [[
+        string as_maya_attribute_name = "lacunarity",
+        string widget = "slider",
+        float min = 0.01,
+        float max = 100.0,
+        float softmin = 0.1,
+        float softmax = 10.0,
+        string label = "Lacunarity",
+        string page = "Recursion",
+        int as_maya_attribute_connectable = 0
+    ]],
+    float in_persistence = 1.0
+    [[
+        string as_maya_attribute_name = "persistence",
+        string widget = "slider",
+        float min = 0.0,
+        float max = 10.0,
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Persistence",
+        string page = "Recursion"
     ]],
     int in_softEdges = 1
     [[
@@ -177,14 +180,14 @@ shader as_voronoi3d
         int as_maya_attribute_hidden = 1,
         string label = "Soft Edges",
         string widget = "checkBox",
-        string page = "Placement Parameters",
+        string page = "Placement",
         int gafferNoduleLayoutVisible = 0
     ]],
     matrix in_placementMatrix = matrix(1)
     [[
         string as_maya_attribute_name = "placementMatrix",
         string label = "Placement Matrix",
-        string page = "Placement Parameters",
+        string page = "Placement",
         int gafferNoduleLayoutVisible = 0
     ]],
     point in_surfacePoint = P
@@ -192,13 +195,11 @@ shader as_voronoi3d
         string as_maya_attribute_name = "surfacePoint",
         int as_maya_attribute_hidden = 1,
         string label = "Surface Point",
-        string page = "Cell Parameters",
+        string page = "Cell",
         string widget = "null",
         int gafferNoduleLayoutVisible = 0
     ]],
 
-    MAYA_COLORBALANCE_PARAMETERS,
-    MAYA_EFFECTS_PARAMETERS,
     MAYA_EFFECTS_3DTEX_PARAMETERS,
 
     output color out_outColor = color(0)
@@ -247,172 +248,156 @@ shader as_voronoi3d
         in_blend,
         box_blending);
 
-    if (outside_box)
+    if (outside_box || in_amplitude == 0.0)
     {
-        out_outColor = in_defaultColor;
-        out_outAlpha = maya_luminance(out_outColor);
+        out_outColor = color(0);
+        out_outAlpha = 1.0;
+        return;
     }
-    else if (in_amplitude > 0.0)
+
+    // Passing the output arrays directly seems not to get the arrays
+    // filled, so use temporary copies for now.
+    
+    float tmp_features[4] = {1000, 1000, 1000, 1000};
+    point tmp_positions[4] = {0, 0, 0, 0};
+    color tmp_IDs[4] = {0, 0, 0, 0};
+
+    point surface_point = in_density * in_surfacePoint; // initial density
+
+    float lacunarity = in_lacunarity, amplitude = in_amplitude;
+    float local_gain = in_persistence, sum = 0.0;
+
+    for (int i = 0; i < in_octaves; ++i)
     {
-        // Passing the output arrays directly seems not to get the arrays
-        // filled, so use temporary copies for now.
-
-        float tmp_features[4] = {1000, 1000, 1000, 1000};
-        point tmp_positions[4] = {0, 0, 0, 0};
-        color tmp_IDs[4] = {0, 0, 0, 0};
-
-        point surface_point = in_density * in_surfacePoint; // initial density
-
-        float lacunarity = in_lacunarity, amplitude = in_amplitude;
-        float gain = in_persistence, sum = 0.0;
-
-        for (int i = 0; i < in_octaves; ++i)
+        if (amplitude == 0.0)
         {
-            if (amplitude == 0.0)
-            {
-                break;
-            }
-
-            voronoi_3D(
-                surface_point,
-                in_jittering,
-                in_metric,
-                in_Minkowski_p,
-                in_coverage,
-                tmp_features,
-                tmp_positions,
-                tmp_IDs);
-
-            // Only the "pebbles" mode requires the accumulation.
-
-            if (in_featuresMode == 9)
-            {
-                sum += amplitude * tmp_features[0];
-                amplitude *= gain;
-            }
-            else
-            {
-                tmp_features[0] *= amplitude;
-                tmp_features[1] *= amplitude;
-                tmp_features[2] *= amplitude;
-                tmp_features[3] *= amplitude;
-            }
-            surface_point *= lacunarity;
+            break;
         }
 
-        out_outFeatures = tmp_features;
-        out_outPositions = tmp_positions;
-        out_outIDs = tmp_IDs;
+        voronoi_3D(
+            surface_point,
+            in_jittering,
+            in_metric,
+            in_Minkowski_p,
+            in_coverage,
+            tmp_features,
+            tmp_positions,
+            tmp_IDs);
 
-        // Basic feature mode outputs, for more the user can use the
-        // extra output parameters directly.
+        // Only the "pebbles" mode requires the accumulation.
 
-        if (in_featuresMode == 0)
+        if (in_featuresMode == 9)
         {
-            out_outAlpha = out_outFeatures[0];
-        }
-        else if (in_featuresMode == 1)
-        {
-            out_outAlpha = out_outFeatures[1];
-        }
-        else if (in_featuresMode == 2)
-        {
-            out_outAlpha = out_outFeatures[2];
-        }
-        else if (in_featuresMode == 3)
-        {
-            out_outAlpha = out_outFeatures[3];
-        }
-        else if (in_featuresMode == 4)
-        {
-            out_outAlpha = out_outFeatures[0] + out_outFeatures[1];
-        }
-        else if (in_featuresMode == 5)
-        {
-            out_outAlpha = out_outFeatures[1] - out_outFeatures[0];
-        }
-        else if (in_featuresMode == 6)
-        {
-            out_outAlpha = out_outFeatures[0] * out_outFeatures[1];
-        }
-        else if (in_featuresMode == 7)
-        {
-            out_outAlpha = out_outFeatures[0] / max(EPS, out_outFeatures[1]);
-        }
-        else if (in_featuresMode == 8)
-        {
-            out_outAlpha = pow(out_outFeatures[0], out_outFeatures[1]);
-        }
-        else if (in_featuresMode == 9)
-        {
-            out_outAlpha =
-                abs(sum) * pow(out_outFeatures[0], out_outFeatures[1]) -
-                    sum  * pow(out_outFeatures[2], out_outFeatures[3]);
-        }
-        else if (in_featuresMode == 10)
-        {
-            // We need to get the render space information in order to get
-            // the correct relative luminance. For now set to Rec.709
-            // primaries.
-
-            out_outAlpha = as_luminance(out_outIDs[0], "Rec.709");
-        }
-        else if (in_featuresMode == 11)
-        {
-            out_outAlpha = as_luminance(out_outIDs[1], "Rec.709");
-        }
-        else if (in_featuresMode == 12)
-        {
-            out_outAlpha = as_luminance(out_outIDs[2], "Rec.709");
-        }
-        else if (in_featuresMode == 13)
-        {
-            out_outAlpha = as_luminance(out_outIDs[3], "Rec.709");
+            sum += amplitude * tmp_features[0];
+            amplitude *= local_gain;
         }
         else
         {
-#ifdef DEBUG
-            string shadername = "";
-            getattribute("shader:shadername", shadername);
-
-            warning("[WARNING]: Invalid Feature Mode selected in %s, %s:%i\n",
-                    shadername, __FILE__, __LINE__);
-#endif
-            out_outAlpha = 0.0;
+            tmp_features[0] *= amplitude;
+            tmp_features[1] *= amplitude;
+            tmp_features[2] *= amplitude;
+            tmp_features[3] *= amplitude;
         }
+        surface_point *= lacunarity;
+    }
 
-        color color_blend = mix(in_color2, in_color1, in_contrast);
+    out_outFeatures = tmp_features;
+    out_outPositions = tmp_positions;
+    out_outIDs = tmp_IDs;
 
-        out_outColor = mix(in_color2, color_blend, 1 - out_outAlpha);
+    // Basic feature mode outputs, for more the user can use the
+    // extra output parameters directly.
+    // TODO: to be removed once the output arrays are filled.
 
-        if (in_softEdges)
-        {
-            out_outColor *= 1 - out_outAlpha;
-        }
-        if (!in_wrap && in_blend)
-        {
-            float blend_factor = clamp(
-                smoothstep(in_blend * 0.05, in_blend * 0.65, box_blending),
-                0.0, 1.0);
+    if (in_featuresMode == 0)
+    {
+        out_outAlpha = out_outFeatures[0];
+    }
+    else if (in_featuresMode == 1)
+    {
+        out_outAlpha = out_outFeatures[1];
+    }
+    else if (in_featuresMode == 2)
+    {
+        out_outAlpha = out_outFeatures[2];
+    }
+    else if (in_featuresMode == 3)
+    {
+        out_outAlpha = out_outFeatures[3];
+    }
+    else if (in_featuresMode == 4)
+    {
+        out_outAlpha = out_outFeatures[0] + out_outFeatures[1];
+    }
+    else if (in_featuresMode == 5)
+    {
+        out_outAlpha = out_outFeatures[1] - out_outFeatures[0];
+    }
+    else if (in_featuresMode == 6)
+    {
+        out_outAlpha = out_outFeatures[0] * out_outFeatures[1];
+    }
+    else if (in_featuresMode == 7)
+    {
+        out_outAlpha = out_outFeatures[0] / max(EPS, out_outFeatures[1]);
+    }
+    else if (in_featuresMode == 8)
+    {
+        out_outAlpha = pow(out_outFeatures[0], out_outFeatures[1]);
+    }
+    else if (in_featuresMode == 9)
+    {
+        out_outAlpha =
+            abs(sum) * pow(out_outFeatures[0], out_outFeatures[1]) -
+                sum  * pow(out_outFeatures[2], out_outFeatures[3]);
+    }
+    else if (in_featuresMode == 10)
+    {
+        // We need to get the render space information in order to get
+        // the correct relative luminance. For now set to Rec.709
+        // primaries.
 
-            out_outColor = mix(in_defaultColor, out_outColor, blend_factor);
-            out_outAlpha *= (1.0 - blend_factor);
-        }
-
-        maya_colorBalance(
-            in_colorGain,
-            in_colorOffset,
-            in_defaultColor,
-            in_alphaGain,
-            in_alphaOffset,
-            in_invert,
-            in_alphaIsLuminance,
-            out_outColor,
-            out_outAlpha);
+        out_outAlpha = as_luminance(out_outIDs[0], "Rec.709");
+    }
+    else if (in_featuresMode == 11)
+    {
+        out_outAlpha = as_luminance(out_outIDs[1], "Rec.709");
+    }
+    else if (in_featuresMode == 12)
+    {
+        out_outAlpha = as_luminance(out_outIDs[2], "Rec.709");
+    }
+    else if (in_featuresMode == 13)
+    {
+        out_outAlpha = as_luminance(out_outIDs[3], "Rec.709");
     }
     else
     {
-        out_outColor = color(0);
-        out_outAlpha = 1 - 0.5 * in_contrast;
+#ifdef DEBUG
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+
+        warning("[WARNING]: Invalid Feature Mode selected in %s, %s:%i\n",
+                shadername, __FILE__, __LINE__);
+#endif
+        out_outAlpha = 0.0;
+    }
+
+    color color_blend = mix(in_color2, in_color1, in_contrast);
+    out_outColor = mix(in_color2, color_blend, 1 - out_outAlpha);
+
+    if (in_softEdges)
+    {
+        out_outColor *= 1 - out_outAlpha;
+    }
+
+    if (!in_wrap && in_blend)
+    {
+        float blend_factor = clamp(
+            smoothstep(in_blend * 0.05, in_blend * 0.65, box_blending),
+            0.0, 1.0);
+
+        out_outColor = mix(color(0), out_outColor, blend_factor);
+        out_outAlpha *= (1.0 - blend_factor);
     }
 }
