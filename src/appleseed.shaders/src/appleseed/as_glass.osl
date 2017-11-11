@@ -31,7 +31,7 @@ shader as_glass
     string as_maya_node_name = "asGlass",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
     string help = "Glass material",
-    int as_maya_type_id = 1210820
+    int as_maya_type_id = 0x001279c4
 ]]
 (
     color in_surface_transmittance = color(1.0)
