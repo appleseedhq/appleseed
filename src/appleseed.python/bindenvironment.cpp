@@ -1,4 +1,4 @@
-
+﻿
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -76,6 +76,14 @@ namespace
         return auto_release_ptr<EnvironmentEDF>();
     }
 
+    auto_release_ptr<EnvironmentEDF> factory_create_environment_edf(
+        const IEnvironmentEDFFactory*   factory,
+        const char*                     name,
+        const bpy::dict&                params)
+    {
+        return factory->create(name, bpy_dict_to_param_array(params));
+    }
+
     TransformSequence* environment_edf_get_transform_sequence(EnvironmentEDF* environment)
     {
         return &(environment->transform_sequence());
@@ -106,6 +114,14 @@ namespace
     {
         return EnvironmentFactory::create(name.c_str(), bpy_dict_to_param_array(params));
     }
+
+    auto_release_ptr<EnvironmentShader> factory_create_environment_shader(
+        const IEnvironmentShaderFactory*    factory,
+        const char*                         name,
+        const bpy::dict&                    params)
+    {
+        return factory->create(name, bpy_dict_to_param_array(params));
+    }
 }
 
 void bind_environment()
@@ -115,8 +131,7 @@ void bind_environment()
         .def("get_input_metadata", &detail::get_entity_input_metadata<EnvironmentEDFFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_environment_edf))
         .def("get_model", &EnvironmentEDF::get_model)
-        .def("transform_sequence", environment_edf_get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
-        ;
+        .def("transform_sequence", environment_edf_get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>());
 
     bind_typed_entity_vector<EnvironmentEDF>("EnvironmentEDFContainer");
 
@@ -124,8 +139,7 @@ void bind_environment()
         .def("get_model_metadata", &detail::get_entity_model_metadata<EnvironmentShaderFactoryRegistrar>).staticmethod("get_model_metadata")
         .def("get_input_metadata", &detail::get_entity_input_metadata<EnvironmentShaderFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_environment_shader))
-        .def("get_model", &EnvironmentShader::get_model)
-        ;
+        .def("get_model", &EnvironmentShader::get_model);
 
     bind_typed_entity_vector<EnvironmentShader>("EnvironmentShaderContainer");
 
@@ -133,6 +147,11 @@ void bind_environment()
         .def("__init__", bpy::make_constructor(create_environment))
         .def("get_environment_edf", &Environment::get_environment_edf, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("get_environment_shader", &Environment::get_environment_shader, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def("get_model", &Environment::get_model)
-        ;
+        .def("get_model", &Environment::get_model);
+
+    bpy::class_<IEnvironmentEDFFactory, boost::noncopyable>("IEnvironmentEDFFactory", bpy::no_init)
+        .def("create", &factory_create_environment_edf);
+
+    bpy::class_<EnvironmentEDFFactoryRegistrar, boost::noncopyable>("EnvironmentEDFFactoryRegistrar", bpy::no_init)
+        .def("lookup", &EnvironmentEDFFactoryRegistrar::lookup, bpy::return_value_policy<bpy::reference_existing_object>());
 }

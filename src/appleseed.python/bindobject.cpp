@@ -57,6 +57,14 @@ namespace boost
 
 namespace
 {
+    auto_release_ptr<Object> factory_create_object(
+        const IObjectFactory*   factory,
+        const char*             name,
+        const bpy::dict&        params)
+    {
+        return factory->create(name, bpy_dict_to_param_array(params));
+    }
+
     void bpy_list_to_string_array(const bpy::list& l, StringArray& strings)
     {
         strings.clear();
@@ -157,8 +165,7 @@ void bind_object()
         .def("compute_local_bbox", &Object::compute_local_bbox)
         .def("material_slots", &obj_material_slots)
         .def("get_material_slot_count", &Object::get_material_slot_count)
-        .def("get_material_slot", &Object::get_material_slot)
-        ;
+        .def("get_material_slot", &Object::get_material_slot);
 
     bind_typed_entity_vector<Object>("ObjectContainer");
 
@@ -170,8 +177,13 @@ void bind_object()
         .def("get_transform", &obj_inst_get_transform)
         .def("bbox", &ObjectInstance::compute_parent_bbox)
         .def("get_front_material_mappings", &obj_inst_get_front_material_mappings)
-        .def("get_back_material_mappings", &obj_inst_get_back_material_mappings)
-        ;
+        .def("get_back_material_mappings", &obj_inst_get_back_material_mappings);
 
     bind_typed_entity_vector<ObjectInstance>("ObjectInstanceContainer");
+
+    bpy::class_<IObjectFactory, boost::noncopyable>("IObjectFactory", bpy::no_init)
+        .def("create", &factory_create_object);
+
+    bpy::class_<ObjectFactoryRegistrar, boost::noncopyable>("ObjectFactoryRegistrar", bpy::no_init)
+        .def("lookup", &ObjectFactoryRegistrar::lookup, bpy::return_value_policy<bpy::reference_existing_object>());
 }

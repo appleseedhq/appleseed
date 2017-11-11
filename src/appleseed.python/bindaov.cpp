@@ -69,6 +69,13 @@ namespace
 
         return auto_release_ptr<AOV>();
     }
+
+    auto_release_ptr<AOV> factory_create_aov(
+        const IAOVFactory*  factory,
+        const bpy::dict&    params)
+    {
+        return factory->create(bpy_dict_to_param_array(params));
+    }
 }
 
 void bind_aov()
@@ -77,8 +84,13 @@ void bind_aov()
         .def("get_model_metadata", &detail::get_entity_model_metadata<AOVFactoryRegistrar>).staticmethod("get_model_metadata")
         .def("get_input_metadata", &detail::get_entity_input_metadata<AOVFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_aov))
-        .def("get_model", &AOV::get_model)
-        ;
+        .def("get_model", &AOV::get_model);
 
     bind_typed_entity_vector<AOV>("AOVContainer");
+
+    bpy::class_<IAOVFactory, boost::noncopyable>("IAOVFactory", bpy::no_init)
+        .def("create", &factory_create_aov);
+
+    bpy::class_<AOVFactoryRegistrar, boost::noncopyable>("AOVFactoryRegistrar", bpy::no_init)
+        .def("lookup", &AOVFactoryRegistrar::lookup, bpy::return_value_policy<bpy::reference_existing_object>());
 }
