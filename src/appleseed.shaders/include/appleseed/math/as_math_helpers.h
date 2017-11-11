@@ -33,6 +33,7 @@
 #endif
 
 float sqr(float x) { return x * x; }
+vector sqr(vector x) { return x * x; }
 
 //
 // Reference:

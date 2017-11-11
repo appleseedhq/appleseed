@@ -188,7 +188,7 @@ float as_luminance(color in_C, string colorspace, string illuminant)
     {
         Y = as_luminance_D60(in_C, colorspace);
     }
-    else if (illuminant = "D65")
+    else if (illuminant == "D65")
     {
         Y = as_luminance_D65(in_C, colorspace);
     }

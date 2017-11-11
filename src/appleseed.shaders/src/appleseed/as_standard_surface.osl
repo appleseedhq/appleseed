@@ -44,14 +44,14 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1.0,
         string label = "Diffuse Weight",
-        string page = "Diffuse Parameters"
+        string page = "Diffuse"
     ]],
     color in_color = color(0.5)
     [[
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Diffuse Color",
-        string page = "Diffuse Parameters"
+        string page = "Diffuse"
     ]],
     float in_diffuse_roughness = 0.1
     [[
@@ -60,7 +60,7 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1.0,
         string label = "Diffuse Roughness",
-        string page = "Diffuse Parameters"
+        string page = "Diffuse"
     ]],
     float in_subsurface_weight = 0.0
     [[
@@ -69,15 +69,15 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1.0,
         string label = "Subsurface Weight",
-        string page = "Subsurface Parameters",
+        string page = "Subsurface",
         int divider = 1
     ]],
     color in_sss_mfp = color(0)
     [[
         string as_maya_attribute_name = "subsurfaceMfp",
         string as_maya_attribute_short_name = "mfp",
-        string label = "Subsurface Mean Free Path",
-        string page = "Subsurface Parameters"
+        string label = "Mean Free Path",
+        string page = "Subsurface"
     ]],
     float in_sss_mfp_scale = 1.0
     [[
@@ -86,13 +86,42 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1000.0,
         float softmax = 100.0,
-        string label = "Subsurface MFP Scale",
-        string page = "Subsurface Parameters",
+        string label = "MFP Scale",
+        string page = "Subsurface",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0
     ]],
+    int in_sss_maximum_ray_depth = 2
+    [[
+        string as_maya_attribute_name = "sssMaximumRayDepth",
+        string as_maya_attribute_short_name = "ssd",
+        int min = 1,
+        int max = 16,
+        int softmax = 8,
+        string label = "SSS Ray Depth",
+        string page = "Subsurface.Advanced",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    float in_sss_threshold = 0.001
+    [[
+        string as_maya_attribute_name = "sssThreshold",
+        string as_maya_attibute_short_name = "sth",
+        float min = 0.0,
+        float max = 1.0,
+        float softmax = 0.01,
+        string label = "SSS Diffuse Threshold",
+        string page = "Subsurface.Advanced",
+        string help = "Threshold at which SSS is replaced by a diffuse term",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]], 
     float in_translucency_weight = 0.0
     [[
         string as_maya_attribute_name = "translucencyWeight",
@@ -100,21 +129,21 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1.0,
         string label = "Translucency Weight",
-        string page = "Translucency Parameters"
+        string page = "Translucency"
     ]],
     color in_translucency_color = color(0.0)
     [[
         string as_maya_attribute_name = "translucencyColor",
         string as_maya_attribute_short_name = "trc",
         string label = "Translucency Color",
-        string page = "Translucency Parameters"
+        string page = "Translucency"
     ]],
     color in_specular_color = color(1)
     [[
         string as_maya_attribute_name = "specularColor",
         string as_maya_attribute_short_name = "spc",
-        string label = "SpecularColor",
-        string page = "Specular Parameters"
+        string label = "Specular Color",
+        string page = "Specular"
     ]],
     float in_specular_roughness = 0.1
     [[
@@ -122,8 +151,8 @@ shader as_standard_surface
         string as_maya_attribute_short_name = "sro",
         float min = 0.0,
         float max = 1.0,
-        string label = "Roughness",
-        string page = "Specular Parameters"
+        string label = "Specular Roughness",
+        string page = "Specular"
     ]],
     float in_specular_spread = 0.25
     [[
@@ -132,7 +161,7 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1.0,
         string label = "Specular Spread",
-        string page = "Specular Parameters",
+        string page = "Specular",
         string help = "Specular spread, controls the tails of the highlights.",
         int divider = 1
     ]],  
@@ -143,7 +172,7 @@ shader as_standard_surface
         string widget = "mapper",
         string options = "Dielectric:0|Conductor:1",
         string label = "Fresnel Type",
-        string page = "Specular Parameters",
+        string page = "Specular",
         string help = "In dielectric mode, set IOR explicitly, and in conductor mode, set face and edge refletance.",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
@@ -158,7 +187,7 @@ shader as_standard_surface
         float max = 10.0,
         float softmax = 2.0,
         string label = "Index Of Refraction",
-        string page = "Specular Parameters",
+        string page = "Specular",
         string help = "IOR, only active if Fresnel is set to dielectric.",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
@@ -170,7 +199,7 @@ shader as_standard_surface
         string as_maya_attribute_name = "faceTint",
         string as_maya_attribute_short_name = "f0",
         string label = "Facing Tint",
-        string page = "Specular Parameters",
+        string page = "Specular",
         string help = "Reflectance at facing angle, for conductor Fresnel.",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
@@ -182,7 +211,7 @@ shader as_standard_surface
         string as_maya_attribute_name = "edgeTint",
         string as_maya_attribute_short_name = "f90",
         string label = "Edge Tint",
-        string page = "Specular Parameters",
+        string page = "Specular",
         string help = "Reflectance at grazing angle, conductor Fresnel only.",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
@@ -197,7 +226,7 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1.0,
         string label = "Anisotropy Amount",
-        string page = "Specular Parameters"
+        string page = "Specular.Anisotropy"
     ]],
     float in_anisotropy_angle = 0.0
     [[
@@ -206,7 +235,7 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1.0,
         string label = "Anisotropy Angle",
-        string page = "Specular Parameters",
+        string page = "Specular.Anisotropy",
         string help = "Anisotropy angle in [0,1], mapping to [0,360] degrees"
     ]],
     color in_anisotropy_map = color(0)
@@ -214,7 +243,7 @@ shader as_standard_surface
         string as_maya_attribute_name = "anisotropyMap",
         string as_maya_attribute_short_name = "ama",
         string label = "Anisotropy Vector Map",
-        string page = "Specular Parameters",
+        string page = "Specular.Anisotropy",
         string help = "Anisotropy vector map, with XY encoded in RG channels"
     ]],
     float in_refraction_amount = 0.0
@@ -224,7 +253,7 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1.0,
         string label = "Refraction Amount",
-        string page = "Refraction Parameters",
+        string page = "Specular.Refraction",
         string help = "Refraction amount. Refraction inherits the IOR"
     ]],
     color in_refraction_tint = color(1)
@@ -232,7 +261,7 @@ shader as_standard_surface
         string as_maya_attribute_name = "refractionTint",
         string as_maya_attribute_short_name = "rti",
         string label = "Refraction Tint",
-        string page = "Refraction Parameters",
+        string page = "Specular.Refraction",
         int divider = 1
     ]],
     float in_absorption_depth = 0.0
@@ -243,7 +272,7 @@ shader as_standard_surface
         float max = 10000.0,
         float softmax = 100.0,
         string label = "Absorption Depth",
-        string page = "Refraction Parameters",
+        string page = "Specular.Refraction",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -254,7 +283,7 @@ shader as_standard_surface
         string as_maya_attribute_name = "absorptionColor",
         string as_maya_attribute_short_name = "rac",
         string label = "Absorption Color",
-        string page = "Refraction Parameters"
+        string page = "Specular.Refraction"
     ]],
     float in_coating_reflectivity = 0.0
     [[
@@ -263,7 +292,7 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1.0,
         string label = "Coating Reflectivity",
-        string page = "Coating Parameters",
+        string page = "Specular.Coating",
         string help = "Coating specular amount."
     ]],
     float in_coating_roughness = 0.0
@@ -273,7 +302,7 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1.0,
         string label = "Coating Roughness",
-        string page = "Coating Parameters"
+        string page = "Specular.Coating"
     ]],
     float in_coating_ior = 1.42
     [[
@@ -283,7 +312,7 @@ shader as_standard_surface
         float max = 5.0,
         float softmax = 2.0,
         string label = "Coating IOR",
-        string page = "Coating Parameters",
+        string page = "Specular.Coating",
         string help = "Coating (monochromatic) dielectric IOR",
         int divider = 1,
         int as_maya_attribute_connectable = 0,
@@ -299,7 +328,7 @@ shader as_standard_surface
         float max = 10.0,
         float softmax = 1.0,
         string label = "Coating Depth",
-        string page = "Coating Parameters",
+        string page = "Specular.Coating",
         string help = "Maps from [0,1] to [0,10] microns."
     ]],
     color in_coating_absorption = color(1)
@@ -307,7 +336,21 @@ shader as_standard_surface
         string as_maya_attribute_name = "coatingAbsorption",
         string as_maya_attribute_short_name = "coa",
         string label = "Coating Absorption",
-        string page = "Coating Parameters"
+        string page = "Specular.Coating"
+    ]],
+    int in_maximum_ray_depth = 8
+    [[
+        string as_maya_attribute_name = "maximumRayDepth",
+        string as_maya_attribute_short_name = "mrd",
+        int min = 0,
+        int max = 32,
+        int softmax = 8,
+        string label = "Ray Depth",
+        string page = "Specular.Advanced",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
     ]],
     float in_incandescence_amount = 0.0
     [[
@@ -316,7 +359,7 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1.0,
         string label = "Incandescence Amount",
-        string page = "Incandescence Parameters"
+        string page = "Incandescence"
     ]],
     int in_incandescence_type = 0
     [[
@@ -325,7 +368,7 @@ shader as_standard_surface
         string widget = "mapper",
         string options = "Constant:0|Physically Based:1",
         string label = "Incandescence Type",
-        string page = "Incandescence Parameters",
+        string page = "Incandescence",
         string help = "Constant based, or blackbody radiator based EDF",
         int divider = 1,
         int as_maya_attribute_connectable = 0,
@@ -338,7 +381,7 @@ shader as_standard_surface
         string as_maya_attribute_name = "incandescenceColor",
         string as_maya_attribute_short_name = "inc",
         string label = "Incandescence Color",
-        string page = "Incandescence Parameters",
+        string page = "Incandescence",
         string help = "Incandescence color, only valid in constant mode."
     ]],
     int in_temperature = 4300
@@ -350,7 +393,7 @@ shader as_standard_surface
         int softmin = 3400,
         int softmax = 9300,
         string label = "Temperature",
-        string page = "Incandescence Parameters",
+        string page = "Incandescence",
         string help = "Temperature in Kelvin degrees, only valid in physically based mode",
         int divider = 1,
         int as_maya_attribute_connectable = 0,
@@ -365,7 +408,7 @@ shader as_standard_surface
         string as_maya_attribute_short_name = "nae",
         string widget = "checkBox",
         string label = "Normalize Area",
-        string page = "Incandescence Parameters",
+        string page = "Incandescence",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -377,7 +420,7 @@ shader as_standard_surface
         string as_maya_attribute_short_name = "tme",
         string widget = "checkBox",
         string label = "Tonemap Color",
-        string page = "Incandescence Parameters",
+        string page = "Incandescence",
         string help = "Tonemap incandescence, only valid for physically based mode",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
@@ -389,14 +432,14 @@ shader as_standard_surface
         string as_maya_attribute_name = "transparency",
         string as_maya_attribute_short_name = "it",
         string label = "Transparency Color",
-        string page = "Transparency Parameters"
+        string page = "Transparency"
     ]],
     normal in_bump_normal_coating = N
     [[
         string as_maya_attribute_name = "coatingNormal",
         string as_maya_attribute_short_name = "ncn",
         string label = "Coating Normal",
-        string page = "Bump Parameters",
+        string page = "Bump",
         string help = "The coating normal. If not set, the substrate normal is used for both layers."
     ]],
     normal in_bump_normal_substrate = N
@@ -404,7 +447,7 @@ shader as_standard_surface
         string as_maya_attribute_name = "normalCamera",
         string as_maya_attribute_short_name = "n",
         string label = "Substrate Normal",
-        string page = "Bump Parameters",
+        string page = "Bump",
         string help = "The default bump normal."
     ]],
     int in_enable_matte = 0
@@ -413,7 +456,7 @@ shader as_standard_surface
         string as_maya_attribute_short_name = "ema",
         string widget = "checkBox",
         string label = "Enable Matte Opacity",
-        string page = "Matte Opacity Parameters",
+        string page = "Matte Opacity",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -427,7 +470,7 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1.0,
         string label = "Matte Opacity",
-        string page = "Matte Opacity Parameters",
+        string page = "Matte Opacity",
         int gafferNoduleLayoutVisible = 0
     ]],
     color in_matte_opacity_color = color(1,0.5,0)
@@ -435,50 +478,7 @@ shader as_standard_surface
         string as_maya_attribute_name = "matteOpacityColor",
         string as_maya_attribute_short_name = "mac",
         string label = "Matte Opacity Color",
-        string page = "Matte Opacity Parameters",
-        int gafferNoduleLayoutVisible = 0
-    ]],
-    int in_sss_maximum_ray_depth = 2
-    [[
-        string as_maya_attribute_name = "sssMaximumRayDepth",
-        string as_maya_attribute_short_name = "ssd",
-        int min = 1,
-        int max = 16,
-        int softmax = 8,
-        string label = "SSS Ray Depth",
-        string page = "Advanced Parameters",
-        int as_maya_attribute_connectable = 0,
-        int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1,
-        int gafferNoduleLayoutVisible = 0
-    ]],
-    float in_sss_threshold = 0.001
-    [[
-        string as_maya_attribute_name = "sssThreshold",
-        string as_maya_attibute_short_name = "sth",
-        float min = 0.0,
-        float max = 1.0,
-        float softmax = 0.01,
-        string label = "SSS Diffuse Threshold",
-        string page = "Advanced Parameters",
-        string help = "Threshold at which SSS is replaced by a diffuse term",
-        int as_maya_attribute_connectable = 0,
-        int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1,
-        int gafferNoduleLayoutVisible = 0
-    ]],
-    int in_maximum_ray_depth = 8
-    [[
-        string as_maya_attribute_name = "maximumRayDepth",
-        string as_maya_attribute_short_name = "mrd",
-        int min = 0,
-        int max = 32,
-        int softmax = 8,
-        string label = "Ray Depth",
-        string page = "Advanced Parameters",
-        int as_maya_attribute_connectable = 0,
-        int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1,
+        string page = "Matte Opacity",
         int gafferNoduleLayoutVisible = 0
     ]],
     vector Tn = vector(0)

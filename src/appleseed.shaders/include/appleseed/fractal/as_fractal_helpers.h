@@ -410,4 +410,138 @@ void voronoi_3D(
     }
 }
 
+// 
+// Reference:
+//
+//      Generalized Voronoi, based on Inigo Quilez "Voronoise"
+//      http://www.iquilezles.org/www/articles/voronoise/voronoise.htm
+//
+
+float voronoise2d(float x, float y, float jittering, float smoothness)
+{
+    vector p = vector(floor(x), floor(y), 0.0);
+    vector f = vector(x - p[0], y - p[1], 0);
+
+    float k = 1.0 + 63.0 * pow(1.0 - smoothness, 4.0);
+
+    float distance_avg = 0.0, normalization = 0.0;
+
+    for (int i = -2; i <= 2; ++i)
+    {
+        for (int j = -2; j <= 2; ++j)
+        {
+            vector g = vector(i, j, 0.0);
+
+            vector hash_value = hashnoise(p + g);
+            hash_value *= vector(jittering, smoothness, 1.0);
+
+            vector r = g - f + hash_value;
+            r[2] = 0.0;
+
+            float weighted_dist =
+                pow(1.0 - smoothstep(0.0, M_SQRT2, length(r)), k);
+
+            distance_avg += hash_value[2] * weighted_dist;
+            normalization += weighted_dist;
+        }
+    }
+    return (normalization > 0.0) ? distance_avg / normalization : 0.0;
+}
+
+float voronoise3d(point Pp, float jittering, float smoothness)
+{
+    point po = Pp + vector(0.5);
+    vector p = floor(po);
+    vector f = po - p;
+
+    float m = 1.0 + 63.0 * pow(1.0 - smoothness, 4.0);
+
+    float distance_avg = 0.0, normalization = 0.0;
+
+    for (int i = -2; i < 2; ++i)
+    {
+        for (int j = -2; j < 2; ++j)
+        {
+            for (int k = -2; k < 2; ++k)
+            {
+                vector g = vector(i, j, k);
+                vector hash_value = (vector) hashnoise(p + g);
+
+                vector r = g - f + vector(jittering) * hash_value;
+                r += vector(0.5);
+
+                float weighted_dist =
+                    pow(1.0 - smoothstep(0.0, M_SQRT2, length(r)), m);
+
+                distance_avg += hash_value[0] * weighted_dist;
+                normalization += weighted_dist;
+            }
+        }
+    }
+    return (normalization > 0.0) ? distance_avg / normalization : 0.0;
+}
+
+//
+// Reference:
+//
+//      Value Noise 2D, https://www.shadertoy.com/view/lsf3WH
+//
+
+float value_noise2d(float x, float y)
+{
+    vector xy = vector(x, y, 0.0);
+
+    vector floor_xy = vector(floor(xy[0]), floor(xy[1]), 0.0);
+    vector fract_xy = xy - floor_xy;
+
+    vector uu = sqr(fract_xy) * (3.0 - 2.0 * fract_xy); // cubic interpolation
+
+    float a = mix(
+        hashnoise(floor_xy + vector(0.0, 0.0, 0.0)),
+        hashnoise(floor_xy + vector(1.0, 0.0, 0.0)),
+        uu[0]);
+
+    float b = mix(
+        hashnoise(floor_xy + vector(0.0, 1.0, 0.0)),
+        hashnoise(floor_xy + vector(1.0, 1.0, 0.0)),
+        uu[0]);
+
+    return mix(a, b, uu[1]);
+}
+
+//
+// Reference:
+//
+//  Value Noise 3D, https://www.shadertoy.com/view/4sfGzS
+//
+
+float value_noise3d(point Pp)
+{
+    vector floor_p = floor(Pp);
+    vector fract_p = Pp - floor_p;
+
+    vector f = sqr(fract_p) * (3.0 - 2.0 * fract_p);
+
+    float a = mix(hashnoise(floor_p + vector(0)),
+                  hashnoise(floor_p + vector(1.0, 0.0, 0.0)),
+                  f[0]);
+
+    float b = mix(hashnoise(floor_p + vector(0.0, 1.0, 0.0)),
+                  hashnoise(floor_p + vector(1.0, 1.0, 0.0)),
+                  f[0]);
+
+    float c = mix(hashnoise(floor_p + vector(0.0, 0.0, 1.0)),
+                  hashnoise(floor_p + vector(1.0, 0.0, 1.0)),
+                  f[0]);
+
+    float d = mix(hashnoise(floor_p + vector(0.0, 1.0, 1.0)),
+                  hashnoise(floor_p + vector(1.0, 1.0, 1.0)),
+                  f[0]);
+
+    float x = mix(a, b, f[1]);
+    float y = mix(c, d, f[1]);
+
+    return mix(x, y, f[2]);
+}
+
 #endif // !AS_FRACTAL_HELPERS_H
