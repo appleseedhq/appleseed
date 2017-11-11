@@ -573,7 +573,7 @@ shader as_noise2d
                 signal = in_offset - signal;
                 signal *= signal;
                 signal *= weight;
-                weight = clamp(signal * 2.0, 0.0, 1.0);
+                weight = min(1.0, signal * 2.0);
             }
 
             result = (in_cascade_mode)
