@@ -35,7 +35,7 @@ shader as_luminance
     string as_maya_node_name = "asLuminance",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility:swatch/AppleseedRenderSwatch",
     string help = "Primaries and illuminants aware relative luminance node",
-    int as_maya_type_id = 1210829
+    int as_maya_type_id = 0x001279cd
 ]]
 (
     color in_color = color(0.5)
@@ -43,7 +43,7 @@ shader as_luminance
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Input Color",
-        string page = "Color Attributes"
+        string page = "Color"
     ]],
     int in_deriveFromMayaCMS = 1
     [[
@@ -61,7 +61,7 @@ shader as_luminance
         string as_maya_attribute_short_name = "is",
         int as_maya_attribute_keyable = 4,
         string widget = "mapper",
-        string options = "ACES 2065-1 AP0:0|ACEScg AP1:1|Rec.2020:2|DCI-P3:3|Rec.709/sRGB:4|Chromaticity Coordinates:5",
+        string options = "ACES 2065-1 AP0:0|ACEScg AP1:1|Rec.2020:2|DCI-P3:3|Rec.709 or sRGB:4|Chromaticity Coordinates:5",
         string label = "Input Color Space",
         string page = "Color Space",
         int divider = 1,
@@ -75,7 +75,7 @@ shader as_luminance
         float min = 0.0,
         float max = 1.0,
         string label = "R xy Coordinates",
-        string page = "Color Space"
+        string page = "Color Space.RGB Primaries"
     ]],
     float in_chromaticityCoordsG[2] = {0.317, 0.329}
     [[
@@ -85,7 +85,7 @@ shader as_luminance
         float min = 0.0,
         float max = 1.0,
         string label = "G xy Coordinates",
-        string page = "Color Space"
+        string page = "Color Space.RGB Primaries"
     ]],
     float in_chromaticityCoordsB[2] = {0.317, 0.329}
     [[
@@ -95,7 +95,7 @@ shader as_luminance
         float min = 0.0,
         float max = 1.0,
         string label = "B xy Coordinates",
-        string page = "Color Space",
+        string page = "Color Space.RGB Primaries",
         int divider = 1
     ]],
     int in_inputIlluminants = 0
@@ -106,7 +106,7 @@ shader as_luminance
         string widget = "mapper",
         string options = "Standard Illuminant D50:0|Standard Illuminant D55:1|Standard Illuminant D60:2|Standard Illuminant D65:3|Standard Illuminant D75:4|DCI White Point:5|Equal Energy White Point E:6|Correlated Color Temperature:7|WP Chromaticity Coordinates:8",
         string label = "Illuminants",
-        string page = "Color Space",
+        string page = "Color Space.Illuminants",
         string help = "Preset illuminants, correlated color temperature or explicit white point xy chromaticity coordinates.",
         int divider = 1,
         int gafferNoduleLayoutVisible = 0
@@ -119,7 +119,7 @@ shader as_luminance
         int min = 1667,
         int max = 25000,
         string label = "Color Temperature",
-        string page = "Color Space"
+        string page = "Color Space.Illuminants"
     ]],
     float in_chromaticityCoordsW[2] = {0.3127, 0.329}
     [[
@@ -129,7 +129,7 @@ shader as_luminance
         float min = 0.0,
         float max = 1.0,
         string label = "W xy Coordinates",
-        string page = "Color Space"
+        string page = "Color Space.Illuminants"
     ]],
 
     MAYA_COLORMANAGEMENT_PARAMETERS,

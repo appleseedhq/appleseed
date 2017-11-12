@@ -34,7 +34,7 @@ shader as_standard_surface
     string as_maya_node_name = "asStandardSurface",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
     string help = "Standard Surface Shader",
-    int as_maya_type_id = 1210836
+    int as_maya_type_id = 0x001279d4
 ]]
 (
     float in_diffuse_weight = 1.0
@@ -121,7 +121,7 @@ shader as_standard_surface
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0
-    ]], 
+    ]],
     float in_translucency_weight = 0.0
     [[
         string as_maya_attribute_name = "translucencyWeight",
@@ -177,7 +177,8 @@ shader as_standard_surface
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
     ]],
     float in_ior = 1.37
     [[
@@ -292,7 +293,7 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1.0,
         string label = "Coating Reflectivity",
-        string page = "Specular.Coating",
+        string page = "Coating",
         string help = "Coating specular amount."
     ]],
     float in_coating_roughness = 0.0
@@ -302,7 +303,7 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1.0,
         string label = "Coating Roughness",
-        string page = "Specular.Coating"
+        string page = "Coating"
     ]],
     float in_coating_ior = 1.42
     [[
@@ -312,7 +313,7 @@ shader as_standard_surface
         float max = 5.0,
         float softmax = 2.0,
         string label = "Coating IOR",
-        string page = "Specular.Coating",
+        string page = "Coating",
         string help = "Coating (monochromatic) dielectric IOR",
         int divider = 1,
         int as_maya_attribute_connectable = 0,
@@ -328,7 +329,7 @@ shader as_standard_surface
         float max = 10.0,
         float softmax = 1.0,
         string label = "Coating Depth",
-        string page = "Specular.Coating",
+        string page = "Coating",
         string help = "Maps from [0,1] to [0,10] microns."
     ]],
     color in_coating_absorption = color(1)
@@ -336,21 +337,7 @@ shader as_standard_surface
         string as_maya_attribute_name = "coatingAbsorption",
         string as_maya_attribute_short_name = "coa",
         string label = "Coating Absorption",
-        string page = "Specular.Coating"
-    ]],
-    int in_maximum_ray_depth = 8
-    [[
-        string as_maya_attribute_name = "maximumRayDepth",
-        string as_maya_attribute_short_name = "mrd",
-        int min = 0,
-        int max = 32,
-        int softmax = 8,
-        string label = "Ray Depth",
-        string page = "Specular.Advanced",
-        int as_maya_attribute_connectable = 0,
-        int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1,
-        int gafferNoduleLayoutVisible = 0
+        string page = "Coating"
     ]],
     float in_incandescence_amount = 0.0
     [[
@@ -479,6 +466,20 @@ shader as_standard_surface
         string as_maya_attribute_short_name = "mac",
         string label = "Matte Opacity Color",
         string page = "Matte Opacity",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_maximum_ray_depth = 8
+    [[
+        string as_maya_attribute_name = "maximumRayDepth",
+        string as_maya_attribute_short_name = "mrd",
+        int min = 0,
+        int max = 32,
+        int softmax = 8,
+        string label = "Ray Depth",
+        string page = "Advanced",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0
     ]],
     vector Tn = vector(0)
