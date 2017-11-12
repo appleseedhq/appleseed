@@ -282,7 +282,7 @@ namespace
     {
         const bf::path parent_path = bf::path(filepath).parent_path();
 
-        if (!bf::exists(parent_path))
+        if (!parent_path.empty() && !bf::exists(parent_path))
         {
             bsys::error_code ec;
             if (!bf::create_directories(parent_path, ec))
