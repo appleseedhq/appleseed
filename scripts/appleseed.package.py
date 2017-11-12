@@ -50,7 +50,7 @@ import zipfile
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.4.7"
+VERSION = "2.4.8"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 
 
@@ -271,9 +271,6 @@ class PackageBuilder:
         # Remove voluminous unit tests/benchmarks data.
         safe_delete_file("appleseed/tests/unit benchmarks/inputs/test_knn_particles.bin")
         safe_delete_file("appleseed/tests/unit benchmarks/inputs/test_knn_photons.bin")
-
-        # Remove the devkit which we ship separately.
-        safe_delete_directory("appleseed/extras/devkit")
 
     def add_local_binaries_to_stage(self):
         progress("Adding local binaries to staging directory")
