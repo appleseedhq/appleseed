@@ -71,6 +71,14 @@ namespace
 
         return auto_release_ptr<EDF>();
     }
+
+    auto_release_ptr<EDF> factory_create_edf(
+        const IEDFFactory*  factory,
+        const char*         name,
+        const bpy::dict&    params)
+    {
+        return factory->create(name, bpy_dict_to_param_array(params));
+    }
 }
 
 void bind_edf()
@@ -79,8 +87,13 @@ void bind_edf()
         .def("get_model_metadata", &detail::get_entity_model_metadata<EDFFactoryRegistrar>).staticmethod("get_model_metadata")
         .def("get_input_metadata", &detail::get_entity_input_metadata<EDFFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_edf))
-        .def("get_model", &EDF::get_model)
-        ;
+        .def("get_model", &EDF::get_model);
 
     bind_typed_entity_vector<EDF>("EDFContainer");
+
+    bpy::class_<IEDFFactory, boost::noncopyable>("IEDFFactory", bpy::no_init)
+        .def("create", &factory_create_edf);
+
+    bpy::class_<EDFFactoryRegistrar, boost::noncopyable>("EDFFactoryRegistrar", bpy::no_init)
+        .def("lookup", &EDFFactoryRegistrar::lookup, bpy::return_value_policy<bpy::reference_existing_object>());
 }

@@ -74,6 +74,14 @@ namespace
 
         return auto_release_ptr<Material>();
     }
+
+    auto_release_ptr<Material> factory_create_material(
+        const IMaterialFactory* factory,
+        const char*             name,
+        const bpy::dict&        params)
+    {
+        return factory->create(name, bpy_dict_to_param_array(params));
+    }
 }
 
 void bind_material()
@@ -82,8 +90,13 @@ void bind_material()
         .def("get_model_metadata", &detail::get_entity_model_metadata<MaterialFactoryRegistrar>).staticmethod("get_model_metadata")
         .def("get_input_metadata", &detail::get_entity_input_metadata<MaterialFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_material))
-        .def("get_model", &Material::get_model)
-        ;
+        .def("get_model", &Material::get_model);
 
     bind_typed_entity_vector<Material>("MaterialContainer");
+
+    bpy::class_<IMaterialFactory, boost::noncopyable>("IMaterialFactory", bpy::no_init)
+        .def("create", &factory_create_material);
+
+    bpy::class_<MaterialFactoryRegistrar, boost::noncopyable>("MaterialFactoryRegistrar", bpy::no_init)
+        .def("lookup", &MaterialFactoryRegistrar::lookup, bpy::return_value_policy<bpy::reference_existing_object>());
 }

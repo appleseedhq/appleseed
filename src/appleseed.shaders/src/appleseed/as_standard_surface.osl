@@ -76,7 +76,7 @@ shader as_standard_surface
     [[
         string as_maya_attribute_name = "subsurfaceMfp",
         string as_maya_attribute_short_name = "mfp",
-        string label = "Subsurface Mean Free Path",
+        string label = "Mean Free Path",
         string page = "Subsurface"
     ]],
     float in_sss_mfp_scale = 1.0
@@ -86,7 +86,7 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1000.0,
         float softmax = 100.0,
-        string label = "Subsurface MFP Scale",
+        string label = "MFP Scale",
         string page = "Subsurface",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
@@ -142,7 +142,7 @@ shader as_standard_surface
     [[
         string as_maya_attribute_name = "specularColor",
         string as_maya_attribute_short_name = "spc",
-        string label = "SpecularColor",
+        string label = "Specular Color",
         string page = "Specular"
     ]],
     float in_specular_roughness = 0.1
@@ -151,7 +151,7 @@ shader as_standard_surface
         string as_maya_attribute_short_name = "sro",
         float min = 0.0,
         float max = 1.0,
-        string label = "Roughness",
+        string label = "Specular Roughness",
         string page = "Specular"
     ]],
     float in_specular_spread = 0.25
@@ -188,7 +188,7 @@ shader as_standard_surface
         float max = 10.0,
         float softmax = 2.0,
         string label = "Index Of Refraction",
-        string page = "Specular.Fresnel",
+        string page = "Specular",
         string help = "IOR, only active if Fresnel is set to dielectric.",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 1,
@@ -200,7 +200,7 @@ shader as_standard_surface
         string as_maya_attribute_name = "faceTint",
         string as_maya_attribute_short_name = "f0",
         string label = "Facing Tint",
-        string page = "Specular.Fresnel",
+        string page = "Specular",
         string help = "Reflectance at facing angle, for conductor Fresnel.",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
@@ -212,7 +212,7 @@ shader as_standard_surface
         string as_maya_attribute_name = "edgeTint",
         string as_maya_attribute_short_name = "f90",
         string label = "Edge Tint",
-        string page = "Specular.Fresnel",
+        string page = "Specular",
         string help = "Reflectance at grazing angle, conductor Fresnel only.",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,

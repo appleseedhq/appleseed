@@ -293,6 +293,23 @@ void bind_project()
         .def("__init__", bpy::make_constructor(create_project))
 
         .def("add_default_configurations", &Project::add_default_configurations)
+        .def("configurations", project_get_configs, bpy::return_value_policy<bpy::reference_existing_object>())
+
+        .def("get_aov_factory_registrar", &Project::get_factory_registrar<AOV>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_assembly_factory_registrar", &Project::get_factory_registrar<Assembly>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_bsdf_factory_registrar", &Project::get_factory_registrar<BSDF>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_bssrdf_factory_registrar", &Project::get_factory_registrar<BSSRDF>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_camera_factory_registrar", &Project::get_factory_registrar<Camera>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_edf_factory_registrar", &Project::get_factory_registrar<EDF>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_environment_edf_factory_registrar", &Project::get_factory_registrar<EnvironmentEDF>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_environment_shader_factory_registrar", &Project::get_factory_registrar<EnvironmentShader>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_light_factory_registrar", &Project::get_factory_registrar<Light>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_material_factory_registrar", &Project::get_factory_registrar<Material>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_object_factory_registrar", &Project::get_factory_registrar<Object>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_surface_shader_factory_registrar", &Project::get_factory_registrar<SurfaceShader>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_texture_factory_registrar", &Project::get_factory_registrar<Texture>, bpy::return_value_policy<bpy::reference_existing_object>())
+
+        .def("reinitialize_factory_registrars", &Project::reinitialize_factory_registrars)
 
         .def("has_path", &Project::has_path)
         .def("set_path", &Project::set_path)
@@ -300,6 +317,7 @@ void bind_project()
 
         .def("get_search_paths", project_get_search_paths)
         .def("set_search_paths", project_set_search_paths)
+        .def("qualify_path", qualify_path, bpy::args("filepath"))
 
         .def("set_scene", &Project::set_scene)
         .def("get_scene", &Project::get_scene, bpy::return_value_policy<bpy::reference_existing_object>())
@@ -310,11 +328,7 @@ void bind_project()
         .def("get_display", &Project::get_display, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("set_display", &Project::set_display)
 
-        .def("get_active_camera", &Project::get_uncached_active_camera, bpy::return_value_policy<bpy::reference_existing_object>())
-
-        .def("configurations", project_get_configs, bpy::return_value_policy<bpy::reference_existing_object>())
-
-        .def("qualify_path", qualify_path, bpy::args("filepath"));
+        .def("get_active_camera", &Project::get_uncached_active_camera, bpy::return_value_policy<bpy::reference_existing_object>());
 
     bpy::enum_<ProjectFileReader::Options>("ProjectFileReaderOptions")
         .value("Defaults", ProjectFileReader::Defaults)
