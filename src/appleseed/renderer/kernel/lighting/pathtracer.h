@@ -100,6 +100,8 @@ class PathTracer
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point);
 
+    const ShadingPoint& get_path_vertex(const int i) const;
+
   private:
     PathVisitor&                m_path_visitor;
     VolumeVisitor&              m_volume_visitor;
@@ -145,8 +147,6 @@ class PathTracer
         const ShadingRay&       ray,
         PathVertex&             vertex,
         ShadingPoint&           shading_point);
-
-    const ShadingPoint& get_path_vertex(const int i) const;
 };
 
 
@@ -937,7 +937,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
 template<typename PathVisitor, typename VolumeVisitor, bool Adjoint>
 inline const ShadingPoint& PathTracer<PathVisitor, VolumeVisitor, Adjoint>::get_path_vertex(const int i) const
 {
-    return *reinterpret_cast<const ShadingPoint*>(m_shading_point_arena.get_storage())[i];
+    return reinterpret_cast<const ShadingPoint*>(m_shading_point_arena.get_storage())[i];
 }
 
 }       // namespace renderer
