@@ -33,6 +33,9 @@
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/utility/paramarray.h"
 
+// appleseed.foundation headers.
+#include "foundation/math/population.h"
+
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace renderer      { class ForwardLightSampler; }

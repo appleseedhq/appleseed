@@ -220,12 +220,14 @@ namespace
                 ~0,
                 shading_context.get_max_iterations());   // don't illuminate points closer than the light near start value
         
-            const size_t path_length =
+            const size_t light_path_length =
                 path_tracer.trace(
                     sampling_context,
                     shading_context,
                     light_ray,
                     &parent_shading_point);
+
+            m_light_path_length.insert(light_path_length);
         }
 
         void trace_non_physical_light(
@@ -250,6 +252,8 @@ namespace
 
         float                       m_shutter_open_time;
         float                       m_shutter_close_time;
+
+        Population<uint64>          m_light_path_length;
 
         struct PathVisitor
         {
