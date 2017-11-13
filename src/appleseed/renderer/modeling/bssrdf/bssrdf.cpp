@@ -34,6 +34,7 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/sourceshadingpoint.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.

@@ -34,6 +34,7 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/sourceshadingpoint.h"
 #include "renderer/utility/autodeskmax.h"
 #include "renderer/utility/paramarray.h"
 

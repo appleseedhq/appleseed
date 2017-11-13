@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/sourceshadingpoint.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -122,9 +123,9 @@ namespace
         }
 
         uint8* evaluate(
-            TextureCache&       texture_cache,
-            const Vector2f&     uv,
-            uint8*              ptr) const
+            TextureCache&               texture_cache,
+            const SourceShadingPoint&   shading_point,
+            uint8*                      ptr) const
         {
             switch (m_format)
             {
@@ -134,7 +135,7 @@ namespace
                     float* out_scalar = reinterpret_cast<float*>(ptr);
 
                     if (m_source)
-                        m_source->evaluate(texture_cache, uv, *out_scalar);
+                        m_source->evaluate(texture_cache, shading_point, *out_scalar);
                     else *out_scalar = 0.0f;
 
                     ptr += sizeof(float);
@@ -149,7 +150,7 @@ namespace
                     new (out_spectrum) Spectrum();
 
                     if (m_source)
-                        m_source->evaluate(texture_cache, uv, *out_spectrum);
+                        m_source->evaluate(texture_cache, shading_point, *out_spectrum);
                     else out_spectrum->set(0.0f);
 
                     ptr += sizeof(Spectrum);
@@ -164,7 +165,7 @@ namespace
                     new (out_spectrum) Spectrum();
 
                     if (m_source)
-                        m_source->evaluate(texture_cache, uv, *out_spectrum);
+                        m_source->evaluate(texture_cache, shading_point, *out_spectrum);
                     else out_spectrum->set(0.0f);
 
                     ptr += sizeof(Spectrum);
@@ -181,7 +182,7 @@ namespace
                     new (out_alpha) Alpha();
 
                     if (m_source)
-                        m_source->evaluate(texture_cache, uv, *out_spectrum, *out_alpha);
+                        m_source->evaluate(texture_cache, shading_point, *out_spectrum, *out_alpha);
                     else
                     {
                         out_spectrum->set(0.0f);
@@ -203,7 +204,7 @@ namespace
                     new (out_alpha) Alpha();
 
                     if (m_source)
-                        m_source->evaluate(texture_cache, uv, *out_spectrum, *out_alpha);
+                        m_source->evaluate(texture_cache, shading_point, *out_spectrum, *out_alpha);
                     else
                     {
                         out_spectrum->set(0.0f);
@@ -458,9 +459,9 @@ size_t InputArray::compute_data_size() const
 }
 
 void InputArray::evaluate(
-    TextureCache&       texture_cache,
-    const Vector2f&     uv,
-    void*               values) const
+    TextureCache&               texture_cache,
+    const SourceShadingPoint&   shading_point,
+    void*                       values) const
 {
     assert(values);
 
@@ -471,7 +472,7 @@ void InputArray::evaluate(
 #endif
 
     for (const_each<InputVector> i = impl->m_inputs; i; ++i)
-        ptr = i->evaluate(texture_cache, uv, ptr);
+        ptr = i->evaluate(texture_cache, shading_point, ptr);
 }
 
 void InputArray::evaluate_uniforms(

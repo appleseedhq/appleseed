@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/sourceshadingpoint.h"
 #include "renderer/modeling/material/ibasismodifier.h"
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/object.h"

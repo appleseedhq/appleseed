@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/sourceshadingpoint.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"

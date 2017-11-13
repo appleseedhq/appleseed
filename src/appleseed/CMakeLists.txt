@@ -1586,6 +1586,8 @@ set (renderer_modeling_input_sources
     renderer/modeling/input/inputbinder.cpp
     renderer/modeling/input/inputbinder.h
     renderer/modeling/input/scalarsource.h
+    renderer/modeling/input/sourceshadingpoint.h
+    renderer/modeling/input/sourceshadingpoint.cpp
     renderer/modeling/input/source.h
     renderer/modeling/input/symbol.h
     renderer/modeling/input/texturesource.cpp

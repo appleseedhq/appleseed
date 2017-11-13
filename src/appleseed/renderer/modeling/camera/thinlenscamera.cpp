@@ -41,6 +41,7 @@
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/sourceshadingpoint.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/visibilityflags.h"
 #include "renderer/utility/paramarray.h"

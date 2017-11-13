@@ -33,6 +33,7 @@
 #include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
+#include "renderer/modeling/input/sourceshadingpoint.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"

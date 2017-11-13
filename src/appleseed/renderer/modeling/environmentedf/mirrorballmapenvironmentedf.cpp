@@ -36,6 +36,7 @@
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/sourceshadingpoint.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.

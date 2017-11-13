@@ -31,5 +31,6 @@
 
 // API headers.
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/sourceshadingpoint.h"
 
 #endif  // !APPLESEED_RENDERER_API_SOURCE_H

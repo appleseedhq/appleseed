@@ -34,6 +34,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/sourceshadingpoint.h"
 #include "renderer/modeling/scene/textureinstance.h"
 
 // appleseed.foundation headers.
@@ -79,28 +80,28 @@ class TextureSource
     // Evaluate the source at a given shading point.
     void evaluate(
         TextureCache&                       texture_cache,
-        const foundation::Vector2f&         uv,
+        const SourceShadingPoint&           shading_point,
         float&                              scalar) const override;
     void evaluate(
         TextureCache&                       texture_cache,
-        const foundation::Vector2f&         uv,
+        const SourceShadingPoint&           shading_point,
         foundation::Color3f&                linear_rgb) const override;
     void evaluate(
         TextureCache&                       texture_cache,
-        const foundation::Vector2f&         uv,
+        const SourceShadingPoint&           shading_point,
         Spectrum&                           spectrum) const override;
     void evaluate(
         TextureCache&                       texture_cache,
-        const foundation::Vector2f&         uv,
+        const SourceShadingPoint&           shading_point,
         Alpha&                              alpha) const override;
     void evaluate(
         TextureCache&                       texture_cache,
-        const foundation::Vector2f&         uv,
+        const SourceShadingPoint&           shading_point,
         foundation::Color3f&                linear_rgb,
         Alpha&                              alpha) const override;
     void evaluate(
         TextureCache&                       texture_cache,
-        const foundation::Vector2f&         uv,
+        const SourceShadingPoint&           shading_point,
         Spectrum&                           spectrum,
         Alpha&                              alpha) const override;
 
@@ -158,58 +159,58 @@ inline const TextureInstance& TextureSource::get_texture_instance() const
 
 inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
-    const foundation::Vector2f&             uv,
+    const SourceShadingPoint&               shading_point,
     float&                                  scalar) const
 {
-    const foundation::Color4f color = sample_texture(texture_cache, uv);
+    const foundation::Color4f color = sample_texture(texture_cache, foundation::Vector2f(shading_point.uvx, shading_point.uvy));
     scalar = color[0];
 }
 
 inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
-    const foundation::Vector2f&             uv,
+    const SourceShadingPoint&               shading_point,
     foundation::Color3f&                    linear_rgb) const
 {
-    const foundation::Color4f color = sample_texture(texture_cache, uv);
+    const foundation::Color4f color = sample_texture(texture_cache, foundation::Vector2f(shading_point.uvx, shading_point.uvy));
     linear_rgb = color.rgb();
 }
 
 inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
-    const foundation::Vector2f&             uv,
+    const SourceShadingPoint&               shading_point,
     Spectrum&                               spectrum) const
 {
-    const foundation::Color4f color = sample_texture(texture_cache, uv);
+    const foundation::Color4f color = sample_texture(texture_cache, foundation::Vector2f(shading_point.uvx, shading_point.uvy));
     spectrum.set(color.rgb(), g_std_lighting_conditions, Spectrum::Reflectance);
 }
 
 inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
-    const foundation::Vector2f&             uv,
+    const SourceShadingPoint&               shading_point,
     Alpha&                                  alpha) const
 {
-    const foundation::Color4f color = sample_texture(texture_cache, uv);
+    const foundation::Color4f color = sample_texture(texture_cache, foundation::Vector2f(shading_point.uvx, shading_point.uvy));
     evaluate_alpha(color, alpha);
 }
 
 inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
-    const foundation::Vector2f&             uv,
+    const SourceShadingPoint&               shading_point,
     foundation::Color3f&                    linear_rgb,
     Alpha&                                  alpha) const
 {
-    const foundation::Color4f color = sample_texture(texture_cache, uv);
+    const foundation::Color4f color = sample_texture(texture_cache, foundation::Vector2f(shading_point.uvx, shading_point.uvy));
     linear_rgb = color.rgb();
     evaluate_alpha(color, alpha);
 }
 
 inline void TextureSource::evaluate(
     TextureCache&                           texture_cache,
-    const foundation::Vector2f&             uv,
+    const SourceShadingPoint&               shading_point,
     Spectrum&                               spectrum,
     Alpha&                                  alpha) const
 {
-    const foundation::Color4f color = sample_texture(texture_cache, uv);
+    const foundation::Color4f color = sample_texture(texture_cache, foundation::Vector2f(shading_point.uvx, shading_point.uvy));
     spectrum.set(color.rgb(), g_std_lighting_conditions, Spectrum::Reflectance);
     evaluate_alpha(color, alpha);
 }

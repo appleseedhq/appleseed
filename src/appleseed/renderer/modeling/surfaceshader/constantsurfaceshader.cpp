@@ -37,6 +37,7 @@
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/sourceshadingpoint.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/paramarray.h"
 
