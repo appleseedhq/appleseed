@@ -214,7 +214,7 @@ namespace
             const Vector2f uv(0.5f * (x + 1.0f), 0.5f * (y + 1.0f));
 
             InputValues values;
-            m_inputs.evaluate(shading_context.get_texture_cache(), uv, &values);
+            m_inputs.evaluate(shading_context.get_texture_cache(), SourceInputs(uv), &values);
 
             radiance = values.m_intensity;
             radiance *= values.m_intensity_multiplier * pow(2.0f, values.m_exposure);

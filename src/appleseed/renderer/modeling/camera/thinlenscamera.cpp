@@ -157,7 +157,7 @@ namespace
                 y / (m_height - 1.0f));
 
             Color3f color;
-            m_source->evaluate(m_texture_cache, uv, color);
+            m_source->evaluate(m_texture_cache, SourceInputs(uv), color);
 
             importance = luminance(color);
         }

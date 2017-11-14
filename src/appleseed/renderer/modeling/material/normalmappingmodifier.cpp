@@ -62,7 +62,7 @@ Basis3d NormalMappingModifier::modify(
 
     // Lookup the normal map.
     Color3f normal_rgb;
-    m_map->evaluate(texture_cache, uv, normal_rgb);
+    m_map->evaluate(texture_cache, SourceInputs(uv), normal_rgb);
 
     // Reconstruct the normal from the texel value.
     const double x = static_cast<double>(normal_rgb[0]);

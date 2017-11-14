@@ -134,7 +134,7 @@ double BumpMappingModifier::evaluate_height(
     const float             v) const
 {
     float h;
-    m_map->evaluate(texture_cache, Vector2f(u, v), h);
+    m_map->evaluate(texture_cache, SourceInputs(Vector2f(u, v)), h);
     return static_cast<double>(h);
 }
 

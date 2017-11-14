@@ -407,7 +407,7 @@ namespace
                 unit_vector_to_angles(outgoing, theta, phi);
                 angles_to_unit_square(theta, phi, u, v);
                 InputValues values;
-                m_inputs.evaluate(shading_context.get_texture_cache(), Vector2f(u, v), &values);
+                m_inputs.evaluate(shading_context.get_texture_cache(), SourceInputs(Vector2f(u, v)), &values);
                 float turbidity = values.m_turbidity;
 
                 // Apply turbidity multiplier and bias.

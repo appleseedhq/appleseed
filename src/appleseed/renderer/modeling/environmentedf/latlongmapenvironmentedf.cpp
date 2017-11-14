@@ -124,15 +124,15 @@ namespace
                 (x + 0.5f) * m_rcp_width,
                 1.0f - (y + 0.5f) * m_rcp_height);
 
-            m_radiance_source->evaluate(m_texture_cache, uv, payload);
+            m_radiance_source->evaluate(m_texture_cache, SourceInputs(uv), payload);
 
             if (is_finite(payload))
             {
                 float multiplier;
-                m_multiplier_source->evaluate(m_texture_cache, uv, multiplier);
+                m_multiplier_source->evaluate(m_texture_cache, SourceInputs(uv), multiplier);
 
                 float exposure;
-                m_exposure_source->evaluate(m_texture_cache, uv, exposure);
+                m_exposure_source->evaluate(m_texture_cache, SourceInputs(uv), exposure);
 
                 payload *= multiplier * pow(2.0f, exposure);
                 importance = luminance(payload);
@@ -431,7 +431,7 @@ namespace
             assert(v >= 0.0f && v < 1.0f);
 
             InputValues values;
-            m_inputs.evaluate(shading_context.get_texture_cache(), Vector2f(u, 1.0f - v), &values);
+            m_inputs.evaluate(shading_context.get_texture_cache(), SourceInputs(Vector2f(u, 1.0f - v)), &values);
 
             if (is_finite(values.m_radiance))
             {

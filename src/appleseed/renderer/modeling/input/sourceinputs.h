@@ -40,8 +40,9 @@ namespace renderer
 
 class APPLESEED_DLLSYMBOL SourceInputs
 {
-    public:
-    SourceInputs(const foundation::Vector2f& uv);
+  public:
+    explicit SourceInputs(const foundation::Vector2f& uv);
+
     float       m_uv_x;           // texture coordinates from UV set #0
     float       m_uv_y;
     double      m_point_x;        // world space intersection point

@@ -89,7 +89,7 @@ namespace
             InputValues values;
             m_inputs.evaluate(
                 shading_context.get_texture_cache(),
-                Vector2f(s[0], 1.0f - s[1]),
+                SourceInputs(Vector2f(s[0], 1.0f - s[1])),
                 &values);
 
             value = values.m_color;

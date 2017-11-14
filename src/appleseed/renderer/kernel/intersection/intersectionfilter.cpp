@@ -280,7 +280,7 @@ IntersectionFilter::AlphaMask* IntersectionFilter::create_alpha_mask(
                 (x + 0.5f) * rcp_width,
                 1.0f - (y + 0.5f) * rcp_height);
             Alpha alpha;
-            alpha_map->evaluate(texture_cache, uv, alpha);
+            alpha_map->evaluate(texture_cache, SourceInputs(uv), alpha);
 
             // Mark this texel as opaque or transparent in the alpha mask.
             const bool opaque = alpha[0] > 0.0f;
