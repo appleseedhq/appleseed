@@ -49,6 +49,8 @@ using namespace std;
 namespace boost
 {
     template <> Light const volatile* get_pointer<Light const volatile>(Light const volatile* p) { return p; }
+    template <> ILightFactory const volatile* get_pointer<ILightFactory const volatile>(ILightFactory const volatile* p) { return p; }
+    template <> LightFactoryRegistrar const volatile* get_pointer<LightFactoryRegistrar const volatile>(LightFactoryRegistrar const volatile* p) { return p; }
 }
 #endif
 

@@ -48,6 +48,8 @@ using namespace std;
 namespace boost
 {
     template <> EDF const volatile* get_pointer<EDF const volatile>(EDF const volatile* p) { return p; }
+    template <> IEDFFactory const volatile* get_pointer<IEDFFactory const volatile>(IEDFFactory const volatile* p) { return p; }
+    template <> EDFFactoryRegistrar const volatile* get_pointer<EDFFactoryRegistrar const volatile>(EDFFactoryRegistrar const volatile* p) { return p; }
 }
 #endif
 

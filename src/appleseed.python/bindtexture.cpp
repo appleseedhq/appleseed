@@ -51,6 +51,8 @@ using namespace std;
 namespace boost
 {
     template <> Texture const volatile* get_pointer<Texture const volatile>(Texture const volatile* p) { return p; }
+    template <> ITextureFactory const volatile* get_pointer<ITextureFactory const volatile>(ITextureFactory const volatile* p) { return p; }
+    template <> TextureFactoryRegistrar const volatile* get_pointer<TextureFactoryRegistrar const volatile>(TextureFactoryRegistrar const volatile* p) { return p; }
     template <> TextureInstance const volatile* get_pointer<TextureInstance const volatile>(TextureInstance const volatile* p) { return p; }
 }
 #endif

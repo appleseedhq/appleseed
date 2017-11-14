@@ -50,7 +50,10 @@ using namespace std;
 namespace boost
 {
     template <> EnvironmentEDF const volatile* get_pointer<EnvironmentEDF const volatile>(EnvironmentEDF const volatile* p) { return p; }
+    template <> IEnvironmentEDFFactory const volatile* get_pointer<IEnvironmentEDFFactory const volatile>(IEnvironmentEDFFactory const volatile* p) { return p; }
+    template <> EnvironmentEDFFactoryRegistrar const volatile* get_pointer<EnvironmentEDFFactoryRegistrar const volatile>(EnvironmentEDFFactoryRegistrar const volatile* p) { return p; }
     template <> EnvironmentShader const volatile* get_pointer<EnvironmentShader const volatile>(EnvironmentShader const volatile* p) { return p; }
+    template <> EnvironmentShaderFactoryRegistrar const volatile* get_pointer<EnvironmentShaderFactoryRegistrar const volatile>(EnvironmentShaderFactoryRegistrar const volatile* p) { return p; }
     template <> Environment const volatile* get_pointer<Environment const volatile>(Environment const volatile* p) { return p; }
 }
 #endif
