@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Sergo Pogosyan, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,11 +26,30 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_SOURCE_H
-#define APPLESEED_RENDERER_API_SOURCE_H
+#ifndef APPLESEED_RENDERER_MODELING_INPUT_SOURCEINPUTS_H
+#define APPLESEED_RENDERER_MODELING_INPUT_SOURCEINPUTS_H
 
-// API headers.
-#include "renderer/modeling/input/source.h"
-#include "renderer/modeling/input/sourceinputs.h"
+// appleseed.foundation headers.
+#include "foundation/math/vector.h"
 
-#endif  // !APPLESEED_RENDERER_API_SOURCE_H
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+namespace renderer
+{
+
+class APPLESEED_DLLSYMBOL SourceInputs
+{
+  public:
+    explicit SourceInputs(const foundation::Vector2f& uv);
+
+    float       m_uv_x;           // texture coordinates from UV set #0
+    float       m_uv_y;
+    double      m_point_x;        // world space intersection point
+    double      m_point_y;
+    double      m_point_z;
+};
+
+}
+
+#endif  // !APPLESEED_RENDERER_MODELING_INPUT_SOURCEINPUTS_H

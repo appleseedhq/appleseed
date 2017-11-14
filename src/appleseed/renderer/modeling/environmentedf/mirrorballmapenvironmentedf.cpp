@@ -36,6 +36,7 @@
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/sourceinputs.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -185,7 +186,7 @@ namespace
 
             // Evaluate the input.
             InputValues values;
-            m_inputs.evaluate(shading_context.get_texture_cache(), uv, &values);
+            m_inputs.evaluate(shading_context.get_texture_cache(), SourceInputs(uv), &values);
             if (is_finite(values.m_radiance))
             {
                 value = values.m_radiance;

@@ -41,6 +41,7 @@
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/sourceinputs.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/visibilityflags.h"
 #include "renderer/utility/paramarray.h"
@@ -156,7 +157,7 @@ namespace
                 y / (m_height - 1.0f));
 
             Color3f color;
-            m_source->evaluate(m_texture_cache, uv, color);
+            m_source->evaluate(m_texture_cache, SourceInputs(uv), color);
 
             importance = luminance(color);
         }

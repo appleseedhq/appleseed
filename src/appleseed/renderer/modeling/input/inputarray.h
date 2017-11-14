@@ -44,6 +44,7 @@
 // Forward declarations.
 namespace renderer  { class Entity; }
 namespace renderer  { class Source; }
+namespace renderer  { class SourceInputs; }
 namespace renderer  { class TextureCache; }
 
 namespace renderer
@@ -218,7 +219,7 @@ class APPLESEED_DLLSYMBOL InputArray
     // 'values' must be 16-byte aligned.
     void evaluate(
         TextureCache&               texture_cache,
-        const foundation::Vector2f& uv,
+        const SourceInputs&         source_inputs,
         void*                       values) const;
 
     // Evaluate all uniform inputs into a preallocated block of memory.

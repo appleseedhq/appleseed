@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/sourceinputs.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -133,7 +134,7 @@ double BumpMappingModifier::evaluate_height(
     const float             v) const
 {
     float h;
-    m_map->evaluate(texture_cache, Vector2f(u, v), h);
+    m_map->evaluate(texture_cache, SourceInputs(Vector2f(u, v)), h);
     return static_cast<double>(h);
 }
 
