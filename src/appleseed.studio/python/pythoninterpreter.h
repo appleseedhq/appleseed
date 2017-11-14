@@ -61,9 +61,9 @@ class PythonInterpreter
 
     void import_python_module(const char* module_name, const char* alias_name);
 
-    MainWindow* m_main_window;
-    boost::python::object m_main_namespace;
-    bool m_is_initialized;
+    MainWindow*             m_main_window;
+    boost::python::object   m_main_namespace;
+    bool                    m_is_initialized;
 };
 
 }       // namespace studio

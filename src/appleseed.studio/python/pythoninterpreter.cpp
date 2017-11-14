@@ -193,7 +193,8 @@ bpy::object PythonInterpreter::execute(const char* command)
 }
 
 PythonInterpreter::PythonInterpreter()
-  : m_is_initialized(false), m_main_window(nullptr)
+  : m_main_window(nullptr)
+  , m_is_initialized(false)
 {
 }
 

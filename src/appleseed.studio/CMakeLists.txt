@@ -232,13 +232,13 @@ set (mainwindow_pythonconsole_sources
     mainwindow/pythonconsole/pythonoutput.h
     mainwindow/pythonconsole/zoomableplaintextedit.cpp
     mainwindow/pythonconsole/zoomableplaintextedit.h
-    )
+)
 list (APPEND appleseed.studio_sources
     ${mainwindow_pythonconsole_sources}
-    )
+)
 source_group ("mainwindow\\pythonconsole" FILES
     ${mainwindow_pythonconsole_sources}
-    )
+)
 
 set (mainwindow_rendering_sources
     mainwindow/rendering/cameracontroller.cpp
