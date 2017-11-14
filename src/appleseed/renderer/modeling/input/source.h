@@ -46,7 +46,7 @@
 
 // Forward declarations.
 namespace renderer      { class TextureCache; }
-namespace renderer      { class SourceShadingPoint; }
+namespace renderer      { class SourceInputs; }
 
 namespace renderer
 {
@@ -83,28 +83,28 @@ class APPLESEED_DLLSYMBOL Source
     // Evaluate the source at a given shading point.
     virtual void evaluate(
         TextureCache&               texture_cache,
-        const SourceShadingPoint&   shading_point,
+        const SourceInputs&         source_inputs,
         float&                      scalar) const;
     virtual void evaluate(
         TextureCache&               texture_cache,
-        const SourceShadingPoint&   shading_point,
+        const SourceInputs&         source_inputs,
         foundation::Color3f&        linear_rgb) const;
     virtual void evaluate(
         TextureCache&               texture_cache,
-        const SourceShadingPoint&   shading_point,
+        const SourceInputs&         source_inputs,
         Spectrum&                   spectrum) const;
     virtual void evaluate(
         TextureCache&               texture_cache,
-        const SourceShadingPoint&   shading_point,
+        const SourceInputs&         source_inputs,
         Alpha&                      alpha) const;
     virtual void evaluate(
         TextureCache&               texture_cache,
-        const SourceShadingPoint&   shading_point,
+        const SourceInputs&         source_inputs,
         foundation::Color3f&        linear_rgb,
         Alpha&                      alpha) const;
     virtual void evaluate(
         TextureCache&               texture_cache,
-        const SourceShadingPoint&   shading_point,
+        const SourceInputs&         source_inputs,
         Spectrum&                   spectrum,
         Alpha&                      alpha) const;
 
@@ -149,7 +149,7 @@ inline bool Source::is_uniform() const
 
 inline void Source::evaluate(
     TextureCache&                   texture_cache,
-    const SourceShadingPoint&       shading_point,
+    const SourceInputs&             source_inputs,
     float&                          scalar) const
 {
     evaluate_uniform(scalar);
@@ -157,7 +157,7 @@ inline void Source::evaluate(
 
 inline void Source::evaluate(
     TextureCache&                   texture_cache,
-    const SourceShadingPoint&       shading_point,
+    const SourceInputs&             source_inputs,
     foundation::Color3f&            linear_rgb) const
 {
     evaluate_uniform(linear_rgb);
@@ -165,7 +165,7 @@ inline void Source::evaluate(
 
 inline void Source::evaluate(
     TextureCache&                   texture_cache,
-    const SourceShadingPoint&       shading_point,
+    const SourceInputs&             source_inputs,
     Spectrum&                       spectrum) const
 {
     evaluate_uniform(spectrum);
@@ -173,7 +173,7 @@ inline void Source::evaluate(
 
 inline void Source::evaluate(
     TextureCache&                   texture_cache,
-    const SourceShadingPoint&       shading_point,
+    const SourceInputs&             source_inputs,
     Alpha&                          alpha) const
 {
     evaluate_uniform(alpha);
@@ -181,7 +181,7 @@ inline void Source::evaluate(
 
 inline void Source::evaluate(
     TextureCache&                   texture_cache,
-    const SourceShadingPoint&       shading_point,
+    const SourceInputs&             source_inputs,
     foundation::Color3f&            linear_rgb,
     Alpha&                          alpha) const
 {
@@ -190,7 +190,7 @@ inline void Source::evaluate(
 
 inline void Source::evaluate(
     TextureCache&                   texture_cache,
-    const SourceShadingPoint&       shading_point,
+    const SourceInputs&             source_inputs,
     Spectrum&                       spectrum,
     Alpha&                          alpha) const
 {

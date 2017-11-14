@@ -35,7 +35,7 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/input/source.h"
-#include "renderer/modeling/input/sourceshadingpoint.h"
+#include "renderer/modeling/input/sourceinputs.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/api/apistring.h"

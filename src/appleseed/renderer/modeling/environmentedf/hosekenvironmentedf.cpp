@@ -38,7 +38,7 @@
 #include "renderer/modeling/environmentedf/sphericalcoordinates.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
-#include "renderer/modeling/input/sourceshadingpoint.h"
+#include "renderer/modeling/input/sourceinputs.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.

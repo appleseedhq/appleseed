@@ -41,7 +41,7 @@
 #include "renderer/modeling/environmentedf/sphericalcoordinates.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
-#include "renderer/modeling/input/sourceshadingpoint.h"
+#include "renderer/modeling/input/sourceinputs.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/paramarray.h"

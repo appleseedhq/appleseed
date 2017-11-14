@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Sergo Pogosyan, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,11 +26,19 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_SOURCE_H
-#define APPLESEED_RENDERER_API_SOURCE_H
+// Interface header.
+#include "sourceinputs.h"
 
-// API headers.
-#include "renderer/modeling/input/source.h"
-#include "renderer/modeling/input/sourceinputs.h"
+namespace renderer
+{
 
-#endif  // !APPLESEED_RENDERER_API_SOURCE_H
+SourceInputs::SourceInputs(const foundation::Vector2f& uv)
+    : m_uv_x(uv.x)
+    , m_uv_y(uv.y)
+    , m_point_x(0)
+    , m_point_y(0)
+    , m_point_z(0)
+{
+}
+
+}
