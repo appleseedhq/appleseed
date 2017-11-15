@@ -48,6 +48,8 @@ using namespace std;
 namespace boost
 {
     template <> Camera const volatile* get_pointer<Camera const volatile>(Camera const volatile* p) { return p; }
+    template <> ICameraFactory const volatile* get_pointer<ICameraFactory const volatile>(ICameraFactory const volatile* p) { return p; }
+    template <> CameraFactoryRegistrar const volatile* get_pointer<CameraFactoryRegistrar const volatile>(CameraFactoryRegistrar const volatile* p) { return p; }
 }
 #endif
 

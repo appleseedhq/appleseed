@@ -50,6 +50,8 @@ using namespace std;
 namespace boost
 {
     template <> BSSRDF const volatile* get_pointer<BSSRDF const volatile>(BSSRDF const volatile* p) { return p; }
+    template <> IBSSRDFFactory const volatile* get_pointer<IBSSRDFFactory const volatile>(IBSSRDFFactory const volatile* p) { return p; }
+    template <> BSSRDFFactoryRegistrar const volatile* get_pointer<BSSRDFFactoryRegistrar const volatile>(BSSRDFFactoryRegistrar const volatile* p) { return p; }
 }
 #endif
 

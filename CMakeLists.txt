@@ -52,7 +52,7 @@ include (cmake/utilities.txt)
 
 
 #--------------------------------------------------------------------------------------------------
-# Build configurations.
+# Project configuration.
 #--------------------------------------------------------------------------------------------------
 
 # Prevent in-source builds.
@@ -60,7 +60,7 @@ if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message (FATAL_ERROR "In-source builds are not permitted; run CMake inside an empty build directory.")
 endif ()
 
-# Create the build configurations. Must come before project ().
+# Create build configurations. Must come before project ().
 set (CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile;Ship" CACHE STRING "" FORCE)
 
 # Select a build configuration if none is selected yet.
@@ -72,8 +72,11 @@ endif ()
 
 project (appleseed)
 
-# Setup the path for our FindPackage modules.
-set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/modules)
+# Must come after project ().
+set (CMAKE_MODULE_PATH
+    ${CMAKE_MODULE_PATH}
+    ${PROJECT_SOURCE_DIR}/cmake/modules
+)
 
 
 #--------------------------------------------------------------------------------------------------

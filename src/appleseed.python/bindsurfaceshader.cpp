@@ -48,6 +48,8 @@ using namespace std;
 namespace boost
 {
     template <> SurfaceShader const volatile* get_pointer<SurfaceShader const volatile>(SurfaceShader const volatile* p) { return p; }
+    template <> ISurfaceShaderFactory const volatile* get_pointer<ISurfaceShaderFactory const volatile>(ISurfaceShaderFactory const volatile* p) { return p; }
+    template <> SurfaceShaderFactoryRegistrar const volatile* get_pointer<SurfaceShaderFactoryRegistrar const volatile>(SurfaceShaderFactoryRegistrar const volatile* p) { return p; }
 }
 #endif
 

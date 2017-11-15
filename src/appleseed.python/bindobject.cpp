@@ -51,6 +51,8 @@ using namespace std;
 namespace boost
 {
     template <> Object const volatile* get_pointer<Object const volatile>(Object const volatile* p) { return p; }
+    template <> IObjectFactory const volatile* get_pointer<IObjectFactory const volatile>(IObjectFactory const volatile* p) { return p; }
+    template <> ObjectFactoryRegistrar const volatile* get_pointer<ObjectFactoryRegistrar const volatile>(ObjectFactoryRegistrar const volatile* p) { return p; }
     template <> ObjectInstance const volatile* get_pointer<ObjectInstance const volatile>(ObjectInstance const volatile* p) { return p; }
 }
 #endif

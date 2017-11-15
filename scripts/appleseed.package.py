@@ -30,8 +30,6 @@
 
 from __future__ import print_function
 from distutils import archive_util, dir_util
-from stat import *
-from subprocess import *
 from xml.etree.ElementTree import ElementTree
 import glob
 import os
@@ -145,10 +143,10 @@ class Settings:
             tree.parse(SETTINGS_FILENAME)
         except IOError:
             fatal("Failed to load configuration file '" + SETTINGS_FILENAME + "'")
-        self.load_values(tree)
-        self.print_summary()
+        self.__load_values(tree)
+        self.__print_summary()
 
-    def load_values(self, tree):
+    def __load_values(self, tree):
         self.platform = self.__get_required(tree, "platform")
         self.configuration = self.__get_required(tree, "configuration")
         self.appleseed_path = self.__get_required(tree, "appleseed_path")
@@ -157,7 +155,13 @@ class Settings:
         self.platform_runtime_path = self.__get_required(tree, "platform_runtime_path")
         self.package_output_path = self.__get_required(tree, "package_output_path")
 
-    def print_summary(self):
+    def __get_required(self, tree, key):
+        value = tree.findtext(key)
+        if value is None:
+            fatal("Missing value \"{0}\" in configuration file".format(key))
+        return value
+
+    def __print_summary(self):
         print("")
         print("  Platform:                  " + self.platform)
         print("  Configuration:             " + self.configuration)
@@ -168,12 +172,6 @@ class Settings:
             print("  Path to platform runtime:  " + self.platform_runtime_path)
         print("  Output directory:          " + self.package_output_path)
         print("")
-
-    def __get_required(self, tree, key):
-        value = tree.findtext(key)
-        if value is None:
-            fatal("Missing value \"{0}\" in configuration file".format(key))
-        return value
 
 
 #--------------------------------------------------------------------------------------------------
@@ -729,5 +727,5 @@ def main():
 
     package_builder.build_package()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

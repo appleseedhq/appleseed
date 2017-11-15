@@ -47,6 +47,8 @@ using namespace std;
 namespace boost
 {
     template <> AOV const volatile* get_pointer<AOV const volatile>(AOV const volatile* p) { return p; }
+    template <> IAOVFactory const volatile* get_pointer<IAOVFactory const volatile>(IAOVFactory const volatile* p) { return p; }
+    template <> AOVFactoryRegistrar const volatile* get_pointer<AOVFactoryRegistrar const volatile>(AOVFactoryRegistrar const volatile* p) { return p; }
 }
 #endif
 
