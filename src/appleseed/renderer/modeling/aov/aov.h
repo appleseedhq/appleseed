@@ -86,6 +86,9 @@ class APPLESEED_DLLSYMBOL AOV
     // Return a reference to the AOV image.
     foundation::Image& get_image() const;
 
+    // Clear the AOV image to transparent black.
+    void clear_image();
+
   protected:
     friend class AOVAccumulatorContainer;
     friend class Frame;

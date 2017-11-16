@@ -33,6 +33,7 @@
 #include "renderer/kernel/aov/imagestack.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
 #include "foundation/image/image.h"
 
 using namespace foundation;
@@ -85,6 +86,11 @@ void AOV::create_image(
 Image& AOV::get_image() const
 {
     return *m_image;
+}
+
+void AOV::clear_image()
+{
+    m_image->clear(Color4f(0.0f));
 }
 
 

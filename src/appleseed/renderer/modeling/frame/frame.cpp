@@ -211,9 +211,12 @@ Image& Frame::image() const
     return *impl->m_image.get();
 }
 
-void Frame::clear_main_image()
+void Frame::clear_main_and_aov_images()
 {
     impl->m_image->clear(Color4f(0.0));
+
+    for (size_t i = 0, e = aovs().size(); i < e; ++i)
+        aovs().get_by_index(i)->clear_image();
 }
 
 ImageStack& Frame::aov_images() const

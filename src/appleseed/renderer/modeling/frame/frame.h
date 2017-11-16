@@ -89,8 +89,8 @@ class APPLESEED_DLLSYMBOL Frame
     // Access the main underlying image.
     foundation::Image& image() const;
 
-    // Clear the main image to transparent black.
-    void clear_main_image();
+    // Clear the main and AOV images to transparent black.
+    void clear_main_and_aov_images();
 
     // Access the AOV images.
     ImageStack& aov_images() const;
