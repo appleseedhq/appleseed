@@ -646,6 +646,7 @@ install (
         ${OSL_COMPILER}
         ${OSL_QUERY_INFO}
         ${OSL_MAKETX}
+        ${OPENIMAGEIO_OIIOTOOL}
     DESTINATION bin
 )
 

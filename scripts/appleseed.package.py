@@ -48,7 +48,7 @@ import zipfile
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.4.8"
+VERSION = "2.4.9"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 
 
@@ -275,6 +275,7 @@ class PackageBuilder:
         safe_make_directory("appleseed/bin")
         dir_util.copy_tree(os.path.join(self.settings.appleseed_path, "sandbox/bin", self.settings.configuration), "appleseed/bin/")
         shutil.copy(os.path.join(self.settings.appleseed_path, "sandbox/bin", exe("maketx")), "appleseed/bin/")
+        shutil.copy(os.path.join(self.settings.appleseed_path, "sandbox/bin", exe("oiiotool")), "appleseed/bin/")
         shutil.copy(os.path.join(self.settings.appleseed_path, "sandbox/bin", exe("oslc")), "appleseed/bin/")
         shutil.copy(os.path.join(self.settings.appleseed_path, "sandbox/bin", exe("oslinfo")), "appleseed/bin/")
 
@@ -637,6 +638,7 @@ class LinuxPackageBuilder(PackageBuilder):
 
     def alter_stage(self):
         self.make_executable(os.path.join("appleseed/bin", "maketx"))
+        self.make_executable(os.path.join("appleseed/bin", "oiiotool"))
         self.make_executable(os.path.join("appleseed/bin", "oslc"))
         self.make_executable(os.path.join("appleseed/bin", "oslinfo"))
         self.add_dependencies_to_stage()
