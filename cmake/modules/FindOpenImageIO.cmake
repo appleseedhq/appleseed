@@ -43,10 +43,13 @@ find_path (OPENIMAGEIO_INCLUDE_DIR NAMES OpenImageIO/imageio.h)
 
 find_library (OPENIMAGEIO_LIBRARY NAMES OpenImageIO)
 
+find_program (OPENIMAGEIO_OIIOTOOL NAMES oiiotool)
+
 # Handle the QUIETLY and REQUIRED arguments and set OPENIMAGEIO_FOUND.
 find_package_handle_standard_args (OPENIMAGEIO DEFAULT_MSG
     OPENIMAGEIO_INCLUDE_DIR
     OPENIMAGEIO_LIBRARY
+    OPENIMAGEIO_OIIOTOOL
 )
 
 # Set the output variables.
