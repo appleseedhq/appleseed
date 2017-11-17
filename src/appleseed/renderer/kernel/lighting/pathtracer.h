@@ -721,7 +721,7 @@ bool PathTracer<PathVisitor, Adjoint>::process_bounce(
 }
 
 template<typename PathVisitor, bool Adjoint>
-inline const ShadingPoint& PathTracer<PathVisitor, VolumeVisitor, Adjoint>::get_path_vertex(const size_t i) const
+inline const ShadingPoint& PathTracer<PathVisitor, Adjoint>::get_path_vertex(const size_t i) const
 {
     return reinterpret_cast<const ShadingPoint*>(m_shading_point_arena.get_storage())[i];
 }
