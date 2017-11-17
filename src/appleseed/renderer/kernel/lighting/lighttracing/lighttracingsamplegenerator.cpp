@@ -312,16 +312,16 @@ namespace
             }
 
             void get_next_shading_point(
-                const ShadingRay&	        ray,
-                PathVertex*			        vertex,
-                ShadingPoint*				next_shading_point)
-			{
-				// This ray is being cast into an ordinary medium.
-				m_shading_context.get_intersector().trace(
+                const ShadingRay&           ray,
+                PathVertex*                 vertex,
+                ShadingPoint*               next_shading_point)
+            {
+                // This ray is being cast into an ordinary medium.
+                m_shading_context.get_intersector().trace(
                     ray,
-					*next_shading_point,
-					vertex->m_shading_point);
-			}
+                    *next_shading_point,
+                    vertex->m_shading_point);
+            }
 
             void visit_area_light_vertex(
                 const LightSample&          light_sample,

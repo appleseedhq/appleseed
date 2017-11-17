@@ -95,7 +95,7 @@ namespace
 
     struct PathVisitor
     {
-		const ShadingContext&		m_shading_context;
+        const ShadingContext&        m_shading_context;
         Spectrum                    m_initial_flux;     // initial particle flux (in W)
         const SPPMParameters&       m_params;
         const bool                  m_store_direct;
@@ -104,15 +104,15 @@ namespace
         SPPMPhotonVector&           m_photons;
 
         PathVisitor(
-			const ShadingContext&	shading_context,
+            const ShadingContext&   shading_context,
             const Spectrum&         initial_flux,
-            const SPPMParameters&   params,
-            const bool              store_direct,
-            const bool              store_indirect,
-            const bool              store_caustics,
-            SPPMPhotonVector&       photons)
+            const SPPMParameters&       params,
+            const bool                  store_direct,
+            const bool                  store_indirect,
+            const bool                  store_caustics,
+            SPPMPhotonVector&           photons)
           : m_shading_context(shading_context)
-		  , m_initial_flux(initial_flux)
+          , m_initial_flux(initial_flux)
           , m_params(params)
           , m_store_direct(store_direct)
           , m_store_indirect(store_indirect)
@@ -142,9 +142,9 @@ namespace
         }
 
         void get_next_shading_point(
-            const ShadingRay&	        ray,
-            PathVertex*			        vertex,
-            ShadingPoint*				next_shading_point)
+            const ShadingRay&           ray,
+            PathVertex*                 vertex,
+            ShadingPoint*               next_shading_point)
         {
             // This ray is being cast into an ordinary medium.
             m_shading_context.get_intersector().trace(
@@ -433,7 +433,7 @@ namespace
             // Build the path tracer.
             const bool cast_indirect_light = (edf->get_flags() & EDF::CastIndirectLight) != 0;
             PathVisitor path_visitor(
-				shading_context,
+                shading_context,
                 initial_flux,
                 m_params,
                 m_params.m_dl_mode == SPPMParameters::SPPM, // store direct lighting photons?
@@ -499,7 +499,7 @@ namespace
             // Build the path tracer.
             const bool cast_indirect_light = (light_sample.m_light->get_flags() & EDF::CastIndirectLight) != 0;
             PathVisitor path_visitor(
-				shading_context,
+                shading_context,
                 initial_flux,
                 m_params,
                 m_params.m_dl_mode == SPPMParameters::SPPM, // store direct lighting photons?
@@ -706,7 +706,7 @@ namespace
             // Build the path tracer.
             const bool cast_indirect_light = true;          // right now environments always cast indirect light
             PathVisitor path_visitor(
-				shading_context,
+                shading_context,
                 initial_flux,
                 m_params,
                 true,

@@ -353,22 +353,22 @@ namespace
                 return true;
             }
 
-			void get_next_shading_point(
-				const ShadingRay&           ray,
-                PathVertex*			        vertex,
-				ShadingPoint*				next_shading_point)
-			{
-                bool hit_surface = m_shading_context.get_intersector().trace(
+            void get_next_shading_point(
+                const ShadingRay&           ray,
+                PathVertex*                 vertex,
+                ShadingPoint*               next_shading_point)
+            {
+                m_shading_context.get_intersector().trace(
                     ray,
                     *next_shading_point,
                     vertex->m_shading_point);
 
-				const ShadingRay::Medium* current_medium = ray.get_current_medium();
-				if (current_medium != nullptr &&
-					current_medium->get_volume() != nullptr)
-				{
+                const ShadingRay::Medium* current_medium = ray.get_current_medium();
+                if (current_medium != nullptr &&
+                    current_medium->get_volume() != nullptr)
+                {
                     //
-					// This ray is being cast into a participating medium.
+                    // This ray is being cast into a participating medium.
                     //
 
                     // Determine the pivot for better importance sampling.
@@ -449,8 +449,8 @@ namespace
                     vertex->m_bsdf = distance_sample.m_bsdf;
                     vertex->m_bsdf_data = distance_sample.m_bsdf_data;
                     vertex->m_edf = nullptr;
-				}
-			}
+                }
+            }
         };
 
         //

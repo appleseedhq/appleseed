@@ -254,9 +254,9 @@ namespace
             }
 
             void get_next_shading_point(
-                const ShadingRay&	        ray,
-                PathVertex*			        vertex,
-                ShadingPoint*				next_shading_point)
+                const ShadingRay&           ray,
+                PathVertex*                 vertex,
+                ShadingPoint*               next_shading_point)
             {
                 // This ray is being cast into an ordinary medium.
                 m_shading_context.get_intersector().trace(

@@ -42,66 +42,66 @@ template <typename SamplingContext>
 class EquiangularSampler
 {
   public:
-	EquiangularSampler(
-		const foundation::Vector3d&		center,
-		const foundation::Ray3d&        volume_ray,
-		SamplingContext&				sampling_context)
-		: m_sampling_context(sampling_context)
-	{
-		// Direction from the ray origin to the light center.
-		const foundation::Vector3f origin_to_light(center - volume_ray.m_org);
+    EquiangularSampler(
+        const foundation::Vector3d&     center,
+        const foundation::Ray3d&        volume_ray,
+        SamplingContext&                sampling_context)
+        : m_sampling_context(sampling_context)
+    {
+        // Direction from the ray origin to the light center.
+        const foundation::Vector3f origin_to_light(center - volume_ray.m_org);
 
-		// Signed distance from the ray origin
-		// to the light projection onto the ray.
-		m_origin_to_projection = foundation::dot(origin_to_light, foundation::Vector3f(volume_ray.m_dir));
+        // Signed distance from the ray origin
+        // to the light projection onto the ray.
+        m_origin_to_projection = foundation::dot(origin_to_light, foundation::Vector3f(volume_ray.m_dir));
 
-		// Distance from the projection point to the light center (height).
-		m_projection_to_light =
-			std::sqrt(square_norm(origin_to_light) - foundation::square(m_origin_to_projection));
+        // Distance from the projection point to the light center (height).
+        m_projection_to_light =
+            std::sqrt(square_norm(origin_to_light) - foundation::square(m_origin_to_projection));
 
-		m_ray_length = static_cast<float>(volume_ray.m_tmax);
+        m_ray_length = static_cast<float>(volume_ray.m_tmax);
 
-		m_near_angle = std::atan2(-m_origin_to_projection, m_projection_to_light);
+        m_near_angle = std::atan2(-m_origin_to_projection, m_projection_to_light);
 
-		m_far_angle =
-			volume_ray.is_finite() ?
-			std::atan2(
-				m_ray_length - m_origin_to_projection,
-				m_projection_to_light) :
-			foundation::HalfPi<float>();
-	}
+        m_far_angle =
+            volume_ray.is_finite() ?
+            std::atan2(
+                m_ray_length - m_origin_to_projection,
+                m_projection_to_light) :
+            foundation::HalfPi<float>();
+    }
 
-	float sample() const
-	{
-		m_sampling_context.split_in_place(1, 1);
+    float sample() const
+    {
+        m_sampling_context.split_in_place(1, 1);
 
-		const float distance = m_origin_to_projection +
-			foundation::sample_equiangular_distribution(
-				m_sampling_context.next2<float>(),
-				m_near_angle,
-				m_far_angle,
-				m_projection_to_light);
+        const float distance = m_origin_to_projection +
+            foundation::sample_equiangular_distribution(
+                m_sampling_context.next2<float>(),
+                m_near_angle,
+                m_far_angle,
+                m_projection_to_light);
 
-		return foundation::clamp(distance, 0.0f, m_ray_length);
-	}
+        return foundation::clamp(distance, 0.0f, m_ray_length);
+    }
 
-	float evaluate(const float distance_sample) const
-	{
-		return foundation::equiangular_distribution_pdf(
-			distance_sample - m_origin_to_projection,
-			m_near_angle,
-			m_far_angle,
-			m_projection_to_light);
-	}
+    float evaluate(const float distance_sample) const
+    {
+        return foundation::equiangular_distribution_pdf(
+            distance_sample - m_origin_to_projection,
+            m_near_angle,
+            m_far_angle,
+            m_projection_to_light);
+    }
 
-private:
-	SamplingContext&        m_sampling_context;
+  private:
+    SamplingContext&        m_sampling_context;
 
-	float                   m_origin_to_projection;
-	float                   m_projection_to_light;
-	float                   m_ray_length;
-	float                   m_near_angle;
-	float                   m_far_angle;
+    float                   m_origin_to_projection;
+    float                   m_projection_to_light;
+    float                   m_ray_length;
+    float                   m_near_angle;
+    float                   m_far_angle;
 };
 
 #endif // APPLESEED_FOUNDATION_MATH_SAMPLING_EQUIANGULARSAMPLER_H
