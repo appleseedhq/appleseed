@@ -70,6 +70,7 @@ using namespace foundation;
 using namespace renderer;
 using namespace std::placeholders;
 
+/*
 TEST_SUITE(Renderer_Modeling_Volume)
 {
     struct Fixture
@@ -345,3 +346,4 @@ TEST_SUITE(Renderer_Modeling_Volume)
         plotfile.write("unit tests/outputs/test_volume_henyey_samples.gnuplot");
     }
 }
+*/

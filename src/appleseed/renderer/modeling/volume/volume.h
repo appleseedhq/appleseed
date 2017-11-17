@@ -45,6 +45,7 @@
 
 // Forward declarations.
 namespace foundation    { class Arena; }
+namespace renderer      { class DistanceSample; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingRay; }
@@ -89,21 +90,12 @@ class APPLESEED_DLLSYMBOL Volume
         const ShadingRay&           volume_ray,
         void*                       data) const;
 
-    // Sample the phase function in a given point on the ray. Return the PDF value.
-    virtual float sample(
-        SamplingContext&            sampling_context,
-        const void*                 data,                       // input values
-        const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
-        const float                 distance,                   // distance to the point on this volume segment
-        foundation::Vector3f&       incoming) const = 0;        // sampled direction
-
-    // Evaluate PDF value of the phase function at a given point
-    // on the ray and for the given incoming direction.
-    virtual float evaluate(
-        const void*                 data,                       // input values
-        const ShadingRay&           volume_ray,                 // ray used for marching inside the volume
-        const float                 distance,                   // distance to the point on this volume segment
-        const foundation::Vector3f& incoming) const = 0;        // world space incoming direction, unit-length
+	// Sample distance before the next scattering event.
+	virtual void sample_distance(
+        const ShadingContext&       shading_context,
+		SamplingContext&            sampling_context,
+		const void*                 data,						// input values
+		DistanceSample&				sample) const = 0;          // distance sample
 
     // Evaluate the transmission (spectrum) between the front end of the ray and a given point.
     virtual void evaluate_transmission(
