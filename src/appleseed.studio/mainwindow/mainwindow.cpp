@@ -1150,8 +1150,7 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
     Project* project = m_project_manager.get_project();
     Frame* frame = project->get_frame();
 
-    // Clear the main image to transparent black.
-    frame->clear_main_image();
+    frame->clear_main_and_aov_images();
 
     // In the UI, darken all render widgets.
     for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
@@ -1881,9 +1880,8 @@ void MainWindow::slot_quicksave_all_aovs()
 
 void MainWindow::slot_clear_frame()
 {
-    // Clear the main image to transparent black.
     Frame* frame = m_project_manager.get_project()->get_frame();
-    frame->clear_main_image();
+    frame->clear_main_and_aov_images();
 
     // In the UI, clear all render widgets to black.
     for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
