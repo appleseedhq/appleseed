@@ -35,7 +35,7 @@ shader as_voronoi3d
 [[
     string as_maya_node_name = "asVoronoi3D",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/3d:swatch/AppleseedRenderSwatch:texture",
-    int as_maya_type_id = 0x001279ca
+    int as_maya_type_id = 0x001279c6
 ]]
 (
     color in_color1 = color(1, 0.3, 0.05)
@@ -257,7 +257,7 @@ shader as_voronoi3d
 
     // Passing the output arrays directly seems not to get the arrays
     // filled, so use temporary copies for now.
-    
+
     float tmp_features[4] = {1000, 1000, 1000, 1000};
     point tmp_positions[4] = {0, 0, 0, 0};
     color tmp_IDs[4] = {0, 0, 0, 0};
