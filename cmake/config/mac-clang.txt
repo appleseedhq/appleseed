@@ -76,6 +76,7 @@ endif ()
 set (cxx_compiler_flags_common
     ${cxx_compiler_flags_common}
     -std=c++11                                          # enable C++11
+    -stdlib=libc++
 )
 if (USE_SSE)
     set (c_compiler_flags_common
