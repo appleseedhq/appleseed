@@ -32,7 +32,8 @@ import traceback
 
 
 def load_plugins(bundled_plugins_path):
-    load_plugins_from_dir(bundled_plugins_path)
+    if os.path.isdir(bundled_plugins_path):
+        load_plugins_from_dir(bundled_plugins_path)
 
     user_plugins_path = os.environ.get('APPLESEED_STUDIO_PLUGIN_PATH')
     if user_plugins_path is not None:
@@ -43,10 +44,8 @@ def load_plugins_from_dir(bundled_plugins_path):
     for plugin in os.listdir(bundled_plugins_path):
         plugin_path = os.path.join(bundled_plugins_path, plugin)
 
-        if not os.path.isdir(plugin_path):
-            continue
-
-        load_plugin(plugin_path)
+        if os.path.isdir(plugin_path):
+            load_plugin(plugin_path)
 
 
 def load_plugin(plugin_path):
