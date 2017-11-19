@@ -1121,7 +1121,7 @@ namespace
 
             m_entity =
                 create_entity<Entity>(
-                    m_context.get_project().get_factory_registrar<Entity>(),
+                    m_context.get_project().template get_factory_registrar<Entity>(),
                     m_entity_type,
                     m_model,
                     m_name,
