@@ -127,7 +127,7 @@ def copy_glob(input_pattern, output_path):
 
 
 def make_writable(filepath):
-    os.chmod(filepath, S_IRUSR | S_IWUSR)
+    os.chmod(filepath, stat.S_IRUSR | stat.S_IWUSR)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -191,7 +191,7 @@ class PackageInfo:
 
     def retrieve_git_tag(self):
         old_path = pushd(self.settings.appleseed_path)
-        self.version = Popen("git describe --long", stdout=PIPE, shell=True).stdout.read().strip()
+        self.version = subprocess.Popen("git describe --long", stdout=subprocess.PIPE, shell=True).stdout.read().strip()
         os.chdir(old_path)
 
     def build_package_path(self):
