@@ -645,8 +645,8 @@ class LinuxPackageBuilder(PackageBuilder):
         self.clear_runtime_paths_on_libraries()
 
     def make_executable(self, filepath):
-        mode = os.stat(filepath)[ST_MODE]
-        mode |= S_IXUSR | S_IXGRP | S_IXOTH
+        mode = os.stat(filepath)[stat.ST_MODE]
+        mode |= stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
         os.chmod(filepath, mode)
 
     def add_dependencies_to_stage(self):
