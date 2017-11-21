@@ -172,159 +172,193 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
         }
     };
 
+    template <typename TestScene>
     struct Fixture
-      : public TestFixtureBase
+      : public StaticTestSceneContext<TestScene>
     {
-        void create_horizontal_gradient_texture(const char* name)
+        typedef StaticTestSceneContext<TestScene> Base;
+
+        TextureStore                        m_texture_store;
+        TextureCache                        m_texture_cache;
+        std::shared_ptr<OIIOTextureSystem>  m_texture_system;
+        RendererServices                    m_renderer_services;
+        std::shared_ptr<OSLShadingSystem>   m_shading_system;
+        Intersector                         m_intersector;
+        Arena                               m_arena;
+        OSLShaderGroupExec                  m_sg_exec;
+        Tracer                              m_tracer;
+        ShadingContext                      m_shading_context;
+
+        Fixture()
+          : m_texture_store(Base::m_scene)
+          , m_texture_cache(m_texture_store)
+          , m_texture_system(
+                OIIOTextureSystemFactory::create(),
+                [](OIIOTextureSystem* object) { object->release(); })
+          , m_renderer_services(Base::m_project, *m_texture_system)
+          , m_shading_system(
+                OSLShadingSystemFactory::create(&m_renderer_services, m_texture_system.get()),
+                [](OSLShadingSystem* object) { object->release(); })
+          , m_intersector(
+                Base::m_project.get_trace_context(),
+                m_texture_cache)
+          , m_sg_exec(*m_shading_system, m_arena)
+          , m_tracer(
+                Base::m_scene,
+                m_intersector,
+                m_texture_cache,
+                m_sg_exec)
+          , m_shading_context(
+                m_intersector,
+                m_tracer,
+                m_texture_cache,
+                *m_texture_system,
+                m_sg_exec,
+                m_arena,
+                0)  // thread index
         {
-            m_scene.textures().insert(
-                auto_release_ptr<Texture>(
-                    new HorizontalGradientTexture(name)));
         }
 
-        bool check_consistency(EnvironmentEDF& env_edf)
+        bool check_consistency(const EnvironmentEDF& env_edf) const
         {
-            auto_release_ptr<Environment> environment(
-                EnvironmentFactory().create(
-                    "environment", ParamArray().insert("environment_edf", env_edf.get_name())));
-
-            m_scene.set_environment(environment);
-
-            bind_inputs();
-
-            OnFrameBeginRecorder recorder;
-            APPLESEED_UNUSED const bool success = env_edf.on_frame_begin(m_project, &m_scene, recorder);
-            assert(success);
-
-            TextureStore texture_store(m_scene);
-            TextureCache texture_cache(texture_store);
-
-            std::shared_ptr<OIIOTextureSystem> texture_system(
-                OIIOTextureSystemFactory::create(),
-                [](OIIOTextureSystem* object) { object->release(); });
-
-            RendererServices renderer_services(
-                m_project,
-                *texture_system);
-
-            std::shared_ptr<OSLShadingSystem> shading_system(
-                OSLShadingSystemFactory::create(&renderer_services, texture_system.get()),
-                [](OSLShadingSystem* object) { object->release(); });
-
-            Intersector intersector(
-                m_project.get_trace_context(),
-                texture_cache);
-
-            Arena arena;
-            OSLShaderGroupExec sg_exec(*shading_system, arena);
-
-            Tracer tracer(
-                m_scene,
-                intersector,
-                texture_cache,
-                sg_exec);
-
-            ShadingContext shading_context(
-                intersector,
-                tracer,
-                texture_cache,
-                *texture_system,
-                sg_exec,
-                arena,
-                0);
-
             Vector3f outgoing;
             Spectrum value1(Spectrum::Illuminance);
             float probability1;
-
             env_edf.sample(
-                shading_context,
+                m_shading_context,
                 Vector2f(0.3f, 0.7f),
                 outgoing,
                 value1,
                 probability1);
 
             Spectrum value2(Spectrum::Illuminance);
-
-            env_edf.evaluate(shading_context, outgoing, value2);
+            env_edf.evaluate(m_shading_context, outgoing, value2);
             const float probability2 = env_edf.evaluate_pdf(outgoing);
 
-            recorder.on_frame_end(m_project);
-
-            const bool consistent =
+            return
                 feq(probability1, probability2) &&
                 feq(value1, value2);
-
-            return consistent;
         }
     };
 
-    TEST_CASE_F(CheckConstantEnvironmentEDFConsistency, Fixture)
+    struct ConstantEnvironmentEDFTestScene
+      : public TestSceneBase
     {
-        create_color_entity("blue", Color3f(0.2f, 0.5f, 0.9f));
+        EnvironmentEDF* m_env_edf;
 
-        auto_release_ptr<EnvironmentEDF> env_edf(
-            ConstantEnvironmentEDFFactory().create(
-                "env_edf",
-                ParamArray().insert("radiance", "blue")));
-        EnvironmentEDF& env_edf_ref = env_edf.ref();
-        m_scene.environment_edfs().insert(env_edf);
+        ConstantEnvironmentEDFTestScene()
+        {
+            create_color_entity("blue", Color3f(0.2f, 0.5f, 0.9f));
 
-        const bool consistent = check_consistency(env_edf_ref);
+            auto_release_ptr<EnvironmentEDF> env_edf(
+                ConstantEnvironmentEDFFactory().create(
+                    "env_edf",
+                    ParamArray().insert("radiance", "blue")));
+            m_env_edf = env_edf.get();
+            m_scene.environment_edfs().insert(env_edf);
 
-        EXPECT_TRUE(consistent);
+            m_scene.set_environment(
+                EnvironmentFactory().create(
+                    "environment",
+                    ParamArray().insert("environment_edf", m_env_edf->get_name())));
+        }
+    };
+
+    TEST_CASE_F(CheckConstantEnvironmentEDFConsistency, Fixture<ConstantEnvironmentEDFTestScene>)
+    {
+        EXPECT_TRUE(check_consistency(*m_env_edf));
     }
 
-    TEST_CASE_F(CheckGradientEnvironmentEDFConsistency, Fixture)
+    struct GradientEnvironmentEDFTestScene
+      : public TestSceneBase
     {
-        create_color_entity("red", Color3f(1.0f, 0.2f, 0.2f));
-        create_color_entity("green", Color3f(0.2f, 1.0f, 0.2f));
+        EnvironmentEDF* m_env_edf;
 
-        auto_release_ptr<EnvironmentEDF> env_edf(
-            GradientEnvironmentEDFFactory().create(
-                "env_edf",
-                ParamArray()
-                    .insert("horizon_radiance", "red")
-                    .insert("zenith_radiance", "green")));
-        EnvironmentEDF& env_edf_ref = env_edf.ref();
-        m_scene.environment_edfs().insert(env_edf);
+        GradientEnvironmentEDFTestScene()
+        {
+            create_color_entity("red", Color3f(1.0f, 0.2f, 0.2f));
+            create_color_entity("green", Color3f(0.2f, 1.0f, 0.2f));
 
-        const bool consistent = check_consistency(env_edf_ref);
+            auto_release_ptr<EnvironmentEDF> env_edf(
+                GradientEnvironmentEDFFactory().create(
+                    "env_edf",
+                    ParamArray()
+                        .insert("horizon_radiance", "red")
+                        .insert("zenith_radiance", "green")));
+            m_env_edf = env_edf.get();
+            m_scene.environment_edfs().insert(env_edf);
 
-        EXPECT_TRUE(consistent);
+            m_scene.set_environment(
+                EnvironmentFactory().create(
+                    "environment",
+                    ParamArray().insert("environment_edf", m_env_edf->get_name())));
+        }
+    };
+
+    TEST_CASE_F(CheckGradientEnvironmentEDFConsistency, Fixture<GradientEnvironmentEDFTestScene>)
+    {
+        EXPECT_TRUE(check_consistency(*m_env_edf));
     }
 
-    TEST_CASE_F(CheckLatLongMapEnvironmentEDFConsistency, Fixture)
+    struct LatLongMapEnvironmentEDFTestScene
+      : public TestSceneBase
     {
-        create_horizontal_gradient_texture("horiz_gradient_texture");
-        create_texture_instance("horiz_gradient_texture_inst", "horiz_gradient_texture");
+        EnvironmentEDF* m_env_edf;
 
-        auto_release_ptr<EnvironmentEDF> env_edf(
-            LatLongMapEnvironmentEDFFactory().create(
-                "env_edf",
-                ParamArray().insert("radiance", "horiz_gradient_texture_inst")));
-        EnvironmentEDF& env_edf_ref = env_edf.ref();
-        m_scene.environment_edfs().insert(env_edf);
+        LatLongMapEnvironmentEDFTestScene()
+        {
+            m_scene.textures().insert(
+                auto_release_ptr<Texture>(
+                    new HorizontalGradientTexture("horiz_gradient_texture")));
+            create_texture_instance("horiz_gradient_texture_inst", "horiz_gradient_texture");
 
-        const bool consistent = check_consistency(env_edf_ref);
+            auto_release_ptr<EnvironmentEDF> env_edf(
+                LatLongMapEnvironmentEDFFactory().create(
+                    "env_edf",
+                    ParamArray().insert("radiance", "horiz_gradient_texture_inst")));
+            m_env_edf = env_edf.get();
+            m_scene.environment_edfs().insert(env_edf);
 
-        EXPECT_TRUE(consistent);
+            m_scene.set_environment(
+                EnvironmentFactory().create(
+                    "environment",
+                    ParamArray().insert("environment_edf", m_env_edf->get_name())));
+        }
+    };
+
+    TEST_CASE_F(CheckLatLongMapEnvironmentEDFConsistency, Fixture<LatLongMapEnvironmentEDFTestScene>)
+    {
+        EXPECT_TRUE(check_consistency(*m_env_edf));
     }
 
-    TEST_CASE_F(CheckMirrorBallMapEnvironmentEDFConsistency, Fixture)
+    struct MirrorBallMapEnvironmentEDFTestScene
+      : public TestSceneBase
     {
-        create_horizontal_gradient_texture("horiz_gradient_texture");
-        create_texture_instance("horiz_gradient_texture_inst", "horiz_gradient_texture");
+        EnvironmentEDF* m_env_edf;
 
-        auto_release_ptr<EnvironmentEDF> env_edf(
-            MirrorBallMapEnvironmentEDFFactory().create(
-                "env_edf",
-                ParamArray().insert("radiance", "horiz_gradient_texture_inst")));
-        EnvironmentEDF& env_edf_ref = env_edf.ref();
-        m_scene.environment_edfs().insert(env_edf);
+        MirrorBallMapEnvironmentEDFTestScene()
+        {
+            m_scene.textures().insert(
+                auto_release_ptr<Texture>(
+                    new HorizontalGradientTexture("horiz_gradient_texture")));
+            create_texture_instance("horiz_gradient_texture_inst", "horiz_gradient_texture");
 
-        const bool consistent = check_consistency(env_edf_ref);
+            auto_release_ptr<EnvironmentEDF> env_edf(
+                MirrorBallMapEnvironmentEDFFactory().create(
+                    "env_edf",
+                    ParamArray().insert("radiance", "horiz_gradient_texture_inst")));
+            m_env_edf = env_edf.get();
+            m_scene.environment_edfs().insert(env_edf);
 
-        EXPECT_TRUE(consistent);
+            m_scene.set_environment(
+                EnvironmentFactory().create(
+                    "environment",
+                    ParamArray().insert("environment_edf", m_env_edf->get_name())));
+        }
+    };
+
+    TEST_CASE_F(CheckMirrorBallMapEnvironmentEDFConsistency, Fixture<MirrorBallMapEnvironmentEDFTestScene>)
+    {
+        EXPECT_TRUE(check_consistency(*m_env_edf));
     }
 }
