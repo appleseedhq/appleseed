@@ -1190,9 +1190,3 @@ QToolTip
     border: 0px;
     opacity: 200;
 }
-
-QToolBar#python_console_toolbar::separator
-{
-    background-color: DISABLED_TEXT_COLOR;
-    width: 5;
-}
