@@ -39,22 +39,34 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// Standard headers.
+#include <cassert>
+
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
+namespace renderer      { class ObjectInstance; }
 namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
 namespace renderer
 {
+
+//
+// An array of object instances.
+//
+
+APPLESEED_DECLARE_APIARRAY(ObjectInstanceArray, const ObjectInstance*);
+
 
 //
 // An assembly is either entirely self-contained, or it references colors,
@@ -125,7 +137,24 @@ class APPLESEED_DLLSYMBOL Assembly
         OnFrameBeginRecorder&       recorder,
         foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
+    // This method is called once after rendering each frame (only if on_frame_begin() was called).
+    void on_frame_end(
+        const Project&              project,
+        const BaseGroup*            parent) override;
+
+    struct RenderData
+    {
+        ObjectInstanceArray         m_procedural_objects;
+    };
+
+    // Return render-time data of this entity.
+    // Render-time data are available between on_frame_begin() and on_frame_end() calls.
+    const RenderData& get_render_data() const;
+
   protected:
+    bool        m_has_render_data;
+    RenderData  m_render_data;
+
     // Constructor.
     Assembly(
         const char*                 name,
@@ -174,6 +203,12 @@ class APPLESEED_DLLSYMBOL AssemblyFactory
 inline bool Assembly::is_flushable() const
 {
     return m_flushable;
+}
+
+inline const Assembly::RenderData& Assembly::get_render_data() const
+{
+    assert(m_has_render_data);
+    return m_render_data;
 }
 
 }       // namespace renderer

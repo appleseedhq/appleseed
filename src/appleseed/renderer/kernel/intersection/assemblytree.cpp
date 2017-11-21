@@ -771,18 +771,13 @@ bool AssemblyLeafVisitor::visit(
         }
 
         // Check the intersection between the ray and procedural objects.
-        for (size_t j = 0, e = item.m_assembly->object_instances().size(); j < e; ++j)
+        const ObjectInstanceArray& procedural_instances = item.m_assembly->get_render_data().m_procedural_objects;
+        for (size_t j = 0, e = procedural_instances.size(); j < e; ++j)
         {
             // Retrieve the object and object instance.
-            const ObjectInstance* object_instance = item.m_assembly->object_instances().get_by_index(j);
+            const ObjectInstance* object_instance = procedural_instances[j];
             const Transformd& object_instance_transform = object_instance->get_transform();
-            const Object& object = object_instance->get_object();
-
-            // Skip non-procedural objects.
-            // todo: don't rely on RTTI to identify procedural objects.
-            const ProceduralObject* proc_object = dynamic_cast<const ProceduralObject*>(&object);
-            if (proc_object == nullptr)
-                continue;
+            const ProceduralObject& object = static_cast<const ProceduralObject&>(object_instance->get_object());
 
             // Transform the ray to object instance space.
             // todo: transform ray differentials.
@@ -799,7 +794,7 @@ bool AssemblyLeafVisitor::visit(
 
             // Ask the procedural object to intersect itself against the ray.
             ProceduralObject::IntersectionResult result;
-            proc_object->intersect(instance_local_ray, result);
+            object.intersect(instance_local_ray, result);
 
             // Keep track of the closest hit.
             if (result.m_hit && result.m_distance < m_shading_point.m_ray.m_tmax)
@@ -986,18 +981,13 @@ bool AssemblyLeafProbeVisitor::visit(
         }
 
         // Check the intersection between the ray and procedural objects.
-        for (size_t j = 0, e = item.m_assembly->object_instances().size(); j < e; ++j)
+        const ObjectInstanceArray& procedural_instances = item.m_assembly->get_render_data().m_procedural_objects;
+        for (size_t j = 0, e = procedural_instances.size(); j < e; ++j)
         {
             // Retrieve the object and object instance.
-            const ObjectInstance* object_instance = item.m_assembly->object_instances().get_by_index(j);
+            const ObjectInstance* object_instance = procedural_instances[j];
             const Transformd& object_instance_transform = object_instance->get_transform();
-            const Object& object = object_instance->get_object();
-
-            // Skip non-procedural objects.
-            // todo: don't rely on RTTI to identify procedural objects.
-            const ProceduralObject* proc_object = dynamic_cast<const ProceduralObject*>(&object);
-            if (proc_object == nullptr)
-                continue;
+            const ProceduralObject& object = static_cast<const ProceduralObject&>(object_instance->get_object());
 
             // Transform the ray to object instance space.
             // todo: transform ray differentials.
@@ -1013,7 +1003,7 @@ bool AssemblyLeafProbeVisitor::visit(
             instance_local_ray.m_medium_count = local_ray.m_medium_count;
 
             // Ask the procedural object to intersect itself against the ray.
-            if (proc_object->intersect(instance_local_ray))
+            if (object.intersect(instance_local_ray))
             {
                 m_hit = true;
                 return false;
