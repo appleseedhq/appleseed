@@ -415,13 +415,6 @@ bool Scene::on_frame_begin(
 
     m_camera = project.get_uncached_active_camera();
 
-    // Fail if we don't have a camera.
-    if (m_camera == nullptr)
-    {
-        RENDERER_LOG_ERROR("no cameras in scene or no camera specified in the frame entity.");
-        return false;
-    }
-
     bool success = true;
 
     success = success && impl->m_default_surface_shader->on_frame_begin(project, this, recorder, abort_switch);

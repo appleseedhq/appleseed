@@ -190,6 +190,7 @@ class RenderingManager
   private slots:
     void slot_rendering_begin();
     void slot_rendering_end();
+    void slot_rendering_failed();
     void slot_frame_begin();
     void slot_frame_end();
     void slot_camera_change_begin();

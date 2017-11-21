@@ -572,14 +572,14 @@ namespace
         {
             ProcessPriorityContext background_context(ProcessPriorityLow, &g_logger);
             stopwatch.start();
-            if (!renderer.render())
+            if (renderer.render() != MasterRenderer::RenderingSucceeded)
                 return false;
             stopwatch.measure();
         }
         else
         {
             stopwatch.start();
-            if (!renderer.render())
+            if (renderer.render() != MasterRenderer::RenderingSucceeded)
                 return false;
             stopwatch.measure();
         }
@@ -679,13 +679,13 @@ namespace
 
             // Render a first time.
             stopwatch.start();
-            if (!renderer.render())
+            if (renderer.render() != MasterRenderer::RenderingSucceeded)
                 return false;
             stopwatch.measure();
             total_time_seconds = stopwatch.get_seconds();
 
             // Render a second time.
-            if (!renderer.render())
+            if (renderer.render() != MasterRenderer::RenderingSucceeded)
                 return false;
             stopwatch.measure();
             render_time_seconds = stopwatch.get_seconds() - total_time_seconds;
