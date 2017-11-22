@@ -141,14 +141,14 @@ void PythonInterpreter::initialize(OutputRedirector redirector)
     //
     // To summarize:
     //  - When using compiled modules with static Boost.Python, there are 2 registries.
-    //  - When using compiled modules with shared Boost.Python, there are 1 registry.
+    //  - When using compiled modules with shared Boost.Python, there is 1 registry.
     //
     // The solution is to build all extension modules into appleseed.studio such that
     // we get a single registry. That way appleseed.studio module can find a converter
     // from e.g. renderer::Project to appleseedpython.Project.
     //
 
-    PyImport_AppendInittab("_appleseedpython", init_appleseedpython);
+    PyImport_AppendInittab("_appleseedpythonbuiltin", init_appleseedpython);
     PyImport_AppendInittab("_appleseedstudio", init_appleseedstudio);
     Py_Initialize();
     m_is_initialized = true;
@@ -174,8 +174,7 @@ void PythonInterpreter::initialize(OutputRedirector redirector)
 
 void PythonInterpreter::import_python_module(const char* module_name, const char* alias_name)
 {
-    const string s =
-        format("import {0}\n{1} = {0}\n", module_name, alias_name);
+    const string s = format("import {0}\n{1} = {0}\n", module_name, alias_name);
     execute(s.c_str());
 }
 

@@ -27,5 +27,13 @@
 # THE SOFTWARE.
 #
 
-from _appleseedpython import *
+# The appleseed.python module built into appleseed.studio
+# is called _appleseedpythonbuiltin. Try to load it first.
+# If that fails it means that we are not in appleseed.studio;
+# in that case just load the normal appleseed.python module.
+try:
+    from _appleseedpythonbuiltin import *
+except:
+    from _appleseedpython import *
+
 from logtarget import *
