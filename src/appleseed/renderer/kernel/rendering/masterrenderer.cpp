@@ -115,28 +115,10 @@ MasterRenderer::~MasterRenderer()
     delete m_serial_renderer_controller;
 }
 
-bool MasterRenderer::render()
+MasterRenderer::RenderingResult MasterRenderer::render()
 {
     // Initialize thread-local variables.
     Spectrum::set_mode(get_spectrum_mode(m_params));
-
-    if (m_project.get_scene() == nullptr)
-    {
-        RENDERER_LOG_ERROR("project does not contain a scene.");
-        return false;
-    }
-
-    if (m_project.get_frame() == nullptr)
-    {
-        RENDERER_LOG_ERROR("project does not contain a frame.");
-        return false;
-    }
-
-    if (m_project.get_uncached_active_camera() == nullptr)
-    {
-        RENDERER_LOG_ERROR("no active camera in project.");
-        return false;
-    }
 
     try
     {
@@ -146,25 +128,25 @@ bool MasterRenderer::render()
     {
         m_renderer_controller->on_rendering_abort();
         RENDERER_LOG_ERROR("rendering failed (ran out of memory).");
-        return false;
+        return RenderingFailed;
     }
 #ifdef NDEBUG
     catch (const exception& e)
     {
         m_renderer_controller->on_rendering_abort();
         RENDERER_LOG_ERROR("rendering failed (%s).", e.what());
-        return false;
+        return RenderingFailed;
     }
     catch (...)
     {
         m_renderer_controller->on_rendering_abort();
         RENDERER_LOG_ERROR("rendering failed (unknown exception).");
-        return false;
+        return RenderingFailed;
     }
 #endif
 }
 
-bool MasterRenderer::do_render()
+MasterRenderer::RenderingResult MasterRenderer::do_render()
 {
     while (true)
     {
@@ -176,11 +158,11 @@ bool MasterRenderer::do_render()
         {
           case IRendererController::TerminateRendering:
             m_renderer_controller->on_rendering_success();
-            return true;
+            return RenderingSucceeded;
 
           case IRendererController::AbortRendering:
             m_renderer_controller->on_rendering_abort();
-            return false;
+            return RenderingAborted;
 
           case IRendererController::ReinitializeRendering:
             break;
@@ -218,6 +200,10 @@ namespace
 
 IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence()
 {
+    // Perform basic integrity checks on the scene.
+    if (!check_scene())
+        return IRendererController::AbortRendering;
+
     // Construct an abort switch based on the renderer controller.
     RendererControllerAbortSwitch abort_switch(*m_renderer_controller);
 
@@ -270,6 +256,29 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     RENDERER_LOG_DEBUG("%s", texture_store.get_statistics().to_string().c_str());
 
     return status;
+}
+
+bool MasterRenderer::check_scene() const
+{
+    if (m_project.get_scene() == nullptr)
+    {
+        RENDERER_LOG_ERROR("project does not contain a scene.");
+        return false;
+    }
+
+    if (m_project.get_frame() == nullptr)
+    {
+        RENDERER_LOG_ERROR("project does not contain a frame.");
+        return false;
+    }
+
+    if (m_project.get_uncached_active_camera() == nullptr)
+    {
+        RENDERER_LOG_ERROR("no active camera in project.");
+        return false;
+    }
+
+    return true;
 }
 
 IRendererController::Status MasterRenderer::render_frame_sequence(

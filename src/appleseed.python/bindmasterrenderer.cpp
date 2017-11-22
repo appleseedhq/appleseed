@@ -55,40 +55,40 @@ namespace
       : public NonCopyable
     {
       public:
+        bpy::object                     m_project_object;   // unreferenced but necessary
+        std::unique_ptr<MasterRenderer> m_renderer;
+
         MasterRendererWrapper(
-            bpy::object                 project,
+            bpy::object                 project_object,
             const ParamArray&           params,
             IRendererController*        renderer_controller,
             ITileCallbackFactory*       tile_callback_factory = nullptr)
-          : m_project(project)
+          : m_project_object(project_object)
         {
-            Project* proj = bpy::extract<Project*>(project);
+            Project* project = bpy::extract<Project*>(project_object);
             m_renderer.reset(
                 new MasterRenderer(
-                    *proj,
+                    *project,
                     params,
                     renderer_controller,
                     tile_callback_factory));
         }
 
         MasterRendererWrapper(
-            bpy::object                 project,
+            bpy::object                 project_object,
             const ParamArray&           params,
             IRendererController*        renderer_controller,
             ITileCallback*              tile_callback)
-            : m_project(project)
+          : m_project_object(project_object)
         {
-            Project* proj = bpy::extract<Project*>(project);
+            Project* project = bpy::extract<Project*>(project_object);
             m_renderer.reset(
                 new MasterRenderer(
-                    *proj,
+                    *project,
                     params,
                     renderer_controller,
                     tile_callback));
         }
-
-        bpy::object                     m_project;
-        std::unique_ptr<MasterRenderer> m_renderer;
     };
 
     std::shared_ptr<MasterRendererWrapper> create_master_renderer(
@@ -98,9 +98,9 @@ namespace
     {
         return
             std::make_shared<MasterRendererWrapper>(
-                    *project,
-                    bpy_dict_to_param_array(params),
-                    renderer_controller);
+                *project,
+                bpy_dict_to_param_array(params),
+                renderer_controller);
     }
 
     std::shared_ptr<MasterRendererWrapper> create_master_renderer_with_tile_callback(
@@ -111,10 +111,10 @@ namespace
     {
         return
             std::make_shared<MasterRendererWrapper>(
-                    *project,
-                    bpy_dict_to_param_array(params),
-                    renderer_controller,
-                    tile_callback);
+                *project,
+                bpy_dict_to_param_array(params),
+                renderer_controller,
+                tile_callback);
     }
 
     bpy::dict master_renderer_get_parameters(const MasterRendererWrapper* m)
@@ -135,7 +135,7 @@ namespace
         // The GIL is locked again when unlock goes out of scope.
         ScopedGILUnlock unlock;
 
-        return m->m_renderer->render();
+        return m->m_renderer->render() == MasterRenderer::RenderingSucceeded;
     }
 }
 
@@ -146,6 +146,5 @@ void bind_master_renderer()
         .def("__init__", bpy::make_constructor(create_master_renderer_with_tile_callback))
         .def("get_parameters", master_renderer_get_parameters)
         .def("set_parameters", master_renderer_set_parameters)
-        .def("render", master_renderer_render)
-        ;
+        .def("render", master_renderer_render);
 }

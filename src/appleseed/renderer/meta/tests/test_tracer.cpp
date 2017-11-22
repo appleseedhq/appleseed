@@ -89,18 +89,14 @@ using namespace std;
 TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 {
     struct SceneBase
+      : public TestSceneBase
     {
-        auto_release_ptr<Project>       m_project;
-        Scene*                          m_scene;
-        Assembly*                       m_assembly;
-        AssemblyInstance*               m_assembly_instance;
+        Assembly*           m_assembly;
+        AssemblyInstance*   m_assembly_instance;
 
         SceneBase()
-          : m_project(ProjectFactory::create("project"))
         {
-            m_project->set_scene(SceneFactory::create());
-            m_scene = m_project->get_scene();
-            m_scene->cameras().insert(
+            m_scene.cameras().insert(
                 PinholeCameraFactory().create(
                     "camera",
                     ParamArray()
@@ -108,23 +104,23 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                         .insert("film_height", "0.025")
                         .insert("focal_length", "0.035")));
 
-            m_project->set_frame(
+            m_project.set_frame(
                 FrameFactory::create(
                     "frame",
                     ParamArray()
                         .insert("resolution", "512 512")
                         .insert("camera", "camera")));
 
-            m_scene->assemblies().insert(
+            m_scene.assemblies().insert(
                 AssemblyFactory().create("assembly", ParamArray()));
-            m_assembly = m_scene->assemblies().get_by_name("assembly");
+            m_assembly = m_scene.assemblies().get_by_name("assembly");
 
-            m_scene->assembly_instances().insert(
+            m_scene.assembly_instances().insert(
                 AssemblyInstanceFactory::create(
                     "assembly_inst",
                     ParamArray(),
                     "assembly"));
-            m_assembly_instance = m_scene->assembly_instances().get_by_name("assembly_inst");
+            m_assembly_instance = m_scene.assembly_instances().get_by_name("assembly_inst");
 
             create_color("white", Color4f(1.0f));
             create_constant_surface_shader("constant_white_surface_shader", "white");
@@ -210,55 +206,45 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     template <typename Base>
     struct Fixture
-      : public BindInputs<Base>
+      : public StaticTestSceneContext<Base>
     {
         TraceContext                            m_trace_context;
         TextureStore                            m_texture_store;
         TextureCache                            m_texture_cache;
         Intersector                             m_intersector;
         std::shared_ptr<OIIOTextureSystem>      m_texture_system;
-        std::shared_ptr<RendererServices>       m_renderer_services;
+        RendererServices                        m_renderer_services;
         std::shared_ptr<OSLShadingSystem>       m_shading_system;
         Arena                                   m_arena;
-        std::shared_ptr<OSLShaderGroupExec>     m_shading_group_exec;
-        OnFrameBeginRecorder                    m_recorder;
-        std::shared_ptr<ShadingContext>         m_shading_context;
+        OSLShaderGroupExec                      m_shading_group_exec;
+        ShadingContext                          m_shading_context;
         Tracer                                  m_tracer;
 
         Fixture()
-          : m_trace_context(*Base::m_scene)
-          , m_texture_store(*Base::m_scene)
+          : m_trace_context(Base::m_scene)
+          , m_texture_store(Base::m_scene)
           , m_texture_cache(m_texture_store)
           , m_intersector(m_trace_context, m_texture_cache)
-          , m_tracer(*Base::m_scene, m_intersector, m_texture_cache, *m_shading_group_exec)
-        {
-            m_texture_system.reset(
+          , m_texture_system(
                 OIIOTextureSystemFactory::create(),
-                [](OIIOTextureSystem* object) { object->release(); });
-            m_renderer_services.reset(
-                new RendererServices(
-                    *Base::m_project,
-                    reinterpret_cast<OIIO::TextureSystem&>(*m_texture_system)));
-            m_shading_system.reset(
-                OSLShadingSystemFactory::create(m_renderer_services.get(), m_texture_system.get()),
-                [](OSLShadingSystem* object) { object->release(); });
-            m_shading_group_exec.reset(new OSLShaderGroupExec(*m_shading_system, m_arena));
-            m_shading_context.reset(
-                new ShadingContext(
-                    m_intersector,
-                    m_tracer,
-                    m_texture_cache,
-                    *m_texture_system,
-                    *m_shading_group_exec,
-                    m_arena,
-                    0));
-
-            Base::m_scene->on_frame_begin(Base::m_project.ref(), nullptr, m_recorder);
-        }
-
-        ~Fixture()
+                [](OIIOTextureSystem* object) { object->release(); })
+          , m_renderer_services(
+                Base::m_project,
+                reinterpret_cast<OIIO::TextureSystem&>(*m_texture_system))
+          , m_shading_system(
+                OSLShadingSystemFactory::create(&m_renderer_services, m_texture_system.get()),
+                [](OSLShadingSystem* object) { object->release(); })
+          , m_shading_group_exec(*m_shading_system, m_arena)
+          , m_tracer(Base::m_scene, m_intersector, m_texture_cache, m_shading_group_exec)
+          , m_shading_context(
+                m_intersector,
+                m_tracer,
+                m_texture_cache,
+                *m_texture_system,
+                m_shading_group_exec,
+                m_arena,
+                0)  // thread index
         {
-            m_recorder.on_frame_end(Base::m_project.ref());
         }
     };
 
@@ -278,7 +264,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             0);
         const ShadingPoint& shading_point =
             m_tracer.trace_full(
-                *m_shading_context,
+                m_shading_context,
                 ray,
                 transmission);
 
@@ -296,7 +282,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             0);
         Spectrum transmission;
         m_tracer.trace_simple(
-            *m_shading_context,
+            m_shading_context,
             ray,
             transmission);
 
@@ -308,7 +294,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Spectrum transmission;
         const ShadingPoint& shading_point =
             m_tracer.trace_between_full(
-                *m_shading_context,
+                m_shading_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 ShadingRay::Time(),
@@ -324,7 +310,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     {
         Spectrum transmission;
         m_tracer.trace_between_simple(
-            *m_shading_context,
+            m_shading_context,
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(5.0, 0.0, 0.0),
             ShadingRay::Time(),
@@ -355,7 +341,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             0);
         const ShadingPoint& shading_point =
             m_tracer.trace_full(
-                *m_shading_context,
+                m_shading_context,
                 ray,
                 transmission);
 
@@ -374,7 +360,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             VisibilityFlags::ShadowRay,
             0);
         m_tracer.trace_simple(
-            *m_shading_context,
+            m_shading_context,
             ray,
             transmission);
 
@@ -386,7 +372,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Spectrum transmission;
         const ShadingPoint& shading_point =
             m_tracer.trace_between_full(
-                *m_shading_context,
+                m_shading_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 ShadingRay::Time(),
@@ -403,7 +389,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     {
         Spectrum transmission;
         m_tracer.trace_between_simple(
-            *m_shading_context,
+            m_shading_context,
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(5.0, 0.0, 0.0),
             ShadingRay::Time(),
@@ -434,7 +420,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             0);
         const ShadingPoint& shading_point =
             m_tracer.trace_full(
-                *m_shading_context,
+                m_shading_context,
                 ray,
                 transmission);
 
@@ -452,7 +438,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             VisibilityFlags::ShadowRay,
             0);
         m_tracer.trace_simple(
-            *m_shading_context,
+            m_shading_context,
             ray,
             transmission);
 
@@ -464,7 +450,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Spectrum transmission;
         const ShadingPoint& shading_point =
             m_tracer.trace_between_full(
-                *m_shading_context,
+                m_shading_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 ShadingRay::Time(),
@@ -480,7 +466,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     {
         Spectrum transmission;
         m_tracer.trace_between_simple(
-            *m_shading_context,
+            m_shading_context,
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(5.0, 0.0, 0.0),
             ShadingRay::Time(),
@@ -512,7 +498,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             0);
         const ShadingPoint& shading_point =
             m_tracer.trace_full(
-                *m_shading_context,
+                m_shading_context,
                 ray,
                 transmission);
 
@@ -531,7 +517,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             VisibilityFlags::ShadowRay,
             0);
         m_tracer.trace_simple(
-            *m_shading_context,
+            m_shading_context,
             ray,
             transmission);
 
@@ -543,7 +529,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Spectrum transmission;
         const ShadingPoint& shading_point =
             m_tracer.trace_between_full(
-                *m_shading_context,
+                m_shading_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 ShadingRay::Time(),
@@ -560,7 +546,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     {
         Spectrum transmission;
         m_tracer.trace_between_simple(
-            *m_shading_context,
+            m_shading_context,
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(5.0, 0.0, 0.0),
             ShadingRay::Time(),
@@ -576,7 +562,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Spectrum transmission;
         const ShadingPoint& shading_point =
             m_tracer.trace_between_full(
-                *m_shading_context,
+                m_shading_context,
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(4.0, 0.0, 0.0),
                 ShadingRay::Time(),
@@ -592,7 +578,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     {
         Spectrum transmission;
         m_tracer.trace_between_simple(
-            *m_shading_context,
+            m_shading_context,
             Vector3d(0.0, 0.0, 0.0),
             Vector3d(4.0, 0.0, 0.0),
             ShadingRay::Time(),
@@ -624,7 +610,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Spectrum parent_transmission;
         const ShadingPoint& parent_shading_point =
             m_tracer.trace_full(
-                *m_shading_context,
+                m_shading_context,
                 ray,
                 parent_transmission);
 
@@ -633,7 +619,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
         Spectrum transmission;
         m_tracer.trace_between_simple(
-            *m_shading_context,
+            m_shading_context,
             parent_shading_point,
             Vector3d(4.0, 0.0, 0.0),
             VisibilityFlags::ShadowRay,
@@ -665,7 +651,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Spectrum parent_transmission;
         const ShadingPoint& parent_shading_point =
             m_tracer.trace_full(
-                *m_shading_context,
+                m_shading_context,
                 ray,
                 parent_transmission);
 
@@ -674,7 +660,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
         Spectrum transmission;
         m_tracer.trace_between_simple(
-            *m_shading_context,
+            m_shading_context,
             parent_shading_point,
             Vector3d(2.0, 0.0, 0.0),
             VisibilityFlags::ShadowRay,

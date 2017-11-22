@@ -112,20 +112,21 @@ namespace
         }
 
 #ifdef _WIN32
+        // If the PYTHONHOME environment variable is defined, use the Python installation it points to.
+        // If it is not defined, use the bundled Python installation.
         if (getenv("PYTHONHOME") == nullptr)
         {
-            QMessageBox msgbox;
-            msgbox.setWindowTitle("PYTHONHOME Environment Variable Missing");
-            msgbox.setIcon(QMessageBox::Critical);
-            msgbox.setText("The application failed to start because the PYTHONHOME environment variable is not defined.");
-            msgbox.setInformativeText(
-                "In order to run, appleseed.studio requires Python 2.7 to be installed in the system "
-                "and the PYTHONHOME environment variable to point to the Python 2.7 installation.");
-            msgbox.setStandardButtons(QMessageBox::Ok);
-            msgbox.setDefaultButton(QMessageBox::Ok);
-            msgbox.exec();
+            const string python_path =
+                bf::canonical(
+                    bf::path(Application::get_root_path()) / "python27"
+                ).make_preferred().string();
 
-            exit(EXIT_FAILURE);
+            static char python_home[FOUNDATION_MAX_PATH_LENGTH + 1];
+
+            assert(python_path.size() <= FOUNDATION_MAX_PATH_LENGTH);
+            strncpy(python_home, python_path.c_str(), sizeof(python_home) - 1);
+
+            Py_SetPythonHome(python_home);
         }
 #endif
     }

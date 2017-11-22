@@ -58,6 +58,8 @@ class StatusBar
 
     void start_rendering_time_display(RenderingTimer* rendering_timer);
 
+    // It is safe to call this method even if rendering time display
+    // hasn't started or has already been stopped.
     void stop_rendering_time_display();
 
   private:

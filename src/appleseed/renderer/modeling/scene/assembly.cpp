@@ -38,6 +38,7 @@
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/object/proceduralobject.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/textureinstance.h"
@@ -59,6 +60,9 @@ using namespace std;
 
 namespace renderer
 {
+
+APPLESEED_DEFINE_APIARRAY(ObjectInstanceArray);
+
 
 //
 // Assembly class implementation.
@@ -108,6 +112,7 @@ Assembly::Assembly(
   : Entity(g_class_uid, params)
   , BaseGroup(this)
   , impl(new Impl(this))
+  , m_has_render_data(false)
 {
     set_name(name);
 
@@ -275,6 +280,8 @@ bool Assembly::on_frame_begin(
     OnFrameBeginRecorder&   recorder,
     IAbortSwitch*           abort_switch)
 {
+    assert(!m_has_render_data);
+
     if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
@@ -294,7 +301,29 @@ bool Assembly::on_frame_begin(
     success = success && invoke_on_frame_begin(project, this, volumes(), recorder, abort_switch);
     success = success && invoke_on_frame_begin(project, this, assemblies(), recorder, abort_switch);
     success = success && invoke_on_frame_begin(project, this, assembly_instances(), recorder, abort_switch);
-    return success;
+    if (!success)
+        return false;
+
+    // Collect instances of procedural objects.
+    for (size_t i = 0, e = object_instances().size(); i < e; ++i)
+    {
+        const ObjectInstance* object_instance = object_instances().get_by_index(i);
+        const Object& object = object_instance->get_object();
+        const ProceduralObject* proc_object = dynamic_cast<const ProceduralObject*>(&object);
+        if (proc_object != nullptr)
+            m_render_data.m_procedural_objects.push_back(object_instance);
+    }
+    m_has_render_data = true;
+
+    return true;
+}
+
+void Assembly::on_frame_end(
+    const Project&          project,
+    const BaseGroup*        parent)
+{
+    m_render_data.m_procedural_objects.clear();
+    m_has_render_data = false;
 }
 
 

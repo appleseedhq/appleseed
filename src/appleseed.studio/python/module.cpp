@@ -44,8 +44,8 @@
 
 namespace bpy = boost::python;
 using namespace appleseed::studio;
-using namespace renderer;
 using namespace foundation;
+using namespace renderer;
 
 MainWindow* main_window()
 {

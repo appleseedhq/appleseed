@@ -76,8 +76,15 @@ class APPLESEED_DLLSYMBOL MasterRenderer
     // Destructor.
     ~MasterRenderer();
 
+    enum RenderingResult
+    {
+        RenderingSucceeded,
+        RenderingAborted,
+        RenderingFailed
+    };
+
     // Render the project. Return true on success, false otherwise.
-    bool render();
+    RenderingResult render();
 
   private:
     IRendererController*            m_renderer_controller;
@@ -90,10 +97,13 @@ class APPLESEED_DLLSYMBOL MasterRenderer
     Display*                        m_display;
 
     // Render frame sequences, each time reinitializing the rendering components.
-    bool do_render();
+    RenderingResult do_render();
 
     // Initialize the rendering components and render a frame sequence.
     IRendererController::Status initialize_and_render_frame_sequence();
+
+    // Return true if the scene passes basic integrity checks.
+    bool check_scene() const;
 
     // Render a frame sequence until the sequence is completed or rendering is aborted.
     IRendererController::Status render_frame_sequence(

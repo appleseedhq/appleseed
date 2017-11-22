@@ -26,10 +26,6 @@
 // THE SOFTWARE.
 //
 
-// We are using standard library in this compile unit
-// and don't need boost placeholders.
-#define BOOST_BIND_NO_PLACEHOLDERS
-
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
@@ -43,6 +39,7 @@
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/entity/onframebeginrecorder.h"
 #include "renderer/modeling/input/scalarsource.h"
+#include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/texture/texture.h"
@@ -58,94 +55,79 @@
 #include "foundation/utility/arena.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/gnuplotfile.h"
+#include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
-#include <functional>
+#include <cstddef>
 #include <memory>
-#include <utility>
 #include <vector>
 
 using namespace foundation;
 using namespace renderer;
-using namespace std::placeholders;
+using namespace std;
 
 TEST_SUITE(Renderer_Modeling_Volume)
 {
-    struct Fixture
-      : public TestFixtureBase
+    struct VolumeTestSceneContext
+      : public TestSceneContext
     {
-        // Number of MC samples to do integrations.
+        // Number of MC samples for integration.
         static const size_t NumberOfSamples = 50000;
 
-        // Number of samples to draw.
+        // Number of samples for plots.
         static const size_t NumberOfSamplesPlot = 100;
 
-        GenericVolumeFactory m_volume_factory;
+        TextureStore                    m_texture_store;
+        TextureCache                    m_texture_cache;
+        shared_ptr<OIIOTextureSystem>   m_texture_system;
+        RendererServices                m_renderer_services;
+        shared_ptr<OSLShadingSystem>    m_shading_system;
+        Intersector                     m_intersector;
+        Arena                           m_arena;
+        OSLShaderGroupExec              m_sg_exec;
+        Tracer                          m_tracer;
+        ShadingContext                  m_shading_context;
 
-        template <typename Procedure>
-        typename std::result_of<Procedure(ShadingContext&, Arena&)>::type
-            setup_environment_and_evaluate(Procedure procedure, Volume& volume)
+        explicit VolumeTestSceneContext(TestSceneBase& base)
+          : TestSceneContext(base)
+          , m_texture_store(base.m_scene)
+          , m_texture_cache(m_texture_store)
+          , m_texture_system(
+              OIIOTextureSystemFactory::create(),
+              [](OIIOTextureSystem* object) { object->release(); })
+          , m_renderer_services(base.m_project, *m_texture_system)
+          , m_shading_system(
+              OSLShadingSystemFactory::create(&m_renderer_services, m_texture_system.get()),
+              [](OSLShadingSystem* object) { object->release(); })
+          , m_intersector(
+              base.m_project.get_trace_context(),
+              m_texture_cache)
+          , m_sg_exec(*m_shading_system, m_arena)
+          , m_tracer(
+              base.m_scene,
+              m_intersector,
+              m_texture_cache,
+              m_sg_exec)
+          , m_shading_context(
+              m_intersector,
+              m_tracer,
+              m_texture_cache,
+              *m_texture_system,
+              m_sg_exec,
+              m_arena,
+              0)  // thread index
         {
-            TextureStore texture_store(m_scene);
-            TextureCache texture_cache(texture_store);
-
-            std::shared_ptr<OIIOTextureSystem> texture_system(
-                OIIOTextureSystemFactory::create(),
-                [](OIIOTextureSystem* object) { object->release(); });
-
-            RendererServices renderer_services(
-                m_project,
-                *texture_system);
-
-            std::shared_ptr<OSLShadingSystem> shading_system(
-                OSLShadingSystemFactory::create(&renderer_services, texture_system.get()),
-                [](OSLShadingSystem* object) { object->release(); });
-
-            Intersector intersector(
-                m_project.get_trace_context(),
-                texture_cache);
-
-            Arena arena;
-            OSLShaderGroupExec sg_exec(*shading_system, arena);
-
-            Tracer tracer(
-                m_scene,
-                intersector,
-                texture_cache,
-                sg_exec);
-
-            ShadingContext shading_context(
-                intersector,
-                tracer,
-                texture_cache,
-                *texture_system,
-                sg_exec,
-                arena,
-                0);
-
-            OnFrameBeginRecorder recorder;
-            APPLESEED_UNUSED const bool success = volume.on_frame_begin(m_project, &m_scene, recorder);
-            assert(success);
-
-            auto result = procedure(shading_context, arena);
-
-            recorder.on_frame_end(m_project);
-
-            return result;
         }
 
         // Integrate PDF of volume using straightforward Monte Carlo approach.
-        static float integrate_volume_pdf(
-            Volume&             volume,
-            ShadingContext&     shading_context,
-            Arena&              arena)
+        float integrate_volume_pdf(const Volume& volume)
         {
             ShadingRay shading_ray;
             shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
             shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
-            void* data = volume.evaluate_inputs(shading_context, shading_ray);
-            volume.prepare_inputs(arena, shading_ray, data);
+            void* data = volume.evaluate_inputs(m_shading_context, shading_ray);
+            volume.prepare_inputs(m_arena, shading_ray, data);
 
             SamplingContext::RNGType rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode, 2, NumberOfSamples);
@@ -162,21 +144,19 @@ TEST_SUITE(Renderer_Modeling_Volume)
         }
 
         // Check if probabilistic sampling is consistent with the returned PDF values.
-        static bool check_sampling_consistency(
-            Volume&             volume,
-            ShadingContext&     shading_context,
-            Arena&              arena)
+        Vector3f get_sampling_bias(const Volume& volume)
         {
             ShadingRay shading_ray;
             shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
             shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
-            void* data = volume.evaluate_inputs(shading_context, shading_ray);
-            volume.prepare_inputs(arena, shading_ray, data);
+
+            void* data = volume.evaluate_inputs(m_shading_context, shading_ray);
+            volume.prepare_inputs(m_arena, shading_ray, data);
 
             SamplingContext::RNGType rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
 
-            Vector3f bias = Vector3f(0.0f);
+            Vector3f bias(0.0f);
             for (size_t i = 0; i < NumberOfSamples; ++i)
             {
                 Vector3f incoming;
@@ -185,20 +165,18 @@ TEST_SUITE(Renderer_Modeling_Volume)
                 bias += incoming / pdf;
             }
 
-            return feq(bias / static_cast<float>(NumberOfSamples), Vector3f(0.0f), 0.2f);
+            return bias / static_cast<float>(NumberOfSamples);
         }
 
         // Sample a given volume and find average cosine of scattering angle.
-        static float get_aposteriori_average_cosine(
-            Volume&             volume,
-            ShadingContext&     shading_context,
-            Arena&              arena)
+        float get_aposteriori_average_cosine(const Volume& volume)
         {
             ShadingRay shading_ray;
             shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
             shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
-            void* data = volume.evaluate_inputs(shading_context, shading_ray);
-            volume.prepare_inputs(arena, shading_ray, data);
+
+            void* data = volume.evaluate_inputs(m_shading_context, shading_ray);
+            volume.prepare_inputs(m_arena, shading_ray, data);
 
             SamplingContext::RNGType rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
@@ -215,21 +193,19 @@ TEST_SUITE(Renderer_Modeling_Volume)
             return bias.x / NumberOfSamples;
         }
 
-        static std::vector<Vector2f> generate_samples_for_plot(
-            Volume& volume,
-            ShadingContext& shading_context,
-            Arena& arena)
+        vector<Vector2f> generate_samples_for_plot(const Volume& volume)
         {
             ShadingRay shading_ray;
             shading_ray.m_org = Vector3d(0.0f, 0.0f, 0.0f);
             shading_ray.m_dir = Vector3d(1.0f, 0.0f, 0.0f);
-            void* data = volume.evaluate_inputs(shading_context, shading_ray);
-            volume.prepare_inputs(arena, shading_ray, data);
+
+            void* data = volume.evaluate_inputs(m_shading_context, shading_ray);
+            volume.prepare_inputs(m_arena, shading_ray, data);
 
             SamplingContext::RNGType rng;
             SamplingContext sampling_context(rng, SamplingContext::RNGMode);
 
-            std::vector<Vector2f> points;
+            vector<Vector2f> points;
             points.reserve(NumberOfSamples);
             for (size_t i = 0; i < NumberOfSamplesPlot; ++i)
             {
@@ -243,75 +219,100 @@ TEST_SUITE(Renderer_Modeling_Volume)
         }
     };
 
-    TEST_CASE_F(CheckHenyeyPdfIntegratesToOne, Fixture)
+    TEST_CASE(CheckHenyeyPdfIntegratesToOne)
     {
         static const float G[4] = { -0.5f, 0.0f, +0.3f, +0.8f };
 
         for (size_t i = 0; i < countof(G); ++i)
         {
+            TestSceneBase test_scene;
+
+            auto_release_ptr<Assembly> assembly(
+                AssemblyFactory().create("assembly", ParamArray()));
+
             auto_release_ptr<Volume> volume =
-                m_volume_factory.create("volume",
+                GenericVolumeFactory().create("volume",
                     ParamArray()
+                        .insert("absorption", 0.5f)
+                        .insert("scattering", 0.5f)
                         .insert("phase_function_model", "henyey")
                         .insert("average_cosine", G[i]));
-            volume->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
+            Volume& volume_ref = volume.ref();
+            assembly->volumes().insert(volume);
 
-            const float integral = setup_environment_and_evaluate(
-                std::bind(&Fixture::integrate_volume_pdf,
-                    std::ref(*volume.get()), _1, _2), *volume.get());
+            test_scene.m_scene.assemblies().insert(assembly);
+
+            VolumeTestSceneContext context(test_scene);
+            const float integral = context.integrate_volume_pdf(volume_ref);
 
             EXPECT_FEQ_EPS(1.0f, integral, 0.05f);
         }
     }
 
-    TEST_CASE_F(CheckHenyeySamplingConsistency, Fixture)
+    TEST_CASE(CheckHenyeySamplingConsistency)
     {
         static const float G[4] = { -0.5f, 0.0f, +0.3f, +0.8f };
 
         for (size_t i = 0; i < countof(G); ++i)
         {
+            TestSceneBase test_scene;
+
+            auto_release_ptr<Assembly> assembly(
+                AssemblyFactory().create("assembly", ParamArray()));
+
             auto_release_ptr<Volume> volume =
-                m_volume_factory.create("volume",
+                GenericVolumeFactory().create("volume",
                     ParamArray()
+                        .insert("absorption", 0.5f)
+                        .insert("scattering", 0.5f)
                         .insert("phase_function_model", "henyey")
                         .insert("average_cosine", G[i]));
-            volume->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
+            Volume& volume_ref = volume.ref();
+            assembly->volumes().insert(volume);
 
-            const bool consistent = setup_environment_and_evaluate(
-                std::bind(&Fixture::check_sampling_consistency,
-                    std::ref(*volume.get()), _1, _2), *volume.get());
+            test_scene.m_scene.assemblies().insert(assembly);
 
-            EXPECT_TRUE(consistent);
+            VolumeTestSceneContext context(test_scene);
+            const Vector3f bias = context.get_sampling_bias(volume_ref);
+
+            EXPECT_FEQ_EPS(bias, Vector3f(0.0f), 0.2f);
         }
     }
 
-    TEST_CASE_F(CheckHenyeyAverageCosine, Fixture)
+    TEST_CASE(CheckHenyeyAverageCosine)
     {
         static const float G[4] = { -0.5f, 0.0f, +0.3f, +0.8f };
 
         for (size_t i = 0; i < countof(G); ++i)
         {
+            TestSceneBase test_scene;
+
+            auto_release_ptr<Assembly> assembly(
+                AssemblyFactory().create("assembly", ParamArray()));
+
             auto_release_ptr<Volume> volume =
-                m_volume_factory.create("volume",
+                GenericVolumeFactory().create("volume",
                     ParamArray()
+                        .insert("absorption", 0.5f)
+                        .insert("scattering", 0.5f)
                         .insert("phase_function_model", "henyey")
                         .insert("average_cosine", G[i]));
-            volume->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
+            Volume& volume_ref = volume.ref();
+            assembly->volumes().insert(volume);
 
-            const float average_cosine = setup_environment_and_evaluate(
-                std::bind(&Fixture::get_aposteriori_average_cosine,
-                    std::ref(*volume.get()), _1, _2), *volume.get());
+            test_scene.m_scene.assemblies().insert(assembly);
+
+            VolumeTestSceneContext context(test_scene);
+            const float average_cosine = context.get_aposteriori_average_cosine(volume_ref);
 
             EXPECT_FEQ_EPS(G[i], average_cosine, 0.05f);
         }
     }
 
-    TEST_CASE_F(PlotHenyeySamples, Fixture)
+    TEST_CASE(PlotHenyeySamples)
     {
         GnuplotFile plotfile;
-        plotfile.set_title(
-            "Samples of Henyey-Greenstein phase function"
-            " (multiplied by PDF)");
+        plotfile.set_title("Samples of Henyey-Greenstein phase function (multiplied by PDF)");
         plotfile.set_xlabel("X");
         plotfile.set_ylabel("Y");
         plotfile.set_xrange(-0.6, +0.6);
@@ -322,17 +323,25 @@ TEST_SUITE(Renderer_Modeling_Volume)
 
         for (size_t i = 0; i < countof(G); ++i)
         {
+            TestSceneBase test_scene;
+
+            auto_release_ptr<Assembly> assembly(
+                AssemblyFactory().create("assembly", ParamArray()));
+
             auto_release_ptr<Volume> volume =
-                m_volume_factory.create("volume",
+                GenericVolumeFactory().create("volume",
                     ParamArray()
+                        .insert("absorption", 0.5f)
+                        .insert("scattering", 0.5f)
                         .insert("phase_function_model", "henyey")
                         .insert("average_cosine", G[i]));
-            volume->get_inputs().find("average_cosine").bind(new ScalarSource(G[i]));
+            Volume& volume_ref = volume.ref();
+            assembly->volumes().insert(volume);
 
-            const std::vector<Vector2f> points =
-                setup_environment_and_evaluate(
-                    std::bind(&Fixture::generate_samples_for_plot,
-                        std::ref(*volume.get()), _1, _2), *volume.get());
+            test_scene.m_scene.assemblies().insert(assembly);
+
+            VolumeTestSceneContext context(test_scene);
+            const vector<Vector2f> points = context.generate_samples_for_plot(volume_ref);
 
             plotfile
                 .new_plot()
