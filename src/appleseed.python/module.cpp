@@ -67,7 +67,7 @@ void bind_transform();
 void bind_utility();
 void bind_vector();
 
-BOOST_PYTHON_MODULE(_appleseedpython)
+extern "C" void bind_appleseed_python_classes()
 {
     boost::python::scope().attr("APPLESEED_VERSION") = APPLESEED_VERSION;
     boost::python::scope().attr("APPLESEED_VERSION_MAJOR") = APPLESEED_VERSION_MAJOR;
@@ -115,4 +115,9 @@ BOOST_PYTHON_MODULE(_appleseedpython)
     bind_renderer_controller();
     bind_tile_callback();
     bind_master_renderer();
+}
+
+BOOST_PYTHON_MODULE(_appleseedpython)
+{
+    bind_appleseed_python_classes();
 }

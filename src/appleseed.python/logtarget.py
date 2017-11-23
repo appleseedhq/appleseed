@@ -27,15 +27,14 @@
 # THE SOFTWARE.
 #
 
-from sys import hexversion as appleseed_python_hexversion
-
-if appleseed_python_hexversion < 0x030000F0:
-    # Python 2.x
-    from _appleseedpython import ILogTarget
-else:
-    # Python 3.x
-    from ._appleseedpython import ILogTarget
-
+# The appleseed.python module built into appleseed.studio
+# is called _appleseedpythonbuiltin. Try to load it first.
+# If that fails it means that we are not in appleseed.studio;
+# in that case just load the normal appleseed.python module.
+try:
+    from _appleseedpythonbuiltin import *
+except:
+    from _appleseedpython import *
 
 class ConsoleLogTarget(ILogTarget):
 
