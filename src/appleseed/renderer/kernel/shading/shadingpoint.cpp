@@ -445,7 +445,12 @@ void ShadingPoint::refine_and_offset() const
 
 Vector3d ShadingPoint::get_biased_point(const Vector3d& direction) const
 {
-    assert(hit_surface());
+    assert(is_valid());
+
+    if (!hit_surface())
+    {
+        return get_point();
+    }
 
     if (!(m_members & HasBiasedPoint))
     {

@@ -269,6 +269,9 @@ bool Intersector::trace(
     // Retrieve assembly tree.
     const AssemblyTree& assembly_tree = m_trace_context.get_assembly_tree();
 
+    if (parent_shading_point && parent_shading_point->hit_volume())
+        parent_shading_point = nullptr;
+
     // Check the intersection between the ray and the assembly tree.
     AssemblyTreeIntersector intersector;
     AssemblyLeafVisitor visitor(
@@ -293,7 +296,8 @@ bool Intersector::trace(
         );
 
     // Detect and report self-intersections.
-    if (m_report_self_intersections)
+    if (m_report_self_intersections && 
+        !parent_shading_point->hit_volume())
         report_self_intersection(shading_point, parent_shading_point);
 
     const ShadingRay::Medium* medium = ray.get_current_medium();

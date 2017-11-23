@@ -71,7 +71,6 @@ APPLESEED_DECLARE_INPUT_VALUES(GenericVolumeInputValues)
     Precomputed m_precomputed;
 };
 
-
 //
 // Generic volume factory.
 //

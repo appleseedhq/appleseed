@@ -213,6 +213,7 @@ source_group ("foundation\\math\\rng" FILES
 )
 
 set (foundation_math_sampling_sources
+    foundation/math/sampling/equiangularsampler.h
     foundation/math/sampling/imageimportancesampler.h
     foundation/math/sampling/mappings.h
     foundation/math/sampling/qmcsamplingcontext.h
@@ -1009,8 +1010,6 @@ set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/lightsample.h
     renderer/kernel/lighting/lightsamplerbase.cpp
     renderer/kernel/lighting/lightsamplerbase.h
-    renderer/kernel/lighting/materialsamplers.cpp
-    renderer/kernel/lighting/materialsamplers.h
     renderer/kernel/lighting/lighttree.cpp
     renderer/kernel/lighting/lighttree.h
     renderer/kernel/lighting/lighttree_node.h
@@ -1021,8 +1020,6 @@ set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/scatteringmode.h
     renderer/kernel/lighting/tracer.cpp
     renderer/kernel/lighting/tracer.h
-    renderer/kernel/lighting/volumelightingintegrator.cpp
-    renderer/kernel/lighting/volumelightingintegrator.h
 )
 list (APPEND appleseed_sources
     ${renderer_kernel_lighting_sources}
@@ -1350,6 +1347,7 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/orennayarbrdf.h
     renderer/modeling/bsdf/oslbsdf.cpp
     renderer/modeling/bsdf/oslbsdf.h
+    renderer/modeling/bsdf/phasefunctionbsdf.h
     renderer/modeling/bsdf/plasticbrdf.cpp
     renderer/modeling/bsdf/plasticbrdf.h
     renderer/modeling/bsdf/sheenbrdf.cpp

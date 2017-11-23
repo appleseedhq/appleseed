@@ -95,11 +95,9 @@ namespace
             ShadingComponents&      radiance) override      // output radiance, in W.sr^-1.m^-2
         {
             PathVisitor light_path_visitor;
-            VolumeVisitor volume_visitor;
 
-            PathTracer<PathVisitor, VolumeVisitor, true> light_path_tracer(     // true = adjoint
+            PathTracer<PathVisitor, true> light_path_tracer(     // true = adjoint
                 light_path_visitor,
-                volume_visitor,
                 ~0,
                 1,
                 ~0,
@@ -208,10 +206,8 @@ namespace
 
             // Build the path tracer.
             PathVisitor path_visitor;
-            VolumeVisitor volume_visitor;
-            PathTracer<PathVisitor, VolumeVisitor, true> path_tracer(
+            PathTracer<PathVisitor, true> path_tracer(
                 path_visitor,
-                volume_visitor,
                 ~0,
                 1,
                 ~0,
@@ -280,23 +276,13 @@ namespace
             void on_scatter(const PathVertex& vertex)
             {
             }
-        };
 
-        struct VolumeVisitor
-        {
-            VolumeVisitor()
+            void get_next_shading_point(
+                const ShadingRay&           ray,
+                PathVertex*                 vertex,
+                ShadingPoint*               next_shading_point)
             {
             }
-
-            bool accept_scattering(
-                const ScatteringMode::Mode  prev_mode)
-            {
-                return true;
-            }
-
-            void on_scatter(PathVertex& vertex) {}
-
-            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray) {}
         };
     };
 }

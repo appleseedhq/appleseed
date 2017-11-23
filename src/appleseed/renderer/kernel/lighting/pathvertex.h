@@ -53,6 +53,7 @@ namespace renderer  { class BSSRDF; }
 namespace renderer  { class EDF; }
 namespace renderer  { class Material; }
 namespace renderer  { class ShadingContext; }
+namespace renderer  { class Volume; }
 
 namespace renderer
 {
@@ -83,6 +84,7 @@ class PathVertex
     const void*                 m_bsdf_data;
     const BSSRDF*               m_bssrdf;
     const void*                 m_bssrdf_data;
+    const Volume*               m_volume;
     const void*                 m_volume_data;
 
     // Properties of the scattering event leading to this vertex.

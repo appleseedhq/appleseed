@@ -38,7 +38,6 @@
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
-#include "renderer/kernel/lighting/volumelightingintegrator.h"
 #include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
@@ -48,6 +47,8 @@
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/modeling/volume/distancesample.h"
+#include "renderer/modeling/volume/volume.h"
 #include "renderer/utility/stochasticcast.h"
 
 // appleseed.foundation headers.
@@ -228,7 +229,7 @@ namespace
         {
             if (m_params.m_next_event_estimation)
             {
-                do_compute_lighting<PathVisitorNextEventEstimation, VolumeVisitorDistanceSampling>(
+                do_compute_lighting<PathVisitorNextEventEstimation>(
                     sampling_context,
                     shading_context,
                     shading_point,
@@ -236,7 +237,7 @@ namespace
             }
             else
             {
-                do_compute_lighting<PathVisitorSimple, VolumeVisitorSimple>(
+                do_compute_lighting<PathVisitorSimple>(
                     sampling_context,
                     shading_context,
                     shading_point,
@@ -244,7 +245,7 @@ namespace
             }
         }
 
-        template <typename PathVisitor, typename VolumeVisitor>
+        template <typename PathVisitor>
         void do_compute_lighting(
             SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
@@ -259,18 +260,8 @@ namespace
                 shading_point.get_scene(),
                 radiance);
 
-            VolumeVisitor volume_visitor(
-                m_params,
-                m_light_sampler,
-                sampling_context,
-                shading_context,
-                shading_point.get_scene(),
-                radiance,
-                m_inf_volume_ray_warnings);
-
-            PathTracer<PathVisitor, VolumeVisitor, false> path_tracer(     // false = not adjoint
+            PathTracer<PathVisitor, false> path_tracer(     // false = not adjoint
                 path_visitor,
-                volume_visitor,
                 m_params.m_rr_min_path_length,
                 m_params.m_max_bounces == ~0 ? ~0 : m_params.m_max_bounces + 1,
                 m_params.m_max_diffuse_bounces == ~0 ? ~0 : m_params.m_max_diffuse_bounces + 1,
@@ -360,6 +351,105 @@ namespace
                 }
 
                 return true;
+            }
+
+            void get_next_shading_point(
+                const ShadingRay&           ray,
+                PathVertex*                 vertex,
+                ShadingPoint*               next_shading_point)
+            {
+                m_shading_context.get_intersector().trace(
+                    ray,
+                    *next_shading_point,
+                    vertex->m_shading_point);
+
+                const ShadingRay::Medium* current_medium = ray.get_current_medium();
+                if (current_medium != nullptr &&
+                    current_medium->get_volume() != nullptr)
+                {
+                    //
+                    // This ray is being cast into a participating medium.
+                    //
+
+                    // Determine the pivot for better importance sampling.
+                    Vector3d pivot;
+                    const Vector3d* pivot_ptr = &pivot;
+                    const size_t light_count = m_light_sampler.get_non_physical_light_count();
+                    m_sampling_context.split_in_place(1, 1);
+                    const float s = m_sampling_context.next2<float>();
+                    bool sample_non_physical_lights = 
+                        light_count > 0 &&
+                        (s < 0.5f || !m_light_sampler.has_lightset());
+                    if (sample_non_physical_lights)
+                    {
+                        LightSample light_sample;
+                        const size_t light_count = m_light_sampler.get_non_physical_light_count();
+                        m_sampling_context.split_in_place(1, 1);
+                        const size_t light_idx = static_cast<size_t>(
+                            m_sampling_context.next2<float>() * light_count);
+                        m_light_sampler.sample_non_physical_light(ray.m_time, light_idx, light_sample);
+                        m_sampling_context.split_in_place(2, 1);
+                        Vector3d emission_direction;  // not used
+                        Spectrum light_value(Spectrum::Illuminance);
+                        float probability;
+                        light_sample.m_light->sample(
+                            m_shading_context,
+                            light_sample.m_light_transform,
+                            m_sampling_context.next2<Vector2d>(),
+                            pivot,
+                            emission_direction,
+                            light_value,
+                            probability);
+                    }
+                    else if (m_light_sampler.has_lightset())
+                    {
+                        LightSample light_sample;
+                        m_sampling_context.split_in_place(3, 1);
+                        m_light_sampler.sample_lightset(
+                            ray.m_time,
+                            m_sampling_context.next2<Vector3f>(),
+                            *vertex->m_shading_point,
+                            light_sample);
+                        pivot = light_sample.m_point;
+                    }
+                    else
+                    {
+                        pivot_ptr = nullptr;
+                    }
+
+                    // Prepare volume for sampling.
+                    const Volume* volume = current_medium->get_volume();
+                    void* volume_data = volume->evaluate_inputs(m_shading_context, ray);
+                    volume->prepare_inputs(m_shading_context.get_arena(), ray, volume_data);
+                    vertex->m_volume_data = volume_data;
+
+                    // Sample the distance.
+                    DistanceSample distance_sample;
+                    distance_sample.m_volume_ray = &next_shading_point->get_ray();
+                    distance_sample.m_shading_point = vertex->m_shading_point;
+                    distance_sample.m_pivot = pivot_ptr;
+                    volume->sample_distance(
+                        m_shading_context,
+                        m_sampling_context,
+                        vertex->m_volume_data,
+                        distance_sample);
+
+                    // Update the throughput of the path and create volume shading point if neccessary.
+                    vertex->m_throughput *= distance_sample.m_value;
+                    if (!distance_sample.m_transmitted)
+                    {
+                        vertex->m_throughput /= distance_sample.m_probability;
+                        m_shading_context.get_intersector().make_volume_shading_point(
+                            *next_shading_point,
+                            ray,
+                            distance_sample.m_distance);
+                    }
+
+                    // Assign vertex BSDF.
+                    vertex->m_bsdf = distance_sample.m_bsdf;
+                    vertex->m_bsdf_data = distance_sample.m_bsdf_data;
+                    vertex->m_edf = nullptr;
+                }
             }
         };
 
@@ -677,20 +767,16 @@ namespace
                 if (light_sample_count == 0)
                     return;
 
-                const BSDFSampler bsdf_sampler(
-                    bsdf,
-                    bsdf_data,
-                    scattering_modes,   // bsdf_sampling_modes (unused)
-                    shading_point);
-
                 // This path will be extended via BSDF sampling: sample the lights only.
                 const DirectLightingIntegrator integrator(
                     m_shading_context,
                     m_light_sampler,
-                    bsdf_sampler,
-                    shading_point.get_time(),
+                    shading_point,
+                    bsdf,
+                    bsdf_data,
+                    scattering_modes,   // bsdf_sampling_modes (unused)
                     scattering_modes,   // light_sampling_modes
-                    1,                  // material_sample_count
+                    1,                  // bsdf_sample_count
                     light_sample_count,
                     m_params.m_dl_low_light_threshold,
                     m_is_indirect_lighting);
@@ -723,19 +809,15 @@ namespace
                         m_sampling_context,
                         m_params.m_ibl_env_sample_count);
 
-                const BSDFSampler bsdf_sampler(
-                    bsdf,
-                    bsdf_data,
-                    scattering_modes,   // bsdf_sampling_modes (unused)
-                    shading_point);
-
                 // This path will be extended via BSDF sampling: sample the environment only.
                 compute_ibl_environment_sampling(
                     m_sampling_context,
                     m_shading_context,
                     *m_env_edf,
+                    shading_point,
                     outgoing,
-                    bsdf_sampler,
+                    bsdf,
+                    bsdf_data,
                     scattering_modes,
                     1,                  // bsdf_sample_count
                     env_sample_count,
@@ -770,206 +852,6 @@ namespace
                 radiance.m_beauty += radiance.m_glossy;
                 radiance.m_beauty += radiance.m_volume;
                 radiance.m_beauty += radiance.m_emission;
-            }
-        };
-
-        //
-        // Base volume visitor.
-        //
-
-        struct VolumeVisitorBase
-        {
-            const Parameters&               m_params;
-            const BackwardLightSampler&     m_light_sampler;
-            SamplingContext&                m_sampling_context;
-            const ShadingContext&           m_shading_context;
-            ShadingComponents&              m_path_radiance;
-            const EnvironmentEDF*           m_env_edf;
-            bool                            m_is_indirect_lighting;
-            size_t&                         m_inf_volume_ray_warnings;
-
-            VolumeVisitorBase(
-                const Parameters&               params,
-                const BackwardLightSampler&     light_sampler,
-                SamplingContext&                sampling_context,
-                const ShadingContext&           shading_context,
-                const Scene&                    scene,
-                ShadingComponents&              path_radiance,
-                size_t&                         inf_volume_ray_warnings)
-              : m_params(params)
-              , m_light_sampler(light_sampler)
-              , m_sampling_context(sampling_context)
-              , m_shading_context(shading_context)
-              , m_path_radiance(path_radiance)
-              , m_env_edf(scene.get_environment()->get_environment_edf())
-              , m_is_indirect_lighting(false)
-              , m_inf_volume_ray_warnings(inf_volume_ray_warnings)
-            {
-            }
-
-            bool accept_scattering(const ScatteringMode::Mode prev_mode)
-            {
-                return true;
-            }
-
-            void on_scatter(PathVertex& vertex)
-            {
-                // When caustics are disabled, disable glossy and specular components after a diffuse or volume bounce.
-                // Note that accept_scattering() is later going to return false in this case.
-                const bool has_diffuse_or_volume_scattering =
-                    vertex.m_prev_mode == ScatteringMode::Diffuse ||
-                    vertex.m_prev_mode == ScatteringMode::Volume;
-                if (!m_params.m_enable_caustics && has_diffuse_or_volume_scattering)
-                    vertex.m_scattering_modes &= ~(ScatteringMode::Glossy | ScatteringMode::Specular);
-            }
-        };
-
-        //
-        // Volume visitor without next event estimation.
-        //
-
-        struct VolumeVisitorSimple
-          : public VolumeVisitorBase
-        {
-            VolumeVisitorSimple(
-                const Parameters&               params,
-                const BackwardLightSampler&     light_sampler,
-                SamplingContext&                sampling_context,
-                const ShadingContext&           shading_context,
-                const Scene&                    scene,
-                ShadingComponents&              path_radiance,
-                size_t&                         inf_volume_ray_warnings)
-              : VolumeVisitorBase(
-                  params,
-                  light_sampler,
-                  sampling_context,
-                  shading_context,
-                  scene,
-                  path_radiance,
-                  inf_volume_ray_warnings)
-            {
-            }
-
-            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray)
-            {
-                // Any light contribution after a diffuse, glossy or volume bounce is considered indirect.
-                if (ScatteringMode::has_diffuse_or_glossy_or_volume(vertex.m_scattering_modes))
-                    m_is_indirect_lighting = true;
-            }
-        };
-
-        //
-        // Volume visitor with next event estimation.
-        //
-
-        struct VolumeVisitorDistanceSampling
-          : public VolumeVisitorBase
-        {
-            VolumeVisitorDistanceSampling(
-                const Parameters&               params,
-                const BackwardLightSampler&     light_sampler,
-                SamplingContext&                sampling_context,
-                const ShadingContext&           shading_context,
-                const Scene&                    scene,
-                ShadingComponents&              path_radiance,
-                size_t&                         inf_volume_ray_warnings)
-              : VolumeVisitorBase(
-                  params,
-                  light_sampler,
-                  sampling_context,
-                  shading_context,
-                  scene,
-                  path_radiance,
-                  inf_volume_ray_warnings)
-            {
-            }
-
-            float sample_distance(
-                const ShadingRay&           volume_ray,
-                const float                 extinction,
-                float&                      distance)
-            {
-                m_sampling_context.split_in_place(1, 1);
-
-                if (!volume_ray.is_finite())
-                {
-                    // Sample distance.
-                    distance = sample_exponential_distribution(
-                        m_sampling_context.next2<float>(), extinction);
-
-                    // Calculate PDF of this distance sample.
-                    return exponential_distribution_pdf(distance, extinction);
-                }
-                else
-                {
-                    // Sample distance.
-                    const float ray_length = static_cast<float>(volume_ray.get_length());
-                    distance = sample_exponential_distribution_on_segment(
-                        m_sampling_context.next2<float>(), extinction, 0.0f, ray_length);
-
-                    // Calculate PDF of this distance sample.
-                    return exponential_distribution_on_segment_pdf(
-                        distance, extinction, 0.0f, ray_length);
-                }
-            }
-
-            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray)
-            {
-                // Any light contribution after a diffuse, glossy or volume bounce is considered indirect.
-                if (ScatteringMode::has_diffuse_or_glossy_or_volume(vertex.m_scattering_modes))
-                    m_is_indirect_lighting = true;
-
-                if (!volume_ray.is_finite())
-                {
-                    if (m_inf_volume_ray_warnings < MaxInfVolumeRayWarnings)
-                        RENDERER_LOG_WARNING("volume ray of infinite length encountered.");
-                    else if (m_inf_volume_ray_warnings == MaxInfVolumeRayWarnings)
-                        RENDERER_LOG_WARNING("there are more volume rays of infinite length, "
-                                             "omitting warning messages for brevity.");
-                    ++m_inf_volume_ray_warnings;
-                }
-
-                const ShadingRay::Medium* medium = volume_ray.get_current_medium();
-                assert(medium != nullptr);
-                const Volume* volume = medium->get_volume();
-                assert(volume != nullptr);
-
-                const size_t light_sample_count =
-                    stochastic_cast<size_t>(
-                        m_sampling_context,
-                        m_params.m_dl_light_sample_count);
-
-                VolumeLightingIntegrator integrator(
-                    m_shading_context,
-                    m_light_sampler,
-                    *volume,
-                    volume_ray,
-                    vertex.m_volume_data,
-                    *vertex.m_shading_point,
-                    vertex.m_scattering_modes,
-                    m_params.m_distance_sample_count,
-                    light_sample_count,
-                    m_params.m_dl_low_light_threshold,
-                    m_is_indirect_lighting);
-
-                DirectShadingComponents radiance;
-                if (m_params.m_enable_equiangular_sampling)
-                {
-                    integrator.compute_radiance_combined_sampling(
-                        m_sampling_context,
-                        MISPower2,
-                        radiance);
-                }
-                else
-                {
-                    integrator.compute_radiance_exponential_sampling(
-                        m_sampling_context,
-                        MISPower2,
-                        radiance);
-                }
-
-                radiance *= vertex.m_throughput;
-                m_path_radiance.add(vertex.m_path_length, vertex.m_aov_mode, radiance);
             }
         };
     };
