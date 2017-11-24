@@ -424,7 +424,6 @@ bool Scene::on_frame_begin(
     success = success && invoke_on_frame_begin(project, this, texture_instances(), recorder, abort_switch);
     success = success && invoke_on_frame_begin(project, this, shader_groups(), recorder, abort_switch);
 
-    success = success && invoke_on_frame_begin(project, this, cameras(), recorder, abort_switch);
     success = success && invoke_on_frame_begin(project, this, environment_edfs(), recorder, abort_switch);
     success = success && invoke_on_frame_begin(project, this, environment_shaders(), recorder, abort_switch);
 
@@ -433,6 +432,9 @@ bool Scene::on_frame_begin(
 
     success = success && invoke_on_frame_begin(project, this, assemblies(), recorder, abort_switch);
     success = success && invoke_on_frame_begin(project, this, assembly_instances(), recorder, abort_switch);
+
+    // Call on_frame_begin() on cameras last because some of them cast rays to sense depth in their autofocus mechanism.
+    success = success && invoke_on_frame_begin(project, this, cameras(), recorder, abort_switch);
 
     return success;
 }
