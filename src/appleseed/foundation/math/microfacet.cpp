@@ -728,7 +728,7 @@ float GTR1MDF::pdf(
     const float         alpha_y,
     const float         gamma) const
 {
-    return D(h, alpha_x, alpha_y, gamma) * h.y;
+    return D(h, alpha_x, alpha_y, gamma) * std::abs(h.y);
 }
 
 
@@ -838,7 +838,7 @@ float StdMDF::pdf(
     const float         alpha_y,
     const float         gamma) const
 {
-    return D(h, alpha_x, alpha_y, gamma) * h.y;
+    return D(h, alpha_x, alpha_y, gamma) * std::abs(h.y);
 }
 
 Vector3f StdMDF::sample(
