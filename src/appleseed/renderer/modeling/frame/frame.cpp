@@ -542,8 +542,8 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
     writer.begin_multipart_exr();
 
     // Always save the main image as half floats.
-    const Image& image = *impl->m_image;
     {
+        const Image& image = *impl->m_image;
         const CanvasProperties& props = image.properties();
         images.emplace_back(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
         static const char* ChannelNames[] = {"R", "G", "B", "A"};
