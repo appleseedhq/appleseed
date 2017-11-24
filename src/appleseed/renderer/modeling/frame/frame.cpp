@@ -300,7 +300,7 @@ namespace
 
     void add_chromaticities(ImageAttributes& image_attributes)
     {
-        // Scene linear sRGB Rec 709 chromaticities.
+        // Scene-linear sRGB / Rec. 709 chromaticities.
         image_attributes.insert("white_xy_chromaticity", Vector2f(0.3127f, 0.3290f));
         image_attributes.insert("red_xy_chromaticity", Vector2f(0.64f, 0.33f));
         image_attributes.insert("green_xy_chromaticity", Vector2f(0.30f, 0.60f));
