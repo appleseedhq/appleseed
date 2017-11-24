@@ -102,6 +102,8 @@ RendererServices::RendererServices(
     m_global_attr_getters[OIIO::ustring("object:object_instance_id")] = &RendererServices::get_attr_object_instance_id;
     m_global_attr_getters[OIIO::ustring("object:object_instance_index")] = &RendererServices::get_attr_object_instance_index;
     m_global_attr_getters[OIIO::ustring("object:assembly_instance_id")] = &RendererServices::get_attr_assembly_instance_id;
+    m_global_attr_getters[OIIO::ustring("object:assembly_name")] = &RendererServices::get_attr_assembly_name;
+    m_global_attr_getters[OIIO::ustring("object:assembly_instance_name")] = &RendererServices::get_attr_assembly_instance_name;
     m_global_attr_getters[OIIO::ustring("object:object_instance_name")] = &RendererServices::get_attr_object_instance_name;
     m_global_attr_getters[OIIO::ustring("object:object_name")] = &RendererServices::get_attr_object_name;
     m_global_attr_getters[OIIO::ustring("camera:resolution")] = &RendererServices::get_attr_camera_resolution;
@@ -611,6 +613,50 @@ IMPLEMENT_ATTR_GETTER(assembly_instance_id)
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
         reinterpret_cast<int*>(val)[0] =
             static_cast<int>(shading_point->get_assembly_instance().get_uid());
+
+        if (derivs)
+            clear_derivatives(type, val);
+
+        return true;
+    }
+
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(assembly_instance_name)
+{
+    if (type == OIIO::TypeDesc::TypeString)
+    {
+        const ShadingPoint* shading_point =
+            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+
+        const AssemblyInstance& assembly_instance = shading_point->get_assembly_instance();
+        const OIIO::ustring* name =
+            reinterpret_cast<const OIIO::ustring*>(assembly_instance.get_name_as_ustring());
+
+        reinterpret_cast<OIIO::ustring*>(val)[0] = *name;
+
+        if (derivs)
+            clear_derivatives(type, val);
+
+        return true;
+    }
+
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(assembly_name)
+{
+    if (type == OIIO::TypeDesc::TypeString)
+    {
+        const ShadingPoint* shading_point =
+            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+
+        const Assembly& assembly = shading_point->get_assembly();
+        const OIIO::ustring* name =
+            reinterpret_cast<const OIIO::ustring*>(assembly.get_name_as_ustring());
+
+        reinterpret_cast<OIIO::ustring*>(val)[0] = *name;
 
         if (derivs)
             clear_derivatives(type, val);

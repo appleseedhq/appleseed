@@ -159,4 +159,24 @@ float filtered_pulsetrain(
     }
 }
 
+//
+// Reference:
+//
+//      Improving Noise, Ken Perlin
+//      http://mrl.nyu.edu/~perlin/paper445.pdf
+//      http://www.iquilezles.org/www/articles/functions/functions.htm
+//
+
+float smootherstep(float edge0, float edge1, float x)
+{
+    x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+    return x * x * x * (x * (x * 6.0 - 15.0) + 10.0);
+}
+
+float smootheststep(float edge0, float edge1, float x)
+{
+    x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+    return x * x * x * x *(x *(x * (-20.0 * x + 70.0) - 84.0) + 35.0);
+}
+
 #endif // !AS_PATTERN_HELPERS_H

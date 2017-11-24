@@ -138,6 +138,16 @@ source_group ("include\\appleseed\\pattern" FILES
     ${include_appleseed_pattern_sources}
 )
 
+set (include_appleseed_transform_sources
+    include/appleseed/transform/as_transform_helpers.h
+)
+list (APPEND osl_headers
+    ${include_appleseed_transform_sources}
+)
+source_group ("include\\appleseed\\transform" FILES
+    ${include_appleseed_transform_sources}
+)
+
 
 #--------------------------------------------------------------------------------------------------
 # Source files.
@@ -407,14 +417,24 @@ source_group ("src\\maya" FILES
 )
 
 set (src_appleseed_sources
+     src/appleseed/as_attributes.osl
      src/appleseed/as_color_transform.osl
+     src/appleseed/as_create_mask.osl
      src/appleseed/as_disney_material.osl
+     src/appleseed/as_double_shade.osl
+     src/appleseed/as_falloff_angle.osl
      src/appleseed/as_glass.osl
+     src/appleseed/as_globals.osl
+     src/appleseed/as_id_manifold.osl
      src/appleseed/as_luminance.osl
+     src/appleseed/as_metal.osl
      src/appleseed/as_noise2d.osl
      src/appleseed/as_noise3d.osl
      src/appleseed/as_plastic.osl
+     src/appleseed/as_space_transform.osl
      src/appleseed/as_standard_surface.osl
+     src/appleseed/as_swizzle.osl
+     src/appleseed/as_vary_color.osl
      src/appleseed/as_voronoi2d.osl
      src/appleseed/as_voronoi3d.osl
 )
