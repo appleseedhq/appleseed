@@ -48,6 +48,7 @@
 #include "OpenEXR/ImfFrameBuffer.h"
 #include "OpenEXR/ImfHeader.h"
 #include "OpenEXR/ImfMultiPartOutputFile.h"
+#include "OpenEXR/ImfPartType.h"
 #include "OpenEXR/ImfPixelType.h"
 #include "OpenEXR/ImfTileDescription.h"
 #include "OpenEXR/ImfTiledOutputPart.h"
@@ -254,8 +255,9 @@ void EXRImageFileWriter::append_part(
     // Build the header.
     PixelType pixel_type;
     Header header = build_header(props, image_attributes, channel_count, channel_names, pixel_type);
-
     header.setName(part_name);
+    header.setType(TILEDIMAGE);
+
     impl->m_image_headers.push_back(header);
 }
 
