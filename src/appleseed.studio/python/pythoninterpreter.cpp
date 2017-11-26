@@ -44,9 +44,6 @@
 // Boost headers.
 #include "boost/filesystem.hpp"
 
-// Standard headers.
-#include <string>
-
 using namespace appleseed::shared;
 using namespace foundation;
 using namespace std;
@@ -182,30 +179,29 @@ void PythonInterpreter::initialize(OutputRedirector redirector)
 
 void PythonInterpreter::import_python_module(const char* module_name, const char* alias_name)
 {
-    const string command = format("import {0}\n{1} = {0}\n", module_name, alias_name);
-    execute(command.c_str());
+    execute(format("import {0}\n{1} = {0}\n", module_name, alias_name));
 }
 
 void PythonInterpreter::load_plugins()
 {
-    const string bundled_plugins_path = compute_bundled_plugins_path();
-    const string command = format(
-        "import appleseed.studio.plugins\n"
-        "appleseed.studio.plugins.load_plugins('{0}')\n",
-        bundled_plugins_path);
-    execute(command.c_str());
+    execute(
+        format(
+            "import appleseed.studio.plugins\n"
+            "appleseed.studio.plugins.load_plugins('{0}')\n",
+            compute_bundled_plugins_path()));
 }
 
-bpy::object PythonInterpreter::execute(const char* command)
+bpy::object PythonInterpreter::execute(const string& command)
 {
     if (!m_is_initialized)
-        throw Exception("Attempt to execute command while interpreter is not initialized");
+        throw Exception("Attempt to execute Python command while interpreter is not initialized");
 
     bpy::object result;
 
     try
     {
-        result = bpy::exec(command, m_main_namespace, m_main_namespace);
+        const string escaped_command = replace(command, "\\", "\\\\");
+        result = bpy::exec(escaped_command.c_str(), m_main_namespace, m_main_namespace);
     }
     catch (const bpy::error_already_set&)
     {

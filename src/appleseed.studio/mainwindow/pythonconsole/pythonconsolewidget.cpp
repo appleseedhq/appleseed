@@ -184,7 +184,7 @@ void PythonConsoleWidget::slot_execute_all()
 
 void PythonConsoleWidget::execute(const QString& script)
 {
-    PythonInterpreter::instance().execute(script.toStdString().c_str());
+    PythonInterpreter::instance().execute(script.toStdString());
 }
 
 void PythonConsoleWidget::slot_clear_output()

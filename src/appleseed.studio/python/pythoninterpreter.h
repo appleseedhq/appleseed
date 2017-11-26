@@ -33,6 +33,9 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/python.h"
 
+// Standard headers.
+#include <string>
+
 namespace appleseed {
 namespace studio {
 
@@ -53,7 +56,7 @@ class PythonInterpreter
 
     void load_plugins();
 
-    boost::python::object execute(const char* command);
+    boost::python::object execute(const std::string& command);
 
   private:
     PythonInterpreter();
