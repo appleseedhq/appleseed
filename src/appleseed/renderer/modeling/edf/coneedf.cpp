@@ -281,12 +281,12 @@ DictionaryArray ConeEDFFactory::get_input_metadata() const
             .insert("type", "numeric")
             .insert("min",
                 Dictionary()
-                    .insert("value", "-360.0")
-                    .insert("type", "soft"))
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
             .insert("max",
                 Dictionary()
-                    .insert("value", "360.0")
-                    .insert("type", "soft"))
+                    .insert("value", "180.0")
+                    .insert("type", "hard"))
             .insert("use", "required")
             .insert("default", "90.0"));
 

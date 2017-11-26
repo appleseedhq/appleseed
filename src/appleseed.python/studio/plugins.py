@@ -33,10 +33,12 @@ import traceback
 
 def load_plugins(bundled_plugins_path):
     if os.path.isdir(bundled_plugins_path):
+        print("Loading Python plugins from {0}...".format(bundled_plugins_path))
         load_plugins_from_dir(bundled_plugins_path)
 
     user_plugins_path = os.environ.get('APPLESEED_STUDIO_PLUGIN_PATH')
     if user_plugins_path is not None:
+        print("Loading Python plugins from {0}...".format(user_plugins_path))
         load_plugins_from_dir(user_plugins_path)
 
 
@@ -56,16 +58,18 @@ def load_plugin(plugin_path):
         file, filename, data = imp.find_module(name, [path])
         plugin_module = imp.load_module(name, file, filename, data)
     except ImportError as e:
-        print "Plugin '{}' could not be imported: {}".format(name, e)
+        print("Plugin '{0}' could not be imported: {1}".format(name, e))
         return
 
     if not hasattr(plugin_module, 'register'):
-        print "Plugin '{}' has no register function.".format(name)
+        print("Plugin '{0}' has no register function.".format(name))
         return
 
     try:
         plugin_module.register()
     except Exception as e:
-        print "Could not initialize plugin '{}': {}".format(plugin_module, e)
+        print("Could not initialize plugin '{0}': {1}".format(name, e))
         traceback.print_exc()
         return
+
+    print("Plugin '{0}' successfully imported.".format(name))

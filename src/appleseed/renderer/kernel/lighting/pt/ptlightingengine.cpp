@@ -924,7 +924,7 @@ namespace
                     if (m_inf_volume_ray_warnings < MaxInfVolumeRayWarnings)
                         RENDERER_LOG_WARNING("volume ray of infinite length encountered.");
                     else if (m_inf_volume_ray_warnings == MaxInfVolumeRayWarnings)
-                        RENDERER_LOG_WARNING("there are more volume rays of infinite length, "
+                        RENDERER_LOG_WARNING("more volume rays of infinite length found, "
                                              "omitting warning messages for brevity.");
                     ++m_inf_volume_ray_warnings;
                 }

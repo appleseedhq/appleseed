@@ -112,7 +112,7 @@ namespace
         // Compute full path.
         lib_path = base_path / lib_path / "python2.7";
 
-        return lib_path.string();
+        return canonical(lib_path).make_preferred().string();
     }
 
     string compute_bundled_plugins_path()
@@ -131,8 +131,9 @@ namespace
         base_path = base_path.parent_path();
 
         // Compute full path.
-        bf::path plugins_path = base_path / "studio" / "plugins";
-        return plugins_path.string();
+        const bf::path plugins_path = base_path / "studio" / "plugins";
+
+        return canonical(plugins_path).make_preferred().string();
     }
 }
 
@@ -181,13 +182,13 @@ void PythonInterpreter::initialize(OutputRedirector redirector)
 
 void PythonInterpreter::import_python_module(const char* module_name, const char* alias_name)
 {
-    const string s = format("import {0}\n{1} = {0}\n", module_name, alias_name);
-    execute(s.c_str());
+    const string command = format("import {0}\n{1} = {0}\n", module_name, alias_name);
+    execute(command.c_str());
 }
 
 void PythonInterpreter::load_plugins()
 {
-    string bundled_plugins_path = compute_bundled_plugins_path();
+    const string bundled_plugins_path = compute_bundled_plugins_path();
     const string command = format(
         "import appleseed.studio.plugins\n"
         "appleseed.studio.plugins.load_plugins('{0}')\n",

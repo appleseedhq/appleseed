@@ -300,7 +300,7 @@ namespace
 
     void add_chromaticities(ImageAttributes& image_attributes)
     {
-        // Scene linear sRGB Rec 709 chromaticities.
+        // Scene-linear sRGB / Rec. 709 chromaticities.
         image_attributes.insert("white_xy_chromaticity", Vector2f(0.3127f, 0.3290f));
         image_attributes.insert("red_xy_chromaticity", Vector2f(0.64f, 0.33f));
         image_attributes.insert("green_xy_chromaticity", Vector2f(0.30f, 0.60f));
@@ -542,8 +542,8 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
     writer.begin_multipart_exr();
 
     // Always save the main image as half floats.
-    const Image& image = *impl->m_image;
     {
+        const Image& image = *impl->m_image;
         const CanvasProperties& props = image.properties();
         images.emplace_back(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
         static const char* ChannelNames[] = {"R", "G", "B", "A"};

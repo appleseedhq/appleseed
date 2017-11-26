@@ -122,14 +122,14 @@ void EntityFactoryRegistrar::register_factories_from_plugins(
             entity_type_name.c_str());
 
         // Iterate over all files in this directory.
-        for (bf::directory_iterator i(search_path), e; i != e; ++i)
+        for (bf::directory_iterator j(search_path), f; j != f; ++j)
         {
             // Only consider shared library files.
-            if (!bf::is_regular_file(*i) ||
-                i->path().extension() != foundation::SharedLibrary::get_default_file_extension())
+            if (!bf::is_regular_file(*j) ||
+                j->path().extension() != foundation::SharedLibrary::get_default_file_extension())
                 continue;
 
-            const std::string plugin_path = i->path().string();
+            const std::string plugin_path = j->path().string();
 
             // Only consider libraries that can be loaded and define the right magic symbol.
             try

@@ -125,10 +125,16 @@ TestSceneContext::TestSceneContext(TestSceneBase& base)
     input_binder.bind(m_base.m_scene);
     assert(input_binder.get_error_count() == 0);
 
-    bool success = m_base.m_scene.on_render_begin(m_base.m_project);
+#ifndef NDEBUG
+    bool success = 
+#endif
+        m_base.m_scene.on_render_begin(m_base.m_project);
     assert(success);
 
-    success = m_base.m_scene.on_frame_begin(m_base.m_project, nullptr, m_recorder);
+#ifndef NDEBUG
+    success =
+#endif
+        m_base.m_scene.on_frame_begin(m_base.m_project, nullptr, m_recorder);
     assert(success);
 }
 

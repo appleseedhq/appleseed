@@ -259,10 +259,14 @@ namespace
 
         fprintf(
             s_log_file,
-            "[%s] Deallocated %s at %s\n\n",
+            "[%s] Deallocated %s at %s\n",
             get_timestamp_string().c_str(),
             pretty_size(size).c_str(),
             to_string(ptr).c_str());
+
+#ifdef DUMP_CALLSTACK_ON_ALLOCATION
+        fprintf(s_log_file, "\n");
+#endif
     }
 
     uint64 compute_leaked_memory_size()
