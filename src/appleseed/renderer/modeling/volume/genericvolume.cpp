@@ -175,7 +175,7 @@ class GenericVolume
         const ShadingContext&       shading_context,
         SamplingContext&            sampling_context,
         const void*                 data,
-        DistanceSample&                sample) const override
+        DistanceSample&             sample) const override
     {
         if (sample.m_pivot != nullptr)
             sample_distance_combined_sampling(sampling_context, data, sample);
@@ -184,17 +184,24 @@ class GenericVolume
 
         const InputValues* values = static_cast<const InputValues*>(data);
 
-        sample.m_bsdf = &m_bsdf;
-        sample.m_bsdf_data;
-        auto bsdf_inputs = shading_context.get_arena().allocate<PhaseFunctionBSDFInputValues>();
-        bsdf_inputs->m_scattering_coefficient = values->m_scattering;
-        sample.m_bsdf_data = bsdf_inputs;
+        if (!sample.m_transmitted)
+        {
+            sample.m_bsdf = &m_bsdf;
+            sample.m_bsdf_data;
+            auto bsdf_inputs = shading_context.get_arena().allocate<PhaseFunctionBSDFInputValues>();
+            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+            {
+                bsdf_inputs->m_albedo[i] = values->m_scattering[i] == 0.0f ? 0.0f :
+                    values->m_scattering[i] / values->m_precomputed.m_extinction[i];
+            }
+            sample.m_bsdf_data = bsdf_inputs;
+        }
     }
 
     void sample_distance_combined_sampling(
         SamplingContext&            sampling_context,
         const void*                 data,
-        DistanceSample&                sample) const
+        DistanceSample&             sample) const
     {
         const InputValues* values = static_cast<const InputValues*>(data);
         const Spectrum& extinction_coef = values->m_precomputed.m_extinction;
@@ -235,32 +242,20 @@ class GenericVolume
             //
 
             const float exponential_sample = static_cast<float>(sample.m_distance);
-            const float exponential_prob = evaluate_exponential_sample(
+            const float exponential_prob_mis = evaluate_exponential_sample(
                 exponential_sample, *sample.m_volume_ray, extinction_coef[channel]);
-            const float equiangular_prob =
+            const float exponential_prob = exponential_distribution_pdf(
+                exponential_sample, extinction_coef[channel]);
+            const float equiangular_prob_mis =
                 equiangular_distance_sampler.evaluate(exponential_sample);
 
-            // Calculate MIS weight for spectral channel sampling (power heuristic).
-            // One-sample estimator is used (Veach: 9.2.4 eq. 9.15).
-            float mis_weights_sum = 0.0f;
-            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
-            {
-                if (extinction_coef[i] > 0.0f)
-                {
-                    const float probability =
-                        evaluate_exponential_sample(
-                            exponential_sample, *sample.m_volume_ray, extinction_coef[i]);
-                    mis_weights_sum += square(probability);
-                }
-            }
-            const float mis_weight_channel =
-                Spectrum::size() *
-                square(exponential_prob) /
-                mis_weights_sum;
+            // Calculate MIS weight for spectral sampling.
+            const float mis_weight_channel = compute_channel_mis(
+                extinction_coef, exponential_sample, exponential_prob);
 
             // Calculate MIS weight for distance sampling.
             const float mis_weight_distance = 2.0f * mis(
-                m_mis_heuristic, exponential_prob, equiangular_prob);
+                m_mis_heuristic, exponential_prob_mis, equiangular_prob_mis);
 
             sample.m_distance = exponential_sample;
             evaluate_transmission(data, *sample.m_volume_ray, exponential_sample, sample.m_value);
@@ -277,25 +272,28 @@ class GenericVolume
 
             const float equiangular_sample =
                 equiangular_distance_sampler.sample();
-            const float equiangular_prob =
+            const float equiangular_prob_mis =
                 equiangular_distance_sampler.evaluate(equiangular_sample);
-            const float exponential_prob = evaluate_exponential_sample(
+            const float exponential_prob_mis = evaluate_exponential_sample(
                 equiangular_sample, *sample.m_volume_ray, extinction_coef[channel]);
 
             // Calculate MIS weight for distance sampling.
             sample.m_distance = equiangular_sample;
             evaluate_transmission(data, *sample.m_volume_ray, equiangular_sample, sample.m_value);
-            sample.m_value *= 2.0f * mis(m_mis_heuristic, equiangular_prob, exponential_prob);
-            assert(equiangular_prob > 0);
+            sample.m_value *= 2.0f * mis(m_mis_heuristic, equiangular_prob_mis, exponential_prob_mis);
+            assert(equiangular_prob_mis > 0);
             assert(equiangular_sample > 0);
-            sample.m_probability = equiangular_prob;
+            const float transmission_prob =
+                std::exp(-extinction_coef[channel] * static_cast<float>(sample.m_volume_ray->m_tmax));
+            sample.m_probability = equiangular_prob_mis * (1.0f - transmission_prob);
         }
+        sample.m_value *= extinction_coef;
     }
 
     void sample_distance_exponential_sampling(
         SamplingContext&            sampling_context,
         const void*                 data,
-        DistanceSample&                sample) const
+        DistanceSample&             sample) const
     {
         const InputValues* values = static_cast<const InputValues*>(data);
         const Spectrum& extinction_coef = values->m_precomputed.m_extinction;
@@ -322,30 +320,24 @@ class GenericVolume
         }
         sample.m_transmitted = false;
 
+        // Perform exponential sampling for distance.
         const float exponential_sample = static_cast<float>(sample.m_distance);
-        const float exponential_prob = evaluate_exponential_sample(
-            exponential_sample, *sample.m_volume_ray, extinction_coef[channel]);
+        const float exponential_probability = exponential_distribution_pdf(
+            exponential_sample, extinction_coef[channel]);
 
-        // Calculate MIS weight for spectral channel sampling (power heuristic).
-        // One-sample estimator is used (Veach: 9.2.4 eq. 9.15).
-        float mis_weights_sum = 0.0f;
-        for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
-        {
-            if (extinction_coef[i] > 0.0f)
-            {
-                const float probability = evaluate_exponential_sample(
-                    exponential_sample, *sample.m_volume_ray, extinction_coef[i]);
-                mis_weights_sum += square(probability);
-            }
-        }
-        const float mis_weight_channel =
-            Spectrum::size() *
-            square(exponential_prob) /
-            mis_weights_sum;
+        // Compute MIS for chromatic distance sampling.
+        const float mis_weight_channel = compute_channel_mis(
+            extinction_coef, exponential_sample, exponential_probability);
 
+        // Compute transmission value for the distance sample.
         evaluate_transmission(data, *sample.m_volume_ray, exponential_sample, sample.m_value);
         sample.m_value *= mis_weight_channel;
-        sample.m_probability = exponential_prob;
+        // When we compute transmission value for further direction sampling
+        // it is multiplied by extinction coefficient;
+        // direction sampling should then use albedo for computations
+        // instead of scattering coefficient:
+        sample.m_value *= extinction_coef;
+        sample.m_probability = exponential_probability;
     }
 
     void evaluate_transmission(
@@ -355,7 +347,7 @@ class GenericVolume
         Spectrum&           spectrum) const override
     {
         const InputValues* values = static_cast<const InputValues*>(data);
-        const Spectrum& extinction_coef = values->m_precomputed.m_extinction;
+        spectrum = values->m_precomputed.m_extinction;
 
         for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
         {
@@ -384,6 +376,26 @@ class GenericVolume
 
     PhaseFunctionBSDF m_bsdf;
     const MISHeuristic m_mis_heuristic = MISHeuristic::MISPower2;
+
+    // Calculate MIS weight for spectral channel sampling (power heuristic).
+    // One-sample estimator is used (Veach: 9.2.4 eq. 9.15).
+    static float compute_channel_mis(
+        const Spectrum& extinction_coef,
+        const float distance_sample,
+        const float probability)
+    {
+        float mis_weights_sum = 0.0f;
+        for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+        {
+            if (extinction_coef[i] > 0.0f)
+            {
+                const float probability = exponential_distribution_pdf(
+                    distance_sample, extinction_coef[i]);
+                mis_weights_sum += square(probability);
+            }
+        }
+        return Spectrum::size() * square(probability) / mis_weights_sum;
+    }
 };
 
 

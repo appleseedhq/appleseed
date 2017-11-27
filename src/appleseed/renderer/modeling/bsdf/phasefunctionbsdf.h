@@ -56,7 +56,7 @@ namespace renderer
 
     APPLESEED_DECLARE_INPUT_VALUES(PhaseFunctionBSDFInputValues)
     {
-        Spectrum m_scattering_coefficient;
+        Spectrum m_albedo;
     };
 
     class PhaseFunctionBSDF
@@ -105,7 +105,7 @@ namespace renderer
             sample.m_incoming = foundation::Dual3f(incoming);
 
             sample.m_value.set(0.0f);
-            sample.m_value.m_volume = values->m_scattering_coefficient;
+            sample.m_value.m_volume = values->m_albedo;
             sample.m_value.m_volume *= sample.m_probability;
             sample.m_value.m_beauty = sample.m_value.m_volume;
 
@@ -136,7 +136,7 @@ namespace renderer
                 modes);
 
             value.set(0.0f);
-            value.m_volume = values->m_scattering_coefficient;
+            value.m_volume = values->m_albedo;
             value.m_volume *= pdf;
             value.m_beauty = value.m_volume;
 
