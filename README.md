@@ -1,7 +1,6 @@
 # appleseed [![Build Status](https://travis-ci.org/appleseedhq/appleseed.svg?branch=master)](https://travis-ci.org/appleseedhq/appleseed) [![Slack](https://slackin-pohcdrcgcs.now.sh/badge.svg)](https://slackin-pohcdrcgcs.now.sh/)
 
 ![Japanese Classroom, by Blender Swap’s user NovaZeeke](http://appleseedhq.net/img/renders/classroom.jpg)
-*(Japanese Classroom, by Blender Swap’s user [NovaZeeke](http://www.blendswap.com/users/view/NovaZeeke).)*
 
 ## Overview
 
