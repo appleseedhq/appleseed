@@ -133,7 +133,7 @@ namespace
                 values->m_edge_tint,
                 values->m_precomputed.m_n,
                 values->m_precomputed.m_k);
-            values->m_precomputed.m_outside_ior = shading_point.get_ray().get_current_ior();
+            values->m_precomputed.m_outside_ior = shading_point.get_ray().m_media.get_current_ior();
         }
 
         bool on_frame_begin(

@@ -811,8 +811,8 @@ inline const Material* ShadingPoint::get_material() const
     {
         if (hit_volume())
         {
-            m_material = m_ray.get_current_medium()->m_material;
-            m_opposite_material = m_ray.get_current_medium()->m_material;
+            m_material = m_ray.m_media.get_current()->m_material;
+            m_opposite_material = m_ray.m_media.get_current()->m_material;
         }
         else
             fetch_materials();
@@ -832,8 +832,8 @@ inline const Material* ShadingPoint::get_opposite_material() const
     {
         if (hit_volume())
         {
-            m_material = m_ray.get_current_medium()->m_material;
-            m_opposite_material = m_ray.get_current_medium()->m_material;
+            m_material = m_ray.m_media.get_current()->m_material;
+            m_opposite_material = m_ray.m_media.get_current()->m_material;
         }
         else
             fetch_materials();
@@ -873,7 +873,7 @@ inline const ObjectInstance& ShadingPoint::get_object_instance() const
     }
     else
     {
-        m_object_instance = m_ray.get_current_medium()->m_object_instance;
+        m_object_instance = m_ray.m_media.get_current()->m_object_instance;
         m_object = &m_object_instance->get_object();
     }
     return *m_object_instance;
@@ -888,7 +888,7 @@ inline const Object& ShadingPoint::get_object() const
     }
     else
     {
-        m_object_instance = m_ray.get_current_medium()->m_object_instance;
+        m_object_instance = m_ray.m_media.get_current()->m_object_instance;
         m_object = &m_object_instance->get_object();
     }
     return *m_object;

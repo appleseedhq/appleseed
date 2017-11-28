@@ -176,12 +176,12 @@ namespace
             if (shading_point.is_entering())
             {
                 values->m_precomputed.m_backfacing = false;
-                values->m_precomputed.m_eta = shading_point.get_ray().get_current_ior() / values->m_ior;
+                values->m_precomputed.m_eta = shading_point.get_ray().m_media.get_current_ior() / values->m_ior;
             }
             else
             {
                 values->m_precomputed.m_backfacing = true;
-                values->m_precomputed.m_eta = values->m_ior / shading_point.get_ray().get_previous_ior();
+                values->m_precomputed.m_eta = values->m_ior / shading_point.get_ray().m_media.get_underlying_ior();
             }
 
             values->m_precomputed.m_reflection_color  = values->m_surface_transmittance;

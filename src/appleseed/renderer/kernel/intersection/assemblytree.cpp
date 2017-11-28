@@ -608,7 +608,7 @@ namespace
         output_ray.m_time = input_ray.m_time;
         output_ray.m_flags = input_ray.m_flags;
         output_ray.m_depth = input_ray.m_depth;
-        output_ray.m_medium_count = input_ray.m_medium_count;
+        output_ray.m_media.m_size = input_ray.m_media.m_size;
     }
 }
 
@@ -795,7 +795,7 @@ bool AssemblyLeafVisitor::visit(
             instance_local_ray.m_time = local_shading_point.m_ray.m_time;
             instance_local_ray.m_flags = local_shading_point.m_ray.m_flags;
             instance_local_ray.m_depth = local_shading_point.m_ray.m_depth;
-            instance_local_ray.m_medium_count = local_shading_point.m_ray.m_medium_count;
+            instance_local_ray.m_media.m_size = local_shading_point.m_ray.m_media.m_size;
 
             // Ask the procedural object to intersect itself against the ray.
             ProceduralObject::IntersectionResult result;
@@ -1010,7 +1010,7 @@ bool AssemblyLeafProbeVisitor::visit(
             instance_local_ray.m_time = local_ray.m_time;
             instance_local_ray.m_flags = local_ray.m_flags;
             instance_local_ray.m_depth = local_ray.m_depth;
-            instance_local_ray.m_medium_count = local_ray.m_medium_count;
+            instance_local_ray.m_media.m_size = local_ray.m_media.m_size;
 
             // Ask the procedural object to intersect itself against the ray.
             if (proc_object->intersect(instance_local_ray))

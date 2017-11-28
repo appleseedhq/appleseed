@@ -863,7 +863,7 @@ IMPLEMENT_ATTR_GETTER(ray_ior)
     {
         const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
-        reinterpret_cast<float*>(val)[0] = shading_point->get_ray().get_current_ior();
+        reinterpret_cast<float*>(val)[0] = shading_point->get_ray().m_media.get_current_ior();
 
         if (derivs)
             clear_derivatives(type, val);

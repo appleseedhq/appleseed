@@ -278,8 +278,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         if (vertex.m_shading_point->hit_surface())
         {
             // Handle false intersections.
-            if (ray.get_current_medium() &&
-                ray.get_current_medium()->m_object_instance->get_medium_priority() >
+            if (ray.m_media.get_current() &&
+                ray.m_media.get_current()->m_object_instance->get_medium_priority() >
                 object_instance.get_medium_priority() &&
                 material_data.m_bsdf != nullptr)
             {
@@ -314,9 +314,9 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
                     const void* data = material_data.m_bsdf->evaluate_inputs(shading_context, *vertex.m_shading_point);
                     const float ior = material_data.m_bsdf->sample_ior(sampling_context, data);
-                    next_ray.add_medium(ray, &object_instance, material, ior);
+                    next_ray.m_media.add(ray.m_media, &object_instance, material, ior);
                 }
-                else next_ray.remove_medium(ray, &object_instance);
+                else next_ray.m_media.remove(ray.m_media, &object_instance);
 
                 // Trace the ray.
                 shading_context.get_arena().clear();
@@ -368,7 +368,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                     }
 
                     // Inherit the medium list from the parent ray.
-                    next_ray.copy_media_from(ray);
+                    next_ray.m_media = ray.m_media;
 
                     // Trace the ray.
                     shading_context.get_arena().clear();
@@ -536,29 +536,29 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                         vertex.m_bsdf->sample_ior(
                             sampling_context,
                             vertex.m_bsdf_data);
-                    next_ray.add_medium(ray, &object_instance, vertex.get_material(), ior);
+                    next_ray.m_media.add(ray.m_media, &object_instance, vertex.get_material(), ior);
                 }
                 else
                 {
-                    next_ray.remove_medium(ray, &object_instance);
+                    next_ray.m_media.remove(ray.m_media, &object_instance);
                 }
             }
             else
             {
                 // Reflected ray:
                 // inherit the medium list of the parent ray.
-                next_ray.copy_media_from(ray);
+                next_ray.m_media.copy_from(ray.m_media);
             }
         }
         else
         {
             // Ray is out-scattered by participating media:
             // inherit the medium list of the parent ray.
-            next_ray.copy_media_from(ray);
+            next_ray.m_media.copy_from(ray.m_media);
         }
 
         // Compute absorption for the segment inside the medium.
-        const ShadingRay::Medium* prev_medium = ray.get_current_medium();
+        const ShadingRay::Medium* prev_medium = ray.m_media.get_current();
         if (prev_medium != nullptr)
         {
             const Material::RenderData& render_data = prev_medium->m_material->get_render_data();

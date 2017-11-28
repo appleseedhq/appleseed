@@ -104,8 +104,8 @@ float BSSRDF::compute_eta(
 {
     const float outside_ior =
         shading_point.is_entering()
-            ? shading_point.get_ray().get_current_ior()
-            : shading_point.get_ray().get_previous_ior();
+            ? shading_point.get_ray().m_media.get_current_ior()
+            : shading_point.get_ray().m_media.get_underlying_ior();
 
     return outside_ior / ior;
 }

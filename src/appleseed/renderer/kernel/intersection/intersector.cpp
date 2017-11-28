@@ -300,7 +300,7 @@ bool Intersector::trace(
         !parent_shading_point->hit_volume())
         report_self_intersection(shading_point, parent_shading_point);
 
-    const ShadingRay::Medium* medium = ray.get_current_medium();
+    const ShadingRay::Medium* medium = ray.m_media.get_current();
     if (!shading_point.hit_surface() && medium != nullptr && medium->get_volume() != nullptr)
         shading_point.m_primitive_type = ShadingPoint::PrimitiveVolume;
 

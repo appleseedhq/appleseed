@@ -363,7 +363,7 @@ namespace
                     *next_shading_point,
                     vertex->m_shading_point);
 
-                const ShadingRay::Medium* current_medium = ray.get_current_medium();
+                const ShadingRay::Medium* current_medium = ray.m_media.get_current();
                 if (current_medium != nullptr &&
                     current_medium->get_volume() != nullptr)
                 {

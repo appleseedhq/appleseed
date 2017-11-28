@@ -136,7 +136,7 @@ namespace
         {
             InputValues* values = static_cast<InputValues*>(data);
             new (&values->m_precomputed) InputValues::Precomputed();
-            values->m_precomputed.m_outside_ior = shading_point.get_ray().get_current_ior();
+            values->m_precomputed.m_outside_ior = shading_point.get_ray().m_media.get_current_ior();
         }
 
         void sample(
