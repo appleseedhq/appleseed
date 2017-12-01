@@ -2876,7 +2876,7 @@ namespace
             if (format_revision > ProjectFormatRevision)
             {
                 RENDERER_LOG_WARNING(
-                    "this project was created with a newer version of appleseed; it may fail to load with this version.");
+                    "this project was created with a newer version of appleseed; it may fail to load or render properly with this version.");
                 m_context.get_event_counters().signal_warning();
             }
 
