@@ -689,7 +689,7 @@ namespace
                 const BSDFSampler bsdf_sampler(
                     bsdf,
                     bsdf_data,
-                    scattering_modes,   // bsdf_sampling_modes (unused)
+                    scattering_modes,       // bsdf_sampling_modes (unused)
                     shading_point);
 
                 // This path will be extended via BSDF sampling: sample the lights only.
@@ -698,8 +698,8 @@ namespace
                     m_light_sampler,
                     bsdf_sampler,
                     shading_point.get_time(),
-                    scattering_modes,   // light_sampling_modes
-                    1,                  // material_sample_count
+                    scattering_modes,       // light_sampling_modes
+                    1,                      // material_sample_count
                     light_sample_count,
                     m_params.m_dl_low_light_threshold,
                     m_is_indirect_lighting);
@@ -735,7 +735,7 @@ namespace
                 const BSDFSampler bsdf_sampler(
                     bsdf,
                     bsdf_data,
-                    scattering_modes,   // bsdf_sampling_modes (unused)
+                    scattering_modes,       // bsdf_sampling_modes (unused)
                     shading_point);
 
                 // This path will be extended via BSDF sampling: sample the environment only.
@@ -746,7 +746,7 @@ namespace
                     outgoing,
                     bsdf_sampler,
                     scattering_modes,
-                    1,                  // bsdf_sample_count
+                    1,                      // bsdf_sample_count
                     env_sample_count,
                     ibl_radiance);
 

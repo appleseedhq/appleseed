@@ -89,8 +89,8 @@ bool BSDFSampler::sample(
     m_bsdf.sample(
         sampling_context,
         m_bsdf_data,
-        false,              // not adjoint
-        true,               // multiply by |cos(incoming, normal)|
+        false,                  // not adjoint
+        true,                   // multiply by |cos(incoming, normal)|
         m_bsdf_sampling_modes,
         sample);
 
@@ -113,8 +113,8 @@ float BSDFSampler::evaluate(
     return
         m_bsdf.evaluate(
             m_bsdf_data,
-            false,          // not adjoint
-            true,           // multiply by |cos(incoming, normal)|
+            false,              // not adjoint
+            true,               // multiply by |cos(incoming, normal)|
             Vector3f(m_geometric_normal),
             Basis3f(m_shading_basis),
             Vector3f(outgoing),
@@ -166,11 +166,11 @@ void BSDFSampler::trace_between(
 //
 
 VolumeSampler::VolumeSampler(
-    const ShadingRay&       volume_ray,
-    const Volume&           volume,
-    const void*             volume_data,
-    const float             distance,
-    const ShadingPoint&     shading_point)
+    const ShadingRay&           volume_ray,
+    const Volume&               volume,
+    const void*                 volume_data,
+    const float                 distance,
+    const ShadingPoint&         shading_point)
   : m_volume_ray(volume_ray)
   , m_volume(volume)
   , m_volume_data(volume_data)
