@@ -1586,6 +1586,14 @@ namespace
                     e.string());
                 m_context.get_event_counters().signal_error();
             }
+            catch (const Exception& e)
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining object \"%s\": %s",
+                    m_name.c_str(),
+                    e.what());
+                m_context.get_event_counters().signal_error();
+            }
         }
 
         const ObjectVector& get_objects() const
