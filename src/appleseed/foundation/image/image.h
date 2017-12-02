@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -83,21 +83,21 @@ class APPLESEED_DLLSYMBOL Image
         const PixelFormat   pixel_format);
 
     // Destructor.
-    virtual ~Image();
+    ~Image() override;
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
     // Access canvas properties.
-    virtual const CanvasProperties& properties() const APPLESEED_OVERRIDE;
+    const CanvasProperties& properties() const override;
 
     // Direct access to a given tile.
-    virtual Tile& tile(
+    Tile& tile(
         const size_t        tile_x,
-        const size_t        tile_y) APPLESEED_OVERRIDE;
-    virtual const Tile& tile(
+        const size_t        tile_y) override;
+    const Tile& tile(
         const size_t        tile_x,
-        const size_t        tile_y) const APPLESEED_OVERRIDE;
+        const size_t        tile_y) const override;
 
     // Set a given tile. Ownership of the tile is transfered to the Image class.
     // If a tile already exists at the given coordinates, it gets replaced.

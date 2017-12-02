@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/entityactions.h"
 #include "mainwindow/project/entitycreatorbase.h"
+#include "mainwindow/project/ientityvalueprovider.h"
 #include "mainwindow/project/itembase.h"
 
 // appleseed.foundation headers.
@@ -52,7 +53,8 @@ namespace studio {
 
 class FrameItem
   : public ItemBase
-  , public EntityCreatorBase
+  , public IEntityValueProvider
+  , public EntityCreatorBase    // gcc 4.8 requires public inheritance here
 {
     Q_OBJECT
 
@@ -60,6 +62,8 @@ class FrameItem
     FrameItem(
         EntityEditorContext&    editor_context,
         renderer::Frame*        frame);
+
+  foundation::Dictionary get_values() const override;
 
   private slots:
     void slot_edit_accepted(foundation::Dictionary values);
@@ -69,7 +73,7 @@ class FrameItem
 
     renderer::Frame* m_frame;
 
-    virtual void slot_edit(AttributeEditor* attribute_editor) APPLESEED_OVERRIDE;
+    void slot_edit(AttributeEditor* attribute_editor) override;
     void edit(const foundation::Dictionary& values);
 };
 

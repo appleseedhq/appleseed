@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -66,7 +66,7 @@ class LCG
     uint32 rand_uint32();
 
   private:
-    uint32 m_x;     // current state of the generator
+    uint32 m_s;
 };
 
 
@@ -75,14 +75,14 @@ class LCG
 //
 
 inline LCG::LCG(const uint32 seed)
-  : m_x(seed)
+  : m_s(seed)
 {
 }
 
 inline uint32 LCG::rand_uint32()
 {
-    m_x = 2147001325UL * m_x + 715136305UL;
-    return m_x;
+    m_s = 2147001325UL * m_s + 715136305UL;
+    return m_s;
 }
 
 }       // namespace foundation

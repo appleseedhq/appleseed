@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,6 @@
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
-#include "renderer/modeling/material/ibasismodifier.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/curveobject.h"
 #include "renderer/modeling/object/regionkit.h"
@@ -47,21 +46,20 @@
 #include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/beziercurve.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/poison.h"
 
 // OSL headers.
-#ifdef APPLESEED_WITH_OSL
-#include "foundation/platform/oslheaderguards.h"
-BEGIN_OSL_INCLUDES
+#include "foundation/platform/_beginoslheaders.h"
 #include "OSL/oslexec.h"
 #include "OSL/shaderglobals.h"
-END_OSL_INCLUDES
-#endif
+#include "foundation/platform/_endoslheaders.h"
 
 // Standard headers.
 #include <cassert>
@@ -69,10 +67,8 @@ END_OSL_INCLUDES
 
 // Forward declarations.
 namespace renderer  { class Object; }
-#ifdef APPLESEED_WITH_OSL
 namespace renderer  { class OSLShaderGroupExec; }
 namespace renderer  { class ShaderGroup; }
-#endif
 namespace renderer  { class Scene; }
 namespace renderer  { class TextureCache; }
 
@@ -89,11 +85,16 @@ class ShadingPoint
     // The type of the primitive at the shading point.
     enum PrimitiveType
     {
-        PrimitiveNone       = 0,
-        PrimitiveTriangle   = 1 << 1,
-        PrimitiveCurve      = 1 << 2,
-        PrimitiveCurve1     = PrimitiveCurve | 0,
-        PrimitiveCurve3     = PrimitiveCurve | 1
+        PrimitiveNone               = 0,
+
+        PrimitiveTriangle           = 1 << 1,
+        PrimitiveProceduralSurface  = 1 << 2,
+
+        PrimitiveCurve              = 1 << 3,
+        PrimitiveCurve1             = PrimitiveCurve | 0,
+        PrimitiveCurve3             = PrimitiveCurve | 1,
+
+        PrimitiveVolume             = 1 << 4
     };
 
     // Constructor, calls clear().
@@ -108,6 +109,13 @@ class ShadingPoint
     // Reset the shading point to its initial state (no intersection).
     void clear();
 
+    // Initialize this shading point as a point in participating media,
+    // given a ray through volume and a distance from origin.
+    void create_volume_shading_point(
+        const ShadingPoint&     prev_shading_point,
+        const ShadingRay&       volume_ray,
+        const float             distance);
+
     // Return the scene that was tested for intersection.
     const Scene& get_scene() const;
 
@@ -118,8 +126,15 @@ class ShadingPoint
     // Return the time stored in the ray.
     const ShadingRay::Time& get_time() const;
 
-    // Return true if an intersection was found, false otherwise.
-    bool hit() const;
+    // Return true if the shading point is either
+    // a surface point or a volume point and can be shaded.
+    bool is_valid() const;
+
+    // Return true if an intersection with some surface was found, false otherwise.
+    bool hit_surface() const;
+
+    // Return true if the shading point is located inside a participating medium.
+    bool hit_volume() const;
 
     // Return the type of the hit primitive.
     PrimitiveType get_primitive_type() const;
@@ -130,14 +145,14 @@ class ShadingPoint
     double get_distance() const;
 
     // Return the barycentric coordinates of the intersection point.
-    const foundation::Vector2d& get_bary() const;
+    const foundation::Vector2f& get_bary() const;
 
     // Return the texture coordinates from a given UV set at the intersection point.
-    const foundation::Vector2d& get_uv(const size_t uvset) const;
+    const foundation::Vector2f& get_uv(const size_t uvset) const;
 
     // Return the screen space partial derivatives of the texture coordinates from a given UV set.
-    const foundation::Vector2d& get_duvdx(const size_t uvset) const;
-    const foundation::Vector2d& get_duvdy(const size_t uvset) const;
+    const foundation::Vector2f& get_duvdx(const size_t uvset) const;
+    const foundation::Vector2f& get_duvdy(const size_t uvset) const;
 
     // Return the intersection point in world space.
     const foundation::Vector3d& get_point() const;
@@ -167,9 +182,9 @@ class ShadingPoint
     // Return the original world space shading normal at the intersection point.
     const foundation::Vector3d& get_original_shading_normal() const;
 
-    // Return the world space (possibly modified) shading normal at the intersection point.
-    // The shading normal is always in the same hemisphere as the geometric normal, but it is
-    // not always facing the incoming ray, i.e. dot(ray_dir, shading_normal) may be negative.
+    // Return the (possibly modified) world space shading normal at the intersection point.
+    // The shading normal is always in the same hemisphere as the geometric normal but it is
+    // not necessarily facing the incoming ray, i.e. dot(ray_dir, shading_normal) may be negative.
     const foundation::Vector3d& get_shading_normal() const;
 
     // Set/get the world space orthonormal basis around the (possibly modified) shading normal.
@@ -178,6 +193,9 @@ class ShadingPoint
 
     // Return the side of the surface that was hit.
     ObjectInstance::Side get_side() const;
+
+    // Flip the side on which this shading point lies.
+    void flip_side();
 
     // Return true if the ray is entering/leaving an object.
     bool is_entering() const;
@@ -225,10 +243,6 @@ class ShadingPoint
     // Return the opacity at the intersection point.
     const Alpha& get_alpha() const;
 
-    // Return whether surface shaders should be invoked for fully transparent shading points.
-    bool shade_alpha_cutouts() const;
-
-#ifdef APPLESEED_WITH_OSL
     OSL::ShaderGlobals& get_osl_shader_globals() const;
 
     struct OSLObjectTransformInfo
@@ -256,30 +270,29 @@ class ShadingPoint
         float       m_u;
         float       m_v;
     };
-#endif
 
   private:
     friend class AssemblyLeafProbeVisitor;
     friend class AssemblyLeafVisitor;
     friend class CurveLeafVisitor;
     friend class Intersector;
-#ifdef APPLESEED_WITH_OSL
     friend class OSLShaderGroupExec;
-#endif
     friend class RegionLeafVisitor;
+    friend class RendererServices;
     friend class ShadingPointBuilder;
     friend class TriangleLeafVisitor;
+    friend class foundation::PoisonImpl<ShadingPoint>;
 
+    // Context.
     RegionKitAccessCache*               m_region_kit_cache;
     StaticTriangleTessAccessCache*      m_tess_cache;
     TextureCache*                       m_texture_cache;
-
     const Scene*                        m_scene;
     mutable ShadingRay                  m_ray;                              // world space ray (m_tmax = distance to intersection)
 
-    // Intersection results.
+    // Primary intersection results.
     PrimitiveType                       m_primitive_type;                   // type of the hit primitive
-    foundation::Vector2d                m_bary;                             // barycentric coordinates of intersection point
+    foundation::Vector2f                m_bary;                             // barycentric coordinates of intersection point
     const AssemblyInstance*             m_assembly_instance;                // hit assembly instance
     foundation::Transformd              m_assembly_instance_transform;      // transform of the hit assembly instance at ray time
     const TransformSequence*            m_assembly_instance_transform_seq;  // transform sequence of the hit assembly instance.
@@ -291,29 +304,27 @@ class ShadingPoint
     // Flags to keep track of which on-demand results have been computed and cached.
     enum Members
     {
-        HasSourceGeometry                = 1 << 0,
-        HasTriangleVertexNormals         = 1 << 1,
-        HasTriangleVertexTangents        = 1 << 2,
-        HasUV0                           = 1 << 3,
-        HasPoint                         = 1 << 4,
-        HasBiasedPoint                   = 1 << 5,
-        HasRefinedPoints                 = 1 << 6,
-        HasWorldSpacePartialDerivatives  = 1 << 7,
-        HasGeometricNormal               = 1 << 8,
-        HasOriginalShadingNormal         = 1 << 9,
-        HasShadingBasis                  = 1 << 10,
-        HasWorldSpaceTriangleVertices    = 1 << 11,
-        HasMaterials                     = 1 << 12,
-        HasWorldSpacePointVelocity       = 1 << 13,
-        HasAlpha                         = 1 << 14,
-        HasScreenSpacePartialDerivatives = 1 << 15
-#ifdef APPLESEED_WITH_OSL
-        , HasOSLShaderGlobals            = 1 << 16
-#endif
+        HasSourceGeometry               = 1 << 0,
+        HasTriangleVertexNormals        = 1 << 1,
+        HasTriangleVertexTangents       = 1 << 2,
+        HasUV0                          = 1 << 3,
+        HasPoint                        = 1 << 4,
+        HasBiasedPoint                  = 1 << 5,
+        HasRefinedPoints                = 1 << 6,
+        HasWorldSpaceDerivatives        = 1 << 7,
+        HasGeometricNormal              = 1 << 8,
+        HasOriginalShadingNormal        = 1 << 9,
+        HasShadingBasis                 = 1 << 10,
+        HasWorldSpaceTriangleVertices   = 1 << 11,
+        HasMaterials                    = 1 << 12,
+        HasWorldSpacePointVelocity      = 1 << 13,
+        HasAlpha                        = 1 << 14,
+        HasScreenSpaceDerivatives       = 1 << 15,
+        HasOSLShaderGlobals             = 1 << 16
     };
     mutable foundation::uint32          m_members;
 
-    // Source geometry.
+    // Source geometry (derived from primary intersection results).
     mutable const Assembly*             m_assembly;                     // hit assembly
     mutable const ObjectInstance*       m_object_instance;              // hit object instance
     mutable Object*                     m_object;                       // hit object
@@ -323,10 +334,10 @@ class ShadingPoint
     mutable GVector3                    m_n0, m_n1, m_n2;               // object instance space triangle vertex normals
     mutable GVector3                    m_t0, m_t1, m_t2;               // object instance space triangle vertex tangents
 
-    // Additional intersection results, computed on demand.
-    mutable foundation::Vector2d        m_uv;                           // texture coordinates from UV set #0
-    mutable foundation::Vector2d        m_duvdx;                        // screen space partial derivative of the texture coords wrt. X
-    mutable foundation::Vector2d        m_duvdy;                        // screen space partial derivative of the texture coords wrt. Y
+    // On-demand intersection results (derived from primary intersection results).
+    mutable foundation::Vector2f        m_uv;                           // texture coordinates from UV set #0
+    mutable foundation::Vector2f        m_duvdx;                        // screen space partial derivative of the texture coords wrt. X
+    mutable foundation::Vector2f        m_duvdy;                        // screen space partial derivative of the texture coords wrt. Y
     mutable foundation::Vector3d        m_point;                        // world space intersection point
     mutable foundation::Vector3d        m_biased_point;                 // world space intersection point with per-object-instance bias applied
     mutable foundation::Vector3d        m_dpdu;                         // world space partial derivative of the intersection point wrt. U
@@ -344,18 +355,16 @@ class ShadingPoint
     mutable const Material*             m_material;                     // material at intersection point
     mutable const Material*             m_opposite_material;            // opposite material at intersection point
     mutable Alpha                       m_alpha;                        // opacity at intersection point
-    mutable bool                        m_shade_alpha_cutouts;
 
     // Data required to avoid self-intersections.
     mutable foundation::Vector3d        m_asm_geo_normal;               // assembly instance space geometric normal to hit triangle
     mutable foundation::Vector3d        m_front_point;                  // hit point refined to front, in assembly instance space
     mutable foundation::Vector3d        m_back_point;                   // hit point refined to back, in assembly instance space
 
-#ifdef APPLESEED_WITH_OSL
+    // OSl-related data.
     mutable OSLObjectTransformInfo      m_obj_transform_info;
     mutable OSLTraceData                m_osl_trace_data;
     mutable OSL::ShaderGlobals          m_shader_globals;
-#endif
 
     // Fetch and cache the source geometry.
     void cache_source_geometry() const;
@@ -370,6 +379,9 @@ class ShadingPoint
 
     void compute_world_space_partial_derivatives() const;
     void compute_screen_space_partial_derivatives() const;
+    void compute_normals() const;
+    void compute_triangle_normals() const;
+    void compute_curve_normals() const;
     void compute_geometric_normal() const;
     void compute_shading_normal() const;
     void compute_original_shading_normal() const;
@@ -381,12 +393,10 @@ class ShadingPoint
 
     void fetch_materials() const;
 
-#ifdef APPLESEED_WITH_OSL
     void initialize_osl_shader_globals(
         const ShaderGroup&              sg,
         const VisibilityFlags::Type     ray_flags,
         OSL::RendererServices*          renderer) const;
-#endif
 };
 
 
@@ -396,6 +406,10 @@ class ShadingPoint
 
 APPLESEED_FORCE_INLINE ShadingPoint::ShadingPoint()
 {
+#ifdef DEBUG
+    foundation::poison(*this);
+#endif
+
     clear();
 }
 
@@ -440,10 +454,10 @@ inline ShadingPoint& ShadingPoint::operator=(const ShadingPoint& rhs)
 
 APPLESEED_FORCE_INLINE void ShadingPoint::clear()
 {
-    m_region_kit_cache = 0;
-    m_tess_cache = 0;
-    m_texture_cache = 0;
-    m_scene = 0;
+    m_region_kit_cache = nullptr;
+    m_tess_cache = nullptr;
+    m_texture_cache = nullptr;
+    m_scene = nullptr;
     m_primitive_type = PrimitiveNone;
     m_members = 0;
 }
@@ -457,7 +471,6 @@ inline const Scene& ShadingPoint::get_scene() const
 inline void ShadingPoint::set_ray(const ShadingRay& ray)
 {
     assert(foundation::is_normalized(ray.m_dir));
-
     m_ray = ray;
 }
 
@@ -471,9 +484,19 @@ inline const ShadingRay::Time& ShadingPoint::get_time() const
     return m_ray.m_time;
 }
 
-inline bool ShadingPoint::hit() const
+inline bool ShadingPoint::is_valid() const
 {
     return m_primitive_type != PrimitiveNone;
+}
+
+inline bool ShadingPoint::hit_surface() const
+{
+    return is_valid() && !hit_volume();
+}
+
+inline bool ShadingPoint::hit_volume() const
+{
+    return m_primitive_type == PrimitiveVolume;
 }
 
 inline ShadingPoint::PrimitiveType ShadingPoint::get_primitive_type() const
@@ -493,40 +516,45 @@ inline bool ShadingPoint::is_curve_primitive() const
 
 inline double ShadingPoint::get_distance() const
 {
-    assert(hit());
+    assert(is_valid());
     return m_ray.m_tmax;
 }
 
-inline const foundation::Vector2d& ShadingPoint::get_bary() const
+inline const foundation::Vector2f& ShadingPoint::get_bary() const
 {
-    assert(hit());
+    assert(hit_surface());
     return m_bary;
 }
 
-inline const foundation::Vector2d& ShadingPoint::get_uv(const size_t uvset) const
+inline const foundation::Vector2f& ShadingPoint::get_uv(const size_t uvset) const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(uvset == 0);     // todo: support multiple UV sets
 
     if (!(m_members & HasUV0))
     {
         cache_source_geometry();
 
-        if (m_primitive_type == PrimitiveTriangle)
+        switch (m_primitive_type)
         {
-            // Compute the texture coordinates.
-            const foundation::Vector2d v0_uv(m_v0_uv);
-            const foundation::Vector2d v1_uv(m_v1_uv);
-            const foundation::Vector2d v2_uv(m_v2_uv);
+          case PrimitiveTriangle:
+            // Compute texture coordinates.
             m_uv =
-                  v0_uv * (1.0 - m_bary[0] - m_bary[1])
-                + v1_uv * m_bary[0]
-                + v2_uv * m_bary[1];
-        }
-        else
-        {
-            assert(is_curve_primitive());
+                  m_v0_uv * (1.0f - m_bary[0] - m_bary[1])
+                + m_v1_uv * m_bary[0]
+                + m_v2_uv * m_bary[1];
+            break;
+
+          case PrimitiveProceduralSurface:
+            // Nothing to do.
+            break;
+
+          case PrimitiveCurve1:
+          case PrimitiveCurve3:
             m_uv = m_bary;
+            break;
+
+          assert_otherwise;
         }
 
         // Texture coordinates from UV set #0 are now available.
@@ -536,29 +564,29 @@ inline const foundation::Vector2d& ShadingPoint::get_uv(const size_t uvset) cons
     return m_uv;
 }
 
-inline const foundation::Vector2d& ShadingPoint::get_duvdx(const size_t uvset) const
+inline const foundation::Vector2f& ShadingPoint::get_duvdx(const size_t uvset) const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(uvset == 0);     // todo: support multiple UV sets
 
-    if (!(m_members & HasScreenSpacePartialDerivatives))
+    if (!(m_members & HasScreenSpaceDerivatives))
     {
         compute_screen_space_partial_derivatives();
-        m_members |= HasScreenSpacePartialDerivatives;
+        m_members |= HasScreenSpaceDerivatives;
     }
 
     return m_duvdx;
 }
 
-inline const foundation::Vector2d& ShadingPoint::get_duvdy(const size_t uvset) const
+inline const foundation::Vector2f& ShadingPoint::get_duvdy(const size_t uvset) const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(uvset == 0);     // todo: support multiple UV sets
 
-    if (!(m_members & HasScreenSpacePartialDerivatives))
+    if (!(m_members & HasScreenSpaceDerivatives))
     {
         compute_screen_space_partial_derivatives();
-        m_members |= HasScreenSpacePartialDerivatives;
+        m_members |= HasScreenSpaceDerivatives;
     }
 
     return m_duvdy;
@@ -566,7 +594,7 @@ inline const foundation::Vector2d& ShadingPoint::get_duvdy(const size_t uvset) c
 
 inline const foundation::Vector3d& ShadingPoint::get_point() const
 {
-    assert(hit());
+    assert(is_valid());
 
     if (!(m_members & HasPoint))
     {
@@ -579,7 +607,7 @@ inline const foundation::Vector3d& ShadingPoint::get_point() const
 
 inline const foundation::Vector3d& ShadingPoint::get_offset_point(const foundation::Vector3d& direction) const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(m_members & HasRefinedPoints);
 
     return
@@ -590,13 +618,13 @@ inline const foundation::Vector3d& ShadingPoint::get_offset_point(const foundati
 
 inline const foundation::Vector3d& ShadingPoint::get_dpdu(const size_t uvset) const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(uvset == 0);     // todo: support multiple UV sets
 
-    if (!(m_members & HasWorldSpacePartialDerivatives))
+    if (!(m_members & HasWorldSpaceDerivatives))
     {
         compute_world_space_partial_derivatives();
-        m_members |= HasWorldSpacePartialDerivatives;
+        m_members |= HasWorldSpaceDerivatives;
     }
 
     return m_dpdu;
@@ -604,13 +632,13 @@ inline const foundation::Vector3d& ShadingPoint::get_dpdu(const size_t uvset) co
 
 inline const foundation::Vector3d& ShadingPoint::get_dpdv(const size_t uvset) const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(uvset == 0);     // todo: support multiple UV sets
 
-    if (!(m_members & HasWorldSpacePartialDerivatives))
+    if (!(m_members & HasWorldSpaceDerivatives))
     {
         compute_world_space_partial_derivatives();
-        m_members |= HasWorldSpacePartialDerivatives;
+        m_members |= HasWorldSpaceDerivatives;
     }
 
     return m_dpdv;
@@ -618,13 +646,13 @@ inline const foundation::Vector3d& ShadingPoint::get_dpdv(const size_t uvset) co
 
 inline const foundation::Vector3d& ShadingPoint::get_dndu(const size_t uvset) const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(uvset == 0);     // todo: support multiple UV sets
 
-    if (!(m_members & HasWorldSpacePartialDerivatives))
+    if (!(m_members & HasWorldSpaceDerivatives))
     {
         compute_world_space_partial_derivatives();
-        m_members |= HasWorldSpacePartialDerivatives;
+        m_members |= HasWorldSpaceDerivatives;
     }
 
     return m_dndu;
@@ -632,13 +660,13 @@ inline const foundation::Vector3d& ShadingPoint::get_dndu(const size_t uvset) co
 
 inline const foundation::Vector3d& ShadingPoint::get_dndv(const size_t uvset) const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(uvset == 0);     // todo: support multiple UV sets
 
-    if (!(m_members & HasWorldSpacePartialDerivatives))
+    if (!(m_members & HasWorldSpaceDerivatives))
     {
         compute_world_space_partial_derivatives();
-        m_members |= HasWorldSpacePartialDerivatives;
+        m_members |= HasWorldSpaceDerivatives;
     }
 
     return m_dndv;
@@ -646,12 +674,12 @@ inline const foundation::Vector3d& ShadingPoint::get_dndv(const size_t uvset) co
 
 inline const foundation::Vector3d& ShadingPoint::get_dpdx() const
 {
-    assert(hit());
+    assert(hit_surface());
 
-    if (!(m_members & HasScreenSpacePartialDerivatives))
+    if (!(m_members & HasScreenSpaceDerivatives))
     {
         compute_screen_space_partial_derivatives();
-        m_members |= HasScreenSpacePartialDerivatives;
+        m_members |= HasScreenSpaceDerivatives;
     }
 
     return m_dpdx;
@@ -659,12 +687,12 @@ inline const foundation::Vector3d& ShadingPoint::get_dpdx() const
 
 inline const foundation::Vector3d& ShadingPoint::get_dpdy() const
 {
-    assert(hit());
+    assert(hit_surface());
 
-    if (!(m_members & HasScreenSpacePartialDerivatives))
+    if (!(m_members & HasScreenSpaceDerivatives))
     {
         compute_screen_space_partial_derivatives();
-        m_members |= HasScreenSpacePartialDerivatives;
+        m_members |= HasScreenSpaceDerivatives;
     }
 
     return m_dpdy;
@@ -672,12 +700,12 @@ inline const foundation::Vector3d& ShadingPoint::get_dpdy() const
 
 inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
 {
-    assert(hit());
+    assert(hit_surface());
 
     if (!(m_members & HasGeometricNormal))
     {
-        compute_geometric_normal();
-        m_members |= HasGeometricNormal;
+        compute_normals();
+        m_members |= HasGeometricNormal | HasOriginalShadingNormal;
     }
 
     return m_geometric_normal;
@@ -685,12 +713,12 @@ inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
 
 inline const foundation::Vector3d& ShadingPoint::get_original_shading_normal() const
 {
-    assert(hit());
+    assert(hit_surface());
 
     if (!(m_members & HasOriginalShadingNormal))
     {
-        compute_original_shading_normal();
-        m_members |= HasOriginalShadingNormal;
+        compute_normals();
+        m_members |= HasGeometricNormal | HasOriginalShadingNormal;
     }
 
     return m_original_shading_normal;
@@ -703,15 +731,15 @@ inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
 
 inline void ShadingPoint::set_shading_basis(const foundation::Basis3d& basis) const
 {
-    assert(hit());
-
+    assert(hit_surface());
     m_shading_basis = basis;
     m_members |= HasShadingBasis;
+    m_members &= ~HasScreenSpaceDerivatives;
 }
 
 inline const foundation::Basis3d& ShadingPoint::get_shading_basis() const
 {
-    assert(hit());
+    assert(hit_surface());
 
     if (!(m_members & HasShadingBasis))
     {
@@ -724,8 +752,14 @@ inline const foundation::Basis3d& ShadingPoint::get_shading_basis() const
 
 inline ObjectInstance::Side ShadingPoint::get_side() const
 {
-    assert(hit());
-    get_geometric_normal();
+    assert(hit_surface());
+
+    if (!(m_members & HasGeometricNormal))
+    {
+        compute_normals();
+        m_members |= HasGeometricNormal | HasOriginalShadingNormal;
+    }
+
     return m_side;
 }
 
@@ -741,7 +775,7 @@ inline bool ShadingPoint::is_leaving() const
 
 inline const foundation::Vector3d& ShadingPoint::get_vertex(const size_t i) const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(m_primitive_type == PrimitiveTriangle);
     assert(i < 3);
 
@@ -756,7 +790,7 @@ inline const foundation::Vector3d& ShadingPoint::get_vertex(const size_t i) cons
 
 inline const foundation::Vector3d& ShadingPoint::get_world_space_point_velocity() const
 {
-    assert(hit());
+    assert(hit_surface());
 
     if (!(m_members & HasWorldSpacePointVelocity))
     {
@@ -769,11 +803,17 @@ inline const foundation::Vector3d& ShadingPoint::get_world_space_point_velocity(
 
 inline const Material* ShadingPoint::get_material() const
 {
-    assert(hit());
+    assert(is_valid());
 
     if (!(m_members & HasMaterials))
     {
-        fetch_materials();
+        if (hit_volume())
+        {
+            m_material = m_ray.get_current_medium()->m_material;
+            m_opposite_material = m_ray.get_current_medium()->m_material;
+        }
+        else
+            fetch_materials();
 
         // The material at the intersection point is now available.
         m_members |= HasMaterials;
@@ -784,11 +824,17 @@ inline const Material* ShadingPoint::get_material() const
 
 inline const Material* ShadingPoint::get_opposite_material() const
 {
-    assert(hit());
+    assert(is_valid());
 
     if (!(m_members & HasMaterials))
     {
-        fetch_materials();
+        if (hit_volume())
+        {
+            m_material = m_ray.get_current_medium()->m_material;
+            m_opposite_material = m_ray.get_current_medium()->m_material;
+        }
+        else
+            fetch_materials();
 
         // The material at the intersection point is now available.
         m_members |= HasMaterials;
@@ -799,58 +845,58 @@ inline const Material* ShadingPoint::get_opposite_material() const
 
 inline const AssemblyInstance& ShadingPoint::get_assembly_instance() const
 {
-    assert(hit());
+    assert(hit_surface());
     return *m_assembly_instance;
 }
 
 inline const foundation::Transformd& ShadingPoint::get_assembly_instance_transform() const
 {
-    assert(hit());
+    assert(hit_surface());
     return m_assembly_instance_transform;
 }
 
 inline const Assembly& ShadingPoint::get_assembly() const
 {
-    assert(hit());
+    assert(hit_surface());
     cache_source_geometry();
     return *m_assembly;
 }
 
 inline const ObjectInstance& ShadingPoint::get_object_instance() const
 {
-    assert(hit());
+    assert(hit_surface());
     cache_source_geometry();
     return *m_object_instance;
 }
 
 inline const Object& ShadingPoint::get_object() const
 {
-    assert(hit());
+    assert(hit_surface());
     cache_source_geometry();
     return *m_object;
 }
 
 inline size_t ShadingPoint::get_object_instance_index() const
 {
-    assert(hit());
+    assert(hit_surface());
     return m_object_instance_index;
 }
 
 inline size_t ShadingPoint::get_region_index() const
 {
-    assert(hit());
+    assert(hit_surface());
     return m_region_index;
 }
 
 inline size_t ShadingPoint::get_primitive_index() const
 {
-    assert(hit());
+    assert(hit_surface());
     return m_primitive_index;
 }
 
 inline size_t ShadingPoint::get_primitive_attribute_index() const
 {
-    assert(hit());
+    assert(hit_surface());
     cache_source_geometry();
     return static_cast<size_t>(m_primitive_pa);
 }
@@ -866,20 +912,12 @@ inline const Alpha& ShadingPoint::get_alpha() const
     return m_alpha;
 }
 
-inline bool ShadingPoint::shade_alpha_cutouts() const
-{
-    get_material();
-    return m_shade_alpha_cutouts;
-}
-
-#ifdef APPLESEED_WITH_OSL
 inline OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
 {
-    assert(hit());
+    assert(hit_surface());
     assert(m_members & HasOSLShaderGlobals);
     return m_shader_globals;
 }
-#endif
 
 inline void ShadingPoint::cache_source_geometry() const
 {
@@ -894,8 +932,8 @@ inline void ShadingPoint::fetch_materials() const
 {
     cache_source_geometry();
 
-    m_material = 0;
-    m_opposite_material = 0;
+    m_material = nullptr;
+    m_opposite_material = nullptr;
 
     // Proceed with retrieving the material only if the hit primitive has one.
     if (m_primitive_pa != Triangle::None)
@@ -921,13 +959,18 @@ inline void ShadingPoint::fetch_materials() const
         if (static_cast<size_t>(m_primitive_pa) < opposite_materials->size())
             m_opposite_material = (*opposite_materials)[m_primitive_pa];
     }
-
-    m_shade_alpha_cutouts = m_object->shade_alpha_cutouts();
-
-    if (m_material && m_material->shade_alpha_cutouts())
-        m_shade_alpha_cutouts = true;
 }
 
 }       // namespace renderer
+
+namespace foundation
+{
+    template <>
+    class PoisonImpl<renderer::ShadingPoint>
+    {
+      public:
+        static void do_poison(renderer::ShadingPoint& point);
+    };
+}
 
 #endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGPOINT_H

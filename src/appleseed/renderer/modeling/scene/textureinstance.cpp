@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -39,10 +39,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
-#include "foundation/image/colorspace.h"
 #include "foundation/image/tile.h"
+#include "foundation/utility/api/apistring.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/makevector.h"
 
 // Standard headers.
@@ -72,16 +72,15 @@ UniqueID TextureInstance::get_class_uid()
 struct TextureInstance::Impl
 {
     // Order of data members impacts performance, preserve it.
-    Transformd              m_transform;
+    Transformf              m_transform;
     string                  m_texture_name;
-    LightingConditions      m_lighting_conditions;
 };
 
 TextureInstance::TextureInstance(
     const char*             name,
     const ParamArray&       params,
     const char*             texture_name,
-    const Transformd&       transform)
+    const Transformf&       transform)
   : Entity(g_class_uid, params)
   , impl(new Impl())
 {
@@ -90,11 +89,8 @@ TextureInstance::TextureInstance(
     impl->m_transform = transform;
     impl->m_texture_name = texture_name;
 
-    // todo: retrieve the lighting conditions.
-    impl->m_lighting_conditions = LightingConditions(IlluminantCIED65, XYZCMFCIE196410Deg);
-
     // No bound texture yet.
-    m_texture = 0;
+    m_texture = nullptr;
 
     const EntityDefMessageContext message_context("texture instance", this);
 
@@ -148,14 +144,9 @@ const char* TextureInstance::get_texture_name() const
     return impl->m_texture_name.c_str();
 }
 
-const Transformd& TextureInstance::get_transform() const
+const Transformf& TextureInstance::get_transform() const
 {
     return impl->m_transform;
-}
-
-const LightingConditions& TextureInstance::get_lighting_conditions() const
-{
-    return impl->m_lighting_conditions;
 }
 
 Texture* TextureInstance::find_texture() const
@@ -176,21 +167,19 @@ Texture* TextureInstance::find_texture() const
         parent = parent->get_parent();
     }
 
-    return 0;
+    return nullptr;
 }
 
 void TextureInstance::unbind_texture()
 {
-    m_texture = 0;
+    m_texture = nullptr;
 }
 
 namespace
 {
     bool has_transparent_pixels(const Tile& tile)
     {
-        const size_t pixel_count = tile.get_pixel_count();
-
-        for (size_t i = 0; i < pixel_count; ++i)
+        for (size_t i = 0, e = tile.get_pixel_count(); i < e; ++i)
         {
             if (tile.get_component<float>(i, 3) < 1.0f)
                 return true;
@@ -225,7 +214,7 @@ namespace
 
 void TextureInstance::bind_texture(const TextureContainer& textures)
 {
-    if (m_texture == 0)
+    if (m_texture == nullptr)
     {
         m_texture = textures.get_by_name(impl->m_texture_name.c_str());
 
@@ -239,7 +228,7 @@ void TextureInstance::bind_texture(const TextureContainer& textures)
 
             RENDERER_LOG_DEBUG(
                 "texture instance \"%s\" was detected to use the \"%s\" alpha mode.",
-                get_name(),
+                get_path().c_str(),
                 m_effective_alpha_mode == TextureAlphaModeAlphaChannel ? "alpha_channel" : "luminance");
         }
     }
@@ -247,19 +236,8 @@ void TextureInstance::bind_texture(const TextureContainer& textures)
 
 void TextureInstance::check_texture() const
 {
-    if (m_texture == 0)
+    if (m_texture == nullptr)
         throw ExceptionUnknownEntity(impl->m_texture_name.c_str(), this);
-}
-
-bool TextureInstance::on_frame_begin(
-    const Project&          project,
-    IAbortSwitch*           abort_switch)
-{
-    return true;
-}
-
-void TextureInstance::on_frame_end(const Project& project)
-{
 }
 
 
@@ -315,7 +293,7 @@ auto_release_ptr<TextureInstance> TextureInstanceFactory::create(
     const char*             name,
     const ParamArray&       params,
     const char*             texture_name,
-    const Transformd&       transform)
+    const Transformf&       transform)
 {
     return
         auto_release_ptr<TextureInstance>(

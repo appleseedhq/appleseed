@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,11 +32,11 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/input/inputevaluator.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/shading/closures.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
+#include "renderer/kernel/texturing/oiiotexturesystem.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
-#endif
 
 using namespace foundation;
 
@@ -51,12 +51,9 @@ ShadingContext::ShadingContext(
     const Intersector&      intersector,
     Tracer&                 tracer,
     TextureCache&           texture_cache,
-#ifdef APPLESEED_WITH_OIIO
-    OIIO::TextureSystem&    oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
+    OIIOTextureSystem&      oiio_texture_system,
     OSLShaderGroupExec&     osl_shadergroup_exec,
-#endif
+    Arena&                  arena,
     const size_t            thread_index,
     ILightingEngine*        lighting_engine,
     const float             transparency_threshold,
@@ -64,29 +61,30 @@ ShadingContext::ShadingContext(
   : m_intersector(intersector)
   , m_tracer(tracer)
   , m_texture_cache(texture_cache)
+  , m_oiio_texture_system(oiio_texture_system)
+  , m_shadergroup_exec(osl_shadergroup_exec)
+  , m_arena(arena)
   , m_thread_index(thread_index)
   , m_lighting_engine(lighting_engine)
   , m_transparency_threshold(transparency_threshold)
   , m_max_iterations(max_iterations)
-#ifdef APPLESEED_WITH_OIIO
-  , m_oiio_texture_system(oiio_texture_system)
-#endif
-#ifdef APPLESEED_WITH_OSL
-  , m_shadergroup_exec(osl_shadergroup_exec)
-#endif
 {
 }
 
-#ifdef APPLESEED_WITH_OIIO
-
-OIIO::TextureSystem& ShadingContext::get_oiio_texture_system() const
+OIIOTextureSystem&   ShadingContext::get_oiio_texture_system() const
 {
     return m_oiio_texture_system;
 }
 
-#endif
+OSLShadingSystem& ShadingContext::get_osl_shading_system() const
+{
+    return m_shadergroup_exec.m_osl_shading_system;
+}
 
-#ifdef APPLESEED_WITH_OSL
+OSL::ShadingContext* ShadingContext::get_osl_shading_context() const
+{
+    return m_shadergroup_exec.m_osl_shading_context;
+}
 
 void ShadingContext::execute_osl_shading(
     const ShaderGroup&      shader_group,
@@ -131,7 +129,7 @@ void ShadingContext::execute_osl_emission(
 void ShadingContext::execute_osl_bump(
     const ShaderGroup&      shader_group,
     const ShadingPoint&     shading_point,
-    const Vector2d&         s) const
+    const Vector2f&         s) const
 {
     m_shadergroup_exec.execute_bump(
         shader_group,
@@ -139,28 +137,24 @@ void ShadingContext::execute_osl_bump(
         s);
 }
 
-void ShadingContext::choose_osl_subsurface_normal(
-    const ShadingPoint&             shading_point,
-    const void*                     bssrdf_data,
-    const double                    s) const
-{
-    m_shadergroup_exec.choose_subsurface_normal(
-        shading_point,
-        bssrdf_data,
-        s);
-}
-
 void ShadingContext::execute_osl_background(
     const ShaderGroup&      shader_group,
-    const Vector3d&         outgoing,
+    const Vector3f&         outgoing,
     Spectrum&               value) const
 {
-    value =
+    value.set(
         m_shadergroup_exec.execute_background(
             shader_group,
-            outgoing);
+            outgoing),
+        g_std_lighting_conditions,
+        Spectrum::Reflectance);
 }
 
-#endif
+void ShadingContext::choose_bsdf_closure_shading_basis(
+    const ShadingPoint&     shading_point,
+    const Vector2f&         s) const
+{
+    m_shadergroup_exec.choose_bsdf_closure_shading_basis(shading_point, s);
+}
 
 }   // namespace renderer

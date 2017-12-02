@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/scene/objectinstance.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
@@ -49,7 +50,7 @@ namespace renderer  { class Camera; }
 namespace renderer  { class EDF; }
 namespace renderer  { class Material; }
 namespace renderer  { class Object; }
-namespace renderer  { class ObjectInstance; }
+namespace renderer  { class Project; }
 namespace renderer  { class SurfaceShader; }
 namespace renderer  { class TraceContext; }
 
@@ -62,13 +63,30 @@ class APPLESEED_DLLSYMBOL ScenePicker
     struct PickingResult
     {
         bool                            m_hit;
-        foundation::Vector3d            m_point;                // world space
-        double                          m_distance;             // world space
         ShadingPoint::PrimitiveType     m_primitive_type;
-        foundation::Transformd          m_assembly_instance_transform;
+        double                          m_distance;                     // world space
+
+        foundation::Vector2f            m_bary;
+        foundation::Vector2f            m_uv;
+        foundation::Vector2f            m_duvdx;
+        foundation::Vector2f            m_duvdy;
+        foundation::Vector3d            m_point;                        // world space
+        foundation::Vector3d            m_dpdu;                         // world space
+        foundation::Vector3d            m_dpdv;                         // world space
+        foundation::Vector3d            m_dndu;                         // world space
+        foundation::Vector3d            m_dndv;                         // world space
+        foundation::Vector3d            m_dpdx;                         // world space
+        foundation::Vector3d            m_dpdy;                         // world space
+        foundation::Vector3d            m_geometric_normal;             // world space
+        foundation::Vector3d            m_original_shading_normal;      // world space
+        ObjectInstance::Side            m_side;
+
+        // Note: the (possibly perturbed) shading normal is excluded from picking results
+        // because it requires the normal modifier which is only available during rendering.
 
         const Camera*                   m_camera;
         const AssemblyInstance*         m_assembly_instance;
+        foundation::Transformd          m_assembly_instance_transform;
         const Assembly*                 m_assembly;
         const ObjectInstance*           m_object_instance;
         const Object*                   m_object;
@@ -79,7 +97,7 @@ class APPLESEED_DLLSYMBOL ScenePicker
         const EDF*                      m_edf;
     };
 
-    explicit ScenePicker(const TraceContext& trace_context);
+    explicit ScenePicker(const Project& project);
 
     ~ScenePicker();
 

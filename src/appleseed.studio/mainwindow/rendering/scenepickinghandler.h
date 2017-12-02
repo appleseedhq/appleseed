@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
+#include "renderer/kernel/rendering/scenepicker.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -68,7 +69,7 @@ class ScenePickingHandler
         const ProjectExplorer&              project_explorer,
         const renderer::Project&            project);
 
-    ~ScenePickingHandler();
+    ~ScenePickingHandler() override;
 
     void set_enabled(const bool enabled);
 
@@ -83,7 +84,7 @@ class ScenePickingHandler
     const renderer::Project&                m_project;
     bool                                    m_enabled;
 
-    virtual bool eventFilter(QObject* object, QEvent* event) APPLESEED_OVERRIDE;
+    bool eventFilter(QObject* object, QEvent* event) override;
 
     ItemBase* pick(const QPoint& point);
 };

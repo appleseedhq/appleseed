@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Marius Avram, The appleseedhq Organization
+// Copyright (c) 2014-2017 Marius Avram, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,17 +37,14 @@
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
 
+// appleseed.shared headers.
+#include "application/application.h"
+
 // appleseed.renderer headers.
 #include "renderer/api/log.h"
 #include "renderer/api/material.h"
 #include "renderer/api/project.h"
-
-// appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
-#include "foundation/utility/seexpr.h"
-
-// appleseed.shared headers.
-#include "application/application.h"
+#include "renderer/api/utility.h"
 
 // SeExpr headers.
 #pragma warning (push)
@@ -79,10 +76,10 @@
 #include <sstream>
 
 using namespace appleseed::shared;
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace studio {
@@ -162,8 +159,8 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     left_layout->addWidget(m_error);
 
     // Expression browser.
-    m_browser = new SeExprEdBrowser(0, m_editor);
-    const filesystem::path root_path(Application::get_root_path());
+    m_browser = new SeExprEdBrowser(nullptr, m_editor);
+    const bf::path root_path(Application::get_root_path());
     const string scripts_path = (root_path / "seexpr").string();
     m_browser->addPath("Examples", scripts_path);
     m_browser->update();
@@ -186,9 +183,9 @@ ExpressionEditorWindow::ExpressionEditorWindow(
 void ExpressionEditorWindow::apply_expression()
 {
     const string expression = m_editor->getExpr();
-    const SeExprValidator validator(expression.c_str());
+    const SeAppleseedExpr expr(expression);
 
-    if (validator.is_valid())
+    if (expr.isValid())
     {
         m_error->hide();
         RENDERER_LOG_INFO("expression successfully applied.");
@@ -197,7 +194,7 @@ void ExpressionEditorWindow::apply_expression()
     else
     {
         m_error->show();
-        RENDERER_LOG_ERROR("expression error: %s", validator.get_parse_error());
+        RENDERER_LOG_ERROR("expression error: %s", expr.parseError().c_str());
     }
 }
 
@@ -319,7 +316,7 @@ void ExpressionEditorWindow::slot_show_examples()
 
 void ExpressionEditorWindow::slot_show_help()
 {
-    filesystem::path docs_path = Application::get_root_path();
+    bf::path docs_path = Application::get_root_path();
     docs_path /= "docs/seexpr/userdoc.html";
 
     const QString docs_file = QString::fromStdString(docs_path.string());

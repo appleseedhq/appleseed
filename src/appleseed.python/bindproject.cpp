@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,6 @@
 //
 
 // appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
 #include "bindentitycontainers.h"
 #include "dict2dict.h"
 
@@ -39,6 +38,7 @@
 #include "renderer/api/scene.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/python.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.
@@ -49,6 +49,15 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+
+// Work around a regression in Visual Studio 2015 Update 3.
+#if defined(_MSC_VER) && _MSC_VER == 1900
+namespace boost
+{
+    template <> Configuration const volatile* get_pointer<Configuration const volatile>(Configuration const volatile* p) { return p; }
+    template <> Project const volatile* get_pointer<Project const volatile>(Project const volatile* p) { return p; }
+}
+#endif
 
 namespace
 {
@@ -75,8 +84,8 @@ namespace
 
         const SearchPaths& search_paths = project->search_paths();
 
-        for (size_t i = 0; i < search_paths.size(); ++i)
-            paths.append(search_paths[i]);
+        for (size_t i = 0; i < search_paths.get_explicit_path_count(); ++i)
+            paths.append(search_paths.get_explicit_path(i));
 
         return paths;
     }
@@ -120,6 +129,16 @@ namespace
         return ProjectFileWriter::write(*project, filepath, opts);
     }
 
+    bool write_project_with_opts_and_comments(
+        const ProjectFileWriter*            writer,
+        const Project*                      project,
+        const char*                         filepath,
+        int                                 opts,
+        const char*                         extra_comments)
+    {
+        return ProjectFileWriter::write(*project, filepath, opts, extra_comments);
+    }
+
     auto_release_ptr<Configuration> create_config(const string& name)
     {
         return ConfigurationFactory::create(name.c_str());
@@ -152,7 +171,6 @@ namespace
 
     void config_insert_path(Configuration* config, const char* path, const bpy::object& value)
     {
-        // string
         {
             bpy::extract<const char*> extractor(value);
             if (extractor.check())
@@ -172,7 +190,6 @@ namespace
             }
         }
 
-#if PY_MAJOR_VERSION == 2
         if (PyInt_Check(value.ptr()))
         {
             bpy::extract<int> extractor(value);
@@ -182,7 +199,7 @@ namespace
                 return;
             }
         }
-#endif
+
         if (PyLong_Check(value.ptr()))
         {
             bpy::extract<int> extractor(value);
@@ -230,7 +247,7 @@ namespace
         ProjectFileReader*                  reader,
         const char*                         project_filename,
         const char*                         schema_filename,
-        ProjectFileReader::Options          opts)
+        const ProjectFileReader::Options    opts)
     {
         auto_release_ptr<Project> project(reader->read(project_filename, schema_filename, opts));
         return bpy::object(project);
@@ -240,6 +257,12 @@ namespace
     {
         auto_release_ptr<Project> project(reader->load_builtin(project_name));
         return bpy::object(project);
+    }
+
+    string qualify_path(const Project* project, const char* filepath)
+    {
+        const SearchPaths& search_paths = project->search_paths();
+        return string(search_paths.qualify(filepath).c_str());
     }
 }
 
@@ -259,8 +282,7 @@ void bind_project()
         .def("insert_path", config_insert_path)
         .def("remove_path", config_remove_path)
 
-        .def("get_metadata", config_get_metadata).staticmethod("get_metadata")
-        ;
+        .def("get_metadata", config_get_metadata).staticmethod("get_metadata");
 
     bind_typed_entity_map<Configuration>("ConfigurationContainer");
 
@@ -271,6 +293,23 @@ void bind_project()
         .def("__init__", bpy::make_constructor(create_project))
 
         .def("add_default_configurations", &Project::add_default_configurations)
+        .def("configurations", project_get_configs, bpy::return_value_policy<bpy::reference_existing_object>())
+
+        .def("get_aov_factory_registrar", &Project::get_factory_registrar<AOV>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_assembly_factory_registrar", &Project::get_factory_registrar<Assembly>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_bsdf_factory_registrar", &Project::get_factory_registrar<BSDF>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_bssrdf_factory_registrar", &Project::get_factory_registrar<BSSRDF>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_camera_factory_registrar", &Project::get_factory_registrar<Camera>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_edf_factory_registrar", &Project::get_factory_registrar<EDF>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_environment_edf_factory_registrar", &Project::get_factory_registrar<EnvironmentEDF>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_environment_shader_factory_registrar", &Project::get_factory_registrar<EnvironmentShader>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_light_factory_registrar", &Project::get_factory_registrar<Light>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_material_factory_registrar", &Project::get_factory_registrar<Material>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_object_factory_registrar", &Project::get_factory_registrar<Object>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_surface_shader_factory_registrar", &Project::get_factory_registrar<SurfaceShader>, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_texture_factory_registrar", &Project::get_factory_registrar<Texture>, bpy::return_value_policy<bpy::reference_existing_object>())
+
+        .def("reinitialize_factory_registrars", &Project::reinitialize_factory_registrars)
 
         .def("has_path", &Project::has_path)
         .def("set_path", &Project::set_path)
@@ -278,6 +317,7 @@ void bind_project()
 
         .def("get_search_paths", project_get_search_paths)
         .def("set_search_paths", project_set_search_paths)
+        .def("qualify_path", qualify_path, bpy::args("filepath"))
 
         .def("set_scene", &Project::set_scene)
         .def("get_scene", &Project::get_scene, bpy::return_value_policy<bpy::reference_existing_object>())
@@ -285,37 +325,33 @@ void bind_project()
         .def("set_frame", &Project::set_frame)
         .def("get_frame", &Project::get_frame, bpy::return_value_policy<bpy::reference_existing_object>())
 
+        .def("get_display", &Project::get_display, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("set_display", &Project::set_display)
 
-        .def("configurations", project_get_configs, bpy::return_value_policy<bpy::reference_existing_object>())
-
-        .def("create_aov_images", &Project::create_aov_images)
-        ;
+        .def("get_active_camera", &Project::get_uncached_active_camera, bpy::return_value_policy<bpy::reference_existing_object>());
 
     bpy::enum_<ProjectFileReader::Options>("ProjectFileReaderOptions")
         .value("Defaults", ProjectFileReader::Defaults)
         .value("OmitReadingMeshFiles", ProjectFileReader::OmitReadingMeshFiles)
         .value("OmitProjectFileUpdate", ProjectFileReader::OmitProjectFileUpdate)
-        ;
+        .value("OmitSearchPaths", ProjectFileReader::OmitSearchPaths)
+        .value("OmitProjectSchemaValidation", ProjectFileReader::OmitProjectSchemaValidation);
 
     bpy::class_<ProjectFileReader>("ProjectFileReader")
         .def("read", &project_file_reader_read_default_opts)
         .def("read", &project_file_reader_read_with_opts)
-        .def("load_builtin", &project_file_reader_load_builtin)
-        ;
+        .def("load_builtin", &project_file_reader_load_builtin);
 
     bpy::enum_<ProjectFileWriter::Options>("ProjectFileWriterOptions")
         .value("Defaults", ProjectFileWriter::Defaults)
         .value("OmitHeaderComment", ProjectFileWriter::OmitHeaderComment)
         .value("OmitWritingGeometryFiles", ProjectFileWriter::OmitWritingGeometryFiles)
-        .value("OmitBringingAssets", ProjectFileWriter::OmitBringingAssets)
-        .value("OmitSearchPaths", ProjectFileWriter::OmitSearchPaths)
-        ;
+        .value("OmitHandlingAssetFiles", ProjectFileWriter::OmitHandlingAssetFiles)
+        .value("CopyAllAssets", ProjectFileWriter::CopyAllAssets);
 
     bpy::class_<ProjectFileWriter>("ProjectFileWriter")
-        // These methods are static, but for symmetry with
-        // ProjectFileReader we're wrapping them non-static.
+        // These methods are static but for symmetry with ProjectFileReader we're exposing them as non-static.
         .def("write", write_project_default_opts)
         .def("write", write_project_with_opts)
-        ;
+        .def("write", write_project_with_opts_and_comments);
 }

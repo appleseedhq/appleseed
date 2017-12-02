@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,9 @@
 // THE SOFTWARE.
 //
 
-// appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
-
 // appleseed.foundation headers.
 #include "foundation/math/quaternion.h"
+#include "foundation/platform/python.h"
 #include "foundation/utility/iostreamop.h"
 
 namespace bpy = boost::python;
@@ -39,13 +37,13 @@ using namespace foundation;
 
 namespace
 {
-    template <class T>
+    template <typename T>
     T quat_dot_prod(const Quaternion<T>& a, const Quaternion<T>& b)
     {
         return dot(a, b);
     }
 
-    template <class T>
+    template <typename T>
     bpy::tuple quat_extract_axis_angle(const Quaternion<T>& q)
     {
         Vector<T, 3> axis;
@@ -55,66 +53,66 @@ namespace
         return bpy::make_tuple(axis, angle);
     }
 
-    template <class T>
+    template <typename T>
     Quaternion<T> quat_conjugate(const Quaternion<T>& q)
     {
         return conjugate(q);
     }
 
-    template <class T>
+    template <typename T>
     Quaternion<T> quat_inverse(const Quaternion<T>& q)
     {
         return inverse(q);
     }
 
-    template <class T>
+    template <typename T>
     T quat_square_norm(const Quaternion<T>& q)
     {
         return square_norm(q);
     }
 
-    template <class T>
+    template <typename T>
     T quat_norm(const Quaternion<T>& q)
     {
         return norm(q);
     }
 
-    template <class T>
+    template <typename T>
     Quaternion<T> quat_normalize(const Quaternion<T>& q)
     {
         return normalize(q);
     }
 
-    template <class T>
+    template <typename T>
     bool quat_is_normalized(const Quaternion<T>& q)
     {
         return is_normalized(q);
     }
 
-    template <class T>
+    template <typename T>
     bool quat_is_normalized_with_eps(const Quaternion<T>& q, const T eps)
     {
         return is_normalized(q, eps);
     }
 
-    template <class T>
+    template <typename T>
     Quaternion<T> quat_slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T t)
     {
         return slerp(p, q, t);
     }
 
-    template <class T>
+    template <typename T>
     void do_bind_quaternion(const char* class_name)
     {
-        Quaternion<T>(*rot1)(const Vector<T, 3>&, T) = &Quaternion<T>::rotation;
-        Quaternion<T>(*rot2)(const Vector<T, 3>&, const Vector<T, 3>&) = &Quaternion<T>::rotation;
+        Quaternion<T>(*rot1)(const Vector<T, 3>&, T) = &Quaternion<T>::make_rotation;
+        Quaternion<T>(*rot2)(const Vector<T, 3>&, const Vector<T, 3>&) = &Quaternion<T>::make_rotation;
 
-        bpy::class_<Quaternion<T> >(class_name)
-            .def("identity", &Quaternion<T>::identity).staticmethod("identity")
-            .def("rotation", rot1).def("rotation", rot2).staticmethod("rotation")
+        bpy::class_<Quaternion<T>>(class_name)
+            .def("make_identity", &Quaternion<T>::make_identity).staticmethod("make_identity")
+            .def("make_rotation", rot1).def("make_rotation", rot2).staticmethod("make_rotation")
 
             .def(bpy::init<>())
-            .def(bpy::init<T, Vector<T, 3> >())
+            .def(bpy::init<T, Vector<T, 3>>())
 
             .def_readwrite("s", &Quaternion<T>::s)
             .def_readwrite("v", &Quaternion<T>::v)
@@ -147,8 +145,7 @@ namespace
             .def("normalize", &quat_normalize<T>)
             .def("is_normalized", &quat_is_normalized<T>)
             .def("is_normalized", &quat_is_normalized_with_eps<T>)
-            .def("slerp", &quat_slerp<T>)
-            ;
+            .def("slerp", &quat_slerp<T>);
     }
 }
 

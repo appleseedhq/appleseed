@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2016-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,46 +29,11 @@
 // Interface header.
 #include "seexpr.h"
 
-// SeExpr headers.
-#include "SeExpression.h"
-
 using namespace boost;
 using namespace std;
 
 namespace foundation
 {
-
-//
-// SeExprValidator class implementation.
-//
-
-struct SeExprValidator::Impl
-{
-    SeExpression m_expr;
-};
-
-SeExprValidator::SeExprValidator(const char* expression)
-  : impl(new Impl())
-{
-    impl->m_expr.setExpr(expression);
-}
-
-SeExprValidator::~SeExprValidator()
-{
-    delete impl;
-}
-
-bool SeExprValidator::is_valid() const
-{
-    return impl->m_expr.isValid();
-}
-
-const char* SeExprValidator::get_parse_error() const
-{
-    is_valid();
-    return impl->m_expr.parseError().c_str();
-}
-
 
 //
 // SeExprFilePathExtractor class implementation.

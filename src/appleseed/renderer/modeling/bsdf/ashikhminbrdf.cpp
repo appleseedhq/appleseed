@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,17 +32,18 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/fp.h"
 #include "foundation/math/fresnel.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <cassert>
@@ -77,42 +78,37 @@ namespace
     {
       public:
         AshikhminBRDFImpl(
-            const char*         name,
-            const ParamArray&   params)
+            const char*                 name,
+            const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy, params)
         {
             m_inputs.declare("diffuse_reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("diffuse_reflectance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("diffuse_reflectance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("glossy_reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("glossy_reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("fresnel_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("shininess_u", InputFormatScalar);
-            m_inputs.declare("shininess_v", InputFormatScalar);
+            m_inputs.declare("glossy_reflectance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("fresnel_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("shininess_u", InputFormatFloat);
+            m_inputs.declare("shininess_v", InputFormatFloat);
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        APPLESEED_FORCE_INLINE virtual void sample(
-            SamplingContext&    sampling_context,
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            BSDFSample&         sample) const APPLESEED_OVERRIDE
+        void sample(
+            SamplingContext&            sampling_context,
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const int                   modes,
+            BSDFSample&                 sample) const override
         {
-            // No reflection below the shading surface.
-            const Vector3d& shading_normal = sample.get_shading_normal();
-            const double cos_on = dot(sample.m_outgoing.get_value(), shading_normal);
-            if (cos_on < 0.0)
-                return;
-
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute reflectance-related values.
@@ -120,50 +116,58 @@ namespace
             if (!compute_rval(rval, values))
                 return;
 
+            // Compute component weights.
+            float diffuse_weight = ScatteringMode::has_diffuse(modes) ? rval.m_pd : 0.0f;
+            float glossy_weight = ScatteringMode::has_glossy(modes) ? rval.m_pg : 0.0f;
+            const float total_weight = diffuse_weight + glossy_weight;
+            if (total_weight == 0.0f)
+                return;
+            const float rcp_total_weight = 1.0f / total_weight;
+            diffuse_weight *= rcp_total_weight;
+            glossy_weight *= rcp_total_weight;
+
             // Compute shininess-related values.
             SVal sval;
             compute_sval(sval, values->m_nu, values->m_nv);
 
             // Generate a uniform sample in [0,1)^3.
             sampling_context.split_in_place(3, 1);
-            const Vector3d s = sampling_context.next_vector2<3>();
+            const Vector3f s = sampling_context.next2<Vector3f>();
 
             ScatteringMode::Mode mode;
-            Vector3d h, incoming;
-            double exp;
+            Vector3f h, incoming;
+            float exp;
 
             // Select a component and sample it to compute the incoming direction.
-            if (s[2] < rval.m_pd)
+            if (s[2] < diffuse_weight)
             {
                 mode = ScatteringMode::Diffuse;
 
-                // Compute the incoming direction in local space.
-                const Vector3d wi = sample_hemisphere_cosine(Vector2d(s[0], s[1]));
-
-                // Transform the incoming direction to parent space.
-                incoming = sample.get_shading_basis().transform_to_parent(wi);
+                // Compute the incoming direction in world space.
+                const Vector3f wi = sample_hemisphere_cosine(Vector2f(s[0], s[1]));
+                incoming = sample.m_shading_basis.transform_to_parent(wi);
 
                 // Compute the halfway vector in world space.
                 h = normalize(incoming + sample.m_outgoing.get_value());
 
                 // Compute the glossy exponent, needed to evaluate the PDF.
-                const double cos_hn = dot(h, sample.get_shading_normal());
-                const double cos_hu = dot(h, sample.get_shading_basis().get_tangent_u());
-                const double cos_hv = dot(h, sample.get_shading_basis().get_tangent_v());
-                const double exp_den = 1.0 - cos_hn * cos_hn;
-                const double exp_u = values->m_nu * cos_hu * cos_hu;
-                const double exp_v = values->m_nv * cos_hv * cos_hv;
-                exp = exp_den == 0.0 ? FP<double>::pos_inf() : (exp_u + exp_v) / exp_den;
+                const float cos_hn = dot(h, sample.m_shading_basis.get_normal());
+                const float cos_hu = dot(h, sample.m_shading_basis.get_tangent_u());
+                const float cos_hv = dot(h, sample.m_shading_basis.get_tangent_v());
+                const float exp_den = 1.0f - cos_hn * cos_hn;
+                const float exp_u = values->m_nu * cos_hu * cos_hu;
+                const float exp_v = values->m_nv * cos_hv * cos_hv;
+                exp = exp_den == 0.0f ? FP<float>::pos_inf() : (exp_u + exp_v) / exp_den;
             }
             else
             {
                 mode = ScatteringMode::Glossy;
 
-                double cos_phi, sin_phi;
+                float cos_phi, sin_phi;
 
                 if (sval.m_isotropic)
                 {
-                    const double phi = s[0] * TwoPi;
+                    const float phi = s[0] * TwoPi<float>();
 
                     cos_phi = cos(phi);
                     sin_phi = sin(phi);
@@ -172,209 +176,216 @@ namespace
                 }
                 else
                 {
-                    const double phi = sample_anisotropic_glossy(sval.m_k, s[0]);
+                    const float phi = sample_anisotropic_glossy(sval.m_k, s[0]);
 
                     cos_phi = cos(phi);
                     sin_phi = sin(phi);
 
-                    const double exp_u = values->m_nu * cos_phi * cos_phi;
-                    const double exp_v = values->m_nv * sin_phi * sin_phi;
+                    const float exp_u = values->m_nu * cos_phi * cos_phi;
+                    const float exp_v = values->m_nv * sin_phi * sin_phi;
 
                     exp = exp_u + exp_v;
                 }
 
-                const double cos_theta = pow(1.0 - s[1], 1.0 / (exp + 1.0));
-                const double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+                const float cos_theta = pow(1.0f - s[1], 1.0f / (exp + 1.0f));
+                const float sin_theta = sqrt(1.0f - cos_theta * cos_theta);
 
                 // Compute the halfway vector in world space.
-                h = sample.get_shading_basis().transform_to_parent(
-                        Vector3d::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi));
+                h = sample.m_shading_basis.transform_to_parent(
+                    Vector3f::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi));
 
                 // Compute the incoming direction in world space.
                 incoming =
                     force_above_surface(
-                        reflect(sample.m_outgoing.get_value(), h), sample.get_geometric_normal());
+                        reflect(sample.m_outgoing.get_value(), h), sample.m_geometric_normal);
             }
 
-            // No reflection below the shading surface.
-            const double cos_in = dot(incoming, shading_normal);
-            if (cos_in < 0.0)
-                return;
-
             // Compute dot products.
-            const double cos_oh = abs(dot(sample.m_outgoing.get_value(), h));
-            const double cos_hn = dot(h, shading_normal);
+            const Vector3f& shading_normal = sample.m_shading_basis.get_normal();
+            const float cos_in = abs(dot(incoming, shading_normal));
+            const float cos_on = abs(dot(sample.m_outgoing.get_value(), shading_normal));
+            const float cos_oh = min(abs(dot(sample.m_outgoing.get_value(), h)), 1.0f);
+            const float cos_hn = abs(dot(h, shading_normal));
 
-            // Evaluate the diffuse component of the BRDF (equation 5).
-            const double a = 1.0 - pow5(1.0 - 0.5 * cos_in);
-            const double b = 1.0 - pow5(1.0 - 0.5 * cos_on);
-            sample.m_value = rval.m_kd;
-            sample.m_value *= static_cast<float>(a * b);
-
-            // Evaluate the PDF of the diffuse component.
-            const double pdf_diffuse = cos_in * RcpPi;
-            assert(pdf_diffuse > 0.0);
-            double probability = rval.m_pd * pdf_diffuse;
-
-            // Evaluate the glossy component of the BRDF (equation 4).
-            const double num = sval.m_kg * pow(cos_hn, exp);
-            const double den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
-            Spectrum glossy;
-            fresnel_reflectance_dielectric_schlick(glossy, rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
-            glossy *= static_cast<float>(num / den);
-            sample.m_value += glossy;
-
-            // Evaluate the PDF of the glossy component (equation 8).
-            const double pdf_glossy = num / cos_oh;     // omit division by 4 since num = pdf(h) / 4
-            assert(pdf_glossy >= 0.0);
-            probability += rval.m_pg * pdf_glossy;
-
-            sample.m_mode = mode;
-            sample.m_probability = probability;
-            sample.m_incoming = Dual3d(incoming);
-            sample.compute_reflected_differentials();
-        }
-
-        APPLESEED_FORCE_INLINE virtual double evaluate(
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes,
-            Spectrum&           value) const APPLESEED_OVERRIDE
-        {
-            // No reflection below the shading surface.
-            const Vector3d& shading_normal = shading_basis.get_normal();
-            const double cos_in = dot(incoming, shading_normal);
-            const double cos_on = dot(outgoing, shading_normal);
-            if (cos_in < 0.0 || cos_on < 0.0)
-                return 0.0;
-
-            const InputValues* values = static_cast<const InputValues*>(data);
-
-            // Compute reflectance-related values.
-            RVal rval;
-            if (!compute_rval(rval, values))
-                return 0.0;
-
-            // Compute shininess-related values.
-            SVal sval;
-            compute_sval(sval, values->m_nu, values->m_nv);
-
-            value.set(0.0f);
-            double probability = 0.0;
-
-            // Compute the halfway vector in world space.
-            const Vector3d h = normalize(incoming + outgoing);
-
-            // Compute dot products.
-            const double cos_oh = dot(outgoing, h);
-            const double cos_hn = dot(h, shading_normal);
-            const double cos_hu = dot(h, shading_basis.get_tangent_u());
-            const double cos_hv = dot(h, shading_basis.get_tangent_v());
+            float pdf_diffuse = 0.0f, pdf_glossy = 0.0f;
 
             if (ScatteringMode::has_diffuse(modes))
             {
                 // Evaluate the diffuse component of the BRDF (equation 5).
-                const double a = 1.0 - pow5(1.0 - 0.5 * cos_in);
-                const double b = 1.0 - pow5(1.0 - 0.5 * cos_on);
-                Spectrum diffuse = rval.m_kd;
-                diffuse *= static_cast<float>(a * b);
-                value += diffuse;
+                const float a = 1.0f - pow5(1.0f - 0.5f * cos_in);
+                const float b = 1.0f - pow5(1.0f - 0.5f * cos_on);
+                sample.m_value.m_diffuse = rval.m_kd;
+                sample.m_value.m_diffuse *= a * b;
 
                 // Evaluate the PDF of the diffuse component.
-                const double pdf_diffuse = cos_in * RcpPi;
-                assert(pdf_diffuse >= 0.0);
-                probability += rval.m_pd * pdf_diffuse;
+                pdf_diffuse = cos_in * RcpPi<float>();
+                assert(pdf_diffuse > 0.0f);
             }
 
             if (ScatteringMode::has_glossy(modes))
             {
                 // Evaluate the glossy component of the BRDF (equation 4).
-                const double exp_num_u = values->m_nu * cos_hu * cos_hu;
-                const double exp_num_v = values->m_nv * cos_hv * cos_hv;
-                const double exp_den = 1.0 - cos_hn * cos_hn;
-                const double exp = (exp_num_u + exp_num_v) / exp_den;
-                const double num = exp_den == 0.0 ? 0.0 : sval.m_kg * pow(cos_hn, exp);
-                const double den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
-                Spectrum glossy;
-                fresnel_reflectance_dielectric_schlick(glossy, rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
-                glossy *= static_cast<float>(num / den);
-                value += glossy;
+                const float num = sval.m_kg * pow(cos_hn, exp);
+                const float den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
+                fresnel_reflectance_dielectric_schlick(sample.m_value.m_glossy, rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
+                sample.m_value.m_glossy *= num / den;
 
                 // Evaluate the PDF of the glossy component (equation 8).
-                const double pdf_glossy = num / cos_oh;     // omit division by 4 since num = pdf(h) / 4
-                assert(pdf_glossy >= 0.0);
-                probability += rval.m_pg * pdf_glossy;
+                pdf_glossy = num / cos_oh;      // omit division by 4 since num = pdf(h) / 4
+                assert(pdf_glossy >= 0.0f);
             }
 
-            return probability;
+            sample.m_mode = mode;
+            sample.m_value.m_beauty = sample.m_value.m_diffuse;
+            sample.m_value.m_beauty += sample.m_value.m_glossy;
+            sample.m_probability = diffuse_weight * pdf_diffuse + glossy_weight * pdf_glossy;
+            sample.m_incoming = Dual3f(incoming);
+            sample.compute_reflected_differentials();
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes) const APPLESEED_OVERRIDE
+        float evaluate(
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes,
+            DirectShadingComponents&    value) const override
         {
-            // No reflection below the shading surface.
-            const Vector3d& shading_normal = shading_basis.get_normal();
-            const double cos_in = dot(incoming, shading_normal);
-            const double cos_on = dot(outgoing, shading_normal);
-            if (cos_in < 0.0 || cos_on < 0.0)
-                return 0.0;
-
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            // Compute (or retrieve precomputed) reflectance-related values.
+            // Compute reflectance-related values.
             RVal rval;
             if (!compute_rval(rval, values))
-                return 0.0;
+                return 0.0f;
+
+            // Compute component weights.
+            float diffuse_weight = ScatteringMode::has_diffuse(modes) ? rval.m_pd : 0.0f;
+            float glossy_weight = ScatteringMode::has_glossy(modes) ? rval.m_pg : 0.0f;
+            const float total_weight = diffuse_weight + glossy_weight;
+            if (total_weight == 0.0f)
+                return 0.0f;
+            const float rcp_total_weight = 1.0f / total_weight;
+            diffuse_weight *= rcp_total_weight;
+            glossy_weight *= rcp_total_weight;
 
             // Compute shininess-related values.
             SVal sval;
             compute_sval(sval, values->m_nu, values->m_nv);
 
-            double probability = 0.0;
-
             // Compute the halfway vector in world space.
-            const Vector3d h = normalize(incoming + outgoing);
+            const Vector3f h = normalize(incoming + outgoing);
 
             // Compute dot products.
-            const double cos_oh = dot(outgoing, h);
-            const double cos_hn = dot(h, shading_normal);
-            const double cos_hu = dot(h, shading_basis.get_tangent_u());
-            const double cos_hv = dot(h, shading_basis.get_tangent_v());
+            const Vector3f& shading_normal = shading_basis.get_normal();
+            const float cos_in = abs(dot(incoming, shading_normal));
+            const float cos_on = abs(dot(outgoing, shading_normal));
+            const float cos_oh = abs(dot(outgoing, h));
+            const float cos_hn = abs(dot(h, shading_normal));
+            const float cos_hu = abs(dot(h, shading_basis.get_tangent_u()));
+            const float cos_hv = abs(dot(h, shading_basis.get_tangent_v()));
+
+            float pdf_diffuse = 0.0f, pdf_glossy = 0.0f;
+
+            if (ScatteringMode::has_diffuse(modes))
+            {
+                // Evaluate the diffuse component of the BRDF (equation 5).
+                const float a = 1.0f - pow5(1.0f - 0.5f * cos_in);
+                const float b = 1.0f - pow5(1.0f - 0.5f * cos_on);
+                value.m_diffuse = rval.m_kd;
+                value.m_diffuse *= a * b;
+
+                // Evaluate the PDF of the diffuse component.
+                pdf_diffuse = cos_in * RcpPi<float>();
+                assert(pdf_diffuse >= 0.0f);
+            }
+
+            if (ScatteringMode::has_glossy(modes))
+            {
+                // Evaluate the glossy component of the BRDF (equation 4).
+                const float exp_num_u = values->m_nu * cos_hu * cos_hu;
+                const float exp_num_v = values->m_nv * cos_hv * cos_hv;
+                const float exp_den = 1.0f - cos_hn * cos_hn;
+                const float exp = (exp_num_u + exp_num_v) / exp_den;
+                const float num = exp_den == 0.0f ? 0.0f : sval.m_kg * pow(cos_hn, exp);
+                const float den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
+                fresnel_reflectance_dielectric_schlick(value.m_glossy, rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
+                value.m_glossy *= num / den;
+
+                // Evaluate the PDF of the glossy component (equation 8).
+                pdf_glossy = num / cos_oh;      // omit division by 4 since num = pdf(h) / 4
+                assert(pdf_glossy >= 0.0f);
+            }
+
+            value.m_beauty = value.m_diffuse;
+            value.m_beauty += value.m_glossy;
+            return diffuse_weight * pdf_diffuse + glossy_weight * pdf_glossy;
+        }
+
+        float evaluate_pdf(
+            const void*                 data,
+            const bool                  adjoint,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes) const override
+        {
+            const InputValues* values = static_cast<const InputValues*>(data);
+
+            // Compute (or retrieve precomputed) reflectance-related values.
+            RVal rval;
+            if (!compute_rval(rval, values))
+                return 0.0f;
+
+            // Compute component weights.
+            float diffuse_weight = ScatteringMode::has_diffuse(modes) ? rval.m_pd : 0.0f;
+            float glossy_weight = ScatteringMode::has_glossy(modes) ? rval.m_pg : 0.0f;
+            const float total_weight = diffuse_weight + glossy_weight;
+            if (total_weight == 0.0f)
+                return 0.0f;
+            const float rcp_total_weight = 1.0f / total_weight;
+            diffuse_weight *= rcp_total_weight;
+            glossy_weight *= rcp_total_weight;
+
+            // Compute shininess-related values.
+            SVal sval;
+            compute_sval(sval, values->m_nu, values->m_nv);
+
+            // Compute the halfway vector in world space.
+            const Vector3f h = normalize(incoming + outgoing);
+
+            float pdf_diffuse = 0.0f, pdf_glossy = 0.0f;
 
             if (ScatteringMode::has_diffuse(modes))
             {
                 // Evaluate the PDF of the diffuse component.
-                const double pdf_diffuse = cos_in * RcpPi;
-                assert(pdf_diffuse >= 0.0);
-                probability += pdf_diffuse;
+                const float cos_in = abs(dot(incoming, shading_basis.get_normal()));
+                pdf_diffuse = cos_in * RcpPi<float>();
+                assert(pdf_diffuse >= 0.0f);
             }
 
             if (ScatteringMode::has_glossy(modes))
             {
                 // Evaluate the PDF for the halfway vector (equation 6).
-                const double exp_num_u = values->m_nu * cos_hu * cos_hu;
-                const double exp_num_v = values->m_nv * cos_hv * cos_hv;
-                const double exp_den = 1.0 - cos_hn * cos_hn;
-                const double exp = (exp_num_u + exp_num_v) / exp_den;
-                const double num = exp_den == 0.0 ? 0.0 : sval.m_kg * pow(cos_hn, exp);
+                const float cos_oh = abs(dot(outgoing, h));
+                const float cos_hn = abs(dot(h, shading_basis.get_normal()));
+                const float cos_hu = dot(h, shading_basis.get_tangent_u());
+                const float cos_hv = dot(h, shading_basis.get_tangent_v());
+                const float exp_num_u = values->m_nu * cos_hu * cos_hu;
+                const float exp_num_v = values->m_nv * cos_hv * cos_hv;
+                const float exp_den = 1.0f - cos_hn * cos_hn;
+                const float exp = (exp_num_u + exp_num_v) / exp_den;
+                const float num = exp_den == 0.0f ? 0.0f : sval.m_kg * pow(cos_hn, exp);
 
                 // Evaluate the PDF of the glossy component (equation 8).
-                const double pdf_glossy = num / cos_oh;     // omit division by 4 since num = pdf(h) / 4
-                assert(pdf_glossy >= 0.0);
-                probability += pdf_glossy;
+                pdf_glossy = num / cos_oh;      // omit division by 4 since num = pdf(h) / 4
+                assert(pdf_glossy >= 0.0f);
             }
 
-            return probability;
+            return diffuse_weight * pdf_diffuse + glossy_weight * pdf_glossy;
         }
 
       private:
@@ -385,21 +396,22 @@ namespace
         {
             Spectrum    m_kd;               // constant factor of diffuse component
             Spectrum    m_scaled_rg;        // glossy reflectance scaled by multiplier
-            double      m_pd;               // probability of diffuse component
-            double      m_pg;               // probability of glossy component
+            float       m_pd;               // probability of diffuse component
+            float       m_pg;               // probability of glossy component
         };
 
         // Precomputed shininess-related values.
         struct SVal
         {
-            double      m_kg;               // constant factor of glossy component
-            double      m_k;                // constant factor needed during hemisphere (anisotropic case only)
+            float       m_kg;               // constant factor of glossy component
+            float       m_k;                // constant factor needed during hemisphere (anisotropic case only)
             bool        m_isotropic;        // true if the U and V shininess values are the same
         };
 
-        static double pow5(const double x)
+        template <typename T>
+        static T pow5(const T x)
         {
-            const double x2 = x * x;
+            const T x2 = x * x;
             return x2 * x2 * x;
         }
 
@@ -407,78 +419,78 @@ namespace
         {
             // Scale and clamp the diffuse reflectance.
             Spectrum scaled_rd = values->m_rd;
-            scaled_rd *= static_cast<float>(values->m_rd_multiplier);
-            scaled_rd = saturate(scaled_rd);
+            scaled_rd *= values->m_rd_multiplier;
+            saturate_in_place(scaled_rd);
 
             // Scale and clamp the glossy reflectance.
             rval.m_scaled_rg = values->m_rg;
-            rval.m_scaled_rg *= static_cast<float>(values->m_rg_multiplier);
-            rval.m_scaled_rg = saturate(rval.m_scaled_rg);
+            rval.m_scaled_rg *= values->m_rg_multiplier;
+            saturate_in_place(rval.m_scaled_rg);
 
             // Compute average diffuse and glossy reflectances.
-            const double rd_avg = average_value(scaled_rd);
-            const double rg_avg = average_value(rval.m_scaled_rg);
-            const double sum = rd_avg + rg_avg;
-            if (sum == 0.0)
+            const float rd_avg = average_value(scaled_rd);
+            const float rg_avg = average_value(rval.m_scaled_rg);
+            const float sum = rd_avg + rg_avg;
+            if (sum == 0.0f)
                 return false;
 
             // Compute probabilities of glossy and diffuse components.
             rval.m_pd = rd_avg / sum;
-            rval.m_pg = 1.0 - rval.m_pd;
-            assert(feq(rval.m_pd + rval.m_pg, 1.0));
+            rval.m_pg = 1.0f - rval.m_pd;
+            assert(feq(rval.m_pd + rval.m_pg, 1.0f));
 
             // Precompute constant factor of diffuse component (equation 5).
             rval.m_kd.set(1.0f);
             rval.m_kd -= rval.m_scaled_rg;
             rval.m_kd *= scaled_rd;
-            rval.m_kd *= static_cast<float>(28.0 / (23.0 * Pi));
+            rval.m_kd *= 28.0f / (23.0f * Pi<float>());
             assert(min_value(rval.m_kd) >= 0.0f);
 
             return true;
         }
 
-        static void compute_sval(SVal& sval, const double nu, const double nv)
+        static void compute_sval(SVal& sval, const float nu, const float nv)
         {
             // Check for isotropicity.
-            sval.m_isotropic = feq(nu, nv, 1.0e-6);
+            sval.m_isotropic = feq(nu, nv, 1.0e-6f);
 
             // Precompute constant factor of glossy component (equations 4 and 6).
-            sval.m_kg = sqrt((nu + 1.0) * (nv + 1.0)) / (8.0 * Pi);
+            sval.m_kg = sqrt((nu + 1.0f) * (nv + 1.0f)) / (8.0f * Pi<float>());
 
             if (!sval.m_isotropic)
             {
                 // Precompute constant factor needed during hemisphere sampling.
-                sval.m_k = sqrt((nu + 1.0) / (nv + 1.0));
+                sval.m_k = sqrt((nu + 1.0f) / (nv + 1.0f));
             }
             else
-                sval.m_k = 0.0;
+                sval.m_k = 0.0f;
         }
 
-        static double sample_anisotropic_glossy(const double k, const double s)
+        static float sample_anisotropic_glossy(const float k, const float s)
         {
-            if (s < 0.25)
+            if (s < 0.25f)
             {
                 // First quadrant.
-                const double b = tan(HalfPi * (4.0 * s));
+                const float b = tan(HalfPi<float>() * (4.0f * s));
                 return atan(k * b);
             }
-            else if (s < 0.5)
+            else if (s < 0.5f)
             {
                 // Second quadrant.
-                const double b = tan(HalfPi * (4.0 * s - 1.0));
-                return atan(k * b) + HalfPi;
+                const float b = tan(HalfPi<float>() * (4.0f * s - 1.0f));
+                return atan(k * b) + HalfPi<float>();
             }
-            else if (s < 0.75)
+            else if (s < 0.75f)
             {
                 // Third quadrant.
-                const double b = tan(HalfPi * (4.0 * s - 2.0));
-                return atan(k * b) + Pi;
+                const float b = tan(HalfPi<float>() * (4.0f * s - 2.0f));
+                return atan(k * b) + Pi<float>();
             }
             else
             {
                 // Fourth quadrant.
-                const double b = tan(HalfPi * (4.0 * s - 3.0));
-                return atan(k * b) + Pi + HalfPi;
+                const float b = tan(HalfPi<float>() * (4.0f * s - 3.0f));
+                return atan(k * b) + Pi<float>() + HalfPi<float>();
             }
         }
     };
@@ -490,6 +502,11 @@ namespace
 //
 // AshikhminBRDFFactory class implementation.
 //
+
+void AshikhminBRDFFactory::release()
+{
+    delete this;
+}
 
 const char* AshikhminBRDFFactory::get_model() const
 {
@@ -588,13 +605,6 @@ DictionaryArray AshikhminBRDFFactory::get_input_metadata() const
 auto_release_ptr<BSDF> AshikhminBRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<BSDF>(new AshikhminBRDF(name, params));
-}
-
-auto_release_ptr<BSDF> AshikhminBRDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<BSDF>(new AshikhminBRDF(name, params));
 }

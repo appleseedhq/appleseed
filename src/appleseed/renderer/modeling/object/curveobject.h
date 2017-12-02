@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Srinath Ravichandran, The appleseedhq Organization
+// Copyright (c) 2014-2017 Srinath Ravichandran, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
+#include "renderer/modeling/object/iobjectfactory.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/regionkit.h"
 
@@ -47,6 +48,9 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace foundation    { class Dictionary; }
+namespace foundation    { class DictionaryArray; }
+namespace foundation    { class SearchPaths; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
 namespace renderer      { class ParamArray; }
@@ -63,34 +67,34 @@ class APPLESEED_DLLSYMBOL CurveObject
 {
   public:
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
     // Return a string identifying the model of this object.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    const char* get_model() const override;
 
     // Compute the local space bounding box of the object over the shutter interval.
-    virtual GAABB3 compute_local_bbox() const APPLESEED_OVERRIDE;
+    GAABB3 compute_local_bbox() const override;
 
     // Return the region kit of the object.
-    virtual foundation::Lazy<RegionKit>& get_region_kit() APPLESEED_OVERRIDE;
+    foundation::Lazy<RegionKit>& get_region_kit() override;
 
     // Insert and access curves.
     void reserve_curves1(const size_t count);
     void reserve_curves3(const size_t count);
-    size_t push_curve1(const CurveType1& curve);
-    size_t push_curve3(const CurveType3& curve);
+    size_t push_curve1(const Curve1Type& curve);
+    size_t push_curve3(const Curve3Type& curve);
     size_t get_curve1_count() const;
     size_t get_curve3_count() const;
-    const CurveType1& get_curve1(const size_t index) const;
-    const CurveType3& get_curve3(const size_t index) const;
+    const Curve1Type& get_curve1(const size_t index) const;
+    const Curve3Type& get_curve3(const size_t index) const;
 
     // Insert and access material slots.
-    virtual size_t get_material_slot_count() const APPLESEED_OVERRIDE;
-    virtual const char* get_material_slot(const size_t index) const APPLESEED_OVERRIDE;
+    size_t get_material_slot_count() const override;
+    const char* get_material_slot(const size_t index) const override;
 
     // Expose asset file paths referenced by this entity to the outside.
-    virtual void collect_asset_paths(foundation::StringArray& paths) const APPLESEED_OVERRIDE;
-    virtual void update_asset_paths(const foundation::StringDictionary& mappings) APPLESEED_OVERRIDE;
+    void collect_asset_paths(foundation::StringArray& paths) const override;
+    void update_asset_paths(const foundation::StringDictionary& mappings) override;
 
   private:
     friend class CurveObjectFactory;
@@ -104,7 +108,7 @@ class APPLESEED_DLLSYMBOL CurveObject
         const ParamArray&   params);
 
     // Destructor.
-    ~CurveObject();
+    ~CurveObject() override;
 };
 
 
@@ -113,15 +117,33 @@ class APPLESEED_DLLSYMBOL CurveObject
 //
 
 class APPLESEED_DLLSYMBOL CurveObjectFactory
+  : public IObjectFactory
 {
   public:
-    // Return a string identifying this object model.
-    static const char* get_model();
+    // Delete this instance.
+    void release() override;
 
-    // Create a new curve object.
-    static foundation::auto_release_ptr<CurveObject> create(
-        const char*         name,
-        const ParamArray&   params);
+    // Return a string identifying this object model.
+    const char* get_model() const override;
+
+    // Return metadata for this object model.
+    foundation::Dictionary get_model_metadata() const override;
+
+    // Return metadata for the inputs of this object model.
+    foundation::DictionaryArray get_input_metadata() const override;
+
+    // Create a new single empty object.
+    foundation::auto_release_ptr<Object> create(
+        const char*                     name,
+        const ParamArray&               params) const override;
+
+    // Create objects, potentially from external assets.
+    bool create(
+        const char*                     name,
+        const ParamArray&               params,
+        const foundation::SearchPaths&  search_paths,
+        const bool                      omit_loading_assets,
+        ObjectArray&                    objects) const override;
 };
 
 }       // namespace renderer

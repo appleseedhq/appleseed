@@ -6,7 +6,7 @@
     This software is released under the MIT license.
 
     Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-    Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+    Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
@@ -109,6 +109,16 @@
                     </xsd:element>
                     <xsd:element ref="color"/>
                     <xsd:element name="edf">
+                        <xsd:complexType>
+                            <xsd:complexContent>
+                                <xsd:extension base="parameterSet">
+                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                                    <xsd:attribute name="model" type="xsd:string" use="required"/>
+                                </xsd:extension>
+                            </xsd:complexContent>
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="volume">
                         <xsd:complexType>
                             <xsd:complexContent>
                                 <xsd:extension base="parameterSet">
@@ -257,6 +267,9 @@
                                         <xsd:complexType>
                                             <xsd:complexContent>
                                                 <xsd:extension base="parameterSet">
+                                                    <xsd:sequence maxOccurs="unbounded">
+                                                        <xsd:element name="transform" type="transform" minOccurs="0"/>
+                                                    </xsd:sequence>
                                                     <xsd:attribute name="name" type="xsd:string" use="required"/>
                                                     <xsd:attribute name="model" type="xsd:string" use="required"/>
                                                 </xsd:extension>
@@ -299,17 +312,34 @@
                 </xsd:element>
                 <xsd:element name="output">
                     <xsd:complexType>
-                        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                        <xsd:all>
                             <xsd:element name="frame">
                                 <xsd:complexType>
                                     <xsd:complexContent>
                                         <xsd:extension base="parameterSet">
+                                            <xsd:choice minOccurs="0" maxOccurs="1">
+                                            <xsd:element name="aovs">
+                                                <xsd:complexType>
+                                                    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                                                        <xsd:element name="aov">
+                                                            <xsd:complexType>
+                                                                <xsd:complexContent>
+                                                                    <xsd:extension base="parameterSet">
+                                                                        <xsd:attribute name="model" type="xsd:string" use="required"/>
+                                                                    </xsd:extension>
+                                                                </xsd:complexContent>
+                                                            </xsd:complexType>
+                                                        </xsd:element>
+                                                    </xsd:choice>
+                                                </xsd:complexType>
+                                            </xsd:element>
+                                            </xsd:choice>
                                             <xsd:attribute name="name" type="xsd:string" use="required"/>
                                         </xsd:extension>
                                     </xsd:complexContent>
                                 </xsd:complexType>
                             </xsd:element>
-                        </xsd:choice>
+                        </xsd:all>
                     </xsd:complexType>
                 </xsd:element>
                 <xsd:element name="configurations">

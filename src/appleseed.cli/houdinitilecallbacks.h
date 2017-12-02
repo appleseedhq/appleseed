@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Hans Hoogenboom, Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Hans Hoogenboom, Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,9 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
 // Standard headers.
 #include <memory>
 
@@ -50,15 +47,15 @@ class MPlayTileCallbackFactory
   public:
     MPlayTileCallbackFactory(
         const char*         scene_name,
-        bool                progressive_mode,
+        const bool          progressive_mode,
         foundation::Logger& logger);
 
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
-    virtual renderer::ITileCallback* create() APPLESEED_OVERRIDE;
+    renderer::ITileCallback* create() override;
 
   private:
-    std::auto_ptr<renderer::ITileCallback> m_callback;
+    std::unique_ptr<renderer::ITileCallback> m_callback;
 };
 
 class HRmanPipeTileCallbackFactory
@@ -66,16 +63,16 @@ class HRmanPipeTileCallbackFactory
 {
   public:
     HRmanPipeTileCallbackFactory(
-        int                 socket_number,
-        bool                progressive_mode,
+        const int           socket_number,
+        const bool          progressive_mode,
         foundation::Logger& logger);
 
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
-    virtual renderer::ITileCallback* create() APPLESEED_OVERRIDE;
+    renderer::ITileCallback* create() override;
 
   private:
-    std::auto_ptr<renderer::ITileCallback> m_callback;
+    std::unique_ptr<renderer::ITileCallback> m_callback;
 };
 
 }       // namespace cli

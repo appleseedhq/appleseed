@@ -1,0 +1,85 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2014-2017 The masked shader writer, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+shader as_normal_map
+(
+    color         Color = color(0),
+    vector        Normal = N,
+    vector        Tn = 0
+    [[
+        string help = "Tangent",
+        string label = "Tangent",
+        int    lockgeom = 0
+    ]],
+    string        UpVector = "Blue"
+    [[
+        string help = "Color channel to use as up direction",
+        string widget = "popup",
+        string options = "Green|Blue"
+    ]],
+    string        Space = "Tangent"
+    [[
+        string widget = "popup",
+        string options = "Tangent|Object|World"
+    ]],
+    float         Amount = 1
+    [[
+        float  min = 0,
+        float  max = 1
+    ]],
+    output vector NormalOut = 0,
+    output vector TangentOut = 0
+)
+{
+    normal n = (normal) mix(-1, 1, clamp(Color, 0, 1));
+
+    if (UpVector == "Green")
+    {
+        float tmp = n[2];
+        n[2] = n[1];
+        n[1] = tmp;
+    }
+
+    vector bn = cross(Tn, Normal);
+
+    if (Space == "Object")
+    {
+        n = transform("object", "world", n);
+    }
+    else if (Space == "Tangent")
+    {
+        n = n[0] * Tn + n[1] * bn + n[2] * Normal;
+    }
+
+    if (Amount != 1.0)
+        NormalOut = normalize(mix(Normal, n, Amount));
+    else
+        NormalOut = normalize(n);
+
+    TangentOut = normalize(cross(NormalOut, bn));
+}

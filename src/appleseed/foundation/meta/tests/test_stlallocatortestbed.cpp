@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -63,13 +63,13 @@ TEST_SUITE(StlAllocatorTestbed)
     //
     // StlAllocatorTestOutput.h
     //
-    // Copyright © 2003 Pete Isensee (PKIsensee@msn.com).
+    // Copyright ï¿½ 2003 Pete Isensee (PKIsensee@msn.com).
     // All rights reserved worldwide.
     //
     // Permission to copy, modify, reproduce or redistribute this source code is
-    // granted provided the above copyright notice is retained in the resulting 
+    // granted provided the above copyright notice is retained in the resulting
     // source code.
-    // 
+    //
     // This software is provided "as is" and without any express or implied
     // warranties.
     //
@@ -104,13 +104,13 @@ TEST_SUITE(StlAllocatorTestbed)
     //
     // StlAllocatorTestPolicy.h
     //
-    // Copyright © 2003 Pete Isensee (PKIsensee@msn.com).
+    // Copyright ï¿½ 2003 Pete Isensee (PKIsensee@msn.com).
     // All rights reserved worldwide.
     //
     // Permission to copy, modify, reproduce or redistribute this source code is
-    // granted provided the above copyright notice is retained in the resulting 
+    // granted provided the above copyright notice is retained in the resulting
     // source code.
-    // 
+    //
     // This software is provided "as is" and without any express or implied
     // warranties.
     //
@@ -133,7 +133,7 @@ TEST_SUITE(StlAllocatorTestbed)
         {
             return Allocator();
         };
-            
+
         // Construct a container using the container default constructor
         // Parameter is not used, but required for specialization
         template< typename Container >
@@ -141,7 +141,7 @@ TEST_SUITE(StlAllocatorTestbed)
         {
             return Container();
         };
-            
+
         // Construct a set using the default set constructor
         // Separate function since specializations may be required
         template< typename Set >
@@ -150,14 +150,14 @@ TEST_SUITE(StlAllocatorTestbed)
             return Set();
         };
 
-        // Construct a map using the default map constructor    
+        // Construct a map using the default map constructor
         // Separate function since specializations may be required
         template< typename Map >
         static Map GetDefaultMap( const Allocator& )
         {
             return Map();
         };
-            
+
         // Construct an adapter (stack, queue) using the default adapter constructor
         // Separate function since specializations may be required
         template< typename Adapter, typename Container >
@@ -185,7 +185,7 @@ TEST_SUITE(StlAllocatorTestbed)
         template< typename Set >
         static Set GetCopiedSet( const Allocator& a )
         {
-            // Sets require a comparison functor prior to the allocator 
+            // Sets require a comparison functor prior to the allocator
             // object in the container ctor
             return Set( std::less< typename Allocator::value_type >(), a );
         }
@@ -198,8 +198,8 @@ TEST_SUITE(StlAllocatorTestbed)
             typedef std::pair< const typename Allocator::value_type, int > Pair;
             typedef typename Allocator::template rebind< Pair >::other Alloc;
             Alloc a( aIn );
-                
-            // Maps require a comparison functor prior to the allocator 
+
+            // Maps require a comparison functor prior to the allocator
             // object in the map ctor.
             return Map( std::less< typename Allocator::value_type >(), a );
         }
@@ -216,7 +216,7 @@ TEST_SUITE(StlAllocatorTestbed)
         template< typename PriorityQueue, typename Container >
         static PriorityQueue GetCopiedPriorityQueue( const Allocator& a )
         {
-            // Priority queues require a comparison functor prior to the 
+            // Priority queues require a comparison functor prior to the
             // allocator object in the container ctor.
             return PriorityQueue( std::less< typename Allocator::value_type >(), Container( a ) );
         }
@@ -224,7 +224,7 @@ TEST_SUITE(StlAllocatorTestbed)
     };
 
     // Any allocator that requires constructor parameters can use this macro
-    // immediately following the inclusion of this header to disable the 
+    // immediately following the inclusion of this header to disable the
     // portion of the testbed that constructs allocators using the default
     // constructor. Example: SET_DEFAULT_CONSTRUCTABLE_OFF( MyAllocator )
 
@@ -305,13 +305,13 @@ TEST_SUITE(StlAllocatorTestbed)
     //
     // StlAllocatorTestTypes.h
     //
-    // Copyright © 2003 Pete Isensee (PKIsensee@msn.com).
+    // Copyright ï¿½ 2003 Pete Isensee (PKIsensee@msn.com).
     // All rights reserved worldwide.
     //
     // Permission to copy, modify, reproduce or redistribute this source code is
-    // granted provided the above copyright notice is retained in the resulting 
+    // granted provided the above copyright notice is retained in the resulting
     // source code.
-    // 
+    //
     // This software is provided "as is" and without any express or implied
     // warranties.
     //
@@ -334,7 +334,7 @@ TEST_SUITE(StlAllocatorTestbed)
         long   l;
         float  f;
         double d;
-            
+
     public:
 
         C()
@@ -348,8 +348,8 @@ TEST_SUITE(StlAllocatorTestbed)
         {
             Verify( *this );
         }
-            
-        C( const C& x )        
+
+        C( const C& x )
         :
             c( x.c ),
             s( x.s ),
@@ -360,7 +360,7 @@ TEST_SUITE(StlAllocatorTestbed)
         {
             Verify( *this );
         }
-            
+
         explicit C( int in )
         :
             c( '0' ),
@@ -372,12 +372,12 @@ TEST_SUITE(StlAllocatorTestbed)
         {
             Verify( *this );
         }
-            
+
         C& operator=( const C& x )
         {
             Verify( x );
             Verify( *this );
-                
+
             C temp( x ); // Exceptional C++ copy assignment swap trick; Item 13
             std::swap( c, temp.c );
             std::swap( s, temp.s );
@@ -385,15 +385,15 @@ TEST_SUITE(StlAllocatorTestbed)
             std::swap( l, temp.l );
             std::swap( f, temp.f );
             std::swap( d, temp.d );
-                
+
             return *this;
-        }        
-            
+        }
+
         ~C()
         {
             Verify( *this );
         }
-            
+
         // Comparable so it can be used in sets and maps
         bool operator<( const C& x ) const
         {
@@ -401,14 +401,14 @@ TEST_SUITE(StlAllocatorTestbed)
             Verify( *this );
             return i < x.i;
         }
-            
+
         // Hashable so it can be used in hash containers
         operator size_t() const
         {
             Verify( *this );
             return size_t( &c );
         }
-            
+
         bool operator==( const C& x ) const
         {
             return c == x.c &&
@@ -429,7 +429,7 @@ TEST_SUITE(StlAllocatorTestbed)
             VERIFY( x.f == 0.0f );
             VERIFY( x.d == 0.0  );
         }
-            
+
     };
 
     //-----------------------------------------------------------------------------
@@ -439,7 +439,7 @@ TEST_SUITE(StlAllocatorTestbed)
     class D
     {
         char* p;
-            
+
     public:
 
         D()
@@ -448,30 +448,30 @@ TEST_SUITE(StlAllocatorTestbed)
         {
             Verify( *this );
         }
-            
+
         D( const D& d )
         :
             p( new char( *d.p ) )
         {
             Verify( d );
         }
-            
+
         explicit D( int i )
         :
             p( new char( static_cast<char>(i) ) )
         {
             Verify( *this );
         }
-            
+
         D& operator=( const D& d )
-        {   
+        {
             Verify( d );
             Verify( *this );
             D temp( d ); // Exceptional C++ copy assignment swap trick; Item 13
             std::swap( p, temp.p );
             return *this;
         }
-            
+
         ~D()
         {
             Verify( *this );
@@ -485,14 +485,14 @@ TEST_SUITE(StlAllocatorTestbed)
             Verify( *this );
             return *p < *d.p;
         }
-            
+
         // Hashable so it can be used in hash containers
         operator size_t() const
         {
             Verify( *this );
             return size_t( p );
         }
-            
+
         bool operator==( const D& d ) const
         {
             return *p == *d.p;
@@ -503,7 +503,7 @@ TEST_SUITE(StlAllocatorTestbed)
             VERIFY( *d.p == 'p' || // assumes outside callers never exceed 100
                     ( *d.p >= 0 && *d.p <= 100 ) );
         }
-                
+
     };
 
     //-----------------------------------------------------------------------------
@@ -516,7 +516,7 @@ TEST_SUITE(StlAllocatorTestbed)
         std::complex<float> c;
         int                 i;
         double              d;
-            
+
     public:
 
         E()
@@ -528,7 +528,7 @@ TEST_SUITE(StlAllocatorTestbed)
         {
             Verify( *this );
         }
-            
+
         E( const E& e )
         :
             s( e.s ), // enough to exceed the small string optimization
@@ -538,7 +538,7 @@ TEST_SUITE(StlAllocatorTestbed)
         {
             Verify( *this );
         }
-            
+
         explicit E( int in )
         :
             s( "0123456789abcxyz" ), // enough to exceed the small string optimization
@@ -548,7 +548,7 @@ TEST_SUITE(StlAllocatorTestbed)
         {
             Verify( *this );
         }
-            
+
         E& operator=( const E& e )
         {
             Verify( e );
@@ -560,12 +560,12 @@ TEST_SUITE(StlAllocatorTestbed)
             std::swap( d, temp.d );
             return *this;
         }
-            
+
         ~E()
         {
             Verify( *this );
         }
-            
+
         // Comparable so it can be used in sets and maps
         bool operator<( const E& e ) const
         {
@@ -573,16 +573,16 @@ TEST_SUITE(StlAllocatorTestbed)
             Verify( *this );
             return i < e.i;
         }
-            
+
         // Hashable so it can be used in hash containers
         operator size_t() const
         {
             Verify( *this );
-                
+
             // Use the string pointer, since it's guaranteed unique
             return size_t( s.c_str() );
         }
-            
+
         bool operator==( const E& e ) const
         {
             return s == e.s &&
@@ -606,13 +606,13 @@ TEST_SUITE(StlAllocatorTestbed)
     //
     // StlAllocatorTestMembers.h
     //
-    // Copyright © 2003 Pete Isensee (PKIsensee@msn.com).
+    // Copyright ï¿½ 2003 Pete Isensee (PKIsensee@msn.com).
     // All rights reserved worldwide.
     //
     // Permission to copy, modify, reproduce or redistribute this source code is
-    // granted provided the above copyright notice is retained in the resulting 
+    // granted provided the above copyright notice is retained in the resulting
     // source code.
-    // 
+    //
     // This software is provided "as is" and without any express or implied
     // warranties.
     //
@@ -633,74 +633,74 @@ TEST_SUITE(StlAllocatorTestbed)
         typename Allocator::value_type      v;
         typename Allocator::reference       r = v;   // Note: must be initialized
         typename Allocator::const_reference cr = v;  // Note: must be initialized
-            
+
         // allocator()
         Allocator b( Policy< Allocator >::Construct( a ) );
         USED( b );
-            
+
         // allocator( const allocator& )
         Allocator c(a);
-            
+
         // allocator( const allocator<U>& ) and rebind
         typename Allocator::template rebind< C >::other d( c );
-            
-        // Although operator=() may be implemented by an allocator, it is 
-        // not required by the C++ Standard, nor is it to be used by 
+
+        // Although operator=() may be implemented by an allocator, it is
+        // not required by the C++ Standard, nor is it to be used by
         // container implementations.
-            
+
         // address( reference )
         p = c.address( r );
-            
+
         // address( const_reference )
         cp = c.address( cr );
-            
+
         // difference_type
         dt = p - cp;
-            
+
         // max_size()
         st = c.max_size();
-            
+
         // allocate( size_type )
         p = c.allocate( 1 );
-            
+
         // deallocate( pointer, size_type )
         c.deallocate( p, 1 );
-            
+
         // allocate( size_type, allocator<void>::const_pointer )
-        p = c.allocate( 1, NULL );
-            
+        p = c.allocate( 1, nullptr );
+
         // construct( pointer, const T& )
         c.construct( p, v );
-            
+
         // destroy( pointer )
         c.destroy( p );
-            
+
         // clean up
         c.deallocate( p, 1 );
-            
+
         // operator ==( const A&, const A& )
         bool f1 = ( a == c );
-            
+
         // operator ==( const A&, const B& )
         bool f2 = ( a == d );
-            
+
         // operator !=( const A&, const A& )
         bool f3 = ( a != c );
-            
+
         // operator !=( const A&, const B& )
         bool f4 = ( a != d );
-            
+
         // Force the compiler to believe that all variables are important
         // so it doesn't optimize away any code
         USED( a );
         USED( c );
         USED( d );
-            
+
         USED( f1 );
         USED( f2 );
         USED( f3 );
         USED( f4 );
-            
+
         USED( st );
         USED( dt );
         USED( p  );
@@ -708,7 +708,7 @@ TEST_SUITE(StlAllocatorTestbed)
         USED( v  );
         USED( r  );
         USED( cr );
-            
+
         // Implicit ~allocator() happens here
     }
 
@@ -718,7 +718,7 @@ TEST_SUITE(StlAllocatorTestbed)
     void TestMemberFunctions( const Allocator& a )
     {
         // Typedefs
-        typename Allocator::pointer         p = NULL;
+        typename Allocator::pointer         p = nullptr;
         typename Allocator::value_type      v;
         typename Allocator::reference       r = v;   // Note: must be initialized
         typename Allocator::const_reference cr = v;  // Note: must be initialized
@@ -726,27 +726,27 @@ TEST_SUITE(StlAllocatorTestbed)
         // allocator()
         Allocator b( Policy< Allocator >::Construct( a ) );
         VERIFY( b == Policy< Allocator >::Construct( a ) );
-            
+
         // allocator( const allocator& )
         // The C++ Standard requires that Alloc<T> a(b) must give the post-condition
         // that Alloc<U>(a) == b
         Allocator c(a);
         VERIFY( c == a );
-            
+
         // allocator( const allocator<U>& ) and rebind
         typename Allocator::template rebind< C >::other d( c );
         typename Allocator::template rebind< typename Allocator::value_type >::other e( d );
         VERIFY( c == e );
-            
+
         // address( reference )
         VERIFY( c.address( r ) == &v );
-            
+
         // address( const_reference )
         VERIFY( c.address( cr ) == &v );
-            
+
         // max_size()
         VERIFY( c.max_size() > 0 );
-            
+
         // allocate( size_type )
         try
         {
@@ -756,92 +756,92 @@ TEST_SUITE(StlAllocatorTestbed)
         {
             OUTERR( "Allocation Failure" );
         }
-        VERIFY( p != NULL );
-            
+        VERIFY( p != nullptr );
+
         // Write to allocated memory
         memset( p, 'x', sizeof( typename Allocator::value_type ) );
 
         // deallocate( pointer, size_type )
         c.deallocate( p, 1 );
-            
+
         // allocate( size_type, allocator<void>::const_pointer )
         try
         {
-            p = c.allocate( 1, NULL );
+            p = c.allocate( 1, nullptr );
         }
         catch(...)
         {
             OUTERR( "Allocation Failure" );
         }
-        VERIFY( p != NULL );
-            
+        VERIFY( p != nullptr );
+
         // Write to allocated memory
         memset( p, 'x', sizeof( typename Allocator::value_type ) );
-            
+
         // construct( pointer, const T& )
         c.construct( p, v );
         VERIFY( *p == v );
-            
+
         // destroy( pointer )
         c.destroy( p );
-            
+
         // clean up
         c.deallocate( p, 1 );
-            
+
         // allocate multiple items
         try
         {
-            p = c.allocate( 2, NULL );
+            p = c.allocate( 2, nullptr );
         }
         catch(...)
         {
             OUTERR( "Allocation Failure" );
         }
-        VERIFY( p != NULL );
-            
+        VERIFY( p != nullptr );
+
         // Write to allocated memory
         memset( p, 'x', sizeof( typename Allocator::value_type ) * 2 );
-            
+
         // construct( pointer, const T& )
         c.construct( p, v );
         VERIFY( *p == v );
-            
+
         c.construct( p + 1, v );
         VERIFY( *(p + 1) == v );
-            
+
         // destroy( pointer )
         c.destroy( p );
         c.destroy( p + 1 );
-            
+
         // clean up
         c.deallocate( p, 2 );
-            
+
         // operator ==( const A&, const A& )
         VERIFY( a == c );
-            
+
         // operator ==( const A&, const B& )
         bool f1 = ( a == d );
-            
+
         // operator !=( const A&, const A& )
         VERIFY( !( a != c ) );
-            
+
         // operator !=( const A&, const B& )
         bool f2 = ( a != d );
-            
+
         // Force the compiler to believe that all variables are important
         // so it doesn't optimize away any code
         USED( a );
         USED( c );
         USED( d );
-            
+
         USED( f1 );
         USED( f2 );
-            
+
         USED( p  );
         USED( v  );
         USED( r  );
         USED( cr );
-            
+
         // Implicit ~allocator() happens here
     }
 
@@ -849,13 +849,13 @@ TEST_SUITE(StlAllocatorTestbed)
     //
     // StlAllocatorTestContainer.h
     //
-    // Copyright © 2003 Pete Isensee (PKIsensee@msn.com).
+    // Copyright ï¿½ 2003 Pete Isensee (PKIsensee@msn.com).
     // All rights reserved worldwide.
     //
     // Permission to copy, modify, reproduce or redistribute this source code is
-    // granted provided the above copyright notice is retained in the resulting 
+    // granted provided the above copyright notice is retained in the resulting
     // source code.
-    // 
+    //
     // This software is provided "as is" and without any express or implied
     // warranties.
     //
@@ -921,7 +921,7 @@ TEST_SUITE(StlAllocatorTestbed)
         c.clear();
         for( int i = 0; i < 100; ++i )
             c.insert( typename Allocator::value_type( static_cast<intptr_t>(i) ) );
-        c.insert( typename Allocator::value_type( 0 ) );        
+        c.insert( typename Allocator::value_type( 0 ) );
         VERIFY( c.find( typename Allocator::value_type( 0 ) ) == c.begin() );
         c.clear();
         USED( a );
@@ -969,7 +969,7 @@ TEST_SUITE(StlAllocatorTestbed)
             c.push( typename Allocator::value_type( static_cast<intptr_t>(i) ) );
     #if( !defined(_MSC_VER) || _MSC_VER < 1310 )
         VERIFY( c.top() == typename Allocator::value_type( 99 ) );
-    #endif    
+    #endif
         for( int i = 0; i < 100; ++i )
             c.pop();
         USED( c );
@@ -1002,7 +1002,7 @@ TEST_SUITE(StlAllocatorTestbed)
         c.pop();
         for( int i = 0; i < 100; ++i )
             c.push( typename Allocator::value_type( static_cast<intptr_t>(i) ) );
-        VERIFY( c.front() == typename Allocator::value_type( 0 ) );        
+        VERIFY( c.front() == typename Allocator::value_type( 0 ) );
         for( int i = 0; i < 100; ++i )
             c.pop();
         USED( c );
@@ -1028,15 +1028,15 @@ TEST_SUITE(StlAllocatorTestbed)
     void TestVector( const Allocator& a )
     {
         typedef std::vector< typename Allocator::value_type, Allocator > Vector;
-            
+
         Vector v1( Policy< Allocator >::template GetDefault< Vector >( a ) );
         Vector v2( Policy< Allocator >::template GetCopied< Vector >( a ) );
-            
+
         TestVector( a, v1 );
         TestVector( a, v2 );
-            
+
         v1.swap( v2 );
-            
+
         TestVector( a, v1 );
         TestVector( a, v2 );
     }
@@ -1047,15 +1047,15 @@ TEST_SUITE(StlAllocatorTestbed)
     void TestDeque( const Allocator& a )
     {
         typedef std::deque< typename Allocator::value_type, Allocator > Deque;
-            
+
         Deque d1( Policy< Allocator >::template GetDefault< Deque >( a ) );
         Deque d2( Policy< Allocator >::template GetCopied< Deque >( a ) );
-            
+
         TestDeque( a, d1 );
         TestDeque( a, d2 );
-            
+
         d1.swap( d2 );
-            
+
         TestDeque( a, d1 );
         TestDeque( a, d2 );
     }
@@ -1066,20 +1066,20 @@ TEST_SUITE(StlAllocatorTestbed)
     void TestList( const Allocator& a )
     {
         typedef std::list< typename Allocator::value_type, Allocator > List;
-            
+
         List l1( Policy< Allocator >::template GetDefault< List >( a ) );
         List l2( Policy< Allocator >::template GetCopied< List >( a ) );
-            
+
         TestList( a, l1 );
         TestList( a, l2 );
-            
+
         l1.swap( l2 );
-            
+
         TestList( a, l1 );
         TestList( a, l2 );
 
         l1.splice( l1.end(), l2 );
-            
+
         TestList( a, l1 );
         TestList( a, l2 );
     }
@@ -1089,18 +1089,18 @@ TEST_SUITE(StlAllocatorTestbed)
     template< typename Allocator >
     void TestSet( const Allocator& a )
     {
-        typedef std::set< typename Allocator::value_type, 
+        typedef std::set< typename Allocator::value_type,
                             std::less< typename Allocator::value_type >,
                             Allocator > Set;
-            
+
         Set s1( Policy< Allocator >::template GetDefaultSet< Set >( a ) );
         Set s2( Policy< Allocator >::template GetCopiedSet< Set >( a ) );
-            
+
         TestSet( a, s1 );
         TestSet( a, s2 );
-            
+
         s1.swap( s2 );
-            
+
         TestSet( a, s1 );
         TestSet( a, s2 );
     }
@@ -1110,18 +1110,18 @@ TEST_SUITE(StlAllocatorTestbed)
     template< typename Allocator >
     void TestMultiset( const Allocator& a )
     {
-        typedef std::multiset< typename Allocator::value_type, 
+        typedef std::multiset< typename Allocator::value_type,
                                 std::less< typename Allocator::value_type >,
                                 Allocator > Multiset;
-            
+
         Multiset s1( Policy< Allocator >::template GetDefaultSet< Multiset >( a ) );
         Multiset s2( Policy< Allocator >::template GetCopiedSet< Multiset >( a ) );
-            
+
         TestSet( a, s1 );
         TestSet( a, s2 );
-            
+
         s1.swap( s2 );
-            
+
         TestSet( a, s1 );
         TestSet( a, s2 );
     }
@@ -1138,15 +1138,15 @@ TEST_SUITE(StlAllocatorTestbed)
         typedef std::map< typename Allocator::value_type, int,
                             std::less< typename Allocator::value_type >,
                             Alloc > Map;
-            
+
         Map m1( Policy< Allocator >::template GetDefaultMap< Map >( a ) );
         Map m2( Policy< Allocator >::template GetCopiedMap< Map >( a ) );
-            
+
         TestMap( a, m1 );
         TestMap( a, m2 );
-            
+
         m1.swap( m2 );
-            
+
         TestMap( a, m1 );
         TestMap( a, m2 );
     }
@@ -1163,15 +1163,15 @@ TEST_SUITE(StlAllocatorTestbed)
         typedef std::multimap< typename Allocator::value_type, int,
                                 std::less< typename Allocator::value_type >,
                                 Alloc > Multimap;
-            
+
         Multimap m1( Policy< Allocator >::template GetDefaultMap< Multimap >( a ) );
         Multimap m2( Policy< Allocator >::template GetCopiedMap< Multimap >( a ) );
-            
+
         TestMap( a, m1 );
         TestMap( a, m2 );
-            
+
         m1.swap( m2 );
-            
+
         TestMap( a, m1 );
         TestMap( a, m2 );
     }
@@ -1185,11 +1185,11 @@ TEST_SUITE(StlAllocatorTestbed)
         typedef typename Allocator::template rebind< char >::other CharAlloc;
         typedef typename Allocator::template rebind< wchar_t >::other WCharAlloc;
 
-        typedef std::basic_string< char, 
-                                    std::char_traits< char >, 
+        typedef std::basic_string< char,
+                                    std::char_traits< char >,
                                     CharAlloc > String;
-        typedef std::basic_string< wchar_t, 
-                                    std::char_traits< wchar_t >, 
+        typedef std::basic_string< wchar_t,
+                                    std::char_traits< wchar_t >,
                                     WCharAlloc > WString;
 
         // string
@@ -1197,25 +1197,25 @@ TEST_SUITE(StlAllocatorTestbed)
 
         String s1( Policy< Allocator >::template GetDefault< String >( a ) );
         String s2( Policy< Allocator >::template GetCopied< String >( a ) );
-            
+
         TestString( a, s1 );
         TestString( a, s2 );
-            
+
         s1.swap( s2 );
-            
+
         TestString( a, s1 );
         TestString( a, s2 );
-            
+
         // wstring
         WCharAlloc wa( aIn );
         WString w1( Policy< Allocator >::template GetDefault< WString >( wa ) );
         WString w2( Policy< Allocator >::template GetCopied< WString >( wa ) );
-            
+
         TestString( wa, w1 );
         TestString( wa, w2 );
-            
+
         w1.swap( w2 );
-            
+
         TestString( wa, w1 );
         TestString( wa, w2 );
     }
@@ -1231,19 +1231,19 @@ TEST_SUITE(StlAllocatorTestbed)
 
         typedef std::stack< typename Allocator::value_type, Deque > DStack;
         typedef std::stack< typename Allocator::value_type, Vector > VStack;
-            
+
         DStack d1( Policy< Allocator >::template GetDefaultAdapter< DStack, Deque >( a ) );
         DStack d2( Policy< Allocator >::template GetCopiedAdapter< DStack, Deque >( a ) );
         VStack v1( Policy< Allocator >::template GetDefaultAdapter< VStack, Vector >( a ) );
         VStack v2( Policy< Allocator >::template GetCopiedAdapter< VStack, Vector >( a ) );
 
         typename Allocator::value_type v;
-            
+
         // Test deque stacks
         TestStack< typename Allocator::value_type >( v, a, d1 );
         TestStack< typename Allocator::value_type >( v, a, d2 );
 
-        // Test vector stacks    
+        // Test vector stacks
         TestStack< typename Allocator::value_type >( v, a, v1 );
         TestStack< typename Allocator::value_type >( v, a, v2 );
     }
@@ -1259,7 +1259,7 @@ TEST_SUITE(StlAllocatorTestbed)
 
         typedef std::queue< typename Allocator::value_type, Deque > DQueue;
         typedef std::queue< typename Allocator::value_type, List > LQueue;
-            
+
         DQueue d1( Policy< Allocator >::template GetDefaultAdapter< DQueue, Deque >( a ) );
         DQueue d2( Policy< Allocator >::template GetCopiedAdapter< DQueue, Deque >( a ) );
         LQueue l1( Policy< Allocator >::template GetDefaultAdapter< LQueue, List >( a ) );
@@ -1285,7 +1285,7 @@ TEST_SUITE(StlAllocatorTestbed)
 
         typedef std::priority_queue< typename Allocator::value_type, Vector > VQueue;
         typedef std::priority_queue< typename Allocator::value_type, Deque > DQueue;
-            
+
         VQueue v1( Policy< Allocator >::template GetDefaultPriorityQueue< VQueue, Vector >( a ) );
         VQueue v2( Policy< Allocator >::template GetCopiedPriorityQueue< VQueue, Vector >( a ) );
         DQueue d1( Policy< Allocator >::template GetDefaultPriorityQueue< DQueue, Deque >( a ) );

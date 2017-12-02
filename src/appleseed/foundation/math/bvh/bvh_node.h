@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,9 +33,6 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
-
-// Boost headers.
-#include "boost/static_assert.hpp"
 
 // Standard headers.
 #include <cassert>
@@ -108,7 +105,7 @@ class APPLESEED_ALIGN(64) Node
     uint32                          m_right_bbox_index;
     uint32                          m_right_bbox_count;
 
-    APPLESEED_SSE_ALIGN ValueType   m_bbox_data[4 * Dimension];
+    APPLESEED_SIMD4_ALIGN ValueType m_bbox_data[4 * Dimension];
 };
 
 
@@ -257,7 +254,7 @@ template <typename AABB>
 template <typename U>
 inline const U& Node<AABB>::get_user_data() const
 {
-    BOOST_STATIC_ASSERT(sizeof(U) <= MAX_USER_DATA_SIZE);
+    static_assert(sizeof(U) <= MAX_USER_DATA_SIZE, "Not enough space in BVH node for user data");
     return *reinterpret_cast<const U*>(m_bbox_data);
 }
 
@@ -265,7 +262,7 @@ template <typename AABB>
 template <typename U>
 inline U& Node<AABB>::get_user_data()
 {
-    BOOST_STATIC_ASSERT(sizeof(U) <= MAX_USER_DATA_SIZE);
+    static_assert(sizeof(U) <= MAX_USER_DATA_SIZE, "Not enough space in BVH node for user data");
     return *reinterpret_cast<U*>(m_bbox_data);
 }
 

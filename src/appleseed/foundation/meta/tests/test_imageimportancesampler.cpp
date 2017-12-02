@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,13 +30,12 @@
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
-#include "foundation/image/colorspace.h"
 #include "foundation/image/drawing.h"
 #include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
-#include "foundation/math/sampling/imageimportancesampler.h"
 #include "foundation/math/qmc.h"
+#include "foundation/math/sampling/imageimportancesampler.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/test.h"
 
@@ -53,16 +52,17 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
     class HorizontalGradientSampler
     {
       public:
+        struct Payload {};
+
         HorizontalGradientSampler(const size_t width, const size_t height)
           : m_width(width)
           , m_height(height)
         {
         }
 
-        void sample(const size_t x, const size_t y, size_t& payload, double& importance) const
+        void sample(const size_t x, const size_t y, Payload& payload, float& importance) const
         {
-            payload = x;
-            importance = static_cast<double>(x) / (m_width - 1);
+            importance = static_cast<float>(x) / (m_width - 1);
         }
 
       private:
@@ -75,39 +75,18 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
         const size_t Width = 5;
         const size_t Height = 5;
 
-        ImageImportanceSampler<size_t, double> importance_sampler(Width, Height);
+        ImageImportanceSampler<HorizontalGradientSampler::Payload, float> importance_sampler(Width, Height);
         HorizontalGradientSampler sampler(Width, Height);
         importance_sampler.rebuild(sampler);
 
         size_t x, y;
-        double prob_xy;
-        importance_sampler.sample(Vector2d(0.3, 0.7), x, y, prob_xy);
+        float prob_xy;
+        importance_sampler.sample(Vector2f(0.3f, 0.7f), x, y, prob_xy);
 
-        const double pdf = importance_sampler.get_pdf(x, y);
+        const float pdf = importance_sampler.get_pdf(x, y);
 
-        EXPECT_FEQ(prob_xy, pdf);
+        EXPECT_EQ(prob_xy, pdf);
     }
-
-    class ImageSampler
-    {
-      public:
-        explicit ImageSampler(const Image& image)
-          : m_image(image)
-        {
-        }
-
-        void sample(const size_t x, const size_t y, size_t& payload, float& importance) const
-        {
-            Color3f color;
-            m_image.get_pixel(x, y, color);
-
-            payload = x;
-            importance = luminance(color);
-        }
-
-      private:
-        const Image&    m_image;
-    };
 
     void generate_image(
         const char*     input_filename,
@@ -115,12 +94,12 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
         const size_t    sample_count)
     {
         GenericImageFileReader reader;
-        auto_ptr<Image> image(reader.read(input_filename));
+        unique_ptr<Image> image(reader.read(input_filename));
 
         const size_t width = image->properties().m_canvas_width;
         const size_t height = image->properties().m_canvas_height;
 
-        ImageImportanceSampler<size_t, float> importance_sampler(width, height);
+        ImageImportanceSampler<ImageSampler::Payload, float> importance_sampler(width, height);
         ImageSampler sampler(*image.get());
         importance_sampler.rebuild(sampler);
 
@@ -191,38 +170,62 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
             256);
     }
 
-    struct UniformBlackSampler
+    struct UniformBlackImageSampler
     {
-        void sample(const size_t x, const size_t y, size_t& payload, double& importance) const
+        struct Payload {};
+
+        void sample(const size_t x, const size_t y, Payload& payload, float& importance) const
         {
-            payload = x;
-            importance = 0.0;
+            importance = 0.0f;
         }
     };
 
     TEST_CASE(Sample_GivenUniformBlackImage)
     {
-        ImageImportanceSampler<size_t, double> importance_sampler(2, 2);
-        UniformBlackSampler sampler;
+        ImageImportanceSampler<UniformBlackImageSampler::Payload, float> importance_sampler(2, 2);
+        UniformBlackImageSampler sampler;
         importance_sampler.rebuild(sampler);
 
         size_t x, y;
-        double prob_xy;
-        importance_sampler.sample(Vector2d(0.0, 0.0), x, y, prob_xy);
+        float prob_xy;
+        importance_sampler.sample(Vector2f(0.0f, 0.0f), x, y, prob_xy);
 
         EXPECT_EQ(0, x);
         EXPECT_EQ(0, y);
-        EXPECT_EQ(0.25, prob_xy);
+        EXPECT_EQ(0.25f, prob_xy);
     }
 
     TEST_CASE(GetPDF_GivenUniformBlackImage)
     {
-        ImageImportanceSampler<size_t, double> importance_sampler(2, 2);
-        UniformBlackSampler sampler;
+        ImageImportanceSampler<UniformBlackImageSampler::Payload, float> importance_sampler(2, 2);
+        UniformBlackImageSampler sampler;
         importance_sampler.rebuild(sampler);
 
-        const double pdf = importance_sampler.get_pdf(0, 1);
+        const float pdf = importance_sampler.get_pdf(0, 1);
 
-        EXPECT_EQ(0.25, pdf);
+        EXPECT_EQ(0.25f, pdf);
+    }
+
+    TEST_CASE(Sample_SinglePrecision)
+    {
+        // With single precision weights and this particular image, we used to hit an assertion
+        // checking that begin != end in sample_cdf(). This was due to the last few entries in
+        // the CDF to be smaller than 1 while corresponding to items with null importance.
+
+        GenericImageFileReader reader;
+        unique_ptr<Image> image(reader.read("unit tests/inputs/test_imageimportancesampler_doge2.exr"));
+
+        const size_t width = image->properties().m_canvas_width;
+        const size_t height = image->properties().m_canvas_height;
+
+        ImageImportanceSampler<ImageSampler::Payload, float> importance_sampler(width, height);
+        ImageSampler sampler(*image.get());
+        importance_sampler.rebuild(sampler);
+
+        size_t x, y;
+        float prob_xy;
+        importance_sampler.sample(Vector2f(0.466647536f, 0.999999762f), x, y, prob_xy);
+
+        EXPECT_GT(0.0f, prob_xy);
     }
 }

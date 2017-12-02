@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/ambientocclusion.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
@@ -42,8 +43,8 @@
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
 #include "foundation/math/sampling/mappings.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 // Forward declarations.
 namespace renderer  { class PixelContext; }
@@ -67,8 +68,8 @@ namespace
     {
       public:
         AOSurfaceShader(
-            const char*             name,
-            const ParamArray&       params)
+            const char*                 name,
+            const ParamArray&           params)
           : SurfaceShader(name, params)
           , m_samples(m_params.get_required<size_t>("samples", 16))
           , m_max_distance(m_params.get_required<double>("max_distance", 1.0))
@@ -89,22 +90,23 @@ namespace
             }
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual void evaluate(
-            SamplingContext&        sampling_context,
-            const PixelContext&     pixel_context,
-            const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point,
-            ShadingResult&          shading_result) const APPLESEED_OVERRIDE
+        void evaluate(
+            SamplingContext&            sampling_context,
+            const PixelContext&         pixel_context,
+            const ShadingContext&       shading_context,
+            const ShadingPoint&         shading_point,
+            AOVAccumulatorContainer&    aov_accumulators,
+            ShadingResult&              shading_result) const override
         {
             double occlusion;
 
@@ -132,8 +134,7 @@ namespace
             }
 
             const float accessibility = static_cast<float>(1.0 - occlusion);
-
-            shading_result.set_main_to_linear_rgb(Color3f(accessibility));
+            shading_result.m_main = Color4f(accessibility, accessibility, accessibility, 1.0f);
         }
 
       private:
@@ -153,6 +154,11 @@ namespace
 //
 // AOSurfaceShaderFactory class implementation.
 //
+
+void AOSurfaceShaderFactory::release()
+{
+    delete this;
+}
 
 const char* AOSurfaceShaderFactory::get_model() const
 {
@@ -205,13 +211,6 @@ DictionaryArray AOSurfaceShaderFactory::get_input_metadata() const
 auto_release_ptr<SurfaceShader> AOSurfaceShaderFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<SurfaceShader>(new AOSurfaceShader(name, params));
-}
-
-auto_release_ptr<SurfaceShader> AOSurfaceShaderFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<SurfaceShader>(new AOSurfaceShader(name, params));
 }

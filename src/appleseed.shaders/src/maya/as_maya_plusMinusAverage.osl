@@ -1,0 +1,148 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/plusMinusAverage.html
+
+shader as_maya_plusMinusAverage
+[[
+    string as_maya_node_name = "plusMinusAverage"
+]]
+(
+    int in_operation = 1
+    [[
+        string as_maya_attribute_name = "operation",
+        string label = "Operation",
+        string widget = "mapper",
+        string options = "No Operation:0|Sum:1|Subtraction:2|Average:3",
+        string page = "Plus-Minus-Average Attributes"
+    ]],
+    float in_input1D[] = {0}
+    [[
+        string as_maya_attribute_name = "input1D",
+        string label = "Input 1D",
+        string page = "Plus-Minus-Average Attributes"
+    ]],
+    vector in_input2D[] = {0}
+    [[
+        string as_maya_attribute_name = "input2D",
+        string label = "Input 2D",
+        string page = "Plus-Minus-Average Attributes"
+    ]],
+    vector in_input3D[] = {0}
+    [[
+        string as_maya_attribute_name = "input3D",
+        string label = "Input 3D",
+        string page = "Plus-Minus-Average Attributes"
+    ]],
+
+    output float out_output1D = 0.0
+    [[
+        string as_maya_attribute_name = "output1D",
+        string label = "Output 1D",
+        string widget = "null"
+    ]],
+    output float out_output2D[2] = {0.0, 0.0}
+    [[
+        string as_maya_attribute_name = "output2D",
+        string label = "Output 2D",
+        string widget = "null"
+    ]],
+    output vector out_output3D = 0.0
+    [[
+        string as_maya_attribute_name = "output3D",
+        string label = "Output 3D",
+        string widget = "null"
+    ]]
+)
+{
+    int size_1d = arraylength(in_input1D);
+    int size_2d = arraylength(in_input2D);
+    int size_3d = arraylength(in_input3D);
+
+    if (in_operation == 0)
+    {
+        out_output1D    = (size_1d) ? in_input1D[0] : 0.0;
+        out_output2D[0] = (size_2d) ? in_input2D[0][0] : 0.0;
+        out_output2D[1] = (size_2d) ? in_input2D[0][1] : 0.0;
+        out_output3D    = (size_3d) ? in_input3D[0] : 0.0;
+    }
+    else if (in_operation == 1 || in_operation == 3)
+    {
+        for (int i = 0; i < size_1d; ++i)
+        {
+            out_output1D += in_input1D[i];
+        }
+        for (int i = 0; i < size_2d; ++i)
+        {
+            out_output2D[0] += in_input2D[i][0];
+            out_output2D[1] += in_input2D[i][1];
+        }
+        for (int i = 0; i < size_3d; ++i)
+        {
+            out_output3D += in_input3D[i];
+        }
+
+        if (in_operation == 3)
+        {
+            out_output1D    /= size_1d;
+            out_output2D[0] /= size_2d;
+            out_output2D[1] /= size_2d;
+            out_output3D    /= size_3d;
+        }
+    }
+    else if (in_operation == 2)
+    {
+        for (int i = 0; i < size_1d; ++i)
+        {
+            out_output1D -= in_input1D[i];
+        }
+        for (int i = 0; i < size_2d; ++i)
+        {
+            out_output2D[0] -= in_input2D[i][0];
+            out_output2D[1] -= in_input2D[i][0];
+        }
+        for (int i = 0; i < size_3d; ++i)
+        {
+            out_output3D -= in_input3D[i];
+        }
+    }
+    else
+    {
+#ifdef DEBUG
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+
+        warning("[WARNING]: invalid operation in shader %s, %s:%i\n",
+                shadername, __FILE__, __LINE__);
+#endif
+        out_output1D = 0.0;
+        out_output2D[0] = 0.0;
+        out_output2D[1] = 0.0;
+        out_output3D = 0.0;
+    }
+}

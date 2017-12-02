@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@
 #include "foundation/image/color.h"
 #include "foundation/image/regularspectrum.h"
 #include "foundation/math/fastmath.h"
+#include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/spline.h"
 #include "foundation/platform/compiler.h"
@@ -45,11 +46,7 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Boost headers.
-#include "boost/static_assert.hpp"
-
 // Standard headers.
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 
@@ -165,7 +162,7 @@ extern const RegularSpectrum31f RGBToSpectrumBlueIlluminance;
 class LightingConditions
 {
   public:
-    APPLESEED_SSE_ALIGN Color4f     m_cmf[32];                  // precomputed values of (cmf[0], cmf[1], cmf[2]) * illuminant
+    APPLESEED_SIMD4_ALIGN Color4f   m_cmf[32];                  // precomputed values of (cmf[0], cmf[1], cmf[2]) * illuminant
 
     LightingConditions();                                       // leaves the object uninitialized
 
@@ -240,10 +237,19 @@ Color<T, 3> linear_rgb_to_hsl(const Color<T, 3>& linear_rgb);
 template <typename T>
 Color<T, 3> ciexyz_to_linear_rgb(const Color<T, 3>& xyz);
 
+template <typename T>
+Color<T, 3> ciexyz_to_linear_rgb(
+    const Color<T, 3>&      xyz,
+    const Matrix<T, 3, 3>&  xyz_to_rgb);
+
 // Convert a color from the linear RGB color space to the CIE XYZ color space.
 template <typename T>
 Color<T, 3> linear_rgb_to_ciexyz(const Color<T, 3>& linear_rgb);
 
+template <typename T>
+Color<T, 3> linear_rgb_to_ciexyz(
+    const Color<T, 3>&      linear_rgb,
+    const Matrix<T, 3, 3>&  rgb_to_xyz);
 
 //
 // CIE XYZ <-> CIE xyY transformations.
@@ -377,20 +383,25 @@ void daylight_ciexy_to_spectrum(
 //   http://www.cs.utah.edu/~bes/papers/color/
 //
 
-// Convert a linear RGB reflectance value to a spectrum,
-// without clamping the spectrum values.
+// Convert a linear RGB reflectance value to a spectrum, without any clamping.
 template <typename T, typename SpectrumType>
 void linear_rgb_reflectance_to_spectrum_unclamped(
     const Color<T, 3>&          linear_rgb,
     SpectrumType&               spectrum);
 
-// Convert a linear RGB reflectance value to a spectrum.
+// Convert a linear RGB reflectance value to a spectrum, and clamp the result to [0, infinity)^N.
 template <typename T, typename SpectrumType>
 void linear_rgb_reflectance_to_spectrum(
     const Color<T, 3>&          linear_rgb,
     SpectrumType&               spectrum);
 
-// Convert a linear RGB illuminance value to a spectrum.
+// Convert a linear RGB illuminance value to a spectrum, without any clamping.
+template <typename T, typename SpectrumType>
+void linear_rgb_illuminance_to_spectrum_unclamped(
+    const Color<T, 3>&          linear_rgb,
+    SpectrumType&               spectrum);
+
+// Convert a linear RGB illuminance value to a spectrum, and clamp the result to [0, infinity)^N.
 template <typename T, typename SpectrumType>
 void linear_rgb_illuminance_to_spectrum(
     const Color<T, 3>&          linear_rgb,
@@ -401,8 +412,7 @@ void linear_rgb_illuminance_to_spectrum(
 // Spectrum <-> Spectrum transformation.
 //
 
-// Convert a spectrum defined over a given set of wavelengths
-// to a spectrum defined over a different set of wavelengths.
+// Resample a spectrum from one set of wavelengths to another.
 template <typename T>
 void spectrum_to_spectrum(
     const size_t                input_count,
@@ -411,7 +421,7 @@ void spectrum_to_spectrum(
     const size_t                output_count,
     const T                     output_wavelength[],
     T                           output_spectrum[],
-    T                           working_storage[] = 0);
+    T                           working_storage[] = nullptr);
 
 
 //
@@ -540,6 +550,7 @@ inline Color<T, 3> hsl_to_linear_rgb(const Color<T, 3>& hsl)
     const T x = c * (T(1.0) - std::abs(mod(hprime, T(2.0)) - T(1.0)));
     switch (truncate<int>(hprime))
     {
+      case 6: // fallthrough
       case 0: linear_rgb[0] += c; linear_rgb[1] += x; break;
       case 1: linear_rgb[0] += x; linear_rgb[1] += c; break;
       case 2: linear_rgb[1] += c; linear_rgb[2] += x; break;
@@ -596,6 +607,14 @@ inline Color<T, 3> ciexyz_to_linear_rgb(const Color<T, 3>& xyz)
 }
 
 template <typename T>
+inline Color<T, 3> ciexyz_to_linear_rgb(
+    const Color<T, 3>&      xyz,
+    const Matrix<T, 3, 3>&  xyz_to_rgb)
+{
+    return clamp_low(xyz_to_rgb * xyz, T(0.0));
+}
+
+template <typename T>
 inline Color<T, 3> linear_rgb_to_ciexyz(const Color<T, 3>& linear_rgb)
 {
     return
@@ -607,6 +626,13 @@ inline Color<T, 3> linear_rgb_to_ciexyz(const Color<T, 3>& linear_rgb)
             T(0.0));
 }
 
+template <typename T>
+inline Color<T, 3> linear_rgb_to_ciexyz(
+    const Color<T, 3>&      linear_rgb,
+    const Matrix<T, 3, 3>&  rgb_to_xyz)
+{
+    return clamp_low(rgb_to_xyz * linear_rgb, T(0.0));
+}
 
 //
 // CIE XYZ <-> CIE xyY transformations implementation.
@@ -697,7 +723,7 @@ inline __m128 fast_linear_rgb_to_srgb(const __m128 linear_rgb)
 
 inline Color3f fast_linear_rgb_to_srgb(const Color3f& linear_rgb)
 {
-    APPLESEED_SSE_ALIGN float transfer[4] =
+    APPLESEED_SIMD4_ALIGN float transfer[4] =
     {
         linear_rgb[0],
         linear_rgb[1],
@@ -762,7 +788,7 @@ inline __m128 faster_linear_rgb_to_srgb(const __m128 linear_rgb)
 
 inline Color3f faster_linear_rgb_to_srgb(const Color3f& linear_rgb)
 {
-    APPLESEED_SSE_ALIGN float transfer[4] =
+    APPLESEED_SIMD4_ALIGN float transfer[4] =
     {
         linear_rgb[0],
         linear_rgb[1],
@@ -819,7 +845,9 @@ Color<T, 3> spectrum_to_ciexyz(
     const LightingConditions&   lighting,
     const SpectrumType&         spectrum)
 {
-    BOOST_STATIC_ASSERT(SpectrumType::Samples == 31);
+    static_assert(
+        SpectrumType::Samples == 31,
+        "foundation::spectrum_to_ciexyz() expects 31-channel spectra");
 
     T x = T(0.0);
     T y = T(0.0);
@@ -860,7 +888,7 @@ inline Color3f spectrum_to_ciexyz<float, RegularSpectrum31f>(
     xyz3 = _mm_add_ps(xyz3, xyz4);
     xyz1 = _mm_add_ps(xyz1, xyz3);
 
-    APPLESEED_SSE_ALIGN float transfer[4];
+    APPLESEED_SIMD4_ALIGN float transfer[4];
     _mm_store_ps(transfer, xyz1);
 
     return Color3f(transfer[0], transfer[1], transfer[2]);
@@ -928,8 +956,10 @@ namespace impl
     {
         for (size_t w = 0;  w < 10; ++w)
             spectrum[w] = static_cast<T>(linear_rgb[2]);
+
         for (size_t w = 10; w < 20; ++w)
             spectrum[w] = static_cast<T>(linear_rgb[1]);
+
         for (size_t w = 20; w < 31; ++w)
             spectrum[w] = static_cast<T>(linear_rgb[0]);
     }
@@ -949,47 +979,84 @@ namespace impl
         const T r = linear_rgb[0];
         const T g = linear_rgb[1];
         const T b = linear_rgb[2];
+        SpectrumType tmp;
 
         if (r <= g && r <= b)
         {
-            spectrum = r * white;
+            spectrum = white;
+            spectrum *= r;
+
             if (g <= b)
             {
-                spectrum += (g - r) * cyan;
-                spectrum += (b - g) * blue;
+                tmp = cyan;
+                tmp *= g - r;
+                spectrum += tmp;
+
+                tmp = blue;
+                tmp *= b - g;
+                spectrum += tmp;
             }
             else
             {
-                spectrum += (b - r) * cyan;
-                spectrum += (g - b) * green;
+                tmp = cyan;
+                tmp *= b - r;
+                spectrum += tmp;
+
+                tmp = green;
+                tmp *= g - b;
+                spectrum += tmp;
             }
         }
         else if (g <= r && g <= b)
         {
-            spectrum = g * white;
+            spectrum = white;
+            spectrum *= g;
+
             if (r <= b)
             {
-                spectrum += (r - g) * magenta;
-                spectrum += (b - r) * blue;
+                tmp = magenta;
+                tmp *= r - g;
+                spectrum += tmp;
+
+                tmp = blue;
+                tmp *= b - r;
+                spectrum += tmp;
             }
             else
             {
-                spectrum += (b - g) * magenta;
-                spectrum += (r - b) * red;
+                tmp = magenta;
+                tmp *= b - g;
+                spectrum += tmp;
+
+                tmp = red;
+                tmp *= r - b;
+                spectrum += tmp;
             }
         }
         else
         {
-            spectrum = b * white;
+            spectrum = white;
+            spectrum *= b;
+
             if (r <= g)
             {
-                spectrum += (r - b) * yellow;
-                spectrum += (g - r) * green;
+                tmp = yellow;
+                tmp *= r - b;
+                spectrum += tmp;
+
+                tmp = green;
+                tmp *= g - r;
+                spectrum += tmp;
             }
             else
             {
-                spectrum += (g - b) * yellow;
-                spectrum += (r - g) * red;
+                tmp = yellow;
+                tmp *= g - b;
+                spectrum += tmp;
+
+                tmp = red;
+                tmp *= r - g;
+                spectrum += tmp;
             }
         }
     }
@@ -1013,21 +1080,16 @@ void linear_rgb_reflectance_to_spectrum_unclamped(
 }
 
 template <typename T, typename SpectrumType>
-void linear_rgb_reflectance_to_spectrum(
+inline void linear_rgb_reflectance_to_spectrum(
     const Color<T, 3>&          linear_rgb,
     SpectrumType&               spectrum)
 {
-    const T m = max_value(linear_rgb);
-
-    linear_rgb_reflectance_to_spectrum_unclamped(
-        linear_rgb,
-        spectrum);
-
-    spectrum = clamp(spectrum, T(0.0), std::max(m, T(1.0)));
+    linear_rgb_reflectance_to_spectrum_unclamped(linear_rgb, spectrum);
+    clamp_low_in_place(spectrum, T(0.0));
 }
 
 template <typename T, typename SpectrumType>
-void linear_rgb_illuminance_to_spectrum(
+void linear_rgb_illuminance_to_spectrum_unclamped(
     const Color<T, 3>&          linear_rgb,
     SpectrumType&               spectrum)
 {
@@ -1053,8 +1115,15 @@ void linear_rgb_illuminance_to_spectrum(
         RGBToSpectrumGreenReflectance,
         RGBToSpectrumBlueReflectance,
         spectrum);
+}
 
-    spectrum = clamp_low(spectrum, T(0.0));
+template <typename T, typename SpectrumType>
+inline void linear_rgb_illuminance_to_spectrum(
+    const Color<T, 3>&          linear_rgb,
+    SpectrumType&               spectrum)
+{
+    linear_rgb_illuminance_to_spectrum_unclamped(linear_rgb, spectrum);
+    clamp_low_in_place(spectrum, T(0.0));
 }
 
 
@@ -1072,7 +1141,7 @@ void spectrum_to_spectrum(
     T                           output_spectrum[],
     T                           working_storage[])
 {
-    const bool own_memory = (working_storage == 0);
+    const bool own_memory = (working_storage == nullptr);
 
     if (own_memory)
         working_storage = new T[input_count];

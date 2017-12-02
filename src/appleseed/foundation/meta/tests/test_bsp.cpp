@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/intersection/rayaabb.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/bsp.h"
+#include "foundation/math/intersection/rayaabb.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/split.h"
 #include "foundation/math/vector.h"
@@ -42,6 +42,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <utility>
 #include <vector>
 
 using namespace foundation;
@@ -277,7 +278,7 @@ TEST_SUITE(Foundation_Math_BSP_Intersector)
 
         Fixture()
         {
-            auto_ptr<Leaf> root_leaf(new Leaf());
+            unique_ptr<Leaf> root_leaf(new Leaf());
             root_leaf->insert(AABB3d(Vector3d(-1.0, -0.5, -0.2), Vector3d(0.0, 0.5, 0.2)));
             root_leaf->insert(AABB3d(Vector3d(0.0, -0.5, -0.7), Vector3d(1.0, 0.5, 0.7)));
 
@@ -285,7 +286,7 @@ TEST_SUITE(Foundation_Math_BSP_Intersector)
             LeafFactory leaf_factory;
             LeafSplitter leaf_splitter;
 
-            builder.build(m_tree, root_leaf, leaf_factory, leaf_splitter);
+            builder.build(m_tree, move(root_leaf), leaf_factory, leaf_splitter);
         }
     };
 

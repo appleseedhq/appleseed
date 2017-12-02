@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -113,7 +113,7 @@ class IntersectionFilter
             return m_bitmask.is_set(ix, iy);
         }
 
-        bool is_transparent(const foundation::Vector2d& uv) const
+        bool is_transparent(const foundation::Vector2f& uv) const
         {
             return !is_opaque(uv);
         }

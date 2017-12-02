@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -66,9 +66,6 @@ class Plugin
 
     // Get a symbol from the plugin.
     void* get_symbol(const char* name, const bool no_throw = true) const;
-
-    // Return the OS default file extension for plugins.
-    static const char* get_default_file_extension();
 
   private:
     friend class PluginCache;

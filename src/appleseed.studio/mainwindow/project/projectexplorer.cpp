@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -136,7 +136,7 @@ namespace
 
 void ProjectExplorer::filter_items(const QString& pattern) const
 {
-    const QRegExp regexp(pattern);
+    const QRegExp regexp(pattern, Qt::CaseInsensitive);
 
     for (int i = 0; i < m_tree_widget->topLevelItemCount(); ++i)
         do_filter_items(m_tree_widget->topLevelItem(i), regexp);
@@ -208,7 +208,7 @@ QMenu* ProjectExplorer::build_multiple_items_context_menu(const QList<QTreeWidge
     return
         are_same_class_uid(items)
             ? items.first()->get_multiple_items_context_menu(items)
-            : 0;
+            : nullptr;
 }
 
 void ProjectExplorer::slot_context_menu(const QPoint& point)

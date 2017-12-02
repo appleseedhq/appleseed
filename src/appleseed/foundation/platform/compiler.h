@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,12 +33,14 @@
 //
 // Quick reminder about Visual Studio versions:
 //
+//   Visual Studio 2017   MSVC++ 15.0   _MSC_VER == 1910
+//   Visual Studio 2015   MSVC++ 14.0   _MSC_VER == 1900
 //   Visual Studio 2013   MSVC++ 12.0   _MSC_VER == 1800
-//   Visual Studio 2012   MSVC++ 11.0   _MSC_VER == 1700
-//   Visual Studio 2010   MSVC++ 10.0   _MSC_VER == 1600
-//   Visual Studio 2008   MSVC++ 9.0    _MSC_VER == 1500
-//   Visual Studio 2005   MSVC++ 8.0    _MSC_VER == 1400
-//   Visual Studio 2003   MSVC++ 7.1    _MSC_VER == 1310
+//   Visual Studio 2012   MSVC++ 11.0   _MSC_VER == 1700 (oldest supported version)
+//   Visual Studio 2010   MSVC++ 10.0   _MSC_VER == 1600 (unsupported)
+//   Visual Studio 2008   MSVC++ 9.0    _MSC_VER == 1500 (unsupported)
+//   Visual Studio 2005   MSVC++ 8.0    _MSC_VER == 1400 (unsupported)
+//   Visual Studio 2003   MSVC++ 7.1    _MSC_VER == 1310 (unsupported)
 //
 
 // appleseed.foundation headers.
@@ -47,13 +49,38 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Source code annotations are available starting with Visual Studio 2005.
-#if _MSC_VER >= 1400
+// Standard headers.
+#include <cstdarg>
+
+// Platform headers.
+#if defined _MSC_VER
 #include <sal.h>
 #endif
 
 namespace foundation
 {
+
+//
+// Thread-local storage-class modifier.
+//
+
+// Visual C++ 2013 and earlier.
+#if defined _MSC_VER && _MSC_VER < 1900
+    #define APPLESEED_TLS __declspec(thread)
+
+// gcc.
+#elif defined __GNUC__
+    // On gcc we use __thread because it's faster than thread_local when dynamic
+    // initialization and destruction is not needed.
+    // It also fixes an internal compiler error in gcc 4.8.3 when using
+    // static thread local members in a template class.
+    #define APPLESEED_TLS __thread
+
+// Other compilers: use C++11's thread_local keyword.
+#else
+    #define APPLESEED_TLS thread_local
+#endif
+
 
 //
 // A qualifier to force inlining of a function/method on supported compilers.
@@ -92,25 +119,28 @@ namespace foundation
 
 
 //
-// A qualifier to specify the alignment of a variable, a structure member or a structure.
+// Qualifiers to specify the alignment of a variable, a structure member or a structure.
 //
-// APPLESEED_SSE_ALIGN aligns on a 16-byte boundary as required by SSE load/store instructions.
+// APPLESEED_SIMD4_ALIGN aligns on a 16-byte boundary as required by SSE load/store instructions.
+// APPLESEED_SIMD8_ALIGN aligns on a 32-byte boundary as required by AVX load/store instructions.
 //
-// Note that APPLESEED_SSE_ALIGN *always* performs the alignment, regardless of whether or not
+// Note that APPLESEED_SIMDx_ALIGN *always* performs the alignment, regardless of whether or not
 // SSE is enabled in the build configuration.
 //
 
 // Visual C++.
 #if defined _MSC_VER
     #define APPLESEED_ALIGN(n) __declspec(align(n))
-    #define APPLESEED_SSE_ALIGN APPLESEED_ALIGN(16)
+    #define APPLESEED_SIMD4_ALIGN APPLESEED_ALIGN(16)
+    #define APPLESEED_SIMD8_ALIGN APPLESEED_ALIGN(32)
 
 // gcc.
 #elif defined __GNUC__
     #define APPLESEED_ALIGN(n) __attribute__((aligned(n)))
-    #define APPLESEED_SSE_ALIGN APPLESEED_ALIGN(16)
+    #define APPLESEED_SIMD4_ALIGN APPLESEED_ALIGN(16)
+    #define APPLESEED_SIMD8_ALIGN APPLESEED_ALIGN(32)
 
-// Other compilers: ignore the qualifier, and leave APPLESEED_SSE_ALIGN undefined.
+// Other compilers: ignore the qualifier, and leave APPLESEED_SIMDX_ALIGN undefined.
 #else
     #define APPLESEED_ALIGN(n)
 #endif
@@ -160,24 +190,6 @@ namespace foundation
 
 
 //
-// Define the APPLESEED_OVERRIDE qualifer as a synonym for the 'override' keyword in C++11.
-//
-
-// Visual C++: supported since Visual Studio 2010.
-#if _MSC_VER >= 1600
-    #define APPLESEED_OVERRIDE override
-
-// gcc: supported since gcc 4.7 when C++11 mode is enabled.
-#elif defined __GNUC__ && __cplusplus >= 201103
-    #define APPLESEED_OVERRIDE override
-
-// Other compilers: the APPLESEED_OVERRIDE qualifier has no effect.
-#else
-    #define APPLESEED_OVERRIDE
-#endif
-
-
-//
 //  A macro to provide the compiler with branch prediction information.
 //  Usage: replace if (cond) with if (APPLESEED_LIKELY(cond))
 //  Warning: programmers are notoriously bad at guessing this.
@@ -197,10 +209,15 @@ namespace foundation
 //  A macro to mark a variable as unused. Useful in unit tests.
 //
 
-#if defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)))
+// gcc: supported since gcc 4.6.
+#if defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 6)))
     #define APPLESEED_UNUSED   __attribute__((unused))
+
+// clang.
 #elif defined(__clang__)
     #define APPLESEED_UNUSED   __attribute__((unused))
+
+// Other compilers: ignore.
 #else
     #define APPLESEED_UNUSED
 #endif
@@ -254,19 +271,14 @@ namespace foundation
 //   available to be checked (such as vprintf), specify the third parameter as zero.
 //   In this case the compiler only checks the format string for consistency. [...]
 //
-//   Since non-static C++ methods have an implicit this argument, the arguments of
+//   Since non-static C++ methods have an implicit 'this' argument, the arguments of
 //   such methods should be counted from two, not one, when giving values for
 //   string_index and first_to_check.
 //
 
 // Visual C++: Visual Studio 2008+ annotations.
-#if _MSC_VER >= 1500
+#if defined _MSC_VER
     #define APPLESEED_PRINTF_FMT _Printf_format_string_
-    #define APPLESEED_PRINTF_FMT_ATTR(string_index, first_to_check)
-
-// Visual C++: Visual Studio 2005 annotations.
-#elif _MSC_VER >= 1400
-    #define APPLESEED_PRINTF_FMT __format_string
     #define APPLESEED_PRINTF_FMT_ATTR(string_index, first_to_check)
 
 // gcc.

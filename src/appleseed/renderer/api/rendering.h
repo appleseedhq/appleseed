@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,11 +33,10 @@
 // API headers.
 #include "renderer/kernel/rendering/debug/blanktilerenderer.h"
 #include "renderer/kernel/rendering/debug/debugtilerenderer.h"
+#include "renderer/kernel/rendering/defaultrenderercontroller.h"
 #include "renderer/kernel/rendering/generic/genericframerenderer.h"
 #include "renderer/kernel/rendering/generic/genericsamplerenderer.h"
 #include "renderer/kernel/rendering/generic/generictilerenderer.h"
-#include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
-#include "renderer/kernel/rendering/defaultrenderercontroller.h"
 #include "renderer/kernel/rendering/iframerenderer.h"
 #include "renderer/kernel/rendering/irenderercontroller.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
@@ -45,7 +44,7 @@
 #include "renderer/kernel/rendering/itilerenderer.h"
 #include "renderer/kernel/rendering/masterrenderer.h"
 #include "renderer/kernel/rendering/nulltilecallback.h"
-#include "renderer/kernel/rendering/scenepicker.h"
+#include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
 #include "renderer/kernel/rendering/tilecallbackbase.h"
 #include "renderer/kernel/rendering/timedrenderercontroller.h"
 

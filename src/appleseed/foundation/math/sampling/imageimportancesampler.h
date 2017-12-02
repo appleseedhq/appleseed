@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/image/color.h"
+#include "foundation/image/colorspace.h"
+#include "foundation/image/image.h"
 #include "foundation/math/cdf.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -77,14 +80,23 @@ class ImageImportanceSampler
     template <typename ImageSampler>
     void rebuild(
         ImageSampler&       sampler,
-        IAbortSwitch*       abort_switch = 0);
+        IAbortSwitch*       abort_switch = nullptr);
 
     // Sample the image and return the coordinates of the chosen pixel
-    // as well as its probability density.
+    // and its probability density.
     void sample(
         const Vector2Type&  s,
-        Payload&            payload,
+        size_t&             x,
         size_t&             y,
+        Importance&         probability) const;
+
+    // Sample the image and return the coordinates of the chosen pixel,
+    // its probability density and its associated payload.
+    void sample(
+        const Vector2Type&  s,
+        size_t&             x,
+        size_t&             y,
+        Payload&            payload,
         Importance&         probability) const;
 
     // Return the probability density of a given pixel.
@@ -93,15 +105,33 @@ class ImageImportanceSampler
         const size_t        y) const;
 
   private:
-    typedef CDF<size_t, Importance> YCDF;
-    typedef CDF<Payload, Importance> XCDF;
+    typedef CDF<size_t, Importance> RowCDF;
+    typedef CDF<Payload, Importance> ColCDF;
 
     const size_t            m_width;
     const size_t            m_height;
     const Importance        m_rcp_pixel_count;
 
-    XCDF*                   m_cdf_x;
-    YCDF                    m_cdf_y;
+    ColCDF*                 m_cols_cdf;
+    RowCDF                  m_rows_cdf;
+};
+
+
+//
+// A foundation::Image sampler.
+//
+
+class ImageSampler
+{
+  public:
+    struct Payload {};
+
+    explicit ImageSampler(const Image& image);
+
+    void sample(const size_t x, const size_t y, Payload& payload, float& importance) const;
+
+  private:
+    const Image& m_image;
 };
 
 
@@ -117,13 +147,13 @@ ImageImportanceSampler<Payload, Importance>::ImageImportanceSampler(
   , m_height(height)
   , m_rcp_pixel_count(Importance(1.0) / (width * height))
 {
-    m_cdf_x = new XCDF[m_height];
+    m_cols_cdf = new ColCDF[m_height];
 }
 
 template <typename Payload, typename Importance>
 ImageImportanceSampler<Payload, Importance>::~ImageImportanceSampler()
 {
-    delete [] m_cdf_x;
+    delete [] m_cols_cdf;
 }
 
 template <typename Payload, typename Importance>
@@ -132,66 +162,107 @@ void ImageImportanceSampler<Payload, Importance>::rebuild(
     ImageSampler&           sampler,
     IAbortSwitch*           abort_switch)
 {
-    m_cdf_y.clear();
-    m_cdf_y.reserve(m_height);
+    m_rows_cdf.clear();
+    m_rows_cdf.reserve(m_height);
 
-    for (size_t y = 0; y < m_height; ++y)
+    for (size_t y = 0, ye = m_height; y < ye; ++y)
     {
         if (is_aborted(abort_switch))
         {
-            m_cdf_y.clear();
+            m_rows_cdf.clear();
             break;
         }
 
-        m_cdf_x[y].clear();
-        m_cdf_x[y].reserve(m_width);
+        m_cols_cdf[y].clear();
+        m_cols_cdf[y].reserve(m_width);
 
-        for (size_t x = 0; x < m_width; ++x)
+        for (size_t x = 0, xe = m_width; x < xe; ++x)
         {
             Payload payload;
             Importance importance;
 
             sampler.sample(x, y, payload, importance);
 
-            m_cdf_x[y].insert(payload, importance);
+            m_cols_cdf[y].insert(payload, importance);
         }
 
-        if (m_cdf_x[y].valid())
-            m_cdf_x[y].prepare();
+        if (m_cols_cdf[y].valid())
+            m_cols_cdf[y].prepare();
 
-        m_cdf_y.insert(y, m_cdf_x[y].weight());
+        m_rows_cdf.insert(y, m_cols_cdf[y].weight());
     }
 
-    if (m_cdf_y.valid())
-        m_cdf_y.prepare();
+    if (m_rows_cdf.valid())
+        m_rows_cdf.prepare();
 }
 
 template <typename Payload, typename Importance>
 inline void ImageImportanceSampler<Payload, Importance>::sample(
     const Vector2Type&      s,
-    Payload&                payload,
+    size_t&                 x,
     size_t&                 y,
     Importance&             probability) const
 {
-    if (m_cdf_y.valid())
+    if (m_rows_cdf.valid())
     {
-        const typename YCDF::ItemWeightPair ry = m_cdf_y.sample(s[1]);
-        const typename XCDF::ItemWeightPair rx = m_cdf_x[ry.first].sample(s[0]);
+        // Select a row.
+        const typename RowCDF::ItemWeightPair& row = m_rows_cdf.sample(s[1]);
+        assert(row.second != Importance(0.0));
+        y = row.first;
 
-        payload = rx.first;
-        y = ry.first;
+        // Select a column within this row.
+        const typename ColCDF::ItemWeightPair& col = m_cols_cdf[y].sample(s[0]);
+        assert(col.second != Importance(0.0));
+        x = &col - &m_cols_cdf[y][0];
 
-        probability = rx.second * ry.second;
+        probability = row.second * col.second;
     }
     else
     {
-        const size_t x = truncate<size_t>(s[0] * m_width);
-
+        // Uniform random sampling.
+        x = truncate<size_t>(s[0] * m_width);
         y = truncate<size_t>(s[1] * m_height);
-        payload = m_cdf_x[y][x].first;
 
         probability = m_rcp_pixel_count;
     }
+
+    assert(probability > Importance(0.0));
+}
+
+template <typename Payload, typename Importance>
+inline void ImageImportanceSampler<Payload, Importance>::sample(
+    const Vector2Type&      s,
+    size_t&                 x,
+    size_t&                 y,
+    Payload&                payload,
+    Importance&             probability) const
+{
+    if (m_rows_cdf.valid())
+    {
+        // Select a row.
+        const typename RowCDF::ItemWeightPair& row = m_rows_cdf.sample(s[1]);
+        assert(row.second != Importance(0.0));
+        y = row.first;
+
+        // Select a column within this row.
+        const typename ColCDF::ItemWeightPair& col = m_cols_cdf[y].sample(s[0]);
+        assert(col.second != Importance(0.0));
+        x = &col - &m_cols_cdf[y][0];
+
+        payload = col.first;
+        probability = row.second * col.second;
+    }
+    else
+    {
+        // Uniform random sampling.
+        x = truncate<size_t>(s[0] * m_width);
+        y = truncate<size_t>(s[1] * m_height);
+
+        payload = m_cols_cdf[y][x].first;
+        probability = m_rcp_pixel_count;
+    }
+
+    assert(probability > Importance(0.0));
 }
 
 template <typename Payload, typename Importance>
@@ -199,14 +270,13 @@ inline Importance ImageImportanceSampler<Payload, Importance>::get_pdf(
     const size_t            x,
     const size_t            y) const
 {
-    if (m_cdf_y.valid())
+    if (m_rows_cdf.valid())
     {
-        if (m_cdf_x[y].valid())
+        if (m_cols_cdf[y].valid())
         {
-            const typename YCDF::ItemWeightPair ry = m_cdf_y[y];
-            const typename XCDF::ItemWeightPair rx = m_cdf_x[y][x];
-
-            return rx.second * ry.second;
+            const typename RowCDF::ItemWeightPair& row = m_rows_cdf[y];
+            const typename ColCDF::ItemWeightPair& col = m_cols_cdf[y][x];
+            return row.second * col.second;
         }
         else
         {
@@ -217,6 +287,23 @@ inline Importance ImageImportanceSampler<Payload, Importance>::get_pdf(
     {
         return m_rcp_pixel_count;
     }
+}
+
+
+//
+// ImageSampler class implementation.
+//
+
+inline ImageSampler::ImageSampler(const Image& image)
+  : m_image(image)
+{
+}
+
+inline void ImageSampler::sample(const size_t x, const size_t y, Payload& payload, float& importance) const
+{
+    Color3f color;
+    m_image.get_pixel(x, y, color);
+    importance = luminance(color);
 }
 
 }       // namespace foundation

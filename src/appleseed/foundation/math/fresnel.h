@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -135,18 +135,31 @@ void normal_reflectance_dielectric(
 // References:
 //
 //   [1] Physically Based Rendering, first edition.
+//
 //   [2] Artist Friendly Metallic Fresnel.
 //       Ole Gulbrandsen
 //       http://jcgt.org/published/0003/04/03/paper.pdf
 //
+//   [3] Memo on Fresnel equations.
+//       https://seblagarde.wordpress.com/2013/04/29/memo-on-fresnel-equations
+//
 
 // Compute the Fresnel reflectance for a conductor for unpolarized light.
-// This approximation assumes an air - conductor interface.
 template <typename SpectrumType, typename T>
 void fresnel_reflectance_conductor(
     SpectrumType&           reflectance,
-    const SpectrumType&     n,                  // refractive index.
-    const SpectrumType&     k,                  // extinction coefficient.
+    const SpectrumType&     nt,                  // conductor refractive index
+    const SpectrumType&     kt,                  // conductor extinction coefficient
+    const T                 ni,                  // incident refractive index
+    const T                 cos_theta_i);
+
+// Compute the Fresnel reflectance for a conductor for unpolarized light.
+// Assumes the incident refractive index is 1.0 (air).
+template <typename SpectrumType, typename T>
+void fresnel_reflectance_conductor(
+    SpectrumType&           reflectance,
+    const SpectrumType&     nt,                  // conductor refractive index
+    const SpectrumType&     kt,                  // conductor extinction coefficient
     const T                 cos_theta_i);
 
 // Compute the refractive index and extinction coefficients for a conductor
@@ -155,15 +168,15 @@ template <typename SpectrumType>
 inline void artist_friendly_fresnel_conductor_reparameterization(
     const SpectrumType&     normal_reflectance,
     const SpectrumType&     edge_tint,
-    SpectrumType&           n,                  // refractive index.
-    SpectrumType&           k);                 // extinction coefficient.
+    SpectrumType&           n,                  // refractive index
+    SpectrumType&           k);                 // extinction coefficient
 
 // Compute the normal reflectivity and edge tint for a conductor
 // using the inverse of the reparameterization defined in [2].
 template <typename SpectrumType>
 inline void artist_friendly_fresnel_conductor_inverse_reparameterization(
-    const SpectrumType&     n,                  // refractive index.
-    const SpectrumType&     k,                  // extinction coefficient.
+    const SpectrumType&     n,                  // refractive index
+    const SpectrumType&     k,                  // extinction coefficient
     SpectrumType&           normal_reflectance,
     SpectrumType&           edge_tint);
 
@@ -182,29 +195,29 @@ void artist_friendly_fresnel_reflectance_conductor(
 //
 // References:
 //
+//   A Better Dipole
+//   http://www.eugenedeon.com/wp-content/uploads/2014/04/betterdipole.pdf
+//
+//   Towards Realistic Image Synthesis of Scattering Materials (eq. 5.27 page 41)
+//   http://www.cs.jhu.edu/~misha/Fall11/Donner.Thesis.pdf
+//
 //   Light Transport in Tissue (appendix A2, page 167)
 //   http://omlc.org/~prahl/pubs/pdf/prahl88.pdf
 //
 //   Fresnel Reflection of Diffusely Incident Light
 //   http://nvlpubs.nist.gov/nistpubs/jres/29/jresv29n5p329_A1b.pdf
 //
-//   Towards Realistic Image Synthesis of Scattering Materials (eq. 5.27 page 41)
-//   http://www.cs.jhu.edu/~misha/Fall11/Donner.Thesis.pdf
-//
-//   A Better Dipole
-//   http://www.eugenedeon.com/wp-content/uploads/2014/04/betterdipole.pdf
-//
 //   Diffuse Fresnel Reflectance
 //   http://photorealizer.blogspot.fr/2012/05/diffuse-fresnel-reflectance.html
 //
 
-// Compute the first moment of the Fresnel equation.
+// Compute 2 * C1(eta) where C1(eta) is the first moment of the Fresnel equation.
 template <typename T>
-T fresnel_first_moment(const T eta);
+T fresnel_first_moment_x2(const T eta);
 
-// Compute the second moment of the Fresnel equation.
+// Compute 3 * C2(eta) where C2(eta) is the second moment of the Fresnel equation.
 template <typename T>
-T fresnel_second_moment(const T eta);
+T fresnel_second_moment_x3(const T eta);
 
 // Compute the internal diffuse reflectance of a dielectric.
 template <typename T>
@@ -434,50 +447,70 @@ void normal_reflectance_dielectric(
 template <typename SpectrumType, typename T>
 inline void fresnel_reflectance_conductor(
     SpectrumType&           reflectance,
-    const SpectrumType&     n,
-    const SpectrumType&     k,
+    const SpectrumType&     nt,
+    const SpectrumType&     kt,
+    const T                 ni,
     const T                 cos_theta_i)
 {
-    //
-    //      (n^2 + k^2) cos_theta^2 - 2n cos_theta + 1
-    // Rp = ------------------------------------------
-    //      (n^2 + k^2) cos_theta^2 + 2n cos_theta + 1
-    //
-
-    //
-    //      (n^2 + k^2) - 2n cos_theta + cos_theta^2
-    // Rs = ----------------------------------------
-    //      (n^2 + k^2) + 2n cos_theta + cos_theta^2
-    //
-
-    //               Rp + Rs
-    // reflectance = -------
-    //                  2
-
-    typedef typename impl::GetValueType<SpectrumType>::ValueType ValueType;
-
     const T cos_theta = std::abs(cos_theta_i);
     const T cos_theta2 = square(cos_theta);
+    const T sin_theta2 = T(1.0) - cos_theta2;
+    const T sin_theta4 = square(sin_theta2);
 
-    const SpectrumType n2 = n * n;
-    const SpectrumType k2 = k * k;
-    const SpectrumType n2_plus_k2 = n2 + k2;
-    const SpectrumType n_2cos_theta = n * ValueType(2.0) * static_cast<ValueType>(cos_theta);
+    const T rcp_ni2 = T(1.0) / square(ni);
 
-    // Parallel.
-    const SpectrumType n2_plus_k2_cos_theta2 = n2_plus_k2 * static_cast<ValueType>(cos_theta2);
-    const SpectrumType one(1.0);
-    reflectance =
-        (n2_plus_k2_cos_theta2 - n_2cos_theta + one) /
-        (n2_plus_k2_cos_theta2 + n_2cos_theta + one);
+    SpectrumType nt2 = nt * nt;
+    nt2 *= rcp_ni2;
 
-    // Perpendicular.
-    const SpectrumType cos_t(static_cast<ValueType>(cos_theta));
-    reflectance +=
-        (n2_plus_k2 - n_2cos_theta + cos_t) /
-        (n2_plus_k2 + n_2cos_theta + cos_t);
+    SpectrumType kt2 = kt * kt;
+    kt2 *= rcp_ni2;
 
-    reflectance *= ValueType(0.5);
+    SpectrumType t0 = nt2 - kt2;
+    t0 -= SpectrumType(sin_theta2);
+
+    SpectrumType a2plusb2 = t0 * t0;
+    SpectrumType tmp = nt2 * kt2;
+    tmp *= T(4.0);
+    a2plusb2 += tmp;
+    a2plusb2 = sqrt(a2plusb2);
+
+    const SpectrumType t1 = a2plusb2 + SpectrumType(cos_theta2);
+
+    tmp = a2plusb2 + t0;
+    tmp *= T(0.5);
+    const SpectrumType a = sqrt(tmp);
+
+    SpectrumType t2 = a;
+    t2 *= T(2.0) * cos_theta;
+
+    tmp = t1 + t2;
+    reflectance = t1 - t2;
+    reflectance /= tmp;
+
+    SpectrumType t3 = a2plusb2;
+    t3 *= cos_theta2;
+    t3 += SpectrumType(sin_theta4);
+
+    SpectrumType t4 = t2;
+    t4 *= sin_theta2;
+
+    tmp = t3 + t4;
+    SpectrumType Rp = t3 - t4;
+    Rp /= tmp;
+    Rp *= reflectance;
+
+    reflectance += Rp;
+    reflectance *= T(0.5);
+}
+
+template <typename SpectrumType, typename T>
+inline void fresnel_reflectance_conductor(
+    SpectrumType&           reflectance,
+    const SpectrumType&     nt,
+    const SpectrumType&     kt,
+    const T                 cos_theta_i)
+{
+    fresnel_reflectance_conductor(reflectance, nt, kt, T(1.0), cos_theta_i);
 }
 
 template <typename SpectrumType>
@@ -562,7 +595,7 @@ inline void artist_friendly_fresnel_reflectance_conductor(
 }
 
 template <typename T>
-inline T fresnel_first_moment(const T eta)
+inline T fresnel_first_moment_x2(const T eta)
 {
     return
         eta < T(1.0)
@@ -571,7 +604,7 @@ inline T fresnel_first_moment(const T eta)
 }
 
 template <typename T>
-inline T fresnel_second_moment(const T eta)
+inline T fresnel_second_moment_x3(const T eta)
 {
     const T rcp_eta = T(1.0) / eta;
     return

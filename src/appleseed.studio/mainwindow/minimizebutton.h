@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Marius Avram, The appleseedhq Organization
+// Copyright (c) 2014-2017 Marius Avram, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -45,13 +45,13 @@ class MinimizeButton
     Q_OBJECT
 
   public:
-    MinimizeButton(QDockWidget* dock_widget, QWidget* parent = 0);
+    MinimizeButton(QDockWidget* dock_widget, QWidget* parent = nullptr);
 
     bool is_on() const;
     void set_fullscreen(const bool on);
 
   protected:
-    void mousePressEvent(QMouseEvent* event);
+    void mousePressEvent(QMouseEvent* event) override;
 
   private:
     QDockWidget*    m_dock_widget;

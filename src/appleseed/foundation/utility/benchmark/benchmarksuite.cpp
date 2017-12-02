@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -73,12 +73,12 @@ namespace
     struct EmptyBenchmarkCase
       : public IBenchmarkCase
     {
-        virtual const char* get_name() const APPLESEED_OVERRIDE
+        const char* get_name() const override
         {
             return "Empty";
         }
 
-        APPLESEED_NO_INLINE virtual void run() APPLESEED_OVERRIDE
+        APPLESEED_NO_INLINE void run() override
         {
         }
     };
@@ -161,7 +161,7 @@ struct BenchmarkSuite::Impl
         StopwatchType&          stopwatch,
         const size_t            measurement_count)
     {
-        auto_ptr<IBenchmarkCase> empty_case(new EmptyBenchmarkCase());
+        unique_ptr<IBenchmarkCase> empty_case(new EmptyBenchmarkCase());
         return
             measure_runtime(
                 empty_case.get(),
@@ -224,7 +224,7 @@ void BenchmarkSuite::run(
         }
 
         // Instantiate the benchmark case.
-        auto_ptr<IBenchmarkCase> benchmark(factory->create());
+        unique_ptr<IBenchmarkCase> benchmark(factory->create());
 
         // Recreate the stopwatch (and the underlying timer) for every benchmark
         // case, since the CPU frequency will fluctuate quite a bit depending on
@@ -268,10 +268,9 @@ void BenchmarkSuite::run(
                         stopwatch,
                         BenchmarkSuite::Impl::measure_runtime_ticks,
                         max<size_t>(1, measurement_count / 100));
-                points.push_back(
-                    Vector2d(
-                        static_cast<double>(j),
-                        ticks > overhead_ticks ? ticks - overhead_ticks : 0.0));
+                points.emplace_back(
+                    static_cast<double>(j),
+                    ticks > overhead_ticks ? ticks - overhead_ticks : 0.0);
             }
 
             stringstream sstr;
@@ -302,13 +301,25 @@ void BenchmarkSuite::run(
 #ifdef NDEBUG
         catch (const exception& e)
         {
-            suite_result.write(
-                *this,
-                *benchmark.get(),
-                __FILE__,
-                __LINE__,
-                "an unexpected exception was caught: %s.",
-                e.what());
+            if (e.what()[0] != '\0')
+            {
+                suite_result.write(
+                    *this,
+                    *benchmark.get(),
+                    __FILE__,
+                    __LINE__,
+                    "an unexpected exception was caught: %s",
+                    e.what());
+            }
+            else
+            {
+                suite_result.write(
+                    *this,
+                    *benchmark.get(),
+                    __FILE__,
+                    __LINE__,
+                    "an unexpected exception was caught (no details available).");
+            }
 
             suite_result.signal_case_failure();
         }

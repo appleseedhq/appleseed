@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -88,7 +88,7 @@ BENCHMARK_SUITE(Foundation_Math_VoxelGrid3)
     {
         for (size_t i = 0; i < LookupPointCount; ++i)
         {
-            APPLESEED_SSE_ALIGN float values[ChannelCount];
+            APPLESEED_SIMD4_ALIGN float values[ChannelCount];
             m_grid.nearest_lookup(m_lookup_points[i], values);
 
             for (size_t j = 0; j < ChannelCount; ++j)
@@ -100,7 +100,7 @@ BENCHMARK_SUITE(Foundation_Math_VoxelGrid3)
     {
         for (size_t i = 0; i < LookupPointCount; ++i)
         {
-            APPLESEED_SSE_ALIGN float values[ChannelCount];
+            APPLESEED_SIMD4_ALIGN float values[ChannelCount];
             m_grid.linear_lookup(m_lookup_points[i], values);
 
             for (size_t j = 0; j < ChannelCount; ++j)
@@ -112,7 +112,7 @@ BENCHMARK_SUITE(Foundation_Math_VoxelGrid3)
     {
         for (size_t i = 0; i < LookupPointCount; ++i)
         {
-            APPLESEED_SSE_ALIGN float values[ChannelCount];
+            APPLESEED_SIMD4_ALIGN float values[ChannelCount];
             m_grid.quadratic_lookup(m_lookup_points[i], values);
 
             for (size_t j = 0; j < ChannelCount; ++j)

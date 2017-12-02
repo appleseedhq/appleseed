@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,10 +32,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/voxel/voxel_node.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/split.h"
 #include "foundation/math/vector.h"
+#include "foundation/math/voxel/voxel_node.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/bufferedfile.h"
 
@@ -181,7 +181,7 @@ bool Tree<T, N>::dump_solid_leaves_to_disk(const std::string& filename) const
     // Open the file for writing.
     // todo: switch to use foundation::BufferedFile.
     std::FILE* file = std::fopen(filename.c_str(), "wt");
-    if (file == 0)
+    if (file == nullptr)
         return false;
 
     // Recursively dump the tree to disk.

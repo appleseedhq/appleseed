@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,7 @@ namespace renderer      { class IFrameRenderer; }
 namespace renderer      { class ITileCallback; }
 namespace renderer      { class ITileCallbackFactory; }
 namespace renderer      { class Project; }
-namespace renderer      { class RendererServices; }
+namespace renderer      { class RendererComponents; }
 namespace renderer      { class SerialRendererController; }
 
 namespace renderer
@@ -64,7 +64,7 @@ class APPLESEED_DLLSYMBOL MasterRenderer
         Project&                    project,
         const ParamArray&           params,
         IRendererController*        renderer_controller,
-        ITileCallbackFactory*       tile_callback_factory = 0);
+        ITileCallbackFactory*       tile_callback_factory = nullptr);
 
     // Constructor for serial tile callbacks.
     MasterRenderer(
@@ -76,8 +76,15 @@ class APPLESEED_DLLSYMBOL MasterRenderer
     // Destructor.
     ~MasterRenderer();
 
+    enum RenderingResult
+    {
+        RenderingSucceeded,
+        RenderingAborted,
+        RenderingFailed
+    };
+
     // Render the project. Return true on success, false otherwise.
-    bool render();
+    RenderingResult render();
 
   private:
     IRendererController*            m_renderer_controller;
@@ -90,14 +97,17 @@ class APPLESEED_DLLSYMBOL MasterRenderer
     Display*                        m_display;
 
     // Render frame sequences, each time reinitializing the rendering components.
-    void do_render();
+    RenderingResult do_render();
 
     // Initialize the rendering components and render a frame sequence.
     IRendererController::Status initialize_and_render_frame_sequence();
 
+    // Return true if the scene passes basic integrity checks.
+    bool check_scene() const;
+
     // Render a frame sequence until the sequence is completed or rendering is aborted.
     IRendererController::Status render_frame_sequence(
-        IFrameRenderer&             frame_renderer,
+        RendererComponents&         components,
         foundation::IAbortSwitch&   abort_switch);
 
     // Wait until the the frame is completed or rendering is aborted.

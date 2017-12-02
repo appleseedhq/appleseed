@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -43,27 +43,27 @@ TEST_SUITE(Foundation_Math_Scalar)
 {
     TEST_CASE(DegToRad)
     {
-        EXPECT_FEQ(0.0,      deg_to_rad(0.0));
-        EXPECT_FEQ(Pi / 4.0, deg_to_rad(45.0));
-        EXPECT_FEQ(Pi,       deg_to_rad(180.0));
-        EXPECT_FEQ(2.0 * Pi, deg_to_rad(360.0));
+        EXPECT_FEQ(0.0,                deg_to_rad(0.0));
+        EXPECT_FEQ(Pi<double>() / 4.0, deg_to_rad(45.0));
+        EXPECT_FEQ(Pi<double>(),       deg_to_rad(180.0));
+        EXPECT_FEQ(2.0 * Pi<double>(), deg_to_rad(360.0));
 
-        EXPECT_FEQ(static_cast<float>(Pi / 4.0), deg_to_rad(45.0f));
-        EXPECT_FEQ_EPS(static_cast<long double>(Pi / 4.0), deg_to_rad(45.0L), 1.0e-14L);
+        EXPECT_FEQ(static_cast<float>(Pi<double>() / 4.0), deg_to_rad(45.0f));
+        EXPECT_FEQ_EPS(static_cast<long double>(Pi<double>() / 4.0), deg_to_rad(45.0L), 1.0e-14L);
     }
 
     TEST_CASE(RadToDeg)
     {
-        EXPECT_FEQ(0.0,      rad_to_deg(0.0));
-        EXPECT_FEQ(45.0,     rad_to_deg(Pi / 4.0));
-        EXPECT_FEQ(180.0,    rad_to_deg(Pi));
-        EXPECT_FEQ(360.0,    rad_to_deg(2.0 * Pi));
+        EXPECT_FEQ(0.0,   rad_to_deg(0.0));
+        EXPECT_FEQ(45.0,  rad_to_deg(Pi<double>() / 4.0));
+        EXPECT_FEQ(180.0, rad_to_deg(Pi<double>()));
+        EXPECT_FEQ(360.0, rad_to_deg(2.0 * Pi<double>()));
 
-        EXPECT_FEQ(45.0f, rad_to_deg(static_cast<float>(Pi / 4.0)));
-        EXPECT_FEQ_EPS(45.0L, rad_to_deg(static_cast<long double>(Pi / 4.0)), 1.0e-14L);
+        EXPECT_FEQ(45.0f, rad_to_deg(static_cast<float>(Pi<double>() / 4.0)));
+        EXPECT_FEQ_EPS(45.0L, rad_to_deg(static_cast<long double>(Pi<double>() / 4.0)), 1.0e-14L);
     }
 
-    TEST_CASE(PowInt)
+    TEST_CASE(PowInt_CompileTimeExponent)
     {
         EXPECT_EQ(1, (pow_int<0, int>(0)));
         EXPECT_EQ(0, (pow_int<1, int>(0)));
@@ -84,6 +84,31 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_FEQ(1.0, (pow_int<0, double>(2.0)));
         EXPECT_FEQ(2.0, (pow_int<1, double>(2.0)));
         EXPECT_FEQ(4.0, (pow_int<2, double>(2.0)));
+        EXPECT_FEQ(8.0, (pow_int<3, double>(2.0)));
+    }
+
+    TEST_CASE(PowInt_RunTimeExponent)
+    {
+        EXPECT_EQ(1, (pow_int<int>(0, 0)));
+        EXPECT_EQ(0, (pow_int<int>(0, 1)));
+        EXPECT_EQ(0, (pow_int<int>(0, 2)));
+
+        EXPECT_EQ(1, (pow_int<int>(1, 0)));
+        EXPECT_EQ(1, (pow_int<int>(1, 1)));
+        EXPECT_EQ(1, (pow_int<int>(1, 2)));
+
+        EXPECT_EQ(1, (pow_int<int>(2, 0)));
+        EXPECT_EQ(2, (pow_int<int>(2, 1)));
+        EXPECT_EQ(4, (pow_int<int>(2, 2)));
+
+        EXPECT_EQ(1, (pow_int<unsigned int>(2, 0)));
+        EXPECT_EQ(2, (pow_int<unsigned int>(2, 1)));
+        EXPECT_EQ(4, (pow_int<unsigned int>(2, 2)));
+
+        EXPECT_FEQ(1.0, (pow_int<double>(2.0, 0)));
+        EXPECT_FEQ(2.0, (pow_int<double>(2.0, 1)));
+        EXPECT_FEQ(4.0, (pow_int<double>(2.0, 2)));
+        EXPECT_FEQ(8.0, (pow_int<double>(2.0, 3)));
     }
 
     TEST_CASE(NextPow2)
@@ -183,6 +208,28 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_EQ(5,  log2_int<uint64>(1 << 5));
         EXPECT_EQ(16, log2_int(1UL << 16));
         EXPECT_EQ(31, log2_int(1UL << 31));
+    }
+
+    TEST_CASE(NextMultiple)
+    {
+        EXPECT_EQ(0,  next_multiple(0, 5));
+        EXPECT_EQ(5,  next_multiple(1, 5));
+        EXPECT_EQ(5,  next_multiple(2, 5));
+        EXPECT_EQ(5,  next_multiple(3, 5));
+        EXPECT_EQ(5,  next_multiple(4, 5));
+        EXPECT_EQ(5,  next_multiple(5, 5));
+        EXPECT_EQ(10, next_multiple(6, 5));
+    }
+
+    TEST_CASE(PrevMultiple)
+    {
+        EXPECT_EQ(0, prev_multiple(0, 5));
+        EXPECT_EQ(0, prev_multiple(1, 5));
+        EXPECT_EQ(0, prev_multiple(2, 5));
+        EXPECT_EQ(0, prev_multiple(3, 5));
+        EXPECT_EQ(0, prev_multiple(4, 5));
+        EXPECT_EQ(5, prev_multiple(5, 5));
+        EXPECT_EQ(5, prev_multiple(6, 5));
     }
 
     TEST_CASE(Factorial)
@@ -305,6 +352,34 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_EQ(2, mod(-4, 3));
         EXPECT_EQ(0.5, mod(0.5, 2.0));
         EXPECT_EQ(1.5, mod(-0.5, 2.0));
+    }
+
+    TEST_CASE(RotL32)
+    {
+        EXPECT_EQ(0xDEADBEEFUL, rotl32(0xDEADBEEFUL, 0));
+        EXPECT_EQ(0xEADBEEFDUL, rotl32(0xDEADBEEFUL, 4));
+        EXPECT_EQ(0xEF56DF77UL, rotl32(0xDEADBEEFUL, 31));
+    }
+
+    TEST_CASE(RotL64)
+    {
+        EXPECT_EQ(0xDEADBEEF12345678ULL, rotl64(0xDEADBEEF12345678ULL, 0));
+        EXPECT_EQ(0xEADBEEF12345678DULL, rotl64(0xDEADBEEF12345678ULL, 4));
+        EXPECT_EQ(0x6F56DF77891A2B3CULL, rotl64(0xDEADBEEF12345678ULL, 63));
+    }
+
+    TEST_CASE(RotR32)
+    {
+        EXPECT_EQ(0xDEADBEEFUL, rotr32(0xDEADBEEFUL, 0));
+        EXPECT_EQ(0xFDEADBEEUL, rotr32(0xDEADBEEFUL, 4));
+        EXPECT_EQ(0xBD5B7DDFUL, rotr32(0xDEADBEEFUL, 31));
+    }
+
+    TEST_CASE(RotR64)
+    {
+        EXPECT_EQ(0xDEADBEEF12345678ULL, rotr64(0xDEADBEEF12345678ULL, 0));
+        EXPECT_EQ(0x8DEADBEEF1234567ULL, rotr64(0xDEADBEEF12345678ULL, 4));
+        EXPECT_EQ(0xBD5B7DDE2468ACF1ULL, rotr64(0xDEADBEEF12345678ULL, 63));
     }
 
     TEST_CASE(SmoothStep)

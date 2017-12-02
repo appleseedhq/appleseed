@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +28,15 @@
 //
 
 // appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
 #include "bindentitycontainers.h"
 #include "dict2dict.h"
 #include "metadata.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/material.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/python.h"
 
 // Standard headers.
 #include <string>
@@ -43,6 +45,16 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+
+// Work around a regression in Visual Studio 2015 Update 3.
+#if defined(_MSC_VER) && _MSC_VER == 1900
+namespace boost
+{
+    template <> Material const volatile* get_pointer<Material const volatile>(Material const volatile* p) { return p; }
+    template <> IMaterialFactory const volatile* get_pointer<IMaterialFactory const volatile>(IMaterialFactory const volatile* p) { return p; }
+    template <> MaterialFactoryRegistrar const volatile* get_pointer<MaterialFactoryRegistrar const volatile>(MaterialFactoryRegistrar const volatile* p) { return p; }
+}
+#endif
 
 namespace
 {
@@ -64,6 +76,14 @@ namespace
 
         return auto_release_ptr<Material>();
     }
+
+    auto_release_ptr<Material> factory_create_material(
+        const IMaterialFactory* factory,
+        const char*             name,
+        const bpy::dict&        params)
+    {
+        return factory->create(name, bpy_dict_to_param_array(params));
+    }
 }
 
 void bind_material()
@@ -72,8 +92,13 @@ void bind_material()
         .def("get_model_metadata", &detail::get_entity_model_metadata<MaterialFactoryRegistrar>).staticmethod("get_model_metadata")
         .def("get_input_metadata", &detail::get_entity_input_metadata<MaterialFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_material))
-        .def("get_model", &Material::get_model)
-        ;
+        .def("get_model", &Material::get_model);
 
     bind_typed_entity_vector<Material>("MaterialContainer");
+
+    bpy::class_<IMaterialFactory, boost::noncopyable>("IMaterialFactory", bpy::no_init)
+        .def("create", &factory_create_material);
+
+    bpy::class_<MaterialFactoryRegistrar, boost::noncopyable>("MaterialFactoryRegistrar", bpy::no_init)
+        .def("lookup", &MaterialFactoryRegistrar::lookup, bpy::return_value_policy<bpy::reference_existing_object>());
 }

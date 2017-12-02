@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -92,7 +92,7 @@ bool AnimationPath::load(const char* filename, const Format format)
 
     AutoClosingFile file(filename, "rt");
 
-    if (file == 0)
+    if (file == nullptr)
     {
         LOG_ERROR(m_logger, "could not read animation path file %s.", filename);
         return false;
@@ -100,7 +100,7 @@ bool AnimationPath::load(const char* filename, const Format format)
 
     char header[1000];
 
-    if (fgets(header, sizeof(header), file) == 0)
+    if (fgets(header, sizeof(header), file) == nullptr)
     {
         LOG_ERROR(m_logger, "could not read animation path file %s.", filename);
         return false;
@@ -171,16 +171,16 @@ bool AnimationPath::load(const char* filename, const Format format)
 
             m_keyframes.push_back(
                 Transformd::from_local_to_parent(
-                    Matrix4d::translation(position) *
-                    Matrix4d::rotation(orientation) *
-                    Matrix4d::rotation(Vector3d(1.0, 0.0, 0.0), -HalfPi)));
+                    Matrix4d::make_translation(position) *
+                    Matrix4d::make_rotation(orientation) *
+                    Matrix4d::make_rotation(Vector3d(1.0, 0.0, 0.0), -HalfPi<double>())));
         }
         else
         {
             m_keyframes.push_back(
                 Transformd::from_local_to_parent(
-                    Matrix4d::translation(position) *
-                    Matrix4d::rotation(orientation)));
+                    Matrix4d::make_translation(position) *
+                    Matrix4d::make_rotation(orientation)));
         }
 
         ++line;

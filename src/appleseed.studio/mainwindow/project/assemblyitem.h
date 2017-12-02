@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -76,7 +76,7 @@ class AssemblyItem
         renderer::BaseGroup&        parent,
         BaseGroupItem*              parent_item);
 
-    virtual QMenu* get_single_item_context_menu() const APPLESEED_OVERRIDE;
+    QMenu* get_single_item_context_menu() const override;
 
     void add_item(renderer::BSDF* bsdf);
     void add_item(renderer::BSSRDF* bssrdf);
@@ -86,6 +86,7 @@ class AssemblyItem
     void add_item(renderer::Light* light);
     void add_item(renderer::Object* object);
     void add_item(renderer::ObjectInstance* object_instance);
+    void add_item(renderer::Volume* volume);
 
     typedef InstanceCollectionItem<renderer::ObjectInstance, ObjectInstanceItem, renderer::Assembly> ObjectInstanceCollectionItem;
 
@@ -108,6 +109,7 @@ class AssemblyItem
     typedef CollectionItem<renderer::EDF, renderer::Assembly, AssemblyItem> EDFCollectionItem;
     typedef CollectionItem<renderer::SurfaceShader, renderer::Assembly, AssemblyItem> SurfaceShaderCollectionItem;
     typedef CollectionItem<renderer::Light, renderer::Assembly, AssemblyItem> LightCollectionItem;
+    typedef CollectionItem<renderer::Volume, renderer::Assembly, AssemblyItem> VolumeCollectionItem;
 
     BSDFCollectionItem*             m_bsdf_collection_item;
     BSSRDFCollectionItem*           m_bssrdf_collection_item;
@@ -117,11 +119,12 @@ class AssemblyItem
     LightCollectionItem*            m_light_collection_item;
     ObjectCollectionItem*           m_object_collection_item;
     ObjectInstanceCollectionItem*   m_object_instance_collection_item;
+    VolumeCollectionItem*           m_volume_collection_item;
 
-    virtual void slot_instantiate() APPLESEED_OVERRIDE;
+    void slot_instantiate() override;
     void do_instantiate(const std::string& name);
 
-    virtual void delete_multiple(const QList<ItemBase*>& items) APPLESEED_OVERRIDE;
+    void delete_multiple(const QList<ItemBase*>& items) override;
     void do_delete();
 
     template <typename Entity, typename EntityContainer>

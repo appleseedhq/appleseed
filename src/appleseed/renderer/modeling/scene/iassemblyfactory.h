@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,15 +30,15 @@
 #define APPLESEED_RENDERER_MODELING_SCENE_IASSEMBLYFACTORY_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/core/concepts/iunknown.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer      { class Assembly; }
-namespace renderer      { class ParamArray; }
+namespace renderer  { class Assembly; }
+namespace renderer  { class ParamArray; }
 
 namespace renderer
 {
@@ -48,12 +48,9 @@ namespace renderer
 //
 
 class APPLESEED_DLLSYMBOL IAssemblyFactory
-  : public foundation::NonCopyable
+  : public foundation::IUnknown
 {
   public:
-    // Destructor.
-    virtual ~IAssemblyFactory() {}
-
     // Return a string identifying this assembly model.
     virtual const char* get_model() const = 0;
 

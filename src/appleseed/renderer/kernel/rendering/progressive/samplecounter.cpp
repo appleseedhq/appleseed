@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,6 @@
 #include <algorithm>
 #include <cassert>
 
-using namespace boost;
 using namespace foundation;
 using namespace std;
 
@@ -49,32 +48,25 @@ SampleCounter::SampleCounter(const uint64 max_sample_count)
 
 void SampleCounter::clear()
 {
-    Spinlock::ScopedLock lock(m_spinlock);
-
     m_sample_count = 0;
 }
 
 uint64 SampleCounter::read() const
 {
-    Spinlock::ScopedLock lock(m_spinlock);
-
     return m_sample_count;
 }
 
-size_t SampleCounter::reserve(const size_t sample_count)
+uint64 SampleCounter::reserve(const uint64 n)
 {
-    Spinlock::ScopedLock lock(m_spinlock);
+    while (true)
+    {
+        uint64 current = m_sample_count;
+        assert(current <= m_max_sample_count);
 
-    assert(m_sample_count <= m_max_sample_count);
-
-    const uint64 reserved_sample_count =
-        min(
-            static_cast<uint64>(sample_count),
-            m_max_sample_count - m_sample_count);
-
-    m_sample_count += reserved_sample_count;
-
-    return static_cast<size_t>(reserved_sample_count);
+        const uint64 reserved = min(n, m_max_sample_count - current);
+        if (m_sample_count.compare_exchange_weak(current, current + reserved))
+            return reserved;
+    }
 }
 
 }   // namespace renderer

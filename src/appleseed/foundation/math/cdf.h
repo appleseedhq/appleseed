@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -49,7 +49,7 @@ namespace foundation
 //
 // Reference:
 //
-//     http://en.wikipedia.org/wiki/Cumulative_distribution_function
+//   http://en.wikipedia.org/wiki/Cumulative_distribution_function
 //
 
 template <typename Item, typename Weight>
@@ -103,6 +103,18 @@ class CDF
 //
 // Sampling and inversion functions.
 //
+
+template <typename T>
+size_t sample_pdf_linear_search(
+    const T*            pdf,
+    const size_t        size,
+    const T             x);
+
+template <typename T>
+size_t sample_cdf_linear_search(
+    const T*            cdf,
+    const size_t        size,
+    const T             x);
 
 template <typename RandomAccessIter, typename Weight>
 size_t sample_cdf(
@@ -200,7 +212,14 @@ void CDF<Item, Weight>::prepare()
         cumulated_weight += m_items[i].second;
         m_densities[i] = cumulated_weight;
     }
-    m_densities[item_count - 1] = Weight(1.0);
+
+    // Post-process the CDF to fix numerical errors.
+    for (size_t i = item_count - 1; ; --i)
+    {
+        m_densities[i] = Weight(1.0);
+        if (m_items[i].second > Weight(0.0))
+            break;
+    }
 }
 
 template <typename Item, typename Weight>
@@ -219,6 +238,43 @@ inline const std::pair<Item, Weight>& CDF<Item, Weight>::sample(const Weight x) 
 //
 // Functions implementation.
 //
+
+template <typename T>
+inline size_t sample_pdf_linear_search(
+    const T*            pdf,
+    const size_t        size,
+    const T             x)
+{
+    assert(size > 0);
+    assert(x >= T(0.0));
+    assert(x < T(1.0));
+
+    T u = T(0.0);
+
+    for (size_t i = 0; i < size; ++i)
+    {
+        u += pdf[i];
+        if (x < u) return i;
+    }
+
+    return size - 1;
+}
+
+template <typename T>
+inline size_t sample_cdf_linear_search(
+    const T*            cdf,
+    const T             x)
+{
+    assert(x >= T(0.0));
+    assert(x < T(1.0));
+
+    size_t i = 0;
+
+    while (cdf[i] < x)
+        i++;
+
+    return i;
+}
 
 template <typename RandomAccessIter, typename Weight>
 inline size_t sample_cdf(
@@ -247,10 +303,17 @@ T invert_cdf_function(
     const T             eps,
     const size_t        max_iterations)
 {
-    assert(cdf(xmin) < u);
-    assert(cdf(xmax) > u);
+    const T cdf_xmin = cdf(xmin);
+    const T cdf_xmax = cdf(xmax);
+
+    if (u <= cdf_xmin)
+        return xmin;
+
+    if (u >= cdf_xmax)
+        return xmax;
 
     T x = guess;
+
     for (size_t i = 0; i < max_iterations; ++i)
     {
         // Use bisection if we go out of bounds.
@@ -264,7 +327,7 @@ T invert_cdf_function(
             break;
 
         // Update bounds.
-        f < 0.0 ? xmin = x : xmax = x;
+        f < T(0.0) ? xmin = x : xmax = x;
 
         // Newton step.
         const T df = pdf(x);

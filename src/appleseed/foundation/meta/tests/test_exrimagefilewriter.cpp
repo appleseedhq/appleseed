@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,9 +30,9 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/exrimagefilewriter.h"
+#include "foundation/image/genericprogressiveimagefilereader.h"
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
-#include "foundation/image/progressiveexrimagefilereader.h"
 #include "foundation/image/tile.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
@@ -49,7 +49,7 @@ TEST_SUITE(Foundation_Image_EXRImageFileWriter)
     static const char* Filename = "unit tests/outputs/test_exrimagefilewriter.exr";
     static const Color4b Reference(50, 100, 150, 42);
 
-    void generate_test_openexr_file()
+    void write_test_openexr_file_to_disk()
     {
         Image image(2, 2, 32, 32, 4, PixelFormatFloat);
         image.clear(Reference);
@@ -58,18 +58,13 @@ TEST_SUITE(Foundation_Image_EXRImageFileWriter)
         writer.write(Filename, image);
     }
 
-    Tile* load_test_openexr_file()
-    {
-        ProgressiveEXRImageFileReader reader;
-        reader.open(Filename);
-        return reader.read_tile(0, 0);
-    }
-
     TEST_CASE(CorrectlyWriteTestImage)
     {
-        generate_test_openexr_file();
+        write_test_openexr_file_to_disk();
 
-        auto_ptr<Tile> tile(load_test_openexr_file());
+        GenericProgressiveImageFileReader reader;
+        reader.open(Filename);
+        unique_ptr<Tile> tile(reader.read_tile(0, 0));
 
         for (size_t i = 0; i < 4; ++i)
         {

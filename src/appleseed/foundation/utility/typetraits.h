@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -126,7 +126,7 @@ namespace impl
         static No is_base(...);
 
       public:
-        typedef typename test_result<sizeof(is_base((Derived*)0))>::type type;
+        typedef typename test_result<sizeof(is_base((Derived*)nullptr))>::type type;
     };
 
     template <typename Base, typename Derived>
@@ -137,7 +137,7 @@ namespace impl
         static Yes is_not_base(...);
 
       public:
-        typedef typename test_result<sizeof(is_not_base((Derived*)0))>::type type;
+        typedef typename test_result<sizeof(is_not_base((Derived*)nullptr))>::type type;
     };
 }
 

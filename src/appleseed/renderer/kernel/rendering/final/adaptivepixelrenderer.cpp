@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,10 +41,9 @@
 #include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/rendering/pixelrendererbase.h"
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
-#include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/frame/frame.h"
-#include "renderer/utility/samplingmode.h"
+#include "renderer/utility/settingsparsing.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -57,6 +56,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/statistics.h"
 
 // Standard headers.
@@ -91,34 +91,27 @@ namespace
         {
             if (m_params.m_diagnostics)
             {
-                ImageStack& images = frame.aov_images();
-
-                m_variation_aov_index = images.get_index("variation");
-                if (m_variation_aov_index == size_t(~0) && images.size() < MaxAOVCount)
-                    m_variation_aov_index = images.append("variation", ImageStack::IdentificationType, 4, PixelFormatFloat);
-
-                m_samples_aov_index = images.get_index("samples");
-                if (m_samples_aov_index == size_t(~0) && images.size() < MaxAOVCount)
-                    m_samples_aov_index = images.append("samples", ImageStack::IdentificationType, 4, PixelFormatFloat);
+                m_variation_aov_index = frame.create_extra_aov_image("variation");
+                m_samples_aov_index = frame.create_extra_aov_image("samples");
 
                 if ((thread_index == 0) && (m_variation_aov_index == size_t(~0) || m_samples_aov_index == size_t(~0)))
                 {
                     RENDERER_LOG_WARNING(
-                        "could not create some of the diagnostic AOVs, maximum number of AOVs (" FMT_SIZE_T ") reached.",
+                        "could not create some of the diagnostic aovs, maximum number of aovs (" FMT_SIZE_T ") reached.",
                         MaxAOVCount);
                 }
             }
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual void on_tile_begin(
+        void on_tile_begin(
             const Frame&                frame,
             Tile&                       tile,
-            TileStack&                  aov_tiles) APPLESEED_OVERRIDE
+            TileStack&                  aov_tiles) override
         {
             m_scratch_fb_half_width = truncate<int>(ceil(frame.get_filter().get_xradius()));
             m_scratch_fb_half_height = truncate<int>(ceil(frame.get_filter().get_yradius()));
@@ -134,10 +127,10 @@ namespace
                 m_diagnostics.reset(new Tile(tile.get_width(), tile.get_height(), 2, PixelFormatFloat));
         }
 
-        virtual void on_tile_end(
+        void on_tile_end(
             const Frame&                frame,
             Tile&                       tile,
-            TileStack&                  aov_tiles) APPLESEED_OVERRIDE
+            TileStack&                  aov_tiles) override
         {
             if (m_params.m_diagnostics)
             {
@@ -161,30 +154,28 @@ namespace
             }
         }
 
-        virtual void render_pixel(
+        void render_pixel(
             const Frame&                frame,
             Tile&                       tile,
             TileStack&                  aov_tiles,
             const AABB2i&               tile_bbox,
-            const PixelContext&         pixel_context,
             const size_t                pass_hash,
-            const int                   tx,
-            const int                   ty,
-            SamplingContext::RNGType&   rng,
-            ShadingResultFrameBuffer&   framebuffer) APPLESEED_OVERRIDE
+            const Vector2i&             pi,
+            const Vector2i&             pt,
+            AOVAccumulatorContainer&    aov_accumulators,
+            ShadingResultFrameBuffer&   framebuffer) override
         {
-            const int ix = pixel_context.m_ix;
-            const int iy = pixel_context.m_iy;
             const size_t aov_count = frame.aov_images().size();
+
+            on_pixel_begin();
 
             m_scratch_fb->clear();
 
             // Create a sampling context.
             const size_t frame_width = frame.image().properties().m_canvas_width;
-            const size_t instance =
-                mix_uint32(
-                    static_cast<uint32>(pass_hash),
-                    static_cast<uint32>(iy * frame_width + ix));
+            const size_t pixel_index = pi.y * frame_width + pi.x;
+            const size_t instance = hash_uint32(static_cast<uint32>(pass_hash + pixel_index));
+            SamplingContext::RNGType rng(pass_hash, instance);
             SamplingContext sampling_context(
                 rng,
                 m_params.m_sampling_mode,
@@ -212,28 +203,28 @@ namespace
                 for (size_t i = 0; i < batch_size; ++i)
                 {
                     // Generate a uniform sample in [0,1)^2.
-                    const Vector2d s = sampling_context.next_vector2<2>();
+                    const Vector2d s = sampling_context.next2<Vector2d>();
 
                     // Compute the sample position in NDC.
-                    const Vector2d sample_position = frame.get_sample_position(ix + s.x, iy + s.y);
+                    const Vector2d sample_position = frame.get_sample_position(pi.x + s.x, pi.y + s.y);
 
-                    // Create and initialize a shading result.
-                    // The main output *must* be set by the sample renderer (typically, by the surface shader).
-                    ShadingResult shading_result(aov_count);
-                    shading_result.set_aovs_to_transparent_black_linear_rgba();
+                    // Create a pixel context that identifies the pixel and sample currently being rendered.
+                    const PixelContext pixel_context(pi, sample_position);
 
                     // Render the sample.
+                    ShadingResult shading_result(aov_count);
                     SamplingContext child_sampling_context(sampling_context);
                     m_sample_renderer->render_sample(
                         child_sampling_context,
                         pixel_context,
                         sample_position,
+                        aov_accumulators,
                         shading_result);
 
                     // Ignore invalid samples.
-                    if (!shading_result.is_valid_linear_rgb())
+                    if (!shading_result.is_valid())
                     {
-                        signal_invalid_sample(ix, iy);
+                        signal_invalid_sample();
                         continue;
                     }
 
@@ -246,9 +237,9 @@ namespace
                     // Update statistics for this pixel.
                     // todo: variation should be computed in a user-selectable color space, typically the target color space.
                     // todo: one tracker per AOV?
-                    trackers[0].insert(shading_result.m_main.m_color[0]);
-                    trackers[1].insert(shading_result.m_main.m_color[1]);
-                    trackers[2].insert(shading_result.m_main.m_color[2]);
+                    trackers[0].insert(shading_result.m_main[0]);
+                    trackers[1].insert(shading_result.m_main[1]);
+                    trackers[2].insert(shading_result.m_main[2]);
                 }
 
                 // Stop if the variation criterion is met.
@@ -264,11 +255,11 @@ namespace
             {
                 for (int x = -m_scratch_fb_half_width; x <= m_scratch_fb_half_width; ++x)
                 {
-                    if (tile_bbox.contains(Vector2i(tx + x, ty + y)))
+                    if (tile_bbox.contains(Vector2i(pt.x + x, pt.y + y)))
                     {
                         framebuffer.merge(                  // destination
-                            tx + x,                         // destination X
-                            ty + y,                         // destination Y
+                            pt.x + x,                       // destination X
+                            pt.y + y,                       // destination Y
                             *m_scratch_fb.get(),            // source
                             m_scratch_fb_half_width + x,    // source X
                             m_scratch_fb_half_height + y,   // source Y
@@ -278,7 +269,7 @@ namespace
             }
 
             // Store diagnostics values in the diagnostics tile.
-            if (m_params.m_diagnostics && tile_bbox.contains(Vector2i(tx, ty)))
+            if (m_params.m_diagnostics && tile_bbox.contains(pt))
             {
                 Color<float, 2> values;
 
@@ -299,13 +290,20 @@ namespace
                             static_cast<float>(m_params.m_max_samples),
                             0.0f, 1.0f);
 
-                m_diagnostics->set_pixel(tx, ty, values);
+                m_diagnostics->set_pixel(pt.x, pt.y, values);
             }
+
+            on_pixel_end(pi);
         }
 
-        virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
+        StatisticsVector get_statistics() const override
         {
             return m_sample_renderer->get_statistics();
+        }
+
+        size_t get_max_samples_per_pixel() const override
+        {
+            return m_params.m_max_samples;
         }
 
       private:
@@ -319,22 +317,22 @@ namespace
 
             explicit Parameters(const ParamArray& params)
               : m_sampling_mode(get_sampling_context_mode(params))
-              , m_min_samples(params.get_required<size_t>("min_samples", 1))
-              , m_max_samples(params.get_required<size_t>("max_samples", 1))
+              , m_min_samples(params.get_required<size_t>("min_samples", 16))
+              , m_max_samples(params.get_required<size_t>("max_samples", 256))
               , m_max_variation(pow(10.0f, -params.get_optional<float>("quality", 2.0f)))
-              , m_diagnostics(params.get_optional<bool>("enable_diagnostics"))
+              , m_diagnostics(params.get_optional<bool>("enable_diagnostics", false))
             {
             }
         };
 
-        const Parameters                    m_params;
-        auto_release_ptr<ISampleRenderer>   m_sample_renderer;
-        size_t                              m_variation_aov_index;
-        size_t                              m_samples_aov_index;
-        int                                 m_scratch_fb_half_width;
-        int                                 m_scratch_fb_half_height;
-        auto_ptr<ShadingResultFrameBuffer>  m_scratch_fb;
-        auto_ptr<Tile>                      m_diagnostics;
+        const Parameters                        m_params;
+        auto_release_ptr<ISampleRenderer>       m_sample_renderer;
+        size_t                                  m_variation_aov_index;
+        size_t                                  m_samples_aov_index;
+        int                                     m_scratch_fb_half_width;
+        int                                     m_scratch_fb_half_height;
+        unique_ptr<ShadingResultFrameBuffer>    m_scratch_fb;
+        unique_ptr<Tile>                        m_diagnostics;
 
         static Color4f scalar_to_color(const float value)
         {
@@ -373,6 +371,47 @@ IPixelRenderer* AdaptivePixelRendererFactory::create(
         m_factory,
         m_params,
         thread_index);
+}
+
+Dictionary AdaptivePixelRendererFactory::get_params_metadata()
+{
+    Dictionary metadata;
+
+    metadata.dictionaries().insert(
+        "min_samples",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "16")
+            .insert("label", "Min Samples")
+            .insert("help", "Minimum number of anti-aliasing samples"));
+
+    metadata.dictionaries().insert(
+        "max_samples",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "256")
+            .insert("label", "Max Samples")
+            .insert("help", "Maximum number of anti-aliasing samples"));
+
+    metadata.dictionaries().insert(
+        "quality",
+        Dictionary()
+            .insert("type", "float")
+            .insert("default", "2.0")
+            .insert("label", "Quality")
+            .insert("help", "Quality factor"));
+
+    metadata.dictionaries().insert(
+        "enable_diagnostics",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "false")
+            .insert("label", "Enable Diagnostics")
+            .insert(
+                "help",
+                "Enable adaptive sampling diagnostics"));
+
+    return metadata;
 }
 
 }   // namespace renderer

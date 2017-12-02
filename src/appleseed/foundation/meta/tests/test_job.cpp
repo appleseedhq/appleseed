@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/platform/atomic.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/timers.h"
 #include "foundation/platform/types.h"
@@ -52,7 +53,7 @@ namespace
     struct EmptyJob
       : public IJob
     {
-        virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
+        void execute(const size_t thread_index) override
         {
         }
     };
@@ -61,18 +62,18 @@ namespace
       : public IJob
     {
       public:
-        explicit JobNotifyingAboutExecution(volatile size_t& execution_count)
+        explicit JobNotifyingAboutExecution(volatile uint32* execution_count)
           : m_execution_count(execution_count)
         {
         }
 
-        virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
+        void execute(const size_t thread_index) override
         {
-            ++m_execution_count;
+            atomic_inc(m_execution_count);
         }
 
       private:
-        volatile size_t& m_execution_count;
+        volatile uint32* m_execution_count;
     };
 }
 
@@ -111,22 +112,22 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
       : public IJob
     {
       public:
-        explicit JobNotifyingAboutDestruction(size_t& destruction_count)
+        explicit JobNotifyingAboutDestruction(volatile uint32* destruction_count)
           : m_destruction_count(destruction_count)
         {
         }
 
-        ~JobNotifyingAboutDestruction()
+        ~JobNotifyingAboutDestruction() override
         {
-            ++m_destruction_count;
+            atomic_inc(m_destruction_count);
         }
 
-        virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
+        void execute(const size_t thread_index) override
         {
         }
 
       private:
-        size_t& m_destruction_count;
+        volatile uint32* m_destruction_count;
     };
 
     TEST_CASE(InitialStateIsCorrect)
@@ -158,11 +159,11 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
 
     TEST_CASE(JobScheduledWithOwnershipTransferIsDestructedWhenJobQueueIsDestructed)
     {
-        size_t destruction_count = 0;
+        volatile uint32 destruction_count = 0;
 
         {
             JobQueue job_queue;
-            job_queue.schedule(new JobNotifyingAboutDestruction(destruction_count), true);
+            job_queue.schedule(new JobNotifyingAboutDestruction(&destruction_count), true);
         }
 
         EXPECT_EQ(1, destruction_count);
@@ -170,11 +171,11 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
 
     TEST_CASE(JobScheduledWithoutOwnershipTransferIsNotDestructedWhenJobQueueIsDestructed)
     {
-        size_t destruction_count = 0;
+        volatile uint32 destruction_count = 0;
 
         {
             JobQueue job_queue;
-            job_queue.schedule(new JobNotifyingAboutDestruction(destruction_count), false);
+            job_queue.schedule(new JobNotifyingAboutDestruction(&destruction_count), false);
         }
 
         EXPECT_EQ(0, destruction_count);
@@ -182,10 +183,10 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
 
     TEST_CASE(JobScheduledWithOwnershipTransferIsDestructedWhenJobQueueIsCleared)
     {
-        size_t destruction_count = 0;
+        volatile uint32 destruction_count = 0;
 
         JobQueue job_queue;
-        job_queue.schedule(new JobNotifyingAboutDestruction(destruction_count), true);
+        job_queue.schedule(new JobNotifyingAboutDestruction(&destruction_count), true);
 
         job_queue.clear_scheduled_jobs();
 
@@ -194,10 +195,10 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
 
     TEST_CASE(JobScheduledWithoutOwnershipTransferIsNotDestructedWhenJobQueueIsCleared)
     {
-        size_t destruction_count = 0;
+        volatile uint32 destruction_count = 0;
 
         JobQueue job_queue;
-        job_queue.schedule(new JobNotifyingAboutDestruction(destruction_count), false);
+        job_queue.schedule(new JobNotifyingAboutDestruction(&destruction_count), false);
 
         job_queue.clear_scheduled_jobs();
 
@@ -269,10 +270,10 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
 
     TEST_CASE(RunningJobOwnedByQueueIsDestructedWhenRetired)
     {
-        size_t destruction_count = 0;
+        volatile uint32 destruction_count = 0;
 
         JobQueue job_queue;
-        job_queue.schedule(new JobNotifyingAboutDestruction(destruction_count), true);
+        job_queue.schedule(new JobNotifyingAboutDestruction(&destruction_count), true);
 
         const JobQueue::RunningJobInfo running_job_info =
             job_queue.acquire_scheduled_job();
@@ -283,10 +284,10 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
 
     TEST_CASE(RunningJobNotOwnedByQueueIsNotDestructedWhenRetired)
     {
-        size_t destruction_count = 0;
+        volatile uint32 destruction_count = 0;
 
         JobQueue job_queue;
-        job_queue.schedule(new JobNotifyingAboutDestruction(destruction_count), false);
+        job_queue.schedule(new JobNotifyingAboutDestruction(&destruction_count), false);
 
         const JobQueue::RunningJobInfo running_job_info =
             job_queue.acquire_scheduled_job();
@@ -316,13 +317,13 @@ TEST_SUITE(Foundation_Utility_Job_JobManager)
       public:
         JobCreatingAnotherJob(
             JobQueue&           job_queue,
-            volatile size_t&    execution_count)
+            volatile uint32*    execution_count)
           : m_job_queue(job_queue)
           , m_execution_count(execution_count)
         {
         }
 
-        virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
+        void execute(const size_t thread_index) override
         {
             m_job_queue.schedule(
                 new JobNotifyingAboutExecution(m_execution_count));
@@ -330,7 +331,7 @@ TEST_SUITE(Foundation_Utility_Job_JobManager)
 
       private:
         JobQueue&           m_job_queue;
-        volatile size_t&    m_execution_count;
+        volatile uint32*    m_execution_count;
     };
 
     TEST_CASE_F(InitialStateIsCorrect, FixtureJobManager)
@@ -350,10 +351,10 @@ TEST_SUITE(Foundation_Utility_Job_JobManager)
 
     TEST_CASE_F(JobManagerExecutesJobs, FixtureJobManager)
     {
-        volatile size_t execution_count = 0;
+        volatile uint32 execution_count = 0;
 
         job_queue.schedule(
-            new JobNotifyingAboutExecution(execution_count));
+            new JobNotifyingAboutExecution(&execution_count));
 
         job_manager.start();
         job_queue.wait_until_completion();
@@ -363,10 +364,10 @@ TEST_SUITE(Foundation_Utility_Job_JobManager)
 
     TEST_CASE_F(JobManagerExecutesSubJobs, FixtureJobManager)
     {
-        volatile size_t execution_count = 0;
+        volatile uint32 execution_count = 0;
 
         job_queue.schedule(
-            new JobCreatingAnotherJob(job_queue, execution_count));
+            new JobCreatingAnotherJob(job_queue, &execution_count));
 
         job_manager.start();
         job_queue.wait_until_completion();
@@ -407,7 +408,7 @@ TEST_SUITE(Foundation_Utility_Job_WorkerThread)
     struct JobThrowingBadAllocException
       : public IJob
     {
-        virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
+        void execute(const size_t thread_index) override
         {
             throw bad_alloc();
         }
@@ -439,8 +440,8 @@ TEST_SUITE(Foundation_Utility_Job_WorkerThread)
         JobQueue job_queue;
         job_queue.schedule(new JobThrowingBadAllocException());
 
-        volatile size_t execution_count = 0;
-        job_queue.schedule(new JobNotifyingAboutExecution(execution_count));
+        volatile uint32 execution_count = 0;
+        job_queue.schedule(new JobNotifyingAboutExecution(&execution_count));
 
         Logger logger;
         WorkerThread worker(0, logger, job_queue, 0);
@@ -464,8 +465,8 @@ TEST_SUITE(Foundation_Utility_Job_WorkerThread)
         JobQueue job_queue;
         job_queue.schedule(new JobThrowingBadAllocException());
 
-        volatile size_t execution_count = 0;
-        job_queue.schedule(new JobNotifyingAboutExecution(execution_count));
+        volatile uint32 execution_count = 0;
+        job_queue.schedule(new JobNotifyingAboutExecution(&execution_count));
 
         Logger logger;
         WorkerThread worker(0, logger, job_queue, JobManager::KeepRunningOnJobFailure);

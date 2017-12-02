@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -52,10 +52,10 @@ class APPLESEED_DLLSYMBOL GenericImageFileWriter
 {
   public:
     // Write an image file.
-    virtual void write(
+    void write(
         const char*             filename,
         const ICanvas&          image,
-        const ImageAttributes&  image_attributes = ImageAttributes());
+        const ImageAttributes&  image_attributes = ImageAttributes()) override;
 };
 
 }       // namespace foundation

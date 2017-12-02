@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -61,18 +61,19 @@ class SceneItem
 
     void expand();
 
-    virtual QMenu* get_single_item_context_menu() const APPLESEED_OVERRIDE;
+    QMenu* get_single_item_context_menu() const override;
 
+    void add_item(renderer::Camera* camera);
     void add_item(renderer::EnvironmentEDF* environment_edf);
     void add_item(renderer::EnvironmentShader* environment_shader);
 
   private:
-    typedef MultiModelEntityItem<renderer::Camera, renderer::Scene, SceneItem> CameraItem;
+    typedef CollectionItem<renderer::Camera, renderer::Scene, SceneItem> CameraCollectionItem;
     typedef SingleModelEntityItem<renderer::Environment, renderer::Scene, SceneItem> EnvironmentItem;
     typedef CollectionItem<renderer::EnvironmentEDF, renderer::Scene, SceneItem> EnvironmentEDFCollectionItem;
     typedef CollectionItem<renderer::EnvironmentShader, renderer::Scene, SceneItem> EnvironmentShaderCollectionItem;
 
-    CameraItem*                         m_camera_item;
+    CameraCollectionItem*               m_camera_collection_item;
     EnvironmentItem*                    m_environment_item;
     EnvironmentEDFCollectionItem*       m_environment_edf_collection_item;
     EnvironmentShaderCollectionItem*    m_environment_shader_collection_item;

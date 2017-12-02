@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 
 // appleseed.foundation headers.
@@ -42,38 +43,40 @@
 namespace renderer
 {
 
+//
+// The BSDFSample class represents the result of sampling a BSDF.
+// It is also used to pass arguments to the BSDF::sample() method.
+//
+
 class BSDFSample
 {
   public:
     // Inputs.
-    const ShadingPoint&             m_shading_point;        // shading point at which the sampling is done
-    const foundation::Dual3d        m_outgoing;             // world space outgoing direction, unit-length
+    const ShadingPoint*             m_shading_point;
+    foundation::Vector3f            m_geometric_normal;     // world space geometric normal at the point where sampling is done, unit-length
+    foundation::Basis3f             m_shading_basis;        // world space shading basis at the point where sampling is done
+    foundation::Dual3f              m_outgoing;             // world space outgoing direction, unit-length
 
     // Outputs.
-    foundation::Dual3d              m_incoming;             // world space incoming direction, unit-length
     ScatteringMode::Mode            m_mode;                 // scattering mode
-    double                          m_probability;          // PDF value
-    Spectrum                        m_value;                // BSDF value
+    foundation::Dual3f              m_incoming;             // world space incoming direction, unit-length, defined only if m_mode != None
+    float                           m_probability;          // PDF value, defined only if m_mode != None
+    DirectShadingComponents         m_value;                // BSDF value, defined only if m_mode != None
 
     // Constructor.
     BSDFSample(
-        const ShadingPoint&         shading_point,
-        const foundation::Dual3d&   outgoing);
-
-    const foundation::Vector3d& get_geometric_normal() const;
-    const foundation::Vector3d& get_shading_normal() const;
-    const foundation::Basis3d& get_shading_basis() const;
-    void set_shading_basis(const foundation::Basis3d& basis);
+        const ShadingPoint*         shading_point,
+        const foundation::Dual3f&   outgoing);
 
     void compute_reflected_differentials();
-    void compute_transmitted_differentials(const double eta);
+    void compute_transmitted_differentials(const float eta);
 
   private:
     void compute_normal_derivatives(
-        foundation::Vector3d&       dndx,
-        foundation::Vector3d&       dndy,
-        double&                     ddndx,
-        double&                     ddndy) const;
+        foundation::Vector3f&       dndx,
+        foundation::Vector3f&       dndy,
+        float&                      ddndx,
+        float&                      ddndy) const;
 
     void apply_pdf_differentials_heuristic();
 };
@@ -84,33 +87,14 @@ class BSDFSample
 //
 
 inline BSDFSample::BSDFSample(
-    const ShadingPoint&             shading_point,
-    const foundation::Dual3d&       outgoing)
+    const ShadingPoint*             shading_point,
+    const foundation::Dual3f&       outgoing)
   : m_shading_point(shading_point)
+  , m_geometric_normal(shading_point->get_geometric_normal())
+  , m_shading_basis(shading_point->get_shading_basis())
   , m_outgoing(outgoing)
-  , m_mode(ScatteringMode::Absorption)
-  , m_probability(0.0)
+  , m_mode(ScatteringMode::None)
 {
-}
-
-inline const foundation::Vector3d& BSDFSample::get_geometric_normal() const
-{
-    return m_shading_point.get_geometric_normal();
-}
-
-inline const foundation::Vector3d& BSDFSample::get_shading_normal() const
-{
-    return m_shading_point.get_shading_normal();
-}
-
-inline const foundation::Basis3d& BSDFSample::get_shading_basis() const
-{
-    return m_shading_point.get_shading_basis();
-}
-
-inline void BSDFSample::set_shading_basis(const foundation::Basis3d& basis)
-{
-    m_shading_point.set_shading_basis(basis);
 }
 
 }       // namespace renderer

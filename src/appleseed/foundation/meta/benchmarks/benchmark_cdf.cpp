@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,9 +28,9 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/math/rng/distribution.h"
-#include "foundation/math/rng/xorshift.h"
 #include "foundation/math/cdf.h"
+#include "foundation/math/rng/distribution.h"
+#include "foundation/math/rng/xorshift32.h"
 #include "foundation/utility/benchmark.h"
 
 // Standard headers.
@@ -48,7 +48,7 @@ BENCHMARK_SUITE(Foundation_Math_CDF)
         typedef CDF<size_t, double> CDFType;
 
         CDFType     m_cdf;
-        Xorshift    m_rng;
+        Xorshift32  m_rng;
         double      m_x;
 
         Fixture()
@@ -69,6 +69,12 @@ BENCHMARK_SUITE(Foundation_Math_CDF)
             m_x += m_cdf.sample(rand_double2(m_rng)).second;
     }
 
+    BENCHMARK_CASE_F(DoublePrecisionSampling_30Elements, Fixture<30>)
+    {
+        for (size_t i = 0; i < 100; ++i)
+            m_x += m_cdf.sample(rand_double2(m_rng)).second;
+    }
+
     BENCHMARK_CASE_F(DoublePrecisionSampling_1000Elements, Fixture<1000>)
     {
         for (size_t i = 0; i < 100; ++i)
@@ -79,5 +85,79 @@ BENCHMARK_SUITE(Foundation_Math_CDF)
     {
         for (size_t i = 0; i < 100; ++i)
             m_x += m_cdf.sample(rand_double2(m_rng)).second;
+    }
+}
+
+BENCHMARK_SUITE(Foundation_Math_CDF_Linear_Search)
+{
+    template <size_t Size>
+    struct Fixture
+    {
+        double              m_weights[Size];
+        Xorshift32          m_rng;
+        double              m_x;
+
+        Fixture()
+          : m_x(0.0)
+        {
+            CDF<size_t, double> cdf;
+
+            for (size_t i = 0; i < Size; ++i)
+                cdf.insert(i, rand_double1(m_rng));
+
+            assert(cdf.valid());
+            cdf.prepare();
+
+            for (size_t i = 0; i < Size; ++i)
+                m_weights[i] = cdf[i].second;
+        }
+    };
+
+    BENCHMARK_CASE_F(DoublePrecisionSampling_1Elements, Fixture<1>)
+    {
+        for (size_t i = 0; i < 100; ++i)
+            m_x += sample_cdf_linear_search(m_weights, rand_double2(m_rng));
+    }
+
+    BENCHMARK_CASE_F(DoublePrecisionSampling_3Elements, Fixture<3>)
+    {
+        for (size_t i = 0; i < 100; ++i)
+            m_x += sample_cdf_linear_search(m_weights, rand_double2(m_rng));
+    }
+
+    BENCHMARK_CASE_F(DoublePrecisionSampling_5Elements, Fixture<5>)
+    {
+        for (size_t i = 0; i < 100; ++i)
+            m_x += sample_cdf_linear_search(m_weights, rand_double2(m_rng));
+    }
+
+    BENCHMARK_CASE_F(DoublePrecisionSampling_10Elements, Fixture<10>)
+    {
+        for (size_t i = 0; i < 100; ++i)
+            m_x += sample_cdf_linear_search(m_weights, rand_double2(m_rng));
+    }
+
+    BENCHMARK_CASE_F(DoublePrecisionSampling_15Elements, Fixture<15>)
+    {
+        for (size_t i = 0; i < 100; ++i)
+            m_x += sample_cdf_linear_search(m_weights, rand_double2(m_rng));
+    }
+
+    BENCHMARK_CASE_F(DoublePrecisionSampling_20Elements, Fixture<20>)
+    {
+        for (size_t i = 0; i < 100; ++i)
+            m_x += sample_cdf_linear_search(m_weights, rand_double2(m_rng));
+    }
+
+    BENCHMARK_CASE_F(DoublePrecisionSampling_30Elements, Fixture<30>)
+    {
+        for (size_t i = 0; i < 100; ++i)
+            m_x += sample_cdf_linear_search(m_weights, rand_double2(m_rng));
+    }
+
+    BENCHMARK_CASE_F(DoublePrecisionSampling_50Elements, Fixture<50>)
+    {
+        for (size_t i = 0; i < 100; ++i)
+            m_x += sample_cdf_linear_search(m_weights, rand_double2(m_rng));
     }
 }

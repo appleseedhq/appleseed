@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,12 @@
 // THE SOFTWARE.
 //
 
-// Project headers.
+// dumpmetadata headers.
 #include "commandlinehandler.h"
+
+// appleseed.shared headers.
+#include "application/application.h"
+#include "application/superlogger.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
@@ -45,14 +49,10 @@
 #include "renderer/api/surfaceshader.h"
 #include "renderer/api/texture.h"
 
-// appleseed.shared headers.
-#include "application/application.h"
-#include "application/superlogger.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/indenter.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/xmlelement.h"
@@ -144,7 +144,6 @@ namespace
         dump_metadata_xml<EnvironmentEDF>(file, indenter);
         dump_metadata_xml<EnvironmentShader>(file, indenter);
         dump_metadata_xml<Light>(file, indenter);
-        dump_metadata_xml<RenderLayerRule>(file, indenter);
         dump_metadata_xml<SurfaceShader>(file, indenter);
         dump_metadata_xml<Texture>(file, indenter);
     }
@@ -266,7 +265,6 @@ namespace
         dump_metadata_markdown<EnvironmentEDF>(section_number++, file);
         dump_metadata_markdown<EnvironmentShader>(section_number++, file);
         dump_metadata_markdown<Light>(section_number++, file);
-        dump_metadata_markdown<RenderLayerRule>(section_number++, file);
         dump_metadata_markdown<SurfaceShader>(section_number++, file);
         dump_metadata_markdown<Texture>(section_number++, file);
     }
@@ -289,11 +287,26 @@ namespace
 
 int main(int argc, const char* argv[])
 {
+    // Construct the logger that will be used throughout the program.
     SuperLogger logger;
+
+    // Make sure this build can run on this host.
+    Application::check_compatibility_with_host(logger);
+
+    // Make sure appleseed is correctly installed.
     Application::check_installation(logger);
 
+    // Parse the command line.
     CommandLineHandler cl;
     cl.parse(argc, argv, logger);
+
+    // Load an apply settings from the settings file.
+    Dictionary settings;
+    Application::load_settings("appleseed.tools.xml", settings, logger);
+    logger.configure_from_settings(settings);
+
+    // Apply command line arguments.
+    cl.apply(logger);
 
     dump_metadata(cl.m_format.value(), logger);
 

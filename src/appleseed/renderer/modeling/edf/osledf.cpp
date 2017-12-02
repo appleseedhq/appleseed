@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,18 +33,23 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/closures.h"
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/edf/diffuseedf.h"
 #include "renderer/modeling/edf/edf.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/arena.h"
+
+// Standard headers.
+#include <limits>
 
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
@@ -67,106 +72,168 @@ namespace
             m_diffuse_edf = DiffuseEDFFactory().create("osl_diff_edf", ParamArray());
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual void evaluate_inputs(
-            InputEvaluator&         input_evaluator,
-            const ShadingPoint&     shading_point) const APPLESEED_OVERRIDE
+        void* evaluate_inputs(
+            const ShadingContext&   shading_context,
+            const ShadingPoint&     shading_point) const override
         {
             CompositeEmissionClosure* c =
-                reinterpret_cast<CompositeEmissionClosure*>(input_evaluator.data());
-            new (c) CompositeEmissionClosure(shading_point.get_osl_shader_globals().Ci);
+                shading_context.get_arena().allocate_noinit<CompositeEmissionClosure>();
+
+            new (c) CompositeEmissionClosure(
+                shading_point.get_osl_shader_globals().Ci,
+                shading_context.get_arena());
+
+            return c;
         }
 
-        virtual void sample(
+        void sample(
             SamplingContext&        sampling_context,
             const void*             data,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector2d&         s,
-            Vector3d&               outgoing,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector2f&         s,
+            Vector3f&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
             const CompositeEmissionClosure* c =
-                reinterpret_cast<const CompositeEmissionClosure*>(data);
+                static_cast<const CompositeEmissionClosure*>(data);
 
-            m_diffuse_edf->sample(
-                sampling_context,
-                &c->edf_input_values(),
-                geometric_normal,
-                shading_basis,
-                s,
-                outgoing,
-                value,
-                probability);
-        }
+            if (c->get_closure_count() > 0)
+            {
+                sampling_context.split_in_place(1, 1);
+                const size_t closure_index = c->choose_closure(
+                    sampling_context.next2<float>());
 
-        virtual void evaluate(
-            const void*             data,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
-            Spectrum&               value) const APPLESEED_OVERRIDE
-        {
-            const CompositeEmissionClosure* c =
-                reinterpret_cast<const CompositeEmissionClosure*>(data);
-
-            m_diffuse_edf->evaluate(
-                &c->edf_input_values(),
-                geometric_normal,
-                shading_basis,
-                outgoing,
-                value);
-        }
-
-        virtual void evaluate(
-            const void*             data,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
-            Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
-        {
-            const CompositeEmissionClosure* c =
-                reinterpret_cast<const CompositeEmissionClosure*>(data);
-
-            m_diffuse_edf->evaluate(
-                &c->edf_input_values(),
-                geometric_normal,
-                shading_basis,
-                outgoing,
-                value,
-                probability);
-        }
-
-        virtual double evaluate_pdf(
-            const void*             data,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing) const APPLESEED_OVERRIDE
-        {
-            const CompositeEmissionClosure* c =
-                reinterpret_cast<const CompositeEmissionClosure*>(data);
-
-            return
-                m_diffuse_edf->evaluate_pdf(
-                    &c->edf_input_values(),
+                const EDF& edf = edf_from_closure_id(c->get_closure_type(closure_index));
+                edf.sample(
+                    sampling_context,
+                    c->get_closure_input_values(closure_index),
                     geometric_normal,
                     shading_basis,
-                    outgoing);
+                    s,
+                    outgoing,
+                    value,
+                    probability);
+            }
+        }
+
+        void evaluate(
+            const void*             data,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
+            Spectrum&               value) const override
+        {
+            const CompositeEmissionClosure* c =
+                static_cast<const CompositeEmissionClosure*>(data);
+
+            value.set(0.0f);
+
+            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
+            {
+                Spectrum s(Spectrum::Illuminance);
+
+                const EDF& edf = edf_from_closure_id(c->get_closure_type(i));
+                edf.evaluate(
+                    c->get_closure_input_values(i),
+                    geometric_normal,
+                    shading_basis,
+                    outgoing,
+                    s);
+
+                value += s;
+            }
+        }
+
+        void evaluate(
+            const void*             data,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
+            Spectrum&               value,
+            float&                  probability) const override
+        {
+            const CompositeEmissionClosure* c =
+                static_cast<const CompositeEmissionClosure*>(data);
+
+            value.set(0.0f);
+            probability = 0.0f;
+
+            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
+            {
+                Spectrum s(Spectrum::Illuminance);
+                float edf_prob = 0.0f;
+
+                const EDF& edf = edf_from_closure_id(c->get_closure_type(i));
+                edf.evaluate(
+                    c->get_closure_input_values(i),
+                    geometric_normal,
+                    shading_basis,
+                    outgoing,
+                    s,
+                    edf_prob);
+
+                if (edf_prob > 0.0f)
+                {
+                    value += s;
+                    probability += edf_prob * c->get_closure_pdf(i);
+                }
+            }
+        }
+
+        float evaluate_pdf(
+            const void*             data,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing) const override
+        {
+            const CompositeEmissionClosure* c =
+                static_cast<const CompositeEmissionClosure*>(data);
+
+            float probability = 0.0f;
+
+            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
+            {
+                const EDF& edf = edf_from_closure_id(c->get_closure_type(i));
+                const float edf_prob =
+                    edf.evaluate_pdf(
+                        c->get_closure_input_values(i),
+                        geometric_normal,
+                        shading_basis,
+                        outgoing);
+
+                if (edf_prob > 0.0f)
+                    probability += edf_prob * c->get_closure_pdf(i);
+            }
+
+            return probability;
+        }
+
+        float get_uncached_max_contribution() const override
+        {
+            // We can't know the max contribution of OSL EDFs.
+            return numeric_limits<float>::max();
         }
 
       private:
         auto_release_ptr<EDF> m_diffuse_edf;
+
+        const EDF& edf_from_closure_id(const ClosureID cid) const
+        {
+            assert(cid == EmissionID);
+            return *m_diffuse_edf;
+        }
     };
 }
 

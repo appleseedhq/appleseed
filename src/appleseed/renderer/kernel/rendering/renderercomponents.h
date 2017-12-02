@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/ilightingengine.h"
-#include "renderer/kernel/lighting/lightsampler.h"
+#include "renderer/kernel/lighting/backwardlightsampler.h"
+#include "renderer/kernel/lighting/forwardlightsampler.h"
 #include "renderer/kernel/rendering/iframerenderer.h"
 #include "renderer/kernel/rendering/ipasscallback.h"
 #include "renderer/kernel/rendering/ipixelrenderer.h"
@@ -44,29 +45,15 @@
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
 
-// OpenImageIO headers.
-#ifdef APPLESEED_WITH_OIIO
-#include "foundation/platform/oiioheaderguards.h"
-BEGIN_OIIO_INCLUDES
-#include "OpenImageIO/texture.h"
-END_OIIO_INCLUDES
-#endif
-
-// OSL headers.
-#ifdef APPLESEED_WITH_OSL
-#include "foundation/platform/oslheaderguards.h"
-BEGIN_OSL_INCLUDES
-#include "OSL/oslexec.h"
-END_OSL_INCLUDES
-#endif
-
 // Standard headers.
-#include <string>
+#include <memory>
 
 // Forward declarations.
 namespace renderer  { class Frame; }
 namespace renderer  { class IFrameRenderer; }
 namespace renderer  { class ITileCallbackFactory; }
+namespace renderer  { class OIIOTextureSystem; }
+namespace renderer  { class OSLShadingSystem; }
 namespace renderer  { class ParamArray; }
 namespace renderer  { class Project; }
 namespace renderer  { class Scene; }
@@ -76,6 +63,11 @@ namespace renderer  { class TraceContext; }
 namespace renderer
 {
 
+//
+// The RendererComponents creates, connects together and owns the various components
+// of the rendering pipeline.
+//
+
 class RendererComponents
 {
   public:
@@ -83,44 +75,40 @@ class RendererComponents
         const Project&          project,
         const ParamArray&       params,
         ITileCallbackFactory*   tile_callback_factory,
-        TextureStore&           texture_store
-#ifdef APPLESEED_WITH_OIIO
-        , OIIO::TextureSystem&  texture_system
-#endif
-#ifdef APPLESEED_WITH_OSL
-        , OSL::ShadingSystem&   shading_system
-#endif
-        );
+        TextureStore&           texture_store,
+        OIIOTextureSystem&      texture_system,
+        OSLShadingSystem&       shading_system);
 
-    bool initialize();
+    bool create();
+
+    ShadingEngine& get_shading_engine();
 
     IFrameRenderer& get_frame_renderer();
 
   private:
-    const Project&                                  m_project;
-    const ParamArray&                               m_params;
-    ITileCallbackFactory*                           m_tile_callback_factory;
-    const Scene&                                    m_scene;
-    const Frame&                                    m_frame;
-    const TraceContext&                             m_trace_context;
-    LightSampler                                    m_light_sampler;
-    ShadingEngine                                   m_shading_engine;
-    TextureStore&                                   m_texture_store;
-#ifdef APPLESEED_WITH_OIIO
-    OIIO::TextureSystem&                            m_texture_system;
-#endif
-#ifdef APPLESEED_WITH_OSL
-    OSL::ShadingSystem&                             m_shading_system;
-#endif
+    const Project&                                      m_project;
+    const ParamArray&                                   m_params;
+    ITileCallbackFactory*                               m_tile_callback_factory;
+    const Scene&                                        m_scene;
+    const Frame&                                        m_frame;
+    const TraceContext&                                 m_trace_context;
+    std::unique_ptr<ForwardLightSampler>
+                                                        m_forward_light_sampler;
+    std::unique_ptr<BackwardLightSampler>
+                                                        m_backward_light_sampler;
+    ShadingEngine                                       m_shading_engine;
+    TextureStore&                                       m_texture_store;
+    OIIOTextureSystem&                                  m_texture_system;
+    OSLShadingSystem&                                   m_shading_system;
 
-    std::auto_ptr<ILightingEngineFactory>           m_lighting_engine_factory;
-    std::auto_ptr<ISampleRendererFactory>           m_sample_renderer_factory;
-    std::auto_ptr<ISampleGeneratorFactory>          m_sample_generator_factory;
-    std::auto_ptr<IPixelRendererFactory>            m_pixel_renderer_factory;
-    std::auto_ptr<IShadingResultFrameBufferFactory> m_shading_result_framebuffer_factory;
-    std::auto_ptr<ITileRendererFactory>             m_tile_renderer_factory;
-    std::auto_ptr<IPassCallback>                    m_pass_callback;
-    foundation::auto_release_ptr<IFrameRenderer>    m_frame_renderer;
+    std::unique_ptr<ILightingEngineFactory>             m_lighting_engine_factory;
+    std::unique_ptr<ISampleRendererFactory>             m_sample_renderer_factory;
+    std::unique_ptr<ISampleGeneratorFactory>            m_sample_generator_factory;
+    std::unique_ptr<IPixelRendererFactory>              m_pixel_renderer_factory;
+    std::unique_ptr<IShadingResultFrameBufferFactory>   m_shading_result_framebuffer_factory;
+    std::unique_ptr<ITileRendererFactory>               m_tile_renderer_factory;
+    std::unique_ptr<IPassCallback>                      m_pass_callback;
+    foundation::auto_release_ptr<IFrameRenderer>        m_frame_renderer;
 
     bool create_lighting_engine_factory();
     bool create_sample_renderer_factory();
@@ -130,6 +118,21 @@ class RendererComponents
     bool create_tile_renderer_factory();
     bool create_frame_renderer_factory();
 };
+
+
+//
+// RendererComponents class implementation.
+//
+
+inline ShadingEngine& RendererComponents::get_shading_engine()
+{
+    return m_shading_engine;
+}
+
+inline IFrameRenderer& RendererComponents::get_frame_renderer()
+{
+    return *m_frame_renderer.get();
+}
 
 }       // namespace renderer
 

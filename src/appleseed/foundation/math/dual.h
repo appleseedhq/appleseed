@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -54,6 +54,10 @@ class Dual
     explicit Dual(const T& value);
     Dual(const T& value, const T& dx, const T& dy);
 
+    // Construct a dual from another dual of a different type.
+    template <typename U>
+    explicit Dual(const Dual<U>& rhs);
+
     // Value.
     const T& get_value() const;
 
@@ -63,6 +67,9 @@ class Dual
     const T& get_dy() const;
 
   private:
+    template <typename U>
+    friend class Dual;
+
     T       m_value;
     T       m_dx;
     T       m_dy;
@@ -107,6 +114,16 @@ inline Dual<T>::Dual(const T& value, const T& dx, const T& dy)
   , m_dx(dx)
   , m_dy(dy)
   , m_has_derivatives(true)
+{
+}
+
+template <typename T>
+template <typename U>
+inline Dual<T>::Dual(const Dual<U>& rhs)
+  : m_value(rhs.m_value)
+  , m_dx(rhs.m_dx)
+  , m_dy(rhs.m_dy)
+  , m_has_derivatives(rhs.m_has_derivatives)
 {
 }
 

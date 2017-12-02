@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -87,6 +87,33 @@ BENCHMARK_SUITE(Foundation_Math_Filter_GaussianFilter2)
     }
 }
 
+BENCHMARK_SUITE(Foundation_Math_Filter_FastGaussianFilter2)
+{
+    struct Fixture
+    {
+        FastGaussianFilter2<float>  m_filter;
+        float                       m_dummy;
+
+        Fixture()
+          : m_filter(2.0f, 2.0f, 8.0f)
+        {
+        }
+    };
+
+    BENCHMARK_CASE_F(Evaluate, Fixture)
+    {
+        m_dummy = 0.0f;
+
+        for (int y = -2; y <= +2; ++y)
+        {
+            for (int x = -2; x <= +2; ++x)
+            {
+                m_dummy += m_filter.evaluate(static_cast<float>(x), static_cast<float>(y));
+            }
+        }
+    }
+}
+
 BENCHMARK_SUITE(Foundation_Math_Filter_MitchellFilter2)
 {
     struct Fixture
@@ -96,6 +123,60 @@ BENCHMARK_SUITE(Foundation_Math_Filter_MitchellFilter2)
 
         Fixture()
           : m_filter(2.0f, 2.0f, 1.0f / 3, 1.0f / 3)
+        {
+        }
+    };
+
+    BENCHMARK_CASE_F(Evaluate, Fixture)
+    {
+        m_dummy = 0.0f;
+
+        for (int y = -2; y <= +2; ++y)
+        {
+            for (int x = -2; x <= +2; ++x)
+            {
+                m_dummy += m_filter.evaluate(static_cast<float>(x), static_cast<float>(y));
+            }
+        }
+    }
+}
+
+BENCHMARK_SUITE(Foundation_Math_Filter_BlackmanHarrisFilter2)
+{
+    struct Fixture
+    {
+        BlackmanHarrisFilter2<float>    m_filter;
+        float                           m_dummy;
+
+        Fixture()
+          : m_filter(2.0f, 2.0f)
+        {
+        }
+    };
+
+    BENCHMARK_CASE_F(Evaluate, Fixture)
+    {
+        m_dummy = 0.0f;
+
+        for (int y = -2; y <= +2; ++y)
+        {
+            for (int x = -2; x <= +2; ++x)
+            {
+                m_dummy += m_filter.evaluate(static_cast<float>(x), static_cast<float>(y));
+            }
+        }
+    }
+}
+
+BENCHMARK_SUITE(Foundation_Math_Filter_FastBlackmanHarrisFilter2)
+{
+    struct Fixture
+    {
+        FastBlackmanHarrisFilter2<float>    m_filter;
+        float                               m_dummy;
+
+        Fixture()
+          : m_filter(2.0f, 2.0f)
         {
         }
     };

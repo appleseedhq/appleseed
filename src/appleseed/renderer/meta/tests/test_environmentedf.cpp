@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,19 +31,22 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/lighting/tracer.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/kernel/shading/oslshadergroupexec.h"
-#endif
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/shading/shadingcontext.h"
+#include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
+#include "renderer/modeling/entity/onframebeginrecorder.h"
+#include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/constantenvironmentedf.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentedf/gradientenvironmentedf.h"
 #include "renderer/modeling/environmentedf/latlongmapenvironmentedf.h"
 #include "renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h"
-#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/texturesource.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/texture/texture.h"
@@ -58,28 +61,20 @@
 #include "foundation/image/tile.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/arena.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
+#include "foundation/utility/uid.h"
 
 // OSL headers.
-#ifdef APPLESEED_WITH_OSL
-#include "foundation/platform/oslheaderguards.h"
-BEGIN_OSL_INCLUDES
+#include "foundation/platform/_beginoslheaders.h"
 #include "OSL/oslexec.h"
-END_OSL_INCLUDES
-#endif
+#include "foundation/platform/_endoslheaders.h"
 
 // OpenImageIO headers.
-#ifdef APPLESEED_WITH_OIIO
-#include "foundation/platform/oiioheaderguards.h"
-BEGIN_OIIO_INCLUDES
+#include "foundation/platform/_beginoiioheaders.h"
 #include "OpenImageIO/texture.h"
-END_OIIO_INCLUDES
-#endif
-
-// Boost headers.
-#include "boost/bind.hpp"
-#include "boost/shared_ptr.hpp"
+#include "foundation/platform/_endoiioheaders.h"
 
 // Standard headers.
 #include <cassert>
@@ -114,29 +109,36 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
             create_horizontal_gradient();
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return "horizontal_gradient_texture";
         }
 
-        virtual ColorSpace get_color_space() const APPLESEED_OVERRIDE
+        ColorSpace get_color_space() const override
         {
             return ColorSpaceLinearRGB;
         }
 
-        virtual const CanvasProperties& properties() APPLESEED_OVERRIDE
+        const CanvasProperties& properties() override
         {
             return m_props;
         }
 
-        virtual Tile* load_tile(
-            const size_t    tile_x,
-            const size_t    tile_y) APPLESEED_OVERRIDE
+        Source* create_source(
+            const UniqueID          assembly_uid,
+            const TextureInstance&  texture_instance) override
+        {
+            return new TextureSource(assembly_uid, texture_instance);
+        }
+
+        Tile* load_tile(
+            const size_t            tile_x,
+            const size_t            tile_y) override
         {
             assert(tile_x == 0);
             assert(tile_y == 0);
@@ -144,16 +146,16 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
             return m_tile.get();
         }
 
-        virtual void unload_tile(
-            const size_t    tile_x,
-            const size_t    tile_y,
-            const Tile*     tile) APPLESEED_OVERRIDE
+        void unload_tile(
+            const size_t            tile_x,
+            const size_t            tile_y,
+            const Tile*             tile) override
         {
         }
 
       private:
         const CanvasProperties  m_props;
-        auto_ptr<Tile>          m_tile;
+        unique_ptr<Tile>        m_tile;
 
         void create_horizontal_gradient()
         {
@@ -170,171 +172,193 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
         }
     };
 
+    template <typename TestScene>
     struct Fixture
-      : public TestFixtureBase
+      : public StaticTestSceneContext<TestScene>
     {
-        void create_horizontal_gradient_texture(const char* name)
+        typedef StaticTestSceneContext<TestScene> Base;
+
+        TextureStore                        m_texture_store;
+        TextureCache                        m_texture_cache;
+        std::shared_ptr<OIIOTextureSystem>  m_texture_system;
+        RendererServices                    m_renderer_services;
+        std::shared_ptr<OSLShadingSystem>   m_shading_system;
+        Intersector                         m_intersector;
+        Arena                               m_arena;
+        OSLShaderGroupExec                  m_sg_exec;
+        Tracer                              m_tracer;
+        ShadingContext                      m_shading_context;
+
+        Fixture()
+          : m_texture_store(Base::m_scene)
+          , m_texture_cache(m_texture_store)
+          , m_texture_system(
+                OIIOTextureSystemFactory::create(),
+                [](OIIOTextureSystem* object) { object->release(); })
+          , m_renderer_services(Base::m_project, *m_texture_system)
+          , m_shading_system(
+                OSLShadingSystemFactory::create(&m_renderer_services, m_texture_system.get()),
+                [](OSLShadingSystem* object) { object->release(); })
+          , m_intersector(
+                Base::m_project.get_trace_context(),
+                m_texture_cache)
+          , m_sg_exec(*m_shading_system, m_arena)
+          , m_tracer(
+                Base::m_scene,
+                m_intersector,
+                m_texture_cache,
+                m_sg_exec)
+          , m_shading_context(
+                m_intersector,
+                m_tracer,
+                m_texture_cache,
+                *m_texture_system,
+                m_sg_exec,
+                m_arena,
+                0)  // thread index
         {
-            m_scene.textures().insert(
-                auto_release_ptr<Texture>(
-                    new HorizontalGradientTexture(name)));
         }
 
-        bool check_consistency(EnvironmentEDF& env_edf)
+        bool check_consistency(const EnvironmentEDF& env_edf) const
         {
-            bind_inputs();
-
-            APPLESEED_UNUSED const bool success = env_edf.on_frame_begin(m_project);
-            assert(success);
-
-            TextureStore texture_store(m_scene);
-            TextureCache texture_cache(texture_store);
-
-#ifdef APPLESEED_WITH_OIIO
-            boost::shared_ptr<OIIO::TextureSystem> texture_system(
-                OIIO::TextureSystem::create(),
-                boost::bind(&OIIO::TextureSystem::destroy, _1));
-#endif
-#ifdef APPLESEED_WITH_OSL
-            RendererServices renderer_services(
-                m_project,
-                *texture_system);
-
-            boost::shared_ptr<OSL::ShadingSystem> shading_system(
-                new OSL::ShadingSystem(&renderer_services, texture_system.get()));
-#endif
-
-            Intersector intersector(
-                m_project.get_trace_context(),
-                texture_cache);
-
-    #ifdef APPLESEED_WITH_OSL
-            OSLShaderGroupExec sg_exec(*shading_system);
-    #endif
-            Tracer tracer(
-                m_scene,
-                intersector,
-                texture_cache
-    #ifdef APPLESEED_WITH_OSL
-                , sg_exec
-    #endif
-                );
-
-            ShadingContext shading_context(
-                intersector,
-                tracer,
-                texture_cache
-    #ifdef APPLESEED_WITH_OIIO
-                , *texture_system
-    #endif
-    #ifdef APPLESEED_WITH_OSL
-                , sg_exec
-    #endif
-                , 0);
-
-            InputEvaluator input_evaluator(texture_cache);
-
-            Vector3d outgoing;
-            Spectrum value1;
-            double probability1;
-
+            Vector3f outgoing;
+            Spectrum value1(Spectrum::Illuminance);
+            float probability1;
             env_edf.sample(
-                shading_context,
-                input_evaluator,
-                Vector2d(0.3, 0.7),
+                m_shading_context,
+                Vector2f(0.3f, 0.7f),
                 outgoing,
                 value1,
                 probability1);
 
-            Spectrum value2;
+            Spectrum value2(Spectrum::Illuminance);
+            env_edf.evaluate(m_shading_context, outgoing, value2);
+            const float probability2 = env_edf.evaluate_pdf(outgoing);
 
-            env_edf.evaluate(
-                shading_context,
-                input_evaluator,
-                outgoing,
-                value2);
-
-            const double probability2 =
-                env_edf.evaluate_pdf(
-                    input_evaluator,
-                    outgoing);
-
-            env_edf.on_frame_end(m_project);
-
-            const bool consistent =
+            return
                 feq(probability1, probability2) &&
                 feq(value1, value2);
-
-            return consistent;
         }
     };
 
-    TEST_CASE_F(CheckConstantEnvironmentEDFConsistency, Fixture)
+    struct ConstantEnvironmentEDFTestScene
+      : public TestSceneBase
     {
-        create_color_entity("blue", Color3f(0.2f, 0.5f, 0.9f));
+        EnvironmentEDF* m_env_edf;
 
-        auto_release_ptr<EnvironmentEDF> env_edf(
-            ConstantEnvironmentEDFFactory().create(
-                "env_edf",
-                ParamArray().insert("radiance", "blue")));
-        EnvironmentEDF& env_edf_ref = env_edf.ref();
-        m_scene.environment_edfs().insert(env_edf);
+        ConstantEnvironmentEDFTestScene()
+        {
+            create_color_entity("blue", Color3f(0.2f, 0.5f, 0.9f));
 
-        const bool consistent = check_consistency(env_edf_ref);
+            auto_release_ptr<EnvironmentEDF> env_edf(
+                ConstantEnvironmentEDFFactory().create(
+                    "env_edf",
+                    ParamArray().insert("radiance", "blue")));
+            m_env_edf = env_edf.get();
+            m_scene.environment_edfs().insert(env_edf);
 
-        EXPECT_TRUE(consistent);
+            m_scene.set_environment(
+                EnvironmentFactory().create(
+                    "environment",
+                    ParamArray().insert("environment_edf", m_env_edf->get_name())));
+        }
+    };
+
+    TEST_CASE_F(CheckConstantEnvironmentEDFConsistency, Fixture<ConstantEnvironmentEDFTestScene>)
+    {
+        EXPECT_TRUE(check_consistency(*m_env_edf));
     }
 
-    TEST_CASE_F(CheckGradientEnvironmentEDFConsistency, Fixture)
+    struct GradientEnvironmentEDFTestScene
+      : public TestSceneBase
     {
-        create_color_entity("red", Color3f(1.0f, 0.2f, 0.2f));
-        create_color_entity("green", Color3f(0.2f, 1.0f, 0.2f));
+        EnvironmentEDF* m_env_edf;
 
-        auto_release_ptr<EnvironmentEDF> env_edf(
-            GradientEnvironmentEDFFactory().create(
-                "env_edf",
-                ParamArray()
-                    .insert("horizon_radiance", "red")
-                    .insert("zenith_radiance", "green")));
-        EnvironmentEDF& env_edf_ref = env_edf.ref();
-        m_scene.environment_edfs().insert(env_edf);
+        GradientEnvironmentEDFTestScene()
+        {
+            create_color_entity("red", Color3f(1.0f, 0.2f, 0.2f));
+            create_color_entity("green", Color3f(0.2f, 1.0f, 0.2f));
 
-        const bool consistent = check_consistency(env_edf_ref);
+            auto_release_ptr<EnvironmentEDF> env_edf(
+                GradientEnvironmentEDFFactory().create(
+                    "env_edf",
+                    ParamArray()
+                        .insert("horizon_radiance", "red")
+                        .insert("zenith_radiance", "green")));
+            m_env_edf = env_edf.get();
+            m_scene.environment_edfs().insert(env_edf);
 
-        EXPECT_TRUE(consistent);
+            m_scene.set_environment(
+                EnvironmentFactory().create(
+                    "environment",
+                    ParamArray().insert("environment_edf", m_env_edf->get_name())));
+        }
+    };
+
+    TEST_CASE_F(CheckGradientEnvironmentEDFConsistency, Fixture<GradientEnvironmentEDFTestScene>)
+    {
+        EXPECT_TRUE(check_consistency(*m_env_edf));
     }
 
-    TEST_CASE_F(CheckLatLongMapEnvironmentEDFConsistency, Fixture)
+    struct LatLongMapEnvironmentEDFTestScene
+      : public TestSceneBase
     {
-        create_horizontal_gradient_texture("horiz_gradient_texture");
-        create_texture_instance("horiz_gradient_texture_inst", "horiz_gradient_texture");
+        EnvironmentEDF* m_env_edf;
 
-        auto_release_ptr<EnvironmentEDF> env_edf(
-            LatLongMapEnvironmentEDFFactory().create(
-                "env_edf",
-                ParamArray().insert("radiance", "horiz_gradient_texture_inst")));
-        EnvironmentEDF& env_edf_ref = env_edf.ref();
-        m_scene.environment_edfs().insert(env_edf);
+        LatLongMapEnvironmentEDFTestScene()
+        {
+            m_scene.textures().insert(
+                auto_release_ptr<Texture>(
+                    new HorizontalGradientTexture("horiz_gradient_texture")));
+            create_texture_instance("horiz_gradient_texture_inst", "horiz_gradient_texture");
 
-        const bool consistent = check_consistency(env_edf_ref);
+            auto_release_ptr<EnvironmentEDF> env_edf(
+                LatLongMapEnvironmentEDFFactory().create(
+                    "env_edf",
+                    ParamArray().insert("radiance", "horiz_gradient_texture_inst")));
+            m_env_edf = env_edf.get();
+            m_scene.environment_edfs().insert(env_edf);
 
-        EXPECT_TRUE(consistent);
+            m_scene.set_environment(
+                EnvironmentFactory().create(
+                    "environment",
+                    ParamArray().insert("environment_edf", m_env_edf->get_name())));
+        }
+    };
+
+    TEST_CASE_F(CheckLatLongMapEnvironmentEDFConsistency, Fixture<LatLongMapEnvironmentEDFTestScene>)
+    {
+        EXPECT_TRUE(check_consistency(*m_env_edf));
     }
 
-    TEST_CASE_F(CheckMirrorBallMapEnvironmentEDFConsistency, Fixture)
+    struct MirrorBallMapEnvironmentEDFTestScene
+      : public TestSceneBase
     {
-        create_horizontal_gradient_texture("horiz_gradient_texture");
-        create_texture_instance("horiz_gradient_texture_inst", "horiz_gradient_texture");
+        EnvironmentEDF* m_env_edf;
 
-        auto_release_ptr<EnvironmentEDF> env_edf(
-            MirrorBallMapEnvironmentEDFFactory().create(
-                "env_edf",
-                ParamArray().insert("radiance", "horiz_gradient_texture_inst")));
-        EnvironmentEDF& env_edf_ref = env_edf.ref();
-        m_scene.environment_edfs().insert(env_edf);
+        MirrorBallMapEnvironmentEDFTestScene()
+        {
+            m_scene.textures().insert(
+                auto_release_ptr<Texture>(
+                    new HorizontalGradientTexture("horiz_gradient_texture")));
+            create_texture_instance("horiz_gradient_texture_inst", "horiz_gradient_texture");
 
-        const bool consistent = check_consistency(env_edf_ref);
+            auto_release_ptr<EnvironmentEDF> env_edf(
+                MirrorBallMapEnvironmentEDFFactory().create(
+                    "env_edf",
+                    ParamArray().insert("radiance", "horiz_gradient_texture_inst")));
+            m_env_edf = env_edf.get();
+            m_scene.environment_edfs().insert(env_edf);
 
-        EXPECT_TRUE(consistent);
+            m_scene.set_environment(
+                EnvironmentFactory().create(
+                    "environment",
+                    ParamArray().insert("environment_edf", m_env_edf->get_name())));
+        }
+    };
+
+    TEST_CASE_F(CheckMirrorBallMapEnvironmentEDFConsistency, Fixture<MirrorBallMapEnvironmentEDFTestScene>)
+    {
+        EXPECT_TRUE(check_consistency(*m_env_edf));
     }
 }

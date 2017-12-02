@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,27 +33,36 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
+#include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
+#include "renderer/modeling/object/object.h"
+#include "renderer/modeling/object/proceduralobject.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/textureinstance.h"
+#include "renderer/modeling/shadergroup/shadergroup.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
+#include "renderer/modeling/texture/texture.h"
+#include "renderer/modeling/volume/volume.h"
 #include "renderer/utility/bbox.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
-#include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/job/abortswitch.h"
 
 using namespace foundation;
 using namespace std;
 
 namespace renderer
 {
+
+APPLESEED_DEFINE_APIARRAY(ObjectInstanceArray);
+
 
 //
 // Assembly class implementation.
@@ -81,6 +90,7 @@ struct Assembly::Impl
     LightContainer              m_lights;
     ObjectContainer             m_objects;
     ObjectInstanceContainer     m_object_instances;
+    VolumeContainer             m_volumes;
 
     explicit Impl(Entity* parent)
       : m_bsdfs(parent)
@@ -91,6 +101,7 @@ struct Assembly::Impl
       , m_lights(parent)
       , m_objects(parent)
       , m_object_instances(parent)
+      , m_volumes(parent)
     {
     }
 };
@@ -101,6 +112,7 @@ Assembly::Assembly(
   : Entity(g_class_uid, params)
   , BaseGroup(this)
   , impl(new Impl(this))
+  , m_has_render_data(false)
 {
     set_name(name);
 
@@ -162,6 +174,11 @@ ObjectInstanceContainer& Assembly::object_instances() const
     return impl->m_object_instances;
 }
 
+VolumeContainer& Assembly::volumes() const
+{
+    return impl->m_volumes;
+}
+
 GAABB3 Assembly::compute_local_bbox() const
 {
     GAABB3 bbox = compute_non_hierarchical_local_bbox();
@@ -215,6 +232,7 @@ void Assembly::collect_asset_paths(StringArray& paths) const
     do_collect_asset_paths(paths, lights());
     do_collect_asset_paths(paths, objects());
     do_collect_asset_paths(paths, object_instances());
+    do_collect_asset_paths(paths, volumes());
 }
 
 void Assembly::update_asset_paths(const StringDictionary& mappings)
@@ -229,6 +247,7 @@ void Assembly::update_asset_paths(const StringDictionary& mappings)
     do_update_asset_paths(mappings, lights());
     do_update_asset_paths(mappings, objects());
     do_update_asset_paths(mappings, object_instances());
+    do_update_asset_paths(mappings, volumes());
 }
 
 namespace
@@ -236,7 +255,9 @@ namespace
     template <typename EntityCollection>
     bool invoke_on_frame_begin(
         const Project&          project,
+        const BaseGroup*        parent,
         EntityCollection&       entities,
+        OnFrameBeginRecorder&   recorder,
         IAbortSwitch*           abort_switch)
     {
         bool success = true;
@@ -246,90 +267,74 @@ namespace
             if (is_aborted(abort_switch))
                 break;
 
-            success = success && i->on_frame_begin(project, abort_switch);
+            success = success && i->on_frame_begin(project, parent, recorder, abort_switch);
         }
 
         return success;
-    }
-
-    template <typename EntityCollection>
-    bool invoke_on_frame_begin(
-        const Project&          project,
-        const Assembly&         assembly,
-        EntityCollection&       entities,
-        IAbortSwitch*           abort_switch)
-    {
-        bool success = true;
-
-        for (each<EntityCollection> i = entities; i; ++i)
-        {
-            if (is_aborted(abort_switch))
-                break;
-
-            success = success && i->on_frame_begin(project, assembly, abort_switch);
-        }
-
-        return success;
-    }
-
-    template <typename EntityCollection>
-    void invoke_on_frame_end(
-        const Project&          project,
-        EntityCollection&       entities)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-            i->on_frame_end(project);
-    }
-
-    template <typename EntityCollection>
-    void invoke_on_frame_end(
-        const Project&          project,
-        const Assembly&         assembly,
-        EntityCollection&       entities)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-            i->on_frame_end(project, assembly);
     }
 }
 
 bool Assembly::on_frame_begin(
-    const Project&      project,
-    IAbortSwitch*       abort_switch)
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
+    IAbortSwitch*           abort_switch)
 {
+    assert(!m_has_render_data);
+
+    if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
+
     bool success = true;
-    success = success && invoke_on_frame_begin(project, texture_instances(), abort_switch);
-    success = success && invoke_on_frame_begin(project, *this, surface_shaders(), abort_switch);
-    success = success && invoke_on_frame_begin(project, *this, bsdfs(), abort_switch);
-    success = success && invoke_on_frame_begin(project, *this, bssrdfs(), abort_switch);
-    success = success && invoke_on_frame_begin(project, *this, edfs(), abort_switch);
-    success = success && invoke_on_frame_begin(project, *this, materials(), abort_switch);
-    success = success && invoke_on_frame_begin(project, *this, lights(), abort_switch);
-    success = success && invoke_on_frame_begin(project, *this, objects(), abort_switch);
-    success = success && invoke_on_frame_begin(project, *this, object_instances(), abort_switch);
-    success = success && invoke_on_frame_begin(project, assemblies(), abort_switch);
-    success = success && invoke_on_frame_begin(project, assembly_instances(), abort_switch);
-    return success;
+    success = success && invoke_on_frame_begin(project, this, colors(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, textures(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, texture_instances(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, shader_groups(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, bsdfs(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, bssrdfs(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, edfs(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, surface_shaders(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, materials(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, lights(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, objects(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, object_instances(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, volumes(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, assemblies(), recorder, abort_switch);
+    success = success && invoke_on_frame_begin(project, this, assembly_instances(), recorder, abort_switch);
+    if (!success)
+        return false;
+
+    // Collect instances of procedural objects.
+    for (size_t i = 0, e = object_instances().size(); i < e; ++i)
+    {
+        const ObjectInstance* object_instance = object_instances().get_by_index(i);
+        const Object& object = object_instance->get_object();
+        const ProceduralObject* proc_object = dynamic_cast<const ProceduralObject*>(&object);
+        if (proc_object != nullptr)
+            m_render_data.m_procedural_objects.push_back(object_instance);
+    }
+    m_has_render_data = true;
+
+    return true;
 }
 
-void Assembly::on_frame_end(const Project& project)
+void Assembly::on_frame_end(
+    const Project&          project,
+    const BaseGroup*        parent)
 {
-    invoke_on_frame_end(project, assembly_instances());
-    invoke_on_frame_end(project, assemblies());
-    invoke_on_frame_end(project, object_instances());
-    invoke_on_frame_end(project, objects());
-    invoke_on_frame_end(project, *this, lights());
-    invoke_on_frame_end(project, *this, materials());
-    invoke_on_frame_end(project, *this, edfs());
-    invoke_on_frame_end(project, *this, bssrdfs());
-    invoke_on_frame_end(project, *this, bsdfs());
-    invoke_on_frame_end(project, *this, surface_shaders());
-    invoke_on_frame_end(project, texture_instances());
+    m_render_data.m_procedural_objects.clear();
+    m_has_render_data = false;
 }
 
 
 //
 // AssemblyFactory class implementation.
 //
+
+void AssemblyFactory::release()
+{
+    delete this;
+}
 
 const char* AssemblyFactory::get_model() const
 {
@@ -339,13 +344,6 @@ const char* AssemblyFactory::get_model() const
 auto_release_ptr<Assembly> AssemblyFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<Assembly>(new Assembly(name, params));
-}
-
-auto_release_ptr<Assembly> AssemblyFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<Assembly>(new Assembly(name, params));
 }

@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -42,14 +42,10 @@
 // Standard headers.
 #include <cstddef>
 #include <string>
-
-// OSL headers.
-#include "foundation/platform/oslheaderguards.h"
-BEGIN_OSL_INCLUDES
-#include "OSL/oslexec.h"
-END_OSL_INCLUDES
+#include <vector>
 
 // Forward declarations.
+namespace renderer  { class OSLShadingSystem; }
 namespace renderer  { class Shader; }
 
 namespace renderer
@@ -62,13 +58,20 @@ namespace renderer
 enum OSLParamType
 {
     OSLParamTypeColor,
+    OSLParamTypeColorArray,
     OSLParamTypeFloat,
+    OSLParamTypeFloatArray,
     OSLParamTypeInt,
+    OSLParamTypeIntArray,
     OSLParamTypeMatrix,
+    OSLParamTypeMatrixArray,
     OSLParamTypeNormal,
+    OSLParamTypeNormalArray,
     OSLParamTypePoint,
+    OSLParamTypePointArray,
     OSLParamTypeString,
-    OSLParamTypeVector
+    OSLParamTypeVector,
+    OSLParamTypeVectorArray
 };
 
 
@@ -81,9 +84,9 @@ class APPLESEED_DLLSYMBOL ShaderParam
 {
   public:
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
-    // TODO: std classes cannot be used in DLL-exported classes.
+    // todo: STL classes cannot be used in DLL-exported classes.
     std::string get_value_as_string() const;
 
   private:
@@ -96,61 +99,96 @@ class APPLESEED_DLLSYMBOL ShaderParam
     explicit ShaderParam(const char* name);
 
     // Destructor.
-    ~ShaderParam();
+    ~ShaderParam() override;
 
     // Create an int param.
     static foundation::auto_release_ptr<ShaderParam> create_int_param(
-        const char*     name,
-        const int       value);
+        const char*         name,
+        const int           value);
+
+    // Create an int array param.
+    static foundation::auto_release_ptr<ShaderParam> create_int_array_param(
+        const char*         name,
+        std::vector<int>&   value);
 
     // Create a float param.
     static foundation::auto_release_ptr<ShaderParam> create_float_param(
-        const char*     name,
-        const float     value);
+        const char*         name,
+        const float         value);
+
+    // Create a float array param.
+    static foundation::auto_release_ptr<ShaderParam> create_float_array_param(
+        const char*         name,
+        std::vector<float>& value);
 
     // Create a vector param.
     static foundation::auto_release_ptr<ShaderParam> create_vector_param(
-        const char*     name,
-        const float     vx,
-        const float     vy,
-        const float     vz);
+        const char*         name,
+        const float         vx,
+        const float         vy,
+        const float         vz);
+
+    // Create a vector array param.
+    static foundation::auto_release_ptr<ShaderParam> create_vector_array_param(
+        const char*         name,
+        std::vector<float>& value);
 
     // Create a normal param.
     static foundation::auto_release_ptr<ShaderParam> create_normal_param(
-        const char*     name,
-        const float     nx,
-        const float     ny,
-        const float     nz);
+        const char*         name,
+        const float         nx,
+        const float         ny,
+        const float         nz);
+
+    // Create a normal array param.
+    static foundation::auto_release_ptr<ShaderParam> create_normal_array_param(
+        const char*         name,
+        std::vector<float>& value);
 
     // Create a point param.
     static foundation::auto_release_ptr<ShaderParam> create_point_param(
-        const char*     name,
-        const float     vx,
-        const float     vy,
-        const float     vz);
+        const char*         name,
+        const float         vx,
+        const float         vy,
+        const float         vz);
+
+    // Create a point array param.
+    static foundation::auto_release_ptr<ShaderParam> create_point_array_param(
+        const char*         name,
+        std::vector<float>& value);
 
     // Create a color param.
     static foundation::auto_release_ptr<ShaderParam> create_color_param(
-        const char*     name,
-        const float     vx,
-        const float     vy,
-        const float     vz);
+        const char*         name,
+        const float         vx,
+        const float         vy,
+        const float         vz);
+
+    // Create a color array param.
+    static foundation::auto_release_ptr<ShaderParam> create_color_array_param(
+        const char*         name,
+        std::vector<float>& value);
 
     // Create a matrix param.
     static foundation::auto_release_ptr<ShaderParam> create_matrix_param(
-        const char*     name,
-        const float*    values);
+        const char*         name,
+        const float*        values);
+
+    // Create a matrix array param.
+    static foundation::auto_release_ptr<ShaderParam> create_matrix_array_param(
+        const char*         name,
+        std::vector<float>& value);
 
     // Create a string param.
     static foundation::auto_release_ptr<ShaderParam> create_string_param(
-        const char*     name,
-        const char*     value);
+        const char*         name,
+        const char*         value);
 
     // Return a const void pointer to this param value.
     const void* get_value() const;
 
     // Add this param to OSL's shading system.
-    bool add(OSL::ShadingSystem& shading_system);
+    bool add(OSLShadingSystem& shading_system);
 };
 
 }       // namespace renderer

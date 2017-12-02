@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@ using namespace std;
 
 TEST_SUITE(Foundation_Math_CDF)
 {
-    typedef CDF<int, double> CDF;
+    typedef foundation::CDF<int, double> CDF;
 
     TEST_CASE(Empty_GivenCDFInInitialState_ReturnsTrue)
     {
@@ -152,7 +152,7 @@ TEST_SUITE(Foundation_Math_CDF)
         EXPECT_FEQ(0.8, result.second);
     }
 
-    TEST_CASE(2D_CDF_Exploration)
+    TEST_CASE(TwoDimensional_CDF_Exploration)
     {
         CDF child[2];
 
@@ -204,5 +204,26 @@ TEST_SUITE(Foundation_Math_CDF)
 
         for (size_t i = 0, e = countof(Result); i < e; ++i)
             EXPECT_EQ(Result[i], sample_cdf(begin, end, Weights[i]));
+    }
+
+    TEST_CASE(SampleCDFLinearSearch)
+    {
+        static const double Cdf[] =
+        {
+            0.03, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0
+        };
+
+        static const double Weights[] =
+        {
+            0.0, 0.07, 0.15, 0.23, 0.41, 0.77, 0.98
+        };
+
+        static const size_t Result[] =
+        {
+            0, 1, 2, 3, 5, 8, 10
+        };
+
+        for (size_t i = 0, e = countof(Result); i < e; ++i)
+            EXPECT_EQ(Result[i], sample_cdf_linear_search(Cdf, Weights[i]));
     }
 }

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
+#include "renderer/kernel/rendering/scenepicker.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -42,7 +43,7 @@
 #include <QObject>
 
 // Forward declarations.
-namespace renderer  { class Scene; }
+namespace renderer  { class Project; }
 class QEvent;
 class QKeyEvent;
 class QMouseEvent;
@@ -58,12 +59,16 @@ class CameraController
 
   public:
     // Constructor.
+    // The camera controller is disabled by default.
     CameraController(
         QWidget*            render_widget,
-        renderer::Scene*    scene);
+        renderer::Project&  project);
 
     // Destructor.
-    ~CameraController();
+    ~CameraController() override;
+
+    // When enabled, the camera controller will track mouse movements and emit signals.
+    void set_enabled(const bool enabled);
 
     foundation::Transformd get_transform() const;
 
@@ -72,6 +77,7 @@ class CameraController
 
   public slots:
     void slot_entity_picked(renderer::ScenePicker::PickingResult result);
+    void slot_frame_modified();
 
   signals:
     void signal_camera_change_begin();
@@ -82,13 +88,15 @@ class CameraController
     typedef foundation::CameraController<double> ControllerType;
 
     QWidget*                m_render_widget;
-    renderer::Scene*        m_scene;
+    renderer::Project&      m_project;
+    bool                    m_enabled;
+
     ControllerType          m_controller;
     foundation::Vector3d    m_pivot;
 
-    void configure_controller(const renderer::Scene* scene);
+    void configure_controller();
 
-    virtual bool eventFilter(QObject* object, QEvent* event) APPLESEED_OVERRIDE;
+    bool eventFilter(QObject* object, QEvent* event) override;
 
     bool handle_mouse_button_press_event(const QMouseEvent* event);
     bool handle_mouse_button_release_event(const QMouseEvent* event);

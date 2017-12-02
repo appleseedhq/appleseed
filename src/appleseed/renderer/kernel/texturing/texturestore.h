@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -36,13 +36,11 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/hash.h"
+#include "foundation/platform/atomic.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/cache.h"
 #include "foundation/utility/uid.h"
-
-// Boost headers.
-#include "boost/cstdint.hpp"
 
 // Standard headers.
 #include <cassert>
@@ -51,9 +49,8 @@
 
 // Forward declarations.
 namespace foundation    { class Dictionary; }
-namespace foundation    { class Statistics; }
+namespace foundation    { class StatisticsVector; }
 namespace foundation    { class Tile; }
-namespace renderer      { class Assemblies; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Scene; }
 
@@ -105,7 +102,7 @@ class TextureStore
     struct TileRecord
     {
         foundation::Tile*           m_tile;
-        volatile boost::uint32_t    m_owners;
+        volatile foundation::uint32 m_owners;
     };
 
     // Constructor.
@@ -122,7 +119,10 @@ class TextureStore
     // Retrieve performance statistics.
     foundation::StatisticsVector get_statistics() const;
 
-    // Get the metadata dictionary describing the texture store params.
+    // Return the default texture store size in bytes.
+    static size_t get_default_size();
+
+    // Return the metadata of the texture store parameters.
     static foundation::Dictionary get_params_metadata();
 
   private:
@@ -197,17 +197,15 @@ inline TextureStore::TileRecord& TextureStore::acquire(const TileKey& key)
     boost::mutex::scoped_lock lock(m_mutex);
 
     TileRecord& record = m_tile_cache.get(key);
-
-    boost_atomic::atomic_inc32(&record.m_owners);
+    foundation::atomic_inc(&record.m_owners);
 
     return record;
 }
 
 inline void TextureStore::release(TileRecord& record) const
 {
-    assert(boost_atomic::atomic_read32(&record.m_owners) > 0);
-
-    boost_atomic::atomic_dec32(&record.m_owners);
+    assert(foundation::atomic_read(&record.m_owners) > 0);
+    foundation::atomic_dec(&record.m_owners);
 }
 
 

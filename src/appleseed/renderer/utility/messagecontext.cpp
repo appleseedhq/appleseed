@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,10 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/api/apistring.h"
+#include "foundation/utility/string.h"
+
 using namespace std;
 
 namespace renderer
@@ -48,12 +52,12 @@ struct MessageContext::Impl
 };
 
 MessageContext::MessageContext()
-  : impl(0)
+  : impl(nullptr)
 {
 }
 
 MessageContext::MessageContext(const char* message)
-  : impl(0)
+  : impl(nullptr)
 {
     set_message(message);
 }
@@ -65,7 +69,7 @@ MessageContext::~MessageContext()
 
 bool MessageContext::empty() const
 {
-    return impl == 0 || impl->m_message.empty();
+    return impl == nullptr || impl->m_message.empty();
 }
 
 const char* MessageContext::get() const
@@ -75,7 +79,7 @@ const char* MessageContext::get() const
 
 void MessageContext::set_message(const char* message)
 {
-    if (impl == 0)
+    if (impl == nullptr)
         impl = new Impl();
 
     impl->m_message = message;
@@ -90,7 +94,7 @@ EntityDefMessageContext::EntityDefMessageContext(
     const char*     entity_type,
     const Entity*   entity)
 {
-    set_message("while defining " + string(entity_type) + " \"" + entity->get_path() + "\"");
+    set_message(format("while defining {0} \"{1}\"", entity_type, entity->get_path()));
 }
 
 }   // namespace renderer

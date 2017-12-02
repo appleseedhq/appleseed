@@ -1,0 +1,273 @@
+
+#
+# This source file is part of appleseed.
+# Visit http://appleseedhq.net/ for additional information and resources.
+#
+# This software is released under the MIT license.
+#
+# Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
+# Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+
+
+#--------------------------------------------------------------------------------------------------
+# clang on macOS, generating 32-bit or 64-bit binaries.
+#--------------------------------------------------------------------------------------------------
+
+set (platform "mac-clang")
+
+
+#--------------------------------------------------------------------------------------------------
+# Extension of executable files.
+#--------------------------------------------------------------------------------------------------
+
+set (exe_ext "")
+
+
+#--------------------------------------------------------------------------------------------------
+# Tools.
+#--------------------------------------------------------------------------------------------------
+
+set (git_command "git")
+
+
+#--------------------------------------------------------------------------------------------------
+# Preprocessor definitions.
+#--------------------------------------------------------------------------------------------------
+
+
+#--------------------------------------------------------------------------------------------------
+# Compilation/linking flags.
+#--------------------------------------------------------------------------------------------------
+
+# Flags common to all configurations.
+set (c_compiler_flags_common
+    -Wno-switch                                         # don't complain about unhandled enumeration values in switch
+    -fno-math-errno                                     # ignore errno when calling math functions
+)
+if (WARNINGS_AS_ERRORS)
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR
+        CMAKE_BUILD_TYPE STREQUAL "Profile" OR
+        CMAKE_BUILD_TYPE STREQUAL "Release")
+        set (c_compiler_flags_common
+            ${c_compiler_flags_common}
+            -Werror                                     # treat Warnings As Errors
+        )
+    endif ()
+endif ()
+set (cxx_compiler_flags_common
+    ${cxx_compiler_flags_common}
+    -std=c++11                                          # enable C++11
+    -stdlib=libc++
+)
+if (USE_SSE)
+    set (c_compiler_flags_common
+        ${c_compiler_flags_common}
+        -msse2                                          # enable SSE instruction sets up to SSE 2
+    )
+endif ()
+if (USE_SSE42)
+    set (c_compiler_flags_common
+        ${c_compiler_flags_common}
+        -msse4.2                                        # enable SSE instruction sets up to SSE 4.2
+    )
+endif ()
+if (USE_AVX)
+    set (c_compiler_flags_common
+        ${c_compiler_flags_common}
+        -mavx                                           # enable AVX instruction set
+    )
+endif ()
+if (USE_AVX2)
+    set (c_compiler_flags_common
+        ${c_compiler_flags_common}
+        -mavx2                                          # enable AVX2 instruction set
+        -mfma                                           # enable FMA instruction
+        -mf16c                                          # enable F16C instructions
+        -ffp-contract=off                               # for now only explicit fmadd
+    )
+endif ()
+set (exe_linker_flags_common
+    -Werror                                             # Treat Warnings As Errors
+    -bind_at_load
+)
+set (shared_lib_linker_flags_common
+    -Werror                                             # Treat Warnings As Errors
+)
+
+# Release configuration.
+set (c_compiler_flags_release
+    -O3                                                 # optimization level
+)
+
+
+#--------------------------------------------------------------------------------------------------
+# Libraries.
+#--------------------------------------------------------------------------------------------------
+
+macro (link_against_platform target)
+    set_target_properties (${target} PROPERTIES
+        LINK_FLAGS "-framework Cocoa -lcurl"
+    )
+endmacro ()
+
+macro (link_against_zlib target)
+    if (USE_EXTERNAL_ZLIB)
+        target_link_libraries (${target} ${ZLIB_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            ${CMAKE_SOURCE_DIR}/build/${platform}/zlib/libz.a
+        )
+    endif ()
+endmacro ()
+
+macro (link_against_libpng target)
+    if (USE_EXTERNAL_PNG)
+        target_link_libraries (${target} ${PNG_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            ${CMAKE_SOURCE_DIR}/build/${platform}/libpng/libpng.a
+        )
+    endif ()
+endmacro ()
+
+macro (link_against_openexr target)
+    if (USE_EXTERNAL_EXR)
+        target_link_libraries (${target}
+            ${IMATH_LIBRARIES}
+            ${OPENEXR_LIBRARIES}
+        )
+    else ()
+        target_link_libraries (${target}
+            ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/libHalf.a
+            ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/libIex.a
+            ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/libIlmImf.a
+            ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/libIlmThread.a
+            ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/libImath.a
+        )
+    endif ()
+endmacro ()
+
+macro (link_against_xercesc target)
+    if (USE_EXTERNAL_XERCES)
+        target_link_libraries (${target} ${XERCES_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            ${CMAKE_SOURCE_DIR}/build/${platform}/xerces-c/libxerces-c.a
+        )
+    endif ()
+endmacro ()
+
+macro (link_against_ocio target)
+    target_link_libraries (${target} ${OPENCOLORIO_LIBRARIES})
+endmacro ()
+
+macro (link_against_oiio target)
+    target_link_libraries (${target} ${OPENIMAGEIO_LIBRARIES})
+endmacro ()
+
+macro (link_against_osl target)
+    target_link_libraries (${target} ${OSL_EXEC_LIBRARY} ${OSL_COMP_LIBRARY} ${OSL_QUERY_LIBRARY})
+endmacro ()
+
+macro (link_against_seexpr target)
+    target_link_libraries (${target} ${SEEXPR_LIBRARIES})
+endmacro ()
+
+macro (link_against_seexpreditor target)
+    target_link_libraries (${target} ${SEEXPREDITOR_LIBRARIES})
+endmacro ()
+
+
+#--------------------------------------------------------------------------------------------------
+# Copy a target binary to the sandbox.
+#--------------------------------------------------------------------------------------------------
+
+macro (get_sandbox_bin_path path)
+    set (${path} ${PROJECT_SOURCE_DIR}/sandbox/bin/${CMAKE_BUILD_TYPE})
+endmacro ()
+
+macro (get_sandbox_lib_path path)
+    set (${path} ${PROJECT_SOURCE_DIR}/sandbox/lib/${CMAKE_BUILD_TYPE})
+endmacro ()
+
+macro (get_sandbox_py_path path)
+    get_sandbox_lib_path (${path})
+    set (${path} ${${path}}/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION})
+endmacro ()
+
+macro (get_relative_path_from_module_name path name)
+    string (REPLACE "." "/" ${path} ${name})
+endmacro ()
+
+macro (add_copy_target_exe_to_sandbox_command target)
+    get_target_property (target_path ${target} LOCATION)
+    get_sandbox_bin_path (bin_path)
+
+    add_custom_command (TARGET ${target} POST_BUILD
+        COMMAND mkdir -p ${bin_path}
+        COMMAND cp ${target_path} ${bin_path}
+    )
+endmacro ()
+
+macro (add_copy_target_lib_to_sandbox_command target)
+    get_target_property (target_path ${target} LOCATION)
+    get_sandbox_lib_path (lib_path)
+
+    add_custom_command (TARGET ${target} POST_BUILD
+        COMMAND mkdir -p ${lib_path}
+        COMMAND cp ${target_path} ${lib_path}
+    )
+endmacro ()
+
+macro (add_copy_target_to_sandbox_py_module_command target module_name)
+    get_target_property (target_path ${target} LOCATION)
+    get_sandbox_py_path (py_path)
+    get_relative_path_from_module_name (relative_module_path ${module_name})
+    set (module_path "${py_path}/${relative_module_path}")
+
+    add_custom_command (TARGET ${target} POST_BUILD
+        COMMAND mkdir -p ${module_path}
+        COMMAND cp ${target_path} ${module_path}
+    )
+endmacro ()
+
+macro (add_copy_py_file_to_sandbox_py_module_command py_src module_name)
+    get_sandbox_py_path (py_path)
+    get_relative_path_from_module_name (relative_module_path ${module_name})
+    set (module_path "${py_path}/${relative_module_path}")
+
+    add_custom_command (TARGET appleseed.python.copy_py_files POST_BUILD
+        COMMAND mkdir -p ${module_path}
+        COMMAND cp ${py_src} ${module_path}
+    )
+endmacro ()
+
+macro (add_copy_dir_to_sandbox_py_module_command py_dir module_name)
+    get_sandbox_py_path (py_path)
+    get_relative_path_from_module_name (relative_module_path ${module_name})
+    set (module_path "${py_path}/${relative_module_path}")
+
+    add_custom_command (TARGET appleseed.python.copy_py_files POST_BUILD
+        COMMAND mkdir -p ${module_path}
+        COMMAND cp -r ${py_dir} ${module_path}
+    )
+endmacro ()

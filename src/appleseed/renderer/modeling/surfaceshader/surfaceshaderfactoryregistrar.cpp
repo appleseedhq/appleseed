@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,9 +34,8 @@
 #include "renderer/modeling/surfaceshader/aosurfaceshader.h"
 #include "renderer/modeling/surfaceshader/constantsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/diagnosticsurfaceshader.h"
-#include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
 #include "renderer/modeling/surfaceshader/physicalsurfaceshader.h"
-#include "renderer/modeling/surfaceshader/surfaceshadercollection.h"
+#include "renderer/modeling/surfaceshader/surfaceshadertraits.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -45,6 +44,7 @@
 // Standard headers.
 #include <cassert>
 #include <string>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -52,21 +52,17 @@ using namespace std;
 namespace renderer
 {
 
-APPLESEED_DEFINE_ARRAY(SurfaceShaderFactoryArray);
+APPLESEED_DEFINE_APIARRAY(SurfaceShaderFactoryArray);
 
 struct SurfaceShaderFactoryRegistrar::Impl
 {
     Registrar<ISurfaceShaderFactory> m_registrar;
 };
 
-SurfaceShaderFactoryRegistrar::SurfaceShaderFactoryRegistrar()
+SurfaceShaderFactoryRegistrar::SurfaceShaderFactoryRegistrar(const SearchPaths& search_paths)
   : impl(new Impl())
 {
-    register_factory(auto_ptr<FactoryType>(new AOSurfaceShaderFactory()));
-    register_factory(auto_ptr<FactoryType>(new ConstantSurfaceShaderFactory()));
-    register_factory(auto_ptr<FactoryType>(new DiagnosticSurfaceShaderFactory()));
-    register_factory(auto_ptr<FactoryType>(new PhysicalSurfaceShaderFactory()));
-    register_factory(auto_ptr<FactoryType>(new SurfaceShaderCollectionFactory()));
+    reinitialize(search_paths);
 }
 
 SurfaceShaderFactoryRegistrar::~SurfaceShaderFactoryRegistrar()
@@ -74,10 +70,26 @@ SurfaceShaderFactoryRegistrar::~SurfaceShaderFactoryRegistrar()
     delete impl;
 }
 
-void SurfaceShaderFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+void SurfaceShaderFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 {
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, factory);
+    // The registrar must be cleared before the plugins are unloaded.
+    impl->m_registrar.clear();
+    unload_all_plugins();
+
+    // Register built-in factories.
+    register_factory(auto_release_ptr<FactoryType>(new AOSurfaceShaderFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new ConstantSurfaceShaderFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new DiagnosticSurfaceShaderFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new PhysicalSurfaceShaderFactory()));
+
+    // Register factories defined in plugins.
+    register_factories_from_plugins<SurfaceShader>(
+        search_paths,
+        [this](void* plugin_entry_point)
+        {
+            auto create_fn = reinterpret_cast<ISurfaceShaderFactory* (*)()>(plugin_entry_point);
+            register_factory(foundation::auto_release_ptr<ISurfaceShaderFactory>(create_fn()));
+        });
 }
 
 SurfaceShaderFactoryArray SurfaceShaderFactoryRegistrar::get_factories() const
@@ -94,8 +106,13 @@ const SurfaceShaderFactoryRegistrar::FactoryType*
 SurfaceShaderFactoryRegistrar::lookup(const char* name) const
 {
     assert(name);
-
     return impl->m_registrar.lookup(name);
+}
+
+void SurfaceShaderFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
+{
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, move(factory));
 }
 
 }   // namespace renderer

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,20 +35,22 @@
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/matrix.h"
 #include "foundation/math/sampling/mappings.h"
+#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <cassert>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class InputEvaluator; }
 namespace renderer      { class Project; }
 
 using namespace foundation;
@@ -70,29 +72,31 @@ namespace
     {
       public:
         ConstantHemisphereEnvironmentEDF(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : EnvironmentEDF(name, params)
         {
             m_inputs.declare("upper_hemi_radiance", InputFormatSpectralIlluminance);
             m_inputs.declare("lower_hemi_radiance", InputFormatSpectralIlluminance);
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
-            const Project&      project,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+        bool on_frame_begin(
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) override
         {
-            if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
+            if (!EnvironmentEDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             if (!check_uniform("upper_hemi_radiance") || !check_uniform("lower_hemi_radiance"))
@@ -106,56 +110,76 @@ namespace
             return true;
         }
 
-        virtual void sample(
+        void sample(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
-            const Vector2d&         s,
-            Vector3d&               outgoing,
+            const Vector2f&         s,
+            Vector3f&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
-            outgoing = sample_sphere_uniform(s);
+            const Vector3f local_outgoing = sample_sphere_uniform(s);
+            probability = RcpFourPi<float>();
+
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            outgoing = transform.vector_to_parent(local_outgoing);
+
             value =
-                outgoing.y >= 0.0
+                local_outgoing.y >= 0.0f
                     ? m_values.m_upper_hemi_radiance
                     : m_values.m_lower_hemi_radiance;
-            probability = RcpFourPi;
         }
 
-        virtual void evaluate(
+        void evaluate(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+            const Vector3f&         outgoing,
+            Spectrum&               value) const override
         {
             assert(is_normalized(outgoing));
+
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            const Transformd::MatrixType& parent_to_local = transform.get_parent_to_local();
+            const float local_outgoing_y =
+                static_cast<float>(parent_to_local[ 4]) * outgoing.x +
+                static_cast<float>(parent_to_local[ 5]) * outgoing.y +
+                static_cast<float>(parent_to_local[ 6]) * outgoing.z;
+
             value =
-                outgoing.y >= 0.0
+                local_outgoing_y >= 0.0f
                     ? m_values.m_upper_hemi_radiance
                     : m_values.m_lower_hemi_radiance;
         }
 
-        virtual void evaluate(
+        void evaluate(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,
+            const Vector3f&         outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
             assert(is_normalized(outgoing));
+
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            const Transformd::MatrixType& parent_to_local = transform.get_parent_to_local();
+            const float local_outgoing_y =
+                static_cast<float>(parent_to_local[ 4]) * outgoing.x +
+                static_cast<float>(parent_to_local[ 5]) * outgoing.y +
+                static_cast<float>(parent_to_local[ 6]) * outgoing.z;
+
             value =
-                outgoing.y >= 0.0
+                local_outgoing_y >= 0.0f
                     ? m_values.m_upper_hemi_radiance
                     : m_values.m_lower_hemi_radiance;
-            probability = RcpFourPi;
+
+            probability = RcpFourPi<float>();
         }
 
-        virtual double evaluate_pdf(
-            InputEvaluator&     input_evaluator,
-            const Vector3d&     outgoing) const APPLESEED_OVERRIDE
+        float evaluate_pdf(
+            const Vector3f&         outgoing) const override
         {
             assert(is_normalized(outgoing));
-            return RcpFourPi;
+            return RcpFourPi<float>();
         }
 
       private:
@@ -173,6 +197,11 @@ namespace
 //
 // ConstantHemisphereEnvironmentEDFFactory class implementation.
 //
+
+void ConstantHemisphereEnvironmentEDFFactory::release()
+{
+    delete this;
+}
 
 const char* ConstantHemisphereEnvironmentEDFFactory::get_model() const
 {
@@ -220,15 +249,6 @@ DictionaryArray ConstantHemisphereEnvironmentEDFFactory::get_input_metadata() co
 auto_release_ptr<EnvironmentEDF> ConstantHemisphereEnvironmentEDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return
-        auto_release_ptr<EnvironmentEDF>(
-            new ConstantHemisphereEnvironmentEDF(name, params));
-}
-
-auto_release_ptr<EnvironmentEDF> ConstantHemisphereEnvironmentEDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return
         auto_release_ptr<EnvironmentEDF>(

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -320,7 +320,7 @@ auto_release_ptr<Entity> EntityVector::remove(Entity* entity)
     }
 
     // Remove the entity from the vector.
-    impl->m_storage.resize(impl->m_storage.size() - 1);
+    impl->m_storage.pop_back();
     impl->m_id_index.erase(id_it);
     impl->m_name_index.erase(name_it);
 
@@ -349,13 +349,13 @@ Entity* EntityVector::get_by_index(const size_t index) const
 Entity* EntityVector::get_by_uid(const UniqueID id) const
 {
     const size_t index = get_index(id);
-    return index == size_t(~0) ? 0 : get_by_index(index);
+    return index == size_t(~0) ? nullptr : get_by_index(index);
 }
 
 Entity* EntityVector::get_by_name(const char* name) const
 {
     const size_t index = get_index(name);
-    return index == size_t(~0) ? 0 : get_by_index(index);
+    return index == size_t(~0) ? nullptr : get_by_index(index);
 }
 
 EntityVector::iterator EntityVector::begin()

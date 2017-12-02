@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -68,7 +68,7 @@ class ItemBase
         const foundation::UniqueID  class_uid,
         const QString&              title);
 
-    virtual ~ItemBase() {}
+    ~ItemBase() override {}
 
     foundation::UniqueID get_class_uid() const;
 
@@ -79,7 +79,6 @@ class ItemBase
     bool allows_deletion() const;
 
     void set_title(const QString& title);
-    void set_render_layer(const QString& name);
 
     virtual QMenu* get_single_item_context_menu() const;
     virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const;
@@ -87,7 +86,7 @@ class ItemBase
     virtual void delete_multiple(const QList<ItemBase*>& items);
 
   public slots:
-    virtual void slot_edit(AttributeEditor* attribute_editor = 0);
+    virtual void slot_edit(AttributeEditor* attribute_editor = nullptr);
     virtual void slot_instantiate();
     void slot_delete_multiple();
 
@@ -115,7 +114,7 @@ QList<Item*> ItemBase::get_action_items()
 
     if (action && !action->data().isNull())
     {
-        const QList<Item*> items = qlist_static_cast<Item*>(action->data().value<QList<ItemBase*> >());
+        const QList<Item*> items = qlist_static_cast<Item*>(action->data().value<QList<ItemBase*>>());
 
         if (!items.empty())
             return items;

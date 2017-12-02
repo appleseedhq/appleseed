@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/regularspectrum.h"
+#include "foundation/math/fresnel.h"
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/mersennetwister.h"
 #include "foundation/math/sampling/mappings.h"
-#include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/gnuplotfile.h"
@@ -149,8 +149,8 @@ TEST_SUITE(Foundation_Math_Fresnel)
             double transmittance;
             fresnel_transmittance_dielectric(transmittance, Eta, cos_theta_i);
 
-            reflectance_points.push_back(Vector2d(theta_i, reflectance));
-            transmittance_points.push_back(Vector2d(theta_i, transmittance));
+            reflectance_points.emplace_back(theta_i, reflectance);
+            transmittance_points.emplace_back(theta_i, transmittance);
         }
 
         plotfile
@@ -197,8 +197,8 @@ TEST_SUITE(Foundation_Math_Fresnel)
             double schlick_refl;
             fresnel_reflectance_dielectric_schlick(schlick_refl, r0, cos_theta_i);
 
-            ref_refl_points.push_back(Vector2d(theta_i, ref_refl));
-            schlick_refl_points.push_back(Vector2d(theta_i, schlick_refl));
+            ref_refl_points.emplace_back(theta_i, ref_refl);
+            schlick_refl_points.emplace_back(theta_i, schlick_refl);
         }
 
         plotfile
@@ -243,7 +243,7 @@ TEST_SUITE(Foundation_Math_Fresnel)
             }
 
             const double value = reflectance * cos_theta_i;
-            const double pdf = cos_theta_i * RcpPi;
+            const double pdf = cos_theta_i * RcpPi<double>();
 
             integral += value / pdf;
         }
@@ -252,7 +252,7 @@ TEST_SUITE(Foundation_Math_Fresnel)
         // and we should divide by 2 * Pi, or we are just computing the integral, in
         // which case we shouldn't divide at all. In any case, this allows to match
         // the polynomial approximation perfectly.
-        integral *= RcpPi;
+        integral *= RcpPi<double>();
 
         return integral / SampleCount;
     }
@@ -271,15 +271,13 @@ TEST_SUITE(Foundation_Math_Fresnel)
         {
             const double eta = fit<size_t, double>(i, 0, PointCount - 1, 0.5, 2.0);
 
-            integral_points.push_back(
-                Vector2d(
-                    eta,
-                    integrate_diffuse_fresnel_reflectance(eta)));
+            integral_points.emplace_back(
+                eta,
+                integrate_diffuse_fresnel_reflectance(eta));
 
-            approx_points.push_back(
-                Vector2d(
-                    eta,
-                    fresnel_internal_diffuse_reflectance(eta)));
+            approx_points.emplace_back(
+                eta,
+                fresnel_internal_diffuse_reflectance(eta));
         }
 
         plotfile
@@ -378,21 +376,21 @@ TEST_SUITE(Foundation_Math_Fresnel)
                 CopperN[0],
                 CopperK[0],
                 cos_theta_i);
-            red_points.push_back(Vector2d(theta_i, result));
+            red_points.emplace_back(theta_i, result);
 
             fresnel_reflectance_conductor(
                 result,
                 CopperN[1],
                 CopperK[1],
                 cos_theta_i);
-            green_points.push_back(Vector2d(theta_i, result));
+            green_points.emplace_back(theta_i, result);
 
             fresnel_reflectance_conductor(
                 result,
                 CopperN[2],
                 CopperK[2],
                 cos_theta_i);
-            blue_points.push_back(Vector2d(theta_i, result));
+            blue_points.emplace_back(theta_i, result);
         }
 
         plotfile
@@ -491,21 +489,21 @@ TEST_SUITE(Foundation_Math_Fresnel)
                 normal_reflectance,
                 edge_tint[0],
                 cos_theta_i);
-            red_points.push_back(Vector2d(theta_i, result));
+            red_points.emplace_back(theta_i, result);
 
             artist_friendly_fresnel_reflectance_conductor(
                 result,
                 normal_reflectance,
                 edge_tint[1],
                 cos_theta_i);
-            green_points.push_back(Vector2d(theta_i, result));
+            green_points.emplace_back(theta_i, result);
 
             artist_friendly_fresnel_reflectance_conductor(
                 result,
                 normal_reflectance,
                 edge_tint[2],
                 cos_theta_i);
-            blue_points.push_back(Vector2d(theta_i, result));
+            blue_points.emplace_back(theta_i, result);
         }
 
         plotfile

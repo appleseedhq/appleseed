@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,15 +31,16 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/basis.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <cmath>
@@ -73,113 +74,103 @@ namespace
     {
       public:
         SheenBRDFImpl(
-            const char*         name,
-            const ParamArray&   params)
-          : BSDF(name, Reflective, ScatteringMode::Diffuse, params)
+            const char*                 name,
+            const ParamArray&           params)
+          : BSDF(name, Reflective, ScatteringMode::Glossy, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        APPLESEED_FORCE_INLINE virtual void sample(
-            SamplingContext&    sampling_context,
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            BSDFSample&         sample) const APPLESEED_OVERRIDE
+        void sample(
+            SamplingContext&            sampling_context,
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const int                   modes,
+            BSDFSample&                 sample) const override
         {
-            // No reflection below the shading surface.
-            const Vector3d& n = sample.get_shading_normal();
-            const double cos_on = dot(sample.m_outgoing.get_value(), n);
-            if (cos_on < 0.0)
+            if (!ScatteringMode::has_glossy(modes))
                 return;
 
-            // Compute the incoming direction in local space.
+            // Set the scattering mode.
+            sample.m_mode = ScatteringMode::Glossy;
+
+            // Compute the incoming direction.
             sampling_context.split_in_place(2, 1);
-            const Vector2d s = sampling_context.next_vector2<2>();
-            const Vector3d wi = sample_hemisphere_uniform(s);
+            const Vector2f s = sampling_context.next2<Vector2f>();
+            const Vector3f wi = sample_hemisphere_uniform(s);
+            const Vector3f incoming = sample.m_shading_basis.transform_to_parent(wi);
+            sample.m_incoming = Dual3f(incoming);
 
-            // Transform the incoming direction to parent space.
-            const Vector3d incoming =
-                sample.get_shading_basis().transform_to_parent(wi);
+            const Vector3f h = normalize(incoming + sample.m_outgoing.get_value());
+            const float cos_ih = dot(incoming, h);
+            const float fh = pow_int<5>(saturate(1.0f - cos_ih));
 
-            const Vector3d h = normalize(incoming + sample.m_outgoing.get_value());
-            const double cos_ih = dot(incoming, h);
-            const double fh = pow_int<5>(saturate(1.0 - cos_ih));
-
+            // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
-            sample.m_value = values->m_reflectance;
-            sample.m_value *= static_cast<float>(fh * values->m_reflectance_multiplier);
+            sample.m_value.m_glossy = values->m_reflectance;
+            sample.m_value.m_glossy *= fh * values->m_reflectance_multiplier;
+            sample.m_value.m_beauty = sample.m_value.m_glossy;
 
-            sample.m_probability = RcpTwoPi;
+            // Compute the probability density of the sampled direction.
+            sample.m_probability = RcpTwoPi<float>();
 
-            sample.m_mode = ScatteringMode::Diffuse;
-            sample.m_incoming = Dual3d(incoming);
             sample.compute_reflected_differentials();
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate(
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+        float evaluate(
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes,
+            DirectShadingComponents&    value) const override
         {
-            if (!ScatteringMode::has_diffuse(modes))
-                return 0.0;
+            if (!ScatteringMode::has_glossy(modes))
+                return 0.0f;
 
-            // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            const double cos_on = dot(outgoing, n);
-            if (cos_in < 0.0 || cos_on < 0.0)
-                return 0.0;
+            const Vector3f h = normalize(incoming + outgoing);
+            const float cos_ih = dot(incoming, h);
+            const float fh = pow_int<5>(saturate(1.0f - cos_ih));
 
-            const Vector3d h = normalize(incoming + outgoing);
-
-            const double cos_ih = dot(incoming, h);
-            const double fh = pow_int<5>(saturate(1.0 - cos_ih));
-
+            // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
-            value = values->m_reflectance;
-            value *= static_cast<float>(fh * values->m_reflectance_multiplier);
+            value.m_glossy = values->m_reflectance;
+            value.m_glossy *= fh * values->m_reflectance_multiplier;
+            value.m_beauty = value.m_glossy;
 
-            return RcpTwoPi;
+            // Return the probability density of the sampled direction.
+            return RcpTwoPi<float>();
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes) const APPLESEED_OVERRIDE
+        float evaluate_pdf(
+            const void*                 data,
+            const bool                  adjoint,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes) const override
         {
-            if (!ScatteringMode::has_diffuse(modes))
-                return 0.0;
+            if (!ScatteringMode::has_glossy(modes))
+                return 0.0f;
 
-            // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            const double cos_on = dot(outgoing, n);
-            if (cos_in < 0.0 || cos_on < 0.0)
-                return 0.0;
-
-            return RcpTwoPi;
+            // Return the probability density of the sampled direction.
+            return RcpTwoPi<float>();
         }
 
       private:
@@ -193,6 +184,11 @@ namespace
 //
 // SheenBRDFFactory class implementation.
 //
+
+void SheenBRDFFactory::release()
+{
+    delete this;
+}
 
 const char* SheenBRDFFactory::get_model() const
 {
@@ -239,13 +235,6 @@ DictionaryArray SheenBRDFFactory::get_input_metadata() const
 auto_release_ptr<BSDF> SheenBRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<BSDF>(new SheenBRDF(name, params));
-}
-
-auto_release_ptr<BSDF> SheenBRDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<BSDF>(new SheenBRDF(name, params));
 }

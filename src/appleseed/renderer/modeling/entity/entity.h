@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -48,8 +48,13 @@
 #include <string>
 
 // Forward declarations.
+namespace foundation    { class APIString; }
+namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
+namespace renderer      { class BaseGroup; }
+namespace renderer      { class OnFrameBeginRecorder; }
+namespace renderer      { class Project; }
 
 namespace renderer
 {
@@ -97,8 +102,11 @@ class APPLESEED_DLLSYMBOL Entity
     void set_name(const char* name);
     const char* get_name() const;
 
+    // Return the name of the entity as a pointer to a OIIO::ustring for OSL.
+    const void* get_name_as_ustring() const;
+
     // Get the full path from the scene entity to this entity in a human-readable format.
-    std::string get_path() const;
+    foundation::APIString get_path() const;
 
     // Return the parameters of this entity.
     ParamArray& get_parameters();
@@ -108,10 +116,18 @@ class APPLESEED_DLLSYMBOL Entity
     virtual void collect_asset_paths(foundation::StringArray& paths) const;
     virtual void update_asset_paths(const foundation::StringDictionary& mappings);
 
-    // Set/get the index of the render layer for this entity.
-    // Use ~0 to disable render layer assignment.
-    void set_render_layer_index(const size_t render_layer);
-    size_t get_render_layer_index() const;
+    // This method is called once before rendering each frame.
+    // Returns true on success, false otherwise.
+    virtual bool on_frame_begin(
+        const Project&                  project,
+        const BaseGroup*                parent,
+        OnFrameBeginRecorder&           recorder,
+        foundation::IAbortSwitch*       abort_switch = nullptr);
+
+    // This method is called once after rendering each frame (only if on_frame_begin() was called).
+    virtual void on_frame_end(
+        const Project&                  project,
+        const BaseGroup*                parent);
 
   protected:
     struct Impl;
@@ -120,10 +136,9 @@ class APPLESEED_DLLSYMBOL Entity
     const foundation::UniqueID          m_class_uid;
     Entity*                             m_parent;
     ParamArray                          m_params;
-    size_t                              m_render_layer;
 
     // Destructor.
-    ~Entity();
+    ~Entity() override;
 };
 
 
@@ -158,25 +173,6 @@ inline Entity* Entity::get_parent() const
     return m_parent;
 }
 
-inline std::string Entity::get_path() const
-{
-    std::string path;
-
-    const Entity* entity = this;
-
-    while (entity)
-    {
-        if (!path.empty())
-            path.insert(0, "/");
-
-        path.insert(0, entity->get_name());
-
-        entity = entity->get_parent();
-    }
-
-    return path;
-}
-
 inline ParamArray& Entity::get_parameters()
 {
     return m_params;
@@ -185,16 +181,6 @@ inline ParamArray& Entity::get_parameters()
 inline const ParamArray& Entity::get_parameters() const
 {
     return m_params;
-}
-
-inline void Entity::set_render_layer_index(const size_t render_layer)
-{
-    m_render_layer = render_layer;
-}
-
-inline size_t Entity::get_render_layer_index() const
-{
-    return m_render_layer;
 }
 
 }       // namespace renderer

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,8 +34,8 @@
 #include "renderer/modeling/material/material.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 using namespace foundation;
 
@@ -55,33 +55,35 @@ namespace
     {
       public:
         GenericMaterial(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : Material(name, params)
         {
             m_inputs.declare("bsdf", InputFormatEntity, "");
             m_inputs.declare("bssrdf", InputFormatEntity, "");
             m_inputs.declare("edf", InputFormatEntity, "");
-            m_inputs.declare("alpha_map", InputFormatScalar, "");
+            m_inputs.declare("alpha_map", InputFormatFloat, "");
             m_inputs.declare("displacement_map", InputFormatSpectralReflectance, "");
+            m_inputs.declare("volume", InputFormatEntity, "");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
-            const Project&      project,
-            const Assembly&     assembly,
-            IAbortSwitch*       abort_switch = 0) APPLESEED_OVERRIDE
+        bool on_frame_begin(
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) override
         {
-            if (!Material::on_frame_begin(project, assembly, abort_switch))
+            if (!Material::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             const EntityDefMessageContext context("material", this);
@@ -89,6 +91,7 @@ namespace
             m_render_data.m_bsdf = get_uncached_bsdf();
             m_render_data.m_bssrdf = get_uncached_bssrdf();
             m_render_data.m_edf = get_uncached_edf();
+            m_render_data.m_volume = get_uncached_volume();
             m_render_data.m_basis_modifier = create_basis_modifier(context);
 
             if (m_render_data.m_edf && m_render_data.m_alpha_map)
@@ -101,13 +104,6 @@ namespace
 
             return true;
         }
-
-        virtual void on_frame_end(
-            const Project&      project,
-            const Assembly&     assembly) APPLESEED_OVERRIDE
-        {
-            Material::on_frame_end(project, assembly);
-        }
     };
 }
 
@@ -115,6 +111,11 @@ namespace
 //
 // GenericMaterialFactory class implementation.
 //
+
+void GenericMaterialFactory::release()
+{
+    delete this;
+}
 
 const char* GenericMaterialFactory::get_model() const
 {
@@ -133,7 +134,7 @@ DictionaryArray GenericMaterialFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
 
-    add_common_input_metadata(metadata);
+    add_surface_shader_metadata(metadata);
 
     metadata.push_back(
         Dictionary()
@@ -161,57 +162,15 @@ DictionaryArray GenericMaterialFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "alpha_map")
-            .insert("label", "Alpha Map")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary()
-                    .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
-            .insert("use", "optional"));
+        .insert("name", "volume")
+        .insert("label", "Volume")
+        .insert("type", "entity")
+        .insert("entity_types",
+            Dictionary().insert("volume", "Volume"))
+        .insert("use", "optional"));
 
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "displacement_map")
-            .insert("label", "Displacement Map")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "displacement_method")
-            .insert("label", "Displacement Method")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("Bump Mapping", "bump")
-                    .insert("Normal Mapping", "normal"))
-            .insert("use", "required")
-            .insert("default", "bump"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "bump_amplitude")
-            .insert("label", "Bump Amplitude")
-            .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "1.0")
-            .insert("use", "optional")
-            .insert("default", "1.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "normal_map_up")
-            .insert("label", "Normal Map Up Vector")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("Green Channel (Y)", "y")
-                    .insert("Blue Channel (Z)", "z"))
-            .insert("use", "optional")
-            .insert("default", "z"));
+    add_alpha_map_metadata(metadata);
+    add_displacement_metadata(metadata);
 
     return metadata;
 }
@@ -219,13 +178,6 @@ DictionaryArray GenericMaterialFactory::get_input_metadata() const
 auto_release_ptr<Material> GenericMaterialFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<Material>(new GenericMaterial(name, params));
-}
-
-auto_release_ptr<Material> GenericMaterialFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<Material>(new GenericMaterial(name, params));
 }

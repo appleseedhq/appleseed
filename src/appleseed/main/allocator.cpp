@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,9 +33,9 @@
 //
 // This module must be enabled on Windows, and on Windows only. Windows is
 // the only platform we support that doesn't natively provide 16-byte aligned
-// allocations. OS X and Linux do.
+// allocations. macOS and Linux do.
 //
-// Moreover, on these platforms (especially on OS X) overriding the new and
+// Moreover, on these platforms (especially on macOS) overriding the new and
 // delete operators in a shared library such as appleseed creates all kinds
 // of problems, as discussed in this thread on Stack Overflow:
 //
@@ -50,8 +50,8 @@
 #ifdef _WIN32
 
 // appleseed.foundation headers.
-#include "foundation/platform/win32stackwalker.h"
 #include "foundation/platform/types.h"
+#include "foundation/platform/win32stackwalker.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/string.h"
@@ -74,9 +74,8 @@
 #include <utility>
 #include <vector>
 
-#if _MSC_VER >= 1500
+// Platform headers.
 #include <sal.h>
-#endif
 
 using namespace boost;
 using namespace foundation;
@@ -260,10 +259,14 @@ namespace
 
         fprintf(
             s_log_file,
-            "[%s] Deallocated %s at %s\n\n",
+            "[%s] Deallocated %s at %s\n",
             get_timestamp_string().c_str(),
             pretty_size(size).c_str(),
             to_string(ptr).c_str());
+
+#ifdef DUMP_CALLSTACK_ON_ALLOCATION
+        fprintf(s_log_file, "\n");
+#endif
     }
 
     uint64 compute_leaked_memory_size()
@@ -501,36 +504,28 @@ namespace
     }
 }
 
-#if _MSC_VER >= 1500
 _Ret_notnull_ _Post_writable_byte_size_(size)
-#endif
 void* operator new(size_t size)
   throw(bad_alloc)
 {
     return new_impl(size);
 }
 
-#if _MSC_VER >= 1500
 _Ret_notnull_ _Post_writable_byte_size_(size)
-#endif
 void* operator new[](size_t size)
   throw(bad_alloc)
 {
     return new_impl(size);
 }
 
-#if _MSC_VER >= 1500
 _Ret_maybenull_ _Post_writable_byte_size_(size)
-#endif
 void* operator new(size_t size, const nothrow_t&)
   throw()
 {
     return new_impl(size);
 }
 
-#if _MSC_VER >= 1500
 _Ret_maybenull_ _Post_writable_byte_size_(size)
-#endif
 void* operator new[](size_t size, const nothrow_t&)
   throw()
 {

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,13 +32,14 @@
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
-#include "foundation/math/rng/distribution.h"
-#include "foundation/math/rng/mersennetwister.h"
 #include "foundation/math/permutation.h"
 #include "foundation/math/primes.h"
 #include "foundation/math/qmc.h"
+#include "foundation/math/rng/distribution.h"
+#include "foundation/math/rng/mersennetwister.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/arch.h"
 #include "foundation/utility/gnuplotfile.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
@@ -496,11 +497,11 @@ TEST_SUITE(Foundation_Math_QMC)
 
         for (size_t i = 0; i < SampleCount; ++i)
         {
-            rng_area += sin(rand_double2(rng) * Pi);
-            qmc_area += sin(radical_inverse_base2<double>(i) * Pi);
+            rng_area += sin(rand_double2(rng) * Pi<double>());
+            qmc_area += sin(radical_inverse_base2<double>(i) * Pi<double>());
 
             const double n = static_cast<double>(i + 1);
-            const double v = Pi / n;
+            const double v = Pi<double>() / n;
 
             rng_rmsd[i] = Vector2d(n, abs(rng_area * v - ExactArea));
             qmc_rmsd[i] = Vector2d(n, abs(qmc_area * v - ExactArea));

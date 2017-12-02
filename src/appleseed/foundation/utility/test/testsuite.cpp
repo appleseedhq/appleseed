@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 #include "testsuite.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/filter.h"
 #include "foundation/utility/test/exceptionassertionfailure.h"
 #include "foundation/utility/test/itestcase.h"
 #include "foundation/utility/test/itestcasefactory.h"
@@ -38,7 +39,6 @@
 #include "foundation/utility/test/testlistenerhelper.h"
 #include "foundation/utility/test/testmessage.h"
 #include "foundation/utility/test/testresult.h"
-#include "foundation/utility/filter.h"
 
 // Standard headers.
 #include <cassert>
@@ -190,7 +190,7 @@ void TestSuite::run_case(
 
     try
     {
-        auto_ptr<ITestCase> test_case(test_case_factory.create());
+        unique_ptr<ITestCase> test_case(test_case_factory.create());
 
         test_case->run(test_listener, test_case_result);
 
@@ -204,15 +204,29 @@ void TestSuite::run_case(
 #ifdef NDEBUG
     catch (const exception& e)
     {
-        TestListenerHelper::write(
-            test_listener,
-            *this,
-            test_case_factory.get_name(),
-            __FILE__,
-            __LINE__,
-            TestMessage::TestCaseFailure,
-            "an unexpected exception was caught: %s.",
-            e.what());
+        if (e.what()[0] != '\0')
+        {
+            TestListenerHelper::write(
+                test_listener,
+                *this,
+                test_case_factory.get_name(),
+                __FILE__,
+                __LINE__,
+                TestMessage::TestCaseFailure,
+                "an unexpected exception was caught: %s",
+                e.what());
+        }
+        else
+        {
+            TestListenerHelper::write(
+                test_listener,
+                *this,
+                test_case_factory.get_name(),
+                __FILE__,
+                __LINE__,
+                TestMessage::TestCaseFailure,
+                "an unexpected exception was caught (no details available).");
+        }
 
         test_case_result.signal_case_failure();
     }

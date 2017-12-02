@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,22 +35,21 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/lighting/sppm/sppmphoton.h"
-#include "renderer/kernel/lighting/lightsampler.h"
+#include "renderer/kernel/lighting/forwardlightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/lighting/tracer.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/shading/oslshadergroupexec.h"
-#endif
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
+#include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/light/lighttarget.h"
 #include "renderer/modeling/scene/assembly.h"
@@ -62,15 +61,16 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/hash.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/timers.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/arena.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job.h"
 #include "foundation/utility/statistics.h"
@@ -116,15 +116,13 @@ namespace
           , m_store_caustics(store_caustics)
           , m_photons(photons)
         {
-            if (params.m_photon_type == SPPMParameters::Monochromatic)
-                Spectrum::upgrade(m_initial_flux, m_initial_flux);
         }
 
         bool accept_scattering(
             const ScatteringMode::Mode  prev_mode,
             const ScatteringMode::Mode  next_mode) const
         {
-            assert(next_mode != ScatteringMode::Absorption);
+            assert(next_mode != ScatteringMode::None);
 
             // Terminate the path at the first vertex if we aren't interested in indirect photons.
             if (!m_store_indirect)
@@ -140,12 +138,17 @@ namespace
             return true;
         }
 
-        void visit_vertex(const PathVertex& vertex)
+        void on_miss(const PathVertex& vertex)
+        {
+            // The photon escapes.
+        }
+
+        void on_hit(const PathVertex& vertex)
         {
             if (vertex.m_path_length > 1 || m_store_direct)
             {
                 // Don't store photons on surfaces without a BSDF.
-                if (vertex.m_bsdf == 0)
+                if (vertex.m_bsdf == nullptr)
                     return;
 
                 // Don't store photons on purely specular surfaces.
@@ -158,11 +161,7 @@ namespace
                     vertex.m_sampling_context.split_in_place(1, 1);
                     const uint32 wavelength =
                         truncate<uint32>(
-                            vertex.m_sampling_context.next_double2() * Spectrum::Samples);
-
-                    // Make sure the path throughput is spectral.
-                    Spectrum spectral_throughput;
-                    Spectrum::upgrade(vertex.m_throughput, spectral_throughput);
+                            vertex.m_sampling_context.next2<double>() * Spectrum::size());
 
                     // Create and store a new photon.
                     SPPMMonoPhoton photon;
@@ -171,9 +170,9 @@ namespace
                     photon.m_flux.m_wavelength = wavelength;
                     photon.m_flux.m_amplitude =
                         m_initial_flux[wavelength] *
-                        Spectrum::Samples *
-                        spectral_throughput[wavelength];
-                    m_photons.push_back(vertex.get_point(), photon);
+                        Spectrum::size() *
+                        vertex.m_throughput[wavelength];
+                    m_photons.push_back(Vector3f(vertex.get_point()), photon);
                 }
                 else
                 {
@@ -185,17 +184,36 @@ namespace
                     photon.m_geometric_normal = Vector3f(vertex.get_geometric_normal());
                     photon.m_flux = m_initial_flux;
                     photon.m_flux *= vertex.m_throughput;
-                    m_photons.push_back(vertex.get_point(), photon);
+                    m_photons.push_back(Vector3f(vertex.get_point()), photon);
                 }
             }
         }
 
-        void visit_environment(const PathVertex& vertex)
+        void on_scatter(const PathVertex& vertex)
         {
-            // The photon escapes, nothing to do.
         }
     };
 
+    //
+    // Volume visitor that does nothing.
+    //
+
+    struct VolumeVisitor
+    {
+        virtual bool accept_scattering(
+            const ScatteringMode::Mode  prev_mode)
+        {
+            return true;
+        }
+
+        virtual void on_scatter(PathVertex& vertex)
+        {
+        }
+
+        void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray)
+        {
+        }
+    };
 
     //
     // A job to trace a packet of photons from area lights and non-physical lights.
@@ -206,42 +224,32 @@ namespace
     {
       public:
         LightPhotonTracingJob(
-            const Scene&            scene,
-            const LightTargetArray& photon_targets,
-            const LightSampler&     light_sampler,
-            const TraceContext&     trace_context,
-            TextureStore&           texture_store,
-#ifdef APPLESEED_WITH_OIIO
-            OIIO::TextureSystem&    oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
-            OSL::ShadingSystem&     shading_system,
-#endif
-            const SPPMParameters&   params,
-            SPPMPhotonVector&       global_photons,
-            const size_t            photon_begin,
-            const size_t            photon_end,
-            const size_t            pass_hash,
-            IAbortSwitch&           abort_switch)
+            const Scene&                    scene,
+            const LightTargetArray&         photon_targets,
+            const ForwardLightSampler&      light_sampler,
+            const TraceContext&             trace_context,
+            TextureStore&                   texture_store,
+            OIIOTextureSystem&              oiio_texture_system,
+            OSLShadingSystem&               shading_system,
+            const SPPMParameters&           params,
+            SPPMPhotonVector&               global_photons,
+            const size_t                    photon_begin,
+            const size_t                    photon_end,
+            const size_t                    pass_hash,
+            IAbortSwitch&                   abort_switch)
           : m_scene(scene)
           , m_photon_targets(photon_targets)
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache)
-#ifdef APPLESEED_WITH_OIIO
           , m_oiio_texture_system(oiio_texture_system)
-#endif
-#ifdef APPLESEED_WITH_OSL
-          , m_shadergroup_exec(shading_system)
-#endif
+          , m_shadergroup_exec(shading_system, m_arena)
           , m_params(params)
           , m_tracer(
                 m_scene,
                 m_intersector,
                 m_texture_cache,
-#ifdef APPLESEED_WITH_OSL
                 m_shadergroup_exec,
-#endif
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations,
                 false)
@@ -251,27 +259,27 @@ namespace
           , m_pass_hash(pass_hash)
           , m_abort_switch(abort_switch)
         {
-            const Camera* camera = scene.get_camera();
+            const Camera* camera = scene.get_active_camera();
             m_shutter_open_time = camera->get_shutter_open_time();
             m_shutter_close_time = camera->get_shutter_close_time();
         }
 
-        virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
+        void execute(const size_t thread_index) override
         {
+            // Initialize thread-local variables.
+            Spectrum::set_mode(m_params.m_spectrum_mode);
+
             const ShadingContext shading_context(
                 m_intersector,
                 m_tracer,
                 m_texture_cache,
-#ifdef APPLESEED_WITH_OIIO
                 m_oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
                 m_shadergroup_exec,
-#endif
+                m_arena,
                 thread_index);
 
-            const uint32 instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
-            SamplingContext::RNGType rng(instance);
+            const size_t instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
+            SamplingContext::RNGType rng(m_pass_hash, instance);
             SamplingContext sampling_context(
                 rng,
                 m_params.m_sampling_mode,
@@ -280,7 +288,10 @@ namespace
                 instance);                  // initial instance number
 
             for (size_t i = m_photon_begin; i < m_photon_end && !m_abort_switch.is_aborted(); ++i)
+            {
+                m_arena.clear();
                 trace_light_photon(shading_context, sampling_context);
+            }
 
             m_global_photons.append(m_local_photons);
         }
@@ -288,15 +299,12 @@ namespace
       private:
         const Scene&                m_scene;
         const LightTargetArray&     m_photon_targets;
-        const LightSampler&         m_light_sampler;
+        const ForwardLightSampler&  m_light_sampler;
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
-#ifdef APPLESEED_WITH_OIIO
-        OIIO::TextureSystem&        m_oiio_texture_system;
-#endif
-#ifdef APPLESEED_WITH_OSL
+        OIIOTextureSystem&          m_oiio_texture_system;
+        Arena                       m_arena;
         OSLShaderGroupExec          m_shadergroup_exec;
-#endif
         const SPPMParameters        m_params;
         Tracer                      m_tracer;
         SPPMPhotonVector&           m_global_photons;
@@ -305,21 +313,21 @@ namespace
         const size_t                m_pass_hash;
         IAbortSwitch&               m_abort_switch;
         SPPMPhotonVector            m_local_photons;
-        double                      m_shutter_open_time;
-        double                      m_shutter_close_time;
+        float                       m_shutter_open_time;
+        float                       m_shutter_close_time;
 
         void trace_light_photon(
             const ShadingContext&   shading_context,
             SamplingContext&        sampling_context)
         {
-            const Vector4d s = sampling_context.next_vector2<4>();
+            const Vector4f s = sampling_context.next2<Vector4f>();
             LightSample light_sample;
             m_light_sampler.sample(
                 ShadingRay::Time::create_with_normalized_time(
                     s[0],
                     m_shutter_open_time,
                     m_shutter_close_time),
-                Vector3d(s[1], s[2], s[3]),
+                Vector3f(s[1], s[2], s[3]),
                 light_sample);
 
             if (light_sample.m_triangle)
@@ -360,30 +368,24 @@ namespace
                 light_sample.m_shading_normal,
                 shading_context.get_intersector());
 
-#ifdef APPLESEED_WITH_OSL
             if (material_data.m_shader_group)
             {
                 shading_context.execute_osl_emission(
                     *material_data.m_shader_group,
                     light_shading_point);
             }
-#endif
-
-            // Evaluate the EDF inputs.
-            InputEvaluator input_evaluator(m_texture_cache);
-            edf->evaluate_inputs(input_evaluator, light_shading_point);
 
             // Sample the EDF.
             SamplingContext child_sampling_context = sampling_context.split(2, 1);
-            Vector3d emission_direction;
-            Spectrum edf_value;
-            double edf_prob;
+            Vector3f emission_direction;
+            Spectrum edf_value(Spectrum::Illuminance);
+            float edf_prob;
             edf->sample(
                 sampling_context,
-                input_evaluator.data(),
-                light_sample.m_geometric_normal,
-                Basis3d(light_sample.m_shading_normal),
-                child_sampling_context.next_vector2<2>(),
+                edf->evaluate_inputs(shading_context, light_shading_point),
+                Vector3f(light_sample.m_geometric_normal),
+                Basis3f(Vector3f(light_sample.m_shading_normal)),
+                child_sampling_context.next2<Vector2f>(),
                 emission_direction,
                 edf_value,
                 edf_prob);
@@ -391,24 +393,23 @@ namespace
             // Compute the initial particle weight.
             Spectrum initial_flux = edf_value;
             initial_flux *=
-                static_cast<float>(
-                    dot(emission_direction, light_sample.m_shading_normal)
-                        / (light_sample.m_probability * edf_prob * m_params.m_light_photon_count));
+                dot(emission_direction, Vector3f(light_sample.m_shading_normal)) /
+                (light_sample.m_probability * edf_prob * m_params.m_light_photon_count);
 
             // Make a shading point that will be used to avoid self-intersections with the light sample.
             ShadingPoint parent_shading_point;
             light_sample.make_shading_point(
                 parent_shading_point,
-                emission_direction,
+                Vector3d(emission_direction),
                 m_intersector);
 
             // Build the photon ray.
             child_sampling_context.split_in_place(1, 1);
             const ShadingRay ray(
                 light_sample.m_point,
-                emission_direction,
+                Vector3d(emission_direction),
                 ShadingRay::Time::create_with_normalized_time(
-                    child_sampling_context.next_double2(),
+                    child_sampling_context.next2<float>(),
                     m_shutter_open_time,
                     m_shutter_close_time),
                 VisibilityFlags::LightRay,
@@ -423,10 +424,16 @@ namespace
                 cast_indirect_light,
                 m_params.m_enable_caustics,
                 m_local_photons);
-            PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
+            VolumeVisitor volume_visitor;
+            PathTracer<PathVisitor, VolumeVisitor, true> path_tracer(      // true = adjoint
                 path_visitor,
+                volume_visitor,
                 m_params.m_photon_tracing_rr_min_path_length,
-                m_params.m_photon_tracing_max_path_length,
+                m_params.m_photon_tracing_max_bounces,
+                ~0, // max diffuse bounces
+                ~0, // max glossy bounces
+                ~0, // max specular bounces
+                ~0, // max volume bounces
                 m_params.m_max_iterations,
                 edf->get_light_near_start());               // don't illuminate points closer than the light near start value
 
@@ -444,15 +451,14 @@ namespace
             const LightSample&      light_sample)
         {
             // Sample the light.
-            InputEvaluator input_evaluator(m_texture_cache);
             SamplingContext child_sampling_context = sampling_context.split(2, 1);
             Vector3d emission_position, emission_direction;
-            Spectrum light_value;
-            double light_prob;
+            Spectrum light_value(Spectrum::Illuminance);
+            float light_prob;
             light_sample.m_light->sample(
-                input_evaluator,
+                shading_context,
                 light_sample.m_light_transform,
-                child_sampling_context.next_vector2<2>(),
+                child_sampling_context.next2<Vector2d>(),
                 m_photon_targets,
                 emission_position,
                 emission_direction,
@@ -461,7 +467,7 @@ namespace
 
             // Compute the initial particle weight.
             Spectrum initial_flux = light_value;
-            initial_flux /= static_cast<float>(light_sample.m_probability * light_prob * m_params.m_light_photon_count);
+            initial_flux /= light_sample.m_probability * light_prob * m_params.m_light_photon_count;
 
             // Build the photon ray.
             child_sampling_context.split_in_place(1, 1);
@@ -469,7 +475,7 @@ namespace
                 emission_position,
                 emission_direction,
                 ShadingRay::Time::create_with_normalized_time(
-                    child_sampling_context.next_double2(),
+                    child_sampling_context.next2<float>(),
                     m_shutter_open_time,
                     m_shutter_close_time),
                 VisibilityFlags::LightRay,
@@ -484,10 +490,16 @@ namespace
                 cast_indirect_light,
                 m_params.m_enable_caustics,
                 m_local_photons);
-            PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
+            VolumeVisitor volume_visitor;
+            PathTracer<PathVisitor, VolumeVisitor, true> path_tracer(      // true = adjoint
                 path_visitor,
+                volume_visitor,
                 m_params.m_photon_tracing_rr_min_path_length,
-                m_params.m_photon_tracing_max_path_length,
+                m_params.m_photon_tracing_max_bounces,
+                ~0, // max diffuse bounces
+                ~0, // max glossy bounces
+                ~0, // max specular bounces
+                ~0, // max volume bounces
                 m_params.m_max_iterations);
 
             // Trace the photon path.
@@ -508,43 +520,33 @@ namespace
     {
       public:
         EnvironmentPhotonTracingJob(
-            const Scene&            scene,
-            const LightTargetArray& photon_targets,
-            const LightSampler&     light_sampler,
-            const TraceContext&     trace_context,
-            TextureStore&           texture_store,
-#ifdef APPLESEED_WITH_OIIO
-            OIIO::TextureSystem&    oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
-            OSL::ShadingSystem&     shading_system,
-#endif
-            const SPPMParameters&   params,
-            SPPMPhotonVector&       global_photons,
-            const size_t            photon_begin,
-            const size_t            photon_end,
-            const size_t            pass_hash,
-            IAbortSwitch&           abort_switch)
+            const Scene&                scene,
+            const LightTargetArray&     photon_targets,
+            const ForwardLightSampler&  light_sampler,
+            const TraceContext&         trace_context,
+            TextureStore&               texture_store,
+            OIIOTextureSystem&          oiio_texture_system,
+            OSLShadingSystem&           shading_system,
+            const SPPMParameters&       params,
+            SPPMPhotonVector&           global_photons,
+            const size_t                photon_begin,
+            const size_t                photon_end,
+            const size_t                pass_hash,
+            IAbortSwitch&               abort_switch)
           : m_scene(scene)
           , m_photon_targets(photon_targets)
           , m_env_edf(*scene.get_environment()->get_environment_edf())
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache)
-#ifdef APPLESEED_WITH_OIIO
           , m_oiio_texture_system(oiio_texture_system)
-#endif
-#ifdef APPLESEED_WITH_OSL
-          , m_shadergroup_exec(shading_system)
-#endif
+          , m_shadergroup_exec(shading_system, m_arena)
           , m_params(params)
           , m_tracer(
                 m_scene,
                 m_intersector,
                 m_texture_cache,
-#ifdef APPLESEED_WITH_OSL
                 m_shadergroup_exec,
-#endif
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations,
                 false)
@@ -555,31 +557,31 @@ namespace
           , m_abort_switch(abort_switch)
         {
             const Scene::RenderData& scene_data = m_scene.get_render_data();
-            m_scene_center = scene_data.m_center;
+            m_scene_center = Vector3d(scene_data.m_center);
             m_scene_radius = scene_data.m_radius;
             m_safe_scene_diameter = scene_data.m_safe_diameter;
 
-            const Camera* camera = scene.get_camera();
+            const Camera* camera = scene.get_active_camera();
             m_shutter_open_time = camera->get_shutter_open_time();
             m_shutter_close_time = camera->get_shutter_close_time();
         }
 
-        virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
+        void execute(const size_t thread_index) override
         {
+            // Initialize thread-local variables.
+            Spectrum::set_mode(m_params.m_spectrum_mode);
+
             const ShadingContext shading_context(
                 m_intersector,
                 m_tracer,
                 m_texture_cache,
-#ifdef APPLESEED_WITH_OIIO
                 m_oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
                 m_shadergroup_exec,
-#endif
+                m_arena,
                 thread_index);
 
-            const uint32 instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
-            SamplingContext::RNGType rng(instance);
+            const size_t instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
+            SamplingContext::RNGType rng(m_pass_hash, instance);
             SamplingContext sampling_context(
                 rng,
                 m_params.m_sampling_mode,
@@ -588,7 +590,10 @@ namespace
                 instance);                  // initial instance number
 
             for (size_t i = m_photon_begin; i < m_photon_end && !m_abort_switch.is_aborted(); ++i)
+            {
+                m_arena.clear();
                 trace_env_photon(shading_context, sampling_context);
+            }
 
             m_global_photons.append(m_local_photons);
         }
@@ -597,15 +602,12 @@ namespace
         const Scene&                m_scene;
         const LightTargetArray&     m_photon_targets;
         const EnvironmentEDF&       m_env_edf;
-        const LightSampler&         m_light_sampler;
+        const ForwardLightSampler&  m_light_sampler;
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
-#ifdef APPLESEED_WITH_OIIO
-        OIIO::TextureSystem&        m_oiio_texture_system;
-#endif
-#ifdef APPLESEED_WITH_OSL
+        OIIOTextureSystem&          m_oiio_texture_system;
+        Arena                       m_arena;
         OSLShaderGroupExec          m_shadergroup_exec;
-#endif
         const SPPMParameters        m_params;
         Tracer                      m_tracer;
         SPPMPhotonVector&           m_global_photons;
@@ -614,8 +616,8 @@ namespace
         const size_t                m_pass_hash;
         IAbortSwitch&               m_abort_switch;
         SPPMPhotonVector            m_local_photons;
-        double                      m_shutter_open_time;
-        double                      m_shutter_close_time;
+        float                       m_shutter_open_time;
+        float                       m_shutter_close_time;
 
         Vector3d                    m_scene_center;         // world space
         double                      m_scene_radius;         // world space
@@ -626,20 +628,18 @@ namespace
             SamplingContext&        sampling_context)
         {
             // Sample the environment.
-            InputEvaluator input_evaluator(m_texture_cache);
-            Vector3d outgoing;
-            Spectrum env_edf_value;
-            double env_edf_prob;
+            Vector3f outgoing;
+            Spectrum env_edf_value(Spectrum::Illuminance);
+            float env_edf_prob;
             m_env_edf.sample(
                 shading_context,
-                input_evaluator,
-                sampling_context.next_vector2<2>(),
+                sampling_context.next2<Vector2f>(),
                 outgoing,                                   // points toward the environment
                 env_edf_value,
                 env_edf_prob);
 
             SamplingContext child_sampling_context = sampling_context.split(2, 1);
-            Vector2d s = child_sampling_context.next_vector2<2>();
+            Vector2d s = child_sampling_context.next2<Vector2d>();
 
             // Compute the center and radius of the target disk.
             Vector3d disk_center;
@@ -662,7 +662,7 @@ namespace
             }
 
             // Compute the origin of the photon ray.
-            const Basis3d basis(-outgoing);
+            const Basis3d basis(-Vector3d(outgoing));
             const Vector2d p = sample_disk_uniform(s);
             const Vector3d ray_origin =
                   disk_center
@@ -670,19 +670,19 @@ namespace
                 + disk_radius * p[0] * basis.get_tangent_u() +
                 + disk_radius * p[1] * basis.get_tangent_v();
 
-            const double disk_point_prob = 1.0 / (Pi * disk_radius * disk_radius);
+            const float disk_point_prob = 1.0f / (Pi<float>() * square(static_cast<float>(disk_radius)));
 
             // Compute the initial particle weight.
             Spectrum initial_flux = env_edf_value;
-            initial_flux /= static_cast<float>(disk_point_prob * env_edf_prob * m_params.m_env_photon_count);
+            initial_flux /= disk_point_prob * env_edf_prob * m_params.m_env_photon_count;
 
             // Build the photon ray.
             child_sampling_context.split_in_place(1, 1);
             const ShadingRay ray(
                 ray_origin,
-                -outgoing,
+                -Vector3d(outgoing),
                 ShadingRay::Time::create_with_normalized_time(
-                    child_sampling_context.next_double2(),
+                    child_sampling_context.next2<float>(),
                     m_shutter_open_time,
                     m_shutter_close_time),
                 VisibilityFlags::LightRay,
@@ -697,10 +697,16 @@ namespace
                 cast_indirect_light,
                 m_params.m_enable_caustics,
                 m_local_photons);
-            PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
+            VolumeVisitor volume_visitor;
+            PathTracer<PathVisitor, VolumeVisitor, true> path_tracer(      // true = adjoint
                 path_visitor,
+                volume_visitor,
                 m_params.m_photon_tracing_rr_min_path_length,
-                m_params.m_photon_tracing_max_path_length,
+                m_params.m_photon_tracing_max_bounces,
+                ~0, // max diffuse bounces
+                ~0, // max glossy bounces
+                ~0, // max specular bounces
+                ~0, // max volume bounces
                 m_params.m_max_iterations);
 
             // Trace the photon path.
@@ -718,17 +724,13 @@ namespace
 //
 
 SPPMPhotonTracer::SPPMPhotonTracer(
-    const Scene&            scene,
-    const LightSampler&     light_sampler,
-    const TraceContext&     trace_context,
-    TextureStore&           texture_store,
-#ifdef APPLESEED_WITH_OIIO
-    OIIO::TextureSystem&    oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
-    OSL::ShadingSystem&     shading_system,
-#endif
-    const SPPMParameters&   params)
+    const Scene&                scene,
+    const ForwardLightSampler&  light_sampler,
+    const TraceContext&         trace_context,
+    TextureStore&               texture_store,
+    OIIOTextureSystem&          oiio_texture_system,
+    OSLShadingSystem&           shading_system,
+    const SPPMParameters&       params)
   : m_params(params)
   , m_scene(scene)
   , m_light_sampler(light_sampler)
@@ -736,12 +738,8 @@ SPPMPhotonTracer::SPPMPhotonTracer(
   , m_texture_store(texture_store)
   , m_total_emitted_photon_count(0)
   , m_total_stored_photon_count(0)
-#ifdef APPLESEED_WITH_OIIO
   , m_oiio_texture_system(oiio_texture_system)
-#endif
-#ifdef APPLESEED_WITH_OSL
   , m_shading_system(shading_system)
-#endif
 {
 }
 
@@ -823,7 +821,7 @@ void SPPMPhotonTracer::trace_photons(
     // Schedule photon tracing jobs.
     size_t job_count = 0;
     size_t emitted_photon_count = 0;
-    if (m_light_sampler.has_lights_or_emitting_triangles())
+    if (m_light_sampler.has_lights())
     {
         schedule_light_photon_tracing_jobs(
             photon_targets,
@@ -895,12 +893,8 @@ void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
                 m_light_sampler,
                 m_trace_context,
                 m_texture_store,
-#ifdef APPLESEED_WITH_OIIO
                 m_oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
                 m_shading_system,
-#endif
                 m_params,
                 photons,
                 photon_begin,
@@ -939,12 +933,8 @@ void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
                 m_light_sampler,
                 m_trace_context,
                 m_texture_store,
-#ifdef APPLESEED_WITH_OIIO
                 m_oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
                 m_shading_system,
-#endif
                 m_params,
                 photons,
                 photon_begin,

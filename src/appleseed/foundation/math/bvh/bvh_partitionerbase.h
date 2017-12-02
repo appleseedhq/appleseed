@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -66,7 +66,8 @@ class PartitionerBase
         const size_t            end) const;
 
     // Return the items ordering.
-    const std::vector<size_t>& get_item_ordering() const;
+    const std::vector<size_t>& get_item_ordering(
+        const size_t  dimension = 0) const;
 
   protected:
     static const size_t Dimension = AABBType::Dimension;
@@ -106,7 +107,7 @@ PartitionerBase<AABBVector>::PartitionerBase(
         for (size_t i = 0; i < size; ++i)
             indices[i] = i;
 
-        // Sort the items according to their bounding boxes.
+        // Sort the items according to the center of their bounding boxes.
         BboxSortPredicate<AABBVectorType> predicate(m_bboxes, d);
         std::sort(indices.begin(), indices.end(), predicate);
     }
@@ -198,9 +199,11 @@ void PartitionerBase<AABBVector>::sort_indices(
 }
 
 template <typename Tree>
-inline const std::vector<size_t>& PartitionerBase<Tree>::get_item_ordering() const
+inline const std::vector<size_t>& PartitionerBase<Tree>::get_item_ordering(
+    const size_t  dimension) const
 {
-    return m_indices[0];
+    assert(dimension < Dimension);
+    return m_indices[dimension];
 }
 
 }       // namespace bvh

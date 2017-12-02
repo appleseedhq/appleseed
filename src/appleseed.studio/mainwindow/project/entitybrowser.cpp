@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,7 @@
 #include "renderer/api/material.h"
 #include "renderer/api/scene.h"
 #include "renderer/api/surfaceshader.h"
+#include "renderer/api/volume.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
@@ -78,7 +79,7 @@ namespace
     {
         assert(entity);
 
-        while (dynamic_cast<const Scene*>(entity) == 0)
+        while (dynamic_cast<const Scene*>(entity) == nullptr)
             entity = entity->get_parent();
 
         return static_cast<const Scene*>(entity);
@@ -132,6 +133,7 @@ EntityBrowser<Scene>::EntityBrowser(const Scene& scene)
 StringDictionary EntityBrowser<Scene>::get_entities(const string& type) const
 {
     return
+        type == "camera" ? build_entity_dictionary(m_scene.cameras()) :
         type == "environment_edf" ? build_entity_dictionary(m_scene.environment_edfs()) :
         type == "environment_shader" ? build_entity_dictionary(m_scene.environment_shaders()) :
         EntityBrowser<BaseGroup>::get_entities(type);
@@ -158,6 +160,7 @@ StringDictionary EntityBrowser<Assembly>::get_entities(const string& type) const
         type == "surface_shader" ? build_entity_dictionary(m_assembly.surface_shaders()) :
         type == "environment_edf" ? build_entity_dictionary(get_parent_scene(&m_assembly)->environment_edfs()) :
         type == "environment_shader" ? build_entity_dictionary(get_parent_scene(&m_assembly)->environment_shaders()) :
+        type == "volume" ? build_entity_dictionary(m_assembly.volumes()) :
         EntityBrowser<BaseGroup>::get_entities(type);
 
     const Assembly* parent_assembly = dynamic_cast<const Assembly*>(m_assembly.get_parent());

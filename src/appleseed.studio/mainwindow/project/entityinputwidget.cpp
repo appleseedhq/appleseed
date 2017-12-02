@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2016-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,7 @@
 #include <QPushButton>
 #include <QStackedWidget>
 #include <QString>
+#include <QValidator>
 
 // Standard headers.
 #include <string>
@@ -168,12 +169,12 @@ ColorMapInputWidget::ColorMapInputWidget(QWidget* parent)
     m_line_edit->setMaximumWidth(120);
     connect(m_line_edit, SIGNAL(returnPressed()), SIGNAL(signal_changed()));
 
-    DoubleSlider* slider = new DoubleSlider(Qt::Horizontal, this);
-    slider->setRange(0.0, 1.0);
-    slider->setPageStep(0.1);
-    new MouseWheelFocusEventFilter(slider);
-    new LineEditDoubleSliderAdaptor(m_line_edit, slider);
-    connect(slider, SIGNAL(valueChanged(int)), SIGNAL(signal_changed()));
+    m_slider = new DoubleSlider(Qt::Horizontal, this);
+    m_slider->setRange(0.0, 1.0);
+    m_slider->setPageStep(0.1);
+    new MouseWheelFocusEventFilter(m_slider);
+    m_adaptor = new LineEditDoubleSliderAdaptor(m_line_edit, m_slider);
+    connect(m_slider, SIGNAL(valueChanged(int)), SIGNAL(signal_changed()));
 
     QWidget* bind_button = new QPushButton("Bind", this);
     bind_button->setObjectName("bind_entity_button");
@@ -185,7 +186,7 @@ ColorMapInputWidget::ColorMapInputWidget(QWidget* parent)
     line_edit_button_group_layout->setMargin(0);
     line_edit_button_group_layout->setSpacing(6);
     line_edit_button_group_layout->addWidget(m_line_edit);
-    line_edit_button_group_layout->addWidget(slider);
+    line_edit_button_group_layout->addWidget(m_slider);
     line_edit_button_group_layout->addWidget(bind_button);
     line_edit_button_group->setLayout(line_edit_button_group_layout);
 
@@ -209,6 +210,17 @@ ColorMapInputWidget::ColorMapInputWidget(QWidget* parent)
     addWidget(entity_button_group);
 }
 
+void ColorMapInputWidget::set_validator(QValidator* validator)
+{
+    validator->setParent(m_line_edit);
+    m_line_edit->setValidator(validator);
+}
+
+void ColorMapInputWidget::set_default_value(const QString& default_value)
+{
+    m_default_value = default_value;
+}
+
 void ColorMapInputWidget::set_focus()
 {
     switch (currentIndex())
@@ -224,33 +236,20 @@ void ColorMapInputWidget::set_focus()
     }
 }
 
-void ColorMapInputWidget::set_default_value(const QString& default_value)
-{
-    m_default_value = default_value;
-}
-
-namespace
-{
-    // todo: ask the InputBinder instead.
-    bool is_numeric_value(const QString& s)
-    {
-        try
-        {
-            from_string<double>(s);
-            return true;
-        }
-        catch (const ExceptionStringConversionError&)
-        {
-            return false;
-        }
-    }
-}
-
 void ColorMapInputWidget::set_value(const QString& value)
 {
-    m_line_edit->setText(value);
-    m_entity_button->setText(value);
-    setCurrentIndex(value.isEmpty() || is_numeric_value(value) ? 0 : 1);
+    try
+    {
+        const double x = from_string<double>(value);
+        m_adaptor->slot_set_line_edit_value(x);
+        setCurrentIndex(0);
+    }
+    catch (const ExceptionStringConversionError&)
+    {
+        m_line_edit->setText(value);
+        m_entity_button->setText(value);
+        setCurrentIndex(value.isEmpty() ? 0 : 1);   // don't show the button if the line edit is empty
+    }
 }
 
 QString ColorMapInputWidget::get_value() const

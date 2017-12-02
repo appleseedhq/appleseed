@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,9 @@
 // THE SOFTWARE.
 //
 
-// appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
-
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
+#include "foundation/platform/python.h"
 #include "foundation/utility/iostreamop.h"
 
 // Standard headers.
@@ -53,7 +51,7 @@ namespace
             bpy::throw_error_already_set();
         }
 
-        auto_ptr<Vector<T, N> > r(new Vector<T, N>());
+        unique_ptr<Vector<T, N>> r(new Vector<T, N>());
 
         for (size_t i = 0; i < N; ++i)
         {
@@ -71,10 +69,10 @@ namespace
     }
 
     template <typename T, size_t N>
-    struct vector_helper {};
+    struct VectorHelper {};
 
     template <typename T>
-    struct vector_helper<T, 2>
+    struct VectorHelper<T, 2>
     {
         typedef Vector<T, 2> VectorType;
 
@@ -100,7 +98,7 @@ namespace
     };
 
     template <typename T>
-    struct vector_helper<T, 3>
+    struct VectorHelper<T, 3>
     {
         typedef Vector<T, 3> VectorType;
 
@@ -131,7 +129,7 @@ namespace
     };
 
     template <typename T>
-    struct vector_helper<T, 4>
+    struct VectorHelper<T, 4>
     {
         typedef Vector<T, 4> VectorType;
 
@@ -193,10 +191,10 @@ namespace
     template <typename T, size_t N>
     void do_bind_vector(const char* class_name)
     {
-        bpy::class_<Vector<T, N> >(class_name)
+        bpy::class_<Vector<T, N>>(class_name)
             .def(bpy::init<>())
             .def(bpy::init<T>())
-            .def("__init__", bpy::make_constructor(&vector_helper<T, N>::construct))
+            .def("__init__", bpy::make_constructor(&VectorHelper<T, N>::construct))
             .def("__init__", bpy::make_constructor(&construct_vec_from_list<T, N>))
 
             // operator[]
@@ -222,10 +220,9 @@ namespace
 
             // Because of a bug in Boost.Python, this needs the extra self_ns qualification.
             .def(bpy::self_ns::str(bpy::self))
-            .def(bpy::self_ns::repr(bpy::self))
-            ;
+            .def(bpy::self_ns::repr(bpy::self));
 
-        bpy::def("dot", &vector_helper<T, N>::dot);
+        bpy::def("dot", &VectorHelper<T, N>::dot);
     }
 }
 
@@ -243,22 +240,22 @@ void bind_vector()
     do_bind_vector<float, 4>("Vector4f");
     do_bind_vector<double, 4>("Vector4d");
 
-    bpy::def("norm", &vector_helper<float,  2>::norm);
-    bpy::def("norm", &vector_helper<double, 2>::norm);
-    bpy::def("norm", &vector_helper<float,  3>::norm);
-    bpy::def("norm", &vector_helper<double, 3>::norm);
-    bpy::def("norm", &vector_helper<float,  4>::norm);
-    bpy::def("norm", &vector_helper<double, 4>::norm);
+    bpy::def("norm", &VectorHelper<float,  2>::norm);
+    bpy::def("norm", &VectorHelper<double, 2>::norm);
+    bpy::def("norm", &VectorHelper<float,  3>::norm);
+    bpy::def("norm", &VectorHelper<double, 3>::norm);
+    bpy::def("norm", &VectorHelper<float,  4>::norm);
+    bpy::def("norm", &VectorHelper<double, 4>::norm);
 
-    bpy::def("normalize", &vector_helper<float,  2>::normalize);
-    bpy::def("normalize", &vector_helper<double, 2>::normalize);
-    bpy::def("normalize", &vector_helper<float,  3>::normalize);
-    bpy::def("normalize", &vector_helper<double, 3>::normalize);
-    bpy::def("normalize", &vector_helper<float,  4>::normalize);
-    bpy::def("normalize", &vector_helper<double, 4>::normalize);
+    bpy::def("normalize", &VectorHelper<float,  2>::normalize);
+    bpy::def("normalize", &VectorHelper<double, 2>::normalize);
+    bpy::def("normalize", &VectorHelper<float,  3>::normalize);
+    bpy::def("normalize", &VectorHelper<double, 3>::normalize);
+    bpy::def("normalize", &VectorHelper<float,  4>::normalize);
+    bpy::def("normalize", &VectorHelper<double, 4>::normalize);
 
-    bpy::def("cross", &vector_helper<float, 3>::cross);
-    bpy::def("cross", &vector_helper<double, 3>::cross);
+    bpy::def("cross", &VectorHelper<float, 3>::cross);
+    bpy::def("cross", &VectorHelper<double, 3>::cross);
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
     bpy::implicitly_convertible<Vector2i, Imath::V2i>();

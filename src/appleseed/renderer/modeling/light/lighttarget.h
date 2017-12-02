@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/containers/array.h"
+#include "foundation/utility/api/apiarray.h"
 
 namespace renderer
 {
@@ -63,7 +63,7 @@ class LightTarget
     double                  m_radius;   // world space
 };
 
-APPLESEED_DECLARE_ARRAY(LightTargetArray, LightTarget);
+APPLESEED_DECLARE_APIARRAY(LightTargetArray, LightTarget);
 
 
 //

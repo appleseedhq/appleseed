@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,9 @@
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/basegroup.h"
 #include "renderer/modeling/scene/visibilityflags.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/api/apistring.h"
 
 // Standard headers.
 #include <string>
@@ -64,10 +67,10 @@ struct AssemblyInstance::Impl
 };
 
 AssemblyInstance::AssemblyInstance(
-    const char*         name,
-    const ParamArray&   params,
-    const char*         assembly_name)
-  : Entity(g_class_uid, params)
+    const char*             name,
+    const ParamArray&       params,
+    const char*             assembly_name)
+  : Entity(g_class_uid,     params)
   , impl(new Impl())
 {
     set_name(name);
@@ -80,7 +83,7 @@ AssemblyInstance::AssemblyInstance(
     m_vis_flags = VisibilityFlags::parse(params.child("visibility"), message_context);
 
     // No bound assembly yet.
-    m_assembly = 0;
+    m_assembly = nullptr;
 }
 
 AssemblyInstance::~AssemblyInstance()
@@ -116,7 +119,7 @@ Assembly* AssemblyInstance::find_assembly() const
         parent = parent->get_parent();
     }
 
-    return 0;
+    return nullptr;
 }
 
 GAABB3 AssemblyInstance::compute_parent_bbox() const
@@ -136,35 +139,36 @@ GAABB3 AssemblyInstance::compute_parent_bbox() const
 
 void AssemblyInstance::unbind_assembly()
 {
-    m_assembly = 0;
+    m_assembly = nullptr;
 }
 
 void AssemblyInstance::bind_assembly(const AssemblyContainer& assemblies)
 {
-    if (m_assembly == 0)
+    if (m_assembly == nullptr)
         m_assembly = assemblies.get_by_name(impl->m_assembly_name.c_str());
 }
 
 void AssemblyInstance::check_assembly() const
 {
-    if (m_assembly == 0)
+    if (m_assembly == nullptr)
         throw ExceptionUnknownEntity(impl->m_assembly_name.c_str(), this);
 }
 
 bool AssemblyInstance::on_frame_begin(
-    const Project&      project,
-    IAbortSwitch*       abort_switch)
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
+    IAbortSwitch*           abort_switch)
 {
+    if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
+
     m_transform_sequence.optimize();
 
     if (!m_transform_sequence.prepare())
-        RENDERER_LOG_WARNING("assembly instance \"%s\" has one or more invalid transforms.", get_name());
+        RENDERER_LOG_WARNING("assembly instance \"%s\" has one or more invalid transforms.", get_path().c_str());
 
     return true;
-}
-
-void AssemblyInstance::on_frame_end(const Project& project)
-{
 }
 
 
@@ -173,9 +177,9 @@ void AssemblyInstance::on_frame_end(const Project& project)
 //
 
 auto_release_ptr<AssemblyInstance> AssemblyInstanceFactory::create(
-    const char*         name,
-    const ParamArray&   params,
-    const char*         assembly_name)
+    const char*             name,
+    const ParamArray&       params,
+    const char*             assembly_name)
 {
     return
         auto_release_ptr<AssemblyInstance>(

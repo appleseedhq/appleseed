@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -62,6 +62,7 @@
 // Standard headers.
 #include <memory>
 #include <string>
+#include <utility>
 
 using namespace appleseed::studio;
 using namespace foundation;
@@ -70,18 +71,11 @@ using namespace std;
 
 namespace
 {
-    enum Side
-    {
-        FrontSide,
-        BackSide,
-        FrontAndBackSides
-    };
-
     struct MaterialAssignmentData
     {
-        string              m_slot;
-        Side                m_side;
-        QList<ItemBase*>    m_items;
+        string                      m_slot;
+        int                         m_sides;
+        QList<ItemBase*>            m_items;
 
         MaterialAssignmentData()
         {
@@ -89,10 +83,10 @@ namespace
 
         MaterialAssignmentData(
             const char*             slot,
-            const Side              side,
+            const int               sides,
             const QList<ItemBase*>& items)
           : m_slot(slot)
-          , m_side(side)
+          , m_sides(sides)
           , m_items(items)
         {
         }
@@ -159,7 +153,7 @@ namespace
 QMenu* ObjectInstanceItem::get_multiple_items_context_menu(const QList<ItemBase*>& items) const
 {
     if (!are_in_same_assembly(items, m_parent.get_uid()))
-        return 0;
+        return nullptr;
 
     QMenu* menu = ItemBase::get_multiple_items_context_menu(items);
 
@@ -190,7 +184,7 @@ class AssignNewDisneyMaterialAction
     {
     }
 
-    virtual void operator()(Project& project) APPLESEED_OVERRIDE
+    void operator()(Project& project) override
     {
         for (int i = 0; i < m_items.size(); ++i)
         {
@@ -232,8 +226,7 @@ class AssignNewDisneyMaterialAction
                 {
                     object_instance_item->do_assign_material(
                         object->get_material_slot(i),
-                        true,   // assign to front side
-                        true,   // assign to back side
+                        ObjectInstance::BothSides,
                         material_name.c_str());
                 }
             }
@@ -241,8 +234,7 @@ class AssignNewDisneyMaterialAction
             {
                 object_instance_item->do_assign_material(
                     ObjectInstanceItem::DefaultSlotName,
-                    true,   // assign to front side
-                    true,   // assign to back side
+                    ObjectInstance::BothSides,
                     material_name.c_str());
             }
         }
@@ -261,7 +253,7 @@ void ObjectInstanceItem::slot_assign_new_disney_material()
 {
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        auto_ptr<RenderingManager::IScheduledAction>(
+        unique_ptr<RenderingManager::IScheduledAction>(
             new AssignNewDisneyMaterialAction(
                 m_editor_context,
                 get_action_items<ObjectInstanceItem>())));
@@ -365,8 +357,8 @@ namespace
         {
         }
 
-        virtual void operator()(
-            Project&                project) APPLESEED_OVERRIDE
+        void operator()(
+            Project&                project) override
         {
             m_parent->assign_material(m_page_name, m_entity_name, m_data);
         }
@@ -382,7 +374,7 @@ namespace
 void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QString entity_name, QVariant data)
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        auto_ptr<RenderingManager::IScheduledAction>(
+        unique_ptr<RenderingManager::IScheduledAction>(
             new AssignMaterialAction(this, page_name, entity_name, data)));
 
     qobject_cast<QWidget*>(sender()->parent())->close();
@@ -394,21 +386,16 @@ void ObjectInstanceItem::assign_material(
     const QVariant&                 untyped_data)
 {
     const string material_name = entity_name.toStdString();
-
     const MaterialAssignmentData data = untyped_data.value<MaterialAssignmentData>();
-    const bool front_side = data.m_side == FrontSide || data.m_side == FrontAndBackSides;
-    const bool back_side = data.m_side == BackSide || data.m_side == FrontAndBackSides;
 
     if (data.m_items.empty())
-    {
-        do_assign_material(data.m_slot.c_str(), front_side, back_side, material_name.c_str());
-    }
+        do_assign_material(data.m_slot.c_str(), data.m_sides, material_name.c_str());
     else
     {
         for (int i = 0; i < data.m_items.size(); ++i)
         {
             ObjectInstanceItem* item = static_cast<ObjectInstanceItem*>(data.m_items[i]);
-            item->do_assign_material(data.m_slot.c_str(), front_side, back_side, material_name.c_str());
+            item->do_assign_material(data.m_slot.c_str(), data.m_sides, material_name.c_str());
         }
     }
 }
@@ -427,8 +414,8 @@ namespace
         {
         }
 
-        virtual void operator()(
-            Project&                project) APPLESEED_OVERRIDE
+        void operator()(
+            Project&                project) override
         {
             m_parent->clear_material(m_data);
         }
@@ -444,26 +431,22 @@ void ObjectInstanceItem::slot_clear_material()
     const QVariant data = qobject_cast<QAction*>(sender())->data();
 
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        auto_ptr<RenderingManager::IScheduledAction>(
+        unique_ptr<RenderingManager::IScheduledAction>(
             new ClearMaterialAction(this, data)));
 }
 
 void ObjectInstanceItem::clear_material(const QVariant& untyped_data)
 {
     const MaterialAssignmentData data = untyped_data.value<MaterialAssignmentData>();
-    const bool front_side = data.m_side == FrontSide || data.m_side == FrontAndBackSides;
-    const bool back_side = data.m_side == BackSide || data.m_side == FrontAndBackSides;
 
     if (data.m_items.empty())
-    {
-        do_unassign_material(data.m_slot.c_str(), front_side, back_side);
-    }
+        do_unassign_material(data.m_slot.c_str(), data.m_sides);
     else
     {
         for (int i = 0; i < data.m_items.size(); ++i)
         {
             ObjectInstanceItem* item = static_cast<ObjectInstanceItem*>(data.m_items[i]);
-            item->do_unassign_material(data.m_slot.c_str(), front_side, back_side);
+            item->do_unassign_material(data.m_slot.c_str(), data.m_sides);
         }
     }
 }
@@ -471,7 +454,7 @@ void ObjectInstanceItem::clear_material(const QVariant& untyped_data)
 void ObjectInstanceItem::delete_multiple(const QList<ItemBase*>& items)
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        auto_ptr<RenderingManager::IScheduledAction>(
+        unique_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<ObjectInstanceItem>(
                 qlist_static_cast<ObjectInstanceItem*>(items))));
 }
@@ -534,36 +517,35 @@ void ObjectInstanceItem::add_material_assignment_menu_actions(
     const QList<ItemBase*>&         items) const
 {
     menu->addAction("Assign Material To Front Side...", this, SLOT(slot_assign_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, FrontSide, items)));
+        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, ObjectInstance::FrontSide, items)));
 
     menu->addAction("Assign Material To Back Side...", this, SLOT(slot_assign_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, BackSide, items)));
+        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, ObjectInstance::BackSide, items)));
 
     menu->addAction("Assign Material To Both Sides...", this, SLOT(slot_assign_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, FrontAndBackSides, items)));
+        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, ObjectInstance::BothSides, items)));
 
     menu->addSeparator();
 
     menu->addAction("Clear Front Side Material", this, SLOT(slot_clear_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, FrontSide, items)));
+        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, ObjectInstance::FrontSide, items)));
 
     menu->addAction("Clear Back Side Material", this, SLOT(slot_clear_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, BackSide, items)));
+        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, ObjectInstance::BackSide, items)));
 
     menu->addAction("Clear Both Sides Materials", this, SLOT(slot_clear_material()))
-        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, FrontAndBackSides, items)));
+        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, ObjectInstance::BothSides, items)));
 }
 
 void ObjectInstanceItem::do_assign_material(
     const char*                     slot_name,
-    const bool                      front_side,
-    const bool                      back_side,
+    const int                       sides,
     const char*                     material_name)
 {
-    if (front_side)
+    if (sides & ObjectInstance::FrontSide)
         m_entity->assign_material(slot_name, ObjectInstance::FrontSide, material_name);
 
-    if (back_side)
+    if (sides & ObjectInstance::BackSide)
         m_entity->assign_material(slot_name, ObjectInstance::BackSide, material_name);
 
     m_editor_context.m_project_builder.notify_project_modification();
@@ -573,13 +555,12 @@ void ObjectInstanceItem::do_assign_material(
 
 void ObjectInstanceItem::do_unassign_material(
     const char*                     slot_name,
-    const bool                      front_side,
-    const bool                      back_side)
+    const int                       sides)
 {
-    if (front_side)
+    if (sides & ObjectInstance::FrontSide)
         m_entity->unassign_material(slot_name, ObjectInstance::FrontSide);
 
-    if (back_side)
+    if (sides & ObjectInstance::BackSide)
         m_entity->unassign_material(slot_name, ObjectInstance::BackSide);
 
     m_editor_context.m_project_builder.notify_project_modification();

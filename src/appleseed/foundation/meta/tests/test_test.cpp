@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ namespace
     struct FakeTestListener
       : public TestListenerBase
     {
-        virtual void release()
+        void release() override
         {
             delete this;
         }
@@ -59,23 +59,23 @@ namespace
     struct FakeTestCase
       : public ITestCase
     {
-        virtual const char* get_name() const
+        const char* get_name() const override
         {
             return "FakeTestCase";
         }
 
-        virtual void run(ITestListener& test_listener, TestResult& case_result) {}
+        void run(ITestListener& test_listener, TestResult& case_result) override {}
     };
 
     struct FakeTestCaseFactory
       : public ITestCaseFactory
     {
-        virtual const char* get_name() const
+        const char* get_name() const override
         {
             return "FakeTestCase";
         }
 
-        virtual FakeTestCase* create()
+        FakeTestCase* create() override
         {
             return new FakeTestCase();
         }
@@ -224,12 +224,12 @@ TEST_SUITE(Foundation_Utility_Test_TestSuite)
         explicit PassingTestCase(size_t& run_count)
           : m_run_count(run_count) {}
 
-        virtual const char* get_name() const
+        const char* get_name() const override
         {
             return "PassingTestCase";
         }
 
-        virtual void run(ITestListener& test_listener, TestResult& case_result)
+        void run(ITestListener& test_listener, TestResult& case_result) override
         {
             ++m_run_count;
         }
@@ -243,12 +243,12 @@ TEST_SUITE(Foundation_Utility_Test_TestSuite)
         explicit PassingTestCaseFactory(size_t& run_count)
           : m_run_count(run_count) {}
 
-        virtual const char* get_name() const
+        const char* get_name() const override
         {
             return "PassingTestCase";
         }
 
-        virtual PassingTestCase* create()
+        PassingTestCase* create() override
         {
             return new PassingTestCase(m_run_count);
         }
@@ -272,12 +272,12 @@ TEST_SUITE(Foundation_Utility_Test_TestSuite)
     struct FailingTestCase
       : public ITestCase
     {
-        virtual const char* get_name() const
+        const char* get_name() const override
         {
             return "FailingTestCase";
         }
 
-        virtual void run(ITestListener& test_listener, TestResult& case_result)
+        void run(ITestListener& test_listener, TestResult& case_result) override
         {
             case_result.signal_assertion_failure();
         }
@@ -286,12 +286,12 @@ TEST_SUITE(Foundation_Utility_Test_TestSuite)
     struct FailingTestCaseFactory
       : public ITestCaseFactory
     {
-        virtual const char* get_name() const
+        const char* get_name() const override
         {
             return "FailingTestCase";
         }
 
-        virtual FailingTestCase* create()
+        FailingTestCase* create() override
         {
             return new FailingTestCase();
         }
@@ -302,15 +302,15 @@ TEST_SUITE(Foundation_Utility_Test_TestSuite)
     {
         TestResult m_test_suite_result;
 
-        virtual void release()
+        void release() override
         {
             delete this;
         }
 
-        virtual void end_suite(
+        void end_suite(
             const TestSuite&    test_suite,
             const TestResult&   test_suite_result,
-            const TestResult&   cumulated_result)
+            const TestResult&   cumulated_result) override
         {
             m_test_suite_result = test_suite_result;
         }

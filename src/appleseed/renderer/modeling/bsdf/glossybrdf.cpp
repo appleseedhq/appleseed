@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2016-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,26 +31,30 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
+#include "renderer/modeling/bsdf/fresnel.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
+#include "renderer/modeling/bsdf/specularhelper.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/microfacet.h"
 #include "foundation/math/minmax.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/otherwise.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <string>
 
 // Forward declarations.
@@ -69,10 +73,6 @@ namespace
     //
     // Glossy BRDF.
     //
-    //    A future version of this BRDF will support multiple-scattering.
-    //    For that reason, the only available microfacet distribution functions
-    //    are those that support it (Beckmann and GGX).
-    //
     // References:
     //
     //   [1] Microfacet Models for Refraction through Rough Surfaces
@@ -89,48 +89,50 @@ namespace
     {
       public:
         GlossyBRDFImpl(
-            const char*         name,
-            const ParamArray&   params)
-          : BSDF(name, Reflective, ScatteringMode::Glossy, params)
+            const char*                 name,
+            const ParamArray&           params)
+          : BSDF(name, Reflective, ScatteringMode::Glossy | ScatteringMode::Specular, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("roughness", InputFormatScalar, "0.15");
-            m_inputs.declare("anisotropic", InputFormatScalar, "0.0");
-            m_inputs.declare("ior", InputFormatScalar, "1.5");
+            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("roughness", InputFormatFloat, "0.15");
+            m_inputs.declare("highlight_falloff", InputFormatFloat, "0.4");
+            m_inputs.declare("anisotropy", InputFormatFloat, "0.0");
+            m_inputs.declare("ior", InputFormatFloat, "1.5");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const APPLESEED_OVERRIDE
+        size_t compute_input_data_size() const override
         {
-            return align(sizeof(InputValues), 16);
+            return sizeof(InputValues);
         }
 
-        APPLESEED_FORCE_INLINE virtual void prepare_inputs(
-            const ShadingPoint&     shading_point,
-            void*                   data) const APPLESEED_OVERRIDE
+        void prepare_inputs(
+            Arena&                      arena,
+            const ShadingPoint&         shading_point,
+            void*                       data) const override
         {
-            InputValues* values = reinterpret_cast<InputValues*>(data);
-            values->m_outside_ior =
-                shading_point.get_ray().get_current_ior();
+            InputValues* values = static_cast<InputValues*>(data);
+            new (&values->m_precomputed) InputValues::Precomputed();
+            values->m_precomputed.m_outside_ior = shading_point.get_ray().get_current_ior();
         }
 
-        virtual bool on_frame_begin(
-            const Project&      project,
-            const Assembly&     assembly,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+        bool on_frame_begin(
+            const Project&              project,
+            const BaseGroup*            parent,
+            OnFrameBeginRecorder&       recorder,
+            IAbortSwitch*               abort_switch) override
         {
-            if (!BSDF::on_frame_begin(project, assembly, abort_switch))
+            if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             const EntityDefMessageContext context("bsdf", this);
@@ -138,197 +140,191 @@ namespace
                 m_params.get_required<string>(
                     "mdf",
                     "ggx",
-                    make_vector("beckmann", "ggx"),
+                    make_vector("beckmann", "ggx", "std"),
                     context);
 
             if (mdf == "ggx")
-                m_mdf = GGX;
-            else // beckmann
-                m_mdf = Beckmann;
+                m_mdf.reset(new GGXMDF());
+            else if (mdf == "beckmann")
+                m_mdf.reset(new BeckmannMDF());
+            else if (mdf == "std")
+                m_mdf.reset(new StdMDF());
+            else return false;
 
             return true;
         }
 
-        APPLESEED_FORCE_INLINE virtual void sample(
-            SamplingContext&    sampling_context,
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            BSDFSample&         sample) const APPLESEED_OVERRIDE
+        void sample(
+            SamplingContext&            sampling_context,
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const int                   modes,
+            BSDFSample&                 sample) const override
         {
-            const Vector3d& n = sample.get_shading_basis().get_normal();
-            const double cos_on = std::min(dot(sample.m_outgoing.get_value(), n), 1.0);
-            if (cos_on < 0.0)
+            const Vector3f& n = sample.m_shading_basis.get_normal();
+            const Vector3f& outgoing = sample.m_outgoing.get_value();
+            const float cos_on = abs(dot(outgoing, n));
+
+            const InputValues* values = static_cast<const InputValues*>(data);
+
+            const FresnelDielectricFun f(
+                values->m_reflectance,
+                values->m_reflectance_multiplier,
+                values->m_precomputed.m_outside_ior / values->m_ior);
+
+            // If roughness is zero use reflection.
+            if (values->m_roughness == 0.0f)
+            {
+                if (ScatteringMode::has_specular(modes))
+                    SpecularBRDFHelper::sample(f, sample);
+
+                sample.m_value.m_beauty = sample.m_value.m_glossy;
                 return;
+            }
 
-            const InputValues* values = reinterpret_cast<const InputValues*>(data);
-
-            double alpha_x, alpha_y;
-            microfacet_alpha_from_roughness(
-                values->m_roughness,
-                values->m_anisotropic,
-                alpha_x,
-                alpha_y);
-
-            FresnelDielectricFun<double> f(
-                values->m_reflectance,
-                values->m_reflectance_multiplier,
-                values->m_outside_ior / values->m_ior);
-
-            if (m_mdf == GGX)
+            if (ScatteringMode::has_glossy(modes))
             {
-                const GGXMDF<double> mdf;
-                MicrofacetBRDFHelper<double>::sample(
+                float alpha_x, alpha_y;
+                microfacet_alpha_from_roughness(
+                    values->m_roughness,
+                    values->m_anisotropy,
+                    alpha_x,
+                    alpha_y);
+
+                const float gamma =
+                    highlight_falloff_to_gama(values->m_highlight_falloff);
+
+                MicrofacetBRDFHelper::sample(
                     sampling_context,
-                    mdf,
+                    *m_mdf,
                     alpha_x,
                     alpha_y,
+                    gamma,
                     f,
                     cos_on,
                     sample);
-            }
-            else
-            {
-                const BeckmannMDF<double> mdf;
-                MicrofacetBRDFHelper<double>::sample(
-                    sampling_context,
-                    mdf,
-                    alpha_x,
-                    alpha_y,
-                    f,
-                    cos_on,
-                    sample);
+
+                sample.m_value.m_beauty = sample.m_value.m_glossy;
             }
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate(
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+        float evaluate(
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes,
+            DirectShadingComponents&    value) const override
         {
             if (!ScatteringMode::has_glossy(modes))
-                return 0.0;
+                return 0.0f;
 
-            // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            const double cos_on = dot(outgoing, n);
-            if (cos_in < 0.0 || cos_on < 0.0)
-                return 0.0;
+            const Vector3f& n = shading_basis.get_normal();
 
-            const InputValues* values = reinterpret_cast<const InputValues*>(data);
+            const Vector3f flipped_incoming =
+                dot(incoming, n) < 0.0f
+                    ? incoming - 2.0f * dot(incoming, n) * n
+                    : incoming;
 
-            double alpha_x, alpha_y;
+            const Vector3f flipped_outgoing =
+                dot(outgoing, n) < 0.0f
+                    ? outgoing - 2.0f * dot(outgoing, n) * n
+                    : outgoing;
+
+            const float cos_in = dot(flipped_incoming, n);
+            const float cos_on = dot(flipped_outgoing, n);
+
+            const InputValues* values = static_cast<const InputValues*>(data);
+
+            float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
                 values->m_roughness,
-                values->m_anisotropic,
+                values->m_anisotropy,
                 alpha_x,
                 alpha_y);
 
-            FresnelDielectricFun<double> f(
+            const float gamma =
+                highlight_falloff_to_gama(values->m_highlight_falloff);
+
+            const FresnelDielectricFun f(
                 values->m_reflectance,
                 values->m_reflectance_multiplier,
-                values->m_outside_ior / values->m_ior);
+                values->m_precomputed.m_outside_ior / values->m_ior);
 
-            if (m_mdf == GGX)
-            {
-                const GGXMDF<double> mdf;
-                return MicrofacetBRDFHelper<double>::evaluate(
-                    mdf,
+            const float pdf =
+                MicrofacetBRDFHelper::evaluate(
+                    *m_mdf,
                     alpha_x,
                     alpha_y,
+                    gamma,
                     shading_basis,
-                    outgoing,
-                    incoming,
+                    flipped_outgoing,
+                    flipped_incoming,
                     f,
                     cos_in,
                     cos_on,
-                    value);
-            }
-            else
-            {
-                const BeckmannMDF<double> mdf;
-                return MicrofacetBRDFHelper<double>::evaluate(
-                    mdf,
-                    alpha_x,
-                    alpha_y,
-                    shading_basis,
-                    outgoing,
-                    incoming,
-                    f,
-                    cos_in,
-                    cos_on,
-                    value);
-            }
+                    value.m_glossy);
+
+            value.m_beauty = value.m_glossy;
+
+            return pdf;
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes) const APPLESEED_OVERRIDE
+        float evaluate_pdf(
+            const void*                 data,
+            const bool                  adjoint,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes) const override
         {
             if (!ScatteringMode::has_glossy(modes))
-                return 0.0;
+                return 0.0f;
 
-            // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            const double cos_on = dot(outgoing, n);
-            if (cos_in < 0.0 || cos_on < 0.0)
-                return 0.0;
+            const Vector3f& n = shading_basis.get_normal();
 
-            const InputValues* values = reinterpret_cast<const InputValues*>(data);
+            const Vector3f flipped_incoming =
+                dot(incoming, n) < 0.0f
+                    ? incoming - 2.0f * dot(incoming, n) * n
+                    : incoming;
 
-            double alpha_x, alpha_y;
+            const Vector3f flipped_outgoing =
+                dot(outgoing, n) < 0.0f
+                    ? outgoing - 2.0f * dot(outgoing, n) * n
+                    : outgoing;
+
+            const InputValues* values = static_cast<const InputValues*>(data);
+
+            float alpha_x, alpha_y;
             microfacet_alpha_from_roughness(
                 values->m_roughness,
-                values->m_anisotropic,
+                values->m_anisotropy,
                 alpha_x,
                 alpha_y);
 
-            if (m_mdf == GGX)
-            {
-                const GGXMDF<double> mdf;
-                return MicrofacetBRDFHelper<double>::pdf(
-                    mdf,
+            const float gamma =
+                highlight_falloff_to_gama(values->m_highlight_falloff);
+
+            return
+                MicrofacetBRDFHelper::pdf(
+                    *m_mdf,
                     alpha_x,
                     alpha_y,
+                    gamma,
                     shading_basis,
-                    outgoing,
-                    incoming);
-            }
-            else
-            {
-                const BeckmannMDF<double> mdf;
-                return MicrofacetBRDFHelper<double>::pdf(
-                    mdf,
-                    alpha_x,
-                    alpha_y,
-                    shading_basis,
-                    outgoing,
-                    incoming);
-            }
+                    flipped_outgoing,
+                    flipped_incoming);
         }
 
       private:
         typedef GlossyBRDFInputValues InputValues;
 
-        enum MDF
-        {
-            GGX,
-            Beckmann
-        };
-
-        MDF m_mdf;
+        unique_ptr<MDF> m_mdf;
     };
 
     typedef BSDFWrapper<GlossyBRDFImpl> GlossyBRDF;
@@ -338,6 +334,11 @@ namespace
 //
 // GlossyBRDFFactory class implementation.
 //
+
+void GlossyBRDFFactory::release()
+{
+    delete this;
+}
 
 const char* GlossyBRDFFactory::get_model() const
 {
@@ -364,7 +365,8 @@ DictionaryArray GlossyBRDFFactory::get_input_metadata() const
             .insert("items",
                 Dictionary()
                     .insert("Beckmann", "beckmann")
-                    .insert("GGX", "ggx"))
+                    .insert("GGX", "ggx")
+                    .insert("STD", "std"))
             .insert("use", "required")
             .insert("default", "ggx"));
 
@@ -400,22 +402,50 @@ DictionaryArray GlossyBRDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("min_value", "0.0")
-            .insert("max_value", "1.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
             .insert("default", "0.15"));
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "anisotropic")
-            .insert("label", "Anisotropic")
+            .insert("name", "highlight_falloff")
+            .insert("label", "Highlight Falloff")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "0.4"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "anisotropy")
+            .insert("label", "Anisotropy")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("min_value", "-1.0")
-            .insert("max_value", "1.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-1.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
             .insert("default", "0.0"));
 
     metadata.push_back(
@@ -423,8 +453,14 @@ DictionaryArray GlossyBRDFFactory::get_input_metadata() const
             .insert("name", "ior")
             .insert("label", "Index of Refraction")
             .insert("type", "numeric")
-            .insert("min_value", "1.0")
-            .insert("max_value", "2.5")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "2.5")
+                    .insert("type", "hard"))
             .insert("use", "required")
             .insert("default", "1.5"));
 
@@ -434,13 +470,6 @@ DictionaryArray GlossyBRDFFactory::get_input_metadata() const
 auto_release_ptr<BSDF> GlossyBRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<BSDF>(new GlossyBRDF(name, params));
-}
-
-auto_release_ptr<BSDF> GlossyBRDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<BSDF>(new GlossyBRDF(name, params));
 }

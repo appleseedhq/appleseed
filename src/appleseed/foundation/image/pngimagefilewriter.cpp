@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,7 @@
 #include "foundation/image/icanvas.h"
 #include "foundation/image/tile.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 
@@ -69,7 +70,7 @@ namespace
         fclose(fp);
 
         // Deallocate the png_struct structure.
-        png_destroy_write_struct(&png_ptr, 0);
+        png_destroy_write_struct(&png_ptr, nullptr);
 
         // Throw an exception.
         throw Exception(error_msg);
@@ -180,7 +181,7 @@ void PNGImageFileWriter::write(
 
     // Open the file in write mode.
     FILE* fp = fopen(filename, "wb");
-    if (fp == 0)
+    if (fp == nullptr)
         throw ExceptionIOError();
 
     // Allocate and initialize the png_struct structure.
@@ -190,7 +191,7 @@ void PNGImageFileWriter::write(
             fp,
             error_callback,
             warning_callback);
-    if (png_ptr == 0)
+    if (png_ptr == nullptr)
     {
         fclose(fp);
         throw ExceptionMemoryError();
@@ -198,9 +199,9 @@ void PNGImageFileWriter::write(
 
     // Allocate the png_info structure.
     png_infop info_ptr = png_create_info_struct(png_ptr);
-    if (info_ptr == 0)
+    if (info_ptr == nullptr)
     {
-        png_destroy_write_struct(&png_ptr, 0);
+        png_destroy_write_struct(&png_ptr, nullptr);
         fclose(fp);
         throw ExceptionMemoryError();
     }
@@ -322,7 +323,7 @@ void PNGImageFileWriter::write(
     }
 
     // Finish writing the file.
-    png_write_end(png_ptr, 0);
+    png_write_end(png_ptr, nullptr);
 
     // Deallocate the png_struct and png_info structures.
     png_destroy_write_struct(&png_ptr, &info_ptr);

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -36,14 +36,14 @@
 // Standard headers.
 #include <string>
 
-using namespace boost;
 using namespace std;
+namespace bf = boost::filesystem;
 
 TEST_SUITE(Boost_Path)
 {
     TEST_CASE(Constructor_GivenPathWithFilenameEndingWithDot_ConstructsValidPath)
     {
-        const filesystem::path path("/directory/filename.");
+        const bf::path path("/directory/filename.");
 
         EXPECT_EQ("filename.", path.filename());
         EXPECT_EQ("filename", path.stem());
@@ -52,8 +52,8 @@ TEST_SUITE(Boost_Path)
 
     TEST_CASE(Constructor_GivenPathWithDirectoryEndingWithDot_ConstructsValidPath)
     {
-        const filesystem::path path("/directory./");
-        const filesystem::path parent = path.parent_path();
+        const bf::path path("/directory./");
+        const bf::path parent = path.parent_path();
 
         EXPECT_EQ("directory.", parent.filename());
         EXPECT_EQ("directory", parent.stem());
@@ -62,41 +62,41 @@ TEST_SUITE(Boost_Path)
 
     TEST_CASE(String_GivenPathWithSlashes)
     {
-        const string s = filesystem::path("dir/file.txt").string();
+        const string s = bf::path("dir/file.txt").string();
     }
 
     TEST_CASE(String_GivenPathWithBackSlashes)
     {
-        const string s = filesystem::path("dir\\file.txt").string();
+        const string s = bf::path("dir\\file.txt").string();
     }
 
     TEST_CASE(Native_GivenPathWithSlashes)
     {
-        const filesystem::path::string_type s = filesystem::path("dir/file.txt").native();
+        const bf::path::string_type s = bf::path("dir/file.txt").native();
     }
 
     TEST_CASE(Native_GivenPathWithBackSlashes)
     {
-        const filesystem::path::string_type s = filesystem::path("dir\\file.txt").native();
+        const bf::path::string_type s = bf::path("dir\\file.txt").native();
     }
 
     TEST_CASE(GenericString_GivenPathWithSlashes)
     {
-        const string s = filesystem::path("dir/file.txt").generic_string();
+        const string s = bf::path("dir/file.txt").generic_string();
     }
 
     TEST_CASE(GenericString_GivenPathWithBackSlashes)
     {
-        const string s = filesystem::path("dir\\file.txt").generic_string();
+        const string s = bf::path("dir\\file.txt").generic_string();
     }
 
     TEST_CASE(MakePreferred_GivenPathWithSlashes)
     {
-        const string s = filesystem::path("dir/file.txt").make_preferred().string();
+        const string s = bf::path("dir/file.txt").make_preferred().string();
     }
 
     TEST_CASE(MakePreferred_GivenPathWithBackSlashes)
     {
-        const string s = filesystem::path("dir\\file.txt").make_preferred().string();
+        const string s = bf::path("dir\\file.txt").make_preferred().string();
     }
 }

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,9 @@
 #include "environmentshaderfactoryregistrar.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/environmentshader/backgroundenvironmentshader.h"
 #include "renderer/modeling/environmentshader/edfenvironmentshader.h"
-#include "renderer/modeling/environmentshader/ienvironmentshaderfactory.h"
+#include "renderer/modeling/environmentshader/environmentshadertraits.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -41,6 +42,7 @@
 // Standard headers.
 #include <cassert>
 #include <string>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -48,17 +50,17 @@ using namespace std;
 namespace renderer
 {
 
-APPLESEED_DEFINE_ARRAY(EnvironmentShaderFactoryArray);
+APPLESEED_DEFINE_APIARRAY(EnvironmentShaderFactoryArray);
 
 struct EnvironmentShaderFactoryRegistrar::Impl
 {
     Registrar<IEnvironmentShaderFactory> m_registrar;
 };
 
-EnvironmentShaderFactoryRegistrar::EnvironmentShaderFactoryRegistrar()
+EnvironmentShaderFactoryRegistrar::EnvironmentShaderFactoryRegistrar(const SearchPaths& search_paths)
   : impl(new Impl())
 {
-    register_factory(auto_ptr<FactoryType>(new EDFEnvironmentShaderFactory()));
+    reinitialize(search_paths);
 }
 
 EnvironmentShaderFactoryRegistrar::~EnvironmentShaderFactoryRegistrar()
@@ -66,10 +68,24 @@ EnvironmentShaderFactoryRegistrar::~EnvironmentShaderFactoryRegistrar()
     delete impl;
 }
 
-void EnvironmentShaderFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+void EnvironmentShaderFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 {
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, factory);
+    // The registrar must be cleared before the plugins are unloaded.
+    impl->m_registrar.clear();
+    unload_all_plugins();
+
+    // Register built-in factories.
+    register_factory(auto_release_ptr<FactoryType>(new BackgroundEnvironmentShaderFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new EDFEnvironmentShaderFactory()));
+
+    // Register factories defined in plugins.
+    register_factories_from_plugins<EnvironmentShader>(
+        search_paths,
+        [this](void* plugin_entry_point)
+        {
+            auto create_fn = reinterpret_cast<IEnvironmentShaderFactory* (*)()>(plugin_entry_point);
+            register_factory(foundation::auto_release_ptr<IEnvironmentShaderFactory>(create_fn()));
+        });
 }
 
 EnvironmentShaderFactoryArray EnvironmentShaderFactoryRegistrar::get_factories() const
@@ -86,8 +102,13 @@ const EnvironmentShaderFactoryRegistrar::FactoryType*
 EnvironmentShaderFactoryRegistrar::lookup(const char* name) const
 {
     assert(name);
-
     return impl->m_registrar.lookup(name);
+}
+
+void EnvironmentShaderFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
+{
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, move(factory));
 }
 
 }   // namespace renderer

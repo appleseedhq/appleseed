@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -43,22 +43,6 @@
 #include "foundation/platform/types.h"
 #include "foundation/utility/stopwatch.h"
 
-// OSL headers.
-#ifdef APPLESEED_WITH_OSL
-#include "foundation/platform/oslheaderguards.h"
-BEGIN_OSL_INCLUDES
-#include "OSL/oslexec.h"
-END_OSL_INCLUDES
-#endif
-
-// OpenImageIO headers.
-#ifdef APPLESEED_WITH_OIIO
-#include "foundation/platform/oiioheaderguards.h"
-BEGIN_OIIO_INCLUDES
-#include "OpenImageIO/texture.h"
-END_OIIO_INCLUDES
-#endif
-
 // Standard headers.
 #include <cstddef>
 #include <memory>
@@ -67,7 +51,9 @@ END_OIIO_INCLUDES
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class JobQueue; }
 namespace renderer      { class Frame; }
-namespace renderer      { class LightSampler; }
+namespace renderer      { class ForwardLightSampler; }
+namespace renderer      { class OIIOTextureSystem; }
+namespace renderer      { class OSLShadingSystem; }
 namespace renderer      { class Scene; }
 namespace renderer      { class TextureStore; }
 namespace renderer      { class TraceContext; }
@@ -85,32 +71,28 @@ class SPPMPassCallback
   public:
     // Constructor.
     SPPMPassCallback(
-        const Scene&                scene,
-        const LightSampler&         light_sampler,
-        const TraceContext&         trace_context,
-        TextureStore&               texture_store,
-#ifdef APPLESEED_WITH_OIIO
-        OIIO::TextureSystem&        oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
-        OSL::ShadingSystem&         shading_system,
-#endif
-        const SPPMParameters&       params);
+        const Scene&                    scene,
+        const ForwardLightSampler&      light_sampler,
+        const TraceContext&             trace_context,
+        TextureStore&                   texture_store,
+        OIIOTextureSystem&              oiio_texture_system,
+        OSLShadingSystem&               shading_system,
+        const SPPMParameters&           params);
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
     // This method is called at the beginning of a pass.
-    virtual void pre_render(
+    void on_pass_begin(
         const Frame&                frame,
         foundation::JobQueue&       job_queue,
-        foundation::IAbortSwitch&   abort_switch) APPLESEED_OVERRIDE;
+        foundation::IAbortSwitch&   abort_switch) override;
 
     // This method is called at the end of a pass.
-    virtual void post_render(
+    void on_pass_end(
         const Frame&                frame,
         foundation::JobQueue&       job_queue,
-        foundation::IAbortSwitch&   abort_switch) APPLESEED_OVERRIDE;
+        foundation::IAbortSwitch&   abort_switch) override;
 
     // Return the i'th photon.
     const SPPMMonoPhoton& get_mono_photon(const size_t i) const;
@@ -123,15 +105,15 @@ class SPPMPassCallback
     float get_lookup_radius() const;
 
   private:
-    const SPPMParameters            m_params;
-    SPPMPhotonTracer                m_photon_tracer;
-    foundation::uint32              m_pass_number;
-    SPPMPhotonVector                m_photons;
-    std::auto_ptr<SPPMPhotonMap>    m_photon_map;
-    float                           m_initial_lookup_radius;
-    float                           m_lookup_radius;
+    const SPPMParameters                m_params;
+    SPPMPhotonTracer                    m_photon_tracer;
+    foundation::uint32                  m_pass_number;
+    SPPMPhotonVector                    m_photons;
+    std::unique_ptr<SPPMPhotonMap>      m_photon_map;
+    float                               m_initial_lookup_radius;
+    float                               m_lookup_radius;
     foundation::Stopwatch<foundation::DefaultWallclockTimer>
-                                    m_stopwatch;
+                                        m_stopwatch;
 };
 
 

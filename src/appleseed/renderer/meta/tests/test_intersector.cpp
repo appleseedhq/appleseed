@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -49,8 +49,8 @@
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/test.h"
 
 using namespace foundation;
@@ -59,11 +59,9 @@ using namespace renderer;
 TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
 {
     struct TestScene
+      : public TestSceneBase
     {
-        auto_release_ptr<Scene> m_scene;
-
         TestScene()
-          : m_scene(SceneFactory::create())
         {
             auto_release_ptr<Assembly> assembly(
                 AssemblyFactory().create("assembly", ParamArray()));
@@ -82,19 +80,19 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
                     Transformd::identity(),
                     StringDictionary()));
 
-            m_scene->assembly_instances().insert(
+            m_scene.assembly_instances().insert(
                 auto_release_ptr<AssemblyInstance>(
                     AssemblyInstanceFactory::create(
                         "assembly_instance",
                         ParamArray(),
                         "assembly")));
 
-            m_scene->assemblies().insert(assembly);
+            m_scene.assemblies().insert(assembly);
         }
     };
 
     struct Fixture
-      : public BindInputs<TestScene>
+      : public StaticTestSceneContext<TestScene>
     {
         TraceContext    m_trace_context;
         TextureStore    m_texture_store;
@@ -102,8 +100,8 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
         Intersector     m_intersector;
 
         Fixture()
-          : m_trace_context(m_scene.ref())
-          , m_texture_store(m_scene.ref())
+          : m_trace_context(m_scene)
+          , m_texture_store(m_scene)
           , m_texture_cache(m_texture_store)
           , m_intersector(m_trace_context, m_texture_cache)
         {

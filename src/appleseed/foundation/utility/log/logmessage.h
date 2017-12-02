@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -43,14 +43,14 @@ namespace foundation
 class APPLESEED_DLLSYMBOL LogMessage
 {
   public:
-    // Message categories.
+    // Message categories. The order matters, preserve it.
     enum Category
     {
-        Info,                       // general information, statistics, progress messages, etc.
-        Debug,                      // debug message
-        Warning,                    // warning message; execution can continue
-        Error,                      // severe error message; the program will attempt to continue
-        Fatal,                      // fatal error message; the program will terminate afterward
+        Debug = 0,                  // debug message
+        Info = 1,                   // general information, statistics, progress message, etc.
+        Warning = 2,                // warning message; execution can continue
+        Error = 3,                  // severe error message; the program will attempt to continue
+        Fatal = 4,                  // fatal error message; the program will terminate afterward
         NumMessageCategories        // number of message categories (keep at the end)
     };
 
@@ -59,8 +59,8 @@ class APPLESEED_DLLSYMBOL LogMessage
     //
     //   Name       Value
     //   ------------------
-    //   "info"     Info
     //   "debug"    Debug
+    //   "info"     Info
     //   "warning"  Warning
     //   "error"    Error
     //   "fatal"    Fatal

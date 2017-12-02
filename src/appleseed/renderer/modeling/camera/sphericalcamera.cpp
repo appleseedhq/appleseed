@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,8 @@
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/api/apistring.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // Forward declarations.
@@ -79,21 +80,21 @@ namespace
         {
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
+        bool on_render_begin(
             const Project&      project,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch*       abort_switch) override
         {
-            if (!Camera::on_frame_begin(project, abort_switch))
+            if (!Camera::on_render_begin(project, abort_switch))
                 return false;
 
             // Precompute pixel dimensions.
@@ -106,18 +107,18 @@ namespace
             return true;
         }
 
-        virtual void spawn_ray(
+        void spawn_ray(
             SamplingContext&    sampling_context,
             const Dual2d&       ndc,
-            ShadingRay&         ray) const APPLESEED_OVERRIDE
+            ShadingRay&         ray) const override
         {
             // Initialize the ray.
             initialize_ray(sampling_context, ray);
 
             // Retrieve the camera transform.
-            Transformd tmp;
+            Transformd scratch;
             const Transformd& transform =
-                m_transform_sequence.evaluate(ray.m_time.m_absolute, tmp);
+                m_transform_sequence.evaluate(ray.m_time.m_absolute, scratch);
 
             // Compute ray origin and direction.
             ray.m_org = transform.get_local_to_parent().extract_translation();
@@ -139,17 +140,17 @@ namespace
             }
         }
 
-        virtual bool connect_vertex(
+        bool connect_vertex(
             SamplingContext&    sampling_context,
-            const double        time,
+            const float         time,
             const Vector3d&     point,
             Vector2d&           ndc,
             Vector3d&           outgoing,
-            double&             importance) const APPLESEED_OVERRIDE
+            float&              importance) const override
         {
             // Retrieve the camera transform.
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
 
             // Transform the input point to camera space.
             const Vector3d p = transform.point_to_local(point);
@@ -166,30 +167,30 @@ namespace
             const Vector3d q2 = ndc_to_camera(Vector2d(ndc.x + m_half_pixel_width, ndc.y + m_half_pixel_height));
             const Vector3d q3 = ndc_to_camera(Vector2d(ndc.x - m_half_pixel_width, ndc.y + m_half_pixel_height));
             const double solid_angle = 0.5 * norm(cross(q2 - q0, q3 - q1));
-            importance = 1.0 / (square_norm(outgoing) * solid_angle);
+            importance = 1.0f / static_cast<float>(square_norm(outgoing) * solid_angle);
 
             // The connection was possible.
             return true;
         }
 
-        virtual bool project_camera_space_point(
+        bool project_camera_space_point(
             const Vector3d&     point,
-            Vector2d&           ndc) const APPLESEED_OVERRIDE
+            Vector2d&           ndc) const override
         {
             ndc = camera_to_ndc(point);
             return true;
         }
 
-        virtual bool project_segment(
-            const double        time,
+        bool project_segment(
+            const float         time,
             const Vector3d&     a,
             const Vector3d&     b,
             Vector2d&           a_ndc,
-            Vector2d&           b_ndc) const APPLESEED_OVERRIDE
+            Vector2d&           b_ndc) const override
         {
             // Retrieve the camera transform.
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
 
             // Project the segment onto the film plane.
             a_ndc = camera_to_ndc(transform.point_to_local(a));
@@ -207,10 +208,11 @@ namespace
         void print_settings() const
         {
             RENDERER_LOG_INFO(
-                "camera settings:\n"
-                "  model            %s\n"
-                "  shutter open     %f\n"
-                "  shutter close    %f",
+                "camera \"%s\" settings:\n"
+                "  model                         %s\n"
+                "  shutter open                  %f\n"
+                "  shutter close                 %f",
+                get_path().c_str(),
                 Model,
                 m_shutter_open_time,
                 m_shutter_close_time);
@@ -218,7 +220,7 @@ namespace
 
         static Vector3d ndc_to_camera(const Vector2d& point)
         {
-            return Vector3d::unit_vector(point.y * Pi, point.x * TwoPi);
+            return Vector3d::make_unit_vector(point.y * Pi<double>(), point.x * TwoPi<double>());
         }
 
         static Vector2d camera_to_ndc(const Vector3d& point)
@@ -231,7 +233,9 @@ namespace
             const double theta = acos(dir.y);
 
             // Convert the spherical coordinates to normalized device coordinates.
-            return Vector2d(wrap(phi * RcpTwoPi), saturate(theta * RcpPi));
+            return Vector2d(
+                wrap(phi * RcpTwoPi<double>()),
+                saturate(theta * RcpPi<double>()));
         }
     };
 }
@@ -240,6 +244,11 @@ namespace
 //
 // SphericalCameraFactory class implementation.
 //
+
+void SphericalCameraFactory::release()
+{
+    delete this;
+}
 
 const char* SphericalCameraFactory::get_model() const
 {
@@ -262,13 +271,6 @@ DictionaryArray SphericalCameraFactory::get_input_metadata() const
 auto_release_ptr<Camera> SphericalCameraFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<Camera>(new SphericalCamera(name, params));
-}
-
-auto_release_ptr<Camera> SphericalCameraFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<Camera>(new SphericalCamera(name, params));
 }

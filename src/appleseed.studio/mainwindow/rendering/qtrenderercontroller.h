@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,11 +34,8 @@
 #include "renderer/api/rendering.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/atomic.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/thread.h"
-
-// Boost headers.
-#include "boost/cstdint.hpp"
 
 // Qt headers.
 #include <QObject>
@@ -57,25 +54,25 @@ class QtRendererController
     QtRendererController();
 
     // This method is called before rendering begins.
-    virtual void on_rendering_begin() APPLESEED_OVERRIDE;
+    void on_rendering_begin() override;
 
     // This method is called after rendering has succeeded.
-    virtual void on_rendering_success() APPLESEED_OVERRIDE;
+    void on_rendering_success() override;
 
     // This method is called after rendering was aborted.
-    virtual void on_rendering_abort() APPLESEED_OVERRIDE;
+    void on_rendering_abort() override;
 
     // This method is called before rendering a single frame.
-    virtual void on_frame_begin() APPLESEED_OVERRIDE;
+    void on_frame_begin() override;
 
     // This method is called after rendering a single frame.
-    virtual void on_frame_end() APPLESEED_OVERRIDE;
+    void on_frame_end() override;
 
     // Store a new status value.
     void set_status(const Status status);
 
     // Return the current rendering status.
-    virtual Status get_status() const APPLESEED_OVERRIDE;
+    Status get_status() const override;
 
   signals:
     void signal_rendering_begin();
@@ -85,7 +82,7 @@ class QtRendererController
     void signal_frame_end();
 
   private:
-    mutable volatile boost::uint32_t m_status;
+    boost::atomic<Status> m_status;
 };
 
 }       // namespace studio

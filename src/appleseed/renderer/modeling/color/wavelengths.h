@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,8 @@
 #ifndef APPLESEED_RENDERER_MODELING_SPECTRUM_WAVELENGTHS_H
 #define APPLESEED_RENDERER_MODELING_SPECTRUM_WAVELENGTHS_H
 
-// appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
+// appleseed.foundation headers.
+#include "foundation/image/regularspectrum.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -46,10 +46,11 @@ namespace renderer
 // Wavelengths used throughout the spectral light simulation.
 //
 
-const float LowWavelength = 400.0f;         // low wavelength, in nm
-const float HighWavelength = 700.0f;        // high wavelength, in nm
-extern Spectrum g_light_wavelengths_nm;     // wavelengths, in nm
-extern Spectrum g_light_wavelengths_um;     // wavelengths, in um
+const float LowWavelength = 400.0f;                             // low wavelength, in nm
+const float HighWavelength = 700.0f;                            // high wavelength, in nm
+
+extern foundation::RegularSpectrum31f g_light_wavelengths_nm;   // wavelengths, in nm
+extern foundation::RegularSpectrum31f g_light_wavelengths_um;   // wavelengths, in um
 
 
 //
@@ -58,18 +59,18 @@ extern Spectrum g_light_wavelengths_um;     // wavelengths, in um
 
 // Generate a set of regularly spaced wavelengths.
 APPLESEED_DLLSYMBOL void generate_wavelengths(
-    const float     low_wavelength,
-    const float     high_wavelength,
-    const size_t    count,
-    float           wavelengths[]);
+    const float                         low_wavelength,
+    const float                         high_wavelength,
+    const size_t                        count,
+    float                               wavelengths[]);
 
 // Convert a set of regularly spaced spectral values to the internal spectrum format.
 APPLESEED_DLLSYMBOL void spectral_values_to_spectrum(
-    const float     low_wavelength,
-    const float     high_wavelength,
-    const size_t    input_spectrum_count,
-    const float     input_spectrum[],
-    float           output_spectrum[]);
+    const float                         low_wavelength,
+    const float                         high_wavelength,
+    const size_t                        input_spectrum_count,
+    const float                         input_spectrum[],
+    foundation::RegularSpectrum31f&     output_spectrum);
 
 }       // namespace renderer
 

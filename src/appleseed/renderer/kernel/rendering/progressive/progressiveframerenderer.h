@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -62,10 +62,10 @@ class ProgressiveFrameRendererFactory
         const ParamArray&           params);
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
     // Return a new progressive frame renderer instance.
-    virtual IFrameRenderer* create() APPLESEED_OVERRIDE;
+    IFrameRenderer* create() override;
 
     // Return a new progressive frame renderer instance.
     static IFrameRenderer* create(
@@ -74,8 +74,7 @@ class ProgressiveFrameRendererFactory
         ITileCallbackFactory*       callback_factory,       // may be 0
         const ParamArray&           params);
 
-    // Get the metadata dictionary describing
-    // the progressive frame renderer params.
+    // Return the metadata of the progressive frame renderer parameters.
     static foundation::Dictionary get_params_metadata();
 
   private:

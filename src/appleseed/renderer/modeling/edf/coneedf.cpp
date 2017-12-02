@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,12 +35,12 @@
 #include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/basis.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 
 // Standard headers.
 #include <cassert>
@@ -70,75 +70,77 @@ namespace
     {
       public:
         ConeEDF(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : EDF(name, params)
         {
             m_inputs.declare("radiance", InputFormatSpectralIlluminance);
-            m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("angle", InputFormatScalar, "90.0");
+            m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("exposure", InputFormatFloat, "0.0");
+            m_inputs.declare("angle", InputFormatFloat, "90.0");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
-            const Project&      project,
-            const Assembly&     assembly,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+        bool on_frame_begin(
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) override
         {
-            if (!EDF::on_frame_begin(project, assembly, abort_switch))
+            if (!EDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             check_non_zero_emission("radiance", "radiance_multiplier");
 
-            m_cos_half_angle = cos(deg_to_rad(m_params.get_required<double>("angle", 90.0) / 2.0));
+            m_cos_half_angle = cos(deg_to_rad(m_params.get_required<float>("angle", 90.0f) / 2.0f));
 
             return true;
         }
 
-        virtual void sample(
-            SamplingContext&    sampling_context,
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector2d&     s,
-            Vector3d&           outgoing,
-            Spectrum&           value,
-            double&             probability) const APPLESEED_OVERRIDE
+        void sample(
+            SamplingContext&        sampling_context,
+            const void*             data,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector2f&         s,
+            Vector3f&               outgoing,
+            Spectrum&               value,
+            float&                  probability) const override
         {
             assert(is_normalized(geometric_normal));
 
-            const Vector3d wo = sample_cone_uniform(s, m_cos_half_angle);
+            const Vector3f wo = sample_cone_uniform(s, m_cos_half_angle);
             outgoing = shading_basis.transform_to_parent(wo);
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= static_cast<float>(values->m_radiance_multiplier);
+            value *= values->m_radiance_multiplier * pow(2.0f, values->m_exposure);
 
             probability = sample_cone_uniform_pdf(m_cos_half_angle);
-            assert(probability > 0.0);
+            assert(probability > 0.0f);
         }
 
-        virtual void evaluate(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+        void evaluate(
+            const void*             data,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
+            Spectrum&               value) const override
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
 
             // No emission outside the cone.
-            const double cos_on = dot(outgoing, shading_basis.get_normal());
+            const float cos_on = dot(outgoing, shading_basis.get_normal());
             if (cos_on <= m_cos_half_angle)
             {
                 value.set(0.0f);
@@ -147,57 +149,62 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= static_cast<float>(values->m_radiance_multiplier);
+            value *= values->m_radiance_multiplier * pow(2.0f, values->m_exposure);
         }
 
-        virtual void evaluate(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            Spectrum&           value,
-            double&             probability) const APPLESEED_OVERRIDE
+        void evaluate(
+            const void*             data,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing,
+            Spectrum&               value,
+            float&                  probability) const override
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
 
             // No emission outside the cone.
-            const double cos_on = dot(outgoing, shading_basis.get_normal());
+            const float cos_on = dot(outgoing, shading_basis.get_normal());
             if (cos_on <= m_cos_half_angle)
             {
                 value.set(0.0f);
-                probability = 0.0;
+                probability = 0.0f;
                 return;
             }
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= static_cast<float>(values->m_radiance_multiplier);
+            value *= values->m_radiance_multiplier * pow(2.0f, values->m_exposure);
 
             probability = sample_cone_uniform_pdf(m_cos_half_angle);
         }
 
-        virtual double evaluate_pdf(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing) const APPLESEED_OVERRIDE
+        float evaluate_pdf(
+            const void*             data,
+            const Vector3f&         geometric_normal,
+            const Basis3f&          shading_basis,
+            const Vector3f&         outgoing) const override
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
 
             // No emission outside the cone.
-            const double cos_on = dot(outgoing, shading_basis.get_normal());
+            const float cos_on = dot(outgoing, shading_basis.get_normal());
             if (cos_on <= m_cos_half_angle)
-                return 0.0;
+                return 0.0f;
 
             return sample_cone_uniform_pdf(m_cos_half_angle);
+        }
+
+        float get_uncached_max_contribution() const override
+        {
+            return get_max_contribution("radiance", "radiance_multiplier", "exposure");
         }
 
       private:
         typedef ConeEDFInputValues InputValues;
 
-        double          m_cos_half_angle;
+        float m_cos_half_angle;
     };
 }
 
@@ -205,6 +212,11 @@ namespace
 //
 // ConeEDFFactory class implementation.
 //
+
+void ConeEDFFactory::release()
+{
+    delete this;
+}
 
 const char* ConeEDFFactory::get_model() const
 {
@@ -247,11 +259,34 @@ DictionaryArray ConeEDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
+            .insert("name", "exposure")
+            .insert("label", "Exposure")
+            .insert("type", "numeric")
+            .insert("use", "optional")
+            .insert("default", "0.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-64.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "64.0")
+                    .insert("type", "soft"))
+            .insert("help", "Exposure"));
+
+    metadata.push_back(
+        Dictionary()
             .insert("name", "angle")
             .insert("label", "Angle")
             .insert("type", "numeric")
-            .insert("min_value", "-360.0")
-            .insert("max_value", "360.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "180.0")
+                    .insert("type", "hard"))
             .insert("use", "required")
             .insert("default", "90.0"));
 
@@ -263,13 +298,6 @@ DictionaryArray ConeEDFFactory::get_input_metadata() const
 auto_release_ptr<EDF> ConeEDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<EDF>(new ConeEDF(name, params));
-}
-
-auto_release_ptr<EDF> ConeEDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<EDF>(new ConeEDF(name, params));
 }

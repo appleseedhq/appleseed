@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
-// Copyright (c) 2014-2016 Marius Avram, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,10 +33,12 @@
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/collectionitem.h"
 
+// appleseed.renderer headers.
+#include "renderer/api/material.h"
+
 // Forward declarations.
 namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace renderer  { class Assembly; }
-namespace renderer  { class Material; }
 
 namespace appleseed {
 namespace studio {
@@ -59,7 +60,7 @@ class MaterialCollectionItem
   protected:
     typedef CollectionItem<renderer::Material, renderer::Assembly, AssemblyItem> Base;
 
-    virtual QMenu* get_single_item_context_menu() const APPLESEED_OVERRIDE;
+    QMenu* get_single_item_context_menu() const override;
 
   private slots:
     void slot_create_generic();
@@ -68,7 +69,7 @@ class MaterialCollectionItem
     void slot_create_osl();
 
   private:
-    virtual ItemBase* create_item(renderer::Material* material) APPLESEED_OVERRIDE;
+    ItemBase* create_item(renderer::Material* material) override;
 
     void do_create_material(const char* model);
 

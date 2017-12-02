@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -71,7 +71,7 @@ Image::Image(
     m_tiles = new Tile*[m_props.m_tile_count];
 
     for (size_t i = 0; i < m_props.m_tile_count; ++i)
-        m_tiles[i] = 0;
+        m_tiles[i] = nullptr;
 }
 
 Image::Image(const CanvasProperties& props)
@@ -80,7 +80,7 @@ Image::Image(const CanvasProperties& props)
     m_tiles = new Tile*[m_props.m_tile_count];
 
     for (size_t i = 0; i < m_props.m_tile_count; ++i)
-        m_tiles[i] = 0;
+        m_tiles[i] = nullptr;
 }
 
 Image::Image(const Image& rhs)
@@ -174,7 +174,7 @@ Tile& Image::tile(
 {
     const size_t tile_index = tile_y * m_props.m_tile_count_x + tile_x;
 
-    if (m_tiles[tile_index] == 0)
+    if (m_tiles[tile_index] == nullptr)
     {
         Tile* tile =
             new Tile(

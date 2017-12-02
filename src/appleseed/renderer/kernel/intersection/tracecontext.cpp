@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -63,13 +63,13 @@ TraceContext::TraceContext(const Scene& scene)
 {
     RENDERER_LOG_DEBUG(
         "data structures size:\n"
-        "  bvh::NodeType    %s\n"
-        "  GTriangleType    %s\n"
-        "  RegionInfo       %s\n"
-        "  ShadingPoint     %s\n"
-        "  ShadingRay       %s\n"
-        "  ShadingResult    %s\n"
-        "  TriangleKey      %s",
+        "  bvh::NodeType                 %s\n"
+        "  GTriangleType                 %s\n"
+        "  RegionInfo                    %s\n"
+        "  ShadingPoint                  %s\n"
+        "  ShadingRay                    %s\n"
+        "  ShadingResult                 %s\n"
+        "  TriangleKey                   %s",
         pretty_size(sizeof(TriangleTree::NodeType)).c_str(),
         pretty_size(sizeof(GTriangleType)).c_str(),
         pretty_size(sizeof(RegionInfo)).c_str(),

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -136,7 +136,7 @@ void MaterialAssignmentEditorWindow::create_widgets()
     layout->setAlignment(Qt::AlignTop);
     layout->setSpacing(20);
 
-    if (m_object == 0)
+    if (m_object == nullptr)
     {
         QHBoxLayout* row_layout = new QHBoxLayout();
         row_layout->addWidget(new QLabel(QString("Object \"%1\" not found.").arg(m_object_instance.get_object_name())));
@@ -155,7 +155,7 @@ void MaterialAssignmentEditorWindow::create_widgets()
 
     if (!slot_names.empty())
     {
-        for (const_each<set<string> > i = slot_names; i; ++i)
+        for (const_each<set<string>> i = slot_names; i; ++i)
             create_widgets_for_slot(layout, i->c_str());
         return;
     }
@@ -194,7 +194,7 @@ void MaterialAssignmentEditorWindow::create_widgets_for_side(
     group->setLayout(new QHBoxLayout());
     group->layout()->setContentsMargins(0, 0, 0, 0);
 
-    QComboBox* combo_box = 0;
+    QComboBox* combo_box = nullptr;
 
     if (side == ObjectInstance::BackSide)
     {
@@ -312,13 +312,50 @@ MaterialAssignmentEditorWindow::SlotValue MaterialAssignmentEditorWindow::get_sl
     return slot_value;
 }
 
+class MaterialAssignmentEditorWindow::AssignMaterialsAction
+  : public RenderingManager::IScheduledAction
+{
+  public:
+    AssignMaterialsAction(
+        ObjectInstance&             object_instance,
+        ObjectInstanceItem&         object_instance_item,
+        const SlotValueCollection&  slot_values)
+      : m_object_instance(object_instance)
+      , m_object_instance_item(object_instance_item)
+      , m_slot_values(slot_values)
+    {
+    }
+
+    void operator()(
+        Project&                    project) override
+    {
+        for (const_each<SlotValueCollection> i = m_slot_values; i; ++i)
+        {
+            i->m_material_name.empty()
+                ? m_object_instance.unassign_material(i->m_slot_name.c_str(), i->m_side)
+                : m_object_instance.assign_material(i->m_slot_name.c_str(), i->m_side, i->m_material_name.c_str());
+        }
+
+        m_object_instance_item.update_style();
+    }
+
+  private:
+    ObjectInstance&                 m_object_instance;
+    ObjectInstanceItem&             m_object_instance_item;
+    const SlotValueCollection       m_slot_values;
+};
+
 void MaterialAssignmentEditorWindow::assign_materials(const SlotValueCollection& slot_values)
 {
     const StringDictionary old_front_mappings = m_object_instance.get_front_material_mappings();
     const StringDictionary old_back_mappings = m_object_instance.get_back_material_mappings();
 
-    for (const_each<SlotValueCollection> i = slot_values; i; ++i)
-        assign_material(*i);
+    m_editor_context.m_rendering_manager.schedule_or_execute(
+        unique_ptr<RenderingManager::IScheduledAction>(
+            new AssignMaterialsAction(
+                m_object_instance,
+                m_object_instance_item,
+                slot_values)));
 
     if (old_front_mappings != m_object_instance.get_front_material_mappings() ||
         old_back_mappings != m_object_instance.get_back_material_mappings())
@@ -326,57 +363,6 @@ void MaterialAssignmentEditorWindow::assign_materials(const SlotValueCollection&
 
     if (m_editor_context.m_rendering_manager.is_rendering())
         m_editor_context.m_rendering_manager.reinitialize_rendering();
-}
-
-namespace
-{
-    class AssignMaterialAction
-      : public RenderingManager::IScheduledAction
-    {
-      public:
-        AssignMaterialAction(
-            ObjectInstance&             object_instance,
-            ObjectInstanceItem&         object_instance_item,
-            const string&               slot,
-            const ObjectInstance::Side  side,
-            const string&               name)
-          : m_object_instance(object_instance)
-          , m_object_instance_item(object_instance_item)
-          , m_slot(slot)
-          , m_side(side)
-          , m_name(name)
-        {
-        }
-
-        virtual void operator()(
-            Project&                    project) APPLESEED_OVERRIDE
-        {
-            m_name.empty()
-              ? m_object_instance.unassign_material(m_slot.c_str(), m_side)
-              : m_object_instance.assign_material(m_slot.c_str(), m_side, m_name.c_str());
-
-            m_object_instance_item.update_style();
-        }
-
-      private:
-        ObjectInstance&                 m_object_instance;
-        ObjectInstanceItem&             m_object_instance_item;
-        const string                    m_slot;
-        const ObjectInstance::Side      m_side;
-        const string                    m_name;
-    };
-}
-
-void MaterialAssignmentEditorWindow::assign_material(const SlotValue& slot_value)
-{
-    m_editor_context.m_rendering_manager.schedule_or_execute(
-        auto_ptr<RenderingManager::IScheduledAction>(
-            new AssignMaterialAction(
-                m_object_instance,
-                m_object_instance_item,
-                slot_value.m_slot_name,
-                slot_value.m_side,
-                slot_value.m_material_name)));
 }
 
 void MaterialAssignmentEditorWindow::slot_change_back_material_mode(int index)

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +41,7 @@
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/object/proceduralobject.h"
 #include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
@@ -137,11 +138,10 @@ void AssemblyTree::collect_assembly_instances(
             continue;
 
         // Create and store an item for this assembly instance.
-        m_items.push_back(
-            Item(
-                &assembly,
-                &assembly_instance,
-                cumulated_transform_seq));
+        m_items.emplace_back(
+            &assembly,
+            &assembly_instance,
+            cumulated_transform_seq);
 
         // Compute and store the assembly instance bounding box.
         AABB3d assembly_instance_bbox(
@@ -393,11 +393,10 @@ namespace
                 const GAABB3 region_bbox =
                     transform.to_parent(region->compute_local_bbox());
 
-                regions.push_back(
-                    RegionInfo(
-                        obj_inst_index,
-                        region_index,
-                        region_bbox));
+                regions.emplace_back(
+                    obj_inst_index,
+                    region_index,
+                    region_bbox);
             }
         }
     }
@@ -406,7 +405,7 @@ namespace
 void AssemblyTree::create_child_trees(const Assembly& assembly)
 {
     // Create a region or a triangle tree if there are mesh objects.
-    if (has_object_instances_of_type(assembly, MeshObjectFactory::get_model()))
+    if (has_object_instances_of_type(assembly, MeshObjectFactory().get_model()))
     {
         assembly.is_flushable()
             ? create_region_tree(assembly)
@@ -414,38 +413,37 @@ void AssemblyTree::create_child_trees(const Assembly& assembly)
     }
 
     // Create a curve tree if there are curve objects.
-    if (has_object_instances_of_type(assembly, CurveObjectFactory::get_model()))
+    if (has_object_instances_of_type(assembly, CurveObjectFactory().get_model()))
         create_curve_tree(assembly);
 }
 
 void AssemblyTree::create_region_tree(const Assembly& assembly)
 {
-    const uint64 hash = hash_assembly_geometry(assembly, MeshObjectFactory::get_model());
-    Lazy<RegionTree>* region_tree = m_region_tree_repository.acquire(hash);
+    const uint64 hash = hash_assembly_geometry(assembly, MeshObjectFactory().get_model());
+    Lazy<RegionTree>* tree = m_region_tree_repository.acquire(hash);
 
-    if (region_tree == 0)
+    if (tree == nullptr)
     {
-        auto_ptr<ILazyFactory<RegionTree> > region_tree_factory(
+        unique_ptr<ILazyFactory<RegionTree>> region_tree_factory(
             new RegionTreeFactory(
                 RegionTree::Arguments(
                     m_scene,
                     assembly.get_uid(),
                     assembly)));
 
-        region_tree = new Lazy<RegionTree>(region_tree_factory);
-
-        m_region_tree_repository.insert(hash, region_tree);
+        tree = new Lazy<RegionTree>(move(region_tree_factory));
+        m_region_tree_repository.insert(hash, tree);
     }
 
-    m_region_trees.insert(make_pair(assembly.get_uid(), region_tree));
+    m_region_trees.insert(make_pair(assembly.get_uid(), tree));
 }
 
 void AssemblyTree::create_triangle_tree(const Assembly& assembly)
 {
-    const uint64 hash = hash_assembly_geometry(assembly, MeshObjectFactory::get_model());
-    Lazy<TriangleTree>* triangle_tree = m_triangle_tree_repository.acquire(hash);
+    const uint64 hash = hash_assembly_geometry(assembly, MeshObjectFactory().get_model());
+    Lazy<TriangleTree>* tree = m_triangle_tree_repository.acquire(hash);
 
-    if (triangle_tree == 0)
+    if (tree == nullptr)
     {
         // Compute the assembly space bounding box of the assembly.
         const GAABB3 assembly_bbox =
@@ -456,7 +454,7 @@ void AssemblyTree::create_triangle_tree(const Assembly& assembly)
         RegionInfoVector regions;
         collect_regions(assembly, regions);
 
-        auto_ptr<ILazyFactory<TriangleTree> > triangle_tree_factory(
+        unique_ptr<ILazyFactory<TriangleTree>> triangle_tree_factory(
             new TriangleTreeFactory(
                 TriangleTree::Arguments(
                     m_scene,
@@ -465,20 +463,19 @@ void AssemblyTree::create_triangle_tree(const Assembly& assembly)
                     assembly,
                     regions)));
 
-        triangle_tree = new Lazy<TriangleTree>(triangle_tree_factory);
-
-        m_triangle_tree_repository.insert(hash, triangle_tree);
+        tree = new Lazy<TriangleTree>(move(triangle_tree_factory));
+        m_triangle_tree_repository.insert(hash, tree);
     }
 
-    m_triangle_trees.insert(make_pair(assembly.get_uid(), triangle_tree));
+    m_triangle_trees.insert(make_pair(assembly.get_uid(), tree));
 }
 
 void AssemblyTree::create_curve_tree(const Assembly& assembly)
 {
-    const uint64 hash = hash_assembly_geometry(assembly, CurveObjectFactory::get_model());
-    Lazy<CurveTree>* curve_tree = m_curve_tree_repository.acquire(hash);
+    const uint64 hash = hash_assembly_geometry(assembly, CurveObjectFactory().get_model());
+    Lazy<CurveTree>* tree = m_curve_tree_repository.acquire(hash);
 
-    if (curve_tree == 0)
+    if (tree == nullptr)
     {
         // Compute the assembly space bounding box of the assembly.
         const GAABB3 assembly_bbox =
@@ -486,7 +483,7 @@ void AssemblyTree::create_curve_tree(const Assembly& assembly)
                 assembly.object_instances().begin(),
                 assembly.object_instances().end());
 
-        auto_ptr<ILazyFactory<CurveTree> > curve_tree_factory(
+        unique_ptr<ILazyFactory<CurveTree>> curve_tree_factory(
             new CurveTreeFactory(
                 CurveTree::Arguments(
                     m_scene,
@@ -494,12 +491,11 @@ void AssemblyTree::create_curve_tree(const Assembly& assembly)
                     assembly_bbox,
                     assembly)));
 
-        curve_tree = new Lazy<CurveTree>(curve_tree_factory);
-
-        m_curve_tree_repository.insert(hash, curve_tree);
+        tree = new Lazy<CurveTree>(move(curve_tree_factory));
+        m_curve_tree_repository.insert(hash, tree);
     }
 
-    m_curve_trees.insert(make_pair(assembly.get_uid(), curve_tree));
+    m_curve_trees.insert(make_pair(assembly.get_uid(), tree));
 }
 
 void AssemblyTree::delete_child_trees(const UniqueID assembly_id)
@@ -546,13 +542,10 @@ namespace
     {
         void operator()(Lazy<TreeType>& tree, const size_t ref_count)
         {
-            Update<TreeType> update(&tree);
+            Access<TreeType> update(&tree);
 
-            if (update.get())
-            {
-                const bool enable_intersection_filters = ref_count == 1;
-                update->update_non_geometry(enable_intersection_filters);
-            }
+            const bool enable_intersection_filters = ref_count == 1;
+            update->update_non_geometry(enable_intersection_filters);
         }
     };
 }
@@ -606,12 +599,16 @@ namespace
             output_ray.m_org = assembly_instance_transform.point_to_local(input_ray.m_org);
         }
 
+        // todo: transform ray differentials.
+        output_ray.m_has_differentials = false;
+
         // Copy the remaining members.
         output_ray.m_tmin = input_ray.m_tmin;
         output_ray.m_tmax = input_ray.m_tmax;
         output_ray.m_time = input_ray.m_time;
         output_ray.m_flags = input_ray.m_flags;
         output_ray.m_depth = input_ray.m_depth;
+        output_ray.m_medium_count = input_ray.m_medium_count;
     }
 }
 
@@ -653,9 +650,9 @@ bool AssemblyLeafVisitor::visit(
         // Evaluate the transformation of the assembly instance.
         const TransformSequence* assembly_instance_transform_seq =
             &item.m_transform_sequence;
-        Transformd tmp;
+        Transformd scratch;
         const Transformd& assembly_instance_transform =
-            assembly_instance_transform_seq->evaluate(ray.m_time.m_absolute, tmp);
+            assembly_instance_transform_seq->evaluate(ray.m_time.m_absolute, scratch);
 
         // Transform the ray to assembly instance space.
         ShadingPoint local_shading_point;
@@ -759,7 +756,7 @@ bool AssemblyLeafVisitor::visit(
         }
 
         // Keep track of the closest hit.
-        if (local_shading_point.hit() && local_shading_point.m_ray.m_tmax < m_shading_point.m_ray.m_tmax)
+        if (local_shading_point.hit_surface() && local_shading_point.m_ray.m_tmax < m_shading_point.m_ray.m_tmax)
         {
             m_shading_point.m_ray.m_tmax = local_shading_point.m_ray.m_tmax;
             m_shading_point.m_primitive_type = local_shading_point.m_primitive_type;
@@ -771,6 +768,51 @@ bool AssemblyLeafVisitor::visit(
             m_shading_point.m_region_index = local_shading_point.m_region_index;
             m_shading_point.m_primitive_index = local_shading_point.m_primitive_index;
             m_shading_point.m_triangle_support_plane = local_shading_point.m_triangle_support_plane;
+        }
+
+        // Check the intersection between the ray and procedural objects.
+        const ObjectInstanceArray& procedural_instances = item.m_assembly->get_render_data().m_procedural_objects;
+        for (size_t j = 0, e = procedural_instances.size(); j < e; ++j)
+        {
+            // Retrieve the object and object instance.
+            const ObjectInstance* object_instance = procedural_instances[j];
+            const Transformd& object_instance_transform = object_instance->get_transform();
+            const ProceduralObject& object = static_cast<const ProceduralObject&>(object_instance->get_object());
+
+            // Transform the ray to object instance space.
+            // todo: transform ray differentials.
+            ShadingRay instance_local_ray;
+            instance_local_ray.m_org = object_instance_transform.point_to_local(local_shading_point.m_ray.m_org);
+            instance_local_ray.m_dir = object_instance_transform.vector_to_local(local_shading_point.m_ray.m_dir);
+            instance_local_ray.m_has_differentials = false;
+            instance_local_ray.m_tmin = local_shading_point.m_ray.m_tmin;
+            instance_local_ray.m_tmax = local_shading_point.m_ray.m_tmax;
+            instance_local_ray.m_time = local_shading_point.m_ray.m_time;
+            instance_local_ray.m_flags = local_shading_point.m_ray.m_flags;
+            instance_local_ray.m_depth = local_shading_point.m_ray.m_depth;
+            instance_local_ray.m_medium_count = local_shading_point.m_ray.m_medium_count;
+
+            // Ask the procedural object to intersect itself against the ray.
+            ProceduralObject::IntersectionResult result;
+            object.intersect(instance_local_ray, result);
+
+            // Keep track of the closest hit.
+            if (result.m_hit && result.m_distance < m_shading_point.m_ray.m_tmax)
+            {
+                m_shading_point.m_ray.m_tmax = result.m_distance;
+                m_shading_point.m_primitive_type = ShadingPoint::PrimitiveProceduralSurface;
+                m_shading_point.m_bary = result.m_uv;
+                m_shading_point.m_assembly_instance = item.m_assembly_instance;
+                m_shading_point.m_assembly_instance_transform = assembly_instance_transform;
+                m_shading_point.m_assembly_instance_transform_seq = assembly_instance_transform_seq;
+                m_shading_point.m_object_instance_index = j;
+                m_shading_point.m_region_index = 0;
+                m_shading_point.m_primitive_index = 0;
+                m_shading_point.m_primitive_pa = result.m_material_slot;
+                m_shading_point.m_geometric_normal = object_instance_transform.normal_to_parent(result.m_geometric_normal);
+                m_shading_point.m_original_shading_normal = object_instance_transform.normal_to_parent(result.m_shading_normal);
+                m_shading_point.m_uv = result.m_uv;
+            }
         }
     }
 
@@ -814,9 +856,9 @@ bool AssemblyLeafProbeVisitor::visit(
         FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
 
         // Evaluate the transformation of the assembly instance.
-        Transformd tmp;
+        Transformd scratch;
         const Transformd& assembly_instance_transform =
-            item.m_transform_sequence.evaluate(ray.m_time.m_absolute, tmp);
+            item.m_transform_sequence.evaluate(ray.m_time.m_absolute, scratch);
 
         // Transform the ray to assembly instance space.
         ShadingRay local_ray;
@@ -932,6 +974,36 @@ bool AssemblyLeafProbeVisitor::visit(
 
             // Terminate traversal if there was a hit.
             if (visitor.hit())
+            {
+                m_hit = true;
+                return false;
+            }
+        }
+
+        // Check the intersection between the ray and procedural objects.
+        const ObjectInstanceArray& procedural_instances = item.m_assembly->get_render_data().m_procedural_objects;
+        for (size_t j = 0, e = procedural_instances.size(); j < e; ++j)
+        {
+            // Retrieve the object and object instance.
+            const ObjectInstance* object_instance = procedural_instances[j];
+            const Transformd& object_instance_transform = object_instance->get_transform();
+            const ProceduralObject& object = static_cast<const ProceduralObject&>(object_instance->get_object());
+
+            // Transform the ray to object instance space.
+            // todo: transform ray differentials.
+            ShadingRay instance_local_ray;
+            instance_local_ray.m_org = object_instance_transform.point_to_local(local_ray.m_org);
+            instance_local_ray.m_dir = object_instance_transform.vector_to_local(local_ray.m_dir);
+            instance_local_ray.m_has_differentials = false;
+            instance_local_ray.m_tmin = local_ray.m_tmin;
+            instance_local_ray.m_tmax = local_ray.m_tmax;
+            instance_local_ray.m_time = local_ray.m_time;
+            instance_local_ray.m_flags = local_ray.m_flags;
+            instance_local_ray.m_depth = local_ray.m_depth;
+            instance_local_ray.m_medium_count = local_ray.m_medium_count;
+
+            // Ask the procedural object to intersect itself against the ray.
+            if (object.intersect(instance_local_ray))
             {
                 m_hit = true;
                 return false;

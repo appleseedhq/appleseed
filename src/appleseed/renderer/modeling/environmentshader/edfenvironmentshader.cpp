@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,9 +32,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#include "renderer/kernel/aov/shadingfragmentstack.h"
-#include "renderer/kernel/shading/shadingfragment.h"
-#include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/project/project.h"
@@ -43,17 +40,18 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/vector.h"
 #include "foundation/image/colorspace.h"
+#include "foundation/math/vector.h"
+#include "foundation/utility/api/apistring.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <string>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class InputEvaluator; }
+namespace renderer      { class PixelContext; }
 
 using namespace foundation;
 using namespace std;
@@ -74,78 +72,71 @@ namespace
     {
       public:
         EDFEnvironmentShader(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : EnvironmentShader(name, params)
-          , m_env_edf(0)
+          , m_env_edf(nullptr)
         {
-            m_inputs.declare("alpha_value", InputFormatScalar, "1.0");
+            m_inputs.declare("alpha_value", InputFormatFloat, "1.0");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
-            const Project&      project,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+        bool on_frame_begin(
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) override
         {
-            if (!EnvironmentShader::on_frame_begin(project, abort_switch))
+            if (!EnvironmentShader::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             // Bind the environment EDF to this environment shader.
             const string name = m_params.get_required<string>("environment_edf", "");
             m_env_edf = project.get_scene()->environment_edfs().get_by_name(name.c_str());
 
-            if (m_env_edf == 0)
+            if (m_env_edf == nullptr)
             {
                 RENDERER_LOG_ERROR(
                     "while preparing environment shader \"%s\": "
                     "cannot find environment edf \"%s\".",
                     get_path().c_str(),
                     name.c_str());
-
                 return false;
             }
 
             // Evaluate and store alpha value.
             InputValues uniform_values;
             m_inputs.evaluate_uniforms(&uniform_values);
-            m_alpha_value = static_cast<float>(uniform_values.m_alpha_value);
+            m_alpha_value = uniform_values.m_alpha_value;
 
             return true;
         }
 
-        virtual void evaluate(
+        void evaluate(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
+            const PixelContext&     pixel_context,
             const Vector3d&         direction,
-            ShadingResult&          shading_result) const APPLESEED_OVERRIDE
+            Spectrum&               value,
+            Alpha&                  alpha) const override
         {
-            // Initialize the shading result.
-            shading_result.m_color_space = ColorSpaceSpectral;
-            shading_result.m_main.m_alpha.set(m_alpha_value);
-            shading_result.m_aovs.m_color.set(0.0f);
-            shading_result.m_aovs.m_alpha.set(0.0f);
-
             // Evaluate the environment EDF and store the radiance into the shading result.
-            m_env_edf->evaluate(
-                shading_context,
-                input_evaluator,
-                direction,
-                shading_result.m_main.m_color);
+            m_env_edf->evaluate(shading_context, Vector3f(direction), value);
+            alpha = Alpha(m_alpha_value);
         }
 
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            double m_alpha_value;
+            float m_alpha_value;
         };
 
         EnvironmentEDF*     m_env_edf;
@@ -157,6 +148,11 @@ namespace
 //
 // EDFEnvironmentShaderFactory class implementation.
 //
+
+void EDFEnvironmentShaderFactory::release()
+{
+    delete this;
+}
 
 const char* EDFEnvironmentShaderFactory::get_model() const
 {
@@ -191,8 +187,14 @@ DictionaryArray EDFEnvironmentShaderFactory::get_input_metadata() const
             .insert("name", "alpha_value")
             .insert("label", "Alpha Value")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "1.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
@@ -202,15 +204,6 @@ DictionaryArray EDFEnvironmentShaderFactory::get_input_metadata() const
 auto_release_ptr<EnvironmentShader> EDFEnvironmentShaderFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return
-        auto_release_ptr<EnvironmentShader>(
-            new EDFEnvironmentShader(name, params));
-}
-
-auto_release_ptr<EnvironmentShader> EDFEnvironmentShaderFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return
         auto_release_ptr<EnvironmentShader>(

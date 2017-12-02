@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/modeling/shadergroup/shaderparamparser.h"
 #include "renderer/utility/paramarray.h"
 
@@ -85,12 +86,28 @@ struct Shader::Impl
                     }
                     break;
 
+                case OSLParamTypeColorArray:
+                  {
+                      vector<float> values;
+                      parser.parse_float3_array(values);
+                      m_params.insert(ShaderParam::create_color_array_param(i.it().key(), values));
+                  }
+                  break;
+
                   case OSLParamTypeFloat:
                     {
                         const float val = parser.parse_one_value<float>();
                         m_params.insert(ShaderParam::create_float_param(i.it().key(), val));
                     }
                     break;
+
+                case OSLParamTypeFloatArray:
+                  {
+                      vector<float> values;
+                      parser.parse_float_array(values);
+                      m_params.insert(ShaderParam::create_float_array_param(i.it().key(), values));
+                  }
+                  break;
 
                   case OSLParamTypeInt:
                     {
@@ -99,11 +116,27 @@ struct Shader::Impl
                     }
                     break;
 
+                case OSLParamTypeIntArray:
+                  {
+                      vector<int> values;
+                      parser.parse_int_array(values);
+                      m_params.insert(ShaderParam::create_int_array_param(i.it().key(), values));
+                  }
+                  break;
+
                   case OSLParamTypeMatrix:
                     {
                         float val[16];
                         parser.parse_n_values(16, val);
                         m_params.insert(ShaderParam::create_matrix_param(i.it().key(), val));
+                    }
+                    break;
+
+                  case OSLParamTypeMatrixArray:
+                    {
+                        vector<float> values;
+                        parser.parse_matrix_array(values);
+                        m_params.insert(ShaderParam::create_matrix_array_param(i.it().key(), values));
                     }
                     break;
 
@@ -115,6 +148,14 @@ struct Shader::Impl
                     }
                     break;
 
+                case OSLParamTypeNormalArray:
+                  {
+                      vector<float> values;
+                      parser.parse_float3_array(values);
+                      m_params.insert(ShaderParam::create_normal_array_param(i.it().key(), values));
+                  }
+                  break;
+
                   case OSLParamTypePoint:
                     {
                         float x, y, z;
@@ -122,6 +163,14 @@ struct Shader::Impl
                         m_params.insert(ShaderParam::create_point_param(i.it().key(), x, y, z));
                     }
                     break;
+
+                case OSLParamTypePointArray:
+                  {
+                      vector<float> values;
+                      parser.parse_float3_array(values);
+                      m_params.insert(ShaderParam::create_point_array_param(i.it().key(), values));
+                  }
+                  break;
 
                   case OSLParamTypeString:
                     {
@@ -139,6 +188,14 @@ struct Shader::Impl
                         m_params.insert(ShaderParam::create_vector_param(i.it().key(), x, y, z));
                     }
                     break;
+
+                case OSLParamTypeVectorArray:
+                  {
+                      vector<float> values;
+                      parser.parse_float3_array(values);
+                      m_params.insert(ShaderParam::create_vector_array_param(i.it().key(), values));
+                  }
+                  break;
 
                   default:
                     RENDERER_LOG_ERROR(
@@ -205,7 +262,7 @@ const ShaderParamContainer& Shader::shader_params() const
     return impl->m_params;
 }
 
-bool Shader::add(OSL::ShadingSystem& shading_system)
+bool Shader::add(OSLShadingSystem& shading_system)
 {
     for (each<ShaderParamContainer> i = impl->m_params; i; ++i)
     {
@@ -213,10 +270,6 @@ bool Shader::add(OSL::ShadingSystem& shading_system)
             return false;
     }
 
-    // For some reason, OSL only supports the surface shader usage.
-    // So, we ignore the user shader type specified in the XML file,
-    // and hardcode "surface" here. TODO: research this...
-    //if (!shading_system.Shader(get_type(), get_shader(), get_layer()))
     if (!shading_system.Shader("surface", get_shader(), get_layer()))
     {
         RENDERER_LOG_ERROR("error adding shader %s, %s.", get_shader(), get_layer());

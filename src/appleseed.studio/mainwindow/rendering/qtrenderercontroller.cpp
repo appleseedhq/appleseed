@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -78,12 +78,12 @@ void QtRendererController::on_frame_end()
 
 void QtRendererController::set_status(const Status status)
 {
-    boost_atomic::atomic_write32(&m_status, status);
+    m_status = status;
 }
 
 IRendererController::Status QtRendererController::get_status() const
 {
-    return static_cast<Status>(boost_atomic::atomic_read32(&m_status));
+    return m_status;
 }
 
 }   // namespace studio

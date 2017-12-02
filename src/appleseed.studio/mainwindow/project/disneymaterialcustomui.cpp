@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Marius Avram, The appleseedhq Organization
+// Copyright (c) 2014-2017 Marius Avram, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -36,8 +36,8 @@
 #include "renderer/api/material.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 // Qt headers.
 #include <QPushButton>
@@ -97,8 +97,8 @@ DisneyMaterialCustomUI::DisneyMaterialCustomUI(
     ParamArray&         settings)
   : m_project(project)
   , m_settings(settings)
-  , m_parent(0)
-  , m_layout(0)
+  , m_parent(nullptr)
+  , m_layout(nullptr)
 {
 }
 
@@ -126,7 +126,7 @@ void DisneyMaterialCustomUI::create_widgets(
     }
     else
     {
-        for (const_each<vector<Dictionary> > i = layer_definitions; i; ++i)
+        for (const_each<vector<Dictionary>> i = layer_definitions; i; ++i)
             append_new_layer(*i);
     }
 }

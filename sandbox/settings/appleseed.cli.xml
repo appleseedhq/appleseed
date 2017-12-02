@@ -2,7 +2,8 @@
 <settings>
     <parameter name="autosave" value="false" />
     <parameter name="background_mode" value="true" />
+    <parameter name="message_verbosity" value="info" />
     <parameter name="message_coloring" value="true" />
     <parameter name="rendering_threads" value="auto" />
-    <parameter name="sampling_mode" value="rng" />
+    <parameter name="sampling_mode" value="qmc" />
 </settings>

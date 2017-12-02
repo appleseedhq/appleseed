@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,17 +28,30 @@
 //
 
 // appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
+#include "bindentitycontainers.h"
 #include "dict2dict.h"
 #include "metadata.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/camera.h"
 
+// appleseed.foundation headers.
+#include "foundation/platform/python.h"
+
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+
+// Work around a regression in Visual Studio 2015 Update 3.
+#if defined(_MSC_VER) && _MSC_VER == 1900
+namespace boost
+{
+    template <> Camera const volatile* get_pointer<Camera const volatile>(Camera const volatile* p) { return p; }
+    template <> ICameraFactory const volatile* get_pointer<ICameraFactory const volatile>(ICameraFactory const volatile* p) { return p; }
+    template <> CameraFactoryRegistrar const volatile* get_pointer<CameraFactoryRegistrar const volatile>(CameraFactoryRegistrar const volatile* p) { return p; }
+}
+#endif
 
 namespace
 {
@@ -61,6 +74,14 @@ namespace
         return auto_release_ptr<Camera>();
     }
 
+    auto_release_ptr<Camera> factory_create_camera(
+        const ICameraFactory*   factory,
+        const char*             name,
+        const bpy::dict&        params)
+    {
+        return factory->create(name, bpy_dict_to_param_array(params));
+    }
+
     TransformSequence* camera_get_transform_sequence(Camera* camera)
     {
         return &(camera->transform_sequence());
@@ -77,6 +98,13 @@ void bind_camera()
         .def("transform_sequence", camera_get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("get_shutter_open_time", &Camera::get_shutter_open_time)
         .def("get_shutter_close_time", &Camera::get_shutter_close_time)
-        .def("get_shutter_middle_time", &Camera::get_shutter_middle_time)
-        ;
+        .def("get_shutter_middle_time", &Camera::get_shutter_middle_time);
+
+    bind_typed_entity_vector<Camera>("CameraContainer");
+
+    bpy::class_<ICameraFactory, boost::noncopyable>("ICameraFactory", bpy::no_init)
+        .def("create", &factory_create_camera);
+
+    bpy::class_<CameraFactoryRegistrar, boost::noncopyable>("CameraFactoryRegistrar", bpy::no_init)
+        .def("lookup", &CameraFactoryRegistrar::lookup, bpy::return_value_policy<bpy::reference_existing_object>());
 }

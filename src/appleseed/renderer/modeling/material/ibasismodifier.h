@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,9 +33,9 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/basis.h"
-#include "foundation/math/vector.h"
 
 // Forward declarations.
+namespace renderer  { class ShadingPoint; }
 namespace renderer  { class TextureCache; }
 
 namespace renderer
@@ -48,9 +48,9 @@ class IBasisModifier
     virtual ~IBasisModifier() {}
 
     virtual foundation::Basis3d modify(
-        TextureCache&                   texture_cache,
-        const foundation::Vector2d&     uv,
-        const foundation::Basis3d&      basis) const = 0;
+        TextureCache&               texture_cache,
+        const foundation::Basis3d&  basis,
+        const ShadingPoint&         shading_point) const = 0;
 };
 
 }       // namespace renderer

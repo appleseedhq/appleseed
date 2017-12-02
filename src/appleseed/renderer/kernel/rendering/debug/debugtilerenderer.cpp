@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -62,17 +62,17 @@ namespace
       : public ITileRenderer
     {
       public:
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual void render_tile(
+        void render_tile(
             const Frame&    frame,
             const size_t    tile_x,
             const size_t    tile_y,
             const size_t    pass_hash,
-            IAbortSwitch&   abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch&   abort_switch) override
         {
             Image& image = frame.image();
 
@@ -103,7 +103,7 @@ namespace
             tile.set_pixel(max_x, max_y, Color4f(0.0f, 0.0f, 1.0f, 1.0f));      // bottom right pixel is blue
         }
 
-        virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
+        StatisticsVector get_statistics() const override
         {
             return StatisticsVector();
         }

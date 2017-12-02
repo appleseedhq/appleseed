@@ -1,16 +1,20 @@
 
-surface diffuse_mirror_mix(float Kd = 1, color Cs = 1, float Kr = 0)
+surface diffuse_mirror_mix(
+    vector Tn = 0 [[int lockgeom = 0]],
+    float  Kd = 1,
+    color  Cs = 1,
+    float  Kr = 0)
 {
     Ci = Cs * Kd * diffuse(N);
 
     if (P[2] < 0.0)
     {
-	    if (P[0] < 0.0)
-	    	Ci += Kr * as_glossy("ggx", N, 0.1, 1.5);
-	}
+        if (P[0] < 0.0)
+            Ci += Kr * as_glossy("ggx", N, Tn, 0.1, 0.5, 0.0, 1.5);
+    }
     else
     {
-	    if (P[0] > 0.0)
-	    	Ci += Kr * as_glossy("ggx", N, 0.1, 1.5);
-	}
+        if (P[0] > 0.0)
+            Ci += Kr * as_glossy("ggx", N, Tn, 0.1, 0.5, 0.0, 1.5);
+    }
 }

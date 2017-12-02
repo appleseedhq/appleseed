@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +28,16 @@
 //
 
 // appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
 #include "dict2dict.h"
 #include "gillocks.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/project.h"
 #include "renderer/api/rendering.h"
+
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/platform/python.h"
 
 // Standard headers.
 #include <memory>
@@ -48,70 +51,70 @@ namespace
     // A class that wraps MasterRenderer and keeps a Python
     // reference to the project object to prevent it being
     // destroyed by Python before the MasterRenderer is destroyed.
-    struct MasterRendererWrapper
+    class MasterRendererWrapper
+      : public NonCopyable
     {
+      public:
+        bpy::object                     m_project_object;   // unreferenced but necessary
+        std::unique_ptr<MasterRenderer> m_renderer;
+
         MasterRendererWrapper(
-            bpy::object                 project,
+            bpy::object                 project_object,
             const ParamArray&           params,
             IRendererController*        renderer_controller,
-            ITileCallbackFactory*       tile_callback_factory = 0)
-          : m_project(project)
+            ITileCallbackFactory*       tile_callback_factory = nullptr)
+          : m_project_object(project_object)
         {
-            Project* proj = bpy::extract<Project*>(project);
+            Project* project = bpy::extract<Project*>(project_object);
             m_renderer.reset(
                 new MasterRenderer(
-                    *proj,
+                    *project,
                     params,
                     renderer_controller,
                     tile_callback_factory));
         }
 
         MasterRendererWrapper(
-            bpy::object                 project,
+            bpy::object                 project_object,
             const ParamArray&           params,
             IRendererController*        renderer_controller,
             ITileCallback*              tile_callback)
-            : m_project(project)
+          : m_project_object(project_object)
         {
-            Project* proj = bpy::extract<Project*>(project);
+            Project* project = bpy::extract<Project*>(project_object);
             m_renderer.reset(
                 new MasterRenderer(
-                    *proj,
+                    *project,
                     params,
                     renderer_controller,
                     tile_callback));
         }
-
-        bpy::object                     m_project;
-        std::auto_ptr<MasterRenderer>   m_renderer;
     };
 
-    std::auto_ptr<MasterRendererWrapper> create_master_renderer(
+    std::shared_ptr<MasterRendererWrapper> create_master_renderer(
         bpy::object             project,
         const bpy::dict&        params,
         IRendererController*    renderer_controller)
     {
         return
-            std::auto_ptr<MasterRendererWrapper>(
-                new MasterRendererWrapper(
-                    *project,
-                    bpy_dict_to_param_array(params),
-                    renderer_controller));
+            std::make_shared<MasterRendererWrapper>(
+                *project,
+                bpy_dict_to_param_array(params),
+                renderer_controller);
     }
 
-    std::auto_ptr<MasterRendererWrapper> create_master_renderer_with_tile_callback(
+    std::shared_ptr<MasterRendererWrapper> create_master_renderer_with_tile_callback(
         bpy::object             project,
         const bpy::dict&        params,
         IRendererController*    renderer_controller,
         ITileCallback*          tile_callback)
     {
         return
-            std::auto_ptr<MasterRendererWrapper>(
-                new MasterRendererWrapper(
-                    *project,
-                    bpy_dict_to_param_array(params),
-                    renderer_controller,
-                    tile_callback));
+            std::make_shared<MasterRendererWrapper>(
+                *project,
+                bpy_dict_to_param_array(params),
+                renderer_controller,
+                tile_callback);
     }
 
     bpy::dict master_renderer_get_parameters(const MasterRendererWrapper* m)
@@ -128,21 +131,20 @@ namespace
 
     bool master_renderer_render(MasterRendererWrapper* m)
     {
-        // Unlock Python's global interpreter lock (GIL) while we do lenghty C++ computations.
+        // Unlock Python's global interpreter lock (GIL) while we do lengthy C++ computations.
         // The GIL is locked again when unlock goes out of scope.
         ScopedGILUnlock unlock;
 
-        return m->m_renderer->render();
+        return m->m_renderer->render() == MasterRenderer::RenderingSucceeded;
     }
 }
 
 void bind_master_renderer()
 {
-    bpy::class_<MasterRendererWrapper, std::auto_ptr<MasterRendererWrapper>, boost::noncopyable>("MasterRenderer", bpy::no_init)
+    bpy::class_<MasterRendererWrapper, std::shared_ptr<MasterRendererWrapper>, boost::noncopyable>("MasterRenderer", bpy::no_init)
         .def("__init__", bpy::make_constructor(create_master_renderer))
         .def("__init__", bpy::make_constructor(create_master_renderer_with_tile_callback))
         .def("get_parameters", master_renderer_get_parameters)
         .def("set_parameters", master_renderer_set_parameters)
-        .def("render", master_renderer_render)
-        ;
+        .def("render", master_renderer_render);
 }

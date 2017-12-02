@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -55,7 +55,7 @@ TEST_SUITE(Foundation_Math_FastMath)
     {
         return
             ref == T(0.0)
-                ? abs(ref - value)
+                ? abs(value)
                 : abs((ref - value) / ref);
     }
 
@@ -94,15 +94,15 @@ TEST_SUITE(Foundation_Math_FastMath)
 
         for (size_t i = 0; i < step_count; i += 4)
         {
-            APPLESEED_SSE_ALIGN T x[4];
+            APPLESEED_SIMD4_ALIGN T x[4];
 
             for (size_t j = 0; j < 4; ++j)
                 x[j] = fit<size_t, T>(i + j, 0, step_count - 1, low, high);
 
-            APPLESEED_SSE_ALIGN T ref_values[4] = { x[0], x[1], x[2], x[3] };
+            APPLESEED_SIMD4_ALIGN T ref_values[4] = { x[0], x[1], x[2], x[3] };
             ref(ref_values);
 
-            APPLESEED_SSE_ALIGN T values[4] = { x[0], x[1], x[2], x[3] };
+            APPLESEED_SIMD4_ALIGN T values[4] = { x[0], x[1], x[2], x[3] };
             func(values);
 
             for (size_t j = 0; j < 4; ++j)
@@ -136,7 +136,7 @@ TEST_SUITE(Foundation_Math_FastMath)
 
         for (size_t f = 0; f < function_count; ++f)
         {
-            vector<Vector<T, 2> > points(step_count);
+            vector<Vector<T, 2>> points(step_count);
 
             for (size_t i = 0; i < step_count; ++i)
             {
@@ -155,7 +155,9 @@ TEST_SUITE(Foundation_Math_FastMath)
         plotfile.write(filepath);
     }
 
+    //
     // Pow2(x).
+    //
 
     float scalar_std_pow2(const float x)
     {
@@ -238,7 +240,9 @@ TEST_SUITE(Foundation_Math_FastMath)
             1000);
     }
 
+    //
     // Log2(x).
+    //
 
     float scalar_std_log2(const float x)
     {
@@ -321,7 +325,9 @@ TEST_SUITE(Foundation_Math_FastMath)
             1000);
     }
 
+    //
     // Pow(x).
+    //
 
     const float Exponent = 2.4f;
 
@@ -426,7 +432,9 @@ TEST_SUITE(Foundation_Math_FastMath)
             1000);
     }
 
+    //
     // Log(x).
+    //
 
     void vector_std_log(float x[4])
     {
@@ -504,7 +512,9 @@ TEST_SUITE(Foundation_Math_FastMath)
             1000);
     }
 
+    //
     // Exp(x).
+    //
 
     void vector_std_exp(float x[4])
     {
@@ -578,6 +588,135 @@ TEST_SUITE(Foundation_Math_FastMath)
             functions,
             countof(functions),
             0.0f,
+            1.0f,
+            1000);
+    }
+
+    //
+    // Rcp(x).
+    //
+
+    TEST_CASE(ScalarFastRcp)
+    {
+        const float error =
+            compute_avg_relative_error_scalar<float, float (*)(float)>(
+                rcp<float>,
+                fast_rcp,
+                1.0e-3f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(1.0e-4f, error);
+    }
+
+    TEST_CASE(PlotRcpFunctions)
+    {
+        const FuncDef<float (*)(float)> functions[] =
+        {
+            { "foundation::rcp", "black", rcp<float> },
+            { "foundation::fast_rcp", "green", fast_rcp }
+        };
+
+        plot_functions(
+            "unit tests/outputs/test_fastmath_rcp.gnuplot",
+            functions,
+            countof(functions),
+            1.0e-3f,
+            1.0f,
+            1000);
+    }
+
+    //
+    // Sqrt(x).
+    //
+
+    TEST_CASE(ScalarFastSqrt)
+    {
+        const float error =
+            compute_avg_relative_error_scalar<float, float (*)(float)>(
+                sqrt,
+                fast_sqrt,
+                0.0f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(0.02f, error);
+    }
+
+    TEST_CASE(PlotSqrtFunctions)
+    {
+        const FuncDef<float (*)(float)> functions[] =
+        {
+            { "std::sqrt", "black", sqrt },
+            { "foundation::fast_sqrt", "green", fast_sqrt }
+        };
+
+        plot_functions(
+            "unit tests/outputs/test_fastmath_sqrt.gnuplot",
+            functions,
+            countof(functions),
+            0.0f,
+            1.0f,
+            1000);
+    }
+
+    //
+    // RcpSqrt(x).
+    //
+
+    float rcp_sqrt(const float x)
+    {
+        return 1.0f / sqrt(x);
+    }
+
+    TEST_CASE(ScalarFastRcpSqrt)
+    {
+        const float error =
+            compute_avg_relative_error_scalar<float, float (*)(float)>(
+                rcp_sqrt,
+                fast_rcp_sqrt,
+                1.0e-3f,
+                1.0f,
+                1000);
+
+#ifdef APPLESEED_USE_SSE
+        EXPECT_LT(4.0e-8f, error);
+#else
+        EXPECT_LT(1.0e-3f, error);
+#endif
+    }
+
+    TEST_CASE(ScalarFasterRcpSqrt)
+    {
+        const float error =
+            compute_avg_relative_error_scalar<float, float (*)(float)>(
+                rcp_sqrt,
+                faster_rcp_sqrt,
+                1.0e-3f,
+                1.0f,
+                1000);
+
+#ifdef APPLESEED_USE_SSE
+        EXPECT_LT(1.0e-4f, error);
+#else
+        EXPECT_LT(1.0e-3f, error);
+#endif
+    }
+
+    TEST_CASE(PlotRcpSqrtFunctions)
+    {
+        const FuncDef<float (*)(float)> functions[] =
+        {
+            { "1.0/std::sqrt", "black", rcp_sqrt },
+            { "foundation::fast_rcp_sqrt", "green", fast_rcp_sqrt },
+            { "foundation::faster_rcp_sqrt", "red", faster_rcp_sqrt }
+        };
+
+        plot_functions(
+            "unit tests/outputs/test_fastmath_rcpsqrt.gnuplot",
+            functions,
+            countof(functions),
+            1.0e-3f,
             1.0f,
             1000);
     }

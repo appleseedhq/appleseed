@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,14 +31,12 @@
 #include "materialfactoryregistrar.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/material/genericmaterial.h"
-#include "renderer/modeling/material/material.h"
-#ifdef APPLESEED_WITH_OSL
-#include "renderer/modeling/material/oslmaterial.h"
-#endif
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
 #include "renderer/modeling/material/disneymaterial.h"
 #endif
+#include "renderer/modeling/material/genericmaterial.h"
+#include "renderer/modeling/material/materialtraits.h"
+#include "renderer/modeling/material/oslmaterial.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -47,6 +45,7 @@
 // Standard headers.
 #include <cassert>
 #include <string>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -54,25 +53,17 @@ using namespace std;
 namespace renderer
 {
 
-APPLESEED_DEFINE_ARRAY(MaterialFactoryArray);
+APPLESEED_DEFINE_APIARRAY(MaterialFactoryArray);
 
 struct MaterialFactoryRegistrar::Impl
 {
     Registrar<IMaterialFactory> m_registrar;
 };
 
-MaterialFactoryRegistrar::MaterialFactoryRegistrar()
+MaterialFactoryRegistrar::MaterialFactoryRegistrar(const SearchPaths& search_paths)
   : impl(new Impl())
 {
-    register_factory(auto_ptr<FactoryType>(new GenericMaterialFactory()));
-
-#ifdef APPLESEED_WITH_OSL
-    register_factory(auto_ptr<FactoryType>(new OSLMaterialFactory()));
-#endif
-
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-    register_factory(auto_ptr<FactoryType>(new DisneyMaterialFactory()));
-#endif
+    reinitialize(search_paths);
 }
 
 MaterialFactoryRegistrar::~MaterialFactoryRegistrar()
@@ -80,10 +71,27 @@ MaterialFactoryRegistrar::~MaterialFactoryRegistrar()
     delete impl;
 }
 
-void MaterialFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+void MaterialFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 {
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, factory);
+    // The registrar must be cleared before the plugins are unloaded.
+    impl->m_registrar.clear();
+    unload_all_plugins();
+
+    // Register built-in factories.
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
+    register_factory(auto_release_ptr<FactoryType>(new DisneyMaterialFactory()));
+#endif
+    register_factory(auto_release_ptr<FactoryType>(new GenericMaterialFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new OSLMaterialFactory()));
+
+    // Register factories defined in plugins.
+    register_factories_from_plugins<Material>(
+        search_paths,
+        [this](void* plugin_entry_point)
+        {
+            auto create_fn = reinterpret_cast<IMaterialFactory* (*)()>(plugin_entry_point);
+            register_factory(foundation::auto_release_ptr<IMaterialFactory>(create_fn()));
+        });
 }
 
 MaterialFactoryArray MaterialFactoryRegistrar::get_factories() const
@@ -99,8 +107,13 @@ MaterialFactoryArray MaterialFactoryRegistrar::get_factories() const
 const MaterialFactoryRegistrar::FactoryType* MaterialFactoryRegistrar::lookup(const char* name) const
 {
     assert(name);
-
     return impl->m_registrar.lookup(name);
+}
+
+void MaterialFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
+{
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, move(factory));
 }
 
 }   // namespace renderer

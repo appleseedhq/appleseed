@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -48,14 +48,10 @@ namespace appleseed {
 namespace studio {
 
 // File dialog filter string for bitmap files supported by appleseed's own image subsystem.
-extern const QString g_bitmap_files_filter;
+extern const QString g_appleseed_image_files_filter;
 
-#ifdef APPLESEED_WITH_OIIO
-
-// Compute and return the file dialog filter string for bitmap files supported by OpenImageIO.
-QString compute_oiio_files_filter();
-
-#endif
+// Return the file dialog filter string for image file formats supported by OpenImageIO.
+QString get_oiio_image_files_filter();
 
 // Combine two filesystem paths and convert the result to native separators.
 QString combine_paths(const QString& lhs, const QString& rhs);
@@ -63,11 +59,16 @@ QString combine_paths(const QString& lhs, const QString& rhs);
 // Combine the application's base path and a given relative path.
 QString make_app_path(const QString& path);
 
+// Combine the action tooltip's name and shortcut.
+QString combine_name_and_shortcut(const QString& name, const QKeySequence& shortcut);
+
 // Check whether a file exists.
 bool file_exists(const QString& path);
 
 // Load an icon and its variants (hover, disabled...) from the application's icons directory.
 QIcon load_icons(const QString& base_name);
+
+QString get_extension(renderer::ParamArray& settings, const QString& target_dialog);
 
 QString get_open_filename(
     QWidget*                parent,
@@ -93,7 +94,7 @@ QString get_save_filename(
     const QString&          settings_key,
     QFileDialog::Options    options = 0);
 
-// Disable the blue focus rectangle of certain widgets. OS X only.
+// Disable the blue focus rectangle of certain widgets. macOS only.
 void disable_osx_focus_rect(QWidget* widget);
 
 // Set the minimum width of a QMessageBox.

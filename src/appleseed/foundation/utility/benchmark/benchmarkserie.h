@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,13 +31,13 @@
 #define APPLESEED_FOUNDATION_UTILITY_BENCHMARK_BENCHMARKSERIE_H
 
 // appleseed.foundation headers.
+#include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/benchmark/benchmarkdatapoint.h"
-#include "foundation/utility/containers/array.h"
 
 namespace foundation
 {
 
-APPLESEED_DECLARE_ARRAY(BenchmarkSerie, BenchmarkDataPoint);
+APPLESEED_DECLARE_APIARRAY(BenchmarkSerie, BenchmarkDataPoint);
 
 }       // namespace foundation
 

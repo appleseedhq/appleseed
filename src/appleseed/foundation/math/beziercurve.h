@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Srinath Ravichandran, The appleseedhq Organization
+// Copyright (c) 2014-2017 Srinath Ravichandran, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -103,7 +103,7 @@ class BezierCurveBase
 
 
 //
-// Degree 1 Bezier curve (a straight line).
+// Degree-1 Bezier curve (a straight line).
 //
 
 template <typename T>
@@ -132,7 +132,7 @@ class BezierCurve1
 
 
 //
-// Degree 2 Bezier curve.
+// Degree-2 Bezier curve.
 //
 
 template <typename T>
@@ -161,7 +161,7 @@ class BezierCurve2
 
 
 //
-// Degree 3 Bezier curve.
+// Degree-3 Bezier curve.
 //
 
 template <typename T>
@@ -369,7 +369,7 @@ size_t BezierCurveBase<T, N>::compute_recursion_depth(const ValueType epsilon) c
                 std::abs(m_ctrl_pts[i].z - ValueType(2.0) * m_ctrl_pts[i + 1].z + m_ctrl_pts[i + 2].z));
     }
 
-    const ValueType value = (ValueType(SqrtTwo) * N * (N - 1) * l0) / (ValueType(8.0) * epsilon);
+    const ValueType value = (SqrtTwo<ValueType>() * N * (N - 1) * l0) / (ValueType(8.0) * epsilon);
     const ValueType RcpLog4 = ValueType(0.7213475204444817);
     const ValueType r0 = std::log(value) * RcpLog4;
     return r0 > ValueType(0.0) ? truncate<size_t>(r0) : 0;
@@ -650,7 +650,7 @@ void BezierCurve3<T>::split(BezierCurve3& c1, BezierCurve3& c2) const
 
 
 //
-// Projection transform free function for Ray-Curve Intersection.
+// Projection transform function for ray-curve intersection.
 //
 
 template <typename MatrixType, typename RayType>
@@ -680,16 +680,16 @@ void make_curve_projection_transform(
     //
     //     if (d > ValueType(0.0))
     //     {
-    //         const MatrixType rot_y = rotation_y(dir.z / d, -dir.x / d);
-    //         const MatrixType rot_x = rotation_x(d, dir.y);
-    //         const MatrixType tr = MatrixType::translation(-ray.m_org);
+    //         const MatrixType rot_y = MatrixType::make_rotation_y(dir.z / d, -dir.x / d);
+    //         const MatrixType rot_x = MatrixType::make_rotation_x(d, dir.y);
+    //         const MatrixType tr = MatrixType::make_translation(-ray.m_org);
     //         matrix = rot_x * rot_y * tr;
     //     }
     //     else
     //     {
-    //         const ValueType phi = dir.y > ValueType(0.0) ? ValueType(HalfPi) : -ValueType(HalfPi);
-    //         const MatrixType rot_x = MatrixType::rotation_x(phi);
-    //         const MatrixType tr = MatrixType::translation(-ray.m_org);
+    //         const ValueType phi = dir.y > ValueType(0.0) ? HalfPi<ValueType>() : -HalfPi<ValueType>();
+    //         const MatrixType rot_x = MatrixType::make_rotation_x(phi);
+    //         const MatrixType tr = MatrixType::make_translation(-ray.m_org);
     //         matrix = rot_x * tr;
     //     }
     //
@@ -758,6 +758,7 @@ void make_curve_projection_transform(
     }
 }
 
+
 //
 // BezierCurveIntersector class implementation.
 //
@@ -812,7 +813,6 @@ bool BezierCurveIntersector<BezierCurveType>::intersect(
     ValueType scaled_t = ray.m_tmax * norm_dir;
 
     ValueType u, v;
-
     return
         converge(
             depth < max_depth ? depth : max_depth,

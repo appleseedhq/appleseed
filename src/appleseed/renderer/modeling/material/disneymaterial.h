@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -42,18 +42,15 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// OpenImageIO headers.
-#include "foundation/platform/oiioheaderguards.h"
-BEGIN_OIIO_INCLUDES
-#include "OpenImageIO/texture.h"
-END_OIIO_INCLUDES
-
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
+namespace renderer      { class BaseGroup; }
 namespace renderer      { class MessageContext; }
+namespace renderer      { class OIIOTextureSystem; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class ShadingContext; }
 
@@ -72,10 +69,10 @@ class APPLESEED_DLLSYMBOL DisneyMaterialLayer
     DisneyMaterialLayer(const DisneyMaterialLayer& other);
 
     // Destructor.
-    ~DisneyMaterialLayer();
+    ~DisneyMaterialLayer() override;
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
     DisneyMaterialLayer& operator=(const DisneyMaterialLayer& other);
 
@@ -87,8 +84,8 @@ class APPLESEED_DLLSYMBOL DisneyMaterialLayer
 
     void evaluate_expressions(
         const ShadingPoint&             shading_point,
-        OIIO::TextureSystem&            texture_system,
-        foundation::Color3d&            base_color,
+        OIIOTextureSystem&              texture_system,
+        foundation::Color3f&            base_color,
         DisneyBRDFInputValues&          values) const;
 
     static foundation::DictionaryArray get_input_metadata();
@@ -116,26 +113,27 @@ class APPLESEED_DLLSYMBOL DisneyMaterial
 {
   public:
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
     // Return a string identifying the model of this material.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    const char* get_model() const override;
 
     // Expose asset file paths referenced by this entity to the outside.
-    virtual void collect_asset_paths(foundation::StringArray& paths) const APPLESEED_OVERRIDE;
-    virtual void update_asset_paths(const foundation::StringDictionary& mappings) APPLESEED_OVERRIDE;
+    void collect_asset_paths(foundation::StringArray& paths) const override;
+    void update_asset_paths(const foundation::StringDictionary& mappings) override;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
+    bool on_frame_begin(
         const Project&              project,
-        const Assembly&             assembly,
-        foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
+        const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
-    // This method is called once after rendering each frame.
-    virtual void on_frame_end(
+    // This method is called once after rendering each frame (only if on_frame_begin() was called).
+    void on_frame_end(
         const Project&              project,
-        const Assembly&             assembly) APPLESEED_OVERRIDE;
+        const BaseGroup*            parent) override;
 
     // Add a new layer with given values to the material.
     // A name and a number will be automatically assigned
@@ -166,7 +164,7 @@ class APPLESEED_DLLSYMBOL DisneyMaterial
         const ParamArray&   params);
 
     // Destructor.
-    ~DisneyMaterial();
+    ~DisneyMaterial() override;
 
     // Prepare all layers for rendering. Returns true on success.
     bool prepare_layers(const MessageContext& context);
@@ -181,24 +179,22 @@ class APPLESEED_DLLSYMBOL DisneyMaterialFactory
   : public IMaterialFactory
 {
   public:
+    // Delete this instance.
+    void release() override;
+
     // Return a string identifying this material model.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    const char* get_model() const override;
 
     // Return metadata for this material model.
-    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
+    foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this material model.
-    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
+    foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new material instance.
-    virtual foundation::auto_release_ptr<Material> create(
+    foundation::auto_release_ptr<Material> create(
         const char*         name,
-        const ParamArray&   params) const APPLESEED_OVERRIDE;
-
-    // Static variant of the create() method above.
-    static foundation::auto_release_ptr<Material> static_create(
-        const char*         name,
-        const ParamArray&   params);
+        const ParamArray&   params) const override;
 };
 
 }       // namespace renderer

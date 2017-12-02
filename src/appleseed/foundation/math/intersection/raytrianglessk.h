@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,7 @@
 #include "foundation/platform/sse.h"
 #endif
 #include "foundation/platform/types.h"
+#include "foundation/utility/poison.h"
 
 // Standard headers.
 #include <cassert>
@@ -125,6 +126,14 @@ struct TriangleSSKSupportPlane
     ValueType intersect(
         const VectorType&   org,
         const VectorType&   dir) const;
+};
+
+// Poisoning.
+template <typename T>
+class PoisonImpl<TriangleSSKSupportPlane<T>>
+{
+  public:
+    static void do_poison(TriangleSSKSupportPlane<T>& plane);
 };
 
 
@@ -222,7 +231,7 @@ APPLESEED_FORCE_INLINE bool TriangleSSK<float>::intersect(
 
     // Check that the intersection point lies inside the triangle.
 #ifdef APPLESEED_USE_SSE
-    APPLESEED_SSE_ALIGN float detarray[4] = { uprime, uprime, vprime, wprime };
+    APPLESEED_SIMD4_ALIGN float detarray[4] = { uprime, uprime, vprime, wprime };
     const __m128 mu = _mm_load_ps(detarray);
     const __m128 mv = _mm_shuffle_ps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));
     const __m128 product = _mm_mul_ps(mu, mv);
@@ -338,7 +347,7 @@ APPLESEED_FORCE_INLINE bool TriangleSSK<float>::intersect(const RayType& ray) co
 
     // Check that the intersection point lies inside the triangle.
 #ifdef APPLESEED_USE_SSE
-    APPLESEED_SSE_ALIGN float detarray[4] = { uprime, uprime, vprime, wprime };
+    APPLESEED_SIMD4_ALIGN float detarray[4] = { uprime, uprime, vprime, wprime };
     const __m128 mu = _mm_load_ps(detarray);
     const __m128 mv = _mm_shuffle_ps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));
     const __m128 product = _mm_mul_ps(mu, mv);
@@ -454,6 +463,15 @@ inline T TriangleSSKSupportPlane<T>::intersect(
     const ValueType det = du * m_nu + dv * m_nv + dw;
     const ValueType tprime = m_np - (ou * m_nu + ov * m_nv + ow);
     return tprime / det;
+}
+
+template <typename T>
+void PoisonImpl<TriangleSSKSupportPlane<T>>::do_poison(TriangleSSKSupportPlane<T>& plane)
+{
+    poison(plane.m_nu);
+    poison(plane.m_nv);
+    poison(plane.m_np);
+    poison(plane.m_ci);
 }
 
 }       // namespace foundation

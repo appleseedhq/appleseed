@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -74,9 +74,9 @@ struct VectorElementWrapper
 };
 
 #ifdef _MSC_VER
-#define ALIGNED_VECTOR_BASE std::vector<VectorElementWrapper<T>, AlignedAllocator<VectorElementWrapper<T> > >
+#define ALIGNED_VECTOR_BASE std::vector<VectorElementWrapper<T>, AlignedAllocator<VectorElementWrapper<T>>>
 #else
-#define ALIGNED_VECTOR_BASE std::vector<T, AlignedAllocator<T> >
+#define ALIGNED_VECTOR_BASE std::vector<T, AlignedAllocator<T>>
 #endif
 
 template <typename T>
@@ -120,13 +120,13 @@ class AlignedVector
     {
     }
 
-    template <class Iterator>
+    template <typename Iterator>
     AlignedVector(Iterator first, Iterator last)
       : Base(first, last)
     {
     }
 
-    template <class Iterator>
+    template <typename Iterator>
     AlignedVector(
         Iterator                                first,
         Iterator                                last,
@@ -135,15 +135,10 @@ class AlignedVector
     {
     }
 
-#if (defined __GNUC__ && defined __GXX_EXPERIMENTAL_CXX0X__) || \
-    (defined _MSC_VER && _MSC_VER >= 1600)
-
     AlignedVector(Base&& rhs)
       : Base(rhs)
     {
     }
-
-#endif
 };
 
 #undef ALIGNED_VECTOR_BASE

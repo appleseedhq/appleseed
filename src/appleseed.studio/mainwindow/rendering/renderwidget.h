@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,12 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/image/image.h"
+#include "foundation/image/tile.h"
+
+// OpenColorIO headers.
+#include <OpenColorIO/OpenColorIO.h>
+namespace OCIO = OCIO_NAMESPACE;
 
 // Qt headers.
 #include <QImage>
@@ -45,7 +51,6 @@
 
 // Forward declarations.
 namespace foundation    { class CanvasProperties; }
-namespace foundation    { class Tile; }
 namespace renderer      { class Frame; }
 class QPaintEvent;
 
@@ -59,12 +64,15 @@ namespace studio {
 class RenderWidget
   : public QWidget
 {
+    Q_OBJECT
+
   public:
     // Constructor.
     RenderWidget(
         const size_t            width,
         const size_t            height,
-        QWidget*                parent = 0);
+        OCIO::ConstConfigRcPtr  ocio_config,
+        QWidget*                parent = nullptr);
 
     // Thread-safe.
     QImage get_image_copy() const;
@@ -77,15 +85,17 @@ class RenderWidget
     // Thread-safe.
     void clear();
 
+    // Called before rendering begins.
+    void start_render();
+
     // Thread-safe.
     void multiply(const float multiplier);
 
     // Thread-safe.
-    void highlight_region(
-        const size_t            x,
-        const size_t            y,
-        const size_t            width,
-        const size_t            height);
+    void highlight_tile(
+        const renderer::Frame&  frame,
+        const size_t            tile_x,
+        const size_t            tile_y);
 
     // Thread-safe.
     void blit_tile(
@@ -100,12 +110,19 @@ class RenderWidget
     QMutex& mutex();
     QImage& image();
 
+  public slots:
+    void slot_display_transform_changed(const QString& transform);
+
   private:
-    mutable QMutex                  m_mutex;
-    QImage                          m_image;
-    QPainter                        m_painter;
-    std::auto_ptr<foundation::Tile> m_float_tile_storage;
-    std::auto_ptr<foundation::Tile> m_uint8_tile_storage;
+    mutable QMutex                      m_mutex;
+    QImage                              m_image;
+    QPainter                            m_painter;
+    std::unique_ptr<foundation::Tile>   m_float_tile_storage;
+    std::unique_ptr<foundation::Tile>   m_uint8_tile_storage;
+    std::unique_ptr<foundation::Image>  m_image_storage;
+
+    OCIO::ConstConfigRcPtr              m_ocio_config;
+    OCIO::ConstProcessorRcPtr           m_ocio_processor;
 
     void allocate_working_storage(const foundation::CanvasProperties& frame_props);
 
@@ -114,7 +131,11 @@ class RenderWidget
         const size_t            tile_x,
         const size_t            tile_y);
 
-    virtual void paintEvent(QPaintEvent* event) APPLESEED_OVERRIDE;
+    void update_tile_no_lock(
+        const size_t            tile_x,
+        const size_t            tile_y);
+
+    void paintEvent(QPaintEvent* event) override;
 };
 
 

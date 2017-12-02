@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -83,7 +83,7 @@ double compute_ambient_occlusion(
     for (size_t i = 0; i < sample_count; ++i)
     {
         // Generate a direction over the unit hemisphere.
-        ray.m_dir = sampling_function(child_sampling_context.next_vector2<2>());
+        ray.m_dir = sampling_function(child_sampling_context.next2<foundation::Vector2d>());
 
         // Transform the direction to world space.
         ray.m_dir = shading_basis.transform_to_parent(ray.m_dir);

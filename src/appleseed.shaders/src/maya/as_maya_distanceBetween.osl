@@ -1,0 +1,78 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/distanceBetween.html
+
+shader as_maya_distanceBetween
+[[
+    string as_maya_node_name = "distanceBetween"
+]]
+(
+    point in_point1 = point(0)
+    [[
+        string as_maya_attribute_name = "point1",
+        string label = "Point 1",
+        string page = "Distance Between Attributes"
+    ]],
+    matrix in_inMatrix1 = matrix(1)
+    [[
+        string as_maya_attribute_name = "inMatrix1",
+        string label = "Matrix 1",
+        string widget = "null"
+    ]],
+    point in_point2 = point(0)
+    [[
+        string as_maya_attribute_name = "point2",
+        string label = "Point 2",
+        string page = "Distance Between Attributes"
+    ]],
+    matrix in_inMatrix2 = matrix(1)
+    [[
+        string as_maya_attribute_name = "inMatrix2",
+        string label = "Matrix 2",
+        string widget = "null"
+    ]],
+
+    output float out_distance = 0.0
+    [[
+        string as_maya_attribute_name = "distance",
+        string label = "Output Distance",
+        string widget = "null"
+    ]]
+)
+{
+    point p1 = (in_inMatrix1 != matrix(1))
+        ? transform(in_inMatrix1, in_point1)
+        : in_point1;
+
+    point p2 = (in_inMatrix2 != matrix(1))
+        ? transform(in_inMatrix2, in_point2)
+        : in_point2;
+
+    out_distance = distance(p1, p2);
+}

@@ -6,7 +6,7 @@
 #
 # This software is released under the MIT license.
 #
-# Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+# Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,7 @@
 from __future__ import division
 from __future__ import print_function
 import argparse
+import colorama
 import datetime
 import os
 import png
@@ -45,23 +46,31 @@ import urllib
 DEFAULT_TOOL_FILEPATH = "..\\..\\sandbox\\bin\\Release\\appleseed.cli.exe" if os.name == "nt" else \
                         "../../sandbox/bin/Release/appleseed.cli"
 
+APPLESEED_BASE_ARGS = "--parameter sampling_mode=qmc"
+
 VALUE_THRESHOLD = 2                 # max allowed absolute diff between two pixel components, in [0, 255]
 MAX_DIFFERING_COMPONENTS = 4 * 2    # max number of pixel components that are allowed to differ significantly
 
 
 #--------------------------------------------------------------------------------------------------
-# Utility functions.
+# Utilities.
 #--------------------------------------------------------------------------------------------------
+
+def remove_prefix(text, prefix):
+    return text[len(prefix):] if text.startswith(prefix) else text
+
 
 def safe_mkdir(dir):
     if not os.path.exists(dir):
         os.mkdir(dir)
+
 
 def safe_remove(filepath):
     try:
         os.remove(filepath)
     except OSError:
         pass
+
 
 def walk(directory, recursive):
     if recursive:
@@ -70,8 +79,10 @@ def walk(directory, recursive):
     else:
         yield os.walk(directory).next()
 
+
 def should_skip(path):
     return path.startswith("skip - ")
+
 
 def format_duration(duration):
     total_seconds = duration.total_seconds()
@@ -80,9 +91,11 @@ def format_duration(duration):
     seconds = total_seconds % 60
     return "{0:02}:{1:02}:{2:09.6f}".format(hours, minutes, seconds)
 
+
 def load_file(filepath):
     with open(filepath, "rt") as file:
         return file.read()
+
 
 def read_png_file(filepath):
     data = png.Reader(filename=filepath).asRGBA8()
@@ -91,6 +104,7 @@ def read_png_file(filepath):
     rows = list(data[2])
     return width, height, rows
 
+
 def write_rgba_png_file(filepath, rows):
     width = len(rows[0]) / 4
     height = len(rows)
@@ -98,34 +112,63 @@ def write_rgba_png_file(filepath, rows):
     with open(filepath, 'wb') as file:
         writer.write(file, rows)
 
-    
+
 #--------------------------------------------------------------------------------------------------
 # Utility class to log progress.
 #--------------------------------------------------------------------------------------------------
 
 class Logger:
-    def __init__(self, args):
-        self.args = args
+
+    SCENE_COLUMN_WIDTH = 82
+    TIME_COLUMN_WIDTH = 16
+    RESULT_COLUMN_WIDTH = 13
+
+    def begin_table(self):
+        self.print_separator()
+        self.print_row("Scene", "Time", "Result")
+        self.print_separator()
+
+    def end_table(self):
+        self.print_separator()
+
+    def print_row(self, scene, time, result):
+        print("| {0} | {1} | {2} |".format(scene.ljust(self.SCENE_COLUMN_WIDTH),
+                                           time.rjust(self.TIME_COLUMN_WIDTH),
+                                           result.rjust(self.RESULT_COLUMN_WIDTH)))
+
+    def print_separator(self):
+        print("+-{0}-+-{1}-+-{2}-+".format("-" * self.SCENE_COLUMN_WIDTH,
+                                           "-" * self.TIME_COLUMN_WIDTH,
+                                           "-" * self.RESULT_COLUMN_WIDTH))
+
+    def skip_rendering(self, scene):
+        DARK_GRAY = colorama.Style.BRIGHT + colorama.Fore.BLACK
+        self.__print_scene(scene, DARK_GRAY)
+        self.__print_result("", "Skipped", DARK_GRAY)
 
     def start_rendering(self, scene):
-        self.scene = scene
-        if self.args.verbose:
-            self.__print_scene(self.scene)
+        self.__print_scene(scene)
 
     def pass_rendering(self, rendering_time):
-        if self.args.verbose:
-            self.__print_result(rendering_time, "passed")
+        self.__print_result(format_duration(rendering_time), "Passed", colorama.Fore.GREEN)
 
-    def fail_rendering(self, rendering_time, error_message):
-        if not self.args.verbose:
-            self.__print_scene(self.scene)
-        self.__print_result(rendering_time, error_message)
+    def fail_rendering(self, rendering_time, message):
+        self.__print_result(format_duration(rendering_time), message, colorama.Fore.RED)
 
-    def __print_scene(self, scene):
-        print("{0}: ".format(scene), end='')
+    def __print_scene(self, scene, color = colorama.Fore.RESET):
+        scene = remove_prefix(scene, "./")
+        scene = remove_prefix(scene, ".\\")
+        if len(scene) > self.SCENE_COLUMN_WIDTH:
+            scene = scene[:self.SCENE_COLUMN_WIDTH - 3] + "..."
+        print("| {0}{1}{2} | ".format(color,
+                                      scene.ljust(self.SCENE_COLUMN_WIDTH),
+                                      colorama.Fore.RESET), end='')
 
-    def __print_result(self, rendering_time, message):
-        print("{0} [{1}]".format(format_duration(rendering_time), message))
+    def __print_result(self, time, message, color = colorama.Fore.RESET):
+        print("{0} | {1}{2}{3} |".format(time.rjust(self.TIME_COLUMN_WIDTH),
+                                         color,
+                                         message.rjust(self.RESULT_COLUMN_WIDTH),
+                                         colorama.Fore.RESET))
 
 
 #--------------------------------------------------------------------------------------------------
@@ -133,6 +176,7 @@ class Logger:
 #--------------------------------------------------------------------------------------------------
 
 class ReportWriter:
+
     def __init__(self, template_directory):
         self.header_template = load_file(os.path.join(template_directory, "header_template.html"))
         self.footer_template = load_file(os.path.join(template_directory, "footer_template.html"))
@@ -157,13 +201,13 @@ class ReportWriter:
         self.all_commands.append(command)
 
         self.file.write(self.__render(self.simple_failure_template,
-                                      { 'project-path': scene,
-                                        'ref-image-url': urllib.quote(reference_filepath),
-                                        'output-image-url': urllib.quote(output_filepath),
-                                        'failure-reason': error_message,
-                                        'log-file-url': urllib.quote(log_filepath),
-                                        'log-file-path': os.path.basename(log_filepath),
-                                        'update-command': command }))
+                                      {'project-path': scene,
+                                       'ref-image-url': urllib.pathname2url(reference_filepath),
+                                       'output-image-url': urllib.pathname2url(output_filepath),
+                                       'failure-reason': error_message,
+                                       'log-file-url': urllib.pathname2url(log_filepath),
+                                       'log-file-path': os.path.basename(log_filepath),
+                                       'update-command': command}))
         self.file.flush()
 
     def report_detailed_failure(self, scene, reference_filepath, output_filepath, log_filepath, error_message, num_diff, max_diff, num_comps, diff_filepath):
@@ -173,34 +217,29 @@ class ReportWriter:
         self.all_commands.append(command)
 
         self.file.write(self.__render(self.detailed_failure_template,
-                                      { 'project-path': scene,
-                                        'ref-image-url': urllib.quote(reference_filepath),
-                                        'diff-image-url': urllib.quote(diff_filepath) if diff_filepath is not None else "",
-                                        'output-image-url': urllib.quote(output_filepath),
-                                        'failure-reason': error_message,
-                                        'log-file-url': urllib.quote(log_filepath),
-                                        'log-file-path': os.path.basename(log_filepath),
-                                        'max-abs-diff': max_diff,
-                                        'diff-comps-count': num_diff,
-                                        'diff-comps-percents': "{0:.2f}".format(100.0 * num_diff / num_comps),
-                                        'update-command': command }))
+                                      {'project-path': scene,
+                                       'ref-image-url': urllib.pathname2url(reference_filepath),
+                                       'diff-image-url': urllib.pathname2url(diff_filepath) if diff_filepath is not None else "",
+                                       'output-image-url': urllib.pathname2url(output_filepath),
+                                       'failure-reason': error_message,
+                                       'log-file-url': urllib.pathname2url(log_filepath),
+                                       'log-file-path': os.path.basename(log_filepath),
+                                       'max-abs-diff': max_diff,
+                                       'diff-comps-count': num_diff,
+                                       'diff-comps-percents': "{0:.2f}".format(100.0 * num_diff / num_comps),
+                                       'update-command': command}))
         self.file.flush()
 
     def __write_header(self, args):
         self.file.write(self.__render(self.header_template,
-                                      { 'test-date': datetime.datetime.now(),
-                                        'appleseed-binary-path': args.tool_path,
-                                        'max-abs-diff-allowed': VALUE_THRESHOLD,
-                                        'max-diff-comps-count-allowed': MAX_DIFFERING_COMPONENTS }))
+                                      {'test-date': datetime.datetime.now(),
+                                       'appleseed-binary-path': args.tool_path,
+                                       'max-abs-diff-allowed': VALUE_THRESHOLD,
+                                       'max-diff-comps-count-allowed': MAX_DIFFERING_COMPONENTS}))
         self.file.flush()
 
     def __write_footer(self):
-        if self.failures == 0:
-            self.file.write("<p>None.</p>")
-        else:
-            commands_html = "\n".join('<li class="command">{0}</li>'.format(c) for c in self.all_commands)
-            self.file.write(self.__render(self.footer_template,
-                                          { 'commands': commands_html }))
+        self.file.write(self.__render(self.footer_template, {}))
 
     def __render(self, template, variables):
         html = template
@@ -221,12 +260,19 @@ class ReportWriter:
 
 def render_project_file(args, project_filepath, output_filepath, log_filepath):
     with open(log_filepath, "w", 0) as log_file:
+        # Base command line.
         command = '"{0}" -o "{1}" "{2}"'.format(args.tool_path, output_filepath, project_filepath)
+
+        # Built-in additional arguments.
+        command += " " + APPLESEED_BASE_ARGS
+
+        # Additional arguments passed on runtestsuite.py's command line.
         if args.args:
-            command += ' {0}'.format(" ".join(args.args))
+            command += " {0}".format(" ".join(args.args))
 
         log_file.write("Command line:\n    {0}\n\n".format(command))
 
+        # Invoke appleseed.
         start_time = datetime.datetime.now()
         result = subprocess.call(command, stderr=log_file, shell=True)
         end_time = datetime.datetime.now()
@@ -248,17 +294,19 @@ def compare_images(rows1, rows2, value_threshold):
     diff_image = []
 
     for row1, row2 in zip(rows1, rows2):
-        diff_row = [ abs(val1 - val2) for val1, val2 in zip(row1, row2) ]
+        diff_row = [abs(val1 - val2) for val1, val2 in zip(row1, row2)]
         num_diff += sum(d > value_threshold for d in diff_row)
         max_diff = max(max_diff, max(diff_row))
         diff_image.append(diff_row)
 
     return num_diff, max_diff, diff_image
 
+
 def fit(x, min_x, max_x, min_y, max_y):
     assert min_x != max_x
     k = (x - min_x) / (max_x - min_x)
     return min_y * (1 - k) + max_y * k
+
 
 def transform_to_false_color(rows):
     image_min = 255
@@ -286,7 +334,7 @@ def transform_to_false_color(rows):
             a = row[i + 3]
 
             m = max(r, g, b, a)
-            
+
             if m == 0:
                 row[i + 0] = 0
                 row[i + 1] = 0
@@ -341,7 +389,7 @@ def render_test_scene(args, logger, report_writer, project_directory, project_fi
         rendering_time = datetime.timedelta(0)
 
     if not rendering_success:
-        logger.fail_rendering(rendering_time, "FAILED")
+        logger.fail_rendering(rendering_time, "Failed")
         report_writer.report_simple_failure(project_filepath, ref_filepath, output_filepath, log_filepath, "Rendering failed")
         return False
 
@@ -350,12 +398,12 @@ def render_test_scene(args, logger, report_writer, project_directory, project_fi
             logger.pass_rendering(rendering_time)
             return True
         else:
-            logger.fail_rendering(rendering_time, "MISSING OUTPUT")
+            logger.fail_rendering(rendering_time, "No Output")
             report_writer.report_simple_failure(project_filepath, ref_filepath, output_filepath, log_filepath, "Output image is missing")
             return False
     else:
         if not os.path.exists(ref_filepath):
-            logger.fail_rendering(rendering_time, "MISSING REFERENCE")
+            logger.fail_rendering(rendering_time, "No Reference")
             report_writer.report_simple_failure(project_filepath, ref_filepath, output_filepath, log_filepath, "Reference image is missing")
             return False
 
@@ -363,7 +411,7 @@ def render_test_scene(args, logger, report_writer, project_directory, project_fi
     ref_width, ref_height, ref_rows = read_png_file(ref_filepath)
 
     if out_width != ref_width or out_height != ref_height:
-        logger.fail_rendering(rendering_time, "OUTPUT/REFERENCE SIZE MISMATCH")
+        logger.fail_rendering(rendering_time, "Size Mismatch")
         report_writer.report_simple_failure(project_filepath, ref_filepath, output_filepath, log_filepath,
                                             "Output and reference images have different sizes")
         return False
@@ -397,22 +445,21 @@ def render_test_scenes(script_directory, args):
     rendered_scene_count = 0
     passing_scene_count = 0
 
-    logger = Logger(args)
+    logger = Logger()
+    logger.begin_table()
 
     report_writer = ReportWriter(script_directory)
     report_writer.open(args, "report.html")
 
     for dirpath, dirnames, filenames in walk(args.directory, args.recursive):
         if should_skip(os.path.basename(dirpath)):
-            if args.verbose:
-                print("skipping:  {0}...".format(dirpath))
+            logger.skip_rendering(dirpath)
             continue
 
         for filename in filenames:
             if os.path.splitext(filename)[1] == '.appleseed':
                 if should_skip(filename):
-                    if args.verbose:
-                        print("skipping:  {0}...".format(os.path.join(dirpath, filename)))
+                    logger.skip_rendering(os.path.join(dirpath, filename))
                     continue
 
                 rendered_scene_count += 1
@@ -422,6 +469,8 @@ def render_test_scenes(script_directory, args):
 
     report_writer.close()
 
+    logger.end_table()
+
     return rendered_scene_count, passing_scene_count
 
 
@@ -430,6 +479,8 @@ def render_test_scenes(script_directory, args):
 #--------------------------------------------------------------------------------------------------
 
 def main():
+    colorama.init()
+
     parser = argparse.ArgumentParser(description="run the functional test suite.")
     parser.add_argument("-t", "--tool-path", metavar="tool-path",
                         help="set the path to the appleseed.cli tool")
@@ -437,8 +488,6 @@ def main():
                         help="scan the specified directory and all its subdirectories")
     parser.add_argument("-s", "--skip-rendering", action='store_true', dest="skip_rendering",
                         help="skip actual rendering, only generate the HTML report")
-    parser.add_argument("-a", "--verbose", action='store_true', dest="verbose",
-                        help="show skipped and passing test scenes")
     parser.add_argument("-p", "--parameter", dest="args", metavar="ARG", nargs="*",
                         help="forward additional arguments to appleseed")
     parser.add_argument("directory", nargs='?', default=".", help="directory to scan")
@@ -449,7 +498,14 @@ def main():
     if args.tool_path is None:
         args.tool_path = os.path.join(script_directory, DEFAULT_TOOL_FILEPATH)
 
-    print("running test suite using {0}".format(args.tool_path))
+    appleseed_args = APPLESEED_BASE_ARGS
+    if args.args:
+        appleseed_args += " {0}".format(" ".join(args.args))
+
+    print("Configuration:")
+    print("  Binary        : {0}".format(args.tool_path))
+    print("  Arguments     : {0}".format(appleseed_args))
+    print()
 
     start_time = datetime.datetime.now()
     rendered_scene_count, passing_scene_count = render_test_scenes(script_directory, args)
@@ -457,11 +513,18 @@ def main():
 
     success = 100.0 * passing_scene_count / rendered_scene_count if rendered_scene_count > 0 else 0.0
 
-    print("{0} out of {1} test scene(s) passed ({2:.2f} %), total rendering time {3}." \
-        .format(passing_scene_count,
-                rendered_scene_count,
-                success,
-                format_duration(end_time - start_time)))
+    print()
+    print("Results:")
+    print("  Success Rate  : {0}{1:.2f} %{2}"
+          .format(colorama.Fore.RED if passing_scene_count < rendered_scene_count else colorama.Fore.GREEN,
+                  success,
+                  colorama.Fore.RESET))
+    print("  Failures      : {0}{1} out of {2} test scene(s){3}"
+          .format(colorama.Fore.RED if passing_scene_count < rendered_scene_count else colorama.Fore.GREEN,
+                  rendered_scene_count - passing_scene_count,
+                  rendered_scene_count,
+                  colorama.Fore.RESET))
+    print("  Total Time    : {0}".format(format_duration(end_time - start_time)))
 
 if __name__ == '__main__':
     main()

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -36,16 +36,19 @@
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/visibilityflags.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
-#endif
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/makevector.h"
+
+// OpenImageIO headers.
+#include "foundation/platform/_beginoiioheaders.h"
+#include "OpenImageIO/ustring.h"
+#include "foundation/platform/_endoiioheaders.h"
 
 // Standard headers.
 #include <string>
@@ -60,7 +63,7 @@ namespace renderer
 // MaterialArray class implementation.
 //
 
-APPLESEED_DEFINE_ARRAY(MaterialArray);
+APPLESEED_DEFINE_APIARRAY(MaterialArray);
 
 bool has_emitting_materials(const MaterialArray& materials)
 {
@@ -79,13 +82,28 @@ bool uses_alpha_mapping(const MaterialArray& materials)
     {
         if (materials[i])
         {
-            if (materials[i]->has_alpha_map())
-                return true;
-
-#ifdef APPLESEED_WITH_OSL
             if (const ShaderGroup* sg = materials[i]->get_uncached_osl_surface())
-                return sg->has_transparency();
-#endif
+            {
+                if (sg->has_transparency())
+                    return true;
+            }
+
+            if (materials[i]->has_alpha_map() && !materials[i]->has_uniform_alpha_map_value_of_one())
+                return true;
+        }
+    }
+
+    return false;
+}
+
+bool has_participating_media(const MaterialArray& materials)
+{
+    for (size_t i = 0, e = materials.size(); i < e; ++i)
+    {
+        if (materials[i])
+        {
+            if (materials[i]->get_uncached_volume() != nullptr)
+                return true;
         }
     }
 
@@ -114,6 +132,7 @@ struct ObjectInstance::Impl
     string                  m_object_name;
     StringDictionary        m_front_material_mappings;
     StringDictionary        m_back_material_mappings;
+    OIIO::ustring           m_sss_set_identifier;
 };
 
 ObjectInstance::ObjectInstance(
@@ -139,7 +158,7 @@ ObjectInstance::ObjectInstance(
     m_vis_flags = VisibilityFlags::parse(params.child("visibility"), message_context);
 
     // Retrieve medium priority.
-    m_medium_priority = params.get_optional<uint8>("medium_priority", 0);
+    m_medium_priority = params.get_optional<int8>("medium_priority", 0);
 
     // Retrieve ray bias method.
     const string ray_bias_method =
@@ -159,8 +178,14 @@ ObjectInstance::ObjectInstance(
     // Retrieve ray bias distance.
     m_ray_bias_distance = params.get_optional<double>("ray_bias_distance", 0.0);
 
+    // Retrieve SSS set ID.
+    impl->m_sss_set_identifier = params.get_optional<std::string>("sss_set_id", "");
+
+    // Retrieve flip normals flag.
+    m_flip_normals = params.get_optional<bool>("flip_normals");
+
     // No bound object yet.
-    m_object = 0;
+    m_object = nullptr;
 }
 
 ObjectInstance::~ObjectInstance()
@@ -186,6 +211,19 @@ const char* ObjectInstance::get_object_name() const
     return impl->m_object_name.c_str();
 }
 
+bool ObjectInstance::is_in_same_sss_set(const ObjectInstance& other) const
+{
+    // If it is the same object instance, the SSS set is also the same.
+    if (other.get_uid() == get_uid())
+        return true;
+
+    // An empty identifier indicates that the object instance belongs to its own SSS set.
+    if (impl->m_sss_set_identifier.empty() || other.impl->m_sss_set_identifier.empty())
+        return false;
+
+    return impl->m_sss_set_identifier == other.impl->m_sss_set_identifier;
+}
+
 const Transformd& ObjectInstance::get_transform() const
 {
     return impl->m_transform;
@@ -197,7 +235,7 @@ Object* ObjectInstance::find_object() const
 
     while (parent)
     {
-        if (dynamic_cast<const Assembly*>(parent) == 0)
+        if (dynamic_cast<const Assembly*>(parent) == nullptr)
             break;
 
         Object* object =
@@ -210,7 +248,7 @@ Object* ObjectInstance::find_object() const
         parent = parent->get_parent();
     }
 
-    return 0;
+    return nullptr;
 }
 
 GAABB3 ObjectInstance::compute_parent_bbox() const
@@ -285,8 +323,8 @@ const char* ObjectInstance::get_material_name(const size_t pa_index, const Side 
 {
     const Object* object = find_object();
 
-    if (object == 0)
-        return 0;
+    if (object == nullptr)
+        return nullptr;
 
     const StringDictionary& material_mappings =
         side == FrontSide
@@ -296,28 +334,28 @@ const char* ObjectInstance::get_material_name(const size_t pa_index, const Side 
     if (object->get_material_slot_count() > 0)
     {
         const char* slot_name = object->get_material_slot(pa_index);
-        return material_mappings.exist(slot_name) ? material_mappings.get(slot_name) : 0;
+        return material_mappings.exist(slot_name) ? material_mappings.get(slot_name) : nullptr;
     }
     else
     {
-        return material_mappings.empty() ? 0 : material_mappings.begin().value();
+        return material_mappings.empty() ? nullptr : material_mappings.begin().value();
     }
 }
 
 void ObjectInstance::unbind_object()
 {
-    m_object = 0;
+    m_object = nullptr;
 }
 
 void ObjectInstance::bind_object(const ObjectContainer& objects)
 {
-    if (m_object == 0)
+    if (m_object == nullptr)
         m_object = objects.get_by_name(impl->m_object_name.c_str());
 }
 
 void ObjectInstance::check_object() const
 {
-    if (m_object == 0)
+    if (m_object == nullptr)
         throw ExceptionUnknownEntity(impl->m_object_name.c_str(), this);
 }
 
@@ -331,7 +369,7 @@ namespace
     {
         for (size_t i = 0; i < material_array.size(); ++i)
         {
-            if (material_array[i] == 0)
+            if (material_array[i] == nullptr)
             {
                 if (object.get_material_slot_count() > 0)
                 {
@@ -360,7 +398,7 @@ namespace
     {
         for (size_t i = 0; i < material_array.size(); ++i)
         {
-            if (material_array[i] == 0)
+            if (material_array[i] == nullptr)
             {
                 if (object.get_material_slot_count() > 0)
                 {
@@ -414,6 +452,13 @@ void ObjectInstance::check_materials() const
     do_check_materials(this, *m_object, m_back_materials, impl->m_back_material_mappings);
 }
 
+bool ObjectInstance::has_participating_media() const
+{
+    return
+        renderer::has_participating_media(m_back_materials) ||
+        renderer::has_participating_media(m_front_materials);
+}
+
 bool ObjectInstance::uses_alpha_mapping() const
 {
     if (get_object().has_alpha_map())
@@ -426,14 +471,22 @@ bool ObjectInstance::uses_alpha_mapping() const
 
 bool ObjectInstance::on_frame_begin(
     const Project&          project,
-    const Assembly&         assembly,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
     IAbortSwitch*           abort_switch)
 {
+    if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
+
     m_transform_swaps_handedness = get_transform().swaps_handedness();
 
     const EntityDefMessageContext context("object instance", this);
 
-    if (uses_alpha_mapping())
+    const bool uses_materials_alpha_mapping =
+        renderer::uses_alpha_mapping(m_back_materials) ||
+        renderer::uses_alpha_mapping(m_front_materials);
+
+    if (uses_materials_alpha_mapping)
     {
         if (m_front_materials != m_back_materials)
         {
@@ -445,10 +498,6 @@ bool ObjectInstance::on_frame_begin(
     }
 
     return true;
-}
-
-void ObjectInstance::on_frame_end(const Project& project)
-{
 }
 
 
@@ -464,9 +513,15 @@ DictionaryArray ObjectInstanceFactory::get_input_metadata()
         Dictionary()
             .insert("name", "medium_priority")
             .insert("label", "Medium Priority")
-            .insert("type", "numeric")
-            .insert("min_value", "0")
-            .insert("max_value", "255")
+            .insert("type", "integer")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-128")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "127")
+                    .insert("type", "hard"))
             .insert("use", "optional")
             .insert("default", "0"));
 
@@ -491,6 +546,14 @@ DictionaryArray ObjectInstanceFactory::get_input_metadata()
             .insert("type", "text")
             .insert("use", "optional")
             .insert("default", "0.0"));
+
+    metadata.push_back(
+        Dictionary()
+        .insert("name", "sss_set_id")
+        .insert("label", "SSS Set Identifier")
+        .insert("type", "text")
+        .insert("use", "optional")
+        .insert("default", ""));
 
     return metadata;
 }

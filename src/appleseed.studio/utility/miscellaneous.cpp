@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,9 @@
 #include "utility/interop.h"
 #include "utility/settingskeys.h"
 
+// appleseed.shared headers.
+#include "application/application.h"
+
 // appleseed.renderer headers.
 #include "renderer/utility/paramarray.h"
 
@@ -41,16 +44,10 @@
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 
-// appleseed.shared headers.
-#include "application/application.h"
-
 // OpenImageIO headers.
-#ifdef APPLESEED_WITH_OIIO
-#include "foundation/platform/oiioheaderguards.h"
-BEGIN_OIIO_INCLUDES
+#include "foundation/platform/_beginoiioheaders.h"
 #include "OpenImageIO/texture.h"
-END_OIIO_INCLUDES
-#endif
+#include "foundation/platform/_endoiioheaders.h"
 
 // Qt headers.
 #include <QDir>
@@ -61,6 +58,8 @@ END_OIIO_INCLUDES
 #include <QLayout>
 #include <QLayoutItem>
 #include <QMessageBox>
+#include <QMutex>
+#include <QMutexLocker>
 #include <QPixmap>
 #include <QShortcut>
 #include <QSpacerItem>
@@ -82,47 +81,53 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
-const QString g_bitmap_files_filter = "Bitmap Files (*.png;*.exr);;OpenEXR (*.exr);;PNG (*.png);;All Files (*.*)";
+const QString g_appleseed_image_files_filter = "Bitmap Files (*.png *.exr);;OpenEXR (*.exr);;PNG (*.png);;All Files (*.*)";
 
-#ifdef APPLESEED_WITH_OIIO
-
-QString compute_oiio_files_filter()
+QString get_oiio_image_files_filter()
 {
-    stringstream sstr;
+    static QString filter;
+    static QMutex mutex;
 
-    string extensions;
-    OIIO::getattribute("extension_list", extensions);
+    QMutexLocker locker(&mutex);
 
-    vector<string> formats;
-    split(extensions, ";", formats);
-
-    for (const_each<vector<string> > i = formats; i; ++i)
+    if (filter.isEmpty())
     {
-        const string::size_type sep = i->find_first_of(':');
-        const string format = i->substr(0, sep);
-        const string extlist = i->substr(sep + 1);
+        stringstream sstr;
 
-        vector<string> exts;
-        split(extlist, ",", exts);
+        string extensions;
+        OIIO::getattribute("extension_list", extensions);
 
-        sstr << upper_case(format) << " Files (";
+        vector<string> formats;
+        split(extensions, ";", formats);
 
-        for (const_each<vector<string> > e = exts; e; ++e)
+        for (const_each<vector<string>> i = formats; i; ++i)
         {
-            if (e.it() != exts.begin())
-                sstr << ";";
-            sstr << "*." << *e;
+            const string::size_type sep = i->find_first_of(':');
+            const string format = i->substr(0, sep);
+            const string extlist = i->substr(sep + 1);
+
+            vector<string> exts;
+            split(extlist, ",", exts);
+
+            sstr << upper_case(format) << " Files (";
+
+            for (const_each<vector<string>> e = exts; e; ++e)
+            {
+                if (e.it() != exts.begin())
+                    sstr << " ";
+                sstr << "*." << *e;
+            }
+
+            sstr << ");;";
         }
 
-        sstr << ");;";
+        sstr << "All Files (*.*)";
+
+        filter = QString::fromStdString(sstr.str());
     }
 
-    sstr << "All Files (*.*)";
-
-    return QString::fromStdString(sstr.str());
+    return filter;
 }
-
-#endif
 
 QString combine_paths(const QString& lhs, const QString& rhs)
 {
@@ -139,6 +144,11 @@ QString combine_paths(const QString& lhs, const QString& rhs)
 QString make_app_path(const QString& path)
 {
     return combine_paths(Application::get_root_path(), path);
+}
+
+QString combine_name_and_shortcut(const QString& name, const QKeySequence& shortcut)
+{
+    return name + " (" + shortcut.toString(QKeySequence::NativeText) + ")";
 }
 
 bool file_exists(const QString& path)
@@ -306,8 +316,8 @@ QShortcut* create_window_local_shortcut(QWidget* parent, const int key)
         new QShortcut(
             QKeySequence(key),
             parent,
-            0,
-            0,
+            nullptr,
+            nullptr,
             Qt::WidgetWithChildrenShortcut);
 }
 

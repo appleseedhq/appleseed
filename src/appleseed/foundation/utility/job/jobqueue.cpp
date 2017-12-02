@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,10 +32,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/thread.h"
-#include "foundation/utility/job/abortswitch.h"
-#include "foundation/utility/job/ijob.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iterators.h"
+#include "foundation/utility/job/abortswitch.h"
+#include "foundation/utility/job/ijob.h"
 
 // Boost headers.
 #include "boost/thread/condition_variable.hpp"
@@ -184,7 +184,7 @@ JobQueue::RunningJobInfo JobQueue::acquire_scheduled_job_unlocked()
 {
     // Bail out if there is no scheduled job.
     if (impl->m_scheduled_jobs.empty())
-        return RunningJobInfo(JobInfo(0, false), impl->m_running_jobs.end());
+        return RunningJobInfo(JobInfo(nullptr, false), impl->m_running_jobs.end());
 
     // Move the next scheduled job to the end of the queue of running jobs.
     const JobInfo job_info = impl->m_scheduled_jobs.front();

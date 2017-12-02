@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -244,9 +244,9 @@ class PassthroughWriterAdapter
   public:
     explicit PassthroughWriterAdapter(BufferedFile& file);
 
-    virtual size_t write(
+    size_t write(
         const void*         inbuf,
-        const size_t        size) APPLESEED_OVERRIDE;
+        const size_t        size) override;
 
   private:
     BufferedFile&           m_file;
@@ -258,9 +258,9 @@ class PassthroughReaderAdapter
   public:
     explicit PassthroughReaderAdapter(BufferedFile& file);
 
-    virtual size_t read(
+    size_t read(
         void*               outbuf,
-        const size_t        size) APPLESEED_OVERRIDE;
+        const size_t        size) override;
 
   private:
     BufferedFile&           m_file;
@@ -279,11 +279,11 @@ class CompressedWriterAdapter
         BufferedFile&       file,
         const size_t        buffer_size = 64 * 1024);   // compression buffer size, in bytes
 
-    virtual ~CompressedWriterAdapter();
+    ~CompressedWriterAdapter() override;
 
-    virtual size_t write(
+    size_t write(
         const void*         inbuf,
-        const size_t        size) APPLESEED_OVERRIDE;
+        const size_t        size) override;
 
   protected:
     BufferedFile&           m_file;
@@ -300,9 +300,9 @@ class CompressedReaderAdapter
   public:
     explicit CompressedReaderAdapter(BufferedFile& file);
 
-    virtual size_t read(
+    size_t read(
         void*               outbuf,
-        const size_t        size) APPLESEED_OVERRIDE;
+        const size_t        size) override;
 
   protected:
     BufferedFile&           m_file;
@@ -328,12 +328,12 @@ class LZ4CompressedWriterAdapter
         BufferedFile&       file,
         const size_t        buffer_size);               // compression buffer size, in bytes
 
-    virtual ~LZ4CompressedWriterAdapter();
+    ~LZ4CompressedWriterAdapter() override;
 
   private:
     std::vector<uint8>      m_compressed_buffer;
 
-    virtual void flush_buffer() APPLESEED_OVERRIDE;
+    void flush_buffer() override;
 };
 
 class LZ4CompressedReaderAdapter
@@ -345,7 +345,7 @@ class LZ4CompressedReaderAdapter
   private:
     std::vector<uint8>      m_compressed_buffer;
 
-    virtual bool fill_buffer() APPLESEED_OVERRIDE;
+    bool fill_buffer() override;
 };
 
 

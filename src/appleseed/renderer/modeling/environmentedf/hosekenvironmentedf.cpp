@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,23 +32,27 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingcontext.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentedf/sphericalcoordinates.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/sourceinputs.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/regularspectrum.h"
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/fastmath.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <algorithm>
@@ -58,7 +62,6 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class InputEvaluator; }
 namespace renderer      { class Project; }
 
 using namespace foundation;
@@ -87,44 +90,45 @@ namespace
     const char* Model = "hosek_environment_edf";
 
     // The smallest valid turbidity value.
-    const double BaseTurbidity = 2.0;
+    const float BaseTurbidity = 2.0f;
 
     class HosekEnvironmentEDF
       : public EnvironmentEDF
     {
       public:
         HosekEnvironmentEDF(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : EnvironmentEDF(name, params)
-          , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
         {
-            m_inputs.declare("sun_theta", InputFormatScalar);
-            m_inputs.declare("sun_phi", InputFormatScalar);
-            m_inputs.declare("turbidity", InputFormatScalar);
-            m_inputs.declare("turbidity_multiplier", InputFormatScalar, "2.0");
-            m_inputs.declare("ground_albedo", InputFormatScalar, "0.3");
-            m_inputs.declare("luminance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("luminance_gamma", InputFormatScalar, "1.0");
-            m_inputs.declare("saturation_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("horizon_shift", InputFormatScalar, "0.0");
+            m_inputs.declare("sun_theta", InputFormatFloat);
+            m_inputs.declare("sun_phi", InputFormatFloat);
+            m_inputs.declare("turbidity", InputFormatFloat);
+            m_inputs.declare("turbidity_multiplier", InputFormatFloat, "2.0");
+            m_inputs.declare("ground_albedo", InputFormatFloat, "0.3");
+            m_inputs.declare("luminance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("luminance_gamma", InputFormatFloat, "1.0");
+            m_inputs.declare("saturation_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("horizon_shift", InputFormatFloat, "0.0");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
-            const Project&      project,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+        bool on_frame_begin(
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) override
         {
-            if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
+            if (!EnvironmentEDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             // Evaluate uniform values.
@@ -133,7 +137,7 @@ namespace
             // Compute the sun direction.
             m_sun_theta = deg_to_rad(m_uniform_values.m_sun_theta);
             m_sun_phi = deg_to_rad(m_uniform_values.m_sun_phi);
-            m_sun_dir = Vector3d::unit_vector(m_sun_theta, m_sun_phi);
+            m_sun_dir = Vector3f::make_unit_vector(m_sun_theta, m_sun_phi);
 
             // Precompute the coefficients of the radiance distribution function and
             // the master luminance value if turbidity is uniform.
@@ -155,123 +159,141 @@ namespace
             return true;
         }
 
-        virtual void sample(
+        void sample(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
-            const Vector2d&         s,
-            Vector3d&               outgoing,
+            const Vector2f&         s,
+            Vector3f&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
-            outgoing = sample_hemisphere_cosine(s);
+            const Vector3f local_outgoing = sample_hemisphere_cosine(s);
 
-            const Vector3d shifted_outgoing = shift(outgoing);
-            if (shifted_outgoing.y > 0.0)
-                compute_sky_radiance(input_evaluator, shifted_outgoing, value);
-            else value.set(0.0f);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            outgoing = transform.vector_to_parent(local_outgoing);
+            const Vector3f shifted_outgoing = shift(local_outgoing);
 
-            probability = outgoing.y * RcpPi;
+            RegularSpectrum31f radiance;
+            if (shifted_outgoing.y > 0.0f)
+                compute_sky_radiance(shading_context, shifted_outgoing, radiance);
+            else radiance.set(0.0f);
+
+            value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
+            probability = shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
         }
 
-        virtual void evaluate(
+        void evaluate(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+            const Vector3f&         outgoing,
+            Spectrum&               value) const override
         {
             assert(is_normalized(outgoing));
 
-            const Vector3d shifted_outgoing = shift(outgoing);
-            if (shifted_outgoing.y > 0.0)
-                compute_sky_radiance(input_evaluator, shifted_outgoing, value);
-            else value.set(0.0f);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            const Vector3f local_outgoing = transform.vector_to_local(outgoing);
+            const Vector3f shifted_outgoing = shift(local_outgoing);
+
+            RegularSpectrum31f radiance;
+            if (shifted_outgoing.y > 0.0f)
+                compute_sky_radiance(shading_context, shifted_outgoing, radiance);
+            else radiance.set(0.0f);
+
+            value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
         }
 
-        virtual void evaluate(
+        void evaluate(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,
+            const Vector3f&         outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
             assert(is_normalized(outgoing));
 
-            const Vector3d shifted_outgoing = shift(outgoing);
-            if (shifted_outgoing.y > 0.0)
-                compute_sky_radiance(input_evaluator, shifted_outgoing, value);
-            else value.set(0.0f);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            const Vector3f local_outgoing = transform.vector_to_local(outgoing);
+            const Vector3f shifted_outgoing = shift(local_outgoing);
 
-            probability = outgoing.y > 0.0 ? outgoing.y * RcpPi : 0.0;
+            RegularSpectrum31f radiance;
+            if (shifted_outgoing.y > 0.0f)
+                compute_sky_radiance(shading_context, shifted_outgoing, radiance);
+            else radiance.set(0.0f);
+
+            value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
+            probability = shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
         }
 
-        virtual double evaluate_pdf(
-            InputEvaluator&     input_evaluator,
-            const Vector3d&     outgoing) const APPLESEED_OVERRIDE
+        float evaluate_pdf(
+            const Vector3f&         outgoing) const override
         {
             assert(is_normalized(outgoing));
 
-            return outgoing.y > 0.0 ? outgoing.y * RcpPi : 0.0;
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            const Vector3f local_outgoing = transform.vector_to_local(outgoing);
+            const Vector3f shifted_outgoing = shift(local_outgoing);
+
+            return shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
         }
 
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            double  m_sun_theta;                    // sun zenith angle in degrees, 0=zenith
-            double  m_sun_phi;                      // degrees
-            double  m_turbidity;                    // atmosphere turbidity
-            double  m_turbidity_multiplier;
-            double  m_ground_albedo;
-            double  m_luminance_multiplier;
-            double  m_luminance_gamma;
-            double  m_saturation_multiplier;
-            double  m_horizon_shift;
+            float   m_sun_theta;                    // sun zenith angle in degrees, 0=zenith
+            float   m_sun_phi;                      // degrees
+            float   m_turbidity;                    // atmosphere turbidity
+            float   m_turbidity_multiplier;
+            float   m_ground_albedo;
+            float   m_luminance_multiplier;
+            float   m_luminance_gamma;
+            float   m_saturation_multiplier;
+            float   m_horizon_shift;
         };
-
-        const LightingConditions    m_lighting_conditions;
 
         InputValues                 m_uniform_values;
 
-        double                      m_sun_theta;    // sun zenith angle in radians, 0=zenith
-        double                      m_sun_phi;      // radians
-        Vector3d                    m_sun_dir;
+        float                       m_sun_theta;    // sun zenith angle in radians, 0=zenith
+        float                       m_sun_phi;      // radians
+        Vector3f                    m_sun_dir;
 
         bool                        m_uniform_turbidity;
-        double                      m_uniform_coeffs[3 * 9];
-        double                      m_uniform_master_Y[3];
+        float                       m_uniform_coeffs[3 * 9];
+        float                       m_uniform_master_Y[3];
 
         // Compute the coefficients of the radiance distribution function and the master luminance value.
         static void compute_coefficients(
-            const double            turbidity,
-            const double            albedo,
-            const double            sun_theta,
-            double                  coeffs[3 * 9],
-            double                  master_Y[3])
+            const float             turbidity,
+            const float             albedo,
+            const float             sun_theta,
+            float                   coeffs[3 * 9],
+            float                   master_Y[3])
         {
-            const double clamped_turbidity = clamp(turbidity, 1.0, 10.0) - 1.0;
+            const float clamped_turbidity = clamp(turbidity, 1.0f, 10.0f) - 1.0f;
             const size_t turbidity_low = truncate<size_t>(clamped_turbidity);
             const size_t turbidity_high = min(turbidity_low + 1, size_t(9));
-            const double turbidity_interp = clamped_turbidity - turbidity_low;
+            const float turbidity_interp = clamped_turbidity - turbidity_low;
 
             // Compute solar elevation.
-            const double eta = HalfPi - sun_theta;
+            const float eta = HalfPi<float>() - sun_theta;
 
             // Transform solar elevation to [0, 1] with more samples for low elevations.
-            const double x1 = pow(eta * RcpHalfPi, (1.0 / 3.0));
-            const double y1 = 1.0 - x1;
+            const float x1 = pow(eta * RcpHalfPi<float>(), (1.0f / 3.0f));
+            const float y1 = 1.0f - x1;
 
             // Compute the square and cube of x1 and (1 - x1).
-            const double x2 = x1 * x1;
-            const double x3 = x2 * x1;
-            const double y2 = y1 * y1;
-            const double y3 = y2 * y1;
+            const float x2 = x1 * x1;
+            const float x3 = x2 * x1;
+            const float y2 = y1 * y1;
+            const float y3 = y2 * y1;
 
             // Coefficients of the quintic Bezier interpolation polynomial.
-            const double c0 = y2 * y3;
-            const double c1 = 5.0 * x1 * y2 * y2;
-            const double c2 = 10.0 * x2 * y3;
-            const double c3 = 10.0 * x3 * y2;
-            const double c4 = 5.0 * x2 * x2 * y1;
-            const double c5 = x2 * x3;
+            const float c0 = y2 * y3;
+            const float c1 = 5.0f * x1 * y2 * y2;
+            const float c2 = 10.0f * x2 * y3;
+            const float c3 = 10.0f * x3 * y2;
+            const float c4 = 5.0f * x2 * x2 * y1;
+            const float c5 = x2 * x3;
 
             #define EVALPOLY1(dataset)  \
                 (dataset)[ 0] * c0 +    \
@@ -293,10 +315,10 @@ namespace
             {
                 for (size_t p = 0; p < 9; ++p)
                 {
-                    const double clow0  = EVALPOLY1(datasetsXYZ[w] + (0 * 10 + turbidity_low ) * 9 * 6 + p);
-                    const double clow1  = EVALPOLY1(datasetsXYZ[w] + (1 * 10 + turbidity_low ) * 9 * 6 + p);
-                    const double chigh0 = EVALPOLY1(datasetsXYZ[w] + (0 * 10 + turbidity_high) * 9 * 6 + p);
-                    const double chigh1 = EVALPOLY1(datasetsXYZ[w] + (1 * 10 + turbidity_high) * 9 * 6 + p);
+                    const float clow0  = EVALPOLY1(datasetsXYZ[w] + (0 * 10 + turbidity_low ) * 9 * 6 + p);
+                    const float clow1  = EVALPOLY1(datasetsXYZ[w] + (1 * 10 + turbidity_low ) * 9 * 6 + p);
+                    const float chigh0 = EVALPOLY1(datasetsXYZ[w] + (0 * 10 + turbidity_high) * 9 * 6 + p);
+                    const float chigh1 = EVALPOLY1(datasetsXYZ[w] + (1 * 10 + turbidity_high) * 9 * 6 + p);
 
                     coeffs[w * 9 + p] =
                         lerp(
@@ -306,10 +328,10 @@ namespace
                 }
 
                 {
-                    const double rlow0  = EVALPOLY2(datasetsXYZRad[w] + (0 * 10 + turbidity_low ) * 6);
-                    const double rlow1  = EVALPOLY2(datasetsXYZRad[w] + (1 * 10 + turbidity_low ) * 6);
-                    const double rhigh0 = EVALPOLY2(datasetsXYZRad[w] + (0 * 10 + turbidity_high) * 6);
-                    const double rhigh1 = EVALPOLY2(datasetsXYZRad[w] + (1 * 10 + turbidity_high) * 6);
+                    const float rlow0  = EVALPOLY2(datasetsXYZRad[w] + (0 * 10 + turbidity_low ) * 6);
+                    const float rlow1  = EVALPOLY2(datasetsXYZRad[w] + (1 * 10 + turbidity_low ) * 6);
+                    const float rhigh0 = EVALPOLY2(datasetsXYZRad[w] + (0 * 10 + turbidity_high) * 6);
+                    const float rhigh1 = EVALPOLY2(datasetsXYZRad[w] + (1 * 10 + turbidity_high) * 6);
 
                     master_Y[w] =
                         lerp(
@@ -317,7 +339,7 @@ namespace
                             lerp(rhigh0, rhigh1, albedo),
                             turbidity_interp);
 
-                    master_Y[w] *= 1000.0;  // Kcd.m^-2 to cd.m^-2
+                    master_Y[w] *= 1000.0f;  // Kcd.m^-2 to cd.m^-2
                 }
             }
 
@@ -326,72 +348,74 @@ namespace
         }
 
         // Anisotropic term that places a localized glow around the solar point.
-        static double chi(
-            const double        g,
-            const double        cos_alpha)
+        static float chi(
+            const float             g,
+            const float             cos_alpha)
         {
-            const double k = 1.0 + g * g - 2.0 * g * cos_alpha;
-            return (1.0 + cos_alpha * cos_alpha) / sqrt(k * k * k);
+            const float k = 1.0f + g * g - 2.0f * g * cos_alpha;
+            return (1.0f + cos_alpha * cos_alpha) / sqrt(k * k * k);
         }
 
         // Extended Perez formula.
-        static double perez(
-            const double        cos_theta,
-            const double        sqrt_cos_theta,
-            const double        gamma,
-            const double        cos_gamma,
-            const double        coeffs[9])
+        static float perez(
+            const float             cos_theta,
+            const float             sqrt_cos_theta,
+            const float             gamma,
+            const float             cos_gamma,
+            const float             coeffs[9])
         {
             // There is an error in the paper, coeffs[7] (H) and coeffs[8] (I) are reversed.
-            const double u = 1.0 + coeffs[0] * exp(coeffs[1] / (cos_theta + 0.01));
-            const double v =   coeffs[2]
-                             + coeffs[3] * exp(coeffs[4] * gamma)
-                             + coeffs[5] * cos_gamma * cos_gamma
-                             + coeffs[6] * chi(coeffs[8], cos_gamma)
-                             + coeffs[7] * sqrt_cos_theta;
+            const float u = 1.0f + coeffs[0] * exp(coeffs[1] / (cos_theta + 0.01f));
+            const float v =   coeffs[2]
+                            + coeffs[3] * exp(coeffs[4] * gamma)
+                            + coeffs[5] * cos_gamma * cos_gamma
+                            + coeffs[6] * chi(coeffs[8], cos_gamma)
+                            + coeffs[7] * sqrt_cos_theta;
             return u * v;
         }
 
         // Compute the sky radiance along a given direction.
         void compute_sky_radiance(
-            InputEvaluator&     input_evaluator,
-            const Vector3d&     outgoing,
-            Spectrum&           value) const
+            const ShadingContext&   shading_context,
+            const Vector3f&         outgoing,
+            RegularSpectrum31f&     radiance) const
         {
-            if (m_uniform_values.m_luminance_multiplier == 0.0)
+            if (m_uniform_values.m_luminance_multiplier == 0.0f)
             {
-                value.set(0.0f);
+                radiance.set(0.0f);
                 return;
             }
 
-            const double sqrt_cos_theta = sqrt(outgoing.y);
-            const double cos_gamma = dot(outgoing, m_sun_dir);
-            const double gamma = acos(cos_gamma);
+            const float sqrt_cos_theta = sqrt(outgoing.y);
+            const float cos_gamma = dot(outgoing, m_sun_dir);
+            const float gamma = acos(cos_gamma);
 
             Color3f ciexyz;
 
             if (m_uniform_turbidity)
             {
                 // Compute the sky color in the CIE XYZ color space.
-                ciexyz[0] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, m_uniform_coeffs + 0 * 9) * m_uniform_master_Y[0]);
-                ciexyz[1] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, m_uniform_coeffs + 1 * 9) * m_uniform_master_Y[1]);
-                ciexyz[2] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, m_uniform_coeffs + 2 * 9) * m_uniform_master_Y[2]);
+                ciexyz[0] = perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, m_uniform_coeffs + 0 * 9) * m_uniform_master_Y[0];
+                ciexyz[1] = perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, m_uniform_coeffs + 1 * 9) * m_uniform_master_Y[1];
+                ciexyz[2] = perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, m_uniform_coeffs + 2 * 9) * m_uniform_master_Y[2];
             }
             else
             {
                 // Evaluate turbidity.
-                double theta, phi;
-                double u, v;
+                float theta, phi;
+                float u, v;
                 unit_vector_to_angles(outgoing, theta, phi);
                 angles_to_unit_square(theta, phi, u, v);
-                double turbidity = input_evaluator.evaluate<InputValues>(m_inputs, Vector2d(u, v))->m_turbidity;
+                InputValues values;
+                m_inputs.evaluate(shading_context.get_texture_cache(), SourceInputs(Vector2f(u, v)), &values);
+                float turbidity = values.m_turbidity;
 
                 // Apply turbidity multiplier and bias.
                 turbidity *= m_uniform_values.m_turbidity_multiplier;
                 turbidity += BaseTurbidity;
 
                 // Compute the coefficients of the radiance distribution function and the master luminance value.
-                double coeffs[3 * 9], master_Y[3];
+                float coeffs[3 * 9], master_Y[3];
                 compute_coefficients(
                     turbidity,
                     m_uniform_values.m_ground_albedo,
@@ -400,20 +424,20 @@ namespace
                     master_Y);
 
                 // Compute the sky color in the CIE XYZ color space.
-                ciexyz[0] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, coeffs + 0 * 9) * master_Y[0]);
-                ciexyz[1] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, coeffs + 1 * 9) * master_Y[1]);
-                ciexyz[2] = static_cast<float>(perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, coeffs + 2 * 9) * master_Y[2]);
+                ciexyz[0] = perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, coeffs + 0 * 9) * master_Y[0];
+                ciexyz[1] = perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, coeffs + 1 * 9) * master_Y[1];
+                ciexyz[2] = perez(outgoing.y, sqrt_cos_theta, gamma, cos_gamma, coeffs + 2 * 9) * master_Y[2];
             }
 
             // Apply an optional saturation correction.
-            if (m_uniform_values.m_saturation_multiplier != 1.0)
+            if (m_uniform_values.m_saturation_multiplier != 1.0f)
             {
                 // Convert the sky color to linear RGB, then to HSL.
                 Color3f linear_rgb = ciexyz_to_linear_rgb(ciexyz);
                 Color3f hsl = linear_rgb_to_hsl(linear_rgb);
 
                 // Apply the saturation multiplier.
-                hsl[1] *= static_cast<float>(m_uniform_values.m_saturation_multiplier);
+                hsl[1] *= m_uniform_values.m_saturation_multiplier;
 
                 // Convert the result back to linear RGB, then to CIE XYZ.
                 linear_rgb = hsl_to_linear_rgb(hsl);
@@ -421,26 +445,24 @@ namespace
             }
 
             // Split sky color into luminance and chromaticity.
-            Color3f xyY = ciexyz_to_ciexyy(ciexyz);
+            const Color3f xyY = ciexyz_to_ciexyy(ciexyz);
             float luminance = xyY[2];
-            RegularSpectrum31f spectrum;
-            daylight_ciexy_to_spectrum(xyY[0], xyY[1], spectrum);
-            value = spectrum;
+            daylight_ciexy_to_spectrum(xyY[0], xyY[1], radiance);
 
             // Apply luminance gamma and multiplier.
-            if (m_uniform_values.m_luminance_gamma != 1.0)
-                luminance = fast_pow(luminance, static_cast<float>(m_uniform_values.m_luminance_gamma));
-            luminance *= static_cast<float>(m_uniform_values.m_luminance_multiplier);
+            if (m_uniform_values.m_luminance_gamma != 1.0f)
+                luminance = fast_pow(luminance, m_uniform_values.m_luminance_gamma);
+            luminance *= m_uniform_values.m_luminance_multiplier;
 
             // Compute the final sky radiance.
-            value *=
+            radiance *=
                   luminance                                         // start with computed luminance
-                / sum_value(value * Spectrum(XYZCMFCIE19312Deg[1])) // normalize to unit luminance
+                / sum_value(radiance * XYZCMFCIE19312Deg[1])        // normalize to unit luminance
                 * (1.0f / 683.0f)                                   // convert lumens to Watts
-                * static_cast<float>(RcpPi);                        // convert irradiance to radiance
+                * RcpPi<float>();                                   // convert irradiance to radiance
         }
 
-        Vector3d shift(Vector3d v) const
+        Vector3f shift(Vector3f v) const
         {
             v.y -= m_uniform_values.m_horizon_shift;
             return normalize(v);
@@ -452,6 +474,11 @@ namespace
 //
 // HosekEnvironmentEDFFactory class implementation.
 //
+
+void HosekEnvironmentEDFFactory::release()
+{
+    delete this;
+}
 
 const char* HosekEnvironmentEDFFactory::get_model() const
 {
@@ -479,8 +506,14 @@ DictionaryArray HosekEnvironmentEDFFactory::get_input_metadata() const
             .insert("name", "ground_albedo")
             .insert("label", "Ground Albedo")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "1.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
             .insert("use", "optional")
             .insert("default", "0.3")
             .insert("help", "Ground albedo (reflection coefficient of the ground)"));
@@ -491,15 +524,6 @@ DictionaryArray HosekEnvironmentEDFFactory::get_input_metadata() const
 auto_release_ptr<EnvironmentEDF> HosekEnvironmentEDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return
-        auto_release_ptr<EnvironmentEDF>(
-            new HosekEnvironmentEDF(name, params));
-}
-
-auto_release_ptr<EnvironmentEDF> HosekEnvironmentEDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return
         auto_release_ptr<EnvironmentEDF>(

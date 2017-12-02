@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -53,6 +53,7 @@
 
 // Standard headers.
 #include <memory>
+#include <utility>
 #include <vector>
 
 using namespace foundation;
@@ -104,7 +105,7 @@ namespace
             collect_texture_instances(texture_instances, texture_uid);
 
         // Remove texture instances and their corresponding project items.
-        for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
+        for (const_each<vector<UniqueID>> i = remove_list; i; ++i)
         {
             texture_instances.remove(texture_instances.get_by_uid(*i));
             delete item_registry.get_item(*i);
@@ -120,7 +121,7 @@ namespace
 void TextureItem::delete_multiple(const QList<ItemBase*>& items)
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        auto_ptr<RenderingManager::IScheduledAction>(
+        unique_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<TextureItem>(
                 qlist_static_cast<TextureItem*>(items))));
 }

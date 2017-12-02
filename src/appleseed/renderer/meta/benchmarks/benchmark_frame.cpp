@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,7 @@ BENCHMARK_SUITE(Renderer_Modeling_Frame)
     struct Fixture
     {
         auto_release_ptr<Frame> m_frame;
-        auto_ptr<Tile>          m_tile;
+        unique_ptr<Tile>        m_tile;
 
         Fixture()
           : m_frame(
@@ -66,14 +66,4 @@ BENCHMARK_SUITE(Renderer_Modeling_Frame)
             m_tile->clear(Color4f(0.8f, -0.3f, 0.6f, 0.5f));
         }
     };
-
-    BENCHMARK_CASE_F(TransformToOutputColorSpace_GivenTileWithFloatPixels_AndFrameColorSpaceIsSRGB, Fixture<PixelFormatFloat>)
-    {
-        m_frame->transform_to_output_color_space(*m_tile.get());
-    }
-
-    BENCHMARK_CASE_F(TransformToOutputColorSpace_GivenTileWithHalfPixels_AndFrameColorSpaceIsSRGB, Fixture<PixelFormatHalf>)
-    {
-        m_frame->transform_to_output_color_space(*m_tile.get());
-    }
 }

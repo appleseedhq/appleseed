@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,11 +41,9 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class Assembly; }
+namespace renderer      { class AOVAccumulatorContainer; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class PixelContext; }
-namespace renderer      { class Project; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 namespace renderer      { class ShadingResult; }
@@ -72,24 +70,13 @@ class APPLESEED_DLLSYMBOL SurfaceShader
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
-    // This method is called once before rendering each frame.
-    // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
-        const Project&              project,
-        const Assembly&             assembly,
-        foundation::IAbortSwitch*   abort_switch = 0);
-
-    // This method is called once after rendering each frame.
-    virtual void on_frame_end(
-        const Project&              project,
-        const Assembly&             assembly);
-
     // Evaluate the shading at a given point.
     virtual void evaluate(
         SamplingContext&            sampling_context,
         const PixelContext&         pixel_context,
         const ShadingContext&       shading_context,
         const ShadingPoint&         shading_point,
+        AOVAccumulatorContainer&    aov_accumulators,
         ShadingResult&              shading_result) const = 0;
 };
 

@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,9 +27,11 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/math/matrix.h"
+#include "foundation/math/quaternion.h"
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/mersennetwister.h"
-#include "foundation/math/quaternion.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/benchmark.h"
@@ -41,7 +43,15 @@ using namespace foundation;
 
 BENCHMARK_SUITE(Foundation_Math_Quaternion)
 {
-    struct Fixture
+    template <typename RNG>
+    Quaterniond make_random_unit_quat(RNG& rng)
+    {
+        const Vector3d axis = sample_sphere_uniform(rand_vector2<Vector2d>(rng));
+        const double angle = rand_double2(rng) * TwoPi<double>();
+        return Quaterniond::make_rotation(axis, angle);
+    }
+
+    struct SlerpFixture
     {
         static const size_t N = 16;
 
@@ -51,32 +61,62 @@ BENCHMARK_SUITE(Foundation_Math_Quaternion)
 
         Quaterniond m_result[N];
 
-        Fixture()
+        SlerpFixture()
         {
             MersenneTwister rng;
 
             for (size_t i = 0; i < N; ++i)
             {
-                const Vector3d v1 = normalize(rand_vector1<Vector3d>(rng));
-                const Vector3d v2 = normalize(rand_vector1<Vector3d>(rng));
-                const double a1 = rand_double1(rng) * TwoPi;
-                const double a2 = rand_double1(rng) * TwoPi;
-                m_q1[i] = Quaterniond::rotation(v1, a1);
-                m_q2[i] = Quaterniond::rotation(v2, a2);
+                m_q1[i] = make_random_unit_quat(rng);
+                m_q2[i] = make_random_unit_quat(rng);
                 m_t[i] = rand_double1(rng);
             }
         }
     };
 
-    BENCHMARK_CASE_F(Slerp, Fixture)
+    BENCHMARK_CASE_F(Slerp, SlerpFixture)
     {
         for (size_t i = 0; i < N; ++i)
             m_result[i] = slerp(m_q1[i], m_q2[i], m_t[i]);
     }
 
-    BENCHMARK_CASE_F(FastSlerp, Fixture)
+    BENCHMARK_CASE_F(FastSlerp, SlerpFixture)
     {
         for (size_t i = 0; i < N; ++i)
             m_result[i] = fast_slerp(m_q1[i], m_q2[i], m_t[i]);
+    }
+
+    struct RotateFixture
+    {
+        static const size_t N = 16;
+
+        Quaterniond m_q[N];
+        Matrix3d    m_m[N];
+        Vector3d    m_v;
+
+        RotateFixture()
+        {
+            MersenneTwister rng;
+
+            for (size_t i = 0; i < N; ++i)
+            {
+                m_q[i] = make_random_unit_quat(rng);
+                m_m[i] = Matrix3d::make_rotation(m_q[i]);
+            }
+
+            m_v = rand_vector2<Vector3d>(rng);
+        }
+    };
+
+    BENCHMARK_CASE_F(Rotate, RotateFixture)
+    {
+        for (size_t i = 0; i < N; ++i)
+            m_v = rotate(m_q[i], m_v);
+    }
+
+    BENCHMARK_CASE_F(RotateWith3x3Matrix, RotateFixture)
+    {
+        for (size_t i = 0; i < N; ++i)
+            m_v = m_m[i] * m_v;
     }
 }

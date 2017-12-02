@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -55,12 +55,6 @@ class APPLESEED_DLLSYMBOL ImageStack
   : public foundation::NonCopyable
 {
   public:
-    enum Type
-    {
-        ContributionType,
-        IdentificationType
-    };
-
     ImageStack(
         const size_t                    canvas_width,
         const size_t                    canvas_height,
@@ -80,14 +74,11 @@ class APPLESEED_DLLSYMBOL ImageStack
 
     const char* get_name(const size_t index) const;
 
-    Type get_type(const size_t index) const;
-
     foundation::Image& get_image(const size_t index);
     const foundation::Image& get_image(const size_t index) const;
 
     size_t append(
         const char*                     name,
-        const Type                      type,
         const size_t                    channel_count,
         const foundation::PixelFormat   pixel_format);
 

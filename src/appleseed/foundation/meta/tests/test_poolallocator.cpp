@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -50,8 +50,8 @@ TEST_SUITE(Foundation_Utility_PoolAllocator)
 
     TEST_CASE(AllocatorsWithDifferentValueTypesAreNotEqual)
     {
-        PoolAllocator<int, 128, allocator<int> > a1;
-        PoolAllocator<unsigned int, 256, allocator<int> > a2;
+        PoolAllocator<int, 128, allocator<int>> a1;
+        PoolAllocator<unsigned int, 256, allocator<int>> a2;
 
         EXPECT_FALSE(a1 == a2);
         EXPECT_TRUE(a1 != a2);
@@ -68,8 +68,8 @@ TEST_SUITE(Foundation_Utility_PoolAllocator)
 
     TEST_CASE(AllocatorsWithDifferentFallbackAllocatorsAreNotEqual)
     {
-        PoolAllocator<int, 128, PoolAllocator<int, 128> > a1;
-        PoolAllocator<int, 128, allocator<int> > a2;
+        PoolAllocator<int, 128, PoolAllocator<int, 128>> a1;
+        PoolAllocator<int, 128, allocator<int>> a2;
 
         EXPECT_FALSE(a1 == a2);
         EXPECT_TRUE(a1 != a2);

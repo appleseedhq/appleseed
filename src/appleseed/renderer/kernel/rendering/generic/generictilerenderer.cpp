@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/aov/tilestack.h"
 #include "renderer/kernel/rendering/ipixelrenderer.h"
@@ -51,7 +52,8 @@
 #include "foundation/math/ordering.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/breakpoint.h"
+#include "foundation/platform/arch.h"
+#include "foundation/platform/debugger.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/iostreamop.h"
@@ -97,23 +99,24 @@ namespace
             const ParamArray&                   params,
             const size_t                        thread_index)
           : m_pixel_renderer(pixel_renderer_factory->create(thread_index))
+          , m_aov_accumulators(frame.aovs())
           , m_framebuffer_factory(framebuffer_factory)
         {
             compute_tile_margins(frame, thread_index == 0);
             compute_pixel_ordering(frame);
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual void render_tile(
+        void render_tile(
             const Frame&    frame,
             const size_t    tile_x,
             const size_t    tile_y,
             const size_t    pass_hash,
-            IAbortSwitch&   abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch&   abort_switch) override
         {
             // Retrieve frame properties.
             const CanvasProperties& frame_properties = frame.image().properties();
@@ -123,16 +126,16 @@ namespace
             // Retrieve tile properties.
             Tile& tile = frame.image().tile(tile_x, tile_y);
             TileStack aov_tiles = frame.aov_images().tiles(tile_x, tile_y);
-            const size_t tile_origin_x = frame_properties.m_tile_width * tile_x;
-            const size_t tile_origin_y = frame_properties.m_tile_height * tile_y;
+            const int tile_origin_x = static_cast<int>(frame_properties.m_tile_width * tile_x);
+            const int tile_origin_y = static_cast<int>(frame_properties.m_tile_height * tile_y);
 
             // Compute the image space bounding box of the pixels to render.
-            AABB2u tile_bbox;
+            AABB2i tile_bbox;
             tile_bbox.min.x = tile_origin_x;
             tile_bbox.min.y = tile_origin_y;
-            tile_bbox.max.x = tile_origin_x + tile.get_width() - 1;
-            tile_bbox.max.y = tile_origin_y + tile.get_height() - 1;
-            tile_bbox = AABB2u::intersect(tile_bbox, frame.get_crop_window());
+            tile_bbox.max.x = tile_origin_x + static_cast<int>(tile.get_width()) - 1;
+            tile_bbox.max.y = tile_origin_y + static_cast<int>(tile.get_height()) - 1;
+            tile_bbox = AABB2i::intersect(tile_bbox, AABB2i(frame.get_crop_window()));
             if (!tile_bbox.is_valid())
                 return;
 
@@ -142,8 +145,22 @@ namespace
             tile_bbox.max.x -= tile_origin_x;
             tile_bbox.max.y -= tile_origin_y;
 
+            // Pad the bounding box with tile margins.
+            AABB2i padded_tile_bbox;
+            padded_tile_bbox.min.x = tile_bbox.min.x - m_margin_width;
+            padded_tile_bbox.min.y = tile_bbox.min.y - m_margin_height;
+            padded_tile_bbox.max.x = tile_bbox.max.x + m_margin_width;
+            padded_tile_bbox.max.y = tile_bbox.max.y + m_margin_height;
+
             // Inform the pixel renderer that we are about to render a tile.
             m_pixel_renderer->on_tile_begin(frame, tile, aov_tiles);
+
+            // Inform the AOV accumulators that we are about to render a tile.
+            m_aov_accumulators.on_tile_begin(
+                frame,
+                tile_x,
+                tile_y,
+                m_pixel_renderer->get_max_samples_per_pixel());
 
             // Create the framebuffer into which we will accumulate the samples.
             ShadingResultFrameBuffer* framebuffer =
@@ -154,42 +171,26 @@ namespace
                     tile_bbox);
             assert(framebuffer);
 
-            // Seed the RNG with the tile index and the pass hash.
-            // Seeding the RNG per tile instead of per pixel has potential consequences on
-            // debugging: rendering a subset of a tile may lead to different computations
-            // than rendering the full tile, e.g. if the sampling context switches to random
-            // sampling because the number of dimensions becomes too high.
-            const size_t tile_index = tile_y * frame_properties.m_tile_count_x + tile_x;
-            m_rng = SamplingContext::RNGType(hash_uint32(static_cast<uint32>(pass_hash + tile_index)));
-
             // Loop over tile pixels.
-            const size_t tile_pixel_count = m_pixel_ordering.size();
-            for (size_t i = 0; i < tile_pixel_count; ++i)
+            for (size_t i = 0, e = m_pixel_ordering.size(); i < e; ++i)
             {
                 // Cancel any work done on this tile if rendering is aborted.
                 if (abort_switch.is_aborted())
                     return;
 
                 // Retrieve the coordinates of the pixel in the padded tile.
-                const int tx = m_pixel_ordering[i].x;
-                const int ty = m_pixel_ordering[i].y;
+                const Vector2i pt(m_pixel_ordering[i].x, m_pixel_ordering[i].y);
 
                 // Skip pixels outside the intersection of the padded tile and the crop window.
-                if (tx < static_cast<int>(tile_bbox.min.x) - m_margin_width  ||
-                    ty < static_cast<int>(tile_bbox.min.y) - m_margin_height ||
-                    tx > static_cast<int>(tile_bbox.max.x) + m_margin_width  ||
-                    ty > static_cast<int>(tile_bbox.max.y) + m_margin_height)
+                if (!padded_tile_bbox.contains(pt))
                     continue;
 
-                // Create a pixel context that identifies the pixel currently being rendered.
-                const PixelContext pixel_context(
-                    static_cast<int>(tile_origin_x) + tx,
-                    static_cast<int>(tile_origin_y) + ty);
+                const Vector2i pi(tile_origin_x + pt.x, tile_origin_y + pt.y);
 
 #ifdef DEBUG_BREAK_AT_PIXEL
 
                 // Break in the debugger when this pixel is reached.
-                if (pixel_context.get_pixel_coordinates() == DEBUG_BREAK_AT_PIXEL)
+                if (pi == DEBUG_BREAK_AT_PIXEL)
                     BREAKPOINT();
 
 #endif
@@ -199,38 +200,39 @@ namespace
                     frame,
                     tile,
                     aov_tiles,
-                    AABB2i(tile_bbox),
-                    pixel_context,
+                    tile_bbox,
                     pass_hash,
-                    tx, ty,
-                    m_rng,
+                    pi,
+                    pt,
+                    m_aov_accumulators,
                     *framebuffer);
             }
 
             // Develop the framebuffer to the tile.
-            if (frame.is_premultiplied_alpha())
-                framebuffer->develop_to_tile_premult_alpha(tile, aov_tiles);
-            else framebuffer->develop_to_tile_straight_alpha(tile, aov_tiles);
+            framebuffer->develop_to_tile(tile, aov_tiles);
 
             // Release the framebuffer.
             m_framebuffer_factory->destroy(framebuffer);
+
+            // Inform the AOV accumulators that we are done rendering a tile.
+            m_aov_accumulators.on_tile_end(frame, tile_x, tile_y);
 
             // Inform the pixel renderer that we are done rendering the tile.
             m_pixel_renderer->on_tile_end(frame, tile, aov_tiles);
         }
 
-        virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
+        StatisticsVector get_statistics() const override
         {
             return m_pixel_renderer->get_statistics();
         }
 
       protected:
         auto_release_ptr<IPixelRenderer>    m_pixel_renderer;
+        AOVAccumulatorContainer             m_aov_accumulators;
         IShadingResultFrameBufferFactory*   m_framebuffer_factory;
         int                                 m_margin_width;
         int                                 m_margin_height;
-        vector<Vector<int16, 2> >           m_pixel_ordering;
-        SamplingContext::RNGType            m_rng;
+        vector<Vector<int16, 2>>            m_pixel_ordering;
 
         void compute_tile_margins(const Frame& frame, const bool primary)
         {

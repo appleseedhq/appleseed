@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,8 +34,11 @@
 #include "renderer/kernel/rendering/ipixelrenderer.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace foundation    { class Tile; }
@@ -56,26 +59,27 @@ class PixelRendererBase
     // Constructor.
     PixelRendererBase();
 
-    // Destructor.
-    virtual ~PixelRendererBase();
-
     // This method is called before a tile gets rendered.
-    virtual void on_tile_begin(
+    void on_tile_begin(
         const Frame&                frame,
         foundation::Tile&           tile,
-        TileStack&                  aov_tiles) APPLESEED_OVERRIDE;
+        TileStack&                  aov_tiles) override;
 
     // This method is called after a tile has been rendered.
-    virtual void on_tile_end(
+    void on_tile_end(
         const Frame&                frame,
         foundation::Tile&           tile,
-        TileStack&                  aov_tiles) APPLESEED_OVERRIDE;
+        TileStack&                  aov_tiles) override;
 
   protected:
-    void signal_invalid_sample(const int x, const int y);
+    void on_pixel_begin();
+    void on_pixel_end(const foundation::Vector2i& pi);
+
+    void signal_invalid_sample();
 
   private:
-    foundation::uint64 m_invalid_sample_count;
+    size_t                          m_invalid_sample_count;
+    size_t                          m_invalid_pixel_count;
 };
 
 }       // namespace renderer

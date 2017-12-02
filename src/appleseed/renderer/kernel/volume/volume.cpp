@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstdio>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -116,7 +117,7 @@ namespace
     }
 }
 
-auto_ptr<VoxelGrid> read_fluid_file(
+unique_ptr<VoxelGrid> read_fluid_file(
     const char*         filename,
     FluidChannels&      channels)
 {
@@ -124,22 +125,22 @@ auto_ptr<VoxelGrid> read_fluid_file(
 
     FILE* file = fopen(filename, "rb");
 
-    if (file == 0)
-        return auto_ptr<VoxelGrid>(0);
+    if (file == nullptr)
+        return unique_ptr<VoxelGrid>(nullptr);
 
     // Read the file header.
     FluidFileHeader header;
     if (fread(&header, sizeof(FluidFileHeader), 1, file) < 1)
     {
         fclose(file);
-        return auto_ptr<VoxelGrid>(0);
+        return unique_ptr<VoxelGrid>(nullptr);
     }
 
     // Check the validity of the file header.
     if (header.m_id != CC32('F', 'L', 'D', '3'))
     {
         fclose(file);
-        return auto_ptr<VoxelGrid>(0);
+        return unique_ptr<VoxelGrid>(nullptr);
     }
 
     const size_t voxel_count = header.m_xres * header.m_yres * header.m_zres;
@@ -187,7 +188,7 @@ auto_ptr<VoxelGrid> read_fluid_file(
         channel_count += 3;
     }
 
-    auto_ptr<VoxelGrid> grid(
+    unique_ptr<VoxelGrid> grid(
         new VoxelGrid(
             header.m_xres,
             header.m_yres,
@@ -277,7 +278,7 @@ auto_ptr<VoxelGrid> read_fluid_file(
 
     fclose(file);
 
-    return read == needed ? grid : auto_ptr<VoxelGrid>(0);
+    return read == needed ? move(grid) : unique_ptr<VoxelGrid>(nullptr);
 }
 
 void write_voxel_grid(
@@ -286,7 +287,7 @@ void write_voxel_grid(
 {
     FILE* file = fopen(filename, "wt");
 
-    if (file == 0)
+    if (file == nullptr)
         return;
 
     const size_t xres = grid.get_xres();

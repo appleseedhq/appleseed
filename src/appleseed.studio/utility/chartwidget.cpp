@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -48,6 +48,7 @@
 // Standard headers.
 #include <cassert>
 #include <limits>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -76,9 +77,9 @@ void ChartBase::set_grid_brush(const QBrush& brush)
     m_grid_brush = brush;
 }
 
-void ChartBase::set_tooltip_formatter(auto_ptr<IToolTipFormatter> formatter)
+void ChartBase::set_tooltip_formatter(unique_ptr<IToolTipFormatter> formatter)
 {
-    m_tooltip_formatter = formatter;
+    m_tooltip_formatter = move(formatter);
 }
 
 void ChartBase::add_point(const Vector2d& p)
@@ -88,7 +89,7 @@ void ChartBase::add_point(const Vector2d& p)
 
 void ChartBase::add_point(const double x, const double y)
 {
-    m_original_points.push_back(Vector2d(x, y));
+    m_original_points.emplace_back(x, y);
 }
 
 void ChartBase::prepare_drawing(QPainter& painter)
@@ -140,7 +141,7 @@ void ChartBase::draw_tooltip(QPainter& painter, const QPoint& mouse_position) co
     const QColor BorderColor(40, 40, 40, Opacity);
     const QColor BackgroundColor(80, 80, 80, Opacity);
 
-    if (m_tooltip_formatter.get() == 0)
+    if (m_tooltip_formatter.get() == nullptr)
         return;
 
     const Vector2d& point = m_original_points[point_index];
@@ -385,7 +386,7 @@ void ChartWidget::clear()
     m_charts.clear();
 }
 
-void ChartWidget::add_chart(auto_ptr<ChartBase> chart)
+void ChartWidget::add_chart(unique_ptr<ChartBase> chart)
 {
     assert(chart.get());
 

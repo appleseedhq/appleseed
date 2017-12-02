@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@
 
 // Forward declarations.
 namespace foundation    { class Dictionary; }
-namespace renderer      { class LightSampler; }
+namespace renderer      { class BackwardLightSampler; }
 
 namespace renderer
 {
@@ -54,22 +54,21 @@ class PTLightingEngineFactory
   public:
     // Constructor.
     PTLightingEngineFactory(
-        const LightSampler& light_sampler,
-        const ParamArray&   params);
+        const BackwardLightSampler&     light_sampler,
+        const ParamArray&               params);
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
     // Return a new path tracing lighting engine instance.
-    virtual ILightingEngine* create() APPLESEED_OVERRIDE;
+    ILightingEngine* create() override;
 
-    // Get the metadata dictionary describing
-    // the PT lighting engine params.
+    // Return the metadata of the PT lighting engine parameters.
     static foundation::Dictionary get_params_metadata();
 
   private:
-    const LightSampler&     m_light_sampler;
-    ParamArray              m_params;
+    const BackwardLightSampler&     m_light_sampler;
+    ParamArray                      m_params;
 };
 
 }       // namespace renderer

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,10 +34,9 @@
 
 // Imath headers.
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
-#include "foundation/platform/exrheaderguards.h"
-BEGIN_EXR_INCLUDES
+#include "foundation/platform/_beginexrheaders.h"
 #include "OpenEXR/ImathVec.h"
-END_EXR_INCLUDES
+#include "foundation/platform/_endexrheaders.h"
 #endif
 
 // Standard headers.
@@ -51,18 +50,6 @@ TEST_SUITE(Foundation_Math_Vector)
     typedef Vector<float, 5> Vector5f;
     typedef Vector<double, 5> Vector5d;
 
-    TEST_CASE(ConstructVectorWithArrayOfValues)
-    {
-        static const double Values[] = { 1.0, 5.0, 19.0, -4.0, -100.0 };
-        const Vector5d v(Values);
-
-        EXPECT_EQ(Values[0], v[0]);
-        EXPECT_EQ(Values[1], v[1]);
-        EXPECT_EQ(Values[2], v[2]);
-        EXPECT_EQ(Values[3], v[3]);
-        EXPECT_EQ(Values[4], v[4]);
-    }
-
     TEST_CASE(ConstructVectorWithSingleValue)
     {
         const Vector5d v(7.0);
@@ -74,10 +61,22 @@ TEST_SUITE(Foundation_Math_Vector)
         EXPECT_EQ(7.0, v[4]);
     }
 
+    TEST_CASE(ConstructVectorFromArrayOfValues)
+    {
+        static const double Values[] = { 1.0, 5.0, 19.0, -4.0, -100.0 };
+        const auto v(Vector5d::from_array(Values));
+
+        EXPECT_EQ(Values[0], v[0]);
+        EXPECT_EQ(Values[1], v[1]);
+        EXPECT_EQ(Values[2], v[2]);
+        EXPECT_EQ(Values[3], v[3]);
+        EXPECT_EQ(Values[4], v[4]);
+    }
+
     TEST_CASE(ConstructVectorByTypeConversion)
     {
         static const double Values[] = { 1.0, 5.0, 19.0, -4.0, -100.0 };
-        const Vector5d v(Values);
+        const auto v(Vector5d::from_array(Values));
         const Vector5f vf(v);
 
         EXPECT_FEQ(static_cast<float>(Values[0]), vf[0]);
@@ -251,11 +250,11 @@ TEST_SUITE(Foundation_Math_Vector)
     TEST_CASE(TestImproveNormalization)
     {
         Vector3d v(-0.48859909517572381, 0.021669236596684682, -0.87223928390023286);
-        ASSERT_FALSE(is_normalized(v));
+        ASSERT_FALSE(is_normalized(v, 1.0e-14));
 
         v = improve_normalization(v);
 
-        EXPECT_TRUE(is_normalized(v));
+        EXPECT_TRUE(is_normalized(v, 1.0e-14));
     }
 
     TEST_CASE(TestIsNormalized)
@@ -368,15 +367,6 @@ TEST_SUITE(Foundation_Math_Vector)
 
 TEST_SUITE(Foundation_Math_Vector2)
 {
-    TEST_CASE(ConstructVectorWithArrayOfValues)
-    {
-        static const double Values[] = { 1.0, 5.0 };
-        const Vector2d v(Values);
-
-        EXPECT_EQ(Values[0], v[0]);
-        EXPECT_EQ(Values[1], v[1]);
-    }
-
     TEST_CASE(ConstructVectorWithSingleValue)
     {
         const Vector2d v(7.0);
@@ -393,10 +383,19 @@ TEST_SUITE(Foundation_Math_Vector2)
         EXPECT_EQ(5.0, v[1]);
     }
 
+    TEST_CASE(ConstructVectorFromArrayOfValues)
+    {
+        static const double Values[] = { 1.0, 5.0 };
+        const auto v(Vector2d::from_array(Values));
+
+        EXPECT_EQ(Values[0], v[0]);
+        EXPECT_EQ(Values[1], v[1]);
+    }
+
     TEST_CASE(ConstructVectorByTypeConversion)
     {
         static const double Values[] = { 1.0, 5.0 };
-        const Vector2d v(Values);
+        const auto v(Vector2d::from_array(Values));
         const Vector2f vf(v);
 
         EXPECT_FEQ(static_cast<float>(Values[0]), vf[0]);
@@ -431,16 +430,6 @@ TEST_SUITE(Foundation_Math_Vector2)
 
 TEST_SUITE(Foundation_Math_Vector3)
 {
-    TEST_CASE(ConstructVectorWithArrayOfValues)
-    {
-        static const double Values[] = { 1.0, 5.0, 19.0 };
-        const Vector3d v(Values);
-
-        EXPECT_EQ(Values[0], v[0]);
-        EXPECT_EQ(Values[1], v[1]);
-        EXPECT_EQ(Values[2], v[2]);
-    }
-
     TEST_CASE(ConstructVectorWithSingleValue)
     {
         const Vector3d v(7.0);
@@ -459,10 +448,20 @@ TEST_SUITE(Foundation_Math_Vector3)
         EXPECT_EQ(19.0, v[2]);
     }
 
+    TEST_CASE(ConstructVectorFromArrayOfValues)
+    {
+        static const double Values[] = { 1.0, 5.0, 19.0 };
+        const auto v(Vector3d::from_array(Values));
+
+        EXPECT_EQ(Values[0], v[0]);
+        EXPECT_EQ(Values[1], v[1]);
+        EXPECT_EQ(Values[2], v[2]);
+    }
+
     TEST_CASE(ConstructVectorByTypeConversion)
     {
         static const double Values[] = { 1.0, 5.0, 19.0 };
-        const Vector3d v(Values);
+        const auto v(Vector3d::from_array(Values));
         const Vector3f vf(v);
 
         EXPECT_FEQ(static_cast<float>(Values[0]), vf[0]);
@@ -504,17 +503,6 @@ TEST_SUITE(Foundation_Math_Vector3)
 
 TEST_SUITE(Foundation_Math_Vector4)
 {
-    TEST_CASE(ConstructVectorWithArrayOfValues)
-    {
-        static const double Values[] = { 1.0, 5.0, 19.0, -100.0 };
-        const Vector4d v(Values);
-
-        EXPECT_EQ(Values[0], v[0]);
-        EXPECT_EQ(Values[1], v[1]);
-        EXPECT_EQ(Values[2], v[2]);
-        EXPECT_EQ(Values[3], v[3]);
-    }
-
     TEST_CASE(ConstructVectorWithSingleValue)
     {
         const Vector4d v(7.0);
@@ -535,10 +523,21 @@ TEST_SUITE(Foundation_Math_Vector4)
         EXPECT_EQ(-100.0, v[3]);
     }
 
+    TEST_CASE(ConstructVectorFromArrayOfValues)
+    {
+        static const double Values[] = { 1.0, 5.0, 19.0, -100.0 };
+        const auto v(Vector4d::from_array(Values));
+
+        EXPECT_EQ(Values[0], v[0]);
+        EXPECT_EQ(Values[1], v[1]);
+        EXPECT_EQ(Values[2], v[2]);
+        EXPECT_EQ(Values[3], v[3]);
+    }
+
     TEST_CASE(ConstructVectorByTypeConversion)
     {
         static const double Values[] = { 1.0, 5.0, 19.0, -100.0 };
-        const Vector4d v(Values);
+        const auto v(Vector4d::from_array(Values));
         const Vector4f vf(v);
 
         EXPECT_FEQ(static_cast<float>(Values[0]), vf[0]);

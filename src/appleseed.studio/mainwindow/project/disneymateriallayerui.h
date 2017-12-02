@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Marius Avram, The appleseedhq Organization
+// Copyright (c) 2014-2017 Marius Avram, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 
 // Qt headers.
 #include <QFrame>
@@ -74,7 +74,7 @@ class DisneyMaterialLayerUI
 
     foundation::Dictionary get_values() const;
 
-    virtual void mouseDoubleClickEvent(QMouseEvent* event) APPLESEED_OVERRIDE;
+    void mouseDoubleClickEvent(QMouseEvent* event) override;
 
   signals:
     void signal_move_layer_up(QWidget* layer_widget);
@@ -121,9 +121,9 @@ class DisneyMaterialLayerUI
     void create_layer_ui();
     void create_input_widgets(const foundation::Dictionary& values);
 
-    std::auto_ptr<IInputWidgetProxy> create_text_input_widgets(const foundation::Dictionary& metadata);
-    std::auto_ptr<IInputWidgetProxy> create_color_input_widgets(const foundation::Dictionary& metadata);
-    std::auto_ptr<IInputWidgetProxy> create_colormap_input_widgets(const foundation::Dictionary& metadata);
+    std::unique_ptr<IInputWidgetProxy> create_text_input_widgets(const foundation::Dictionary& metadata);
+    std::unique_ptr<IInputWidgetProxy> create_color_input_widgets(const foundation::Dictionary& metadata);
+    std::unique_ptr<IInputWidgetProxy> create_colormap_input_widgets(const foundation::Dictionary& metadata);
 
     QWidget* create_texture_button(const std::string& name);
     QWidget* create_expression_button(const std::string& name);

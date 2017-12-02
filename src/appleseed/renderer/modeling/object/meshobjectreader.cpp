@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -50,6 +50,7 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/filter.h"
 #include "foundation/utility/foreach.h"
@@ -77,7 +78,7 @@ namespace renderer
 // MeshObjectArray class implementation.
 //
 
-APPLESEED_DEFINE_ARRAY(MeshObjectArray);
+APPLESEED_DEFINE_APIARRAY(MeshObjectArray);
 
 
 //
@@ -123,29 +124,28 @@ namespace
             return m_total_triangle_count;
         }
 
-        virtual void begin_mesh(const char* mesh_name) APPLESEED_OVERRIDE
+        void begin_mesh(const char* mesh_name) override
         {
             // Construct the object name.
             const string object_name = m_base_object_name + "." + make_unique_mesh_name(mesh_name);
 
             // Create an empty mesh object.
             m_objects.push_back(
-                MeshObjectFactory::create(
-                    object_name.c_str(),
-                    m_params).release());
+                static_cast<MeshObject*>(
+                    MeshObjectFactory().create(object_name.c_str(), m_params).release()));
 
             // Reset mesh statistics.
             reset_mesh_stats();
         }
 
-        virtual void end_mesh() APPLESEED_OVERRIDE
+        void end_mesh() override
         {
             // Print the number of faces that could not be triangulated, if any.
             if (m_triangulation_error_count > 0)
             {
                 RENDERER_LOG_WARNING(
                     "while loading mesh object \"%s\": %s polygonal %s (out of %s) could not be triangulated and have been replaced by zero-area triangles.",
-                    m_objects.back()->get_name(),
+                    m_objects.back()->get_path().c_str(),
                     pretty_uint(m_triangulation_error_count).c_str(),
                     m_triangulation_error_count > 1 ? "faces" : "face",
                     pretty_uint(m_face_count).c_str());
@@ -156,7 +156,7 @@ namespace
             {
                 RENDERER_LOG_WARNING(
                     "while loading mesh object \"%s\": %s normal %s (out of %s) were null and have been replaced by arbitrary unit-length vectors.",
-                    m_objects.back()->get_name(),
+                    m_objects.back()->get_path().c_str(),
                     pretty_uint(m_null_normal_vector_count).c_str(),
                     m_null_normal_vector_count > 1 ? "vectors" : "vector",
                     pretty_uint(m_normal_count).c_str());
@@ -167,12 +167,12 @@ namespace
             m_total_triangle_count += m_objects.back()->get_triangle_count();
         }
 
-        virtual size_t push_vertex(const Vector3d& v) APPLESEED_OVERRIDE
+        size_t push_vertex(const Vector3d& v) override
         {
             return m_objects.back()->push_vertex(GVector3(v));
         }
 
-        virtual size_t push_vertex_normal(const Vector3d& v) APPLESEED_OVERRIDE
+        size_t push_vertex_normal(const Vector3d& v) override
         {
             GVector3 n(v);
 
@@ -191,17 +191,17 @@ namespace
             return m_objects.back()->push_vertex_normal(n);
         }
 
-        virtual size_t push_tex_coords(const Vector2d& v) APPLESEED_OVERRIDE
+        size_t push_tex_coords(const Vector2d& v) override
         {
             return m_objects.back()->push_tex_coords(GVector2(v));
         }
 
-        virtual size_t push_material_slot(const char* name) APPLESEED_OVERRIDE
+        size_t push_material_slot(const char* name) override
         {
             return m_objects.back()->push_material_slot(name);
         }
 
-        virtual void begin_face(const size_t vertex_count) APPLESEED_OVERRIDE
+        void begin_face(const size_t vertex_count) override
         {
             assert(vertex_count >= 3);
 
@@ -214,7 +214,7 @@ namespace
             ++m_face_count;
         }
 
-        virtual void end_face() APPLESEED_OVERRIDE
+        void end_face() override
         {
             assert(m_face_vertices.size() == m_vertex_count);
             assert(m_face_normals.size() == 0 || m_face_normals.size() == m_vertex_count);
@@ -227,10 +227,7 @@ namespace
 
                 // Create the polygon to triangulate.
                 for (size_t i = 0; i < m_vertex_count; ++i)
-                {
-                    m_polygon.push_back(
-                        Vector3d(m_objects.back()->get_vertex(m_face_vertices[i])));
-                }
+                    m_polygon.emplace_back(m_objects.back()->get_vertex(m_face_vertices[i]));
 
                 // Triangulate the polygon.
                 if (m_triangulator.triangulate(m_polygon, m_triangles))
@@ -265,7 +262,7 @@ namespace
             }
         }
 
-        virtual void set_face_vertices(const size_t vertices[]) APPLESEED_OVERRIDE
+        void set_face_vertices(const size_t vertices[]) override
         {
             m_face_vertices.resize(m_vertex_count);
 
@@ -273,7 +270,7 @@ namespace
                 m_face_vertices[i] = static_cast<uint32>(vertices[i]);
         }
 
-        virtual void set_face_vertex_normals(const size_t vertex_normals[]) APPLESEED_OVERRIDE
+        void set_face_vertex_normals(const size_t vertex_normals[]) override
         {
             m_face_normals.resize(m_vertex_count);
 
@@ -281,7 +278,7 @@ namespace
                 m_face_normals[i] = static_cast<uint32>(vertex_normals[i]);
         }
 
-        virtual void set_face_vertex_tex_coords(const size_t tex_coords[]) APPLESEED_OVERRIDE
+        void set_face_vertex_tex_coords(const size_t tex_coords[]) override
         {
             m_face_tex_coords.resize(m_vertex_count);
 
@@ -289,7 +286,7 @@ namespace
                 m_face_tex_coords[i] = static_cast<uint32>(tex_coords[i]);
         }
 
-        virtual void set_face_material(const size_t material) APPLESEED_OVERRIDE
+        void set_face_material(const size_t material) override
         {
             m_face_material = static_cast<uint32>(material);
         }
@@ -723,7 +720,7 @@ namespace
         {
             const double key = from_string<double>(i->key());
             const string filename = i->value<string>();
-            key_frames.push_back(MeshObjectKeyFrame(key, filename));
+            key_frames.emplace_back(key, filename);
         }
 
         sort(key_frames.begin(), key_frames.end());
@@ -739,7 +736,10 @@ namespace
             objects[i]->set_motion_segment_count(key_frames.size() - 1);
 
         for (size_t i = 0; i < objects.size(); ++i)
-            unshare_normals(*objects[i]);
+        {
+            if (objects[i]->get_vertex_normal_count() != 0)
+                unshare_normals(*objects[i]);
+        }
 
         for (size_t i = 1; i < key_frames.size(); ++i)
         {
@@ -755,7 +755,10 @@ namespace
                 return false;
 
             for (size_t j = 0; j < poses.size(); ++j)
-                unshare_normals(*poses[j]);
+            {
+                if (poses[j]->get_vertex_normal_count() != 0)
+                    unshare_normals(*poses[j]);
+            }
 
             if (!set_vertex_poses(
                     objects,
@@ -772,13 +775,28 @@ namespace
         return true;
     }
 
+    void compute_smooth_normals(MeshObject& object)
+    {
+        if (object.get_vertex_normal_count() > 0)
+        {
+            RENDERER_LOG_WARNING(
+                "skipping computation of smooth normal vectors for mesh object \"%s\" because it already has normal vectors.",
+                object.get_path().c_str());
+            return;
+        }
+
+        RENDERER_LOG_INFO("computing smooth normal vectors for mesh object \"%s\"...", object.get_path().c_str());
+
+        compute_smooth_vertex_normals(object);
+    }
+
     void compute_smooth_tangents(MeshObject& object)
     {
         if (object.get_vertex_tangent_count() > 0)
         {
             RENDERER_LOG_WARNING(
                 "skipping computation of smooth tangent vectors for mesh object \"%s\" because it already has tangent vectors.",
-                object.get_name());
+                object.get_path().c_str());
             return;
         }
 
@@ -786,11 +804,11 @@ namespace
         {
             RENDERER_LOG_WARNING(
                 "cannot compute smooth tangent vectors for mesh object \"%s\" because it lacks texture coordinates.",
-                object.get_name());
+                object.get_path().c_str());
             return;
         }
 
-        RENDERER_LOG_INFO("computing smooth tangent vectors for mesh object \"%s\"...", object.get_name());
+        RENDERER_LOG_INFO("computing smooth tangent vectors for mesh object \"%s\"...", object.get_path().c_str());
 
         compute_smooth_vertex_tangents(object);
     }
@@ -804,7 +822,7 @@ bool MeshObjectReader::read(
 {
     assert(base_object_name);
 
-    // Tag objects with the name of their parent.
+    // Objects will be tagged with the name of their parent.
     ParamArray completed_params(params);
     completed_params.insert("__base_object_name", base_object_name);
 
@@ -879,20 +897,24 @@ bool MeshObjectReader::read(
             break;
         }
     }
-    else
+
+    // Compute smooth normals.
+    if (params.strings().exist("compute_smooth_normals"))
     {
-        RENDERER_LOG_ERROR(
-            "while reading geometry for object \"%s\": no \"filename\" parameter or "
-            "\"filename\" parameter group found.",
-            base_object_name);
-        return false;
+        const RegExFilter filter(params.get("compute_smooth_normals"));
+        for (size_t i = 0, e = objects.size(); i < e; ++i)
+        {
+            MeshObject& object = *objects[i];
+            if (filter.accepts(object.get_name()))
+                compute_smooth_normals(object);
+        }
     }
 
     // Compute smooth tangents.
     if (params.strings().exist("compute_smooth_tangents"))
     {
         const RegExFilter filter(params.get("compute_smooth_tangents"));
-        for (size_t i = 0; i < objects.size(); ++i)
+        for (size_t i = 0, e = objects.size(); i < e; ++i)
         {
             MeshObject& object = *objects[i];
             if (filter.accepts(object.get_name()))

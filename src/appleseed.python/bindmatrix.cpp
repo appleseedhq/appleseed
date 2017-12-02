@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,10 @@
 //
 
 // appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
 #include "unalignedmatrix44.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/python.h"
 
 // Standard headers.
 #include <cstddef>
@@ -50,7 +52,7 @@ namespace
             bpy::throw_error_already_set();
         }
 
-        auto_ptr<UnalignedMatrix44<T> > r(new UnalignedMatrix44<T>());
+        unique_ptr<UnalignedMatrix44<T>> r(new UnalignedMatrix44<T>());
 
         for (size_t i = 0; i < 4 * 4; ++i)
         {
@@ -68,7 +70,7 @@ namespace
     }
 
     template <typename T>
-    struct matrix_indexer
+    struct MatrixIndexer
     {
         static T get(const UnalignedMatrix44<T>& mat, bpy::tuple indices)
         {
@@ -170,40 +172,40 @@ namespace
         return bpy::make_tuple(yaw, pitch, roll);
     }
 
-    void bind_typed_matrix4_extra(bpy::class_<UnalignedMatrix44<float> >& X)
+    void bind_typed_matrix4_extra(bpy::class_<UnalignedMatrix44<float>>& X)
     {
-        X.def(bpy::init<UnalignedMatrix44<double> >());
+        X.def(bpy::init<UnalignedMatrix44<double>>());
     }
 
-    void bind_typed_matrix4_extra(bpy::class_<UnalignedMatrix44<double> >& X)
+    void bind_typed_matrix4_extra(bpy::class_<UnalignedMatrix44<double>>& X)
     {
-        X.def(bpy::init<UnalignedMatrix44<float> >());
+        X.def(bpy::init<UnalignedMatrix44<float>>());
     }
 
     template <typename T>
     void bind_typed_matrix4(const char* class_name)
     {
-        UnalignedMatrix44<T>(*rot1)(T, T, T) = &UnalignedMatrix44<T>::rotation;
-        UnalignedMatrix44<T>(*rot2)(const Vector<T, 3>&, T) = &UnalignedMatrix44<T>::rotation;
-        UnalignedMatrix44<T>(*rot3)(const Quaternion<T>&) = &UnalignedMatrix44<T>::rotation;
+        UnalignedMatrix44<T>(*rot1)(T, T, T) = &UnalignedMatrix44<T>::make_rotation;
+        UnalignedMatrix44<T>(*rot2)(const Vector<T, 3>&, T) = &UnalignedMatrix44<T>::make_rotation;
+        UnalignedMatrix44<T>(*rot3)(const Quaternion<T>&) = &UnalignedMatrix44<T>::make_rotation;
 
-        bpy::class_<UnalignedMatrix44<T> > X(class_name);
+        bpy::class_<UnalignedMatrix44<T>> X(class_name);
 
         X.def("identity", &UnalignedMatrix44<T>::identity).staticmethod("identity")
-            .def("translation", &UnalignedMatrix44<T>::translation).staticmethod("translation")
-            .def("scaling", &UnalignedMatrix44<T>::scaling).staticmethod("scaling")
-            .def("rotation_x", &UnalignedMatrix44<T>::rotation_x).staticmethod("rotation_x")
-            .def("rotation_y", &UnalignedMatrix44<T>::rotation_y).staticmethod("rotation_y")
-            .def("rotation_z", &UnalignedMatrix44<T>::rotation_z).staticmethod("rotation_z")
-            .def("lookat", &UnalignedMatrix44<T>::lookat).staticmethod("lookat")
-            .def("rotation", rot1).def("rotation", rot2).def("rotation", rot3).staticmethod("rotation")
+            .def("make_translation", &UnalignedMatrix44<T>::make_translation).staticmethod("make_translation")
+            .def("make_scaling", &UnalignedMatrix44<T>::make_scaling).staticmethod("make_scaling")
+            .def("make_rotation_x", &UnalignedMatrix44<T>::make_rotation_x).staticmethod("make_rotation_x")
+            .def("make_rotation_y", &UnalignedMatrix44<T>::make_rotation_y).staticmethod("make_rotation_y")
+            .def("make_rotation_z", &UnalignedMatrix44<T>::make_rotation_z).staticmethod("make_rotation_z")
+            .def("make_lookat", &UnalignedMatrix44<T>::make_lookat).staticmethod("make_lookat")
+            .def("make_rotation", rot1).def("make_rotation", rot2).def("make_rotation", rot3).staticmethod("make_rotation")
 
             .def(bpy::init<T>())
             .def("__init__", bpy::make_constructor(&construct_matrix_from_list<T>))
 
             // operator[]
-            .def("__getitem__", &matrix_indexer<T>::get)
-            .def("__setitem__", &matrix_indexer<T>::set)
+            .def("__getitem__", &MatrixIndexer<T>::get)
+            .def("__setitem__", &MatrixIndexer<T>::set)
 
             .def("transpose", &transpose_matrix<T>)
             .def("inverse", &invert_matrix<T>)
@@ -216,8 +218,7 @@ namespace
             .def(bpy::self_ns::repr(bpy::self))
 
             .def("extract_matrix3", &UnalignedMatrix44<T>::extract_matrix3)
-            .def("extract_translation", &UnalignedMatrix44<T>::extract_translation)
-            ;
+            .def("extract_translation", &UnalignedMatrix44<T>::extract_translation);
 
         bind_typed_matrix4_extra(X);
     }
@@ -230,9 +231,9 @@ void bind_matrix()
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
     bpy::implicitly_convertible<UnalignedMatrix44<float>, Imath::M44f>();
-    bpy::implicitly_convertible<Imath::M44f, UnalignedMatrix44<float> >();
+    bpy::implicitly_convertible<Imath::M44f, UnalignedMatrix44<float>>();
 
     bpy::implicitly_convertible<UnalignedMatrix44<double>, Imath::M44d>();
-    bpy::implicitly_convertible<Imath::M44d, UnalignedMatrix44<double> >();
+    bpy::implicitly_convertible<Imath::M44d, UnalignedMatrix44<double>>();
 #endif
 }

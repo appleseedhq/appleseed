@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/entity.h"
+#include "renderer/modeling/entity/onframebeginrecorder.h"
 #include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/regionkit.h"
@@ -45,41 +46,40 @@
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/lazy.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // Standard headers.
-#include <cassert>
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
 namespace renderer  { class Scene; }
 
 namespace renderer
 {
 
-class TestFixtureBaseProjectHolder
+//
+// Convenient base class for test scenes.
+//
+
+class TestSceneBaseProjectHolder
   : public foundation::NonCopyable
 {
   public:
-    TestFixtureBaseProjectHolder();
+    TestSceneBaseProjectHolder();
 
+  protected:
     Project& get_project();
 
   private:
     foundation::auto_release_ptr<Project> m_project;
 };
 
-class TestFixtureBase
-  : public TestFixtureBaseProjectHolder
+class TestSceneBase
+  : public TestSceneBaseProjectHolder
 {
   public:
     Project&    m_project;
     Scene&      m_scene;
-    Assembly&   m_assembly;
 
-    TestFixtureBase();
+    TestSceneBase();
 
     void create_color_entity(
         const char*                 name,
@@ -92,30 +92,55 @@ class TestFixtureBase
     void create_texture_instance(
         const char*                 name,
         const char*                 texture_name);
-
-    void bind_inputs();
 };
 
-template <typename Scene>
-class BindInputs
-  : public Scene
+
+//
+// Invoke on_render_begin/end() and on_frame_begin/end() hooks on all entities of a scene.
+//
+
+class TestSceneContext
 {
   public:
-    BindInputs()
-    {
-        InputBinder input_binder;
-        input_binder.bind(*Scene::m_scene);
-        assert(input_binder.get_error_count() == 0);
-    }
+    explicit TestSceneContext(TestSceneBase& base);
+    ~TestSceneContext();
+
+  private:
+    TestSceneBase&          m_base;
+    OnFrameBeginRecorder    m_recorder;
 };
+
+template <typename Base>
+class StaticTestSceneContext
+  : public Base
+{
+  public:
+    StaticTestSceneContext()
+      : m_context(*this)
+    {
+    }
+
+  private:
+    TestSceneContext m_context;
+};
+
+
+//
+// A dummy entity that does not do anything.
+//
 
 class DummyEntity
   : public Entity
 {
   public:
     explicit DummyEntity(const char* name);
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 };
+
+
+//
+// An entity holding a flag indicating whether release() was called on it.
+//
 
 class DummyEntityReleaseCheck
   : public Entity
@@ -124,8 +149,13 @@ class DummyEntityReleaseCheck
     bool& m_release_was_called;
 
     DummyEntityReleaseCheck(const char* name, bool& release_was_called);
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 };
+
+
+//
+// A dummy object entity with just a bounding box.
+//
 
 class BoundingBoxObject
   : public Object
@@ -135,16 +165,16 @@ class BoundingBoxObject
         const char*                 name,
         const GAABB3&               bbox);
 
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    const char* get_model() const override;
 
-    virtual GAABB3 compute_local_bbox() const APPLESEED_OVERRIDE;
+    GAABB3 compute_local_bbox() const override;
 
-    virtual foundation::Lazy<RegionKit>& get_region_kit() APPLESEED_OVERRIDE;
+    foundation::Lazy<RegionKit>& get_region_kit() override;
 
-    virtual size_t get_material_slot_count() const APPLESEED_OVERRIDE;
-    virtual const char* get_material_slot(const size_t index) const APPLESEED_OVERRIDE;
+    size_t get_material_slot_count() const override;
+    const char* get_material_slot(const size_t index) const override;
 
   private:
     GAABB3                          m_bbox;

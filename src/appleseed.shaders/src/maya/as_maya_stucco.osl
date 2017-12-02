@@ -1,0 +1,199 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/stucco.html
+
+#include "appleseed/maya/as_maya_fractal_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/maya/as_maya_transform_helpers.h"
+
+shader as_maya_stucco
+[[
+    string as_maya_node_name = "stucco"
+]]
+(
+    float in_shaker = 20.0
+    [[
+        string as_maya_attribute_name = "shaker",
+        string as_maya_attribute_short_name = "sh",
+        float min = 0.0,
+        float softmax = 20.0,
+        string label = "Shaker",
+        string page = "Crater Attributes"
+    ]],
+    color in_channel1 = color(1, 0, 0)
+    [[
+        string as_maya_attribute_name = "channel1",
+        string as_maya_attribute_short_name = "c1",
+        string label = "Channel 1",
+        string page = "Crater Attributes"
+    ]],
+    color in_channel2 = color(0, 1, 0)
+    [[
+        string as_maya_attribute_name = "channel2",
+        string as_maya_attribute_short_name = "c2",
+        string label = "Channel 2",
+        string page = "Crater Attributes"
+    ]],
+    color in_channel3 = color(0, 0, 1)
+    [[
+        string as_maya_attribute_name = "channel3",
+        string as_maya_attribute_short_name = "c3",
+        string label = "Channel 3",
+        string page = "Crater Attributes"
+    ]],
+    float in_normDepth = 1.0
+    [[
+        string as_maya_attribute_name = "normDepth",
+        string as_maya_attribute_short_name = "nd",
+        float softmin = -5.0,
+        float softmax = 5.0,
+        string label = "Normal Depth",
+        string page = "Normal Options"
+    ]],
+    float in_normMelt = 0.1
+    [[
+        string as_maya_attribute_name = "normMelt",
+        string as_maya_attribute_short_name = "nm",
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Normal Melt",
+        string page = "Normal Options"
+    ]],
+    normal in_normalCamera = N
+    [[
+        string as_maya_attribute_name = "normalCamera",
+        string as_maya_attribute_short_name = "n",
+        string label = "Normal",
+        string widget = "null"
+    ]],
+    point in_refPointCamera = P
+    [[
+        string as_maya_attribute_name = "refPointCamera",
+        string as_maya_attribute_short_name = "rpc",
+        string label = "Surface Point",
+        string widget = "null"
+    ]],
+    matrix in_placementMatrix = matrix(1)
+    [[
+        string as_maya_attribute_name = "placementMatrix",
+        string label = "Placement Matrix",
+        string widget = "null"
+    ]],
+
+    MAYA_COLORBALANCE_PARAMETERS,
+    MAYA_EFFECTS_PARAMETERS,
+    MAYA_EFFECTS_3DTEX_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]],
+    output normal out_outNormal = N
+    [[
+        string as_maya_attribute_name = "outNormal",
+        string as_maya_attribute_short_name = "o",
+        string label = "Output Normal",
+        string widget = "null"
+    ]]
+)
+{
+    matrix placement = (in_local)
+        ? matrix("common", "object") * in_placementMatrix
+        : in_placementMatrix;
+
+    point Pp = transform(placement, in_refPointCamera);
+
+    float box_blending = 0.0;
+
+    int outside_box = outside_place3d_volume(
+        Pp,
+        in_wrap,
+        in_blend,
+        box_blending);
+
+    if (outside_box)
+    {
+        out_outColor = in_defaultColor;
+        out_outAlpha = maya_luminance(out_outColor);
+        out_outNormal = in_normalCamera;
+
+        return;
+    }
+    else
+    {
+        float filter_width = 0.0;
+
+        if (in_filter > 0.0)
+        {
+            filter_width = in_filter * max(EPS, sqrt(area(Pp)));
+            filter_width += in_filterOffset;
+        }
+
+        float value = recurrence(filter_width, Pp, in_shaker, 0.0);
+        value = value * 0.25 + 0.5;
+
+        out_outAlpha = value;
+        out_outColor = mix(in_channel2, in_channel1, min(1.0, sqr(value)));
+
+        // Normal output.
+        float melt = 0.1 * in_normMelt;
+
+        out_outNormal = recurrence3(filter_width, Pp, in_normDepth, melt);
+
+        if (!in_wrap && in_blend)
+        {
+            out_outColor = mix(in_defaultColor, out_outColor, box_blending);
+            out_outAlpha *= box_blending;
+            out_outNormal *= box_blending;
+        }
+        out_outNormal = normalize(out_outNormal + in_normalCamera);
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha
+            );
+    }
+}

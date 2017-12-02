@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -67,8 +67,8 @@ class EntityCreationAction
     {
     }
 
-    virtual void operator()(
-        renderer::Project&              project) APPLESEED_OVERRIDE
+    void operator()(
+        renderer::Project&              project) override
     {
         m_item->create(m_values);
     }
@@ -91,8 +91,8 @@ class EntityEditionAction
     {
     }
 
-    virtual void operator()(
-        renderer::Project&              project) APPLESEED_OVERRIDE
+    void operator()(
+        renderer::Project&              project) override
     {
         m_item->edit(m_values);
     }
@@ -115,8 +115,8 @@ class EntityInstantiationAction
     {
     }
 
-    virtual void operator()(
-        renderer::Project&              project) APPLESEED_OVERRIDE
+    void operator()(
+        renderer::Project&              project) override
     {
         m_item->do_instantiate(m_name);
     }
@@ -143,8 +143,8 @@ class EntityDeletionAction
     {
     }
 
-    virtual void operator()(
-        renderer::Project&              project) APPLESEED_OVERRIDE
+    void operator()(
+        renderer::Project&              project) override
     {
         for (int i = 0; i < m_items.size(); ++i)
             m_items[i]->do_delete();

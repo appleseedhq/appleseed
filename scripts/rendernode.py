@@ -7,7 +7,7 @@
 # This software is released under the MIT license.
 #
 # Copyright (c) 2012-2013 Jonathan Topf, Jupiter Jazz Limited
-# Copyright (c) 2014-2016 Jonathan Topf, The appleseedhq Organization
+# Copyright (c) 2014-2017 Jonathan Topf, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -62,20 +62,23 @@ def safe_mkdir(dir):
     if not os.path.exists(dir):
         os.mkdir(dir)
 
+
 def convert_path_to_local(path):
     if os.name == "nt":
         return path.replace('/', '\\')
     else:
         return path.replace('\\', '/')
 
+
 def format_message(severity, msg):
     now = datetime.datetime.now()
     timestamp = now.strftime("%Y-%m-%d %H:%M:%S.%f")
     padded_severity = severity.ljust(7)
-    return "\n".join("{0} node  {1} | {2}".format(timestamp, padded_severity, line) \
-        for line in msg.splitlines())
+    return "\n".join("{0} node  {1} | {2}".format(timestamp, padded_severity, line)
+                     for line in msg.splitlines())
 
 VALID_USER_NAME_CHARS = frozenset("%s%s_-" % (string.ascii_letters, string.digits))
+
 
 def cleanup_user_name(user_name):
     return "".join(c if c in VALID_USER_NAME_CHARS else '_' for c in user_name)
@@ -86,6 +89,7 @@ def cleanup_user_name(user_name):
 #--------------------------------------------------------------------------------------------------
 
 class ConsoleBackend:
+
     @staticmethod
     def info(msg):
         print("{0}".format(msg))
@@ -114,6 +118,7 @@ class ConsoleBackend:
 #--------------------------------------------------------------------------------------------------
 
 class LogFileBackend:
+
     def __init__(self, path):
         self.path = path
 
@@ -129,6 +134,7 @@ class LogFileBackend:
 #--------------------------------------------------------------------------------------------------
 
 class Log:
+
     def __init__(self, path):
         self.log_file = LogFileBackend(path)
 
@@ -261,6 +267,7 @@ def print_appleseed_version(args, log):
 class ProcessFailedException(Exception):
     pass
 
+
 def render_project(args, project_filepath, log):
     # Assign the project file to ourselves.
     assigned_project_filepath = project_filepath + "." + args.user_name
@@ -333,6 +340,7 @@ def get_project_files(directory):
 
     return project_files
 
+
 def extract_project_deps(project_filepath, log):
     try:
         with open(project_filepath, 'r') as file:
@@ -362,6 +370,7 @@ def extract_project_deps(project_filepath, log):
 
     return True, deps
 
+
 def gather_missing_project_deps(deps):
     missing_deps = []
 
@@ -370,6 +379,7 @@ def gather_missing_project_deps(deps):
             missing_deps.append(filepath)
 
     return missing_deps
+
 
 def watch(args, log):
     # Look for project files in the watch directory.
@@ -415,7 +425,7 @@ def watch(args, log):
 
 def main():
     # Parse the command line.
-    parser = argparse.ArgumentParser(description="continuously watch a directory and render any " \
+    parser = argparse.ArgumentParser(description="continuously watch a directory and render any "
                                      "appleseed project file that appears in it.")
     parser.add_argument("-t", "--tool-path", metavar="tool-path",
                         help="set the path to the appleseed.cli tool")
@@ -471,7 +481,8 @@ def main():
     try:
         while True:
             try:
-                while watch(args, log): pass
+                while watch(args, log):
+                    pass
             except KeyboardInterrupt, SystemExit:
                 raise
             except ProcessFailedException:

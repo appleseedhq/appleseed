@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,21 +31,24 @@
 #define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRESULT_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
-#include "renderer/kernel/aov/shadingfragmentstack.h"
-#include "renderer/kernel/shading/shadingfragment.h"
-#include "renderer/modeling/entity/entity.h"
+#include "renderer/kernel/aov/aovsettings.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/color.h"
-#include "foundation/image/colorspace.h"
+#include "foundation/utility/poison.h"
+
+// Standard headers.
+#include <cassert>
+#include <cstddef>
 
 namespace renderer
 {
 
 //
-// Shading result.
+// The result of shading an image sample.
+//
+// All colors are expressed in linear RGB.
 //
 
 class ShadingResult
@@ -53,54 +56,25 @@ class ShadingResult
 {
   public:
     // Public members.
-    foundation::ColorSpace      m_color_space;
-    ShadingFragment             m_main;
-    ShadingFragmentStack        m_aovs;
-    double                      m_depth;
+    foundation::Color4f m_main;
+    foundation::Color4f m_aovs[MaxAOVCount];
+    size_t              m_aov_count;
 
     // Constructor.
+    // AOVs are cleared to transparent black but the main output is left uninitialized.
     explicit ShadingResult(const size_t aov_count = 0);
 
-    // Return true if this shading result contains valid linear RGB values;
-    // false if the color, alpha or any AOV contain NaN or negative values.
-    bool is_valid_linear_rgb() const;
+    // Return false if the main output of any of the AOV contains NaN, negative or infinite values.
+    bool is_valid() const;
 
-    // Set the main color to a given linear RGB value. Leaves the alpha channel intact.
-    void set_main_to_linear_rgb(const foundation::Color3f& linear_rgb);
+    // Composite this shading result over `background`.
+    void composite_over(const ShadingResult& background);
 
-    // Set the main color and alpha channel to a given linear RGBA value.
-    void set_main_to_linear_rgba(const foundation::Color4f& linear_rgba);
+    // Apply alpha premultiplication to the main output and the AOVs.
+    void apply_alpha_premult();
 
-    // Set the main color and alpha channel to transparent black in linear RGB.
-    void set_main_to_transparent_black_linear_rgba();
-
-    // Set the main color and alpha channel to opaque pink in linear RGB (useful for debugging).
-    void set_main_to_opaque_pink_linear_rgba();
-
-    // Set all AOV colors and alpha channels to transparent black in linear RGB.
-    void set_aovs_to_transparent_black_linear_rgba();
-
-    // Copy the main output to the AOV of a given entity.
-    void set_entity_aov(const Entity& entity);
-
-    // Store a shading fragment to the AOV of a given entity.
-    void set_entity_aov(
-        const Entity&           entity,
-        const ShadingFragment&  fragment);
-
-    // Transform main and AOV colors to the linear RGB color space.
-    void transform_to_linear_rgb(const foundation::LightingConditions& lighting);
-
-    // Composite this shading result over 'background'.
-    // Both shading results must be expressed in linear RGB.
-    void composite_over_linear_rgb(const ShadingResult& background);
-
-    // Multiply main and AOV colors by their respective alpha channels.
-    void apply_alpha_premult_linear_rgb();
-
-  private:
-    // Set all values to NaN.
-    void poison();
+    // Set the main output to opaque pink.
+    void set_main_to_opaque_pink();
 };
 
 
@@ -109,49 +83,35 @@ class ShadingResult
 //
 
 inline ShadingResult::ShadingResult(const size_t aov_count)
-  : m_aovs(aov_count)
+  : m_aov_count(aov_count)
 {
+    assert(aov_count <= MaxAOVCount);
+
 #ifdef DEBUG
-    poison();
+    poison(*this);
 #endif
-}
 
-inline void ShadingResult::set_main_to_linear_rgb(const foundation::Color3f& linear_rgb)
-{
-    m_color_space = foundation::ColorSpaceLinearRGB;
-    m_main.m_color[0] = linear_rgb[0];
-    m_main.m_color[1] = linear_rgb[1];
-    m_main.m_color[2] = linear_rgb[2];
-}
-
-inline void ShadingResult::set_main_to_linear_rgba(const foundation::Color4f& linear_rgba)
-{
-    set_main_to_linear_rgb(linear_rgba.rgb());
-    m_main.m_alpha.set(linear_rgba[3]);
-}
-
-inline void ShadingResult::set_main_to_transparent_black_linear_rgba()
-{
-    set_main_to_linear_rgba(foundation::Color4f(0.0f));
-}
-
-inline void ShadingResult::set_main_to_opaque_pink_linear_rgba()
-{
-    set_main_to_linear_rgba(foundation::Color4f(1.0f, 0.0f, 1.0f, 1.0f));
-}
-
-inline void ShadingResult::set_entity_aov(const Entity& entity)
-{
-    m_aovs.set(entity.get_render_layer_index(), m_main);
-}
-
-inline void ShadingResult::set_entity_aov(
-    const Entity&               entity,
-    const ShadingFragment&      fragment)
-{
-    m_aovs.set(entity.get_render_layer_index(), fragment);
+    // Set all AOVs to transparent black.
+    for (size_t i = 0, e = m_aov_count; i < e; ++i)
+        m_aovs[i].set(0.0f);
 }
 
 }       // namespace renderer
+
+namespace foundation
+{
+    template <>
+    class PoisonImpl<renderer::ShadingResult>
+    {
+      public:
+        static void do_poison(renderer::ShadingResult& result)
+        {
+            poison(result.m_main);
+
+            for (size_t i = 0, e = result.m_aov_count; i < e; ++i)
+                poison(result.m_aovs[i]);
+        }
+    };
+}
 
 #endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRESULT_H

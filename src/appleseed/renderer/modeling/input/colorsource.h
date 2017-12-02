@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -60,27 +60,30 @@ class ColorSource
     const ColorEntity& get_color_entity() const;
 
     // Compute a signature unique to this source.
-    virtual foundation::uint64 compute_signature() const APPLESEED_OVERRIDE;
+    foundation::uint64 compute_signature() const override;
+
+    // Return hints allowing to treat this source as one of another type.
+    Hints get_hints() const override;
 
     // Evaluate the source.
-    virtual void evaluate_uniform(
-        double&                     scalar) const APPLESEED_OVERRIDE;
-    virtual void evaluate_uniform(
-        foundation::Color3f&        linear_rgb) const APPLESEED_OVERRIDE;
-    virtual void evaluate_uniform(
-        Spectrum&                   spectrum) const APPLESEED_OVERRIDE;
-    virtual void evaluate_uniform(
-        Alpha&                      alpha) const APPLESEED_OVERRIDE;
-    virtual void evaluate_uniform(
+    void evaluate_uniform(
+        float&                      scalar) const override;
+    void evaluate_uniform(
+        foundation::Color3f&        linear_rgb) const override;
+    void evaluate_uniform(
+        Spectrum&                   spectrum) const override;
+    void evaluate_uniform(
+        Alpha&                      alpha) const override;
+    void evaluate_uniform(
         foundation::Color3f&        linear_rgb,
-        Alpha&                      alpha) const APPLESEED_OVERRIDE;
-    virtual void evaluate_uniform(
+        Alpha&                      alpha) const override;
+    void evaluate_uniform(
         Spectrum&                   spectrum,
-        Alpha&                      alpha) const APPLESEED_OVERRIDE;
+        Alpha&                      alpha) const override;
 
   private:
     const ColorEntity&              m_color_entity;
-    double                          m_scalar;
+    float                           m_scalar;
     foundation::Color3f             m_linear_rgb;
     Spectrum                        m_spectrum;
     Alpha                           m_alpha;
@@ -100,7 +103,7 @@ inline const ColorEntity& ColorSource::get_color_entity() const
 }
 
 inline void ColorSource::evaluate_uniform(
-    double&                         scalar) const
+    float&                          scalar) const
 {
     scalar = m_scalar;
 }

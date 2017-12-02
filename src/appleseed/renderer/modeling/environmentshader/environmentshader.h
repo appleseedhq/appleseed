@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 #define APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_ENVIRONMENTSHADER_H
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/connectableentity.h"
 
 // appleseed.foundation headers.
@@ -41,12 +42,9 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class InputEvaluator; }
-namespace renderer      { class ParamArray; }
-namespace renderer      { class Project; }
-namespace renderer      { class ShadingContext; }
-namespace renderer      { class ShadingResult; }
+namespace renderer  { class ParamArray; }
+namespace renderer  { class PixelContext; }
+namespace renderer  { class ShadingContext; }
 
 namespace renderer
 {
@@ -64,27 +62,19 @@ class APPLESEED_DLLSYMBOL EnvironmentShader
 
     // Constructor.
     EnvironmentShader(
-        const char*                 name,
-        const ParamArray&           params);
+        const char*                     name,
+        const ParamArray&               params);
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
-    // This method is called once before rendering each frame.
-    // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
-        const Project&              project,
-        foundation::IAbortSwitch*   abort_switch = 0);
-
-    // This method is called once after rendering each frame.
-    virtual void on_frame_end(const Project& project);
-
     // Evaluate the environment for a given unit-length direction.
     virtual void evaluate(
-        const ShadingContext&       shading_context,
-        InputEvaluator&             input_evaluator,
-        const foundation::Vector3d& direction,                      // world space direction, pointing toward the environment
-        ShadingResult&              shading_result) const = 0;
+        const ShadingContext&           shading_context,
+        const PixelContext&             pixel_context,
+        const foundation::Vector3d&     direction,                      // world space direction, pointing toward the environment
+        Spectrum&                       value,
+        Alpha&                          alpha) const = 0;
 };
 
 }       // namespace renderer

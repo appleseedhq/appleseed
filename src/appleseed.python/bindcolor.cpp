@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,6 @@
 //
 
 // appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
 #include "bindentitycontainers.h"
 #include "dict2dict.h"
 
@@ -37,7 +36,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/platform/python.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 
 // Standard headers.
 #include <cstddef>
@@ -46,6 +46,14 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
+
+// Work around a regression in Visual Studio 2015 Update 3.
+#if defined(_MSC_VER) && _MSC_VER == 1900
+namespace boost
+{
+    template <> ColorEntity const volatile* get_pointer<ColorEntity const volatile>(ColorEntity const volatile* p) { return p; }
+}
+#endif
 
 namespace
 {

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,16 +32,17 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
-#include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/basis.h"
+#include "foundation/math/sampling/mappings.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <cmath>
@@ -70,109 +71,100 @@ namespace
     {
       public:
         LambertianBRDFImpl(
-            const char*         name,
-            const ParamArray&   params)
+            const char*                 name,
+            const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Diffuse, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        APPLESEED_FORCE_INLINE virtual void sample(
-            SamplingContext&    sampling_context,
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            BSDFSample&         sample) const APPLESEED_OVERRIDE
+        void sample(
+            SamplingContext&            sampling_context,
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const int                   modes,
+            BSDFSample&                 sample) const override
         {
-            // Compute the incoming direction in local space.
-            sampling_context.split_in_place(2, 1);
-            const Vector2d s = sampling_context.next_vector2<2>();
-            const Vector3d wi = sample_hemisphere_cosine(s);
-
-            // Transform the incoming direction to parent space.
-            sample.m_incoming = Dual3d(sample.get_shading_basis().transform_to_parent(wi));
-
-            // Compute the BRDF value.
-            const InputValues* values = static_cast<const InputValues*>(data);
-            sample.m_value = values->m_reflectance;
-            sample.m_value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
-
-            // Compute the probability density of the sampled direction.
-            sample.m_probability = wi.y * RcpPi;
-            assert(sample.m_probability > 0.0);
+            if (!ScatteringMode::has_diffuse(modes))
+                return;
 
             // Set the scattering mode.
             sample.m_mode = ScatteringMode::Diffuse;
 
+            // Compute the incoming direction.
+            sampling_context.split_in_place(2, 1);
+            const Vector2f s = sampling_context.next2<Vector2f>();
+            const Vector3f wi = sample_hemisphere_cosine(s);
+            sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
+
+            // Compute the BRDF value.
+            const LambertianBRDFInputValues* values = static_cast<const LambertianBRDFInputValues*>(data);
+            sample.m_value.m_diffuse = values->m_reflectance;
+            sample.m_value.m_diffuse *= values->m_reflectance_multiplier * RcpPi<float>();
+            sample.m_value.m_beauty = sample.m_value.m_diffuse;
+
+            // Compute the probability density of the sampled direction.
+            sample.m_probability = wi.y * RcpPi<float>();
+            assert(sample.m_probability > 0.0f);
+
             sample.compute_reflected_differentials();
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate(
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+        float evaluate(
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes,
+            DirectShadingComponents&    value) const override
         {
             if (!ScatteringMode::has_diffuse(modes))
-                return 0.0;
-
-            // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            if (cos_in < 0.0)
-                return 0.0;
+                return 0.0f;
 
             // Compute the BRDF value.
-            const InputValues* values = static_cast<const InputValues*>(data);
-            value = values->m_reflectance;
-            value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
+            const LambertianBRDFInputValues* values = static_cast<const LambertianBRDFInputValues*>(data);
+            value.m_diffuse = values->m_reflectance;
+            value.m_diffuse *= values->m_reflectance_multiplier * RcpPi<float>();
+            value.m_beauty = value.m_diffuse;
 
             // Return the probability density of the sampled direction.
-            return cos_in * RcpPi;
+            const Vector3f& n = shading_basis.get_normal();
+            const float cos_in = abs(dot(incoming, n));
+            return cos_in * RcpPi<float>();
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes) const APPLESEED_OVERRIDE
+        float evaluate_pdf(
+            const void*                 data,
+            const bool                  adjoint,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes) const override
         {
             if (!ScatteringMode::has_diffuse(modes))
-                return 0.0;
+                return 0.0f;
 
-            // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            if (cos_in < 0.0)
-                return 0.0;
-
-            return cos_in * RcpPi;
+            // Return the probability density of the sampled direction.
+            const Vector3f& n = shading_basis.get_normal();
+            const float cos_in = abs(dot(incoming, n));
+            return cos_in * RcpPi<float>();
         }
-
-      private:
-        APPLESEED_DECLARE_INPUT_VALUES(InputValues)
-        {
-            Spectrum    m_reflectance;              // diffuse reflectance (albedo, technically)
-            double      m_reflectance_multiplier;
-        };
     };
 
     typedef BSDFWrapper<LambertianBRDFImpl> LambertianBRDF;
@@ -182,6 +174,11 @@ namespace
 //
 // LambertianBRDFFactory class implementation.
 //
+
+void LambertianBRDFFactory::release()
+{
+    delete this;
+}
 
 const char* LambertianBRDFFactory::get_model() const
 {
@@ -228,13 +225,6 @@ DictionaryArray LambertianBRDFFactory::get_input_metadata() const
 auto_release_ptr<BSDF> LambertianBRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<BSDF>(new LambertianBRDF(name, params));
-}
-
-auto_release_ptr<BSDF> LambertianBRDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<BSDF>(new LambertianBRDF(name, params));
 }

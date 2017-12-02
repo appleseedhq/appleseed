@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -68,34 +68,33 @@ namespace
                 Qt::QueuedConnection);
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual void pre_render(
-            const size_t    x,
-            const size_t    y,
-            const size_t    width,
-            const size_t    height) APPLESEED_OVERRIDE
+        void on_tile_begin(
+            const Frame*    frame,
+            const size_t    tile_x,
+            const size_t    tile_y) override
         {
             assert(m_render_widget);
-            m_render_widget->highlight_region(x, y, width, height);
+            m_render_widget->highlight_tile(*frame, tile_x, tile_y);
             emit signal_update();
         }
 
-        virtual void post_render_tile(
+        void on_tile_end(
             const Frame*    frame,
             const size_t    tile_x,
-            const size_t    tile_y) APPLESEED_OVERRIDE
+            const size_t    tile_y) override
         {
             assert(m_render_widget);
             m_render_widget->blit_tile(*frame, tile_x, tile_y);
             emit signal_update();
         }
 
-        virtual void post_render(
-            const Frame*    frame) APPLESEED_OVERRIDE
+        void on_progressive_frame_end(
+            const Frame*    frame) override
         {
             assert(m_render_widget);
             m_render_widget->blit_frame(*frame);

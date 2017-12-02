@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,13 @@
 
 // appleseed.cli headers.
 #include "commandlinehandler.h"
-#include "continuoussavingtilecallback.h"
 #include "houdinitilecallbacks.h"
 #include "progresstilecallback.h"
+#include "stdouttilecallback.h"
+
+// appleseed.shared headers.
+#include "application/application.h"
+#include "application/superlogger.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/color.h"
@@ -46,20 +50,17 @@
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/console.h"
+#include "foundation/platform/debugger.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/timers.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/filter.h"
 #include "foundation/utility/log.h"
-#include "foundation/utility/settings.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
-
-// appleseed.shared headers.
-#include "application/application.h"
-#include "application/superlogger.h"
 
 // appleseed.main headers.
 #include "main/allocator.h"
@@ -76,69 +77,16 @@
 
 using namespace appleseed::cli;
 using namespace appleseed::shared;
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace
 {
     SuperLogger         g_logger;
-    CommandLineHandler  g_cl;
     ParamArray          g_settings;
-
-    void load_settings()
-    {
-        const filesystem::path root_path(Application::get_root_path());
-        const filesystem::path schema_file_path = root_path / "schemas" / "settings.xsd";
-
-        SettingsFileReader reader(g_logger);
-
-        // First try to read the settings from the user path.
-        if (const char* p = Application::get_user_settings_path())
-        {
-            const filesystem::path user_settings_path(p);
-            const filesystem::path user_settings_file_path = user_settings_path / "appleseed.cli.xml";
-
-            if (boost::filesystem::exists(user_settings_file_path) &&
-                reader.read(
-                    user_settings_file_path.string().c_str(),
-                    schema_file_path.string().c_str(),
-                    g_settings))
-            {
-                LOG_INFO(g_logger, "successfully loaded settings from %s.", user_settings_file_path.string().c_str());
-                return;
-            }
-        }
-
-        // As a fallback, try to read the settings from the appleseed install.
-        const filesystem::path settings_file_path = root_path / "settings" / "appleseed.cli.xml";
-
-        if (reader.read(
-                settings_file_path.string().c_str(),
-                schema_file_path.string().c_str(),
-                g_settings))
-        {
-            LOG_INFO(g_logger, "successfully loaded settings from %s.", settings_file_path.string().c_str());
-        }
-    }
-
-    void apply_settings()
-    {
-        if (g_settings.get_optional<bool>("message_coloring", false))
-            g_logger.enable_message_coloring();
-    }
-
-    void configure_renderer_logger()
-    {
-        global_logger().add_target(&g_logger.get_log_target());
-
-        for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
-        {
-            const LogMessage::Category category = static_cast<LogMessage::Category>(i);
-            global_logger().set_format(category, g_logger.get_format(category));
-        }
-    }
+    CommandLineHandler  g_cl;
 
     template <typename Result>
     void print_suite_case_result(const Result& result)
@@ -203,7 +151,7 @@ namespace
 
         TestResult result;
 
-        const filesystem::path old_current_path =
+        const bf::path old_current_path =
             Application::change_current_directory_to_tests_root_path();
 
         // Run test suites.
@@ -227,7 +175,7 @@ namespace
         }
 
         // Restore the current directory.
-        filesystem::current_path(old_current_path);
+        bf::current_path(old_current_path);
 
         print_unit_test_result(result);
 
@@ -258,8 +206,8 @@ namespace
         auto_release_ptr<XMLFileBenchmarkListener> xmlfile_listener(
             create_xmlfile_benchmark_listener());
         const string xmlfile_name = "benchmark." + get_time_stamp_string() + ".xml";
-        const filesystem::path xmlfile_path =
-              filesystem::path(Application::get_tests_root_path())
+        const bf::path xmlfile_path =
+              bf::path(Application::get_tests_root_path())
             / "unit benchmarks" / "results" / xmlfile_name;
         if (xmlfile_listener->open(xmlfile_path.string().c_str()))
             result.add_listener(xmlfile_listener.get());
@@ -271,7 +219,7 @@ namespace
                 xmlfile_path.string().c_str());
         }
 
-        const filesystem::path old_current_path =
+        const bf::path old_current_path =
             Application::change_current_directory_to_tests_root_path();
 
         // Run benchmark suites.
@@ -295,7 +243,7 @@ namespace
         }
 
         // Restore the current directory.
-        filesystem::current_path(old_current_path);
+        bf::current_path(old_current_path);
 
         // Print results.
         print_unit_benchmark_result(result);
@@ -511,8 +459,8 @@ namespace
     auto_release_ptr<Project> load_project(const string& project_filepath)
     {
         // Construct the schema file path.
-        const filesystem::path schema_filepath =
-              filesystem::path(Application::get_root_path())
+        const bf::path schema_filepath =
+              bf::path(Application::get_root_path())
             / "schemas"
             / "project.xsd";
 
@@ -534,7 +482,7 @@ namespace
         // Retrieve the configuration.
         const Configuration* configuration =
             project.configurations().get_by_name(config_name.c_str());
-        if (configuration == 0)
+        if (configuration == nullptr)
         {
             LOG_ERROR(
                 g_logger,
@@ -565,21 +513,21 @@ namespace
         return value == "progressive";
     }
 
-    void render(const string& project_filename)
+    bool render(const string& project_filename)
     {
         // Load the project.
         auto_release_ptr<Project> project = load_project(project_filename);
-        if (project.get() == 0)
-            return;
+        if (project.get() == nullptr)
+            return false;
 
         // Retrieve the rendering parameters.
         ParamArray params;
         if (!configure_project(project.ref(), params))
-            return;
+            return false;
 
         // Create the tile callback factory.
-        auto_ptr<ITileCallbackFactory> tile_callback_factory;
-        if (g_cl.m_mplay_display.is_set())
+        unique_ptr<ITileCallbackFactory> tile_callback_factory;
+        if (g_cl.m_send_to_mplay.is_set())
         {
             tile_callback_factory.reset(
                 new MPlayTileCallbackFactory(
@@ -587,25 +535,22 @@ namespace
                     is_progressive_render(params),
                     g_logger));
         }
-        else if (g_cl.m_hrmanpipe_display.is_set())
+        else if (g_cl.m_send_to_hrmanpipe.is_set())
         {
             tile_callback_factory.reset(
                 new HRmanPipeTileCallbackFactory(
-                    g_cl.m_hrmanpipe_display.value(),
+                    g_cl.m_send_to_hrmanpipe.value(),
                     is_progressive_render(params),
                     g_logger));
         }
-        else if (g_cl.m_output.is_set() && g_cl.m_continuous_saving.is_set())
+        else if (g_cl.m_send_to_stdout.is_set())
         {
-            tile_callback_factory.reset(
-                new ContinuousSavingTileCallbackFactory(
-                    g_cl.m_output.value().c_str(),
-                    g_logger));
+            tile_callback_factory.reset(new StdOutTileCallbackFactory());
         }
-        else
+        else if (project->get_display() == nullptr)
         {
             // Create a default tile callback if needed.
-            if (project->get_display() == 0)
+            if (params.get_optional<string>("frame_renderer", "") != "progressive")
             {
                 tile_callback_factory.reset(
                     new ProgressTileCallbackFactory(g_logger));
@@ -625,17 +570,17 @@ namespace
         Stopwatch<DefaultWallclockTimer> stopwatch;
         if (params.get_optional<bool>("background_mode", true))
         {
-            ProcessPriorityContext background_context(
-                ProcessPriorityLow,
-                &g_logger);
+            ProcessPriorityContext background_context(ProcessPriorityLow, &g_logger);
             stopwatch.start();
-            renderer.render();
+            if (renderer.render() != MasterRenderer::RenderingSucceeded)
+                return false;
             stopwatch.measure();
         }
         else
         {
             stopwatch.start();
-            renderer.render();
+            if (renderer.render() != MasterRenderer::RenderingSucceeded)
+                return false;
             stopwatch.measure();
         }
 
@@ -647,12 +592,12 @@ namespace
             pretty_time(seconds, 3).c_str());
 
         // Archive the frame to disk.
-        char* archive_path = 0;
+        char* archive_path = nullptr;
         if (params.get_optional<bool>("autosave", true))
         {
             // Construct the path to the archive directory.
-            const filesystem::path autosave_path =
-                  filesystem::path(Application::get_root_path())
+            const bf::path autosave_path =
+                  bf::path(Application::get_root_path())
                 / "images" / "autosave";
 
             // Archive the frame to disk.
@@ -663,26 +608,16 @@ namespace
         }
 
         // Write the frame to disk.
-        if (g_cl.m_output.is_set() && !g_cl.m_continuous_saving.is_set())
+
+        if (g_cl.m_output.is_set())
         {
-            LOG_INFO(g_logger, "writing frame to disk...");
             project->get_frame()->write_main_image(g_cl.m_output.value().c_str());
             project->get_frame()->write_aov_images(g_cl.m_output.value().c_str());
         }
         else
         {
             const Frame* frame = project->get_frame();
-            const string output_filename =
-                frame->get_parameters().get_optional<string>("output_filename");
-
-            if (!output_filename.empty())
-            {
-                LOG_INFO(g_logger, "writing frame to disk...");
-                frame->write_main_image(output_filename.c_str());
-
-                if (frame->get_parameters().get_optional<bool>("output_aovs", false))
-                    frame->write_aov_images(output_filename.c_str());
-            }
+            frame->write_main_and_aov_images();
         }
 
 #if defined __APPLE__ || defined _WIN32
@@ -701,9 +636,11 @@ namespace
 
         // Deallocate the memory used by the path to the archived image.
         free_string(archive_path);
+
+        return true;
     }
 
-    void benchmark_render(const string& project_filename)
+    bool benchmark_render(const string& project_filename)
     {
         // Configure our logger.
         SaveLogFormatterConfig save_g_logger_config(g_logger);
@@ -719,13 +656,13 @@ namespace
 
         // Load the project.
         auto_release_ptr<Project> project = load_project(project_filename);
-        if (project.get() == 0)
-            return;
+        if (project.get() == nullptr)
+            return false;
 
         // Figure out the rendering parameters.
         ParamArray params;
         if (!configure_project(project.ref(), params))
-            return;
+            return false;
 
         // Create the master renderer.
         DefaultRendererController renderer_controller;
@@ -734,21 +671,25 @@ namespace
             params,
             &renderer_controller);
 
-        // Start the stopwatch.
-        Stopwatch<DefaultWallclockTimer> stopwatch;
-        stopwatch.start();
+        double total_time_seconds, render_time_seconds;
+        {
+            // Raise the process priority to reduce interruptions.
+            ProcessPriorityContext benchmark_context(ProcessPriorityHigh, &g_logger);
+            Stopwatch<DefaultWallclockTimer> stopwatch;
 
-        // Render a first time.
-        if (!renderer.render())
-            return;
-        stopwatch.measure();
-        const double total_time_seconds = stopwatch.get_seconds();
+            // Render a first time.
+            stopwatch.start();
+            if (renderer.render() != MasterRenderer::RenderingSucceeded)
+                return false;
+            stopwatch.measure();
+            total_time_seconds = stopwatch.get_seconds();
 
-        // Render a second time.
-        if (!renderer.render())
-            return;
-        stopwatch.measure();
-        const double render_time_seconds = stopwatch.get_seconds() - total_time_seconds;
+            // Render a second time.
+            if (renderer.render() != MasterRenderer::RenderingSucceeded)
+                return false;
+            stopwatch.measure();
+            render_time_seconds = stopwatch.get_seconds() - total_time_seconds;
+        }
 
         // Write the frame to disk.
         if (g_cl.m_output.is_set())
@@ -758,14 +699,13 @@ namespace
             project->get_frame()->write_aov_images(file_path);
         }
 
-        // Force-unload the project.
-        project.reset();
-
         // Print benchmark results.
         LOG_INFO(g_logger, "result=success");
+        LOG_INFO(g_logger, "total_time=%.6f", total_time_seconds);
         LOG_INFO(g_logger, "setup_time=%.6f", total_time_seconds - render_time_seconds);
         LOG_INFO(g_logger, "render_time=%.6f", render_time_seconds);
-        LOG_INFO(g_logger, "total_time=%.6f", total_time_seconds);
+
+        return true;
     }
 }
 
@@ -776,19 +716,30 @@ namespace
 
 int main(int argc, const char* argv[])
 {
+    // Enable memory tracking immediately as to catch as many leaks as possible.
     start_memory_tracking();
 
-    Application::check_installation(g_logger);
+    // Make sure this build can run on this host.
+    Application::check_compatibility_with_host(g_logger);
 
-    // Load and apply settings from the settings file.
-    load_settings();
-    apply_settings();
+    // Make sure appleseed is correctly installed.
+    Application::check_installation(g_logger);
 
     // Parse the command line.
     g_cl.parse(argc, argv, g_logger);
 
+    // Load and apply settings from the settings file.
+    Application::load_settings("appleseed.cli.xml", g_settings, g_logger);
+    g_logger.configure_from_settings(g_settings);
+
+    // Apply command line arguments.
+    g_cl.apply(g_logger);
+
     // Configure the renderer's global logger.
-    configure_renderer_logger();
+    // Must be done after settings have been loaded and the command line
+    // has been parsed, because these two operations may replace the log
+    // target of the global logger.
+    global_logger().initialize_from(g_logger);
 
     bool success = true;
 
@@ -806,9 +757,12 @@ int main(int argc, const char* argv[])
         const string project_filename = g_cl.m_filename.value();
 
         if (g_cl.m_benchmark_mode.is_set())
-            benchmark_render(project_filename);
-        else render(project_filename);
+            success = success && benchmark_render(project_filename);
+        else success = success && render(project_filename);
     }
+
+    if (is_debugger_attached())
+        Console::pause();
 
     return success ? 0 : 1;
 }

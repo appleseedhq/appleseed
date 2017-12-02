@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -93,7 +93,7 @@ class BoxFilter2
   public:
     BoxFilter2(const T xradius, const T yradius);
 
-    virtual T evaluate(const T x, const T y) const APPLESEED_OVERRIDE;
+    T evaluate(const T x, const T y) const override;
 };
 
 
@@ -108,7 +108,7 @@ class TriangleFilter2
   public:
     TriangleFilter2(const T xradius, const T yradius);
 
-    virtual T evaluate(const T x, const T y) const APPLESEED_OVERRIDE;
+    T evaluate(const T x, const T y) const override;
 };
 
 
@@ -126,7 +126,26 @@ class GaussianFilter2
         const T yradius,
         const T alpha);
 
-    virtual T evaluate(const T x, const T y) const APPLESEED_OVERRIDE;
+    T evaluate(const T x, const T y) const override;
+
+  private:
+    const T m_alpha;
+    const T m_shift;
+
+    static T gaussian(const T x, const T alpha);
+};
+
+template <typename T>
+class FastGaussianFilter2
+  : public Filter2<T>
+{
+  public:
+    FastGaussianFilter2(
+        const T xradius,
+        const T yradius,
+        const T alpha);
+
+    T evaluate(const T x, const T y) const override;
 
   private:
     const T m_alpha;
@@ -155,13 +174,11 @@ class MitchellFilter2
         const T b,
         const T c);
 
-    virtual T evaluate(const T x, const T y) const APPLESEED_OVERRIDE;
+    T evaluate(const T x, const T y) const override;
 
   private:
     T m_a3, m_a2, m_a0;
     T m_b3, m_b2, m_b1, m_b0;
-
-    static T mitchell(const T x, const T b, const T c);
 };
 
 
@@ -179,7 +196,7 @@ class LanczosFilter2
         const T yradius,
         const T tau);
 
-    virtual T evaluate(const T x, const T y) const APPLESEED_OVERRIDE;
+    T evaluate(const T x, const T y) const override;
 
   private:
     const T m_rcp_tau;
@@ -204,7 +221,20 @@ class BlackmanHarrisFilter2
   public:
     BlackmanHarrisFilter2(const T xradius, const T yradius);
 
-    virtual T evaluate(const T x, const T y) const APPLESEED_OVERRIDE;
+    T evaluate(const T x, const T y) const override;
+
+  private:
+    static T blackman(const T x);
+};
+
+template <typename T>
+class FastBlackmanHarrisFilter2
+  : public Filter2<T>
+{
+  public:
+    FastBlackmanHarrisFilter2(const T xradius, const T yradius);
+
+    T evaluate(const T x, const T y) const override;
 
   private:
     static T blackman(const T x);
@@ -316,6 +346,44 @@ APPLESEED_FORCE_INLINE T GaussianFilter2<T>::gaussian(const T x, const T alpha)
 {
     return
         static_cast<T>(
+            std::exp(
+                static_cast<float>(-alpha * x * x)));
+}
+
+
+//
+// FastGaussianFilter2 class implementation.
+//
+
+template <typename T>
+inline FastGaussianFilter2<T>::FastGaussianFilter2(
+    const T xradius,
+    const T yradius,
+    const T alpha)
+  : Filter2<T>(xradius, yradius)
+  , m_alpha(alpha)
+  , m_shift(gaussian(T(1.0), alpha))
+{
+}
+
+template <typename T>
+inline T FastGaussianFilter2<T>::evaluate(const T x, const T y) const
+{
+    const T nx = x * Filter2<T>::m_rcp_xradius;
+    const T ny = y * Filter2<T>::m_rcp_yradius;
+
+    const T fx = gaussian(nx, m_alpha) - m_shift;
+    const T fy = gaussian(ny, m_alpha) - m_shift;
+
+    return fx * fy;
+}
+
+template <typename T>
+APPLESEED_FORCE_INLINE T FastGaussianFilter2<T>::gaussian(const T x, const T alpha)
+{
+    // Use foundation::fast_exp() because foundation::faster_exp() is way too inaccurate.
+    return
+        static_cast<T>(
             fast_exp(
                 static_cast<float>(-alpha * x * x)));
 }
@@ -369,28 +437,6 @@ inline T MitchellFilter2<T>::evaluate(const T x, const T y) const
     return fx * fy;
 }
 
-template <typename T>
-APPLESEED_FORCE_INLINE T MitchellFilter2<T>::mitchell(const T x, const T b, const T c)
-{
-    const T x1 = std::abs(x + x);
-    const T x2 = x1 * x1;
-    const T x3 = x2 * x1;
-
-    if (x1 < T(1.0))
-    {
-        return T(1.0 / 6.0) * ((T(12.0) - T(9.0) * b - T(6.0) * c) * x3 +
-                               (T(-18.0) + T(12.0) * b + T(6.0) * c) * x2 +
-                               (T(6.0) - T(2.0) * b));
-    }
-    else
-    {
-        return T(1.0 / 6.0) * ((-b - T(6.0) * c) * x3 +
-                               (T(6.0) * b + T(30.0) * c) * x2 +
-                               (T(-12.0) * b - T(48.0) * c) * x1 +
-                               (T(8.0) * b + T(24.0) * c));
-    }
-}
-
 
 //
 // LanczosFilter2 class implementation.
@@ -417,7 +463,7 @@ inline T LanczosFilter2<T>::evaluate(const T x, const T y) const
 template <typename T>
 APPLESEED_FORCE_INLINE T LanczosFilter2<T>::lanczos(const T x, const T rcp_tau)
 {
-    const T theta = T(Pi) * x;
+    const T theta = Pi<T>() * x;
     return theta == T(0.0) ? T(1.0) : sinc(theta * rcp_tau) * sinc(theta);
 }
 
@@ -451,9 +497,38 @@ APPLESEED_FORCE_INLINE T BlackmanHarrisFilter2<T>::blackman(const T x)
 {
     return
           T(0.35875)
-        - T(0.48829) * cos(T(2.0 * Pi) * x)
-        + T(0.14128) * cos(T(4.0 * Pi) * x)
-        - T(0.01174) * cos(T(6.0 * Pi) * x);    // original coefficient is 0.01168, modified to ensure 0 at borders
+        - T(0.48829) * std::cos((T(2.0) * Pi<T>()) * x)
+        + T(0.14128) * std::cos((T(4.0) * Pi<T>()) * x)
+        - T(0.01174) * std::cos((T(6.0) * Pi<T>()) * x);                // original coefficient is 0.01168, modified to ensure 0 at borders
+}
+
+
+//
+// FastBlackmanHarrisFilter2 class implementation.
+//
+
+template <typename T>
+inline FastBlackmanHarrisFilter2<T>::FastBlackmanHarrisFilter2(const T xradius, const T yradius)
+  : Filter2<T>(xradius, yradius)
+{
+}
+
+template <typename T>
+inline T FastBlackmanHarrisFilter2<T>::evaluate(const T x, const T y) const
+{
+    const T nx = T(0.5) * (T(1.0) + x * Filter2<T>::m_rcp_xradius);
+    const T ny = T(0.5) * (T(1.0) + y * Filter2<T>::m_rcp_yradius);
+    return blackman(nx) * blackman(ny);
+}
+
+template <typename T>
+APPLESEED_FORCE_INLINE T FastBlackmanHarrisFilter2<T>::blackman(const T x)
+{
+    return
+          T(0.35875)
+        - T(0.48829) * fast_cos_full_positive((T(2.0) * Pi<T>()) * x)
+        + T(0.14128) * fast_cos_full_positive((T(4.0) * Pi<T>()) * x)
+        - T(0.01174) * fast_cos_full_positive((T(6.0) * Pi<T>()) * x);  // original coefficient is 0.01168, modified to ensure 0 at borders
 }
 
 

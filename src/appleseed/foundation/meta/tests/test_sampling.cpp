@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,11 +28,11 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/math/fp.h"
+#include "foundation/math/qmc.h"
 #include "foundation/math/rng/mersennetwister.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/sampling/qmcsamplingcontext.h"
-#include "foundation/math/fp.h"
-#include "foundation/math/qmc.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/iostreamop.h"
@@ -124,7 +124,7 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulat
 
         for (size_t i = 0; i < light_sample_count; ++i)
         {
-            const Vector2d s = child_context.next_vector2<2>();
+            const Vector2d s = child_context.next2<Vector2d>();
             light_samples.push_back(s);
         }
     }
@@ -146,7 +146,7 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulat
 
         for (size_t i = 0; i < pixel_sample_count; ++i)
         {
-            const Vector2d s = sampling_context.next_vector2<2>();
+            const Vector2d s = sampling_context.next2<Vector2d>();
 
             pixel_samples.push_back(s);
 
@@ -219,13 +219,13 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
     template <typename T>
     T sample_hemisphere_uniform_pdf(const Vector<T, 3>& dir)
     {
-        return T(RcpTwoPi);
+        return RcpTwoPi<T>();
     }
 
     template <typename T>
     T sample_hemisphere_cosine_pdf(const Vector<T, 3>& dir)
     {
-        return dir.y * T(RcpPi);
+        return dir.y * RcpPi<T>();
     }
 
     template <typename T>
@@ -406,7 +406,7 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
     }
 
     // Value of the integral of func() over the hemisphere.
-    const double ExpectedIntegralValue = Pi / 3;
+    const double ExpectedIntegralValue = Pi<double>() / 3;
 
     TEST_CASE(Integration_UniformHemisphereSampling)
     {
@@ -433,7 +433,7 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
                 sample_hemisphere_cosine_pdf<double>,
                 SampleCount);
 
-        EXPECT_FEQ_EPS(ExpectedIntegralValue, value, 1.0e-5);
+        EXPECT_FEQ_EPS(ExpectedIntegralValue, value, 1.0e-3);
     }
 
     TEST_CASE(Integration_CosinePowerHemisphereSampling)

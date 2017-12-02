@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -56,22 +56,22 @@ namespace
       : public ISampleRenderer
     {
       public:
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual void render_sample(
-            SamplingContext&    sampling_context,
-            const PixelContext& pixel_context,
-            const Vector2d&     image_point,
-            ShadingResult&      shading_result) APPLESEED_OVERRIDE
+        void render_sample(
+            SamplingContext&            sampling_context,
+            const PixelContext&         pixel_context,
+            const Vector2d&             image_point,
+            AOVAccumulatorContainer&    aov_accumulators,
+            ShadingResult&              shading_result) override
         {
-            shading_result.set_main_to_transparent_black_linear_rgba();
-            shading_result.set_aovs_to_transparent_black_linear_rgba();
+            shading_result.m_main.set(0.0f);
         }
 
-        virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
+        StatisticsVector get_statistics() const override
         {
             return StatisticsVector();
         }

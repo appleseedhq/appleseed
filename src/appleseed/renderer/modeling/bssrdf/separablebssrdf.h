@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,29 +31,35 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/bsdf/lambertianbrdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/fresnel.h"
-#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/compiler.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
-#include <cmath>
+#include <cstddef>
 
 // Forward declarations.
+namespace renderer  { class BSDF; }
+namespace renderer  { class BSDFSample; }
+namespace renderer  { class BSSRDFSample; }
 namespace renderer  { class ParamArray; }
+namespace renderer  { class ShadingContext; }
+namespace renderer  { class ShadingPoint; }
 
 namespace renderer
 {
 
 //
-// Base class for radially-symmetric BSSRDF models.
+// BSSRDF that can be expressed as a product of a radially-symmetric spatial
+// term and a pair of directional terms.
 //
 
-class SeparableBSSRDF
+class APPLESEED_DLLSYMBOL SeparableBSSRDF
   : public BSSRDF
 {
   public:
@@ -62,95 +68,64 @@ class SeparableBSSRDF
         const char*                 name,
         const ParamArray&           params);
 
-    virtual void evaluate(
+    // Destructor.
+    ~SeparableBSSRDF() override;
+
+    // Sample the radially-symmetric profile and return a radius value.
+    virtual float sample_profile(
         const void*                 data,
-        const ShadingPoint&         outgoing_point,
-        const foundation::Vector3d& outgoing_dir,
-        const ShadingPoint&         incoming_point,
-        const foundation::Vector3d& incoming_dir,
-        Spectrum&                   value) const APPLESEED_OVERRIDE;
+        const size_t                channel,
+        const float                 u) const = 0;
 
-  protected:
-    // Return the relative index of refraction.
-    virtual double get_eta(
-        const void*                 data) const = 0;
+    // Evaluate the radially-symmetric profile's PDF with respect to area measure.
+    virtual float evaluate_profile_pdf(
+        const void*                 data,
+        const float                 disk_radius) const = 0;
 
-    // Evaluate the profile for a given (square) radius.
+    // Evaluate the radially-symmetric profile.
     virtual void evaluate_profile(
         const void*                 data,
-        const double                square_radius,
+        const ShadingPoint&         outgoing_point,
+        const foundation::Vector3f& outgoing_dir,
+        const ShadingPoint&         incoming_point,
+        const foundation::Vector3f& incoming_dir,
         Spectrum&                   value) const = 0;
+
+    struct InputValues
+    {
+        float       m_weight;
+        float       m_fresnel_weight;
+        float       m_eta;
+        float       m_max_disk_radius;
+        Spectrum    m_channel_cdf;
+    };
+
+  protected:
+    // The BRDF that represents the directional component of this BSSRDF.
+    const BSDF*                     m_brdf;
+    LambertianBRDFInputValues       m_brdf_data;
+
+    // Implementation of the BSSRDF::sample() method.
+    bool do_sample(
+        const ShadingContext&       shading_context,
+        SamplingContext&            sampling_context,
+        const void*                 data,
+        const InputValues&          values,
+        const ShadingPoint&         outgoing_point,
+        const foundation::Vector3f& outgoing_dir,
+        BSSRDFSample&               bssrdf_sample,
+        BSDFSample&                 bsdf_sample) const;
+
+    // Implementation of the BSSRDF::evaluate() method.
+    void do_evaluate(
+        const void*                 data,
+        const InputValues&          values,
+        const ShadingPoint&         outgoing_point,
+        const foundation::Vector3f& outgoing_dir,
+        const ShadingPoint&         incoming_point,
+        const foundation::Vector3f& incoming_dir,
+        Spectrum&                   value) const;
 };
-
-
-//
-// SeparableBSSRDF class implementation.
-//
-
-inline SeparableBSSRDF::SeparableBSSRDF(
-    const char*                     name,
-    const ParamArray&               params)
-  : BSSRDF(name, params)
-{
-}
-
-inline void SeparableBSSRDF::evaluate(
-    const void*                     data,
-    const ShadingPoint&             outgoing_point,
-    const foundation::Vector3d&     outgoing_dir,
-    const ShadingPoint&             incoming_point,
-    const foundation::Vector3d&     incoming_dir,
-    Spectrum&                       value) const
-{
-    //
-    // The diffusion term of a separable BSSRDF is given in [1] equation 5:
-    //
-    //   Sd(xi, wi, xo, wo) = 1/Pi * Ft(eta, wi) * Rd(||xi - xo||) * Ft(eta, wo)
-    //
-    // Rd(r) is the spatially resolved diffuse reflectance for a normally
-    // incident beam of light on a planar semi-infinite medium ([2] equation 27):
-    //
-    //            /
-    //            |
-    //   Rd(x0) = |  Sd(xi, wi, xo, wo) (wo . no) dwo
-    //            |
-    //            / 2 Pi
-    //
-    // If Sd does not depend on wo, then Rd only depends on ||xi - xo|| and we get:
-    //
-    //   Rd = Pi Sd    <=>    Sd = 1/Pi Rd
-    //
-    // A note regarding the computation of the Fresnel factors:
-    //
-    //   Since the direction in the outside medium--be it the outgoing or the incoming
-    //   direction--is always fixed, we always need to figure out a refracted direction
-    //   in the inside medium, and thus we compute both Fresnel factors at the
-    //   incoming and outgoing points using eta (defined as outside IOR / inside IOR).
-    //
-    // [1] A Practical Model for Subsurface Light Transport
-    //     https://graphics.stanford.edu/papers/bssrdf/bssrdf.pdf
-    //
-    // [2] Directional Dipole Model for Subsurface Scattering
-    //     Jeppe Revall Frisvad, Toshiya Hachisuka, Thomas Kim Kjeldsen
-    //     http://www.ci.i.u-tokyo.ac.jp/~hachisuka/dirpole.pdf
-    //
-
-    const double eta = get_eta(data);
-
-    double fo;
-    const double cos_on = std::abs(foundation::dot(outgoing_dir, outgoing_point.get_shading_normal()));
-    foundation::fresnel_transmittance_dielectric(fo, eta, cos_on);
-
-    double fi;
-    const double cos_in = std::abs(foundation::dot(incoming_dir, incoming_point.get_shading_normal()));
-    foundation::fresnel_transmittance_dielectric(fi, eta, cos_in);
-
-    const double square_radius =
-        foundation::square_norm(outgoing_point.get_point() - incoming_point.get_point());
-    evaluate_profile(data, square_radius, value);
-
-    value *= static_cast<float>(foundation::RcpPi * fo * fi);
-}
 
 }       // namespace renderer
 

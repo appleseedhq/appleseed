@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,5 +32,16 @@
 
 // API headers.
 #include "renderer/kernel/aov/imagestack.h"
+#include "renderer/modeling/aov/aov.h"
+#include "renderer/modeling/aov/aovcontainer.h"
+#include "renderer/modeling/aov/aovfactoryregistrar.h"
+#include "renderer/modeling/aov/aovtraits.h"
+#include "renderer/modeling/aov/depthaov.h"
+#include "renderer/modeling/aov/diffuseaov.h"
+#include "renderer/modeling/aov/emissionaov.h"
+#include "renderer/modeling/aov/glossyaov.h"
+#include "renderer/modeling/aov/iaovfactory.h"
+#include "renderer/modeling/aov/normalaov.h"
+#include "renderer/modeling/aov/uvaov.h"
 
 #endif  // !APPLESEED_RENDERER_API_AOV_H

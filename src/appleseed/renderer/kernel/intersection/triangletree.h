@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -174,7 +174,7 @@ class TriangleTreeFactory
         const TriangleTree::Arguments& arguments);
 
     // Create the triangle tree.
-    virtual std::auto_ptr<TriangleTree> create();
+    std::unique_ptr<TriangleTree> create() override;
 
   private:
     TriangleTree::Arguments m_arguments;
@@ -317,7 +317,7 @@ inline TriangleLeafVisitor::TriangleLeafVisitor(
   : m_tree(tree)
   , m_has_intersection_filters(!tree.m_intersection_filters.empty())
   , m_shading_point(shading_point)
-  , m_hit_triangle(0)
+  , m_hit_triangle(nullptr)
 {
 }
 

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,7 @@
 #include "foundation/image/pixel.h"
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/mersennetwister.h"
+#include "foundation/math/scalar.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/test.h"
 
@@ -45,6 +46,7 @@
 #include <cstddef>
 #include <iostream>
 #include <memory>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -61,7 +63,7 @@ TEST_SUITE(ImageTools)
         const size_t W = 256;
         const size_t H = 256;
 
-        auto_ptr<Image> output(new Image(W, H, 32, 32, 3, PixelFormatFloat));
+        unique_ptr<Image> output(new Image(W, H, 32, 32, 3, PixelFormatFloat));
 
         MersenneTwister rng;
 
@@ -104,7 +106,7 @@ TEST_SUITE(ImageTools)
         {
         }
 
-        virtual Color3f operator()(const Color3f& c) const APPLESEED_OVERRIDE
+        Color3f operator()(const Color3f& c) const override
         {
             return c * m_multiplier;
         }
@@ -117,7 +119,7 @@ TEST_SUITE(ImageTools)
 
     struct ColorDifference : public ITwoPixelOp
     {
-        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const APPLESEED_OVERRIDE
+        Color3f operator()(const Color3f& lhs, const Color3f& rhs) const override
         {
             return abs_diff(lhs, rhs);
         }
@@ -125,7 +127,7 @@ TEST_SUITE(ImageTools)
 
     struct ColorRatio : public ITwoPixelOp
     {
-        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const APPLESEED_OVERRIDE
+        Color3f operator()(const Color3f& lhs, const Color3f& rhs) const override
         {
             Color3f result;
 
@@ -138,7 +140,7 @@ TEST_SUITE(ImageTools)
 
     struct LuminanceDifference : public ITwoPixelOp
     {
-        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const APPLESEED_OVERRIDE
+        Color3f operator()(const Color3f& lhs, const Color3f& rhs) const override
         {
             const float result = luminance(lhs) - luminance(rhs);
             return result > 0.0f ? IsoLumRed : IsoLumBlue;
@@ -147,7 +149,7 @@ TEST_SUITE(ImageTools)
 
     struct LuminanceRatio : public ITwoPixelOp
     {
-        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const APPLESEED_OVERRIDE
+        Color3f operator()(const Color3f& lhs, const Color3f& rhs) const override
         {
             const float lhs_lum = luminance(lhs);
             const float rhs_lum = luminance(rhs);
@@ -165,7 +167,7 @@ TEST_SUITE(ImageTools)
         {
         }
 
-        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const APPLESEED_OVERRIDE
+        Color3f operator()(const Color3f& lhs, const Color3f& rhs) const override
         {
             const float diff = luminance(lhs) - luminance(rhs);
             return
@@ -184,7 +186,7 @@ TEST_SUITE(ImageTools)
         {
         }
 
-        virtual Color3f operator()(const Color3f& lhs, const Color3f& rhs) const APPLESEED_OVERRIDE
+        Color3f operator()(const Color3f& lhs, const Color3f& rhs) const override
         {
             const Color3f delta = lhs - rhs;
             const float diff = delta[max_abs_index(delta)];
@@ -195,14 +197,14 @@ TEST_SUITE(ImageTools)
         }
     };
 
-    auto_ptr<Image> apply(const Image& image, const IOnePixelOp& op)
+    unique_ptr<Image> apply(const Image& image, const IOnePixelOp& op)
     {
         const CanvasProperties& props = image.properties();
 
         if (props.m_channel_count != 4)
             throw ExceptionUnsupportedChannelCount();
 
-        auto_ptr<Image> output(new Image(props));
+        unique_ptr<Image> output(new Image(props));
 
         for (size_t y = 0; y < props.m_canvas_height; ++y)
         {
@@ -219,10 +221,10 @@ TEST_SUITE(ImageTools)
             }
         }
 
-        return output;
+        return move(output);
     }
 
-    auto_ptr<Image> apply(const Image& lhs, const Image& rhs, const ITwoPixelOp& op)
+    unique_ptr<Image> apply(const Image& lhs, const Image& rhs, const ITwoPixelOp& op)
     {
         const CanvasProperties& lhs_props = lhs.properties();
         const CanvasProperties& rhs_props = rhs.properties();
@@ -235,7 +237,7 @@ TEST_SUITE(ImageTools)
         if (lhs_props.m_channel_count != 4)
             throw ExceptionUnsupportedChannelCount();
 
-        auto_ptr<Image> output(new Image(lhs));
+        unique_ptr<Image> output(new Image(lhs));
 
         for (size_t y = 0; y < lhs_props.m_canvas_height; ++y)
         {
@@ -261,7 +263,7 @@ TEST_SUITE(ImageTools)
             }
         }
 
-        return output;
+        return move(output);
     }
 
 #if 0
@@ -269,8 +271,8 @@ TEST_SUITE(ImageTools)
     TEST_CASE(CompareImages)
     {
         GenericImageFileReader reader;
-        auto_ptr<Image> left_image(reader.read("left.exr"));
-        auto_ptr<Image> right_image(reader.read("right.exr"));
+        unique_ptr<Image> left_image(reader.read("left.exr"));
+        unique_ptr<Image> right_image(reader.read("right.exr"));
 
         ASSERT_TRUE(left_image.get());
         ASSERT_TRUE(right_image.get());
@@ -282,7 +284,7 @@ TEST_SUITE(ImageTools)
         // LuminanceDifferenceSign op(1.0e-9f);
         MaximumComponentDifferenceSign op(1.0e-9f);
 
-        auto_ptr<Image> result =
+        unique_ptr<Image> result =
             apply(
                 *apply(*left_image.get(), *right_image.get(), op).get(),
                 ColorMultiply(1.0f));
@@ -303,7 +305,7 @@ TEST_SUITE(ImageTools)
         const float DarksGammaCorrection = 10.0f;
 
         GenericImageFileReader reader;
-        auto_ptr<Image> input_image(reader.read("input.exr"));
+        unique_ptr<Image> input_image(reader.read("input.exr"));
 
         ASSERT_TRUE(input_image.get());
 
@@ -370,7 +372,7 @@ TEST_SUITE(ImageTools)
     TEST_CASE(ComputeAverageImageValue)
     {
         GenericImageFileReader reader;
-        auto_ptr<Image> input_image(reader.read("input.exr"));
+        unique_ptr<Image> input_image(reader.read("input.exr"));
 
         ASSERT_TRUE(input_image.get());
 
@@ -390,6 +392,73 @@ TEST_SUITE(ImageTools)
         avg /= static_cast<double>(props.m_pixel_count);
 
         cerr << "Average: " << avg[0] << " " << avg[1] << " " << avg[2] << endl;
+    }
+
+#endif
+
+#if 0
+
+    TEST_CASE(GenerateSphereBumpMap)
+    {
+        const size_t ImageSize = 512;
+
+        Image image(
+            ImageSize,
+            ImageSize,
+            32,
+            32,
+            4,
+            PixelFormatFloat);
+
+        for (size_t y = 0; y < ImageSize; ++y)
+        {
+            for (size_t x = 0; x < ImageSize; ++x)
+            {
+                const float fx = fit<size_t, float>(x, 0, ImageSize - 1, -1.0f, +1.0f);
+                const float fy = fit<size_t, float>(y, 0, ImageSize - 1, -1.0f, +1.0f);
+                const float dist = sqrt(fx * fx + fy * fy);
+                const float height =
+                    dist < 0.5f
+                        ? 0.5f + sqrt(1.0f - square(dist / 0.5f)) / 2.0f
+                        : 0.5f;
+                const Color4f color(height, height, height, 1.0f);
+                image.set_pixel(x, y, color);
+            }
+        }
+
+        GenericImageFileWriter writer;
+        writer.write("unit tests/outputs/test_imagetools_spherebump.exr", image);
+    }
+
+#endif
+
+#if 0
+
+    TEST_CASE(GenerateSineBumpMap)
+    {
+        const size_t ImageSize = 512;
+
+        Image image(
+            ImageSize,
+            ImageSize,
+            32,
+            32,
+            4,
+            PixelFormatFloat);
+
+        for (size_t y = 0; y < ImageSize; ++y)
+        {
+            for (size_t x = 0; x < ImageSize; ++x)
+            {
+                const float fx = fit<size_t, float>(x, 0, ImageSize - 1, -1.0f, +1.0f);
+                const float height = 0.5f + 0.5f * cos(fx * TwoPi<float>());
+                const Color4f color(height, height, height, 1.0f);
+                image.set_pixel(x, y, color);
+            }
+        }
+
+        GenericImageFileWriter writer;
+        writer.write("unit tests/outputs/test_imagetools_sinebump.exr", image);
     }
 
 #endif

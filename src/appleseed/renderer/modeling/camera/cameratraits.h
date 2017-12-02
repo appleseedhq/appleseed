@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,10 +33,11 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/entity/entitytraits.h"
+#include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/containers/dictionary.h"
 
 // Forward declarations.
 namespace renderer  { class CameraFactoryRegistrar; }
@@ -51,10 +52,15 @@ namespace renderer
 template <>
 struct EntityTraits<Camera>
 {
+    typedef CameraContainer ContainerType;
     typedef CameraFactoryRegistrar FactoryRegistrarType;
 
-    static const char* get_entity_type_name()                   { return "camera"; }
-    static const char* get_human_readable_entity_type_name()    { return "Camera"; }
+    static const char* get_entity_type_name()                       { return "camera"; }
+    static const char* get_human_readable_entity_type_name()        { return "Camera"; }
+    static const char* get_human_readable_collection_type_name()    { return "Cameras"; }
+
+    template <typename ParentEntity>
+    static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.cameras(); }
 
     static foundation::Dictionary get_entity_values(const Camera* entity)
     {
@@ -66,7 +72,7 @@ struct EntityTraits<Camera>
         foundation::auto_release_ptr<Camera>        entity,
         ParentEntity&                               parent)
     {
-        parent.set_camera(entity);
+        get_entity_container(parent).insert(entity);
     }
 
     template <typename ParentEntity>
@@ -74,7 +80,7 @@ struct EntityTraits<Camera>
         Camera*                                     entity,
         ParentEntity&                               parent)
     {
-        parent.set_camera(foundation::auto_release_ptr<Camera>(0));
+        get_entity_container(parent).remove(entity);
     }
 };
 

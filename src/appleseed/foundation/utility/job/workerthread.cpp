@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -61,7 +61,7 @@ WorkerThread::WorkerThread(
   , m_job_queue(job_queue)
   , m_flags(flags)
   , m_thread_func(*this)
-  , m_thread(0)
+  , m_thread(nullptr)
 {
 }
 
@@ -101,7 +101,7 @@ void WorkerThread::stop()
 
     // Delete the thread object.
     delete m_thread;
-    m_thread = 0;
+    m_thread = nullptr;
 }
 
 void WorkerThread::pause()
@@ -151,7 +151,7 @@ void WorkerThread::run()
             m_job_queue.wait_for_scheduled_job(m_abort_switch);
 
         // Handle the case where the job queue is empty.
-        if (running_job_info.first.m_job == 0)
+        if (running_job_info.first.m_job == nullptr)
         {
             if (m_flags & JobManager::KeepRunningOnEmptyQueue)
             {
@@ -202,7 +202,7 @@ bool WorkerThread::execute_job(IJob& job)
             m_logger,
             "worker thread " FMT_SIZE_T ": job was terminated (%s).",
             m_index,
-            e.what());
+            e.what()[0] != '\0' ? e.what() : "no details available");
 
         return false;
     }

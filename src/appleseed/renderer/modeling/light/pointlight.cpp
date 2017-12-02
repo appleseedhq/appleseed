@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,15 +33,14 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/distance.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <cmath>
@@ -50,6 +49,7 @@
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class Project; }
+namespace renderer      { class ShadingContext; }
 
 using namespace foundation;
 using namespace std;
@@ -70,31 +70,35 @@ namespace
     {
       public:
         PointLight(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : Light(name, params)
         {
             m_inputs.declare("intensity", InputFormatSpectralIlluminance);
-            m_inputs.declare("intensity_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("exposure", InputFormatScalar, "0.0");
+            m_inputs.declare("intensity_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("exposure", InputFormatFloat, "0.0");
+
+            // Point lights can be used by the LightTree.
+            m_flags |= LightTreeCompatible;
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
-            const Project&      project,
-            const Assembly&     assembly,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+        bool on_frame_begin(
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) override
         {
-            if (!Light::on_frame_begin(project, assembly, abort_switch))
+            if (!Light::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             if (
@@ -108,54 +112,55 @@ namespace
             check_non_zero_emission("intensity", "intensity_multiplier");
 
             m_inputs.evaluate_uniforms(&m_values);
-            m_values.m_intensity *=
-                static_cast<float>(
-                    m_values.m_intensity_multiplier * pow(2.0, m_values.m_exposure));
+            m_values.m_intensity *= m_values.m_intensity_multiplier * pow(2.0f, m_values.m_exposure);
 
             return true;
         }
 
-        virtual void sample(
-            InputEvaluator&     input_evaluator,
-            const Transformd&   light_transform,
-            const Vector2d&     s,
-            Vector3d&           position,
-            Vector3d&           outgoing,
-            Spectrum&           value,
-            double&             probability) const APPLESEED_OVERRIDE
+        void sample(
+            const ShadingContext&   shading_context,
+            const Transformd&       light_transform,
+            const Vector3d&         target_point,
+            const Vector2d&         s,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            float&                  probability) const override
+        {
+            position = light_transform.get_parent_origin();
+            outgoing = normalize(target_point - position);
+            value = m_values.m_intensity;
+            probability = 1.0f;
+        }
+
+        void sample(
+            const ShadingContext&   shading_context,
+            const Transformd&       light_transform,
+            const Vector2d&         s,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            float&                  probability) const override
         {
             position = light_transform.get_parent_origin();
             outgoing = sample_sphere_uniform(s);
             value = m_values.m_intensity;
-            probability = RcpFourPi;
+            probability = RcpFourPi<float>();
         }
 
-        virtual void evaluate(
-            InputEvaluator&     input_evaluator,
-            const Transformd&   light_transform,
-            const Vector3d&     target,
-            Vector3d&           position,
-            Vector3d&           outgoing,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+        float compute_distance_attenuation(
+            const Vector3d&         target,
+            const Vector3d&         position) const override
         {
-            position = light_transform.get_parent_origin();
-            outgoing = normalize(target - position);
-            value = m_values.m_intensity;
-        }
-
-        double compute_distance_attenuation(
-            const Vector3d&     target,
-            const Vector3d&     position) const APPLESEED_OVERRIDE
-        {
-            return 1.0 / square_distance(target, position);
+            return 1.0f / static_cast<float>(square_distance(target, position));
         }
 
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_intensity;                // emitted intensity in W.sr^-1
-            double      m_intensity_multiplier;     // emitted intensity multiplier
-            double      m_exposure;                 // emitted intensity multiplier in f-stops
+            float       m_intensity_multiplier;     // emitted intensity multiplier
+            float       m_exposure;                 // emitted intensity multiplier in f-stops
         };
 
         InputValues     m_values;
@@ -166,6 +171,11 @@ namespace
 //
 // PointLightFactory class implementation.
 //
+
+void PointLightFactory::release()
+{
+    delete this;
+}
 
 const char* PointLightFactory::get_model() const
 {
@@ -203,8 +213,14 @@ DictionaryArray PointLightFactory::get_input_metadata() const
             .insert("name", "intensity_multiplier")
             .insert("label", "Intensity Multiplier")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "10.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("help", "Light intensity multiplier"));
@@ -216,8 +232,14 @@ DictionaryArray PointLightFactory::get_input_metadata() const
             .insert("type", "numeric")
             .insert("use", "optional")
             .insert("default", "0.0")
-            .insert("min_value", "-64.0")
-            .insert("max_value", "64.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-64.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "64.0")
+                    .insert("type", "soft"))
             .insert("help", "Light exposure"));
 
     add_common_input_metadata(metadata);
@@ -228,13 +250,6 @@ DictionaryArray PointLightFactory::get_input_metadata() const
 auto_release_ptr<Light> PointLightFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<Light>(new PointLight(name, params));
-}
-
-auto_release_ptr<Light> PointLightFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<Light>(new PointLight(name, params));
 }

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,13 +40,13 @@
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
+#include "foundation/utility/poison.h"
 
 // Imath headers.
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
-#include "foundation/platform/exrheaderguards.h"
-BEGIN_EXR_INCLUDES
+#include "foundation/platform/_beginexrheaders.h"
 #include "OpenEXR/ImathMatrix.h"
-END_EXR_INCLUDES
+#include "foundation/platform/_endexrheaders.h"
 #endif
 
 // Standard headers.
@@ -85,12 +85,14 @@ class Matrix
 
     // Constructors.
     Matrix();                                               // leave all components uninitialized
-    explicit Matrix(const ValueType* rhs);                  // initialize with array of M * N scalars
-    explicit Matrix(const ValueType val);                   // set all components to 'val'
+    explicit Matrix(const ValueType val);                   // set all components to `val`
 
     // Construct a matrix from another matrix of a different type.
     template <typename U>
-    Matrix(const Matrix<U, M, N>& rhs);
+    explicit Matrix(const Matrix<U, M, N>& rhs);
+
+    // Construct a matrix from an array of M * N scalars.
+    static MatrixType from_array(const ValueType* rhs);
 
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
@@ -104,6 +106,14 @@ class Matrix
     ValueType m_comp[Components];
 };
 
+// Poisoning.
+template <typename T, size_t M, size_t N>
+class PoisonImpl<Matrix<T, M, N>>
+{
+  public:
+    static void do_poison(Matrix<T, M, N>& m);
+};
+
 // Exact inequality and equality tests.
 template <typename T, size_t M, size_t N> bool operator!=(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs);
 template <typename T, size_t M, size_t N> bool operator==(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs);
@@ -113,8 +123,8 @@ template <typename T, size_t M, size_t N> bool feq(const Matrix<T, M, N>& lhs, c
 template <typename T, size_t M, size_t N> bool feq(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs, const T eps);
 
 // Approximate zero tests.
-template <typename T, size_t M, size_t N> bool fz(const Matrix<T, M, N>& v);
-template <typename T, size_t M, size_t N> bool fz(const Matrix<T, M, N>& v, const T eps);
+template <typename T, size_t M, size_t N> bool fz(const Matrix<T, M, N>& m);
+template <typename T, size_t M, size_t N> bool fz(const Matrix<T, M, N>& m, const T eps);
 
 // Matrix arithmetic.
 template <typename T, size_t M, size_t N> Matrix<T, M, N>  operator+ (const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs);
@@ -170,14 +180,16 @@ class Matrix<T, N, N>
 
     // Constructors.
     Matrix();                                               // leave all components uninitialized
-    explicit Matrix(const ValueType* rhs);                  // initialize with array of N * N scalars
-    explicit Matrix(const ValueType val);                   // set all components to 'val'
+    explicit Matrix(const ValueType val);                   // set all components to `val`
 
     // Construct a matrix from another matrix of a different type.
     template <typename U>
     Matrix(const Matrix<U, N, N>& rhs);
 
-    // Construct and return an NxN identity matrix.
+    // Construct a matrix from an array of N * N scalars.
+    static MatrixType from_array(const ValueType* rhs);
+
+    // Construct and return the NxN identity matrix.
     static MatrixType make_identity();
 
     // Return the NxN identity matrix.
@@ -236,8 +248,7 @@ class Matrix<T, 3, 3>
 
     // Constructors.
     Matrix();                                               // leave all components uninitialized
-    explicit Matrix(const ValueType* rhs);                  // initialize with array of 9 scalars
-    explicit Matrix(const ValueType val);                   // set all components to 'val'
+    explicit Matrix(const ValueType val);                   // set all components to `val`
 
     // Construct a matrix from another matrix of a different type.
     template <typename U>
@@ -253,44 +264,50 @@ class Matrix<T, 3, 3>
 
 #endif
 
-    // Construct and return a 3x3 identity matrix.
+    // Construct a matrix from an array of 9 scalars.
+    static MatrixType from_array(const ValueType* rhs);
+
+    // Construct and return the 3x3 identity matrix.
     static MatrixType make_identity();
 
     // Return the 3x3 identity matrix.
     static const MatrixType& identity();
 
     // Build canonical transformation matrices.
-    static MatrixType scaling(const Vector<T, 3>& s);
-    static MatrixType rotation_x(const ValueType angle);    // rotation angle, in radians
-    static MatrixType rotation_y(const ValueType angle);    // rotation angle, in radians
-    static MatrixType rotation_z(const ValueType angle);    // rotation angle, in radians
-    static MatrixType rotation_x(
+    static MatrixType make_scaling(const Vector<T, 3>& s);
+    static MatrixType make_rotation_x(
+        const ValueType         angle);                     // rotation angle, in radians
+    static MatrixType make_rotation_y(
+        const ValueType         angle);                     // rotation angle, in radians
+    static MatrixType make_rotation_z(
+        const ValueType         angle);                     // rotation angle, in radians
+    static MatrixType make_rotation_x(
         const ValueType         cos_angle,                  // cosine of the rotation angle
         const ValueType         sin_angle);                 // sine of the rotation angle
-    static MatrixType rotation_y(
+    static MatrixType make_rotation_y(
         const ValueType         cos_angle,                  // cosine of the rotation angle
         const ValueType         sin_angle);                 // sine of the rotation angle
-    static MatrixType rotation_z(
+    static MatrixType make_rotation_z(
         const ValueType         cos_angle,                  // cosine of the rotation angle
         const ValueType         sin_angle);                 // sine of the rotation angle
 
     // Build a rotation matrix from Euler angles.
-    static MatrixType rotation(
+    static MatrixType make_rotation(
         const ValueType         yaw,                        // rotation angle, in radians
         const ValueType         pitch,                      // rotation angle, in radians
         const ValueType         roll);                      // rotation angle, in radians
 
     // Build a rotation matrix from an axis and an angle.
-    static MatrixType rotation(
+    static MatrixType make_rotation(
         const Vector<T, 3>&     axis,                       // rotation axis, unit-length
         const ValueType         angle);                     // rotation angle, in radians
-    static MatrixType rotation(
+    static MatrixType make_rotation(
         const Vector<T, 3>&     axis,                       // rotation axis, unit-length
         const ValueType         cos_angle,                  // cosine of the rotation angle
         const ValueType         sin_angle);                 // sine of the rotation angle
 
     // Build a rotation matrix from a unit quaternion.
-    static MatrixType rotation(
+    static MatrixType make_rotation(
         const Quaternion<T>&    q);                         // unit quaternion
 
     // Unchecked array subscripting.
@@ -352,8 +369,7 @@ class Matrix<T, 4, 4>
 
     // Constructors.
     Matrix();                                               // leave all components uninitialized
-    explicit Matrix(const ValueType* rhs);                  // initialize with array of 16 scalars
-    explicit Matrix(const ValueType val);                   // set all components to 'val'
+    explicit Matrix(const ValueType val);                   // set all components to `val`
 
     // Construct a matrix from another matrix of a different type.
     template <typename U>
@@ -369,50 +385,56 @@ class Matrix<T, 4, 4>
 
 #endif
 
-    // Construct and return a 4x4 identity matrix.
+    // Construct a matrix from an array of 16 scalars.
+    static MatrixType from_array(const ValueType* rhs);
+
+    // Construct and return the 4x4 identity matrix.
     static MatrixType make_identity();
 
     // Return the 4x4 identity matrix.
     static const MatrixType& identity();
 
     // Build canonical transformation matrices.
-    static MatrixType translation(const Vector<T, 3>& v);
-    static MatrixType scaling(const Vector<T, 3>& s);
-    static MatrixType rotation_x(const ValueType angle);    // rotation angle, in radians
-    static MatrixType rotation_y(const ValueType angle);    // rotation angle, in radians
-    static MatrixType rotation_z(const ValueType angle);    // rotation angle, in radians
-    static MatrixType rotation_x(
+    static MatrixType make_translation(const Vector<T, 3>& v);
+    static MatrixType make_scaling(const Vector<T, 3>& s);
+    static MatrixType make_rotation_x(
+        const ValueType         angle);                     // rotation angle, in radians
+    static MatrixType make_rotation_y(
+        const ValueType         angle);                     // rotation angle, in radians
+    static MatrixType make_rotation_z(
+        const ValueType         angle);                     // rotation angle, in radians
+    static MatrixType make_rotation_x(
         const ValueType         cos_angle,                  // cosine of the rotation angle
         const ValueType         sin_angle);                 // sine of the rotation angle
-    static MatrixType rotation_y(
+    static MatrixType make_rotation_y(
         const ValueType         cos_angle,                  // cosine of the rotation angle
         const ValueType         sin_angle);                 // sine of the rotation angle
-    static MatrixType rotation_z(
+    static MatrixType make_rotation_z(
         const ValueType         cos_angle,                  // cosine of the rotation angle
         const ValueType         sin_angle);                 // sine of the rotation angle
 
     // Build a rotation matrix from Euler angles.
-    static MatrixType rotation(
+    static MatrixType make_rotation(
         const ValueType         yaw,                        // rotation angle, in radians
         const ValueType         pitch,                      // rotation angle, in radians
         const ValueType         roll);                      // rotation angle, in radians
 
     // Build a rotation matrix from an axis and an angle.
-    static MatrixType rotation(
+    static MatrixType make_rotation(
         const Vector<T, 3>&     axis,                       // rotation axis, unit-length
         const ValueType         angle);                     // rotation angle, in radians
-    static MatrixType rotation(
+    static MatrixType make_rotation(
         const Vector<T, 3>&     axis,                       // rotation axis, unit-length
         const ValueType         cos_angle,                  // cosine of the rotation angle
         const ValueType         sin_angle);                 // sine of the rotation angle
 
     // Build a rotation matrix from a unit quaternion.
-    static MatrixType rotation(
+    static MatrixType make_rotation(
         const Quaternion<T>&    q);                         // unit quaternion
 
     // Build a look-at transformation matrix. The returned matrix is orthonormal,
     // and such that the Z- axis is pointing toward the target point.
-    static MatrixType lookat(
+    static MatrixType make_lookat(
         const Vector<T, 3>&     origin,                     // camera origin
         const Vector<T, 3>&     target,                     // target point
         const Vector<T, 3>&     up);                        // up vector, unit-length
@@ -438,7 +460,7 @@ class Matrix<T, 4, 4>
         Vector<T, 3>&           translation) const;
 
   private:
-    APPLESEED_SSE_ALIGN ValueType m_comp[Components];
+    APPLESEED_SIMD4_ALIGN ValueType m_comp[Components];
 
     // The identity matrix returned by identity().
     static const MatrixType m_identity;
@@ -474,14 +496,6 @@ inline Matrix<T, M, N>::Matrix()
 }
 
 template <typename T, size_t M, size_t N>
-inline Matrix<T, M, N>::Matrix(const ValueType* rhs)
-{
-    assert(rhs);
-    for (size_t i = 0; i < Components; ++i)
-        m_comp[i] = rhs[i];
-}
-
-template <typename T, size_t M, size_t N>
 inline Matrix<T, M, N>::Matrix(const ValueType val)
 {
     for (size_t i = 0; i < Components; ++i)
@@ -494,6 +508,19 @@ inline Matrix<T, M, N>::Matrix(const Matrix<U, M, N>& rhs)
 {
     for (size_t i = 0; i < Components; ++i)
         m_comp[i] = static_cast<ValueType>(rhs[i]);
+}
+
+template <typename T, size_t M, size_t N>
+inline Matrix<T, M, N> Matrix<T, M, N>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+
+    Matrix result;
+
+    for (size_t i = 0; i < Components; ++i)
+        result.m_comp[i] = rhs[i];
+
+    return result;
 }
 
 template <typename T, size_t M, size_t N>
@@ -524,6 +551,13 @@ inline const T& Matrix<T, M, N>::operator()(const size_t row, const size_t col) 
     assert(row < Rows);
     assert(col < Columns);
     return m_comp[row * Columns + col];
+}
+
+template <typename T, size_t M, size_t N>
+void PoisonImpl<Matrix<T, M, N>>::do_poison(Matrix<T, M, N>& m)
+{
+    for (size_t i = 0; i < m.Components; ++i)
+        poison(m[i]);
 }
 
 template <typename T, size_t M, size_t N>
@@ -569,11 +603,11 @@ inline bool feq(const Matrix<T, M, N>& lhs, const Matrix<T, M, N>& rhs, const T 
 }
 
 template <typename T, size_t M, size_t N>
-inline bool fz(const Matrix<T, M, N>& v)
+inline bool fz(const Matrix<T, M, N>& m)
 {
-    for (size_t i = 0; i < v.Components; ++i)
+    for (size_t i = 0; i < m.Components; ++i)
     {
-        if (!fz(v[i]))
+        if (!fz(m[i]))
             return false;
     }
 
@@ -581,11 +615,11 @@ inline bool fz(const Matrix<T, M, N>& v)
 }
 
 template <typename T, size_t M, size_t N>
-inline bool fz(const Matrix<T, M, N>& v, const T eps)
+inline bool fz(const Matrix<T, M, N>& m, const T eps)
 {
-    for (size_t i = 0; i < v.Components; ++i)
+    for (size_t i = 0; i < m.Components; ++i)
     {
-        if (!fz(v[i], eps))
+        if (!fz(m[i], eps))
             return false;
     }
 
@@ -791,7 +825,7 @@ template <typename T, size_t M, size_t N>
 inline Matrix<T, N, M> transpose(const Matrix<T, M, N>& mat)
 {
     Matrix<T, N, M> res;
-    T *p = &res(0,0);
+    T* p = &res(0, 0);
 
     for (size_t c = 0; c < N; ++c)
     {
@@ -808,17 +842,11 @@ inline Matrix<T, N, M> transpose(const Matrix<T, M, N>& mat)
 //
 
 template <typename T, size_t N>
-inline Matrix<T, N, N>::Matrix()
-{
-}
+const Matrix<T, N, N> Matrix<T, N, N>::m_identity(Matrix<T, N, N>::make_identity());
 
 template <typename T, size_t N>
-inline Matrix<T, N, N>::Matrix(const ValueType* rhs)
+inline Matrix<T, N, N>::Matrix()
 {
-    assert(rhs);
-
-    for (size_t i = 0; i < Components; ++i)
-        m_comp[i] = rhs[i];
 }
 
 template <typename T, size_t N>
@@ -837,7 +865,17 @@ inline Matrix<T, N, N>::Matrix(const Matrix<U, N, N>& rhs)
 }
 
 template <typename T, size_t N>
-const Matrix<T, N, N> Matrix<T, N, N>::m_identity(Matrix<T, N, N>::make_identity());
+inline Matrix<T, N, N> Matrix<T, N, N>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+
+    Matrix result;
+
+    for (size_t i = 0; i < Components; ++i)
+        result.m_comp[i] = rhs[i];
+
+    return result;
+}
 
 template <typename T, size_t N>
 Matrix<T, N, N> Matrix<T, N, N>::make_identity()
@@ -1004,17 +1042,11 @@ Matrix<T, N, N> inverse(
 //
 
 template <typename T>
-inline Matrix<T, 3, 3>::Matrix()
-{
-}
+const Matrix<T, 3, 3> Matrix<T, 3, 3>::m_identity(Matrix<T, 3, 3>::make_identity());
 
 template <typename T>
-inline Matrix<T, 3, 3>::Matrix(const ValueType* rhs)
+inline Matrix<T, 3, 3>::Matrix()
 {
-    assert(rhs);
-
-    for (size_t i = 0; i < Components; ++i)
-        m_comp[i] = rhs[i];
 }
 
 template <typename T>
@@ -1064,7 +1096,17 @@ inline Matrix<T, 3, 3>::operator Imath::Matrix33<T>() const
 #endif
 
 template <typename T>
-const Matrix<T, 3, 3> Matrix<T, 3, 3>::m_identity(Matrix<T, 3, 3>::make_identity());
+inline Matrix<T, 3, 3> Matrix<T, 3, 3>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+
+    Matrix result;
+
+    for (size_t i = 0; i < Components; ++i)
+        result.m_comp[i] = rhs[i];
+
+    return result;
+}
 
 template <typename T>
 Matrix<T, 3, 3> Matrix<T, 3, 3>::make_identity()
@@ -1093,7 +1135,7 @@ inline const Matrix<T, 3, 3>& Matrix<T, 3, 3>::identity()
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::scaling(const Vector<T, 3>& s)
+inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_scaling(const Vector<T, 3>& s)
 {
     MatrixType mat;
 
@@ -1113,25 +1155,25 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::scaling(const Vector<T, 3>& s)
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_x(const ValueType angle)
+inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation_x(const ValueType angle)
 {
-    return rotation_x(std::cos(angle), std::sin(angle));
+    return make_rotation_x(std::cos(angle), std::sin(angle));
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_y(const ValueType angle)
+inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation_y(const ValueType angle)
 {
-    return rotation_y(std::cos(angle), std::sin(angle));
+    return make_rotation_y(std::cos(angle), std::sin(angle));
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_z(const ValueType angle)
+inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation_z(const ValueType angle)
 {
-    return rotation_z(std::cos(angle), std::sin(angle));
+    return make_rotation_z(std::cos(angle), std::sin(angle));
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_x(
+inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation_x(
     const ValueType         cos_angle,
     const ValueType         sin_angle)
 {
@@ -1153,7 +1195,7 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_x(
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_y(
+inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation_y(
     const ValueType         cos_angle,
     const ValueType         sin_angle)
 {
@@ -1175,7 +1217,7 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_y(
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_z(
+inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation_z(
     const ValueType         cos_angle,
     const ValueType         sin_angle)
 {
@@ -1197,7 +1239,7 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_z(
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation(
+inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation(
     const ValueType         yaw,
     const ValueType         pitch,
     const ValueType         roll)
@@ -1227,15 +1269,15 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation(
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation(
+inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation(
     const Vector<T, 3>&     axis,
     const ValueType         angle)
 {
-    return rotation(axis, std::cos(angle), std::sin(angle));
+    return make_rotation(axis, std::cos(angle), std::sin(angle));
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation(
+inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation(
     const Vector<T, 3>&     axis,
     const ValueType         cos_angle,
     const ValueType         sin_angle)
@@ -1262,12 +1304,17 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation(
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation(
+inline Matrix<T, 3, 3> Matrix<T, 3, 3>::make_rotation(
     const Quaternion<T>&    q)
 {
     //
     // Implementation from Wild Magic Source Code, David Eberly
     // http://www.geometrictools.com
+    //
+    // Another interesting reference if this code needs to be optimized:
+    //
+    // From Quaternion to Matrix and Back
+    // http://fabiensanglard.net/doom3_documentation/37726-293748.pdf
     //
 
     assert(is_normalized(q));
@@ -1361,7 +1408,7 @@ inline void Matrix<T, 3, 3>::extract_euler_angles(
     else
     {
         yaw   = ValueType(0.0);
-        pitch = ValueType(HalfPi);
+        pitch = HalfPi<ValueType>();
         roll  = std::atan2(m_comp[3], m_comp[0]);
     }
 }
@@ -1436,7 +1483,7 @@ inline void Matrix<T, 3, 3>::decompose(
         T(1.0) / scaling[1],
         T(1.0) / scaling[2]);
 
-    Matrix<T, 3, 3> unit_matrix(*this);
+    MatrixType unit_matrix(*this);
 
     unit_matrix[0] *= rcp_scaling[0];
     unit_matrix[3] *= rcp_scaling[0];
@@ -1471,7 +1518,7 @@ inline Vector<T, 3> rotate(
     const Vector<T, 3>&     axis,
     const T                 angle)
 {
-    return Matrix<T, 3, 3>::rotation(axis, angle) * v;
+    return Matrix<T, 3, 3>::make_rotation(axis, angle) * v;
 }
 
 template <typename T>
@@ -1530,16 +1577,11 @@ inline Vector<T, 3> operator*(
 //
 
 template <typename T>
-inline Matrix<T, 4, 4>::Matrix()
-{
-}
+const Matrix<T, 4, 4> Matrix<T, 4, 4>::m_identity(Matrix<T, 4, 4>::make_identity());
 
 template <typename T>
-inline Matrix<T, 4, 4>::Matrix(const ValueType* rhs)
+inline Matrix<T, 4, 4>::Matrix()
 {
-    assert(rhs);
-    for (size_t i = 0; i < Components; ++i)
-        m_comp[i] = rhs[i];
 }
 
 template <typename T>
@@ -1589,7 +1631,17 @@ inline Matrix<T, 4, 4>::operator Imath::Matrix44<T>() const
 #endif
 
 template <typename T>
-const Matrix<T, 4, 4> Matrix<T, 4, 4>::m_identity(Matrix<T, 4, 4>::make_identity());
+inline Matrix<T, 4, 4> Matrix<T, 4, 4>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+
+    Matrix result;
+
+    for (size_t i = 0; i < Components; ++i)
+        result.m_comp[i] = rhs[i];
+
+    return result;
+}
 
 template <typename T>
 Matrix<T, 4, 4> Matrix<T, 4, 4>::make_identity()
@@ -1626,7 +1678,7 @@ inline const Matrix<T, 4, 4>& Matrix<T, 4, 4>::identity()
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::translation(const Vector<T, 3>& v)
+inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_translation(const Vector<T, 3>& v)
 {
     MatrixType mat;
 
@@ -1654,7 +1706,7 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::translation(const Vector<T, 3>& v)
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::scaling(const Vector<T, 3>& s)
+inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_scaling(const Vector<T, 3>& s)
 {
     MatrixType mat;
 
@@ -1682,25 +1734,25 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::scaling(const Vector<T, 3>& s)
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_x(const ValueType angle)
+inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation_x(const ValueType angle)
 {
-    return rotation_x(std::cos(angle), std::sin(angle));
+    return make_rotation_x(std::cos(angle), std::sin(angle));
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_y(const ValueType angle)
+inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation_y(const ValueType angle)
 {
-    return rotation_y(std::cos(angle), std::sin(angle));
+    return make_rotation_y(std::cos(angle), std::sin(angle));
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_z(const ValueType angle)
+inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation_z(const ValueType angle)
 {
-    return rotation_z(std::cos(angle), std::sin(angle));
+    return make_rotation_z(std::cos(angle), std::sin(angle));
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_x(
+inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation_x(
     const ValueType         cos_angle,
     const ValueType         sin_angle)
 {
@@ -1730,7 +1782,7 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_x(
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_y(
+inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation_y(
     const ValueType         cos_angle,
     const ValueType         sin_angle)
 {
@@ -1760,7 +1812,7 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_y(
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_z(
+inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation_z(
     const ValueType         cos_angle,
     const ValueType         sin_angle)
 {
@@ -1790,7 +1842,7 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_z(
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation(
+inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation(
     const ValueType         yaw,
     const ValueType         pitch,
     const ValueType         roll)
@@ -1828,15 +1880,15 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation(
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation(
+inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation(
     const Vector<T, 3>&     axis,
     const ValueType         angle)
 {
-    return rotation(axis, std::cos(angle), std::sin(angle));
+    return make_rotation(axis, std::cos(angle), std::sin(angle));
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation(
+inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation(
     const Vector<T, 3>&     axis,
     const ValueType         cos_angle,
     const ValueType         sin_angle)
@@ -1871,7 +1923,7 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation(
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation(
+inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_rotation(
     const Quaternion<T>&    q)
 {
     //
@@ -1879,7 +1931,7 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation(
     // http://www.geometrictools.com
     //
 
-    assert(is_normalized(q, make_eps<T>(1.0e-4f, 1.0e-6)));
+    assert(is_normalized(q));
 
     const ValueType tx  = q.v[0] + q.v[0];
     const ValueType ty  = q.v[1] + q.v[1];
@@ -1920,7 +1972,7 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation(
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::lookat(
+inline Matrix<T, 4, 4> Matrix<T, 4, 4>::make_lookat(
     const Vector<T, 3>&     origin,
     const Vector<T, 3>&     target,
     const Vector<T, 3>&     up)

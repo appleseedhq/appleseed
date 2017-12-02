@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -69,51 +69,62 @@ class Intersector
   public:
     // Constructor, binds the intersector to a given trace context.
     Intersector(
-        const TraceContext&             trace_context,
-        TextureCache&                   texture_cache,
-        const bool                      report_self_intersections = false);
+        const TraceContext&                 trace_context,
+        TextureCache&                       texture_cache,
+        const bool                          report_self_intersections = false);
 
     // Refine the location of a point on a surface.
     static foundation::Vector3d refine(
-        const TriangleSupportPlaneType& support_plane,
-        const foundation::Vector3d&     point,
-        const foundation::Vector3d&     direction);     // incoming or outgoing direction
+        const TriangleSupportPlaneType&     support_plane,
+        const foundation::Vector3d&         point,
+        const foundation::Vector3d&         direction);     // incoming or outgoing direction
 
     // Offset a point away from a surface represented by its normal.
     static void fixed_offset(
-        const foundation::Vector3d&     p,
-        foundation::Vector3d            n,
-        foundation::Vector3d&           front,
-        foundation::Vector3d&           back);
+        const foundation::Vector3d&         p,
+        foundation::Vector3d                n,
+        foundation::Vector3d&               front,
+        foundation::Vector3d&               back);
     static void adaptive_offset(
-        const TriangleSupportPlaneType& support_plane,
-        const foundation::Vector3d&     p,
-        foundation::Vector3d            n,
-        foundation::Vector3d&           front,
-        foundation::Vector3d&           back);
+        const TriangleSupportPlaneType&     support_plane,
+        const foundation::Vector3d&         p,
+        foundation::Vector3d                n,
+        foundation::Vector3d&               front,
+        foundation::Vector3d&               back);
 
     // Trace a world space ray through the scene.
     bool trace(
-        const ShadingRay&               ray,
-        ShadingPoint&                   shading_point,
-        const ShadingPoint*             parent_shading_point = 0) const;
+        const ShadingRay&                   ray,
+        ShadingPoint&                       shading_point,
+        const ShadingPoint*                 parent_shading_point = nullptr) const;
 
     // Trace a world space probe ray through the scene.
     bool trace_probe(
-        const ShadingRay&               ray,
-        const ShadingPoint*             parent_shading_point = 0) const;
+        const ShadingRay&                   ray,
+        const ShadingPoint*                 parent_shading_point = nullptr) const;
 
     // Manufacture a hit "by hand".
-    void manufacture_hit(
+    // There is no restriction placed on the shading point passed to this method.
+    // For instance it may have been previously initialized and used.
+    void make_surface_shading_point(
         ShadingPoint&                       shading_point,
         const ShadingRay&                   shading_ray,
         const ShadingPoint::PrimitiveType   primitive_type,
+        const foundation::Vector2f&         bary,
         const AssemblyInstance*             assembly_instance,
         const foundation::Transformd&       assembly_instance_transform,
         const size_t                        object_instance_index,
         const size_t                        region_index,
         const size_t                        primitive_index,
         const TriangleSupportPlaneType&     triangle_support_plane) const;
+
+    // Manufacture a volume shading point "by hand".
+    // There is no restriction placed on the shading point passed to this method.
+    // For instance it may have been previously initialized and used.
+    void make_volume_shading_point(
+        ShadingPoint&                       shading_point,
+        const ShadingRay&                   volume_ray,
+        const double                        distance) const;
 
     // Retrieve performance statistics.
     foundation::StatisticsVector get_statistics() const;

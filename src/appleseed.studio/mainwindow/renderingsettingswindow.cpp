@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,8 +34,8 @@
 #include "ui_renderingsettingswindow.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/projectmanager.h"
 #include "mainwindow/configurationmanagerwindow.h"
+#include "mainwindow/project/projectmanager.h"
 #include "utility/foldablepanelwidget.h"
 #include "utility/inputwidgetproxies.h"
 #include "utility/miscellaneous.h"
@@ -116,7 +116,7 @@ namespace
         return layout;
     }
 
-    QWidget* create_horizontal_group(QWidget* widget1, QWidget* widget2 = 0, QWidget* widget3 = 0)
+    QWidget* create_horizontal_group(QWidget* widget1, QWidget* widget2 = nullptr, QWidget* widget3 = nullptr)
     {
         QWidget* group = new QWidget();
 
@@ -173,8 +173,9 @@ class RenderSettingsPanel
   : public FoldablePanelWidget
 {
   public:
-    RenderSettingsPanel(const QString& title, QWidget* parent = 0)
+    RenderSettingsPanel(const QString& title, QWidget* parent = nullptr)
       : FoldablePanelWidget(title, parent)
+      , m_params_metadata(Configuration::get_metadata())
     {
     }
 
@@ -201,6 +202,8 @@ class RenderSettingsPanel
     };
 
     typedef vector<DirectLink> DirectLinkCollection;
+
+    const ParamArray            m_params_metadata;
 
     WidgetProxyCollection       m_widget_proxies;
     DirectLinkCollection        m_direct_links;
@@ -333,23 +336,27 @@ class RenderSettingsPanel
         return combobox;
     }
 
-    template <typename T>
     void create_direct_link(
         const string&           widget_key,
         const string&           param_path,
-        const T&                default_value)
+        const string&           default_value = string())
     {
         DirectLink direct_link;
         direct_link.m_widget_key = widget_key;
         direct_link.m_param_path = param_path;
-        direct_link.m_default_value = to_string(default_value);
+        direct_link.m_default_value = default_value;
         m_direct_links.push_back(direct_link);
     }
 
     void load_directly_linked_values(const Configuration& config)
     {
         for (const_each<DirectLinkCollection> i = m_direct_links; i; ++i)
-            set_widget(i->m_widget_key, get_config<string>(config, i->m_param_path, i->m_default_value));
+        {
+            const string default_value_path = i->m_param_path + ".default";
+            const string default_value = m_params_metadata.get_path_optional<string>(default_value_path.c_str(), i->m_default_value);
+            const string value = get_config<string>(config, i->m_param_path, default_value);
+            set_widget(i->m_widget_key, value);
+        }
     }
 
     void save_directly_linked_values(Configuration& config) const
@@ -398,6 +405,39 @@ class RenderSettingsPanel
 namespace
 {
     //
+    // General settings panel.
+    //
+
+    class GeneralSettingsPanel
+      : public RenderSettingsPanel
+    {
+        Q_OBJECT
+
+      public:
+        GeneralSettingsPanel(const Configuration& config, QWidget* parent = nullptr)
+          : RenderSettingsPanel("General Settings", parent)
+        {
+            QFormLayout* layout = create_form_layout();
+            container()->setLayout(layout);
+
+            QComboBox* color_pipeline_combobox = create_combobox("spectrum_mode");
+            color_pipeline_combobox->setToolTip(m_params_metadata.get_path("spectrum_mode.help"));
+            color_pipeline_combobox->addItem("RGB", "rgb");
+            color_pipeline_combobox->addItem("Spectral", "spectral");
+            layout->addRow("Color Pipeline:", color_pipeline_combobox);
+
+            create_direct_link("spectrum_mode", "spectrum_mode", "rgb");
+
+            load_directly_linked_values(config);
+        }
+
+        void save_config(Configuration& config) const override
+        {
+            save_directly_linked_values(config);
+        }
+    };
+
+    //
     // Image Plane Sampling panel.
     //
 
@@ -407,7 +447,7 @@ namespace
         Q_OBJECT
 
       public:
-        ImagePlaneSamplingPanel(const Configuration& config, QWidget* parent = 0)
+        ImagePlaneSamplingPanel(const Configuration& config, QWidget* parent = nullptr)
           : RenderSettingsPanel("Image Plane Sampling", parent)
         {
             QVBoxLayout* layout = new QVBoxLayout();
@@ -416,20 +456,23 @@ namespace
             create_image_plane_sampling_general_settings(layout);
             create_image_plane_sampling_sampler_settings(layout);
 
-            create_direct_link("general.sampler", "pixel_renderer", "uniform");
-            create_direct_link("general.passes", "generic_frame_renderer.passes", 1);
-            create_direct_link("uniform_sampler.samples", "uniform_pixel_renderer.samples", 64);
-            create_direct_link("uniform_sampler.force_antialiasing", "uniform_pixel_renderer.force_antialiasing", false);
-            create_direct_link("uniform_sampler.decorrelate_pixels", "uniform_pixel_renderer.decorrelate_pixels", true);
-            create_direct_link("adaptive_sampler.min_samples", "adaptive_pixel_renderer.min_samples", 16);
-            create_direct_link("adaptive_sampler.max_samples", "adaptive_pixel_renderer.max_samples", 64);
-            create_direct_link("adaptive_sampler.quality", "adaptive_pixel_renderer.quality", 2.0);
-            create_direct_link("adaptive_sampler.enable_diagnostics", "adaptive_pixel_renderer.enable_diagnostics", false);
+            create_direct_link("general.sampler",                       "pixel_renderer", "uniform");
+
+            create_direct_link("general.passes",                        "generic_frame_renderer.passes");
+
+            create_direct_link("uniform_sampler.samples",               "uniform_pixel_renderer.samples");
+            create_direct_link("uniform_sampler.force_antialiasing",    "uniform_pixel_renderer.force_antialiasing");
+            create_direct_link("uniform_sampler.decorrelate_pixels",    "uniform_pixel_renderer.decorrelate_pixels");
+
+            create_direct_link("adaptive_sampler.min_samples",          "adaptive_pixel_renderer.min_samples");
+            create_direct_link("adaptive_sampler.max_samples",          "adaptive_pixel_renderer.max_samples");
+            create_direct_link("adaptive_sampler.quality",              "adaptive_pixel_renderer.quality");
+            create_direct_link("adaptive_sampler.enable_diagnostics",   "adaptive_pixel_renderer.enable_diagnostics");
 
             load_directly_linked_values(config);
         }
 
-        virtual void save_config(Configuration& config) const APPLESEED_OVERRIDE
+        void save_config(Configuration& config) const override
         {
             save_directly_linked_values(config);
 
@@ -459,6 +502,7 @@ namespace
             layout->addLayout(sublayout);
 
             m_image_plane_sampler_combo = create_combobox("general.sampler");
+            m_image_plane_sampler_combo->setToolTip(m_params_metadata.get_path("sampling_mode.help"));
             m_image_plane_sampler_combo->addItem("Uniform", "uniform");
             m_image_plane_sampler_combo->addItem("Adaptive", "adaptive");
             m_image_plane_sampler_combo->setCurrentIndex(-1);
@@ -469,6 +513,7 @@ namespace
                 SLOT(slot_changed_image_plane_sampler(const int)));
 
             m_image_plane_sampler_passes = create_integer_input("general.passes", 1, 1000000, 1);
+            m_image_plane_sampler_passes->setToolTip(m_params_metadata.get_path("generic_frame_renderer.passes.help"));
             sublayout->addRow("Passes:", m_image_plane_sampler_passes);
         }
 
@@ -490,17 +535,19 @@ namespace
             m_uniform_image_plane_sampler->setLayout(layout);
 
             QSpinBox* samples_spinbox = create_integer_input("uniform_sampler.samples", 1, 1000000, 1);
+            samples_spinbox->setToolTip(m_params_metadata.get_path("uniform_pixel_renderer.samples.help"));
             layout->addLayout(create_form_layout("Samples:", samples_spinbox));
 
             m_uniform_sampler_force_aa = create_checkbox("uniform_sampler.force_antialiasing", "Force Antialiasing");
+            m_uniform_sampler_force_aa->setToolTip(m_params_metadata.get_path("uniform_pixel_renderer.force_antialiasing.help"));
             layout->addWidget(m_uniform_sampler_force_aa);
 
             connect(
                 samples_spinbox, SIGNAL(valueChanged(const int)),
                 SLOT(slot_changed_uniform_sampler_samples(const int)));
 
-            m_uniform_sampler_decorrelate_pixels =
-                create_checkbox("uniform_sampler.decorrelate_pixels", "Decorrelate Pixels");
+            m_uniform_sampler_decorrelate_pixels = create_checkbox("uniform_sampler.decorrelate_pixels", "Decorrelate Pixels");
+            m_uniform_sampler_decorrelate_pixels->setToolTip(m_params_metadata.get_path("uniform_pixel_renderer.decorrelate_pixels.help"));
             layout->addWidget(m_uniform_sampler_decorrelate_pixels);
 
             connect(
@@ -519,11 +566,21 @@ namespace
             QFormLayout* sublayout = create_form_layout();
             layout->addLayout(sublayout);
 
-            sublayout->addRow("Min Samples:", create_integer_input("adaptive_sampler.min_samples", 1, 1000000, 1));
-            sublayout->addRow("Max Samples:", create_integer_input("adaptive_sampler.max_samples", 1, 1000000, 1));
-            sublayout->addRow("Quality:", create_double_input("adaptive_sampler.quality", -20.0, +20.0, 2, 0.5));
+            QSpinBox* min_samples = create_integer_input("adaptive_sampler.min_samples", 1, 1000000, 1);
+            min_samples->setToolTip(m_params_metadata.get_path("adaptive_pixel_renderer.min_samples.help"));
+            sublayout->addRow("Min Samples:", min_samples);
 
-            layout->addWidget(create_checkbox("adaptive_sampler.enable_diagnostics", "Enable Diagnostic AOVs"));
+            QSpinBox* max_samples = create_integer_input("adaptive_sampler.max_samples", 1, 1000000, 1);
+            max_samples->setToolTip(m_params_metadata.get_path("adaptive_pixel_renderer.max_samples.help"));
+            sublayout->addRow("Max Samples:", max_samples);
+
+            QDoubleSpinBox* quality = create_double_input("adaptive_sampler.quality", -20.0, +20.0, 2, 0.5);
+            quality->setToolTip(m_params_metadata.get_path("adaptive_pixel_renderer.quality.help"));
+            sublayout->addRow("Quality:", quality);
+
+            QCheckBox* enable_diagnostics = create_checkbox("adaptive_sampler.enable_diagnostics", "Enable Diagnostic AOVs");
+            enable_diagnostics->setToolTip(m_params_metadata.get_path("adaptive_pixel_renderer.enable_diagnostics.help"));
+            layout->addWidget(enable_diagnostics);
         }
 
       private slots:
@@ -562,12 +619,12 @@ namespace
       : public RenderSettingsPanel
     {
       public:
-        LightingPanel(const Configuration& config, QWidget* parent = 0)
+        LightingPanel(const Configuration& config, QWidget* parent = nullptr)
           : RenderSettingsPanel("Lighting", parent)
         {
         }
 
-        virtual void save_config(Configuration& config) const APPLESEED_OVERRIDE
+        void save_config(Configuration& config) const override
         {
             save_directly_linked_values(config);
         }
@@ -577,6 +634,7 @@ namespace
         {
             QFormLayout* layout = create_form_layout();
             container()->setLayout(layout);
+
             layout->addRow("Engine:", engine_combobox);
 
             create_direct_link("engine", "lighting_engine", "pt");
@@ -589,11 +647,11 @@ namespace
       : public LightingPanel
     {
       public:
-        FinalConfigurationLightingPanel(const Configuration& config, QWidget* parent = 0)
+        FinalConfigurationLightingPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingPanel(config, parent)
         {
             QComboBox* combobox = create_combobox("engine");
-            combobox->addItem("Distribution Ray Tracer", "drt");
+            combobox->setToolTip(m_params_metadata.get_path("lighting_engine.help"));
             combobox->addItem("Unidirectional Path Tracer", "pt");
             combobox->addItem("Stochastic Progressive Photon Mapping", "sppm");
             construct(config, combobox);
@@ -604,11 +662,11 @@ namespace
       : public LightingPanel
     {
       public:
-        InteractiveConfigurationLightingPanel(const Configuration& config, QWidget* parent = 0)
+        InteractiveConfigurationLightingPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingPanel(config, parent)
         {
             QComboBox* combobox = create_combobox("engine");
-            combobox->addItem("Distribution Ray Tracer", "drt");
+            combobox->setToolTip(m_params_metadata.get_path("lighting_engine.help"));
             combobox->addItem("Unidirectional Path Tracer", "pt");
             construct(config, combobox);
         }
@@ -622,13 +680,13 @@ namespace
       : public RenderSettingsPanel
     {
       public:
-        LightingEnginePanel(const QString& title, QWidget* parent = 0)
+        LightingEnginePanel(const QString& title, QWidget* parent = nullptr)
           : RenderSettingsPanel(title, parent)
         {
         }
 
       protected:
-        void create_bounce_settings_group(QVBoxLayout* parent, const string& prefix)
+        void create_bounce_settings_group(QVBoxLayout* parent, const string& prefix, const string& config_param_path)
         {
             QGroupBox* groupbox = new QGroupBox("Bounces");
             parent->addWidget(groupbox);
@@ -636,19 +694,66 @@ namespace
             QFormLayout* layout = create_form_layout();
             groupbox->setLayout(layout);
 
-            create_bounce_settings(layout, prefix);
+            create_bounce_settings(layout, prefix, config_param_path);
         }
 
-        void create_bounce_settings(QFormLayout* layout, const string& prefix)
+        void create_bounce_settings(QFormLayout* layout, const string& prefix, const string& config_param_path)
         {
             const string widget_base_key = prefix + ".bounces.";
 
-            QSpinBox* max_bounces = create_integer_input(widget_base_key + "max_bounces", 0, 10000, 1);
+            QSpinBox* max_bounces = create_integer_input(widget_base_key + "max_bounces", 0, 100, 1);
+            max_bounces->setToolTip(m_params_metadata.get_path((config_param_path + ".help").c_str()));
+
             QCheckBox* unlimited_bounces = create_checkbox(widget_base_key + "unlimited_bounces", "Unlimited");
+
             layout->addRow("Max Bounces:", create_horizontal_group(max_bounces, unlimited_bounces));
             connect(unlimited_bounces, SIGNAL(toggled(bool)), max_bounces, SLOT(setDisabled(bool)));
 
-            layout->addRow("Russian Roulette Start Bounce:", create_integer_input(widget_base_key + "rr_start_bounce", 1, 10000, 1));
+            QSpinBox* russian_roulette_start = create_integer_input(widget_base_key + "rr_start_bounce", 1, 100, 1);
+            russian_roulette_start->setToolTip(m_params_metadata.get_path("pt.rr_min_path_length.help"));
+            layout->addRow("Russian Roulette Start Bounce:", russian_roulette_start);
+        }
+
+        void create_separate_bounce_settings_group(QVBoxLayout* parent, const string& prefix, const string& config_param_path)
+        {
+            QGroupBox* groupbox = new QGroupBox("Bounces");
+            parent->addWidget(groupbox);
+
+            QFormLayout* layout = create_form_layout();
+            groupbox->setLayout(layout);
+
+            create_separate_bounce_settings(layout, prefix, config_param_path);
+        }
+
+        void create_separate_bounce_settings(QFormLayout* layout, const string& prefix, const string& config_param_path)
+        {
+            const string widget_base_key = prefix + ".bounces.";
+
+            QSpinBox* max_bounces = create_integer_input(widget_base_key + "max_bounces", 0, 100, 1);
+            QSpinBox* max_diffuse_bounces = create_integer_input(widget_base_key + "max_diffuse_bounces", 0, 100, 1);
+            QSpinBox* max_glossy_bounces = create_integer_input(widget_base_key + "max_glossy_bounces", 0, 100, 1);
+            QSpinBox* max_specular_bounces = create_integer_input(widget_base_key + "max_specular_bounces", 0, 100, 1);
+            QSpinBox* max_volume_bounces = create_integer_input(widget_base_key + "max_volume_bounces", 0, 100, 1);
+            max_bounces->setToolTip(m_params_metadata.get_path((config_param_path + ".help").c_str()));
+
+            QCheckBox* unlimited_bounces = create_checkbox(widget_base_key + "unlimited_bounces", "Unlimited");
+            QCheckBox* unlimited_diffuse_bounces = create_checkbox(widget_base_key + "unlimited_diffuse_bounces", "Unlimited");
+            QCheckBox* unlimited_glossy_bounces = create_checkbox(widget_base_key + "unlimited_glossy_bounces", "Unlimited");
+            QCheckBox* unlimited_specular_bounces = create_checkbox(widget_base_key + "unlimited_specular_bounces", "Unlimited");
+
+            layout->addRow("Max Global Bounces:", create_horizontal_group(max_bounces, unlimited_bounces));
+            layout->addRow("Max Diffuse Bounces:", create_horizontal_group(max_diffuse_bounces, unlimited_diffuse_bounces));
+            layout->addRow("Max Glossy Bounces:", create_horizontal_group(max_glossy_bounces, unlimited_glossy_bounces));
+            layout->addRow("Max Specular Bounces:", create_horizontal_group(max_specular_bounces, unlimited_specular_bounces));
+            layout->addRow("Max Volume Bounces:", create_horizontal_group(max_volume_bounces));
+            connect(unlimited_bounces, SIGNAL(toggled(bool)), max_bounces, SLOT(setDisabled(bool)));
+            connect(unlimited_diffuse_bounces, SIGNAL(toggled(bool)), max_diffuse_bounces, SLOT(setDisabled(bool)));
+            connect(unlimited_glossy_bounces, SIGNAL(toggled(bool)), max_glossy_bounces, SLOT(setDisabled(bool)));
+            connect(unlimited_specular_bounces, SIGNAL(toggled(bool)), max_specular_bounces, SLOT(setDisabled(bool)));
+
+            QSpinBox* russian_roulette_start = create_integer_input(widget_base_key + "rr_start_bounce", 1, 100, 1);
+            russian_roulette_start->setToolTip(m_params_metadata.get_path("pt.rr_min_path_length.help"));
+            layout->addRow("Russian Roulette Start Bounce:", russian_roulette_start);
         }
 
         void load_bounce_settings(
@@ -656,13 +761,12 @@ namespace
             const string&           widget_key_prefix,
             const string&           param_path)
         {
-            const size_t DefaultMaxBounces = 8;
+            const int DefaultMaxBounces = 8;
 
-            const size_t max_path_length =
-                get_config<size_t>(config, param_path, 0);
+            const int max_bounces = get_config<int>(config, param_path, -1);
 
-            set_widget(widget_key_prefix + ".bounces.unlimited_bounces", max_path_length == 0);
-            set_widget(widget_key_prefix + ".bounces.max_bounces", max_path_length == 0 ? DefaultMaxBounces : max_path_length - 1);
+            set_widget(widget_key_prefix + ".bounces.unlimited_bounces", max_bounces == -1);
+            set_widget(widget_key_prefix + ".bounces.max_bounces", max_bounces == -1 ? DefaultMaxBounces : max_bounces);
         }
 
         void save_bounce_settings(
@@ -670,98 +774,51 @@ namespace
             const string&           widget_key_prefix,
             const string&           param_path) const
         {
-            const size_t max_path_length =
+            const int max_bounces =
                 !get_widget<bool>(widget_key_prefix + ".bounces.unlimited_bounces")
-                    ? get_widget<size_t>(widget_key_prefix + ".bounces.max_bounces") + 1
-                    : 0;
+                    ? get_widget<int>(widget_key_prefix + ".bounces.max_bounces")
+                    : -1;
 
-            set_config(config, param_path, max_path_length);
-        }
-    };
-
-    //
-    // Distribution Ray Tracer panel.
-    //
-
-    class DistributionRayTracerPanel
-      : public LightingEnginePanel
-    {
-      public:
-        DistributionRayTracerPanel(const Configuration& config, QWidget* parent = 0)
-          : LightingEnginePanel("Distribution Ray Tracer", parent)
-        {
-            fold();
-
-            QVBoxLayout* layout = new QVBoxLayout();
-            container()->setLayout(layout);
-
-            QGroupBox* groupbox = new QGroupBox("Components");
-            layout->addWidget(groupbox);
-
-            QVBoxLayout* sublayout = new QVBoxLayout();
-            groupbox->setLayout(sublayout);
-
-            sublayout->addWidget(create_checkbox("lighting_components.ibl", "Image-Based Lighting"));
-
-            create_bounce_settings_group(layout, "drt");
-            create_drt_advanced_settings(layout);
-
-            create_direct_link("lighting_components.ibl", "drt.enable_ibl", true);
-            create_direct_link("drt.bounces.rr_start_bounce", "drt.rr_min_path_length", 3);
-            create_direct_link("advanced.dl.light_samples", "drt.dl_light_samples", 1);
-            create_direct_link("advanced.ibl.env_samples", "drt.ibl_env_samples", 1);
-
-            load_directly_linked_values(config);
-
-            load_bounce_settings(config, "drt", "drt.max_path_length");
+            set_config(config, param_path, max_bounces);
         }
 
-        virtual void save_config(Configuration& config) const APPLESEED_OVERRIDE
+        void load_separate_bounce_settings(
+            const Configuration&    config,
+            const string&           widget_key_prefix,
+            const string&           bounce_type,
+            const bool              allow_unlimited = true)
         {
-            save_directly_linked_values(config);
+            const int DefaultMaxBounces = 8;
 
-            save_bounce_settings(config, "drt", "drt.max_path_length");
+            const int max_bounces =
+                get_config<int>(config, construct_bounce_param_path(bounce_type), -1);
+
+            if (allow_unlimited)
+                set_widget(widget_key_prefix + ".bounces.unlimited_" + bounce_type + "_bounces", max_bounces == -1);
+            set_widget(widget_key_prefix + ".bounces.max_" + bounce_type + "_bounces", max_bounces == -1 ? DefaultMaxBounces : max_bounces);
         }
 
-      private:
-        void create_drt_advanced_settings(QVBoxLayout* parent)
+        void save_separate_bounce_settings(
+            Configuration&          config,
+            const string&           widget_key_prefix,
+            const string&           bounce_type,
+            const bool              allow_unlimited = true) const
         {
-            QGroupBox* groupbox = new QGroupBox("Advanced");
-            parent->addWidget(groupbox);
+            const bool unlimited_bounces =
+                allow_unlimited &&
+                get_widget<bool>(widget_key_prefix + ".bounces.unlimited_" + bounce_type + "_bounces");
 
-            QVBoxLayout* layout = new QVBoxLayout();
-            groupbox->setLayout(layout);
+            const int max_bounces =
+                !unlimited_bounces
+                    ? get_widget<int>(widget_key_prefix + ".bounces.max_" + bounce_type + "_bounces")
+                    : -1;
 
-            create_drt_advanced_dl_settings(layout);
-            create_drt_advanced_ibl_settings(layout);
+            set_config(config, construct_bounce_param_path(bounce_type), max_bounces);
         }
 
-        void create_drt_advanced_dl_settings(QVBoxLayout* parent)
+        static string construct_bounce_param_path(const string& bounce_type)
         {
-            QGroupBox* groupbox = new QGroupBox("Direct Lighting");
-            parent->addWidget(groupbox);
-
-            QVBoxLayout* layout = create_vertical_layout();
-            groupbox->setLayout(layout);
-
-            QHBoxLayout* sublayout = create_horizontal_layout();
-            layout->addLayout(sublayout);
-
-            sublayout->addLayout(create_form_layout("Light Samples:", create_double_input("advanced.dl.light_samples", 0.0, 1000000.0, 3, 1.0)));
-        }
-
-        void create_drt_advanced_ibl_settings(QVBoxLayout* parent)
-        {
-            QGroupBox* groupbox = new QGroupBox("Image-Based Lighting");
-            parent->addWidget(groupbox);
-
-            QVBoxLayout* layout = create_vertical_layout();
-            groupbox->setLayout(layout);
-
-            QHBoxLayout* sublayout = create_horizontal_layout();
-            layout->addLayout(sublayout);
-
-            sublayout->addLayout(create_form_layout("Environment Samples:", create_double_input("advanced.ibl.env_samples", 0.0, 1000000.0, 3, 1.0)));
+            return "pt.max_" + bounce_type + "_bounces";
         }
     };
 
@@ -773,7 +830,7 @@ namespace
       : public LightingEnginePanel
     {
       public:
-        UnidirectionalPathTracerPanel(const Configuration& config, QWidget* parent = 0)
+        UnidirectionalPathTracerPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingEnginePanel("Unidirectional Path Tracer", parent)
         {
             fold();
@@ -791,30 +848,43 @@ namespace
             sublayout->addWidget(create_checkbox("lighting_components.ibl", "Image-Based Lighting"));
             sublayout->addWidget(create_checkbox("lighting_components.caustics", "Caustics"));
 
-            create_bounce_settings_group(layout, "pt");
+            create_separate_bounce_settings_group(layout, "pt", "pt.max_bounces");
+            create_pt_volume_settings(layout);
             create_pt_advanced_settings(layout);
 
-            create_direct_link("lighting_components.dl", "pt.enable_dl", true);
-            create_direct_link("lighting_components.ibl", "pt.enable_ibl", true);
-            create_direct_link("lighting_components.caustics", "pt.enable_caustics", false);
-            create_direct_link("pt.bounces.rr_start_bounce", "pt.rr_min_path_length", 3);
-            create_direct_link("advanced.next_event_estimation", "pt.next_event_estimation", true);
-            create_direct_link("advanced.dl.light_samples", "pt.dl_light_samples", 1);
-            create_direct_link("advanced.ibl.env_samples", "pt.ibl_env_samples", 1);
+            create_direct_link("lighting_components.dl",                    "pt.enable_dl");
+            create_direct_link("lighting_components.ibl",                   "pt.enable_ibl");
+            create_direct_link("lighting_components.caustics",              "pt.enable_caustics");
+            create_direct_link("pt.bounces.rr_start_bounce",                "pt.rr_min_path_length");
+            create_direct_link("advanced.next_event_estimation",            "pt.next_event_estimation");
+            create_direct_link("advanced.dl.light_samples",                 "pt.dl_light_samples");
+            create_direct_link("advanced.dl.low_light_threshold",           "pt.dl_low_light_threshold");
+            create_direct_link("advanced.ibl.env_samples",                  "pt.ibl_env_samples");
+            create_direct_link("volume.distance_samples",                   "pt.volume_distance_samples");
+            create_direct_link("volume.optimize_for_lights_outside_volumes","pt.optimize_for_lights_outside_volumes");
+            create_direct_link("advanced.light_sampler.algorithm",          "light_sampler.algorithm");
 
             load_directly_linked_values(config);
 
-            load_bounce_settings(config, "pt", "pt.max_path_length");
+            load_bounce_settings(config, "pt", "pt.max_bounces");
+            load_separate_bounce_settings(config, "pt", "diffuse");
+            load_separate_bounce_settings(config, "pt", "glossy");
+            load_separate_bounce_settings(config, "pt", "specular");
+            load_separate_bounce_settings(config, "pt", "volume", false);
 
             set_widget("advanced.unlimited_ray_intensity", !config.get_parameters().exist_path("pt.max_ray_intensity"));
             set_widget("advanced.max_ray_intensity", get_config<double>(config, "pt.max_ray_intensity", 1.0));
         }
 
-        virtual void save_config(Configuration& config) const APPLESEED_OVERRIDE
+        void save_config(Configuration& config) const override
         {
             save_directly_linked_values(config);
 
-            save_bounce_settings(config, "pt", "pt.max_path_length");
+            save_bounce_settings(config, "pt", "pt.max_bounces");
+            save_separate_bounce_settings(config, "pt", "diffuse");
+            save_separate_bounce_settings(config, "pt", "glossy");
+            save_separate_bounce_settings(config, "pt", "specular");
+            save_separate_bounce_settings(config, "pt", "volume", false);
 
             if (get_widget<bool>("advanced.unlimited_ray_intensity"))
                 config.get_parameters().remove_path("pt.max_ray_intensity");
@@ -830,15 +900,54 @@ namespace
             QVBoxLayout* layout = new QVBoxLayout();
             groupbox->setLayout(layout);
 
+            QFormLayout* sublayout = create_form_layout();
+            layout->addLayout(sublayout);
+
             QGroupBox* nee_groupbox = create_checkable_groupbox("advanced.next_event_estimation", "Next Event Estimation");
             layout->addWidget(nee_groupbox);
 
             QVBoxLayout* nee_layout = create_vertical_layout();
             nee_groupbox->setLayout(nee_layout);
 
+            create_pt_advanced_lightsampler_settings(nee_layout);
             create_pt_advanced_dl_settings(nee_layout);
             create_pt_advanced_ibl_settings(nee_layout);
             create_pt_advanced_max_ray_intensity_settings(nee_layout);
+        }
+
+        void create_pt_volume_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* groupbox = new QGroupBox("Participating Media");
+            parent->addWidget(groupbox);
+
+            QVBoxLayout* layout = create_vertical_layout();
+            groupbox->setLayout(layout);
+
+            QFormLayout* sublayout = create_form_layout();
+            layout->addLayout(sublayout);
+
+            QSpinBox* volume_distance_samples =
+                create_integer_input("volume.distance_samples", 1, 1000, 1);
+            volume_distance_samples->setToolTip(
+                m_params_metadata.get_path("pt.volume_distance_samples.help"));
+            sublayout->addRow("Volume Distance Samples:", volume_distance_samples);
+
+            QCheckBox* optimize_for_lights_outside_volumes =
+                create_checkbox("volume.optimize_for_lights_outside_volumes", "Optimize for Lights Outside Volumes");
+            sublayout->addRow(optimize_for_lights_outside_volumes);
+        }
+
+        void create_pt_advanced_lightsampler_settings(QVBoxLayout* parent)
+        {
+            QFormLayout* sublayout = create_form_layout();
+            parent->addLayout(sublayout);
+
+            QComboBox* light_sampling;
+            light_sampling = create_combobox("advanced.light_sampler.algorithm");
+            light_sampling->setToolTip(m_params_metadata.get_path("light_sampler.algorithm.help"));
+            light_sampling->addItem("CDF", "cdf");
+            light_sampling->addItem("Light Tree", "lighttree");
+            sublayout->addRow("Light Sampler:", light_sampling);
         }
 
         void create_pt_advanced_dl_settings(QVBoxLayout* parent)
@@ -849,10 +958,16 @@ namespace
             QVBoxLayout* layout = create_vertical_layout();
             groupbox->setLayout(layout);
 
-            QHBoxLayout* sublayout = create_horizontal_layout();
+            QFormLayout* sublayout = create_form_layout();
             layout->addLayout(sublayout);
 
-            sublayout->addLayout(create_form_layout("Light Samples:", create_double_input("advanced.dl.light_samples", 0.0, 1000000.0, 3, 1.0)));
+            QDoubleSpinBox* light_samples = create_double_input("advanced.dl.light_samples", 0.0, 1000000.0, 3, 1.0);
+            light_samples->setToolTip(m_params_metadata.get_path("pt.dl_light_samples.help"));
+            sublayout->addRow("Light Samples:", light_samples);
+
+            QDoubleSpinBox* low_light_threshold = create_double_input("advanced.dl.low_light_threshold", 0.0, 1000.0, 3, 0.1);
+            low_light_threshold->setToolTip(m_params_metadata.get_path("pt.dl_low_light_threshold.help"));
+            sublayout->addRow("Low Light Threshold:", low_light_threshold);
         }
 
         void create_pt_advanced_ibl_settings(QVBoxLayout* parent)
@@ -866,12 +981,16 @@ namespace
             QHBoxLayout* sublayout = create_horizontal_layout();
             layout->addLayout(sublayout);
 
-            sublayout->addLayout(create_form_layout("Environment Samples:", create_double_input("advanced.ibl.env_samples", 0.0, 1000000.0, 3, 1.0)));
+            QDoubleSpinBox* env_samples = create_double_input("advanced.ibl.env_samples", 0.0, 1000000.0, 3, 1.0);
+            env_samples->setToolTip(m_params_metadata.get_path("pt.ibl_env_samples.help"));
+            sublayout->addLayout(create_form_layout("Environment Samples:", env_samples));
         }
 
         void create_pt_advanced_max_ray_intensity_settings(QVBoxLayout* parent)
         {
             QDoubleSpinBox* max_ray_intensity = create_double_input("advanced.max_ray_intensity", 0.0, 1.0e9, 3, 0.1);
+            max_ray_intensity->setToolTip(m_params_metadata.get_path("pt.max_ray_intensity.help"));
+
             QCheckBox* unlimited_ray_intensity = create_checkbox("advanced.unlimited_ray_intensity", "Unlimited");
             parent->addLayout(create_form_layout("Max Ray Intensity:", create_horizontal_group(max_ray_intensity, unlimited_ray_intensity)));
             connect(unlimited_ray_intensity, SIGNAL(toggled(bool)), max_ray_intensity, SLOT(setDisabled(bool)));
@@ -886,7 +1005,7 @@ namespace
       : public LightingEnginePanel
     {
       public:
-        SPPMPanel(const Configuration& config, QWidget* parent = 0)
+        SPPMPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingEnginePanel("Stochastic Progressive Photon Mapping", parent)
         {
             fold();
@@ -899,20 +1018,20 @@ namespace
             create_photon_tracing_settings(layout);
             create_radiance_estimation_settings(layout);
 
-            create_direct_link("lighting_components.ibl", "sppm.enable_ibl", true);
-            create_direct_link("lighting_components.caustics", "sppm.enable_caustics", true);
-            create_direct_link("photon_tracing.bounces.rr_start_bounce", "sppm.photon_tracing_rr_min_path_length", 3);
-            create_direct_link("photon_tracing.light_photons", "sppm.light_photons_per_pass", 1000000);
-            create_direct_link("photon_tracing.env_photons", "sppm.env_photons_per_pass", 1000000);
-            create_direct_link("radiance_estimation.bounces.rr_start_bounce", "sppm.path_tracing_rr_min_path_length", 3);
-            create_direct_link("radiance_estimation.initial_radius", "sppm.initial_radius", 1.0);
-            create_direct_link("radiance_estimation.max_photons", "sppm.max_photons_per_estimate", 100);
-            create_direct_link("radiance_estimation.alpha", "sppm.alpha", 0.7);
+            create_direct_link("lighting_components.ibl",                        "sppm.enable_ibl");
+            create_direct_link("lighting_components.caustics",                   "sppm.enable_caustics");
+            create_direct_link("photon_tracing.bounces.rr_start_bounce",         "sppm.photon_tracing_rr_min_path_length");
+            create_direct_link("photon_tracing.light_photons",                   "sppm.light_photons_per_pass");
+            create_direct_link("photon_tracing.env_photons",                     "sppm.env_photons_per_pass");
+            create_direct_link("radiance_estimation.bounces.rr_start_bounce",    "sppm.path_tracing_rr_min_path_length");
+            create_direct_link("radiance_estimation.initial_radius",             "sppm.initial_radius");
+            create_direct_link("radiance_estimation.max_photons",                "sppm.max_photons_per_estimate");
+            create_direct_link("radiance_estimation.alpha",                      "sppm.alpha");
 
             load_directly_linked_values(config);
 
-            load_bounce_settings(config, "photon_tracing", "sppm.photon_tracing_max_path_length");
-            load_bounce_settings(config, "radiance_estimation", "sppm.path_tracing_max_path_length");
+            load_bounce_settings(config, "photon_tracing", "sppm.photon_tracing_max_bounces");
+            load_bounce_settings(config, "radiance_estimation", "sppm.path_tracing_max_bounces");
 
             const string dl_mode = get_config<string>(config, "sppm.dl_mode", "rt");
             if (dl_mode == "rt")
@@ -921,18 +1040,18 @@ namespace
                 set_widget("lighting_components.dl.sppm", true);
             else set_widget("lighting_components.dl.off", true);
 
-            const string photon_type = get_config<string>(config, "sppm.photon_type", "mono");
+            const string photon_type = get_config<string>(config, "sppm.photon_type", "poly");
             if (photon_type == "mono")
                 set_widget("photon_type.mono", true);
             else set_widget("photon_type.poly", true);
         }
 
-        virtual void save_config(Configuration& config) const APPLESEED_OVERRIDE
+        void save_config(Configuration& config) const override
         {
             save_directly_linked_values(config);
 
-            save_bounce_settings(config, "photon_tracing", "sppm.photon_tracing_max_path_length");
-            save_bounce_settings(config, "radiance_estimation", "sppm.path_tracing_max_path_length");
+            save_bounce_settings(config, "photon_tracing", "sppm.photon_tracing_max_bounces");
+            save_bounce_settings(config, "radiance_estimation", "sppm.path_tracing_max_bounces");
 
             set_config(config, "sppm.dl_mode",
                 get_widget<bool>("lighting_components.dl.rt") ? "rt" :
@@ -969,17 +1088,23 @@ namespace
             groupbox->setLayout(layout);
 
             QButtonGroup* buttons = new QButtonGroup(groupbox);
-            QRadioButton* buttons_rt = create_radio_button("lighting_components.dl.rt", "RT Direct Lighting");
-            QRadioButton* buttons_sppm = create_radio_button("lighting_components.dl.sppm", "SPPM Direct Lighting");
-            QRadioButton* buttons_off = create_radio_button("lighting_components.dl.off", "No Direct Lighting");
-            buttons->addButton(buttons_rt);
-            buttons->addButton(buttons_sppm);
-            buttons->addButton(buttons_off);
+
+            QRadioButton* button_rt = create_radio_button("lighting_components.dl.rt", "RT Direct Lighting");
+            button_rt->setToolTip(m_params_metadata.get_path("sppm.dl_type.options.rt.help"));
+            buttons->addButton(button_rt);
+
+            QRadioButton* button_sppm = create_radio_button("lighting_components.dl.sppm", "SPPM Direct Lighting");
+            button_sppm->setToolTip(m_params_metadata.get_path("sppm.dl_type.options.sppm.help"));
+            buttons->addButton(button_sppm);
+
+            QRadioButton* button_off = create_radio_button("lighting_components.dl.off", "No Direct Lighting");
+            button_off->setToolTip(m_params_metadata.get_path("sppm.dl_type.options.off.help"));
+            buttons->addButton(button_off);
 
             QHBoxLayout* dl_buttons_layout = new QHBoxLayout();
-            dl_buttons_layout->addWidget(buttons_rt);
-            dl_buttons_layout->addWidget(buttons_sppm);
-            dl_buttons_layout->addWidget(buttons_off);
+            dl_buttons_layout->addWidget(button_rt);
+            dl_buttons_layout->addWidget(button_sppm);
+            dl_buttons_layout->addWidget(button_off);
             layout->addLayout(dl_buttons_layout);
 
             layout->addWidget(create_checkbox("lighting_components.ibl", "Image-Based Lighting"));
@@ -997,9 +1122,15 @@ namespace
             QFormLayout* sublayout = create_form_layout();
             layout->addLayout(sublayout);
 
-            create_bounce_settings(sublayout, "photon_tracing");
-            sublayout->addRow("Light Photons:", create_integer_input("photon_tracing.light_photons", 0, 1000000000, 100000));
-            sublayout->addRow("Environment Photons:", create_integer_input("photon_tracing.env_photons", 0, 1000000000, 100000));
+            create_bounce_settings(sublayout, "photon_tracing", "sppm.photon_tracing_max_bounces");
+
+            QSpinBox* light_photons = create_integer_input("photon_tracing.light_photons", 0, 1000000000, 100000);
+            light_photons->setToolTip(m_params_metadata.get_path("sppm.light_photons_per_pass.help"));
+            sublayout->addRow("Light Photons:", light_photons);
+
+            QSpinBox* environment_photons = create_integer_input("photon_tracing.env_photons", 0, 1000000000, 100000);
+            environment_photons->setToolTip(m_params_metadata.get_path("sppm.env_photons_per_pass.help"));
+            sublayout->addRow("Environment Photons:", environment_photons);
         }
 
         void create_radiance_estimation_settings(QVBoxLayout* parent)
@@ -1013,10 +1144,19 @@ namespace
             QFormLayout* sublayout = create_form_layout();
             layout->addLayout(sublayout);
 
-            create_bounce_settings(sublayout, "radiance_estimation");
-            sublayout->addRow("Initial Radius:", create_double_input("radiance_estimation.initial_radius", 0.001, 100.0, 3, 0.1, "%"));
-            sublayout->addRow("Max Photons:", create_integer_input("radiance_estimation.max_photons", 8, 1000000000, 50));
-            sublayout->addRow("Alpha:", create_double_input("radiance_estimation.alpha", 0.0, 1.0, 2, 0.1));
+            create_bounce_settings(sublayout, "radiance_estimation", "sppm.path_tracing_max_bounces");
+
+            QDoubleSpinBox* initial_radius = create_double_input("radiance_estimation.initial_radius", 0.001, 100.0, 3, 0.1, "%");
+            initial_radius->setToolTip(m_params_metadata.get_path("sppm.initial_radius.help"));
+            sublayout->addRow("Initial Radius:", initial_radius);
+
+            QSpinBox* max_photons = create_integer_input("radiance_estimation.max_photons", 8, 1000000000, 50);
+            max_photons->setToolTip(m_params_metadata.get_path("sppm.max_photons_per_estimate.help"));
+            sublayout->addRow("Max Photons:", max_photons);
+
+            QDoubleSpinBox* alpha = create_double_input("radiance_estimation.alpha", 0.0, 1.0, 2, 0.1);
+            alpha->setToolTip(m_params_metadata.get_path("sppm.alpha.help"));
+            sublayout->addRow("Alpha:", alpha);
         }
     };
 
@@ -1028,7 +1168,7 @@ namespace
       : public LightingEnginePanel
     {
       public:
-        SystemPanel(const Configuration& config, QWidget* parent = 0)
+        SystemPanel(const Configuration& config, QWidget* parent = nullptr)
           : LightingEnginePanel("System", parent)
         {
             fold();
@@ -1055,10 +1195,10 @@ namespace
             set_widget("texture_store_max_size.value", get_config<size_t>(config, "texture_store.max_size", DefaultTextureStoreSizeMB) / MB);
 
             set_widget("tile_ordering.override", config.get_parameters().exist_path("generic_frame_renderer.tile_ordering"));
-            set_widget("tile_ordering.value", get_config<string>(config, "generic_frame_renderer.tile_ordering", "hilbert"));
+            set_widget("tile_ordering.value", get_config<string>(config, "generic_frame_renderer.tile_ordering", "spiral"));
         }
 
-        virtual void save_config(Configuration& config) const APPLESEED_OVERRIDE
+        void save_config(Configuration& config) const override
         {
             save_directly_linked_values(config);
 
@@ -1086,17 +1226,20 @@ namespace
             QGroupBox* groupbox = create_checkable_groupbox("rendering_threads.override", "Override");
             parent->addWidget(groupbox);
 
-            QSpinBox* rendering_threads = create_integer_input("rendering_threads.value", 1, 65536, 1);
+            QSpinBox* rendering_threads = create_integer_input("rendering_threads.value", -65535, 65536, 1);
+            rendering_threads->setToolTip(m_params_metadata.get_path("rendering_threads.help"));
+
             QCheckBox* auto_rendering_threads = create_checkbox("rendering_threads.auto", "Auto");
             groupbox->setLayout(create_form_layout("Rendering Threads:", create_horizontal_group(rendering_threads, auto_rendering_threads)));
+
             connect(auto_rendering_threads, SIGNAL(toggled(bool)), rendering_threads, SLOT(setDisabled(bool)));
         }
 
         void create_system_override_texture_store_max_size_settings(QVBoxLayout* parent)
         {
             QGroupBox* groupbox = create_checkable_groupbox("texture_store_max_size.override", "Override");
+            groupbox->setToolTip(m_params_metadata.get_path("texture_store.max_size.help"));
             parent->addWidget(groupbox);
-
             groupbox->setLayout(
                 create_form_layout(
                     "Texture Store Size:",
@@ -1109,6 +1252,7 @@ namespace
             parent->addWidget(groupbox);
 
             QComboBox* tile_ordering = create_combobox("tile_ordering.value");
+            tile_ordering->setToolTip(m_params_metadata.get_path("generic_frame_renderer.tile_ordering.help"));
             tile_ordering->addItem("Linear", "linear");
             tile_ordering->addItem("Spiral", "spiral");
             tile_ordering->addItem("Hilbert", "hilbert");
@@ -1147,14 +1291,17 @@ RenderingSettingsWindow::~RenderingSettingsWindow()
 
 void RenderingSettingsWindow::reload()
 {
-    vector<QString> configs;
+    assert(m_project_manager.get_project() != nullptr);
 
+    // Collect configuration names.
+    vector<QString> configs;
     for (const_each<ConfigurationContainer> i = m_project_manager.get_project()->configurations(); i; ++i)
     {
         if (!BaseConfigurationFactory::is_base_configuration(i->get_name()))
-            configs.push_back(i->get_name());
+            configs.emplace_back(i->get_name());
     }
 
+    // Sort configuration names alphabetically.
     sort(configs.begin(), configs.end());
 
     // This will load an empty configuration.
@@ -1199,7 +1346,7 @@ namespace
 
         const Configuration* base_config = config.get_base();
 
-        if (base_config == 0)
+        if (base_config == nullptr)
             return false;
 
         return is_interactive_configuration(*base_config);
@@ -1212,6 +1359,8 @@ void RenderingSettingsWindow::create_panels(const Configuration& config)
 
     m_panels.clear();
 
+    m_panels.push_back(new GeneralSettingsPanel(config));
+
     if (!interactive)
         m_panels.push_back(new ImagePlaneSamplingPanel(config));
 
@@ -1219,7 +1368,6 @@ void RenderingSettingsWindow::create_panels(const Configuration& config)
         m_panels.push_back(new InteractiveConfigurationLightingPanel(config));
     else m_panels.push_back(new FinalConfigurationLightingPanel(config));
 
-    m_panels.push_back(new DistributionRayTracerPanel(config));
     m_panels.push_back(new UnidirectionalPathTracerPanel(config));
 
     if (!interactive)

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -61,7 +61,7 @@ class APPLESEED_DLLSYMBOL Configuration
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
     // Set the base configuration.
     // A null pointer is a valid value.
@@ -75,7 +75,7 @@ class APPLESEED_DLLSYMBOL Configuration
     // from the base configuration and the ones of this configuration.
     ParamArray get_inherited_parameters() const;
 
-    // Get the metadata dictionary describing the configuration settings.
+    // Return the metadata of the configuration settings.
     static foundation::Dictionary get_metadata();
 
   private:

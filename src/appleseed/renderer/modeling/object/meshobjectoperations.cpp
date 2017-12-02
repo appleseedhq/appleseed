@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/triangle.h"
+#include "renderer/utility/triangle.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -47,6 +48,71 @@ using namespace std;
 
 namespace renderer
 {
+
+void compute_smooth_vertex_normals_base_pose(MeshObject& object)
+{
+    assert(object.get_vertex_normal_count() == 0);
+
+    const size_t vertex_count = object.get_vertex_count();
+    const size_t triangle_count = object.get_triangle_count();
+
+    vector<GVector3> normals(vertex_count, GVector3(0.0));
+
+    for (size_t i = 0; i < triangle_count; ++i)
+    {
+        Triangle& triangle = object.get_triangle(i);
+        triangle.m_n0 = triangle.m_v0;
+        triangle.m_n1 = triangle.m_v1;
+        triangle.m_n2 = triangle.m_v2;
+
+        const GVector3& v0 = object.get_vertex(triangle.m_v0);
+        const GVector3& v1 = object.get_vertex(triangle.m_v1);
+        const GVector3& v2 = object.get_vertex(triangle.m_v2);
+        const GVector3 normal = normalize(compute_triangle_normal(v0, v1, v2));
+
+        normals[triangle.m_v0] += normal;
+        normals[triangle.m_v1] += normal;
+        normals[triangle.m_v2] += normal;
+    }
+
+    object.reserve_vertex_normals(vertex_count);
+
+    for (size_t i = 0; i < vertex_count; ++i)
+        object.push_vertex_normal(safe_normalize(normals[i]));
+}
+
+void compute_smooth_vertex_normals_pose(MeshObject& object, const size_t motion_segment_index)
+{
+    const size_t vertex_count = object.get_vertex_count();
+    const size_t triangle_count = object.get_triangle_count();
+
+    vector<GVector3> normals(vertex_count, GVector3(0.0));
+
+    for (size_t i = 0; i < triangle_count; ++i)
+    {
+        const Triangle& triangle = object.get_triangle(i);
+
+        const GVector3& v0 = object.get_vertex_pose(triangle.m_v0, motion_segment_index);
+        const GVector3& v1 = object.get_vertex_pose(triangle.m_v1, motion_segment_index);
+        const GVector3& v2 = object.get_vertex_pose(triangle.m_v2, motion_segment_index);
+        const GVector3 normal = normalize(compute_triangle_normal(v0, v1, v2));
+
+        normals[triangle.m_v0] += normal;
+        normals[triangle.m_v1] += normal;
+        normals[triangle.m_v2] += normal;
+    }
+
+    for (size_t i = 0; i < vertex_count; ++i)
+        object.set_vertex_normal_pose(i, motion_segment_index, safe_normalize(normals[i]));
+}
+
+void compute_smooth_vertex_normals(MeshObject& object)
+{
+    compute_smooth_vertex_normals_base_pose(object);
+
+    for (size_t i = 0; i < object.get_motion_segment_count(); ++i)
+        compute_smooth_vertex_normals_pose(object, i);
+}
 
 void compute_smooth_vertex_tangents_base_pose(MeshObject& object)
 {
@@ -97,7 +163,7 @@ void compute_smooth_vertex_tangents_base_pose(MeshObject& object)
     object.reserve_vertex_tangents(vertex_count);
 
     for (size_t i = 0; i < vertex_count; ++i)
-        object.push_vertex_tangent(normalize(tangents[i]));
+        object.push_vertex_tangent(safe_normalize(tangents[i]));
 }
 
 void compute_smooth_vertex_tangents_pose(MeshObject& object, const size_t motion_segment_index)
@@ -146,7 +212,7 @@ void compute_smooth_vertex_tangents_pose(MeshObject& object, const size_t motion
     }
 
     for (size_t i = 0; i < vertex_count; ++i)
-        object.set_vertex_tangent_pose(i, motion_segment_index, normalize(tangents[i]));
+        object.set_vertex_tangent_pose(i, motion_segment_index, safe_normalize(tangents[i]));
 }
 
 void compute_smooth_vertex_tangents(MeshObject& object)

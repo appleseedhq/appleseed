@@ -5,7 +5,7 @@
 #
 # This software is released under the MIT license.
 #
-# Copyright (c) 2016 Esteban Tovagliari, The appleseedhq Organization
+# Copyright (c) 2016-2017 Esteban Tovagliari, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,10 @@
 import unittest
 import appleseed as asr
 
+
 class TestEntityMap(unittest.TestCase):
     """
-        Basic entity map tests.
+    Basic entity map tests.
     """
 
     def setUp(self):
@@ -84,13 +85,13 @@ class TestEntityMap(unittest.TestCase):
         self.assertEqual(self.assembly_map["assembly"].get_uid(), uid1)
         self.assertEqual(self.assembly_map["another_assembly"].get_uid(), uid2)
 
-    def test_insert_remove(self):
+    def test_insert_remove_by_uid(self):
         ass = asr.Assembly("assembly")
         self.assembly_map.insert(ass)
         self.assertEqual(len(self.assembly_map), 1)
 
-        a= self.assembly_map.get_by_name("assembly")
-        ass = self.assembly_map.remove(a.get_uid())
+        a = self.assembly_map.get_by_name("assembly")
+        ass = self.assembly_map.remove_by_uid(a.get_uid())
         self.assertEqual(len(self.assembly_map), 0)
 
         self.assembly_map.insert(ass)

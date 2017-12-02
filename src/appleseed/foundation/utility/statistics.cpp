@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -115,7 +115,7 @@ string Statistics::to_string(const size_t max_header_length) const
             sstr << entry->m_name.substr(0, max_header_length);
         else sstr << entry->m_name << string(max_header_length - entry->m_name.size(), ' ');
 
-        sstr << ' ' << entry->to_string();
+        sstr << entry->to_string();
     }
 
     return sstr.str();
@@ -173,9 +173,9 @@ Statistics::IntegerEntry::IntegerEntry(
 {
 }
 
-auto_ptr<Statistics::Entry> Statistics::IntegerEntry::clone() const
+unique_ptr<Statistics::Entry> Statistics::IntegerEntry::clone() const
 {
-    return auto_ptr<Entry>(new IntegerEntry(*this));
+    return unique_ptr<Entry>(new IntegerEntry(*this));
 }
 
 void Statistics::IntegerEntry::merge(const Entry* other)
@@ -202,9 +202,9 @@ Statistics::UnsignedIntegerEntry::UnsignedIntegerEntry(
 {
 }
 
-auto_ptr<Statistics::Entry> Statistics::UnsignedIntegerEntry::clone() const
+unique_ptr<Statistics::Entry> Statistics::UnsignedIntegerEntry::clone() const
 {
-    return auto_ptr<Entry>(new UnsignedIntegerEntry(*this));
+    return unique_ptr<Entry>(new UnsignedIntegerEntry(*this));
 }
 
 void Statistics::UnsignedIntegerEntry::merge(const Entry* other)
@@ -231,9 +231,9 @@ Statistics::FloatingPointEntry::FloatingPointEntry(
 {
 }
 
-auto_ptr<Statistics::Entry> Statistics::FloatingPointEntry::clone() const
+unique_ptr<Statistics::Entry> Statistics::FloatingPointEntry::clone() const
 {
-    return auto_ptr<Entry>(new FloatingPointEntry(*this));
+    return unique_ptr<Entry>(new FloatingPointEntry(*this));
 }
 
 void Statistics::FloatingPointEntry::merge(const Entry* other)
@@ -260,9 +260,9 @@ Statistics::StringEntry::StringEntry(
 {
 }
 
-auto_ptr<Statistics::Entry> Statistics::StringEntry::clone() const
+unique_ptr<Statistics::Entry> Statistics::StringEntry::clone() const
 {
-    return auto_ptr<Entry>(new StringEntry(*this));
+    return unique_ptr<Entry>(new StringEntry(*this));
 }
 
 void Statistics::StringEntry::merge(const Entry* other)

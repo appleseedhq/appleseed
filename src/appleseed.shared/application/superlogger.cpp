@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,12 @@
 // Interface header.
 #include "superlogger.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
+
 // Standard headers.
 #include <cstdio>
+#include <string>
 
 // Platform headers.
 #ifndef _WIN32
@@ -45,7 +49,7 @@ namespace appleseed {
 namespace shared {
 
 SuperLogger::SuperLogger()
-  : m_log_target(0)
+  : m_log_target(nullptr)
 {
     set_log_target(create_open_file_log_target(stderr));
 }
@@ -53,6 +57,11 @@ SuperLogger::SuperLogger()
 SuperLogger::~SuperLogger()
 {
     delete m_log_target;
+}
+
+ILogTarget& SuperLogger::get_log_target() const
+{
+    return *m_log_target;
 }
 
 void SuperLogger::set_log_target(ILogTarget* log_target)
@@ -67,11 +76,6 @@ void SuperLogger::set_log_target(ILogTarget* log_target)
     add_target(m_log_target);
 }
 
-ILogTarget& SuperLogger::get_log_target() const
-{
-    return *m_log_target;
-}
-
 void SuperLogger::enable_message_coloring()
 {
 #ifndef _WIN32
@@ -81,6 +85,35 @@ void SuperLogger::enable_message_coloring()
 #endif
 
     set_log_target(create_console_log_target(stderr));
+}
+
+void SuperLogger::set_verbosity_level_from_string(const char* level_name)
+{
+    const LogMessage::Category level = LogMessage::get_category_value(level_name);
+
+    if (level < LogMessage::NumMessageCategories)
+        set_verbosity_level(level);
+    else LOG_ERROR(*this, "invalid message verbosity level \"%s\".", level_name);
+}
+
+void SuperLogger::configure_from_settings(const Dictionary& settings)
+{
+    if (settings.strings().exist("message_coloring"))
+    {
+        const char* value = settings.get("message_coloring");
+        try
+        {
+            if (from_string<bool>(value))
+                enable_message_coloring();
+        }
+        catch (ExceptionStringConversionError)
+        {
+            LOG_ERROR(*this, "invalid value \"%s\" for parameter \"message_coloring\".", value);
+        }
+    }
+
+    if (settings.strings().exist("message_verbosity"))
+        set_verbosity_level_from_string(settings.get("message_verbosity"));
 }
 
 }   // namespace shared

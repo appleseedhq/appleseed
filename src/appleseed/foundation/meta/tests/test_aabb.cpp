@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,10 +35,9 @@
 
 // Imath headers.
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
-#include "foundation/platform/exrheaderguards.h"
-BEGIN_EXR_INCLUDES
+#include "foundation/platform/_beginexrheaders.h"
 #include "OpenEXR/ImathBox.h"
-END_EXR_INCLUDES
+#include "foundation/platform/_endexrheaders.h"
 #endif
 
 using namespace foundation;
@@ -397,13 +396,37 @@ TEST_SUITE(Foundation_Math_AABB)
         EXPECT_FEQ(sqrt(5.0 * 5.0 + 7.0 * 7.0 + 9.0 * 9.0), bbox.diameter());
     }
 
+    TEST_CASE(TestSquareDiameter)
+    {
+        const AABB3d bbox(
+            Vector3d(-1.0, -2.0, -3.0),
+            Vector3d(4.0, 5.0, 6.0));
+
+        EXPECT_FEQ(5.0 * 5.0 + 7.0 * 7.0 + 9.0 * 9.0, bbox.square_diameter());
+    }
+
     TEST_CASE(TestRadius)
     {
         const AABB3d bbox(
             Vector3d(-1.0, -2.0, -3.0),
             Vector3d(4.0, 5.0, 6.0));
 
-        EXPECT_FEQ(sqrt(5.0 * 5.0 + 7.0 * 7.0 + 9.0 * 9.0) / 2.0, bbox.radius());
+        const double square_diameter = 5.0 * 5.0 + 7.0 * 7.0 + 9.0 * 9.0;
+        const double radius = sqrt(square_diameter / 4.0);
+
+        EXPECT_FEQ(radius, bbox.radius());
+    }
+
+    TEST_CASE(TestSquareRadius)
+    {
+        const AABB3d bbox(
+            Vector3d(-1.0, -2.0, -3.0),
+            Vector3d(4.0, 5.0, 6.0));
+
+        const double square_diameter = 5.0 * 5.0 + 7.0 * 7.0 + 9.0 * 9.0;
+        const double square_radius = square_diameter / 4.0;
+
+        EXPECT_FEQ(square_radius, bbox.square_radius());
     }
 
     TEST_CASE(TestVolume)

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -51,25 +51,25 @@ class APPLESEED_DLLSYMBOL DefaultRendererController
 {
   public:
     // This method is called before rendering begins.
-    virtual void on_rendering_begin() APPLESEED_OVERRIDE;
+    void on_rendering_begin() override;
 
     // This method is called after rendering has succeeded.
-    virtual void on_rendering_success() APPLESEED_OVERRIDE;
+    void on_rendering_success() override;
 
     // This method is called after rendering was aborted.
-    virtual void on_rendering_abort() APPLESEED_OVERRIDE;
+    void on_rendering_abort() override;
 
     // This method is called before rendering a single frame.
-    virtual void on_frame_begin() APPLESEED_OVERRIDE;
+    void on_frame_begin() override;
 
     // This method is called after rendering a single frame.
-    virtual void on_frame_end() APPLESEED_OVERRIDE;
+    void on_frame_end() override;
 
     // This method is called continuously during rendering.
-    virtual void on_progress() APPLESEED_OVERRIDE;
+    void on_progress() override;
 
     // Return the current rendering status.
-    virtual Status get_status() const APPLESEED_OVERRIDE;
+    Status get_status() const override;
 };
 
 }       // namespace renderer

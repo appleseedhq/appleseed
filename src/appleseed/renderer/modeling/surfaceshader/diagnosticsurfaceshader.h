@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -48,11 +48,11 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
+namespace renderer      { class AOVAccumulatorContainer; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class PixelContext; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
-namespace renderer      { class ShadingResult; }
 
 namespace renderer
 {
@@ -89,6 +89,7 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
         Primitives,                 // assign a unique color to each primitive
         Materials,                  // assign a unique color to each material
         RaySpread,                  // shade according to the reflected ray spread
+        FacingRatio,                // shade according to the facing ratio
         ShadingModeCount            // number of shading modes -- keep last
     };
 
@@ -97,22 +98,23 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
 
     // Constructor.
     DiagnosticSurfaceShader(
-        const char*             name,
-        const ParamArray&       params);
+        const char*                 name,
+        const ParamArray&           params);
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
     // Return a string identifying the model of this surface shader.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    const char* get_model() const override;
 
     // Evaluate the shading at a given point.
-    virtual void evaluate(
-        SamplingContext&        sampling_context,
-        const PixelContext&     pixel_context,
-        const ShadingContext&   shading_context,
-        const ShadingPoint&     shading_point,
-        ShadingResult&          shading_result) const APPLESEED_OVERRIDE;
+    void evaluate(
+        SamplingContext&            sampling_context,
+        const PixelContext&         pixel_context,
+        const ShadingContext&       shading_context,
+        const ShadingPoint&         shading_point,
+        AOVAccumulatorContainer&    aov_accumulators,
+        ShadingResult&              shading_result) const override;
 
   private:
     ShadingMode m_shading_mode;
@@ -120,6 +122,18 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
     size_t      m_ao_samples;
 
     void extract_parameters();
+
+    static void set_result(
+        const foundation::Color3f&  color,
+        ShadingResult&              shading_result);
+
+    static void set_result(
+        const foundation::Color4f&  color,
+        ShadingResult&              shading_result);
+
+    static void set_result(
+        const Spectrum&             value,
+        ShadingResult&              shading_result);
 };
 
 
@@ -131,24 +145,22 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShaderFactory
   : public ISurfaceShaderFactory
 {
   public:
+    // Delete this instance.
+    void release() override;
+
     // Return a string identifying this surface shader model.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    const char* get_model() const override;
 
     // Return metadata for this surface shader model.
-    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
+    foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this surface shader model.
-    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
+    foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new surface shader instance.
-    virtual foundation::auto_release_ptr<SurfaceShader> create(
+    foundation::auto_release_ptr<SurfaceShader> create(
         const char*         name,
-        const ParamArray&   params) const APPLESEED_OVERRIDE;
-
-    // Static variant of the create() method above.
-    static foundation::auto_release_ptr<SurfaceShader> static_create(
-        const char*         name,
-        const ParamArray&   params);
+        const ParamArray&   params) const override;
 };
 
 }       // namespace renderer

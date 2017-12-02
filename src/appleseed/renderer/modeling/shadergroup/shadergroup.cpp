@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,17 +31,19 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/shadergroup/shader.h"
 #include "renderer/modeling/shadergroup/shaderconnection.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/job/abortswitch.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/uid.h"
 
-// Boost headers
+// Boost headers.
 #include "boost/unordered/unordered_map.hpp"
 
 // Standard headers.
@@ -65,7 +67,6 @@ namespace
     const OIIO::ustring g_emission_str("emission");
     const OIIO::ustring g_transparent_str("transparent");
     const OIIO::ustring g_subsurface_str("as_subsurface");
-    const OIIO::ustring g_glass_str("as_glass");
     const OIIO::ustring g_holdout_str("holdout");
     const OIIO::ustring g_debug_str("debug");
     const OIIO::ustring g_dPdtime_str("dPdtime");
@@ -74,7 +75,7 @@ namespace
 struct ShaderGroup::Impl
 {
     typedef pair<const AssemblyInstance*, const ObjectInstance*> SurfaceAreaKey;
-    typedef boost::unordered_map<SurfaceAreaKey, double>         SurfaceAreaMap;
+    typedef boost::unordered_map<SurfaceAreaKey, float>          SurfaceAreaMap;
 
     ShaderContainer             m_shaders;
     ShaderConnectionContainer   m_connections;
@@ -155,21 +156,21 @@ void ShaderGroup::add_connection(
 }
 
 bool ShaderGroup::create_optimized_osl_shader_group(
-    OSL::ShadingSystem& shading_system,
+    OSLShadingSystem&   shading_system,
     IAbortSwitch*       abort_switch)
 {
     if (is_valid())
         return true;
 
-    RENDERER_LOG_DEBUG("setting up shader group %s...", get_name());
+    RENDERER_LOG_DEBUG("setting up shader group \"%s\"...", get_path().c_str());
 
     try
     {
         OSL::ShaderGroupRef shader_group_ref = shading_system.ShaderGroupBegin(get_name());
 
-        if (shader_group_ref.get() == 0)
+        if (shader_group_ref.get() == nullptr)
         {
-            RENDERER_LOG_ERROR("failed to setup shader group %s: ShaderGroupBegin() call failed.", get_name());
+            RENDERER_LOG_ERROR("failed to setup shader group \"%s\": ShaderGroupBegin() call failed.", get_path().c_str());
             return false;
         }
 
@@ -199,17 +200,17 @@ bool ShaderGroup::create_optimized_osl_shader_group(
 
         if (!shading_system.ShaderGroupEnd())
         {
-            RENDERER_LOG_ERROR("failed to setup shader group %s: ShaderGroupEnd() call failed.", get_name());
+            RENDERER_LOG_ERROR("failed to setup shader group \"%s\": ShaderGroupEnd() call failed.", get_path().c_str());
             return false;
         }
 
         impl->m_shader_group_ref = shader_group_ref;
 
         get_shadergroup_closures_info(shading_system);
+        report_has_closure("bsdf", HasBSDFs);
         report_has_closure("emission", HasEmission);
         report_has_closure("transparent", HasTransparency);
         report_has_closure("subsurface", HasSubsurface);
-        report_has_closure("refraction", HasRefraction);
         report_has_closure("holdout", HasHoldout);
         report_has_closure("debug", HasDebug);
 
@@ -220,7 +221,7 @@ bool ShaderGroup::create_optimized_osl_shader_group(
     }
     catch (const exception& e)
     {
-        RENDERER_LOG_ERROR("failed to setup shader group %s: %s.", get_name(), e.what());
+        RENDERER_LOG_ERROR("failed to setup shader group \"%s\": %s.", get_path().c_str(), e.what());
         return false;
     }
 }
@@ -242,22 +243,23 @@ const ShaderConnectionContainer& ShaderGroup::shader_connections() const
 
 bool ShaderGroup::is_valid() const
 {
-    return impl->m_shader_group_ref.get() != 0;
+    return impl->m_shader_group_ref.get() != nullptr;
 }
 
-double ShaderGroup::get_surface_area(const AssemblyInstance* ass, const ObjectInstance* obj) const
+float ShaderGroup::get_surface_area(
+    const AssemblyInstance* assembly_instance,
+    const ObjectInstance*   object_instance) const
 {
     assert(has_emission());
-
-    return impl->m_surface_areas[Impl::SurfaceAreaKey(ass, obj)];
+    return impl->m_surface_areas[Impl::SurfaceAreaKey(assembly_instance, object_instance)];
 }
 
-OSL::ShaderGroupRef& ShaderGroup::shader_group_ref() const
+void* ShaderGroup::osl_shader_group() const
 {
-    return impl->m_shader_group_ref;
+    return impl->m_shader_group_ref.get();
 }
 
-void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_system)
+void ShaderGroup::get_shadergroup_closures_info(OSLShadingSystem& shading_system)
 {
     // Assume the shader group has all closure types.
     m_flags |= HasAllClosures;
@@ -269,18 +271,18 @@ void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_syst
             num_unknown_closures))
     {
         RENDERER_LOG_WARNING(
-            "getattribute: unknown_closures_needed call failed for shader group %s; "
+            "getattribute: unknown_closures_needed call failed for shader group \"%s\"; "
             "assuming shader group has all kinds of closures.",
-            get_name());
+            get_path().c_str());
         return;
     }
 
     if (num_unknown_closures != 0)
     {
         RENDERER_LOG_WARNING(
-            "shader group %s has unknown closures; "
+            "shader group \"%s\" has unknown closures; "
             "assuming shader group has all kinds of closures.",
-            get_name());
+            get_path().c_str());
         return;
     }
 
@@ -291,14 +293,14 @@ void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_syst
             num_closures))
     {
         RENDERER_LOG_WARNING(
-            "getattribute: num_closures_needed call failed for shader group %s; "
+            "getattribute: num_closures_needed call failed for shader group \"%s\"; "
             "assuming shader group has all kinds of closures.",
-            get_name());
+            get_path().c_str());
     }
 
     if (num_closures != 0)
     {
-        OIIO::ustring* closures = 0;
+        OIIO::ustring* closures = nullptr;
         if (!shading_system.getattribute(
                 impl->m_shader_group_ref.get(),
                 "closures_needed",
@@ -306,9 +308,9 @@ void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_syst
                 &closures))
         {
             RENDERER_LOG_WARNING(
-                "getattribute: closures_needed call failed for shader group %s; "
+                "getattribute: closures_needed call failed for shader group \"%s\"; "
                 "assuming shader group has all kinds of closures.",
-                get_name());
+                get_path().c_str());
             return;
         }
 
@@ -320,21 +322,16 @@ void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_syst
         {
             if (closures[i] == g_emission_str)
                 m_flags |= HasEmission;
-
-            if (closures[i] == g_transparent_str)
+            else if (closures[i] == g_transparent_str)
                 m_flags |= HasTransparency;
-
-            if (closures[i] == g_subsurface_str)
+            else if (closures[i] == g_subsurface_str)
                 m_flags |= HasSubsurface;
-
-            if (closures[i] == g_glass_str)
-                m_flags |= HasRefraction;
-
-            if (closures[i] == g_holdout_str)
+            else if (closures[i] == g_holdout_str)
                 m_flags |= HasHoldout;
-
-            if (closures[i] == g_debug_str)
+            else if (closures[i] == g_debug_str)
                 m_flags |= HasDebug;
+            else
+                m_flags |= HasBSDFs;
         }
     }
     else
@@ -348,21 +345,21 @@ void ShaderGroup::report_has_closure(const char* closure_name, const Flags flag)
 {
     if (m_flags & flag)
     {
-        RENDERER_LOG_INFO(
-            "shader group %s has %s closures.",
-            get_name(),
+        RENDERER_LOG_DEBUG(
+            "shader group \"%s\" has %s closures.",
+            get_path().c_str(),
             closure_name);
     }
     else
     {
-        RENDERER_LOG_INFO(
-            "shader group %s does not have %s closures.",
-            get_name(),
+        RENDERER_LOG_DEBUG(
+            "shader group \"%s\" does not have %s closures.",
+            get_path().c_str(),
             closure_name);
     }
 }
 
-void ShaderGroup::get_shadergroup_globals_info(OSL::ShadingSystem& shading_system)
+void ShaderGroup::get_shadergroup_globals_info(OSLShadingSystem& shading_system)
 {
     // Assume the shader group uses all globals.
     m_flags |= UsesAllGlobals;
@@ -374,15 +371,15 @@ void ShaderGroup::get_shadergroup_globals_info(OSL::ShadingSystem& shading_syste
             num_globals))
     {
         RENDERER_LOG_WARNING(
-            "getattribute: num_globals_needed call failed for shader group %s; "
+            "getattribute: num_globals_needed call failed for shader group \"%s\"; "
             "assuming shader group uses all globals.",
-            get_name());
+            get_path().c_str());
         return;
     }
 
     if (num_globals != 0)
     {
-        OIIO::ustring* globals = 0;
+        OIIO::ustring* globals = nullptr;
         if (!shading_system.getattribute(
                 impl->m_shader_group_ref.get(),
                 "globals_needed",
@@ -390,9 +387,9 @@ void ShaderGroup::get_shadergroup_globals_info(OSL::ShadingSystem& shading_syste
                 &globals))
         {
             RENDERER_LOG_WARNING(
-                "getattribute: globals_needed call failed for shader group %s; "
+                "getattribute: globals_needed call failed for shader group \"%s\"; "
                 "assuming shader group uses all globals.",
-                get_name());
+                get_path().c_str());
             return;
         }
 
@@ -417,28 +414,27 @@ void ShaderGroup::report_uses_global(const char* global_name, const Flags flag) 
 {
     if (m_flags & flag)
     {
-        RENDERER_LOG_INFO(
-            "shader group %s uses the %s global.",
-            get_name(),
+        RENDERER_LOG_DEBUG(
+            "shader group \"%s\" uses the %s global.",
+            get_path().c_str(),
             global_name);
     }
     else
     {
-        RENDERER_LOG_INFO(
-            "shader group %s does not use the %s global.",
-            get_name(),
+        RENDERER_LOG_DEBUG(
+            "shader group \"%s\" does not use the %s global.",
+            get_path().c_str(),
             global_name);
     }
 }
 
 void ShaderGroup::set_surface_area(
-    const AssemblyInstance* ass,
-    const ObjectInstance*   obj,
-    const double            area) const
+    const AssemblyInstance* assembly_instance,
+    const ObjectInstance*   object_instance,
+    const float             area) const
 {
     assert(has_emission());
-
-    impl->m_surface_areas[Impl::SurfaceAreaKey(ass, obj)] = area;
+    impl->m_surface_areas[Impl::SurfaceAreaKey(assembly_instance, object_instance)] = area;
 }
 
 

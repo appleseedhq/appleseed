@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -46,13 +46,10 @@ namespace
 {
     void redirect(FILE* fp, const char* mode, const DWORD std_device)
     {
-#pragma warning (push)
-#pragma warning (disable : 4311)    // 'variable' : pointer truncation from 'type' to 'type'
-        const long handle = (long)GetStdHandle(std_device);
+        const intptr_t handle = (intptr_t)GetStdHandle(std_device);
         const int fd = _open_osfhandle(handle, _O_TEXT);
         *fp = *_fdopen(fd, mode);
         setvbuf(fp, NULL, _IONBF, 0);
-#pragma warning (pop)
     }
 
     void open_console()

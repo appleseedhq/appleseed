@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -47,6 +47,7 @@
 
 // Standard headers.
 #include <cmath>
+#include <utility>
 
 using namespace foundation;
 using namespace renderer;
@@ -80,26 +81,28 @@ string get_entity_name_dialog(
 }
 
 void open_entity_editor(
-    QWidget*                                parent,
-    const string&                           window_title,
-    const Project&                          project,
-    auto_ptr<EntityEditor::IFormFactory>    form_factory,
-    auto_ptr<EntityEditor::IEntityBrowser>  entity_browser,
-    auto_ptr<CustomEntityUI>                custom_entity_ui,
-    const Dictionary&                       values,
-    QObject*                                receiver,
-    const char*                             slot_apply,
-    const char*                             slot_accept,
-    const char*                             slot_cancel)
+    QWidget*                                    parent,
+    const string&                               window_title,
+    const Project&                              project,
+    renderer::ParamArray&                       settings,
+    unique_ptr<EntityEditor::IFormFactory>      form_factory,
+    unique_ptr<EntityEditor::IEntityBrowser>    entity_browser,
+    unique_ptr<CustomEntityUI>                  custom_entity_ui,
+    const Dictionary&                           values,
+    QObject*                                    receiver,
+    const char*                                 slot_apply,
+    const char*                                 slot_accept,
+    const char*                                 slot_cancel)
 {
     EntityEditorWindow* editor_window =
         new EntityEditorWindow(
             parent,
             window_title,
             project,
-            form_factory,
-            entity_browser,
-            custom_entity_ui,
+            settings,
+            move(form_factory),
+            move(entity_browser),
+            move(custom_entity_ui),
             values);
 
     QObject::connect(
@@ -119,24 +122,26 @@ void open_entity_editor(
 }
 
 void open_entity_editor(
-    QWidget*                                parent,
-    const string&                           window_title,
-    const Project&                          project,
-    auto_ptr<EntityEditor::IFormFactory>    form_factory,
-    auto_ptr<EntityEditor::IEntityBrowser>  entity_browser,
-    const Dictionary&                       values,
-    QObject*                                receiver,
-    const char*                             slot_apply,
-    const char*                             slot_accept,
-    const char*                             slot_cancel)
+    QWidget*                                    parent,
+    const string&                               window_title,
+    const Project&                              project,
+    renderer::ParamArray&                       settings,
+    unique_ptr<EntityEditor::IFormFactory>      form_factory,
+    unique_ptr<EntityEditor::IEntityBrowser>    entity_browser,
+    const Dictionary&                           values,
+    QObject*                                    receiver,
+    const char*                                 slot_apply,
+    const char*                                 slot_accept,
+    const char*                                 slot_cancel)
 {
     open_entity_editor(
         parent,
         window_title,
         project,
-        form_factory,
-        entity_browser,
-        auto_ptr<CustomEntityUI>(),
+        settings,
+        move(form_factory),
+        move(entity_browser),
+        unique_ptr<CustomEntityUI>(),
         values,
         receiver,
         slot_apply,
@@ -145,23 +150,25 @@ void open_entity_editor(
 }
 
 void open_entity_editor(
-    QWidget*                                parent,
-    const string&                           window_title,
-    const Project&                          project,
-    auto_ptr<EntityEditor::IFormFactory>    form_factory,
-    auto_ptr<EntityEditor::IEntityBrowser>  entity_browser,
-    QObject*                                receiver,
-    const char*                             slot_apply,
-    const char*                             slot_accept,
-    const char*                             slot_cancel)
+    QWidget*                                    parent,
+    const string&                               window_title,
+    const Project&                              project,
+    renderer::ParamArray&                       settings,
+    unique_ptr<EntityEditor::IFormFactory>      form_factory,
+    unique_ptr<EntityEditor::IEntityBrowser>    entity_browser,
+    QObject*                                    receiver,
+    const char*                                 slot_apply,
+    const char*                                 slot_accept,
+    const char*                                 slot_cancel)
 {
     open_entity_editor(
         parent,
         window_title,
         project,
-        form_factory,
-        entity_browser,
-        auto_ptr<CustomEntityUI>(),
+        settings,
+        move(form_factory),
+        move(entity_browser),
+        unique_ptr<CustomEntityUI>(),
         Dictionary(),
         receiver,
         slot_apply,
@@ -181,6 +188,59 @@ void show_error_message_box(const string& title, const string& text)
 
 
 //
+// LineEditSliderAdaptor class implementation.
+//
+
+LineEditSliderAdaptor::LineEditSliderAdaptor(
+    QLineEdit*      line_edit,
+    QSlider*        slider)
+  : QObject(line_edit)
+  , m_line_edit(line_edit)
+  , m_slider(slider)
+{
+    slot_set_slider_value(m_line_edit->text());
+
+    // When the slider is moved, update the line edit's value.
+    connect(
+        m_slider, SIGNAL(valueChanged(const int)),
+        SLOT(slot_set_line_edit_value(const int)));
+
+    // When the line edit value is changed, update the slider's position.
+    connect(
+        m_line_edit, SIGNAL(textChanged(const QString&)),
+        SLOT(slot_set_slider_value(const QString&)));
+
+    // When enter is pressed in the line edit, update the slider's position.
+    connect(
+        m_line_edit, SIGNAL(editingFinished()),
+        SLOT(slot_apply_line_edit_value()));
+}
+
+void LineEditSliderAdaptor::slot_set_line_edit_value(const int value)
+{
+    const QString new_line_edit_value = QString("%1").arg(value);
+
+    // Don't block signals here, for live edit to work we want the line edit to signal changes.
+    m_line_edit->setText(new_line_edit_value);
+}
+
+void LineEditSliderAdaptor::slot_set_slider_value(const QString& value)
+{
+    if (value.isEmpty())
+        return;
+
+    const bool were_signals_blocked = m_slider->blockSignals(true);
+    m_slider->setValue(value.toInt());
+    m_slider->blockSignals(were_signals_blocked);
+}
+
+void LineEditSliderAdaptor::slot_apply_line_edit_value()
+{
+    slot_set_slider_value(m_line_edit->text());
+}
+
+
+//
 // LineEditDoubleSliderAdaptor class implementation.
 //
 
@@ -193,45 +253,56 @@ LineEditDoubleSliderAdaptor::LineEditDoubleSliderAdaptor(
 {
     slot_set_slider_value(m_line_edit->text());
 
-    // Connect the line edit and the slider together.
+    // When the slider is moved, update the line edit's value.
     connect(
         m_slider, SIGNAL(valueChanged(const double)),
         SLOT(slot_set_line_edit_value(const double)));
+
+    // When the line edit value is changed, update the slider's position.
     connect(
         m_line_edit, SIGNAL(textChanged(const QString&)),
         SLOT(slot_set_slider_value(const QString&)));
+
+    // When enter is pressed in the line edit, update the slider's position.
     connect(
         m_line_edit, SIGNAL(editingFinished()),
-        SLOT(slot_apply_slider_value()));
+        SLOT(slot_apply_line_edit_value()));
 }
 
 void LineEditDoubleSliderAdaptor::slot_set_line_edit_value(const double value)
 {
+    // Format integer values such as 2 as "2.0" instead of "2".
+    const bool is_integer = floor(value) == value;
+    const QString format_string = is_integer ? "%1.0" : "%1";
+    const QString new_line_edit_value = format_string.arg(value);
+
     // Don't block signals here, for live edit to work we want the line edit to signal changes.
-    m_line_edit->setText(QString("%1").arg(value));
+    m_line_edit->setText(new_line_edit_value);
 }
 
 void LineEditDoubleSliderAdaptor::slot_set_slider_value(const QString& value)
 {
-    if (!value.isEmpty())
-    {
-        m_slider->blockSignals(true);
+    if (value.isEmpty())
+        return;
 
-        const double new_value = value.toDouble();
+    const bool were_signals_blocked = m_slider->blockSignals(true);
 
-        // Adjust range if the new value is outside the current range.
-        if (new_value < m_slider->minimum() ||
-            new_value > m_slider->maximum())
-            adjust_slider(new_value);
+    const double new_value = value.toDouble();
 
-        m_slider->setValue(new_value);
-        m_slider->blockSignals(false);
-    }
+    // Adjust range if the new value is outside the current range.
+    // The test is intentionally different than the one in slot_apply_line_edit_value().
+    if (new_value < m_slider->minimum() ||
+        new_value > m_slider->maximum())
+        adjust_slider(new_value);
+
+    m_slider->setValue(new_value);
+
+    m_slider->blockSignals(were_signals_blocked);
 }
 
-void LineEditDoubleSliderAdaptor::slot_apply_slider_value()
+void LineEditDoubleSliderAdaptor::slot_apply_line_edit_value()
 {
-    m_slider->blockSignals(true);
+    const bool were_signals_blocked = m_slider->blockSignals(true);
 
     const double new_value = m_line_edit->text().toDouble();
 
@@ -243,7 +314,12 @@ void LineEditDoubleSliderAdaptor::slot_apply_slider_value()
         adjust_slider(new_value);
 
     m_slider->setValue(new_value);
-    m_slider->blockSignals(false);
+
+    // Force reformatting of the value in the QLineEdit if necessary.
+    if (!m_line_edit->text().isEmpty())
+        slot_set_line_edit_value(new_value);
+
+    m_slider->blockSignals(were_signals_blocked);
 }
 
 void LineEditDoubleSliderAdaptor::adjust_slider(const double new_value)
@@ -256,19 +332,59 @@ void LineEditDoubleSliderAdaptor::adjust_slider(const double new_value)
 
 
 //
+// QDoubleValidatorWithDefault class implementation.
+//
+
+QDoubleValidatorWithDefault::QDoubleValidatorWithDefault(const QString& default_value, QObject* parent)
+  : QDoubleValidator(parent)
+  , m_default_value(default_value)
+{
+}
+
+QDoubleValidatorWithDefault::QDoubleValidatorWithDefault(
+    const double    bottom,
+    const double    top,
+    const int       decimals,
+    const QString&  default_value,
+    QObject*        parent)
+  : QDoubleValidator(bottom, top, decimals, parent)
+  , m_default_value(default_value)
+{
+}
+
+QValidator::State QDoubleValidatorWithDefault::validate(QString& input, int& pos) const
+{
+    return
+        input == m_default_value
+            ? QValidator::Acceptable
+            : QDoubleValidator::validate(input, pos);
+}
+
+
+//
 // ForwardColorChangedSignal class implementation.
 //
 
 ForwardColorChangedSignal::ForwardColorChangedSignal(
     QObject*        parent,
-    const QString&  widget_name)
+    const QString&  widget_name,
+    const QColor&   initial_color)
   : QObject(parent)
   , m_widget_name(widget_name)
+  , m_initial_color(initial_color)
+  , m_current_color(initial_color)
 {
+}
+
+void ForwardColorChangedSignal::slot_color_reset()
+{
+    if (m_current_color != m_initial_color)
+        emit signal_color_reset(m_widget_name, m_initial_color);
 }
 
 void ForwardColorChangedSignal::slot_color_changed(const QColor& color)
 {
+    m_current_color = color;
     emit signal_color_changed(m_widget_name, color);
 }
 

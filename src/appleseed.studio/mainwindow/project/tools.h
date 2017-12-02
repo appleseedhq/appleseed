@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@
 #include "mainwindow/project/entityeditor.h"
 
 // Qt headers.
+#include <QDoubleValidator>
 #include <QObject>
 #include <QString>
 
@@ -44,9 +45,11 @@
 // Forward declarations.
 namespace appleseed     { namespace studio { class DoubleSlider; } }
 namespace foundation    { class Dictionary; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 class QColor;
 class QLineEdit;
+class QSlider;
 class QWidget;
 
 namespace appleseed {
@@ -62,9 +65,10 @@ void open_entity_editor(
     QWidget*                                        parent,
     const std::string&                              window_title,
     const renderer::Project&                        project,
-    std::auto_ptr<EntityEditor::IFormFactory>       form_factory,
-    std::auto_ptr<EntityEditor::IEntityBrowser>     entity_browser,
-    std::auto_ptr<CustomEntityUI>                   custom_entity_ui,
+    renderer::ParamArray&                           settings,
+    std::unique_ptr<EntityEditor::IFormFactory>     form_factory,
+    std::unique_ptr<EntityEditor::IEntityBrowser>   entity_browser,
+    std::unique_ptr<CustomEntityUI>                 custom_entity_ui,
     const foundation::Dictionary&                   values,
     QObject*                                        receiver,
     const char*                                     slot_apply,
@@ -75,8 +79,9 @@ void open_entity_editor(
     QWidget*                                        parent,
     const std::string&                              window_title,
     const renderer::Project&                        project,
-    std::auto_ptr<EntityEditor::IFormFactory>       form_factory,
-    std::auto_ptr<EntityEditor::IEntityBrowser>     entity_browser,
+    renderer::ParamArray&                           settings,
+    std::unique_ptr<EntityEditor::IFormFactory>     form_factory,
+    std::unique_ptr<EntityEditor::IEntityBrowser>   entity_browser,
     const foundation::Dictionary&                   values,
     QObject*                                        receiver,
     const char*                                     slot_apply,
@@ -87,8 +92,9 @@ void open_entity_editor(
     QWidget*                                        parent,
     const std::string&                              window_title,
     const renderer::Project&                        project,
-    std::auto_ptr<EntityEditor::IFormFactory>       form_factory,
-    std::auto_ptr<EntityEditor::IEntityBrowser>     entity_browser,
+    renderer::ParamArray&                           settings,
+    std::unique_ptr<EntityEditor::IFormFactory>     form_factory,
+    std::unique_ptr<EntityEditor::IEntityBrowser>   entity_browser,
     QObject*                                        receiver,
     const char*                                     slot_apply,
     const char*                                     slot_accept,
@@ -98,7 +104,34 @@ void show_error_message_box(const std::string& title, const std::string& text);
 
 
 //
-// Updates the value of LineEdit associated with the given DoubleSlider.
+// Binds QLineEdit and QSlider controls together such that updading
+// the value in one control updates the value in the other.
+//
+
+class LineEditSliderAdaptor
+  : public QObject
+{
+    Q_OBJECT
+
+  public:
+    LineEditSliderAdaptor(
+        QLineEdit*      line_edit,
+        QSlider*        slider);
+
+  public slots:
+    void slot_set_line_edit_value(const int value);
+    void slot_set_slider_value(const QString& value);
+    void slot_apply_line_edit_value();
+
+  private:
+    QLineEdit*      m_line_edit;
+    QSlider*        m_slider;
+};
+
+
+//
+// Binds QLineEdit and DoubleSlider controls together such that updading
+// the value in one control updates the value in the other.
 //
 
 class LineEditDoubleSliderAdaptor
@@ -114,13 +147,36 @@ class LineEditDoubleSliderAdaptor
   public slots:
     void slot_set_line_edit_value(const double value);
     void slot_set_slider_value(const QString& value);
-    void slot_apply_slider_value();
+    void slot_apply_line_edit_value();
 
   private:
     QLineEdit*      m_line_edit;
     DoubleSlider*   m_slider;
 
     void adjust_slider(const double new_value);
+};
+
+
+//
+// A QDoubleValidator that also accepts a given string value, for instance an empty string.
+//
+
+class QDoubleValidatorWithDefault
+  : public QDoubleValidator
+{
+  public:
+    explicit QDoubleValidatorWithDefault(const QString& default_value, QObject* parent = nullptr);
+    QDoubleValidatorWithDefault(
+        const double    bottom,
+        const double    top,
+        const int       decimals,
+        const QString&  default_value,
+        QObject*        parent = nullptr);
+
+    QValidator::State validate(QString& input, int& pos) const override;
+
+  private:
+    const QString m_default_value;
 };
 
 
@@ -136,16 +192,21 @@ class ForwardColorChangedSignal
   public:
     ForwardColorChangedSignal(
         QObject*        parent,
-        const QString&  widget_name);
+        const QString&  widget_name,
+        const QColor&   initial_color);
 
   public slots:
     void slot_color_changed(const QColor& color);
+    void slot_color_reset();
 
   signals:
     void signal_color_changed(const QString& widget_name, const QColor& color);
+    void signal_color_reset(const QString& widget_name, const QColor& color);
 
   private:
     const QString m_widget_name;
+    const QColor  m_initial_color;
+    QColor        m_current_color;
 };
 
 }       // namespace studio

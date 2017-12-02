@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -42,8 +42,8 @@
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
@@ -52,13 +52,15 @@ using namespace renderer;
 
 TEST_SUITE(Renderer_Modeling_Scene_Scene)
 {
-    TEST_CASE(ComputeBbox_GivenEmptyScene_ReturnsInvalidBoundingBox)
+    TEST_CASE(ComputeBbox_GivenEmptyScene_ReturnsEmptyBoundingBox)
     {
         auto_release_ptr<Scene> scene(SceneFactory::create());
 
         const GAABB3 bbox = scene->compute_bbox();
 
-        EXPECT_FALSE(bbox.is_valid());
+        ASSERT_TRUE(bbox.is_valid());
+        EXPECT_EQ(GVector3(0.0), bbox.min);
+        EXPECT_EQ(GVector3(0.0), bbox.max);
     }
 
     TEST_CASE(ComputeBbox_GivenSceneWithOneAssemblyInstance_ReturnsBoundingBox)
@@ -93,10 +95,10 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
                 ParamArray(),
                 "assembly"));
         assembly_instance->transform_sequence().set_transform(
-            0.0,
+            0.0f,
             Transformd::from_local_to_parent(
-                Matrix4d::translation(Vector3d(1.0)) *
-                Matrix4d::scaling(Vector3d(10.0))));
+                Matrix4d::make_translation(Vector3d(1.0)) *
+                Matrix4d::make_scaling(Vector3d(10.0))));
 
         // Insert the assembly and the assembly instance into the scene.
         scene->assemblies().insert(assembly);

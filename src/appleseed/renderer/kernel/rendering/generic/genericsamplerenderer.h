@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,25 +37,11 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
-// OSL headers.
-#ifdef APPLESEED_WITH_OSL
-#include "foundation/platform/oslheaderguards.h"
-BEGIN_OSL_INCLUDES
-#include "OSL/oslexec.h"
-END_OSL_INCLUDES
-#endif
-
-// OpenImageIO headers.
-#ifdef APPLESEED_WITH_OIIO
-#include "foundation/platform/oiioheaderguards.h"
-BEGIN_OIIO_INCLUDES
-#include "OpenImageIO/texture.h"
-END_OIIO_INCLUDES
-#endif
-
 // Forward declarations.
 namespace renderer  { class Frame; }
 namespace renderer  { class ILightingEngineFactory; }
+namespace renderer  { class OIIOTextureSystem; }
+namespace renderer  { class OSLShadingSystem; }
 namespace renderer  { class Scene; }
 namespace renderer  { class ShadingEngine; }
 namespace renderer  { class TextureStore; }
@@ -80,20 +66,16 @@ class GenericSampleRendererFactory
         TextureStore&           texture_store,
         ILightingEngineFactory* lighting_engine_factory,
         ShadingEngine&          shading_engine,
-#ifdef APPLESEED_WITH_OIIO
-        OIIO::TextureSystem&    oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
-        OSL::ShadingSystem&     shading_system,
-#endif
+        OIIOTextureSystem&      oiio_texture_system,
+        OSLShadingSystem&       shading_system,
         const ParamArray&       params);
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
     // Return a new sample renderer instance.
-    virtual ISampleRenderer* create(
-        const size_t            thread_index) APPLESEED_OVERRIDE;
+    ISampleRenderer* create(
+        const size_t            thread_index) override;
 
   private:
     const Scene&                m_scene;
@@ -102,12 +84,8 @@ class GenericSampleRendererFactory
     TextureStore&               m_texture_store;
     ILightingEngineFactory*     m_lighting_engine_factory;
     ShadingEngine&              m_shading_engine;
-#ifdef APPLESEED_WITH_OIIO
-    OIIO::TextureSystem&        m_oiio_texture_system;
-#endif
-#ifdef APPLESEED_WITH_OSL
-    OSL::ShadingSystem&         m_shading_system;
-#endif
+    OIIOTextureSystem&          m_oiio_texture_system;
+    OSLShadingSystem&           m_shading_system;
     const ParamArray            m_params;
 };
 

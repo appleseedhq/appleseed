@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -61,7 +61,7 @@ TEST_SUITE(Foundation_Utility_Memory)
 
     TEST_CASE(Align_GivenNullPointer_ReturnsNullPointer)
     {
-        EXPECT_EQ((void*)0, align((void*)0, 4));
+        EXPECT_EQ((void*)nullptr, align((void*)nullptr, 4));
     }
 
     TEST_CASE(Align_GivenUnalignedPointer_ReturnsAlignedPointer)
@@ -91,7 +91,7 @@ TEST_SUITE(Foundation_Utility_Memory)
 
     TEST_CASE(Alignment_GivenNullPointer_ReturnsMaxAlignment)
     {
-        EXPECT_EQ(32, alignment((void*)0, 32));
+        EXPECT_EQ(32, alignment((void*)nullptr, 32));
     }
 
     TEST_CASE(Alignment_GivenAlignedPointer_ReturnsAlignment)
@@ -121,7 +121,7 @@ TEST_SUITE(Foundation_Utility_Memory)
 
     TEST_CASE(IsAligned_GivenNullPointer_ReturnsTrue)
     {
-        EXPECT_TRUE(is_aligned((void*)0, 32));
+        EXPECT_TRUE(is_aligned((void*)nullptr, 32));
     }
 
     TEST_CASE(IsAligned_GivenAlignedPointer_ReturnsTrue)
@@ -214,7 +214,7 @@ TEST_SUITE(Foundation_Utility_Memory)
     {
         typedef AlignedAllocator<int> Allocator;
 
-        vector<int, AlignedAllocator<int> > v(Allocator(32));
+        vector<int, AlignedAllocator<int>> v(Allocator(32));
         const size_t default_capacity = v.capacity();
 
         v.resize(1000);

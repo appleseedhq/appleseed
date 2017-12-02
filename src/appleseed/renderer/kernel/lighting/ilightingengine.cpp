@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -58,6 +58,14 @@ void ILightingEngineFactory::add_common_params_metadata(
                 .insert("default", "1.0")
                 .insert("label", "Light Samples")
                 .insert("help", "Number of samples used to estimate direct lighting"));
+
+        metadata.dictionaries().insert(
+            "dl_low_light_threshold",
+            Dictionary()
+                .insert("type", "float")
+                .insert("default", "0.0")
+                .insert("label", "Low Light Threshold")
+                .insert("help", "Light contribution threshold to disable shadow rays"));
 
         metadata.dictionaries().insert(
             "ibl_env_samples",

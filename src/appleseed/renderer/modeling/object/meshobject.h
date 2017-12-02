@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/modeling/object/iobjectfactory.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/regionkit.h"
 
@@ -47,10 +48,14 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace foundation    { class Dictionary; }
+namespace foundation    { class DictionaryArray; }
 namespace foundation    { class IAbortSwitch; }
+namespace foundation    { class SearchPaths; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
-namespace renderer      { class Assembly; }
+namespace renderer      { class BaseGroup; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 namespace renderer      { class Source; }
@@ -70,32 +75,35 @@ class APPLESEED_DLLSYMBOL MeshObject
 {
   public:
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
     // Return a string identifying the model of this object.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    const char* get_model() const override;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
+    bool on_frame_begin(
         const Project&              project,
-        const Assembly&             assembly,
-        foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
+        const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
-    // This method is called once after rendering each frame.
-    virtual void on_frame_end(const Project& project) APPLESEED_OVERRIDE;
+    // This method is called once after rendering each frame (only if on_frame_begin() was called).
+    void on_frame_end(
+        const Project&              project,
+        const BaseGroup*            parent) override;
 
     // Return true if this object has an alpha map.
-    virtual bool has_alpha_map() const APPLESEED_OVERRIDE;
+    bool has_alpha_map() const override;
 
     // Return the source bound to the alpha map input, or 0 if the object doesn't have an alpha map.
-    virtual const Source* get_uncached_alpha_map() const APPLESEED_OVERRIDE;
+    const Source* get_uncached_alpha_map() const override;
 
     // Compute the local space bounding box of the object over the shutter interval.
-    virtual GAABB3 compute_local_bbox() const APPLESEED_OVERRIDE;
+    GAABB3 compute_local_bbox() const override;
 
     // Return the region kit of the object.
-    virtual foundation::Lazy<RegionKit>& get_region_kit() APPLESEED_OVERRIDE;
+    foundation::Lazy<RegionKit>& get_region_kit() override;
 
     // Insert and access vertices.
     void reserve_vertices(const size_t count);
@@ -127,6 +135,7 @@ class APPLESEED_DLLSYMBOL MeshObject
     size_t push_triangle(const Triangle& triangle);
     size_t get_triangle_count() const;
     const Triangle& get_triangle(const size_t index) const;
+    Triangle& get_triangle(const size_t index);
     void clear_triangles();
 
     // Set/get the number of motion segments (the number of motion vectors per vertex).
@@ -178,12 +187,12 @@ class APPLESEED_DLLSYMBOL MeshObject
     // Insert and access material slots.
     void reserve_material_slots(const size_t count);
     size_t push_material_slot(const char* name);
-    virtual size_t get_material_slot_count() const APPLESEED_OVERRIDE;
-    virtual const char* get_material_slot(const size_t index) const APPLESEED_OVERRIDE;
+    size_t get_material_slot_count() const override;
+    const char* get_material_slot(const size_t index) const override;
 
     // Expose asset file paths referenced by this entity to the outside.
-    virtual void collect_asset_paths(foundation::StringArray& paths) const APPLESEED_OVERRIDE;
-    virtual void update_asset_paths(const foundation::StringDictionary& mappings) APPLESEED_OVERRIDE;
+    void collect_asset_paths(foundation::StringArray& paths) const override;
+    void update_asset_paths(const foundation::StringDictionary& mappings) override;
 
   private:
     friend class MeshObjectFactory;
@@ -197,7 +206,7 @@ class APPLESEED_DLLSYMBOL MeshObject
         const ParamArray&   params);
 
     // Destructor.
-    ~MeshObject();
+    ~MeshObject() override;
 };
 
 
@@ -206,15 +215,33 @@ class APPLESEED_DLLSYMBOL MeshObject
 //
 
 class APPLESEED_DLLSYMBOL MeshObjectFactory
+  : public IObjectFactory
 {
   public:
-    // Return a string identifying this object model.
-    static const char* get_model();
+    // Delete this instance.
+    void release() override;
 
-    // Create a new mesh object.
-    static foundation::auto_release_ptr<MeshObject> create(
-        const char*         name,
-        const ParamArray&   params);
+    // Return a string identifying this object model.
+    const char* get_model() const override;
+
+    // Return metadata for this object model.
+    foundation::Dictionary get_model_metadata() const override;
+
+    // Return metadata for the inputs of this object model.
+    foundation::DictionaryArray get_input_metadata() const override;
+
+    // Create a new single empty object.
+    foundation::auto_release_ptr<Object> create(
+        const char*                     name,
+        const ParamArray&               params) const override;
+
+    // Create objects, potentially from external assets.
+    bool create(
+        const char*                     name,
+        const ParamArray&               params,
+        const foundation::SearchPaths&  search_paths,
+        const bool                      omit_loading_assets,
+        ObjectArray&                    objects) const override;
 };
 
 }       // namespace renderer

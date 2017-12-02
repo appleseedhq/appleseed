@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -46,19 +46,19 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class Assembly; }
+namespace renderer      { class BaseGroup; }
 namespace renderer      { class BSDF; }
 namespace renderer      { class BSSRDF; }
 namespace renderer      { class EDF; }
 namespace renderer      { class IBasisModifier; }
 namespace renderer      { class MessageContext; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
-#ifdef APPLESEED_WITH_OSL
 namespace renderer      { class ShaderGroup; }
-#endif
 namespace renderer      { class Source; }
 namespace renderer      { class SurfaceShader; }
+namespace renderer      { class Volume; }
 
 namespace renderer
 {
@@ -77,11 +77,11 @@ class APPLESEED_DLLSYMBOL Material
     // Return a string identifying the model of this material.
     virtual const char* get_model() const = 0;
 
-    // Return whether surface shaders should be invoked for fully transparent shading points.
-    bool shade_alpha_cutouts() const;
-
     // Return true if this material has an alpha map.
     bool has_alpha_map() const;
+
+    // Return true if this material has an uniform alpha value equals to 1.0f.
+    bool has_uniform_alpha_map_value_of_one() const;
 
     // Return the name the surface shader bound to this material, or 0 if the material doesn't have one.
     const char* get_surface_shader_name() const;
@@ -91,6 +91,9 @@ class APPLESEED_DLLSYMBOL Material
 
     // Return the name the BSSRDF bound to this material, or 0 if the material doesn't have one.
     const char* get_bssrdf_name() const;
+
+    // Return the name the volume bound to this material, or 0 if the material doesn't have one.
+    const char* get_volume_name() const;
 
     // Return the name the EDF bound to this material, or 0 if the material doesn't have one.
     const char* get_edf_name() const;
@@ -107,40 +110,41 @@ class APPLESEED_DLLSYMBOL Material
     // Return the EDF of the material, or 0 if the material doesn't have one.
     const EDF* get_uncached_edf() const;
 
+    // Return the volume of the material, or 0 if the material doesn't have one.
+    const Volume* get_uncached_volume() const;
+
     // Return the source bound to the alpha map input, or 0 if the material doesn't have an alpha map.
     const Source* get_uncached_alpha_map() const;
 
-#ifdef APPLESEED_WITH_OSL
     // Return the OSL surface shader of the material, or 0 if the material doesn't have one.
     virtual const ShaderGroup* get_uncached_osl_surface() const;
-#endif
 
     // Return true if the material emits light.
     virtual bool has_emission() const;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
+    bool on_frame_begin(
         const Project&              project,
-        const Assembly&             assembly,
-        foundation::IAbortSwitch*   abort_switch = 0);
+        const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
-    // This method is called once after rendering each frame.
-    virtual void on_frame_end(
+    // This method is called once after rendering each frame (only if on_frame_begin() was called).
+    void on_frame_end(
         const Project&              project,
-        const Assembly&             assembly);
+        const BaseGroup*            parent) override;
 
     struct RenderData
     {
-        const SurfaceShader*    m_surface_shader;
-        const BSDF*             m_bsdf;
-        const BSSRDF*           m_bssrdf;
-        const EDF*              m_edf;
-        const Source*           m_alpha_map;
-#ifdef APPLESEED_WITH_OSL
-        const ShaderGroup*      m_shader_group;
-#endif
-        const IBasisModifier*   m_basis_modifier;   // owned by RenderData
+        const SurfaceShader*        m_surface_shader;
+        const BSDF*                 m_bsdf;
+        const BSSRDF*               m_bssrdf;
+        const EDF*                  m_edf;
+        const Volume*               m_volume;
+        const Source*               m_alpha_map;
+        const ShaderGroup*          m_shader_group;
+        const IBasisModifier*       m_basis_modifier;   // owned by RenderData
     };
 
     // Return render-time data of this entity.
@@ -148,7 +152,6 @@ class APPLESEED_DLLSYMBOL Material
     const RenderData& get_render_data() const;
 
   protected:
-    bool        m_shade_alpha_cutouts;
     bool        m_has_render_data;
     RenderData  m_render_data;
 
@@ -166,11 +169,6 @@ class APPLESEED_DLLSYMBOL Material
 //
 // Material class implementation.
 //
-
-inline bool Material::shade_alpha_cutouts() const
-{
-    return m_shade_alpha_cutouts;
-}
 
 inline const Material::RenderData& Material::get_render_data() const
 {

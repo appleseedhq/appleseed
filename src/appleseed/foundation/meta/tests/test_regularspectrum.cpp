@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,9 @@
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
+// Standard headers.
+#include <cstddef>
+
 using namespace foundation;
 
 TEST_SUITE(Foundation_Image_RegularSpectrum31f)
@@ -46,7 +49,7 @@ TEST_SUITE(Foundation_Image_RegularSpectrum31f)
             42.0f, 42.0f, 42.0f, 42.0f, 42.0f, 42.0f, 42.0f
         };
 
-        const RegularSpectrum31f Expected(ExpectedValues);
+        const auto Expected(RegularSpectrum31f::from_array(ExpectedValues));
         RegularSpectrum31f s;
 
         s.set(42.0f);
@@ -73,8 +76,8 @@ TEST_SUITE(Foundation_Image_RegularSpectrum31f)
         };
 
         const RegularSpectrum31f Expected(32.0f);
-        const RegularSpectrum31f Rhs(RhsValues);
-        RegularSpectrum31f s(InputValues);
+        const auto Rhs(RegularSpectrum31f::from_array(RhsValues));
+        auto s(RegularSpectrum31f::from_array(InputValues));
 
         s += Rhs;
 
@@ -99,8 +102,8 @@ TEST_SUITE(Foundation_Image_RegularSpectrum31f)
             50.0f, 52.0f, 54.0f, 56.0f, 58.0f, 60.0f, 62.0f
         };
 
-        const RegularSpectrum31f Expected(ExpectedValues);
-        RegularSpectrum31f s(InputValues);
+        const auto Expected(RegularSpectrum31f::from_array(ExpectedValues));
+        auto s(RegularSpectrum31f::from_array(InputValues));
 
         s *= 2.0f;
 
@@ -133,9 +136,9 @@ TEST_SUITE(Foundation_Image_RegularSpectrum31f)
             175.0f, 156.0f, 135.0f, 112.0f,  87.0f,  60.0f,  31.0f
         };
 
-        const RegularSpectrum31f Expected(ExpectedValues);
-        const RegularSpectrum31f Rhs(RhsValues);
-        RegularSpectrum31f s(InputValues);
+        const auto Expected(RegularSpectrum31f::from_array(ExpectedValues));
+        const auto Rhs(RegularSpectrum31f::from_array(RhsValues));
+        auto s(RegularSpectrum31f::from_array(InputValues));
 
         s *= Rhs;
 
@@ -160,8 +163,8 @@ TEST_SUITE(Foundation_Image_RegularSpectrum31f)
              1.0f / 25.0f, 1.0f / 26.0f, 1.0f / 27.0f, 1.0f / 28.0f, 1.0f / 29.0f, 1.0f / 30.0f, 1.0f / 31.0f
         };
 
-        const RegularSpectrum31f Expected(ExpectedValues);
-        RegularSpectrum31f s(InputValues);
+        const auto Expected(RegularSpectrum31f::from_array(ExpectedValues));
+        auto s(RegularSpectrum31f::from_array(InputValues));
 
         s = rcp(s);
 
@@ -170,23 +173,62 @@ TEST_SUITE(Foundation_Image_RegularSpectrum31f)
 
     TEST_CASE(IsSaturated_GivenSpectrumWithAllComponentsSetToZero_ReturnsTrue)
     {
-        const RegularSpectrum31f s(0.0f);
+        RegularSpectrum31f s(2.0f);
+
+        // Don't use set() to avoid altering the padding value (the 32th value in RegularSpectrum<>::m_samples).
+        for (size_t i = 0; i < 31; ++i)
+            s[i] = 0.0f;
 
         EXPECT_TRUE(is_saturated(s));
     }
 
     TEST_CASE(IsSaturated_GivenSpectrumWithAllComponentsSetToOne_ReturnsTrue)
     {
-        const RegularSpectrum31f s(1.0f);
+        RegularSpectrum31f s(2.0f);
+
+        // Don't use set() to avoid altering the padding value (the 32th value in RegularSpectrum<>::m_samples).
+        for (size_t i = 0; i < 31; ++i)
+            s[i] = 1.0f;
 
         EXPECT_TRUE(is_saturated(s));
     }
 
     TEST_CASE(IsSaturated_GivenUnsaturatedSpectrum_ReturnsFalse)
     {
-        RegularSpectrum31f s(0.5f);
-        s[0] = 2.0f;
+        for (size_t i = 0; i < 31; ++i)
+        {
+            RegularSpectrum31f s(0.5f);
+            s[i] = 2.0f;
 
-        EXPECT_FALSE(is_saturated(s));
+            EXPECT_FALSE(is_saturated(s));
+        }
+    }
+
+    TEST_CASE(MinValue_Spectrum)
+    {
+        for (size_t i = 0; i < 31; ++i)
+        {
+            RegularSpectrum31f s(0.0f);
+
+            // Don't use set() to avoid altering the padding value (the 32th value in RegularSpectrum<>::m_samples).
+            for (size_t j = 0; j < 31; ++j)
+                s[j] = j == i ? 1.0f : 2.0f;
+
+            EXPECT_EQ(1.0f, min_value(s));
+        }
+    }
+
+    TEST_CASE(MaxValue_Spectrum)
+    {
+        for (size_t i = 0; i < 31; ++i)
+        {
+            RegularSpectrum31f s(3.0f);
+
+            // Don't use set() to avoid altering the padding value (the 32th value in RegularSpectrum<>::m_samples).
+            for (size_t j = 0; j < 31; ++j)
+                s[j] = j == i ? 2.0f : 1.0f;
+
+            EXPECT_EQ(2.0f, max_value(s));
+        }
     }
 }

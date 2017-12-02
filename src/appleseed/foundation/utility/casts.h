@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,6 @@
 
 #ifndef APPLESEED_FOUNDATION_UTILITY_CASTS_H
 #define APPLESEED_FOUNDATION_UTILITY_CASTS_H
-
-// Boost headers.
-#include "boost/static_assert.hpp"
 
 namespace foundation
 {
@@ -67,7 +64,9 @@ Target binary_cast(Source s);
 template <typename Target, typename Source>
 inline Target binary_cast(Source s)
 {
-    BOOST_STATIC_ASSERT(sizeof(Target) == sizeof(Source));
+    static_assert(
+        sizeof(Target) == sizeof(Source),
+        "foundation::binary_cast() expects the source and target types to have the same size");
 
     return *static_cast<const Target*>(static_cast<const void*>(&s));
 }
@@ -77,7 +76,9 @@ inline Target binary_cast(Source s)
 template <typename Target, typename Source>
 inline Target binary_cast(Source s)
 {
-    BOOST_STATIC_ASSERT(sizeof(Target) == sizeof(Source));
+    static_assert(
+        sizeof(Target) == sizeof(Source),
+        "foundation::binary_cast() expects the source and target types to have the same size");
 
     union
     {

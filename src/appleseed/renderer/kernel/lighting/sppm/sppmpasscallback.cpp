@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,8 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
+#include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
@@ -56,38 +58,27 @@ namespace renderer
 //
 
 SPPMPassCallback::SPPMPassCallback(
-    const Scene&            scene,
-    const LightSampler&     light_sampler,
-    const TraceContext&     trace_context,
-    TextureStore&           texture_store,
-#ifdef APPLESEED_WITH_OIIO
-    OIIO::TextureSystem&    oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
-    OSL::ShadingSystem&     shading_system,
-#endif
-    const SPPMParameters&   params)
+    const Scene&                    scene,
+    const ForwardLightSampler&      light_sampler,
+    const TraceContext&             trace_context,
+    TextureStore&                   texture_store,
+    OIIOTextureSystem&              oiio_texture_system,
+    OSLShadingSystem&               shading_system,
+    const SPPMParameters&           params)
   : m_params(params)
   , m_photon_tracer(
         scene,
         light_sampler,
         trace_context,
         texture_store,
-#ifdef APPLESEED_WITH_OIIO
         oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
         shading_system,
-#endif
         params)
   , m_pass_number(0)
 {
     // Compute the initial lookup radius.
     const GAABB3 scene_bbox = scene.compute_bbox();
-    const float scene_diameter =
-        scene_bbox.is_valid()
-            ? static_cast<float>(scene_bbox.diameter())
-            : 0.0f;
+    const float scene_diameter = static_cast<float>(scene_bbox.diameter());
     const float diameter_factor = m_params.m_initial_radius_percents / 100.0f;
     m_initial_lookup_radius = scene_diameter * diameter_factor;
 
@@ -100,7 +91,7 @@ void SPPMPassCallback::release()
     delete this;
 }
 
-void SPPMPassCallback::pre_render(
+void SPPMPassCallback::on_pass_begin(
     const Frame&            frame,
     JobQueue&               job_queue,
     IAbortSwitch&           abort_switch)
@@ -131,7 +122,7 @@ void SPPMPassCallback::pre_render(
     m_photon_map.reset(new SPPMPhotonMap(m_photons));
 }
 
-void SPPMPassCallback::post_render(
+void SPPMPassCallback::on_pass_end(
     const Frame&            frame,
     JobQueue&               job_queue,
     IAbortSwitch&           abort_switch)

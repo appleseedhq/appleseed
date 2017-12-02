@@ -6,7 +6,7 @@
 # This software is released under the MIT license.
 #
 # Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-# Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+# Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,35 +27,16 @@
 # THE SOFTWARE.
 #
 
+
 #--------------------------------------------------------------------------------------------------
-# Python.
+# Packages.
 #--------------------------------------------------------------------------------------------------
 
-find_package (PythonLibs REQUIRED)
-
-# Splitting version string into list.
-string (REGEX MATCHALL "[0123456789]+" PYTHON_VERSION_LIST "${PYTHONLIBS_VERSION_STRING}")
-
-if (PYTHON_VERSION_LIST)
-    # Accessing major and minor version numbers with the version list we got.
-    list (GET PYTHON_VERSION_LIST 0 PYTHON_MAJOR_VERSION)
-    list (GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)
+# Boost.
+if (NOT PYTHON_MAJOR_VERSION STREQUAL "2")
+    message (FATAL_ERROR "Python 2.x needed")
 else ()
-    # Default to latest Python 2 release if version string cannot be read.
-    message (STATUS "Cannot find Python version. Using 2.7 by default")
-    set (PYTHON_MAJOR_VERSION "2")
-    set (PYTHON_MINOR_VERSION "7")
-endif ()
-
-
-#--------------------------------------------------------------------------------------------------
-# Boost libraries.
-#--------------------------------------------------------------------------------------------------
-
-if (PYTHON_MAJOR_VERSION STREQUAL "3")
-    find_package (Boost 1.47 COMPONENTS python3)
-else ()
-    find_package (Boost 1.47 COMPONENTS python)
+    find_package (Boost 1.55 COMPONENTS python)
 endif ()
 
 
@@ -63,8 +44,30 @@ endif ()
 # Source files.
 #--------------------------------------------------------------------------------------------------
 
+set (studio_sources
+    studio/__init__.py
+    studio/plugins.py
+    studio/Qt.py
+    studio/ui.py
+)
+list (APPEND appleseed.python_sources
+    ${studio_sources}
+)
+source_group ("studio" FILES
+    ${studio_sources}
+)
+
+file (GLOB test_sources test/*.py)
+list (APPEND appleseed.python_sources
+    ${test_sources}
+)
+source_group ("test" FILES
+    ${test_sources}
+)
+
 set (sources
     __init__.py
+    bindaov.cpp
     bindassembly.cpp
     bindbasis.cpp
     bindbbox.cpp
@@ -90,6 +93,7 @@ set (sources
     bindquaternion.cpp
     bindrenderercontroller.cpp
     bindscene.cpp
+    bindshadergroup.cpp
     bindsurfaceshader.cpp
     bindtexture.cpp
     bindtilecallback.cpp
@@ -100,24 +104,14 @@ set (sources
     dict2dict.h
     gillocks.h
     gillocks.cpp
-    logging.py
+    logtarget.py
     metadata.h
     module.cpp
-    pyseed.h
     unalignedmatrix44.h
-    unalignedtransformd44.h
+    unalignedtransform.h
 )
-if (WITH_OSL)
-    list (APPEND sources
-        bindshadergroup.cpp
-    )
-endif ()
 list (APPEND appleseed.python_sources
     ${sources}
-)
-file (GLOB py_test_sources test/*.py)
-list (APPEND appleseed.python_sources
-    ${py_test_sources}
 )
 source_group ("" FILES
     ${sources}
@@ -183,10 +177,17 @@ target_link_libraries (appleseed.python
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
 
-add_copy_target_to_sandbox_py_module_command (appleseed.python)
-add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/__init__.py)
-add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/logging.py)
-add_copy_dir_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/test)
+add_custom_target(appleseed.python.copy_py_files ALL)
+
+add_copy_target_to_sandbox_py_module_command (appleseed.python appleseed)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/__init__.py appleseed)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/logtarget.py appleseed)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/textureconverter.py appleseed)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/studio/__init__.py appleseed.studio)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/studio/Qt.py appleseed.studio)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/studio/ui.py appleseed.studio)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/studio/plugins.py appleseed.studio)
+add_copy_dir_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/test appleseed)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -195,6 +196,7 @@ add_copy_dir_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.p
 
 set (py_module_dst "lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/appleseed")
 install (FILES __init__.py DESTINATION ${py_module_dst})
-install (FILES logging.py DESTINATION ${py_module_dst})
+install (FILES logtarget.py DESTINATION ${py_module_dst})
+install (DIRECTORY studio DESTINATION ${py_module_dst})
 install (DIRECTORY test DESTINATION ${py_module_dst})
 install (TARGETS appleseed.python DESTINATION ${py_module_dst})

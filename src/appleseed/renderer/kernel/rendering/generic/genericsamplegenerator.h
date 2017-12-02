@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -59,15 +59,15 @@ class GenericSampleGeneratorFactory
         const ParamArray&       params);
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
     // Return a new sample generator instance.
-    virtual ISampleGenerator* create(
+    ISampleGenerator* create(
         const size_t            generator_index,
-        const size_t            generator_count) APPLESEED_OVERRIDE;
+        const size_t            generator_count) override;
 
     // Create an accumulation buffer for this sample generator.
-    virtual SampleAccumulationBuffer* create_sample_accumulation_buffer() APPLESEED_OVERRIDE;
+    SampleAccumulationBuffer* create_sample_accumulation_buffer() override;
 
   private:
     const Frame&                m_frame;

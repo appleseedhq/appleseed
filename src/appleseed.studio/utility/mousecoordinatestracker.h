@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -56,7 +56,7 @@ class MouseCoordinatesTracker
         RenderWidget*   widget,
         QLabel*         label);
 
-    ~MouseCoordinatesTracker();
+    ~MouseCoordinatesTracker() override;
 
     foundation::Vector2d widget_to_ndc(const QPoint& point) const;
     foundation::Vector2i widget_to_pixel(const QPoint& point) const;
@@ -67,7 +67,7 @@ class MouseCoordinatesTracker
     const int        m_content_width;
     const int        m_content_height;
 
-    virtual bool eventFilter(QObject* object, QEvent* event);
+    bool eventFilter(QObject* object, QEvent* event) override;
 
     void set_label_text(const QPoint& point) const;
 

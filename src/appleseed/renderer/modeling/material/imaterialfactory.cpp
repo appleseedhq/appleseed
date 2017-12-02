@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,24 +31,16 @@
 #include "imaterialfactory.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 using namespace foundation;
 
 namespace renderer
 {
 
-void IMaterialFactory::add_common_input_metadata(DictionaryArray& metadata)
+void IMaterialFactory::add_surface_shader_metadata(DictionaryArray& metadata)
 {
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "shade_alpha_cutouts")
-            .insert("label", "Shade Alpha Cutouts")
-            .insert("type", "boolean")
-            .insert("use", "optional")
-            .insert("default", "false"));
-
     metadata.push_back(
         Dictionary()
             .insert("name", "surface_shader")
@@ -57,6 +49,106 @@ void IMaterialFactory::add_common_input_metadata(DictionaryArray& metadata)
             .insert("entity_types",
                 Dictionary().insert("surface_shader", "Surface Shaders"))
             .insert("use", "optional"));
+}
+
+void IMaterialFactory::add_alpha_map_metadata(DictionaryArray& metadata)
+{
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "alpha_map")
+            .insert("label", "Alpha Map")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
+            .insert("use", "optional"));
+}
+
+void IMaterialFactory::add_displacement_metadata(DictionaryArray& metadata)
+{
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "displacement_map")
+            .insert("label", "Displacement Map")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "displacement_method")
+            .insert("label", "Displacement Method")
+            .insert("type", "enumeration")
+            .insert("items",
+                Dictionary()
+                    .insert("Bump Mapping", "bump")
+                    .insert("Normal Mapping", "normal"))
+            .insert("use", "required")
+            .insert("default", "bump")
+            .insert("on_change", "rebuild_form"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "bump_amplitude")
+            .insert("label", "Bump Amplitude")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", "1.0")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("displacement_method", "bump")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "bump_offset")
+            .insert("label", "Bump Offset")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.01")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10.0")
+                    .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", "0.5")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("displacement_method", "bump")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "normal_map_up")
+            .insert("label", "Normal Map Up Vector")
+            .insert("type", "enumeration")
+            .insert("items",
+                Dictionary()
+                    .insert("Green Channel (Y)", "y")
+                    .insert("Blue Channel (Z)", "z"))
+            .insert("use", "optional")
+            .insert("default", "z")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("displacement_method", "normal")));
 }
 
 }   // namespace renderer

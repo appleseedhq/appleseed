@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,30 +37,16 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
-// OSL headers.
-#ifdef APPLESEED_WITH_OSL
-#include "foundation/platform/oslheaderguards.h"
-BEGIN_OSL_INCLUDES
-#include "OSL/oslexec.h"
-END_OSL_INCLUDES
-#endif
-
-// OpenImageIO headers.
-#ifdef APPLESEED_WITH_OIIO
-#include "foundation/platform/oiioheaderguards.h"
-BEGIN_OIIO_INCLUDES
-#include "OpenImageIO/texture.h"
-END_OIIO_INCLUDES
-#endif
-
 // Standard headers.
 #include <cstddef>
 
 // Forward declarations.
+namespace renderer  { class ForwardLightSampler; }
 namespace renderer  { class Frame; }
-namespace renderer  { class LightSampler; }
+namespace renderer  { class OIIOTextureSystem; }
+namespace renderer  { class OSLShadingSystem; }
+namespace renderer  { class Project; }
 namespace renderer  { class SampleAccumulationBuffer; }
-namespace renderer  { class Scene; }
 namespace renderer  { class TextureStore; }
 namespace renderer  { class TraceContext; }
 
@@ -73,43 +59,35 @@ class LightTracingSampleGeneratorFactory
   public:
     // Constructor.
     LightTracingSampleGeneratorFactory(
-        const Scene&            scene,
-        const Frame&            frame,
-        const TraceContext&     trace_context,
-        TextureStore&           texture_store,
-        const LightSampler&     light_sampler,
-#ifdef APPLESEED_WITH_OIIO
-        OIIO::TextureSystem&    oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
-        OSL::ShadingSystem&     shading_system,
-#endif
-        const ParamArray&       params);
+        const Project&              project,
+        const Frame&                frame,
+        const TraceContext&         trace_context,
+        TextureStore&               texture_store,
+        const ForwardLightSampler&  light_sampler,
+        OIIOTextureSystem&          oiio_texture_system,
+        OSLShadingSystem&           shading_system,
+        const ParamArray&           params);
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
     // Return a new sample generator instance.
-    virtual ISampleGenerator* create(
+    ISampleGenerator* create(
         const size_t            generator_index,
-        const size_t            generator_count) APPLESEED_OVERRIDE;
+        const size_t            generator_count) override;
 
     // Create an accumulation buffer for this sample generator.
-    virtual SampleAccumulationBuffer* create_sample_accumulation_buffer() APPLESEED_OVERRIDE;
+    SampleAccumulationBuffer* create_sample_accumulation_buffer() override;
 
   private:
-    const Scene&                m_scene;
-    const Frame&                m_frame;
-    const TraceContext&         m_trace_context;
-    TextureStore&               m_texture_store;
-    const LightSampler&         m_light_sampler;
-#ifdef APPLESEED_WITH_OIIO
-    OIIO::TextureSystem&        m_oiio_texture_system;
-#endif
-#ifdef APPLESEED_WITH_OSL
-    OSL::ShadingSystem&         m_shading_system;
-#endif
-    const ParamArray            m_params;
+    const Project&                  m_project;
+    const Frame&                    m_frame;
+    const TraceContext&             m_trace_context;
+    TextureStore&                   m_texture_store;
+    const ForwardLightSampler&      m_light_sampler;
+    OIIOTextureSystem&              m_oiio_texture_system;
+    OSLShadingSystem&               m_shading_system;
+    const ParamArray                m_params;
 };
 
 }       // namespace renderer

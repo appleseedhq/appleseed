@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,13 @@
 // Interface header.
 #include "environmentedf.h"
 
+// appleseed.foundation headers.
+#include "foundation/math/transform.h"
+#include "foundation/utility/api/apistring.h"
+
+// Standard headers.
+#include <cstddef>
+
 using namespace foundation;
 
 namespace renderer
@@ -50,22 +57,49 @@ UniqueID EnvironmentEDF::get_class_uid()
 }
 
 EnvironmentEDF::EnvironmentEDF(
-    const char*         name,
-    const ParamArray&   params)
+    const char*             name,
+    const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
 {
     set_name(name);
 }
 
 bool EnvironmentEDF::on_frame_begin(
-    const Project&      project,
-    IAbortSwitch*       abort_switch)
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
+    IAbortSwitch*           abort_switch)
 {
-    return true;
-}
+    if (!ConnectableEntity::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
 
-void EnvironmentEDF::on_frame_end(const Project& project)
-{
+    // Make sure the environment EDF's transform is only a (sequence of) rotation.
+    bool warned = false;
+    for (size_t i = 0, e = m_transform_sequence.size(); i < e; ++i)
+    {
+        float time;
+        Transformd transform;
+        m_transform_sequence.get_transform(i, time, transform);
+
+        Vector3d scaling, translation;
+        Quaterniond rotation;
+        transform.get_local_to_parent().decompose(scaling, rotation, translation);
+
+        if ((!feq(scaling, Vector3d(1.0)) || !fz(translation)) && !warned)
+        {
+            RENDERER_LOG_WARNING(
+                "transforms of environment edf \"%s\" must be pure rotations but have scaling and/or translation components; these will be ignored.",
+                get_path().c_str());
+            warned = true;
+        }
+
+        m_transform_sequence.set_transform(
+            time,
+            Transformd::from_local_to_parent(
+                Matrix4d::make_rotation(rotation)));
+    }
+
+    return true;
 }
 
 }   // namespace renderer

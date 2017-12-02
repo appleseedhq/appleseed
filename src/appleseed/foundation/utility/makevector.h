@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -69,45 +69,45 @@ std::vector<T> make_vector_n(const size_t n, const T& val, ...);
 inline std::vector<std::string> make_vector(const char* v1)
 {
     std::vector<std::string> vec;
-    vec.push_back(v1);
+    vec.emplace_back(v1);
     return vec;
 }
 
 inline std::vector<std::string> make_vector(const char* v1, const char* v2)
 {
     std::vector<std::string> vec;
-    vec.push_back(v1);
-    vec.push_back(v2);
+    vec.emplace_back(v1);
+    vec.emplace_back(v2);
     return vec;
 }
 
 inline std::vector<std::string> make_vector(const char* v1, const char* v2, const char* v3)
 {
     std::vector<std::string> vec;
-    vec.push_back(v1);
-    vec.push_back(v2);
-    vec.push_back(v3);
+    vec.emplace_back(v1);
+    vec.emplace_back(v2);
+    vec.emplace_back(v3);
     return vec;
 }
 
 inline std::vector<std::string> make_vector(const char* v1, const char* v2, const char* v3, const char* v4)
 {
     std::vector<std::string> vec;
-    vec.push_back(v1);
-    vec.push_back(v2);
-    vec.push_back(v3);
-    vec.push_back(v4);
+    vec.emplace_back(v1);
+    vec.emplace_back(v2);
+    vec.emplace_back(v3);
+    vec.emplace_back(v4);
     return vec;
 }
 
 inline std::vector<std::string> make_vector(const char* v1, const char* v2, const char* v3, const char* v4, const char* v5)
 {
     std::vector<std::string> vec;
-    vec.push_back(v1);
-    vec.push_back(v2);
-    vec.push_back(v3);
-    vec.push_back(v4);
-    vec.push_back(v5);
+    vec.emplace_back(v1);
+    vec.emplace_back(v2);
+    vec.emplace_back(v3);
+    vec.emplace_back(v4);
+    vec.emplace_back(v5);
     return vec;
 }
 
@@ -166,13 +166,13 @@ inline std::vector<std::string> make_vector_n(const size_t n, const char* val, .
     assert(n > 0);
 
     std::vector<std::string> vec;
-    vec.push_back(val);
+    vec.emplace_back(val);
 
     va_list argptr;
     va_start(argptr, val);
 
     for (size_t i = 1; i < n; ++i)
-        vec.push_back(va_arg(argptr, char*));
+        vec.emplace_back(va_arg(argptr, char*));
 
     va_end(argptr);
 

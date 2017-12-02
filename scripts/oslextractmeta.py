@@ -6,7 +6,7 @@
 #
 # This software is released under the MIT license.
 #
-# Copyright (c) 2015-2016 Hans Hoogenboom, The appleseedhq Organization
+# Copyright (c) 2015-2017 Hans Hoogenboom, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -41,12 +41,12 @@ import getpass
 import subprocess
 
 
-FileTypes = {'.oso' : "openshadinglanguage"}
+FileTypes = {'.oso': "openshadinglanguage"}
 
 # metadata according to the OSL specification
 _shaderTypes = ["surface", "displacement", "light", "volume", "shader"]
-_dataTypes   = ["int", "float", "point", "vector", "normal", "color", "matrix", "string", "void"]
-_shaderKeys  = ["name", "label", "type", "help", "url", "value", "page", "widget", "units"]
+_dataTypes = ["int", "float", "point", "vector", "normal", "color", "matrix", "string", "void"]
+_shaderKeys = ["name", "label", "type", "help", "url", "value", "page", "widget", "units"]
 # These osl parameters are not part of the official shadinglanguage but more guidelines as how to
 # make up the interface of the shader inside a 3rd party program. Not yet decided what to do with it...
 #_parmWidgets = ["number", "string", "boolean", "checkBox", "popup", "mapper", "filename", "null"]
@@ -67,21 +67,23 @@ def _error(msg, crash=False):
         sys.exit(1)
     return False
 
+
 def _fatalError(msg):
-    _error(msg,True)
+    _error(msg, True)
+
 
 def _formatVal(st):
-    value = st.replace('"','',2)
+    value = st.replace('"', '', 2)
     value = value.strip()
     return value
 
 
 def _getKeyValue(st):
     signPos = st.index('=')
-    value   = st[signPos+1:]
-    key     = st[:signPos-1]
-    key     = key.split()
-    key     = key[-1].strip()
+    value = st[signPos + 1:]
+    key = st[:signPos - 1]
+    key = key.split()
+    key = key[-1].strip()
     return (key, value)
 
 
@@ -98,7 +100,7 @@ def isValidExtension(fp, filetypes):
     return (os.path.splitext(fp)[1] in filetypes)
 
 
-def createFileList(filetypes, osl_cfg, recursive=False, args=None, pathfile=None): 
+def createFileList(filetypes, osl_cfg, recursive=False, args=None, pathfile=None):
     filelist = list()
     # files/dirs from external file
     if pathfile:
@@ -132,9 +134,9 @@ def createFileList(filetypes, osl_cfg, recursive=False, args=None, pathfile=None
 
     # split files from directories
     dirlist = list()
-    dirlist     = [x for x in filelist if os.path.isdir(x)]
+    dirlist = [x for x in filelist if os.path.isdir(x)]
     filelist[:] = [x for x in filelist if isValidFile(x, filetypes)]
-        
+
     # travel directories and add shader files to filelist
     for directory in dirlist:
         if recursive:
@@ -151,12 +153,12 @@ def createFileList(filetypes, osl_cfg, recursive=False, args=None, pathfile=None
                     filelist.append(os.path.join(dirpath, filename))
 
     # clear duplicate entries, do not care for order
-    filelist = list (set(filelist))
+    filelist = list(set(filelist))
 
     # if there are no files/paths quit
     if len(filelist) < 1:
         _fatalError("No files or directories found, exiting.")
-    
+
     return filelist
 
 
@@ -176,7 +178,7 @@ def parseOslInfo(compiledShader, osl_cfg):
         fp = subprocess.check_output(cmd)
     except subprocess.CalledProcessError as fp_ret:
         _fatalError("Could not run oslinfo, exiting.\nReturncode: %s" % fp_ret.returncode)
-    
+
     # check if output of oslinfo is correct
     # if false skip shader and write error message to console
     lines = fp.splitlines()
@@ -184,7 +186,7 @@ def parseOslInfo(compiledShader, osl_cfg):
         _error('Missing shader definition for %s' % compiledShader)
         return False
     count = 0
-    shaderDef = lines[ count ]    
+    shaderDef = lines[count]
     args = shaderDef.split()
 
     # tempShader stores all the data
@@ -197,7 +199,7 @@ def parseOslInfo(compiledShader, osl_cfg):
         return False
     else:
         tempShader['type'] = _formatVal(args[0])
-        tempShader['name'] = _formatVal(args[1]) 
+        tempShader['name'] = _formatVal(args[1])
         tempShader['hasMetaData'] = False
         tempShader['hasParmHelp'] = False
 
@@ -207,22 +209,22 @@ def parseOslInfo(compiledShader, osl_cfg):
     # lines iterator
     count = 1
     while True:
-        line = lines[ count ]
+        line = lines[count]
         if not line:
             _error("No more lines to read, invalid shader %s?" % compiledShader)
             break
 
         args = line.split()
         # find parameter name
-        if args[0] not in ["Default", "metadata:"]: # or args[0] == "export":
+        if args[0] not in ["Default", "metadata:"]:  # or args[0] == "export":
             tempparm = dict()
             if len(args) < 3:
                 tempparm['name'] = _formatVal(args[0])
                 tempparm['type'] = _formatVal(args[1])
             else:
                 tempparm['output'] = True
-                tempparm['name']   = _formatVal(args[0])
-                tempparm['type']   = _formatVal(args[2])
+                tempparm['name'] = _formatVal(args[0])
+                tempparm['type'] = _formatVal(args[2])
             condition = True
             widget = str()
             while condition:
@@ -258,13 +260,13 @@ def parseOslInfo(compiledShader, osl_cfg):
                 value = _formatVal(value)
                 tempparm[key] = value
                 tempShader['hasMetaData'] = True
-  
+
         if count > length:
-           break
+            break
         else:
             count += 1
             # parsed all lines
-    tempShader['parmlist'] = parmlist 
+    tempShader['parmlist'] = parmlist
     return tempShader
 
 
@@ -279,13 +281,13 @@ def parseShaderInfo(compiledShader, FileTypes, osl_cfg):
         return None
     else:
         compShader = dict()
-        compShader['name']    = shaderUI['name']
-        compShader['path']    = compiledShader
-        compShader['mtime']   = str(os.path.getmtime(compiledShader))
-        compShader['ctime']   = str(datetime.datetime.now())
-        compShader['language']= FileTypes[extension]
+        compShader['name'] = shaderUI['name']
+        compShader['path'] = compiledShader
+        compShader['mtime'] = str(os.path.getmtime(compiledShader))
+        compShader['ctime'] = str(datetime.datetime.now())
+        compShader['language'] = FileTypes[extension]
         # holds the output of parseOslInfo (the actual shader metadata/ui)
-        compShader['ui']      = shaderUI
+        compShader['ui'] = shaderUI
         return compShader
 
 
@@ -316,11 +318,11 @@ def existsJsonShader(jsonFile, shaderName):
 
 def writeJsonHeader(filename, numElements):
     headerDict = dict()
-    headerDict['creator']       = getpass.getuser()
+    headerDict['creator'] = getpass.getuser()
     headerDict['creation date'] = str(datetime.datetime.now())
-    headerDict['name']          = os.path.basename(filename)
-    headerDict['elements']      = numElements
-    headerDict['last update']   = str(datetime.datetime.now())
+    headerDict['name'] = os.path.basename(filename)
+    headerDict['elements'] = numElements
+    headerDict['last update'] = str(datetime.datetime.now())
     return headerDict
 
 
@@ -334,7 +336,7 @@ def updateJsonHeader(jsonFile, numElements):
 def cli():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        description = '''
+        description='''
         oslextractmetadata stores the user interface and metadata of a 
         compiled OSL (openshadinglanguage) shader(s) into a JSON file.
         The JSON dictionary consists of a 'header' and a 'shader' part.
@@ -345,18 +347,19 @@ def cli():
         for x in jsondict['shaders'].values():
             print x['ui']
         ''')
-    parser.add_argument('-i', '--input', nargs='+', action='store', dest='files', metavar='compiled shaders',help='List of file(s) to parse.')
+    parser.add_argument('-i', '--input', nargs='+', action='store', dest='files', metavar='compiled shaders', help='List of file(s) to parse.')
     parser.add_argument('-v', '--verbose', action='store_true', dest='verbosity', help='Increase output verbosity.')
-    parser.add_argument('-o', '--output', nargs=1, action='store', dest='output', required=True, metavar='output file', help="Store shader UI in file.")
+    parser.add_argument('-o', '--output', nargs=1, action='store', dest='output',
+                        required=True, metavar='output file', help="Store shader UI in file.")
     parser.add_argument('-f', '--file', nargs='+', action='store', dest='read_file', metavar='file',  help="Read file paths from file(s).")
     parser.add_argument('-U', '--update', action='store_true', dest='update', help="Update existing shader file.")
     parser.add_argument('-O', '--overwrite', action='store_true', dest='overwrite', help="Overwrite existing files.")
     parser.add_argument('-c', '--clean', action='store_true', dest='clean', help="Clean file, remove non existant shaders.")
-    parser.add_argument('-r', '--recursive', action='store_true', dest='recursive', help="Add directories recursively.") 
+    parser.add_argument('-r', '--recursive', action='store_true', dest='recursive', help="Add directories recursively.")
 
     args = parser.parse_args()
-   
-    # user input checks 
+
+    # user input checks
     output = args.output[0]
     existingFile = os.path.exists(output)
     if not existingFile:
@@ -365,7 +368,7 @@ def cli():
         args.clean = False
     if args.overwrite:
         args.update = False
-        args.clean = False 
+        args.clean = False
 
     return (args, output, existingFile)
 
@@ -378,7 +381,7 @@ def main():
     (args, output, existingFile) = cli()
 
     # read configuration file
-    cfg_defaults = {'oslpath' : '/usr/bin/oslinfo'}
+    cfg_defaults = {'oslpath': '/usr/bin/oslinfo'}
     osl_cfg = ConfigParser(cfg_defaults)
     osl_cfg.read('oslextractmeta.conf')
 
@@ -416,7 +419,7 @@ def main():
             print("%s shaders updated." % changes)
     if args.overwrite:
         changes = len(shaders)
-        jsonDict['header']  = writeJsonHeader(output, changes)
+        jsonDict['header'] = writeJsonHeader(output, changes)
         jsonDict['shaders'] = shaders
         if args.verbosity:
             print("%s shaders added to %s" % (changes, output))
@@ -445,10 +448,10 @@ def main():
             json.dump(jsonDict, fp)
     elif not existingFile and changes:
         with open(output, 'w') as fp:
-            jsonDict['header'] = writeJsonHeader(output, len(shaders))        
+            jsonDict['header'] = writeJsonHeader(output, len(shaders))
             json.dump(jsonDict, fp)
     elif args.verbosity:
-            print("No shaders found for adding to %s, exiting." % output)
+        print("No shaders found for adding to %s, exiting." % output)
 
     return 0
 

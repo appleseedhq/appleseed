@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -125,6 +125,11 @@ class Intersector
 // Intersector class implementation.
 //
 
+#if defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
 template <
     typename Tree,
     typename Visitor,
@@ -193,10 +198,7 @@ void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect_no_motion(
             if (hit_left | hit_right)
             {
                 // Push the far child node to the stack, continue with the near child node.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
                 const int far_index = tmin[0] < tmin[1] ? 1 : 0;
-#pragma GCC diagnostic pop
                 *stack_ptr++ = node_ptr + far_index - 1;
                 node_ptr -= far_index;
                 continue;
@@ -255,6 +257,10 @@ void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect_no_motion(
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_bboxes.insert(intersected_bboxes));
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_discarded_nodes.insert(discarded_nodes));
 }
+
+#if defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)))
+#pragma GCC diagnostic pop
+#endif
 
 template <
     typename Tree,
@@ -718,7 +724,7 @@ void Intersector<Tree, Visitor, Ray3d, StackSize, 3>::intersect_motion(
             }
             else
             {
-                APPLESEED_SSE_ALIGN double bbox_data[12];
+                APPLESEED_SIMD4_ALIGN double bbox_data[12];
 
                 // Fetch the left bounding box.
                 if (left_motion_segment_count > 0)

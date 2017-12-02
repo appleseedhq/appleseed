@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,12 +31,10 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bssrdf/betterdipolebssrdf.h"
+#include "renderer/modeling/bssrdf/bssrdftraits.h"
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #include "renderer/modeling/bssrdf/gaussianbssrdf.h"
-#include "renderer/modeling/bssrdf/ibssrdffactory.h"
-#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
-#endif
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
 
 // appleseed.foundation headers.
@@ -46,6 +44,7 @@
 // Standard headers.
 #include <cassert>
 #include <string>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -53,23 +52,17 @@ using namespace std;
 namespace renderer
 {
 
-APPLESEED_DEFINE_ARRAY(BSSRDFFactoryArray);
+APPLESEED_DEFINE_APIARRAY(BSSRDFFactoryArray);
 
 struct BSSRDFFactoryRegistrar::Impl
 {
     Registrar<IBSSRDFFactory> m_registrar;
 };
 
-BSSRDFFactoryRegistrar::BSSRDFFactoryRegistrar()
+BSSRDFFactoryRegistrar::BSSRDFFactoryRegistrar(const SearchPaths& search_paths)
   : impl(new Impl())
 {
-    register_factory(auto_ptr<FactoryType>(new BetterDipoleBSSRDFFactory()));
-    register_factory(auto_ptr<FactoryType>(new DirectionalDipoleBSSRDFFactory()));
-    register_factory(auto_ptr<FactoryType>(new GaussianBSSRDFFactory()));
-#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
-    register_factory(auto_ptr<FactoryType>(new NormalizedDiffusionBSSRDFFactory()));
-#endif
-    register_factory(auto_ptr<FactoryType>(new StandardDipoleBSSRDFFactory()));
+    reinitialize(search_paths);
 }
 
 BSSRDFFactoryRegistrar::~BSSRDFFactoryRegistrar()
@@ -77,10 +70,27 @@ BSSRDFFactoryRegistrar::~BSSRDFFactoryRegistrar()
     delete impl;
 }
 
-void BSSRDFFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+void BSSRDFFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 {
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, factory);
+    // The registrar must be cleared before the plugins are unloaded.
+    impl->m_registrar.clear();
+    unload_all_plugins();
+
+    // Register built-in factories.
+    register_factory(auto_release_ptr<FactoryType>(new BetterDipoleBSSRDFFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new DirectionalDipoleBSSRDFFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new GaussianBSSRDFFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new NormalizedDiffusionBSSRDFFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new StandardDipoleBSSRDFFactory()));
+
+    // Register factories defined in plugins.
+    register_factories_from_plugins<BSSRDF>(
+        search_paths,
+        [this](void* plugin_entry_point)
+        {
+            auto create_fn = reinterpret_cast<IBSSRDFFactory* (*)()>(plugin_entry_point);
+            register_factory(foundation::auto_release_ptr<IBSSRDFFactory>(create_fn()));
+        });
 }
 
 BSSRDFFactoryArray BSSRDFFactoryRegistrar::get_factories() const
@@ -96,8 +106,13 @@ BSSRDFFactoryArray BSSRDFFactoryRegistrar::get_factories() const
 const BSSRDFFactoryRegistrar::FactoryType* BSSRDFFactoryRegistrar::lookup(const char* name) const
 {
     assert(name);
-
     return impl->m_registrar.lookup(name);
+}
+
+void BSSRDFFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
+{
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, move(factory));
 }
 
 }   // namespace renderer

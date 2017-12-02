@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,7 @@ namespace studio {
 //
 
 StatusBar::StatusBar()
-  : m_rendering_timer(0)
+  : m_rendering_timer(nullptr)
   , m_timer_id(-1)
 {
 }
@@ -56,7 +56,7 @@ void StatusBar::set_text(const string& text)
 
 void StatusBar::start_rendering_time_display(RenderingTimer* rendering_timer)
 {
-    assert(m_rendering_timer == 0);
+    assert(m_rendering_timer == nullptr);
     assert(m_timer_id == -1);
 
     assert(rendering_timer);
@@ -67,13 +67,15 @@ void StatusBar::start_rendering_time_display(RenderingTimer* rendering_timer)
 
 void StatusBar::stop_rendering_time_display()
 {
-    assert(m_rendering_timer != 0);
-    assert(m_timer_id != -1);
+    if (m_rendering_timer != nullptr)
+    {
+        assert(m_timer_id != -1);
 
-    killTimer(m_timer_id);
+        killTimer(m_timer_id);
 
-    m_rendering_timer = 0;
-    m_timer_id = -1;
+        m_rendering_timer = nullptr;
+        m_timer_id = -1;
+    }
 }
 
 void StatusBar::timerEvent(QTimerEvent* event)

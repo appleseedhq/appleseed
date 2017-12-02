@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -45,8 +45,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/uid.h"
 
@@ -63,10 +63,10 @@
 #include <cassert>
 #include <cstddef>
 
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace studio {
@@ -112,8 +112,8 @@ namespace
         {
         }
 
-        virtual void operator()(
-            Project&                project) APPLESEED_OVERRIDE
+        void operator()(
+            Project&                project) override
         {
             m_parent->import_objects(m_filepaths);
         }
@@ -130,11 +130,7 @@ void ObjectCollectionItem::slot_import_objects()
         get_open_filenames(
             treeWidget(),
             "Import Objects...",
-#ifdef APPLESEED_WITH_ALEMBIC
-            "Geometry Files (*.abc;*.binarymesh;*.obj);;All Files (*.*)",
-#else
-            "Geometry Files (*.binarymesh;*.obj);;All Files (*.*)",
-#endif
+            "Geometry Files (*.binarymesh *.obj);;All Files (*.*)",
             m_editor_context.m_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 
@@ -142,7 +138,7 @@ void ObjectCollectionItem::slot_import_objects()
         return;
 
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        auto_ptr<RenderingManager::IScheduledAction>(
+        unique_ptr<RenderingManager::IScheduledAction>(
             new ImportObjectsAction(this, filepaths)));
 }
 
@@ -155,7 +151,7 @@ void ObjectCollectionItem::import_objects(const QStringList& filepaths)
 void ObjectCollectionItem::insert_objects(const string& path) const
 {
     const string base_object_name =
-        filesystem::path(path).replace_extension().filename().string();
+        bf::path(path).replace_extension().filename().string();
 
     ParamArray params;
     params.insert("filename", path);

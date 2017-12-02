@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,13 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/source.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/api/apistring.h"
+
 // Standard headers.
 #include <cassert>
+
+using namespace foundation;
 
 namespace renderer
 {
@@ -47,10 +52,10 @@ bool ConnectableEntity::is_uniform_zero_scalar(const Source* source)
 
     if (source->is_uniform())
     {
-        double value;
+        float value;
         source->evaluate_uniform(value);
 
-        if (value == 0.0)
+        if (value == 0.0f)
             return true;
     }
 
@@ -66,7 +71,7 @@ bool ConnectableEntity::is_uniform_zero_spectrum(const Source* source)
         Spectrum spectrum;
         source->evaluate_uniform(spectrum);
 
-        if (spectrum == Spectrum(0.0f))
+        if (is_zero(spectrum))
             return true;
     }
 
@@ -105,7 +110,7 @@ bool ConnectableEntity::check_uniform(const char* input_name) const
     RENDERER_LOG_ERROR(
         "the \"%s\" input of \"%s\" must be bound to a scalar or a color.",
         input_name,
-        get_name());
+        get_path().c_str());
 
     return false;
 }
@@ -139,7 +144,7 @@ void ConnectableEntity::warn_zero_emission() const
     RENDERER_LOG_WARNING(
         "\"%s\" does not emit any light and will slow down rendering "
         "without contributing to the lighting.",
-        get_name());
+        get_path().c_str());
 }
 
 }   // namespace renderer

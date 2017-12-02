@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -118,10 +118,13 @@ struct Console::Impl
 Console::Console()
   : impl(new Impl())
 {
-    // Get current text attributes.
     CONSOLE_SCREEN_BUFFER_INFO info;
+
+    // Save current stdout text attributes.
     GetConsoleScreenBufferInfo(get_device_handle(StdOut), &info);
     impl->m_default_attributes[StdOut] = info.wAttributes;
+
+    // Save current stderr text attributes.
     GetConsoleScreenBufferInfo(get_device_handle(StdErr), &info);
     impl->m_default_attributes[StdErr] = info.wAttributes;
 }
@@ -136,17 +139,21 @@ void Console::set_text_color(
     const Color     color)
 {
     assert(device < NumDevices);
+    const WORD default_attributes = impl->m_default_attributes[device];
+
     if (color == DefaultColor)
     {
         SetConsoleTextAttribute(
             get_device_handle(device),
-            impl->m_default_attributes[device]);
+            default_attributes);
     }
     else
     {
+        // Only set the foreground color, preserve the background color.
+        // https://blogs.msdn.microsoft.com/joshpoley/2011/07/26/console-output-with-a-transparent-background-color/
         SetConsoleTextAttribute(
             get_device_handle(device),
-            get_color_code(color));
+            get_color_code(color) | (default_attributes & 0x00F0));
     }
 }
 
@@ -200,7 +207,7 @@ namespace
 }
 
 Console::Console()
-  : impl(0)
+  : impl(nullptr)
 {
 }
 

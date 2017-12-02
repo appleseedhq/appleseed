@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 #include "projectfilewriter.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/camera/camera.h"
@@ -48,42 +49,39 @@
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/meshobjectwriter.h"
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/project/assethandler.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
 #include "renderer/modeling/project/project.h"
-#include "renderer/modeling/project/renderlayerrule.h"
-#include "renderer/modeling/project/renderlayerrulecontainer.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
+#include "renderer/modeling/scene/proceduralassembly.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shader.h"
 #include "renderer/modeling/shadergroup/shaderconnection.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #include "renderer/modeling/shadergroup/shaderparam.h"
-#endif
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/modeling/volume/volume.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
 #include "foundation/math/transform.h"
-#include "foundation/platform/path.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/indenter.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/xmlelement.h"
+#include "foundation/utility/zip.h"
 
 // Boost headers.
-#include "boost/filesystem/operations.hpp"
-#include "boost/filesystem/path.hpp"
+#include "boost/filesystem.hpp"
 
 // Standard headers.
 #include <algorithm>
@@ -99,6 +97,7 @@
 using namespace boost;
 using namespace foundation;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace renderer
 {
@@ -112,218 +111,6 @@ namespace
     // Floating-point formatting settings.
     const char* MatrixFormat     = "%.15f";
     const char* ColorValueFormat = "%.6f";
-
-    template <typename EntityCollection>
-    void do_collect_asset_paths(
-        StringArray&            paths,
-        const EntityCollection& entities)
-    {
-        for (const_each<EntityCollection> i = entities; i; ++i)
-            i->collect_asset_paths(paths);
-    }
-
-    template <typename EntityCollection>
-    void do_update_asset_paths(
-        const StringDictionary& mappings,
-        EntityCollection&       entities)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-            i->update_asset_paths(mappings);
-    }
-
-    class AssetHandler
-    {
-      public:
-        // Constructor.
-        AssetHandler(
-            const Project&      project,
-            const char*         filepath,
-            const int           options)
-          : m_project_search_paths(project.search_paths())
-          , m_project_old_root_path(project.get_path())
-          , m_project_new_root_path(filepath)
-          , m_project_old_root_dir(m_project_old_root_path.parent_path())
-          , m_project_new_root_dir(m_project_new_root_path.parent_path())
-          , m_options(options)
-        {
-        }
-
-        bool handle_assets(const Project& project) const
-        {
-            StringArray paths;
-
-            Scene* scene = project.get_scene();
-            if (scene)
-                scene->collect_asset_paths(paths);
-
-            Frame* frame = project.get_frame();
-            if (frame)
-                frame->collect_asset_paths(paths);
-
-            do_collect_asset_paths(paths, project.render_layer_rules());
-            do_collect_asset_paths(paths, project.configurations());
-
-            vector<string> unique_paths = array_vector<vector<string> >(paths);
-            sort(unique_paths.begin(), unique_paths.end());
-            unique_paths.erase(
-                unique(unique_paths.begin(), unique_paths.end()),
-                unique_paths.end());
-
-            StringDictionary mappings;
-            for (size_t i = 0, e = unique_paths.size(); i < e; ++i)
-            {
-                string path = unique_paths[i];
-
-                if (!handle_link_to_asset(path))
-                    return false;
-
-                mappings.insert(unique_paths[i], path);
-            }
-
-            if (scene)
-                scene->update_asset_paths(mappings);
-
-            if (frame)
-                frame->update_asset_paths(mappings);
-
-            do_update_asset_paths(mappings, project.render_layer_rules());
-            do_update_asset_paths(mappings, project.configurations());
-
-            return true;
-        }
-
-      private:
-        //
-        //  PROJECT DIRECTORY   OLD PARAMETER VALUE                 TARGET DIRECTORY    BRING ASSETS?   NEW PARAMETER VALUE                 CHANGES
-        //  -------------------------------------------------------------------------------------------------------------------------------------------
-        //
-        //  -- ABSOLUTE PATHS
-        //
-        //  c:\appleseed        c:\textures\bunny.exr               c:\appleseed        yes             bunny.exr                           copy, param
-        //  c:\appleseed        c:\textures\bunny.exr               c:\appleseed        no              c:\textures\bunny.exr               -
-        //
-        //  c:\appleseed        c:\textures\bunny.exr               c:\temp             yes             bunny.exr                           copy, param
-        //  c:\appleseed        c:\textures\bunny.exr               c:\temp             no              c:\textures\bunny.exr               -
-        //
-        //  c:\appleseed        c:\appleseed\textures\bunny.exr     c:\appleseed        yes             textures/bunny.exr                  param
-        //  c:\appleseed        c:\appleseed\textures\bunny.exr     c:\appleseed        no              c:\appleseed\textures\bunny.exr     -
-        //
-        //  -- RELATIVE PATHS
-        //
-        //  c:\appleseed        bunny.exr                           c:\appleseed        yes             bunny.exr                           -
-        //  c:\appleseed        bunny.exr                           c:\appleseed        no              bunny.exr                           -
-        //
-        //  c:\appleseed        bunny.exr                           c:\temp             yes             bunny.exr                           copy
-        //  c:\appleseed        bunny.exr                           c:\temp             no              c:\appleseed\bunny.exr              param
-        //
-        //  c:\appleseed        textures/bunny.exr                  c:\appleseed        yes             textures/bunny.exr                  -
-        //  c:\appleseed        textures/bunny.exr                  c:\appleseed        no              textures/bunny.exr                  -
-        //
-        //  c:\appleseed        textures/bunny.exr                  c:\temp             yes             textures/bunny.exr                  copy
-        //  c:\appleseed        textures/bunny.exr                  c:\temp             no              c:\appleseed\textures\bunny.exr     param
-        //
-
-        const SearchPaths&      m_project_search_paths;
-        const filesystem::path  m_project_old_root_path;
-        const filesystem::path  m_project_new_root_path;
-        const filesystem::path  m_project_old_root_dir;
-        const filesystem::path  m_project_new_root_dir;
-        const int               m_options;
-
-        bool handle_link_to_asset(string& asset_path) const
-        {
-            return
-                filesystem::path(asset_path).is_absolute()
-                    ? handle_absolute_link_to_asset(asset_path)
-                    : handle_relative_link_to_asset(asset_path);
-        }
-
-        bool handle_absolute_link_to_asset(string& asset_path) const
-        {
-            // Nothing to do if the asset path is absolute and we don't want to bring the asset over.
-            if (m_options & ProjectFileWriter::OmitBringingAssets)
-                return true;
-
-            // Check if the project's old directory (e.g. c:\appleseed) is a prefix of the asset path
-            // (e.g. c:\appleseed\textures\bunny.exr).
-            filesystem::path common_path, discard, relative_asset_path;
-            split_paths(
-                m_project_old_root_path,        // input path 1
-                asset_path,                     // input path 2
-                common_path,                    // common part
-                discard,                        // remaining part of path 1
-                relative_asset_path);           // remaining part of path 2
-
-            // If it is, then keep the relative part of the asset path (e.g. textures\bunny.exr);
-            // otherwise simply keep the asset's file name (e.g. bunny.exr).
-            const filesystem::path new_asset_path =
-                common_path.empty() || discard.has_parent_path()
-                    ? filesystem::path(asset_path).filename()
-                    : relative_asset_path;
-
-            // Copy the asset file to the project's new directory if necessary.
-            const filesystem::path dest_path = m_project_new_root_dir / new_asset_path;
-            const bool success = asset_path != dest_path ? copy_file(asset_path, dest_path) : true;
-
-            // Update the asset path parameter.
-            asset_path = convert_to_posix(new_asset_path.string());
-
-            return success;
-        }
-
-        bool handle_relative_link_to_asset(string& asset_path) const
-        {
-            // Nothing to do if the project is written to the same directory as before.
-            if (m_project_old_root_dir == m_project_new_root_dir)
-                return true;
-
-            // Find the asset in the search paths, leading to e.g. textures/bunny.exr.
-            const filesystem::path qualified_asset_path = m_project_search_paths.qualify(asset_path);
-
-            if (m_options & ProjectFileWriter::OmitBringingAssets)
-            {
-                // Make the asset path absolute according to the old project path.
-                filesystem::path new_asset_path = absolute(qualified_asset_path, m_project_old_root_dir);
-                new_asset_path.make_preferred();
-                asset_path = new_asset_path.string();
-                return true;
-            }
-            else
-            {
-                // Copy the asset file to the project's new directory if necessary.
-                // The asset path parameter is left unmodified, e.g. bunny.exr or textures/bunny.exr.
-                const filesystem::path dest_path = m_project_new_root_dir / asset_path;
-                return qualified_asset_path != dest_path ? copy_file(qualified_asset_path, dest_path) : true;
-            }
-        }
-
-        static string convert_to_posix(string path)
-        {
-            replace(path.begin(), path.end(), '\\', '/');
-            return path;
-        }
-
-        static bool copy_file(
-            const filesystem::path& source_path,
-            const filesystem::path& dest_path)
-        {
-            try
-            {
-                filesystem::create_directories(dest_path.parent_path());
-                filesystem::copy_file(source_path, dest_path, filesystem::copy_option::overwrite_if_exists);
-                return true;
-            }
-            catch (const std::exception& e)
-            {
-                RENDERER_LOG_ERROR(
-                    "failed to copy %s to %s: %s.",
-                    source_path.string().c_str(),
-                    dest_path.string().c_str(),
-                    e.what());
-                return false;
-            }
-        }
-    };
 
     class Writer
     {
@@ -348,8 +135,7 @@ namespace
             element.add_attribute("format_revision", project.get_format_revision());
             element.write(XMLElement::HasChildElements);
 
-            if (!(m_options & ProjectFileWriter::OmitSearchPaths))
-                write_search_paths(project);
+            write_search_paths(project);
 
             if (project.get_display())
                 write(*project.get_display());
@@ -357,7 +143,6 @@ namespace
             if (project.get_scene())
                 write_scene(*project.get_scene());
 
-            write_rules(project);
             write_output(project);
             write_configurations(project);
         }
@@ -400,28 +185,13 @@ namespace
         }
 
         // Write a <transform> element.
-        void write_transform(const Transformd& transform)
+        template <typename T>
+        void write_transform(const Transform<T>& transform)
         {
+            if (transform.get_local_to_parent() == Matrix<T, 4, 4>::identity())
+                return;
+
             XMLElement element("transform", m_file, m_indenter);
-            element.write(XMLElement::HasChildElements);
-
-            {
-                XMLElement child_element("matrix", m_file, m_indenter);
-                child_element.write(XMLElement::HasChildElements);
-
-                write_vector(
-                    transform.get_local_to_parent(),
-                    16,
-                    4,
-                    MatrixFormat);
-            }
-        }
-
-        // Write a <transform> element with a "time" attribute.
-        void write_transform(const Transformd& transform, const double time)
-        {
-            XMLElement element("transform", m_file, m_indenter);
-            element.add_attribute("time", time);
             element.write(XMLElement::HasChildElements);
 
             {
@@ -439,12 +209,35 @@ namespace
         // Write a transform sequence.
         void write_transform_sequence(const TransformSequence& transform_sequence)
         {
-            for (size_t i = 0; i < transform_sequence.size(); ++i)
+            if (transform_sequence.size() == 1)
             {
-                double time;
+                float time;
+                Transformd transform;
+                transform_sequence.get_transform(0, time, transform);
+                if (transform.get_local_to_parent() == Matrix4d::identity())
+                    return;
+            }
+
+            for (size_t i = 0, e = transform_sequence.size(); i < e; ++i)
+            {
+                float time;
                 Transformd transform;
                 transform_sequence.get_transform(i, time, transform);
-                write_transform(transform, time);
+
+                XMLElement element("transform", m_file, m_indenter);
+                element.add_attribute("time", time);
+                element.write(XMLElement::HasChildElements);
+
+                {
+                    XMLElement child_element("matrix", m_file, m_indenter);
+                    child_element.write(XMLElement::HasChildElements);
+
+                    write_vector(
+                        transform.get_local_to_parent(),
+                        16,
+                        4,
+                        MatrixFormat);
+                }
             }
         }
 
@@ -513,8 +306,21 @@ namespace
         {
             const SortedMutableEntityVector<Collection> sorted(collection);
 
-            for (const_each<SortedMutableEntityVector<Collection> > i = sorted; i; ++i)
+            for (const_each<SortedMutableEntityVector<Collection>> i = sorted; i; ++i)
                 write(**i);
+        }
+
+        // Write an <aov> element.
+        void write(const AOV& aov)
+        {
+            XMLElement element("aov", m_file, m_indenter);
+            element.add_attribute("model", aov.get_model());
+            element.write(
+                !aov.get_parameters().empty()
+                    ? XMLElement::HasChildElements
+                    : XMLElement::HasNoContent);
+
+            write_params(aov.get_parameters());
         }
 
         // Write an <assembly> element.
@@ -528,6 +334,19 @@ namespace
             if (strcmp(assembly.get_model(), AssemblyFactory().get_model()) != 0)
                 element.add_attribute("model", assembly.get_model());
 
+            // Don't write the content of the assembly if it was
+            // generated procedurally.
+            if (dynamic_cast<const ProceduralAssembly*>(&assembly))
+            {
+                element.write(
+                    !assembly.get_parameters().empty()
+                        ? XMLElement::HasChildElements
+                        : XMLElement::HasNoContent);
+
+                write_params(assembly.get_parameters());
+                return;
+            }
+
             element.write(
                 !assembly.get_parameters().empty() ||
                 !assembly.colors().empty() ||
@@ -536,14 +355,13 @@ namespace
                 !assembly.bsdfs().empty() ||
                 !assembly.bssrdfs().empty() ||
                 !assembly.edfs().empty() ||
-#ifdef APPLESEED_WITH_OSL
                 !assembly.shader_groups().empty() ||
-#endif
                 !assembly.surface_shaders().empty() ||
                 !assembly.materials().empty() ||
                 !assembly.lights().empty() ||
                 !assembly.objects().empty() ||
                 !assembly.object_instances().empty() ||
+                !assembly.volumes().empty() ||
                 !assembly.assemblies().empty() ||
                 !assembly.assembly_instances().empty()
                     ? XMLElement::HasChildElements
@@ -557,14 +375,13 @@ namespace
             write_collection(assembly.bsdfs());
             write_collection(assembly.bssrdfs());
             write_collection(assembly.edfs());
-#ifdef APPLESEED_WITH_OSL
             write_collection(assembly.shader_groups());
-#endif
             write_collection(assembly.surface_shaders());
             write_collection(assembly.materials());
             write_collection(assembly.lights());
             write_object_collection(assembly.objects());
             write_collection(assembly.object_instances());
+            write_collection(assembly.volumes());
             write_collection(assembly.assemblies());
             write_collection(assembly.assembly_instances());
         }
@@ -579,6 +396,20 @@ namespace
 
             write_params(assembly_instance.get_parameters());
             write_transform_sequence(assembly_instance.transform_sequence());
+        }
+
+        // Write an <aovs> element.
+        void write_aovs(const Frame& frame)
+        {
+            const AOVContainer& aovs = frame.aovs();
+            if (!aovs.empty())
+            {
+                XMLElement element("aovs", m_file, m_indenter);
+                element.write(XMLElement::HasChildElements);
+
+                for (size_t i = 0, e = aovs.size(); i != e; ++i)
+                    write(*aovs.get_by_index(i));
+            }
         }
 
         // Write an <assign_material> element.
@@ -715,7 +546,13 @@ namespace
         // Write an <environment_edf> element.
         void write(const EnvironmentEDF& env_edf)
         {
-            write_entity("environment_edf", env_edf);
+            XMLElement element("environment_edf", m_file, m_indenter);
+            element.add_attribute("name", env_edf.get_name());
+            element.add_attribute("model", env_edf.get_model());
+            element.write(XMLElement::HasChildElements);
+
+            write_params(env_edf.get_parameters());
+            write_transform_sequence(env_edf.transform_sequence());
         }
 
         // Write an <environment_shader> element.
@@ -730,10 +567,12 @@ namespace
             XMLElement element("frame", m_file, m_indenter);
             element.add_attribute("name", frame.get_name());
             element.write(
-                !frame.get_parameters().empty()
+                !frame.get_parameters().empty() ||
+                !frame.aovs().empty()
                     ? XMLElement::HasChildElements
                     : XMLElement::HasNoContent);
             write_params(frame.get_parameters());
+            write_aovs(frame);
         }
 
         // Write a <light> element.
@@ -754,19 +593,25 @@ namespace
             write_entity("material", material);
         }
 
+        // Write a <volume> element.
+        void write(const Volume& material)
+        {
+            write_entity("volume", material);
+        }
+
         // Write a collection of <object> elements.
         void write_object_collection(ObjectContainer& objects)
         {
             const SortedMutableEntityVector<ObjectContainer> sorted(objects);
             set<string> groups;
 
-            for (const_each<SortedMutableEntityVector<ObjectContainer> > i = sorted; i; ++i)
+            for (const_each<SortedMutableEntityVector<ObjectContainer>> i = sorted; i; ++i)
             {
                 Object& object = **i;
 
-                if (strcmp(object.get_model(), MeshObjectFactory::get_model()) == 0)
+                if (strcmp(object.get_model(), MeshObjectFactory().get_model()) == 0)
                     write_mesh_object(static_cast<MeshObject&>(object), groups);
-                else if (strcmp(object.get_model(), CurveObjectFactory::get_model()) == 0)
+                else if (strcmp(object.get_model(), CurveObjectFactory().get_model()) == 0)
                     write_curve_object(static_cast<CurveObject&>(object));
                 else write(object);
             }
@@ -776,6 +621,17 @@ namespace
         void write_mesh_object(MeshObject& object, set<string>& groups)
         {
             ParamArray& params = object.get_parameters();
+
+            // If the object is a mesh primitive, do not write geometry to disk.
+            if (params.strings().exist("primitive"))
+            {
+                XMLElement element("object", m_file, m_indenter);
+                element.add_attribute("name", object.get_name());
+                element.add_attribute("model", MeshObjectFactory().get_model());
+                element.write(XMLElement::HasChildElements);
+                write_params(params);
+                return;
+            }
 
             if (params.strings().exist("__base_object_name"))
             {
@@ -826,16 +682,13 @@ namespace
             {
                 // Write the mesh file to disk.
                 const string filepath = (m_project_new_root_dir / filename).string();
-                MeshObjectWriter::write(
-                    object,
-                    object_name.c_str(),
-                    filepath.c_str());
+                MeshObjectWriter::write(object, object_name.c_str(), filepath.c_str());
             }
 
             // Write the <object> element.
             XMLElement element("object", m_file, m_indenter);
             element.add_attribute("name", object_name);
-            element.add_attribute("model", MeshObjectFactory::get_model());
+            element.add_attribute("model", MeshObjectFactory().get_model());
             element.write(XMLElement::HasChildElements);
 
             // Output a "filename" parameter but don't add it to the object.
@@ -852,17 +705,20 @@ namespace
         {
             ParamArray& params = object.get_parameters();
 
-            if (!params.strings().exist("filepath") &&
-                !(m_options & ProjectFileWriter::OmitWritingGeometryFiles))
+            if (!params.strings().exist("filepath"))
             {
-                // Write the curve file to disk.
                 const string object_name = object.get_name();
-                const string filename = object_name + ".curves";
-                const string filepath = (m_project_new_root_dir / filename).string();
-                CurveObjectWriter::write(object, filepath.c_str());
+                const string filename = object_name + ".txt";
+
+                if (!(m_options & ProjectFileWriter::OmitWritingGeometryFiles))
+                {
+                    // Write the curve file to disk.
+                    const string filepath = (m_project_new_root_dir / filename).string();
+                    CurveObjectWriter::write(object, filepath.c_str());
+                }
 
                 // Add a file path parameter to the object.
-                params.insert("filepath", filepath);
+                params.insert("filepath", filename);
             }
 
             // Write the <object> element.
@@ -895,7 +751,7 @@ namespace
         {
             XMLElement element("output", m_file, m_indenter);
             element.write(
-                project.get_frame() != 0
+                project.get_frame() != nullptr
                     ? XMLElement::HasChildElements
                     : XMLElement::HasNoContent);
 
@@ -903,39 +759,19 @@ namespace
                 write_frame(*project.get_frame());
         }
 
-        // Write a <rules> element.
-        void write_rules(const Project& project)
-        {
-            if (!project.render_layer_rules().empty())
-            {
-                XMLElement element("rules", m_file, m_indenter);
-                element.write(XMLElement::HasChildElements);
-
-                write_collection(project.render_layer_rules());
-            }
-        }
-
-        // Write an <render_layer_assignment> element.
-        void write(const RenderLayerRule& rule)
-        {
-            write_entity("render_layer_assignment", rule);
-        }
-
         // Write a <scene> element.
         void write_scene(const Scene& scene)
         {
             XMLElement element("scene", m_file, m_indenter);
             element.write(
-                scene.get_camera() != 0 ||
+                !scene.cameras().empty() ||
                 !scene.colors().empty() ||
                 !scene.textures().empty() ||
                 !scene.texture_instances().empty() ||
                 !scene.environment_edfs().empty() ||
                 !scene.environment_shaders().empty() ||
-                scene.get_environment() != 0 ||
-#ifdef APPLESEED_WITH_OSL
+                scene.get_environment() != nullptr ||
                 !scene.shader_groups().empty() ||
-#endif
                 !scene.assemblies().empty() ||
                 !scene.assembly_instances().empty()
                     ? XMLElement::HasChildElements
@@ -943,9 +779,7 @@ namespace
 
             write_params(scene.get_parameters());
 
-            if (scene.get_camera())
-                write(*scene.get_camera());
-
+            write_collection(scene.cameras());
             write_collection(scene.colors());
             write_collection(scene.textures());
             write_collection(scene.texture_instances());
@@ -955,9 +789,7 @@ namespace
             if (scene.get_environment())
                 write(*scene.get_environment());
 
-#ifdef APPLESEED_WITH_OSL
             write_collection(scene.shader_groups());
-#endif
             write_collection(scene.assemblies());
             write_collection(scene.assembly_instances());
         }
@@ -981,12 +813,10 @@ namespace
                 XMLElement element("search_paths", m_file, m_indenter);
                 element.write(XMLElement::HasChildElements);
 
-                for (size_t i = 0; i < search_paths.size(); ++i)
-                    write_search_path(search_paths[i]);
+                for (size_t i = 0; i < search_paths.get_explicit_path_count(); ++i)
+                    write_search_path(search_paths.get_explicit_path(i));
             }
         }
-
-#ifdef APPLESEED_WITH_OSL
 
         // Write a shader's <parameter> element.
         void write(const ShaderParam& param)
@@ -1035,8 +865,6 @@ namespace
                 write(*i);
         }
 
-#endif
-
         // Write a <surface_shader> element.
         void write(const SurfaceShader& surface_shader)
         {
@@ -1066,19 +894,46 @@ namespace
 bool ProjectFileWriter::write(
     const Project&  project,
     const char*     filepath,
-    const int       options)
+    const int       options,
+    const char*     extra_comments)
+{
+    return
+        bf::path(filepath).extension() == ".appleseedz"
+            ? write_packed_project_file(project, filepath, options, extra_comments)
+            : write_plain_project_file(project, filepath, options, extra_comments);
+}
+
+bool ProjectFileWriter::write_plain_project_file(
+    const Project&  project,
+    const char*     filepath,
+    const int       options,
+    const char*     extra_comments)
 {
     RENDERER_LOG_INFO("writing project file %s...", filepath);
 
-    // Manage references to external asset files.
-    AssetHandler asset_handler(project, filepath, options);
-    if (!asset_handler.handle_assets(project))
-        return false;
+    if (!(options & OmitHandlingAssetFiles))
+    {
+        // Manage references to external asset files.
+        const AssetHandler asset_handler(
+            project,
+            filepath,
+            (options & CopyAllAssets) != 0
+                ? AssetHandler::CopyAllAssets
+                : AssetHandler::CopyRelativeAssetsOnly);
+        if (!asset_handler.handle_assets())
+        {
+            RENDERER_LOG_ERROR("failed to write project file %s.", filepath);
+            return false;
+        }
+    }
 
     // Open the file for writing.
     FILE* file = fopen(filepath, "wt");
-    if (file == 0)
+    if (file == nullptr)
+    {
+        RENDERER_LOG_ERROR("failed to write project file %s: i/o error.", filepath);
         return false;
+    }
 
     // Write the file header.
     fprintf(file, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -1090,6 +945,19 @@ bool ProjectFileWriter::write(
             file,
             "<!-- File generated by %s. -->\n",
             Appleseed::get_synthetic_version_string());
+
+        // Write any optional comments.
+        if (extra_comments)
+        {
+            vector<string> lines;
+            split(extra_comments, "\n", lines);
+
+            for (const auto& line : lines)
+            {
+                if (line.empty() == false)
+                    fprintf(file, "<!-- %s -->\n", line.c_str());
+            }
+        }
     }
 
     // Write the project.
@@ -1100,8 +968,58 @@ bool ProjectFileWriter::write(
     fclose(file);
 
     RENDERER_LOG_INFO("wrote project file %s.", filepath);
-
     return true;
+}
+
+bool ProjectFileWriter::write_packed_project_file(
+    const Project&  project,
+    const char*     filepath,
+    const int       options,
+    const char*     extra_comments)
+{
+    const bf::path project_path(filepath);
+
+    const bf::path temp_directory =
+        project_path.parent_path() /
+        project_path.filename().replace_extension(".unpacked.temp");
+
+    const bf::path temp_project_filepath =
+        temp_directory /
+        project_path.filename().replace_extension(".appleseed");
+
+    if (!bf::create_directory(temp_directory))
+    {
+        RENDERER_LOG_ERROR("failed to create directory %s", temp_directory.string().c_str());
+        return false;
+    }
+
+    bool success = true;
+
+    try
+    {
+        success =
+            write_plain_project_file(
+                project,
+                temp_project_filepath.string().c_str(),
+                options | ProjectFileWriter::CopyAllAssets,
+                extra_comments);
+
+        if (success)
+        {
+            RENDERER_LOG_INFO("packing project to %s...", filepath);
+            zip(filepath, temp_directory.string());
+        }
+    }
+    catch (const std::exception&)
+    {
+        RENDERER_LOG_ERROR("failed to write project file %s.", filepath);
+        success = false;
+    }
+
+    if (bf::exists(temp_directory))
+        bf::remove_all(temp_directory);
+
+    return success;
 }
 
 }   // namespace renderer

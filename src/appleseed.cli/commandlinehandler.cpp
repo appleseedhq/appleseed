@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -47,133 +47,154 @@ CommandLineHandler::CommandLineHandler()
 {
     add_default_options();
 
-    m_filename.set_min_value_count(0);
-    m_filename.set_max_value_count(1);
-    parser().set_default_option_handler(&m_filename);
+    parser().set_default_option_handler(
+        &m_filename
+            .set_min_value_count(0)
+            .set_max_value_count(1));
 
-    m_configuration.add_name("--configuration");
-    m_configuration.add_name("-c");
-    m_configuration.set_description("select the configuration");
-    m_configuration.set_syntax("name");
-    m_configuration.set_exact_value_count(1);
-    parser().add_option_handler(&m_configuration);
+    parser().add_option_handler(
+        &m_configuration
+            .add_name("--configuration")
+            .add_name("-c")
+            .set_description("select the configuration")
+            .set_syntax("name")
+            .set_exact_value_count(1));
 
-    m_params.add_name("--parameter");
-    m_params.add_name("-p");
-    m_params.set_description("set a custom parameter");
-    m_params.set_syntax("name=value");
-    m_params.set_flags(OptionHandler::Repeatable);
-    m_params.set_exact_value_count(1);
-    parser().add_option_handler(&m_params);
+    parser().add_option_handler(
+        &m_params
+            .add_name("--parameter")
+            .add_name("-p")
+            .set_description("set a custom parameter")
+            .set_syntax("name=value")
+            .set_flags(OptionHandler::Repeatable)
+            .set_exact_value_count(1));
+
+    parser().add_option_handler(
+        &m_threads
+            .add_name("--threads")
+            .add_name("-t")
+            .set_description("set the number of rendering threads")
+            .set_syntax("n")
+            .set_exact_value_count(1));
+
+    parser().add_option_handler(
+        &m_resolution
+            .add_name("--resolution")
+            .add_name("-r")
+            .set_description("set the resolution of the rendered image")
+            .set_syntax("width height")
+            .set_exact_value_count(2));
+
+    parser().add_option_handler(
+        &m_window
+            .add_name("--window")
+            .add_name("-w")
+            .set_description("restrict rendering to a given rectangle (expressed in pixels)")
+            .set_syntax("x0 y0 x1 y1")
+            .set_exact_value_count(4));
+
+    parser().add_option_handler(
+        &m_samples
+            .add_name("--samples")
+            .add_name("-s")
+            .set_description("set the minimum and maximum numbers of samples per pixel")
+            .set_syntax("min max")
+            .set_exact_value_count(2));
+
+    parser().add_option_handler(
+        &m_passes
+            .add_name("--passes")
+            .set_description("set the number of rendering passes")
+            .set_syntax("n")
+            .set_exact_value_count(1));
+
+    parser().add_option_handler(
+        &m_override_shading
+            .add_name("--override-shading")
+            .set_description("override shading with a diagnostic shader")
+            .set_syntax("shader")
+            .set_exact_value_count(1));
+
+    parser().add_option_handler(
+        &m_select_object_instances
+            .add_name("--select-object-instances")
+            .set_description("select which object instances to include in the render using a regular expression")
+            .set_syntax("regex")
+            .set_exact_value_count(1));
+
+    parser().add_option_handler(
+        &m_output.add_name("--output")
+            .add_name("-o")
+            .set_description("set the name of the output file")
+            .set_syntax("filename")
+            .set_exact_value_count(1));
 
 #if defined __APPLE__ || defined _WIN32
-
-    m_display_output.add_name("--display-output");
-    m_display_output.set_description("display the output image");
-    parser().add_option_handler(&m_display_output);
-
+    parser().add_option_handler(
+        &m_display_output
+            .add_name("--display-output")
+            .set_description("display the output image"));
 #endif
 
-    m_disable_autosave.add_name("--disable-autosave");
-    m_disable_autosave.set_description("disable automatic saving of rendered images");
-    parser().add_option_handler(&m_disable_autosave);
+    parser().add_option_handler(
+        &m_send_to_mplay
+            .add_name("--to-mplay")
+            .set_description("send render to Houdini's mplay"));
 
-    m_threads.add_name("--threads");
-    m_threads.add_name("-t");
-    m_threads.set_description("set the number of rendering threads");
-    m_threads.set_syntax("n");
-    m_threads.set_exact_value_count(1);
-    parser().add_option_handler(&m_threads);
+    parser().add_option_handler(
+        &m_send_to_hrmanpipe
+            .add_name("--to-hrmanpipe")
+            .set_description("send render to Houdini's hrmanpipe; the argument is the socket number to pass to hrmanpipe")
+            .set_syntax("socket")
+            .set_exact_value_count(1));
 
-    m_output.add_name("--output");
-    m_output.add_name("-o");
-    m_output.set_description("set the name of the output file");
-    m_output.set_syntax("filename");
-    m_output.set_exact_value_count(1);
-    parser().add_option_handler(&m_output);
+    parser().add_option_handler(
+        &m_send_to_stdout
+            .add_name("--to-stdout")
+            .set_description("send render to standard output"));
 
-    m_continuous_saving.add_name("--continuous-saving");
-    m_continuous_saving.set_description("write tiles to disk as soon as they are rendered");
-    parser().add_option_handler(&m_continuous_saving);
+    parser().add_option_handler(
+        &m_disable_autosave
+            .add_name("--disable-autosave")
+            .set_description("disable automatic saving of rendered images"));
 
-    m_resolution.add_name("--resolution");
-    m_resolution.add_name("-r");
-    m_resolution.set_description("set the resolution of the rendered image");
-    m_resolution.set_syntax("width height");
-    m_resolution.set_exact_value_count(2);
-    parser().add_option_handler(&m_resolution);
+    parser().add_option_handler(
+        &m_run_unit_tests
+            .add_name("--run-unit-tests")
+            .add_name("-ut")
+            .set_description("run unit tests; filter them based on the optional regular expression argument")
+            .set_min_value_count(0)
+            .set_max_value_count(1));
 
-    m_window.add_name("--window");
-    m_window.add_name("-w");
-    m_window.set_description("restrict rendering to a given rectangle (expressed in pixels)");
-    m_window.set_syntax("x0 y0 x1 y1");
-    m_window.set_exact_value_count(4);
-    parser().add_option_handler(&m_window);
+    parser().add_option_handler(
+        &m_run_unit_benchmarks
+            .add_name("--run-unit-benchmarks")
+            .add_name("-ub")
+            .set_description("run unit benchmarks; filter them based on the optional regular expression argument")
+            .set_min_value_count(0)
+            .set_max_value_count(1));
 
-    m_samples.add_name("--samples");
-    m_samples.add_name("-s");
-    m_samples.set_description("set the minimum and maximum numbers of samples per pixel");
-    m_samples.set_syntax("min max");
-    m_samples.set_exact_value_count(2);
-    parser().add_option_handler(&m_samples);
+    parser().add_option_handler(
+        &m_verbose_unit_tests
+            .add_name("--verbose-unit-tests")
+            .add_name("-utv")
+            .set_description("enable verbose mode while unit testing"));
 
-    m_passes.add_name("--passes");
-    m_passes.set_description("set the number of rendering passes");
-    m_passes.set_syntax("n");
-    m_passes.set_exact_value_count(1);
-    parser().add_option_handler(&m_passes);
-
-    m_override_shading.add_name("--override-shading");
-    m_override_shading.set_description("override shading with a diagnostic shader");
-    m_override_shading.set_syntax("shader");
-    m_override_shading.set_exact_value_count(1);
-    parser().add_option_handler(&m_override_shading);
-
-    m_select_object_instances.add_name("--select-object-instances");
-    m_select_object_instances.set_description("select which object instances to include in the render using a regular expression");
-    m_select_object_instances.set_syntax("regex");
-    m_select_object_instances.set_exact_value_count(1);
-    parser().add_option_handler(&m_select_object_instances);
-
-    m_mplay_display.add_name("--mplay");
-    m_mplay_display.set_description("use Houdini's mplay");
-    parser().add_option_handler(&m_mplay_display);
-
-    m_hrmanpipe_display.add_name("--hrmanpipe");
-    m_hrmanpipe_display.set_description("use Houdini's hrmanpipe; the argument is the socket number to pass to hrmanpipe");
-    m_hrmanpipe_display.set_syntax("socket");
-    m_hrmanpipe_display.set_exact_value_count(1);
-    parser().add_option_handler(&m_hrmanpipe_display);
-
-    m_run_unit_tests.add_name("--run-unit-tests");
-    m_run_unit_tests.set_description("run unit tests; filter them based on the optional regular expression argument");
-    m_run_unit_tests.set_min_value_count(0);
-    m_run_unit_tests.set_max_value_count(1);
-    parser().add_option_handler(&m_run_unit_tests);
-
-    m_run_unit_benchmarks.add_name("--run-unit-benchmarks");
-    m_run_unit_benchmarks.set_description("run unit benchmarks; filter them based on the optional regular expression argument");
-    m_run_unit_benchmarks.set_min_value_count(0);
-    m_run_unit_benchmarks.set_max_value_count(1);
-    parser().add_option_handler(&m_run_unit_benchmarks);
-
-    m_verbose_unit_tests.add_name("--verbose-unit-tests");
-    m_verbose_unit_tests.set_description("enable verbose mode while unit testing");
-    parser().add_option_handler(&m_verbose_unit_tests);
-
-    m_benchmark_mode.add_name("--benchmark-mode");
-    m_benchmark_mode.set_description("enable benchmark mode");
-    parser().add_option_handler(&m_benchmark_mode);
+    parser().add_option_handler(
+        &m_benchmark_mode
+            .add_name("--benchmark-mode")
+            .set_description("enable benchmark mode"));
 }
 
 void CommandLineHandler::print_program_usage(
-    const char*     program_name,
+    const char*     executable_name,
     SuperLogger&    logger) const
 {
     SaveLogFormatterConfig save_config(logger);
+    logger.set_verbosity_level(LogMessage::Info);
     logger.set_format(LogMessage::Info, "{message}");
 
-    LOG_INFO(logger, "usage: %s [options] project.appleseed", program_name);
+    LOG_INFO(logger, "usage: %s [options] project.appleseed", executable_name);
     LOG_INFO(logger, "options:");
 
     parser().print_usage(logger);

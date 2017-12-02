@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,20 +32,21 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/sourceinputs.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/distance.h"
 #include "foundation/math/matrix.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <cmath>
@@ -74,31 +75,32 @@ namespace
     {
       public:
         SpotLight(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : Light(name, params)
         {
             m_inputs.declare("intensity", InputFormatSpectralIlluminance);
-            m_inputs.declare("intensity_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("exposure", InputFormatScalar, "0.0");
+            m_inputs.declare("intensity_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("exposure", InputFormatFloat, "0.0");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
-            const Project&      project,
-            const Assembly&     assembly,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+        bool on_frame_begin(
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) override
         {
-            if (!Light::on_frame_begin(project, assembly, abort_switch))
+            if (!Light::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             m_intensity_source = m_inputs.source("intensity");
@@ -118,55 +120,62 @@ namespace
             return true;
         }
 
-        virtual void sample(
-            InputEvaluator&     input_evaluator,
-            const Transformd&   light_transform,
-            const Vector2d&     s,
-            Vector3d&           position,
-            Vector3d&           outgoing,
-            Spectrum&           value,
-            double&             probability) const APPLESEED_OVERRIDE
+        void sample(
+            const ShadingContext&   shading_context,
+            const Transformd&       light_transform,
+            const Vector3d&         target_point,
+            const Vector2d&         s,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            float&                  probability) const override
         {
             position = light_transform.get_parent_origin();
-            outgoing = light_transform.vector_to_parent(rotate_minus_pi_around_x(sample_cone_uniform(s, m_cos_outer_half_angle)));
-            probability = sample_cone_uniform_pdf(m_cos_outer_half_angle);
-
-            const Vector3d axis = -normalize(light_transform.get_parent_z());
-
-            compute_radiance(input_evaluator, light_transform, axis, outgoing, value);
-        }
-
-        virtual void evaluate(
-            InputEvaluator&     input_evaluator,
-            const Transformd&   light_transform,
-            const Vector3d&     target,
-            Vector3d&           position,
-            Vector3d&           outgoing,
-            Spectrum&           value) const APPLESEED_OVERRIDE
-        {
-            position = light_transform.get_parent_origin();
-            outgoing = normalize(target - position);
+            outgoing = normalize(target_point - position);
 
             const Vector3d axis = -normalize(light_transform.get_parent_z());
 
             if (dot(outgoing, axis) > m_cos_outer_half_angle)
-                compute_radiance(input_evaluator, light_transform, axis, outgoing, value);
+                compute_radiance(shading_context, light_transform, axis, outgoing, value);
             else value.set(0.0f);
+
+            probability = 1.0f;
         }
 
-        double compute_distance_attenuation(
-            const Vector3d&     target,
-            const Vector3d&     position) const APPLESEED_OVERRIDE
+        void sample(
+            const ShadingContext&   shading_context,
+            const Transformd&       light_transform,
+            const Vector2d&         s,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            float&                  probability) const override
         {
-            return 1.0 / square_distance(target, position);
+            position = light_transform.get_parent_origin();
+            outgoing =
+                light_transform.vector_to_parent(
+                    rotate_minus_pi_around_x(
+                        sample_cone_uniform(s, m_cos_outer_half_angle)));
+            probability = sample_cone_uniform_pdf(static_cast<float>(m_cos_outer_half_angle));
+
+            const Vector3d axis = -normalize(light_transform.get_parent_z());
+
+            compute_radiance(shading_context, light_transform, axis, outgoing, value);
+        }
+
+        float compute_distance_attenuation(
+            const Vector3d&         target,
+            const Vector3d&         position) const override
+        {
+            return 1.0f / static_cast<float>(square_distance(target, position));
         }
 
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_intensity;                // emitted intensity in W.sr^-1
-            double      m_intensity_multiplier;     // emitted intensity multiplier
-            double      m_exposure;                 // emitted intensity multiplier in f-stops
+            float       m_intensity_multiplier;     // emitted intensity multiplier
+            float       m_exposure;                 // emitted intensity multiplier in f-stops
         };
 
         const Source*   m_intensity_source;
@@ -185,11 +194,11 @@ namespace
         }
 
         void compute_radiance(
-            InputEvaluator&     input_evaluator,
-            const Transformd&   light_transform,
-            const Vector3d&     axis,
-            const Vector3d&     outgoing,
-            Spectrum&           radiance) const
+            const ShadingContext&   shading_context,
+            const Transformd&       light_transform,
+            const Vector3d&         axis,
+            const Vector3d&         outgoing,
+            Spectrum&               radiance) const
         {
             const Vector3d up = light_transform.vector_to_parent(m_up);
             const Vector3d v = -axis;
@@ -200,14 +209,15 @@ namespace
             assert(cos_theta > m_cos_outer_half_angle);
 
             const Vector3d d = outgoing / cos_theta - axis;
-            const double x = dot(d, u) * m_rcp_screen_half_size;
-            const double y = dot(d, n) * m_rcp_screen_half_size;
-            const Vector2d uv(0.5 * (x + 1.0), 0.5 * (y + 1.0));
+            const float x = static_cast<float>(dot(d, u) * m_rcp_screen_half_size);
+            const float y = static_cast<float>(dot(d, n) * m_rcp_screen_half_size);
+            const Vector2f uv(0.5f * (x + 1.0f), 0.5f * (y + 1.0f));
 
-            const InputValues* values = input_evaluator.evaluate<InputValues>(m_inputs, uv);
-            radiance = values->m_intensity;
-            radiance *=
-                static_cast<float>(values->m_intensity_multiplier * pow(2.0, values->m_exposure));
+            InputValues values;
+            m_inputs.evaluate(shading_context.get_texture_cache(), SourceInputs(uv), &values);
+
+            radiance = values.m_intensity;
+            radiance *= values.m_intensity_multiplier * pow(2.0f, values.m_exposure);
 
             if (cos_theta < m_cos_inner_half_angle)
             {
@@ -223,6 +233,11 @@ namespace
 //
 // SpotLightFactory class implementation.
 //
+
+void SpotLightFactory::release()
+{
+    delete this;
+}
 
 const char* SpotLightFactory::get_model() const
 {
@@ -282,8 +297,14 @@ DictionaryArray SpotLightFactory::get_input_metadata() const
             .insert("name", "inner_angle")
             .insert("label", "Inner Angle")
             .insert("type", "numeric")
-            .insert("min_value", "-180.0")
-            .insert("max_value", "180.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-180.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "180.0")
+                    .insert("type", "soft"))
             .insert("use", "required")
             .insert("default", "20.0")
             .insert("help", "Cone distribution inner angle"));
@@ -293,8 +314,14 @@ DictionaryArray SpotLightFactory::get_input_metadata() const
             .insert("name", "outer_angle")
             .insert("label", "Outer Angle")
             .insert("type", "numeric")
-            .insert("min_value", "-180.0")
-            .insert("max_value", "180.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-180.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "180.0")
+                    .insert("type", "soft"))
             .insert("use", "required")
             .insert("default", "30.0")
             .insert("help", "Cone distribution outer angle"));
@@ -304,8 +331,14 @@ DictionaryArray SpotLightFactory::get_input_metadata() const
             .insert("name", "tilt_angle")
             .insert("label", "Tilt Angle")
             .insert("type", "numeric")
-            .insert("min_value", "-360.0")
-            .insert("max_value", "360.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-360.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "360.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "0.0")
             .insert("help", "Rotate the spot light around its axis; only useful when using the light intensity is textured (gobo)"));
@@ -318,13 +351,6 @@ DictionaryArray SpotLightFactory::get_input_metadata() const
 auto_release_ptr<Light> SpotLightFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<Light>(new SpotLight(name, params));
-}
-
-auto_release_ptr<Light> SpotLightFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<Light>(new SpotLight(name, params));
 }

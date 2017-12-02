@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,8 @@
 #include <vector>
 
 // Forward declarations.
-namespace renderer  { class Project; }
+namespace renderer { class ParamArray; }
+namespace renderer { class Project; }
 class QColor;
 class QVBoxLayout;
 class QFormLayout;
@@ -101,12 +102,15 @@ class EntityEditor
     EntityEditor(
         QWidget*                            parent,
         const renderer::Project&            project,
-        std::auto_ptr<IFormFactory>         form_factory,
-        std::auto_ptr<IEntityBrowser>       entity_browser,
-        std::auto_ptr<CustomEntityUI>       custom_ui,
+        renderer::ParamArray&               settings,
+        std::unique_ptr<IFormFactory>       form_factory,
+        std::unique_ptr<IEntityBrowser>     entity_browser,
+        std::unique_ptr<CustomEntityUI>     custom_ui,
         const foundation::Dictionary&       values = foundation::Dictionary());
 
     foundation::Dictionary get_values() const;
+
+    void rebuild_form(const foundation::Dictionary& values);
 
   signals:
     void signal_applied(foundation::Dictionary values);
@@ -114,9 +118,10 @@ class EntityEditor
   private:
     QWidget*                                m_parent;
     const renderer::Project&                m_project;
-    std::auto_ptr<IFormFactory>             m_form_factory;
-    std::auto_ptr<IEntityBrowser>           m_entity_browser;
-    std::auto_ptr<CustomEntityUI>           m_custom_ui;
+    renderer::ParamArray&                   m_settings;
+    std::unique_ptr<IFormFactory>           m_form_factory;
+    std::unique_ptr<IEntityBrowser>         m_entity_browser;
+    std::unique_ptr<CustomEntityUI>         m_custom_ui;
 
     QVBoxLayout*                            m_top_layout;
     QFormLayout*                            m_form_layout;
@@ -130,21 +135,25 @@ class EntityEditor
     void create_form_layout();
     void create_connections();
 
-    void rebuild_form(const foundation::Dictionary& values);
+    const foundation::Dictionary& get_input_metadata(const std::string& name) const;
 
-    foundation::Dictionary get_input_metadata(const std::string& name) const;
+    // Return whether a widget should be visible, based on the visible_if predicate and the current parameter values.
+    bool is_input_widget_visible(
+        const foundation::Dictionary&       metadata,
+        const foundation::Dictionary&       values) const;
 
     // Create one or multiple widgets given the definition of one input.
-    void create_input_widgets(const foundation::Dictionary& definition);
+    void create_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
 
-    std::auto_ptr<IInputWidgetProxy> create_text_input_widgets(const foundation::Dictionary& definition);
-    std::auto_ptr<IInputWidgetProxy> create_numeric_input_widgets(const foundation::Dictionary& definition);
-    std::auto_ptr<IInputWidgetProxy> create_colormap_input_widgets(const foundation::Dictionary& definition);
-    std::auto_ptr<IInputWidgetProxy> create_boolean_input_widgets(const foundation::Dictionary& definition);
-    std::auto_ptr<IInputWidgetProxy> create_enumeration_input_widgets(const foundation::Dictionary& definition);
-    std::auto_ptr<IInputWidgetProxy> create_entity_input_widgets(const foundation::Dictionary& definition);
-    std::auto_ptr<IInputWidgetProxy> create_color_input_widgets(const foundation::Dictionary& definition);
-    std::auto_ptr<IInputWidgetProxy> create_file_input_widgets(const foundation::Dictionary& definition);
+    std::unique_ptr<IInputWidgetProxy> create_text_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
+    std::unique_ptr<IInputWidgetProxy> create_numeric_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
+    std::unique_ptr<IInputWidgetProxy> create_integer_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
+    std::unique_ptr<IInputWidgetProxy> create_boolean_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
+    std::unique_ptr<IInputWidgetProxy> create_enumeration_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
+    std::unique_ptr<IInputWidgetProxy> create_color_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
+    std::unique_ptr<IInputWidgetProxy> create_colormap_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
+    std::unique_ptr<IInputWidgetProxy> create_entity_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
+    std::unique_ptr<IInputWidgetProxy> create_file_input_widgets(const foundation::Dictionary& definition, const bool input_widget_visible);
 
   private slots:
     void slot_rebuild_form();

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -49,48 +49,41 @@ namespace foundation
 {
 
 //
-// Generic progressive image file reader interface.
+// A progressive image file reader based on OpenImageIO.
 //
 
 class APPLESEED_DLLSYMBOL GenericProgressiveImageFileReader
   : public IProgressiveImageFileReader
 {
   public:
-    // Constructors.
-    explicit GenericProgressiveImageFileReader(Logger* logger = 0);
-    GenericProgressiveImageFileReader(
-        const size_t        default_tile_width,
-        const size_t        default_tile_height);
-    GenericProgressiveImageFileReader(
-        Logger*             logger,
-        const size_t        default_tile_width,
-        const size_t        default_tile_height);
+    // Constructor.
+    explicit GenericProgressiveImageFileReader(Logger* logger = nullptr);
 
     // Destructor.
-    ~GenericProgressiveImageFileReader();
+    ~GenericProgressiveImageFileReader() override;
 
     // Open an image file.
-    virtual void open(
-        const char*         filename);
+    void open(
+        const char*         filename) override;
 
     // Close the image file.
-    virtual void close();
+    void close() override;
 
     // Return true if an image file is currently open.
-    virtual bool is_open() const;
+    bool is_open() const override;
 
     // Read canvas properties.
-    virtual void read_canvas_properties(
-        CanvasProperties&   props);
+    void read_canvas_properties(
+        CanvasProperties&   props) override;
 
     // Read image attributes.
-    virtual void read_image_attributes(
-        ImageAttributes&    attrs);
+    void read_image_attributes(
+        ImageAttributes&    attrs) override;
 
     // Read an image tile. Returns a newly allocated tile.
-    virtual Tile* read_tile(
+    Tile* read_tile(
         const size_t        tile_x,
-        const size_t        tile_y);
+        const size_t        tile_y) override;
 
   private:
     struct Impl;

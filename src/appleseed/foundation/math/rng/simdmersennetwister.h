@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -53,7 +53,7 @@ class APPLESEED_DLLSYMBOL SimdMersenneTwister
     explicit SimdMersenneTwister(const uint32 seed = 5489UL);
     SimdMersenneTwister(const uint32 init_key[], const int key_length);
 
-    // Generate a full-range 32-bit random number.
+    // Generate a 32-bit random number.
     uint32 rand_uint32();
 
   private:

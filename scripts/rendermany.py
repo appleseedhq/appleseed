@@ -7,7 +7,7 @@
 # This software is released under the MIT license.
 #
 # Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-# Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+# Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -51,6 +51,7 @@ def safe_mkdir(dir):
     if not os.path.exists(dir):
         os.mkdir(dir)
 
+
 def walk(directory, recursive):
     if recursive:
         for dirpath, dirnames, filenames in os.walk(directory):
@@ -58,8 +59,10 @@ def walk(directory, recursive):
     else:
         yield os.walk(directory).next()
 
+
 def should_skip(path):
     return path.startswith("skip - ")
+
 
 def format_duration(duration):
     total_seconds = duration.total_seconds()
@@ -156,8 +159,8 @@ def main():
     rendered_file_count = render_project_files(args)
     end_time = datetime.datetime.now()
 
-    print("rendered {0} project file(s) in {1}." \
-        .format(rendered_file_count, format_duration(end_time - start_time)))
+    print("rendered {0} project file(s) in {1}."
+          .format(rendered_file_count, format_duration(end_time - start_time)))
 
 if __name__ == '__main__':
     main()

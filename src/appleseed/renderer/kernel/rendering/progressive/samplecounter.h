@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,11 +32,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/platform/thread.h"
+#include "foundation/platform/atomic.h"
 #include "foundation/platform/types.h"
-
-// Standard headers.
-#include <cstddef>
 
 namespace renderer
 {
@@ -55,13 +52,11 @@ class SampleCounter
 
     foundation::uint64 read() const;
 
-    size_t reserve(const size_t sample_count);
+    foundation::uint64 reserve(const foundation::uint64 n);
 
   private:
-    const foundation::uint64        m_max_sample_count;
-
-    mutable foundation::Spinlock    m_spinlock;
-    foundation::uint64              m_sample_count;
+    const foundation::uint64            m_max_sample_count;
+    boost::atomic<foundation::uint64>   m_sample_count;
 };
 
 }       // namespace renderer

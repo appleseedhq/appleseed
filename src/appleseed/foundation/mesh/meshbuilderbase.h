@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -52,55 +52,55 @@ class APPLESEED_DLLSYMBOL MeshBuilderBase
   : public IMeshBuilder
 {
   public:
-    virtual void begin_mesh(const char* name) APPLESEED_OVERRIDE
+    void begin_mesh(const char* name) override
     {
     }
 
-    virtual size_t push_vertex(const Vector3d& v) APPLESEED_OVERRIDE
-    {
-        return 0;
-    }
-
-    virtual size_t push_vertex_normal(const Vector3d& v) APPLESEED_OVERRIDE
+    size_t push_vertex(const Vector3d& v) override
     {
         return 0;
     }
 
-    virtual size_t push_tex_coords(const Vector2d& v) APPLESEED_OVERRIDE
+    size_t push_vertex_normal(const Vector3d& v) override
     {
         return 0;
     }
 
-    virtual size_t push_material_slot(const char* name) APPLESEED_OVERRIDE
+    size_t push_tex_coords(const Vector2d& v) override
     {
         return 0;
     }
 
-    virtual void begin_face(const size_t vertex_count) APPLESEED_OVERRIDE
+    size_t push_material_slot(const char* name) override
+    {
+        return 0;
+    }
+
+    void begin_face(const size_t vertex_count) override
     {
     }
 
-    virtual void set_face_vertices(const size_t vertices[]) APPLESEED_OVERRIDE
+    void set_face_vertices(const size_t vertices[]) override
     {
     }
 
-    virtual void set_face_vertex_normals(const size_t vertex_normals[]) APPLESEED_OVERRIDE
+    void set_face_vertex_normals(const size_t vertex_normals[]) override
     {
     }
 
-    virtual void set_face_vertex_tex_coords(const size_t tex_coords[]) APPLESEED_OVERRIDE
+    void set_face_vertex_tex_coords(const size_t tex_coords[]) override
     {
     }
 
-    virtual void set_face_material(const size_t material) APPLESEED_OVERRIDE
+    void set_face_material(const size_t material) override
     {
     }
 
-    virtual void end_face() APPLESEED_OVERRIDE
+    void end_face() override
     {
     }
 
-    virtual void end_mesh() APPLESEED_OVERRIDE
+    void end_mesh() override
     {
     }
 };

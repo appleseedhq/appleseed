@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,15 +27,23 @@
 // THE SOFTWARE.
 //
 
-// appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
-
 // appleseed.renderer headers.
 #include "renderer/modeling/scene/scene.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/python.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
+
+// Work around a regression in Visual Studio 2015 Update 3.
+#if defined(_MSC_VER) && _MSC_VER == 1900
+namespace boost
+{
+    template <> Scene const volatile* get_pointer<Scene const volatile>(Scene const volatile* p) { return p; }
+}
+#endif
 
 namespace
 {
@@ -50,8 +58,7 @@ void bind_scene()
     bpy::class_<Scene, auto_release_ptr<Scene>, bpy::bases<Entity, BaseGroup>, boost::noncopyable>("Scene", bpy::no_init)
         .def("__init__", bpy::make_constructor(create_scene))
         .def("get_uid", &Identifiable::get_uid)
-        .def("set_camera", &Scene::set_camera)
-        .def("get_camera", &Scene::get_camera, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("cameras", &Scene::cameras, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("get_environment", &Scene::get_environment, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("set_environment", &Scene::set_environment)
         .def("environment_edfs", &Scene::environment_edfs, bpy::return_value_policy<bpy::reference_existing_object>())

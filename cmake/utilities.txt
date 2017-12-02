@@ -1,0 +1,132 @@
+
+#
+# This source file is part of appleseed.
+# Visit http://appleseedhq.net/ for additional information and resources.
+#
+# This software is released under the MIT license.
+#
+# Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
+# Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+
+
+# Replace slashes by backslashes in a string.
+macro (slashes_to_backslashes output input)
+    string (REGEX REPLACE "/" "\\\\" ${output} ${input})
+endmacro ()
+
+# Filter a list of items using a regular expression.
+macro (filter_list output_list input_list regex)
+    foreach (item ${input_list})
+        if (${item} MATCHES ${regex})
+            list (APPEND ${output_list} ${item})
+        endif ()
+    endforeach ()
+endmacro ()
+
+# Convert a semicolon-separated list to a whitespace-separated string.
+macro (convert_list_to_string output_string input_list)
+    foreach (item ${input_list})
+        if (DEFINED ${output_string})
+            set (${output_string} "${${output_string}} ${item}")
+        else ()
+            set (${output_string} "${item}")
+        endif ()
+    endforeach ()
+endmacro ()
+
+# Assign a whitespace-separated string to a variable, given a list.
+macro (set_to_string output_variable first_arg)
+    set (arg_list ${first_arg} ${ARGN})
+    convert_list_to_string (${output_variable} "${arg_list}")
+endmacro ()
+
+#
+# A variant of the QT4_WRAP_CPP macro designed to moc .cpp files.
+#
+# It differs from the original macro in two ways:
+#
+#   1.  It generates a file of the form moc_cpp_XXX.cxx for a given input file XXX.cpp,
+#       whereas the original macro generates a file of the form moc_XXX.cxx for a given
+#       input file XXX.h.
+#
+#   2.  It adds a dependency between the input file XXX.cpp and the generated file so
+#       that the generated file gets rebuilt whenever the input file is modified. This
+#       is necessary because the generated file is to be included in the input file.
+#
+# The original QT4_WRAP_CPP macro can be found in share/cmake-2.8/Modules/Qt4Macros.cmake.
+#
+
+macro (QT4_WRAP_CPP_CPLUSPLUS_FILES outfiles)
+    QT4_GET_MOC_FLAGS (moc_flags)
+    QT4_EXTRACT_OPTIONS (moc_files moc_options moc_target ${ARGN})
+    foreach (it ${moc_files})
+        get_filename_component (it ${it} ABSOLUTE)
+        QT4_MAKE_OUTPUT_FILE (${it} moc_cpp_ cxx outfile)
+        QT4_CREATE_MOC_COMMAND (${it} ${outfile} "${moc_flags}" "${moc_options}" "${moc_target}")
+        set (${outfiles} ${${outfiles}} ${outfile})
+        set_source_files_properties (${it} PROPERTIES OBJECT_DEPENDS ${outfile})
+    endforeach (it)
+endmacro ()
+
+#
+# Use the compiler in a smart way to try to figure the target architecture.
+# Works when cross-compiling.
+#
+# Based on:
+#
+#   https://github.com/petroules/solar-cmake/blob/master/TargetArch.cmake
+#
+
+function (detect_target_arch output_var)
+    set (archdetect_c_code
+        "#if defined(__arm__) || defined(__TARGET_ARCH_ARM)
+             #error cmake_ARCH ARM
+         #elif defined(__i386) || defined(__i386__) || defined(_M_IX86)
+             #error cmake_ARCH i386
+         #elif defined(__x86_64) || defined(__x86_64__) || defined(__amd64) || defined(_M_X64)
+             #error cmake_ARCH x86_64
+         #elif defined(__ppc__) || defined(__ppc) || defined(__powerpc__) \\
+             || defined(_ARCH_COM) || defined(_ARCH_PWR) || defined(_ARCH_PPC) \\
+             || defined(_M_MPPC) || defined(_M_PPC)
+             #error cmake_ARCH PPC
+         #endif
+         #error cmake_ARCH unknown"
+    )
+
+    file (WRITE "${CMAKE_BINARY_DIR}/arch.c" "${archdetect_c_code}")
+    enable_language (C)
+
+    try_run(
+        run_result_unused
+        compile_result_unused
+        "${CMAKE_BINARY_DIR}"
+        "${CMAKE_BINARY_DIR}/arch.c"
+        COMPILE_OUTPUT_VARIABLE ARCH)
+
+    # Parse the architecture name from the compiler output.
+    string (REGEX MATCH "cmake_ARCH ([a-zA-Z0-9_]+)" ARCH "${ARCH}")
+
+    # Get rid of the value marker leaving just the architecture name.
+    string (REPLACE "cmake_ARCH " "" ARCH "${ARCH}")
+
+    set (${output_var} "${ARCH}" PARENT_SCOPE)
+endfunction ()

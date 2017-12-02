@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,13 +40,14 @@
 
 // Forward declarations.
 namespace renderer  { class Scene; }
+namespace renderer  { class ShadingRay; }
 
 namespace renderer
 {
 
 //
-// Utility class to initialize a renderer::ShadingPoint "by hand".
-// This is typically used to handcraft shading points in unit tests.
+// Utility class to initialize a renderer::ShadingPoint by hand.
+// This is used to handcraft shading points in unit tests.
 //
 
 class ShadingPointBuilder
@@ -55,12 +56,16 @@ class ShadingPointBuilder
   public:
     explicit ShadingPointBuilder(ShadingPoint& shading_point);
 
-    void set_primitive_type(const ShadingPoint::PrimitiveType primitive_type);
     void set_scene(const Scene* scene);
+    void set_ray(const ShadingRay& ray);
+    void set_primitive_type(const ShadingPoint::PrimitiveType primitive_type);
+    void set_distance(const double distance);
+    void set_bary(const foundation::Vector2f& bary);
     void set_point(const foundation::Vector3d& point);
     void set_geometric_normal(const foundation::Vector3d& n);
+    void set_side(const ObjectInstance::Side side);
     void set_shading_basis(const foundation::Basis3d& basis);
-    void set_uvs(const foundation::Vector2d& uv);
+    void set_uvs(const foundation::Vector2f& uv);
 
   private:
     ShadingPoint& m_shading_point;

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,6 @@
 #include "foundation/platform/compiler.h"
 
 // Qt headers.
-#include <QObject>
 #include <QWidget>
 
 // Standard headers.
@@ -65,43 +64,48 @@ class TestWindow
 
   public:
     // Constructor.
-    explicit TestWindow(QWidget* parent = 0);
+    explicit TestWindow(QWidget* parent = nullptr);
 
     // Destructor.
-    ~TestWindow();
+    ~TestWindow() override;
 
-    virtual void closeEvent(QCloseEvent* event) APPLESEED_OVERRIDE;
+    void closeEvent(QCloseEvent* event) override;
 
   private:
-    // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
+    // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
     Ui::TestWindow*                             m_ui;
 
-    std::auto_ptr<TestOutputWidgetDecorator>    m_output_widget;
-    std::auto_ptr<TestResultWidgetDecorator>    m_result_widget;
+    std::unique_ptr<TestOutputWidgetDecorator>  m_output_widget;
+    std::unique_ptr<TestResultWidgetDecorator>  m_result_widget;
 
     AutoDeleteTestSuiteRepository               m_test_suite_repository;
-    std::auto_ptr<TestRunnerThread>             m_test_runner_thread;
+    std::unique_ptr<TestRunnerThread>           m_test_runner_thread;
 
     void create_test_runner_thread();
 
     void build_connections();
 
-    void populate_tests_treeview();
-    void update_checked_tests_label();
+    void populate_tests_treeview() const;
+    void update_checked_tests_label() const;
 
-    void enable_widgets(const bool enabled);
+    void enable_widgets(const bool enabled) const;
 
   private slots:
-    void slot_on_test_item_check_state_changed(QTreeWidgetItem* item, int column);
+    void slot_on_test_item_check_state_changed(QTreeWidgetItem* item, int column) const;
 
-    void slot_check_all_tests();
-    void slot_uncheck_all_tests();
+    void slot_filter_text_changed(const QString&) const;
+
+    void slot_clear_filter_text() const;
+
+    void slot_check_all_tests() const;
+    void slot_check_visible_tests() const;
+    void slot_uncheck_all_tests() const;
 
     void slot_run_tests();
-    void slot_on_tests_execution_complete(const int passed_count, const int failed_count);
+    void slot_on_tests_execution_complete(const int passed_count, const int failed_count) const;
 
-    void slot_clear_output_treeview();
-    void slot_filter_output_treeview();
+    void slot_clear_output_treeview() const;
+    void slot_filter_output_treeview() const;
 };
 
 }       // namespace studio

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,11 @@
 #ifndef APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLEGENERATORJOB_H
 #define APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLEGENERATORJOB_H
 
+// appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
+
 // appleseed.foundation headers.
+#include "foundation/platform/types.h"
 #include "foundation/utility/job.h"
 
 // Standard headers.
@@ -48,28 +52,32 @@ class SampleGeneratorJob
   : public foundation::IJob
 {
   public:
+    // Number of samples per job as a function of the number of samples already rendered.
+    static foundation::uint64 samples_to_samples_per_job(
+        const foundation::uint64    samples);
+
     // Constructor.
     SampleGeneratorJob(
         SampleAccumulationBuffer&   buffer,
         ISampleGenerator*           sample_generator,
         SampleCounter&              sample_counter,
+        const Spectrum::Mode        spectrum_mode,
         foundation::JobQueue&       job_queue,
         const size_t                job_index,
         const size_t                job_count,
-        const size_t                pass,
         foundation::IAbortSwitch&   abort_switch);
 
     // Execute the job.
-    virtual void execute(const size_t thread_index);
+    void execute(const size_t thread_index) override;
 
   private:
     SampleAccumulationBuffer&       m_buffer;
     ISampleGenerator*               m_sample_generator;
     SampleCounter&                  m_sample_counter;
+    const Spectrum::Mode            m_spectrum_mode;
     foundation::JobQueue&           m_job_queue;
     const size_t                    m_job_index;
     const size_t                    m_job_count;
-    const size_t                    m_pass;
     foundation::IAbortSwitch&       m_abort_switch;
 };
 

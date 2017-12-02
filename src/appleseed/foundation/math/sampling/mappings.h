@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -101,6 +101,23 @@ Vector<T, 2> sample_disk_uniform(const Vector<T, 2>& s);
 template <typename T>
 Vector<T, 2> sample_disk_uniform_alt(const Vector<T, 2>& s);
 
+// Map a uniform random sample in [0,1) to a radius on the unit disk such
+// that samples follow a 2D Gaussian distribution with probability density
+//   pdf(x, y) = 4*a/Pi*exp(-a*(x^2+y^2))
+//   pdf(r, theta) = r*pdf(x, y) = a/Pi*r*exp(-a*r^2)
+template <typename T>
+T sample_disk_gaussian(
+    const T s,
+    const T a);
+template <typename T>
+T sample_disk_gaussian_polar_pdf(
+    const T r,
+    const T a);
+template <typename T>
+T sample_disk_gaussian_area_pdf(
+    const T r,
+    const T a);
+
 
 //
 // Other sampling functions.
@@ -168,7 +185,23 @@ T exponential_distribution_pdf(
     const T x,
     const T a);
 
+// Map a uniform random sample in [0,1) to an exponential distribution on segment [l, r].
+// of the form exp(-a*(x - l)) - exp(-a*(x - r)).
+template <typename T>
+T sample_exponential_distribution_on_segment(
+    const T s,
+    const T a,
+    const T l,
+    const T r);
+template <typename T>
+T exponential_distribution_on_segment_pdf(
+    const T x,
+    const T a,
+    const T l,
+    const T r);
 
+
+//
 // Equiangular sampling along a ray with respect to a point.
 //
 // Reference:
@@ -176,6 +209,7 @@ T exponential_distribution_pdf(
 //   Importance Sampling Techniques for Path Tracing in Participating Media
 //   Christopher Kulla and Marcos Fajardo
 //   https://www.solidangle.com/research/egsr2012_volume.pdf
+//
 
 template <typename T>
 T sample_equiangular_distribution(
@@ -183,7 +217,6 @@ T sample_equiangular_distribution(
     const T theta_a,                // start angle
     const T theta_b,                // end angle
     const T distance);              // distance from point to the ray
-
 template <typename T>
 T equiangular_distribution_pdf(
     const T t,
@@ -202,12 +235,12 @@ inline Vector<T, 3> sample_sphere_uniform(const Vector<T, 2>& s)
     assert(s[0] >= T(0.0) && s[0] < T(1.0));
     assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
-    const T phi = T(TwoPi) * s[0];
+    const T phi = TwoPi<T>() * s[0];
     const T cos_theta = T(1.0) - T(2.0) * s[1];
     const T sin_theta = std::sqrt(T(1.0) - cos_theta * cos_theta);
 
     return
-        Vector<T, 3>::unit_vector(
+        Vector<T, 3>::make_unit_vector(
             cos_theta,
             sin_theta,
             std::cos(phi),
@@ -220,12 +253,12 @@ inline Vector<T, 3> sample_hemisphere_uniform(const Vector<T, 2>& s)
     assert(s[0] >= T(0.0) && s[0] < T(1.0));
     assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
-    const T phi = T(TwoPi) * s[0];
+    const T phi = TwoPi<T>() * s[0];
     const T cos_theta = T(1.0) - s[1];
     const T sin_theta = std::sqrt(T(1.0) - cos_theta * cos_theta);
 
     return
-        Vector<T, 3>::unit_vector(
+        Vector<T, 3>::make_unit_vector(
             cos_theta,
             sin_theta,
             std::cos(phi),
@@ -238,12 +271,12 @@ inline Vector<T, 3> sample_hemisphere_cosine(const Vector<T, 2>& s)
     assert(s[0] >= T(0.0) && s[0] < T(1.0));
     assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
-    const T phi = T(TwoPi) * s[0];
+    const T phi = TwoPi<T>() * s[0];
     const T cos_theta = std::sqrt(T(1.0) - s[1]);
     const T sin_theta = std::sqrt(s[1]);
 
     return
-        Vector<T, 3>::unit_vector(
+        Vector<T, 3>::make_unit_vector(
             cos_theta,
             sin_theta,
             std::cos(phi),
@@ -257,12 +290,12 @@ inline Vector<T, 3> sample_hemisphere_cosine_power(const Vector<T, 2>& s, const 
     assert(s[1] >= T(0.0) && s[1] < T(1.0));
     assert(n >= T(0.0));
 
-    const T phi = T(TwoPi) * s[0];
+    const T phi = TwoPi<T>() * s[0];
     const T cos_theta = std::pow(T(1.0) - s[1], T(1.0) / (n + T(1.0)));
     const T sin_theta = std::sqrt(T(1.0) - cos_theta * cos_theta);
 
     return
-        Vector<T, 3>::unit_vector(
+        Vector<T, 3>::make_unit_vector(
             cos_theta,
             sin_theta,
             std::cos(phi),
@@ -272,7 +305,7 @@ inline Vector<T, 3> sample_hemisphere_cosine_power(const Vector<T, 2>& s, const 
 template <typename T>
 inline T sample_hemisphere_cosine_power_pdf(const T cos_theta, const T n)
 {
-    return (n + T(1.0)) * T(RcpTwoPi) * std::pow(cos_theta, n);
+    return (n + T(1.0)) * RcpTwoPi<T>() * std::pow(cos_theta, n);
 }
 
 template <typename T>
@@ -289,13 +322,14 @@ inline Vector<T, 2> sample_disk_uniform(const Vector<T, 2>& s)
     if (a * a > b * b)
     {
         r = a;
-        phi = T(Pi / 4.0) * (b / a);
+        phi = PiOverFour<T>() * (b / a);
     }
-    else
+    else if (b != T(0.0))
     {
         r = b;
-        phi = T(Pi / 2.0) - T(Pi / 4.0) * (a / b);
+        phi = HalfPi<T>() - PiOverFour<T>() * (a / b);
     }
+    else return Vector<T, 2>(0.0);
 
     return Vector<T, 2>(r * std::cos(phi), r * std::sin(phi));
 }
@@ -306,10 +340,41 @@ inline Vector<T, 2> sample_disk_uniform_alt(const Vector<T, 2>& s)
     assert(s[0] >= T(0.0) && s[0] < T(1.0));
     assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
-    const T phi = T(TwoPi) * s[0];
+    const T phi = TwoPi<T>() * s[0];
     const T r = std::sqrt(T(1.0) - s[1]);
 
     return r * Vector<T, 2>(std::cos(phi), std::sin(phi));
+}
+
+template <typename T>
+inline T sample_disk_gaussian(
+    const T s,
+    const T a)
+{
+    assert(s >= T(0.0));
+    assert(s < T(1.0));
+
+    return std::sqrt(-std::log(T(1.0) - s) / a);
+}
+
+template <typename T>
+inline T sample_disk_gaussian_polar_pdf(
+    const T r,
+    const T a)
+{
+    assert(r >= T(0.0));
+
+    return a * RcpPi<T>() * r * std::exp(-a * r * r);
+}
+
+template <typename T>
+inline T sample_disk_gaussian_area_pdf(
+    const T r,
+    const T a)
+{
+    assert(r >= T(0.0));
+
+    return a * FourOverPi<T>() * std::exp(-a * r * r);
 }
 
 template <typename T>
@@ -318,12 +383,12 @@ inline Vector<T, 3> sample_cone_uniform(const Vector<T, 2>& s, const T cos_theta
     assert(s[0] >= T(0.0) && s[0] < T(1.0));
     assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
-    const T phi = T(TwoPi) * s[0];
+    const T phi = TwoPi<T>() * s[0];
     const T cos_theta = lerp(T(1.0), cos_theta_max, s[1]);
     const T sin_theta = std::sqrt(T(1.0) - cos_theta * cos_theta);
 
     return
-        Vector<T, 3>::unit_vector(
+        Vector<T, 3>::make_unit_vector(
             cos_theta,
             sin_theta,
             std::cos(phi),
@@ -333,7 +398,7 @@ inline Vector<T, 3> sample_cone_uniform(const Vector<T, 2>& s, const T cos_theta
 template <typename T>
 inline T sample_cone_uniform_pdf(const T cos_theta_max)
 {
-    return T(1.0) / (T(TwoPi) * (T(1.0) - cos_theta_max));
+    return T(1.0) / (TwoPi<T>() * (T(1.0) - cos_theta_max));
 }
 
 template <typename T>
@@ -341,7 +406,7 @@ inline Vector<T, 2> sample_circle_uniform(const T s)
 {
     assert(s >= T(0.0) && s < T(1.0));
 
-    const T phi = s * T(TwoPi);
+    const T phi = s * TwoPi<T>();
 
     return Vector<T, 2>(std::cos(phi), std::sin(phi));
 }
@@ -374,7 +439,7 @@ void build_regular_polygon(
 
     for (size_t i = 0; i < vertex_count; ++i)
     {
-        const T a = static_cast<T>(i * TwoPi) / vertex_count + tilt_angle;
+        const T a = (i * TwoPi<T>()) / vertex_count + tilt_angle;
         vertices[i] = Vector<T, 2>(std::cos(a), std::sin(a));
     }
 }
@@ -472,17 +537,48 @@ inline T exponential_distribution_pdf(
 }
 
 template <typename T>
-T sample_equiangular_distribution(
-    const T u,
+inline T sample_exponential_distribution_on_segment(
+    const T s,
+    const T a,
+    const T l,
+    const T r)
+{
+    assert(s >= T(0.0));
+    assert(s < T(1.0));
+    assert(a > T(0.0));
+
+    const T tail = T(1.0) - std::exp(-(r - l) * a);
+    return clamp(l - std::log(T(1.0) - s * tail) / a, l, r);
+}
+
+template <typename T>
+inline T exponential_distribution_on_segment_pdf(
+    const T x,
+    const T a,
+    const T l,
+    const T r)
+{
+    assert (x >= l && x <= r);
+    const T left = std::exp(a * (x - l));
+    const T right = std::exp(a * (x - r));
+    return a / (left - right);
+}
+
+template <typename T>
+inline T sample_equiangular_distribution(
+    const T s,
     const T theta_a,
     const T theta_b,
     const T distance)
 {
-    return distance * std::tan(lerp(theta_a, theta_b, u));
+    assert(s >= T(0.0));
+    assert(s < T(1.0));
+
+    return distance * std::tan(lerp(theta_a, theta_b, s));
 }
 
 template <typename T>
-T equiangular_distribution_pdf(
+inline T equiangular_distribution_pdf(
     const T t,
     const T theta_a,
     const T theta_b,

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,21 +32,20 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/aov/spectrumstack.h"
-#include "renderer/kernel/lighting/sppm/sppmpasscallback.h"
-#include "renderer/kernel/lighting/sppm/sppmphoton.h"
-#include "renderer/kernel/lighting/sppm/sppmphotonmap.h"
 #include "renderer/kernel/lighting/directlightingintegrator.h"
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/lighting/sppm/sppmpasscallback.h"
+#include "renderer/kernel/lighting/sppm/sppmphoton.h"
+#include "renderer/kernel/lighting/sppm/sppmphotonmap.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/stochasticcast.h"
 
@@ -89,13 +88,13 @@ namespace
     template <typename T>
     inline T box2d(const T r2)
     {
-        return static_cast<T>(RcpPi);
+        return foundation::RcpPi<T>();
     }
 
     template <typename T>
     inline T epanechnikov2d(const T r2)
     {
-        return static_cast<T>(2.0 / Pi) * (T(1.0) - r2);
+        return foundation::RcpHalfPi<T>() * (T(1.0) - r2);
     }
 
 
@@ -126,51 +125,59 @@ namespace
     {
       public:
         SPPMLightingEngine(
-            const SPPMPassCallback& pass_callback,
-            const LightSampler&     light_sampler,
+            const SPPMPassCallback&         pass_callback,
+            const ForwardLightSampler&      forward_light_sampler,
+            const BackwardLightSampler&     backward_light_sampler,
             const SPPMParameters&   params)
           : m_params(params)
           , m_pass_callback(pass_callback)
-          , m_light_sampler(light_sampler)
+          , m_forward_light_sampler(forward_light_sampler)
+          , m_backward_light_sampler(backward_light_sampler)
           , m_path_count(0)
           , m_answer(m_params.m_max_photons_per_estimate)
         {
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual void compute_lighting(
-            SamplingContext&        sampling_context,
-            const PixelContext&     pixel_context,
-            const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point,
-            Spectrum&               radiance,               // output radiance, in W.sr^-1.m^-2
-            SpectrumStack&          aovs) APPLESEED_OVERRIDE
+        void compute_lighting(
+            SamplingContext&            sampling_context,
+            const PixelContext&         pixel_context,
+            const ShadingContext&       shading_context,
+            const ShadingPoint&         shading_point,
+            ShadingComponents&          radiance) override      // output radiance, in W.sr^-1.m^-2
         {
             if (m_params.m_view_photons)
             {
-                view_photons(shading_point, radiance);
+                view_photons(shading_point, radiance.m_beauty);
                 return;
             }
 
             PathVisitor path_visitor(
                 m_params,
                 m_pass_callback,
-                m_light_sampler,
+                m_forward_light_sampler,
+                m_backward_light_sampler,
                 sampling_context,
                 shading_context,
                 shading_point.get_scene(),
                 m_answer,
-                radiance,
-                aovs);
+                radiance);
 
-            PathTracer<PathVisitor, false> path_tracer(     // false = not adjoint
+            VolumeVisitor volume_visitor;
+
+            PathTracer<PathVisitor, VolumeVisitor, false> path_tracer(     // false = not adjoint
                 path_visitor,
+                volume_visitor,
                 m_params.m_path_tracing_rr_min_path_length,
-                m_params.m_path_tracing_max_path_length,
+                m_params.m_path_tracing_max_bounces,
+                ~0, // max diffuse bounces
+                ~0, // max glossy bounces
+                ~0, // max specular bounces
+                ~0, // max volume bounces
                 shading_context.get_max_iterations());
 
             const size_t path_length =
@@ -184,7 +191,7 @@ namespace
             m_path_length.insert(path_length);
         }
 
-        virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
+        StatisticsVector get_statistics() const override
         {
             Statistics stats;
             stats.insert("path count", m_path_count);
@@ -196,44 +203,43 @@ namespace
       private:
         const SPPMParameters            m_params;
         const SPPMPassCallback&         m_pass_callback;
-        const LightSampler&             m_light_sampler;
+        const ForwardLightSampler&      m_forward_light_sampler;
+        const BackwardLightSampler&     m_backward_light_sampler;
         uint64                          m_path_count;
         Population<uint64>              m_path_length;
         knn::Answer<float>              m_answer;
 
         struct PathVisitor
         {
-            const SPPMParameters&       m_params;
-            const SPPMPassCallback&     m_pass_callback;
-            const LightSampler&         m_light_sampler;
-            SamplingContext&            m_sampling_context;
-            const ShadingContext&       m_shading_context;
-            TextureCache&               m_texture_cache;
-            const EnvironmentEDF*       m_env_edf;
-            knn::Answer<float>&         m_answer;
-            Spectrum&                   m_path_radiance;
-            SpectrumStack&              m_path_aovs;
+            const SPPMParameters&           m_params;
+            const SPPMPassCallback&         m_pass_callback;
+            const ForwardLightSampler&      m_forward_light_sampler;
+            const BackwardLightSampler&     m_backward_light_sampler;
+            SamplingContext&                m_sampling_context;
+            const ShadingContext&           m_shading_context;
+            const EnvironmentEDF*           m_env_edf;
+            knn::Answer<float>&             m_answer;
+            ShadingComponents&              m_path_radiance;
 
             PathVisitor(
-                const SPPMParameters&   params,
-                const SPPMPassCallback& pass_callback,
-                const LightSampler&     light_sampler,
-                SamplingContext&        sampling_context,
-                const ShadingContext&   shading_context,
-                const Scene&            scene,
-                knn::Answer<float>&     answer,
-                Spectrum&               path_radiance,
-                SpectrumStack&          path_aovs)
+                const SPPMParameters&           params,
+                const SPPMPassCallback&         pass_callback,
+                const ForwardLightSampler&      forward_light_sampler,
+                const BackwardLightSampler&     backward_light_sampler,
+                SamplingContext&                sampling_context,
+                const ShadingContext&           shading_context,
+                const Scene&                    scene,
+                knn::Answer<float>&             answer,
+                ShadingComponents&              path_radiance)
               : m_params(params)
               , m_pass_callback(pass_callback)
-              , m_light_sampler(light_sampler)
+              , m_forward_light_sampler(forward_light_sampler)
+              , m_backward_light_sampler(backward_light_sampler)
               , m_sampling_context(sampling_context)
               , m_shading_context(shading_context)
-              , m_texture_cache(shading_context.get_texture_cache())
               , m_env_edf(scene.get_environment()->get_environment_edf())
               , m_answer(answer)
               , m_path_radiance(path_radiance)
-              , m_path_aovs(path_aovs)
             {
             }
 
@@ -241,7 +247,7 @@ namespace
                 const ScatteringMode::Mode  prev_mode,
                 const ScatteringMode::Mode  next_mode) const
             {
-                assert(next_mode != ScatteringMode::Absorption);
+                assert(next_mode != ScatteringMode::None);
 
                 // No diffuse bounces.
                 if (ScatteringMode::has_diffuse(next_mode))
@@ -250,98 +256,122 @@ namespace
                 return true;
             }
 
-            void visit_vertex(const PathVertex& vertex)
+            void on_miss(const PathVertex& vertex)
             {
-                Spectrum vertex_radiance(0.0f);
-                SpectrumStack vertex_aovs(m_path_aovs.size(), 0.0f);
+                assert(vertex.m_prev_mode != ScatteringMode::None);
+
+                // Can't look up the environment if there's no environment EDF.
+                if (m_env_edf == nullptr)
+                    return;
+
+                // When IBL is disabled, only specular reflections should contribute here.
+                if (!m_params.m_enable_ibl && vertex.m_prev_mode != ScatteringMode::Specular)
+                    return;
+
+                // Evaluate the environment EDF.
+                Spectrum env_radiance(Spectrum::Illuminance);
+                float env_prob;
+                m_env_edf->evaluate(
+                    m_shading_context,
+                    -Vector3f(vertex.m_outgoing.get_value()),
+                    env_radiance,
+                    env_prob);
+
+                // Update the path radiance.
+                env_radiance *= vertex.m_throughput;
+                m_path_radiance.add_emission(
+                    vertex.m_path_length,
+                    vertex.m_aov_mode,
+                    env_radiance);
+            }
+
+            void on_hit(const PathVertex& vertex)
+            {
+                DirectShadingComponents vertex_radiance;
 
                 if (vertex.m_bsdf)
                 {
                     // Direct lighting.
                     if (m_params.m_dl_mode == SPPMParameters::RayTraced)
-                    {
-                        add_direct_lighting_contribution(
-                            vertex,
-                            vertex_radiance,
-                            vertex_aovs);
-                    }
+                        add_direct_lighting_contribution(vertex, vertex_radiance);
 
                     if (!vertex.m_bsdf->is_purely_specular())
                     {
                         // Lighting from photon map.
-                        add_photon_map_lighting_contribution(
-                            vertex,
-                            vertex_radiance,
-                            vertex_aovs);
+                        add_photon_map_lighting_contribution(vertex, vertex_radiance);
                     }
                 }
 
                 // Emitted light.
                 if (vertex.m_edf && vertex.m_cos_on > 0.0)
                 {
-                    add_emitted_light_contribution(
-                        vertex,
-                        vertex_radiance,
-                        vertex_aovs);
+                    Spectrum emitted;
+                    vertex.compute_emitted_radiance(m_shading_context, emitted);
+                    vertex_radiance.m_emission += emitted;
+                    vertex_radiance.m_beauty += emitted;
                 }
 
                 // Update the path radiance.
                 vertex_radiance *= vertex.m_throughput;
-                m_path_radiance += vertex_radiance;
-                vertex_aovs *= vertex.m_throughput;
-                m_path_aovs += vertex_aovs;
+                m_path_radiance.add(vertex.m_path_length, vertex.m_aov_mode, vertex_radiance);
+            }
+
+            void on_scatter(const PathVertex& vertex)
+            {
             }
 
             void add_direct_lighting_contribution(
-                const PathVertex&       vertex,
-                Spectrum&               vertex_radiance,
-                SpectrumStack&          vertex_aovs)
+                const PathVertex&           vertex,
+                DirectShadingComponents&    vertex_radiance)
             {
-                Spectrum dl_radiance;
-                SpectrumStack dl_aovs(vertex_aovs.size());
+                DirectShadingComponents dl_radiance;
 
                 const size_t light_sample_count =
                     stochastic_cast<size_t>(
                         m_sampling_context,
                         m_params.m_dl_light_sample_count);
 
+                if (light_sample_count == 0)
+                    return;
+
                 const size_t bsdf_sample_count = light_sample_count;
+
+                const BSDFSampler bsdf_sampler(
+                    *vertex.m_bsdf,
+                    vertex.m_bsdf_data,
+                    ScatteringMode::Diffuse,
+                    *vertex.m_shading_point);
 
                 // Unlike in the path tracer, we need to sample the diffuse components
                 // of the BSDF because we won't extend the path after a diffuse bounce.
                 const DirectLightingIntegrator integrator(
                     m_shading_context,
-                    m_light_sampler,
-                    vertex,
-                    ScatteringMode::Diffuse,
+                    m_backward_light_sampler,
+                    bsdf_sampler,
+                    vertex.m_shading_point->get_time(),
                     ScatteringMode::All,
                     bsdf_sample_count,
                     light_sample_count,
+                    m_params.m_dl_low_light_threshold,
                     false);             // not computing indirect lighting
 
                 // Always sample both the lights and the BSDF.
                 integrator.compute_outgoing_radiance_combined_sampling_low_variance(
                     vertex.m_sampling_context,
                     vertex.m_outgoing,
-                    dl_radiance,
-                    dl_aovs);
+                    dl_radiance);
 
                 // Divide by the sample count when this number is less than 1.
                 if (m_params.m_rcp_dl_light_sample_count > 0.0f)
-                {
                     dl_radiance *= m_params.m_rcp_dl_light_sample_count;
-                    dl_aovs *= m_params.m_rcp_dl_light_sample_count;
-                }
 
                 // Add the direct lighting contributions.
                 vertex_radiance += dl_radiance;
-                vertex_aovs += dl_aovs;
             }
 
             void add_photon_map_lighting_contribution(
-                const PathVertex&       vertex,
-                Spectrum&               vertex_radiance,
-                SpectrumStack&          vertex_aovs)
+                const PathVertex&           vertex,
+                DirectShadingComponents&    vertex_radiance)
             {
                 const SPPMPhotonMap& photon_map = m_pass_callback.get_photon_map();
 
@@ -374,10 +404,9 @@ namespace
                 const float rcp_max_square_dist = 1.0f / max_square_dist;
 
                 // Accumulate photons contributions.
-                Spectrum indirect_radiance;
+                Spectrum indirect_radiance(Spectrum::Illuminance);
                 if (m_params.m_photon_type == SPPMParameters::Monochromatic)
                 {
-                    indirect_radiance.resize(Spectrum::Samples);
                     indirect_radiance.set(0.0f);
                     accumulate_mono_photons(
                         vertex,
@@ -399,7 +428,8 @@ namespace
                 indirect_radiance *= rcp_max_square_dist;
 
                 // Add the indirect lighting contribution.
-                vertex_radiance += indirect_radiance;
+                vertex_radiance.m_diffuse += indirect_radiance;
+                vertex_radiance.m_beauty += indirect_radiance;
             }
 
             void accumulate_mono_photons(
@@ -444,29 +474,25 @@ namespace
 #endif
 
                     // Evaluate the BSDF for this photon.
-                    Spectrum bsdf_value;
-                    const double bsdf_prob =
+                    DirectShadingComponents bsdf_value;
+                    const float bsdf_prob =
                         vertex.m_bsdf->evaluate(
                             vertex.m_bsdf_data,
                             false,                                      // not adjoint
                             true,                                       // multiply by |cos(incoming, normal)|
-                            vertex.get_geometric_normal(),
-                            vertex.get_shading_basis(),
-                            vertex.m_outgoing.get_value(),              // toward the camera
-                            normalize(Vector3d(photon.m_incoming)),     // toward the light
+                            Vector3f(vertex.get_geometric_normal()),
+                            Basis3f(vertex.get_shading_basis()),
+                            Vector3f(vertex.m_outgoing.get_value()),    // toward the camera
+                            normalize(photon.m_incoming),               // toward the light
                             ScatteringMode::Diffuse,
                             bsdf_value);
-                    if (bsdf_prob == 0.0)
+                    if (bsdf_prob == 0.0f)
                         continue;
-
-                    // Make sure the BSDF value is spectral.
-                    Spectrum spectral_bsdf_value;
-                    Spectrum::upgrade(bsdf_value, spectral_bsdf_value);
 
                     // The photons store flux but we are computing reflected radiance.
                     // The first step of the flux -> radiance conversion is done here.
                     // The conversion will be completed when doing density estimation.
-                    float bsdf_mono_value = spectral_bsdf_value[photon.m_flux.m_wavelength];
+                    float bsdf_mono_value = bsdf_value.m_beauty[photon.m_flux.m_wavelength];
                     bsdf_mono_value /= abs(dot(photon.m_incoming, photon.m_geometric_normal));
                     bsdf_mono_value *= photon.m_flux.m_amplitude;
 
@@ -520,79 +546,50 @@ namespace
 #endif
 
                     // Evaluate the BSDF for this photon.
-                    Spectrum bsdf_value;
-                    const double bsdf_prob =
+                    DirectShadingComponents bsdf_value;
+                    const float bsdf_prob =
                         vertex.m_bsdf->evaluate(
                             vertex.m_bsdf_data,
                             false,                                      // not adjoint
                             true,                                       // multiply by |cos(incoming, normal)|
-                            vertex.get_geometric_normal(),
-                            vertex.get_shading_basis(),
-                            vertex.m_outgoing.get_value(),              // toward the camera
-                            normalize(Vector3d(photon.m_incoming)),     // toward the light
+                            Vector3f(vertex.get_geometric_normal()),
+                            Basis3f(vertex.get_shading_basis()),
+                            Vector3f(vertex.m_outgoing.get_value()),    // toward the camera
+                            normalize(photon.m_incoming),               // toward the light
                             ScatteringMode::Diffuse,
                             bsdf_value);
-                    if (bsdf_prob == 0.0)
+                    if (bsdf_prob == 0.0f)
                         continue;
 
                     // The photons store flux but we are computing reflected radiance.
                     // The first step of the flux -> radiance conversion is done here.
                     // The conversion will be completed when doing density estimation.
-                    bsdf_value /= abs(dot(photon.m_incoming, photon.m_geometric_normal));
-                    bsdf_value *= photon.m_flux;
+                    bsdf_value.m_beauty /= abs(dot(photon.m_incoming, photon.m_geometric_normal));
+                    bsdf_value.m_beauty *= photon.m_flux;
 
                     // Apply kernel weight.
-                    bsdf_value *= epanechnikov2d(entry.m_square_dist * rcp_max_square_dist);
+                    bsdf_value.m_beauty *= epanechnikov2d(entry.m_square_dist * rcp_max_square_dist);
 
                     // Accumulate reflected flux.
-                    radiance += bsdf_value;
+                    radiance += bsdf_value.m_beauty;
                 }
             }
+        };
 
-            void add_emitted_light_contribution(
-                const PathVertex&       vertex,
-                Spectrum&               vertex_radiance,
-                SpectrumStack&          vertex_aovs)
+        struct VolumeVisitor
+        {
+            bool accept_scattering(
+                const ScatteringMode::Mode  prev_mode)
             {
-                // Compute the emitted radiance.
-                Spectrum emitted_radiance;
-                vertex.compute_emitted_radiance(
-                    m_shading_context,
-                    m_texture_cache,
-                    emitted_radiance);
-
-                // Add the emitted light contribution.
-                vertex_radiance += emitted_radiance;
-                vertex_aovs.add(vertex.m_edf->get_render_layer_index(), emitted_radiance);
+                return true;
             }
 
-            void visit_environment(const PathVertex& vertex)
+            void on_scatter(PathVertex& vertex)
             {
-                assert(vertex.m_prev_mode != ScatteringMode::Absorption);
+            }
 
-                // Can't look up the environment if there's no environment EDF.
-                if (m_env_edf == 0)
-                    return;
-
-                // When IBL is disabled, only specular reflections should contribute here.
-                if (!m_params.m_enable_ibl && vertex.m_prev_mode != ScatteringMode::Specular)
-                    return;
-
-                // Evaluate the environment EDF.
-                InputEvaluator input_evaluator(m_texture_cache);
-                Spectrum env_radiance;
-                double env_prob;
-                m_env_edf->evaluate(
-                    m_shading_context,
-                    input_evaluator,
-                    -vertex.m_outgoing.get_value(),
-                    env_radiance,
-                    env_prob);
-
-                // Update the path radiance.
-                env_radiance *= vertex.m_throughput;
-                m_path_radiance += env_radiance;
-                m_path_aovs.add(m_env_edf->get_render_layer_index(), env_radiance);
+            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray)
+            {
             }
         };
 
@@ -643,11 +640,13 @@ namespace
 //
 
 SPPMLightingEngineFactory::SPPMLightingEngineFactory(
-    const SPPMPassCallback&     pass_callback,
-    const LightSampler&         light_sampler,
-    const SPPMParameters&       params)
+    const SPPMPassCallback&         pass_callback,
+    const ForwardLightSampler&      forward_light_sampler,
+    const BackwardLightSampler&     backward_light_sampler,
+    const SPPMParameters&           params)
   : m_pass_callback(pass_callback)
-  , m_light_sampler(light_sampler)
+  , m_forward_light_sampler(forward_light_sampler)
+  , m_backward_light_sampler(backward_light_sampler)
   , m_params(params)
 {
     m_params.print();
@@ -663,7 +662,8 @@ ILightingEngine* SPPMLightingEngineFactory::create()
     return
         new SPPMLightingEngine(
             m_pass_callback,
-            m_light_sampler,
+            m_forward_light_sampler,
+            m_backward_light_sampler,
             m_params);
 }
 
@@ -676,7 +676,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
         "enable_caustics",
         Dictionary()
             .insert("type", "bool")
-            .insert("default", "false")
+            .insert("default", "true")
             .insert("label", "Enable Caustics")
             .insert("help", "Enable caustics"));
 
@@ -717,7 +717,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
                         "rt",
                         Dictionary()
                             .insert("label", "Ray Tracing")
-                            .insert("help","Use ray tracing to estimate direct lighting"))
+                            .insert("help", "Use ray tracing to estimate direct lighting"))
                     .insert(
                         "sppm",
                         Dictionary()
@@ -727,38 +727,40 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
                         "off",
                         Dictionary()
                             .insert("label", "Disabled")
-                            .insert("help","Do not estimate direct lighting"))));
+                            .insert("help", "Do not estimate direct lighting"))));
 
     metadata.dictionaries().insert(
-        "photon_tracing_max_path_length",
+        "photon_tracing_max_bounces",
         Dictionary()
             .insert("type", "int")
             .insert("default", "8")
             .insert("unlimited", "true")
-            .insert("label", "Max Photon Path Length")
+            .insert("min", "0")
+            .insert("label", "Max Photon Bounces")
             .insert("help", "Maximum number of photon bounces"));
 
     metadata.dictionaries().insert(
         "photon_tracing_rr_min_path_length",
         Dictionary()
             .insert("type", "int")
-            .insert("default", "3")
+            .insert("default", "6")
             .insert("help", "Consider pruning low contribution photons starting with this bounce"));
 
     metadata.dictionaries().insert(
-        "path_tracing_max_path_length",
+        "path_tracing_max_bounces",
         Dictionary()
             .insert("type", "int")
             .insert("default", "8")
             .insert("unlimited", "true")
-            .insert("label", "Max Path Length")
+            .insert("min", "0")
+            .insert("label", "Max Bounces")
             .insert("help", "Maximum number of path bounces"));
 
     metadata.dictionaries().insert(
         "path_tracing_rr_min_path_length",
         Dictionary()
             .insert("type", "int")
-            .insert("default", "3")
+            .insert("default", "6")
             .insert("help", "Consider pruning low contribution paths starting with this bounce"));
 
     metadata.dictionaries().insert(
@@ -766,7 +768,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
         Dictionary()
             .insert("type", "int")
             .insert("default", "1000000")
-            .insert("label", "Light Photons Per Pass")
+            .insert("label", "Light Photons per Pass")
             .insert("help", "Number of photons per render pass"));
 
     metadata.dictionaries().insert(
@@ -774,14 +776,14 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
         Dictionary()
             .insert("type", "int")
             .insert("default", "1000000")
-            .insert("label", "IBL Photons Per Pass")
+            .insert("label", "IBL Photons per Pass")
             .insert("help", "Number of environment photons per render pass"));
 
     metadata.dictionaries().insert(
         "initial_radius",
         Dictionary()
             .insert("type", "float")
-            .insert("default", "1.0")
+            .insert("default", "0.1")
             .insert("unit", "percent")
             .insert("min", "0.0")
             .insert("max", "100.0")
@@ -794,7 +796,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
             .insert("type", "int")
             .insert("default", "100")
             .insert("min", "1")
-            .insert("label", "Max Photons Per Estimate")
+            .insert("label", "Max Photons per Estimate")
             .insert("help", "Maximum number of photons used to estimate radiance"));
 
     metadata.dictionaries().insert(

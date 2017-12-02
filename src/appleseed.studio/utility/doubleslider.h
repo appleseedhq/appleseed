@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -81,8 +81,8 @@ class DoubleSlider
     Q_OBJECT
 
   public:
-    explicit DoubleSlider(QWidget* parent = 0);
-    DoubleSlider(const Qt::Orientation orientation, QWidget* parent = 0);
+    explicit DoubleSlider(QWidget* parent = nullptr);
+    DoubleSlider(const Qt::Orientation orientation, QWidget* parent = nullptr);
 
     void setRange(const double min, const double max);
     void setMinimum(const double min);

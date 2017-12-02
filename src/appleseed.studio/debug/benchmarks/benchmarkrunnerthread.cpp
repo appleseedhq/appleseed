@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -48,9 +48,9 @@
 #include <string>
 
 using namespace appleseed::shared;
-using namespace boost;
 using namespace foundation;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace studio {
@@ -67,8 +67,8 @@ void BenchmarkRunnerThread::run()
         create_xmlfile_benchmark_listener());
 
     const string xmlfile_name = "benchmark." + get_time_stamp_string() + ".xml";
-    const filesystem::path xmlfile_path =
-          filesystem::path(Application::get_tests_root_path())
+    const bf::path xmlfile_path =
+          bf::path(Application::get_tests_root_path())
         / "unit benchmarks"
         / "results"
         / xmlfile_name;
@@ -82,12 +82,12 @@ void BenchmarkRunnerThread::run()
     BenchmarkResult result;
     result.add_listener(xmlfile_listener.get());
 
-    const filesystem::path old_current_path =
+    const bf::path old_current_path =
         Application::change_current_directory_to_tests_root_path();
 
     BenchmarkSuiteRepository::instance().run(result);
 
-    filesystem::current_path(old_current_path);
+    bf::current_path(old_current_path);
 
     emit signal_finished();
 }

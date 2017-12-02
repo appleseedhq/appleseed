@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +37,15 @@
 #include "foundation/utility/test.h"
 #include "foundation/utility/testutils.h"
 
+// Boost headers.
+#include "boost/filesystem.hpp"
+
+// Standard headers.
+#include <exception>
+
 using namespace foundation;
 using namespace renderer;
+namespace bf = boost::filesystem;
 
 TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
 {
@@ -67,4 +74,56 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
 
         EXPECT_TRUE(identical);
     }
+
+    TEST_CASE(ReadValidPackedProject)
+    {
+        const char* UnpackDirectory = "unit tests/inputs/test_projectfilereader_validpackedproject.unpacked/";
+
+        try
+        {
+            ProjectFileReader reader;
+
+            auto_release_ptr<Project> project =
+                reader.read(
+                    "unit tests/inputs/test_projectfilereader_validpackedproject.appleseedz",
+                    "../../../../schemas/project.xsd");     // path relative to input file
+
+            EXPECT_NEQ(0, project.get());
+
+            bf::remove_all(bf::path(UnpackDirectory));
+        }
+        catch (const std::exception& e)
+        {
+            bf::remove_all(bf::path(UnpackDirectory));
+            throw e;
+        }
+    }
+
+#if 0
+    // Test waits for a brilliant solution of how to invoke it without emitting error message
+
+    TEST_CASE(ReadInvalidPackedProject)
+    {
+        const char* UnpackDirectory = "unit tests/inputs/test_projectfilereader_invalidpackedproject.unpacked/";
+
+        try
+        {
+            ProjectFileReader reader;
+
+            auto_release_ptr<Project> project =
+                reader.read(
+                    "unit tests/inputs/test_projectfilereader_invalidpackedproject.appleseedz",
+                    "../../../../schemas/project.xsd");     // path relative to input file
+
+            EXPECT_EQ(0, project.get());
+
+            bf::remove_all(bf::path(UnpackDirectory));
+        }
+        catch (const std::exception& e)
+        {
+            bf::remove_all(bf::path(UnpackDirectory));
+            throw e;
+        }
+    }
+#endif
 }

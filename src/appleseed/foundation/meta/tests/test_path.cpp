@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,9 +41,9 @@
 #include <cstdio>
 #include <string>
 
-using namespace boost;
 using namespace foundation;
 using namespace std;
+namespace bf = boost::filesystem;
 
 TEST_SUITE(Foundation_Platform_Path)
 {
@@ -65,10 +65,10 @@ TEST_SUITE(Foundation_Platform_Path)
 
     TEST_CASE(SplitPaths_GivenTwoEmptyPathes_ReturnsEmptyPath)
     {
-        const filesystem::path p1("");
-        const filesystem::path p2("");
+        const bf::path p1("");
+        const bf::path p2("");
 
-        filesystem::path common, r1, r2;
+        bf::path common, r1, r2;
         split_paths(p1, p2, common, r1, r2);
 
         EXPECT_EQ("", common.make_preferred().string());
@@ -78,10 +78,10 @@ TEST_SUITE(Foundation_Platform_Path)
 
     TEST_CASE(SplitPaths_GivenOneNonEmptyPathAndOneEmptyPath_ReturnsEmptyPath)
     {
-        const filesystem::path p1("C:\\foo");
-        const filesystem::path p2("");
+        const bf::path p1("C:\\foo");
+        const bf::path p2("");
 
-        filesystem::path common, r1, r2;
+        bf::path common, r1, r2;
         split_paths(p1, p2, common, r1, r2);
 
         EXPECT_EQ("", common.make_preferred().string());
@@ -91,10 +91,10 @@ TEST_SUITE(Foundation_Platform_Path)
 
     TEST_CASE(SplitPaths_GivenOneEmptyPathAndOneNonEmptyPath_ReturnsEmptyPath)
     {
-        const filesystem::path p1("");
-        const filesystem::path p2("C:\\foo");
+        const bf::path p1("");
+        const bf::path p2("C:\\foo");
 
-        filesystem::path common, r1, r2;
+        bf::path common, r1, r2;
         split_paths(p1, p2, common, r1, r2);
 
         EXPECT_EQ("", common.make_preferred().string());
@@ -104,10 +104,10 @@ TEST_SUITE(Foundation_Platform_Path)
 
     TEST_CASE(SplitPaths_GivenIdenticalPathsButDifferentFilenames_ReturnsCommonPath)
     {
-        const filesystem::path p1("C:\\foo\\bar\\file1.ext");
-        const filesystem::path p2("C:\\foo\\bar\\file2.ext");
+        const bf::path p1("C:\\foo\\bar\\file1.ext");
+        const bf::path p2("C:\\foo\\bar\\file2.ext");
 
-        filesystem::path common, r1, r2;
+        bf::path common, r1, r2;
         split_paths(p1, p2, common, r1, r2);
 
         EXPECT_EQ("C:\\foo\\bar", common.make_preferred().string());
@@ -117,10 +117,10 @@ TEST_SUITE(Foundation_Platform_Path)
 
     TEST_CASE(SplitPaths_GivenIdenticalPathsAndFilenamesWithExtensions_ReturnsCommonPath)
     {
-        const filesystem::path p1("C:\\foo\\bar\\file.ext");
-        const filesystem::path p2("C:\\foo\\bar\\file.ext");
+        const bf::path p1("C:\\foo\\bar\\file.ext");
+        const bf::path p2("C:\\foo\\bar\\file.ext");
 
-        filesystem::path common, r1, r2;
+        bf::path common, r1, r2;
         split_paths(p1, p2, common, r1, r2);
 
         EXPECT_EQ("C:\\foo\\bar", common.make_preferred().string());
@@ -130,10 +130,10 @@ TEST_SUITE(Foundation_Platform_Path)
 
     TEST_CASE(SplitPaths_GivenIdenticalPathsAndFilenamesWithoutExtensions_ReturnsCommonPath)
     {
-        const filesystem::path p1("C:\\foo\\bar\\file");
-        const filesystem::path p2("C:\\foo\\bar\\file");
+        const bf::path p1("C:\\foo\\bar\\file");
+        const bf::path p2("C:\\foo\\bar\\file");
 
-        filesystem::path common, r1, r2;
+        bf::path common, r1, r2;
         split_paths(p1, p2, common, r1, r2);
 
         EXPECT_EQ("C:\\foo\\bar", common.make_preferred().string());
@@ -143,10 +143,10 @@ TEST_SUITE(Foundation_Platform_Path)
 
     TEST_CASE(SplitPaths_GivenDifferentDriveLetters_ReturnsEmptyPath)
     {
-        const filesystem::path p1("C:\\foo\\bar\\file.ext");
-        const filesystem::path p2("D:\\foo\\bar\\file.ext");
+        const bf::path p1("C:\\foo\\bar\\file.ext");
+        const bf::path p2("D:\\foo\\bar\\file.ext");
 
-        filesystem::path common, r1, r2;
+        bf::path common, r1, r2;
         split_paths(p1, p2, common, r1, r2);
 
         EXPECT_EQ("", common.make_preferred().string());
@@ -156,10 +156,10 @@ TEST_SUITE(Foundation_Platform_Path)
 
     TEST_CASE(SplitPaths_GivenPathsWithCommonPrefix_ReturnsCommonPath)
     {
-        const filesystem::path p1("C:\\foo\\bar\\file.ext");
-        const filesystem::path p2("C:\\foo\\bob\\file.ext");
+        const bf::path p1("C:\\foo\\bar\\file.ext");
+        const bf::path p2("C:\\foo\\bob\\file.ext");
 
-        filesystem::path common, r1, r2;
+        bf::path common, r1, r2;
         split_paths(p1, p2, common, r1, r2);
 
         EXPECT_EQ("C:\\foo", common.make_preferred().string());
@@ -169,10 +169,10 @@ TEST_SUITE(Foundation_Platform_Path)
 
     TEST_CASE(SplitPaths_GivenPathsWithCommonPrefixWithExtensionsInDirectoryNames_ReturnsCommonPath)
     {
-        const filesystem::path p1("C:\\foo\\bar.baz\\file.txt");
-        const filesystem::path p2("C:\\foo\\bar.qux\\file.txt");
+        const bf::path p1("C:\\foo\\bar.baz\\file.txt");
+        const bf::path p2("C:\\foo\\bar.qux\\file.txt");
 
-        filesystem::path common, r1, r2;
+        bf::path common, r1, r2;
         split_paths(p1, p2, common, r1, r2);
 
         EXPECT_EQ("C:\\foo", common.make_preferred().string());
@@ -182,10 +182,10 @@ TEST_SUITE(Foundation_Platform_Path)
 
     TEST_CASE(SplitPaths_GivenPathsOfDifferentLengthWithCommonPrefix1_ReturnsCommonPath)
     {
-        const filesystem::path p1("C:\\foo\\bar\\file.ext");
-        const filesystem::path p2("C:\\foo\\file.ext");
+        const bf::path p1("C:\\foo\\bar\\file.ext");
+        const bf::path p2("C:\\foo\\file.ext");
 
-        filesystem::path common, r1, r2;
+        bf::path common, r1, r2;
         split_paths(p1, p2, common, r1, r2);
 
         EXPECT_EQ("C:\\foo", common.make_preferred().string());
@@ -195,10 +195,10 @@ TEST_SUITE(Foundation_Platform_Path)
 
     TEST_CASE(SplitPaths_GivenPathsOfDifferentLengthWithCommonPrefix2)
     {
-        const filesystem::path p1("C:\\foo\\file.ext");
-        const filesystem::path p2("C:\\foo\\bar\\file.ext");
+        const bf::path p1("C:\\foo\\file.ext");
+        const bf::path p2("C:\\foo\\bar\\file.ext");
 
-        filesystem::path common, r1, r2;
+        bf::path common, r1, r2;
         split_paths(p1, p2, common, r1, r2);
 
         EXPECT_EQ("C:\\foo", common.make_preferred().string());
@@ -213,16 +213,16 @@ TEST_SUITE(Foundation_Utility_Path)
 {
     struct Fixture
     {
-        const filesystem::path m_base_output;
+        const bf::path m_base_output;
 
         Fixture()
-          : m_base_output(filesystem::absolute("unit tests/outputs/test_path/"))
+          : m_base_output(bf::absolute("unit tests/outputs/test_path/"))
         {
-            filesystem::remove_all(m_base_output);
-            filesystem::create_directory(m_base_output);
+            bf::remove_all(m_base_output);
+            bf::create_directory(m_base_output);
         }
 
-        static void create_file(const filesystem::path& filepath)
+        static void create_file(const bf::path& filepath)
         {
             FILE* f = fopen(filepath.string().c_str(), "w");
             assert(f);

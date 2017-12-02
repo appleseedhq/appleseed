@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,12 +30,10 @@
 #ifndef APPLESEED_RENDERER_KERNEL_RENDERING_IPIXELRENDERER_H
 #define APPLESEED_RENDERER_KERNEL_RENDERING_IPIXELRENDERER_H
 
-// appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
 #include "foundation/math/aabb.h"
+#include "foundation/math/vector.h"
 
 // Standard headers.
 #include <cstddef>
@@ -43,8 +41,8 @@
 // Forward declarations.
 namespace foundation    { class StatisticsVector; }
 namespace foundation    { class Tile; }
+namespace renderer      { class AOVAccumulatorContainer; }
 namespace renderer      { class Frame; }
-namespace renderer      { class PixelContext; }
 namespace renderer      { class ShadingResultFrameBuffer; }
 namespace renderer      { class TileStack; }
 
@@ -77,15 +75,17 @@ class IPixelRenderer
         foundation::Tile&           tile,
         TileStack&                  aov_tiles,
         const foundation::AABB2i&   tile_bbox,
-        const PixelContext&         pixel_context,
         const size_t                pass_hash,
-        const int                   tx,
-        const int                   ty,
-        SamplingContext::RNGType&   rng,
+        const foundation::Vector2i& pi,               // image-space pixel coordinates
+        const foundation::Vector2i& pt,               // tile-space pixel coordinates
+        AOVAccumulatorContainer&    aov_accumulators,
         ShadingResultFrameBuffer&   framebuffer) = 0;
 
     // Retrieve performance statistics.
     virtual foundation::StatisticsVector get_statistics() const = 0;
+
+    // Return the maximum number of samples per pixel.
+    virtual size_t get_max_samples_per_pixel() const = 0;
 };
 
 
@@ -98,8 +98,7 @@ class IPixelRendererFactory
 {
   public:
     // Return a new pixel renderer instance.
-    virtual IPixelRenderer* create(
-        const size_t    thread_index) = 0;
+    virtual IPixelRenderer* create(const size_t thread_index) = 0;
 };
 
 }       // namespace renderer

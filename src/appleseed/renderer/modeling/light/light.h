@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/uid.h"
 
 // appleseed.main headers.
@@ -44,11 +45,12 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class Assembly; }
-namespace renderer      { class InputEvaluator; }
+namespace renderer      { class BaseGroup; }
 namespace renderer      { class LightTargetArray; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
+namespace renderer      { class ShadingContext; }
 
 namespace renderer
 {
@@ -70,21 +72,22 @@ class APPLESEED_DLLSYMBOL Light
         const ParamArray&               params);
 
     // Destructor.
-    ~Light();
+    ~Light() override;
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
     enum Flags
     {
-        CastIndirectLight = 1 << 0                                  // does this light generate indirect lighting?
+        CastIndirectLight = 1 << 0,         // does this light generate indirect lighting?
+        LightTreeCompatible = 1 << 1        // can this light be used by the LightTree?
     };
 
     // Retrieve the flags.
     int get_flags() const;
 
     // Retrieve the importance multiplier.
-    double get_uncached_importance_multiplier() const;
+    float get_uncached_importance_multiplier() const;
 
     // Set the light transformation.
     void set_transform(const foundation::Transformd& transform);
@@ -94,55 +97,52 @@ class APPLESEED_DLLSYMBOL Light
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
+    bool on_frame_begin(
         const Project&                  project,
-        const Assembly&                 assembly,
-        foundation::IAbortSwitch*       abort_switch = 0);
-
-    // This method is called once after rendering each frame.
-    virtual void on_frame_end(
-        const Project&                  project,
-        const Assembly&                 assembly);
+        const BaseGroup*                parent,
+        OnFrameBeginRecorder&           recorder,
+        foundation::IAbortSwitch*       abort_switch = nullptr) override;
 
     // Sample the light and compute the emission position, the emission direction,
     // its probability density and the value of the light for this direction.
     virtual void sample(
-        InputEvaluator&                 input_evaluator,
+        const ShadingContext&           shading_context,
+        const foundation::Transformd&   light_transform,            // light space to world space transform
+        const foundation::Vector3d&     target_point,               // world space target point
+        const foundation::Vector2d&     s,                          // sample in [0,1)^2
+        foundation::Vector3d&           position,                   // world space emission position
+        foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
+        Spectrum&                       value,                      // light value
+        float&                          probability) const = 0;     // PDF value
+    virtual void sample(
+        const ShadingContext&           shading_context,
         const foundation::Transformd&   light_transform,            // light space to world space transform
         const foundation::Vector2d&     s,                          // sample in [0,1)^2
         foundation::Vector3d&           position,                   // world space emission position
         foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
         Spectrum&                       value,                      // light value
-        double&                         probability) const = 0;     // PDF value
+        float&                          probability) const = 0;     // PDF value
     virtual void sample(
-        InputEvaluator&                 input_evaluator,
+        const ShadingContext&           shading_context,
         const foundation::Transformd&   light_transform,            // light space to world space transform
         const foundation::Vector2d&     s,                          // sample in [0,1)^2
         const LightTargetArray&         targets,
         foundation::Vector3d&           position,                   // world space emission position
         foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
         Spectrum&                       value,                      // light value
-        double&                         probability) const;         // PDF value
-
-    // Evaluate the light for a given target point.
-    virtual void evaluate(
-        InputEvaluator&                 input_evaluator,
-        const foundation::Transformd&   light_transform,            // light space to world space transform
-        const foundation::Vector3d&     target,                     // world space target point
-        foundation::Vector3d&           position,                   // world space emission position
-        foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
-        Spectrum&                       value) const = 0;           // light value
+        float&                          probability) const;         // PDF value
 
     // Compute the distance attenuation of this light.
-    virtual double compute_distance_attenuation(
+    virtual float compute_distance_attenuation(
         const foundation::Vector3d&     target,                     // world space target point
         const foundation::Vector3d&     position) const = 0;        // world space emission position
+
+  protected:
+    int m_flags;
 
   private:
     struct Impl;
     Impl* impl;
-
-    int m_flags;
 };
 
 

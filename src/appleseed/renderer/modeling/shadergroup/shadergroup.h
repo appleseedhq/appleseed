@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,25 +35,18 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// OSL headers.
-#include "foundation/platform/oslheaderguards.h"
-BEGIN_OSL_INCLUDES
-#include "OSL/oslexec.h"
-END_OSL_INCLUDES
-
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class Assembly; }
 namespace renderer      { class AssemblyInstance; }
-namespace renderer      { class LightSamper; }
+namespace renderer      { class OSLShadingSystem; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class ObjectInstance; }
-namespace renderer      { class Project; }
 
 namespace renderer
 {
@@ -67,7 +60,7 @@ class APPLESEED_DLLSYMBOL ShaderGroup
 {
   public:
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
     // Return a string identifying the model of this shader group.
     const char* get_model() const;
@@ -89,10 +82,10 @@ class APPLESEED_DLLSYMBOL ShaderGroup
         const char*                 dst_layer,
         const char*                 dst_param);
 
-    // Create OSL shader group.
+    // Create internal OSL shader group.
     bool create_optimized_osl_shader_group(
-        OSL::ShadingSystem&         shading_system,
-        foundation::IAbortSwitch*   abort_switch = 0);
+        OSLShadingSystem&           shading_system,
+        foundation::IAbortSwitch*   abort_switch = nullptr);
 
     // Release internal OSL shader group.
     void release_optimized_osl_shader_group();
@@ -106,6 +99,9 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Return true if the shader group was setup correctly.
     bool is_valid() const;
 
+    // Return true if the shader group contains at least one BSDF closure.
+    bool has_bsdfs() const;
+
     // Return true if the shader group contains at least one emission closure.
     bool has_emission() const;
 
@@ -114,9 +110,6 @@ class APPLESEED_DLLSYMBOL ShaderGroup
 
     // Return true if the shader group contains at least one subsurface closure.
     bool has_subsurface() const;
-
-    // Return true if the shader group contains at least one dielectric closure.
-    bool has_refraction() const;
 
     // Return true if the shader group contains at least one holdout closure.
     bool has_holdout() const;
@@ -129,13 +122,15 @@ class APPLESEED_DLLSYMBOL ShaderGroup
 
     // Return the surface area of an object.
     // Can only be called if the shader group has emission closures.
-    double get_surface_area(const AssemblyInstance* ass, const ObjectInstance* obj) const;
+    float get_surface_area(
+        const AssemblyInstance* assembly_instance,
+        const ObjectInstance*   object_instance) const;
 
-    // Return a reference-counted (but opaque) reference to the internal OSL shader group.
-    OSL::ShaderGroupRef& shader_group_ref() const;
+    // Return an opaque pointer to the internal OSL shader group.
+    void* osl_shader_group() const;
 
   private:
-    friend class LightSampler;
+    friend class LightSamplerBase;
     friend class ShaderGroupFactory;
 
     struct Impl;
@@ -143,22 +138,23 @@ class APPLESEED_DLLSYMBOL ShaderGroup
 
     enum Flags
     {
-        HasEmission     = 1 << 0,
-        HasTransparency = 1 << 1,
-        HasSubsurface   = 1 << 2,
-        HasRefraction   = 1 << 3,
+        // Closures.
+        HasBSDFs        = 1 << 0,
+        HasEmission     = 1 << 1,
+        HasTransparency = 1 << 2,
+        HasSubsurface   = 1 << 3,
         HasHoldout      = 1 << 4,
         HasDebug        = 1 << 5,
-        UsesdPdTime     = 1 << 6,
-
         HasAllClosures  =
+            HasBSDFs        |
             HasEmission     |
             HasTransparency |
             HasSubsurface   |
-            HasRefraction   |
             HasHoldout      |
             HasDebug,
 
+        // Globals.
+        UsesdPdTime     = 1 << 7,
         UsesAllGlobals  = UsesdPdTime
     };
     foundation::uint32 m_flags;
@@ -167,18 +163,18 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     explicit ShaderGroup(const char* name);
 
     // Destructor.
-    ~ShaderGroup();
+    ~ShaderGroup() override;
 
-    void get_shadergroup_closures_info(OSL::ShadingSystem& shading_system);
+    void get_shadergroup_closures_info(OSLShadingSystem& shading_system);
     void report_has_closure(const char* closure_name, const Flags flag) const;
 
-    void get_shadergroup_globals_info(OSL::ShadingSystem& shading_system);
+    void get_shadergroup_globals_info(OSLShadingSystem& shading_system);
     void report_uses_global(const char* global_name, const Flags flag) const;
 
     void set_surface_area(
-        const AssemblyInstance* ass,
-        const ObjectInstance*   obj,
-        const double            area) const;
+        const AssemblyInstance* assembly_instance,
+        const ObjectInstance*   object_instance,
+        const float             area) const;
 };
 
 
@@ -201,6 +197,11 @@ class APPLESEED_DLLSYMBOL ShaderGroupFactory
 // ShaderGroup class implementation.
 //
 
+inline bool ShaderGroup::has_bsdfs() const
+{
+    return (m_flags & HasBSDFs) != 0;
+}
+
 inline bool ShaderGroup::has_emission() const
 {
     return (m_flags & HasEmission) != 0;
@@ -214,11 +215,6 @@ inline bool ShaderGroup::has_transparency() const
 inline bool ShaderGroup::has_subsurface() const
 {
     return (m_flags & HasSubsurface) != 0;
-}
-
-inline bool ShaderGroup::has_refraction() const
-{
-    return (m_flags & HasRefraction) != 0;
 }
 
 inline bool ShaderGroup::has_holdout() const

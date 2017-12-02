@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -36,30 +36,16 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
-// OSL headers.
-#ifdef APPLESEED_WITH_OSL
-#include "foundation/platform/oslheaderguards.h"
-BEGIN_OSL_INCLUDES
-#include "OSL/oslexec.h"
-END_OSL_INCLUDES
-#endif
-
-// OpenImageIO headers.
-#ifdef APPLESEED_WITH_OIIO
-#include "foundation/platform/oiioheaderguards.h"
-BEGIN_OIIO_INCLUDES
-#include "OpenImageIO/texture.h"
-END_OIIO_INCLUDES
-#endif
-
 // Standard headers.
 #include <cstddef>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class JobQueue; }
-namespace renderer      { class LightSampler; }
+namespace renderer      { class ForwardLightSampler; }
 namespace renderer      { class LightTargetArray; }
+namespace renderer      { class OIIOTextureSystem; }
+namespace renderer      { class OSLShadingSystem; }
 namespace renderer      { class Scene; }
 namespace renderer      { class SPPMPhotonVector; }
 namespace renderer      { class TextureStore; }
@@ -74,15 +60,11 @@ class SPPMPhotonTracer
   public:
     SPPMPhotonTracer(
         const Scene&                scene,
-        const LightSampler&         light_sampler,
+        const ForwardLightSampler&  light_sampler,
         const TraceContext&         trace_context,
         TextureStore&               texture_store,
-#ifdef APPLESEED_WITH_OIIO
-        OIIO::TextureSystem&        oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
-        OSL::ShadingSystem&         shading_system,
-#endif
+        OIIOTextureSystem&          oiio_texture_system,
+        OSLShadingSystem&           shading_system,
         const SPPMParameters&       params);
 
     void trace_photons(
@@ -94,17 +76,13 @@ class SPPMPhotonTracer
   private:
     const SPPMParameters            m_params;
     const Scene&                    m_scene;
-    const LightSampler&             m_light_sampler;
+    const ForwardLightSampler&      m_light_sampler;
     const TraceContext&             m_trace_context;
     TextureStore&                   m_texture_store;
     size_t                          m_total_emitted_photon_count;
     size_t                          m_total_stored_photon_count;
-#ifdef APPLESEED_WITH_OIIO
-    OIIO::TextureSystem&            m_oiio_texture_system;
-#endif
-#ifdef APPLESEED_WITH_OSL
-    OSL::ShadingSystem&             m_shading_system;
-#endif
+    OIIOTextureSystem&              m_oiio_texture_system;
+    OSLShadingSystem&               m_shading_system;
 
     void schedule_light_photon_tracing_jobs(
         const LightTargetArray&     photon_targets,

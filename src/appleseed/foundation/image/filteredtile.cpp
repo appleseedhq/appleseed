@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@
 #include "foundation/image/pixel.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/atomic.h"
 
 using namespace std;
 
@@ -52,6 +53,8 @@ namespace foundation
 //   A Pixel Is Not A Little Square, Technical Memo 6, Alvy Ray Smith
 //   http://alvyray.com/Memos/CG/Microsoft/6_pixel.pdf
 //
+
+#define ATOMIC_UPDATES
 
 FilteredTile::FilteredTile(
     const size_t        width,
@@ -80,7 +83,7 @@ void FilteredTile::clear()
 {
     float* ptr = reinterpret_cast<float*>(pixel(0));
 
-    for (size_t i = 0; i < m_pixel_count * m_channel_count; ++i)
+    for (size_t i = 0, e = m_pixel_count * m_channel_count; i < e; ++i)
         ptr[i] = 0.0f;
 }
 
@@ -116,10 +119,20 @@ void FilteredTile::add(
         {
             const float weight = m_filter.evaluate(rx - dx, ry - dy);
 
+#ifdef ATOMIC_UPDATES
+            atomic_add(ptr++, weight);
+#else
             *ptr++ += weight;
+#endif
 
-            for (size_t i = 0; i < m_channel_count - 1; ++i)
+            for (size_t i = 0, e = m_channel_count - 1; i < e; ++i)
+            {
+#ifdef ATOMIC_UPDATES
+                atomic_add(ptr++, values[i] * weight);
+#else
                 *ptr++ += values[i] * weight;
+#endif
+            }
         }
     }
 }

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -50,6 +50,7 @@ namespace renderer  { class Assembly; }
 namespace renderer  { class AssemblyInstance; }
 namespace renderer  { class BSDF; }
 namespace renderer  { class BSSRDF; }
+namespace renderer  { class Camera; }
 namespace renderer  { class ColorEntity; }
 namespace renderer  { class EDF; }
 namespace renderer  { class EnvironmentEDF; }
@@ -58,15 +59,14 @@ namespace renderer  { class Light; }
 namespace renderer  { class Material; }
 namespace renderer  { class Object; }
 namespace renderer  { class ObjectInstance; }
-#ifdef APPLESEED_WITH_OSL
 namespace renderer  { class Shader; }
 namespace renderer  { class ShaderConnection; }
 namespace renderer  { class ShaderGroup; }
 namespace renderer  { class ShaderParam; }
-#endif
 namespace renderer  { class SurfaceShader; }
 namespace renderer  { class Texture; }
 namespace renderer  { class TextureInstance; }
+namespace renderer  { class Volume; }
 
 namespace renderer
 {
@@ -79,6 +79,7 @@ typedef TypedEntityMap<Assembly>                AssemblyContainer;
 typedef TypedEntityMap<AssemblyInstance>        AssemblyInstanceContainer;
 typedef TypedEntityVector<BSDF>                 BSDFContainer;
 typedef TypedEntityVector<BSSRDF>               BSSRDFContainer;
+typedef TypedEntityVector<Camera>               CameraContainer;
 typedef TypedEntityVector<ColorEntity>          ColorContainer;
 typedef TypedEntityVector<EDF>                  EDFContainer;
 typedef TypedEntityVector<EnvironmentEDF>       EnvironmentEDFContainer;
@@ -87,15 +88,14 @@ typedef TypedEntityVector<Light>                LightContainer;
 typedef TypedEntityVector<Material>             MaterialContainer;
 typedef TypedEntityVector<Object>               ObjectContainer;
 typedef TypedEntityVector<ObjectInstance>       ObjectInstanceContainer;
-#ifdef APPLESEED_WITH_OSL
 typedef TypedEntityVector<Shader>               ShaderContainer;
 typedef TypedEntityVector<ShaderConnection>     ShaderConnectionContainer;
 typedef TypedEntityVector<ShaderGroup>          ShaderGroupContainer;
 typedef TypedEntityVector<ShaderParam>          ShaderParamContainer;
-#endif
 typedef TypedEntityVector<SurfaceShader>        SurfaceShaderContainer;
 typedef TypedEntityVector<Texture>              TextureContainer;
 typedef TypedEntityVector<TextureInstance>      TextureInstanceContainer;
+typedef TypedEntityVector<Volume>               VolumeContainer;
 
 
 //
@@ -108,9 +108,9 @@ class ExceptionUnknownEntity
   public:
     explicit ExceptionUnknownEntity(
         const char*         entity_name,
-        const Entity*       context = 0);
+        const Entity*       context = nullptr);
 
-    virtual ~ExceptionUnknownEntity() throw() {}
+    ~ExceptionUnknownEntity() throw() override {}
 
     const std::string& get_context_path() const;
 
@@ -238,7 +238,7 @@ inline std::string make_unique_name(
 {
     int max_number = 0;
 
-    for (size_t i = 0; i < entity_names.size(); ++i)
+    for (size_t i = 0, e = entity_names.size(); i < e; ++i)
     {
         const std::string& entity_name = entity_names[i];
 

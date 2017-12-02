@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 // THE SOFTWARE.
 //
 
-// Project headers.
+// makefluffy headers.
 #include "commandlinehandler.h"
 
 // appleseed.shared headers.
@@ -37,16 +37,18 @@
 #include "renderer/api/object.h"
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
+#include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/cdf.h"
+#include "foundation/math/qmc.h"
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/mersennetwister.h"
 #include "foundation/math/sampling/mappings.h"
-#include "foundation/math/cdf.h"
-#include "foundation/math/qmc.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/filter.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
@@ -65,10 +67,10 @@
 
 using namespace appleseed::makefluffy;
 using namespace appleseed::shared;
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace
 {
@@ -133,7 +135,7 @@ namespace
             const GVector3& v2 = object.get_vertex(triangle.m_v2);
 
             // Compute the geometric normal to the triangle and the area of the triangle.
-            GVector3 normal = cross(v1 - v0, v2 - v0);
+            GVector3 normal = compute_triangle_normal(v0, v1, v2);
             const GScalar normal_norm = norm(normal);
             if (normal_norm == GScalar(0.0))
                 continue;
@@ -161,12 +163,12 @@ namespace
 
     void split_and_store(
         CurveObject&                object,
-        const CurveType3&           curve,
+        const Curve3Type&           curve,
         const size_t                split_count)
     {
         if (split_count > 0)
         {
-            CurveType3 child1, child2;
+            Curve3Type child1, child2;
             curve.split(child1, child2);
             split_and_store(object, child1, split_count - 1);
             split_and_store(object, child2, split_count - 1);
@@ -186,10 +188,10 @@ namespace
         extract_support_triangles(support_object, support_triangles, cdf);
 
         const string curve_object_name = string(support_object.get_name()) + "_curves";
-        auto_release_ptr<CurveObject> curve_object =
-            CurveObjectFactory::create(
+        auto_release_ptr<CurveObject> curve_object(
+            CurveObjectFactory().create(
                 curve_object_name.c_str(),
-                ParamArray());
+                ParamArray()));
 
         curve_object->reserve_curves3(params.m_curve_count);
 
@@ -201,7 +203,7 @@ namespace
         for (size_t i = 0; i < params.m_curve_count; ++i)
         {
             static const size_t Bases[] = { 2, 3 };
-            const GVector3 s = hammersley_sequence<double, 3>(Bases, params.m_curve_count, i);
+            const GVector3 s(hammersley_sequence<double, 3>(Bases, params.m_curve_count, i));
 
             const size_t triangle_index = cdf.sample(s[0]).first;
             const SupportTriangle& st = support_triangles[triangle_index];
@@ -225,7 +227,7 @@ namespace
                 widths[p] = lerp(params.m_root_width, params.m_tip_width, r);
             }
 
-            const CurveType3 curve(&points[0], &widths[0]);
+            const Curve3Type curve(&points[0], &widths[0]);
             split_and_store(curve_object.ref(), curve, params.m_split_count);
         }
 
@@ -250,11 +252,11 @@ namespace
 
             // Find the object referenced by this instance.
             const Object* object = object_instance.find_object();
-            if (object == 0)
+            if (object == nullptr)
                 continue;
 
             // Skip non-mesh objects.
-            if (strcmp(object->get_model(), MeshObjectFactory::get_model()) != 0)
+            if (strcmp(object->get_model(), MeshObjectFactory().get_model()) != 0)
                 continue;
 
             // Insert the (object, instance) pair into the mapping.
@@ -310,14 +312,32 @@ namespace
 
 int main(int argc, const char* argv[])
 {
+    // Construct the logger that will be used throughout the program.
     SuperLogger logger;
+
+    // Make sure this build can run on this host.
+    Application::check_compatibility_with_host(logger);
+
+    // Make sure appleseed is correctly installed.
     Application::check_installation(logger);
 
+    // Parse the command line.
     CommandLineHandler cl;
     cl.parse(argc, argv, logger);
 
-    // Initialize the renderer's logger.
-    global_logger().add_target(&logger.get_log_target());
+    // Load an apply settings from the settings file.
+    Dictionary settings;
+    Application::load_settings("appleseed.tools.xml", settings, logger);
+    logger.configure_from_settings(settings);
+
+    // Apply command line arguments.
+    cl.apply(logger);
+
+    // Configure the renderer's global logger.
+    // Must be done after settings have been loaded and the command line
+    // has been parsed, because these two operations may replace the log
+    // target of the global logger.
+    global_logger().initialize_from(logger);
 
     // Retrieve the command line arguments.
     const string& input_filepath = cl.m_filenames.values()[0];
@@ -325,8 +345,8 @@ int main(int argc, const char* argv[])
     const FluffParams params(cl);
 
     // Construct the schema file path.
-    const filesystem::path schema_filepath =
-          filesystem::path(Application::get_root_path())
+    const bf::path schema_filepath =
+          bf::path(Application::get_root_path())
         / "schemas"
         / "project.xsd";
 
@@ -338,7 +358,7 @@ int main(int argc, const char* argv[])
             schema_filepath.string().c_str()));
 
     // Bail out if the project couldn't be loaded.
-    if (project.get() == 0)
+    if (project.get() == nullptr)
         return 1;
 
     // Fluffify the project.

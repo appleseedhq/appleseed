@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -72,7 +72,7 @@ BENCHMARK_SUITE(Foundation_Math_Sampling_RNGSamplingContext)
         for (size_t i = 0; i < 32; ++i)
         {
             context.split_in_place(2, 1);
-            m_v += context.next_vector2<2>();
+            m_v += context.next2<Vector2d>();
         }
     }
 }
@@ -92,7 +92,7 @@ BENCHMARK_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
         for (size_t i = 0; i < 32; ++i)
         {
             context.split_in_place(2, 1);
-            m_v += context.next_vector2<2>();
+            m_v += context.next2<Vector2d>();
         }
     }
 
@@ -109,7 +109,7 @@ BENCHMARK_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
         for (size_t i = 0; i < 32; ++i)
         {
             context.split_in_place(2, 1);
-            m_v += context.next_vector2<2>();
+            m_v += context.next2<Vector2d>();
         }
     }
 }

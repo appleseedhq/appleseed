@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,20 +32,19 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/aov/shadingfragmentstack.h"
-#include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/shading/shadingcontext.h"
-#include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/sourceinputs.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 // Forward declarations.
 namespace renderer  { class PixelContext; }
@@ -69,13 +68,13 @@ namespace
     {
       public:
         ConstantSurfaceShader(
-            const char*             name,
-            const ParamArray&       params)
+            const char*                 name,
+            const ParamArray&           params)
           : SurfaceShader(name, params)
         {
             m_inputs.declare("color", InputFormatSpectralIlluminanceWithAlpha);
-            m_inputs.declare("color_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("alpha_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("color_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("alpha_multiplier", InputFormatFloat, "1.0");
 
             const string alpha_source = m_params.get_optional<string>("alpha_source", "color");
             if (alpha_source == "color")
@@ -92,43 +91,37 @@ namespace
             }
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual void evaluate(
-            SamplingContext&        sampling_context,
-            const PixelContext&     pixel_context,
-            const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point,
-            ShadingResult&          shading_result) const APPLESEED_OVERRIDE
+        void evaluate(
+            SamplingContext&            sampling_context,
+            const PixelContext&         pixel_context,
+            const ShadingContext&       shading_context,
+            const ShadingPoint&         shading_point,
+            AOVAccumulatorContainer&    aov_accumulators,
+            ShadingResult&              shading_result) const override
         {
             // Evaluate the shader inputs.
             InputValues values;
             m_inputs.evaluate(
                 shading_context.get_texture_cache(),
-                shading_point.get_uv(0),
+                SourceInputs(shading_point.get_uv(0)),
                 &values);
 
             // Initialize the shading result.
-            shading_result.m_color_space = ColorSpaceSpectral;
-            shading_result.m_main.m_color = values.m_color;
-            shading_result.m_aovs.m_color.set(0.0f);
-            shading_result.m_aovs.m_alpha.set(0.0f);
+            shading_result.m_main.rgb() = values.m_color.to_rgb(g_std_lighting_conditions);
 
             // This surface shader can override alpha.
             if (m_alpha_source == AlphaSourceColor)
-                shading_result.m_main.m_alpha = values.m_alpha;
-
-            // Apply multipliers.
-            shading_result.m_main.m_color *= static_cast<float>(values.m_color_multiplier);
-            shading_result.m_main.m_alpha *= static_cast<float>(values.m_alpha_multiplier);
+                shading_result.m_main.a = values.m_alpha[0] * values.m_alpha_multiplier;
         }
 
       private:
@@ -136,8 +129,8 @@ namespace
         {
             Spectrum    m_color;
             Alpha       m_alpha;
-            double      m_color_multiplier;
-            double      m_alpha_multiplier;
+            float       m_color_multiplier;
+            float       m_alpha_multiplier;
         };
 
         enum AlphaSource
@@ -154,6 +147,11 @@ namespace
 //
 // ConstantSurfaceShaderFactory class implementation.
 //
+
+void ConstantSurfaceShaderFactory::release()
+{
+    delete this;
+}
 
 const char* ConstantSurfaceShaderFactory::get_model() const
 {
@@ -222,13 +220,6 @@ DictionaryArray ConstantSurfaceShaderFactory::get_input_metadata() const
 auto_release_ptr<SurfaceShader> ConstantSurfaceShaderFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<SurfaceShader>(new ConstantSurfaceShader(name, params));
-}
-
-auto_release_ptr<SurfaceShader> ConstantSurfaceShaderFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<SurfaceShader>(new ConstantSurfaceShader(name, params));
 }

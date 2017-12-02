@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,10 +40,10 @@
 #include "boost/filesystem/path.hpp"
 
 using namespace appleseed::shared;
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace studio {
@@ -67,7 +67,12 @@ void ProjectManager::create_project()
     assert(result);
 }
 
-void ProjectManager::load_project(const string& filepath)
+bool ProjectManager::load_project(const std::string& filepath)
+{
+    return do_load_project(filepath);
+}
+
+void ProjectManager::load_project_async(const string& filepath)
 {
     m_is_loading = true;
 
@@ -87,14 +92,22 @@ bool ProjectManager::load_builtin_project(const string& name)
     return true;
 }
 
-bool ProjectManager::save_project()
-{
-    return do_save_project(m_project->get_path(), ProjectFileWriter::Defaults);
-}
-
 bool ProjectManager::save_project_as(const string& filepath)
 {
-    return do_save_project(filepath, ProjectFileWriter::OmitSearchPaths);
+    const bool successful = do_save_project(filepath, ProjectFileWriter::Defaults);
+
+    if (successful)
+    {
+        m_project->set_path(filepath.c_str());
+        m_dirty_flag = false;
+    }
+
+    return successful;
+}
+
+bool ProjectManager::pack_project_as(const string& filepath)
+{
+    return do_save_project(filepath, ProjectFileWriter::Defaults);
 }
 
 void ProjectManager::close_project()
@@ -110,7 +123,7 @@ Project* ProjectManager::get_project() const
 
 bool ProjectManager::is_project_open() const
 {
-    return m_project.get() != 0;
+    return m_project.get() != nullptr;
 }
 
 bool ProjectManager::is_project_loading() const
@@ -124,7 +137,7 @@ string ProjectManager::get_project_display_name() const
 
     if (m_project->has_path())
     {
-        const filesystem::path filepath(m_project->get_path());
+        const bf::path filepath(m_project->get_path());
         return filepath.filename().string();
     }
     else
@@ -161,8 +174,8 @@ void ProjectManager::slot_load_project_async_complete()
 
 string ProjectManager::get_project_schema_filepath()
 {
-    const filesystem::path schema_filepath =
-          filesystem::path(Application::get_root_path())
+    const bf::path schema_filepath =
+          bf::path(Application::get_root_path())
         / "schemas"
         / "project.xsd";
 
@@ -177,7 +190,7 @@ bool ProjectManager::do_load_project(const string& filepath)
     auto_release_ptr<Project> loaded_project(
         reader.read(filepath.c_str(), schema_filepath.c_str()));
 
-    if (loaded_project.get() == 0)
+    if (loaded_project.get() == nullptr)
         return false;
 
     m_project = loaded_project;
@@ -192,13 +205,7 @@ bool ProjectManager::do_save_project(
 {
     assert(m_project.get());
 
-    if (!ProjectFileWriter::write(m_project.ref(), filepath.c_str(), options))
-        return false;
-
-    m_project->set_path(filepath.c_str());
-    m_dirty_flag = false;
-
-    return true;
+    return ProjectFileWriter::write(m_project.ref(), filepath.c_str(), options);
 }
 
 }   // namespace studio

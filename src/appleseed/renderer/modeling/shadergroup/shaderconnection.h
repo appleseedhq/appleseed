@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -38,13 +38,8 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// OSL headers.
-#include "foundation/platform/oslheaderguards.h"
-BEGIN_OSL_INCLUDES
-#include "OSL/oslexec.h"
-END_OSL_INCLUDES
-
 // Forward declarations.
+namespace renderer  { class OSLShadingSystem; }
 namespace renderer  { class ShaderGroup; }
 
 namespace renderer
@@ -59,7 +54,7 @@ class APPLESEED_DLLSYMBOL ShaderConnection
 {
   public:
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
     // Return the source layer name.
     const char* get_src_layer() const;
@@ -87,10 +82,10 @@ class APPLESEED_DLLSYMBOL ShaderConnection
         const char* dst_param);
 
     // Destructor.
-    ~ShaderConnection();
+    ~ShaderConnection() override;
 
     // Add this connection to OSL's shading system.
-    bool add(OSL::ShadingSystem& shading_system);
+    bool add(OSLShadingSystem& shading_system);
 };
 
 }       // namespace renderer

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,13 +35,12 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
-#include "foundation/math/vector.h"
-#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cstddef>
 
 // Forward declarations.
+namespace renderer  { class ShadingPoint; }
 namespace renderer  { class Source; }
 namespace renderer  { class TextureCache; }
 
@@ -55,17 +54,17 @@ class NormalMappingModifier
     enum UpVector { UpVectorY, UpVectorZ };
 
     NormalMappingModifier(
-        const Source*                   map,
-        const UpVector                  up_vector);
+        const Source*               map,
+        const UpVector              up_vector);
 
-    virtual foundation::Basis3d modify(
-        TextureCache&                   texture_cache,
-        const foundation::Vector2d&     uv,
-        const foundation::Basis3d&      basis) const APPLESEED_OVERRIDE;
+    foundation::Basis3d modify(
+        TextureCache&               texture_cache,
+        const foundation::Basis3d&  basis,
+        const ShadingPoint&         shading_point) const override;
 
   private:
-    const Source*   m_map;
-    const size_t    m_y;
+    const Source*                   m_map;
+    const size_t                    m_y;
 };
 
 }       // namespace renderer

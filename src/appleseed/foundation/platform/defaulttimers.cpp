@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -108,6 +108,13 @@ uint64 DefaultProcessorTimer::read()
 // Other platforms.
 #else
 
+    //
+    // On Linux, we might want to use clock_gettime(CLOCK_REALTIME).
+    //
+    //   Andrei Alexandrescu, Writing Fast Code
+    //   https://youtu.be/vrfYLlR8X8k?t=1973
+    //
+
     return static_cast<uint64>(clock());
 
 #endif
@@ -144,7 +151,7 @@ uint64 DefaultWallclockTimer::read()
 #if defined __GNUC__
 
     timeval tv;
-    gettimeofday(&tv, 0);
+    gettimeofday(&tv, nullptr);
     return static_cast<uint64>(tv.tv_sec) * 1000000 + static_cast<uint64>(tv.tv_usec);
 
 // Windows.

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,9 +33,11 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/connectableentity.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/uid.h"
 
 // appleseed.main headers.
@@ -43,7 +45,8 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class InputEvaluator; }
+namespace renderer      { class BaseGroup; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 namespace renderer      { class ShadingContext; }
@@ -74,43 +77,60 @@ class APPLESEED_DLLSYMBOL EnvironmentEDF
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
+    // Access the transform sequence of the environment EDF.
+    TransformSequence& transform_sequence();
+    const TransformSequence& transform_sequence() const;
+
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
+    bool on_frame_begin(
         const Project&              project,
-        foundation::IAbortSwitch*   abort_switch = 0);
-
-    // This method is called once after rendering each frame.
-    virtual void on_frame_end(const Project& project);
+        const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
     // Sample the EDF and compute the emission direction, its probability
     // density and the value of the EDF for this direction.
     virtual void sample(
         const ShadingContext&       shading_context,
-        InputEvaluator&             input_evaluator,
-        const foundation::Vector2d& s,                          // sample in [0,1)^2
-        foundation::Vector3d&       outgoing,                   // world space emission direction, unit-length
+        const foundation::Vector2f& s,                          // sample in [0,1)^2
+        foundation::Vector3f&       outgoing,                   // world space emission direction, unit-length
         Spectrum&                   value,                      // EDF value for this direction
-        double&                     probability) const = 0;     // PDF value
+        float&                      probability) const = 0;     // PDF value
 
     // Evaluate the EDF for a given emission direction.
     virtual void evaluate(
         const ShadingContext&       shading_context,
-        InputEvaluator&             input_evaluator,
-        const foundation::Vector3d& outgoing,                   // world space emission direction, unit-length
+        const foundation::Vector3f& outgoing,                   // world space emission direction, unit-length
         Spectrum&                   value) const = 0;           // EDF value for this direction
     virtual void evaluate(
         const ShadingContext&       shading_context,
-        InputEvaluator&             input_evaluator,
-        const foundation::Vector3d& outgoing,                   // world space emission direction, unit-length
+        const foundation::Vector3f& outgoing,                   // world space emission direction, unit-length
         Spectrum&                   value,                      // EDF value for this direction
-        double&                     probability) const = 0;     // PDF value
+        float&                      probability) const = 0;     // PDF value
 
     // Evaluate the PDF for a given emission direction.
-    virtual double evaluate_pdf(
-        InputEvaluator&             input_evaluator,
-        const foundation::Vector3d& outgoing) const = 0;        // world space emission direction, unit-length
+    virtual float evaluate_pdf(
+        const foundation::Vector3f& outgoing) const = 0;        // world space emission direction, unit-length
+
+  protected:
+    TransformSequence m_transform_sequence;
 };
+
+
+//
+// EnvironmentEDF class implementation.
+//
+
+inline TransformSequence& EnvironmentEDF::transform_sequence()
+{
+    return m_transform_sequence;
+}
+
+inline const TransformSequence& EnvironmentEDF::transform_sequence() const
+{
+    return m_transform_sequence;
+}
 
 }       // namespace renderer
 

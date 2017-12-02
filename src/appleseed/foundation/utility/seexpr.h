@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2016-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,9 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // Boost headers.
 #include "boost/regex.hpp"
 
@@ -45,28 +42,6 @@
 
 namespace foundation
 {
-
-//
-// Checks the validity of a SeExpr expression.
-//
-
-class APPLESEED_DLLSYMBOL SeExprValidator
-  : public NonCopyable
-{
-  public:
-    explicit SeExprValidator(const char* expression);
-
-    ~SeExprValidator();
-
-    bool is_valid() const;
-
-    const char* get_parse_error() const;
-
-  private:
-    struct Impl;
-    Impl* impl;
-};
-
 
 //
 // Extracts all file paths from a valid SeExpr expression.

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,7 @@
 #include "mainwindow/project/entitycreatorbase.h"
 #include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/entityitembase.h"
+#include "mainwindow/project/ientityvalueprovider.h"
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/rendering/renderingmanager.h"
@@ -68,6 +69,7 @@ namespace studio {
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 class EntityItem
   : public EntityItemBase<Entity>
+  , public IEntityValueProvider
   , private EntityCreatorBase
 {
   public:
@@ -86,10 +88,10 @@ class EntityItem
     ParentEntity&               m_parent;
     CollectionItem*             m_collection_item;
 
-    virtual void slot_edit_accepted(foundation::Dictionary values) APPLESEED_OVERRIDE;
+    void slot_edit_accepted(foundation::Dictionary values) override;
     void edit(const foundation::Dictionary& values);
 
-    virtual void delete_multiple(const QList<ItemBase*>& items) APPLESEED_OVERRIDE;
+    void delete_multiple(const QList<ItemBase*>& items) override;
     void do_delete();
 
   private:
@@ -139,7 +141,7 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::slot_edit_accepted(founda
     if (Base::m_editor_context.m_rendering_manager.is_rendering())
     {
         Base::m_editor_context.m_rendering_manager.schedule(
-            std::auto_ptr<RenderingManager::IScheduledAction>(
+            std::unique_ptr<RenderingManager::IScheduledAction>(
                 new EntityEditionAction<EntityItem>(this, values)));
 
         Base::m_editor_context.m_rendering_manager.reinitialize_rendering();
@@ -182,7 +184,7 @@ template <typename Entity, typename ParentEntity, typename CollectionItem>
 void EntityItem<Entity, ParentEntity, CollectionItem>::delete_multiple(const QList<ItemBase*>& items)
 {
     Base::m_editor_context.m_rendering_manager.schedule_or_execute(
-        std::auto_ptr<RenderingManager::IScheduledAction>(
+        std::unique_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<EntityItem>(
                 qlist_static_cast<EntityItem*>(items))));
 }

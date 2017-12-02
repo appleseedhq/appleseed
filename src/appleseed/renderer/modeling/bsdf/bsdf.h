@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
-#include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/entity/connectableentity.h"
 
 // appleseed.foundation headers.
@@ -48,11 +47,10 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class Assembly; }
-namespace renderer      { class InputEvaluator; }
+namespace foundation    { class Arena; }
+namespace renderer      { class BSDFSample; }
 namespace renderer      { class ParamArray; }
-namespace renderer      { class Project; }
+namespace renderer      { class DirectShadingComponents; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 
@@ -92,14 +90,14 @@ class APPLESEED_DLLSYMBOL BSDF
     // BSDF types.
     enum Type
     {
-        Reflective          = 1 << 0,
-        Transmissive        = 1 << 1,
-        AllBSDFTypes        = Reflective | Transmissive
+        Reflective   = 1 << 0,
+        Transmissive = 1 << 1,
+        AllBSDFTypes = Reflective | Transmissive
     };
 
     // Use a particular (negative) value as the probability density
     // of the Dirac Delta in order to detect incorrect usages.
-    static const double DiracDelta;
+    static const float DiracDelta;
 
     // Constructor.
     BSDF(
@@ -124,87 +122,76 @@ class APPLESEED_DLLSYMBOL BSDF
     bool is_purely_diffuse_or_glossy() const;
     bool is_purely_glossy_or_specular() const;
 
-    // This method is called once before rendering each frame.
-    // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
-        const Project&              project,
-        const Assembly&             assembly,
-        foundation::IAbortSwitch*   abort_switch = 0);
-
-    // This method is called once after rendering each frame.
-    virtual void on_frame_end(
-        const Project&              project,
-        const Assembly&             assembly);
-
-    // Compute the cumulated size in bytes of the values of all inputs of
-    // this BSDF and its child BSDFs, if any.
-    virtual size_t compute_input_data_size(
-        const Assembly&             assembly) const;
+    // Return the size in bytes to allocate for the input values of this BSDF
+    // and its precomputed values, if any. By default, enough space is allocated
+    // for the inputs alone, i.e. this returns get_inputs().compute_data_size().
+    // If a BSDF stores additional data such as precomputed values in its input
+    // block, it must override this method and return the correct size.
+    // If evaluate_inputs() is overridden, then this method is irrelevant.
+    virtual size_t compute_input_data_size() const;
 
     // Evaluate the inputs of this BSDF and of its child BSDFs, if any.
-    // Input values are stored in the input evaluator. This method is called
-    // once per shading point and pair of incoming/outgoing directions.
-    virtual void evaluate_inputs(
+    virtual void* evaluate_inputs(
         const ShadingContext&       shading_context,
-        InputEvaluator&             input_evaluator,
-        const ShadingPoint&         shading_point,
-        const size_t                offset = 0) const;
+        const ShadingPoint&         shading_point) const;
 
-    // Perform any precomputation needed for this BSDF's input values.
+    // Precompute data based on already evaluated input values.
     virtual void prepare_inputs(
+        foundation::Arena&          arena,
         const ShadingPoint&         shading_point,
         void*                       data) const;
 
     // Given an outgoing direction, sample the BSDF and compute the incoming
     // direction, its probability density and the value of the BSDF for this
     // pair of directions. Return the scattering mode. If the scattering mode
-    // is Absorption, the BSDF and PDF values are undefined.
+    // is None, the BSDF and PDF values are undefined.
     virtual void sample(
         SamplingContext&            sampling_context,
         const void*                 data,                       // input values
         const bool                  adjoint,                    // if true, use the adjoint scattering kernel
         const bool                  cosine_mult,                // if true, multiply by |cos(incoming, normal)|
+        const int                   modes,                      // allowed scattering modes
         BSDFSample&                 sample) const = 0;
 
     // Evaluate the BSDF for a given pair of directions. Return the PDF value
     // for this pair of directions. If the returned probability is zero, the
     // BSDF value is undefined.
-    virtual double evaluate(
+    virtual float evaluate(
         const void*                 data,                       // input values
         const bool                  adjoint,                    // if true, use the adjoint scattering kernel
         const bool                  cosine_mult,                // if true, multiply by |cos(incoming, normal)|
-        const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
-        const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
-        const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length
-        const foundation::Vector3d& incoming,                   // world space incoming direction, unit-length
-        const int                   modes,                      // selected scattering modes
-        Spectrum&                   value) const = 0;           // BSDF value, or BSDF value * |cos(incoming, normal)|
+        const foundation::Vector3f& geometric_normal,           // world space geometric normal, unit-length
+        const foundation::Basis3f&  shading_basis,              // world space orthonormal basis around shading normal
+        const foundation::Vector3f& outgoing,                   // world space outgoing direction, unit-length
+        const foundation::Vector3f& incoming,                   // world space incoming direction, unit-length
+        const int                   modes,                      // enabled scattering modes
+        DirectShadingComponents&    value) const = 0;           // BSDF value, or BSDF value * |cos(incoming, normal)|
 
     // Evaluate the PDF for a given pair of directions.
-    virtual double evaluate_pdf(
+    virtual float evaluate_pdf(
         const void*                 data,                       // input values
-        const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
-        const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
-        const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length
-        const foundation::Vector3d& incoming,                   // world space incoming direction, unit-length
-        const int                   modes) const = 0;           // selected scattering modes
+        const bool                  adjoint,                    // if true, use the adjoint scattering kernel
+        const foundation::Vector3f& geometric_normal,           // world space geometric normal, unit-length
+        const foundation::Basis3f&  shading_basis,              // world space orthonormal basis around shading normal
+        const foundation::Vector3f& outgoing,                   // world space outgoing direction, unit-length
+        const foundation::Vector3f& incoming,                   // world space incoming direction, unit-length
+        const int                   modes) const = 0;           // enabled scattering modes
 
     // Compute the index of refraction of the interior medium.
-    virtual double sample_ior(
+    virtual float sample_ior(
         SamplingContext&            sampling_context,
         const void*                 data) const;
 
     // Compute absorption of the interior medium over a given distance.
     virtual void compute_absorption(
         const void*                 data,
-        const double                distance,
+        const float                 distance,
         Spectrum&                   absorption) const;
 
-  protected:
     // Force a given direction to lie above a surface described by its normal vector.
-    static foundation::Vector3d force_above_surface(
-        const foundation::Vector3d& direction,
-        const foundation::Vector3d& normal);
+    static foundation::Vector3f force_above_surface(
+        const foundation::Vector3f& direction,
+        const foundation::Vector3f& normal);
 
   private:
     const Type  m_type;
@@ -251,17 +238,17 @@ inline bool BSDF::is_purely_glossy_or_specular() const
     return m_modes == (ScatteringMode::Glossy | ScatteringMode::Specular);
 }
 
-inline foundation::Vector3d BSDF::force_above_surface(
-    const foundation::Vector3d&     direction,
-    const foundation::Vector3d&     normal)
+inline foundation::Vector3f BSDF::force_above_surface(
+    const foundation::Vector3f&     direction,
+    const foundation::Vector3f&     normal)
 {
-    const double Eps = 1.0e-4;
+    const float Eps = 1.0e-4f;
 
-    const double cos_theta = foundation::dot(direction, normal);
-    const double correction = Eps - cos_theta;
+    const float cos_theta = foundation::dot(direction, normal);
+    const float correction = Eps - cos_theta;
 
     return
-        correction > 0.0
+        correction > 0.0f
             ? foundation::normalize(direction + correction * normal)
             : direction;
 }

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/sourceinputs.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -93,9 +94,9 @@ namespace
         {
             switch (m_format)
             {
-              case InputFormatScalar:
-                size = align_to<double>(size);
-                size += sizeof(double);
+              case InputFormatFloat:
+                size = align_to<float>(size);
+                size += sizeof(float);
                 break;
 
               case InputFormatSpectralReflectance:
@@ -122,26 +123,40 @@ namespace
         }
 
         uint8* evaluate(
-            TextureCache&       texture_cache,
-            const Vector2d&     uv,
-            uint8*              ptr) const
+            TextureCache&               texture_cache,
+            const SourceInputs&         source_inputs,
+            uint8*                      ptr) const
         {
             switch (m_format)
             {
-              case InputFormatScalar:
+              case InputFormatFloat:
                 {
-                    ptr = align_to<double>(ptr);
-                    double* out_scalar = reinterpret_cast<double*>(ptr);
+                    ptr = align_to<float>(ptr);
+                    float* out_scalar = reinterpret_cast<float*>(ptr);
 
                     if (m_source)
-                        m_source->evaluate(texture_cache, uv, *out_scalar);
-                    else *out_scalar = 0.0;
+                        m_source->evaluate(texture_cache, source_inputs, *out_scalar);
+                    else *out_scalar = 0.0f;
 
-                    ptr += sizeof(double);
+                    ptr += sizeof(float);
                 }
                 break;
 
               case InputFormatSpectralReflectance:
+                {
+                    ptr = align_to<Spectrum>(ptr);
+                    Spectrum* out_spectrum = reinterpret_cast<Spectrum*>(ptr);
+
+                    new (out_spectrum) Spectrum();
+
+                    if (m_source)
+                        m_source->evaluate(texture_cache, source_inputs, *out_spectrum);
+                    else out_spectrum->set(0.0f);
+
+                    ptr += sizeof(Spectrum);
+                }
+                break;
+
               case InputFormatSpectralIlluminance:
                 {
                     ptr = align_to<Spectrum>(ptr);
@@ -150,15 +165,35 @@ namespace
                     new (out_spectrum) Spectrum();
 
                     if (m_source)
-                        m_source->evaluate(texture_cache, uv, *out_spectrum);
-                    else
-                        out_spectrum->set(0.0f);
+                        m_source->evaluate(texture_cache, source_inputs, *out_spectrum);
+                    else out_spectrum->set(0.0f);
 
                     ptr += sizeof(Spectrum);
                 }
                 break;
 
               case InputFormatSpectralReflectanceWithAlpha:
+                {
+                    ptr = align_to<Spectrum>(ptr);
+                    Spectrum* out_spectrum = reinterpret_cast<Spectrum*>(ptr);
+                    Alpha* out_alpha = reinterpret_cast<Alpha*>(ptr + sizeof(Spectrum));
+
+                    new (out_spectrum) Spectrum();
+                    new (out_alpha) Alpha();
+
+                    if (m_source)
+                        m_source->evaluate(texture_cache, source_inputs, *out_spectrum, *out_alpha);
+                    else
+                    {
+                        out_spectrum->set(0.0f);
+                        out_alpha->set(0.0f);
+                    }
+
+                    ptr += sizeof(Spectrum);
+                    ptr += sizeof(Alpha);
+                }
+                break;
+
               case InputFormatSpectralIlluminanceWithAlpha:
                 {
                     ptr = align_to<Spectrum>(ptr);
@@ -169,7 +204,7 @@ namespace
                     new (out_alpha) Alpha();
 
                     if (m_source)
-                        m_source->evaluate(texture_cache, uv, *out_spectrum, *out_alpha);
+                        m_source->evaluate(texture_cache, source_inputs, *out_spectrum, *out_alpha);
                     else
                     {
                         out_spectrum->set(0.0f);
@@ -195,20 +230,34 @@ namespace
         {
             switch (m_format)
             {
-              case InputFormatScalar:
+              case InputFormatFloat:
                 {
-                    ptr = align_to<double>(ptr);
-                    double* out_scalar = reinterpret_cast<double*>(ptr);
+                    ptr = align_to<float>(ptr);
+                    float* out_scalar = reinterpret_cast<float*>(ptr);
 
                     if (m_source && m_source->is_uniform())
                         m_source->evaluate_uniform(*out_scalar);
-                    else *out_scalar = 0.0;
+                    else *out_scalar = 0.0f;
 
-                    ptr += sizeof(double);
+                    ptr += sizeof(float);
                 }
                 break;
 
               case InputFormatSpectralReflectance:
+                {
+                    ptr = align_to<Spectrum>(ptr);
+                    Spectrum* out_spectrum = reinterpret_cast<Spectrum*>(ptr);
+
+                    new (out_spectrum) Spectrum();
+
+                    if (m_source && m_source->is_uniform())
+                        m_source->evaluate_uniform(*out_spectrum);
+                    else out_spectrum->set(0.0f);
+
+                    ptr += sizeof(Spectrum);
+                }
+                break;
+
               case InputFormatSpectralIlluminance:
                 {
                     ptr = align_to<Spectrum>(ptr);
@@ -218,14 +267,34 @@ namespace
 
                     if (m_source && m_source->is_uniform())
                         m_source->evaluate_uniform(*out_spectrum);
-                    else
-                        out_spectrum->set(0.0f);
+                    else out_spectrum->set(0.0f);
 
                     ptr += sizeof(Spectrum);
                 }
                 break;
 
               case InputFormatSpectralReflectanceWithAlpha:
+                {
+                    ptr = align_to<Spectrum>(ptr);
+                    Spectrum* out_spectrum = reinterpret_cast<Spectrum*>(ptr);
+                    Alpha* out_alpha = reinterpret_cast<Alpha*>(ptr + sizeof(Spectrum));
+
+                    new (out_spectrum) Spectrum();
+                    new (out_alpha) Alpha();
+
+                    if (m_source && m_source->is_uniform())
+                        m_source->evaluate_uniform(*out_spectrum, *out_alpha);
+                    else
+                    {
+                        out_spectrum->set(0.0f);
+                        out_alpha->set(0.0f);
+                    }
+
+                    ptr += sizeof(Spectrum);
+                    ptr += sizeof(Alpha);
+                }
+                break;
+
               case InputFormatSpectralIlluminanceWithAlpha:
                 {
                     ptr = align_to<Spectrum>(ptr);
@@ -295,8 +364,8 @@ void InputArray::declare(
     if (default_value)
         input.m_default_value = default_value;
 
-    input.m_source = 0;
-    input.m_entity = 0;
+    input.m_source = nullptr;
+    input.m_entity = nullptr;
 
     impl->m_inputs.push_back(input);
 }
@@ -361,7 +430,7 @@ Source* InputArray::source(const char* name) const
             return i->m_source;
     }
 
-    return 0;
+    return nullptr;
 }
 
 Entity* InputArray::get_entity(const char* name) const
@@ -374,7 +443,7 @@ Entity* InputArray::get_entity(const char* name) const
             return i->m_entity;
     }
 
-    return 0;
+    return nullptr;
 }
 
 size_t InputArray::compute_data_size() const
@@ -390,30 +459,28 @@ size_t InputArray::compute_data_size() const
 }
 
 void InputArray::evaluate(
-    TextureCache&       texture_cache,
-    const Vector2d&     uv,
-    void*               values,
-    const size_t        offset) const
+    TextureCache&               texture_cache,
+    const SourceInputs&         source_inputs,
+    void*                       values) const
 {
     assert(values);
 
-    uint8* ptr = static_cast<uint8*>(values) + offset;
+    uint8* ptr = static_cast<uint8*>(values);
 
 #ifdef APPLESEED_USE_SSE
     assert(is_aligned(ptr, 16));
 #endif
 
     for (const_each<InputVector> i = impl->m_inputs; i; ++i)
-        ptr = i->evaluate(texture_cache, uv, ptr);
+        ptr = i->evaluate(texture_cache, source_inputs, ptr);
 }
 
 void InputArray::evaluate_uniforms(
-    void*               values,
-    const size_t        offset) const
+    void*               values) const
 {
     assert(values);
 
-    uint8* ptr = static_cast<uint8*>(values) + offset;
+    uint8* ptr = static_cast<uint8*>(values);
 
 #ifdef APPLESEED_USE_SSE
     assert(is_aligned(ptr, 16));

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,10 +32,10 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/lighting/lightsampler.h"
+#include "renderer/kernel/lighting/backwardlightsampler.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -48,12 +48,11 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace renderer  { class BSDF; }
 namespace renderer  { class BSSRDF; }
 namespace renderer  { class EDF; }
 namespace renderer  { class Material; }
 namespace renderer  { class ShadingContext; }
-namespace renderer  { class ShadingRay; }
-namespace renderer  { class TextureCache; }
 
 namespace renderer
 {
@@ -71,10 +70,12 @@ class PathVertex
 
     // Path properties.
     size_t                      m_path_length;
+    int                         m_scattering_modes;
     Spectrum                    m_throughput;
 
     // Current vertex properties.
     const ShadingPoint*         m_shading_point;
+    const ShadingPoint*         m_parent_shading_point;
     foundation::Dual3d          m_outgoing;
     double                      m_cos_on;       // cos(outgoing direction, shading normal)
     const EDF*                  m_edf;
@@ -82,14 +83,14 @@ class PathVertex
     const void*                 m_bsdf_data;
     const BSSRDF*               m_bssrdf;
     const void*                 m_bssrdf_data;
+    const void*                 m_volume_data;
 
-    // Sampled incoming point for subsurface scattering.
-    const ShadingPoint*         m_incoming_point;
-    double                      m_incoming_point_prob;
-
-    // Properties of the last scattering event (for multiple importance sampling).
+    // Properties of the scattering event leading to this vertex.
     ScatteringMode::Mode        m_prev_mode;
-    double                      m_prev_prob;
+    float                       m_prev_prob;
+
+    // AOV properties.
+    ScatteringMode::Mode        m_aov_mode;
 
     // Constructor.
     explicit PathVertex(SamplingContext& sampling_context);
@@ -97,7 +98,7 @@ class PathVertex
     // Forward the most useful methods to the shading point.
     const ShadingRay& get_ray() const;
     const ShadingRay::Time& get_time() const;
-    const foundation::Vector2d& get_uv(const size_t uvset) const;
+    const foundation::Vector2f& get_uv(const size_t uvset) const;
     const foundation::Vector3d& get_point() const;
     const foundation::Vector3d& get_geometric_normal() const;
     const foundation::Vector3d& get_shading_normal() const;
@@ -107,14 +108,13 @@ class PathVertex
     // Compute the radiance emitted at this vertex. Only call when there is an EDF (when m_edf is set).
     void compute_emitted_radiance(
         const ShadingContext&   shading_context,
-        TextureCache&           texture_cache,
         Spectrum&               radiance) const;
 
-    // Return the probability density wrt. surface area mesure of reaching this vertex via BSDF sampling.
-    double get_bsdf_prob_area() const;
+    // Return the probability density wrt. surface area measure of reaching this vertex via BSDF sampling.
+    float get_bsdf_prob_area() const;
 
-    // Return the probability density wrt. surface area mesure of reaching this vertex via light sampling.
-    double get_light_prob_area(const LightSampler& light_sampler) const;
+    // Return the probability density wrt. surface area measure of reaching this vertex via light sampling.
+    float get_light_prob_area(const BackwardLightSampler& light_sampler) const;
 };
 
 
@@ -137,7 +137,7 @@ inline const ShadingRay::Time& PathVertex::get_time() const
     return m_shading_point->get_time();
 }
 
-inline const foundation::Vector2d& PathVertex::get_uv(const size_t uvset) const
+inline const foundation::Vector2f& PathVertex::get_uv(const size_t uvset) const
 {
     return m_shading_point->get_uv(uvset);
 }
@@ -167,21 +167,21 @@ inline const Material* PathVertex::get_material() const
     return m_shading_point->get_material();
 }
 
-inline double PathVertex::get_bsdf_prob_area() const
+inline float PathVertex::get_bsdf_prob_area() const
 {
     // Make sure we're coming from a valid scattering event.
-    assert(m_prev_mode != ScatteringMode::Absorption);
-    assert(m_prev_prob > 0.0);
+    assert(m_prev_mode != ScatteringMode::None);
+    assert(m_prev_prob > 0.0f);
 
     // Veach: 8.2.2.2 eq. 8.10.
     const double d = m_shading_point->get_distance();
-    const double g = m_cos_on / (d * d);
+    const float g = static_cast<float>(m_cos_on / (d * d));
     return m_prev_prob * g;
 }
 
-inline double PathVertex::get_light_prob_area(const LightSampler& light_sampler) const
+inline float PathVertex::get_light_prob_area(const BackwardLightSampler& light_sampler) const
 {
-    return light_sampler.evaluate_pdf(*m_shading_point);
+    return light_sampler.evaluate_pdf(*m_shading_point, *m_parent_shading_point);
 }
 
 }       // namespace renderer

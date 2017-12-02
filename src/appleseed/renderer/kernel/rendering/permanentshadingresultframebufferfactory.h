@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -57,19 +57,19 @@ class PermanentShadingResultFrameBufferFactory
         const Frame&                frame);
 
     // Destructor.
-    ~PermanentShadingResultFrameBufferFactory();
+    ~PermanentShadingResultFrameBufferFactory() override;
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
-    virtual ShadingResultFrameBuffer* create(
+    ShadingResultFrameBuffer* create(
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y,
-        const foundation::AABB2u&   tile_bbox) APPLESEED_OVERRIDE;
+        const foundation::AABB2u&   tile_bbox) override;
 
-    virtual void destroy(
-        ShadingResultFrameBuffer*   framebuffer) APPLESEED_OVERRIDE;
+    void destroy(
+        ShadingResultFrameBuffer*   framebuffer) override;
 
   private:
     std::vector<ShadingResultFrameBuffer*> m_framebuffers;

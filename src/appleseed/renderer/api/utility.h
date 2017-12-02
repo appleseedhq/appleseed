@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,8 +33,12 @@
 // API headers.
 #include "renderer/utility/bbox.h"
 #include "renderer/utility/paramarray.h"
-#include "renderer/utility/samplingmode.h"
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
+#include "renderer/utility/seexpr.h"
+#endif
+#include "renderer/utility/settingsparsing.h"
 #include "renderer/utility/testutils.h"
 #include "renderer/utility/transformsequence.h"
+#include "renderer/utility/triangle.h"
 
 #endif  // !APPLESEED_RENDERER_API_UTILITY_H

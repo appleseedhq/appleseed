@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 #define APPLESEED_RENDERER_KERNEL_RENDERING_SAMPLE_H
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
 #include "foundation/math/vector.h"
 
 namespace renderer
@@ -40,7 +41,7 @@ class Sample
 {
   public:
     foundation::Vector2f    m_position;
-    float                   m_values[5];    // RGBA + Z
+    foundation::Color4f     m_color;
 };
 
 }       // namespace renderer

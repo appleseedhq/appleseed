@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -54,14 +54,14 @@ class APPLESEED_DLLSYMBOL GenericMeshFileReader
     explicit GenericMeshFileReader(const char* filename);
 
     // Destructor.
-    virtual ~GenericMeshFileReader();
+    ~GenericMeshFileReader() override;
 
     // Get/set options for the Wavefront OBJ mesh file reader.
     int get_obj_options() const;
     void set_obj_options(const int obj_options);
 
     // Read a mesh.
-    virtual void read(IMeshBuilder& builder);
+    void read(IMeshBuilder& builder) override;
 
   private:
     struct Impl;

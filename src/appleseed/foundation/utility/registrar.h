@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,11 +32,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/foreach.h"
 
 // Standard headers.
 #include <map>
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -57,8 +57,11 @@ class Registrar
     // Destructor.
     ~Registrar();
 
+    // Remove all items.
+    void clear();
+
     // Insert an item, replacing any existing item with the same name.
-    void insert(const std::string& name, std::auto_ptr<T> item);
+    void insert(const std::string& name, auto_release_ptr<T> item);
 
     // Lookup an item. Returns 0 if the item could not be found.
     T* lookup(const std::string& name) const;
@@ -78,18 +81,26 @@ class Registrar
 template <typename T>
 Registrar<T>::~Registrar()
 {
-    for (const_each<Items> i = m_items; i; ++i)
-        delete i->second;
+    clear();
 }
 
 template <typename T>
-void Registrar<T>::insert(const std::string& name, std::auto_ptr<T> item)
+void Registrar<T>::clear()
+{
+    for (const_each<Items> i = m_items; i; ++i)
+        i->second->release();
+
+    m_items.clear();
+}
+
+template <typename T>
+void Registrar<T>::insert(const std::string& name, auto_release_ptr<T> item)
 {
     const typename Items::iterator i = m_items.find(name);
 
     if (i != m_items.end())
     {
-        delete i->second;
+        i->second->release();
         m_items.erase(i);
     }
 
@@ -101,7 +112,7 @@ T* Registrar<T>::lookup(const std::string& name) const
 {
     const typename Items::const_iterator i = m_items.find(name);
 
-    return i == m_items.end() ? 0 : i->second;
+    return i == m_items.end() ? nullptr : i->second;
 }
 
 template <typename T>

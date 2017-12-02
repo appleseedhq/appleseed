@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -61,7 +61,7 @@ class PixelColorTracker
         const MouseCoordinatesTracker&      mouse_tracker,
         const renderer::Project&            project);
 
-    ~PixelColorTracker();
+    ~PixelColorTracker() override;
 
     void set_enabled(const bool enabled);
 
@@ -75,7 +75,7 @@ class PixelColorTracker
     const renderer::Project&                m_project;
     bool                                    m_enabled;
 
-    virtual bool eventFilter(QObject* object, QEvent* event) APPLESEED_OVERRIDE;
+    bool eventFilter(QObject* object, QEvent* event) override;
 
     void clear_rgba_labels() const;
     void set_rgba_labels(const QPoint& point) const;

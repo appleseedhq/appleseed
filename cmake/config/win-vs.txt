@@ -1,0 +1,439 @@
+
+#
+# This source file is part of appleseed.
+# Visit http://appleseedhq.net/ for additional information and resources.
+#
+# This software is released under the MIT license.
+#
+# Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
+# Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+
+
+#--------------------------------------------------------------------------------------------------
+# Microsoft Visual Studio on Windows, generating 32-bit or 64-bit binaries.
+#--------------------------------------------------------------------------------------------------
+
+set (platform "win-vs")
+
+
+#--------------------------------------------------------------------------------------------------
+# Extension of executable files.
+#--------------------------------------------------------------------------------------------------
+
+set (exe_ext ".exe")
+
+
+#--------------------------------------------------------------------------------------------------
+# Tools.
+#--------------------------------------------------------------------------------------------------
+
+set (git_command "git")
+
+
+#--------------------------------------------------------------------------------------------------
+# Preprocessor definitions.
+#--------------------------------------------------------------------------------------------------
+
+# Definitions common to all configurations.
+set (preprocessor_definitions_common
+    WIN32
+    _CRT_SECURE_NO_WARNINGS
+    _SCL_SECURE_NO_WARNINGS
+    _USRDLL
+    _WINDOWS
+    XERCES_STATIC_LIBRARY                   # link statically against Xerces-C
+    BOOST_PYTHON_STATIC_LIB                 # link statically against Boost.Python
+)
+
+# Release configuration.
+set (preprocessor_definitions_release
+    _SECURE_SCL=0
+)
+
+
+#--------------------------------------------------------------------------------------------------
+# Compilation/linking flags.
+#--------------------------------------------------------------------------------------------------
+
+# Flags common to all configurations.
+set (c_compiler_flags_common
+    /MP                                     # Multi-processor Compilation
+    /GF                                     # Enable String Pooling
+)
+if (WARNINGS_AS_ERRORS)
+    set (c_compiler_flags_common
+         ${c_compiler_flags_common}
+         /WX                                # Treat Warnings As Errors
+    )
+endif ()
+set (cxx_compiler_flags_common
+    /wd4068                                 # Disable warning C4068: unknown pragma
+    /wd4091                                 # Disable warning C4091: 'typedef' : ignored on left of X when no variable is declared
+    /wd4290                                 # Disable warning C4290: C++ exception specification ignored except to indicate a function is not __declspec(nothrow)
+    /wd4345                                 # Disable warning C4345: behavior change: an object of POD type constructed with an initializer of the form () will be default-initialized
+    /wd4355                                 # Disable warning C4355: 'this' : used in base member initializer list
+    /wd4503                                 # Disable warning C4503: decorated name length exceeded, name was truncated
+)
+if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set (c_compiler_flags_common
+        ${c_compiler_flags_common}
+        /bigobj                             # Increase Number of Sections in .Obj file
+    )
+endif ()
+set (exe_linker_flags_common
+)
+set (shared_lib_linker_flags_common
+    ${exe_linker_flags_common}
+)
+
+# Debug configuration.
+if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set (c_compiler_flags_debug
+        /Zi                                 # set Debug Information Format to Program Database
+    )
+else ()
+    set (c_compiler_flags_debug
+        /ZI                                 # set Debug Information Format to Program Database for Edit & Continue
+    )
+endif ()
+set (c_compiler_flags_debug
+    ${c_compiler_flags_debug}
+    /MDd                                    # set Runtime Library to Multi-threaded Debug DLL
+)
+
+# Release configuration.
+set (c_compiler_flags_release
+    /Zi                                     # set Debug Information Format to Program Database
+    /Ox                                     # Full Optimization
+    /Ob2                                    # set Inline Function Expansion to Any Suitable
+    /Oi                                     # Enable Intrinsic Functions
+    /Ot                                     # Favor Fast Code
+    /Oy                                     # Omit Frame Pointers
+    /MD                                     # set Runtime Library to Multi-threaded DLL
+    /GS-                                    # set Buffer Security Check to No
+)
+if (CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set (c_compiler_flags_release
+        ${c_compiler_flags_release}
+        /fp:fast                            # set Floating Point Model to Fast, in 32-bit builds only because of a bug in VS 2010-2013:
+    )                                       # http://stackoverflow.com/questions/15786606/vc-optimisations-break-comparisons-with-nan
+    if (USE_SSE)
+        set (c_compiler_flags_release
+            ${c_compiler_flags_release}
+            /arch:SSE2                      # Streaming SIMD Extensions 2 (always enabled in 64-bit builds)
+        )
+    endif ()
+endif ()
+if (USE_AVX)
+    set (c_compiler_flags_release
+        ${c_compiler_flags_release}
+        /arch:AVX                           # Advanced Vector Extensions
+    )
+endif ()
+if (USE_AVX2)
+    set (c_compiler_flags_release
+        ${c_compiler_flags_release}
+        /arch:AVX2                          # Advanced Vector Extensions 2
+    )
+endif ()
+set (exe_linker_flags_release
+    /DEBUG                                  # Generate Debug Info
+    /OPT:REF                                # Eliminate Unreferenced Data
+    /OPT:ICF                                # Remove Redundant COMDATs
+)
+set (shared_lib_linker_flags_release
+    ${exe_linker_flags_release}
+)
+
+# Ship configuration.
+set (c_compiler_flags_ship
+    /GL                                     # Enable link-time code generation
+    /WX-                                    # Disable Treat Warnings As Errors
+)
+set (exe_linker_flags_ship
+    /LTCG                                   # Use Link Time Code Generation
+    /INCREMENTAL:NO                         # Disable Incremental Linking
+)
+set (shared_lib_linker_flags_ship
+    ${exe_linker_flags_ship}
+)
+set (static_lib_linker_flags_ship
+    /LTCG                                   # Use Link Time Code Generation
+)
+
+# Profile configuration.
+set (c_compiler_flags_profile
+    /GL                                     # Enable link-time code generation
+)
+set (exe_linker_flags_profile
+    /LTCG                                   # Use Link Time Code Generation
+    /INCREMENTAL:NO                         # Disable Incremental Linking
+    /DEBUG                                  # Generate Debug Info
+)
+set (shared_lib_linker_flags_profile
+    ${exe_linker_flags_profile}
+)
+set (static_lib_linker_flags_profile
+    /LTCG                                   # Use Link Time Code Generation
+)
+
+
+#--------------------------------------------------------------------------------------------------
+# Libraries.
+#--------------------------------------------------------------------------------------------------
+
+macro (link_against_platform target)
+endmacro ()
+
+macro (link_against_zlib target)
+    if (USE_EXTERNAL_ZLIB)
+        target_link_libraries (${target} ${ZLIB_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/zlib/lib/zlibstaticd.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/zlib/lib/zlibstatic.lib
+        )
+    endif ()
+endmacro ()
+
+macro (link_against_libpng target)
+    if (USE_EXTERNAL_PNG)
+        target_link_libraries (${target} ${PNG_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/libpng-debug/lib/libpng16_staticd.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/libpng-release/lib/libpng16_static.lib
+        )
+    endif ()
+endmacro ()
+
+macro (link_against_openexr target)
+    if (USE_EXTERNAL_EXR)
+        target_link_libraries (${target}
+            ${IMATH_LIBRARIES}
+            ${OPENEXR_LIBRARIES}
+        )
+    else ()
+        target_link_libraries (${target}
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-debug/lib/Half.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-debug/lib/Iex-2_2.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-debug/lib/IlmThread-2_2.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-debug/lib/Imath-2_2.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/openexr-debug/lib/IlmImf-2_2.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-release/lib/Half.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-release/lib/Iex-2_2.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-release/lib/IlmThread-2_2.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-release/lib/Imath-2_2.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/openexr-release/lib/IlmImf-2_2.lib
+        )
+    endif ()
+endmacro ()
+
+macro (link_against_xercesc target)
+    if (USE_EXTERNAL_XERCES)
+        target_link_libraries (${target} ${XERCES_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/xerces-c-debug/lib/xerces-c_3D.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/xerces-c-release/lib/xerces-c_3.lib
+        )
+    endif ()
+endmacro ()
+
+macro (link_against_oiio target)
+    if (USE_EXTERNAL_OIIO)
+        target_link_libraries (${target}
+            ${OPENIMAGEIO_LIBRARIES}
+            ${LIBJPEG_LIBRARY}
+            ${LIBTIFF_LIBRARY}
+        )
+    else ()
+        target_link_libraries (${target}
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/oiio-debug/lib/OpenImageIO.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/libjpeg-turbo-debug/lib/jpeg-static.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/libtiff-debug/lib/libtiff.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/lib/OpenImageIO.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/libjpeg-turbo-release/lib/jpeg-static.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/libtiff-release/lib/libtiff.lib
+        )
+    endif ()
+endmacro ()
+
+macro (link_against_ocio target)
+    if (USE_EXTERNAL_OCIO)
+        target_link_libraries (${target}
+            ${OPENCOLORIO_LIBRARIES}
+        )
+    else ()
+        target_link_libraries (${target}
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/ocio-debug/lib/libyaml-cppmdd.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/ocio-debug/lib/OpenColorIO.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/ocio-debug/lib/tinyxml.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ocio-release/lib/libyaml-cppmd.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ocio-release/lib/OpenColorIO.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ocio-release/lib/tinyxml.lib
+        )
+    endif ()
+endmacro ()
+
+macro (link_against_osl target)
+    set (LLVM_LIBS
+        LLVMLTO LLVMLinker LLVMipo LLVMVectorize LLVMBitWriter LLVMTableGen LLVMDebugInfo LLVMOption LLVMX86Disassembler LLVMX86AsmParser
+        LLVMX86CodeGen LLVMSelectionDAG LLVMAsmPrinter LLVMX86Desc LLVMX86Info LLVMX86AsmPrinter LLVMX86Utils LLVMIRReader LLVMBitReader
+        LLVMAsmParser LLVMMCDisassembler LLVMMCParser LLVMInstrumentation LLVMInterpreter LLVMMCJIT LLVMJIT LLVMCodeGen LLVMObjCARCOpts
+        LLVMScalarOpts LLVMInstCombine LLVMTransformUtils LLVMipa LLVMAnalysis LLVMRuntimeDyld LLVMExecutionEngine LLVMTarget LLVMMC
+        LLVMObject LLVMCore LLVMSupport
+    )
+
+    if (USE_EXTERNAL_OSL)
+        target_link_libraries (${target}
+            ${OSL_EXEC_LIBRARY}
+            ${OSL_QUERY_LIBRARY}
+            ${OSL_COMP_LIBRARY}
+        )
+        foreach (lib ${LLVM_LIBS})
+            target_link_libraries (${target} "${LLVM_LIBS_DIR}/${lib}.lib")
+        endforeach ()
+    else ()
+        target_link_libraries (${target}
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/osl-debug/lib/oslexec.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/osl-debug/lib/oslquery.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/osl-debug/lib/oslcomp.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/osl-release/lib/oslexec.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/osl-release/lib/oslquery.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/osl-release/lib/oslcomp.lib
+        )
+        foreach (lib ${LLVM_LIBS})
+            target_link_libraries (${target}
+                debug       ${APPLESEED_DEPS_STAGE_DIR}/llvm-debug/lib/${lib}.lib
+                optimized   ${APPLESEED_DEPS_STAGE_DIR}/llvm-release/lib/${lib}.lib
+            )
+        endforeach ()
+    endif ()
+endmacro ()
+
+macro (link_against_seexpr target)
+    if (USE_EXTERNAL_SEEXPR)
+        target_link_libraries (${target} ${SEEXPR_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/seexpr-debug/lib/SeExpr.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/seexpr-release/lib/SeExpr.lib
+        )
+    endif ()
+endmacro ()
+
+macro (link_against_seexpreditor target)
+    if (USE_EXTERNAL_SEEXPR)
+        target_link_libraries (${target} ${SEEXPREDITOR_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/seexpr-debug/lib/SeExprEditor.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/seexpr-release/lib/SeExprEditor.lib
+        )
+    endif ()
+endmacro ()
+
+
+#--------------------------------------------------------------------------------------------------
+# Copy a target binary to the sandbox.
+#--------------------------------------------------------------------------------------------------
+
+macro (get_sandbox_bin_path path)
+    slashes_to_backslashes (${path} ${PROJECT_SOURCE_DIR})
+    set (${path} ${${path}}\\sandbox\\bin\\$(PlatformToolset)\\$(ConfigurationName))
+endmacro ()
+
+macro (get_sandbox_lib_path path)
+    slashes_to_backslashes (${path} ${PROJECT_SOURCE_DIR})
+    set (${path} ${${path}}\\sandbox\\lib\\$(PlatformToolset)\\$(ConfigurationName))
+endmacro ()
+
+macro (get_sandbox_py_path path)
+    get_sandbox_lib_path (${path})
+    set (${path} ${${path}}\\python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION})
+endmacro ()
+
+macro (get_relative_path_from_module_name path name)
+    string (REPLACE "." "\\" ${path} ${name})
+endmacro ()
+
+macro (add_copy_target_exe_to_sandbox_command target)
+    get_sandbox_bin_path (bin_path)
+
+    # Copy the .exe and the PDB file (except in Ship configuration).
+    add_custom_command (TARGET ${target} POST_BUILD
+        COMMAND if not exist "${bin_path}" mkdir "${bin_path}"
+        COMMAND ${CMAKE_COMMAND} -E copy "$(TargetPath)" "${bin_path}"
+        COMMAND if not "$(Configuration)" == "Ship" copy /Y "$(TargetDir)\$(TargetName).pdb" "${bin_path}"
+    )
+endmacro ()
+
+macro (add_copy_target_lib_to_sandbox_command target)
+    # Copy the DLL and the PDB file (except in Ship configuration).
+    get_sandbox_bin_path (bin_path)
+    add_custom_command (TARGET ${target} POST_BUILD
+        COMMAND if not exist "${bin_path}" mkdir "${bin_path}"
+        COMMAND ${CMAKE_COMMAND} -E copy "$(TargetPath)" "${bin_path}"
+        COMMAND if not "$(Configuration)" == "Ship" copy /Y "$(TargetDir)\$(TargetName).pdb" "${bin_path}"
+    )
+
+    # Copy the import library.
+    get_sandbox_lib_path (lib_path)
+    add_custom_command (TARGET ${target} POST_BUILD
+        COMMAND if not exist "${lib_path}" mkdir "${lib_path}"
+        COMMAND ${CMAKE_COMMAND} -E copy "$(TargetDir)\$(TargetName).lib" "${lib_path}"
+    )
+endmacro ()
+
+macro (add_copy_target_to_sandbox_py_module_command target module_name)
+    get_sandbox_py_path (py_path)
+    get_relative_path_from_module_name (relative_module_path ${module_name})
+    set (module_path "${py_path}\\${relative_module_path}")
+
+    add_custom_command (TARGET ${target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${module_path}"
+        COMMAND ${CMAKE_COMMAND} -E copy "$(TargetPath)" "${module_path}"
+    )
+endmacro ()
+
+macro (add_copy_py_file_to_sandbox_py_module_command py_src module_name)
+    get_sandbox_py_path (py_path)
+    get_relative_path_from_module_name (relative_module_path ${module_name})
+    set (module_path "${py_path}\\${relative_module_path}")
+
+    add_custom_command (TARGET appleseed.python.copy_py_files POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${module_path}"
+        COMMAND ${CMAKE_COMMAND} -E copy "${py_src}" "${module_path}"
+    )
+endmacro ()
+
+macro (add_copy_dir_to_sandbox_py_module_command py_dir module_name)
+    get_sandbox_py_path (py_path)
+    get_relative_path_from_module_name (relative_module_path ${module_name})
+    set (module_path "${py_path}\\${relative_module_path}")
+
+    add_custom_command (TARGET appleseed.python.copy_py_files POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${module_path}"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "${py_dir}" "${module_path}"
+    )
+endmacro ()

@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,18 +40,13 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// OSL headers.
-#include "foundation/platform/oslheaderguards.h"
-BEGIN_OSL_INCLUDES
-#include "OSL/oslexec.h"
-END_OSL_INCLUDES
-
 // Standard headers.
 #include <cstddef>
 
 // Forward declarations.
 namespace foundation    { class SearchPaths; }
 namespace renderer      { class Assembly; }
+namespace renderer      { class OSLShadingSystem; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 namespace renderer      { class ShaderGroup; }
@@ -68,11 +63,11 @@ class APPLESEED_DLLSYMBOL Shader
 {
   public:
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
-    const char *get_type() const;
-    const char *get_shader() const;
-    const char *get_layer() const;
+    const char* get_type() const;
+    const char* get_shader() const;
+    const char* get_layer() const;
 
     const ShaderParamContainer& shader_params() const;
 
@@ -80,7 +75,7 @@ class APPLESEED_DLLSYMBOL Shader
     friend class ShaderGroup;
 
     struct Impl;
-    Impl *impl;
+    Impl* impl;
 
     // Constructor.
     Shader(
@@ -90,9 +85,9 @@ class APPLESEED_DLLSYMBOL Shader
         const ParamArray&   params);
 
     // Destructor.
-    ~Shader();
+    ~Shader() override;
 
-    bool add(OSL::ShadingSystem& shading_system);
+    bool add(OSLShadingSystem& shading_system);
 };
 
 }       // namespace renderer

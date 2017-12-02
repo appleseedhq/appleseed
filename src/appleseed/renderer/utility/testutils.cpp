@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,6 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/input/inputbinder.h"
-#include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
@@ -42,6 +41,9 @@
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
 
+// Standard headers.
+#include <cassert>
+
 using namespace foundation;
 using namespace std;
 
@@ -49,36 +51,32 @@ namespace renderer
 {
 
 //
-// TestFixtureBaseProjectHolder class implementation.
+// TestSceneBaseProjectHolder class implementation.
 //
 
-TestFixtureBaseProjectHolder::TestFixtureBaseProjectHolder()
+TestSceneBaseProjectHolder::TestSceneBaseProjectHolder()
   : m_project(ProjectFactory::create("project"))
 {
     m_project->set_scene(SceneFactory::create());
-
-    m_project->get_scene()->assemblies().insert(
-        AssemblyFactory().create("assembly", ParamArray()));
 };
 
-Project& TestFixtureBaseProjectHolder::get_project()
+Project& TestSceneBaseProjectHolder::get_project()
 {
     return m_project.ref();
 }
 
 
 //
-// TestFixtureBase class implementation.
+// TestSceneBase class implementation.
 //
 
-TestFixtureBase::TestFixtureBase()
+TestSceneBase::TestSceneBase()
   : m_project(get_project())
   , m_scene(*get_project().get_scene())
-  , m_assembly(*get_project().get_scene()->assemblies().get_by_name("assembly"))
 {
 }
 
-void TestFixtureBase::create_color_entity(const char* name, const Color3f& linear_rgb)
+void TestSceneBase::create_color_entity(const char* name, const Color3f& linear_rgb)
 {
     ParamArray params;
     params.insert("color_space", "linear_rgb");
@@ -89,7 +87,7 @@ void TestFixtureBase::create_color_entity(const char* name, const Color3f& linea
         ColorEntityFactory::create(name, params, values));
 }
 
-void TestFixtureBase::create_color_entity(const char* name, const Spectrum& spectrum)
+void TestSceneBase::create_color_entity(const char* name, const Spectrum& spectrum)
 {
     ParamArray params;
     params.insert("color_space", "spectral");
@@ -101,7 +99,7 @@ void TestFixtureBase::create_color_entity(const char* name, const Spectrum& spec
         ColorEntityFactory::create(name, params, values));
 }
 
-void TestFixtureBase::create_texture_instance(const char* name, const char* texture_name)
+void TestSceneBase::create_texture_instance(const char* name, const char* texture_name)
 {
     ParamArray params;
     params.insert("addressing_mode", "clamp");
@@ -112,14 +110,38 @@ void TestFixtureBase::create_texture_instance(const char* name, const char* text
             name,
             params,
             texture_name,
-            Transformd::identity()));
+            Transformf::identity()));
 }
 
-void TestFixtureBase::bind_inputs()
+
+//
+// TestSceneContext class implementation.
+//
+
+TestSceneContext::TestSceneContext(TestSceneBase& base)
+  : m_base(base)
 {
     InputBinder input_binder;
-    input_binder.bind(m_scene);
+    input_binder.bind(m_base.m_scene);
     assert(input_binder.get_error_count() == 0);
+
+#ifndef NDEBUG
+    bool success = 
+#endif
+        m_base.m_scene.on_render_begin(m_base.m_project);
+    assert(success);
+
+#ifndef NDEBUG
+    success =
+#endif
+        m_base.m_scene.on_frame_begin(m_base.m_project, nullptr, m_recorder);
+    assert(success);
+}
+
+TestSceneContext::~TestSceneContext()
+{
+    m_recorder.on_frame_end(m_base.m_project);
+    m_base.m_scene.on_render_end(m_base.m_project);
 }
 
 
@@ -197,7 +219,7 @@ size_t BoundingBoxObject::get_material_slot_count() const
 
 const char* BoundingBoxObject::get_material_slot(const size_t index) const
 {
-    return 0;
+    return nullptr;
 }
 
 }   // namespace renderer

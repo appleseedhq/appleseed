@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -190,6 +190,11 @@ std::string replace(
     const std::string&      s,
     const std::string&      old_string,
     const std::string&      new_string);
+
+// Prefix all lines of a multi-line string.
+std::string prefix_all_lines(
+    const std::string&      s,
+    const std::string&      prefix);
 
 // Formatting functions, similar to the .NET String.Format() method.
 // Placeholders are of the form {n} with n starting at 0, e.g. {0}, {1}, etc.
@@ -752,6 +757,13 @@ inline std::string replace(
     } while ((pos = result.find(old_string, pos)) != std::string::npos);
 
     return result;
+}
+
+inline std::string prefix_all_lines(
+    const std::string&      s,
+    const std::string&      prefix)
+{
+    return prefix + replace(s, "\n", "\n" + prefix);
 }
 
 template <typename T1>

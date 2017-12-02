@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Srinath Ravichandran, The appleseedhq Organization
+// Copyright (c) 2014-2017 Srinath Ravichandran, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -47,6 +47,7 @@
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/system.h"
 #include "foundation/utility/alignedallocator.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/statistics.h"
@@ -86,7 +87,7 @@ CurveTree::CurveTree(const Arguments& arguments)
 {
     // Retrieve construction parameters.
     const MessageContext message_context(
-        string("while building curve tree for assembly \"") + m_arguments.m_assembly.get_name() + "\"");
+        format("while building curve tree for assembly \"{0}\"", m_arguments.m_assembly.get_path()));
     const ParamArray& params = m_arguments.m_assembly.get_parameters().child("acceleration_structure");
     const string algorithm = params.get_optional<string>("algorithm", "bvh", make_vector("bvh", "sbvh"), message_context);
     const double time = params.get_optional<double>("time", 0.5);
@@ -100,10 +101,10 @@ CurveTree::CurveTree(const Arguments& arguments)
     if (algorithm == "bvh")
         build_bvh(params, time, statistics);
     else throw ExceptionNotImplemented();
+    statistics.insert_time("total build time", stopwatch.measure().get_seconds());
+    statistics.insert_size("nodes alignment", alignment(&m_nodes[0]));
 
     // Print curve tree statistics.
-    statistics.insert_size("nodes alignment", alignment(&m_nodes[0]));
-    statistics.insert_time("total time", stopwatch.measure().get_seconds());
     RENDERER_LOG_DEBUG("%s",
         StatisticsVector::make(
             "curve tree #" + to_string(m_arguments.m_curve_tree_uid) + " statistics",
@@ -124,7 +125,7 @@ void CurveTree::collect_curves(vector<GAABB3>& curve_bboxes)
         const Object& object = object_instance->get_object();
 
         // Process only curve objects.
-        if (strcmp(object.get_model(), CurveObjectFactory::get_model()))
+        if (strcmp(object.get_model(), CurveObjectFactory().get_model()))
             continue;
 
         const CurveObject& curve_object = static_cast<const CurveObject&>(object);
@@ -137,7 +138,7 @@ void CurveTree::collect_curves(vector<GAABB3>& curve_bboxes)
         const size_t curve1_count = curve_object.get_curve1_count();
         for (size_t j = 0; j < curve1_count; ++j)
         {
-            const CurveType1 curve(curve_object.get_curve1(j), transform);
+            const Curve1Type curve(curve_object.get_curve1(j), transform);
             const CurveKey curve_key(
                 i,                  // object instance index
                 j,                  // curve index in object
@@ -157,7 +158,7 @@ void CurveTree::collect_curves(vector<GAABB3>& curve_bboxes)
         const size_t curve3_count = curve_object.get_curve3_count();
         for (size_t j = 0; j < curve3_count; ++j)
         {
-            const CurveType3 curve(curve_object.get_curve3(j), transform);
+            const Curve3Type curve(curve_object.get_curve3(j), transform);
             const CurveKey curve_key(
                 i,                  // object instance index
                 j,                  // curve index in object
@@ -184,7 +185,7 @@ void CurveTree::build_bvh(
     RENDERER_LOG_INFO(
         "collecting geometry for curve tree #" FMT_UNIQUE_ID " from assembly \"%s\"...",
         m_arguments.m_curve_tree_uid,
-        m_arguments.m_assembly.get_name());
+        m_arguments.m_assembly.get_path().c_str());
     vector<GAABB3> curve_bboxes;
     collect_curves(curve_bboxes);
 
@@ -196,7 +197,7 @@ void CurveTree::build_bvh(
         plural(m_curve_keys.size(), "curve").c_str());
 
     // Create the partitioner.
-    typedef bvh::SAHPartitioner<vector<GAABB3> > Partitioner;
+    typedef bvh::SAHPartitioner<vector<GAABB3>> Partitioner;
     Partitioner partitioner(
         curve_bboxes,
         CurveTreeDefaultMaxLeafSize,
@@ -232,8 +233,8 @@ void CurveTree::reorder_curve_keys(const vector<size_t>& ordering)
 
 void CurveTree::reorder_curves(const vector<size_t>& ordering)
 {
-    vector<CurveType1> new_curves1(m_curves1.size());
-    vector<CurveType3> new_curves3(m_curves3.size());
+    vector<Curve1Type> new_curves1(m_curves1.size());
+    vector<Curve3Type> new_curves3(m_curves3.size());
 
     size_t curve1_index = 0;
     size_t curve3_index = 0;
@@ -311,9 +312,9 @@ CurveTreeFactory::CurveTreeFactory(const CurveTree::Arguments& arguments)
 {
 }
 
-auto_ptr<CurveTree> CurveTreeFactory::create()
+unique_ptr<CurveTree> CurveTreeFactory::create()
 {
-    return auto_ptr<CurveTree>(new CurveTree(m_arguments));
+    return unique_ptr<CurveTree>(new CurveTree(m_arguments));
 }
 
 }   // namespace renderer

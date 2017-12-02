@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,13 +32,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/log/logger.h"
-#include "foundation/utility/log/logmessage.h"
-
-// Standard headers.
-#include <cstddef>
-#include <string>
-
-using namespace std;
 
 namespace foundation
 {
@@ -50,32 +43,27 @@ namespace foundation
 struct SaveLogFormatterConfig::Impl
 {
     Logger& m_logger;
-    string  m_formats[LogMessage::NumMessageCategories];
+    Logger  m_backup;
 
     explicit Impl(Logger& logger)
       : m_logger(logger)
     {
+        m_backup.initialize_from(logger);
+    }
+
+    ~Impl()
+    {
+        m_logger.initialize_from(m_backup);
     }
 };
 
 SaveLogFormatterConfig::SaveLogFormatterConfig(Logger& logger)
   : impl(new Impl(logger))
 {
-    for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
-    {
-        const LogMessage::Category category = static_cast<LogMessage::Category>(i);
-        impl->m_formats[i] = impl->m_logger.get_format(category);
-    }
 }
 
 SaveLogFormatterConfig::~SaveLogFormatterConfig()
 {
-    for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
-    {
-        const LogMessage::Category category = static_cast<LogMessage::Category>(i);
-        impl->m_logger.set_format(category, impl->m_formats[i]);
-    }
-
     delete impl;
 }
 

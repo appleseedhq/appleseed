@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,31 +31,24 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/bsdf/disneylayeredbrdf.h"
 #include "renderer/modeling/scene/containers.h"
+#include "renderer/utility/seexpr.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
 #include "foundation/math/scalar.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/seexpr.h"
 #include "foundation/utility/tls.h"
 
-// SeExpr headers.
-#pragma warning (push)
-#pragma warning (disable : 4267)    // conversion from 'size_t' to 'int', possible loss of data
-#include "SeExpression.h"
-#include "SeExprFunc.h"
-#include "SeExprNode.h"
-#pragma warning (pop)
-
 // Boost headers.
 #include "boost/algorithm/string.hpp"
 #include "boost/algorithm/string/split.hpp"
-#include "boost/ptr_container/ptr_vector.hpp"
 
 // Standard headers.
 #include <algorithm>
@@ -74,194 +67,7 @@ namespace renderer
 namespace
 {
     //
-    // SeExpr utilities.
-    //
-
-    bool texture_is_srgb(const OIIO::ustring& filename)
-    {
-        if (filename.rfind(".exr") == filename.length() - 4)
-            return false;
-
-        return true;
-    }
-
-    class TextureSeExprFunc
-      : public SeExprFuncX
-    {
-      public:
-        TextureSeExprFunc()
-          : SeExprFuncX(true)   // true = thread-safe
-          , m_texture_system(0)
-          , m_texture_is_srgb(true)
-        {
-#if OIIO_VERSION <= 10504
-            m_texture_options.nchannels = 3;
-#endif
-            m_texture_options.swrap = OIIO::TextureOpt::WrapPeriodic;
-            m_texture_options.twrap = OIIO::TextureOpt::WrapPeriodic;
-        }
-
-        void set_texture_system(OIIO::TextureSystem* texture_system)
-        {
-            m_texture_system = texture_system;
-        }
-
-        virtual bool prep(SeExprFuncNode* node, bool /*wantVec*/) APPLESEED_OVERRIDE
-        {
-            if (node->nargs() != 3)
-            {
-                node->addError("3 arguments expected.");
-                return false;
-            }
-
-            if (!node->isStrArg(0))
-            {
-                node->addError("First argument must be a texture file path.");
-                return false;
-            }
-
-            if (node->getStrArg(0).empty())
-            {
-                node->addError("Path to texture file is empty.");
-                return false;
-            }
-
-            if (!node->child(1)->prep(0) || !node->child(2)->prep(0))
-                return false;
-
-            m_texture_filename = OIIO::ustring(node->getStrArg(0), 0);
-            m_texture_is_srgb = texture_is_srgb(m_texture_filename);
-
-            return true;
-        }
-
-        virtual void eval(const SeExprFuncNode* node, SeVec3d& result) const APPLESEED_OVERRIDE
-        {
-            SeVec3d u, v;
-            node->child(1)->eval(u);
-            node->child(2)->eval(v);
-
-            Color3f color;
-            if (!m_texture_system->texture(
-                    m_texture_filename,
-                    m_texture_options,
-                    static_cast<float>(u[0]),
-                    static_cast<float>(1.0 - v[0]),
-                    0.0f,
-                    0.0f,
-                    0.0f,
-                    0.0f,
-#if OIIO_VERSION > 10504
-                    3,
-#endif
-                    &color[0]))
-            {
-                // Failed to find or open the texture.
-                // todo: issue an error message (once).
-                result = SeVec3d(1.0, 0.0, 1.0);
-                return;
-            }
-
-            // Colors in SeExpr are always in the sRGB color space.
-            if (!m_texture_is_srgb)
-                color = linear_rgb_to_srgb(color);
-
-            result = SeVec3d(color[0], color[1], color[2]);
-        }
-
-      private:
-        OIIO::TextureSystem*        m_texture_system;
-        OIIO::ustring               m_texture_filename;
-        mutable OIIO::TextureOpt    m_texture_options;
-        bool                        m_texture_is_srgb;
-    };
-
-    class SeAppleseedExpr
-      : public SeExpression
-    {
-      public:
-        SeAppleseedExpr()
-        {
-        }
-
-        SeAppleseedExpr(const string& expr)
-          : SeExpression(expr)
-        {
-            m_vars["u"] = Var(0.0);
-            m_vars["v"] = Var(0.0);
-        }
-
-        void set_expr(const string& expr)
-        {
-            SeExpression::setExpr(expr);
-            m_vars["u"] = Var(0.0);
-            m_vars["v"] = Var(0.0);
-        }
-
-        // Called during preparation.
-        SeExprVarRef* resolveVar(const string& name) const APPLESEED_OVERRIDE
-        {
-            const map<string, Var>::iterator i = m_vars.find(name);
-            return i != m_vars.end() ? &i->second : 0;
-        }
-
-        // Called during preparation.
-        SeExprFunc* resolveFunc(const string& name) const APPLESEED_OVERRIDE
-        {
-            if (name == "texture")
-            {
-                TextureSeExprFunc* texture_function_x = new TextureSeExprFunc();
-                SeExprFunc* texture_function = new SeExprFunc(*texture_function_x, 3, 3);
-                m_functions_x.push_back(texture_function_x);
-                m_functions.push_back(texture_function);
-                return texture_function;
-            }
-
-            return SeExpression::resolveFunc(name);
-        }
-
-        Color3d update_and_evaluate(
-            const ShadingPoint&     shading_point,
-            OIIO::TextureSystem&    texture_system)
-        {
-            for (each<ptr_vector<TextureSeExprFunc> > i = m_functions_x; i; ++i)
-                i->set_texture_system(&texture_system);
-
-            const Vector2d& uv = shading_point.get_uv(0);
-            m_vars["u"] = Var(uv[0]);
-            m_vars["v"] = Var(uv[1]);
-
-            const SeVec3d result = evaluate();
-            return Color3d(result[0], result[1], result[2]);
-        }
-
-      private:
-        struct Var
-          : public SeExprScalarVarRef
-        {
-            double m_val;
-
-            Var() {}
-
-            explicit Var(const double val)
-              : m_val(val)
-            {
-            }
-
-            virtual void eval(const SeExprVarNode* /*node*/, SeVec3d& result) APPLESEED_OVERRIDE
-            {
-                result[0] = m_val;
-            }
-        };
-
-        mutable map<string, Var>                m_vars;         // todo: use a hash table
-        mutable ptr_vector<TextureSeExprFunc>   m_functions_x;
-        mutable ptr_vector<SeExprFunc>          m_functions;
-    };
-
-
-    //
-    // The DisneyLayerParam class wraps an SeAppleseedExpr to add basic optimizations
+    // The DisneyLayerParam class wraps an SeAppleseedExpr object to add basic optimizations
     // for straightforward expressions such as a single scalar or a simple texture lookup.
     //
 
@@ -352,50 +158,50 @@ namespace
                 m_texture_is_srgb = texture_is_srgb(m_texture_filename);
                 m_texture_options.swrap = OIIO::TextureOpt::WrapPeriodic;
                 m_texture_options.rwrap = OIIO::TextureOpt::WrapPeriodic;
-#if OIIO_VERSION <= 10504
-                m_texture_options.nchannels = 3;
-#endif
             }
 
             return true;
         }
 
-        Color3d evaluate(
+        Color3f evaluate(
             const ShadingPoint&     shading_point,
-            OIIO::TextureSystem&    texture_system) const
+            OIIOTextureSystem&      texture_system) const
         {
             if (m_is_constant)
                 return m_constant_value;
 
             if (!m_texture_filename.empty())
             {
-                const Vector2d& uv = shading_point.get_uv(0);
+                const Vector2f& uv = shading_point.get_uv(0);
 
                 Color3f color;
                 if (!texture_system.texture(
                         m_texture_filename,
                         m_texture_options,
-                        static_cast<float>(uv[0]),
-                        static_cast<float>(1.0 - uv[1]),
+                        uv[0],
+                        uv[1],
                         0.0f,
                         0.0f,
                         0.0f,
                         0.0f,
-#if OIIO_VERSION > 10504
                         3,
-#endif
                         &color[0]))
                 {
                     // Failed to find or open the texture.
-                    // todo: issue an error message (once).
-                    return Color3d(1.0, 0.0, 1.0);
+                    const string message = texture_system.geterror();
+                    if (!message.empty())
+                    {
+                        const string modified_message = prefix_all_lines(trim_both(message), "oiio: ");
+                        RENDERER_LOG_ERROR("%s", modified_message.c_str());
+                    }
+                    return Color3f(1.0f, 0.0f, 1.0f);
                 }
 
                 // Colors in SeExpr are always in the sRGB color space.
                 if (!m_texture_is_srgb)
                     color = linear_rgb_to_srgb(color);
 
-                return Color3d(color);
+                return color;
             }
 
             return
@@ -525,16 +331,20 @@ bool DisneyMaterialLayer::prepare_expressions() const
 
 void DisneyMaterialLayer::evaluate_expressions(
     const ShadingPoint&     shading_point,
-    OIIO::TextureSystem&    texture_system,
-    Color3d&                base_color,
+    OIIOTextureSystem&      texture_system,
+    Color3f&                base_color,
     DisneyBRDFInputValues&  values) const
 {
-    const double mask = saturate(impl->m_mask.evaluate(shading_point, texture_system)[0]);
+    const float mask = saturate(impl->m_mask.evaluate(shading_point, texture_system)[0]);
 
-    if (mask == 0.0)
+    if (mask == 0.0f)
         return;
 
-    base_color = lerp(base_color, impl->m_base_color.evaluate(shading_point, texture_system), mask);
+    base_color =
+        lerp(
+            base_color,
+            impl->m_base_color.evaluate(shading_point, texture_system),
+            mask);
 
     values.m_subsurface =
         lerp(
@@ -551,7 +361,7 @@ void DisneyMaterialLayer::evaluate_expressions(
     values.m_specular =
         lerp(
             values.m_specular,
-            max(impl->m_specular.evaluate(shading_point, texture_system)[0], 0.0),
+            max(impl->m_specular.evaluate(shading_point, texture_system)[0], 0.0f),
             mask);
 
     values.m_specular_tint =
@@ -563,13 +373,13 @@ void DisneyMaterialLayer::evaluate_expressions(
     values.m_anisotropic =
         lerp(
             values.m_anisotropic,
-            clamp(impl->m_anisotropic.evaluate(shading_point, texture_system)[0], -1.0, 1.0),
+            clamp(impl->m_anisotropic.evaluate(shading_point, texture_system)[0], -1.0f, 1.0f),
             mask);
 
     values.m_roughness =
         lerp(
             values.m_roughness,
-            clamp(impl->m_roughness.evaluate(shading_point, texture_system)[0], 0.001, 1.0),
+            clamp(impl->m_roughness.evaluate(shading_point, texture_system)[0], 0.001f, 1.0f),
             mask);
 
     values.m_sheen =
@@ -686,7 +496,7 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "0.5"));
+            .insert("default", "0.1"));
 
     metadata.push_back(
         Dictionary()
@@ -706,7 +516,7 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "0.5"));
+            .insert("default", "0.0"));
 
     metadata.push_back(
         Dictionary()
@@ -770,7 +580,7 @@ struct DisneyMaterial::Impl
     static const size_t MaxThreadCount = 256;
 
     DisneyMaterialLayerContainer                m_layers;
-    auto_ptr<DisneyLayeredBRDF>                 m_brdf;
+    unique_ptr<DisneyLayeredBRDF>               m_brdf;
     mutable TLS<DisneyMaterialLayerContainer*>  m_per_thread_layers;
 
     explicit Impl(const DisneyMaterial* parent)
@@ -778,7 +588,7 @@ struct DisneyMaterial::Impl
       , m_per_thread_layers(MaxThreadCount)
     {
         for (size_t i = 0; i < MaxThreadCount; ++i)
-            m_per_thread_layers[i] = 0;
+            m_per_thread_layers[i] = nullptr;
     }
 
     ~Impl()
@@ -794,7 +604,7 @@ struct DisneyMaterial::Impl
             if (m_per_thread_layers[i])
             {
                 delete m_per_thread_layers[i];
-                m_per_thread_layers[i] = 0;
+                m_per_thread_layers[i] = nullptr;
             }
         }
 
@@ -807,7 +617,7 @@ DisneyMaterial::DisneyMaterial(
   : Material(name, params)
   , impl(new Impl(this))
 {
-    m_inputs.declare("alpha_map", InputFormatScalar, "");
+    m_inputs.declare("alpha_map", InputFormatFloat, "");
     m_inputs.declare("displacement_map", InputFormatSpectralReflectance, "");
 }
 
@@ -864,10 +674,14 @@ void DisneyMaterial::update_asset_paths(const StringDictionary& mappings)
 
 bool DisneyMaterial::on_frame_begin(
     const Project&          project,
-    const Assembly&         assembly,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
     IAbortSwitch*           abort_switch)
 {
-    if (!Material::on_frame_begin(project, assembly, abort_switch))
+    if (!Material::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
+
+    if (!impl->m_brdf->on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
     const EntityDefMessageContext context("material", this);
@@ -880,12 +694,12 @@ bool DisneyMaterial::on_frame_begin(
 
 void DisneyMaterial::on_frame_end(
     const Project&          project,
-    const Assembly&         assembly)
+    const BaseGroup*        parent)
 {
     impl->clear_per_thread_layers();
     impl->m_layers.clear();
 
-    Material::on_frame_end(project, assembly);
+    Material::on_frame_end(project, parent);
 }
 
 void DisneyMaterial::add_layer(Dictionary layer_values)
@@ -935,11 +749,11 @@ const DisneyMaterialLayer& DisneyMaterial::get_layer(
     vector<DisneyMaterialLayer>* layers =
         impl->m_per_thread_layers[thread_index];
 
-    if (layers == 0)
+    if (layers == nullptr)
     {
         layers = new vector<DisneyMaterialLayer>(impl->m_layers);
 
-        for (const_each<vector<DisneyMaterialLayer> > it = *layers; it; ++it)
+        for (const_each<vector<DisneyMaterialLayer>> it = *layers; it; ++it)
         {
             APPLESEED_UNUSED const bool ok = it->prepare_expressions();
             assert(ok);
@@ -983,6 +797,11 @@ bool DisneyMaterial::prepare_layers(const MessageContext& context)
 // DisneyMaterialFactory class implementation.
 //
 
+void DisneyMaterialFactory::release()
+{
+    delete this;
+}
+
 const char* DisneyMaterialFactory::get_model() const
 {
     return Model;
@@ -1001,7 +820,7 @@ DictionaryArray DisneyMaterialFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
 
-    add_common_input_metadata(metadata);
+    add_surface_shader_metadata(metadata);
 
     metadata.push_back(
         Dictionary()
@@ -1011,57 +830,8 @@ DictionaryArray DisneyMaterialFactory::get_input_metadata() const
             .insert("entity_types", Dictionary().insert("edf", "EDF"))
             .insert("use", "optional"));
 
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "alpha_map")
-            .insert("label", "Alpha Map")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary()
-                    .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "displacement_map")
-            .insert("label", "Displacement Map")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "displacement_method")
-            .insert("label", "Displacement Method")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("Bump Mapping", "bump")
-                    .insert("Normal Mapping", "normal"))
-            .insert("use", "required")
-            .insert("default", "bump"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "bump_amplitude")
-            .insert("label", "Bump Amplitude")
-            .insert("type", "text")
-            .insert("use", "optional")
-            .insert("default", "1.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "normal_map_up")
-            .insert("label", "Normal Map Up Vector")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("Green Channel (Y)", "y")
-                    .insert("Blue Channel (Z)", "z"))
-            .insert("use", "optional")
-            .insert("default", "z"));
+    add_alpha_map_metadata(metadata);
+    add_displacement_metadata(metadata);
 
     return metadata;
 }
@@ -1069,13 +839,6 @@ DictionaryArray DisneyMaterialFactory::get_input_metadata() const
 auto_release_ptr<Material> DisneyMaterialFactory::create(
     const char*             name,
     const ParamArray&       params) const
-{
-    return auto_release_ptr<Material>(new DisneyMaterial(name, params));
-}
-
-auto_release_ptr<Material> DisneyMaterialFactory::static_create(
-    const char*             name,
-    const ParamArray&       params)
 {
     return auto_release_ptr<Material>(new DisneyMaterial(name, params));
 }

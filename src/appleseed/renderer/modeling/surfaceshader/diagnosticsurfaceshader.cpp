@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,28 +32,31 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/ambientocclusion.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/camera/camera.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/distance.h"
 #include "foundation/math/hash.h"
 #include "foundation/math/minmax.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/otherwise.h"
 
 // Standard headers.
 #include <algorithm>
@@ -96,7 +99,8 @@ const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
     { "regions",                    Regions },
     { "primitives",                 Primitives },
     { "materials",                  Materials },
-    { "ray_spread",                 RaySpread }
+    { "ray_spread",                 RaySpread },
+    { "facing_ratio",               FacingRatio }
 };
 
 const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingModeNames[] =
@@ -121,12 +125,13 @@ const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingMod
     { "regions",                    "Regions" },
     { "primitives",                 "Primitives" },
     { "materials",                  "Materials" },
-    { "ray_spread",                 "Ray Spread" }
+    { "ray_spread",                 "Ray Spread" },
+    { "facing_ratio",               "Facing Ratio" }
 };
 
 DiagnosticSurfaceShader::DiagnosticSurfaceShader(
-    const char*             name,
-    const ParamArray&       params)
+    const char*                 name,
+    const ParamArray&           params)
   : SurfaceShader(name, params)
 {
     extract_parameters();
@@ -157,7 +162,8 @@ namespace
     }
 
     // Compute a color from a given 2D vector.
-    inline Color3f vector2_to_color(const Vector2d& vec)
+    template <typename T>
+    inline Color3f vector2_to_color(const Vector<T, 2>& vec)
     {
         const float u = wrap1(static_cast<float>(vec[0]));
         const float v = wrap1(static_cast<float>(vec[1]));
@@ -166,7 +172,8 @@ namespace
     }
 
     // Compute a color from uv coordinates.
-    inline Color3f uvs_to_color(const Vector2d& vec)
+    template <typename T>
+    inline Color3f uvs_to_color(const Vector<T, 2>& vec)
     {
         const float u = wrap1(static_cast<float>(vec[0]));
         const float v = wrap1(static_cast<float>(vec[1]));
@@ -174,20 +181,21 @@ namespace
     }
 
     // Compute a color from a given unit-length 3D vector.
-    inline Color3f vector3_to_color(const Vector3d& vec)
+    template <typename T>
+    inline Color3f vector3_to_color(const Vector<T, 3>& vec)
     {
         assert(is_normalized(vec));
 
 #ifdef SHADE_VECTORS_USING_3DSMAX_CONVENTIONS
         return Color3f(
-            static_cast<float>((vec[0] + 1.0) * 0.5),
-            static_cast<float>((-vec[2] + 1.0) * 0.5),
-            static_cast<float>((vec[1] + 1.0) * 0.5));
+            static_cast<float>(( vec[0] + T(1.0)) * T(0.5)),
+            static_cast<float>((-vec[2] + T(1.0)) * T(0.5)),
+            static_cast<float>(( vec[1] + T(1.0)) * T(0.5)));
 #else
         return Color3f(
-            static_cast<float>((vec[0] + 1.0) * 0.5),
-            static_cast<float>((vec[1] + 1.0) * 0.5),
-            static_cast<float>((vec[2] + 1.0) * 0.5));
+            static_cast<float>((vec[0] + T(1.0)) * T(0.5)),
+            static_cast<float>((vec[1] + T(1.0)) * T(0.5)),
+            static_cast<float>((vec[2] + T(1.0)) * T(0.5)));
 #endif
     }
 
@@ -209,24 +217,24 @@ namespace
 }
 
 void DiagnosticSurfaceShader::evaluate(
-    SamplingContext&        sampling_context,
-    const PixelContext&     pixel_context,
-    const ShadingContext&   shading_context,
-    const ShadingPoint&     shading_point,
-    ShadingResult&          shading_result) const
+    SamplingContext&            sampling_context,
+    const PixelContext&         pixel_context,
+    const ShadingContext&       shading_context,
+    const ShadingPoint&         shading_point,
+    AOVAccumulatorContainer&    aov_accumulators,
+    ShadingResult&              shading_result) const
 {
     switch (m_shading_mode)
     {
       case Color:
         {
-            shading_result.set_main_to_opaque_pink_linear_rgba();
+            shading_result.set_main_to_opaque_pink();
 
             const Material* material = shading_point.get_material();
             if (material)
             {
                 const Material::RenderData& material_data = material->get_render_data();
 
-#ifdef APPLESEED_WITH_OSL
                 // Execute the OSL shader if there is one.
                 if (material_data.m_shader_group)
                 {
@@ -234,53 +242,48 @@ void DiagnosticSurfaceShader::evaluate(
                         *material_data.m_shader_group,
                         shading_point);
                 }
-#endif
 
                 if (material_data.m_bsdf)
                 {
-                    InputEvaluator input_evaluator(shading_context.get_texture_cache());
-                    material_data.m_bsdf->evaluate_inputs(
-                        shading_context,
-                        input_evaluator,
-                        shading_point);
+                    const Vector3f direction = -normalize(Vector3f(shading_point.get_ray().m_dir));
 
-                    const Vector3d direction = -normalize(shading_point.get_ray().m_dir);
+                    DirectShadingComponents value;
                     material_data.m_bsdf->evaluate(
-                        input_evaluator.data(),
+                        material_data.m_bsdf->evaluate_inputs(shading_context, shading_point),
                         false,
                         false,
-                        shading_point.get_geometric_normal(),
-                        shading_point.get_shading_basis(),
+                        Vector3f(shading_point.get_geometric_normal()),
+                        Basis3f(shading_point.get_shading_basis()),
                         direction,
                         direction,
                         ScatteringMode::All,
-                        shading_result.m_main.m_color);
-
-                    shading_result.m_color_space = ColorSpaceSpectral;
+                        value);
+                    set_result(value.m_beauty, shading_result);
                 }
             }
         }
         break;
 
       case Coverage:
-        shading_result.set_main_to_linear_rgb(Color3f(1.0f));
+        set_result(Color3f(1.0f), shading_result);
         break;
 
       case Barycentric:
-        shading_result.set_main_to_linear_rgb(
-            vector2_to_color(shading_point.get_bary()));
+        set_result(
+            vector2_to_color(shading_point.get_bary()),
+            shading_result);
         break;
 
       case UV:
-        shading_result.set_main_to_linear_rgb(
-            uvs_to_color(shading_point.get_uv(0)));
+        set_result(
+            uvs_to_color(shading_point.get_uv(0)),
+            shading_result);
         break;
 
       case Tangent:
       case Bitangent:
       case ShadingNormal:
         {
-#ifdef APPLESEED_WITH_OSL
             const Material* material = shading_point.get_material();
             if (material)
             {
@@ -293,98 +296,110 @@ void DiagnosticSurfaceShader::evaluate(
                     shading_context.execute_osl_bump(
                         *material_data.m_shader_group,
                         shading_point,
-                        sampling_context.next_vector2<2>());
+                        sampling_context.next2<Vector2f>());
                 }
             }
-#endif
 
             const Vector3d v =
                 m_shading_mode == ShadingNormal ? shading_point.get_shading_basis().get_normal() :
                 m_shading_mode == Tangent ? shading_point.get_shading_basis().get_tangent_u() :
                 shading_point.get_shading_basis().get_tangent_v();
-
-            shading_result.set_main_to_linear_rgb(vector3_to_color(v));
+            set_result(vector3_to_color(v), shading_result);
         }
         break;
 
       case GeometricNormal:
-        shading_result.set_main_to_linear_rgb(
-            vector3_to_color(shading_point.get_geometric_normal()));
+        set_result(
+            vector3_to_color(shading_point.get_geometric_normal()),
+            shading_result);
         break;
 
       case OriginalShadingNormal:
-        shading_result.set_main_to_linear_rgb(
-            vector3_to_color(shading_point.get_original_shading_normal()));
+        set_result(
+            vector3_to_color(shading_point.get_original_shading_normal()),
+            shading_result);
         break;
 
       case WorldSpacePosition:
         {
             const Vector3d& p = shading_point.get_point();
-            shading_result.set_main_to_linear_rgb(
-                Color3f(Color3d(p.x, p.y, p.z)));
+            set_result(
+                Color3f(Color3d(p.x, p.y, p.z)),
+                shading_result);
         }
         break;
 
       case Sides:
-        shading_result.set_main_to_linear_rgb(
+        set_result(
             shading_point.get_side() == ObjectInstance::FrontSide
                 ? Color3f(0.0f, 0.0f, 1.0f)
-                : Color3f(1.0f, 0.0f, 0.0f));
+                : Color3f(1.0f, 0.0f, 0.0f),
+            shading_result);
         break;
 
       case Depth:
-        shading_result.set_main_to_linear_rgb(
-            Color3f(static_cast<float>(shading_point.get_distance())));
+        set_result(
+            Color3f(static_cast<float>(shading_point.get_distance())),
+            shading_result);
         break;
 
       case ScreenSpaceWireframe:
         {
             // Initialize the shading result to the background color.
-            shading_result.set_main_to_linear_rgba(Color4f(0.0f, 0.0f, 0.8f, 0.5f));
+            set_result(Color4f(0.0f, 0.0f, 0.8f, 0.5f), shading_result);
 
-            if (shading_point.is_triangle_primitive())
+            switch (shading_point.get_primitive_type())
             {
-                // Film space thickness of the wires.
-                const double SquareWireThickness = square(0.00025);
-
-                // Retrieve the time, the scene and the camera.
-                const double time = shading_point.get_time().m_absolute;
-                const Scene& scene = shading_point.get_scene();
-                const Camera& camera = *scene.get_camera();
-
-                // Compute the film space coordinates of the intersection point.
-                Vector2d point_ndc;
-                camera.project_point(time, shading_point.get_point(), point_ndc);
-
-                // Loop over the triangle edges.
-                for (size_t i = 0; i < 3; ++i)
+              case ShadingPoint::PrimitiveTriangle:
                 {
-                    // Retrieve the end points of this edge.
-                    const size_t j = (i + 1) % 3;
-                    const Vector3d vi = shading_point.get_vertex(i);
-                    const Vector3d vj = shading_point.get_vertex(j);
+                    // Film space thickness of the wires.
+                    const double SquareWireThickness = square(0.00025);
 
-                    // Compute the film space coordinates of the edge's end points.
-                    Vector2d vi_ndc, vj_ndc;
-                    if (!camera.project_segment(time, vi, vj, vi_ndc, vj_ndc))
-                        continue;
+                    // Retrieve the time, the scene and the camera.
+                    const float time = shading_point.get_time().m_absolute;
+                    const Scene& scene = shading_point.get_scene();
+                    const Camera& camera = *scene.get_active_camera();
 
-                    // Compute the film space distance from the intersection point to the edge.
-                    const double d = square_distance_point_segment(point_ndc, vi_ndc, vj_ndc);
+                    // Compute the film space coordinates of the intersection point.
+                    Vector2d point_ndc;
+                    camera.project_point(time, shading_point.get_point(), point_ndc);
 
-                    // Shade with the wire's color if the hit point is close enough to the edge.
-                    if (d < SquareWireThickness)
+                    // Loop over the triangle edges.
+                    for (size_t i = 0; i < 3; ++i)
                     {
-                        shading_result.set_main_to_linear_rgba(Color4f(1.0f));
-                        break;
+                        // Retrieve the end points of this edge.
+                        const size_t j = (i + 1) % 3;
+                        const Vector3d vi = shading_point.get_vertex(i);
+                        const Vector3d vj = shading_point.get_vertex(j);
+
+                        // Compute the film space coordinates of the edge's end points.
+                        Vector2d vi_ndc, vj_ndc;
+                        if (!camera.project_segment(time, vi, vj, vi_ndc, vj_ndc))
+                            continue;
+
+                        // Compute the film space distance from the intersection point to the edge.
+                        const double d = square_distance_point_segment(point_ndc, vi_ndc, vj_ndc);
+
+                        // Shade with the wire's color if the hit point is close enough to the edge.
+                        if (d < SquareWireThickness)
+                        {
+                            set_result(Color4f(1.0f), shading_result);
+                            break;
+                        }
                     }
                 }
-            }
-            else
-            {
-                assert(shading_point.is_curve_primitive());
+                break;
 
+              case ShadingPoint::PrimitiveProceduralSurface:
                 // todo: implement.
+                break;
+
+              case ShadingPoint::PrimitiveCurve1:
+              case ShadingPoint::PrimitiveCurve3:
+                // todo: implement.
+                break;
+
+              assert_otherwise;
             }
         }
         break;
@@ -392,40 +407,49 @@ void DiagnosticSurfaceShader::evaluate(
       case WorldSpaceWireframe:
         {
             // Initialize the shading result to the background color.
-            shading_result.set_main_to_linear_rgba(Color4f(0.0f, 0.0f, 0.8f, 0.5f));
+            set_result(Color4f(0.0f, 0.0f, 0.8f, 0.5f), shading_result);
 
-            if (shading_point.is_triangle_primitive())
+            switch (shading_point.get_primitive_type())
             {
-                // World space thickness of the wires.
-                const double SquareWireThickness = square(0.0015);
-
-                // Retrieve the world space intersection point.
-                const Vector3d& point = shading_point.get_point();
-
-                // Loop over the triangle edges.
-                for (size_t i = 0; i < 3; ++i)
+              case ShadingPoint::PrimitiveTriangle:
                 {
-                    // Retrieve the end points of this edge.
-                    const size_t j = (i + 1) % 3;
-                    const Vector3d& vi = shading_point.get_vertex(i);
-                    const Vector3d& vj = shading_point.get_vertex(j);
+                    // World space thickness of the wires.
+                    const double SquareWireThickness = square(0.0015);
 
-                    // Compute the world space distance from the intersection point to the edge.
-                    const double d = square_distance_point_segment(point, vi, vj);
+                    // Retrieve the world space intersection point.
+                    const Vector3d& point = shading_point.get_point();
 
-                    // Shade with the wire's color if the hit point is close enough to the edge.
-                    if (d < SquareWireThickness)
+                    // Loop over the triangle edges.
+                    for (size_t i = 0; i < 3; ++i)
                     {
-                        shading_result.set_main_to_linear_rgba(Color4f(1.0f));
-                        break;
+                        // Retrieve the end points of this edge.
+                        const size_t j = (i + 1) % 3;
+                        const Vector3d& vi = shading_point.get_vertex(i);
+                        const Vector3d& vj = shading_point.get_vertex(j);
+
+                        // Compute the world space distance from the intersection point to the edge.
+                        const double d = square_distance_point_segment(point, vi, vj);
+
+                        // Shade with the wire's color if the hit point is close enough to the edge.
+                        if (d < SquareWireThickness)
+                        {
+                            set_result(Color4f(1.0f), shading_result);
+                            break;
+                        }
                     }
                 }
-            }
-            else
-            {
-                assert(shading_point.is_curve_primitive());
+                break;
 
+              case ShadingPoint::PrimitiveProceduralSurface:
                 // todo: implement.
+                break;
+
+              case ShadingPoint::PrimitiveCurve1:
+              case ShadingPoint::PrimitiveCurve3:
+                // todo: implement.
+                break;
+
+              assert_otherwise;
             }
         }
         break;
@@ -444,18 +468,20 @@ void DiagnosticSurfaceShader::evaluate(
 
             // Return a gray scale value proportional to the accessibility.
             const float accessibility = static_cast<float>(1.0 - occlusion);
-            shading_result.set_main_to_linear_rgb(Color3f(accessibility));
+            set_result(Color3f(accessibility), shading_result);
         }
         break;
 
       case AssemblyInstances:
-        shading_result.set_main_to_linear_rgb(
-            integer_to_color(shading_point.get_assembly_instance().get_uid()));
+        set_result(
+            integer_to_color(shading_point.get_assembly_instance().get_uid()),
+            shading_result);
         break;
 
       case ObjectInstances:
-        shading_result.set_main_to_linear_rgb(
-            integer_to_color(shading_point.get_object_instance().get_uid()));
+        set_result(
+            integer_to_color(shading_point.get_object_instance().get_uid()),
+            shading_result);
         break;
 
       case Regions:
@@ -464,7 +490,7 @@ void DiagnosticSurfaceShader::evaluate(
                 mix_uint32(
                     static_cast<uint32>(shading_point.get_object_instance().get_uid()),
                     static_cast<uint32>(shading_point.get_region_index()));
-            shading_result.set_main_to_linear_rgb(integer_to_color(h));
+            set_result(integer_to_color(h), shading_result);
         }
         break;
 
@@ -475,7 +501,7 @@ void DiagnosticSurfaceShader::evaluate(
                     static_cast<uint32>(shading_point.get_object_instance().get_uid()),
                     static_cast<uint32>(shading_point.get_region_index()),
                     static_cast<uint32>(shading_point.get_primitive_index()));
-            shading_result.set_main_to_linear_rgb(integer_to_color(h));
+            set_result(integer_to_color(h), shading_result);
         }
         break;
 
@@ -483,8 +509,8 @@ void DiagnosticSurfaceShader::evaluate(
         {
             const Material* material = shading_point.get_material();
             if (material)
-                shading_result.set_main_to_linear_rgb(integer_to_color(material->get_uid()));
-            else shading_result.set_main_to_opaque_pink_linear_rgba();
+                set_result(integer_to_color(material->get_uid()), shading_result);
+            else shading_result.set_main_to_opaque_pink();
         }
         break;
 
@@ -499,7 +525,6 @@ void DiagnosticSurfaceShader::evaluate(
             {
                 const Material::RenderData& material_data = material->get_render_data();
 
-#ifdef APPLESEED_WITH_OSL
                 // Execute the OSL shader if there is one.
                 if (material_data.m_shader_group)
                 {
@@ -507,7 +532,6 @@ void DiagnosticSurfaceShader::evaluate(
                         *material_data.m_shader_group,
                         shading_point);
                 }
-#endif
 
                 if (material_data.m_bsdf)
                 {
@@ -516,19 +540,13 @@ void DiagnosticSurfaceShader::evaluate(
                         ray.m_dir - ray.m_rx.m_dir,
                         ray.m_dir - ray.m_ry.m_dir);
 
-                    InputEvaluator input_evaluator(shading_context.get_texture_cache());
-                    material_data.m_bsdf->evaluate_inputs(
-                        shading_context,
-                        input_evaluator,
-                        shading_point);
-                    const void* bsdf_data = input_evaluator.data();
-
-                    BSDFSample sample(shading_point, outgoing);
+                    BSDFSample sample(&shading_point, Dual3f(outgoing));
                     material_data.m_bsdf->sample(
                         sampling_context,
-                        bsdf_data,
+                        material_data.m_bsdf->evaluate_inputs(shading_context, shading_point),
                         false,
                         false,
+                        ScatteringMode::All,
                         sample);
 
                     if (!sample.m_incoming.has_derivatives())
@@ -539,17 +557,28 @@ void DiagnosticSurfaceShader::evaluate(
                         max(
                             norm(sample.m_incoming.get_dx()),
                             norm(sample.m_incoming.get_dy())) * 3.0;
+                    set_result(
+                        Color3f(static_cast<float>(spread)),
+                        shading_result);
 
-                    shading_result.set_main_to_linear_rgb(
-                        Color3f(static_cast<float>(spread)));
                 }
             }
         }
         break;
 
+      case FacingRatio:
+        {
+            const Vector3d& normal = shading_point.get_shading_normal();
+            const Vector3d& view = shading_point.get_ray().m_dir;
+            const double facing = abs(dot(normal, view));
+            set_result(
+                Color3f(static_cast<float>(facing)),
+                shading_result);
+        }
+        break;
+
       default:
         assert(false);
-        shading_result.set_main_to_transparent_black_linear_rgba();
         break;
     }
 }
@@ -579,10 +608,38 @@ void DiagnosticSurfaceShader::extract_parameters()
     }
 }
 
+void DiagnosticSurfaceShader::set_result(
+    const Color3f&              color,
+    ShadingResult&              shading_result)
+{
+    shading_result.m_main.rgb() = color;
+    shading_result.m_main.a = 1.0f;
+}
+
+void DiagnosticSurfaceShader::set_result(
+    const Color4f&              color,
+    ShadingResult&              shading_result)
+{
+    shading_result.m_main = color;
+}
+
+void DiagnosticSurfaceShader::set_result(
+    const Spectrum&             value,
+    ShadingResult&              shading_result)
+{
+    shading_result.m_main.rgb() = value.to_rgb(g_std_lighting_conditions);
+    shading_result.m_main.a = 1.0f;
+}
+
 
 //
 // DiagnosticSurfaceShaderFactory class implementation.
 //
+
+void DiagnosticSurfaceShaderFactory::release()
+{
+    delete this;
+}
 
 const char* DiagnosticSurfaceShaderFactory::get_model() const
 {
@@ -626,13 +683,6 @@ DictionaryArray DiagnosticSurfaceShaderFactory::get_input_metadata() const
 auto_release_ptr<SurfaceShader> DiagnosticSurfaceShaderFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<SurfaceShader>(new DiagnosticSurfaceShader(name, params));
-}
-
-auto_release_ptr<SurfaceShader> DiagnosticSurfaceShaderFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<SurfaceShader>(new DiagnosticSurfaceShader(name, params));
 }

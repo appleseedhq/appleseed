@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -337,7 +337,7 @@ namespace
             IntermRegionLeafFactory factory(assembly);
 
             // Create the root leaf of the region tree.
-            auto_ptr<IntermRegionLeaf> root_leaf(factory.create_leaf());
+            unique_ptr<IntermRegionLeaf> root_leaf(factory.create_leaf());
             root_leaf->m_extent =
                 compute_parent_bbox<GAABB3>(
                     assembly.object_instances().begin(),
@@ -388,7 +388,7 @@ namespace
             IntermRegionTreeBuilder builder;
             builder.build(
                 *this,
-                root_leaf,
+                move(root_leaf),
                 factory,
                 splitter,
                 RegionTreeMaxDuplication);
@@ -444,7 +444,7 @@ RegionTree::RegionTree(const Arguments& arguments)
         const UniqueID triangle_tree_uid = new_guid();
 
         // Create the triangle tree factory.
-        auto_ptr<ILazyFactory<TriangleTree> > triangle_tree_factory(
+        unique_ptr<ILazyFactory<TriangleTree>> triangle_tree_factory(
             new TriangleTreeFactory(
                 TriangleTree::Arguments(
                     arguments.m_scene,
@@ -455,7 +455,7 @@ RegionTree::RegionTree(const Arguments& arguments)
 
         // Create and store the triangle tree.
         m_triangle_trees.insert(
-            make_pair(triangle_tree_uid, new Lazy<TriangleTree>(triangle_tree_factory)));
+            make_pair(triangle_tree_uid, new Lazy<TriangleTree>(move(triangle_tree_factory))));
 
         // Create and store the leaf.
         m_leaves.push_back(new RegionLeaf(*this, triangle_tree_uid));
@@ -477,9 +477,8 @@ void RegionTree::update_non_geometry(const bool enable_intersection_filters)
 {
     for (each<TriangleTreeContainer> i = m_triangle_trees; i; ++i)
     {
-        Update<TriangleTree> access(i->second);
-        if (access.get())
-            access->update_non_geometry(enable_intersection_filters);
+        Access<TriangleTree> access(i->second);
+        access->update_non_geometry(enable_intersection_filters);
     }
 }
 
@@ -494,9 +493,9 @@ RegionTreeFactory::RegionTreeFactory(
 {
 }
 
-auto_ptr<RegionTree> RegionTreeFactory::create()
+unique_ptr<RegionTree> RegionTreeFactory::create()
 {
-    return auto_ptr<RegionTree>(new RegionTree(m_arguments));
+    return unique_ptr<RegionTree>(new RegionTree(m_arguments));
 }
 
 

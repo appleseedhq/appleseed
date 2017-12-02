@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,6 @@
 //
 
 // appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
 #include "dict2dict.h"
 
 // appleseed.renderer headers.
@@ -40,6 +39,9 @@
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 
+// appleseed.foundation headers.
+#include "foundation/platform/python.h"
+
 // Standard headers.
 #include <cstddef>
 #include <string>
@@ -48,6 +50,15 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+
+// Work around a regression in Visual Studio 2015 Update 3.
+#if defined(_MSC_VER) && _MSC_VER == 1900
+namespace boost
+{
+    template <> Entity const volatile* get_pointer<Entity const volatile>(Entity const volatile* p) { return p; }
+    template <> ConnectableEntity const volatile* get_pointer<ConnectableEntity const volatile>(ConnectableEntity const volatile* p) { return p; }
+}
+#endif
 
 namespace
 {
@@ -77,9 +88,6 @@ void bind_entity()
 
         .def("get_parameters", entity_get_parameters)
         .def("set_parameters", entity_set_parameters)
-
-        .def("set_render_layer_index", &Entity::set_render_layer_index)
-        .def("get_render_layer_index", &Entity::get_render_layer_index)
         ;
 
     bpy::class_<ConnectableEntity, auto_release_ptr<ConnectableEntity>, bpy::bases<Entity>, boost::noncopyable>("ConnectableEntity", bpy::no_init);

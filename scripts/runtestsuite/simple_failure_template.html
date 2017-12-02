@@ -1,18 +1,16 @@
 <div class="result">
     <table>
         <tr>
-            <td class="title" colspan="3">{project-path}</td>
+            <td class="title" colspan="3"><pre>{project-path}</pre></td>
         </tr>
         <tr>
             <td class="reference">
-                <a href="{ref-image-url}">
-                    <img src="{ref-image-url}" alt="Reference Image" title="Reference Image">
-                </a>
+                <a href="{ref-image-url}"><img src="{ref-image-url}" alt="Reference Image" title="Reference Image"></a>
             </td>
+            <td class="diff"></td>
             <td class="output">
-                <a href="{output-image-url}">
-                    <img src="{output-image-url}" alt="Output Image" title="Output Image">
-                </a>
+                <a href="{output-image-url}"><img src="{output-image-url}" alt="Output Image" title="Output Image"></a>
+                <br><label class="update-checkbox"><input type="checkbox" class="update-checkbox">Update</label>
             </td>
         </tr>
         <tr>

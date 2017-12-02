@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,10 @@
 #include "utility/scrollareapanhandler.h"
 #include "utility/widgetzoomhandler.h"
 
+// OpenColorIO headers.
+#include<OpenColorIO/OpenColorIO.h>
+namespace OCIO = OCIO_NAMESPACE;
+
 // Qt headers.
 #include <QObject>
 #include <QTextEdit>
@@ -80,18 +84,22 @@ class RenderTab
   public:
     RenderTab(
         ProjectExplorer&                    project_explorer,
-        renderer::Project&                  project);
+        renderer::Project&                  project,
+        OCIO::ConstConfigRcPtr              ocio_config);
+
+    RenderWidget* get_render_widget() const;
+    CameraController* get_camera_controller() const;
+    ScenePickingHandler* get_scene_picking_handler() const;
+
+    void set_clear_frame_button_enabled(const bool enabled);
+    void set_render_region_buttons_enabled(const bool enabled);
 
     void clear();
     void darken();
     void reset_zoom();
-    void set_clear_frame_button_enabled(const bool enabled);
 
     void update();
     void update_size();
-
-    RenderWidget* get_render_widget() const;
-    CameraController* get_camera_controller() const;
 
     struct State
     {
@@ -124,36 +132,39 @@ class RenderTab
     void slot_toggle_pixel_inspector(const bool checked);
 
   private:
-    RenderWidget*                           m_render_widget;
-    QScrollArea*                            m_scroll_area;
-    QToolBar*                               m_toolbar;
-    QToolButton*                            m_save_aovs_button;
-    QToolButton*                            m_quick_save_aovs_button;
-    QToolButton*                            m_set_render_region_button;
-    QToolButton*                            m_clear_render_region_button;
-    QToolButton*                            m_reset_zoom_button;
-    QToolButton*                            m_pixel_inspector_button;
-    QToolButton*                            m_clear_frame_button;
-    QComboBox*                              m_picking_mode_combo;
-    QWidget*                                m_spacer;
-    QLabel*                                 m_info_label;
-    QLabel*                                 m_r_label;
-    QLabel*                                 m_g_label;
-    QLabel*                                 m_b_label;
-    QLabel*                                 m_a_label;
+    RenderWidget*                             m_render_widget;
+    QScrollArea*                              m_scroll_area;
+    QToolBar*                                 m_toolbar;
+    QToolButton*                              m_save_aovs_button;
+    QToolButton*                              m_quick_save_aovs_button;
+    QToolButton*                              m_set_render_region_button;
+    QToolButton*                              m_clear_render_region_button;
+    QToolButton*                              m_reset_zoom_button;
+    QToolButton*                              m_pixel_inspector_button;
+    QToolButton*                              m_clear_frame_button;
+    QComboBox*                                m_picking_mode_combo;
+    QComboBox*                                m_display_transform_combo;
+    QWidget*                                  m_spacer;
+    QLabel*                                   m_info_label;
+    QLabel*                                   m_r_label;
+    QLabel*                                   m_g_label;
+    QLabel*                                   m_b_label;
+    QLabel*                                   m_a_label;
 
-    ProjectExplorer&                        m_project_explorer;
-    renderer::Project&                      m_project;
+    ProjectExplorer&                          m_project_explorer;
+    renderer::Project&                        m_project;
 
-    std::auto_ptr<WidgetZoomHandler>        m_zoom_handler;
-    std::auto_ptr<ScrollAreaPanHandler>     m_pan_handler;
-    std::auto_ptr<MouseCoordinatesTracker>  m_mouse_tracker;
-    std::auto_ptr<PixelColorTracker>        m_pixel_color_tracker;
-    std::auto_ptr<PixelInspectorHandler>    m_pixel_inspector_handler;
-    std::auto_ptr<CameraController>         m_camera_controller;
-    std::auto_ptr<ScenePickingHandler>      m_picking_handler;
-    std::auto_ptr<RenderRegionHandler>      m_render_region_handler;
-    std::auto_ptr<RenderClipboardHandler>   m_clipboard_handler;
+    std::unique_ptr<WidgetZoomHandler>        m_zoom_handler;
+    std::unique_ptr<ScrollAreaPanHandler>     m_pan_handler;
+    std::unique_ptr<MouseCoordinatesTracker>  m_mouse_tracker;
+    std::unique_ptr<PixelColorTracker>        m_pixel_color_tracker;
+    std::unique_ptr<PixelInspectorHandler>    m_pixel_inspector_handler;
+    std::unique_ptr<CameraController>         m_camera_controller;
+    std::unique_ptr<ScenePickingHandler>      m_scene_picking_handler;
+    std::unique_ptr<RenderRegionHandler>      m_render_region_handler;
+    std::unique_ptr<RenderClipboardHandler>   m_clipboard_handler;
+
+    OCIO::ConstConfigRcPtr                    m_ocio_config;
 
     void create_render_widget();
     void create_toolbar();

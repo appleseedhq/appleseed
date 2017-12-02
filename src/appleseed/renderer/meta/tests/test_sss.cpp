@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,13 +33,16 @@
 #include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/dipolebssrdf.h"
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
-#ifdef APPLESEED_WITH_NORMALIZED_DIFFUSION_BSSRDF
+#include "renderer/modeling/bssrdf/gaussianbssrdf.h"
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
-#endif
 #include "renderer/modeling/bssrdf/sss.h"
+#include "renderer/modeling/bssrdf/separablebssrdf.h"
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
+#include "renderer/modeling/color/colorspace.h"
+#include "renderer/modeling/entity/onframebeginrecorder.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/scalarsource.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/utility/iostreamop.h"
 #include "renderer/utility/paramarray.h"
 
@@ -51,11 +54,10 @@
 #include "foundation/math/basis.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
+#include "foundation/utility/arena.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/gnuplotfile.h"
-#ifdef APPLESEED_WITH_PARTIO
-#include "foundation/utility/partiofile.h"
-#endif
+#include "foundation/utility/poison.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
@@ -74,225 +76,245 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     // Utilities.
     //
 
-    template <typename BSSRDFFactory>
-    class DipoleBSSRDFEvaluator
+    template <typename BSSRDFFactory, typename BSSRDFInputValues>
+    class BSSRDFEvaluator
     {
       public:
-        DipoleBSSRDFEvaluator()
-          : m_bssrdf(BSSRDFFactory().create("bssrdf", ParamArray()))
+        explicit BSSRDFEvaluator(Project& project)
+          : m_project(project)
+          , m_bssrdf(
+              static_cast<SeparableBSSRDF*>(
+                  BSSRDFFactory().create("bssrdf", ParamArray()).release()))
         {
             ShadingPointBuilder outgoing_builder(m_outgoing_point);
             outgoing_builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
-            outgoing_builder.set_shading_basis(Basis3d(Vector3d(0.0, 1.0, 0.0)));
             outgoing_builder.set_point(Vector3d(0.0, 0.0, 0.0));
+            outgoing_builder.set_geometric_normal(Vector3d(0.0, 1.0, 0.0));
+            outgoing_builder.set_shading_basis(Basis3d(Vector3d(0.0, 1.0, 0.0)));
+            outgoing_builder.set_side(ObjectInstance::FrontSide);
+        }
+
+        ~BSSRDFEvaluator()
+        {
+            m_recorder.on_frame_end(m_project);
         }
 
         void set_values_from_sigmas(
-            const double    sigma_a,
-            const double    sigma_s,
-            const double    eta,
-            const double    g)
+            const float     sigma_a,
+            const float     sigma_s)
         {
-            m_values.m_weight = 1.0;
-            m_values.m_anisotropy = g;
-            m_values.m_outside_ior = 1.0;
-            m_values.m_inside_ior = eta;
-
             m_bssrdf->get_inputs().find("sigma_a").bind(new ScalarSource(sigma_a));
-            m_bssrdf->get_inputs().find("sigma_a").source()->evaluate_uniform(m_values.m_sigma_a);
-
             m_bssrdf->get_inputs().find("sigma_s").bind(new ScalarSource(sigma_s));
-            m_bssrdf->get_inputs().find("sigma_s").source()->evaluate_uniform(m_values.m_sigma_s);
 
-            m_bssrdf->prepare_inputs(&m_values);
+            m_bssrdf->on_frame_begin(m_project, nullptr, m_recorder);
+
+            m_values.m_weight = 1.0f;
+            poison(m_values.m_reflectance);
+            poison(m_values.m_reflectance_multiplier);
+            poison(m_values.m_mfp);
+            poison(m_values.m_mfp_multiplier);
+            m_values.m_sigma_a.set(sigma_a);
+            m_values.m_sigma_s.set(sigma_s);
+            m_values.m_g = 0.0f;
+            m_values.m_ior = 1.0f;
+            m_values.m_fresnel_weight = 1.0f;
+
+            m_bssrdf->prepare_inputs(m_arena, m_outgoing_point, &m_values);
         }
 
-        void set_values_from_rd_dmfp(
-            const double    rd,
-            const double    dmfp,
-            const double    eta,
-            const double    g)
+        void set_values_from_rd_mfp(
+            const float     rd,
+            const float     mfp)
         {
-            m_values.m_weight = 1.0;
-            m_values.m_reflectance.set(static_cast<float>(rd));
-            m_values.m_reflectance_multiplier = 1.0;
-            m_values.m_dmfp.set(static_cast<float>(dmfp));
-            m_values.m_dmfp_multiplier = 1.0;
-            m_values.m_anisotropy = g;
-            m_values.m_outside_ior = 1.0;
-            m_values.m_inside_ior = eta;
+            m_bssrdf->on_frame_begin(m_project, nullptr, m_recorder);
 
-            m_bssrdf->prepare_inputs(&m_values);
+            do_set_values_from_rd_mfp(m_values, rd, mfp);
+
+            m_bssrdf->prepare_inputs(m_arena, m_outgoing_point, &m_values);
         }
 
-        const double get_sigma_tr() const
+        const float get_sigma_tr() const
         {
-            return static_cast<double>(m_values.m_sigma_tr[0]);
+            return m_values.m_precomputed.m_sigma_tr[0];
         }
 
-        double evaluate(const double r) const
+        float sample_profile(const float u) const
+        {
+            return m_bssrdf->sample_profile(&m_values, 0, u);
+        }
+
+        float evaluate_profile_pdf(const float disk_radius) const
+        {
+            return m_bssrdf->evaluate_profile_pdf(&m_values, disk_radius);
+        }
+
+        float evaluate_profile(const float disk_radius) const
+        {
+            ShadingPoint incoming_point;
+            ShadingPointBuilder incoming_builder(incoming_point);
+            incoming_builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
+            incoming_builder.set_point(Vector3d(disk_radius, 0.0, 0.0));
+            incoming_builder.set_shading_basis(Basis3d(Vector3d(0.0, 1.0, 0.0)));
+
+            Spectrum value;
+            m_bssrdf->evaluate_profile(
+                &m_values,
+                m_outgoing_point,
+                Vector3f(0.0f, 1.0f, 0.0f),
+                incoming_point,
+                Vector3f(0.0f, 1.0f, 0.0f),
+                value);
+
+            return value[0];
+        }
+
+        float evaluate(const float radius) const
         {
             ShadingPoint incoming_point;
             ShadingPointBuilder incoming_builder(incoming_point);
             incoming_builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
             incoming_builder.set_shading_basis(Basis3d(Vector3d(0.0, 1.0, 0.0)));
-            incoming_builder.set_point(Vector3d(r, 0.0, 0.0));
-
-            const Vector3d Up(0.0, 1.0, 0.0);
+            incoming_builder.set_point(Vector3d(radius, 0.0, 0.0));
 
             Spectrum result;
             m_bssrdf->evaluate(
                 &m_values,
                 m_outgoing_point,
-                Up,
+                Vector3f(0.0f, 1.0f, 0.0f),
                 incoming_point,
-                Up,
+                Vector3f(0.0f, 1.0f, 0.0f),
                 result);
 
-            return static_cast<double>(result[0]);
+            return result[0];
         }
 
       private:
-        auto_release_ptr<BSSRDF>    m_bssrdf;
-        ShadingPoint                m_outgoing_point;
-        DipoleBSSRDFInputValues     m_values;
+        Arena                               m_arena;
+        Project&                            m_project;
+        auto_release_ptr<SeparableBSSRDF>   m_bssrdf;
+        ShadingPoint                        m_outgoing_point;
+        BSSRDFInputValues                   m_values;
+        OnFrameBeginRecorder                m_recorder;
+
+        template <typename InputValues>
+        static void do_set_values_from_rd_mfp(
+            InputValues&                    values,
+            const float                     rd,
+            const float                     mfp)
+        {
+            values.m_weight = 1.0f;
+            values.m_reflectance.set(rd);
+            values.m_reflectance_multiplier = 1.0f;
+            values.m_mfp.set(mfp);
+            values.m_mfp_multiplier = 1.0f;
+            values.m_ior = 1.0f;
+            values.m_fresnel_weight = 1.0f;
+        }
+
+        static void do_set_values_from_rd_mfp(
+            DipoleBSSRDFInputValues&        values,
+            const float                     rd,
+            const float                     mfp)
+        {
+            values.m_weight = 1.0f;
+            values.m_reflectance.set(rd);
+            values.m_reflectance_multiplier = 1.0f;
+            values.m_mfp.set(mfp);
+            values.m_mfp_multiplier = 1.0f;
+            poison(values.m_sigma_a);
+            poison(values.m_sigma_s);
+            values.m_g = 0.0f;
+            values.m_ior = 1.0f;
+            values.m_fresnel_weight = 1.0f;
+        }
     };
 
-    template <typename BSSRDFEvaluator>
-    double integrate_dipole(
-        MersenneTwister&        rng,
-        const BSSRDFEvaluator&  bssrdf_eval,
-        const size_t            sample_count)
+    template <typename BSSRDFEvaluatorType>
+    float integrate_bssrdf_profile(const BSSRDFEvaluatorType& bssrdf_eval, const size_t sample_count)
     {
-        const double sigma_tr = bssrdf_eval.get_sigma_tr();
-        double integral = 0.0;
+        MersenneTwister rng;
+
+        float integral = 0.0f;
 
         for (size_t i = 0; i < sample_count; ++i)
         {
-            const double u = rand_double2(rng);
-            const double r = sample_exponential_distribution(u, sigma_tr);
-
-            const double pdf_radius = exponential_distribution_pdf(r, sigma_tr);
-            const double pdf_angle = RcpTwoPi;
-            const double pdf = pdf_radius * pdf_angle;
-
-            const double value = bssrdf_eval.evaluate(r);
-            integral += value / pdf;
+            const float s = rand_float2(rng);
+            const float radius = bssrdf_eval.sample_profile(s);
+            const float pdf = bssrdf_eval.evaluate_profile_pdf(radius);
+            if (pdf > 0.0f)
+            {
+                const float value = bssrdf_eval.evaluate_profile(radius);
+                integral += value / pdf;
+            }
         }
 
         return integral / sample_count;
     }
 
-    template <typename BSSRDFFactory>
-    double integrate_dipole_rd_dmfp(
-        MersenneTwister&        rng,
-        const double            rd,
-        const double            dmfp,
-        const double            eta,
-        const size_t            sample_count)
+    template <typename BSSRDFEvaluatorType>
+    float integrate_bssrdf(const BSSRDFEvaluatorType& bssrdf_eval, const size_t sample_count)
     {
-        DipoleBSSRDFEvaluator<BSSRDFFactory> bssrdf_eval;
-        bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, eta, 0.0);
+        MersenneTwister rng;
 
-        return integrate_dipole(rng, bssrdf_eval, sample_count);
-    }
+        float integral = 0.0f;
 
-    template <typename BSSRDFFactory>
-    double integrate_dipole_alpha_prime(
-        MersenneTwister&        rng,
-        const double            alpha_prime,
-        const double            eta,
-        const size_t            sample_count)
-    {
-        const double sigma_s_prime = alpha_prime;
-        const double sigma_a = 1.0 - alpha_prime;
+        for (size_t i = 0; i < sample_count; ++i)
+        {
+            const float s = rand_float2(rng);
+            const float radius = bssrdf_eval.sample_profile(s);
+            const float pdf = bssrdf_eval.evaluate_profile_pdf(radius);
+            if (pdf > 0.0f)
+            {
+                const float value = bssrdf_eval.evaluate(radius);
+                integral += value / pdf;
+            }
+        }
 
-        DipoleBSSRDFEvaluator<BSSRDFFactory> bssrdf_eval;
-        bssrdf_eval.set_values_from_sigmas(sigma_a, sigma_s_prime, eta, 0.0);
-
-        return integrate_dipole(rng, bssrdf_eval, sample_count);
+        return integral / sample_count;
     }
 
     //
     // BSSRDF reparameterization.
     //
 
-    template <typename ComputeRdFun>
-    double rd_alpha_prime_roundtrip(
-        const double        rd,
-        const double        eta)
+    static const float RDs[] =
     {
-        const ComputeRdFun f(eta);
-        const double alpha_prime = compute_alpha_prime(f, rd);
-        return f(alpha_prime);
-    }
-
-    const double AlphaPrimeRoundtripTestEps = 0.001;
-
-    static const double AlphaPrimes[] =
-    {
-        0.025, 0.1, 0.2, 0.4, 0.6, 0.8, 0.99
+        0.025f, 0.1f, 0.2f, 0.4f, 0.6f, 0.8f, 0.99f
     };
 
-    static const double IORs[] =
+    static const float IORs[] =
     {
-        1.6, 1.3, 1.2, 1.3, 1.4, 1.3, 1.5
+        1.6f, 1.3f, 1.2f, 1.3f, 1.4f, 1.3f, 1.5f
     };
 
-    TEST_CASE(BSSRDFReparam_StandardDipoleRoundtrip)
+    TEST_CASE(BSSRDFReparam_StandardDipole_RdAlphaPrimeRdRoundtrip)
     {
-        for (size_t i = 0, e = countof(AlphaPrimes); i < e; ++i)
-            EXPECT_FEQ_EPS(AlphaPrimes[i], rd_alpha_prime_roundtrip<ComputeRdStandardDipole>(AlphaPrimes[i], IORs[i]), AlphaPrimeRoundtripTestEps);
-    }
-
-    TEST_CASE(BSSRDFReparam_BetterDipoleRoundtrip)
-    {
-        for (size_t i = 0, e = countof(AlphaPrimes); i < e; ++i)
-            EXPECT_FEQ_EPS(AlphaPrimes[i], rd_alpha_prime_roundtrip<ComputeRdBetterDipole>(AlphaPrimes[i], IORs[i]), AlphaPrimeRoundtripTestEps);
-    }
-
-    TEST_CASE(BSSRDFReparamStandardDipole_VaryingDiffuseMeanFreePath)
-    {
-        const size_t N = 1000;
-        const double Eta = 1.0 / 1.3;
-        const double Anisotropy = 0.0;
-
-        MersenneTwister rng;
-
-        for (size_t i = 0; i < N; ++i)
+        for (size_t i = 0, e = countof(RDs); i < e; ++i)
         {
-            const ComputeRdStandardDipole rd_fun(Eta);
-            const Spectrum rd(rand_float1(rng, 0.001f, 0.999f));
-
-            Spectrum sigma_a1, sigma_s1;
-            compute_absorption_and_scattering(
-                rd_fun,
-                rd,
-                Spectrum(1.0f),
-                Anisotropy,
-                sigma_a1,
-                sigma_s1);
-
-            const Spectrum dmfp(rand_float1(rng, 0.001f, 10.0f));
-            Spectrum sigma_a, sigma_s;
-            compute_absorption_and_scattering(
-                rd_fun,
-                rd,
-                dmfp,
-                Anisotropy,
-                sigma_a,
-                sigma_s);
-
-            EXPECT_FEQ_EPS(sigma_a1 / dmfp, sigma_a, 1.0e-6f);
-            EXPECT_FEQ_EPS(sigma_s1 / dmfp, sigma_s, 1.0e-6f);
+            const ComputeRdStandardDipole f(IORs[i]);
+            const float rd = RDs[i];
+            const float alpha_prime = compute_alpha_prime(f, rd);
+            const float new_rd = f(alpha_prime);
+            EXPECT_FEQ_EPS(rd, new_rd, 1.0e-3f);
         }
     }
 
-    TEST_CASE(BSSRDFReparamStandardDipole_RoundTrip)
+    TEST_CASE(BSSRDFReparam_BetterDipole_RdAlphaPrimeRdRoundtrip)
+    {
+        for (size_t i = 0, e = countof(RDs); i < e; ++i)
+        {
+            const ComputeRdBetterDipole f(IORs[i]);
+            const float rd = RDs[i];
+            const float alpha_prime = compute_alpha_prime(f, rd);
+            const float new_rd = f(alpha_prime);
+            EXPECT_FEQ_EPS(rd, new_rd, 1.0e-3f);
+        }
+    }
+
+    TEST_CASE(BSSRDFReparam_StandardDipole_SigmasRdMfpSigmasRoundTrip)
     {
         //
-        // 1. Start with sigma_a and sigma_s.
-        //    Compute diffuse surface reflectance and diffuse mean free path.
+        // 1. (sigma_a, sigma_s) -> (diffuse surface reflectance, mean free path).
         //
         //    Using skin2 material parameters from
         //
@@ -302,49 +324,52 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         const Color3f sigma_a(0.013f, 0.070f, 0.145f);      // in mm^-1
         const Color3f sigma_s(1.09f, 1.59f, 1.79f);         // in mm^-1
+        const Spectrum sigma_t(sigma_a + sigma_s, g_std_lighting_conditions, Spectrum::Reflectance);
 
-        const Spectrum sigma_a_spectrum(sigma_a);
-        const Spectrum sigma_s_spectrum(sigma_s);
+        const Spectrum sigma_a_spectrum(sigma_a, g_std_lighting_conditions, Spectrum::Reflectance);
+        const Spectrum sigma_s_spectrum(sigma_s, g_std_lighting_conditions, Spectrum::Reflectance);
 
         const Color3f alpha_prime = sigma_s / (sigma_a + sigma_s);
-        const double eta = 1.0;
+        const float eta = 1.0f;
         const ComputeRdStandardDipole rd_fun(eta);
         const Color3f rd(
-            static_cast<float>(rd_fun(alpha_prime[0])),
-            static_cast<float>(rd_fun(alpha_prime[1])),
-            static_cast<float>(rd_fun(alpha_prime[2])));
+            rd_fun(alpha_prime[0]),
+            rd_fun(alpha_prime[1]),
+            rd_fun(alpha_prime[2]));
 
-        // rd = [185, 138, 112] in 8-bit linear RGB
+        // rd = [185, 138, 112] in 8-bit linear RGB.
 
         Spectrum sigma_tr;
         effective_extinction_coefficient(
             sigma_a_spectrum,
             sigma_s_spectrum,
-            0.0,        // anisotropy
+            0.0f,       // anisotropy
             sigma_tr);
 
-        const Spectrum dmfp = Spectrum(1.0f) / sigma_tr;
+        const Spectrum mfp = Spectrum(1.0f) / sigma_t;
 
         //
-        // 2. Start from diffuse surface reflectance and diffuse mean free path.
-        //    Compute sigma_a and sigma_s.
+        // 2. (diffuse surface reflectance, mean free path) -> (sigma_a, sigma_s).
         //
 
         Spectrum new_sigma_a_spectrum, new_sigma_s_spectrum;
-        const Spectrum rd_spectrum(rd);
-        compute_absorption_and_scattering(
+        const Spectrum rd_spectrum(rd, g_std_lighting_conditions, Spectrum::Reflectance);
+        compute_absorption_and_scattering_mfp(
             rd_fun,
             rd_spectrum,
-            dmfp,
-            0.0,        // anisotropy
+            mfp,
             new_sigma_a_spectrum,
             new_sigma_s_spectrum);
+
+        //
+        // 3. Compare sigmas.
+        //
 
         EXPECT_FEQ_EPS(sigma_a_spectrum, new_sigma_a_spectrum, 1.0e-5f);
         EXPECT_FEQ_EPS(sigma_s_spectrum, new_sigma_s_spectrum, 1.0e-5f);
     }
 
-    TEST_CASE(Plot_CompareStandardAndBetterDipolesReparameterizations)
+    TEST_CASE(Plot_StandardAndBetterDipolesReparameterizations)
     {
         GnuplotFile plotfile;
         plotfile.set_title("BSSRDF Reparameterization");
@@ -353,7 +378,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_xrange(-0.05, 1.0);
         plotfile.set_yrange(0.0, 1.05);
 
-        const double Eta = 1.0 / 1.3;
+        const float Eta = 1.0f / 1.3f;
         const ComputeRdStandardDipole std_rd_fun(Eta);
         const ComputeRdBetterDipole better_rd_fun(Eta);
 
@@ -362,17 +387,15 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         for (size_t i = 0; i < PointCount; ++i)
         {
-            const double rd = fit<size_t, double>(i, 0, PointCount - 1, 0.0, 1.0);
+            const float rd = fit<size_t, float>(i, 0, PointCount - 1, 0.0f, 1.0f);
 
-            std_points.push_back(
-                Vector2d(
-                    rd,
-                    compute_alpha_prime(std_rd_fun, rd)));
+            std_points.emplace_back(
+                rd,
+                compute_alpha_prime(std_rd_fun, rd));
 
-            better_points.push_back(
-                Vector2d(
-                    rd,
-                    compute_alpha_prime(better_rd_fun, rd)));
+            better_points.emplace_back(
+                rd,
+                compute_alpha_prime(better_rd_fun, rd));
         }
 
         plotfile
@@ -390,66 +413,37 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.write("unit tests/outputs/test_sss_reparam_compare.gnuplot");
     }
 
-    TEST_CASE(CompareAnalyticalAndNumericalIntegrals_StandardDipole)
+    TEST_CASE(Plot_AnalyticalAndNumericalIntegrals_StandardDipole)
     {
-        const double Eta = 1.0 / 1.0;
-        const ComputeRdStandardDipole rd_fun(Eta);
+        const size_t PointCount = 200;
+        const size_t SampleCount = 1000;
 
-        const size_t TestCount = 100;
-        const size_t SampleCount = 10000;
-
-        for (size_t i = 0; i < TestCount; ++i)
-        {
-            const double Eps = 1.0e-6;
-            const double alpha_prime = fit<size_t, double>(i, 0, TestCount - 1, 0.0 + Eps, 1.0 - Eps);
-
-            const double rd_a = RcpPi * rd_fun(alpha_prime);
-
-            MersenneTwister rng;
-            const double rd_n =
-                integrate_dipole_alpha_prime<StandardDipoleBSSRDFFactory>(
-                    rng,
-                    alpha_prime,
-                    Eta,
-                    SampleCount);
-
-            EXPECT_FEQ_EPS(rd_a, rd_n, 0.02);
-        }
-    }
-
-    TEST_CASE(Plot_CompareAnalyticalAndNumericalIntegrals_StandardDipole)
-    {
         GnuplotFile plotfile;
         plotfile.set_title("Integration of the Standard Dipole Profile");
         plotfile.set_xlabel("Alpha'");
         plotfile.set_ylabel("Rd");
 
-        const double Eta = 1.0 / 1.0;
-        const ComputeRdStandardDipole rd_fun(Eta);
+        auto_release_ptr<Project> project(ProjectFactory::create("project"));
 
-        const size_t PointCount = 1000;
-        const size_t SampleCount = 1000;
+        const ComputeRdStandardDipole rd_fun(1.0f);
         vector<Vector2d> ai_points, ni_points;
-        MersenneTwister rng;
 
         for (size_t i = 0; i < PointCount; ++i)
         {
-            const double Eps = 1.0e-6;
-            const double alpha_prime = fit<size_t, double>(i, 0, PointCount - 1, 0.0 + Eps, 1.0 - Eps);
+            const float Eps = 1.0e-6f;
+            const float alpha_prime = fit<size_t, float>(i, 0, PointCount - 1, 0.0f + Eps, 1.0f - Eps);
 
-            ai_points.push_back(
-                Vector2d(
-                    alpha_prime,
-                    RcpPi * rd_fun(alpha_prime)));
+            // Analytical integration.
+            const float rd_a = rd_fun(alpha_prime);
+            ai_points.emplace_back(alpha_prime, rd_a);
 
-            ni_points.push_back(
-                Vector2d(
-                    alpha_prime,
-                    integrate_dipole_alpha_prime<StandardDipoleBSSRDFFactory>(
-                        rng,
-                        alpha_prime,
-                        Eta,
-                        SampleCount)));
+            // Numerical integration.
+            const float sigma_s_prime = alpha_prime;
+            const float sigma_a = 1.0f - alpha_prime;
+            BSSRDFEvaluator<StandardDipoleBSSRDFFactory, DipoleBSSRDFInputValues> bssrdf_eval(project.ref());
+            bssrdf_eval.set_values_from_sigmas(sigma_a, sigma_s_prime);
+            const float rd_n = integrate_bssrdf(bssrdf_eval, SampleCount);
+            ni_points.emplace_back(alpha_prime, rd_n);
         }
 
         plotfile
@@ -467,39 +461,37 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.write("unit tests/outputs/test_sss_stddipole_integrals.gnuplot");
     }
 
-    TEST_CASE(Plot_CompareAnalyticalAndNumericalIntegrals_BetterDipole)
+    TEST_CASE(Plot_AnalyticalAndNumericalIntegrals_BetterDipole)
     {
+        const size_t PointCount = 200;
+        const size_t SampleCount = 1000;
+
         GnuplotFile plotfile;
         plotfile.set_title("Integration of the Better Dipole Profile");
         plotfile.set_xlabel("Alpha'");
         plotfile.set_ylabel("Rd");
 
-        const double Eta = 1.0 / 1.0;
-        const ComputeRdBetterDipole rd_fun(Eta);
+        auto_release_ptr<Project> project(ProjectFactory::create("project"));
 
-        const size_t PointCount = 1000;
-        const size_t SampleCount = 1000;
+        const ComputeRdBetterDipole rd_fun(1.0f);
         vector<Vector2d> ai_points, ni_points;
-        MersenneTwister rng;
 
         for (size_t i = 0; i < PointCount; ++i)
         {
-            const double Eps = 1.0e-6;
-            const double alpha_prime = fit<size_t, double>(i, 0, PointCount - 1, 0.0 + Eps, 1.0 - Eps);
+            const float Eps = 1.0e-6f;
+            const float alpha_prime = fit<size_t, float>(i, 0, PointCount - 1, 0.0f + Eps, 1.0f - Eps);
 
-            ai_points.push_back(
-                Vector2d(
-                    alpha_prime,
-                    RcpPi * rd_fun(alpha_prime)));
+            // Analytical integration.
+            const float rd_a = rd_fun(alpha_prime);
+            ai_points.emplace_back(alpha_prime, rd_a);
 
-            ni_points.push_back(
-                Vector2d(
-                    alpha_prime,
-                    integrate_dipole_alpha_prime<BetterDipoleBSSRDFFactory>(
-                        rng,
-                        alpha_prime,
-                        Eta,
-                        SampleCount)));
+            // Numerical integration.
+            const float sigma_s_prime = alpha_prime;
+            const float sigma_a = 1.0f - alpha_prime;
+            BSSRDFEvaluator<BetterDipoleBSSRDFFactory, DipoleBSSRDFInputValues> bssrdf_eval(project.ref());
+            bssrdf_eval.set_values_from_sigmas(sigma_a, sigma_s_prime);
+            const float rd_n = integrate_bssrdf(bssrdf_eval, SampleCount);
+            ni_points.emplace_back(alpha_prime, rd_n);
         }
 
         plotfile
@@ -518,192 +510,52 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     }
 
     //
-    // Gaussian profile.
+    // Gaussian BSSRDF.
     //
 
-    TEST_CASE(GaussianProfileIntegration_UniformSampling)
+    TEST_CASE(GaussianBSSRDF_IntegrateProfile)
     {
-        const double V = 1.0;
-        const double RIntegralThreshold = 0.999;
-        const double RMax2Constant = -2.0 * log(1.0 - RIntegralThreshold);
-        const double RMax2 = V * RMax2Constant;
-
+        const float Rd = 0.5f;
+        const float Mfp = 0.1f;
         const size_t SampleCount = 10000;
-        MersenneTwister rng;
 
-        double integral = 0.0;
+        auto_release_ptr<Project> project(ProjectFactory::create("project"));
+        BSSRDFEvaluator<GaussianBSSRDFFactory, GaussianBSSRDFInputValues> bssrdf_eval(project.ref());
+        bssrdf_eval.set_values_from_rd_mfp(Rd, Mfp);
 
-        for (size_t i = 0; i < SampleCount; ++i)
-        {
-            const double u = rand_double2(rng);
-            const double r = u * sqrt(RMax2);
-            const double pdf_radius = 1.0 / sqrt(RMax2);
-            const double pdf_angle = RcpTwoPi;
-            const double pdf = pdf_radius * pdf_angle;
-            const double value = r * gaussian_profile(r, V, RIntegralThreshold);
-            integral += value / pdf;
-        }
+        const float integral = integrate_bssrdf_profile(bssrdf_eval, SampleCount);
 
-        integral /= SampleCount;
-
-        EXPECT_FEQ_EPS(1.0, integral, 0.01);
-    }
-
-    TEST_CASE(GaussianProfileIntegration_ImportanceSampling)
-    {
-        const double V = 1.0;
-        const double RIntegralThreshold = 0.999;
-        const double RMax2Constant = -2.0 * log(1.0 - RIntegralThreshold);
-        const double RMax2 = V * RMax2Constant;
-
-        const size_t SampleCount = 1000;
-        MersenneTwister rng;
-
-        double integral = 0.0;
-
-        for (size_t i = 0; i < SampleCount; ++i)
-        {
-            const double u = rand_double2(rng);
-            const double r = gaussian_profile_sample(u, V, RMax2);
-            const double pdf = gaussian_profile_pdf(r, V, RIntegralThreshold);
-            const double value = gaussian_profile(r, V, RIntegralThreshold);
-            integral += value / pdf;
-        }
-
-        integral /= SampleCount;
-
-        EXPECT_FEQ(1.0, integral);
+        EXPECT_FEQ_EPS(Rd, integral, 1.0e-2f);
     }
 
     //
-    // Normalized diffusion profile.
+    // Normalized Diffusion BSSRDF.
     //
 
-    const double NormalizedDiffusionTestEps = 0.0001;
-
-    TEST_CASE(NormalizedDiffusionS)
+    TEST_CASE(NormalizedDiffusion_PlotS_mfp)
     {
-        static const double Expected[] =
+        GnuplotFile plotfile;
+        plotfile.set_title("Scaling Factor For Searchlight Configuration With mfp Parameterization");
+        plotfile.set_xlabel("A");
+        plotfile.set_ylabel("s(A)");
+        plotfile.set_xrange(0.0, 1.0);
+        plotfile.set_yrange(0.0, 6.0);
+
+        const size_t N = 1000;
+        vector<Vector2d> points;
+
+        for (size_t i = 0; i < N; ++i)
         {
-            4.68592, 4.11466, 3.77984, 3.60498, 3.52856, 3.5041, 3.50008,
-            3.50002, 3.5024, 3.52074, 3.58352, 3.73426, 4.03144, 4.54858,
-            5.37416, 6.6117, 8.37968, 10.8116, 14.056, 18.2763, 23.6511
-        };
-
-        for (size_t i = 0, e = countof(Expected); i < e; ++i)
-        {
-            const double a = fit<size_t, double>(i, 0, countof(Expected) - 1, 0.0, 1.0);
-            const double s = normalized_diffusion_s(a);
-
-            EXPECT_FEQ_EPS(Expected[i], s, NormalizedDiffusionTestEps);
-        }
-    }
-
-    TEST_CASE(NormalizedDiffusionR)
-    {
-        static const double Expected[] =
-        {
-            2.53511, 0.674967, 0.327967, 0.192204, 0.124137, 0.0852575,
-            0.0611367, 0.0452741, 0.0343737, 0.0266197, 0.0209473, 0.0167009,
-            0.0134603, 0.0109471, 0.00897108, 0.00739936, 0.00613676, 0.00511384,
-            0.00427902, 0.0035934, 0.00302721
-        };
-
-        for (size_t i = 0, e = countof(Expected); i < e; ++i)
-        {
-            const double A = 0.5;                           // surface albedo
-            const double L = 1.0;                           // mean free path
-            const double S = 3.583521;                      // scaling factor for A = 0.5
-            const double r = static_cast<double>(i) * 0.1 + 0.05;
-            const double value = normalized_diffusion_profile(r, L, S, A);
-
-            EXPECT_FEQ_EPS(Expected[i], value, NormalizedDiffusionTestEps);
-        }
-    }
-
-    TEST_CASE(NormalizedDiffusionCDF)
-    {
-        static const double Expected[] =
-        {
-            0.282838, 0.598244, 0.760091, 0.85267, 0.908478, 0.942885, 0.964293,
-            0.97766, 0.98602, 0.99125, 0.994523, 0.996572, 0.997854, 0.998657,
-            0.999159, 0.999474, 0.999671, 0.999794, 0.999871, 0.999919, 0.999949,
-            0.999968, 0.99998, 0.999988, 0.999992, 0.999995, 0.999997, 0.999998,
-            0.999999, 0.999999, 1
-        };
-
-        for (size_t i = 0, e = countof(Expected); i < e; ++i)
-        {
-            const double L = 1.0;                           // mean free path
-            const double S = 14.056001;                     // scaling factor for A = 0.9
-            const double r = static_cast<double>(i) * 0.1 + 0.05;
-            const double cdf = normalized_diffusion_cdf(r, L, S);
-
-            EXPECT_FEQ_EPS(Expected[i], cdf, NormalizedDiffusionTestEps);
-        }
-    }
-
-    TEST_CASE(NormalizedDiffusionSample)
-    {
-        MersenneTwister rng;
-
-        for (size_t i = 0; i < 1000; ++i)
-        {
-            const double u = rand_double2(rng);
-            const double a = rand_double1(rng);
-            const double l = rand_double1(rng, 0.001, 10.0);
-            const double s = normalized_diffusion_s(a);
-            const double r = normalized_diffusion_sample(u, l, s, 0.00001);
-            const double e = normalized_diffusion_cdf(r, l, s);
-
-            EXPECT_FEQ_EPS(u, e, 0.005);
-        }
-    }
-
-    TEST_CASE(NormalizedDiffusionMaxRadius)
-    {
-        MersenneTwister rng;
-
-        for (size_t i = 0; i < 1000; ++i)
-        {
-            const double a = rand_double1(rng);
-            const double l = rand_double1(rng, 0.001, 10.0);
-            const double s = normalized_diffusion_s(a);
-            const double r = normalized_diffusion_max_radius(l, s);
-            const double value = normalized_diffusion_profile(r, l, s, a);
-
-            EXPECT_LT(0.00001, value);
-        }
-    }
-
-    TEST_CASE(NormalizedDiffusionProfileIntegration)
-    {
-        const double A = 0.5;
-        const double L = 100;
-        const double s = normalized_diffusion_s(A);
-
-        const size_t SampleCount = 1000;
-        MersenneTwister rng;
-
-        double integral = 0.0;
-
-        for (size_t i = 0; i < SampleCount; ++i)
-        {
-            const double u = rand_double2(rng);
-            const double r = normalized_diffusion_sample(u, L, s);
-            const double pdf_radius = normalized_diffusion_pdf(r, L, s);
-            const double pdf_angle = RcpTwoPi;
-            const double pdf = pdf_radius * pdf_angle;
-            const double value = r * normalized_diffusion_profile(r, L, s, A);
-            integral += value / pdf;
+            const float a = fit<size_t, float>(i, 0, N - 1, 0.0f, 1.0f);
+            const float s = normalized_diffusion_s_mfp(a);
+            points.emplace_back(a, s);
         }
 
-        integral /= SampleCount;
-
-        EXPECT_FEQ(A, integral);
+        plotfile.new_plot().set_points(points);
+        plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_s_mfp.gnuplot");
     }
 
-    TEST_CASE(PlotNormalizedDiffusionS)
+    TEST_CASE(NormalizedDiffusion_PlotS_dmfp)
     {
         GnuplotFile plotfile;
         plotfile.set_title("Scaling Factor For Searchlight Configuration With dmfp Parameterization");
@@ -717,38 +569,38 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         for (size_t i = 0; i < N; ++i)
         {
-            const double a = fit<size_t, double>(i, 0, N - 1, 0.0, 1.0);
-            const double s = normalized_diffusion_s(a);
-            points.push_back(Vector2d(a, s));
+            const float a = fit<size_t, float>(i, 0, N - 1, 0.0f, 1.0f);
+            const float s = normalized_diffusion_s_dmfp(a);
+            points.emplace_back(a, s);
         }
 
         plotfile.new_plot().set_points(points);
-        plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_s.gnuplot");
+        plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_s_dmfp.gnuplot");
     }
 
-    TEST_CASE(PlotNormalizedDiffusionR)
+    TEST_CASE(NormalizedDiffusion_PlotR_mfp)
     {
         GnuplotFile plotfile;
-        plotfile.set_title("Reflectance Profile For Searchlight Configuration With dmfp Parameterization");
+        plotfile.set_title("Reflectance Profile For Searchlight Configuration With mfp Parameterization");
         plotfile.set_xlabel("r");
         plotfile.set_ylabel("r R(r)");
         plotfile.set_xrange(0.0, 8.0);
-        plotfile.set_yrange(0.001, 1.0);
+        plotfile.set_yrange(0.001, 0.1);
         plotfile.set_logscale_y();
 
         for (size_t i = 9; i >= 1; --i)
         {
-            const double a = static_cast<double>(i) / 10.0;
-            const double s = normalized_diffusion_s(a);
+            const float a = static_cast<float>(i) / 10.0f;
+            const float s = normalized_diffusion_s_mfp(a);
 
             const size_t N = 1000;
             vector<Vector2d> points;
 
             for (size_t j = 0; j < N; ++j)
             {
-                const double r = max(fit<size_t, double>(j, 0, N - 1, 0.0, 8.0), 0.0001);
-                const double y = r * normalized_diffusion_profile(r, 1.0, s, a);
-                points.push_back(Vector2d(r, y));
+                const float r = max(fit<size_t, float>(j, 0, N - 1, 0.0f, 8.0f), 0.0001f);
+                const float y = r * normalized_diffusion_profile(r, 1.0f, s, a);
+                points.emplace_back(r, y);
             }
 
             static const char* Colors[9] =
@@ -771,10 +623,58 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
                 .set_color(Colors[i - 1]);
         }
 
-        plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_r.gnuplot");
+        plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_r_mfp.gnuplot");
     }
 
-    TEST_CASE(PlotNormalizedDiffusionCDF)
+    TEST_CASE(NormalizedDiffusion_PlotR_dmfp)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title("Reflectance Profile For Searchlight Configuration With dmfp Parameterization");
+        plotfile.set_xlabel("r");
+        plotfile.set_ylabel("r R(r)");
+        plotfile.set_xrange(0.0, 8.0);
+        plotfile.set_yrange(0.001, 0.1);
+        plotfile.set_logscale_y();
+
+        for (size_t i = 9; i >= 1; --i)
+        {
+            const float a = static_cast<float>(i) / 10.0f;
+            const float s = normalized_diffusion_s_dmfp(a);
+
+            const size_t N = 1000;
+            vector<Vector2d> points;
+
+            for (size_t j = 0; j < N; ++j)
+            {
+                const float r = max(fit<size_t, float>(j, 0, N - 1, 0.0f, 8.0f), 0.0001f);
+                const float y = r * normalized_diffusion_profile(r, 1.0f, s, a);
+                points.emplace_back(r, y);
+            }
+
+            static const char* Colors[9] =
+            {
+                "gray",
+                "orange",
+                "black",
+                "brown",
+                "cyan",
+                "magenta",
+                "blue",
+                "green",
+                "red"
+            };
+
+            plotfile
+                .new_plot()
+                .set_points(points)
+                .set_title("A = " + to_string(a))
+                .set_color(Colors[i - 1]);
+        }
+
+        plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_r_dmfp.gnuplot");
+    }
+
+    TEST_CASE(NormalizedDiffusion_PlotCDF)
     {
         GnuplotFile plotfile;
         plotfile.set_title("CDF");
@@ -788,108 +688,87 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 
         for (size_t i = 0; i < N; ++i)
         {
-            const double r = fit<size_t, double>(i, 0, N - 1, 0.0, 40.0);
-            const double u = normalized_diffusion_cdf(r, 1.0);
-            points.push_back(Vector2d(r, u));
+            const float r = fit<size_t, float>(i, 0, N - 1, 0.0f, 40.0f);
+            const float u = normalized_diffusion_cdf(r, 1.0f);
+            points.emplace_back(r, u);
         }
 
         plotfile.new_plot().set_points(points);
         plotfile.write("unit tests/outputs/test_sss_normalized_diffusion_cdf.gnuplot");
     }
 
-#ifdef APPLESEED_WITH_PARTIO
-
-    TEST_CASE(PartioNormalizedDiffusionSample)
+    TEST_CASE(NormalizedDiffusion_MaxRadius)
     {
-        const double A = 1.0;
-        const double L = 1;
-        const double s = normalized_diffusion_s(A);
-
-        const size_t SampleCount = 1000;
-        MersenneTwister rng;
-
-        PartioFile particles;
-        Partio::ParticleAttribute pos_attr = particles.add_vector_attribute("position");
-        Partio::ParticleAttribute col_attr = particles.add_color_attribute("color");
-
-        for (size_t i = 0; i < SampleCount; ++i)
-        {
-            const double u = rand_double2(rng);
-            const double r = normalized_diffusion_sample(u, L, s);
-            const double phi = TwoPi * rand_double2(rng);
-            const Vector3d sample(r * cos(phi), 0.0, r * sin(phi));
-
-            Partio::ParticleIndex p = particles.add_particle();
-            particles.set_vector_attribute(p, pos_attr, sample);
-            particles.set_color_attribute(p, col_attr, Color3d(1.0, 1.0, 1.0));
-        }
-
-        // Add a circle of particles of radius max_radius.
-        const size_t CircleCount = 100;
-        const double max_radius = normalized_diffusion_max_radius(L, s);
-
-        for (size_t i = 0; i < CircleCount; ++i)
-        {
-            const double phi = fit<size_t, double>(i, 0, CircleCount - 1, 0.0, TwoPi);
-            const Vector3d c(max_radius * cos(phi), 0.0, max_radius * sin(phi));
-
-            Partio::ParticleIndex p = particles.add_particle();
-            particles.set_vector_attribute(p, pos_attr, c);
-            particles.set_color_attribute(p, col_attr, Color3d(0.0, 0.0, 1.0));
-        }
-
-        // Add particles with the value of the profile.
-        const size_t ProfileCount = 500;
-        for (size_t i = 0; i < ProfileCount; ++i)
-        {
-            const double r = fit<size_t, double>(i, 0, ProfileCount - 1, 0.0, max_radius);
-            const double v = normalized_diffusion_profile(r, L, s, A) * r;
-
-            Partio::ParticleIndex p = particles.add_particle();
-            particles.set_vector_attribute(p, pos_attr, Vector3d(r, v, 0.0));
-            particles.set_color_attribute(p, col_attr, Color3d(1.0, 0.0, 0.0));
-
-            p = particles.add_particle();
-            particles.set_vector_attribute(p, pos_attr, Vector3d(-r, v, 0.0));
-            particles.set_color_attribute(p, col_attr, Color3d(1.0, 0.0, 0.0));
-
-            p = particles.add_particle();
-            particles.set_vector_attribute(p, pos_attr, Vector3d(0.0, v, r));
-            particles.set_color_attribute(p, col_attr, Color3d(1.0, 0.0, 0.0));
-
-            p = particles.add_particle();
-            particles.set_vector_attribute(p, pos_attr, Vector3d(0.0, v, -r));
-            particles.set_color_attribute(p, col_attr, Color3d(1.0, 0.0, 0.0));
-        }
-
-        particles.write("unit tests/outputs/test_sss_nd_sampling_particles.bgeo");
-    }
-
-#endif
-
-    //
-    // Standard dipole profile.
-    //
-
-    TEST_CASE(StdDipoleMaxRadius)
-    {
-        DipoleBSSRDFEvaluator<StandardDipoleBSSRDFFactory> bssrdf_eval;
         MersenneTwister rng;
 
         for (size_t i = 0; i < 1000; ++i)
         {
-            const double rd = rand_double1(rng);
-            const double dmfp = rand_double1(rng, 0.001, 100.0);
-            bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, 1.0, 0.0);
+            const float a = rand_float1(rng);
+            const float l = rand_float1(rng, 0.001f, 10.0f);
 
-            const double r = dipole_max_radius(bssrdf_eval.get_sigma_tr());
-            const double result = bssrdf_eval.evaluate(r);
+            const float s = normalized_diffusion_s_dmfp(a);
+            const float r = normalized_diffusion_max_radius(l, s);
+            const float value = normalized_diffusion_profile(r, l, s, a);
 
-            EXPECT_LT(0.00001, result);
+            EXPECT_LT(1.0e-4f, value);
         }
     }
 
-    TEST_CASE(PlotStdDipoleIntegralRd)
+    TEST_CASE(NormalizedDiffusion_IntegrateProfile)
+    {
+        const float Rd = 0.5f;
+        const float Mfp = 0.1f;
+        const size_t SampleCount = 10000;
+
+        auto_release_ptr<Project> project(ProjectFactory::create("project"));
+        BSSRDFEvaluator<NormalizedDiffusionBSSRDFFactory, NormalizedDiffusionBSSRDFInputValues> bssrdf_eval(project.ref());
+        bssrdf_eval.set_values_from_rd_mfp(Rd, Mfp);
+
+        const float integral = integrate_bssrdf_profile(bssrdf_eval, SampleCount);
+
+        EXPECT_FEQ_EPS(Rd, integral, 1.0e-2f);
+    }
+
+    //
+    // Standard dipole BSSRDF.
+    //
+
+    TEST_CASE(StandardDipole_MaxRadius)
+    {
+        auto_release_ptr<Project> project(ProjectFactory::create("project"));
+        MersenneTwister rng;
+
+        for (size_t i = 0; i < 1000; ++i)
+        {
+            const float rd = rand_float1(rng);
+            const float mfp = rand_float1(rng, 0.001f, 10.0f);
+
+            BSSRDFEvaluator<StandardDipoleBSSRDFFactory, DipoleBSSRDFInputValues> bssrdf_eval(project.ref());
+            bssrdf_eval.set_values_from_rd_mfp(rd, mfp);
+
+            const float r = dipole_max_radius(bssrdf_eval.get_sigma_tr());
+            const float result = bssrdf_eval.evaluate(r);
+
+            EXPECT_LT(1.0e-4f, result);
+        }
+    }
+
+    TEST_CASE(StandardDipole_IntegrateProfile)
+    {
+        const float Rd = 0.5f;
+        const float Mfp = 0.1f;
+        const size_t SampleCount = 10000;
+
+        auto_release_ptr<Project> project(ProjectFactory::create("project"));
+        BSSRDFEvaluator<StandardDipoleBSSRDFFactory, DipoleBSSRDFInputValues> bssrdf_eval(project.ref());
+        bssrdf_eval.set_values_from_rd_mfp(Rd, Mfp);
+
+        const float integral = integrate_bssrdf_profile(bssrdf_eval, SampleCount);
+
+        EXPECT_FEQ_EPS(Rd, integral, 1.0e-2f);
+    }
+
+    TEST_CASE(StandardDipole_PlotRdIntegral)
     {
         GnuplotFile plotfile;
         plotfile.set_title("Standard Dipole Integral");
@@ -898,36 +777,175 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_xrange(0.0, 1.0);
         plotfile.set_yrange(0.0, 1.25);
 
-        const size_t N = 256;
+        auto_release_ptr<Project> project(ProjectFactory::create("project"));
+
+        const size_t N = 200;
         vector<Vector2d> points;
         MersenneTwister rng;
 
         for (size_t i = 0; i < N; ++i)
         {
-            const double rd = fit<size_t, double>(i, 0, N - 1, 0.01, 1.0);
-            const double x =
-                integrate_dipole_rd_dmfp<StandardDipoleBSSRDFFactory>(
-                    rng,
-                    rd,
-                    1.0,
-                    1.0,
-                    1000);
+            const float rd = fit<size_t, float>(i, 0, N - 1, 0.01f, 1.0f);
 
-            points.push_back(Vector2d(rd, x));
+            BSSRDFEvaluator<StandardDipoleBSSRDFFactory, DipoleBSSRDFInputValues> bssrdf_eval(project.ref());
+            bssrdf_eval.set_values_from_rd_mfp(rd, 1.0f);
+
+            const float integral = integrate_bssrdf(bssrdf_eval, 1000);
+            points.emplace_back(rd, integral);
         }
 
         plotfile.new_plot().set_points(points);
-        plotfile.write("unit tests/outputs/test_sss_stddipole_integral_rd.gnuplot");
+        plotfile.write("unit tests/outputs/test_sss_standarddipole_rd_integral.gnuplot");
     }
 
     //
-    // Directional dipole profile.
+    // Better dipole BSSRDF.
     //
 
-    void plot_dirpole_rd(
+    TEST_CASE(BetterDipole_MaxRadius)
+    {
+        auto_release_ptr<Project> project(ProjectFactory::create("project"));
+        MersenneTwister rng;
+
+        for (size_t i = 0; i < 1000; ++i)
+        {
+            const float rd = rand_float1(rng);
+            const float mfp = rand_float1(rng, 0.001f, 10.0f);
+
+            BSSRDFEvaluator<BetterDipoleBSSRDFFactory, DipoleBSSRDFInputValues> bssrdf_eval(project.ref());
+            bssrdf_eval.set_values_from_rd_mfp(rd, mfp);
+
+            const float r = dipole_max_radius(bssrdf_eval.get_sigma_tr());
+            const float result = bssrdf_eval.evaluate(r);
+
+            EXPECT_LT(1.0e-4f, result);
+        }
+    }
+
+    TEST_CASE(BetterDipole_IntegrateProfile)
+    {
+        const float Rd = 0.5f;
+        const float Mfp = 0.1f;
+        const size_t SampleCount = 10000;
+
+        auto_release_ptr<Project> project(ProjectFactory::create("project"));
+        BSSRDFEvaluator<BetterDipoleBSSRDFFactory, DipoleBSSRDFInputValues> bssrdf_eval(project.ref());
+        bssrdf_eval.set_values_from_rd_mfp(Rd, Mfp);
+
+        const float integral = integrate_bssrdf_profile(bssrdf_eval, SampleCount);
+
+        EXPECT_FEQ_EPS(Rd, integral, 1.0e-2f);
+    }
+
+    TEST_CASE(BetterDipole_PlotRdIntegral)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title("Better Dipole Integral");
+        plotfile.set_xlabel("Rd");
+        plotfile.set_ylabel("Integral");
+        plotfile.set_xrange(0.0, 1.0);
+        plotfile.set_yrange(0.0, 1.25);
+
+        auto_release_ptr<Project> project(ProjectFactory::create("project"));
+
+        const size_t N = 200;
+        vector<Vector2d> points;
+        MersenneTwister rng;
+
+        for (size_t i = 0; i < N; ++i)
+        {
+            const float rd = fit<size_t, float>(i, 0, N - 1, 0.01f, 1.0f);
+
+            BSSRDFEvaluator<BetterDipoleBSSRDFFactory, DipoleBSSRDFInputValues> bssrdf_eval(project.ref());
+            bssrdf_eval.set_values_from_rd_mfp(rd, 1.0f);
+
+            const float integral = integrate_bssrdf(bssrdf_eval, 1000);
+            points.emplace_back(rd, integral);
+        }
+
+        plotfile.new_plot().set_points(points);
+        plotfile.write("unit tests/outputs/test_sss_betterdipole_rd_integral.gnuplot");
+    }
+
+    //
+    // Directional dipole BSSRDF.
+    //
+
+    TEST_CASE(DirectionalDipole_MaxRadius)
+    {
+        auto_release_ptr<Project> project(ProjectFactory::create("project"));
+        MersenneTwister rng;
+
+        for (size_t i = 0; i < 1000; ++i)
+        {
+            const float rd = rand_float1(rng);
+            const float mfp = rand_float1(rng, 0.001f, 100.0f);
+
+            BSSRDFEvaluator<DirectionalDipoleBSSRDFFactory, DipoleBSSRDFInputValues> bssrdf_eval(project.ref());
+            bssrdf_eval.set_values_from_rd_mfp(rd, mfp);
+
+            const float r = dipole_max_radius(bssrdf_eval.get_sigma_tr());
+            const float result = bssrdf_eval.evaluate(r);
+
+            EXPECT_LT(1.0e-4f, result);
+        }
+    }
+
+#if 0
+    // There is still a misunderstanding about the directional dipole or a bug in our implementation
+    // which makes this test fail. Commenting it until we figure things out.
+    TEST_CASE(DirectionalDipole_IntegrateProfile)
+    {
+        const float Rd = 0.5f;
+        const float Mfp = 0.1f;
+        const size_t SampleCount = 10000;
+
+        auto_release_ptr<Project> project(ProjectFactory::create("project"));
+        BSSRDFEvaluator<DirectionalDipoleBSSRDFFactory, DipoleBSSRDFInputValues> bssrdf_eval(project.ref());
+        bssrdf_eval.set_values_from_rd_mfp(Rd, Mfp);
+
+        const float integral = integrate_bssrdf_profile(bssrdf_eval, SampleCount);
+
+        EXPECT_FEQ_EPS(Rd, integral, 1.0e-2f);
+    }
+#endif
+
+    //
+    // Comparison of the dipole-based models.
+    //
+
+    template <typename BSSRDFFactory, typename BSSRDFInputValues>
+    void plot_rd_curve(
+        GnuplotFile&    plotfile,
+        const char*     title,
+        const float     sigma_a,
+        const float     sigma_s)
+    {
+        auto_release_ptr<Project> project(ProjectFactory::create("project"));
+        BSSRDFEvaluator<BSSRDFFactory, BSSRDFInputValues> bssrdf_eval(project.ref());
+        bssrdf_eval.set_values_from_sigmas(sigma_a, sigma_s);
+
+        const size_t N = 1000;
+        vector<Vector2d> points;
+
+        for (size_t i = 0; i < N; ++i)
+        {
+            const float r = fit<size_t, float>(i, 0, N - 1, -16.0f, 16.0f);
+            const float rd = bssrdf_eval.evaluate(r);   // integral of Lambertian BRDF equals 1
+            points.emplace_back(r, rd);
+        }
+
+        plotfile
+            .new_plot()
+            .set_title(title)
+            .set_points(points);
+    }
+
+    void plot_rd_curves(
         const char*     filename,
         const char*     title,
-        const double    sigma_a,
+        const float     sigma_a,
+        const float     sigma_s,
         const double    ymin,
         const double    ymax)
     {
@@ -939,65 +957,51 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_xrange(-16.0, 16.0);   // cm
         plotfile.set_yrange(ymin, ymax);
 
-        DipoleBSSRDFEvaluator<DirectionalDipoleBSSRDFFactory> bssrdf_eval;
-        bssrdf_eval.set_values_from_sigmas(sigma_a, 1.0, 1.0, 0.0);
+        plot_rd_curve<StandardDipoleBSSRDFFactory, DipoleBSSRDFInputValues>(
+            plotfile,
+            "Standard Dipole",
+            sigma_a,
+            sigma_s);
 
-        const size_t N = 1000;
-        vector<Vector2d> points;
+        plot_rd_curve<BetterDipoleBSSRDFFactory, DipoleBSSRDFInputValues>(
+            plotfile,
+            "Better Dipole",
+            sigma_a,
+            sigma_s);
 
-        for (size_t i = 0; i < N; ++i)
-        {
-            const double r = fit<size_t, double>(i, 0, N - 1, -16.0, 16.0);
-            const double result = bssrdf_eval.evaluate(r);
-            points.push_back(Vector2d(r, result * Pi / abs(r)));
-        }
-
-        plotfile
-            .new_plot()
-            .set_points(points);
+        plot_rd_curve<DirectionalDipoleBSSRDFFactory, DipoleBSSRDFInputValues>(
+            plotfile,
+            "Directional Dipole",
+            sigma_a,
+            sigma_s);
 
         plotfile.write(filename);
     }
 
-    TEST_CASE(PlotDirectionalDipoleRd)
+    TEST_CASE(DipoleBasedModels_PlotRdCurves)
     {
-        plot_dirpole_rd(
-            "unit tests/outputs/test_sss_dirpole_sg_a_001.gnuplot",
-            "Directional Dipole Diffuse Reflectance (sigma_a = 0.01)",
-            0.01,           // sigma_a in cm
+        plot_rd_curves(
+            "unit tests/outputs/test_sss_rd_curves_sigma_a_001.gnuplot",
+            "Diffuse Reflectance Curves (sigma_a = 0.01 cm^-1)",
+            0.01f,          // sigma_a in cm^-1
+            1.0f,           // sigma_s in cm^-1
             1.0e-5,         // ymin
             1.0e+1);        // ymax
 
-        plot_dirpole_rd(
-            "unit tests/outputs/test_sss_dirpole_sg_a_01.gnuplot",
-            "Directional Dipole Diffuse Reflectance (sigma_a = 0.1)",
-            0.1,            // sigma_a in cm
+        plot_rd_curves(
+            "unit tests/outputs/test_sss_rd_curves_sigma_a_01.gnuplot",
+            "Diffuse Reflectance Curves (sigma_a = 0.1 cm^-1)",
+            0.1f,           // sigma_a in cm^-1
+            1.0f,           // sigma_s in cm^-1
             1.0e-8,         // ymin
             1.0e+1);        // ymax
 
-        plot_dirpole_rd(
-            "unit tests/outputs/test_sss_dirpole_sg_a_1.gnuplot",
-            "Directional Dipole Diffuse Reflectance (sigma_a = 1.0)",
-            1.0,            // sigma_a in cm
+        plot_rd_curves(
+            "unit tests/outputs/test_sss_rd_curves_sigma_a_1.gnuplot",
+            "Diffuse Reflectance Curves (sigma_a = 1.0 cm^-1)",
+            1.0f,           // sigma_a in cm^-1
+            1.0f,           // sigma_s in cm^-1
             1.0e-16,        // ymin
             1.0e+1);        // ymax
-    }
-
-    TEST_CASE(DirpoleMaxRadius)
-    {
-        DipoleBSSRDFEvaluator<DirectionalDipoleBSSRDFFactory> bssrdf_eval;
-        MersenneTwister rng;
-
-        for (size_t i = 0; i < 1000; ++i)
-        {
-            const double rd = rand_double1(rng);
-            const double dmfp = rand_double1(rng, 0.001, 100.0);
-            bssrdf_eval.set_values_from_rd_dmfp(rd, dmfp, 1.0, 0.0);
-
-            const double r = dipole_max_radius(bssrdf_eval.get_sigma_tr());
-            const double result = bssrdf_eval.evaluate(r);
-
-            EXPECT_LT(0.00001, result);
-        }
     }
 }

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -95,25 +95,24 @@ inline void shift_angles(
     const T                         theta_shift,
     const T                         phi_shift)
 {
-    using foundation::Pi;
-    using foundation::TwoPi;
+    using namespace foundation;
 
     theta += theta_shift;
     phi += phi_shift;
 
-    theta = std::fmod(theta, T(Pi));
+    theta = std::fmod(theta, Pi<T>());
 
     if (theta < T(0.0))
-        theta += T(Pi);
+        theta += Pi<T>();
 
-    phi += T(Pi);
+    phi += Pi<T>();
 
-    phi = std::fmod(phi, T(TwoPi));
+    phi = std::fmod(phi, TwoPi<T>());
 
     if (phi < T(0.0))
-        phi += T(TwoPi);
+        phi += TwoPi<T>();
 
-    phi -= T(Pi);
+    phi -= Pi<T>();
 }
 
 template <typename T>
@@ -123,15 +122,15 @@ inline void angles_to_unit_square(
     T&                              u,
     T&                              v)
 {
-    using foundation::Pi;
+    using namespace foundation;
 
     assert(theta >= T(0.0));
-    assert(theta <= T(Pi));
-    assert(phi >= T(-Pi));
-    assert(phi <= T(Pi));
+    assert(theta <= Pi<T>());
+    assert(phi >= -Pi<T>());
+    assert(phi <= Pi<T>());
 
-    u = (T(0.5 / Pi)) * (phi + T(Pi));
-    v = (T(1.0 / Pi)) * theta;
+    u = RcpTwoPi<T>() * (phi + Pi<T>());
+    v = RcpPi<T>() * theta;
 }
 
 template <typename T>
@@ -141,15 +140,15 @@ inline void unit_square_to_angles(
     T&                              theta,
     T&                              phi)
 {
-    using foundation::Pi;
+    using namespace foundation;
 
     assert(u >= T(0.0));
     assert(u <= T(1.0));
     assert(v >= T(0.0));
     assert(v <= T(1.0));
 
-    theta = T(Pi) * v;
-    phi = T(Pi) * (T(2.0) * u - T(1.0));
+    theta = Pi<T>() * v;
+    phi = Pi<T>() * (T(2.0) * u - T(1.0));
 }
 
 }       // namespace renderer

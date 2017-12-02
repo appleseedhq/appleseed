@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -59,6 +59,7 @@
 using namespace boost;
 using namespace std;
 using namespace xercesc;
+namespace bf = boost::filesystem;
 
 namespace foundation
 {
@@ -255,10 +256,10 @@ bool BenchmarkAggregator::scan_file(const char* path)
     if (!impl->m_xerces_context.is_initialized())
         return false;
 
-    if (!filesystem::is_regular_file(path))
+    if (!bf::is_regular_file(path))
         return false;
 
-    const string filename = filesystem::path(path).filename().string();
+    const string filename = bf::path(path).filename().string();
 
     smatch match;
 
@@ -298,12 +299,12 @@ void BenchmarkAggregator::scan_directory(const char* path)
     if (!impl->m_xerces_context.is_initialized())
         return;
 
-    if (!filesystem::is_directory(path))
+    if (!bf::is_directory(path))
         return;
 
-    for (filesystem::directory_iterator i(path), e; i != e; ++i)
+    for (bf::directory_iterator i(path), e; i != e; ++i)
     {
-        if (!filesystem::is_regular_file(i->status()))
+        if (!bf::is_regular_file(i->status()))
             continue;
 
         scan_file(i->path().string().c_str());

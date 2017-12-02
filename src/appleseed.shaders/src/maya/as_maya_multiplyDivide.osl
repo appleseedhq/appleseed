@@ -1,0 +1,96 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/multiplyDivide.html
+
+shader as_maya_multiplyDivide
+[[
+    string as_maya_node_name = "multiplyDivide"
+]]
+(
+    int in_operation = 1
+    [[
+        string as_maya_attribute_name = "operation",
+        string label = "Operation",
+        string widget = "mapper",
+        string options = "No Operation:0|Multiply:1|Divide:2|Power:3",
+        string page = "Multiply-Divide Attributes"
+    ]],
+    vector in_input1 = 1.0
+    [[
+        string as_maya_attribute_name = "input1",
+        string label = "Input 1",
+        string page = "Multiply-Divide Attributes"
+    ]],
+    vector in_input2 = 1.0
+    [[
+        string as_maya_attribute_name = "input2",
+        string label = "Input 2",
+        string page = "Multiply-Divide Attributes"
+    ]],
+
+    output vector out_output = 1.0
+    [[
+        string as_maya_attribute_name = "output",
+        string label = "Output",
+        string widget = "null"
+    ]]
+)
+{
+    if (in_operation == 0)
+    {
+        out_output = in_input1;
+    }
+    else if (in_operation == 1)
+    {
+        out_output = in_input1 * in_input2;
+    }
+    else if (in_operation == 2)
+    {
+        out_output = in_input1 / in_input2;
+    }
+    else if (in_operation == 3)
+    {
+        out_output = vector(
+            pow(in_input1[0], in_input2[0]),
+            pow(in_input1[1], in_input2[1]),
+            pow(in_input1[2], in_input2[2])
+            );
+    }
+    else
+    {
+#ifdef DEBUG
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+
+        warning("[WARNING]: invalid operation passed in shader %s, %s:%i\n",
+                shadername, __FILE__, __LINE__);
+#endif
+        out_output = 0.0;
+    }
+}

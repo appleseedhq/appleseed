@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 
 // appleseed.foundation headers.
@@ -52,52 +53,54 @@ class NullBSDF
 {
   public:
     NullBSDF()
-      : BSDF("null_bsdf", Reflective, ScatteringMode::Absorption, ParamArray())
+      : BSDF("null_bsdf", Reflective, ScatteringMode::None, ParamArray())
     {
     }
 
-    virtual void release() APPLESEED_OVERRIDE
+    void release() override
     {
         delete this;
     }
 
-    virtual const char* get_model() const APPLESEED_OVERRIDE
+    const char* get_model() const override
     {
         return "null_bsdf";
     }
 
-    virtual void sample(
+    void sample(
         SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
-        BSDFSample&                     sample) const APPLESEED_OVERRIDE
+        const int                       modes,
+        BSDFSample&                     sample) const override
     {
     }
 
-    virtual double evaluate(
+    float evaluate(
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
-        const foundation::Vector3d&     geometric_normal,
-        const foundation::Basis3d&      shading_basis,
-        const foundation::Vector3d&     outgoing,
-        const foundation::Vector3d&     incoming,
+        const foundation::Vector3f&     geometric_normal,
+        const foundation::Basis3f&      shading_basis,
+        const foundation::Vector3f&     outgoing,
+        const foundation::Vector3f&     incoming,
         const int                       modes,
-        Spectrum&                       value) const APPLESEED_OVERRIDE
+        DirectShadingComponents&        value) const override
     {
-        return 0.0;
+        return 0.0f;
     }
 
-    virtual double evaluate_pdf(
+    float evaluate_pdf(
         const void*                     data,
-        const foundation::Vector3d&     geometric_normal,
-        const foundation::Basis3d&      shading_basis,
-        const foundation::Vector3d&     outgoing,
-        const foundation::Vector3d&     incoming,
-        const int                       modes) const APPLESEED_OVERRIDE
+        const bool                      adjoint,
+        const foundation::Vector3f&     geometric_normal,
+        const foundation::Basis3f&      shading_basis,
+        const foundation::Vector3f&     outgoing,
+        const foundation::Vector3f&     incoming,
+        const int                       modes) const override
     {
-        return 0.0;
+        return 0.0f;
     }
 };
 

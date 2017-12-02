@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -177,7 +177,7 @@ asf::auto_release_ptr<asr::Project> build_project()
                 .insert("intensity", "light_intensity")));
     light->set_transform(
         asf::Transformd::from_local_to_parent(
-            asf::Matrix4d::translation(asf::Vector3d(0.6, 2.0, 1.0))));
+            asf::Matrix4d::make_translation(asf::Vector3d(0.6, 2.0, 1.0))));
     assembly->lights().insert(light);
 
     //------------------------------------------------------------------------
@@ -253,11 +253,11 @@ asf::auto_release_ptr<asr::Project> build_project()
     camera->transform_sequence().set_transform(
         0.0,
         asf::Transformd::from_local_to_parent(
-            asf::Matrix4d::rotation(asf::Vector3d(1.0, 0.0, 0.0), asf::deg_to_rad(-20.0)) *
-            asf::Matrix4d::translation(asf::Vector3d(0.0, 0.8, 11.0))));
+            asf::Matrix4d::make_rotation(asf::Vector3d(1.0, 0.0, 0.0), asf::deg_to_rad(-20.0)) *
+            asf::Matrix4d::make_translation(asf::Vector3d(0.0, 0.8, 11.0))));
 
     // Bind the camera to the scene.
-    scene->set_camera(camera);
+    scene->cameras().insert(camera);
 
     //------------------------------------------------------------------------
     // Frame
@@ -268,7 +268,7 @@ asf::auto_release_ptr<asr::Project> build_project()
         asr::FrameFactory::create(
             "beauty",
             asr::ParamArray()
-                .insert("camera", scene->get_camera()->get_name())
+                .insert("camera", "camera")
                 .insert("resolution", "640 480")
                 .insert("color_space", "srgb")));
 
@@ -283,7 +283,7 @@ int main()
     // Create a log target that outputs to stderr, and binds it to the renderer's global logger.
     // Eventually you will probably want to redirect log messages to your own target. For this
     // you will need to implement foundation::ILogTarget (foundation/utility/log/ilogtarget.h).
-    std::auto_ptr<asf::ILogTarget> log_target(asf::create_console_log_target(stderr));
+    std::unique_ptr<asf::ILogTarget> log_target(asf::create_console_log_target(stderr));
     asr::global_logger().add_target(log_target.get());
 
     // Print appleseed's version string.
@@ -294,7 +294,7 @@ int main()
 
     // Create the master renderer.
     asr::DefaultRendererController renderer_controller;
-    std::auto_ptr<asr::MasterRenderer> renderer(
+    std::unique_ptr<asr::MasterRenderer> renderer(
         new asr::MasterRenderer(
             project.ref(),
             project->configurations().get_by_name("final")->get_inherited_parameters(),

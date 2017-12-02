@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -44,43 +44,65 @@ using namespace std;
 
 namespace
 {
-    bool is_zero_on_domain_border(const Filter2d& filter)
+    template <typename T>
+    bool is_zero_on_domain_border(const Filter2<T>& filter)
     {
-        const double Eps = 1.0e-6;
+        const T Eps = T(1.0e-6);
 
         return
             fz(filter.evaluate(-filter.get_xradius(), -filter.get_yradius()), Eps) &&
-            fz(filter.evaluate(                  0.0, -filter.get_yradius()), Eps) &&
+            fz(filter.evaluate(               T(0.0), -filter.get_yradius()), Eps) &&
             fz(filter.evaluate(+filter.get_xradius(), -filter.get_yradius()), Eps) &&
-            fz(filter.evaluate(+filter.get_xradius(),                   0.0), Eps) &&
+            fz(filter.evaluate(+filter.get_xradius(),                T(0.0)), Eps) &&
             fz(filter.evaluate(+filter.get_xradius(), +filter.get_yradius()), Eps) &&
-            fz(filter.evaluate(                  0.0, +filter.get_yradius()), Eps) &&
+            fz(filter.evaluate(               T(0.0), +filter.get_yradius()), Eps) &&
             fz(filter.evaluate(-filter.get_xradius(), +filter.get_yradius()), Eps) &&
-            fz(filter.evaluate(-filter.get_xradius(),                   0.0), Eps);
+            fz(filter.evaluate(-filter.get_xradius(),                T(0.0)), Eps);
     }
 
-    void plot(
-        const string&   filepath,
-        const string&   title,
-        const Filter2d& filter)
+    template <typename T>
+    vector<Vector2d> make_points(const Filter2<T>& filter)
     {
-        const double r = filter.get_xradius();
+        const T r = filter.get_xradius();
 
         const size_t PointCount = 256;
         vector<Vector2d> points(PointCount);
 
         for (size_t i = 0; i < PointCount; ++i)
         {
-            const double x = fit<size_t, double>(i, 0, PointCount, -r - 1.0, r + 1.0);
-            const double value = x < -r || x > r ? 0.0 : filter.evaluate(x, 0.0);
-            points[i] = Vector2d(x, value);
+            const T x = fit<size_t, T>(i, 0, PointCount - 1, -r - T(1.0), r + T(1.0));
+            const T y = x < -r || x > r ? T(0.0) : filter.evaluate(x, T(0.0));
+            points[i] = Vector2d(x, y);
         }
 
+        return points;
+    }
+
+    template <typename T>
+    void plot(
+        const string&       filepath,
+        const string&       plot_title,
+        const Filter2<T>&   filter)
+    {
         GnuplotFile plotfile;
-        plotfile
-            .new_plot()
-            .set_points(points)
-            .set_title(title + ", radius=" + pretty_scalar(r, 1));
+        plotfile.set_title(plot_title + ", radius=" + pretty_scalar(filter.get_xradius(), 1));
+        plotfile.new_plot().set_points(make_points(filter));
+        plotfile.write(filepath);
+    }
+
+    template <typename T, typename U>
+    void plot(
+        const string&       filepath,
+        const string&       plot_title,
+        const string&       filter1_name,
+        const Filter2<T>&   filter1,
+        const string&       filter2_name,
+        const Filter2<U>&   filter2)
+    {
+        GnuplotFile plotfile;
+        plotfile.set_title(plot_title + ", radius=" + pretty_scalar(filter1.get_xradius(), 1));
+        plotfile.new_plot().set_title(filter1_name).set_points(make_points(filter1));
+        plotfile.new_plot().set_title(filter2_name).set_points(make_points(filter2));
         plotfile.write(filepath);
     }
 }
@@ -101,7 +123,7 @@ TEST_SUITE(Foundation_Math_Filter_BoxFilter2)
 
         plot(
             "unit tests/outputs/test_math_filter_boxfilter2.gnuplot",
-            "Box Filter",
+            "Box Reconstruction Filter",
             filter);
     }
 }
@@ -121,7 +143,7 @@ TEST_SUITE(Foundation_Math_Filter_TriangleFilter2)
 
         plot(
             "unit tests/outputs/test_math_filter_trianglefilter2.gnuplot",
-            "Triangle Filter",
+            "Triangle Reconstruction Filter",
             filter);
     }
 }
@@ -139,12 +161,14 @@ TEST_SUITE(Foundation_Math_Filter_GaussianFilter2)
 
     TEST_CASE(Plot)
     {
-        const GaussianFilter2<double> filter(2.0, 3.0, Alpha);
+        const GaussianFilter2<double> accurate_filter(2.0, 3.0, Alpha);
+        const FastGaussianFilter2<double> fast_filter(2.0, 3.0, Alpha);
 
         plot(
             "unit tests/outputs/test_math_filter_gaussianfilter2.gnuplot",
-            "Gaussian Filter, alpha=" + pretty_scalar(Alpha, 1),
-            filter);
+            "Gaussian Reconstruction Filter, alpha=" + pretty_scalar(Alpha, 1),
+            "Accurate Variant", accurate_filter,
+            "Fast Variant", fast_filter);
     }
 }
 
@@ -166,7 +190,7 @@ TEST_SUITE(Foundation_Math_Filter_MitchellFilter2)
 
         plot(
             "unit tests/outputs/test_math_filter_mitchellfilter2.gnuplot",
-            "Mitchell Filter, B=" + pretty_scalar(B, 1) + ", C=" + pretty_scalar(C, 1),
+            "Mitchell Reconstruction Filter, B=" + pretty_scalar(B, 1) + ", C=" + pretty_scalar(C, 1),
             filter);
     }
 }
@@ -188,7 +212,7 @@ TEST_SUITE(Foundation_Math_Filter_LanczosFilter2)
 
         plot(
             "unit tests/outputs/test_math_filter_lanczosfilter2.gnuplot",
-            "Lanczos Filter, tau=" + pretty_scalar(Tau, 1),
+            "Lanczos Reconstruction Filter, tau=" + pretty_scalar(Tau, 1),
             filter);
     }
 }
@@ -204,11 +228,13 @@ TEST_SUITE(Foundation_Math_Filter_BlackmanHarrisFilter2)
 
     TEST_CASE(Plot)
     {
-        const BlackmanHarrisFilter2<double> filter(2.0, 3.0);
+        const BlackmanHarrisFilter2<double> accurate_filter(2.0, 3.0);
+        const FastBlackmanHarrisFilter2<float> fast_filter(2.0f, 3.0f);
 
         plot(
             "unit tests/outputs/test_math_filter_blackmanharrisfilter2.gnuplot",
-            "Blackman-Harris Filter",
-            filter);
+            "Blackman-Harris Reconstruction Filter",
+            "Accurate Variant", accurate_filter,
+            "Fast Variant", fast_filter);
     }
 }

@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,14 +35,17 @@
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/matrix.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <cassert>
@@ -51,7 +54,6 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class InputEvaluator; }
 namespace renderer      { class Project; }
 
 using namespace foundation;
@@ -75,28 +77,30 @@ namespace
     {
       public:
         OSLEnvironmentEDF(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : EnvironmentEDF(name, params)
         {
             m_inputs.declare("osl_background", InputFormatEntity, "");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
-            const Project&      project,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+        bool on_frame_begin(
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) override
         {
-            if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
+            if (!EnvironmentEDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             m_shader_group =
@@ -105,58 +109,80 @@ namespace
             return true;
         }
 
-        virtual void on_frame_end(const Project& project) APPLESEED_OVERRIDE
+        void on_frame_end(
+            const Project&          project,
+            const BaseGroup*        parent) override
         {
-            m_shader_group = 0;
+            m_shader_group = nullptr;
+
+            EnvironmentEDF::on_frame_end(project, parent);
         }
 
-        virtual void sample(
+        void sample(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
-            const Vector2d&         s,
-            Vector3d&               outgoing,
+            const Vector2f&         s,
+            Vector3f&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
-            outgoing = sample_sphere_uniform(s);
-            evaluate(shading_context, input_evaluator, outgoing, value);
-            probability = RcpFourPi;
+            const Vector3f local_outgoing = sample_sphere_uniform(s);
+            probability = RcpFourPi<float>();
+
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            outgoing = transform.vector_to_parent(local_outgoing);
+
+            evaluate_osl_background(shading_context, local_outgoing, value);
         }
 
-        virtual void evaluate(
+        void evaluate(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+            const Vector3f&         outgoing,
+            Spectrum&               value) const override
         {
             assert(is_normalized(outgoing));
-            if (m_shader_group)
-                shading_context.execute_osl_background(*m_shader_group, outgoing, value);
-            else
-                value.set(0.0f);
+
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            const Vector3f local_outgoing = transform.vector_to_local(outgoing);
+
+            evaluate_osl_background(shading_context, local_outgoing, value);
         }
 
-        virtual void evaluate(
+        void evaluate(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,
+            const Vector3f&         outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
             assert(is_normalized(outgoing));
-            evaluate(shading_context, input_evaluator, outgoing, value);
-            probability = evaluate_pdf(input_evaluator, outgoing);
+
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            const Vector3f local_outgoing = transform.vector_to_local(outgoing);
+
+            evaluate_osl_background(shading_context, local_outgoing, value);
+            probability = RcpFourPi<float>();
         }
 
-        virtual double evaluate_pdf(
-            InputEvaluator&     input_evaluator,
-            const Vector3d&     outgoing) const APPLESEED_OVERRIDE
+        float evaluate_pdf(
+            const Vector3f&         outgoing) const override
         {
             assert(is_normalized(outgoing));
-            return RcpFourPi;
+            return RcpFourPi<float>();
         }
 
       private:
+        void evaluate_osl_background(
+            const ShadingContext&   shading_context,
+            const Vector3f&         local_outgoing,
+            Spectrum&               value) const
+        {
+            if (m_shader_group)
+                shading_context.execute_osl_background(*m_shader_group, local_outgoing, value);
+            else value.set(0.0f);
+        }
+
         ShaderGroup* m_shader_group;
     };
 }
@@ -165,6 +191,11 @@ namespace
 //
 // OSLEnvironmentEDFFactory class implementation.
 //
+
+void OSLEnvironmentEDFFactory::release()
+{
+    delete this;
+}
 
 const char* OSLEnvironmentEDFFactory::get_model() const
 {
@@ -199,15 +230,6 @@ DictionaryArray OSLEnvironmentEDFFactory::get_input_metadata() const
 auto_release_ptr<EnvironmentEDF> OSLEnvironmentEDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return
-        auto_release_ptr<EnvironmentEDF>(
-            new OSLEnvironmentEDF(name, params));
-}
-
-auto_release_ptr<EnvironmentEDF> OSLEnvironmentEDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return
         auto_release_ptr<EnvironmentEDF>(

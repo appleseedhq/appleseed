@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,10 +35,11 @@
 
 // appleseed.studio headers.
 #include "help/about/aboutwindow.h"
-#include "mainwindow/project/attributeeditor.h"
-#include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/logwidget.h"
 #include "mainwindow/minimizebutton.h"
+#include "mainwindow/project/attributeeditor.h"
+#include "mainwindow/project/projectexplorer.h"
+#include "mainwindow/pythonconsole/pythonconsolewidget.h"
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
@@ -63,6 +64,7 @@
 #include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/log/logmessage.h"
 #include "foundation/utility/path.h"
 #include "foundation/utility/settings.h"
 
@@ -95,12 +97,13 @@
 // Standard headers.
 #include <algorithm>
 #include <cassert>
+#include <cstdlib>
 
 using namespace appleseed::shared;
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace studio {
@@ -118,10 +121,12 @@ MainWindow::MainWindow(QWidget* parent)
   : QMainWindow(parent)
   , m_ui(new Ui::MainWindow())
   , m_rendering_manager(m_status_bar)
-  , m_project_explorer(0)
-  , m_attribute_editor(0)
-  , m_project_file_watcher(0)
+  , m_project_explorer(nullptr)
+  , m_attribute_editor(nullptr)
+  , m_project_file_watcher(nullptr)
 {
+    initialize_ocio();
+
     m_ui->setupUi(this);
 
     statusBar()->addWidget(&m_status_bar);
@@ -129,6 +134,7 @@ MainWindow::MainWindow(QWidget* parent)
     build_menus();
     build_toolbar();
     build_log_panel();
+    build_python_console_panel();
     build_project_explorer();
 
     build_connections();
@@ -159,25 +165,6 @@ MainWindow::~MainWindow()
     delete m_ui;
 }
 
-void MainWindow::open_project(const QString& filepath)
-{
-    save_state_before_project_open();
-
-    if (m_rendering_manager.is_rendering())
-    {
-        m_rendering_manager.abort_rendering();
-        m_rendering_manager.wait_until_rendering_end();
-    }
-
-    remove_render_widgets();
-
-    set_file_widgets_enabled(false);
-    set_project_explorer_enabled(false);
-    set_rendering_widgets_enabled(false, false);
-
-    m_project_manager.load_project(filepath.toAscii().constData());
-}
-
 namespace
 {
     class CustomSignalMapper
@@ -206,6 +193,62 @@ namespace
     };
 }
 
+void MainWindow::new_project()
+{
+    m_project_manager.create_project();
+    on_project_change();
+}
+
+bool MainWindow::open_project(const QString& filepath)
+{
+    save_state_before_project_open();
+
+    if (m_rendering_manager.is_rendering())
+    {
+        m_rendering_manager.abort_rendering();
+        m_rendering_manager.wait_until_rendering_end();
+    }
+
+    remove_render_widgets();
+
+    set_file_widgets_enabled(false, NotRendering);
+    set_project_explorer_enabled(false);
+    set_rendering_widgets_enabled(false, NotRendering);
+
+    const bool successful = m_project_manager.load_project(filepath.toAscii().constData());
+
+    if (successful)
+    {
+        on_project_change();
+    }
+    else
+    {
+        recreate_render_widgets();
+        update_workspace();
+    }
+
+    return successful;
+}
+
+void MainWindow::open_project_async(const QString& filepath)
+{
+    save_state_before_project_open();
+
+    if (m_rendering_manager.is_rendering())
+    {
+        m_rendering_manager.abort_rendering();
+        m_rendering_manager.wait_until_rendering_end();
+    }
+
+    remove_render_widgets();
+
+    set_file_widgets_enabled(false, NotRendering);
+    set_project_explorer_enabled(false);
+    set_rendering_widgets_enabled(false, NotRendering);
+
+    m_project_manager.load_project_async(filepath.toAscii().constData());
+}
+
 void MainWindow::open_and_render_project(const QString& filepath, const QString& configuration)
 {
     CustomSignalMapper* mapper = new CustomSignalMapper(this, configuration);
@@ -218,7 +261,89 @@ void MainWindow::open_and_render_project(const QString& filepath, const QString&
         mapper, SIGNAL(mapped(const QString&, const QString&, const bool)),
         SLOT(slot_start_rendering_once(const QString&, const QString&, const bool)));
 
-    open_project(filepath);
+    open_project_async(filepath);
+}
+
+bool MainWindow::save_project(QString filepath)
+{
+    if (!m_project_manager.is_project_open())
+        return false;
+
+    const QString Extension = "appleseed";
+
+    if (QFileInfo(filepath).suffix() != Extension)
+        filepath += "." + Extension;
+
+    if (m_project_file_watcher)
+        stop_monitoring_project_file();
+
+    const bool successful = m_project_manager.save_project_as(filepath.toAscii().constData());
+
+    if (m_project_file_watcher)
+        start_monitoring_project_file();
+
+    update_workspace();
+
+    return successful;
+}
+
+bool MainWindow::pack_project(QString filepath)
+{
+    if (!m_project_manager.is_project_open())
+        return false;
+
+    const QString Extension = "appleseedz";
+
+    if (QFileInfo(filepath).suffix() != Extension)
+        filepath += "." + Extension;
+
+    return m_project_manager.pack_project_as(filepath.toAscii().constData());
+}
+
+void MainWindow::close_project()
+{
+    m_project_manager.close_project();
+    on_project_change();
+}
+
+ProjectManager* MainWindow::get_project_manager()
+{
+    return &m_project_manager;
+}
+
+ParamArray& MainWindow::get_settings()
+{
+    return m_settings;
+}
+
+QDockWidget* MainWindow::create_dock_widget(const char* dock_name)
+{
+    QDockWidget* dock_widget = new QDockWidget(this);
+
+    const QString object_name = QString(dock_name).toLower().split(' ').join("_");
+    dock_widget->setObjectName(object_name);
+    dock_widget->setWindowTitle(dock_name);
+
+    const auto& actions = m_ui->menu_view->actions();
+    QAction* menu_separator = actions.last();
+    for (int i = actions.size() - 2; i != 0; --i)
+    {
+        if (actions[i]->isSeparator())
+        {
+            menu_separator = actions[i];
+            break;
+        }
+    }
+
+    m_ui->menu_view->insertAction(menu_separator,
+                                  dock_widget->toggleViewAction());
+
+    m_minimize_buttons.push_back(new MinimizeButton(dock_widget));
+    statusBar()->insertPermanentWidget(
+        static_cast<int>(m_minimize_buttons.size()),
+        m_minimize_buttons.back());
+
+    return dock_widget;
 }
 
 void MainWindow::build_menus()
@@ -238,13 +363,18 @@ void MainWindow::build_menus()
     connect(m_ui->action_file_open_builtin_project_cornellbox, SIGNAL(triggered()), SLOT(slot_open_cornellbox_builtin_project()));
     connect(m_ui->action_file_reload_project, SIGNAL(triggered()), SLOT(slot_reload_project()));
 
+    connect(m_ui->action_file_monitor_project, SIGNAL(toggled(bool)), SLOT(slot_toggle_project_file_monitoring(const bool)));
+
     m_ui->action_file_save_project->setShortcut(QKeySequence::Save);
     connect(m_ui->action_file_save_project, SIGNAL(triggered()), SLOT(slot_save_project()));
 
     m_ui->action_file_save_project_as->setShortcut(QKeySequence::SaveAs);
     connect(m_ui->action_file_save_project_as, SIGNAL(triggered()), SLOT(slot_save_project_as()));
 
-    connect(m_ui->action_monitor_project_file, SIGNAL(toggled(bool)), SLOT(slot_toggle_project_file_monitoring(const bool)));
+    connect(m_ui->action_file_pack_project_as, SIGNAL(triggered()), SLOT(slot_pack_project_as()));
+
+    m_ui->action_file_close_project->setShortcut(QKeySequence::Close);
+    connect(m_ui->action_file_close_project, SIGNAL(triggered()), SLOT(slot_close_project()));
 
     m_ui->action_file_exit->setShortcut(QKeySequence::Quit);
     connect(m_ui->action_file_exit, SIGNAL(triggered()), SLOT(close()));
@@ -256,6 +386,7 @@ void MainWindow::build_menus()
     m_ui->menu_view->addAction(m_ui->project_explorer->toggleViewAction());
     m_ui->menu_view->addAction(m_ui->attribute_editor->toggleViewAction());
     m_ui->menu_view->addAction(m_ui->log->toggleViewAction());
+    m_ui->menu_view->addAction(m_ui->python_console->toggleViewAction());
     m_ui->menu_view->addSeparator();
 
     QAction* fullscreen_action = m_ui->menu_view->addAction("Fullscreen");
@@ -324,7 +455,7 @@ void MainWindow::build_override_shading_menu_item()
             QApplication::translate(
                 objectName().toAscii().constData(),
                 shading_mode_name,
-                0,
+                nullptr,
                 QApplication::UnicodeUTF8));
 
         const int shortcut_number = i + 1;
@@ -335,7 +466,7 @@ void MainWindow::build_override_shading_menu_item()
                 QApplication::translate(
                     objectName().toAscii().constData(),
                     QString::fromAscii("Ctrl+Shift+%1").arg(shortcut_number).toAscii().constData(),
-                    0,
+                    nullptr,
                     QApplication::UnicodeUTF8);
 
             action->setShortcut(shortcut);
@@ -363,7 +494,7 @@ void MainWindow::update_override_shading_menu_item()
         const string shading_mode =
             shading_engine_params.child("override_shading").get_optional<string>("mode", "coverage");
 
-        for (const_each<QList<QAction*> > i = m_ui->menu_diagnostics_override_shading->actions(); i; ++i)
+        for (const_each<QList<QAction*>> i = m_ui->menu_diagnostics_override_shading->actions(); i; ++i)
         {
             QAction* action = *i;
 
@@ -427,9 +558,9 @@ void MainWindow::update_recent_files_menu(const QString& filepath)
 
 void MainWindow::update_recent_files_menu(const QStringList& files)
 {
-    const int num_recent_files = min(files.size(), MaxRecentlyOpenedFiles);
+    const int recent_file_count = min(files.size(), MaxRecentlyOpenedFiles);
 
-    for (int i = 0; i < num_recent_files; ++i)
+    for (int i = 0; i < recent_file_count; ++i)
     {
         const QString filepath = files[i];
         const QString text = tr("&%1 %2").arg(i + 1).arg(filepath);
@@ -439,7 +570,7 @@ void MainWindow::update_recent_files_menu(const QStringList& files)
         m_recently_opened[i]->setVisible(true);
     }
 
-    for (int i = num_recent_files; i < MaxRecentlyOpenedFiles; ++i)
+    for (int i = recent_file_count; i < MaxRecentlyOpenedFiles; ++i)
         m_recently_opened[i]->setVisible(false);
 }
 
@@ -449,19 +580,19 @@ void MainWindow::build_toolbar()
     // File actions.
     //
 
-    m_action_new_project = new QAction(load_icons("project_new"), "New Project", this);
+    m_action_new_project = new QAction(load_icons("project_new"), combine_name_and_shortcut("New Project", m_ui->action_file_new_project->shortcut()), this);
     connect(m_action_new_project, SIGNAL(triggered()), SLOT(slot_new_project()));
     m_ui->main_toolbar->addAction(m_action_new_project);
 
-    m_action_open_project = new QAction(load_icons("project_open"), "Open Project...", this);
+    m_action_open_project = new QAction(load_icons("project_open"), combine_name_and_shortcut("Open Project...", m_ui->action_file_open_project->shortcut()), this);
     connect(m_action_open_project, SIGNAL(triggered()), SLOT(slot_open_project()));
     m_ui->main_toolbar->addAction(m_action_open_project);
 
-    m_action_save_project = new QAction(load_icons("project_save") , "Save Project", this);
+    m_action_save_project = new QAction(load_icons("project_save") , combine_name_and_shortcut("Save Project", m_ui->action_file_save_project->shortcut()), this);
     connect(m_action_save_project, SIGNAL(triggered()), SLOT(slot_save_project()));
     m_ui->main_toolbar->addAction(m_action_save_project);
 
-    m_action_reload_project = new QAction(load_icons("project_reload"), "Reload Project", this);
+    m_action_reload_project = new QAction(load_icons("project_reload"), combine_name_and_shortcut("Reload Project", m_ui->action_file_reload_project->shortcut()), this);
     connect(m_action_reload_project, SIGNAL(triggered()), SLOT(slot_reload_project()));
     m_ui->main_toolbar->addAction(m_action_reload_project);
 
@@ -476,19 +607,19 @@ void MainWindow::build_toolbar()
     // Rendering actions.
     //
 
-    m_action_start_interactive_rendering = new QAction(load_icons("rendering_start_interactive"), "Start Interactive Rendering", this);
+    m_action_start_interactive_rendering = new QAction(load_icons("rendering_start_interactive"), combine_name_and_shortcut("Start Interactive Rendering", m_ui->action_rendering_start_interactive_rendering->shortcut()), this);
     connect(m_action_start_interactive_rendering, SIGNAL(triggered()), SLOT(slot_start_interactive_rendering()));
     m_ui->main_toolbar->addAction(m_action_start_interactive_rendering);
 
-    m_action_start_final_rendering = new QAction(load_icons("rendering_start_final"), "Start Final Rendering", this);
+    m_action_start_final_rendering = new QAction(load_icons("rendering_start_final"), combine_name_and_shortcut("Start Final Rendering", m_ui->action_rendering_start_final_rendering->shortcut()), this);
     connect(m_action_start_final_rendering, SIGNAL(triggered()), SLOT(slot_start_final_rendering()));
     m_ui->main_toolbar->addAction(m_action_start_final_rendering);
 
-    m_action_stop_rendering = new QAction(load_icons("rendering_stop"), "Stop Rendering", this);
+    m_action_stop_rendering = new QAction(load_icons("rendering_stop"), combine_name_and_shortcut("Stop Rendering", m_ui->action_rendering_stop_rendering->shortcut()), this);
     connect(m_action_stop_rendering, SIGNAL(triggered()), &m_rendering_manager, SLOT(slot_abort_rendering()));
     m_ui->main_toolbar->addAction(m_action_stop_rendering);
 
-    m_action_rendering_settings = new QAction(load_icons("rendering_settings"), "Rendering Settings...", this);
+    m_action_rendering_settings = new QAction(load_icons("rendering_settings"), combine_name_and_shortcut("Rendering Settings...", m_ui->action_rendering_rendering_settings->shortcut()), this);
     connect(m_action_rendering_settings, SIGNAL(triggered()), SLOT(slot_show_rendering_settings_window()));
     m_ui->main_toolbar->addAction(m_action_rendering_settings);
 }
@@ -509,10 +640,17 @@ void MainWindow::build_log_panel()
     global_logger().add_target(m_log_target.get());
 }
 
+void MainWindow::build_python_console_panel()
+{
+    PythonConsoleWidget* console_widget = new PythonConsoleWidget(m_ui->python_console_contents);
+    m_ui->python_console_contents->layout()->addWidget(console_widget);
+
+    console_widget->setObjectName("textedit_console");
+}
+
 void MainWindow::build_project_explorer()
 {
-    m_ui->treewidget_project_explorer_scene->setColumnWidth(0, 220);    // name
-    m_ui->treewidget_project_explorer_scene->setColumnWidth(1, 75);     // render layer
+    m_ui->treewidget_project_explorer_scene->setColumnWidth(0, 295);    // name
 
     disable_osx_focus_rect(m_ui->treewidget_project_explorer_scene);
 
@@ -532,6 +670,7 @@ void MainWindow::build_minimize_buttons()
     m_minimize_buttons.push_back(new MinimizeButton(m_ui->project_explorer));
     m_minimize_buttons.push_back(new MinimizeButton(m_ui->attribute_editor));
     m_minimize_buttons.push_back(new MinimizeButton(m_ui->log));
+    m_minimize_buttons.push_back(new MinimizeButton(m_ui->python_console));
 
     for (size_t i = 0; i < m_minimize_buttons.size(); ++i)
     {
@@ -545,10 +684,10 @@ void MainWindow::build_connections()
 {
     connect(
         m_action_monitor_project_file, SIGNAL(toggled(bool)),
-        m_ui->action_monitor_project_file, SLOT(setChecked(bool)));
+        m_ui->action_file_monitor_project, SLOT(setChecked(bool)));
 
     connect(
-        m_ui->action_monitor_project_file, SIGNAL(toggled(bool)),
+        m_ui->action_file_monitor_project, SIGNAL(toggled(bool)),
         m_action_monitor_project_file, SLOT(setChecked(bool)));
 
     connect(
@@ -567,25 +706,29 @@ void MainWindow::build_connections()
 void MainWindow::update_workspace()
 {
     update_window_title();
-    set_file_widgets_enabled(true);
+
+    set_file_widgets_enabled(true, NotRendering);
     set_project_explorer_enabled(true);
-    set_rendering_widgets_enabled(true, false);
+    set_rendering_widgets_enabled(true, NotRendering);
+
+    m_ui->attribute_editor_scrollarea_contents->setEnabled(true);
 }
 
 void MainWindow::update_project_explorer()
 {
     delete m_project_explorer;
-    m_project_explorer = 0;
+    m_project_explorer = nullptr;
 
     delete m_attribute_editor;
-    m_attribute_editor = 0;
+    m_attribute_editor = nullptr;
 
     if (m_project_manager.is_project_open())
     {
         m_attribute_editor =
             new AttributeEditor(
                 m_ui->attribute_editor_scrollarea_contents,
-                *m_project_manager.get_project());
+                *m_project_manager.get_project(),
+                m_settings);
 
         m_project_explorer =
             new ProjectExplorer(
@@ -625,9 +768,10 @@ void MainWindow::update_window_title()
     setWindowTitle(title);
 }
 
-void MainWindow::set_file_widgets_enabled(const bool is_enabled)
+void MainWindow::set_file_widgets_enabled(const bool is_enabled, const RenderingMode rendering_mode)
 {
     const bool is_project_open = m_project_manager.is_project_open();
+    const bool project_has_path = is_project_open && m_project_manager.get_project()->has_path();
 
     // File -> New Project.
     m_ui->action_file_new_project->setEnabled(is_enabled);
@@ -644,19 +788,25 @@ void MainWindow::set_file_widgets_enabled(const bool is_enabled)
     m_ui->menu_file_open_builtin_project->setEnabled(is_enabled);
 
     // File -> Reload Project.
-    m_ui->action_file_reload_project->setEnabled(
-        is_enabled &&
-        is_project_open &&
-        m_project_manager.get_project()->has_path());
-    m_action_reload_project->setEnabled(
-        is_enabled &&
-        is_project_open &&
-        m_project_manager.get_project()->has_path());
+    const bool allow_reload = (is_enabled || rendering_mode == InteractiveRendering) && project_has_path;
+    m_ui->action_file_reload_project->setEnabled(allow_reload);
+    m_action_reload_project->setEnabled(allow_reload);
 
-    // File -> Save Project and Save Project As.
-    m_ui->action_file_save_project->setEnabled(is_enabled && is_project_open);
-    m_action_save_project->setEnabled(is_enabled && is_project_open);
-    m_ui->action_file_save_project_as->setEnabled(is_enabled && is_project_open);
+    // File -> Monitor Project.
+    const bool allow_monitor = (is_enabled || rendering_mode == InteractiveRendering) && project_has_path;
+    m_ui->action_file_monitor_project->setEnabled(allow_monitor);
+    m_action_monitor_project_file->setEnabled(allow_monitor);
+
+    // File -> Save Project, Save Project As and Pack Project As.
+    const bool allow_save = is_enabled && is_project_open;
+    m_ui->action_file_save_project->setEnabled(allow_save);
+    m_action_save_project->setEnabled(allow_save);
+    m_ui->action_file_save_project_as->setEnabled(allow_save);
+    m_ui->action_file_pack_project_as->setEnabled(allow_save);
+
+    // File -> Close Project.
+    const bool allow_close = is_enabled && is_project_open;
+    m_ui->action_file_close_project->setEnabled(allow_close);
 
     // File -> Exit.
     m_ui->action_file_exit->setEnabled(is_enabled);
@@ -672,37 +822,48 @@ void MainWindow::set_project_explorer_enabled(const bool is_enabled)
     m_ui->treewidget_project_explorer_scene->setEnabled(is_enabled && is_project_open);
 }
 
-void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const bool is_rendering)
+void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const RenderingMode rendering_mode)
 {
-    const bool is_project_open = is_enabled && m_project_manager.is_project_open();
-    const bool allow_starting_rendering = is_project_open && !is_rendering;
-    const bool allow_stopping_rendering = is_project_open && is_rendering;
+    const bool is_project_open = m_project_manager.is_project_open();
+    const bool allow_start = is_enabled && is_project_open && rendering_mode == NotRendering;
+    const bool allow_stop = is_enabled && is_project_open && rendering_mode != NotRendering;
 
     // Rendering -> Rendering Settings.
-    m_ui->action_rendering_rendering_settings->setEnabled(allow_starting_rendering);
-    m_action_rendering_settings->setEnabled(allow_starting_rendering);
+    m_ui->action_rendering_rendering_settings->setEnabled(allow_start);
+    m_action_rendering_settings->setEnabled(allow_start);
 
     // Rendering -> Start Interactive Rendering.
-    m_ui->action_rendering_start_interactive_rendering->setEnabled(allow_starting_rendering);
-    m_action_start_interactive_rendering->setEnabled(allow_starting_rendering);
+    m_ui->action_rendering_start_interactive_rendering->setEnabled(allow_start);
+    m_action_start_interactive_rendering->setEnabled(allow_start);
 
     // Rendering -> Start Final Rendering.
-    m_ui->action_rendering_start_final_rendering->setEnabled(allow_starting_rendering);
-    m_action_start_final_rendering->setEnabled(allow_starting_rendering);
+    m_ui->action_rendering_start_final_rendering->setEnabled(allow_start);
+    m_action_start_final_rendering->setEnabled(allow_start);
 
     // Rendering -> Stop Rendering.
-    m_ui->action_rendering_stop_rendering->setEnabled(allow_stopping_rendering);
-    m_action_stop_rendering->setEnabled(allow_stopping_rendering);
+    m_ui->action_rendering_stop_rendering->setEnabled(allow_stop);
+    m_action_stop_rendering->setEnabled(allow_stop);
 
     // Rendering -> Render Settings.
-    m_ui->action_rendering_rendering_settings->setEnabled(allow_starting_rendering);
+    m_ui->action_rendering_rendering_settings->setEnabled(allow_start);
 
-    // Rendering -> Clear Frame.
-    if (is_project_open)
+    // Render tab buttons.
+    const int current_tab_index = m_ui->tab_render_channels->currentIndex();
+    if (current_tab_index != -1)
     {
-        const int current_tab_index = m_ui->tab_render_channels->currentIndex();
-        if (current_tab_index != -1)
-            m_tab_index_to_render_tab[current_tab_index]->set_clear_frame_button_enabled(!is_rendering);
+        RenderTab* render_tab = m_tab_index_to_render_tab[current_tab_index];
+
+        // Clear frame.
+        render_tab->set_clear_frame_button_enabled(
+            is_enabled && is_project_open && rendering_mode == NotRendering);
+
+        // Set/clear rendering region.
+        render_tab->set_render_region_buttons_enabled(
+            is_enabled && is_project_open && rendering_mode != FinalRendering);
+
+        // Scene picker.
+        render_tab->get_scene_picking_handler()->set_enabled(
+            is_enabled && is_project_open && rendering_mode != FinalRendering);
     }
 }
 
@@ -730,7 +891,7 @@ void MainWindow::restore_state_after_project_open()
         }
 
         if (m_state_before_project_open->m_is_rendering)
-            start_rendering(true);
+            start_rendering(InteractiveRendering);
     }
 }
 
@@ -760,7 +921,8 @@ void MainWindow::add_render_widget(const QString& label)
     RenderTab* render_tab =
         new RenderTab(
             *m_project_explorer,
-            *m_project_manager.get_project());
+            *m_project_manager.get_project(),
+            m_ocio_config);
     connect(
         render_tab, SIGNAL(signal_render_widget_context_menu(const QPoint&)),
         SLOT(slot_render_widget_context_menu(const QPoint&)));
@@ -813,7 +975,7 @@ ParamArray MainWindow::get_project_params(const char* configuration_name) const
     Configuration* configuration =
         m_project_manager.is_project_open()
             ? m_project_manager.get_project()->configurations().get_by_name(configuration_name)
-            : 0;
+            : nullptr;
 
     if (configuration && configuration->get_base())
         params = configuration->get_base()->get_parameters();
@@ -880,7 +1042,8 @@ void MainWindow::on_project_change()
 
     update_override_shading_menu_item();
 
-    if (m_rendering_settings_window.get())
+    if (m_rendering_settings_window.get() != nullptr &&
+        m_project_manager.get_project() != nullptr)
         m_rendering_settings_window->reload();
 
     m_status_bar.clear();
@@ -895,7 +1058,7 @@ void MainWindow::on_project_change()
 
 void MainWindow::enable_project_file_monitoring()
 {
-    if (m_project_file_watcher == 0)
+    if (m_project_file_watcher == nullptr)
     {
         m_project_file_watcher = new QFileSystemWatcher(this);
 
@@ -915,7 +1078,7 @@ void MainWindow::disable_project_file_monitoring()
     if (m_project_file_watcher)
     {
         delete m_project_file_watcher;
-        m_project_file_watcher = 0;
+        m_project_file_watcher = nullptr;
 
         RENDERER_LOG_INFO("project file monitoring is now disabled.");
     }
@@ -955,38 +1118,39 @@ void MainWindow::dropEvent(QDropEvent* event)
     {
         const QList<QUrl> urls = event->mimeData()->urls();
         QApplication::sendEvent(this, new QCloseEvent());
-        open_project(urls[0].toLocalFile());
+        open_project_async(urls[0].toLocalFile());
     }
     else
     {
         const QString text = event->mimeData()->text();
         QApplication::sendEvent(this, new QCloseEvent());
-        open_project(text);
+        open_project_async(text);
     }
 
      event->accept();
 }
 
-void MainWindow::start_rendering(const bool interactive)
+void MainWindow::start_rendering(const RenderingMode rendering_mode)
 {
     assert(m_project_manager.is_project_open());
 
-    // Enable/disable widgets appropriately. File -> Reload is enabled during interactive rendering.
-    set_file_widgets_enabled(false);
-    if (interactive)
+    // Enable/disable widgets appropriately.
+    set_file_widgets_enabled(false, rendering_mode);
+    set_rendering_widgets_enabled(true, rendering_mode);
+    set_project_explorer_enabled(rendering_mode == InteractiveRendering);
+    m_ui->attribute_editor_scrollarea_contents->setEnabled(rendering_mode == InteractiveRendering);
+
+    // Stop monitoring the project file in Final rendering mode.
+    if (rendering_mode == FinalRendering)
     {
-        m_ui->action_file_reload_project->setEnabled(
-            m_project_manager.get_project()->has_path());
+        if (m_project_file_watcher)
+            stop_monitoring_project_file();
     }
-    set_project_explorer_enabled(true);
-    set_rendering_widgets_enabled(true, true);
 
     Project* project = m_project_manager.get_project();
     Frame* frame = project->get_frame();
 
-    // Internally, clear the main image to transparent black and delete all AOV images.
-    frame->clear_main_image();
-    frame->aov_images().clear();
+    frame->clear_main_and_aov_images();
 
     // In the UI, darken all render widgets.
     for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
@@ -996,13 +1160,17 @@ void MainWindow::start_rendering(const bool interactive)
     }
 
     // Retrieve the right configuration.
-    const char* configuration_name = interactive ? "interactive" : "final";
+    const char* configuration_name =
+        rendering_mode == InteractiveRendering ? "interactive" : "final";
     const ParamArray params = get_project_params(configuration_name);
 
     // Effectively start rendering.
     m_rendering_manager.start_rendering(
         project,
         params,
+        rendering_mode == InteractiveRendering
+            ? RenderingManager::InteractiveRendering
+            : RenderingManager::FinalRendering,
         m_render_tabs["RGB"]);
 }
 
@@ -1084,9 +1252,7 @@ void MainWindow::slot_new_project()
     if (!can_close_project())
         return;
 
-    m_project_manager.create_project();
-
-    on_project_change();
+    new_project();
 }
 
 void MainWindow::slot_open_project()
@@ -1094,11 +1260,18 @@ void MainWindow::slot_open_project()
     if (!can_close_project())
         return;
 
+    const QString filter_string =
+        get_filter_string(
+            ProjectDialogFilterAllProjects |
+            ProjectDialogFilterPlainProjects |
+            ProjectDialogFilterPackedProjects |
+            ProjectDialogFilterAllFiles);
+
     QString filepath =
         get_open_filename(
             this,
             "Open...",
-            "Project Files (*.appleseed);;All Files (*.*)",
+            filter_string,
             m_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 
@@ -1106,7 +1279,7 @@ void MainWindow::slot_open_project()
     {
         filepath = QDir::toNativeSeparators(filepath);
 
-        open_project(filepath);
+        open_project_async(filepath);
         update_recent_files_menu(filepath);
     }
 }
@@ -1121,7 +1294,7 @@ void MainWindow::slot_open_recent()
     if (action)
     {
         const QString filepath = action->data().toString();
-        open_project(filepath);
+        open_project_async(filepath);
     }
 }
 
@@ -1152,7 +1325,7 @@ void MainWindow::slot_reload_project()
     if (!can_close_project())
         return;
 
-    open_project(m_project_manager.get_project()->get_path());
+    open_project_async(m_project_manager.get_project()->get_path());
 }
 
 namespace
@@ -1190,20 +1363,8 @@ void MainWindow::slot_save_project()
     assert(m_project_manager.is_project_open());
 
     if (!m_project_manager.get_project()->has_path())
-    {
         slot_save_project_as();
-        return;
-    }
-
-    if (m_project_file_watcher)
-        stop_monitoring_project_file();
-
-    m_project_manager.save_project();
-
-    if (m_project_file_watcher)
-        start_monitoring_project_file();
-
-    update_workspace();
+    else save_project(m_project_manager.get_project()->get_path());
 }
 
 void MainWindow::slot_save_project_as()
@@ -1214,28 +1375,101 @@ void MainWindow::slot_save_project_as()
         get_save_filename(
             this,
             "Save As...",
-            "Project Files (*.appleseed)",
+            get_filter_string(ProjectDialogFilterPlainProjects),
             m_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 
     if (!filepath.isEmpty())
     {
-        if (QFileInfo(filepath).suffix().isEmpty())
-            filepath += ".appleseed";
-
         filepath = QDir::toNativeSeparators(filepath);
 
-        if (m_project_file_watcher)
-            stop_monitoring_project_file();
-
-        m_project_manager.save_project_as(filepath.toAscii().constData());
-
-        if (m_project_file_watcher)
-            start_monitoring_project_file();
-
+        save_project(filepath);
         update_recent_files_menu(filepath);
-        update_workspace();
     }
+}
+
+void MainWindow::slot_pack_project_as()
+{
+    assert(m_project_manager.is_project_open());
+
+    QString filepath =
+        get_save_filename(
+            this,
+            "Pack As...",
+            get_filter_string(ProjectDialogFilterPackedProjects),
+            m_settings,
+            SETTINGS_FILE_DIALOG_PROJECTS);
+
+    if (!filepath.isEmpty())
+    {
+        filepath = QDir::toNativeSeparators(filepath);
+
+        pack_project(filepath);
+        // Don't update the Recent Files menu.
+    }
+}
+
+void MainWindow::slot_close_project()
+{
+    if (!can_close_project())
+        return;
+
+    close_project();
+}
+
+QString MainWindow::get_filter_string(const int filter)
+{
+    QStringList filters;
+
+    if (filter & ProjectDialogFilterAllProjects)
+        filters << "Project Files (*.appleseed *.appleseedz)";
+
+    if (filter & ProjectDialogFilterPlainProjects)
+        filters << "Plain Project Files (*.appleseed)";
+
+    if (filter & ProjectDialogFilterPackedProjects)
+        filters << "Packed Project Files (*.appleseedz)";
+
+    if (filter & ProjectDialogFilterAllFiles)
+        filters << "All Files (*.*)";
+
+    return filters.join(";;");
+}
+
+void MainWindow::initialize_ocio()
+{
+    // Try first a user specified OCIO config.
+    if (getenv("OCIO"))
+    {
+        try
+        {
+            m_ocio_config = OCIO::GetCurrentConfig();
+            RENDERER_LOG_INFO("using ocio configuration: %s", getenv("OCIO"));
+            return;
+        }
+        catch (const OCIO::Exception&)
+        {
+        }
+    }
+
+    // Try the bundled default OCIO config.
+    const bf::path root_path(Application::get_root_path());
+    const string default_ocio_config = (root_path / "ocio" / "config.ocio").string();
+
+    try
+    {
+        m_ocio_config = OCIO::Config::CreateFromFile(default_ocio_config.c_str());
+        RENDERER_LOG_INFO("using ocio configuration: %s", default_ocio_config.c_str());
+        OCIO::SetCurrentConfig(m_ocio_config);
+        return;
+    }
+    catch (const OCIO::Exception&)
+    {
+    }
+
+    // Default to an empty OCIO config if everything else fails.
+    m_ocio_config = OCIO::GetCurrentConfig();
+    RENDERER_LOG_ERROR("Could not initialize OCIO config.");
 }
 
 void MainWindow::slot_project_modified()
@@ -1255,7 +1489,7 @@ void MainWindow::slot_toggle_project_file_monitoring(const bool checked)
 
     m_settings.insert_path(
         SETTINGS_WATCH_FILE_CHANGES,
-        m_project_file_watcher != 0);
+        m_project_file_watcher != nullptr);
 }
 
 void MainWindow::slot_project_file_changed(const QString& filepath)
@@ -1270,63 +1504,32 @@ void MainWindow::slot_project_file_changed(const QString& filepath)
 
 void MainWindow::slot_load_settings()
 {
-    const filesystem::path root_path(Application::get_root_path());
-    const string schema_file_path = (root_path / "schemas" / "settings.xsd").string();
-
-    SettingsFileReader reader(global_logger());
-
     Dictionary settings;
-    bool success = false;
 
-    // First try to read the settings from the user path.
-    if (const char* p = Application::get_user_settings_path())
+    if (!Application::load_settings("appleseed.studio.xml", settings, global_logger(), LogMessage::Info))
+        return;
+
+    m_settings = settings;
+
+    if (m_settings.strings().exist("message_verbosity"))
     {
-        const filesystem::path user_settings_path(p);
-        const string user_settings_file_path = (user_settings_path / "appleseed.studio.xml").string();
+        const char* level_name = m_settings.get("message_verbosity");
+        const LogMessage::Category level = LogMessage::get_category_value(level_name);
 
-        success =
-            reader.read(
-                user_settings_file_path.c_str(),
-                schema_file_path.c_str(),
-                settings);
-
-        if (success)
-            RENDERER_LOG_INFO("successfully loaded settings from %s.", user_settings_file_path.c_str());
+        if (level < LogMessage::NumMessageCategories)
+            global_logger().set_verbosity_level(level);
+        else RENDERER_LOG_ERROR("invalid message verbosity level \"%s\".", level_name);
     }
 
-    // As a fallback, try to read the settings from the appleseed's installation directory.
-    const string settings_file_path = (root_path / "settings" / "appleseed.studio.xml").string();
-
-    if (!success)
+    if (m_settings.get_optional<bool>(SETTINGS_WATCH_FILE_CHANGES))
     {
-        success =
-            reader.read(
-                settings_file_path.c_str(),
-                schema_file_path.c_str(),
-                settings);
-
-        if (success)
-            RENDERER_LOG_INFO("successfully loaded settings from %s.", settings_file_path.c_str());
-    }
-
-    if (success)
-    {
-        m_settings = settings;
-
-        if (m_settings.get_optional<bool>(SETTINGS_WATCH_FILE_CHANGES))
-        {
-            m_action_monitor_project_file->setChecked(true);
-            enable_project_file_monitoring();
-        }
-        else
-        {
-            m_action_monitor_project_file->setChecked(false);
-            disable_project_file_monitoring();
-        }
+        m_action_monitor_project_file->setChecked(true);
+        enable_project_file_monitoring();
     }
     else
     {
-        RENDERER_LOG_ERROR("failed to load settings from %s.", settings_file_path.c_str());
+        m_action_monitor_project_file->setChecked(false);
+        disable_project_file_monitoring();
     }
 }
 
@@ -1339,8 +1542,8 @@ void MainWindow::slot_save_settings()
     {
         try
         {
-            const filesystem::path user_settings_path(p);
-            filesystem::create_directories(user_settings_path);
+            const bf::path user_settings_path(p);
+            bf::create_directories(user_settings_path);
             const string user_settings_file_path = (user_settings_path / "appleseed.studio.xml").string();
 
             if (writer.write(user_settings_file_path.c_str(), m_settings))
@@ -1349,13 +1552,13 @@ void MainWindow::slot_save_settings()
                 return;
             }
         }
-        catch (const filesystem::filesystem_error&)
+        catch (const bf::filesystem_error&)
         {
         }
     }
 
     // As a fallback, try to save the settings to the appleseed's installation directory.
-    const filesystem::path root_path(Application::get_root_path());
+    const bf::path root_path(Application::get_root_path());
     const string settings_file_path = (root_path / "settings" / "appleseed.studio.xml").string();
 
     if (writer.write(settings_file_path.c_str(), m_settings))
@@ -1369,12 +1572,12 @@ void MainWindow::slot_save_settings()
 
 void MainWindow::slot_start_interactive_rendering()
 {
-    start_rendering(true);
+    start_rendering(InteractiveRendering);
 }
 
 void MainWindow::slot_start_final_rendering()
 {
-    start_rendering(false);
+    start_rendering(FinalRendering);
 }
 
 void MainWindow::slot_start_rendering_once(const QString& filepath, const QString& configuration, const bool successful)
@@ -1383,14 +1586,20 @@ void MainWindow::slot_start_rendering_once(const QString& filepath, const QStrin
 
     if (successful)
     {
-        const bool interactive = configuration == "interactive";
-        start_rendering(interactive);
+        if (configuration == "interactive")
+            start_rendering(InteractiveRendering);
+        else start_rendering(FinalRendering);
     }
 }
 
 void MainWindow::slot_rendering_end()
 {
     update_workspace();
+
+    // Restart monitoring the project file if monitoring was enabled
+    // (monitoring would have been stopped if rendering in Final mode).
+    if (m_project_file_watcher)
+        start_monitoring_project_file();
 }
 
 void MainWindow::slot_camera_changed()
@@ -1404,9 +1613,9 @@ namespace
       : public RenderingManager::IStickyAction
     {
       public:
-        virtual void operator()(
+        void operator()(
             MasterRenderer& master_renderer,
-            Project&        project) APPLESEED_OVERRIDE
+            Project&        project) override
         {
             master_renderer.get_parameters()
                 .push("shading_engine")
@@ -1423,9 +1632,9 @@ namespace
         {
         }
 
-        virtual void operator()(
+        void operator()(
             MasterRenderer& master_renderer,
-            Project&        project) APPLESEED_OVERRIDE
+            Project&        project) override
         {
             master_renderer.get_parameters()
                 .push("shading_engine")
@@ -1442,7 +1651,7 @@ void MainWindow::slot_clear_shading_override()
 {
     m_rendering_manager.set_sticky_action(
         "override_shading",
-        auto_ptr<RenderingManager::IStickyAction>(
+        unique_ptr<RenderingManager::IStickyAction>(
             new ClearShadingOverrideAction()));
 
     m_rendering_manager.reinitialize_rendering();
@@ -1455,7 +1664,7 @@ void MainWindow::slot_set_shading_override()
 
     m_rendering_manager.set_sticky_action(
         "override_shading",
-        auto_ptr<RenderingManager::IStickyAction>(
+        unique_ptr<RenderingManager::IStickyAction>(
             new SetShadingOverrideAction(shading_mode)));
 
     m_rendering_manager.reinitialize_rendering();
@@ -1467,24 +1676,37 @@ namespace
       : public RenderingManager::IScheduledAction
     {
       public:
-        virtual void operator()(
-            Project&        project) APPLESEED_OVERRIDE
+        explicit ClearRenderRegionAction(const AttributeEditor* attribute_editor)
+          : m_attribute_editor(attribute_editor)
+        {
+        }
+
+        void operator()(
+            Project&        project) override
         {
             project.get_frame()->reset_crop_window();
+
+            m_attribute_editor->refresh();
         }
+
+      private:
+        const AttributeEditor* m_attribute_editor;
     };
 
     class SetRenderRegionAction
       : public RenderingManager::IScheduledAction
     {
       public:
-        explicit SetRenderRegionAction(const QRect& rect)
-          : m_rect(rect)
+        SetRenderRegionAction(
+            const QRect&            rect,
+            const AttributeEditor*  attribute_editor)
+          : m_rect(rect),
+            m_attribute_editor(attribute_editor)
         {
         }
 
-        virtual void operator()(
-            Project&        project) APPLESEED_OVERRIDE
+        void operator()(
+            Project&        project) override
         {
             const int w = m_rect.width();
             const int h = m_rect.height();
@@ -1502,35 +1724,47 @@ namespace
                 AABB2i(
                     Vector2i(x0, y0),
                     Vector2i(x1, y1)));
+
+            m_attribute_editor->refresh();
         }
 
       private:
         const QRect m_rect;
+        const AttributeEditor* m_attribute_editor;
     };
 }
 
 void MainWindow::slot_clear_render_region()
 {
-    m_rendering_manager.schedule(
-        auto_ptr<RenderingManager::IScheduledAction>(
-            new ClearRenderRegionAction()));
+    unique_ptr<RenderingManager::IScheduledAction> clear_render_region_action(
+        new ClearRenderRegionAction(m_attribute_editor));
+
+    if (m_rendering_manager.is_rendering())
+        m_rendering_manager.schedule(std::move(clear_render_region_action));
+    else clear_render_region_action.get()->operator()(
+        *m_project_manager.get_project());
 
     m_rendering_manager.reinitialize_rendering();
 }
 
 void MainWindow::slot_set_render_region(const QRect& rect)
 {
-    m_rendering_manager.schedule(
-        auto_ptr<RenderingManager::IScheduledAction>(
-            new SetRenderRegionAction(rect)));
+    unique_ptr<RenderingManager::IScheduledAction> set_render_region_action(
+        new SetRenderRegionAction(rect, m_attribute_editor));
 
-    if (m_settings.get_path_optional<bool>(SETTINGS_RENDER_REGION_TRIGGERS_RENDERING))
+    if (!m_rendering_manager.is_rendering())
     {
-        if (m_rendering_manager.is_rendering())
-            m_rendering_manager.reinitialize_rendering();
-        else start_rendering(true);
+        set_render_region_action.get()->operator()(
+            *m_project_manager.get_project());
+
+        if (m_settings.get_path_optional<bool>(SETTINGS_RENDER_REGION_TRIGGERS_RENDERING))
+            start_rendering(InteractiveRendering);
     }
-    else m_rendering_manager.reinitialize_rendering();
+    else
+    {
+        m_rendering_manager.schedule(std::move(set_render_region_action));
+        m_rendering_manager.reinitialize_rendering();
+    }
 }
 
 void MainWindow::slot_render_widget_context_menu(const QPoint& point)
@@ -1561,7 +1795,7 @@ namespace
             get_save_filename(
                 parent,
                 caption,
-                g_bitmap_files_filter,
+                g_appleseed_image_files_filter,
                 settings,
                 SETTINGS_FILE_DIALOG_FRAMES);
 
@@ -1611,10 +1845,10 @@ void MainWindow::slot_save_all_aovs()
 namespace
 {
     void write_all_aovs(
-        const Project&          project,
-        const filesystem::path& image_path)
+        const Project&  project,
+        const bf::path& image_path)
     {
-        filesystem::create_directories(image_path.parent_path());
+        bf::create_directories(image_path.parent_path());
 
         const Frame* frame = project.get_frame();
 
@@ -1630,26 +1864,24 @@ void MainWindow::slot_quicksave_all_aovs()
 
     const Project& project = *m_project_manager.get_project();
 
-    const filesystem::path project_path(project.get_path());
-    const filesystem::path quicksave_dir = project_path.parent_path() / "quicksaves";
+    const bf::path project_path(project.get_path());
+    const bf::path quicksave_dir = project_path.parent_path() / "quicksaves";
 
     write_all_aovs(
         project,
-        filesystem::absolute(
+        bf::absolute(
             quicksave_dir / "quicksave.exr"));
 
     write_all_aovs(
         project,
-        filesystem::absolute(
+        bf::absolute(
             find_next_available_path(quicksave_dir / "quicksave####.exr")));
 }
 
 void MainWindow::slot_clear_frame()
 {
-    // Internally, clear the main image to transparent black and delete all AOV images.
     Frame* frame = m_project_manager.get_project()->get_frame();
-    frame->clear_main_image();
-    frame->aov_images().clear();
+    frame->clear_main_and_aov_images();
 
     // In the UI, clear all render widgets to black.
     for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
@@ -1685,7 +1917,7 @@ void MainWindow::slot_fullscreen()
 
     bool all_minimized = true;
     bool not_minimized = false;
-    for (each<vector<MinimizeButton*> > button = m_minimize_buttons; button; ++button)
+    for (each<vector<MinimizeButton*>> button = m_minimize_buttons; button; ++button)
     {
         all_minimized = all_minimized && (*button)->is_on();
         not_minimized = not_minimized || !(*button)->is_on();
@@ -1699,7 +1931,7 @@ void MainWindow::slot_fullscreen()
     if (not_minimized)
         m_fullscreen = true;
 
-    for (each<vector<MinimizeButton*> > button = m_minimize_buttons; button; ++button)
+    for (each<vector<MinimizeButton*>> button = m_minimize_buttons; button; ++button)
         (*button)->set_fullscreen(m_fullscreen);
 }
 
@@ -1707,7 +1939,7 @@ void MainWindow::slot_show_rendering_settings_window()
 {
     assert(m_project_manager.is_project_open());
 
-    if (m_rendering_settings_window.get() == 0)
+    if (m_rendering_settings_window.get() == nullptr)
     {
         m_rendering_settings_window.reset(new RenderingSettingsWindow(m_project_manager, this));
 
@@ -1722,7 +1954,7 @@ void MainWindow::slot_show_rendering_settings_window()
 
 void MainWindow::slot_show_test_window()
 {
-    if (m_test_window.get() == 0)
+    if (m_test_window.get() == nullptr)
         m_test_window.reset(new TestWindow(this));
 
     m_test_window->showNormal();
@@ -1731,7 +1963,7 @@ void MainWindow::slot_show_test_window()
 
 void MainWindow::slot_show_benchmark_window()
 {
-    if (m_benchmark_window.get() == 0)
+    if (m_benchmark_window.get() == nullptr)
         m_benchmark_window.reset(new BenchmarkWindow(this));
 
     m_benchmark_window->showNormal();

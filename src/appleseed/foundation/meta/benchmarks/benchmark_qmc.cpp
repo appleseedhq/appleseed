@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +41,109 @@ using namespace foundation;
 
 BENCHMARK_SUITE(Foundation_Math_QMC)
 {
+    template <typename T>
+    struct DivisionFixture
+    {
+        T m_x;
+
+        DivisionFixture()
+          : m_x(156878697)
+        {
+        }
+    };
+
+    BENCHMARK_CASE_F(UnsignedDivisionsByPrimeConstants, DivisionFixture<uint32>)
+    {
+        for (size_t i = 0; i < 128; ++i)
+        {
+            m_x /= 3;
+            m_x /= 5;
+            m_x /= 7;
+            m_x /= 11;
+            m_x /= 13;
+            m_x /= 17;
+        }
+    }
+
+    BENCHMARK_CASE_F(SignedDivisionsByPrimeConstants, DivisionFixture<int32>)
+    {
+        for (size_t i = 0; i < 128; ++i)
+        {
+            m_x /= 3;
+            m_x /= 5;
+            m_x /= 7;
+            m_x /= 11;
+            m_x /= 13;
+            m_x /= 17;
+        }
+    }
+
+    BENCHMARK_CASE_F(UnsignedModulosByPrimeConstants, DivisionFixture<uint32>)
+    {
+        for (size_t i = 0; i < 128; ++i)
+        {
+            m_x %= 3;
+            m_x %= 5;
+            m_x %= 7;
+            m_x %= 11;
+            m_x %= 13;
+            m_x %= 17;
+        }
+    }
+
+    BENCHMARK_CASE_F(SignedModulosByPrimeConstants, DivisionFixture<int32>)
+    {
+        for (size_t i = 0; i < 128; ++i)
+        {
+            m_x %= 3;
+            m_x %= 5;
+            m_x %= 7;
+            m_x %= 11;
+            m_x %= 13;
+            m_x %= 17;
+        }
+    }
+
+    template <typename T, size_t Base>
+    inline T static_radical_inverse_unsigned(const size_t value)
+    {
+        const T RcpBase = T(1.0) / Base;
+
+        size_t i = value;
+        size_t x = 0;
+        T b = T(1.0);
+
+        while (i > 0)
+        {
+            const size_t digit = i % Base;
+            x = x * Base + digit;
+            i /= Base;
+            b *= RcpBase;
+        }
+
+        return static_cast<T>(x) * b;
+    }
+
+    template <typename T, isize_t Base>
+    inline T static_radical_inverse_signed(const size_t value)
+    {
+        const T RcpBase = T(1.0) / Base;
+
+        isize_t i = static_cast<isize_t>(value);
+        isize_t x = 0;
+        T b = T(1.0);
+
+        while (i > 0)
+        {
+            const isize_t digit = i % Base;
+            x = x * Base + digit;
+            i /= Base;
+            b *= RcpBase;
+        }
+
+        return static_cast<T>(x) * b;
+    }
+
     template <typename T>
     struct ScalarFixture
     {
@@ -97,6 +200,36 @@ BENCHMARK_SUITE(Foundation_Math_QMC)
                     m_x += fast_permuted_radical_inverse<T>(d, FaurePermutations[d], s);
             }
         }
+
+        void static_radical_inverse_unsigned_payload()
+        {
+            m_x = T(0.0);
+
+            for (size_t i = 0; i < 32; ++i)
+            {
+                m_x += static_radical_inverse_unsigned<T, 3>(i);
+                m_x += static_radical_inverse_unsigned<T, 5>(i);
+                m_x += static_radical_inverse_unsigned<T, 7>(i);
+                m_x += static_radical_inverse_unsigned<T, 11>(i);
+                m_x += static_radical_inverse_unsigned<T, 13>(i);
+                m_x += static_radical_inverse_unsigned<T, 17>(i);
+            }
+        }
+
+        void static_radical_inverse_signed_payload()
+        {
+            m_x = T(0.0);
+
+            for (size_t i = 0; i < 32; ++i)
+            {
+                m_x += static_radical_inverse_signed<T, 3>(i);
+                m_x += static_radical_inverse_signed<T, 5>(i);
+                m_x += static_radical_inverse_signed<T, 7>(i);
+                m_x += static_radical_inverse_signed<T, 11>(i);
+                m_x += static_radical_inverse_signed<T, 13>(i);
+                m_x += static_radical_inverse_signed<T, 17>(i);
+            }
+        }
     };
 
     template <typename T>
@@ -125,7 +258,9 @@ BENCHMARK_SUITE(Foundation_Math_QMC)
         }
     };
 
+    //
     // Radical inverse, single precision.
+    //
 
     BENCHMARK_CASE_F(RadicalInverseBase2_SinglePrecision, ScalarFixture<float>)
     {
@@ -152,7 +287,9 @@ BENCHMARK_SUITE(Foundation_Math_QMC)
         fast_permuted_radical_inverse_payload();
     }
 
+    //
     // Radical inverse, double precision.
+    //
 
     BENCHMARK_CASE_F(RadicalInverseBase2_DoublePrecision, ScalarFixture<double>)
     {
@@ -179,7 +316,33 @@ BENCHMARK_SUITE(Foundation_Math_QMC)
         fast_permuted_radical_inverse_payload();
     }
 
+    //
+    // Signed vs. unsigned radical inverse implementations.
+    //
+
+    BENCHMARK_CASE_F(StaticRadicalInverseUnsigned_SinglePrecision, ScalarFixture<float>)
+    {
+        static_radical_inverse_unsigned_payload();
+    }
+
+    BENCHMARK_CASE_F(StaticRadicalInverseSigned_SinglePrecision, ScalarFixture<float>)
+    {
+        static_radical_inverse_signed_payload();
+    }
+
+    BENCHMARK_CASE_F(StaticRadicalInverseUnsigned_DoublePrecision, ScalarFixture<double>)
+    {
+        static_radical_inverse_unsigned_payload();
+    }
+
+    BENCHMARK_CASE_F(StaticRadicalInverseSigned_DoublePrecision, ScalarFixture<double>)
+    {
+        static_radical_inverse_signed_payload();
+    }
+
+    //
     // Halton sequence.
+    //
 
     BENCHMARK_CASE_F(HaltonSequence_Bases2And3_SinglePrecision, Vector2Fixture<float>)
     {
@@ -191,7 +354,9 @@ BENCHMARK_SUITE(Foundation_Math_QMC)
         halton_payload();
     }
 
+    //
     // Hammersley sequence.
+    //
 
     BENCHMARK_CASE_F(HammersleySequence_Base2_SinglePrecision, Vector2Fixture<float>)
     {

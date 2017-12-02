@@ -7,7 +7,7 @@
 # This software is released under the MIT license.
 #
 # Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-# Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+# Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -56,6 +56,7 @@ def safe_make_directory(path):
 #--------------------------------------------------------------------------------------------------
 
 class Logger:
+
     def __init__(self, directory):
         now = datetime.datetime.now()
         self.filename = now.strftime("benchmark.%Y%m%d.%H%M%S.txt")
@@ -65,7 +66,7 @@ class Logger:
     def get_log_file_path(self):
         return self.filepath
 
-    def write(self, s = ""):
+    def write(self, s=""):
         self.file.write(s + "\n")
         print(s)
 
@@ -83,14 +84,15 @@ def benchmark_projects(appleseed_path, appleseed_args, logger):
             if os.path.splitext(filename)[1] == ".appleseed":
                 benchmark_project(os.path.join(dirpath, filename), appleseed_path, appleseed_args, logger)
 
+
 def benchmark_project(project_path, appleseed_path, appleseed_args, logger):
     project_name = os.path.splitext(os.path.split(project_path)[1])[0]
 
     logger.write("Benchmarking {0} scene...".format(project_name))
 
     command_line = [appleseed_path, project_path] + appleseed_args
-    command_line += [ "--benchmark-mode" ]
-    command_line += [ "-o", os.path.join("renders", project_name + ".png") ]
+    command_line += ["--benchmark-mode"]
+    command_line += ["-o", os.path.join("renders", project_name + ".png")]
 
     output = subprocess.check_output(command_line, stderr=subprocess.STDOUT)
 
@@ -99,8 +101,10 @@ def benchmark_project(project_path, appleseed_path, appleseed_args, logger):
     else:
         logger.write(output)
 
+
 def was_successful(output):
     return get_value(output, "result") == "success"
+
 
 def process_output(output, logger):
     setup_time = float(get_value(output, "setup_time"))
@@ -111,6 +115,7 @@ def process_output(output, logger):
     logger.write("  Render Time : {0} seconds".format(render_time))
     logger.write("  Total Time  : {0} seconds".format(total_time))
     logger.write()
+
 
 def get_value(output, key):
     pattern = r"^{0}=(.*)[\r\n]+$".format(key)
@@ -128,6 +133,7 @@ def print_configuration(appleseed_path, appleseed_args, logger):
     logger.write("  Path to appleseed      : {0}".format(appleseed_path))
     logger.write("  appleseed command line : {0}".format(" ".join(appleseed_args)))
     logger.write()
+
 
 def main():
     print("appleseed.benchmark version " + VERSION)

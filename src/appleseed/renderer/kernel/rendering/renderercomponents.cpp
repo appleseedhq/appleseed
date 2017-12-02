@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#include "renderer/kernel/lighting/drt/drtlightingengine.h"
+#include "renderer/kernel/lighting/bdpt/bdptlightingengine.h"
 #include "renderer/kernel/lighting/lighttracing/lighttracingsamplegenerator.h"
 #include "renderer/kernel/lighting/pt/ptlightingengine.h"
 #include "renderer/kernel/lighting/sppm/sppmlightingengine.h"
@@ -41,17 +41,22 @@
 #include "renderer/kernel/rendering/debug/blanktilerenderer.h"
 #include "renderer/kernel/rendering/debug/debugsamplerenderer.h"
 #include "renderer/kernel/rendering/debug/debugtilerenderer.h"
+#include "renderer/kernel/rendering/ephemeralshadingresultframebufferfactory.h"
 #include "renderer/kernel/rendering/final/adaptivepixelrenderer.h"
 #include "renderer/kernel/rendering/final/uniformpixelrenderer.h"
 #include "renderer/kernel/rendering/generic/genericframerenderer.h"
 #include "renderer/kernel/rendering/generic/genericsamplegenerator.h"
 #include "renderer/kernel/rendering/generic/genericsamplerenderer.h"
 #include "renderer/kernel/rendering/generic/generictilerenderer.h"
-#include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
-#include "renderer/kernel/rendering/ephemeralshadingresultframebufferfactory.h"
 #include "renderer/kernel/rendering/permanentshadingresultframebufferfactory.h"
+#include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
+#include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/utility/paramarray.h"
+
+// Standard headers.
+#include <string>
 
 using namespace std;
 
@@ -73,15 +78,14 @@ namespace
             dest.strings().insert(param_name, source.strings().get(param_name));
     }
 
-    ParamArray child_inherit(
+    ParamArray get_child_and_inherit_globals(
         const ParamArray&   source,
         const char*         name)
     {
         ParamArray child = source.child(name);
-
+        copy_param(child, source, "spectrum_mode");
         copy_param(child, source, "sampling_mode");
         copy_param(child, source, "rendering_threads");
-
         return child;
     }
 }
@@ -90,33 +94,25 @@ RendererComponents::RendererComponents(
     const Project&          project,
     const ParamArray&       params,
     ITileCallbackFactory*   tile_callback_factory,
-    TextureStore&           texture_store
-#ifdef APPLESEED_WITH_OIIO
-    , OIIO::TextureSystem&  texture_system
-#endif
-#ifdef APPLESEED_WITH_OSL
-    , OSL::ShadingSystem&   shading_system
-#endif
-    )
+    TextureStore&           texture_store,
+    OIIOTextureSystem&      texture_system,
+    OSLShadingSystem&       shading_system)
   : m_project(project)
   , m_params(params)
   , m_tile_callback_factory(tile_callback_factory)
   , m_scene(*project.get_scene())
   , m_frame(*project.get_frame())
   , m_trace_context(project.get_trace_context())
-  , m_light_sampler(m_scene, child_inherit(params, "light_sampler"))
-  , m_shading_engine(child_inherit(params, "shading_engine"))
+  , m_shading_engine(get_child_and_inherit_globals(params, "shading_engine"))
   , m_texture_store(texture_store)
-#ifdef APPLESEED_WITH_OIIO
   , m_texture_system(texture_system)
-#endif
-#ifdef APPLESEED_WITH_OSL
   , m_shading_system(shading_system)
-#endif
+  , m_forward_light_sampler(nullptr)
+  , m_backward_light_sampler(nullptr)
 {
 }
 
-bool RendererComponents::initialize()
+bool RendererComponents::create()
 {
     if (!create_lighting_engine_factory())
         return false;
@@ -142,11 +138,6 @@ bool RendererComponents::initialize()
     return true;
 }
 
-IFrameRenderer& RendererComponents::get_frame_renderer()
-{
-    return *m_frame_renderer.get();
-}
-
 bool RendererComponents::create_lighting_engine_factory()
 {
     const string name = m_params.get_required<string>("lighting_engine", "pt");
@@ -155,38 +146,58 @@ bool RendererComponents::create_lighting_engine_factory()
     {
         return true;
     }
-    else if (name == "drt")
-    {
-        m_lighting_engine_factory.reset(
-            new DRTLightingEngineFactory(
-                m_light_sampler,
-                child_inherit(m_params, "drt")));   // todo: change to "drt_lighting_engine"?
-        return true;
-    }
     else if (name == "pt")
     {
+        m_backward_light_sampler.reset(
+            new BackwardLightSampler(
+                m_scene,
+                get_child_and_inherit_globals(m_params, "light_sampler")));
+
         m_lighting_engine_factory.reset(
             new PTLightingEngineFactory(
-                m_light_sampler,
-                child_inherit(m_params, "pt")));    // todo: change to "pt_lighting_engine"?
+                *m_backward_light_sampler,
+                get_child_and_inherit_globals(m_params, "pt")));    // todo: change to "pt_lighting_engine"?
+
+        return true;
+    }
+    else if (name == "bdpt")
+    {
+        m_forward_light_sampler.reset(
+            new ForwardLightSampler(
+                m_scene,
+                get_child_and_inherit_globals(m_params, "light_sampler")));
+
+        m_lighting_engine_factory.reset(
+            new BDPTLightingEngineFactory(
+                m_project,
+                *m_forward_light_sampler,
+                get_child_and_inherit_globals(m_params, "bdpt")));
+
         return true;
     }
     else if (name == "sppm")
     {
-        const SPPMParameters sppm_params(child_inherit(m_params, "sppm"));
+        m_forward_light_sampler.reset(
+            new ForwardLightSampler(
+                m_scene,
+                get_child_and_inherit_globals(m_params, "light_sampler")));
+
+        m_backward_light_sampler.reset(
+            new BackwardLightSampler(
+                m_scene,
+                get_child_and_inherit_globals(m_params, "light_sampler")));
+
+        const SPPMParameters sppm_params(
+            get_child_and_inherit_globals(m_params, "sppm"));
 
         SPPMPassCallback* sppm_pass_callback =
             new SPPMPassCallback(
                 m_scene,
-                m_light_sampler,
+                *m_forward_light_sampler,
                 m_trace_context,
                 m_texture_store,
-#ifdef APPLESEED_WITH_OIIO
                 m_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
                 m_shading_system,
-#endif
                 sppm_params);
 
         m_pass_callback.reset(sppm_pass_callback);
@@ -194,7 +205,8 @@ bool RendererComponents::create_lighting_engine_factory()
         m_lighting_engine_factory.reset(
             new SPPMLightingEngineFactory(
                 *sppm_pass_callback,
-                m_light_sampler,
+                *m_forward_light_sampler,
+                *m_backward_light_sampler,
                 sppm_params));
 
         return true;
@@ -226,13 +238,9 @@ bool RendererComponents::create_sample_renderer_factory()
                 m_texture_store,
                 m_lighting_engine_factory.get(),
                 m_shading_engine,
-#ifdef APPLESEED_WITH_OIIO
                 m_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
                 m_shading_system,
-#endif
-                child_inherit(m_params, "generic_sample_renderer")));
+                get_child_and_inherit_globals(m_params, "generic_sample_renderer")));
         return true;
     }
     else if (name == "blank")
@@ -264,29 +272,38 @@ bool RendererComponents::create_sample_generator_factory()
     }
     else if (name == "generic")
     {
+        if (m_sample_renderer_factory.get() == nullptr)
+        {
+            RENDERER_LOG_ERROR("cannot use the generic sample generator without a sample renderer.");
+            return false;
+        }
+
         m_sample_generator_factory.reset(
             new GenericSampleGeneratorFactory(
                 m_frame,
                 m_sample_renderer_factory.get(),
-                child_inherit(m_params, "generic_sample_generator")));
+                get_child_and_inherit_globals(m_params, "generic_sample_generator")));
+
         return true;
     }
     else if (name == "lighttracing")
     {
+        m_forward_light_sampler.reset(
+            new ForwardLightSampler(
+                m_scene,
+                get_child_and_inherit_globals(m_params, "light_sampler")));
+
         m_sample_generator_factory.reset(
             new LightTracingSampleGeneratorFactory(
-                m_scene,
+                m_project,
                 m_frame,
                 m_trace_context,
                 m_texture_store,
-                m_light_sampler,
-#ifdef APPLESEED_WITH_OIIO
+                *m_forward_light_sampler,
                 m_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
                 m_shading_system,
-#endif
-                child_inherit(m_params, "lighttracing_sample_generator")));
+                get_child_and_inherit_globals(m_params, "lighttracing_sample_generator")));
+
         return true;
     }
     else
@@ -308,9 +325,14 @@ bool RendererComponents::create_pixel_renderer_factory()
     }
     else if (name == "uniform")
     {
-        ParamArray params = child_inherit(m_params, "uniform_pixel_renderer");
-        copy_param(params, m_params, "passes");
+        if (m_sample_renderer_factory.get() == nullptr)
+        {
+            RENDERER_LOG_ERROR("cannot use the uniform pixel renderer without a sample renderer.");
+            return false;
+        }
 
+        ParamArray params = get_child_and_inherit_globals(m_params, "uniform_pixel_renderer");
+        copy_param(params, m_params, "passes");
         m_pixel_renderer_factory.reset(
             new UniformPixelRendererFactory(
                 m_sample_renderer_factory.get(),
@@ -320,11 +342,18 @@ bool RendererComponents::create_pixel_renderer_factory()
     }
     else if (name == "adaptive")
     {
+        if (m_sample_renderer_factory.get() == nullptr)
+        {
+            RENDERER_LOG_ERROR("cannot use the adaptive pixel renderer without a sample renderer.");
+            return false;
+        }
+
         m_pixel_renderer_factory.reset(
             new AdaptivePixelRendererFactory(
                 m_frame,
                 m_sample_renderer_factory.get(),
-                child_inherit(m_params, "adaptive_pixel_renderer")));
+                get_child_and_inherit_globals(m_params, "adaptive_pixel_renderer")));
+
         return true;
     }
     else
@@ -375,12 +404,25 @@ bool RendererComponents::create_tile_renderer_factory()
     }
     else if (name == "generic")
     {
+        if (m_pixel_renderer_factory.get() == nullptr)
+        {
+            RENDERER_LOG_ERROR("cannot use the generic tile renderer without a pixel renderer.");
+            return false;
+        }
+
+        if (m_shading_result_framebuffer_factory.get() == nullptr)
+        {
+            RENDERER_LOG_ERROR("cannot use the generic tile renderer without a shading result framebuffer.");
+            return false;
+        }
+
         m_tile_renderer_factory.reset(
             new GenericTileRendererFactory(
                 m_frame,
                 m_pixel_renderer_factory.get(),
                 m_shading_result_framebuffer_factory.get(),
-                child_inherit(m_params, "generic_tile_renderer")));
+                get_child_and_inherit_globals(m_params, "generic_tile_renderer")));
+
         return true;
     }
     else if (name == "blank")
@@ -412,23 +454,37 @@ bool RendererComponents::create_frame_renderer_factory()
     }
     else if (name == "generic")
     {
+        if (m_tile_renderer_factory.get() == nullptr)
+        {
+            RENDERER_LOG_ERROR("cannot use the generic frame renderer without a tile renderer.");
+            return false;
+        }
+
         m_frame_renderer.reset(
             GenericFrameRendererFactory::create(
                 m_frame,
                 m_tile_renderer_factory.get(),
                 m_tile_callback_factory,
                 m_pass_callback.get(),
-                child_inherit(m_params, "generic_frame_renderer")));
+                get_child_and_inherit_globals(m_params, "generic_frame_renderer")));
+
         return true;
     }
     else if (name == "progressive")
     {
+        if (m_sample_generator_factory.get() == nullptr)
+        {
+            RENDERER_LOG_ERROR("cannot use the progressive frame renderer without a sample generator.");
+            return false;
+        }
+
         m_frame_renderer.reset(
             ProgressiveFrameRendererFactory::create(
                 m_project,
                 m_sample_generator_factory.get(),
                 m_tile_callback_factory,
-                child_inherit(m_params, "progressive_frame_renderer")));
+                get_child_and_inherit_globals(m_params, "progressive_frame_renderer")));
+
         return true;
     }
     else

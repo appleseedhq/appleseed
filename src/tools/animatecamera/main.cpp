@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 // THE SOFTWARE.
 //
 
-// Project headers.
+// animatecamera headers.
 #include "animationpath.h"
 #include "commandlinehandler.h"
 
@@ -49,6 +49,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/string.h"
 
@@ -69,10 +70,10 @@
 
 using namespace appleseed::animatecamera;
 using namespace appleseed::shared;
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace
 {
@@ -122,7 +123,7 @@ namespace
     template <typename T>
     struct TransformPairComparer
     {
-        typedef pair<Transform<T>, Transform<T> > TransformPair;
+        typedef pair<Transform<T>, Transform<T>> TransformPair;
 
         bool operator()(const TransformPair& lhs, const TransformPair& rhs) const
         {
@@ -180,7 +181,7 @@ namespace
             const size_t    number,
             const size_t    digits = 4)
         {
-            const filesystem::path path(filename);
+            const bf::path path(filename);
 
             stringstream sstr;
             sstr << path.stem().string();
@@ -191,24 +192,25 @@ namespace
             return sstr.str();
         }
 
-        static auto_release_ptr<Project> load_master_project()
+        auto_release_ptr<Project> load_master_project()
         {
             // Construct the schema file path.
-            const filesystem::path schema_filepath =
-                  filesystem::path(Application::get_root_path())
+            const bf::path schema_filepath =
+                  bf::path(Application::get_root_path())
                 / "schemas"
                 / "project.xsd";
 
             // Read the master project file.
+            const char* project_filepath = g_cl.m_filenames.values()[0].c_str();
             ProjectFileReader reader;
             auto_release_ptr<Project> project(
                 reader.read(
-                    g_cl.m_filenames.values()[0].c_str(),
+                    project_filepath,
                     schema_filepath.string().c_str()));
 
             // Bail out if the master project file couldn't be read.
-            if (project.get() == 0)
-                exit(1);
+            if (project.get() == nullptr)
+                LOG_FATAL(m_logger, "failed to load master project file %s", project_filepath);
 
             return project;
         }
@@ -249,7 +251,7 @@ namespace
 
             FILE* script_file = fopen(script_filename.c_str(), "wt");
 
-            if (script_file == 0)
+            if (script_file == nullptr)
                 LOG_FATAL(m_logger, "could not write to %s.", script_filename.c_str());
 
             fprintf(
@@ -356,10 +358,10 @@ namespace
         }
 
       private:
-        virtual vector<size_t> do_generate()
+        vector<size_t> do_generate() override
         {
             typedef pair<Transformd, Transformd> TransformPair;
-            typedef map<TransformPair, size_t, TransformPairComparer<double> > TransformMap;
+            typedef map<TransformPair, size_t, TransformPairComparer<double>> TransformMap;
 
             TransformMap transform_map;
             vector<size_t> frames;
@@ -405,11 +407,11 @@ namespace
                 }
 
                 // Set the camera's transform sequence.
-                Camera* camera = project->get_scene()->get_camera();
+                Camera* camera = project->get_uncached_active_camera();
                 camera->transform_sequence().clear();
-                camera->transform_sequence().set_transform(0.0, animation_path[i]);
+                camera->transform_sequence().set_transform(0.0f, animation_path[i]);
                 if (i + 1 < animation_path.size())
-                    camera->transform_sequence().set_transform(1.0, animation_path[i + 1]);
+                    camera->transform_sequence().set_transform(1.0f, animation_path[i + 1]);
 
                 // Write the project file for this frame.
                 const string new_path = make_numbered_filename(m_base_output_filename + ".appleseed", frame);
@@ -445,7 +447,7 @@ namespace
         }
 
       private:
-        virtual vector<size_t> do_generate()
+        vector<size_t> do_generate() override
         {
             vector<size_t> frames;
 
@@ -477,26 +479,26 @@ namespace
             const double elevation = max_height * normalized_elevation;
 
             // Compute the transform of the camera at the last frame.
-            const double angle = -1.0 / frame_count * TwoPi;
+            const double angle = -1.0 / frame_count * TwoPi<double>();
             const Vector3d position(distance * cos(angle), elevation, distance * sin(angle));
             Transformd previous_transform(
                 Transformd::from_local_to_parent(
-                    Matrix4d::lookat(position, center, Up)));
+                    Matrix4d::make_lookat(position, center, Up)));
 
             for (int i = 0; i < frame_count; ++i)
             {
                 // Compute the transform of the camera at this frame.
-                const double angle = static_cast<double>(i) / frame_count * TwoPi;
+                const double angle = (i * TwoPi<double>()) / frame_count;
                 const Vector3d position(distance * cos(angle), elevation, distance * sin(angle));
                 const Transformd new_transform(
                     Transformd::from_local_to_parent(
-                        Matrix4d::lookat(position, center, Up)));
+                        Matrix4d::make_lookat(position, center, Up)));
 
                 // Set the camera's transform sequence.
-                Camera* camera = project->get_scene()->get_camera();
+                Camera* camera = project->get_uncached_active_camera();
                 camera->transform_sequence().clear();
-                camera->transform_sequence().set_transform(0.0, previous_transform);
-                camera->transform_sequence().set_transform(1.0, new_transform);
+                camera->transform_sequence().set_transform(0.0f, previous_transform);
+                camera->transform_sequence().set_transform(1.0f, new_transform);
                 previous_transform = new_transform;
 
                 // Write the project file for this frame.
@@ -525,18 +527,36 @@ namespace
 
 int main(int argc, const char* argv[])
 {
+    // Construct the logger that will be used throughout the program.
     SuperLogger logger;
+
+    // Make sure this build can run on this host.
+    Application::check_compatibility_with_host(logger);
+
+    // Make sure appleseed is correctly installed.
     Application::check_installation(logger);
 
+    // Parse the command line.
     g_cl.parse(argc, argv, logger);
 
-    // Initialize the renderer's logger.
-    global_logger().add_target(&logger.get_log_target());
+    // Load an apply settings from the settings file.
+    Dictionary settings;
+    Application::load_settings("appleseed.tools.xml", settings, logger);
+    logger.configure_from_settings(settings);
+
+    // Apply command line arguments.
+    g_cl.apply(logger);
+
+    // Configure the renderer's global logger.
+    // Must be done after settings have been loaded and the command line
+    // has been parsed, because these two operations may replace the log
+    // target of the global logger.
+    global_logger().initialize_from(logger);
 
     const string base_output_filename =
-        filesystem::path(g_cl.m_filenames.values()[1]).stem().string();
+        bf::path(g_cl.m_filenames.values()[1]).stem().string();
 
-    auto_ptr<AnimationGenerator> generator;
+    unique_ptr<AnimationGenerator> generator;
 
     if (g_cl.m_animation_path.is_set())
         generator.reset(new PathAnimationGenerator(base_output_filename, logger));

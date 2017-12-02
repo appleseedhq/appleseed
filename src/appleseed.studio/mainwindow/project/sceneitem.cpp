@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -78,20 +78,20 @@ SceneItem::SceneItem(
     font.setBold(true);
     setFont(0, font);
 
+    int child_index = 0;
     insertChild(
-        0,
-        m_camera_item =
-            new CameraItem(
+        child_index++,
+        m_camera_collection_item =
+            new MultiModelCollectionItem<Camera, Scene, SceneItem>(
                 editor_context,
-                scene.get_camera(),
+                new_guid(),
+                EntityTraits<Camera>::get_human_readable_collection_type_name(),
                 scene,
                 this));
-    m_camera_item->set_allow_deletion(false);
-    m_camera_item->set_fixed_position(true);
-    editor_context.m_item_registry.insert(*scene.get_camera(), m_camera_item);
+    m_camera_collection_item->add_items(scene.cameras());
 
     insertChild(
-        1,
+        child_index++,
         m_environment_item =
             new EnvironmentItem(
                 editor_context,
@@ -103,7 +103,7 @@ SceneItem::SceneItem(
     editor_context.m_item_registry.insert(*scene.get_environment(), m_environment_item);
 
     insertChild(
-        2,
+        child_index++,
         m_environment_edf_collection_item =
             new MultiModelCollectionItem<EnvironmentEDF, Scene, SceneItem>(
                 editor_context,
@@ -114,7 +114,7 @@ SceneItem::SceneItem(
     m_environment_edf_collection_item->add_items(scene.environment_edfs());
 
     insertChild(
-        3,
+        child_index++,
         m_environment_shader_collection_item =
             new MultiModelCollectionItem<EnvironmentShader, Scene, SceneItem>(
                 editor_context,
@@ -145,11 +145,17 @@ QMenu* SceneItem::get_single_item_context_menu() const
 
     menu->addSeparator();
     menu->addAction("Create Assembly...", &get_assembly_collection_item(), SLOT(slot_create()));
+    menu->addAction("Create Camera...", m_camera_collection_item, SLOT(slot_create()));
     menu->addAction("Create Color...", &get_color_collection_item(), SLOT(slot_create()));
     menu->addAction("Create Environment EDF...", m_environment_edf_collection_item, SLOT(slot_create()));
     menu->addAction("Create Environment Shader...", m_environment_shader_collection_item, SLOT(slot_create()));
 
     return menu;
+}
+
+void SceneItem::add_item(Camera* camera)
+{
+    m_camera_collection_item->add_item(camera);
 }
 
 void SceneItem::add_item(EnvironmentEDF* environment_edf)

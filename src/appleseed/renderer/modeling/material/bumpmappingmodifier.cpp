@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,80 +31,111 @@
 #include "bumpmappingmodifier.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/input/source.h"
-#include "renderer/modeling/input/texturesource.h"
-#include "renderer/modeling/scene/textureinstance.h"
-#include "renderer/modeling/texture/texture.h"
+#include "renderer/modeling/input/sourceinputs.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/canvasproperties.h"
-#include "foundation/image/color.h"
+#include "foundation/math/vector.h"
+
+// Standard headers.
+#include <cmath>
+#include <cstddef>
 
 using namespace foundation;
 
 namespace renderer
 {
 
+//#define USE_SCREEN_SPACE_UV_DERIVATIVES
+
 BumpMappingModifier::BumpMappingModifier(
-    const Source*       map,
-    const double        offset,
-    const double        amplitude)
+    const Source*           map,
+    const float             offset,
+    const float             amplitude)
   : m_map(map)
-  , m_amplitude(amplitude)
+  , m_amplitude(static_cast<double>(amplitude))
 {
-    const TextureSource* texture_map = dynamic_cast<const TextureSource*>(map);
+#ifndef USE_SCREEN_SPACE_UV_DERIVATIVES
+    const Source::Hints map_hints = map->get_hints();
 
-    if (texture_map)
-    {
-        Texture& texture = texture_map->get_texture_instance().get_texture();
-        const CanvasProperties& props = texture.properties();
+    m_delta_u = offset / map_hints.m_width;
+    m_delta_v = offset / map_hints.m_height;
 
-        m_du = offset / props.m_canvas_width;
-        m_dv = offset / props.m_canvas_height;
-    }
-    else
-    {
-        m_du = m_dv = offset;
-    }
-
-    m_rcp_du = 1.0 / m_du;
-    m_rcp_dv = 1.0 / m_dv;
+    m_rcp_delta_u = 1.0 / static_cast<double>(m_delta_u);
+    m_rcp_delta_v = 1.0 / static_cast<double>(m_delta_v);
+#endif
 }
 
 Basis3d BumpMappingModifier::modify(
-    TextureCache&       texture_cache,
-    const Vector2d&     uv,
-    const Basis3d&      basis) const
+    TextureCache&           texture_cache,
+    const Basis3d&          basis,
+    const ShadingPoint&     shading_point) const
 {
-    // Evaluate the displacement function at (u, v).
-    double val;
-    m_map->evaluate(texture_cache, uv, val);
+    const size_t UVSet = 0;
+    const Vector2f& uv = shading_point.get_uv(UVSet);
+    const Vector3d& dpdu = shading_point.get_dpdu(UVSet);
+    const Vector3d& dpdv = shading_point.get_dpdv(UVSet);
+    const Vector3d& n = basis.get_normal();
 
-    // Evaluate the displacement function at (u + delta_u, v).
-    double val_du;
-    m_map->evaluate(texture_cache, Vector2d(uv[0] + m_du, uv[1]), val_du);
+#ifdef USE_SCREEN_SPACE_UV_DERIVATIVES
+    const Vector2f& duvdx = shading_point.get_duvdx(UVSet);
+    const Vector2f& duvdy = shading_point.get_duvdy(UVSet);
+    const float delta_u = 0.5f * (abs(duvdx[0]) + abs(duvdy[0]));
+    const float delta_v = 0.5f * (abs(duvdx[1]) + abs(duvdy[1]));
+#else
+    const float delta_u = m_delta_u;
+    const float delta_v = m_delta_v;
+#endif
 
-    // Evaluate the displacement function at (u, v + delta_v).
-    double val_dv;
-    m_map->evaluate(texture_cache, Vector2d(uv[0], uv[1] + m_dv), val_dv);
+    // Evaluate the height function at (u, v), (u + delta_u, v) and (u, v + delta_v).
+    const double h =  evaluate_height(texture_cache, uv[0],           uv[1]);
+    const double hu = evaluate_height(texture_cache, uv[0] + delta_u, uv[1]);
+    const double hv = evaluate_height(texture_cache, uv[0],           uv[1] + delta_v);
 
-    // Compute the partial derivatives of the displacement function d(u, v).
-    const double ddispdu = m_amplitude * (val_du - val) * m_rcp_du;
-    const double ddispdv = m_amplitude * (val_dv - val) * m_rcp_dv;
+    // Compute the partial derivatives of the height function at (u, v).
+#ifdef USE_SCREEN_SPACE_UV_DERIVATIVES
+    const double dhdu = (hu - h) / delta_u;
+    const double dhdv = (hv - h) / delta_v;
+#else
+    const double dhdu = (hu - h) * m_rcp_delta_u;
+    const double dhdv = (hv - h) * m_rcp_delta_v;
+#endif
 
-    // Compute the partial derivatives of the displaced surface p(u, v) + d(u, v) * n.
-    const Vector3d perturbed_dpdu = basis.get_tangent_u() + ddispdu * basis.get_normal();
-    const Vector3d perturbed_dpdv = basis.get_tangent_v() + ddispdv * basis.get_normal();
+    //
+    // Compute the partial derivatives of the displaced surface p'(u, v) = p(u, v) + amplitude * h(u, v) * n.
+    //
+    // The rigorous derivatives of the displaced surface wrt. the UV coordinates are
+    //
+    //   dp'du = dpdu + amplitude * (dhdu * n + h * dndu)
+    //   dp'dv = dpdv + amplitude * (dhdv * n + h * dndv)
+    //
+    // Unfortunately, dndu and dndv are constant per triangle and thus introduce artifacts revealing
+    // the tessellation on coarse meshes. Since these terms are negligible, we simply omit them.
+    //
+
+    const Vector3d displaced_dpdu = dpdu + m_amplitude * (dhdu * n);
+    const Vector3d displaced_dpdv = dpdv + m_amplitude * (dhdv * n);
 
     // Compute the perturbed normal.
-    Vector3d perturbed_n = normalize(cross(perturbed_dpdu, perturbed_dpdv));
+    Vector3d perturbed_n = normalize(cross(displaced_dpdu, displaced_dpdv));
 
     // Make sure the perturbed normal lies in the same hemisphere as the original one.
-    if (dot(perturbed_n, basis.get_normal()) < 0.0)
+    if (dot(perturbed_n, n) < 0.0)
         perturbed_n = -perturbed_n;
 
     // Construct an orthonormal basis around the perturbed normal.
-    return Basis3d(perturbed_n, perturbed_dpdu);
+    return Basis3d(perturbed_n, displaced_dpdu);
+}
+
+double BumpMappingModifier::evaluate_height(
+    TextureCache&           texture_cache,
+    const float             u,
+    const float             v) const
+{
+    float h;
+    m_map->evaluate(texture_cache, SourceInputs(Vector2f(u, v)), h);
+    return static_cast<double>(h);
 }
 
 }   // namespace renderer

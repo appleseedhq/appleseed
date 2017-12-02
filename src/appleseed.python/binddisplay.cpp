@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,11 +28,13 @@
 //
 
 // appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
 #include "dict2dict.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/display.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/python.h"
 
 // Standard headers.
 #include <cstddef>
@@ -42,16 +44,22 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
+// Work around a regression in Visual Studio 2015 Update 3.
+#if defined(_MSC_VER) && _MSC_VER == 1900
+namespace boost
+{
+    template <> Display const volatile* get_pointer<Display const volatile>(Display const volatile* p) { return p; }
+}
+#endif
+
 namespace
 {
-
-auto_release_ptr<Display> create_display(
-    const std::string&  name,
-    const bpy::dict&    params)
-{
-    return DisplayFactory::create(name.c_str(), bpy_dict_to_param_array(params));
-}
-
+    auto_release_ptr<Display> create_display(
+        const std::string&  name,
+        const bpy::dict&    params)
+    {
+        return DisplayFactory::create(name.c_str(), bpy_dict_to_param_array(params));
+    }
 }
 
 void bind_display()

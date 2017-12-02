@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,20 +32,19 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 
 // OSL headers.
-#include "foundation/platform/oslheaderguards.h"
-BEGIN_OSL_INCLUDES
+#include "foundation/platform/_beginoslheaders.h"
 #include "OSL/oslversion.h"
 #include "OSL/rendererservices.h"
-END_OSL_INCLUDES
+#include "foundation/platform/_endoslheaders.h"
 
 // OpenImageIO headers.
-#include "foundation/platform/oiioheaderguards.h"
-BEGIN_OIIO_INCLUDES
+#include "foundation/platform/_beginoiioheaders.h"
 #include "OpenImageIO/texture.h"
-END_OIIO_INCLUDES
+#include "foundation/platform/_endoiioheaders.h"
 
 // Boost headers.
 #include "boost/unordered_map.hpp"
@@ -79,72 +78,36 @@ class RendererServices
     void initialize(TextureStore& texture_store);
 
     // Return a pointer to the texture system.
-    virtual OIIO::TextureSystem* texturesys() const APPLESEED_OVERRIDE;
-
-    // Filtered 2D texture lookup for a single point.
-    //
-    // s,t are the texture coordinates; dsdx, dtdx, dsdy, and dtdy are
-    // the differentials of s and t change in some canonical directions
-    // x and y.  The choice of x and y are not important to the
-    // implementation; it can be any imposed 2D coordinates, such as
-    // pixels in screen space, adjacent samples in parameter space on a
-    // surface, etc.
-    //
-    // The filename will always be passed, and it's ok for the renderer
-    // implementation to use only that (and in fact should be prepared to
-    // deal with texture_handle and texture_thread_info being NULL). But
-    // sometimes OSL can figure out the texture handle or thread info also
-    // and may pass them as non-NULL, in which case the renderer may (if it
-    // can) use that extra information to perform a less expensive texture
-    // lookup.
-    //
-    // Return true if the file is found and could be opened, otherwise
-    // return false.
-    virtual bool texture(
-        OSL::ustring                filename,
-        TextureHandle*              texture_handle,
-        TexturePerthread*           texture_thread_info,
-        OSL::TextureOpt&            options,
-        OSL::ShaderGlobals*         sg,
-        float                       s,
-        float                       t,
-        float                       dsdx,
-        float                       dtdx,
-        float                       dsdy,
-        float                       dtdy,
-        int                         nchannels,
-        float*                      result,
-        float*                      dresultds,
-        float*                      dresultdt) APPLESEED_OVERRIDE;
+    OIIO::TextureSystem* texturesys() const override;
 
     // Get the 4x4 matrix that transforms by the specified
     // transformation at the given time.  Return true if ok, false
     // on error.
-    virtual bool get_matrix(
+    bool get_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
         OSL::TransformationPtr      xform,
-        float                       time) APPLESEED_OVERRIDE;
+        float                       time) override;
 
     // Get the 4x4 matrix that transforms by the specified
     // transformation at the given time.  Return true if ok, false on
     // error.  The default implementation is to use get_matrix and
     // invert it, but a particular renderer may have a better technique
     // and overload the implementation.
-    virtual bool get_inverse_matrix(
+    bool get_inverse_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
         OSL::TransformationPtr      xform,
-        float                       time) APPLESEED_OVERRIDE;
+        float                       time) override;
 
     // Get the 4x4 matrix that transforms by the specified
     // transformation.  Return true if ok, false on error.  Since no
     // time value is given, also return false if the transformation may
     // be time-varying.
-    virtual bool get_matrix(
+    bool get_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
-        OSL::TransformationPtr      xform) APPLESEED_OVERRIDE;
+        OSL::TransformationPtr      xform) override;
 
     // Get the 4x4 matrix that transforms by the specified
     // transformation.  Return true if ok, false on error.  Since no
@@ -152,39 +115,39 @@ class RendererServices
     // be time-varying.  The default implementation is to use
     // get_matrix and invert it, but a particular renderer may have a
     // better technique and overload the implementation.
-    virtual bool get_inverse_matrix(
+    bool get_inverse_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
-        OSL::TransformationPtr      xform) APPLESEED_OVERRIDE;
+        OSL::TransformationPtr      xform) override;
 
     // Get the 4x4 matrix that transforms points from the named
     // 'from' coordinate system to "common" space at the given time.
     // Returns true if ok, false if the named matrix is not known.
-    virtual bool get_matrix(
+    bool get_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
         OIIO::ustring               from,
-        float                       time) APPLESEED_OVERRIDE;
+        float                       time) override;
 
     // Get the 4x4 matrix that transforms points from "common" space to
     // the named 'to' coordinate system to at the given time.  The
     // default implementation is to use get_matrix and invert it, but a
     // particular renderer may have a better technique and overload the
     // implementation.
-    virtual bool get_inverse_matrix(
+    bool get_inverse_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
         OSL::ustring                to,
-        float                       time) APPLESEED_OVERRIDE;
+        float                       time) override;
 
     // Get the 4x4 matrix that transforms 'from' to "common" space.
     // Since there is no time value passed, return false if the
     // transformation may be time-varying(as well as if it's not found
     // at all).
-    virtual bool get_matrix(
+    bool get_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
-        OIIO::ustring               from) APPLESEED_OVERRIDE;
+        OIIO::ustring               from) override;
 
     // Get the 4x4 matrix that transforms points from "common" space to
     // the named 'to' coordinate system.  Since there is no time value
@@ -193,10 +156,10 @@ class RendererServices
     // implementation is to use get_matrix and invert it, but a
     // particular renderer may have a better technique and overload the
     // implementation.
-    virtual bool get_inverse_matrix(
+    bool get_inverse_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
-        OSL::ustring                to) APPLESEED_OVERRIDE;
+        OSL::ustring                to) override;
 
     // Transform points Pin[0..npoints-1] in named coordinate system
     // 'from' into 'to' coordinates, storing the result in Pout[] using
@@ -221,7 +184,7 @@ class RendererServices
     // Note to RendererServices implementations: just return 'false'
     // if there isn't a special nonlinear transformation between the
     // two spaces.
-    virtual bool transform_points(
+    bool transform_points(
         OSL::ShaderGlobals*         sg,
         OSL::ustring                from,
         OSL::ustring                to,
@@ -229,7 +192,7 @@ class RendererServices
         const OSL::Vec3*            Pin,
         OSL::Vec3*                  Pout,
         int                         npoints,
-        OSL::TypeDesc::VECSEMANTICS vectype) APPLESEED_OVERRIDE;
+        OSL::TypeDesc::VECSEMANTICS vectype) override;
 
     // Immediately trace a ray from P in the direction R.  Return true
     // if anything hit, otherwise false.
@@ -241,7 +204,7 @@ class RendererServices
         const OSL::Vec3&            dPdy,
         const OSL::Vec3&            R,
         const OSL::Vec3&            dRdx,
-        const OSL::Vec3&            dRdy) APPLESEED_OVERRIDE;
+        const OSL::Vec3&            dRdy) override;
 
     // Get the named message from the renderer and if found then
     // write it into 'val'.  Otherwise, return false.  This is only
@@ -252,7 +215,7 @@ class RendererServices
         OIIO::ustring               name,
         OIIO::TypeDesc              type,
         void*                       val,
-        bool                        derivatives) APPLESEED_OVERRIDE;
+        bool                        derivatives) override;
 
     // Get the named attribute from the renderer and if found then
     // write it into 'val'.  Otherwise, return false.  If no object is
@@ -266,41 +229,34 @@ class RendererServices
     // run on. Be robust to this situation, return 'true' (retrieve the
     // attribute) if you can (known object and attribute name), but
     // otherwise just fail by returning 'false'.
-    virtual bool get_attribute(
+    bool get_attribute(
         OSL::ShaderGlobals*         sg,
         bool                        derivatives,
         OIIO::ustring               object,
         OIIO::TypeDesc              type,
         OIIO::ustring               name,
-        void*                       val) APPLESEED_OVERRIDE;
+        void*                       val) override;
 
     // Similar to get_attribute();  this method will return the 'index'
     // element of an attribute array.
-    virtual bool get_array_attribute(
+    bool get_array_attribute(
         OSL::ShaderGlobals*         sg,
         bool                        derivatives,
         OIIO::ustring               object,
         OIIO::TypeDesc              type,
         OIIO::ustring               name,
         int                         index,
-        void*                       val) APPLESEED_OVERRIDE;
+        void*                       val) override;
 
     // Get the named user-data from the current object and write it into
     // 'val'. If derivatives is true, the derivatives should be written into val
     // as well. Return false if no user-data with the given name and type was found.
-    virtual bool get_userdata(
+    bool get_userdata(
         bool                        derivatives,
         OIIO::ustring               name,
         OIIO::TypeDesc              type,
         OSL::ShaderGlobals*         sg,
-        void*                       val) APPLESEED_OVERRIDE;
-
-#if OSL_LIBRARY_VERSION_CODE < 10700
-    virtual bool has_userdata(
-        OIIO::ustring       name,
-        OIIO::TypeDesc      type,
-        OSL::ShaderGlobals* sg) APPLESEED_OVERRIDE;
-#endif
+        void*                       val) override;
 
   private:
     // This code is based on OSL's test renderer.
@@ -324,14 +280,15 @@ class RendererServices
     typedef boost::unordered_map<OIIO::ustring, UserDataGetterFun, OIIO::ustringHash> UserDataGetterMapType;
 
     OIIO::TextureSystem&            m_texture_sys;
-    const Project&                  m_project;
     AttrGetterMapType               m_global_attr_getters;
     UserDataGetterMapType           m_global_user_data_getters;
     const Camera*                   m_camera;
-    TextureStore*                   m_texture_store;
+    foundation::Vector2i            m_resolution;
     OIIO::ustring                   m_cam_projection_str;
     float                           m_shutter[2];
     float                           m_shutter_interval;
+    const Project&                  m_project;
+    TextureStore*                   m_texture_store;
 
     #define DECLARE_ATTR_GETTER(name)           \
         bool get_attr_##name(                   \
@@ -346,6 +303,8 @@ class RendererServices
     DECLARE_ATTR_GETTER(object_instance_id);
     DECLARE_ATTR_GETTER(object_instance_index);
     DECLARE_ATTR_GETTER(assembly_instance_id);
+    DECLARE_ATTR_GETTER(object_instance_name);
+    DECLARE_ATTR_GETTER(object_name);
 
     // Camera attributes.
     DECLARE_ATTR_GETTER(camera_resolution);

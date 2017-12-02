@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,11 +28,11 @@
 //
 
 // appleseed.renderer headers.
-#include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingresult.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
+#include "foundation/math/fp.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
@@ -41,111 +41,113 @@ using namespace renderer;
 
 TEST_SUITE(Renderer_Kernel_Shading_ShadingResult)
 {
-    struct Fixture
+    struct IsValidFixture
     {
-        const LightingConditions m_lighting_conditions;
+        ShadingResult m_result;
 
-        Fixture()
-          : m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
+        IsValidFixture()
         {
+            // Initialize m_result to linear RGB transparent black.
+            m_result.m_main[0] = 0.0f;
+            m_result.m_main[1] = 0.0f;
+            m_result.m_main[2] = 0.0f;
+            m_result.m_main[3] = 0.0f;
         }
     };
 
-    TEST_CASE_F(TransformToLinearRGB_GivenLinearRGB_DoesNothing, Fixture)
+    TEST_CASE_F(IsValid_PositiveZero_ReturnsTrue, IsValidFixture)
     {
-        ShadingResult result;
-        result.m_color_space = ColorSpaceLinearRGB;
-        result.m_main.m_color[0] = 0.0f;
-        result.m_main.m_color[1] = 0.0f;
-        result.m_main.m_color[2] = 0.0f;
+        m_result.m_main[0] = FP<float>::pos_zero();
 
-        result.transform_to_linear_rgb(m_lighting_conditions);
-
-        EXPECT_EQ(ColorSpaceLinearRGB, result.m_color_space);
-        EXPECT_EQ(0.0f, result.m_main.m_color[0]);
-        EXPECT_EQ(0.0f, result.m_main.m_color[1]);
-        EXPECT_EQ(0.0f, result.m_main.m_color[2]);
+        EXPECT_TRUE(m_result.is_valid());
     }
 
-    TEST_CASE_F(TransformToLinearRGB_FromSRGB, Fixture)
+    TEST_CASE_F(IsValid_NegativeZero_ReturnsTrue, IsValidFixture)
     {
-        ShadingResult result;
-        result.m_color_space = ColorSpaceSRGB;
-        result.m_main.m_color[0] = 0.0f;
-        result.m_main.m_color[1] = 0.0f;
-        result.m_main.m_color[2] = 0.0f;
+        m_result.m_main[0] = FP<float>::neg_zero();
 
-        result.transform_to_linear_rgb(m_lighting_conditions);
-
-        EXPECT_EQ(ColorSpaceLinearRGB, result.m_color_space);
-        EXPECT_EQ(0.0f, result.m_main.m_color[0]);
-        EXPECT_EQ(0.0f, result.m_main.m_color[1]);
-        EXPECT_EQ(0.0f, result.m_main.m_color[2]);
+        EXPECT_TRUE(m_result.is_valid());
     }
 
-    TEST_CASE_F(TransformToLinearRGB_FromCIEXYZ, Fixture)
+    TEST_CASE_F(IsValid_PositiveMin_ReturnsTrue, IsValidFixture)
     {
-        ShadingResult result;
-        result.m_color_space = ColorSpaceCIEXYZ;
-        result.m_main.m_color[0] = 0.0f;
-        result.m_main.m_color[1] = 0.0f;
-        result.m_main.m_color[2] = 0.0f;
+        m_result.m_main[0] = FP<float>::pos_min();
 
-        result.transform_to_linear_rgb(m_lighting_conditions);
-
-        EXPECT_EQ(ColorSpaceLinearRGB, result.m_color_space);
-        EXPECT_EQ(0.0f, result.m_main.m_color[0]);
-        EXPECT_EQ(0.0f, result.m_main.m_color[1]);
-        EXPECT_EQ(0.0f, result.m_main.m_color[2]);
+        EXPECT_TRUE(m_result.is_valid());
     }
 
-    TEST_CASE_F(TransformToLinearRGB_FromSpectrum, Fixture)
+    TEST_CASE_F(IsValid_NegativeMin_ReturnsFalse, IsValidFixture)
     {
-        ShadingResult result;
-        result.m_color_space = ColorSpaceSpectral;
-        result.m_main.m_color.set(0.0f);
+        m_result.m_main[0] = FP<float>::neg_min();
 
-        result.transform_to_linear_rgb(m_lighting_conditions);
-
-        EXPECT_EQ(ColorSpaceLinearRGB, result.m_color_space);
-        EXPECT_EQ(0.0f, result.m_main.m_color[0]);
-        EXPECT_EQ(0.0f, result.m_main.m_color[1]);
-        EXPECT_EQ(0.0f, result.m_main.m_color[2]);
+        EXPECT_FALSE(m_result.is_valid());
     }
 
-    TEST_CASE(CompositeOverLinearRGB_TenPercentOpaqueWhiteOverFullyTransparentBlack)
+    TEST_CASE_F(IsValid_PositiveOne_ReturnsTrue, IsValidFixture)
+    {
+        m_result.m_main[0] = +1.0f;
+
+        EXPECT_TRUE(m_result.is_valid());
+    }
+
+    TEST_CASE_F(IsValid_NegativeOne_ReturnsFalse, IsValidFixture)
+    {
+        m_result.m_main[0] = -1.0f;
+
+        EXPECT_FALSE(m_result.is_valid());
+    }
+
+    TEST_CASE_F(IsValid_PositiveInfinity_ReturnsFalse, IsValidFixture)
+    {
+        m_result.m_main[0] = FP<float>::pos_inf();
+
+        EXPECT_FALSE(m_result.is_valid());
+    }
+
+    TEST_CASE_F(IsValid_NegativeInfinity_ReturnsFalse, IsValidFixture)
+    {
+        m_result.m_main[0] = FP<float>::neg_inf();
+
+        EXPECT_FALSE(m_result.is_valid());
+    }
+
+    TEST_CASE_F(IsValid_QNaN_ReturnsFalse, IsValidFixture)
+    {
+        m_result.m_main[0] = FP<float>::qnan();
+
+        EXPECT_FALSE(m_result.is_valid());
+    }
+
+    TEST_CASE_F(IsValid_SNaN_ReturnsFalse, IsValidFixture)
+    {
+        m_result.m_main[0] = FP<float>::snan();
+
+        EXPECT_FALSE(m_result.is_valid());
+    }
+
+    TEST_CASE(CompositeOver_TenPercentOpaqueWhiteOverFullyTransparentBlack)
     {
         ShadingResult a;
-        a.m_color_space = ColorSpaceLinearRGB;
-        a.m_main.m_color.set(0.1f);
-        a.m_main.m_alpha.set(0.1f);
+        a.m_main.set(0.1f);
 
         ShadingResult b;
-        b.m_color_space = ColorSpaceLinearRGB;
-        b.m_main.m_color.set(0.0f);
-        b.m_main.m_alpha.set(0.0f);
+        b.m_main.set(0.0f);
 
-        a.composite_over_linear_rgb(b);
+        a.composite_over(b);
 
-        EXPECT_FEQ(0.1f, a.m_main.m_color[0]);
-        EXPECT_FEQ(0.1f, a.m_main.m_alpha[0]);
+        EXPECT_FEQ(0.1f, a.m_main[0]);
     }
 
-    TEST_CASE(CompositeOverLinearRGB_FullyTransparentBlackOverTenPercentOpaqueWhite)
+    TEST_CASE(CompositeOver_FullyTransparentBlackOverTenPercentOpaqueWhite)
     {
         ShadingResult a;
-        a.m_color_space = ColorSpaceLinearRGB;
-        a.m_main.m_color.set(0.0f);
-        a.m_main.m_alpha.set(0.0f);
+        a.m_main.set(0.0f);
 
         ShadingResult b;
-        b.m_color_space = ColorSpaceLinearRGB;
-        b.m_main.m_color.set(0.1f);
-        b.m_main.m_alpha.set(0.1f);
+        b.m_main.set(0.1f);
 
-        a.composite_over_linear_rgb(b);
+        a.composite_over(b);
 
-        EXPECT_FEQ(0.1f, a.m_main.m_color[0]);
-        EXPECT_FEQ(0.1f, a.m_main.m_alpha[0]);
+        EXPECT_FEQ(0.1f, a.m_main[0]);
     }
 }

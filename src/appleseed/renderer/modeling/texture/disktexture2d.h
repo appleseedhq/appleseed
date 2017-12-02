@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -51,33 +51,30 @@ namespace renderer
 {
 
 //
-// 2D disk texture factory.
+// Factory for 2D on-disk textures.
 //
 
 class APPLESEED_DLLSYMBOL DiskTexture2dFactory
   : public ITextureFactory
 {
   public:
+    // Delete this instance.
+    void release() override;
+
     // Return a string identifying this texture model.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    const char* get_model() const override;
 
     // Return metadata for this texture model.
-    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
+    foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this texture model.
-    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
+    foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new texture.
-    virtual foundation::auto_release_ptr<Texture> create(
+    foundation::auto_release_ptr<Texture> create(
         const char*                     name,
         const ParamArray&               params,
-        const foundation::SearchPaths&  search_paths) const APPLESEED_OVERRIDE;
-
-    // Static variant of the create() method above.
-    static foundation::auto_release_ptr<Texture> static_create(
-        const char*                     name,
-        const ParamArray&               params,
-        const foundation::SearchPaths&  search_paths);
+        const foundation::SearchPaths&  search_paths) const override;
 };
 
 }       // namespace renderer

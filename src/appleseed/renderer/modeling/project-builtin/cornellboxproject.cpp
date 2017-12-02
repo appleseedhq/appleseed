@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -622,7 +622,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
     {
         // Create a new mesh object.
         auto_release_ptr<MeshObject> object(
-            MeshObjectFactory::create("floor", ParamArray()));
+            MeshObjectFactory().create("floor", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(552.8f, 0.0f,   0.0f));
@@ -649,7 +649,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 "floor_inst",
                 ParamArray(),
                 "floor",
-                Transformd::from_local_to_parent(Matrix4d::scaling(Vector3d(0.001f))),
+                Transformd::from_local_to_parent(Matrix4d::make_scaling(Vector3d(0.001f))),
                 StringDictionary()
                     .insert("white_material", "white_material")));
     }
@@ -661,7 +661,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
     {
         // Create a new mesh object.
         auto_release_ptr<MeshObject> object(
-            MeshObjectFactory::create("ceiling", ParamArray()));
+            MeshObjectFactory().create("ceiling", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(556.0f, 548.8f,   0.0f));
@@ -688,7 +688,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 "ceiling_inst",
                 ParamArray(),
                 "ceiling",
-                Transformd::from_local_to_parent(Matrix4d::scaling(Vector3d(0.001f))),
+                Transformd::from_local_to_parent(Matrix4d::make_scaling(Vector3d(0.001f))),
                 StringDictionary()
                     .insert("white_material", "white_material")));
     }
@@ -700,7 +700,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
     {
         // Create a new mesh object.
         auto_release_ptr<MeshObject> object(
-            MeshObjectFactory::create("back_wall", ParamArray()));
+            MeshObjectFactory().create("back_wall", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(549.6f,   0.0f, 559.2f));
@@ -727,7 +727,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 "back_wall_inst",
                 ParamArray(),
                 "back_wall",
-                Transformd::from_local_to_parent(Matrix4d::scaling(Vector3d(0.001f))),
+                Transformd::from_local_to_parent(Matrix4d::make_scaling(Vector3d(0.001f))),
                 StringDictionary()
                     .insert("white_material", "white_material")));
     }
@@ -739,7 +739,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
     {
         // Create a new mesh object.
         auto_release_ptr<MeshObject> object(
-            MeshObjectFactory::create("right_wall", ParamArray()));
+            MeshObjectFactory().create("right_wall", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(0.0f,   0.0f, 559.2f));
@@ -766,7 +766,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 "right_wall_inst",
                 ParamArray(),
                 "right_wall",
-                Transformd::from_local_to_parent(Matrix4d::scaling(Vector3d(0.001f))),
+                Transformd::from_local_to_parent(Matrix4d::make_scaling(Vector3d(0.001f))),
                 StringDictionary()
                     .insert("green_material", "green_material")));
     }
@@ -778,7 +778,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
     {
         // Create a new mesh object.
         auto_release_ptr<MeshObject> object(
-            MeshObjectFactory::create("left_wall", ParamArray()));
+            MeshObjectFactory().create("left_wall", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(552.8f,   0.0f,   0.0f));
@@ -806,7 +806,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 "left_wall_inst",
                 ParamArray(),
                 "left_wall",
-                Transformd::from_local_to_parent(Matrix4d::scaling(Vector3d(0.001f))),
+                Transformd::from_local_to_parent(Matrix4d::make_scaling(Vector3d(0.001f))),
                 StringDictionary()
                     .insert("red_material", "red_material")));
     }
@@ -818,7 +818,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
     {
         // Create a new mesh object.
         auto_release_ptr<MeshObject> object(
-            MeshObjectFactory::create("short_block", ParamArray()));
+            MeshObjectFactory().create("short_block", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(130.0f, 165.0f,  65.0f));
@@ -873,7 +873,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 "short_block_inst",
                 ParamArray(),
                 "short_block",
-                Transformd::from_local_to_parent(Matrix4d::scaling(Vector3d(0.001f))),
+                Transformd::from_local_to_parent(Matrix4d::make_scaling(Vector3d(0.001f))),
                 StringDictionary()
                     .insert("white_material", "white_material")));
     }
@@ -885,7 +885,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
     {
         // Create a new mesh object.
         auto_release_ptr<MeshObject> object(
-            MeshObjectFactory::create("tall_block", ParamArray()));
+            MeshObjectFactory().create("tall_block", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(423.0f, 330.0f, 247.0f));
@@ -940,7 +940,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 "tall_block_inst",
                 ParamArray(),
                 "tall_block",
-                Transformd::from_local_to_parent(Matrix4d::scaling(Vector3d(0.001f))),
+                Transformd::from_local_to_parent(Matrix4d::make_scaling(Vector3d(0.001f))),
                 StringDictionary()
                     .insert("white_material", "white_material")));
     }
@@ -952,7 +952,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
     {
         // Create a new mesh object.
         auto_release_ptr<MeshObject> object(
-            MeshObjectFactory::create("light", ParamArray()));
+            MeshObjectFactory().create("light", ParamArray()));
 
         // Vertices.
         object->push_vertex(GVector3(343.0f, 548.7999f, 227.0f));
@@ -979,7 +979,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
                 "light_inst",
                 ParamArray(),
                 "light",
-                Transformd::from_local_to_parent(Matrix4d::scaling(Vector3d(0.001f))),
+                Transformd::from_local_to_parent(Matrix4d::make_scaling(Vector3d(0.001f))),
                 StringDictionary()
                     .insert("light_material", "light_material")));
     }
@@ -1006,13 +1006,13 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         auto_release_ptr<Camera> camera(
             PinholeCameraFactory().create("camera", params));
         camera->transform_sequence().set_transform(
-            0.0,
+            0.0f,
             Transformd::from_local_to_parent(
-                  Matrix4d::translation(Vector3d(0.278, 0.273, -0.800))
-                * Matrix4d::rotation_y(Pi)));
+                  Matrix4d::make_translation(Vector3d(0.278, 0.273, -0.800))
+                * Matrix4d::make_rotation_y(Pi<double>())));
 
         // Attach the camera to the scene.
-        scene->set_camera(camera);
+        scene->cameras().insert(camera);
     }
 
     //
@@ -1022,7 +1022,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
     {
         // Create a frame.
         ParamArray params;
-        params.insert("camera", scene->get_camera()->get_name());
+        params.insert("camera", "camera");
         params.insert("resolution", "512 512");
         params.insert("color_space", "srgb");
         auto_release_ptr<Frame> frame(FrameFactory::create("beauty", params));

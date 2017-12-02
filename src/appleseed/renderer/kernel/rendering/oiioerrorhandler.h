@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,10 +33,9 @@
 #include "foundation/platform/compiler.h"
 
 // OpenImageIO headers.
-#include "foundation/platform/oiioheaderguards.h"
-BEGIN_OIIO_INCLUDES
+#include "foundation/platform/_beginoiioheaders.h"
 #include "OpenImageIO/errorhandler.h"
-END_OIIO_INCLUDES
+#include "foundation/platform/_endoiioheaders.h"
 
 // Standard headers.
 #include <string>
@@ -52,7 +51,7 @@ class OIIOErrorHandler
   : public OIIO::ErrorHandler
 {
   public:
-    virtual void operator()(int errcode, const std::string& msg) APPLESEED_OVERRIDE;
+    void operator()(int errcode, const std::string& msg) override;
 };
 
 }       // namespace renderer

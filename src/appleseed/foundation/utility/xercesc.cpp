@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,8 @@
 
 // Xerces-C++ headers.
 #include "xercesc/util/PlatformUtils.hpp"
-#include "xercesc/util/XMLExceptMsgs.hpp"
 #include "xercesc/util/XMLException.hpp"
+#include "xercesc/util/XMLExceptMsgs.hpp"
 
 using namespace std;
 using namespace xercesc;
@@ -161,8 +161,8 @@ void ErrorLogger::fatalError(const SAXParseException& e)
 #ifndef APPLESEED_WITH_EXTERNAL_XERCES
     switch (e.getOriginalExceptionCode())
     {
-      // Using our modified version of Xerces-C++, we can catch the case where
-      // it failed to open the input file, and print a reasonable error message.
+      // Using our modified version of Xerces-C, we can catch the case where
+      // the file failed to open and print a (more) reasonable error message.
       case XMLExcepts::Scan_CouldNotOpenSource:
         LOG_ERROR(
             m_logger,
@@ -170,7 +170,7 @@ void ErrorLogger::fatalError(const SAXParseException& e)
             m_input_filepath.c_str());
         break;
 
-      // For now, all other errors will be reported as is.
+      // Report all other errors as is.
       default:
         print(LogMessage::Error, e);
         break;

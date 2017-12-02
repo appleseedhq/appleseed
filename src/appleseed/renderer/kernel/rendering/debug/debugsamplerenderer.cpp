@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -61,16 +61,17 @@ namespace
       : public ISampleRenderer
     {
       public:
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual void render_sample(
-            SamplingContext&    sampling_context,
-            const PixelContext& pixel_context,
-            const Vector2d&     image_point,
-            ShadingResult&      shading_result) APPLESEED_OVERRIDE
+        void render_sample(
+            SamplingContext&            sampling_context,
+            const PixelContext&         pixel_context,
+            const Vector2d&             image_point,
+            AOVAccumulatorContainer&    aov_accumulators,
+            ShadingResult&              shading_result) override
         {
             const Vector2d v = Vector2d(0.5) - image_point;
             const double d = norm(v) * 2.0;
@@ -79,11 +80,10 @@ namespace
                 abs(0.5 - image_point.x) < M / 2 ||
                 abs(0.5 - image_point.y) < M / 2 ||
                 abs(1.0 - M / 2 - d) < M ? 0.0f : 1.0f;
-            shading_result.set_main_to_linear_rgba(Color4f(c, c, c, 1.0f));
-            shading_result.set_aovs_to_transparent_black_linear_rgba();
+            shading_result.m_main = Color4f(c, c, c, 1.0f);
         }
 
-        virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
+        StatisticsVector get_statistics() const override
         {
             return StatisticsVector();
         }

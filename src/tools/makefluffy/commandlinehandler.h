@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,11 +29,11 @@
 #ifndef APPLESEED_MAKEFLUFFY_COMMANDLINEHANDLER_H
 #define APPLESEED_MAKEFLUFFY_COMMANDLINEHANDLER_H
 
-// appleseed.foundation headers.
-#include "foundation/utility/commandlineparser.h"
-
 // appleseed.shared headers.
 #include "application/commandlinehandlerbase.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/commandlineparser.h"
 
 // Standard headers.
 #include <cstddef>
@@ -69,9 +69,9 @@ class CommandLineHandler
 
   private:
     // Emit usage instructions to the logger.
-    virtual void print_program_usage(
-        const char*             program_name,
-        shared::SuperLogger&    logger) const;
+    void print_program_usage(
+        const char*             executable_name,
+        shared::SuperLogger&    logger) const override;
 };
 
 }       // namespace makefluffy

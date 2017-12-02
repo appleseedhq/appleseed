@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,56 +32,61 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bssrdf/separablebssrdf.h"
+#include "renderer/modeling/bssrdf/sss.h"
 #include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/memory.h"
 
 // Standard headers.
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer      { class Assembly; }
+namespace foundation    { class IAbortSwitch; }
+namespace renderer      { class BaseGroup; }
+namespace renderer      { class BSDFSample; }
 namespace renderer      { class BSSRDFSample; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class Project; }
+namespace renderer      { class ShadingContext; }
+namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
 
 //
-// Dipole BSSRDF input values.
+// Input values common to all dipole BSSRDF models.
 //
 
 APPLESEED_DECLARE_INPUT_VALUES(DipoleBSSRDFInputValues)
 {
-    double      m_weight;
-    Spectrum    m_reflectance;
-    double      m_reflectance_multiplier;
-    Spectrum    m_dmfp;
-    double      m_dmfp_multiplier;
-    Spectrum    m_sigma_a;
-    Spectrum    m_sigma_s;
-    double      m_anisotropy;
-    double      m_outside_ior;
-    double      m_inside_ior;
+    float           m_weight;
+    Spectrum        m_reflectance;
+    float           m_reflectance_multiplier;
+    Spectrum        m_mfp;
+    float           m_mfp_multiplier;
+    Spectrum        m_sigma_a;
+    Spectrum        m_sigma_s;
+    float           m_g;
+    float           m_ior;
+    float           m_fresnel_weight;
 
-    // Precomputed values.
-    Spectrum    m_sigma_t;
-    Spectrum    m_sigma_s_prime;
-    Spectrum    m_sigma_t_prime;
-    Spectrum    m_alpha_prime;
-    Spectrum    m_sigma_tr;
-    Spectrum    m_channel_pdf;
-    Spectrum    m_channel_cdf;
-    double      m_rmax2;
-    double      m_eta;
-    Spectrum    m_dirpole_reparam_weight;
+    struct Precomputed
+    {
+        Spectrum    m_alpha_prime;
+        Spectrum    m_sigma_tr;
+        Spectrum    m_channel_pdf;
+    };
+
+    Precomputed                     m_precomputed;
+    SeparableBSSRDF::InputValues    m_base_values;
 };
 
 
 //
-// Base class for radially-symmetric dipole BSSRDFs.
+// Base class for dipole-based BSSRDF models.
 //
 
 class DipoleBSSRDF
@@ -90,25 +95,51 @@ class DipoleBSSRDF
   public:
     // Constructor.
     DipoleBSSRDF(
-        const char*         name,
-        const ParamArray&   params);
+        const char*                 name,
+        const ParamArray&           params);
 
-    virtual size_t compute_input_data_size(
-        const Assembly&     assembly) const APPLESEED_OVERRIDE;
+    bool on_frame_begin(
+        const Project&              project,
+        const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
+        foundation::IAbortSwitch*   abort_switch) override;
 
-    virtual bool sample(
-        SamplingContext&    sampling_context,
-        const void*         data,
-        BSSRDFSample&       sample) const APPLESEED_OVERRIDE;
+    size_t compute_input_data_size() const override;
 
-    virtual double evaluate_pdf(
-        const void*         data,
-        const size_t        channel,
-        const double        radius) const APPLESEED_OVERRIDE;
+    float sample_profile(
+        const void*                 data,
+        const size_t                channel,
+        const float                 u) const override;
+
+    float evaluate_profile_pdf(
+        const void*                 data,
+        const float                 disk_radius) const override;
+
+    bool sample(
+        const ShadingContext&       shading_context,
+        SamplingContext&            sampling_context,
+        const void*                 data,
+        const ShadingPoint&         outgoing_point,
+        const foundation::Vector3f& outgoing_dir,
+        BSSRDFSample&               bssrdf_sample,
+        BSDFSample&                 bsdf_sample) const override;
+
+    void evaluate(
+        const void*                 data,
+        const ShadingPoint&         outgoing_point,
+        const foundation::Vector3f& outgoing_dir,
+        const ShadingPoint&         incoming_point,
+        const foundation::Vector3f& incoming_dir,
+        Spectrum&                   value) const override;
+
+  protected:
+    template <typename ComputeRdFun>
+    void do_prepare_inputs(
+        const ShadingPoint&         shading_point,
+        DipoleBSSRDFInputValues*    values) const;
 
   private:
-    virtual double get_eta(
-        const void*         data) const APPLESEED_OVERRIDE;
+    bool m_has_sigma_sources;
 };
 
 
@@ -116,16 +147,91 @@ class DipoleBSSRDF
 // DipoleBSSRDF class implementation.
 //
 
-inline size_t DipoleBSSRDF::compute_input_data_size(
-    const Assembly&         assembly) const
+inline bool DipoleBSSRDF::on_frame_begin(
+    const Project&                  project,
+    const BaseGroup*                parent,
+    OnFrameBeginRecorder&           recorder,
+    foundation::IAbortSwitch*       abort_switch)
 {
-    return foundation::align(sizeof(DipoleBSSRDFInputValues), 16);
+    m_has_sigma_sources =
+        m_inputs.source("sigma_a") != nullptr &&
+        m_inputs.source("sigma_s") != nullptr;
+
+    return true;
 }
 
-inline double DipoleBSSRDF::get_eta(
-    const void*             data) const
+template <typename ComputeRdFun>
+void DipoleBSSRDF::do_prepare_inputs(
+    const ShadingPoint&             shading_point,
+    DipoleBSSRDFInputValues*        values) const
 {
-    return reinterpret_cast<const DipoleBSSRDFInputValues*>(data)->m_eta;
+    new (&values->m_precomputed) DipoleBSSRDFInputValues::Precomputed();
+
+    new (&values->m_base_values) SeparableBSSRDF::InputValues();
+    values->m_base_values.m_weight = values->m_weight;
+    values->m_base_values.m_fresnel_weight = values->m_fresnel_weight;
+
+    // Precompute the relative index of refraction.
+    values->m_base_values.m_eta = compute_eta(shading_point, values->m_ior);
+
+    if (!m_has_sigma_sources)
+    {
+        //
+        // Compute sigma_a, sigma_s and sigma_t from the diffuse surface reflectance
+        // and mean free path (mfp).
+        //
+
+        // Apply multipliers to input values.
+        values->m_reflectance *= values->m_reflectance_multiplier;
+        values->m_mfp *= values->m_mfp_multiplier;
+
+        // Clamp input values.
+        foundation::clamp_in_place(values->m_reflectance, 0.001f, 0.999f);
+        foundation::clamp_low_in_place(values->m_mfp, 1.0e-6f);
+
+        // Compute sigma_a and sigma_s.
+        const ComputeRdFun rd_fun(values->m_base_values.m_eta);
+        compute_absorption_and_scattering_mfp(
+            rd_fun,
+            values->m_reflectance,
+            values->m_mfp,
+            values->m_sigma_a,
+            values->m_sigma_s);
+    }
+
+    //
+    // Compute sigma_tr from sigma_a and sigma_s.
+    //
+    // If you want to use the sigma_a and sigma_s values provided in [1],
+    // and if your scene is modeled in meters, you will need to *multiply*
+    // them by 1000. If your scene is modeled in centimers (e.g. the "size"
+    // of the object is 4 units) then you will need to multiply the sigmas
+    // by 100.
+    //
+
+    effective_extinction_coefficient(
+        values->m_sigma_a,
+        values->m_sigma_s,
+        values->m_g,
+        values->m_precomputed.m_sigma_tr);
+
+    // Precompute alpha'.
+    for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+    {
+        const float sigma_s_prime = values->m_sigma_s[i] * (1.0f - values->m_g);
+        const float sigma_t_prime = sigma_s_prime + values->m_sigma_a[i];
+        values->m_precomputed.m_alpha_prime[i] = sigma_s_prime / sigma_t_prime;
+    }
+
+    // Build a CDF and PDF for channel sampling.
+    build_cdf_and_pdf(
+        values->m_precomputed.m_alpha_prime,
+        values->m_base_values.m_channel_cdf,
+        values->m_precomputed.m_channel_pdf);
+
+    // Precompute the radius of the sampling disk.
+    values->m_base_values.m_max_disk_radius =
+        dipole_max_radius(foundation::min_value(values->m_precomputed.m_sigma_tr));
 }
 
 }       // namespace renderer

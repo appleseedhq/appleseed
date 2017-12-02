@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,9 @@
 #include "mainwindow/project/disneymaterialcustomui.h"
 #include "utility/miscellaneous.h"
 
+// Standard headers.
+#include <utility>
+
 // Qt headers.
 #include <QShortcut>
 #include <QString>
@@ -53,9 +56,10 @@ EntityEditorWindow::EntityEditorWindow(
     QWidget*                                    parent,
     const string&                               window_title,
     const Project&                              project,
-    auto_ptr<EntityEditor::IFormFactory>        form_factory,
-    auto_ptr<EntityEditor::IEntityBrowser>      entity_browser,
-    auto_ptr<CustomEntityUI>                    custom_entity_ui,
+    ParamArray&                                 settings,
+    unique_ptr<EntityEditor::IFormFactory>      form_factory,
+    unique_ptr<EntityEditor::IEntityBrowser>    entity_browser,
+    unique_ptr<CustomEntityUI>                  custom_entity_ui,
     const Dictionary&                           values)
   : QWidget(parent)
   , m_ui(new Ui::EntityEditorWindow())
@@ -71,9 +75,10 @@ EntityEditorWindow::EntityEditorWindow(
         new EntityEditor(
             m_ui->scrollarea_contents,
             project,
-            form_factory,
-            entity_browser,
-            custom_entity_ui,
+            settings,
+            std::move(form_factory),
+            std::move(entity_browser),
+            std::move(custom_entity_ui),
             values));
 
     m_initial_values = m_entity_editor->get_values();

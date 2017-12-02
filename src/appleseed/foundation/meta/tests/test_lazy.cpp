@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 
 // Standard headers.
 #include <memory>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -60,9 +61,9 @@ namespace
         {
         }
 
-        virtual auto_ptr<Object> create()
+        unique_ptr<Object> create() override
         {
-            return auto_ptr<Object>(new Object(m_value));
+            return unique_ptr<Object>(new Object(m_value));
         }
     };
 }
@@ -71,8 +72,8 @@ TEST_SUITE(Foundation_Utility_Lazy_Access)
 {
     TEST_CASE(Get_GivenAccessBoundToNonNullObject_ReturnsNonNullPointer)
     {
-        auto_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
-        Lazy<Object> object(factory);
+        unique_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
+        Lazy<Object> object(move(factory));
 
         Access<Object> access(&object);
 
@@ -81,8 +82,8 @@ TEST_SUITE(Foundation_Utility_Lazy_Access)
 
     TEST_CASE(OperatorArrow_GivenAccessBoundToNonNullObject_GivesAccessToObject)
     {
-        auto_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
-        Lazy<Object> object(factory);
+        unique_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
+        Lazy<Object> object(move(factory));
 
         Access<Object> access(&object);
 
@@ -91,8 +92,8 @@ TEST_SUITE(Foundation_Utility_Lazy_Access)
 
     TEST_CASE(OperatorStar_GivenAccessBoundToNonNullObject_GivesAccessToObject)
     {
-        auto_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
-        Lazy<Object> object(factory);
+        unique_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
+        Lazy<Object> object(move(factory));
 
         Access<Object> access(&object);
 
@@ -101,31 +102,18 @@ TEST_SUITE(Foundation_Utility_Lazy_Access)
 
     struct NullObjectFactory : public ObjectFactory
     {
-        virtual auto_ptr<Object> create()
+        unique_ptr<Object> create() override
         {
-            return auto_ptr<Object>(0);
+            return unique_ptr<Object>(nullptr);
         }
     };
 
     TEST_CASE(Get_GivenAccessBoundToNullObject_ReturnsNullPointer)
     {
-        auto_ptr<ObjectFactory> factory(new NullObjectFactory());
-        Lazy<Object> object(factory);
+        unique_ptr<ObjectFactory> factory(new NullObjectFactory());
+        Lazy<Object> object(move(factory));
 
         Access<Object> access(&object);
-
-        EXPECT_EQ(0, access.get());
-    }
-}
-
-TEST_SUITE(Foundation_Utility_Lazy_Update)
-{
-    TEST_CASE(Get_GivenUpdateBoundToNonConstructedObject_ReturnsNullPointer)
-    {
-        auto_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
-        Lazy<Object> object(factory);
-
-        Update<Object> access(&object);
 
         EXPECT_EQ(0, access.get());
     }

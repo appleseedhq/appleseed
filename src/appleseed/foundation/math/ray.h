@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/poison.h"
 
 // Standard headers.
 #include <cassert>
@@ -82,8 +83,22 @@ class Ray
     template <typename U>
     Ray(const Ray<U, N>& rhs);
 
+    // Return true if the ray has finite length.
+    bool is_finite() const;
+
+    // Get length of the ray interval, assuming that m_tmax is finite. 
+    ValueType get_length() const;
+
     // Return the point of the ray at abscissa t, t >= 0.
     VectorType point_at(const ValueType t) const;
+};
+
+// Poisoning.
+template <typename T, size_t N>
+class PoisonImpl<Ray<T, N>>
+{
+  public:
+    static void do_poison(Ray<T, N>& ray);
 };
 
 // Exact inequality and equality tests.
@@ -157,12 +172,12 @@ class RayInfo<double, 3>
     static const size_t Dimension = 3;
 
     // Reciprocal of the ray direction.
-    APPLESEED_SSE_ALIGN VectorType m_rcp_dir;
+    APPLESEED_SIMD4_ALIGN VectorType m_rcp_dir;
 
     // Sign of the ray direction (for the i'th component, the sign value
     // is 1 if the component is positive or null, and 0 if the component
     // is strictly negative).
-    APPLESEED_SSE_ALIGN Vector<uint32, 4> m_sgn_dir;
+    APPLESEED_SIMD4_ALIGN Vector<uint32, 4> m_sgn_dir;
 
     // Constructors.
     RayInfo();                              // leave all fields uninitialized
@@ -173,7 +188,7 @@ class RayInfo<double, 3>
     RayInfo(const RayInfo<U, 3>& rhs);
 };
 
-#endif
+#endif  // APPLESEED_USE_SSE
 
 
 //
@@ -221,9 +236,31 @@ inline Ray<T, N>::Ray(const Ray<U, N>& rhs)
 }
 
 template <typename T, size_t N>
+inline bool Ray<T, N>::is_finite() const
+{
+    return m_tmax < std::numeric_limits<ValueType>::max();
+}
+
+template <typename T, size_t N>
+inline T Ray<T, N>::get_length() const
+{
+    assert(is_finite());
+    return (m_tmax - m_tmin) * foundation::norm(m_dir);
+}
+
+template <typename T, size_t N>
 inline typename Ray<T, N>::VectorType Ray<T, N>::point_at(const ValueType t) const
 {
     return m_org + t * m_dir;
+}
+
+template <typename T, size_t N>
+void PoisonImpl<Ray<T, N>>::do_poison(Ray<T, N>& ray)
+{
+    poison(ray.m_org);
+    poison(ray.m_dir);
+    poison(ray.m_tmin);
+    poison(ray.m_tmax);
 }
 
 template <typename T, size_t N>
@@ -325,7 +362,7 @@ inline RayInfo<double, 3>::RayInfo(const RayInfo<U, 3>& rhs)
         m_sgn_dir[i] = rhs.m_sgn_dir[i];
 }
 
-#endif
+#endif  // APPLESEED_USE_SSE
 
 }       // namespace foundation
 

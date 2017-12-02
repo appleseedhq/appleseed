@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -39,21 +39,34 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// Standard headers.
+#include <cassert>
+
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
+namespace renderer      { class ObjectInstance; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
 namespace renderer
 {
+
+//
+// An array of object instances.
+//
+
+APPLESEED_DECLARE_APIARRAY(ObjectInstanceArray, const ObjectInstance*);
+
 
 //
 // An assembly is either entirely self-contained, or it references colors,
@@ -72,7 +85,7 @@ class APPLESEED_DLLSYMBOL Assembly
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
     // Access the BSDFs.
     BSDFContainer& bsdfs() const;
@@ -95,6 +108,9 @@ class APPLESEED_DLLSYMBOL Assembly
     // Access the objects.
     ObjectContainer& objects() const;
 
+    // Access the volumes.
+    VolumeContainer& volumes() const;
+
     // Access the object instances.
     ObjectInstanceContainer& object_instances() const;
 
@@ -110,17 +126,42 @@ class APPLESEED_DLLSYMBOL Assembly
     GAABB3 compute_non_hierarchical_local_bbox() const;
 
     // Expose asset file paths referenced by this entity to the outside.
-    virtual void collect_asset_paths(foundation::StringArray& paths) const APPLESEED_OVERRIDE;
-    virtual void update_asset_paths(const foundation::StringDictionary& mappings) APPLESEED_OVERRIDE;
+    void collect_asset_paths(foundation::StringArray& paths) const override;
+    void update_asset_paths(const foundation::StringDictionary& mappings) override;
 
-    // Perform pre-frame rendering actions.
+    // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
+    bool on_frame_begin(
         const Project&              project,
-        foundation::IAbortSwitch*   abort_switch = 0);
+        const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
-    // Perform post-frame rendering actions.
-    virtual void on_frame_end(const Project& project);
+    // This method is called once after rendering each frame (only if on_frame_begin() was called).
+    void on_frame_end(
+        const Project&              project,
+        const BaseGroup*            parent) override;
+
+    struct RenderData
+    {
+        ObjectInstanceArray         m_procedural_objects;
+    };
+
+    // Return render-time data of this entity.
+    // Render-time data are available between on_frame_begin() and on_frame_end() calls.
+    const RenderData& get_render_data() const;
+
+  protected:
+    bool        m_has_render_data;
+    RenderData  m_render_data;
+
+    // Constructor.
+    Assembly(
+        const char*                 name,
+        const ParamArray&           params);
+
+    // Destructor.
+    ~Assembly() override;
 
   private:
     friend class AssemblyFactory;
@@ -130,14 +171,6 @@ class APPLESEED_DLLSYMBOL Assembly
 
     // Derogate to the private implementation rule, for performance reasons.
     bool m_flushable;
-
-    // Constructor.
-    Assembly(
-        const char*                 name,
-        const ParamArray&           params);
-
-    // Destructor.
-    ~Assembly();
 };
 
 
@@ -150,18 +183,16 @@ class APPLESEED_DLLSYMBOL AssemblyFactory
   : public IAssemblyFactory
 {
   public:
+    // Delete this instance.
+    void release() override;
+
     // Return a string identifying this assembly model.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    const char* get_model() const override;
 
     // Create a new assembly.
-    virtual foundation::auto_release_ptr<Assembly> create(
+    foundation::auto_release_ptr<Assembly> create(
         const char*         name,
-        const ParamArray&   params = ParamArray()) const APPLESEED_OVERRIDE;
-
-    // Static variant of the create() method above.
-    static foundation::auto_release_ptr<Assembly> static_create(
-        const char*         name,
-        const ParamArray&   params = ParamArray());
+        const ParamArray&   params = ParamArray()) const override;
 };
 
 
@@ -172,6 +203,12 @@ class APPLESEED_DLLSYMBOL AssemblyFactory
 inline bool Assembly::is_flushable() const
 {
     return m_flushable;
+}
+
+inline const Assembly::RenderData& Assembly::get_render_data() const
+{
+    assert(m_has_render_data);
+    return m_render_data;
 }
 
 }       // namespace renderer

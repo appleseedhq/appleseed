@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,9 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/modeling/aov/aov.h"
+#include "renderer/modeling/aov/aovfactoryregistrar.h"
+#include "renderer/modeling/aov/iaovfactory.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
@@ -61,20 +64,15 @@
 #include "renderer/modeling/material/imaterialfactory.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/material/materialfactoryregistrar.h"
-#include "renderer/modeling/object/curveobject.h"
-#include "renderer/modeling/object/curveobjectreader.h"
-#include "renderer/modeling/object/meshobject.h"
-#include "renderer/modeling/object/meshobjectreader.h"
+#include "renderer/modeling/object/iobjectfactory.h"
 #include "renderer/modeling/object/object.h"
+#include "renderer/modeling/object/objectfactoryregistrar.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
 #include "renderer/modeling/project/eventcounters.h"
-#include "renderer/modeling/project/irenderlayerrulefactory.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/project/projectfileupdater.h"
 #include "renderer/modeling/project/projectformatrevision.h"
-#include "renderer/modeling/project/renderlayerrule.h"
-#include "renderer/modeling/project/renderlayerrulefactoryregistrar.h"
 #include "renderer/modeling/project-builtin/cornellboxproject.h"
 #include "renderer/modeling/project-builtin/defaultproject.h"
 #include "renderer/modeling/scene/assembly.h"
@@ -85,19 +83,21 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
-#endif
 #include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.h"
 #include "renderer/modeling/texture/itexturefactory.h"
 #include "renderer/modeling/texture/texture.h"
 #include "renderer/modeling/texture/texturefactoryregistrar.h"
+#include "renderer/modeling/volume/ivolumefactory.h"
+#include "renderer/modeling/volume/volume.h"
+#include "renderer/modeling/volume/volumefactoryregistrar.h"
 #include "renderer/utility/paramarray.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
@@ -106,6 +106,8 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/api/apiarray.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iterators.h"
@@ -116,6 +118,7 @@
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/xercesc.h"
+#include "foundation/utility/zip.h"
 
 // Xerces-C++ headers.
 #include "xercesc/sax2/Attributes.hpp"
@@ -125,7 +128,8 @@
 #include "xercesc/util/XMLUni.hpp"
 
 // Boost headers.
-#include "boost/filesystem/path.hpp"
+#include "boost/filesystem.hpp"
+#include "boost/filesystem/operations.hpp"
 
 // Standard headers.
 #include <cassert>
@@ -135,11 +139,13 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 using namespace foundation;
 using namespace std;
 using namespace xercesc;
+namespace bf = boost::filesystem;
 
 namespace renderer
 {
@@ -167,25 +173,25 @@ namespace
         {
         }
 
-        virtual void resetErrors() APPLESEED_OVERRIDE
+        void resetErrors() override
         {
             m_event_counters.clear();
         }
 
-        virtual void warning(const SAXParseException& e) APPLESEED_OVERRIDE
+        void warning(const SAXParseException& e) override
         {
             ErrorLogger::warning(e);
             m_event_counters.signal_warning();
         }
 
-        virtual void error(const SAXParseException& e) APPLESEED_OVERRIDE
+        void error(const SAXParseException& e) override
         {
             ErrorLogger::error(e);
             m_event_counters.signal_error();
             throw e;    // terminate parsing
         }
 
-        virtual void fatalError(const SAXParseException& e) APPLESEED_OVERRIDE
+        void fatalError(const SAXParseException& e) override
         {
             ErrorLogger::fatalError(e);
             m_event_counters.signal_error();
@@ -212,12 +218,6 @@ namespace
           , m_options(options)
           , m_event_counters(event_counters)
         {
-            // Extract the root path of the project.
-            const boost::filesystem::path project_root_path =
-                boost::filesystem::path(project.get_path()).parent_path();
-
-            // Set the root path in the search path collection.
-            m_project.search_paths().set_root_path(project_root_path.string());
         }
 
         Project& get_project()
@@ -246,19 +246,20 @@ namespace
     // Utility functions.
     //
 
-    double get_scalar(
+    template <typename T>
+    T get_scalar(
         const string&       text,
         ParseContext&       context)
     {
         try
         {
-            return from_string<double>(text);
+            return from_string<T>(text);
         }
         catch (const ExceptionStringConversionError&)
         {
             RENDERER_LOG_ERROR("expected scalar value, got \"%s\".", text.c_str());
             context.get_event_counters().signal_error();
-            return 0.0;
+            return T(0.0);
         }
     }
 
@@ -362,7 +363,7 @@ namespace
             context.get_event_counters().signal_error();
         }
 
-        return auto_release_ptr<Entity>(0);
+        return auto_release_ptr<Entity>(nullptr);
     }
 
 
@@ -373,6 +374,8 @@ namespace
     enum ProjectElementID
     {
         ElementAlpha,
+        ElementAOV,
+        ElementAOVs,
         ElementAssembly,
         ElementAssemblyInstance,
         ElementAssignMaterial,
@@ -398,28 +401,25 @@ namespace
         ElementParameter,
         ElementParameters,
         ElementProject,
-        ElementRenderLayerAssignment,
         ElementRotation,
-        ElementRules,
         ElementScaling,
         ElementScene,
         ElementSearchPath,
         ElementSearchPaths,
-#ifdef APPLESEED_WITH_OSL
         ElementShader,
         ElementShaderConnection,
         ElementShaderGroup,
-#endif
         ElementSurfaceShader,
         ElementTexture,
         ElementTextureInstance,
         ElementTransform,
         ElementTranslation,
-        ElementValues
+        ElementValues,
+        ElementVolume
     };
 
     typedef IElementHandler<ProjectElementID> ElementHandlerType;
-    typedef ElementHandlerBase<ProjectElementID> ElementHandlerBase;
+    typedef ElementHandlerBase<ProjectElementID> ElementHandlerBaseType;
 
 
     //
@@ -427,7 +427,7 @@ namespace
     //
 
     class ParameterElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit ParameterElementHandler(ParseContext& context)
@@ -435,15 +435,15 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
-            m_name = ElementHandlerBase::get_value(attrs, "name");
-            m_value = ElementHandlerBase::get_value(attrs, "value");
+            m_name = ElementHandlerBaseType::get_value(attrs, "name");
+            m_value = ElementHandlerBaseType::get_value(attrs, "value");
         }
 
-        virtual void characters(
+        void characters(
             const XMLCh* const  chars,
-            const XMLSize_t     length) APPLESEED_OVERRIDE
+            const XMLSize_t     length) override
         {
             const string inner_value = transcode(chars);
             if (!m_value.empty() && !inner_value.empty())
@@ -480,14 +480,14 @@ namespace
     //
 
     class ParametrizedElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE;
+        void start_element(const Attributes& attrs) override;
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) APPLESEED_OVERRIDE;
+            ElementHandlerType*         handler) override;
 
       protected:
         ParamArray m_params;
@@ -507,7 +507,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -577,7 +577,7 @@ namespace
     //
 
     class LookAtElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit LookAtElementHandler(ParseContext& context)
@@ -585,7 +585,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             m_matrix = Matrix4d::identity();
 
@@ -597,7 +597,7 @@ namespace
                 norm(up) > 0.0 &&
                 norm(cross(up, origin - target)) > 0.0)
             {
-                m_matrix = Matrix4d::lookat(origin, target, normalize(up));
+                m_matrix = Matrix4d::make_lookat(origin, target, normalize(up));
             }
             else
             {
@@ -630,7 +630,7 @@ namespace
     //
 
     class MatrixElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit MatrixElementHandler(ParseContext& context)
@@ -638,13 +638,13 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             m_matrix = Matrix4d::identity();
             clear_keep_memory(m_values);
         }
 
-        virtual void end_element() APPLESEED_OVERRIDE
+        void end_element() override
         {
             if (m_values.size() == 16)
             {
@@ -660,9 +660,9 @@ namespace
             }
         }
 
-        virtual void characters(
+        void characters(
             const XMLCh* const  chars,
-            const XMLSize_t     length) APPLESEED_OVERRIDE
+            const XMLSize_t     length) override
         {
             get_vector(transcode(chars), m_values, m_context);
         }
@@ -684,7 +684,7 @@ namespace
     //
 
     class RotationElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit RotationElementHandler(ParseContext& context)
@@ -692,16 +692,16 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             m_matrix = Matrix4d::identity();
 
             const Vector3d axis = get_vector3(get_value(attrs, "axis"), m_context);
-            const double angle = get_scalar(get_value(attrs, "angle"), m_context);
+            const double angle = get_scalar<double>(get_value(attrs, "angle"), m_context);
 
             if (norm(axis) > 0.0)
             {
-                m_matrix = Matrix4d::rotation(normalize(axis), deg_to_rad(angle));
+                m_matrix = Matrix4d::make_rotation(normalize(axis), deg_to_rad(angle));
             }
             else
             {
@@ -726,7 +726,7 @@ namespace
     //
 
     class ScalingElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit ScalingElementHandler(ParseContext& context)
@@ -734,10 +734,10 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             const Vector3d value = get_vector3(get_value(attrs, "value"), m_context);
-            m_matrix = Matrix4d::scaling(value);
+            m_matrix = Matrix4d::make_scaling(value);
         }
 
         const Matrix4d& get_matrix() const
@@ -756,7 +756,7 @@ namespace
     //
 
     class TranslationElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit TranslationElementHandler(ParseContext& context)
@@ -764,10 +764,10 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             const Vector3d value = get_vector3(get_value(attrs, "value"), m_context);
-            m_matrix = Matrix4d::translation(value);
+            m_matrix = Matrix4d::make_translation(value);
         }
 
         const Matrix4d& get_matrix() const
@@ -786,7 +786,7 @@ namespace
     //
 
     class TransformElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit TransformElementHandler(ParseContext& context)
@@ -794,13 +794,13 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
-            m_time = get_scalar(get_value(attrs, "time", "0.0"), m_context);
+            m_time = get_scalar<float>(get_value(attrs, "time", "0.0"), m_context);
             m_matrix = Matrix4d::identity();
         }
 
-        virtual void end_element() APPLESEED_OVERRIDE
+        void end_element() override
         {
             try
             {
@@ -814,9 +814,9 @@ namespace
             }
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) APPLESEED_OVERRIDE
+            ElementHandlerType*         handler) override
         {
             switch (element)
             {
@@ -864,7 +864,7 @@ namespace
             }
         }
 
-        double get_time() const
+        float get_time() const
         {
             return m_time;
         }
@@ -876,7 +876,7 @@ namespace
 
       private:
         ParseContext&   m_context;
-        double          m_time;
+        float           m_time;
         Matrix4d        m_matrix;
         Transformd      m_transform;
     };
@@ -891,23 +891,23 @@ namespace
       : public Base
     {
       public:
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             Base::start_element(attrs);
         }
 
-        virtual void end_element() APPLESEED_OVERRIDE
+        void end_element() override
         {
             if (m_transforms.size() > 1)
                 collapse_transforms();
 
             if (m_transforms.empty())
-                m_transforms[0.0] = Transformd::identity();
+                m_transforms[0.0f] = Transformd::identity();
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) APPLESEED_OVERRIDE
+            ElementHandlerType*         handler) override
         {
             switch (element)
             {
@@ -941,7 +941,7 @@ namespace
         }
 
       private:
-        typedef map<double, Transformd> TransformMap;
+        typedef map<float, Transformd> TransformMap;
 
         TransformMap m_transforms;
 
@@ -951,13 +951,13 @@ namespace
             {
                 const Transformd transform = m_transforms.begin()->second;
                 m_transforms.clear();
-                m_transforms[0.0] = transform;
+                m_transforms[0.0f] = transform;
             }
         }
 
         bool are_transforms_identical() const
         {
-            for (TransformMap::const_iterator i = m_transforms.begin(); i != pred(m_transforms.end()); ++i)
+            for (TransformMap::const_iterator i = m_transforms.begin(), e = pred(m_transforms.end()); i != e; ++i)
             {
                 if (i->second != succ(i)->second)
                     return false;
@@ -973,7 +973,7 @@ namespace
     //
 
     class ValuesElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit ValuesElementHandler(ParseContext& context)
@@ -981,14 +981,14 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             m_values.clear();
         }
 
-        virtual void characters(
+        void characters(
             const XMLCh* const  chars,
-            const XMLSize_t     length) APPLESEED_OVERRIDE
+            const XMLSize_t     length) override
         {
             get_vector(transcode(chars), m_values, m_context);
         }
@@ -1017,7 +1017,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -1028,7 +1028,7 @@ namespace
             m_name = get_value(attrs, "name");
         }
 
-        virtual void end_element() APPLESEED_OVERRIDE
+        void end_element() override
         {
             ParametrizedElementHandler::end_element();
 
@@ -1056,9 +1056,9 @@ namespace
             }
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) APPLESEED_OVERRIDE
+            ElementHandlerType*         handler) override
         {
             switch (element)
             {
@@ -1094,7 +1094,7 @@ namespace
     // Handle an element defining an entity.
     //
 
-    template <typename Entity, typename EntityFactoryRegistrar, typename Base>
+    template <typename Entity, typename Base>
     class EntityElementHandler
       : public Base
     {
@@ -1105,7 +1105,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             Base::start_element(attrs);
 
@@ -1115,13 +1115,13 @@ namespace
             m_model = Base::get_value(attrs, "model");
         }
 
-        virtual void end_element() APPLESEED_OVERRIDE
+        void end_element() override
         {
             Base::end_element();
 
             m_entity =
                 create_entity<Entity>(
-                    m_registrar,
+                    m_context.get_project().template get_factory_registrar<Entity>(),
                     m_entity_type,
                     m_model,
                     m_name,
@@ -1136,7 +1136,6 @@ namespace
 
       protected:
         ParseContext&                   m_context;
-        const EntityFactoryRegistrar    m_registrar;
         const string                    m_entity_type;
         auto_release_ptr<Entity>        m_entity;
         string                          m_name;
@@ -1157,7 +1156,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -1167,7 +1166,7 @@ namespace
             m_model = get_value(attrs, "model");
         }
 
-        virtual void end_element() APPLESEED_OVERRIDE
+        void end_element() override
         {
             ParametrizedElementHandler::end_element();
 
@@ -1230,7 +1229,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             Base::start_element(attrs);
 
@@ -1240,7 +1239,7 @@ namespace
             m_texture = get_value(attrs, "texture");
         }
 
-        virtual void end_element() APPLESEED_OVERRIDE
+        void end_element() override
         {
             Base::end_element();
 
@@ -1251,7 +1250,9 @@ namespace
                         m_name.c_str(),
                         m_params,
                         m_texture.c_str(),
-                        get_earliest_transform());
+                        Transformf(
+                            get_earliest_transform().get_local_to_parent(),
+                            get_earliest_transform().get_parent_to_local()));
             }
             catch (const ExceptionDictionaryKeyNotFound& e)
             {
@@ -1283,17 +1284,11 @@ namespace
     //
 
     class BSDFElementHandler
-      : public EntityElementHandler<
-                   BSDF,
-                   BSDFFactoryRegistrar,
-                   ParametrizedElementHandler>
+      : public EntityElementHandler<BSDF, ParametrizedElementHandler>
     {
       public:
         explicit BSDFElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                BSDF,
-                BSDFFactoryRegistrar,
-                ParametrizedElementHandler>("bsdf", context)
+          : EntityElementHandler<BSDF, ParametrizedElementHandler>("bsdf", context)
         {
         }
     };
@@ -1304,17 +1299,11 @@ namespace
     //
 
     class BSSRDFElementHandler
-      : public EntityElementHandler<
-                   BSSRDF,
-                   BSSRDFFactoryRegistrar,
-                   ParametrizedElementHandler>
+      : public EntityElementHandler<BSSRDF, ParametrizedElementHandler>
     {
       public:
         explicit BSSRDFElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                BSSRDF,
-                BSSRDFFactoryRegistrar,
-                ParametrizedElementHandler>("bssrdf", context)
+          : EntityElementHandler<BSSRDF, ParametrizedElementHandler>("bssrdf", context)
         {
         }
     };
@@ -1325,17 +1314,26 @@ namespace
     //
 
     class EDFElementHandler
-      : public EntityElementHandler<
-                   EDF,
-                   EDFFactoryRegistrar,
-                   ParametrizedElementHandler>
+      : public EntityElementHandler<EDF, ParametrizedElementHandler>
     {
       public:
         explicit EDFElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                EDF,
-                EDFFactoryRegistrar,
-                ParametrizedElementHandler>("edf", context)
+          : EntityElementHandler<EDF, ParametrizedElementHandler>("edf", context)
+        {
+        }
+    };
+
+
+    //
+    // <volume> element handler.
+    //
+
+    class VolumeElementHandler
+      : public EntityElementHandler<Volume, ParametrizedElementHandler>
+    {
+      public:
+        explicit VolumeElementHandler(ParseContext& context)
+          : EntityElementHandler<Volume, ParametrizedElementHandler>("volume", context)
         {
         }
     };
@@ -1346,17 +1344,11 @@ namespace
     //
 
     class SurfaceShaderElementHandler
-      : public EntityElementHandler<
-                   SurfaceShader,
-                   SurfaceShaderFactoryRegistrar,
-                   ParametrizedElementHandler>
+      : public EntityElementHandler<SurfaceShader, ParametrizedElementHandler>
     {
       public:
         explicit SurfaceShaderElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                SurfaceShader,
-                SurfaceShaderFactoryRegistrar,
-                ParametrizedElementHandler>("surface shader", context)
+          : EntityElementHandler< SurfaceShader, ParametrizedElementHandler>("surface shader", context)
         {
         }
     };
@@ -1375,7 +1367,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -1385,7 +1377,7 @@ namespace
             m_model = get_value(attrs, "model");
         }
 
-        virtual void end_element() APPLESEED_OVERRIDE
+        void end_element() override
         {
             ParametrizedElementHandler::end_element();
 
@@ -1419,19 +1411,24 @@ namespace
     //
 
     class EnvironmentEDFElementHandler
-      : public EntityElementHandler<
-                   EnvironmentEDF,
-                   EnvironmentEDFFactoryRegistrar,
-                   ParametrizedElementHandler>
+      : public EntityElementHandler<EnvironmentEDF, TransformSequenceElementHandler<ParametrizedElementHandler>>
     {
       public:
         explicit EnvironmentEDFElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                EnvironmentEDF,
-                EnvironmentEDFFactoryRegistrar,
-                ParametrizedElementHandler>("environment edf", context)
+          : Base("environment edf", context)
         {
         }
+
+        void end_element() override
+        {
+            Base::end_element();
+
+            if (m_entity.get())
+                copy_transform_sequence_to(m_entity->transform_sequence());
+        }
+
+      private:
+        typedef EntityElementHandler<EnvironmentEDF, TransformSequenceElementHandler<ParametrizedElementHandler>> Base;
     };
 
 
@@ -1440,17 +1437,11 @@ namespace
     //
 
     class EnvironmentShaderElementHandler
-      : public EntityElementHandler<
-                   EnvironmentShader,
-                   EnvironmentShaderFactoryRegistrar,
-                   ParametrizedElementHandler>
+      : public EntityElementHandler<EnvironmentShader, ParametrizedElementHandler>
     {
       public:
         explicit EnvironmentShaderElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                EnvironmentShader,
-                EnvironmentShaderFactoryRegistrar,
-                ParametrizedElementHandler>("environment shader", context)
+          : EntityElementHandler<EnvironmentShader, ParametrizedElementHandler>("environment shader", context)
         {
         }
     };
@@ -1461,10 +1452,7 @@ namespace
     //
 
     class LightElementHandler
-      : public EntityElementHandler<
-                   Light,
-                   LightFactoryRegistrar,
-                   TransformSequenceElementHandler<ParametrizedElementHandler> >
+      : public EntityElementHandler<Light, TransformSequenceElementHandler<ParametrizedElementHandler>>
     {
       public:
         explicit LightElementHandler(ParseContext& context)
@@ -1472,7 +1460,7 @@ namespace
         {
         }
 
-        virtual void end_element() APPLESEED_OVERRIDE
+        void end_element() override
         {
             Base::end_element();
 
@@ -1481,11 +1469,7 @@ namespace
         }
 
       private:
-        typedef EntityElementHandler<
-            Light,
-            LightFactoryRegistrar,
-            TransformSequenceElementHandler<ParametrizedElementHandler>
-        > Base;
+        typedef EntityElementHandler<Light, TransformSequenceElementHandler<ParametrizedElementHandler>> Base;
     };
 
 
@@ -1494,17 +1478,11 @@ namespace
     //
 
     class MaterialElementHandler
-      : public EntityElementHandler<
-                   Material,
-                   MaterialFactoryRegistrar,
-                   ParametrizedElementHandler>
+      : public EntityElementHandler<Material, ParametrizedElementHandler>
     {
       public:
         explicit MaterialElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                Material,
-                MaterialFactoryRegistrar,
-                ParametrizedElementHandler>("material", context)
+          : EntityElementHandler<Material, ParametrizedElementHandler>("material", context)
         {
         }
     };
@@ -1515,10 +1493,7 @@ namespace
     //
 
     class CameraElementHandler
-      : public EntityElementHandler<
-                   Camera,
-                   CameraFactoryRegistrar,
-                   TransformSequenceElementHandler<ParametrizedElementHandler> >
+      : public EntityElementHandler<Camera, TransformSequenceElementHandler<ParametrizedElementHandler>>
     {
       public:
         explicit CameraElementHandler(ParseContext& context)
@@ -1526,7 +1501,7 @@ namespace
         {
         }
 
-        virtual void end_element() APPLESEED_OVERRIDE
+        void end_element() override
         {
             Base::end_element();
 
@@ -1535,11 +1510,7 @@ namespace
         }
 
       private:
-        typedef EntityElementHandler<
-            Camera,
-            CameraFactoryRegistrar,
-            TransformSequenceElementHandler<ParametrizedElementHandler>
-        > Base;
+        typedef EntityElementHandler<Camera, TransformSequenceElementHandler<ParametrizedElementHandler>> Base;
     };
 
 
@@ -1558,7 +1529,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -1568,40 +1539,27 @@ namespace
             m_model = get_value(attrs, "model");
         }
 
-        virtual void end_element() APPLESEED_OVERRIDE
+        void end_element() override
         {
             ParametrizedElementHandler::end_element();
 
             try
             {
-                if (m_model == MeshObjectFactory::get_model())
+                const IObjectFactory* factory =
+                    m_context.get_project().get_factory_registrar<Object>().lookup(m_model.c_str());
+
+                if (factory)
                 {
-                    if (m_context.get_options() & ProjectFileReader::OmitReadingMeshFiles)
-                    {
-                        m_objects.push_back(
-                            MeshObjectFactory::create(
-                                m_name.c_str(),
-                                m_params).release());
-                    }
-                    else
-                    {
-                        MeshObjectArray object_array;
-                        if (MeshObjectReader::read(
-                                m_context.get_project().search_paths(),
-                                m_name.c_str(),
-                                m_params,
-                                object_array))
-                            m_objects = array_vector<ObjectVector>(object_array);
-                        else m_context.get_event_counters().signal_error();
-                    }
-                }
-                else if (m_model == CurveObjectFactory::get_model())
-                {
-                    m_objects.push_back(
-                        CurveObjectReader::read(
-                            m_context.get_project().search_paths(),
+                    ObjectArray objects;
+                    if (!factory->create(
                             m_name.c_str(),
-                            m_params).release());
+                            m_params,
+                            m_context.get_project().search_paths(),
+                            m_context.get_options() & ProjectFileReader::OmitReadingMeshFiles,
+                            objects))
+                        m_context.get_event_counters().signal_error();
+
+                    m_objects = array_vector<ObjectVector>(objects);
                 }
                 else
                 {
@@ -1616,6 +1574,14 @@ namespace
             {
                 RENDERER_LOG_ERROR(
                     "while defining object \"%s\": required parameter \"%s\" missing.",
+                    m_name.c_str(),
+                    e.string());
+                m_context.get_event_counters().signal_error();
+            }
+            catch (const ExceptionUnknownEntity& e)
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining object \"%s\": unknown entity \"%s\".",
                     m_name.c_str(),
                     e.string());
                 m_context.get_event_counters().signal_error();
@@ -1640,7 +1606,7 @@ namespace
     //
 
     class AssignMaterialElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit AssignMaterialElementHandler(ParseContext& context)
@@ -1648,7 +1614,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             m_slot = get_value(attrs, "slot");
             m_side = get_value(attrs, "side", "front");
@@ -1700,7 +1666,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             Base::start_element(attrs);
 
@@ -1712,7 +1678,7 @@ namespace
             m_object = get_value(attrs, "object");
         }
 
-        virtual void end_element() APPLESEED_OVERRIDE
+        void end_element() override
         {
             Base::end_element();
 
@@ -1726,9 +1692,9 @@ namespace
                     m_back_material_mappings);
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID          element,
-            ElementHandlerType*             handler) APPLESEED_OVERRIDE
+            ElementHandlerType*             handler) override
         {
             switch (element)
             {
@@ -1789,7 +1755,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             Base::start_element(attrs);
 
@@ -1799,7 +1765,7 @@ namespace
             m_assembly = get_value(attrs, "assembly");
         }
 
-        virtual void end_element() APPLESEED_OVERRIDE
+        void end_element() override
         {
             Base::end_element();
 
@@ -1827,8 +1793,6 @@ namespace
     };
 
 
-#ifdef APPLESEED_WITH_OSL
-
     //
     // <shader> element handler.
     //
@@ -1842,7 +1806,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
             m_type = get_value(attrs, "type");
@@ -1883,7 +1847,7 @@ namespace
     //
 
     class ShaderConnectionElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit ShaderConnectionElementHandler(ParseContext& context)
@@ -1891,7 +1855,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             m_src_layer = get_value(attrs, "src_layer");
             m_src_param = get_value(attrs, "src_param");
@@ -1933,7 +1897,7 @@ namespace
     //
 
     class ShaderGroupElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit ShaderGroupElementHandler(ParseContext& context)
@@ -1941,15 +1905,15 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             m_name = get_value(attrs, "name");
             m_shader_group = ShaderGroupFactory::create(m_name.c_str());
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) APPLESEED_OVERRIDE
+            ElementHandlerType*         handler) override
         {
             switch (element)
             {
@@ -1990,8 +1954,6 @@ namespace
         auto_release_ptr<ShaderGroup>   m_shader_group;
     };
 
-#endif
-
 
     //
     // Base class for assembly and scene element handlers.
@@ -2012,14 +1974,14 @@ namespace
         template <typename Container, typename Entity>
         void insert(Container& container, auto_release_ptr<Entity> entity)
         {
-            if (entity.get() == 0)
+            if (entity.get() == nullptr)
                 return;
 
-            if (container.get_by_name(entity->get_name()) != 0)
+            if (container.get_by_name(entity->get_name()) != nullptr)
             {
                 RENDERER_LOG_ERROR(
-                    "an entity with the name \"%s\" already exists.",
-                    entity->get_name());
+                    "an entity with the path \"%s\" already exists.",
+                    entity->get_path().c_str());
                 m_context.get_event_counters().signal_error();
                 return;
             }
@@ -2042,7 +2004,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -2058,9 +2020,8 @@ namespace
             m_materials.clear();
             m_objects.clear();
             m_object_instances.clear();
-#ifdef APPLESEED_WITH_OSL
+            m_volumes.clear();
             m_shader_groups.clear();
-#endif
             m_surface_shaders.clear();
             m_textures.clear();
             m_texture_instances.clear();
@@ -2069,12 +2030,12 @@ namespace
             m_model = get_value(attrs, "model", AssemblyFactory().get_model());
         }
 
-        virtual void end_element() APPLESEED_OVERRIDE
+        void end_element() override
         {
             ParametrizedElementHandler::end_element();
 
-            const AssemblyFactoryRegistrar factories;
-            const IAssemblyFactory *factory = factories.lookup(m_model.c_str());
+            const IAssemblyFactory* factory =
+                m_context.get_project().get_factory_registrar<Assembly>().lookup(m_model.c_str());
 
             if (factory)
             {
@@ -2090,9 +2051,8 @@ namespace
                 m_assembly->materials().swap(m_materials);
                 m_assembly->objects().swap(m_objects);
                 m_assembly->object_instances().swap(m_object_instances);
-#ifdef APPLESEED_WITH_OSL
+                m_assembly->volumes().swap(m_volumes);
                 m_assembly->shader_groups().swap(m_shader_groups);
-#endif
                 m_assembly->surface_shaders().swap(m_surface_shaders);
                 m_assembly->textures().swap(m_textures);
                 m_assembly->texture_instances().swap(m_texture_instances);
@@ -2107,9 +2067,9 @@ namespace
             }
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) APPLESEED_OVERRIDE
+            ElementHandlerType*         handler) override
         {
             switch (element)
             {
@@ -2162,9 +2122,8 @@ namespace
                 break;
 
               case ElementObject:
-                for (const_each<ObjectElementHandler::ObjectVector> i =
-                        static_cast<ObjectElementHandler*>(handler)->get_objects(); i; ++i)
-                    insert(m_objects, auto_release_ptr<Object>(*i));
+                for (Object* object : static_cast<ObjectElementHandler*>(handler)->get_objects())
+                    insert(m_objects, auto_release_ptr<Object>(object));
                 break;
 
               case ElementObjectInstance:
@@ -2173,13 +2132,11 @@ namespace
                     static_cast<ObjectInstanceElementHandler*>(handler)->get_object_instance());
                 break;
 
-#ifdef APPLESEED_WITH_OSL
               case ElementShaderGroup:
                 insert(
                     m_shader_groups,
                     static_cast<ShaderGroupElementHandler*>(handler)->get_shader_group());
                 break;
-#endif
 
               case ElementSurfaceShader:
                 insert(
@@ -2197,6 +2154,12 @@ namespace
                 insert(
                     m_texture_instances,
                     static_cast<TextureInstanceElementHandler*>(handler)->get_texture_instance());
+                break;
+
+              case ElementVolume:
+                insert(
+                    m_volumes,
+                    static_cast<VolumeElementHandler*>(handler)->get_entity());
                 break;
 
               default:
@@ -2224,9 +2187,8 @@ namespace
         MaterialContainer           m_materials;
         ObjectContainer             m_objects;
         ObjectInstanceContainer     m_object_instances;
-#ifdef APPLESEED_WITH_OSL
+        VolumeContainer             m_volumes;
         ShaderGroupContainer        m_shader_groups;
-#endif
         SurfaceShaderContainer      m_surface_shaders;
         TextureContainer            m_textures;
         TextureInstanceContainer    m_texture_instances;
@@ -2246,42 +2208,34 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
 
             m_scene = SceneFactory::create();
         }
 
-        virtual void end_element() APPLESEED_OVERRIDE
+        void end_element() override
         {
             ParametrizedElementHandler::end_element();
 
             m_scene->get_parameters() = m_params;
 
             const GAABB3 scene_bbox = m_scene->compute_bbox();
+            const Vector3d scene_center(scene_bbox.center());
 
-            if (scene_bbox.is_valid())
-            {
-                const Vector3d scene_center = scene_bbox.center();
-
-                RENDERER_LOG_INFO(
-                    "scene bounding box: (%f, %f, %f)-(%f, %f, %f).\n"
-                    "scene bounding sphere: center (%f, %f, %f), diameter %f.",
-                    scene_bbox.min[0], scene_bbox.min[1], scene_bbox.min[2],
-                    scene_bbox.max[0], scene_bbox.max[1], scene_bbox.max[2],
-                    scene_center[0], scene_center[1], scene_center[2],
-                    scene_bbox.diameter());
-            }
-            else
-            {
-                RENDERER_LOG_INFO("scene bounding box is empty.");
-            }
+            RENDERER_LOG_INFO(
+                "scene bounding box: (%f, %f, %f)-(%f, %f, %f).\n"
+                "scene bounding sphere: center (%f, %f, %f), diameter %f.",
+                scene_bbox.min[0], scene_bbox.min[1], scene_bbox.min[2],
+                scene_bbox.max[0], scene_bbox.max[1], scene_bbox.max[2],
+                scene_center[0], scene_center[1], scene_center[2],
+                scene_bbox.diameter());
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) APPLESEED_OVERRIDE
+            ElementHandlerType*         handler) override
         {
             assert(m_scene.get());
 
@@ -2310,14 +2264,7 @@ namespace
                     auto_release_ptr<Camera> camera =
                         static_cast<CameraElementHandler*>(handler)->get_entity();
                     if (camera.get())
-                    {
-                        if (m_scene->get_camera())
-                        {
-                            RENDERER_LOG_WARNING("support for multiple cameras is not implemented yet.");
-                            m_context.get_event_counters().signal_warning();
-                        }
-                        m_scene->set_camera(camera);
-                    }
+                        m_scene->cameras().insert(camera);
                 }
                 break;
 
@@ -2361,13 +2308,12 @@ namespace
                     static_cast<TextureInstanceElementHandler*>(handler)->get_texture_instance());
                 break;
 
-#ifdef APPLESEED_WITH_OSL
               case ElementShaderGroup:
                 insert(
                     m_scene->shader_groups(),
                     static_cast<ShaderGroupElementHandler*>(handler)->get_shader_group());
                 break;
-#endif
+
               default:
                 ParametrizedElementHandler::end_child_element(element, handler);
                 break;
@@ -2385,58 +2331,118 @@ namespace
 
 
     //
-    // <render_layer_assignment> element handler.
+    // <aov> element handler.
     //
 
-    class RenderLayerAssignmentElementHandler
-      : public EntityElementHandler<
-                   RenderLayerRule,
-                   RenderLayerRuleFactoryRegistrar,
-                   ParametrizedElementHandler>
+    class AOVElementHandler
+      : public ParametrizedElementHandler
     {
       public:
-        explicit RenderLayerAssignmentElementHandler(ParseContext& context)
-          : EntityElementHandler<
-                RenderLayerRule,
-                RenderLayerRuleFactoryRegistrar,
-                ParametrizedElementHandler>("render layer assignment rule", context)
+        explicit AOVElementHandler(ParseContext& context)
+          : m_context(context)
         {
         }
+
+        void start_element(const Attributes& attrs) override
+        {
+            ParametrizedElementHandler::start_element(attrs);
+
+            m_aov.reset();
+
+            m_model = ParametrizedElementHandler::get_value(attrs, "model");
+        }
+
+        void end_element() override
+        {
+            ParametrizedElementHandler::end_element();
+
+            try
+            {
+                const IAOVFactory* factory =
+                    m_context.get_project().get_factory_registrar<AOV>().lookup(m_model.c_str());
+
+                if (factory)
+                {
+                    m_aov = factory->create(m_params);
+                }
+                else
+                {
+                    RENDERER_LOG_ERROR(
+                        "while defining aov: invalid model \"%s\".",
+                        m_model.c_str());
+                    m_context.get_event_counters().signal_error();
+                }
+            }
+            catch (const ExceptionDictionaryKeyNotFound& e)
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining aov \"%s\": required parameter \"%s\" missing.",
+                    m_model.c_str(),
+                    e.string());
+                m_context.get_event_counters().signal_error();
+            }
+            catch (const ExceptionUnknownEntity& e)
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining aov \"%s\": unknown entity \"%s\".",
+                    m_model.c_str(),
+                    e.string());
+                m_context.get_event_counters().signal_error();
+            }
+        }
+
+        auto_release_ptr<AOV> get_aov()
+        {
+            return m_aov;
+        }
+
+      protected:
+        ParseContext&           m_context;
+        auto_release_ptr<AOV>   m_aov;
+        string                  m_model;
     };
 
 
     //
-    // <rules> element handler.
+    // <aovs> element handler.
     //
 
-    class RulesElementHandler
-      : public ElementHandlerBase
+    class AOVsElementHandler
+      : public ElementHandlerBaseType
     {
       public:
-        explicit RulesElementHandler(ParseContext& context)
+        explicit AOVsElementHandler(ParseContext& context)
           : m_context(context)
-          , m_project(0)
+          , m_aovs(nullptr)
         {
         }
 
-        void set_project(Project* project)
-        {
-            m_project = project;
-        }
-
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) APPLESEED_OVERRIDE
+            ElementHandlerType*         handler) override
         {
-            assert(m_project);
+            assert(m_aovs);
 
             switch (element)
             {
-              case ElementRenderLayerAssignment:
+              case ElementAOV:
                 {
-                    RenderLayerAssignmentElementHandler* assignment_handler =
-                        static_cast<RenderLayerAssignmentElementHandler*>(handler);
-                    m_project->add_render_layer_rule(assignment_handler->get_entity());
+                    auto_release_ptr<AOV> aov(
+                        static_cast<AOVElementHandler*>(handler)->get_aov());
+
+                    if (aov.get() == nullptr)
+                        return;
+
+                    if (m_aovs->get_by_name(aov->get_name()) != nullptr)
+                    {
+                        RENDERER_LOG_ERROR(
+                            "an aov with the path \"%s\" already exists.",
+                            aov->get_path().c_str());
+                        m_context.get_event_counters().signal_error();
+                        return;
+                    }
+
+                    m_aovs->insert(aov);
                 }
                 break;
 
@@ -2444,9 +2450,14 @@ namespace
             }
         }
 
+        void set_aov_container(AOVContainer* aovs)
+        {
+            m_aovs = aovs;
+        }
+
       private:
         ParseContext&   m_context;
-        Project*        m_project;
+        AOVContainer*   m_aovs;
     };
 
 
@@ -2463,7 +2474,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -2472,11 +2483,40 @@ namespace
             m_name = get_value(attrs, "name");
         }
 
-        virtual void end_element() APPLESEED_OVERRIDE
+        void end_element() override
         {
             ParametrizedElementHandler::end_element();
 
-            m_frame = FrameFactory::create(m_name.c_str(), m_params);
+            m_frame = FrameFactory::create(m_name.c_str(), m_params, m_aovs);
+        }
+
+        void start_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler) override
+        {
+            switch (element)
+            {
+              case ElementAOVs:
+                {
+                    AOVsElementHandler* aovs_handler =
+                        static_cast<AOVsElementHandler*>(handler);
+                    aovs_handler->set_aov_container(&m_aovs);
+                }
+                break;
+
+              default:
+                ParametrizedElementHandler::start_child_element(element, handler);
+            }
+        }
+
+        void end_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler) override
+        {
+            if (element == ElementAOVs)
+                return;
+
+            ParametrizedElementHandler::end_child_element(element, handler);
         }
 
         auto_release_ptr<Frame> get_frame()
@@ -2487,6 +2527,7 @@ namespace
       private:
         ParseContext&           m_context;
         auto_release_ptr<Frame> m_frame;
+        AOVContainer            m_aovs;
         string                  m_name;
     };
 
@@ -2496,12 +2537,12 @@ namespace
     //
 
     class OutputElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit OutputElementHandler(ParseContext& context)
           : m_context(context)
-          , m_project(0)
+          , m_project(nullptr)
         {
         }
 
@@ -2510,9 +2551,9 @@ namespace
             m_project = project;
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) APPLESEED_OVERRIDE
+            ElementHandlerType*         handler) override
         {
             assert(m_project);
 
@@ -2546,7 +2587,7 @@ namespace
       public:
         explicit ConfigurationElementHandler(ParseContext& context)
           : m_context(context)
-          , m_project(0)
+          , m_project(nullptr)
         {
         }
 
@@ -2555,7 +2596,7 @@ namespace
             m_project = project;
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -2565,7 +2606,7 @@ namespace
             m_base_name = get_value(attrs, "base");
         }
 
-        virtual void end_element() APPLESEED_OVERRIDE
+        void end_element() override
         {
             ParametrizedElementHandler::end_element();
 
@@ -2589,7 +2630,7 @@ namespace
                 {
                     RENDERER_LOG_ERROR(
                         "while defining configuration \"%s\": the configuration \"%s\" does not exist.",
-                        m_configuration->get_name(),
+                        m_configuration->get_path().c_str(),
                         m_base_name.c_str());
                     m_context.get_event_counters().signal_error();
                 }
@@ -2615,12 +2656,12 @@ namespace
     //
 
     class ConfigurationsElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit ConfigurationsElementHandler(ParseContext& context)
           : m_context(context)
-          , m_project(0)
+          , m_project(nullptr)
         {
         }
 
@@ -2629,9 +2670,9 @@ namespace
             m_project = project;
         }
 
-        virtual void start_child_element(
+        void start_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) APPLESEED_OVERRIDE
+            ElementHandlerType*         handler) override
         {
             assert(m_project);
 
@@ -2649,9 +2690,9 @@ namespace
             }
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) APPLESEED_OVERRIDE
+            ElementHandlerType*         handler) override
         {
             assert(m_project);
 
@@ -2682,7 +2723,7 @@ namespace
     //
 
     class SearchPathElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit SearchPathElementHandler(ParseContext& context)
@@ -2690,9 +2731,9 @@ namespace
         {
         }
 
-        virtual void characters(
+        void characters(
             const XMLCh* const  chars,
-            const XMLSize_t     length) APPLESEED_OVERRIDE
+            const XMLSize_t     length) override
         {
             m_path = trim_both(transcode(chars));
         }
@@ -2713,18 +2754,28 @@ namespace
     //
 
     class SearchPathsElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         explicit SearchPathsElementHandler(ParseContext& context)
           : m_context(context)
-          , m_project(0)
+          , m_project(nullptr)
         {
         }
 
-        virtual void end_child_element(
+        void set_project(Project* project)
+        {
+            m_project = project;
+        }
+
+        void end_element() override
+        {
+            m_project->reinitialize_factory_registrars();
+        }
+
+        void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) APPLESEED_OVERRIDE
+            ElementHandlerType*         handler) override
         {
             assert(m_project);
 
@@ -2732,19 +2783,20 @@ namespace
             {
               case ElementSearchPath:
                 {
+                    // Skip search paths if asked to do so.
+                    if (m_context.get_options() & ProjectFileReader::OmitSearchPaths)
+                        return;
+
                     SearchPathElementHandler* path_handler =
                         static_cast<SearchPathElementHandler*>(handler);
-                    m_project->search_paths().push_back(path_handler->get_path());
+                    const string& path = path_handler->get_path();
+                    if (!path.empty())
+                        m_project->search_paths().push_back(path);
                 }
                 break;
 
               assert_otherwise;
             }
-        }
-
-        void set_project(Project* project)
-        {
-            m_project = project;
         }
 
       private:
@@ -2763,19 +2815,8 @@ namespace
       public:
         explicit DisplayElementHandler(ParseContext& context)
           : m_context(context)
+          , m_project(nullptr)
         {
-        }
-
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
-        {
-            ParametrizedElementHandler::start_element(attrs);
-            m_name = get_value(attrs, "name");
-        }
-
-        virtual void end_element() APPLESEED_OVERRIDE
-        {
-            ParametrizedElementHandler::end_element();
-            m_project->set_display(DisplayFactory::create(m_name.c_str(), m_params));
         }
 
         void set_project(Project* project)
@@ -2783,10 +2824,22 @@ namespace
             m_project = project;
         }
 
+        void start_element(const Attributes& attrs) override
+        {
+            ParametrizedElementHandler::start_element(attrs);
+            m_name = get_value(attrs, "name");
+        }
+
+        void end_element() override
+        {
+            ParametrizedElementHandler::end_element();
+            m_project->set_display(DisplayFactory::create(m_name.c_str(), m_params));
+        }
+
       private:
         ParseContext&   m_context;
-        string          m_name;
         Project*        m_project;
+        string          m_name;
     };
 
 
@@ -2795,7 +2848,7 @@ namespace
     //
 
     class ProjectElementHandler
-      : public ElementHandlerBase
+      : public ElementHandlerBaseType
     {
       public:
         ProjectElementHandler(ParseContext& context, Project* project)
@@ -2804,13 +2857,13 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
+        void start_element(const Attributes& attrs) override
         {
-            ElementHandlerBase::start_element(attrs);
+            ElementHandlerBaseType::start_element(attrs);
 
             const size_t format_revision =
                 from_string<size_t>(
-                    ElementHandlerBase::get_value(attrs, "format_revision", "2"));
+                    ElementHandlerBaseType::get_value(attrs, "format_revision", "2"));
 
             if (format_revision > ProjectFormatRevision)
             {
@@ -2822,9 +2875,9 @@ namespace
             m_project->set_format_revision(format_revision);
         }
 
-        virtual void start_child_element(
+        void start_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) APPLESEED_OVERRIDE
+            ElementHandlerType*         handler) override
         {
             assert(m_project);
 
@@ -2843,14 +2896,6 @@ namespace
                     OutputElementHandler* output_handler =
                         static_cast<OutputElementHandler*>(handler);
                     output_handler->set_project(m_project);
-                }
-                break;
-
-              case ElementRules:
-                {
-                    RulesElementHandler* rules_handler =
-                        static_cast<RulesElementHandler*>(handler);
-                    rules_handler->set_project(m_project);
                 }
                 break;
 
@@ -2877,9 +2922,9 @@ namespace
             }
         }
 
-        virtual void end_child_element(
+        void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) APPLESEED_OVERRIDE
+            ElementHandlerType*         handler) override
         {
             assert(m_project);
 
@@ -2891,10 +2936,6 @@ namespace
 
               case ElementOutput:
                 // Nothing to do, frames were directly inserted into the project.
-                break;
-
-              case ElementRules:
-                // Nothing to do, rules were directly inserted into the project.
                 break;
 
               case ElementScene:
@@ -2937,6 +2978,8 @@ namespace
           : m_context(context)
         {
             register_factory_helper<ValuesElementHandler>("alpha", ElementAlpha);
+            register_factory_helper<AOVElementHandler>("aov", ElementAOV);
+            register_factory_helper<AOVsElementHandler>("aovs", ElementAOVs);
             register_factory_helper<AssemblyElementHandler>("assembly", ElementAssembly);
             register_factory_helper<AssemblyInstanceElementHandler>("assembly_instance", ElementAssemblyInstance);
             register_factory_helper<AssignMaterialElementHandler>("assign_material", ElementAssignMaterial);
@@ -2946,9 +2989,7 @@ namespace
             register_factory_helper<ColorElementHandler>("color", ElementColor);
             register_factory_helper<ConfigurationElementHandler>("configuration", ElementConfiguration);
             register_factory_helper<ConfigurationsElementHandler>("configurations", ElementConfigurations);
-#ifdef APPLESEED_WITH_OSL
             register_factory_helper<ShaderConnectionElementHandler>("connect_shaders", ElementShaderConnection);
-#endif
             register_factory_helper<DisplayElementHandler>("display", ElementDisplay);
             register_factory_helper<EDFElementHandler>("edf", ElementEDF);
             register_factory_helper<EnvironmentElementHandler>("environment", ElementEnvironment);
@@ -2964,28 +3005,25 @@ namespace
             register_factory_helper<OutputElementHandler>("output", ElementOutput);
             register_factory_helper<ParameterElementHandler>("parameter", ElementParameter);
             register_factory_helper<ParametersElementHandler>("parameters", ElementParameters);
-            register_factory_helper<RenderLayerAssignmentElementHandler>("render_layer_assignment", ElementRenderLayerAssignment);
             register_factory_helper<RotationElementHandler>("rotation", ElementRotation);
-            register_factory_helper<RulesElementHandler>("rules", ElementRules);
             register_factory_helper<ScalingElementHandler>("scaling", ElementScaling);
             register_factory_helper<SceneElementHandler>("scene", ElementScene);
             register_factory_helper<SearchPathElementHandler>("search_path", ElementSearchPath);
             register_factory_helper<SearchPathsElementHandler>("search_paths", ElementSearchPaths);
-#ifdef APPLESEED_WITH_OSL
             register_factory_helper<ShaderElementHandler>("shader", ElementShader);
             register_factory_helper<ShaderGroupElementHandler>("shader_group", ElementShaderGroup);
-#endif
             register_factory_helper<SurfaceShaderElementHandler>("surface_shader", ElementSurfaceShader);
             register_factory_helper<TextureElementHandler>("texture", ElementTexture);
             register_factory_helper<TextureInstanceElementHandler>("texture_instance", ElementTextureInstance);
             register_factory_helper<TransformElementHandler>("transform", ElementTransform);
             register_factory_helper<TranslationElementHandler>("translation", ElementTranslation);
             register_factory_helper<ValuesElementHandler>("values", ElementValues);
+            register_factory_helper<VolumeElementHandler>("volume", ElementVolume);
 
-            auto_ptr<IElementHandlerFactory<ProjectElementID> > factory(
+            unique_ptr<IElementHandlerFactory<ProjectElementID>> factory(
                 new ProjectElementHandlerFactory(m_context, project));
 
-            register_factory("project", ElementProject, factory);
+            register_factory("project", ElementProject, move(factory));
         }
 
       private:
@@ -3003,9 +3041,9 @@ namespace
             {
             }
 
-            virtual auto_ptr<ElementHandlerType> create() APPLESEED_OVERRIDE
+            unique_ptr<ElementHandlerType> create() override
             {
-                return auto_ptr<ElementHandlerType>(
+                return unique_ptr<ElementHandlerType>(
                     new ProjectElementHandler(m_context, m_project));
             }
         };
@@ -3021,19 +3059,19 @@ namespace
             {
             }
 
-            virtual auto_ptr<ElementHandlerType> create() APPLESEED_OVERRIDE
+            unique_ptr<ElementHandlerType> create() override
             {
-                return auto_ptr<ElementHandlerType>(new ElementHandler(m_context));
+                return unique_ptr<ElementHandlerType>(new ElementHandler(m_context));
             }
         };
 
         template <typename ElementHandler>
         void register_factory_helper(const string& name, const ProjectElementID id)
         {
-            auto_ptr<IElementHandlerFactory<ProjectElementID> > factory(
+            unique_ptr<IElementHandlerFactory<ProjectElementID>> factory(
                 new GenericElementHandlerFactory<ElementHandler>(m_context));
 
-            register_factory(name, id, factory);
+            register_factory(name, id, move(factory));
         }
     };
 }
@@ -3052,6 +3090,28 @@ namespace
 
         return false;
     }
+
+    // returns filename of .appleseed file inside archive
+    // returns "" in case there are more than 1 .appleseed files
+    // "" means it's not a valid packed project
+    string get_project_filename_from_archive(const char* project_filepath)
+    {
+        const vector<string> appleseed_files = get_filenames_with_extension_from_zip(project_filepath, ".appleseed");
+        return appleseed_files.size() == 1 ? appleseed_files[0] : "";
+    }
+
+    string unpack_project(
+        const string& project_filepath,
+        const string& project_name,
+        const bf::path& unpacked_project_directory)
+    {
+        if (bf::exists(unpacked_project_directory))
+            bf::remove_all(unpacked_project_directory);
+
+        unzip(project_filepath, unpacked_project_directory.string());
+
+        return (unpacked_project_directory / project_name).string().c_str();
+    }
 }
 
 auto_release_ptr<Project> ProjectFileReader::read(
@@ -3060,16 +3120,51 @@ auto_release_ptr<Project> ProjectFileReader::read(
     const int               options)
 {
     assert(project_filepath);
-    assert(schema_filepath);
 
     // Handle built-in projects.
     string project_name;
     if (is_builtin_project(project_filepath, project_name))
         return load_builtin(project_name.c_str());
 
+    // Handle packed projects.
+    string actual_project_filepath;
+    if (is_zip_file(project_filepath))
+    {
+        const string project_filename = get_project_filename_from_archive(project_filepath);
+        if (project_filename == "")
+        {
+            RENDERER_LOG_ERROR(
+                "%s looks like a packed project file, but it should contain a single *.appleseed file in order to be valid.",
+                project_filepath);
+            return auto_release_ptr<Project>(nullptr);
+        }
+
+        const string unpacked_project_directory =
+            bf::path(project_filepath).replace_extension(".unpacked").string();
+
+        RENDERER_LOG_INFO(
+            "%s appears to be a packed project; unpacking to %s...",
+            project_filepath,
+            unpacked_project_directory.c_str());
+
+        actual_project_filepath = unpack_project(
+            project_filepath,
+            project_filename,
+            unpacked_project_directory);
+
+        project_filepath = actual_project_filepath.data();
+    }
+
     XercesCContext xerces_context(global_logger());
     if (!xerces_context.is_initialized())
-        return auto_release_ptr<Project>(0);
+        return auto_release_ptr<Project>(nullptr);
+
+    if ((options & OmitProjectSchemaValidation) == false && schema_filepath == nullptr)
+    {
+        RENDERER_LOG_ERROR(
+            "project schema validation enabled, but no schema filepath provided.");
+        return auto_release_ptr<Project>(nullptr);
+    }
 
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();
@@ -3093,7 +3188,93 @@ auto_release_ptr<Project> ProjectFileReader::read(
         event_counters,
         stopwatch.get_seconds());
 
-    return event_counters.has_errors() ? auto_release_ptr<Project>(0) : project;
+    return event_counters.has_errors() ? auto_release_ptr<Project>(nullptr) : project;
+}
+
+auto_release_ptr<Assembly> ProjectFileReader::read_archive(
+    const char*             archive_filepath,
+    const char*             schema_filepath,
+    const SearchPaths&      search_paths,
+    const int               options)
+{
+    assert(archive_filepath);
+
+    // Handle packed archives.
+    string actual_archive_filepath;
+    if (is_zip_file(archive_filepath))
+    {
+        string archive_name = get_project_filename_from_archive(archive_filepath);
+        if (archive_name == "")
+        {
+            RENDERER_LOG_ERROR(
+                "%s looks like a packed archive file, but it should contain a single *.appleseed file in order to be valid.",
+                archive_filepath);
+            return auto_release_ptr<Assembly>(nullptr);
+        }
+
+        const string unpacked_archive_directory =
+            bf::path(archive_filepath).replace_extension(".unpacked").string();
+
+        actual_archive_filepath = unpack_project(
+            archive_filepath,
+            archive_name,
+            unpacked_archive_directory);
+
+        archive_filepath = actual_archive_filepath.data();
+    }
+
+    XercesCContext xerces_context(global_logger());
+    if (!xerces_context.is_initialized())
+        return auto_release_ptr<Assembly>(nullptr);
+
+    if ((options & OmitProjectSchemaValidation) == false && schema_filepath == nullptr)
+    {
+        RENDERER_LOG_ERROR(
+            "archive schema validation enabled, but no schema filepath provided.");
+        return auto_release_ptr<Assembly>(nullptr);
+    }
+
+    Stopwatch<DefaultWallclockTimer> stopwatch;
+    stopwatch.start();
+
+    EventCounters event_counters;
+    auto_release_ptr<Project> project(
+        load_project_file(
+            archive_filepath,
+            schema_filepath,
+            options | OmitSearchPaths,
+            event_counters,
+            &search_paths));
+
+    if (project.get())
+    {
+        if (!event_counters.has_errors() &&
+            !(options & OmitProjectFileUpdate) &&
+            project->get_format_revision() < ProjectFormatRevision)
+            upgrade_project(*project, event_counters);
+    }
+
+    stopwatch.measure();
+
+    print_loading_results(
+        archive_filepath,
+        false,
+        event_counters,
+        stopwatch.get_seconds());
+
+    if (event_counters.has_errors())
+        return auto_release_ptr<Assembly>(nullptr);
+
+    if (project->get_scene())
+    {
+        if (Assembly* assembly = project->get_scene()->assemblies().get_by_name("assembly"))
+        {
+            return auto_release_ptr<Assembly>(
+                project->get_scene()->assemblies().remove(assembly));
+        }
+    }
+
+    return auto_release_ptr<Assembly>(nullptr);
 }
 
 auto_release_ptr<Project> ProjectFileReader::load_builtin(
@@ -3119,42 +3300,65 @@ auto_release_ptr<Project> ProjectFileReader::load_builtin(
         event_counters,
         stopwatch.get_seconds());
 
-    return event_counters.has_errors() ? auto_release_ptr<Project>(0) : project;
+    return event_counters.has_errors() ? auto_release_ptr<Project>(nullptr) : project;
 }
 
 auto_release_ptr<Project> ProjectFileReader::load_project_file(
-    const char*             project_filepath,
-    const char*             schema_filepath,
-    const int               options,
-    EventCounters&          event_counters) const
+    const char*                     project_filepath,
+    const char*                     schema_filepath,
+    const int                       options,
+    EventCounters&                  event_counters,
+    const foundation::SearchPaths*  search_paths) const
 {
     // Create an empty project.
     auto_release_ptr<Project> project(ProjectFactory::create(project_filepath));
     project->set_path(project_filepath);
 
+    if ((options & OmitSearchPaths) == false)
+    {
+        project->search_paths().set_root_path(
+            bf::absolute(project_filepath).parent_path().string());
+    }
+    else
+    {
+        assert(search_paths);
+        project->search_paths() = *search_paths;
+    }
+
     // Create the error handler.
-    auto_ptr<ErrorLogger> error_handler(
+    unique_ptr<ErrorLogger> error_handler(
         new ErrorLoggerAndCounter(
             project_filepath,
             event_counters));
 
     // Create the content handler.
     ParseContext context(project.ref(), options, event_counters);
-    auto_ptr<ContentHandler> content_handler(
+    unique_ptr<ContentHandler> content_handler(
         new ContentHandler(
             project.get(),
             context));
 
     // Create the parser.
-    auto_ptr<SAX2XMLReader> parser(XMLReaderFactory::createXMLReader());
+    unique_ptr<SAX2XMLReader> parser(XMLReaderFactory::createXMLReader());
     parser->setFeature(XMLUni::fgSAX2CoreNameSpaces, true);         // perform namespace processing
-    parser->setFeature(XMLUni::fgSAX2CoreValidation, true);         // report all validation errors
-    parser->setFeature(XMLUni::fgXercesSchema, true);               // enable the parser's schema support
-    parser->setProperty(
-        XMLUni::fgXercesSchemaExternalNoNameSpaceSchemaLocation,
-        const_cast<void*>(
-            static_cast<const void*>(
-                transcode(schema_filepath).c_str())));
+
+    if ((options & OmitProjectSchemaValidation) == false)
+    {
+        assert(schema_filepath);
+        parser->setFeature(XMLUni::fgSAX2CoreValidation, true);     // report all validation errors
+        parser->setFeature(XMLUni::fgXercesSchema, true);           // enable the parser's schema support
+        parser->setProperty(
+            XMLUni::fgXercesSchemaExternalNoNameSpaceSchemaLocation,
+            const_cast<void*>(
+                static_cast<const void*>(
+                    transcode(schema_filepath).c_str())));
+    }
+    else
+    {
+        parser->setFeature(XMLUni::fgSAX2CoreValidation, false); // ignore all validation errors
+        parser->setFeature(XMLUni::fgXercesSchema, false);       // disable the parser's schema support
+    }
+
     parser->setErrorHandler(error_handler.get());
     parser->setContentHandler(content_handler.get());
 
@@ -3166,18 +3370,18 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
     }
     catch (const XMLException&)
     {
-        return auto_release_ptr<Project>(0);
+        return auto_release_ptr<Project>(nullptr);
     }
     catch (const SAXParseException&)
     {
-        return auto_release_ptr<Project>(0);
+        return auto_release_ptr<Project>(nullptr);
     }
 
     // Report a failure in case of warnings or errors.
     if (error_handler->get_warning_count() > 0 ||
         error_handler->get_error_count() > 0 ||
         error_handler->get_fatal_error_count() > 0)
-        return auto_release_ptr<Project>(0);
+        return auto_release_ptr<Project>(nullptr);
 
     return project;
 }
@@ -3198,7 +3402,7 @@ auto_release_ptr<Project> ProjectFileReader::construct_builtin_project(
     {
         RENDERER_LOG_ERROR("unknown built-in project %s.", project_name);
         event_counters.signal_error();
-        return auto_release_ptr<Project>(0);
+        return auto_release_ptr<Project>(nullptr);
     }
 }
 
@@ -3226,8 +3430,8 @@ void ProjectFileReader::validate_project(
     // Make sure the project contains a scene.
     if (project.get_scene())
     {
-        // Make sure the scene contains a camera.
-        if (project.get_scene()->get_camera() == 0)
+        // Make sure the scene contains at least one camera.
+        if (project.get_scene()->cameras().empty())
         {
             RENDERER_LOG_ERROR("the scene does not define any camera.");
             event_counters.signal_error();
@@ -3240,19 +3444,19 @@ void ProjectFileReader::validate_project(
     }
 
     // Make sure the project contains at least one output frame.
-    if (project.get_frame() == 0)
+    if (project.get_frame() == nullptr)
     {
         RENDERER_LOG_ERROR("the project does not define any frame.");
         event_counters.signal_error();
     }
 
     // Make sure the project contains the required configurations.
-    if (project.configurations().get_by_name("final") == 0)
+    if (project.configurations().get_by_name("final") == nullptr)
     {
         RENDERER_LOG_ERROR("the project must define a \"final\" configuration.");
         event_counters.signal_error();
     }
-    if (project.configurations().get_by_name("interactive") == 0)
+    if (project.configurations().get_by_name("interactive") == nullptr)
     {
         RENDERER_LOG_ERROR("the project must define an \"interactive\" configuration.");
         event_counters.signal_error();
@@ -3264,7 +3468,7 @@ void ProjectFileReader::complete_project(
     EventCounters&          event_counters) const
 {
     // Add a default environment if the project doesn't define any.
-    if (project.get_scene()->get_environment() == 0)
+    if (project.get_scene()->get_environment() == nullptr)
     {
         auto_release_ptr<Environment> environment(
             EnvironmentFactory::create("environment", ParamArray()));
@@ -3277,7 +3481,7 @@ void ProjectFileReader::upgrade_project(
     EventCounters&          event_counters) const
 {
     ProjectFileUpdater updater;
-    updater.update(project);
+    updater.update(project, event_counters);
 }
 
 void ProjectFileReader::print_loading_results(

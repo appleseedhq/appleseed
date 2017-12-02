@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,13 +27,15 @@
 //
 
 // appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
 #include "bindentitycontainers.h"
 #include "dict2dict.h"
 #include "metadata.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/bssrdf.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/python.h"
 
 // Standard headers.
 #include <string>
@@ -43,11 +45,22 @@ using namespace foundation;
 using namespace renderer;
 using namespace std;
 
+// Work around a regression in Visual Studio 2015 Update 3.
+#if defined(_MSC_VER) && _MSC_VER == 1900
+namespace boost
+{
+    template <> BSSRDF const volatile* get_pointer<BSSRDF const volatile>(BSSRDF const volatile* p) { return p; }
+    template <> IBSSRDFFactory const volatile* get_pointer<IBSSRDFFactory const volatile>(IBSSRDFFactory const volatile* p) { return p; }
+    template <> BSSRDFFactoryRegistrar const volatile* get_pointer<BSSRDFFactoryRegistrar const volatile>(BSSRDFFactoryRegistrar const volatile* p) { return p; }
+}
+#endif
+
 namespace
 {
-    auto_release_ptr<BSSRDF> create_bssrdf(const string&    model,
-                                           const string&    name,
-                                           const bpy::dict& params)
+    auto_release_ptr<BSSRDF> create_bssrdf(
+        const string&    model,
+        const string&    name,
+        const bpy::dict& params)
     {
         BSSRDFFactoryRegistrar factories;
         const IBSSRDFFactory* factory = factories.lookup(model.c_str());
@@ -62,6 +75,14 @@ namespace
 
         return auto_release_ptr<BSSRDF>();
     }
+
+    auto_release_ptr<BSSRDF> factory_create_bssrdf(
+        const IBSSRDFFactory*   factory,
+        const char*             name,
+        const bpy::dict&        params)
+    {
+        return factory->create(name, bpy_dict_to_param_array(params));
+    }
 }
 
 void bind_bssrdf()
@@ -70,8 +91,13 @@ void bind_bssrdf()
         .def("get_model_metadata", &detail::get_entity_model_metadata<BSSRDFFactoryRegistrar>).staticmethod("get_model_metadata")
         .def("get_input_metadata", &detail::get_entity_input_metadata<BSSRDFFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_bssrdf))
-        .def("get_model", &BSSRDF::get_model)
-        ;
+        .def("get_model", &BSSRDF::get_model);
 
     bind_typed_entity_vector<BSSRDF>("BSSRDFContainer");
+
+    bpy::class_<IBSSRDFFactory, boost::noncopyable>("IBSSRDFFactory", bpy::no_init)
+        .def("create", &factory_create_bssrdf);
+
+    bpy::class_<BSSRDFFactoryRegistrar, boost::noncopyable>("BSSRDFFactoryRegistrar", bpy::no_init)
+        .def("lookup", &BSSRDFFactoryRegistrar::lookup, bpy::return_value_policy<bpy::reference_existing_object>());
 }

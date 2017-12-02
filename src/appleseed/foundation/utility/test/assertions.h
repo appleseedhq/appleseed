@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,12 +32,12 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
+#include "foundation/utility/countof.h"
+#include "foundation/utility/string.h"
 #include "foundation/utility/test/exceptionassertionfailure.h"
 #include "foundation/utility/test/testlistenerhelper.h"
 #include "foundation/utility/test/testmessage.h"
 #include "foundation/utility/test/testresult.h"
-#include "foundation/utility/countof.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <string>

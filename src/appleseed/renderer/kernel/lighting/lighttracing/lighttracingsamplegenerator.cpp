@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
-#include "renderer/kernel/lighting/lightsampler.h"
+#include "renderer/kernel/lighting/forwardlightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
@@ -42,38 +42,41 @@
 #include "renderer/kernel/rendering/globalsampleaccumulationbuffer.h"
 #include "renderer/kernel/rendering/sample.h"
 #include "renderer/kernel/rendering/samplegeneratorbase.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/shading/oslshadergroupexec.h"
-#endif
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
+#include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/camera/camera.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/frame/frame.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/visibilityflags.h"
-#include "renderer/utility/samplingmode.h"
+#include "renderer/utility/settingsparsing.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/population.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/arena.h"
+#include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
@@ -120,7 +123,7 @@ namespace
             const size_t                m_max_iterations;
             const bool                  m_report_self_intersections;
 
-            const size_t                m_max_path_length;              // maximum path length, ~0 for unlimited
+            const size_t                m_max_bounces;                  // maximum number of bounces, ~0 for unlimited
             const size_t                m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
 
             explicit Parameters(const ParamArray& params)
@@ -128,14 +131,19 @@ namespace
               , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
               , m_enable_caustics(params.get_optional<bool>("enable_caustics", true))
               , m_transparency_threshold(params.get_optional<float>("transparency_threshold", 0.001f))
-              , m_max_iterations(params.get_optional<size_t>("max_iterations", 1000))
+              , m_max_iterations(params.get_optional<size_t>("max_iterations", 100))
               , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
-              , m_max_path_length(nz(params.get_optional<size_t>("max_path_length", 0)))
-              , m_rr_min_path_length(nz(params.get_optional<size_t>("rr_min_path_length", 3)))
+              , m_max_bounces(fixup_bounces(params.get_optional<int>("max_bounces", -1)))
+              , m_rr_min_path_length(fixup_path_length(params.get_optional<size_t>("rr_min_path_length", 3)))
             {
             }
 
-            static size_t nz(const size_t x)
+            static size_t fixup_bounces(const int x)
+            {
+                return x == -1 ? ~0 : x;
+            }
+
+            static size_t fixup_path_length(const size_t x)
             {
                 return x == 0 ? ~0 : x;
             }
@@ -144,104 +152,104 @@ namespace
             {
                 RENDERER_LOG_INFO(
                     "light tracing settings:\n"
-                    "  ibl              %s\n"
-                    "  caustics         %s\n"
-                    "  max path length  %s\n"
-                    "  rr min path len. %s",
+                    "  ibl                           %s\n"
+                    "  caustics                      %s\n"
+                    "  max bounces                   %s\n"
+                    "  rr min path length            %s",
                     m_enable_ibl ? "on" : "off",
                     m_enable_caustics ? "on" : "off",
-                    m_max_path_length == size_t(~0) ? "infinite" : pretty_uint(m_max_path_length).c_str(),
-                    m_rr_min_path_length == size_t(~0) ? "infinite" : pretty_uint(m_rr_min_path_length).c_str());
+                    m_max_bounces == ~0 ? "infinite" : pretty_uint(m_max_bounces).c_str(),
+                    m_rr_min_path_length == ~0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str());
             }
         };
 
         LightTracingSampleGenerator(
-            const Scene&                scene,
+            const Project&              project,
             const Frame&                frame,
             const TraceContext&         trace_context,
             TextureStore&               texture_store,
-            const LightSampler&         light_sampler,
+            const ForwardLightSampler&  light_sampler,
             const size_t                generator_index,
             const size_t                generator_count,
-#ifdef APPLESEED_WITH_OIIO
-            OIIO::TextureSystem&        oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
-            OSL::ShadingSystem&         shading_system,
-#endif
+            OIIOTextureSystem&          oiio_texture_system,
+            OSLShadingSystem&           shading_system,
             const ParamArray&           params)
           : SampleGeneratorBase(generator_index, generator_count)
           , m_params(params)
-          , m_scene(scene)
+          , m_scene(*project.get_scene())
           , m_frame(frame)
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache, m_params.m_report_self_intersections)
-#ifdef APPLESEED_WITH_OSL
-          , m_shadergroup_exec(shading_system)
-#endif
+          , m_shadergroup_exec(shading_system, m_arena)
           , m_tracer(
                 m_scene,
                 m_intersector,
                 m_texture_cache,
-#ifdef APPLESEED_WITH_OSL
                 m_shadergroup_exec,
-#endif
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations)
           , m_shading_context(
                 m_intersector,
                 m_tracer,
                 m_texture_cache,
-#ifdef APPLESEED_WITH_OIIO
                 oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
                 m_shadergroup_exec,
-#endif
+                m_arena,
                 generator_index,
-                0,
+                nullptr,
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations)
           , m_light_sample_count(0)
           , m_path_count(0)
         {
             const Scene::RenderData& scene_data = m_scene.get_render_data();
-            m_scene_center = scene_data.m_center;
+            m_scene_center = Vector3d(scene_data.m_center);
             m_scene_radius = scene_data.m_radius;
             m_safe_scene_diameter = scene_data.m_safe_diameter;
-            m_disk_point_prob = 1.0 / (Pi * m_scene_radius * m_scene_radius);
+            m_disk_point_prob = 1.0f / (Pi<float>() * square(static_cast<float>(m_scene_radius)));
 
-            const Camera* camera = scene.get_camera();
+            const Camera* camera = project.get_uncached_active_camera();
+
             m_shutter_open_time = camera->get_shutter_open_time();
             m_shutter_close_time = camera->get_shutter_close_time();
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual void reset() APPLESEED_OVERRIDE
+        void reset() override
         {
             SampleGeneratorBase::reset();
             m_rng = SamplingContext::RNGType();
         }
 
-        virtual void generate_samples(
+        void generate_samples(
             const size_t                sample_count,
             SampleAccumulationBuffer&   buffer,
-            IAbortSwitch&               abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch&               abort_switch) override
         {
             m_light_sample_count = 0;
 
             SampleGeneratorBase::generate_samples(sample_count, buffer, abort_switch);
 
-            static_cast<GlobalSampleAccumulationBuffer&>(buffer)
-                .increment_sample_count(m_light_sample_count);
+            if (!abort_switch.is_aborted())
+            {
+                // `GlobalSampleAccumulationBuffer::increment_sample_count()` must only be
+                // called if rendering was not aborted. Indeed, when rendering is aborted,
+                // `GlobalSampleAccumulationBuffer::store_samples()` returns before it has
+                // stored all the samples rendered by this job. In this case, incrementing
+                // the total number of samples would create an imbalance that would darken
+                // the final render. This is still not 100% correct since some samples may
+                // have been stored.
+                static_cast<GlobalSampleAccumulationBuffer&>(buffer)
+                    .increment_sample_count(m_light_sample_count);
+            }
         }
 
-        virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
+        StatisticsVector get_statistics() const override
         {
             Statistics stats;
             stats.insert("path count", m_path_count);
@@ -251,12 +259,24 @@ namespace
         }
 
       private:
+        struct VolumeVisitor
+        {
+            bool accept_scattering(
+                const ScatteringMode::Mode  prev_mode)
+            {
+                return true;
+            }
+
+            void on_scatter(PathVertex& vertex) {}
+
+            void visit_ray(PathVertex& vertex, const ShadingRay& volume_ray) {}
+        };
+
         struct PathVisitor
         {
             const Parameters&               m_params;
             const Camera&                   m_camera;
             const Frame&                    m_frame;
-            const LightingConditions&       m_lighting_conditions;
             const ShadingContext&           m_shading_context;
             SamplingContext&                m_sampling_context;
 
@@ -273,9 +293,8 @@ namespace
                 SampleVector&               samples,
                 const Spectrum&             initial_flux)
               : m_params(params)
-              , m_camera(*scene.get_camera())
+              , m_camera(*scene.get_active_camera())
               , m_frame(frame)
-              , m_lighting_conditions(frame.get_lighting_conditions())
               , m_shading_context(shading_context)
               , m_sampling_context(sampling_context)
               , m_samples(samples)
@@ -293,7 +312,7 @@ namespace
                 const ScatteringMode::Mode  prev_mode,
                 const ScatteringMode::Mode  next_mode) const
             {
-                assert(next_mode != ScatteringMode::Absorption);
+                assert(next_mode != ScatteringMode::None);
 
                 if (!m_params.m_enable_caustics)
                 {
@@ -313,7 +332,7 @@ namespace
                 // Connect the light vertex with the camera.
                 Vector2d sample_position;
                 Vector3d camera_outgoing;
-                double importance;
+                float importance;
                 if (!m_camera.connect_vertex(
                         m_sampling_context,
                         time.m_absolute,
@@ -330,16 +349,18 @@ namespace
 
                 // Compute the transmission factor between the light vertex and the camera.
                 // Prevent self-intersections by letting the ray originate from the camera.
-                const double transmission =
-                    m_shading_context.get_tracer().trace_between(
-                        light_sample.m_point - camera_outgoing,
-                        light_sample.m_point,
-                        time,
-                        VisibilityFlags::CameraRay,
-                        0);
+                Spectrum radiance;
+                m_shading_context.get_tracer().trace_between_simple(
+                    m_shading_context,
+                    light_sample.m_point - camera_outgoing,
+                    light_sample.m_point,
+                    time,
+                    VisibilityFlags::CameraRay,
+                    0,
+                    radiance);
 
                 // Ignore occluded vertices.
-                if (transmission == 0.0)
+                if (max_value(radiance) == 0.0f)
                     return;
 
                 // Adjust cos(alpha) to account for the fact that the camera outgoing direction was not unit-length.
@@ -347,9 +368,9 @@ namespace
                 cos_alpha /= distance;
 
                 // Store the contribution of this vertex.
-                Spectrum radiance = light_particle_flux;
-                radiance *= static_cast<float>(transmission * cos_alpha * importance);
-                emit_sample(sample_position, distance, radiance);
+                radiance *= light_particle_flux;
+                radiance *= static_cast<float>(cos_alpha * importance);
+                emit_sample(sample_position, radiance);
             }
 
             void visit_non_physical_light_vertex(
@@ -360,7 +381,7 @@ namespace
                 // Connect the light vertex with the camera.
                 Vector2d sample_position;
                 Vector3d camera_outgoing;
-                double importance;
+                float importance;
                 if (!m_camera.connect_vertex(
                         m_sampling_context,
                         time.m_absolute,
@@ -371,34 +392,41 @@ namespace
                     return;
 
                 // Compute the transmission factor between the light vertex and the camera.
-                const double transmission =
-                    m_shading_context.get_tracer().trace_between(
-                        light_vertex - camera_outgoing,
-                        light_vertex,
-                        time,
-                        VisibilityFlags::CameraRay,
-                        0);
+                Spectrum radiance;
+                m_shading_context.get_tracer().trace_between_simple(
+                    m_shading_context,
+                    light_vertex - camera_outgoing,
+                    light_vertex,
+                    time,
+                    VisibilityFlags::CameraRay,
+                    0,
+                    radiance);
 
                 // Ignore occluded vertices.
-                if (transmission == 0.0)
+                if (max_value(radiance) == 0.0f)
                     return;
 
                 // Store the contribution of this vertex.
-                Spectrum radiance = light_particle_flux;
-                radiance *= static_cast<float>(transmission * importance);
-                emit_sample(sample_position, norm(camera_outgoing), radiance);
+                radiance *= light_particle_flux;
+                radiance *= importance;
+                emit_sample(sample_position, radiance);
             }
 
-            void visit_vertex(const PathVertex& vertex)
+            void on_miss(const PathVertex& vertex)
+            {
+                // The particle escapes.
+            }
+
+            void on_hit(const PathVertex& vertex)
             {
                 // Don't process this vertex if there is no BSDF.
-                if (vertex.m_bsdf == 0)
+                if (vertex.m_bsdf == nullptr)
                     return;
 
                 // Connect the path vertex with the camera.
                 Vector2d sample_position;
                 Vector3d camera_outgoing;
-                double importance;
+                float importance;
                 if (!m_camera.connect_vertex(
                         m_sampling_context,
                         vertex.get_time().m_absolute,
@@ -408,23 +436,25 @@ namespace
                         importance))
                     return;
 
-                // Reject vertices on the back side of the shading surface.
-                const Vector3d& shading_normal = vertex.get_shading_normal();
+                // Reject vertices on the back side of the geometric surface.
+                const Vector3d& shading_normal = vertex.get_geometric_normal();
                 if (dot(camera_outgoing, shading_normal) >= 0.0)
                     return;
 
                 // Compute the transmission factor between the path vertex and the camera.
                 // Prevent self-intersections by letting the ray originate from the camera.
-                const double transmission =
-                    m_shading_context.get_tracer().trace_between(
-                        vertex.get_point() - camera_outgoing,
-                        vertex.get_point(),
-                        vertex.get_time(),
-                        VisibilityFlags::CameraRay,
-                        static_cast<ShadingRay::DepthType>(vertex.m_path_length));  // ray depth = (path length - 1) + 1
+                Spectrum transmission;
+                m_shading_context.get_tracer().trace_between_simple(
+                    m_shading_context,
+                    vertex.get_point() - camera_outgoing,
+                    vertex.get_point(),
+                    vertex.get_time(),
+                    VisibilityFlags::CameraRay,
+                    static_cast<ShadingRay::DepthType>(vertex.m_path_length), // ray depth = (path length - 1) + 1
+                    transmission);
 
                 // Ignore occluded vertices.
-                if (transmission == 0.0)
+                if (max_value(transmission) == 0.0f)
                     return;
 
                 // Normalize the camera outgoing direction.
@@ -435,63 +465,55 @@ namespace
                 const Vector3d geometric_normal =
                     flip_to_same_hemisphere(
                         vertex.get_geometric_normal(),
-                        shading_normal);
+                        vertex.get_shading_normal());
 
                 // Evaluate the BSDF at the vertex position.
-                Spectrum bsdf_value;
-                const double bsdf_prob =
+                DirectShadingComponents bsdf_value;
+                const float bsdf_prob =
                     vertex.m_bsdf->evaluate(
                         vertex.m_bsdf_data,
-                        true,                           // adjoint
-                        true,                           // multiply by |cos(incoming, normal)|
-                        geometric_normal,
-                        vertex.get_shading_basis(),
-                        vertex.m_outgoing.get_value(),  // outgoing (toward the light)
-                        -camera_outgoing,               // incoming (toward the camera)
-                        ScatteringMode::All,            // todo: likely incorrect
+                        true,                                       // adjoint
+                        true,                                       // multiply by |cos(incoming, normal)|
+                        Vector3f(geometric_normal),
+                        Basis3f(vertex.get_shading_basis()),
+                        Vector3f(vertex.m_outgoing.get_value()),    // outgoing (toward the light)
+                        -Vector3f(camera_outgoing),                 // incoming (toward the camera)
+                        ScatteringMode::All,                        // todo: likely incorrect
                         bsdf_value);
-                if (bsdf_prob == 0.0)
+                if (bsdf_prob == 0.0f)
                     return;
 
                 // Store the contribution of this vertex.
                 Spectrum radiance = m_initial_flux;
                 radiance *= vertex.m_throughput;
-                radiance *= bsdf_value;
-                radiance *= static_cast<float>(transmission * importance);
-                emit_sample(sample_position, distance, radiance);
+                radiance *= bsdf_value.m_beauty;
+                radiance *= transmission;
+                radiance *= importance;
+                emit_sample(sample_position, radiance);
             }
 
-            void visit_environment(const PathVertex& vertex)
+            void on_scatter(const PathVertex& vertex)
             {
-                // The particle escapes.
             }
 
             void emit_sample(
                 const Vector2d&             position_ndc,
-                const double                distance,
                 const Spectrum&             radiance)
             {
                 assert(min_value(radiance) >= 0.0f);
 
-                const Color3f linear_rgb =
-                    radiance.is_rgb()
-                        ? radiance.rgb()
-                        : radiance.convert_to_rgb(m_lighting_conditions);
+                const Color3f linear_rgb = radiance.to_rgb(g_std_lighting_conditions);
 
                 Sample sample;
                 sample.m_position = Vector2f(position_ndc);
-                sample.m_values[0] = linear_rgb.r;
-                sample.m_values[1] = linear_rgb.g;
-                sample.m_values[2] = linear_rgb.b;
-                sample.m_values[3] = 1.0f;
-                sample.m_values[4] = static_cast<float>(distance);
+                sample.m_color = Color4f(linear_rgb, 1.0f);
                 m_samples.push_back(sample);
 
                 ++m_sample_count;
             }
         };
 
-        typedef PathTracer<PathVisitor, true> PathTracerType;   // true = adjoint
+        typedef PathTracer<PathVisitor, VolumeVisitor, true> PathTracerType;   // true = adjoint
 
         const Parameters                m_params;
 
@@ -502,14 +524,13 @@ namespace
         Vector3d                        m_scene_center;         // world space
         double                          m_scene_radius;         // world space
         double                          m_safe_scene_diameter;  // world space
-        double                          m_disk_point_prob;
+        float                           m_disk_point_prob;
 
-        const LightSampler&             m_light_sampler;
+        const ForwardLightSampler&      m_light_sampler;
         TextureCache                    m_texture_cache;
         Intersector                     m_intersector;
-#ifdef APPLESEED_WITH_OSL
+        Arena                           m_arena;
         OSLShaderGroupExec              m_shadergroup_exec;
-#endif
         Tracer                          m_tracer;
         const ShadingContext            m_shading_context;
 
@@ -520,13 +541,15 @@ namespace
         uint64                          m_path_count;
         Population<uint64>              m_path_length;
 
-        double                          m_shutter_open_time;
-        double                          m_shutter_close_time;
+        float                           m_shutter_open_time;
+        float                           m_shutter_close_time;
 
-        virtual size_t generate_samples(
+        size_t generate_samples(
             const size_t                sequence_index,
-            SampleVector&               samples) APPLESEED_OVERRIDE
+            SampleVector&               samples) override
         {
+            m_arena.clear();
+
             SamplingContext sampling_context(
                 m_rng,
                 m_params.m_sampling_mode,
@@ -536,7 +559,7 @@ namespace
 
             size_t stored_sample_count = 0;
 
-            if (m_light_sampler.has_lights_or_emitting_triangles())
+            if (m_light_sampler.has_lights())
                 stored_sample_count += generate_light_sample(sampling_context, samples);
 
             if (m_params.m_enable_ibl)
@@ -561,14 +584,14 @@ namespace
         {
             // Sample the light sources.
             sampling_context.split_in_place(4, 1);
-            const Vector4d s = sampling_context.next_vector2<4>();
+            const Vector4f s = sampling_context.next2<Vector4f>();
             LightSample light_sample;
             m_light_sampler.sample(
                 ShadingRay::Time::create_with_normalized_time(
                     s[0],
                     m_shutter_open_time,
                     m_shutter_close_time),
-                Vector3d(s[1], s[2], s[3]),
+                Vector3f(s[1], s[2], s[3]),
                 light_sample);
 
             return
@@ -598,30 +621,24 @@ namespace
                 light_sample.m_shading_normal,
                 m_shading_context.get_intersector());
 
-#ifdef APPLESEED_WITH_OSL
             if (material_data.m_shader_group)
             {
                 m_shading_context.execute_osl_emission(
                     *material_data.m_shader_group,
                     light_shading_point);
             }
-#endif
-
-            // Evaluate the EDF inputs.
-            InputEvaluator input_evaluator(m_texture_cache);
-            material_data.m_edf->evaluate_inputs(input_evaluator, light_shading_point);
 
             // Sample the EDF.
             sampling_context.split_in_place(2, 1);
-            Vector3d emission_direction;
-            Spectrum edf_value;
-            double edf_prob;
+            Vector3f emission_direction;
+            Spectrum edf_value(Spectrum::Illuminance);
+            float edf_prob;
             material_data.m_edf->sample(
                 sampling_context,
-                input_evaluator.data(),
-                light_sample.m_geometric_normal,
-                Basis3d(light_sample.m_shading_normal),
-                sampling_context.next_vector2<2>(),
+                material_data.m_edf->evaluate_inputs(m_shading_context, light_shading_point),
+                Vector3f(light_sample.m_geometric_normal),
+                Basis3f(Vector3f(light_sample.m_shading_normal)),
+                sampling_context.next2<Vector2f>(),
                 emission_direction,
                 edf_value,
                 edf_prob);
@@ -629,27 +646,26 @@ namespace
             // Compute the initial particle weight.
             Spectrum initial_flux = edf_value;
             initial_flux *=
-                static_cast<float>(
-                    dot(emission_direction, light_sample.m_shading_normal)
-                        / (light_sample.m_probability * edf_prob));
+                dot(emission_direction, Vector3f(light_sample.m_shading_normal)) /
+                (light_sample.m_probability * edf_prob);
 
             // Make a shading point that will be used to avoid self-intersections with the light sample.
             ShadingPoint parent_shading_point;
             light_sample.make_shading_point(
                 parent_shading_point,
-                emission_direction,
+                Vector3d(emission_direction),
                 m_intersector);
 
             // Build the light ray.
             sampling_context.split_in_place(1, 1);
             const ShadingRay::Time time =
                 ShadingRay::Time::create_with_normalized_time(
-                    sampling_context.next_double2(),
+                    sampling_context.next2<float>(),
                     m_shutter_open_time,
                     m_shutter_close_time);
             const ShadingRay light_ray(
                 light_sample.m_point,
-                emission_direction,
+                Vector3d(emission_direction),
                 time,
                 VisibilityFlags::LightRay,
                 0);
@@ -663,16 +679,22 @@ namespace
                 sampling_context,
                 samples,
                 initial_flux);
+            VolumeVisitor volume_visitor;
             PathTracerType path_tracer(
                 path_visitor,
+                volume_visitor,
                 m_params.m_rr_min_path_length,
-                m_params.m_max_path_length,
+                m_params.m_max_bounces,
+                ~0, // max diffuse bounces
+                ~0, // max glossy bounces
+                ~0, // max specular bounces
+                ~0, // max volume bounces
                 m_params.m_max_iterations,
                 material_data.m_edf->get_light_near_start());   // don't illuminate points closer than the light near start value
 
             // Handle the light vertex separately.
-            Spectrum light_particle_flux = edf_value;       // todo: only works for diffuse EDF? What we need is the light exitance
-            light_particle_flux /= static_cast<float>(light_sample.m_probability);
+            Spectrum light_particle_flux = edf_value;           // todo: only works for diffuse EDF? What we need is the light exitance
+            light_particle_flux /= light_sample.m_probability;
             path_visitor.visit_area_light_vertex(
                 light_sample,
                 light_particle_flux,
@@ -700,15 +722,14 @@ namespace
             SampleVector&               samples)
         {
             // Sample the light.
-            InputEvaluator input_evaluator(m_texture_cache);
             sampling_context.split_in_place(2, 1);
             Vector3d emission_position, emission_direction;
-            Spectrum light_value;
-            double light_prob;
+            Spectrum light_value(Spectrum::Illuminance);
+            float light_prob;
             light_sample.m_light->sample(
-                input_evaluator,
+                m_shading_context,
                 light_sample.m_light_transform,
-                sampling_context.next_vector2<2>(),
+                sampling_context.next2<Vector2d>(),
                 emission_position,
                 emission_direction,
                 light_value,
@@ -716,13 +737,13 @@ namespace
 
             // Compute the initial particle weight.
             Spectrum initial_flux = light_value;
-            initial_flux /= static_cast<float>(light_sample.m_probability * light_prob);
+            initial_flux /= light_sample.m_probability * light_prob;
 
             // Build the light ray.
             sampling_context.split_in_place(1, 1);
             const ShadingRay::Time time =
                 ShadingRay::Time::create_with_normalized_time(
-                    sampling_context.next_double2(),
+                    sampling_context.next2<float>(),
                     m_shutter_open_time,
                     m_shutter_close_time);
             const ShadingRay light_ray(
@@ -741,15 +762,20 @@ namespace
                 sampling_context,
                 samples,
                 initial_flux);
+            VolumeVisitor volume_visitor;
             PathTracerType path_tracer(
                 path_visitor,
+                volume_visitor,
                 m_params.m_rr_min_path_length,
-                m_params.m_max_path_length,
+                m_params.m_max_bounces,
+                ~0, // max diffuse bounces
+                ~0, // max glossy bounces
+                ~0, // max specular bounces
                 m_params.m_max_iterations);
 
             // Handle the light vertex separately.
             Spectrum light_particle_flux = light_value;
-            light_particle_flux /= static_cast<float>(light_sample.m_probability);
+            light_particle_flux /= light_sample.m_probability;
             path_visitor.visit_non_physical_light_vertex(
                 emission_position,
                 light_particle_flux,
@@ -777,14 +803,12 @@ namespace
         {
             // Sample the environment.
             sampling_context.split_in_place(2, 1);
-            InputEvaluator input_evaluator(m_texture_cache);
-            Vector3d outgoing;
-            Spectrum env_edf_value;
-            double env_edf_prob;
+            Vector3f outgoing;
+            Spectrum env_edf_value(Spectrum::Illuminance);
+            float env_edf_prob;
             env_edf->sample(
                 m_shading_context,
-                input_evaluator,
-                sampling_context.next_vector2<2>(),
+                sampling_context.next2<Vector2f>(),
                 outgoing,               // points toward the environment
                 env_edf_value,
                 env_edf_prob);
@@ -793,10 +817,10 @@ namespace
             sampling_context.split_in_place(2, 1);
             const Vector2d p =
                   m_scene_radius
-                * sample_disk_uniform(sampling_context.next_vector2<2>());
+                * sample_disk_uniform(sampling_context.next2<Vector2d>());
 
             // Compute the origin of the light ray.
-            const Basis3d basis(-outgoing);
+            const Basis3d basis(-Vector3d(outgoing));
             const Vector3d ray_origin =
                   m_scene_center
                 - m_safe_scene_diameter * basis.get_normal()    // a safe radius would have been sufficient
@@ -805,18 +829,18 @@ namespace
 
             // Compute the initial particle weight.
             Spectrum initial_flux = env_edf_value;
-            initial_flux /= static_cast<float>(m_disk_point_prob * env_edf_prob);
+            initial_flux /= m_disk_point_prob * env_edf_prob;
 
             // Build the light ray.
             sampling_context.split_in_place(1, 1);
             const ShadingRay::Time time =
                 ShadingRay::Time::create_with_normalized_time(
-                    sampling_context.next_double2(),
+                    sampling_context.next2<float>(),
                     m_shutter_open_time,
                     m_shutter_close_time);
             const ShadingRay light_ray(
                 ray_origin,
-                -outgoing,
+                -Vector3d(outgoing),
                 time,
                 VisibilityFlags::LightRay,
                 0);
@@ -830,10 +854,15 @@ namespace
                 sampling_context,
                 samples,
                 initial_flux);
+            VolumeVisitor volume_visitor;
             PathTracerType path_tracer(
                 path_visitor,
+                volume_visitor,
                 m_params.m_rr_min_path_length,
-                m_params.m_max_path_length,
+                m_params.m_max_bounces,
+                ~0, // max diffuse bounces
+                ~0, // max glossy bounces
+                ~0, // max specular bounces
                 m_params.m_max_iterations);
 
             // Trace the light path.
@@ -859,29 +888,21 @@ namespace
 //
 
 LightTracingSampleGeneratorFactory::LightTracingSampleGeneratorFactory(
-    const Scene&            scene,
-    const Frame&            frame,
-    const TraceContext&     trace_context,
-    TextureStore&           texture_store,
-    const LightSampler&     light_sampler,
-#ifdef APPLESEED_WITH_OIIO
-    OIIO::TextureSystem&    oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
-    OSL::ShadingSystem&     shading_system,
-#endif
-    const ParamArray&       params)
-  : m_scene(scene)
+    const Project&                  project,
+    const Frame&                    frame,
+    const TraceContext&             trace_context,
+    TextureStore&                   texture_store,
+    const ForwardLightSampler&      light_sampler,
+    OIIOTextureSystem&              oiio_texture_system,
+    OSLShadingSystem&               shading_system,
+    const ParamArray&               params)
+  : m_project(project)
   , m_frame(frame)
   , m_trace_context(trace_context)
   , m_texture_store(texture_store)
   , m_light_sampler(light_sampler)
-#ifdef APPLESEED_WITH_OIIO
   , m_oiio_texture_system(oiio_texture_system)
-#endif
-#ifdef APPLESEED_WITH_OSL
   , m_shading_system(shading_system)
-#endif
   , m_params(params)
 {
     LightTracingSampleGenerator::Parameters(params).print();
@@ -898,19 +919,15 @@ ISampleGenerator* LightTracingSampleGeneratorFactory::create(
 {
     return
         new LightTracingSampleGenerator(
-            m_scene,
+            m_project,
             m_frame,
             m_trace_context,
             m_texture_store,
             m_light_sampler,
             generator_index,
             generator_count,
-#ifdef APPLESEED_WITH_OIIO
             m_oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
             m_shading_system,
-#endif
             m_params);
 }
 

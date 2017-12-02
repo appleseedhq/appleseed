@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -121,14 +121,14 @@ bool SettingsFileReader::read(
         return false;
 
     // Create the DOM parser.
-    auto_ptr<XercesDOMParser> parser(new XercesDOMParser());
+    unique_ptr<XercesDOMParser> parser(new XercesDOMParser());
     parser->setValidationScheme(XercesDOMParser::Val_Always);
     parser->setDoNamespaces(true);
     parser->setDoSchema(true);
     parser->setExternalNoNamespaceSchemaLocation(schema_filename);
 
     // Create the error handler.
-    auto_ptr<ErrorLogger> error_handler(new ErrorLogger(m_logger, settings_filename));
+    unique_ptr<ErrorLogger> error_handler(new ErrorLogger(m_logger, settings_filename));
     parser->setErrorHandler(error_handler.get());
 
     // Parse the settings file.

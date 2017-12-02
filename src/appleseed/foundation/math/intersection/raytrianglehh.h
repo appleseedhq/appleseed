@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@
 #include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/poison.h"
 
 namespace foundation
 {
@@ -107,6 +108,14 @@ struct TriangleHHSupportPlane
     ValueType intersect(
         const VectorType&   org,
         const VectorType&   dir) const;
+};
+
+// Poisoning.
+template <typename T>
+class PoisonImpl<TriangleHHSupportPlane<T>>
+{
+  public:
+    static void do_poison(TriangleHHSupportPlane<T>& plane);
 };
 
 
@@ -241,6 +250,13 @@ inline T TriangleHHSupportPlane<T>::intersect(
     const VectorType&       dir) const
 {
     return (m_d - dot(org, m_n)) / dot(dir, m_n);
+}
+
+template <typename T>
+void PoisonImpl<TriangleHHSupportPlane<T>>::do_poison(TriangleHHSupportPlane<T>& plane)
+{
+    poison(plane.m_n);
+    poison(plane.m_d);
 }
 
 }       // namespace foundation

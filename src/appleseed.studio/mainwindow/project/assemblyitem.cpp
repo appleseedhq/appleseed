@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -59,6 +59,7 @@
 #include "renderer/api/scene.h"
 #include "renderer/api/surfaceshader.h"
 #include "renderer/api/utility.h"
+#include "renderer/api/volume.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
@@ -147,6 +148,10 @@ AssemblyItem::AssemblyItem(
                 EntityTraits<ObjectInstance>::get_human_readable_collection_type_name(),
                 assembly));
     m_object_instance_collection_item->add_items(assembly.object_instances());
+
+    insertChild(
+        11,
+        m_volume_collection_item = add_multi_model_collection_item<Volume>(assembly.volumes()));
 }
 
 QMenu* AssemblyItem::get_single_item_context_menu() const
@@ -167,6 +172,7 @@ QMenu* AssemblyItem::get_single_item_context_menu() const
     menu->addAction("Create Color...", &get_color_collection_item(), SLOT(slot_create()));
     menu->addAction("Create EDF...", m_edf_collection_item, SLOT(slot_create()));
     menu->addAction("Create Light...", m_light_collection_item, SLOT(slot_create()));
+    menu->addAction("Create Volume...", m_volume_collection_item, SLOT(slot_create()));
 
     QMenu* submenu = menu->addMenu("Create Material...");
     submenu->addAction("Create Disney Material...", m_material_collection_item, SLOT(slot_create_disney()));
@@ -217,6 +223,11 @@ void AssemblyItem::add_item(ObjectInstance* object_instance)
     m_object_instance_collection_item->add_item(object_instance);
 }
 
+void AssemblyItem::add_item(Volume* volume)
+{
+    m_volume_collection_item->add_item(volume);
+}
+
 MaterialCollectionItem& AssemblyItem::get_material_collection_item() const
 {
     return *m_material_collection_item;
@@ -235,7 +246,7 @@ AssemblyItem::ObjectInstanceCollectionItem& AssemblyItem::get_object_instance_co
 void AssemblyItem::instantiate(const string& name)
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        auto_ptr<RenderingManager::IScheduledAction>(
+        unique_ptr<RenderingManager::IScheduledAction>(
             new EntityInstantiationAction<AssemblyItem>(this, name)));
 }
 
@@ -350,7 +361,7 @@ namespace
             collect_assembly_instances(assembly_instances, assembly_uid);
 
         // Remove assembly instances and their corresponding project items.
-        for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
+        for (const_each<vector<UniqueID>> i = remove_list; i; ++i)
         {
             assembly_instances.remove(*i);
             delete item_registry.get_item(*i);
@@ -366,7 +377,7 @@ namespace
 void AssemblyItem::delete_multiple(const QList<ItemBase*>& items)
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        auto_ptr<RenderingManager::IScheduledAction>(
+        unique_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<AssemblyItem>(
                 qlist_static_cast<AssemblyItem*>(items))));
 }

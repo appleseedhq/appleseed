@@ -1,18 +1,19 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.9
+# Compiled by oslc 1.7.4
+# options: 
 surface transparent_checkers
-param	float	kd	1		%read{44,44} %write{2147483647,-1}
-param	color	Cs	1 1 1		%read{44,44} %write{2147483647,-1}
+param	float	kd	1		%read{43,43} %write{2147483647,-1}
+param	color	Cs	1 1 1		%read{43,43} %write{2147483647,-1}
 param	float	scale	5		%read{7,7} %write{2147483647,-1}
 param	float	transparency	0		%read{32,32} %write{2147483647,-1}
 global	point	P	%read{7,7} %write{2147483647,-1}
-global	normal	N	%read{43,43} %write{2147483647,-1}
-global	closure color	Ci	%read{2147483647,-1} %write{41,45}
-local	point	___301_q	%read{8,28} %write{7,19}
-local	int	___301_xi	%read{33,33} %write{23,23}
-local	int	___301_yi	%read{34,34} %write{27,27}
-local	int	___301_zi	%read{36,36} %write{31,31}
-local	float	___301_transp	%read{41,41} %write{32,39}
+global	normal	N	%read{42,42} %write{2147483647,-1}
+global	closure color	Ci	%read{2147483647,-1} %write{41,44}
+local	point	___320_q	%read{8,28} %write{7,19}
+local	int	___320_xi	%read{33,33} %write{23,23}
+local	int	___320_yi	%read{34,34} %write{27,27}
+local	int	___320_zi	%read{36,36} %write{31,31}
+local	float	___320_transp	%read{41,41} %write{32,39}
 temp	int	$tmp1	%read{1,1} %write{0,0}
 const	string	$const1	"shadow"		%read{0,0} %write{2147483647,-1}
 temp	int	$tmp2	%read{2,6} %write{1,5}
@@ -50,11 +51,9 @@ temp	int	$tmp27	%read{38,38} %write{37,37}
 const	float	$const8	1		%read{39,39} %write{2147483647,-1}
 temp	closure color	$tmp28	%read{41,41} %write{40,40}
 const	string	$const9	"transparent"		%read{40,40} %write{2147483647,-1}
-temp	closure color	$tmp29	%read{45,45} %write{43,43}
+temp	closure color	$tmp29	%read{44,44} %write{42,42}
 const	string	$const10	"diffuse"		%read{42,42} %write{2147483647,-1}
-const	float	$const11	0		%read{43,43} %write{2147483647,-1}
-const	string	$const12	"oren_nayar"		%read{43,43} %write{2147483647,-1}
-temp	color	$tmp30	%read{45,45} %write{44,44}
+temp	color	$tmp30	%read{44,44} %write{43,43}
 code ___main___
 # transparent_checkers.osl:8
 #     if (raytype("shadow") || raytype("transparency"))
@@ -64,72 +63,67 @@ code ___main___
 	raytype		$tmp3 $const3 	%argrw{"wr"}
 	neq		$tmp4 $tmp3 $const2 	%argrw{"wrr"}
 	assign		$tmp2 $tmp4 	%argrw{"wr"}
-	if		$tmp2 42 46 	%argrw{"r"}
+	if		$tmp2 42 45 	%argrw{"r"}
 # transparent_checkers.osl:10
 #         point q = P * scale;
-	mul		___301_q P scale 	%line{10} %argrw{"wrr"}
+	mul		___320_q P scale 	%line{10} %argrw{"wrr"}
 # transparent_checkers.osl:11
 #         q[0] = (q[0] + 0.00001) * 0.9999;
-	compref		$tmp5 ___301_q $const2 	%line{11} %argrw{"wrr"}
+	compref		$tmp5 ___320_q $const2 	%line{11} %argrw{"wrr"}
 	add		$tmp6 $tmp5 $const4 	%argrw{"wrr"}
 	mul		$tmp7 $tmp6 $const5 	%argrw{"wrr"}
-	compassign	___301_q $const2 $tmp7 	%argrw{"wrr"}
+	compassign	___320_q $const2 $tmp7 	%argrw{"wrr"}
 # transparent_checkers.osl:12
 #         q[1] = (q[1] + 0.00001) * 0.9999;
-	compref		$tmp8 ___301_q $const6 	%line{12} %argrw{"wrr"}
+	compref		$tmp8 ___320_q $const6 	%line{12} %argrw{"wrr"}
 	add		$tmp9 $tmp8 $const4 	%argrw{"wrr"}
 	mul		$tmp10 $tmp9 $const5 	%argrw{"wrr"}
-	compassign	___301_q $const6 $tmp10 	%argrw{"wrr"}
+	compassign	___320_q $const6 $tmp10 	%argrw{"wrr"}
 # transparent_checkers.osl:13
 #         q[2] = (q[2] + 0.00001) * 0.9999;
-	compref		$tmp11 ___301_q $const7 	%line{13} %argrw{"wrr"}
+	compref		$tmp11 ___320_q $const7 	%line{13} %argrw{"wrr"}
 	add		$tmp12 $tmp11 $const4 	%argrw{"wrr"}
 	mul		$tmp13 $tmp12 $const5 	%argrw{"wrr"}
-	compassign	___301_q $const7 $tmp13 	%argrw{"wrr"}
+	compassign	___320_q $const7 $tmp13 	%argrw{"wrr"}
 # transparent_checkers.osl:15
 #         int xi = (int)fabs(floor(q[0]));
-	compref		$tmp16 ___301_q $const2 	%line{15} %argrw{"wrr"}
+	compref		$tmp16 ___320_q $const2 	%line{15} %argrw{"wrr"}
 	floor		$tmp15 $tmp16 	%argrw{"wr"}
 	fabs		$tmp14 $tmp15 	%argrw{"wr"}
-	assign		___301_xi $tmp14 	%argrw{"wr"}
+	assign		___320_xi $tmp14 	%argrw{"wr"}
 # transparent_checkers.osl:16
 #         int yi = (int)fabs(floor(q[1]));
-	compref		$tmp19 ___301_q $const6 	%line{16} %argrw{"wrr"}
+	compref		$tmp19 ___320_q $const6 	%line{16} %argrw{"wrr"}
 	floor		$tmp18 $tmp19 	%argrw{"wr"}
 	fabs		$tmp17 $tmp18 	%argrw{"wr"}
-	assign		___301_yi $tmp17 	%argrw{"wr"}
+	assign		___320_yi $tmp17 	%argrw{"wr"}
 # transparent_checkers.osl:17
 #         int zi = (int)fabs(floor(q[2]));
-	compref		$tmp22 ___301_q $const7 	%line{17} %argrw{"wrr"}
+	compref		$tmp22 ___320_q $const7 	%line{17} %argrw{"wrr"}
 	floor		$tmp21 $tmp22 	%argrw{"wr"}
 	fabs		$tmp20 $tmp21 	%argrw{"wr"}
-	assign		___301_zi $tmp20 	%argrw{"wr"}
+	assign		___320_zi $tmp20 	%argrw{"wr"}
 # transparent_checkers.osl:19
 #         float transp = transparency;
-	assign		___301_transp transparency 	%line{19} %argrw{"wr"}
+	assign		___320_transp transparency 	%line{19} %argrw{"wr"}
 # transparent_checkers.osl:21
 #         if ((xi % 2 == yi % 2) == (zi % 2))
-	mod		$tmp23 ___301_xi $const7 	%line{21} %argrw{"wrr"}
-	mod		$tmp24 ___301_yi $const7 	%argrw{"wrr"}
+	mod		$tmp23 ___320_xi $const7 	%line{21} %argrw{"wrr"}
+	mod		$tmp24 ___320_yi $const7 	%argrw{"wrr"}
 	eq		$tmp25 $tmp23 $tmp24 	%argrw{"wrr"}
-	mod		$tmp26 ___301_zi $const7 	%argrw{"wrr"}
+	mod		$tmp26 ___320_zi $const7 	%argrw{"wrr"}
 	eq		$tmp27 $tmp25 $tmp26 	%argrw{"wrr"}
 	if		$tmp27 40 40 	%argrw{"r"}
 # transparent_checkers.osl:22
 #             transp = 1.0;
-	assign		___301_transp $const8 	%line{22} %argrw{"wr"}
+	assign		___320_transp $const8 	%line{22} %argrw{"wr"}
 # transparent_checkers.osl:24
 #         Ci = transp * transparent();
 	closure		$tmp28 $const9 	%line{24} %argrw{"wr"}
-	mul		Ci $tmp28 ___301_transp 	%argrw{"wrr"}
+	mul		Ci $tmp28 ___320_transp 	%argrw{"wrr"}
 # transparent_checkers.osl:27
 #         Ci = kd * Cs * diffuse(N);
-	functioncall	$const10 44 	%line{27} %argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:658
-#     vector  T,
-	closure		$tmp29 $const12 N $const11 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{658} %argrw{"wrrr"}
-# transparent_checkers.osl:27
-#         Ci = kd * Cs * diffuse(N);
-	mul		$tmp30 kd Cs 	%filename{"transparent_checkers.osl"} %line{27} %argrw{"wrr"}
+	closure		$tmp29 $const10 N 	%line{27} %argrw{"wrr"}
+	mul		$tmp30 kd Cs 	%argrw{"wrr"}
 	mul		Ci $tmp29 $tmp30 	%argrw{"wrr"}
 	end

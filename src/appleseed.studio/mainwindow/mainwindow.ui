@@ -48,7 +48,7 @@
      <x>0</x>
      <y>0</y>
      <width>1280</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_file">
@@ -72,10 +72,13 @@
     <addaction name="menu_file_open_builtin_project"/>
     <addaction name="action_file_reload_project"/>
     <addaction name="separator"/>
-    <addaction name="action_monitor_project_file"/>
+    <addaction name="action_file_monitor_project"/>
     <addaction name="separator"/>
     <addaction name="action_file_save_project"/>
     <addaction name="action_file_save_project_as"/>
+    <addaction name="action_file_pack_project_as"/>
+    <addaction name="separator"/>
+    <addaction name="action_file_close_project"/>
     <addaction name="separator"/>
     <addaction name="action_file_exit"/>
    </widget>
@@ -162,7 +165,7 @@
   <widget class="QDockWidget" name="project_explorer">
    <property name="minimumSize">
     <size>
-     <width>200</width>
+     <width>228</width>
      <height>187</height>
     </size>
    </property>
@@ -198,7 +201,7 @@
         <bool>true</bool>
        </property>
        <property name="columnCount">
-        <number>2</number>
+        <number>1</number>
        </property>
        <attribute name="headerVisible">
         <bool>true</bool>
@@ -206,11 +209,6 @@
        <column>
         <property name="text">
          <string>Name</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Render Layer</string>
         </property>
        </column>
       </widget>
@@ -254,7 +252,7 @@
    <property name="minimumSize">
     <size>
      <width>200</width>
-     <height>93</height>
+     <height>113</height>
     </size>
    </property>
    <property name="floating">
@@ -276,10 +274,21 @@
        <x>0</x>
        <y>0</y>
        <width>198</width>
-       <height>903</height>
+       <height>878</height>
       </rect>
      </property>
     </widget>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="python_console">
+   <property name="windowTitle">
+    <string>Python Console</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="python_console_contents">
+    <layout class="QGridLayout" name="gridLayout_10"/>
    </widget>
   </widget>
   <action name="action_file_new_project">
@@ -447,12 +456,22 @@
     <string>Watch File Changes</string>
    </property>
   </action>
-  <action name="action_monitor_project_file">
+  <action name="action_file_monitor_project">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Monitor Project File</string>
+    <string>&amp;Monitor Project File</string>
+   </property>
+  </action>
+  <action name="action_file_pack_project_as">
+   <property name="text">
+    <string>&amp;Pack Project As...</string>
+   </property>
+  </action>
+  <action name="action_file_close_project">
+   <property name="text">
+    <string>&amp;Close Project</string>
    </property>
   </action>
  </widget>

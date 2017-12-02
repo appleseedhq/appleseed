@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,13 +32,13 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
+#include "foundation/utility/poison.h"
 
 // Imath headers.
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
-#include "foundation/platform/exrheaderguards.h"
-BEGIN_EXR_INCLUDES
+#include "foundation/platform/_beginexrheaders.h"
 #include "OpenEXR/ImathVec.h"
-END_EXR_INCLUDES
+#include "foundation/platform/_endexrheaders.h"
 #endif
 
 // Standard headers.
@@ -67,12 +67,14 @@ class Vector
 
     // Constructors.
     Vector();                                   // leave all components uninitialized
-    explicit Vector(const ValueType* rhs);      // initialize with array of N scalars
-    explicit Vector(const ValueType val);       // set all components to 'val'
+    explicit Vector(const ValueType val);       // set all components to `val`
 
     // Construct a vector from another vector of a different type.
     template <typename U>
-    Vector(const Vector<U, N>& rhs);
+    explicit Vector(const Vector<U, N>& rhs);
+
+    // Construct a vector from an array of N scalars.
+    static VectorType from_array(const ValueType* rhs);
 
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
@@ -81,6 +83,14 @@ class Vector
   private:
     // Vector components.
     ValueType m_comp[N];
+};
+
+// Poisoning.
+template <typename T, size_t N>
+class PoisonImpl<Vector<T, N>>
+{
+  public:
+    static void do_poison(Vector<T, N>& v);
 };
 
 // Exact inequality and equality tests.
@@ -121,8 +131,13 @@ template <typename T, size_t N> Vector<T, N> normalize(const Vector<T, N>& v);
 template <typename T, size_t N> Vector<T, N> safe_normalize(const Vector<T, N>& v, const Vector<T, N>& fallback);
 template <typename T, size_t N> Vector<T, N> safe_normalize(const Vector<T, N>& v);
 
-// Bring the norm of a nearly-unit vector closer to 1.
-template <typename T, size_t N> Vector<T, N> improve_normalization(const Vector<T, N>& v);
+// Bring the norm of a nearly-unit vector closer to 1 by performing a single Newton-Raphson step.
+template <typename T, size_t N>
+Vector<T, N> improve_normalization(const Vector<T, N>& v);
+
+// Bring the norm of a nearly-unit vector closer to 1 by performing a set number of Newton-Raphson steps.
+template <size_t Steps, typename T, size_t N>
+Vector<T, N> improve_normalization(const Vector<T, N>& v);
 
 // Return true if a vector is normalized (unit-length), false otherwise.
 template <typename T, size_t N> bool is_normalized(const Vector<T, N>& v);
@@ -235,15 +250,14 @@ class Vector<T, 2>
 
     // Constructors.
     Vector();                                   // leave all components uninitialized
-    explicit Vector(const ValueType* rhs);      // initialize with array of 2 scalars
-    explicit Vector(const ValueType val);       // set all components to 'val'
+    explicit Vector(const ValueType val);       // set all components to `val`
     Vector(                                     // set individual components
         const ValueType x,
         const ValueType y);
 
     // Construct a vector from another vector of a different type.
     template <typename U>
-    Vector(const Vector<U, 2>& rhs);
+    explicit Vector(const Vector<U, 2>& rhs);
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
 
@@ -255,6 +269,9 @@ class Vector<T, 2>
     operator const Imath::Vec2<T>&() const;
 
 #endif
+
+    // Construct a vector from an array of 2 scalars.
+    static VectorType from_array(const ValueType* rhs);
 
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
@@ -285,8 +302,7 @@ class Vector<T, 3>
 
     // Constructors.
     Vector();                                   // leave all components uninitialized
-    explicit Vector(const ValueType* rhs);      // initialize with array of 3 scalars
-    explicit Vector(const ValueType val);       // set all components to 'val'
+    explicit Vector(const ValueType val);       // set all components to `val`
     Vector(                                     // set individual components
         const ValueType x,
         const ValueType y,
@@ -294,7 +310,7 @@ class Vector<T, 3>
 
     // Construct a vector from another vector of a different type.
     template <typename U>
-    Vector(const Vector<U, 3>& rhs);
+    explicit Vector(const Vector<U, 3>& rhs);
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
 
@@ -307,11 +323,14 @@ class Vector<T, 3>
 
 #endif
 
+    // Construct a vector from an array of 3 scalars.
+    static VectorType from_array(const ValueType* rhs);
+
     // Build a unit vector from two angles.
-    static VectorType unit_vector(
+    static VectorType make_unit_vector(
         const ValueType theta,                  // angle with Y basis vector, in radians
         const ValueType phi);                   // angle with X basis vector, in radians
-    static VectorType unit_vector(
+    static VectorType make_unit_vector(
         const ValueType cos_theta,              // cosine of angle with Y basis vector
         const ValueType sin_theta,              // sine of angle with Y basis vector
         const ValueType cos_phi,                // cosine of angle with X basis vector
@@ -346,8 +365,7 @@ class Vector<T, 4>
 
     // Constructors.
     Vector();                                   // leave all components uninitialized
-    explicit Vector(const ValueType* rhs);      // initialize with array of 4 scalars
-    explicit Vector(const ValueType val);       // set all components to 'val'
+    explicit Vector(const ValueType val);       // set all components to `val`
     Vector(                                     // set individual components
         const ValueType x,
         const ValueType y,
@@ -356,7 +374,10 @@ class Vector<T, 4>
 
     // Construct a vector from another vector of a different type.
     template <typename U>
-    Vector(const Vector<U, 4>& rhs);
+    explicit Vector(const Vector<U, 4>& rhs);
+
+    // Construct a vector from an array of 4 scalars.
+    static VectorType from_array(const ValueType* rhs);
 
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
@@ -423,15 +444,6 @@ inline Vector<T, N>::Vector()
 }
 
 template <typename T, size_t N>
-inline Vector<T, N>::Vector(const ValueType* rhs)
-{
-    assert(rhs);
-
-    for (size_t i = 0; i < N; ++i)
-        m_comp[i] = rhs[i];
-}
-
-template <typename T, size_t N>
 inline Vector<T, N>::Vector(const ValueType val)
 {
     for (size_t i = 0; i < N; ++i)
@@ -447,6 +459,19 @@ inline Vector<T, N>::Vector(const Vector<U, N>& rhs)
 }
 
 template <typename T, size_t N>
+inline Vector<T, N> Vector<T, N>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+
+    Vector<T, N> result;
+
+    for (size_t i = 0; i < N; ++i)
+        result.m_comp[i] = rhs[i];
+
+    return result;
+}
+
+template <typename T, size_t N>
 inline T& Vector<T, N>::operator[](const size_t i)
 {
     assert(i < Dimension);
@@ -458,6 +483,13 @@ inline const T& Vector<T, N>::operator[](const size_t i) const
 {
     assert(i < Dimension);
     return m_comp[i];
+}
+
+template <typename T, size_t N>
+void PoisonImpl<Vector<T, N>>::do_poison(Vector<T, N>& v)
+{
+    for (size_t i = 0; i < N; ++i)
+        poison(v[i]);
 }
 
 template <typename T, size_t N>
@@ -757,13 +789,24 @@ inline Vector<T, N> safe_normalize(const Vector<T, N>& v)
 template <typename T, size_t N>
 inline Vector<T, N> improve_normalization(const Vector<T, N>& v)
 {
-    return v * (T(3.0) - square_norm(v)) * T(0.5);
+    return improve_normalization<1, T, N>(v);
+}
+
+template <size_t Steps, typename T, size_t N>
+inline Vector<T, N> improve_normalization(const Vector<T, N>& v)
+{
+    Vector<T, N> result = v;
+
+    for (size_t i = 0; i < Steps; ++i)
+        result *= (T(3.0) - square_norm(result)) * T(0.5);
+
+    return result;
 }
 
 template <typename T, size_t N>
 inline bool is_normalized(const Vector<T, N>& v)
 {
-    return feq(square_norm(v), T(1.0));
+    return feq(square_norm(v), T(1.0), make_eps<T>(1.0e-4f, 1.0e-5));
 }
 
 template <typename T, size_t N>
@@ -1008,14 +1051,6 @@ inline Vector<T, 2>::Vector()
 }
 
 template <typename T>
-inline Vector<T, 2>::Vector(const ValueType* rhs)
-{
-    assert(rhs);
-    x = rhs[0];
-    y = rhs[1];
-}
-
-template <typename T>
 inline Vector<T, 2>::Vector(const ValueType val)
   : x(val)
   , y(val)
@@ -1063,6 +1098,13 @@ inline Vector<T, 2>::operator const Imath::Vec2<T>&() const
 #endif
 
 template <typename T>
+inline Vector<T, 2> Vector<T, 2>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+    return Vector(rhs[0], rhs[1]);
+}
+
+template <typename T>
 inline T& Vector<T, 2>::operator[](const size_t i)
 {
     assert(i < Dimension);
@@ -1090,15 +1132,6 @@ inline T det(const Vector<T, 2>& lhs, const Vector<T, 2>& rhs)
 template <typename T>
 inline Vector<T, 3>::Vector()
 {
-}
-
-template <typename T>
-inline Vector<T, 3>::Vector(const ValueType* rhs)
-{
-    assert(rhs);
-    x = rhs[0];
-    y = rhs[1];
-    z = rhs[2];
 }
 
 template <typename T>
@@ -1154,7 +1187,14 @@ inline Vector<T, 3>::operator const Imath::Vec3<T>&() const
 #endif
 
 template <typename T>
-inline Vector<T, 3> Vector<T, 3>::unit_vector(
+inline Vector<T, 3> Vector<T, 3>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+    return Vector(rhs[0], rhs[1], rhs[2]);
+}
+
+template <typename T>
+inline Vector<T, 3> Vector<T, 3>::make_unit_vector(
     const ValueType theta,
     const ValueType phi)
 {
@@ -1168,7 +1208,7 @@ inline Vector<T, 3> Vector<T, 3>::unit_vector(
 }
 
 template <typename T>
-inline Vector<T, 3> Vector<T, 3>::unit_vector(
+inline Vector<T, 3> Vector<T, 3>::make_unit_vector(
     const ValueType cos_theta,
     const ValueType sin_theta,
     const ValueType cos_phi,
@@ -1216,16 +1256,6 @@ inline Vector<T, 4>::Vector()
 }
 
 template <typename T>
-inline Vector<T, 4>::Vector(const ValueType* rhs)
-{
-    assert(rhs);
-    x = rhs[0];
-    y = rhs[1];
-    z = rhs[2];
-    w = rhs[3];
-}
-
-template <typename T>
 inline Vector<T, 4>::Vector(const ValueType val)
   : x(val)
   , y(val)
@@ -1255,6 +1285,13 @@ inline Vector<T, 4>::Vector(const Vector<U, 4>& rhs)
   , z(static_cast<ValueType>(rhs.z))
   , w(static_cast<ValueType>(rhs.w))
 {
+}
+
+template <typename T>
+inline Vector<T, 4> Vector<T, 4>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+    return Vector(rhs[0], rhs[1], rhs[2], rhs[3]);
 }
 
 template <typename T>

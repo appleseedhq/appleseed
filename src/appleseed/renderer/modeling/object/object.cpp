@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -53,22 +53,9 @@ Object::Object(
     const char*         name,
     const ParamArray&   params)
   : ConnectableEntity(g_class_uid, params)
-  , m_alpha_map(0)
-  , m_shade_alpha_cutouts(false)
+  , m_alpha_map(nullptr)
 {
     set_name(name);
-}
-
-bool Object::on_frame_begin(
-    const Project&  project,
-    const Assembly& assembly,
-    IAbortSwitch*   abort_switch)
-{
-    return true;
-}
-
-void Object::on_frame_end(const Project& project)
-{
 }
 
 bool Object::has_alpha_map() const
@@ -78,7 +65,7 @@ bool Object::has_alpha_map() const
 
 const Source* Object::get_uncached_alpha_map() const
 {
-    return 0;
+    return nullptr;
 }
 
 }   // namespace renderer

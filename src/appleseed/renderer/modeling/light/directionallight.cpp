@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,19 +33,18 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/light/lighttarget.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/basis.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <cmath>
@@ -54,6 +53,7 @@
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Assembly; }
+namespace renderer      { class ShadingContext; }
 
 using namespace foundation;
 using namespace std;
@@ -79,30 +79,30 @@ namespace
           : Light(name, params)
         {
             m_inputs.declare("irradiance", InputFormatSpectralIlluminance);
-            m_inputs.declare("irradiance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("exposure", InputFormatScalar, "0.0");
+            m_inputs.declare("irradiance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("exposure", InputFormatFloat, "0.0");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
+        bool on_frame_begin(
             const Project&          project,
-            const Assembly&         assembly,
-            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) override
         {
-            if (!Light::on_frame_begin(project, assembly, abort_switch))
+            if (!Light::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            if (
-                !check_uniform("irradiance") ||
+            if (!check_uniform("irradiance") ||
                 !check_uniform("irradiance_multiplier") ||
                 !check_uniform("exposure"))
             {
@@ -112,26 +112,40 @@ namespace
             check_non_zero_emission("irradiance", "irradiance_multiplier");
 
             const Scene::RenderData& scene_data = project.get_scene()->get_render_data();
-            m_scene_center = scene_data.m_center;
+            m_scene_center = Vector3d(scene_data.m_center);
             m_scene_radius = scene_data.m_radius;
             m_safe_scene_diameter = scene_data.m_safe_diameter;
 
             m_inputs.evaluate_uniforms(&m_values);
-            m_values.m_irradiance *=
-                static_cast<float>(
-                    m_values.m_irradiance_multiplier * pow(2.0, m_values.m_exposure));
+            m_values.m_irradiance *= m_values.m_irradiance_multiplier * pow(2.0f, m_values.m_exposure);
 
             return true;
         }
 
-        virtual void sample(
-            InputEvaluator&         input_evaluator,
+        void sample(
+            const ShadingContext&   shading_context,
+            const Transformd&       light_transform,
+            const Vector3d&         target_point,
+            const Vector2d&         s,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            float&                  probability) const override
+        {
+            outgoing = -normalize(light_transform.get_parent_z());
+            position = target_point - m_safe_scene_diameter * outgoing;
+            value = m_values.m_irradiance;
+            probability = 1.0f;
+        }
+
+        void sample(
+            const ShadingContext&   shading_context,
             const Transformd&       light_transform,
             const Vector2d&         s,
             Vector3d&               position,
             Vector3d&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
             sample_disk(
                 light_transform,
@@ -144,15 +158,15 @@ namespace
                 probability);
         }
 
-        virtual void sample(
-            InputEvaluator&         input_evaluator,
+        void sample(
+            const ShadingContext&   shading_context,
             const Transformd&       light_transform,
             const Vector2d&         s,
             const LightTargetArray& targets,
             Vector3d&               position,
             Vector3d&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
             const size_t target_count = targets.size();
 
@@ -187,32 +201,19 @@ namespace
             }
         }
 
-        virtual void evaluate(
-            InputEvaluator&         input_evaluator,
-            const Transformd&       light_transform,
+        float compute_distance_attenuation(
             const Vector3d&         target,
-            Vector3d&               position,
-            Vector3d&               outgoing,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+            const Vector3d&         position) const override
         {
-            outgoing = -normalize(light_transform.get_parent_z());
-            position = target - m_safe_scene_diameter * outgoing;
-            value = m_values.m_irradiance;
-        }
-
-        virtual double compute_distance_attenuation(
-            const Vector3d&         target,
-            const Vector3d&         position) const APPLESEED_OVERRIDE
-        {
-            return 1.0;
+            return 1.0f;
         }
 
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_irradiance;               // emitted irradiance in W.m^-2
-            double      m_irradiance_multiplier;    // emitted irradiance multiplier
-            double      m_exposure;                 // emitted irradiance multiplier in f-stops
+            float       m_irradiance_multiplier;    // emitted irradiance multiplier
+            float       m_exposure;                 // emitted irradiance multiplier in f-stops
         };
 
         Vector3d        m_scene_center;             // world space
@@ -229,7 +230,7 @@ namespace
             Vector3d&               position,
             Vector3d&               outgoing,
             Spectrum&               value,
-            double&                 probability) const
+            float&                  probability) const
         {
             outgoing = -normalize(light_transform.get_parent_z());
 
@@ -244,7 +245,7 @@ namespace
 
             value = m_values.m_irradiance;
 
-            probability = 1.0 / (Pi * disk_radius * disk_radius);
+            probability = 1.0f / (Pi<float>() * square(static_cast<float>(disk_radius)));
         }
     };
 }
@@ -253,6 +254,11 @@ namespace
 //
 // DirectionalLightFactory class implementation.
 //
+
+void DirectionalLightFactory::release()
+{
+    delete this;
+}
 
 const char* DirectionalLightFactory::get_model() const
 {
@@ -289,8 +295,14 @@ DictionaryArray DirectionalLightFactory::get_input_metadata() const
             .insert("name", "irradiance_multiplier")
             .insert("label", "Irradiance Multiplier")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "10.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("help", "Light intensity multiplier"));
@@ -302,8 +314,14 @@ DictionaryArray DirectionalLightFactory::get_input_metadata() const
             .insert("type", "numeric")
             .insert("use", "optional")
             .insert("default", "0.0")
-            .insert("min_value", "-64.0")
-            .insert("max_value", "64.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-64.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "64.0")
+                    .insert("type", "soft"))
             .insert("help", "Light exposure"));
 
     add_common_input_metadata(metadata);
@@ -314,13 +332,6 @@ DictionaryArray DirectionalLightFactory::get_input_metadata() const
 auto_release_ptr<Light> DirectionalLightFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<Light>(new DirectionalLight(name, params));
-}
-
-auto_release_ptr<Light> DirectionalLightFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<Light>(new DirectionalLight(name, params));
 }

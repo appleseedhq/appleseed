@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -80,7 +80,7 @@ class ProjectBuilder
     auto_release_ptr<Project> build_project()
     {
         GenericImageFileReader reader;
-        auto_ptr<Image> image(reader.read("data/heightfield.png"));
+        unique_ptr<Image> image(reader.read("data/heightfield.png"));
         const size_t image_width = image->properties().m_canvas_width;
         const size_t image_height = image->properties().m_canvas_height;
 
@@ -151,9 +151,9 @@ class ProjectBuilder
                 // Compute cube transform.
                 const Transformd transform =
                     Transformd::from_local_to_parent(
-                          Matrix4d::translation(translation)
-                        * Matrix4d::rotation_y(rotation)
-                        * Matrix4d::scaling(scaling));
+                          Matrix4d::make_translation(translation)
+                        * Matrix4d::make_rotation_y(rotation)
+                        * Matrix4d::make_scaling(scaling));
 
                 // Add cube to assembly.
                 add_cube(*assembly, ix, iy, fx, fz, color, transform);
@@ -184,7 +184,7 @@ class ProjectBuilder
                     .insert("irradiance", "light_irradiance")));
         light->set_transform(
             Transformd::from_local_to_parent(
-                Matrix4d::rotation_x(deg_to_rad(-30.0))));
+                Matrix4d::make_rotation_x(deg_to_rad(-30.0))));
         assembly->lights().insert(light);
 
         //------------------------------------------------------------------------
@@ -248,7 +248,7 @@ class ProjectBuilder
             0.0,
             Transformd::from_local_to_parent(Matrix4d(CameraMatrix)));
 
-        scene->set_camera(camera);
+        scene->cameras().insert(camera);
 
         //------------------------------------------------------------------------
         // Frame
@@ -260,7 +260,8 @@ class ProjectBuilder
                 ParamArray()
                     .insert("camera", scene->get_camera()->get_name())
                     .insert("resolution", "1280 720")
-                    .insert("color_space", "srgb")));
+                    .insert("color_space", "srgb")
+                    .insert("camera", "camera")));
 
         project->set_scene(scene);
 
@@ -563,7 +564,7 @@ class InstancesProjectBuilder
 int main()
 {
     // Create a log target that outputs to stderr, and binds it to the renderer's global logger.
-    auto_ptr<ILogTarget> log_target(create_console_log_target(stderr));
+    unique_ptr<ILogTarget> log_target(create_console_log_target(stderr));
     global_logger().add_target(log_target.get());
 
     //SingleBakedMeshProjectBuilder project_builder;

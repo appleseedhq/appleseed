@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 #define APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_TILEJOBFACTORY_H
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/rendering/generic/tilejob.h"
 
 // appleseed.foundation headers.
@@ -74,6 +75,7 @@ class TileJobFactory
         const TileJob::TileRendererVector&  tile_renderers,
         const TileJob::TileCallbackVector&  tile_callbacks,
         const size_t                        pass_hash,
+        const Spectrum::Mode                spectrum_mode,
         TileJobVector&                      tile_jobs,
         foundation::IAbortSwitch&           abort_switch);
 

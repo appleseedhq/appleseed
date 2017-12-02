@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -36,8 +36,8 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/iostreamop.h"
 
 // Standard headers.
@@ -285,7 +285,9 @@ DictionaryArray ColorEntityFactory::get_input_metadata()
             .insert("type", "text")
             .insert("default", "400.0 700.0")
             .insert("use", "optional")
-            .insert("on_change", "rebuild_form"));
+            .insert("visible_if",
+                Dictionary()
+                    .insert("color_space", "spectral")));
 
     metadata.push_back(
         Dictionary()
@@ -301,8 +303,14 @@ DictionaryArray ColorEntityFactory::get_input_metadata()
             .insert("name", "alpha")
             .insert("label", "Alpha")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "1.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
             .insert("default", "1.0")
             .insert("use", "optional"));
 
@@ -311,8 +319,14 @@ DictionaryArray ColorEntityFactory::get_input_metadata()
             .insert("name", "multiplier")
             .insert("label", "Multiplier")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "10.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10.0")
+                    .insert("type", "soft"))
             .insert("default", "1.0")
             .insert("use", "optional"));
 

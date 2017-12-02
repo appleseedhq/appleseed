@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,10 +32,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
+#include "foundation/platform/arch.h"
 #include "foundation/platform/types.h"
-
-// Boost headers.
-#include "boost/static_assert.hpp"
 
 // Standard headers.
 #include <cassert>
@@ -68,7 +66,17 @@ namespace foundation
 // Radical inverse in base 2.
 template <typename T>
 T radical_inverse_base2(
-    size_t              value);         // input digits
+    const size_t        value);         // input digits
+
+// Radical inverse in base 2, 32-bit version.
+template <typename T>
+T radical_inverse_base2_32(
+    uint32              value);         // input digits
+
+// Radical inverse in base 2, 64-bit version.
+template <typename T>
+T radical_inverse_base2_64(
+    uint64              value);         // input digits
 
 // Folded radical inverse in base 2.
 template <typename T>
@@ -89,9 +97,9 @@ T radical_inverse(
     size_t              value);         // input digits
 
 // Radical inverse in arbitrary base, with the base specified at compile-time.
-template <typename T, isize_t Base>
+template <typename T, size_t Base>
 T static_radical_inverse(
-    const size_t        value);         // input digits
+    size_t              value);         // input digits
 
 // Fast variant of radical_inverse() for the first 1000 prime bases.
 template <typename T>
@@ -113,10 +121,10 @@ T permuted_radical_inverse(
     size_t              value);         // input digits
 
 // Radical inverse in arbitrary base with digits permutation, with the base specified at compile-time.
-template <typename T, isize_t Base>
+template <typename T, size_t Base>
 T static_permuted_radical_inverse(
     const size_t        perm[],         // digit permutation table (Base entries)
-    const size_t        value);         // input digits
+    size_t              value);         // input digits
 
 // Fast variant of permuted_radical_inverse() for the first 1000 prime bases.
 template <typename T>
@@ -196,21 +204,32 @@ Vector<T, Dim> hammersley_zaremba_sequence(
 // Base-2 radical inverse functions implementation.
 //
 
-template <>
-inline float radical_inverse_base2(
-    size_t              value)
+template <typename T>
+inline T radical_inverse_base2(
+    const size_t        value)
+{
+#ifdef APPLESEED_ARCH64
+    return radical_inverse_base2_64<T>(value);
+#else
+    return radical_inverse_base2_32<T>(value);
+#endif
+}
+
+template <typename T>
+inline T radical_inverse_base2_32(
+    uint32              value)
 {
     value = (value >> 16) | (value << 16);                                                      // 16-bit swap
     value = ((value & 0xFF00FF00UL) >> 8) | ((value & 0x00FF00FFUL) << 8);                      // 8-bit swap
     value = ((value & 0xF0F0F0F0UL) >> 4) | ((value & 0x0F0F0F0FUL) << 4);                      // 4-bit swap
     value = ((value & 0xCCCCCCCCUL) >> 2) | ((value & 0x33333333UL) << 2);                      // 2-bit swap
     value = ((value & 0xAAAAAAAAUL) >> 1) | ((value & 0x55555555UL) << 1);                      // 1-bit swap
-    return value / 4294967296.0f;
+    return static_cast<T>(value / 4294967296.0f);
 }
 
-template <>
-inline double radical_inverse_base2(
-    size_t              value)
+template <typename T>
+inline T radical_inverse_base2_64(
+    uint64              value)
 {
     value = (value >> 32) | (value << 32);                                                      // 32-bit swap
     value = ((value & 0xFFFF0000FFFF0000ULL) >> 16) | ((value & 0x0000FFFF0000FFFFULL) << 16);  // 16-bit swap
@@ -218,7 +237,7 @@ inline double radical_inverse_base2(
     value = ((value & 0xF0F0F0F0F0F0F0F0ULL) >> 4)  | ((value & 0x0F0F0F0F0F0F0F0FULL) << 4);   // 4-bit swap
     value = ((value & 0xCCCCCCCCCCCCCCCCULL) >> 2)  | ((value & 0x3333333333333333ULL) << 2);   // 2-bit swap
     value = ((value & 0xAAAAAAAAAAAAAAAAULL) >> 1)  | ((value & 0x5555555555555555ULL) << 1);   // 1-bit swap
-    return value / 18446744073709551616.0;
+    return static_cast<T>(value / 18446744073709551616.0);
 }
 
 template <typename T>
@@ -269,30 +288,22 @@ inline T radical_inverse(
     return inverse;
 }
 
-template <typename T, isize_t Base>
+template <typename T, size_t Base>
 inline T static_radical_inverse(
-    const size_t        value)
+    size_t              value)
 {
-    BOOST_STATIC_ASSERT(Base >= 2);
+    static_assert(Base >= 2, "foundation::static_radical_inverse() expects Base >= 2");
 
     const T RcpBase = T(1.0) / Base;
 
-    //
-    // Use isize_t instead of size_t because multiplication
-    // by a constant is usually faster on Intel processors.
-    // Since division by a constant is typically implemented
-    // using multiplication, it is also positively affected.
-    //
-
-    isize_t i = static_cast<isize_t>(value);
-    isize_t x = 0;
+    size_t x = 0;
     T b = T(1.0);
 
-    while (i > 0)
+    while (value > 0)
     {
-        const isize_t digit = i % Base;
+        const size_t digit = value % Base;
         x = x * Base + digit;
-        i /= Base;
+        value /= Base;
         b *= RcpBase;
     }
 
@@ -1382,31 +1393,23 @@ inline T permuted_radical_inverse(
     return inverse;
 }
 
-template <typename T, isize_t Base>
+template <typename T, size_t Base>
 inline T static_permuted_radical_inverse(
     const size_t        perm[],
-    const size_t        value)
+    size_t              value)
 {
-    BOOST_STATIC_ASSERT(Base >= 2);
+    static_assert(Base >= 2, "foundation::static_permuted_radical_inverse() expects Base >= 2");
 
     const T RcpBase = T(1.0) / Base;
 
-    //
-    // Use isize_t instead of size_t because multiplication
-    // by a constant is usually faster on Intel processors.
-    // Since division by a constant is typically implemented
-    // using multiplication, it is also positively affected.
-    //
-
-    isize_t i = static_cast<isize_t>(value);
-    isize_t x = 0;
+    size_t x = 0;
     T b = T(1.0);
 
-    while (i > 0)
+    while (value > 0)
     {
-        const isize_t digit = i % Base;
+        const size_t digit = value % Base;
         x = x * Base + perm[digit];
-        i /= Base;
+        value /= Base;
         b *= RcpBase;
     }
 

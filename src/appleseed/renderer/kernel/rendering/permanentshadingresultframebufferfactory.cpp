@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -56,7 +56,7 @@ PermanentShadingResultFrameBufferFactory::PermanentShadingResultFrameBufferFacto
     const size_t tile_count_x = frame.image().properties().m_tile_count_x;
     const size_t tile_count_y = frame.image().properties().m_tile_count_y;
 
-    m_framebuffers.resize(tile_count_x * tile_count_y, 0);
+    m_framebuffers.resize(tile_count_x * tile_count_y, nullptr);
 }
 
 PermanentShadingResultFrameBufferFactory::~PermanentShadingResultFrameBufferFactory()
@@ -74,7 +74,7 @@ ShadingResultFrameBuffer* PermanentShadingResultFrameBufferFactory::create(
     const size_t tile_count_x = frame.image().properties().m_tile_count_x;
     const size_t index = tile_y * tile_count_x + tile_x;
 
-    if (m_framebuffers[index] == 0)
+    if (m_framebuffers[index] == nullptr)
     {
         const Tile& tile = frame.image().tile(tile_x, tile_y);
 

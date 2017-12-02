@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,8 +34,12 @@
 #include "renderer/kernel/rendering/sampleaccumulationbuffer.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/aabb.h"
 #include "foundation/math/filter.h"
+#include "foundation/platform/atomic.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/thread.h"
+#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
@@ -43,6 +47,8 @@
 
 // Forward declarations.
 namespace foundation    { class FilteredTile; }
+namespace foundation    { class IAbortSwitch; }
+namespace foundation    { class Tile; }
 namespace renderer      { class Frame; }
 namespace renderer      { class Sample; }
 
@@ -60,26 +66,41 @@ class LocalSampleAccumulationBuffer
         const foundation::Filter2f&         filter);
 
     // Destructor.
-    ~LocalSampleAccumulationBuffer();
+    ~LocalSampleAccumulationBuffer() override;
 
     // Reset the buffer to its initial state. Thread-safe.
-    virtual void clear() APPLESEED_OVERRIDE;
+    void clear() override;
 
     // Store a set of samples into the buffer. Thread-safe.
-    virtual void store_samples(
+    void store_samples(
         const size_t                        sample_count,
-        const Sample                        samples[]) APPLESEED_OVERRIDE;
+        const Sample                        samples[],
+        foundation::IAbortSwitch&           abort_switch) override;
 
     // Develop the buffer to a frame. Thread-safe.
-    virtual void develop_to_frame(Frame& frame) APPLESEED_OVERRIDE;
+    void develop_to_frame(
+        Frame&                              frame,
+        foundation::IAbortSwitch&           abort_switch) override;
+
+    // Exposed for tests and benchmarks.
+    static void develop_to_tile(
+        foundation::Tile&                   color_tile,
+        const size_t                        image_width,
+        const size_t                        image_height,
+        const foundation::FilteredTile&     level,
+        const size_t                        origin_x,
+        const size_t                        origin_y,
+        const foundation::AABB2u&           rect);
 
   private:
-    std::vector<foundation::FilteredTile*>  m_levels;
-    std::vector<size_t>                     m_remaining_pixels;
-    size_t                                  m_active_level;
+    typedef foundation::ReadWriteLock<
+        foundation::SleepWaitPolicy<5>
+    > LockType;
 
-    // Find the first (the highest resolution) level that has all its pixels set.
-    const foundation::FilteredTile& find_display_level() const;
+    LockType                                m_lock;
+    std::vector<foundation::FilteredTile*>  m_levels;
+    boost::atomic<foundation::int32>*       m_remaining_pixels;
+    boost::atomic<foundation::uint32>       m_active_level;
 };
 
 }       // namespace renderer

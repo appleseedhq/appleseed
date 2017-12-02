@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,9 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/api/apistring.h"
 
 // Standard headers.
 #include <string>
@@ -80,9 +83,9 @@ Light::~Light()
     delete impl;
 }
 
-double Light::get_uncached_importance_multiplier() const
+float Light::get_uncached_importance_multiplier() const
 {
-    return m_params.get_optional<double>("importance_multiplier", 1.0);
+    return m_params.get_optional<float>("importance_multiplier", 1.0f);
 }
 
 void Light::set_transform(const Transformd& transform)
@@ -98,13 +101,17 @@ const Transformd& Light::get_transform() const
 
 bool Light::on_frame_begin(
     const Project&          project,
-    const Assembly&         assembly,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
     IAbortSwitch*           abort_switch)
 {
-    m_flags = 0;
+    if (!ConnectableEntity::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
 
     if (m_params.get_optional<bool>("cast_indirect_light", true))
         m_flags |= CastIndirectLight;
+    else
+        m_flags &= ~CastIndirectLight;
 
     if (get_uncached_importance_multiplier() <= 0.0)
     {
@@ -116,26 +123,20 @@ bool Light::on_frame_begin(
     return true;
 }
 
-void Light::on_frame_end(
-    const Project&          project,
-    const Assembly&         assembly)
-{
-}
-
 void Light::sample(
-    InputEvaluator&         input_evaluator,
+    const ShadingContext&   shading_context,
     const Transformd&       light_transform,
     const Vector2d&         s,
     const LightTargetArray& targets,
     Vector3d&               position,
     Vector3d&               outgoing,
     Spectrum&               value,
-    double&                 probability) const
+    float&                  probability) const
 {
     // By default we ignore the light targets.
     return
         sample(
-            input_evaluator,
+            shading_context,
             light_transform,
             s,
             position,

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -42,35 +42,35 @@ using namespace foundation;
 
 BENCHMARK_SUITE(Foundation_Image_ColorSpace)
 {
-    struct RGBFixture
+    struct LinearRGBTosRGBFixture
     {
         Color3f m_input;
         Color3f m_output;
 
-        RGBFixture()
+        LinearRGBTosRGBFixture()
           : m_input(0.5f, 0.7f, 0.2f)
         {
         }
     };
 
-    BENCHMARK_CASE_F(LinearRGBTosRGBConversion, RGBFixture)
+    BENCHMARK_CASE_F(LinearRGBTosRGBConversion, LinearRGBTosRGBFixture)
     {
         m_output = linear_rgb_to_srgb(m_input);
     }
 
-    BENCHMARK_CASE_F(FastLinearRGBTosRGBConversion, RGBFixture)
+    BENCHMARK_CASE_F(FastLinearRGBTosRGBConversion, LinearRGBTosRGBFixture)
     {
         m_output = fast_linear_rgb_to_srgb(m_input);
     }
 
-    struct SpectrumFixture
+    struct SpectrumToCIEXYZFixture
     {
         const LightingConditions    m_lighting_conditions;
         RegularSpectrum31f          m_input;
         Color3f                     m_output;
 
-        SpectrumFixture()
-          : m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
+        SpectrumToCIEXYZFixture()
+          : m_lighting_conditions(IlluminantCIED65, XYZCMFCIE19312Deg)
         {
             MersenneTwister rng;
 
@@ -79,8 +79,24 @@ BENCHMARK_SUITE(Foundation_Image_ColorSpace)
         }
     };
 
-    BENCHMARK_CASE_F(SpectrumToCIEXYZ, SpectrumFixture)
+    BENCHMARK_CASE_F(SpectrumToCIEXYZ, SpectrumToCIEXYZFixture)
     {
         m_output = spectrum_to_ciexyz<float>(m_lighting_conditions, m_input);
+    }
+
+    struct LinearRGBToSpectrumFixture
+    {
+        Color3f                     m_input;
+        RegularSpectrum31f          m_output;
+
+        LinearRGBToSpectrumFixture()
+          : m_input(0.5f, 0.7f, 0.2f)
+        {
+        }
+    };
+
+    BENCHMARK_CASE_F(LinearRGBIlluminanceToSpectrum, LinearRGBToSpectrumFixture)
+    {
+        linear_rgb_illuminance_to_spectrum(m_input, m_output);
     }
 }

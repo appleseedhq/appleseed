@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,11 +28,11 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/math/rng/distribution.h"
-#include "foundation/math/rng/mersennetwister.h"
 #include "foundation/math/distance.h"
 #include "foundation/math/knn.h"
 #include "foundation/math/permutation.h"
+#include "foundation/math/rng/distribution.h"
+#include "foundation/math/rng/mersennetwister.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/timers.h"
@@ -65,7 +65,7 @@ TEST_SUITE(Foundation_Math_Knn_Builder)
         knn::Tree3d tree;
 
         knn::Builder3d builder(tree);
-        builder.build<DefaultWallclockTimer>(0, 0);
+        builder.build<DefaultWallclockTimer>(nullptr, 0);
 
         EXPECT_TRUE(tree.empty());
 

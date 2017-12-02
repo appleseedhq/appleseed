@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -55,8 +55,8 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/intersection/aabbtriangle.h"
 #include "foundation/math/area.h"
+#include "foundation/math/intersection/aabbtriangle.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/treeoptimizer.h"
@@ -64,6 +64,7 @@
 #include "foundation/platform/system.h"
 #include "foundation/platform/timers.h"
 #include "foundation/utility/alignedallocator.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/memory.h"
@@ -412,7 +413,7 @@ TriangleTree::TriangleTree(const Arguments& arguments)
 {
     // Retrieve construction parameters.
     const MessageContext message_context(
-        string("while building triangle tree for assembly \"") + m_arguments.m_assembly.get_name() + "\"");
+        format("while building triangle tree for assembly \"{0}\"", m_arguments.m_assembly.get_path()));
     const ParamArray& params = m_arguments.m_assembly.get_parameters().child("acceleration_structure");
     const string algorithm = params.get_optional<string>("algorithm", "bvh", make_vector("bvh", "sbvh"), message_context);
     const double time = params.get_optional<double>("time", 0.5);
@@ -427,6 +428,8 @@ TriangleTree::TriangleTree(const Arguments& arguments)
     if (algorithm == "bvh")
         build_bvh(params, time, save_memory, statistics);
     else build_sbvh(params, time, save_memory, statistics);
+    statistics.insert_time("total build time", stopwatch.measure().get_seconds());
+    statistics.insert_size("nodes alignment", alignment(&m_nodes[0]));
 
 #ifdef RENDERER_TRIANGLE_TREE_REORDER_NODES
     // Optimize the tree layout in memory.
@@ -436,8 +439,6 @@ TriangleTree::TriangleTree(const Arguments& arguments)
 #endif
 
     // Print triangle tree statistics.
-    statistics.insert_size("nodes alignment", alignment(&m_nodes[0]));
-    statistics.insert_time("total time", stopwatch.measure().get_seconds());
     RENDERER_LOG_DEBUG("%s",
         StatisticsVector::make(
             "triangle tree #" + to_string(m_arguments.m_triangle_tree_uid) + " statistics",
@@ -518,7 +519,7 @@ void TriangleTree::build_bvh(
     RENDERER_LOG_INFO(
         "collecting geometry for triangle tree #" FMT_UNIQUE_ID " from assembly \"%s\" (%s %s)...",
         m_arguments.m_triangle_tree_uid,
-        m_arguments.m_assembly.get_name(),
+        m_arguments.m_assembly.get_path().c_str(),
         pretty_uint(m_arguments.m_regions.size()).c_str(),
         plural(m_arguments.m_regions.size(), "region").c_str());
     stopwatch.start();
@@ -531,7 +532,7 @@ void TriangleTree::build_bvh(
         save_memory,
         &triangle_keys,
         &triangle_vertex_infos,
-        0,
+        nullptr,
         &triangle_bboxes);
     const double collection_time = stopwatch.measure().get_seconds();
 
@@ -554,7 +555,7 @@ void TriangleTree::build_bvh(
     const GScalar triangle_intersection_cost = params.get_optional<GScalar>("triangle_intersection_cost", TriangleTreeDefaultTriangleIntersectionCost);
 
     // Create the partitioner.
-    typedef bvh::SAHPartitioner<vector<GAABB3> > Partitioner;
+    typedef bvh::SAHPartitioner<vector<GAABB3>> Partitioner;
     Partitioner partitioner(
         triangle_bboxes,
         max_leaf_size,
@@ -583,10 +584,10 @@ void TriangleTree::build_bvh(
         m_arguments,
         time,
         save_memory,
-        0,
-        0,
+        nullptr,
+        nullptr,
         &triangle_vertices,
-        0);
+        nullptr);
 
     // Compute and propagate motion bounding boxes.
     compute_motion_bboxes(
@@ -622,7 +623,7 @@ void TriangleTree::build_sbvh(
     RENDERER_LOG_INFO(
         "collecting geometry for triangle tree #" FMT_UNIQUE_ID " from assembly \"%s\" (%s %s)...",
         m_arguments.m_triangle_tree_uid,
-        m_arguments.m_assembly.get_name(),
+        m_arguments.m_assembly.get_path().c_str(),
         pretty_uint(m_arguments.m_regions.size()).c_str(),
         plural(m_arguments.m_regions.size(), "region").c_str());
     vector<TriangleKey> triangle_keys;
@@ -660,7 +661,7 @@ void TriangleTree::build_sbvh(
     const GScalar triangle_intersection_cost = params.get_optional<GScalar>("triangle_intersection_cost", TriangleTreeDefaultTriangleIntersectionCost);
 
     // Create the partitioner.
-    typedef bvh::SBVHPartitioner<TriangleItemHandler, vector<AABB3d> > Partitioner;
+    typedef bvh::SBVHPartitioner<TriangleItemHandler, vector<AABB3d>> Partitioner;
     TriangleItemHandler triangle_handler(
         triangle_vertex_infos,
         triangle_vertices,
@@ -935,7 +936,7 @@ void TriangleTree::store_triangles(
     m_triangle_keys.reserve(triangle_indices.size());
     m_leaf_data.resize(leaf_data_size);
 
-    MemoryWriter leaf_data_writer(m_leaf_data.empty() ? 0 : &m_leaf_data[0]);
+    MemoryWriter leaf_data_writer(m_leaf_data.empty() ? nullptr : &m_leaf_data[0]);
 
     for (size_t i = 0; i < node_count; ++i)
     {
@@ -1164,7 +1165,7 @@ namespace
             }
 
             // Create an intersection filter for this key.
-            auto_ptr<IntersectionFilter> intersection_filter(
+            unique_ptr<IntersectionFilter> intersection_filter(
                 new IntersectionFilter(
                     *filter_key.m_object,
                     filter_key.m_materials,
@@ -1177,7 +1178,7 @@ namespace
             RENDERER_LOG_DEBUG(
                 "created intersection filter for object \"%s\" with " FMT_SIZE_T " material%s "
                 "(masks: %s, uvs: %s, filter key hash: 0x" FMT_UINT64_HEX ").",
-                filter_key.m_object->get_name(),
+                filter_key.m_object->get_path().c_str(),
                 filter_key.m_materials.size(),
                 filter_key.m_materials.size() > 1 ? "s" : "",
                 pretty_size(intersection_filter->get_masks_memory_size()).c_str(),
@@ -1230,7 +1231,7 @@ namespace
             const size_t max_object_instance_index =
                 *max_element(object_instances.begin(), object_instances.end());
 
-            filters.assign(max_object_instance_index + 1, 0);
+            filters.assign(max_object_instance_index + 1, nullptr);
 
             if (!repository.empty())
             {
@@ -1305,9 +1306,9 @@ TriangleTreeFactory::TriangleTreeFactory(const TriangleTree::Arguments& argument
 {
 }
 
-auto_ptr<TriangleTree> TriangleTreeFactory::create()
+unique_ptr<TriangleTree> TriangleTreeFactory::create()
 {
-    return auto_ptr<TriangleTree>(new TriangleTree(m_arguments));
+    return unique_ptr<TriangleTree>(new TriangleTree(m_arguments));
 }
 
 
@@ -1417,8 +1418,8 @@ bool TriangleLeafVisitor::visit(
                 m_hit_triangle = &triangle;
                 m_hit_triangle_index = triangle_index;
                 m_shading_point.m_ray.m_tmax = t;
-                m_shading_point.m_bary[0] = u;
-                m_shading_point.m_bary[1] = v;
+                m_shading_point.m_bary[0] = static_cast<float>(u);
+                m_shading_point.m_bary[1] = static_cast<float>(v);
             }
         }
         else
@@ -1473,8 +1474,8 @@ bool TriangleLeafVisitor::visit(
                 m_hit_triangle = &m_interpolated_triangle;
                 m_hit_triangle_index = triangle_index;
                 m_shading_point.m_ray.m_tmax = t;
-                m_shading_point.m_bary[0] = u;
-                m_shading_point.m_bary[1] = v;
+                m_shading_point.m_bary[0] = static_cast<float>(u);
+                m_shading_point.m_bary[1] = static_cast<float>(v);
             }
         }
     }
@@ -1586,19 +1587,19 @@ bool TriangleLeafProbeVisitor::visit(
             v1 += reader.read<GVector3>() * frac;
             v2 += reader.read<GVector3>() * frac;
 
-            // Skip the remaining motion steps of this triangle.
-            reader += (motion_segment_count - base_index - 1) * TriangleSize;
-
             // Build the triangle and convert it to the right format if necessary.
             const GTriangleType triangle(v0, v1, v2);
-            const TriangleReader reader(triangle);
+            const TriangleReader triangle_reader(triangle);
 
             // Intersect the triangle.
-            if (reader.m_triangle.intersect(ray))
+            if (triangle_reader.m_triangle.intersect(ray))
             {
                 m_hit = true;
                 return false;
             }
+
+            // Skip the remaining motion steps of this triangle.
+            reader += (motion_segment_count - base_index - 1) * TriangleSize;
         }
     }
 

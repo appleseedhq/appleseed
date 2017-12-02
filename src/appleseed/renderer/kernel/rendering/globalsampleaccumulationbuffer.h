@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,12 +37,14 @@
 #include "foundation/image/filteredtile.h"
 #include "foundation/math/filter.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/thread.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
 
 // Forward declarations.
+namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class Tile; }
 namespace renderer      { class Frame; }
 namespace renderer      { class Sample; }
@@ -61,20 +63,24 @@ class GlobalSampleAccumulationBuffer
         const foundation::Filter2f& filter);
 
     // Reset the buffer to its initial state. Thread-safe.
-    virtual void clear() APPLESEED_OVERRIDE;
+    void clear() override;
 
     // Store a set of samples into the buffer. Thread-safe.
-    virtual void store_samples(
+    void store_samples(
         const size_t                sample_count,
-        const Sample                samples[]) APPLESEED_OVERRIDE;
+        const Sample                samples[],
+        foundation::IAbortSwitch&   abort_switch) override;
 
     // Develop the buffer to a frame. Thread-safe.
-    virtual void develop_to_frame(Frame& frame) APPLESEED_OVERRIDE;
+    void develop_to_frame(
+        Frame&                      frame,
+        foundation::IAbortSwitch&   abort_switch) override;
 
     // Increment the number of samples used for pixel values renormalization. Thread-safe.
     void increment_sample_count(const foundation::uint64 delta_sample_count);
 
   private:
+    boost::shared_mutex             m_mutex;
     foundation::FilteredTile        m_fb;
     const float                     m_filter_rcp_norm_factor;
 

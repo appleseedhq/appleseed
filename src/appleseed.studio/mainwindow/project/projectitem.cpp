@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,6 @@ namespace studio {
 namespace
 {
     const UniqueID g_project_class_uid = new_guid();
-    const UniqueID g_rules_class_uid = new_guid();
 }
 
 ProjectItem::ProjectItem(EntityEditorContext& editor_context)
@@ -66,25 +65,6 @@ ProjectItem::ProjectItem(EntityEditorContext& editor_context)
     m_scene_item = new SceneItem(editor_context, *project.get_scene());
     addChild(m_scene_item);
 
-    ItemBase* rules_item =
-        new ItemBase(
-            editor_context,
-            g_rules_class_uid,
-            "Rules");
-    rules_item->set_allow_deletion(false);
-    rules_item->set_allow_edition(false);
-    addChild(rules_item);
-
-    m_render_layer_collection_item =
-        new MultiModelCollectionItem<RenderLayerRule, Project, ProjectItem>(
-            editor_context,
-            new_guid(),
-            EntityTraits<RenderLayerRule>::get_human_readable_collection_type_name(),
-            project,
-            this);
-    m_render_layer_collection_item->add_items(project.render_layer_rules());
-    rules_item->addChild(m_render_layer_collection_item);
-
     m_output_item = new OutputItem(editor_context, project);
     addChild(m_output_item);
 }
@@ -95,11 +75,6 @@ void ProjectItem::expand()
 
     m_scene_item->expand();
     m_output_item->setExpanded(true);
-}
-
-void ProjectItem::add_item(RenderLayerRule* rule)
-{
-    m_render_layer_collection_item->add_item(rule);
 }
 
 }   // namespace studio

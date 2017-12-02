@@ -6,8 +6,8 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,11 +34,11 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
-#include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
@@ -51,234 +51,144 @@ namespace renderer
 
 //
 // Map roughness to microfacet distribution function's alpha parameter in a
-// perceptually linear fashion.
-// Refactored from the Disney BRDF implementation.
+// perceptually linear fashion. Refactored from the Disney BRDF implementation.
 //
 
-template <typename T>
-inline T microfacet_alpha_from_roughness(const T& roughness)
+inline float microfacet_alpha_from_roughness(const float roughness)
 {
-    return std::max(T(0.001), foundation::square(roughness));
+    return std::max(0.001f, foundation::square(roughness));
 }
 
-template <typename T>
 inline void microfacet_alpha_from_roughness(
-    const T&   roughness,
-    const T&   anisotropic,
-    T&         alpha_x,
-    T&         alpha_y)
+    const float     roughness,
+    const float     anisotropy,
+    float&          alpha_x,
+    float&          alpha_y)
 {
-    if (anisotropic >= 0.0)
+    if (anisotropy >= 0.0f)
     {
-        const T aspect = std::sqrt(T(1.0) - anisotropic * T(0.9));
-        alpha_x = std::max(T(0.001), foundation::square(roughness) / aspect);
-        alpha_y = std::max(T(0.001), foundation::square(roughness) * aspect);
+        const float aspect = std::sqrt(1.0f - anisotropy * 0.9f);
+        alpha_x = std::max(0.001f, foundation::square(roughness) / aspect);
+        alpha_y = std::max(0.001f, foundation::square(roughness) * aspect);
     }
     else
     {
-        const T aspect = std::sqrt(T(1.0) + anisotropic * T(0.9));
-        alpha_x = std::max(T(0.001), foundation::square(roughness) * aspect);
-        alpha_y = std::max(T(0.001), foundation::square(roughness) / aspect);
+        const float aspect = std::sqrt(1.0f + anisotropy * 0.9f);
+        alpha_x = std::max(0.001f, foundation::square(roughness) * aspect);
+        alpha_y = std::max(0.001f, foundation::square(roughness) / aspect);
     }
 }
 
+//
+// Map highlight falloff to STD microfacet distribution function's gamma parameter
+// in a perceptually linear fashion.
+//
 
-template <typename T>
-class FresnelDielectricFun
+inline float highlight_falloff_to_gama(const float highlight_falloff)
 {
-  public:
-    FresnelDielectricFun(
-        const Spectrum& reflectance,
-        const T         reflectance_multiplier,
-        const T         eta)
-      : m_reflectance(reflectance)
-      , m_reflectance_multiplier(reflectance_multiplier)
-      , m_eta(eta)
-    {
-    }
+    const float t = highlight_falloff;
+    const float t2 = t * t;
+    return foundation::mix(1.51f, 40.0f, t2 * t2 * t);
+}
 
-    void operator()(
-        const foundation::Vector<T,3>&  o,
-        const foundation::Vector<T,3>&  h,
-        const foundation::Vector<T,3>&  n,
-        Spectrum&                       value) const
-    {
-        value = m_reflectance;
-        double f;
-        foundation::fresnel_reflectance_dielectric(f, m_eta, foundation::dot(o, h));
-        value *= static_cast<float>(f * m_reflectance_multiplier);
-    }
-
-  private:
-    const Spectrum& m_reflectance;
-    const T         m_reflectance_multiplier;
-    const T         m_eta;
-};
-
-
-template <typename T>
 class MicrofacetBRDFHelper
 {
   public:
-    typedef foundation::Vector<T, 3> VectorType;
-    typedef foundation::Basis3<T> BasisType;
-
     template <typename MDF, typename FresnelFun>
     static void sample(
-        SamplingContext&    sampling_context,
-        const MDF&          mdf,
-        const T             alpha_x,
-        const T             alpha_y,
-        FresnelFun          f,
-        const T             cos_on,
-        BSDFSample&         sample)
+        SamplingContext&                sampling_context,
+        const MDF&                      mdf,
+        const float                     alpha_x,
+        const float                     alpha_y,
+        const float                     gamma,
+        FresnelFun                      f,
+        const float                     cos_on,
+        BSDFSample&                     sample)
     {
-        // gcc needs the qualifier, otherwise
-        // it complains about missing operator() for BSDFSample.
-        MicrofacetBRDFHelper<T>::sample(
-            sampling_context,
-            mdf,
-            alpha_x,
-            alpha_y,
-            alpha_x,
-            alpha_y,
-            f,
-            cos_on,
-            sample);
+        // Compute the incoming direction by sampling the MDF.
+        sampling_context.split_in_place(3, 1);
+        const foundation::Vector3f s = sampling_context.next2<foundation::Vector3f>();
+        const foundation::Vector3f wo = sample.m_shading_basis.transform_to_local(sample.m_outgoing.get_value());
+        const foundation::Vector3f m = mdf.sample(wo, s, alpha_x, alpha_y, gamma);
+        const foundation::Vector3f h = sample.m_shading_basis.transform_to_parent(m);
+        const foundation::Vector3f incoming = foundation::reflect(sample.m_outgoing.get_value(), h);
+        const float cos_oh = std::abs(foundation::dot(sample.m_outgoing.get_value(), h));
+        const float cos_in = std::abs(foundation::dot(incoming, sample.m_shading_basis.get_normal()));
+
+        const float D = mdf.D(m, alpha_x, alpha_y, gamma);
+        const float G =
+            mdf.G(
+                sample.m_shading_basis.transform_to_local(incoming),
+                wo,
+                m,
+                alpha_x,
+                alpha_y,
+                gamma);
+
+        f(sample.m_outgoing.get_value(), h, sample.m_shading_basis.get_normal(), sample.m_value.m_glossy);
+        sample.m_value.m_glossy *= D * G / (4.0f * cos_on * cos_in);
+        sample.m_probability = mdf.pdf(wo, m, alpha_x, alpha_y, gamma) / (4.0f * cos_oh);
+        sample.m_mode = ScatteringMode::Glossy;
+        sample.m_incoming = foundation::Dual<foundation::Vector3f>(incoming);
+        sample.compute_reflected_differentials();
     }
 
     template <typename MDF, typename FresnelFun>
-    static T evaluate(
-        const MDF&          mdf,
-        const T             alpha_x,
-        const T             alpha_y,
-        const BasisType&    shading_basis,
-        const VectorType&   outgoing,
-        const VectorType&   incoming,
-        FresnelFun          f,
-        const T             cos_in,
-        const T             cos_on,
-        Spectrum&           value)
+    static float evaluate(
+        const MDF&                      mdf,
+        const float                     alpha_x,
+        const float                     alpha_y,
+        const float                     gamma,
+        const foundation::Basis3f&      shading_basis,
+        const foundation::Vector3f&     outgoing,
+        const foundation::Vector3f&     incoming,
+        FresnelFun                      f,
+        const float                     cos_in,
+        const float                     cos_on,
+        Spectrum&                       value)
     {
-        return evaluate(
-            mdf,
-            alpha_x,
-            alpha_y,
-            alpha_x,
-            alpha_y,
-            shading_basis,
-            outgoing,
-            incoming,
-            f,
-            cos_in,
-            cos_on,
-            value);
+        const foundation::Vector3f h = foundation::normalize(incoming + outgoing);
+        const foundation::Vector3f m = shading_basis.transform_to_local(h);
+        const foundation::Vector3f wo = shading_basis.transform_to_local(outgoing);
+
+        const float D = mdf.D(m, alpha_x, alpha_y, gamma);
+        const float G =
+            mdf.G(
+                shading_basis.transform_to_local(incoming),
+                wo,
+                m,
+                alpha_x,
+                alpha_y,
+                gamma);
+
+        const float cos_oh = foundation::dot(outgoing, h);
+        f(outgoing, h, shading_basis.get_normal(), value);
+        value *= D * G / (4.0f * cos_on * cos_in);
+        return mdf.pdf(wo, m, alpha_x, alpha_y, gamma) / (4.0f * cos_oh);
     }
 
     template <typename MDF>
-    static T pdf(
-        const MDF&          mdf,
-        const T             alpha_x,
-        const T             alpha_y,
-        const BasisType&    shading_basis,
-        const VectorType&   outgoing,
-        const VectorType&   incoming)
+    static float pdf(
+        const MDF&                      mdf,
+        const float                     alpha_x,
+        const float                     alpha_y,
+        const float                     gamma,
+        const foundation::Basis3f&      shading_basis,
+        const foundation::Vector3f&     outgoing,
+        const foundation::Vector3f&     incoming)
     {
-        const VectorType h = foundation::normalize(incoming + outgoing);
-        const T cos_oh = foundation::dot(outgoing, h);
+        const foundation::Vector3f h = foundation::normalize(incoming + outgoing);
+        const float cos_oh = foundation::dot(outgoing, h);
         return
             mdf.pdf(
                 shading_basis.transform_to_local(outgoing),
                 shading_basis.transform_to_local(h),
                 alpha_x,
-                alpha_y) / (T(4.0) * cos_oh);
-    }
-
-    //
-    // Decoupled distribution and shadowing alpha parameters.
-    // They are used in the Disney BRDF implementation.
-    //
-
-    template <typename MDF, typename FresnelFun>
-    static void sample(
-        SamplingContext&    sampling_context,
-        const MDF&          mdf,
-        const T             alpha_x,
-        const T             alpha_y,
-        const T             g_alpha_x,
-        const T             g_alpha_y,
-        FresnelFun          f,
-        const T             cos_on,
-        BSDFSample&         sample)
-    {
-        // Compute the incoming direction by sampling the MDF.
-        sampling_context.split_in_place(3, 1);
-        const VectorType s = sampling_context.next_vector2<3>();
-        const VectorType wo = sample.get_shading_basis().transform_to_local(sample.m_outgoing.get_value());
-        const VectorType m = mdf.sample(wo, s, alpha_x, alpha_y);
-        const VectorType h = sample.get_shading_basis().transform_to_parent(m);
-        const VectorType incoming = foundation::reflect(sample.m_outgoing.get_value(), h);
-        const T cos_oh = foundation::dot(sample.m_outgoing.get_value(), h);
-
-        // No reflection below the shading surface.
-        const VectorType& n = sample.get_shading_normal();
-        const T cos_in = foundation::dot(incoming, n);
-        if (cos_in < T(0.0))
-            return;
-
-        const T D = mdf.D(m, alpha_x, alpha_y);
-
-        const T G =
-            mdf.G(
-                sample.get_shading_basis().transform_to_local(incoming),
-                wo,
-                m,
-                g_alpha_x,
-                g_alpha_y);
-
-        f(sample.m_outgoing.get_value(), h, sample.get_shading_normal(), sample.m_value);
-        sample.m_value *= static_cast<float>(D * G / (T(4.0) * cos_on * cos_in));
-        sample.m_probability = mdf.pdf(wo, m, alpha_x, alpha_y) / (T(4.0) * cos_oh);
-        sample.m_mode = ScatteringMode::Glossy;
-        sample.m_incoming = foundation::Dual<VectorType>(incoming);
-        sample.compute_reflected_differentials();
-    }
-
-    template <typename MDF, typename FresnelFun>
-    static T evaluate(
-        const MDF&          mdf,
-        const T             alpha_x,
-        const T             alpha_y,
-        const T             g_alpha_x,
-        const T             g_alpha_y,
-        const BasisType&    shading_basis,
-        const VectorType&   outgoing,
-        const VectorType&   incoming,
-        FresnelFun          f,
-        const T             cos_in,
-        const T             cos_on,
-        Spectrum&           value)
-    {
-        const VectorType h = foundation::normalize(incoming + outgoing);
-        const VectorType m = shading_basis.transform_to_local(h);
-        const T D = mdf.D(m, alpha_x, alpha_y);
-
-        const VectorType wo = shading_basis.transform_to_local(outgoing);
-        const T G =
-            mdf.G(
-                shading_basis.transform_to_local(incoming),
-                wo,
-                m,
-                g_alpha_x,
-                g_alpha_y);
-
-        const T cos_oh = foundation::dot(outgoing, h);
-        f(outgoing, h, shading_basis.get_normal(), value);
-        value *= static_cast<float>(D * G / (T(4.0) * cos_on * cos_in));
-        return mdf.pdf(wo, m, alpha_x, alpha_y) / (T(4.0) * cos_oh);
+                alpha_y,
+                gamma) / (4.0f * cos_oh);
     }
 };
 
-#endif
+}       // namespace renderer
 
-}   // namespace renderer
+#endif  // !APPLESEED_RENDERER_MODELING_BSDF_MICROFACETHELPER_H

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -63,7 +63,7 @@ class ILazyFactory
     virtual ~ILazyFactory() {}
 
     // Create the object.
-    virtual std::auto_ptr<Object> create() = 0;
+    virtual std::unique_ptr<Object> create() = 0;
 };
 
 
@@ -83,7 +83,7 @@ class Lazy
 
     // Construct a lazy object with a factory to create the actual
     // object the first time it is accessed.
-    explicit Lazy(std::auto_ptr<FactoryType> factory);
+    explicit Lazy(std::unique_ptr<FactoryType> factory);
 
     // Construct a lazy object that simply wraps an existing source object,
     // effectively bypassing lazy object construction altogether.
@@ -101,7 +101,6 @@ class Lazy
 
   private:
     template <typename> friend class Access;
-    template <typename> friend class Update;
 
     boost::mutex    m_mutex;
     int             m_reference_count;
@@ -114,7 +113,7 @@ class Lazy
 
 
 //
-// Thread-safe read-only access to a lazily constructed object.
+// Thread-safe read/write access to a lazily constructed object.
 //
 
 template <typename Object>
@@ -126,7 +125,7 @@ class Access
     typedef Lazy<Object> LazyType;
 
     // Constructor, acquires access to a lazy object.
-    explicit Access(LazyType* lazy = 0);
+    explicit Access(LazyType* lazy = nullptr);
 
     // Copy constructor.
     Access(const Access& rhs);
@@ -146,48 +145,7 @@ class Access
     void reset(LazyType* lazy);
 
     // Get the object pointer.
-    const ObjectType* get() const;
-    const ObjectType& ref() const;
-
-    // Access the object.
-    const ObjectType* operator->() const;
-    const ObjectType& operator*() const;
-
-  private:
-    LazyType*   m_lazy;
-};
-
-
-//
-// Thread-safe read/write access to a lazily constructed object.
-//
-
-template <typename Object>
-class Update
-{
-  public:
-    // Object and lazy object types.
-    typedef Object ObjectType;
-    typedef Lazy<Object> LazyType;
-
-    // Constructor, acquires access to a lazy object.
-    // The object must already exist.
-    explicit Update(LazyType* lazy = 0);
-
-    // Copy constructor.
-    Update(const Update& rhs);
-
-    // Assignment operator.
-    Update<Object>& operator=(const Update& rhs);
-
-    // Destructor.
-    ~Update();
-
-    // Acquire access to another lazy object.
-    void reset(LazyType* lazy);
-
-    // Get the object pointer.
-    ObjectType* get() const;    // may return 0
+    ObjectType* get() const;
     ObjectType& ref() const;
 
     // Access the object.
@@ -384,11 +342,11 @@ class AccessCacheMap
 //
 
 template <typename Object>
-Lazy<Object>::Lazy(std::auto_ptr<FactoryType> factory)
+Lazy<Object>::Lazy(std::unique_ptr<FactoryType> factory)
   : m_reference_count(0)
   , m_factory(factory.release())
-  , m_source_object(0)
-  , m_object(0)
+  , m_source_object(nullptr)
+  , m_object(nullptr)
   , m_own_object(true)
 {
     assert(m_factory);
@@ -397,9 +355,9 @@ Lazy<Object>::Lazy(std::auto_ptr<FactoryType> factory)
 template <typename Object>
 Lazy<Object>::Lazy(ObjectType* source_object)
   : m_reference_count(0)
-  , m_factory(0)
+  , m_factory(nullptr)
   , m_source_object(source_object)
-  , m_object(0)
+  , m_object(nullptr)
   , m_own_object(false)
 {
     assert(m_source_object);
@@ -436,14 +394,14 @@ inline typename Lazy<Object>::ObjectType* Lazy<Object>::get_source_object() cons
 
 template <typename Object>
 inline Access<Object>::Access(LazyType* lazy)
-  : m_lazy(0)
+  : m_lazy(nullptr)
 {
     reset(lazy);
 }
 
 template <typename Object>
 inline Access<Object>::Access(const Access& rhs)
-  : m_lazy(0)
+  : m_lazy(nullptr)
 {
     reset(rhs.m_lazy);
 }
@@ -458,7 +416,7 @@ inline Access<Object>& Access<Object>::operator=(const Access& rhs)
 template <typename Object>
 inline Access<Object>::~Access()
 {
-    reset(0);
+    reset(nullptr);
 }
 
 template <typename Object>
@@ -481,7 +439,7 @@ void Access<Object>::reset(LazyType* lazy)
         ++m_lazy->m_reference_count;
 
         // Create the object if it doesn't exist yet.
-        if (m_lazy->m_object == 0)
+        if (m_lazy->m_object == nullptr)
         {
             if (m_lazy->m_factory)
                 m_lazy->m_object = m_lazy->m_factory->create().release();
@@ -491,94 +449,13 @@ void Access<Object>::reset(LazyType* lazy)
 }
 
 template <typename Object>
-inline const Object* Access<Object>::get() const
+inline Object* Access<Object>::get() const
 {
-    return m_lazy ? m_lazy->m_object : 0;
+    return m_lazy ? m_lazy->m_object : nullptr;
 }
 
 template <typename Object>
-inline const Object& Access<Object>::ref() const
-{
-    assert(m_lazy);
-    assert(m_lazy->m_object);
-    return *m_lazy->m_object;
-}
-
-template <typename Object>
-inline const Object* Access<Object>::operator->() const
-{
-    return m_lazy ? m_lazy->m_object : 0;
-}
-
-template <typename Object>
-inline const Object& Access<Object>::operator*() const
-{
-    assert(m_lazy);
-    assert(m_lazy->m_object);
-    return *m_lazy->m_object;
-}
-
-
-//
-// Update class implementation.
-//
-
-template <typename Object>
-inline Update<Object>::Update(LazyType* lazy)
-  : m_lazy(0)
-{
-    reset(lazy);
-}
-
-template <typename Object>
-inline Update<Object>::Update(const Update& rhs)
-  : m_lazy(0)
-{
-    reset(rhs.m_lazy);
-}
-
-template <typename Object>
-inline Update<Object>& Update<Object>::operator=(const Update& rhs)
-{
-    reset(rhs.m_lazy);
-    return *this;
-}
-
-template <typename Object>
-inline Update<Object>::~Update()
-{
-    reset(0);
-}
-
-template <typename Object>
-void Update<Object>::reset(LazyType* lazy)
-{
-    // Release access to the current lazy object, if any.
-    if (m_lazy)
-    {
-        boost::mutex::scoped_lock lock(m_lazy->m_mutex);
-        assert(m_lazy->m_reference_count > 0);
-        --m_lazy->m_reference_count;
-    }
-
-    m_lazy = lazy;
-
-    // Acquire access to the new lazy object.
-    if (m_lazy)
-    {
-        boost::mutex::scoped_lock lock(m_lazy->m_mutex);
-        ++m_lazy->m_reference_count;
-    }
-}
-
-template <typename Object>
-inline Object* Update<Object>::get() const
-{
-    return m_lazy ? m_lazy->m_object : 0;
-}
-
-template <typename Object>
-inline Object& Update<Object>::ref() const
+inline Object& Access<Object>::ref() const
 {
     assert(m_lazy);
     assert(m_lazy->m_object);
@@ -586,13 +463,13 @@ inline Object& Update<Object>::ref() const
 }
 
 template <typename Object>
-inline Object* Update<Object>::operator->() const
+inline Object* Access<Object>::operator->() const
 {
-    return m_lazy ? m_lazy->m_object : 0;
+    return m_lazy ? m_lazy->m_object : nullptr;
 }
 
 template <typename Object>
-inline Object& Update<Object>::operator*() const
+inline Object& Access<Object>::operator*() const
 {
     assert(m_lazy);
     assert(m_lazy->m_object);
@@ -658,7 +535,7 @@ inline size_t AccessCache<Object, Lines, Ways, Allocator>::KeyHasher::operator()
 
 template <typename Object, size_t Lines, size_t Ways, typename Allocator>
 AccessCache<Object, Lines, Ways, Allocator>::ObjectSwapper::ObjectSwapper()
-  : m_lazy(0)
+  : m_lazy(nullptr)
 {
 }
 
@@ -682,7 +559,7 @@ inline bool AccessCache<Object, Lines, Ways, Allocator>::ObjectSwapper::unload(
     const KeyType&      key,
     AccessType&         access)
 {
-    access.reset(0);
+    access.reset(nullptr);
     return true;
 }
 
@@ -754,7 +631,7 @@ inline size_t AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::KeyHasher::oper
 
 template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>
 AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::ObjectSwapper::ObjectSwapper()
-  : m_object_map(0)
+  : m_object_map(nullptr)
 {
 }
 
@@ -772,7 +649,7 @@ inline void AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::ObjectSwapper::lo
     AccessType&         access)
 {
     const typename ObjectMap::const_iterator i = m_object_map->find(key);
-    access.reset(i != m_object_map->end() ? i->second : 0);
+    access.reset(i != m_object_map->end() ? i->second : nullptr);
 }
 
 template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>
@@ -780,7 +657,7 @@ inline bool AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::ObjectSwapper::un
     const KeyType&      key,
     AccessType&         access)
 {
-    access.reset(0);
+    access.reset(nullptr);
     return true;
 }
 

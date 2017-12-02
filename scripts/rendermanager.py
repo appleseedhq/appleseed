@@ -7,7 +7,7 @@
 # This software is released under the MIT license.
 #
 # Copyright (c) 2013 Francois Beaune, Jupiter Jazz Limited
-# Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+# Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -63,6 +63,7 @@ def safe_get_file_size(filepath):
     except:
         return 0
 
+
 def get_directory_size(directory):
     size = 0
     for dirpath, dirnames, filenames in os.walk(directory):
@@ -71,15 +72,18 @@ def get_directory_size(directory):
             size += safe_get_file_size(filepath)
     return size
 
-def get_files(directory, pattern = "*"):
+
+def get_files(directory, pattern="*"):
     files = []
     for file in glob.glob(os.path.join(directory, pattern)):
         files.append(file)
     return files
 
+
 def safe_mkdir(dir):
     if not os.path.exists(dir):
         os.makedirs(dir)
+
 
 def convert_path_to_local(path):
     if os.name == "nt":
@@ -87,7 +91,8 @@ def convert_path_to_local(path):
     else:
         return path.replace('\\', '/')
 
-def tail_file(f, window = 20):
+
+def tail_file(f, window=20):
     """
     Returns the last `window` lines of file `f` as a list.
     Based on code from http://stackoverflow.com/a/7047765/393756.
@@ -121,12 +126,13 @@ def tail_file(f, window = 20):
 
     return "".join(data).splitlines()[-window:]
 
+
 def format_message(severity, msg):
     now = datetime.datetime.now()
     timestamp = now.strftime("%Y-%m-%d %H:%M:%S.%f")
     padded_severity = severity.ljust(7)
-    return "\n".join("{0} mgr   {1} | {2}".format(timestamp, padded_severity, line) \
-        for line in msg.splitlines())
+    return "\n".join("{0} mgr   {1} | {2}".format(timestamp, padded_severity, line)
+                     for line in msg.splitlines())
 
 
 #--------------------------------------------------------------------------------------------------
@@ -134,6 +140,7 @@ def format_message(severity, msg):
 #--------------------------------------------------------------------------------------------------
 
 class ConsoleBackend:
+
     @staticmethod
     def info(msg):
         print("{0}".format(msg))
@@ -162,6 +169,7 @@ class ConsoleBackend:
 #--------------------------------------------------------------------------------------------------
 
 class LogFileBackend:
+
     def __init__(self, path):
         self.path = path
 
@@ -177,6 +185,7 @@ class LogFileBackend:
 #--------------------------------------------------------------------------------------------------
 
 class Log:
+
     def __init__(self, path):
         self.log_file = LogFileBackend(path)
 
@@ -213,6 +222,7 @@ class Log:
 #--------------------------------------------------------------------------------------------------
 
 class DependencyDB:
+
     def __init__(self, source_directory, log):
         self.source_directory = source_directory
         self.log = log
@@ -276,6 +286,7 @@ class DependencyDB:
 #--------------------------------------------------------------------------------------------------
 
 class Manager:
+
     def __init__(self, args, log):
         self.args = args
         self.log = log
@@ -338,8 +349,8 @@ class Manager:
         rendering = self.count_inprogress_frames()
         pending = self.count_pending_frames()
         progress = 100.0 * completed / total if total > 0 else 0.0
-        self.log.info("PROGRESS: {0}/{1} completed ({2:.2f} %), {3} rendering, {4} pending" \
-            .format(completed, total, progress, rendering, pending))
+        self.log.info("PROGRESS: {0}/{1} completed ({2:.2f} %), {3} rendering, {4} pending"
+                      .format(completed, total, progress, rendering, pending))
 
     def print_assignments(self):
         assignments = {}
@@ -359,11 +370,11 @@ class Manager:
             if filename in self.inprogress_files.keys():
                 for owner in self.inprogress_files[filename]:
                     owners.add(owner)
-        unsorted_pings = [ (owner, self.read_ping(owner)) for owner in owners ]
-        filtered_pings = [ x for x in unsorted_pings if x[1] is not None ]
-        pings = sorted(filtered_pings, key = lambda x: x[1])
+        unsorted_pings = [(owner, self.read_ping(owner)) for owner in owners]
+        filtered_pings = [x for x in unsorted_pings if x[1] is not None]
+        pings = sorted(filtered_pings, key=lambda x: x[1])
         if len(pings) > 0:
-            max_owner_length = max([ len(owner) for owner in owners ])
+            max_owner_length = max([len(owner) for owner in owners])
             self.log.info("pings:")
             for (owner, ping) in pings:
                 padding = " " * (max_owner_length + 1 - len(owner))
@@ -388,8 +399,8 @@ class Manager:
         size_mb = self.target_directory_size / MB
         max_size_mb = self.args.max_size / MB
         full = 100.0 * size_mb / max_size_mb if max_size_mb > 0 else 100.0
-        self.log.info("size of target directory: {0:.2f}/{1} mb ({2:.2f} % full)" \
-            .format(size_mb, max_size_mb, full))
+        self.log.info("size of target directory: {0:.2f}/{1} mb ({2:.2f} % full)"
+                      .format(size_mb, max_size_mb, full))
 
     def count_completed_frames(self):
         return sum(1 for filename in self.source_files if filename in self.completed_files)
@@ -398,7 +409,7 @@ class Manager:
         return sum(1 for filename in self.source_files if filename in self.inprogress_files)
 
     def count_pending_frames(self):
-        return sum(1 for filename in self.source_files \
+        return sum(1 for filename in self.source_files
                    if not filename in self.completed_files and not filename in self.inprogress_files)
 
     def move_frames(self):
@@ -423,13 +434,13 @@ class Manager:
         self.all_uploaded_dependency_db.update(all_roots)
 
         self.log.info("updating dependency database of uploaded files (this shot)...")
-        own_roots = [ filename for filename in self.source_files \
-                      if filename in self.inprogress_files or filename in self.uploaded_files ]
+        own_roots = [filename for filename in self.source_files
+                     if filename in self.inprogress_files or filename in self.uploaded_files]
         self.own_uploaded_dependency_db.update(own_roots)
 
     def update_completed_dependency_db(self):
         self.log.info("updating dependency database of completed files (this shot)...")
-        roots = [ filename for filename in self.source_files if filename in self.completed_files ]
+        roots = [filename for filename in self.source_files if filename in self.completed_files]
         self.completed_dependency_db.update(roots)
 
     def remove_orphan_dependencies(self):
@@ -506,10 +517,10 @@ class Manager:
 
 def main():
     # Parse the command line.
-    parser = argparse.ArgumentParser(description="send a shot to a folder being watched by " \
+    parser = argparse.ArgumentParser(description="send a shot to a folder being watched by "
                                      "appleseed render nodes.")
     parser.add_argument("-s", "--max-size", metavar="MB",
-                        help="set the maximum allowed size in mb of the target directory " \
+                        help="set the maximum allowed size in mb of the target directory "
                         "(default is 1 terabyte)")
     parser.add_argument("--source", metavar="source-directory", dest="source_directory",
                         required=True, help="directory containing the source shot data")

@@ -1,0 +1,423 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/water.html
+
+#include "appleseed/fractal/as_fractal_helpers.h"
+#include "appleseed/maya/as_maya_fractal_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
+
+#ifndef MAYA_WATER2D_MAX_WAVES
+#define MAYA_WATER2D_MAX_WAVES  100
+#endif
+
+struct CurrentWave
+{
+    float number_U;
+    float number_V;
+    float amplitude;
+    float angle_frequency;
+};
+
+shader as_maya_water
+[[
+    string as_maya_node_name = "water"
+]]
+(
+    int in_numberOfWaves = 8
+    [[
+        string as_maya_attribute_name = "numberOfWaves",
+        int min = 0,
+        int max = 32,
+        string widget = "slider",
+        string label = "Number Of Waves",
+        string page = "Water Attributes"
+    ]],
+    float in_waveTime = 0.0
+    [[
+        string as_maya_attribute_name = "waveTime",
+        string label = "Wave Time",
+        string page = "Water Attributes"
+    ]],
+    float in_waveVelocity = 1.0
+    [[
+        string as_maya_attribute_name = "waveVelocity",
+        string label = "Wave Velocity",
+        string page = "Water Attributes"
+    ]],
+    float in_waveAmplitude = 0.05
+    [[
+        string as_maya_attribute_name = "waveAmplitude",
+        string label = "Wave Amplitude",
+        string page = "Water Attributes",
+        int divider = 1
+    ]],
+    float in_waveFrequency = 4.0
+    [[
+        string as_maya_attribute_name = "waveFrequency",
+        float min = 0.0,
+        float max = 20.0,
+        string widget = "slider",
+        string label = "Wave Frequency",
+        string page = "Water Attributes"
+    ]],
+    float in_subWaveFrequency = 0.125
+    [[
+        string as_maya_attribute_name = "subWaveFrequency",
+        string label = "Sub-Wave Frequency",
+        string page = "Water Attributes"
+    ]],
+    float in_smoothness = 2.0
+    [[
+        string as_maya_attribute_name = "smoothness",
+        float min = 0.0,
+        float max = 5.0,
+        string widget = "slider",
+        string label = "Smoothness",
+        string page = "Water Attributes",
+        int divider = 1
+    ]],
+    float in_windUV[2] = {1.0, 0.0}
+    [[
+        string as_maya_attribute_name = "windUV",
+        string label = "Wind UV Coords",
+        string page = "Water Attributes"
+    ]],
+    float in_rippleTime = 0.0
+    [[
+        string as_maya_attribute_name = "rippleTime",
+        string label = "Ripple Time",
+        string page = "Concentric Ripples Attributes"
+    ]],
+    float in_rippleFrequency = 25.0
+    [[
+        string as_maya_attribute_name = "rippleFrequency",
+        string label = "Ripple Frequency",
+        string page = "Concentric Ripples Attributes"
+    ]],
+    float in_rippleAmplitude = 0.5
+    [[
+        string as_maya_attribute_name = "rippleAmplitude",
+        string label = "Ripple Amplitude",
+        string page = "Concentric Ripples Attributes"
+    ]],
+    float in_dropSize = 0.3
+    [[
+        string as_maya_attribute_name = "in_dropSize",
+        string label = "Drop Size",
+        string page = "Concentric Ripples Attributes"
+    ]],
+    float in_rippleOrigin[2] = {0.5, 0.5}
+    [[
+        string as_maya_attribute_name = "rippleOrigin",
+        string label = "Ripple Origin",
+        string page = "Concentric Ripples Attributes",
+        int divider = 1
+    ]],
+    float in_groupVelocity = 1.0
+    [[
+        string as_maya_attribute_name = "groupVelocity",
+        string label = "Group Velocity",
+        string page = "Concentric Ripples Attributes"
+    ]],
+    float in_phaseVelocity = 2.5
+    [[
+        string as_maya_attribute_name = "phaseVelocity",
+        string label = "Phase Velocity",
+        string page = "Concentric Ripples Attributes"
+    ]],
+    float in_spreadStart = 0.005
+    [[
+        string as_maya_attribute_name = "spreadStart",
+        string label = "Spread Start",
+        string page = "Concentric Ripples Attributes"
+    ]],
+    float in_spreadRate = 0.3
+    [[
+        string as_maya_attribute_name = "spreadRate",
+        string label = "Spread Rate",
+        string page = "Concentric Ripples Attributes",
+        int divider = 1
+    ]],
+    int in_reflectionBox = 0
+    [[
+        string as_maya_attribute_name = "reflectionBox",
+        string widget = "checkBox",
+        string label = "Reflection Box",
+        string page = "Concentric Ripples Attributes"
+    ]],
+    float in_boxMax[2] = {1.0, 1.0}
+    [[
+        string as_maya_attribute_name = "boxMax",
+        string label = "Box Max",
+        string page = "Concentric Ripples Attributes"
+    ]],
+    float in_boxMin[2] = {0.0, 0.0}
+    [[
+        string as_maya_attribute_name = "boxMin",
+        string label = "Box Min",
+        string page = "Concentric Ripples Attributes"
+    ]],
+
+    MAYA_COLORBALANCE_PARAMETERS,
+    MAYA_EFFECTS_PARAMETERS,
+    MAYA_UV_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]]
+)
+{
+    if (in_uvCoord[0] == OUTSIDE_UVFRAME || in_uvCoord[1] == OUTSIDE_UVFRAME)
+    {
+        out_outColor = in_defaultColor;
+        out_outAlpha = maya_luminance(in_defaultColor);
+    }
+    else if (in_waveAmplitude > 0.0)
+    {
+        int f_num_waves = 0, seed = 23;
+        float f_spread = 1.0, f_envelope_scale = 1.0;
+        float sqr_spread_start = sqr(in_spreadStart);
+
+        void buildWaves(output CurrentWave current_waves[])
+        {
+            if (in_numberOfWaves > 0 && in_numberOfWaves != f_num_waves)
+            {
+                f_num_waves = in_numberOfWaves;
+            }
+
+            float wind_normalization =
+                max(EPS, hypot(in_windUV[0], in_windUV[1]));
+
+            float wind_UV[2] = {
+                in_windUV[0] / wind_normalization,
+                in_windUV[1] / wind_normalization};
+
+            for (int i = 0; i < in_numberOfWaves; ++i)
+            {
+                float random_index = (i + 0.5 * random_noise(i + seed++)) *
+                    in_subWaveFrequency;
+
+                float frequency = pow(2, random_index);
+
+                float windwards = 0.75 + 0.25 * random_noise(i + seed++);
+
+                int extra = (int) random_noise(i + seed++);
+
+                float sidewards = random_noise(i + extra + seed++) - 0.5;
+
+                float sum = hypot(windwards, sidewards) + EPS;
+
+                float wave_number = M_2PI *
+                    (frequency * in_waveFrequency + EPS);
+
+                // Swap U,V waves to match Maya's results.
+
+                current_waves[i].number_V = (wind_UV[0] * windwards -
+                    wind_UV[1] * sidewards) * wave_number / sum;
+
+                current_waves[i].number_U = (wind_UV[1] * windwards +
+                    wind_UV[0] * sidewards) * wave_number / sum;
+
+                current_waves[i].angle_frequency = in_waveTime *
+                    in_waveVelocity * sqrt(frequency) * wave_number;
+
+                sum = abs(windwards / sum);
+
+                current_waves[i].amplitude = sum * in_waveAmplitude /
+                    pow(frequency, in_smoothness);
+            }
+
+            if (in_rippleTime > 0.0)
+            {
+                float sp = sqr(in_spreadRate * in_rippleTime);
+                sp += sqr_spread_start;
+
+                f_spread = max(EPS, sp);
+
+                sp = in_spreadStart * in_rippleAmplitude / sqrt(f_spread);
+
+                float arg = max(EPS, in_rippleTime * in_groupVelocity);
+
+                sp *= in_dropSize / (in_dropSize + sqrt(arg));
+
+                f_envelope_scale = sp;
+            }
+        }
+
+        CurrentWave current_waves[MAYA_WATER2D_MAX_WAVES];
+
+        if (in_numberOfWaves > 0 && in_numberOfWaves != f_num_waves)
+        {
+            buildWaves(current_waves);
+        }
+
+        float st[2] = {in_uvCoord[0], in_uvCoord[1]}, value = 0.5;
+
+        if (in_rippleTime > 0.0)
+        {
+            float dudv[2] = {
+                st[0] - in_rippleOrigin[0],
+                st[1] - in_rippleOrigin[1]};
+
+            float rad = hypot(dudv[0], dudv[1]);
+            float arg = rad - in_rippleTime * in_groupVelocity;
+
+            float envelope = -sqr(arg) / f_spread;
+
+            if (envelope < -10.0)
+            {
+                envelope = 0.0;
+            }
+            else
+            {
+                envelope = f_envelope_scale * exp(envelope);
+            }
+
+            arg = M_2PI * (rad * in_rippleFrequency -
+                in_rippleTime * in_phaseVelocity);
+
+            value -= envelope * cos(arg);
+
+            if (in_reflectionBox)
+            {
+                float tu, tv, spread, spread2;
+
+                for (int u_mirror = -1; u_mirror <= 1; u_mirror += 2)
+                {
+                    if (u_mirror > 0)
+                    {
+                        tu = in_boxMax[0] +
+                            (in_boxMax[0] - in_rippleOrigin[0]);
+                    }
+                    else
+                    {
+                        tu = in_boxMin[0] +
+                            (in_boxMin[0] - in_rippleOrigin[0]);
+                    }
+
+                    dudv[0] = st[0] - tu;
+
+                    for (int v_mirror = -1; v_mirror <= -1; v_mirror += 2)
+                    {
+                        if (v_mirror > 0)
+                        {
+                            tv = in_boxMax[1] +
+                                (in_boxMax[1] - in_rippleOrigin[1]);
+                        }
+                        else
+                        {
+                            tv = in_boxMin[1] +
+                                (in_boxMin[1] - in_rippleOrigin[1]);
+                        }
+
+                        dudv[1] = st[1] - tv;
+
+                        rad = hypot(dudv[0], dudv[1]);
+                        arg = rad - in_rippleTime * in_groupVelocity;
+
+                        spread = in_spreadRate * in_rippleTime;
+                        spread2 = max(EPS, sqr(spread) + sqr_spread_start);
+                        spread = sqrt(spread2);
+
+                        envelope = -sqr(arg) / spread2;
+
+                        if (envelope < -10.0)
+                        {
+                            envelope = 0.0;
+                        }
+                        else
+                        {
+                            envelope = in_rippleAmplitude * exp(envelope);
+                        }
+                        envelope *= in_spreadStart / spread;
+
+                        arg = max(EPS, in_rippleTime * in_groupVelocity);
+
+                        envelope *= in_dropSize / (in_dropSize + sqrt(arg));
+
+                        arg = M_2PI * (rad * in_rippleFrequency -
+                            in_rippleTime * in_phaseVelocity);
+
+                        value -= envelope * cos(arg);
+                    }
+                }
+            }
+        }
+
+        // Total waves contribution.
+
+        for (int i = 0; i < in_numberOfWaves; ++i)
+        {
+            float arg = st[0] * current_waves[i].number_U +
+                        st[1] * current_waves[i].number_V -
+                        current_waves[i].angle_frequency;
+
+            value -= current_waves[i].amplitude * cos(arg);
+        }
+
+        out_outColor = color(value);
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha
+            );
+    }
+    else
+    {
+        out_outColor = color(0.5);
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha
+            );
+    }
+}

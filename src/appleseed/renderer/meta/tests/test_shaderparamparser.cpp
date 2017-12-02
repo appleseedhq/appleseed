@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -72,6 +72,79 @@ TEST_SUITE(Renderer_Modeling_ShaderParamParser)
         EXPECT_EQ("test_string", parser.parse_string_value());
     }
 
+    TEST_CASE(ShaderParamParserEmptyString)
+    {
+        {
+            ShaderParamParser parser("string");
+            EXPECT_EQ("", parser.parse_string_value());
+        }
+
+        {
+            ShaderParamParser parser("string ");
+            EXPECT_EQ("", parser.parse_string_value());
+        }
+
+        {
+            ShaderParamParser parser("string      ");
+            EXPECT_EQ("", parser.parse_string_value());
+        }
+    }
+
+    TEST_CASE(ShaderParamParserStringWithSpaces)
+    {
+        ShaderParamParser parser("string c:\\Some Windows Filename.tiff");
+        EXPECT_EQ("c:\\Some Windows Filename.tiff", parser.parse_string_value());
+    }
+
+    TEST_CASE(ShaderParamParserFloatArray)
+    {
+        ShaderParamParser parser("float[] 1.0 2.0 3.0 4.0 5.0 6.0 7.0");
+        EXPECT_EQ(OSLParamTypeFloatArray, parser.param_type());
+        std::vector<float> values;
+        parser.parse_float_array(values);
+        EXPECT_EQ(7, values.size());
+    }
+
+    TEST_CASE(ShaderParamParserIntArray)
+    {
+        ShaderParamParser parser("int[] 1 2 3 4 5 6 7");
+        EXPECT_EQ(OSLParamTypeIntArray, parser.param_type());
+        std::vector<int> values;
+        parser.parse_int_array(values);
+        EXPECT_EQ(7, values.size());
+    }
+
+    TEST_CASE(ShaderParamParserEmptyFloatArray)
+    {
+        ShaderParamParser parser("float[] ");
+        std::vector<float> values;
+
+        EXPECT_EXCEPTION(ExceptionOSLParamParseError,
+        {
+            parser.parse_float_array(values);
+        });
+    }
+
+    TEST_CASE(ShaderParamParserColorArray)
+    {
+        ShaderParamParser parser("color[] 1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0");
+        EXPECT_EQ(OSLParamTypeColorArray, parser.param_type());
+        std::vector<float> values;
+        parser.parse_float3_array(values);
+        EXPECT_EQ(9, values.size());
+    }
+
+    TEST_CASE(ShaderParamParserVectorArrayWrongLength)
+    {
+        ShaderParamParser parser("vector[] 1.0 2.0 3.0 4.0 5.0");
+        std::vector<float> values;
+
+        EXPECT_EXCEPTION(ExceptionOSLParamParseError,
+        {
+            parser.parse_float3_array(values);
+        });
+    }
+
     TEST_CASE(ShaderParamParserUnknownType)
     {
         EXPECT_EXCEPTION(ExceptionOSLParamParseError,
@@ -108,15 +181,6 @@ TEST_SUITE(Renderer_Modeling_ShaderParamParser)
             EXPECT_EXCEPTION(ExceptionOSLParamParseError,
             {
                 parser.parse_one_value<float>();
-            });
-        }
-
-        {
-            ShaderParamParser parser("string a b");
-
-            EXPECT_EXCEPTION(ExceptionOSLParamParseError,
-            {
-                parser.parse_string_value();
             });
         }
     }

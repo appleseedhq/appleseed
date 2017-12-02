@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -39,15 +39,25 @@ namespace renderer
 //
 // This class identifies the pixel currently being rendered throughout the
 // Tile Renderer -> Pixel Renderer -> Sample Renderer -> Surface Shader -> Lighting Engine chain.
+//
 
 class PixelContext
 {
   public:
-    const int m_ix, m_iy;
+    // Constructor.
+    PixelContext(
+        const foundation::Vector2i& pixel_coords,
+        const foundation::Vector2d& sample_position);
 
-    PixelContext(const int ix, const int iy);
+    // Return pixel coordinates.
+    const foundation::Vector2i& get_pixel_coords() const;
 
-    foundation::Vector2i get_pixel_coordinates() const;
+    // Return sample coordinates.
+    const foundation::Vector2d& get_sample_position() const;
+
+  private:
+    const foundation::Vector2i  m_pixel_coords;
+    const foundation::Vector2d  m_sample_position;
 };
 
 
@@ -55,15 +65,22 @@ class PixelContext
 // PixelContext class implementation.
 //
 
-inline PixelContext::PixelContext(const int ix, const int iy)
-  : m_ix(ix)
-  , m_iy(iy)
+inline PixelContext::PixelContext(
+    const foundation::Vector2i& pixel_coords,
+    const foundation::Vector2d& sample_position)
+  : m_pixel_coords(pixel_coords)
+  , m_sample_position(sample_position)
 {
 }
 
-inline foundation::Vector2i PixelContext::get_pixel_coordinates() const
+inline const foundation::Vector2i& PixelContext::get_pixel_coords() const
 {
-    return foundation::Vector2i(m_ix, m_iy);
+    return m_pixel_coords;
+}
+
+inline const foundation::Vector2d& PixelContext::get_sample_position() const
+{
+    return m_sample_position;
 }
 
 }       // namespace renderer

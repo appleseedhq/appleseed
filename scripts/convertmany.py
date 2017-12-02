@@ -7,7 +7,7 @@
 # This software is released under the MIT license.
 #
 # Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-# Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+# Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -90,7 +90,7 @@ def convert_mesh_files(tool_path, directory, recursive, input_pattern, output_fo
 #--------------------------------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="convert multiple mesh files from one format " \
+    parser = argparse.ArgumentParser(description="convert multiple mesh files from one format "
                                      "to another.")
     parser.add_argument("-t", "--tool-path", metavar="tool-path",
                         help="set the path to the convertmeshfile tool")

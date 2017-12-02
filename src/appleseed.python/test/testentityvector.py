@@ -5,7 +5,7 @@
 #
 # This software is released under the MIT license.
 #
-# Copyright (c) 2016 Esteban Tovagliari, The appleseedhq Organization
+# Copyright (c) 2016-2017 Esteban Tovagliari, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,10 @@
 import unittest
 import appleseed as asr
 
+
 class TestEntityVector(unittest.TestCase):
     """
-        Basic entity vector tests.
+    Basic entity vector tests.
     """
 
     def setUp(self):
@@ -77,7 +78,7 @@ class TestEntityVector(unittest.TestCase):
         self.color_vec.insert(col)
         self.assertEqual(len(self.color_vec), 1)
 
-        c= self.color_vec.get_by_name("color")
+        c = self.color_vec.get_by_name("color")
         col = self.color_vec.remove(c)
         self.assertEqual(len(self.color_vec), 0)
 

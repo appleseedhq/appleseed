@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -61,6 +61,7 @@ TileJob::TileJob(
     const size_t                tile_x,
     const size_t                tile_y,
     const size_t                pass_hash,
+    const Spectrum::Mode        spectrum_mode,
     IAbortSwitch&               abort_switch)
   : m_tile_renderers(tile_renderers)
   , m_tile_callbacks(tile_callbacks)
@@ -68,6 +69,7 @@ TileJob::TileJob(
   , m_tile_x(tile_x)
   , m_tile_y(tile_y)
   , m_pass_hash(pass_hash)
+  , m_spectrum_mode(spectrum_mode)
   , m_abort_switch(abort_switch)
 {
     // Either there is no tile callback, or there is the same number
@@ -79,29 +81,19 @@ TileJob::TileJob(
 
 void TileJob::execute(const size_t thread_index)
 {
-    assert(thread_index < m_tile_renderers.size());
+    // Initialize thread-local variables.
+    Spectrum::set_mode(m_spectrum_mode);
 
     // Retrieve the tile callback.
+    assert(thread_index < m_tile_renderers.size());
     ITileCallback* tile_callback =
         m_tile_callbacks.size() == m_tile_renderers.size()
             ? m_tile_callbacks[thread_index]
-            : 0;
+            : nullptr;
 
     // Call the pre-render tile callback.
     if (tile_callback)
-    {
-        const Image& frame_image = m_frame.image();
-
-        const CanvasProperties& frame_props = frame_image.properties();
-        const size_t x = m_tile_x * frame_props.m_tile_width;
-        const size_t y = m_tile_y * frame_props.m_tile_height;
-
-        const Tile& tile = frame_image.tile(m_tile_x, m_tile_y);
-        const size_t width = tile.get_width();
-        const size_t height = tile.get_height();
-
-        tile_callback->pre_render(x, y, width, height);
-    }
+        tile_callback->on_tile_begin(&m_frame, m_tile_x, m_tile_y);
 
     try
     {
@@ -117,7 +109,7 @@ void TileJob::execute(const size_t thread_index)
     {
         // Call the post-render tile callback.
         if (tile_callback)
-            tile_callback->post_render_tile(&m_frame, m_tile_x, m_tile_y);
+            tile_callback->on_tile_end(&m_frame, m_tile_x, m_tile_y);
 
         // Rethrow the exception.
         throw;
@@ -125,7 +117,7 @@ void TileJob::execute(const size_t thread_index)
 
     // Call the post-render tile callback.
     if (tile_callback)
-        tile_callback->post_render_tile(&m_frame, m_tile_x, m_tile_y);
+        tile_callback->on_tile_end(&m_frame, m_tile_x, m_tile_y);
 }
 
 }   // namespace renderer

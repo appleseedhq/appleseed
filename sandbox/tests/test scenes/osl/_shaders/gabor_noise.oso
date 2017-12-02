@@ -1,5 +1,6 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.9
+# Compiled by oslc 1.7.4
+# options: 
 shader gabor_noise
 param	point	Pos	0 0 0		%read{1,1} %write{0,0} %derivs %initexpr
 param	float	frequency	1		%read{1,1} %write{2147483647,-1} %derivs

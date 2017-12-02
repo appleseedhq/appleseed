@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
 
 // appleseed.foundation headers.
@@ -54,7 +55,7 @@ namespace renderer
 // and takes care of correcting for the use of shading normals in the adjoint case.
 //
 
-template <typename BSDFImpl>
+template <typename BSDFImpl, bool Cull = true>
 class BSDFWrapper
   : public BSDFImpl
 {
@@ -63,31 +64,40 @@ class BSDFWrapper
         const char*                     name,
         const ParamArray&               params);
 
-    virtual void sample(
+    void sample(
         SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
-        BSDFSample&                     sample) const APPLESEED_OVERRIDE;
+        const int                       modes,
+        BSDFSample&                     sample) const override;
 
-    virtual double evaluate(
+    float evaluate(
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
-        const foundation::Vector3d&     geometric_normal,
-        const foundation::Basis3d&      shading_basis,
-        const foundation::Vector3d&     outgoing,
-        const foundation::Vector3d&     incoming,
+        const foundation::Vector3f&     geometric_normal,
+        const foundation::Basis3f&      shading_basis,
+        const foundation::Vector3f&     outgoing,
+        const foundation::Vector3f&     incoming,
         const int                       modes,
-        Spectrum&                       value) const APPLESEED_OVERRIDE;
+        DirectShadingComponents&        value) const override;
 
-    virtual double evaluate_pdf(
+    float evaluate_pdf(
         const void*                     data,
-        const foundation::Vector3d&     geometric_normal,
-        const foundation::Basis3d&      shading_basis,
-        const foundation::Vector3d&     outgoing,
-        const foundation::Vector3d&     incoming,
-        const int                       modes) const APPLESEED_OVERRIDE;
+        const bool                      adjoint,
+        const foundation::Vector3f&     geometric_normal,
+        const foundation::Basis3f&      shading_basis,
+        const foundation::Vector3f&     outgoing,
+        const foundation::Vector3f&     incoming,
+        const int                       modes) const override;
+
+  private:
+    bool is_culled(
+        const bool                      adjoint,
+        const foundation::Basis3f&      shading_basis,
+        const foundation::Vector3f&     outgoing,
+        const foundation::Vector3f&     incoming) const;
 };
 
 
@@ -95,23 +105,24 @@ class BSDFWrapper
 // BSDFWrapper class implementation.
 //
 
-template <typename BSDFImpl>
-BSDFWrapper<BSDFImpl>::BSDFWrapper(
+template <typename BSDFImpl, bool Cull>
+BSDFWrapper<BSDFImpl, Cull>::BSDFWrapper(
     const char*                         name,
     const ParamArray&                   params)
   : BSDFImpl(name, params)
 {
 }
 
-template <typename BSDFImpl>
-void BSDFWrapper<BSDFImpl>::sample(
+template <typename BSDFImpl, bool Cull>
+void BSDFWrapper<BSDFImpl, Cull>::sample(
     SamplingContext&                    sampling_context,
     const void*                         data,
     const bool                          adjoint,
     const bool                          cosine_mult,
+    const int                           modes,
     BSDFSample&                         sample) const
 {
-    assert(foundation::is_normalized(sample.get_geometric_normal()));
+    assert(foundation::is_normalized(sample.m_geometric_normal));
     assert(foundation::is_normalized(sample.m_outgoing.get_value()));
 
     BSDFImpl::sample(
@@ -119,48 +130,52 @@ void BSDFWrapper<BSDFImpl>::sample(
         data,
         adjoint,
         false,
+        modes,
         sample);
 
-    if (sample.m_mode != ScatteringMode::Absorption)
+    if (sample.m_mode != ScatteringMode::None)
     {
-        assert(foundation::is_normalized(sample.m_incoming.get_value()));
-        assert(sample.m_probability == BSDFImpl::DiracDelta || sample.m_probability > 0.0);
+        assert(foundation::is_normalized(sample.m_incoming.get_value(), 1.0e-5f));
+        assert(sample.m_probability == BSDFImpl::DiracDelta || sample.m_probability > 0.0f);
 
         if (cosine_mult)
         {
             if (adjoint)
             {
-                const double cos_on = std::abs(foundation::dot(sample.m_outgoing.get_value(), sample.get_shading_normal()));
-                const double cos_ig = std::abs(foundation::dot(sample.m_incoming.get_value(), sample.get_geometric_normal()));
-                const double cos_og = std::abs(foundation::dot(sample.m_outgoing.get_value(), sample.get_geometric_normal()));
-                sample.m_value *= static_cast<float>(cos_on * cos_ig / cos_og);
+                const float cos_on = std::abs(foundation::dot(sample.m_outgoing.get_value(), sample.m_shading_basis.get_normal()));
+                const float cos_ig = std::abs(foundation::dot(sample.m_incoming.get_value(), sample.m_geometric_normal));
+                const float cos_og = std::abs(foundation::dot(sample.m_outgoing.get_value(), sample.m_geometric_normal));
+                sample.m_value *= cos_on * cos_ig / cos_og;
             }
             else
             {
-                const double cos_in = std::abs(foundation::dot(sample.m_incoming.get_value(), sample.get_shading_normal()));
-                sample.m_value *= static_cast<float>(cos_in);
+                const float cos_in = std::abs(foundation::dot(sample.m_incoming.get_value(), sample.m_shading_basis.get_normal()));
+                sample.m_value *= cos_in;
             }
         }
     }
 }
 
-template <typename BSDFImpl>
-double BSDFWrapper<BSDFImpl>::evaluate(
+template <typename BSDFImpl, bool Cull>
+float BSDFWrapper<BSDFImpl, Cull>::evaluate(
     const void*                         data,
     const bool                          adjoint,
     const bool                          cosine_mult,
-    const foundation::Vector3d&         geometric_normal,
-    const foundation::Basis3d&          shading_basis,
-    const foundation::Vector3d&         outgoing,
-    const foundation::Vector3d&         incoming,
+    const foundation::Vector3f&         geometric_normal,
+    const foundation::Basis3f&          shading_basis,
+    const foundation::Vector3f&         outgoing,
+    const foundation::Vector3f&         incoming,
     const int                           modes,
-    Spectrum&                           value) const
+    DirectShadingComponents&            value) const
 {
     assert(foundation::is_normalized(geometric_normal));
     assert(foundation::is_normalized(outgoing));
     assert(foundation::is_normalized(incoming));
 
-    const double probability =
+    if (Cull && is_culled(adjoint, shading_basis, outgoing, incoming))
+        return 0.0f;
+
+    const float probability =
         BSDFImpl::evaluate(
             data,
             adjoint,
@@ -172,52 +187,69 @@ double BSDFWrapper<BSDFImpl>::evaluate(
             modes,
             value);
 
-    assert(probability >= 0.0);
+    assert(probability >= 0.0f);
 
-    if (probability > 0.0 && cosine_mult)
+    if (probability > 0.0f && cosine_mult)
     {
         if (adjoint)
         {
-            const double cos_on = std::abs(foundation::dot(outgoing, shading_basis.get_normal()));
-            const double cos_ig = std::abs(foundation::dot(incoming, geometric_normal));
-            const double cos_og = std::abs(foundation::dot(outgoing, geometric_normal));
-            value *= static_cast<float>(cos_on * cos_ig / cos_og);
+            const float cos_on = std::abs(foundation::dot(outgoing, shading_basis.get_normal()));
+            const float cos_ig = std::abs(foundation::dot(incoming, geometric_normal));
+            const float cos_og = std::abs(foundation::dot(outgoing, geometric_normal));
+            value *= cos_on * cos_ig / cos_og;
         }
         else
         {
-            const double cos_in = std::abs(foundation::dot(incoming, shading_basis.get_normal()));
-            value *= static_cast<float>(cos_in);
+            const float cos_in = std::abs(foundation::dot(incoming, shading_basis.get_normal()));
+            value *= cos_in;
         }
     }
 
     return probability;
 }
 
-template <typename BSDFImpl>
-double BSDFWrapper<BSDFImpl>::evaluate_pdf(
+template <typename BSDFImpl, bool Cull>
+float BSDFWrapper<BSDFImpl, Cull>::evaluate_pdf(
     const void*                         data,
-    const foundation::Vector3d&         geometric_normal,
-    const foundation::Basis3d&          shading_basis,
-    const foundation::Vector3d&         outgoing,
-    const foundation::Vector3d&         incoming,
+    const bool                          adjoint,
+    const foundation::Vector3f&         geometric_normal,
+    const foundation::Basis3f&          shading_basis,
+    const foundation::Vector3f&         outgoing,
+    const foundation::Vector3f&         incoming,
     const int                           modes) const
 {
     assert(foundation::is_normalized(geometric_normal));
     assert(foundation::is_normalized(outgoing));
     assert(foundation::is_normalized(incoming));
 
-    const double probability =
+    if (Cull && is_culled(adjoint, shading_basis, outgoing, incoming))
+        return 0.0f;
+
+    const float probability =
         BSDFImpl::evaluate_pdf(
             data,
+            adjoint,
             geometric_normal,
             shading_basis,
             outgoing,
             incoming,
             modes);
 
-    assert(probability >= 0.0);
+    assert(probability >= 0.0f);
 
     return probability;
+}
+
+template <typename BSDFImpl, bool Cull>
+bool BSDFWrapper<BSDFImpl, Cull>::is_culled(
+    const bool                          adjoint,
+    const foundation::Basis3f&          shading_basis,
+    const foundation::Vector3f&         outgoing,
+    const foundation::Vector3f&         incoming) const
+{
+    const foundation::Vector3f& n = shading_basis.get_normal();
+    const float cos_n = foundation::dot(adjoint ? outgoing : incoming, n);
+    return BSDFImpl::get_type() == BSDF::Reflective ? cos_n < 0.0f : cos_n > 0.0f;
 }
 
 }       // namespace renderer

@@ -1,0 +1,308 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: http://blog.selfshadow.com/publications/s2012-shading-course/burley/s2012_pbs_disney_brdf_slides_v2.pdf
+
+shader as_disney_material
+[[
+    string as_maya_node_name = "asDisneyMaterial",
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
+    string help = "Disney material",
+    int as_maya_type_id = 0x001279c3
+]]
+(
+    color in_color = color(0.5)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Surface Color",
+        string page = "Common"
+    ]],
+    float in_subsurface_amount = 0.0
+    [[
+        string as_maya_attribute_name = "subsurfaceAmount",
+        string as_maya_attribute_short_name = "ss",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Subsurface",
+        string page = "Common"
+    ]],
+    float in_specular_amount = 0.5
+    [[
+        string as_maya_attribute_name = "specularAmount",
+        string as_maya_attribute_short_name = "sa",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Specular Amount",
+        string page = "Specular"
+    ]],
+    float in_roughness = 0.5
+    [[
+        string as_maya_attribute_name = "roughness",
+        string as_maya_attribute_short_name = "ro",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Surface Roughness",
+        string page = "Specular"
+    ]],
+    float in_specular_tint = 0.0
+    [[
+        string as_maya_attribute_name = "specularTint",
+        string as_maya_attribute_short_name = "st",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Specular Tinting",
+        string page = "Specular"
+    ]],
+    float in_metallic_amount = 0.0
+    [[
+        string as_maya_attribute_name = "metallicAmount",
+        string as_maya_attribute_short_name = "ma",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Metallicness",
+        string page = "Specular",
+        int divider = 1
+    ]],
+    float in_anisotropy_amount = 0.0
+    [[
+        string as_maya_attribute_name = "anisotropyAmount",
+        string as_maya_attribute_short_name = "am",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Anisotropy Amount",
+        string page = "Specular",
+    ]],
+    float in_anisotropy_angle = 0.0
+    [[
+        string as_maya_attribute_name = "anisotropyAngle",
+        string as_maya_attribute_short_name = "aa",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Anisotropy Angle",
+        string page = "Specular",
+        string help = "The [0,1] range maps to [0,360] degrees range"
+    ]],
+    color in_anisotropy_vector_map= color(0)
+    [[
+        string as_maya_attribute_name = "anisotropyVectorMap",
+        string as_maya_attribute_short_name = "vm",
+        string label = "Anisotropy Vector Map",
+        string page = "Specular",
+        string help = "Vector tangent field map, with XY in R,G channels"
+    ]],
+    float in_sheen_amount = 0.0
+    [[
+        string as_maya_attribute_name = "sheenAmount",
+        string as_maya_attribute_short_name = "ha",
+        float min = 0.0,
+        float max = 10.0,
+        float softmax = 1.0,
+        string label = "Sheen Amount",
+        string page = "Sheen"
+    ]],
+    float in_sheen_tint = 0.5
+    [[
+        string as_maya_attribute_name = "sheenTint",
+        string as_maya_attribute_short_name = "ht",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Sheen Tint",
+        string page = "Sheen"
+    ]],
+    float in_clear_coat = 0.0
+    [[
+        string as_maya_attribute_name = "clearCoat",
+        string as_maya_attribute_short_name = "ct",
+        float min = 0.0,
+        float max = 100.0,
+        float softmax = 1.0,
+        string label = "Coating Amount",
+        string page = "Clear Coat"
+    ]],
+    float in_clear_coat_glossyness = 1.0
+    [[
+        string as_maya_attribute_name = "clearCoatGlossyness",
+        string as_maya_attribute_short_name = "cy",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Coating Glossyness",
+        string page = "Clear Coat"
+    ]],
+    normal in_bump_normal = N
+    [[
+        string as_maya_attribute_name = "normalCamera",
+        string as_maya_attribute_short_name = "n",
+        string label = "Bump Normal",
+        string page = "Bump"
+    ]],
+    int in_enable_matte = 0
+    [[
+        string as_maya_attribute_name = "enableMatte",
+        string as_maya_attribute_short_name = "ema",
+        string widget = "checkBox",
+        string label = "Enable Matte Opacity",
+        string page = "Matte Opacity",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int divider = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    float in_matte_opacity = 0.0
+    [[
+        string as_maya_attribute_name = "matteOpacity",
+        string as_maya_attribute_short_name = "mao",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Matte Opacity",
+        string page = "Matte Opacity",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    color in_matte_opacity_color = color(1, 0.5, 0)
+    [[
+        string as_maya_attribute_name = "matteOpacityColor",
+        string as_maya_attribute_short_name = "mac",
+        string label = "Matte Opacity Color",
+        string page = "Matte Opacity",
+        int gafferNoduleLayoutVisible = 0
+    ]], 
+    int in_maximum_ray_depth = 4
+    [[
+        string as_maya_attribute_name = "maximumRayDepth",
+        string as_maya_attribute_short_name = "rd",
+        int min = 0,
+        int max = 32,
+        int softmax = 8,
+        string label = "Ray Depth",
+        string page = "Advanced",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    vector Tn = vector(0)
+    [[
+        int lockgeom = 0,
+        int as_maya_attribute_hidden = 1,
+        string widget = "null",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    vector Bn = vector(0)
+    [[
+        int lockgeom = 0,
+        int as_maya_attribute_hidden = 1,
+        string widget = "null",
+        int gafferNoduleLayoutVisible = 0
+        
+    ]],
+
+    output closure color out_outColor = 0
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string widget = "null"
+    ]],
+    output closure color out_outTransparency = 0
+    [[
+        string as_maya_attribute_name = "outTransparency",
+        string as_maya_attribute_short_name = "ot",
+        string widget = "null"
+    ]],
+    output closure color out_outMatteOpacity = 0
+    [[
+        string as_maya_attribute_name = "outMatteOpacity",
+        string as_maya_attribute_short_name = "om",
+        string widget = "null",
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]]
+)
+{
+    if (raytype("shadow") || raytype("transparency"))
+    {
+        return;
+    }
+
+    if (in_enable_matte)
+    {
+        out_outMatteOpacity = in_matte_opacity *
+            in_matte_opacity_color * holdout();
+
+        out_outColor += out_outMatteOpacity;
+    }
+
+    int ray_depth = 0;
+    int status = getattribute("path:ray_depth", ray_depth);
+
+    if (!status || ray_depth > in_maximum_ray_depth)
+    {
+        return;
+    }
+
+    normal Nn = normalize(in_bump_normal);
+    vector tangent = Tn;
+
+    if (max(in_specular_amount * in_specular_tint) > 0.0 &&
+        in_anisotropy_amount > 0.0)
+    {
+        if (isconnected(in_anisotropy_vector_map))
+        {
+            vector vector_map = normalize(
+                (vector) in_anisotropy_vector_map * 2.0 - 1.0);
+
+            tangent = normalize(vector_map[0] * Tn +
+                                vector_map[1] * Bn +
+                                vector_map[2] * Nn);
+        }
+
+        if (in_anisotropy_angle > 0.0)
+        {
+            tangent = rotate(
+                tangent,
+                in_anisotropy_angle * M_2PI,
+                point(0),
+                point(in_bump_normal));
+        }
+    }
+
+    out_outColor += as_disney(
+        Nn,
+        tangent,
+        in_color,
+        in_subsurface_amount,
+        in_metallic_amount,
+        in_specular_amount,
+        in_specular_tint,
+        in_anisotropy_amount,
+        in_roughness,
+        in_sheen_amount,
+        in_sheen_tint,
+        in_clear_coat,
+        in_clear_coat_glossyness);
+}

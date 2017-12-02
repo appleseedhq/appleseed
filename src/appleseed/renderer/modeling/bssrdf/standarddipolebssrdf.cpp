@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,12 +31,11 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/bssrdf/bssrdfsample.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bssrdf/dipolebssrdf.h"
 #include "renderer/modeling/bssrdf/sss.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/colorspace.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -45,6 +44,9 @@
 // Standard headers.
 #include <cmath>
 #include <cstddef>
+
+// Forward declarations.
+namespace foundation    { class Arena; }
 
 using namespace foundation;
 using namespace std;
@@ -73,143 +75,59 @@ namespace
     {
       public:
         StandardDipoleBSSRDF(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : DipoleBSSRDF(name, params)
-          , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
         {
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        void prepare_inputs(void* data) const APPLESEED_OVERRIDE
+        void prepare_inputs(
+            Arena&                  arena,
+            const ShadingPoint&     shading_point,
+            void*                   data) const override
         {
             DipoleBSSRDFInputValues* values =
-                reinterpret_cast<DipoleBSSRDFInputValues*>(data);
+                static_cast<DipoleBSSRDFInputValues*>(data);
 
-            // Precompute the relative index of refraction.
-            values->m_eta = values->m_outside_ior / values->m_inside_ior;
-
-            // Clamp anisotropy.
-            values->m_anisotropy = clamp(values->m_anisotropy, 0.0, 0.999);
-
-            if (m_inputs.source("sigma_a") == 0 || m_inputs.source("sigma_s") == 0)
-            {
-                //
-                // Compute sigma_a, sigma_s and sigma_tr from the diffuse surface reflectance
-                // and diffuse mean free path (dmfp).
-                //
-
-                if (values->m_reflectance.size() != values->m_dmfp.size())
-                {
-                    // Since it does not really make sense to convert a dmfp,
-                    // a per channel distance, as if it were a color,
-                    // we instead always convert the reflectance to match the
-                    // size of the dmfp.
-                    if (values->m_dmfp.is_spectral())
-                    {
-                        Spectrum::upgrade(
-                            values->m_reflectance,
-                            values->m_reflectance);
-                    }
-                    else
-                    {
-                        Spectrum::downgrade(
-                            m_lighting_conditions,
-                            values->m_reflectance,
-                            values->m_reflectance);
-                    }
-                }
-
-                // Apply multipliers to input values.
-                values->m_reflectance *= static_cast<float>(values->m_reflectance_multiplier);
-                values->m_dmfp *= static_cast<float>(values->m_dmfp_multiplier);
-
-                // Clamp input values.
-                values->m_reflectance = clamp(values->m_reflectance, 0.001f, 0.999f);
-                values->m_dmfp = clamp_low(values->m_dmfp, 1.0e-5f);
-
-                // Compute sigma_a and sigma_s.
-                const ComputeRdStandardDipole rd_fun(values->m_eta);
-                compute_absorption_and_scattering(
-                    rd_fun,
-                    values->m_reflectance,
-                    values->m_dmfp,
-                    values->m_anisotropy,
-                    values->m_sigma_a,
-                    values->m_sigma_s);
-
-                // Compute sigma_tr = 1 / dmfp.
-                values->m_sigma_tr = rcp(values->m_dmfp);
-            }
-            else
-            {
-                //
-                // Compute sigma_tr from sigma_a and sigma_s.
-                //
-                // If you want to use the sigma_a and sigma_s values provided in [1],
-                // and if your scene is modeled in meters, you will need to *multiply*
-                // them by 1000. If your scene is modeled in centimers (e.g. the "size"
-                // of the object is 4 units) then you will need to multiply the sigmas
-                // by 100.
-                //
-
-                effective_extinction_coefficient(
-                    values->m_sigma_a,
-                    values->m_sigma_s,
-                    values->m_anisotropy,
-                    values->m_sigma_tr);
-            }
-
-            // Precompute some coefficients.
-            values->m_sigma_s_prime = values->m_sigma_s * static_cast<float>(1.0 - values->m_anisotropy);
-            values->m_sigma_t_prime = values->m_sigma_s_prime + values->m_sigma_a;
-            values->m_alpha_prime = values->m_sigma_s_prime / values->m_sigma_t_prime;
-
-            // Build a CDF for channel sampling.
-            values->m_channel_pdf = values->m_alpha_prime;
-            values->m_channel_cdf.resize(values->m_channel_pdf.size());
-            float cumulated_pdf = 0.0f;
-            for (size_t i = 0, e = values->m_channel_cdf.size(); i < e; ++i)
-            {
-                cumulated_pdf += values->m_channel_pdf[i];
-                values->m_channel_cdf[i] = cumulated_pdf;
-            }
-            const float rcp_cumulated_pdf = 1.0f / cumulated_pdf;
-            values->m_channel_pdf *= rcp_cumulated_pdf;
-            values->m_channel_cdf *= rcp_cumulated_pdf;
-            values->m_channel_cdf[values->m_channel_cdf.size() - 1] = 1.0f;
-
-            // Precompute the (square of the) max radius.
-            values->m_rmax2 = square(dipole_max_radius(min_value(values->m_sigma_tr)));
+            do_prepare_inputs<ComputeRdStandardDipole>(shading_point, values);
         }
 
-        virtual void evaluate_profile(
-            const void*         data,
-            const double        square_radius,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+        void evaluate_profile(
+            const void*             data,
+            const ShadingPoint&     outgoing_point,
+            const Vector3f&         outgoing_dir,
+            const ShadingPoint&     incoming_point,
+            const Vector3f&         incoming_dir,
+            Spectrum&               value) const override
         {
             const DipoleBSSRDFInputValues* values =
-                reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
+                static_cast<const DipoleBSSRDFInputValues*>(data);
 
-            const double fdr = fresnel_internal_diffuse_reflectance(values->m_eta);
-            const double a = (1.0 + fdr) / (1.0 - fdr);
+            const float square_radius =
+                static_cast<float>(
+                    square_norm(outgoing_point.get_point() - incoming_point.get_point()));
 
-            value.resize(values->m_sigma_a.size());
+            const float fdr = fresnel_internal_diffuse_reflectance(values->m_base_values.m_eta);
+            const float a = (1.0f + fdr) / (1.0f - fdr);
 
-            for (size_t i = 0, e = value.size(); i < e; ++i)
+            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
             {
-                const double sigma_t_prime = values->m_sigma_t_prime[i];
-                const double alpha_prime = values->m_alpha_prime[i];
-                const double sigma_tr = values->m_sigma_tr[i];
+                const float sigma_a = values->m_sigma_a[i];
+                const float sigma_s = values->m_sigma_s[i];
+                const float sigma_s_prime = sigma_s * (1.0f - values->m_g);
+                const float sigma_t_prime = sigma_s_prime + sigma_a;
+                const float alpha_prime = values->m_precomputed.m_alpha_prime[i];
+                const float sigma_tr = values->m_precomputed.m_sigma_tr[i];
 
                 //
                 // The extended source represented by the refracted ray in the medium is approximated
@@ -236,8 +154,8 @@ namespace
                 //      = -zr * (1 + 4/3 * A)
                 //
 
-                const double zr = 1.0 / sigma_t_prime;
-                const double zv = -zr * (1.0 + (4.0 / 3.0) * a);
+                const float zr = 1.0f / sigma_t_prime;
+                const float zv = -zr * (1.0f + (4.0f / 3.0f) * a);
 
                 //
                 // Let's call xo the outgoing point, xi the incoming point and ni the normal at
@@ -263,27 +181,21 @@ namespace
                 //   dv = sqrt( ||xo - xi||^2 + zv^2 )
                 //
 
-                const double dr = sqrt(square_radius + zr * zr);
-                const double dv = sqrt(square_radius + zv * zv);
+                const float dr = sqrt(square_radius + zr * zr);
+                const float dv = sqrt(square_radius + zv * zv);
 
                 // The expression for R(r) in [1] is incorrect; use the correct expression from [2].
-                const double rcp_dr = 1.0 / dr;
-                const double rcp_dv = 1.0 / dv;
-                const double sigma_tr_dr = sigma_tr * dr;
-                const double sigma_tr_dv = sigma_tr * dv;
-                const double kr = zr * (sigma_tr_dr + 1.0) * square(rcp_dr);
-                const double kv = zv * (sigma_tr_dv + 1.0) * square(rcp_dv);
-                const double er = exp(-sigma_tr_dr) * rcp_dr;
-                const double ev = exp(-sigma_tr_dv) * rcp_dv;
-                value[i] = static_cast<float>(alpha_prime * RcpFourPi * (kr * er - kv * ev));
+                const float rcp_dr = 1.0f / dr;
+                const float rcp_dv = 1.0f / dv;
+                const float sigma_tr_dr = sigma_tr * dr;
+                const float sigma_tr_dv = sigma_tr * dv;
+                const float kr = zr * (sigma_tr_dr + 1.0f) * square(rcp_dr);
+                const float kv = zv * (sigma_tr_dv + 1.0f) * square(rcp_dv);
+                const float er = exp(-sigma_tr_dr) * rcp_dr;
+                const float ev = exp(-sigma_tr_dv) * rcp_dv;
+                value[i] = alpha_prime * RcpFourPi<float>() * (kr * er - kv * ev);
             }
-
-            // Return r * R(r) * weight.
-            value *= static_cast<float>(sqrt(square_radius) * values->m_weight);
         }
-
-      private:
-        const LightingConditions m_lighting_conditions;
     };
 }
 
@@ -291,6 +203,11 @@ namespace
 //
 // StandardDipoleBSSRDFFactory class implementation.
 //
+
+void StandardDipoleBSSRDFFactory::release()
+{
+    delete this;
+}
 
 const char* StandardDipoleBSSRDFFactory::get_model() const
 {
@@ -308,13 +225,6 @@ Dictionary StandardDipoleBSSRDFFactory::get_model_metadata() const
 auto_release_ptr<BSSRDF> StandardDipoleBSSRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<BSSRDF>(new StandardDipoleBSSRDF(name, params));
-}
-
-auto_release_ptr<BSSRDF> StandardDipoleBSSRDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<BSSRDF>(new StandardDipoleBSSRDF(name, params));
 }

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,6 @@
 //
 
 // appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
 #include "bindentitycontainers.h"
 #include "dict2dict.h"
 
@@ -36,8 +35,9 @@
 #include "renderer/api/shadergroup.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/python.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.
@@ -48,6 +48,14 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+
+// Work around a regression in Visual Studio 2015 Update 3.
+#if defined(_MSC_VER) && _MSC_VER == 1900
+namespace boost
+{
+    template <> ShaderGroup const volatile* get_pointer<ShaderGroup const volatile>(ShaderGroup const volatile* p) { return p; }
+}
+#endif
 
 namespace
 {
@@ -113,9 +121,9 @@ namespace
             return m_shader_query->get_shader_type();
         }
 
-        size_t get_num_params() const
+        size_t get_param_count() const
         {
-            return m_shader_query->get_num_params();
+            return m_shader_query->get_param_count();
         }
 
         bpy::dict get_param_info(const size_t param_index) const
@@ -151,7 +159,7 @@ void bind_shader_group()
         .def("open", &ShaderQueryWrapper::open)
         .def("get_shader_name", &ShaderQueryWrapper::get_shader_name)
         .def("get_shader_type", &ShaderQueryWrapper::get_shader_type)
-        .def("get_num_params", &ShaderQueryWrapper::get_num_params)
+        .def("get_num_params", &ShaderQueryWrapper::get_param_count)
         .def("get_param_info", &ShaderQueryWrapper::get_param_info)
         .def("get_metadata", &ShaderQueryWrapper::get_metadata)
         ;

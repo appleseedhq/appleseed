@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,11 +33,15 @@
 // appleseed.shared headers.
 #include "dllsymbol.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/log/logmessage.h"
+
 // Boost headers.
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 
 // Forward declarations.
+namespace foundation    { class Dictionary; }
 namespace foundation    { class Logger; }
 
 namespace appleseed {
@@ -51,16 +55,22 @@ namespace shared {
 class SHAREDDLL Application
 {
   public:
+    // Return true if the application can run on the host machine, false otherwise.
+    static bool is_compatible_with_host(const char** missing_feature);
+
+    // Check if the application can run on the host machine. If it cannot, issue
+    // a fatal error message through the provided foundation::Logger object.
+    static void check_compatibility_with_host(foundation::Logger& logger);
+
     // Return true if the application is correctly installed, false otherwise.
-    // The application should print a message and exit if not correctly installed.
     static bool is_correctly_installed();
 
-    // Check if the application is correctly installed, and issue a fatal error
-    // message (through the provided foundation::Logger object) if it isn't.
+    // Check if the application is correctly installed. If it is not, issue
+    // a fatal error message through the provided foundation::Logger object.
     static void check_installation(foundation::Logger& logger);
 
-    // Return the root path of the application.  The root path of an application
-    // is the path to the parent of the bin/ subdirectory.  This method returns
+    // Return the root path of the application. The root path of an application
+    // is the path to the parent of the bin/ subdirectory. This method returns
     // an empty string if the application is not correctly installed.
     static const char* get_root_path();
 
@@ -69,6 +79,14 @@ class SHAREDDLL Application
 
     // Return the root path of the application's tests.
     static const char* get_tests_root_path();
+
+    // Load a settings file from appleseed's settings directory.
+    // Returns true if settings could be loaded.
+    static bool load_settings(
+        const char*                             filename,
+        foundation::Dictionary&                 settings,
+        foundation::Logger&                     logger,
+        const foundation::LogMessage::Category  category = foundation::LogMessage::Debug);
 
     // Change the current directory to the root path of the application's tests.
     // Returns the path to the current directory.

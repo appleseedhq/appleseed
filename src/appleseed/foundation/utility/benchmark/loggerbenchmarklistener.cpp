@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -132,23 +132,23 @@ namespace
         {
         }
 
-        virtual void release()
+        void release() override
         {
             delete this;
         }
 
-        virtual void begin_suite(
-            const BenchmarkSuite&   benchmark_suite)
+        void begin_suite(
+            const BenchmarkSuite&   benchmark_suite) override
         {
             m_suite_name_printed = false;
         }
 
-        virtual void write(
+        void write(
             const BenchmarkSuite&   benchmark_suite,
             const IBenchmarkCase&   benchmark_case,
             const char*             file,
             const size_t            line,
-            const char*             message)
+            const char*             message) override
         {
             print_suite_name(benchmark_suite);
 
@@ -166,16 +166,16 @@ namespace
             split(message, "\n", tokens);
 
             // Print the message.
-            for (const_each<vector<string> > i = tokens; i; ++i)
-                LOG_ERROR(m_logger, "    %s\n", i->c_str());
+            for (const_each<vector<string>> i = tokens; i; ++i)
+                LOG_ERROR(m_logger, "    %s", i->c_str());
         }
 
-        virtual void write(
+        void write(
             const BenchmarkSuite&   benchmark_suite,
             const IBenchmarkCase&   benchmark_case,
             const char*             file,
             const size_t            line,
-            const TimingResult&     timing_result)
+            const TimingResult&     timing_result) override
         {
             string callrate_string;
 

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,15 +32,19 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/path.h"
+#include "foundation/platform/system.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/log.h"
+#include "foundation/utility/settings.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cstring>
+#include <string>
 
-using namespace boost;
 using namespace foundation;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace shared {
@@ -58,21 +62,70 @@ void Application::check_installation(Logger& logger)
 {
     if (!is_correctly_installed())
     {
-        // We need the path to the application's executable to construct the error message.
-        const filesystem::path executable_path(get_executable_path());
-
-        // Issue a fatal error message.
+        logger.set_all_formats("{message}");
         LOG_FATAL(
             logger,
-            "The application failed to start because it is not properly installed. "
-            "Please reinstall the application.\n"
-            "Specifically, it was expected that %s would reside in a %s subdirectory "
-            "inside the main directory of the application, but it appears not to be "
-            "the case (%s seems to be located in %s).",
-            executable_path.filename().string().c_str(),
-            filesystem::path("bin/").make_preferred().string().c_str(),
-            executable_path.filename().string().c_str(),
-            executable_path.parent_path().string().c_str());
+            "the application failed to start because it is not properly installed. "
+            "please reinstall the application.");
+    }
+}
+
+bool Application::is_compatible_with_host(const char** missing_feature)
+{
+#ifdef APPLESEED_X86
+    System::X86CpuFeatures features;
+    System::detect_x86_cpu_features(features);
+
+#ifdef APPLESEED_USE_SSE
+    if (!features.m_hw_sse)
+    {
+        if (missing_feature)
+            *missing_feature = "SSE";
+        return false;
+    }
+#endif
+
+#ifdef APPLESEED_USE_SSE42
+    if (!features.m_hw_sse42)
+    {
+        if (missing_feature)
+            *missing_feature = "SSE4.2";
+        return false;
+    }
+#endif
+
+#ifdef APPLESEED_USE_AVX
+    if (!features.m_hw_avx)
+    {
+        if (missing_feature)
+            *missing_feature = "AVX";
+        return false;
+    }
+#endif
+
+#ifdef APPLESEED_USE_AVX2
+    if (!features.m_hw_avx2)
+    {
+        if (missing_feature)
+            *missing_feature = "AVX2";
+        return false;
+    }
+#endif
+#endif
+
+    return true;
+}
+
+void Application::check_compatibility_with_host(Logger& logger)
+{
+    const char* missing_feature = nullptr;
+    if (!is_compatible_with_host(&missing_feature))
+    {
+        logger.set_all_formats("{message}");
+        LOG_FATAL(
+            logger,
+            "this executable requires a cpu with %s support.",
+            lower_case(missing_feature).c_str());
     }
 }
 
@@ -81,13 +134,13 @@ namespace
     // Compute the root path of the application.  Return true if the root path could be
     // determined, in which case it is stored in root_path, or false if the application
     // is not properly installed, in which case root_path is left unaltered.
-    bool compute_root_path(filesystem::path& root_path)
+    bool compute_root_path(bf::path& root_path)
     {
         // Retrieve the full path to the application's executable.
-        const filesystem::path executable_path(get_executable_path());
+        const bf::path executable_path(get_executable_path());
 
         // Remove the end of the path until /bin is reached.
-        filesystem::path path = executable_path;
+        bf::path path = executable_path;
         while (path.has_parent_path() && path.filename() != "bin")
             path = path.parent_path();
 
@@ -102,7 +155,7 @@ namespace
         }
     }
 
-    void copy_directory_path_to_buffer(const filesystem::path& path, char* output)
+    void copy_directory_path_to_buffer(const bf::path& path, char* output)
     {
         const string path_string = path.string();
 
@@ -120,7 +173,7 @@ const char* Application::get_root_path()
 
     if (!root_path_initialized)
     {
-        filesystem::path root_path;
+        bf::path root_path;
 
         if (compute_root_path(root_path))
         {
@@ -149,7 +202,7 @@ const char* Application::get_user_settings_path()
 
         return 0;
 
-// OS X.
+// macOS.
 #elif defined __APPLE__
 
         return 0;
@@ -157,7 +210,7 @@ const char* Application::get_user_settings_path()
 // Other Unices.
 #elif defined __linux__ || defined __FreeBSD__
 
-        filesystem::path p(get_home_directory());
+        bf::path p(get_home_directory());
         p /= ".appleseed/settings";
         copy_directory_path_to_buffer(p, user_settings_buffer);
 
@@ -180,11 +233,11 @@ const char* Application::get_tests_root_path()
 
     if (!tests_root_path_initialized)
     {
-        filesystem::path root_path;
+        bf::path root_path;
 
         if (compute_root_path(root_path))
         {
-            root_path = root_path / filesystem::path("tests");
+            root_path = root_path / bf::path("tests");
             copy_directory_path_to_buffer(root_path, tests_root_path_buffer);
         }
         else
@@ -196,6 +249,46 @@ const char* Application::get_tests_root_path()
     }
 
     return tests_root_path_buffer;
+}
+
+bool Application::load_settings(
+    const char*                 filename,
+    Dictionary&                 settings,
+    Logger&                     logger,
+    const LogMessage::Category  category)
+{
+    const bf::path root_path(get_root_path());
+    const bf::path schema_file_path = root_path / "schemas" / "settings.xsd";
+
+    SettingsFileReader reader(logger);
+
+    // First try to read the settings from the user path.
+    if (const char* user_path = get_user_settings_path())
+    {
+        const bf::path user_settings_file_path = bf::path(user_path) / filename;
+        if (bf::exists(user_settings_file_path) &&
+            reader.read(
+                user_settings_file_path.string().c_str(),
+                schema_file_path.string().c_str(),
+                settings))
+        {
+            LOG(logger, category, "successfully loaded settings from %s.", user_settings_file_path.string().c_str());
+            return true;
+        }
+    }
+
+    // As a fallback, try to read the settings from the appleseed installation directory.
+    const bf::path settings_file_path = root_path / "settings" / filename;
+    if (reader.read(
+            settings_file_path.string().c_str(),
+            schema_file_path.string().c_str(),
+            settings))
+    {
+        LOG(logger, category, "successfully loaded settings from %s.", settings_file_path.string().c_str());
+        return true;
+    }
+
+    return false;
 }
 
 }   // namespace shared

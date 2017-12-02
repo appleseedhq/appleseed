@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -46,11 +46,11 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/aabb.h"
 #include "foundation/math/intersection/aabbtriangle.h"
 #include "foundation/math/intersection/rayaabb.h"
-#include "foundation/math/sampling/mappings.h"
-#include "foundation/math/aabb.h"
 #include "foundation/math/ray.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/transform.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/lazy.h"
@@ -182,7 +182,7 @@ void AOVoxelTree::build(
     BuilderType&    builder)
 {
     // The voxel tree is built using the scene geometry at the middle of the shutter interval.
-    const double time = scene.get_camera()->get_shutter_middle_time();
+    const float time = scene.get_active_camera()->get_shutter_middle_time();
 
     // Loop over the assembly instances of the scene.
     for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
@@ -333,7 +333,7 @@ double compute_fast_ambient_occlusion(
     for (size_t i = 0; i < sample_count; ++i)
     {
         // Generate a cosine-weighted direction over the unit hemisphere.
-        ray.m_dir = sample_hemisphere_cosine(child_sampling_context.next_vector2<2>());
+        ray.m_dir = sample_hemisphere_cosine(child_sampling_context.next2<Vector2d>());
 
         // Transform the direction to world space.
         ray.m_dir = shading_basis.transform_to_parent(ray.m_dir);

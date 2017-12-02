@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,11 +31,10 @@
 #define APPLESEED_FOUNDATION_MATH_SAMPLING_QMCSAMPLINGCONTEXT_H
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exceptionnotimplemented.h"
-#include "foundation/math/rng/distribution.h"
 #include "foundation/math/permutation.h"
 #include "foundation/math/primes.h"
 #include "foundation/math/qmc.h"
+#include "foundation/math/rng/distribution.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/test/helpers.h"
 
@@ -111,19 +110,9 @@ class QMCSamplingContext
     // Set the instance number.
     void set_instance(const size_t instance);
 
-    // Return the next sample in [0,1].
-    double next_double1();
-
-    // Return the next sample in [0,1).
-    double next_double2();
-
-    // Return the next sample in [0,1]^N.
-    void next_vector1(const size_t n, double v[]);
-    template <size_t N> Vector<double, N> next_vector1();
-
     // Return the next sample in [0,1)^N.
-    void next_vector2(const size_t n, double v[]);
-    template <size_t N> Vector<double, N> next_vector2();
+    // Works for scalars and foundation::Vector<>.
+    template <typename T> T next2();
 
     // Return the total dimension of this sampler.
     size_t get_total_dimension() const;
@@ -151,6 +140,10 @@ class QMCSamplingContext
     size_t      m_instance;
     VectorType  m_offset;
 
+    // Cranley-Patterson rotation.
+    template <typename T>
+    static T rotate(T x, const T offset);
+
     QMCSamplingContext(
         RNG&            rng,
         const Mode      mode,
@@ -161,8 +154,10 @@ class QMCSamplingContext
 
     void compute_offset();
 
-    // Cranley-Patterson rotation.
-    static double rotate(double x, const double offset);
+    template <typename T> struct Tag {};
+
+    template <typename T> T next2(Tag<T>);
+    template <typename T, size_t N> Vector<T, N> next2(Tag<Vector<T, N>>);
 };
 
 
@@ -243,8 +238,8 @@ QMCSamplingContext<RNG>::operator=(const QMCSamplingContext& rhs)
 
 template <typename RNG>
 inline QMCSamplingContext<RNG> QMCSamplingContext<RNG>::split(
-    const size_t    dimension,
-    const size_t    sample_count) const
+    const size_t        dimension,
+    const size_t        sample_count) const
 {
     return
         QMCSamplingContext(
@@ -258,8 +253,8 @@ inline QMCSamplingContext<RNG> QMCSamplingContext<RNG>::split(
 
 template <typename RNG>
 inline void QMCSamplingContext<RNG>::split_in_place(
-    const size_t    dimension,
-    const size_t    sample_count)
+    const size_t        dimension,
+    const size_t        sample_count)
 {
     assert(m_sample_count == 0 || m_instance == m_sample_count);    // can't split in the middle of a sequence
     assert(dimension <= VectorType::Dimension);
@@ -272,6 +267,45 @@ inline void QMCSamplingContext<RNG>::split_in_place(
 
     if (m_mode == QMCMode)
         compute_offset();
+}
+
+template <typename RNG>
+inline void QMCSamplingContext<RNG>::set_instance(const size_t instance)
+{
+    m_instance = instance;
+}
+
+template <typename RNG>
+template <typename T>
+inline T QMCSamplingContext<RNG>::next2()
+{
+    return next2(Tag<T>());
+}
+
+template <typename RNG>
+inline size_t QMCSamplingContext<RNG>::get_total_dimension() const
+{
+    return m_base_dimension + m_dimension;
+}
+
+template <typename RNG>
+inline size_t QMCSamplingContext<RNG>::get_total_instance() const
+{
+    return m_base_instance + m_instance;
+}
+
+template <typename RNG>
+template <typename T>
+inline T QMCSamplingContext<RNG>::rotate(T x, const T offset)
+{
+    assert(offset >= T(0.0));
+
+    x += offset;
+
+    if (x >= T(1.0))
+        x -= T(1.0);
+
+    return x;
 }
 
 template <typename RNG>
@@ -298,112 +332,53 @@ inline void QMCSamplingContext<RNG>::compute_offset()
 }
 
 template <typename RNG>
-inline void QMCSamplingContext<RNG>::set_instance(const size_t instance)
+template <typename T>
+inline T QMCSamplingContext<RNG>::next2(Tag<T>)
 {
-    m_instance = instance;
+    return next2(Tag<Vector<T, 1>>())[0];
 }
 
 template <typename RNG>
-inline double QMCSamplingContext<RNG>::next_double1()
+template <typename T, size_t N>
+inline Vector<T, N> QMCSamplingContext<RNG>::next2(Tag<Vector<T, N>>)
 {
-    return next_vector1<1>()[0];
-}
+    Vector<T, N> v;
 
-template <typename RNG>
-inline double QMCSamplingContext<RNG>::next_double2()
-{
-    return next_vector2<1>()[0];
-}
-
-template <typename RNG>
-inline void QMCSamplingContext<RNG>::next_vector1(const size_t n, double v[])
-{
-    throw ExceptionNotImplemented();
-}
-
-template <typename RNG>
-template <size_t N>
-inline Vector<double, N> QMCSamplingContext<RNG>::next_vector1()
-{
-    Vector<double, N> v;
-
-    next_vector1(N, &v[0]);
-
-    return v;
-}
-
-template <typename RNG>
-inline void QMCSamplingContext<RNG>::next_vector2(const size_t n, double v[])
-{
     assert(m_sample_count == 0 || m_instance < m_sample_count);
-    assert(n == m_dimension);
-    assert(n <= PrimeTableSize);
+    assert(N == m_dimension);
+    assert(N <= PrimeTableSize);
 
     if (m_mode == QMCMode)
     {
         if (m_instance < PrecomputedHaltonSequenceSize)
         {
-            for (size_t i = 0; i < n; ++i)
+            for (size_t i = 0; i < N; ++i)
             {
-                v[i] = PrecomputedHaltonSequence[m_instance * 4 + i];
-                v[i] = rotate(v[i], m_offset[i]);
+                v[i] = static_cast<T>(PrecomputedHaltonSequence[m_instance * 4 + i]);
+                v[i] = rotate(v[i], static_cast<T>(m_offset[i]));
             }
         }
         else
         {
-            v[0] = radical_inverse_base2<double>(m_instance);
-            v[0] = rotate(v[0], m_offset[0]);
+            v[0] = radical_inverse_base2<T>(m_instance);
+            v[0] = rotate(v[0], static_cast<T>(m_offset[0]));
 
-            for (size_t i = 1; i < n; ++i)
+            for (size_t i = 1; i < N; ++i)
             {
-                v[i] = fast_radical_inverse<double>(i, m_instance);
-                v[i] = rotate(v[i], m_offset[i]);
+                v[i] = fast_radical_inverse<T>(i, m_instance);
+                v[i] = rotate(v[i], static_cast<T>(m_offset[i]));
             }
         }
     }
     else
     {
-        for (size_t i = 0; i < n; ++i)
-            v[i] = rand_double2(m_rng);
+        for (size_t i = 0; i < N; ++i)
+            v[i] = rand2<T>(m_rng);
     }
 
     ++m_instance;
-}
-
-template <typename RNG>
-template <size_t N>
-inline Vector<double, N> QMCSamplingContext<RNG>::next_vector2()
-{
-    Vector<double, N> v;
-
-    next_vector2(N, &v[0]);
 
     return v;
-}
-
-template <typename RNG>
-inline double QMCSamplingContext<RNG>::rotate(double x, const double offset)
-{
-    assert(offset >= 0.0);
-
-    x += offset;
-
-    if (x >= 1.0)
-        x -= 1.0;
-
-    return x;
-}
-
-template <typename RNG>
-inline size_t QMCSamplingContext<RNG>::get_total_dimension() const
-{
-    return m_base_dimension + m_dimension;
-}
-
-template <typename RNG>
-inline size_t QMCSamplingContext<RNG>::get_total_instance() const
-{
-    return m_base_instance + m_instance;
 }
 
 }       // namespace foundation

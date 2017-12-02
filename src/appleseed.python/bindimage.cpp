@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,9 +27,6 @@
 // THE SOFTWARE.
 //
 
-// appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
-
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/aov/tilestack.h"
@@ -39,6 +36,7 @@
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
+#include "foundation/platform/python.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.
@@ -65,7 +63,7 @@ namespace
 
     void copy_tile_data_to_py_buffer(const Tile& tile, bpy::object& buffer)
     {
-        void* array = 0;
+        void* array = nullptr;
         Py_ssize_t len;
 
         const int success = PyObject_AsWriteBuffer(buffer.ptr(), &array, &len);

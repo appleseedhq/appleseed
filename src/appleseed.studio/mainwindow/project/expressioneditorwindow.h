@@ -4,7 +4,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Marius Avram, The appleseedhq Organization
+// Copyright (c) 2014-2017 Marius Avram, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -78,7 +78,7 @@ class ExpressionEditorWindow
     void signal_editor_closed();
 
   protected:
-    virtual void closeEvent(QCloseEvent* e);
+    void closeEvent(QCloseEvent* e) override;
 
   private:
     Ui::ExpressionEditorWindow*     m_ui;

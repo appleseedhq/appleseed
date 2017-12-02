@@ -7,7 +7,7 @@
 # This software is released under the MIT license.
 #
 # Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-# Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+# Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ import subprocess
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-DEFAULT_TOOL_FILENAME = "updateprojectfile.exe" if os.name == "nt" else "updateprojectfile"
+DEFAULT_TOOL_FILENAME = "projecttool.exe" if os.name == "nt" else "projecttool"
 
 
 #--------------------------------------------------------------------------------------------------
@@ -62,7 +62,7 @@ def walk(directory, recursive):
 
 def update_project_file(filepath, tool_path):
     print("updating {0}...".format(filepath))
-    subprocess.call([tool_path, filepath])
+    subprocess.call([tool_path, "update", filepath])
 
 
 #--------------------------------------------------------------------------------------------------
@@ -86,10 +86,10 @@ def update_project_files(tool_path, directory, recursive):
 #--------------------------------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="normalize multiple project files and update " \
+    parser = argparse.ArgumentParser(description="normalize multiple project files and update "
                                      "them to the latest format revision if necessary.")
     parser.add_argument("-t", "--tool-path", metavar="tool-path",
-                        help="set the path to the updateprojectfile tool")
+                        help="set the path to the projecttool binary")
     parser.add_argument("-r", "--recursive", action='store_true', dest="recursive",
                         help="scan the specified directory and all its subdirectories")
     parser.add_argument("directory", help="directory to scan")

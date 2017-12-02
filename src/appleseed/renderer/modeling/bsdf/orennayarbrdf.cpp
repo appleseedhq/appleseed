@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Luis B. Barrancos, The appleseedhq Organization
+// Copyright (c) 2014-2017 Luis B. Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,16 +31,17 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/basis.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <algorithm>
@@ -75,114 +76,59 @@ namespace
     {
       public:
         OrenNayarBRDFImpl(
-            const char*         name,
-            const ParamArray&   params)
+            const char*                 name,
+            const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Diffuse, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("roughness" , InputFormatScalar, "0.1");
+            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("roughness" , InputFormatFloat, "0.1");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        APPLESEED_FORCE_INLINE virtual void sample(
-            SamplingContext&    sampling_context,
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            BSDFSample&         sample) const APPLESEED_OVERRIDE
+        void sample(
+            SamplingContext&            sampling_context,
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const int                   modes,
+            BSDFSample&                 sample) const override
         {
-            // No reflection below the shading surface.
-            const Vector3d& n = sample.get_shading_normal();
-
-            // Compute the incoming direction in local space.
-            sampling_context.split_in_place(2, 1);
-            const Vector2d s = sampling_context.next_vector2<2>();
-            const Vector3d wi = sample_hemisphere_cosine(s);
-
-            // Transform the incoming direction to parent space.
-            const Vector3d incoming = sample.get_shading_basis().transform_to_parent(wi);
-
-            // Compute the BRDF value.
-            const InputValues* values = static_cast<const InputValues*>(data);
-            if (values->m_roughness != 0.0)
-            {
-                const double cos_on = dot(sample.m_outgoing.get_value(), n);
-                if (cos_on < 0.0)
-                    return;
-
-                // No reflection below the shading surface.
-                const double cos_in = dot(incoming, n);
-                if (cos_in < 0.0)
-                    return;
-
-                oren_nayar_qualitative(
-                    cos_on,
-                    cos_in,
-                    values->m_roughness,
-                    values->m_reflectance,
-                    values->m_reflectance_multiplier,
-                    sample.m_outgoing.get_value(),
-                    incoming,
-                    n,
-                    sample.m_value);
-            }
-            else
-            {
-                // Revert to Lambertian when roughness is zero.
-                sample.m_value = values->m_reflectance;
-                sample.m_value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
-            }
-
-            // Compute the probability density of the sampled direction.
-            sample.m_probability = wi.y * RcpPi;
-            assert(sample.m_probability > 0.0);
+            if (!ScatteringMode::has_diffuse(modes))
+                return;
 
             // Set the scattering mode.
             sample.m_mode = ScatteringMode::Diffuse;
 
-            sample.m_incoming = Dual3d(incoming);
-            sample.compute_reflected_differentials();
-        }
-
-        APPLESEED_FORCE_INLINE virtual double evaluate(
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes,
-            Spectrum&           value) const APPLESEED_OVERRIDE
-        {
-            if (!ScatteringMode::has_diffuse(modes))
-                return 0.0;
-
-            // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            if (cos_in < 0.0)
-                return 0.0;
+            // Compute the incoming direction.
+            sampling_context.split_in_place(2, 1);
+            const Vector2f s = sampling_context.next2<Vector2f>();
+            const Vector3f wi = sample_hemisphere_cosine(s);
+            const Vector3f incoming = sample.m_shading_basis.transform_to_parent(wi);
+            sample.m_incoming = Dual3f(incoming);
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
-            if (values->m_roughness != 0.0)
+            if (values->m_roughness != 0.0f)
             {
-                // No reflection below the shading surface.
-                const double cos_on = dot(outgoing, n);
-                if (cos_on < 0.0)
-                    return 0.0;
+                const Vector3f& n = sample.m_shading_basis.get_normal();
 
+                // No reflection below the shading surface.
+                const float cos_in = dot(incoming, n);
+                if (cos_in < 0.0f)
+                    return;
+
+                const Vector3f& outgoing = sample.m_outgoing.get_value();
+                const float cos_on = abs(dot(outgoing, n));
                 oren_nayar_qualitative(
                     cos_on,
                     cos_in,
@@ -192,116 +138,152 @@ namespace
                     outgoing,
                     incoming,
                     n,
-                    value);
+                    sample.m_value.m_diffuse);
             }
             else
             {
                 // Revert to Lambertian when roughness is zero.
-                value = values->m_reflectance;
-                value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
+                sample.m_value.m_diffuse = values->m_reflectance;
+                sample.m_value.m_diffuse *= values->m_reflectance_multiplier * RcpPi<float>();
             }
+            sample.m_value.m_beauty = sample.m_value.m_diffuse;
 
-            // Return the probability density of the sampled direction.
-            return cos_in * RcpPi;
+            // Compute the probability density of the sampled direction.
+            sample.m_probability = wi.y * RcpPi<float>();
+            assert(sample.m_probability > 0.0f);
+
+            sample.compute_reflected_differentials();
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes) const APPLESEED_OVERRIDE
+        float evaluate(
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes,
+            DirectShadingComponents&    value) const override
         {
             if (!ScatteringMode::has_diffuse(modes))
-                return 0.0;
+                return 0.0f;
 
-            // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            if (cos_in < 0.0)
-                return 0.0;
+            const Vector3f& n = shading_basis.get_normal();
+            const float cos_in = abs(dot(incoming, n));
 
+            // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
-            if (values->m_roughness != 0.0)
+            if (values->m_roughness != 0.0f)
             {
-                // No reflection below the shading surface.
-                const double cos_on = dot(outgoing, n);
-                if (cos_on < 0.0)
-                    return 0.0;
+                const float cos_on = abs(dot(outgoing, n));
+                oren_nayar_qualitative(
+                    cos_on,
+                    cos_in,
+                    values->m_roughness,
+                    values->m_reflectance,
+                    values->m_reflectance_multiplier,
+                    outgoing,
+                    incoming,
+                    n,
+                    value.m_diffuse);
             }
+            else
+            {
+                // Revert to Lambertian when roughness is zero.
+                value.m_diffuse = values->m_reflectance;
+                value.m_diffuse *= values->m_reflectance_multiplier * RcpPi<float>();
+            }
+            value.m_beauty = value.m_diffuse;
 
-            return cos_in * RcpPi;
+            // Return the probability density of the sampled direction.
+            return cos_in * RcpPi<float>();
+        }
+
+        float evaluate_pdf(
+            const void*                 data,
+            const bool                  adjoint,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes) const override
+        {
+            if (!ScatteringMode::has_diffuse(modes))
+                return 0.0f;
+
+            // Return the probability density of the sampled direction.
+            const Vector3f& n = shading_basis.get_normal();
+            const float cos_in = abs(dot(incoming, n));
+            return cos_in * RcpPi<float>();
         }
 
       private:
         typedef OrenNayarBRDFInputValues InputValues;
 
         static void oren_nayar_qualitative(
-            const double        cos_on,
-            const double        cos_in,
-            const double        roughness,
-            const Spectrum&     reflectance,
-            const double        reflectance_multiplier,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const Vector3d&     n,
-            Spectrum&           value)
+            const float                 cos_on,
+            const float                 cos_in,
+            const float                 roughness,
+            const Spectrum&             reflectance,
+            const float                 reflectance_multiplier,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const Vector3f&             n,
+            Spectrum&                   value)
         {
-            const double sigma2 = square(roughness);
-            const double theta_r = min(acos(cos_on), HalfPi);
-            const double theta_i = acos(cos_in);
-            const double alpha = max(theta_r, theta_i);
-            const double beta = min(theta_r, theta_i);
+            const float sigma2 = square(roughness);
+            const float theta_r = min(acos(cos_on), HalfPi<float>());
+            const float theta_i = acos(cos_in);
+            const float alpha = max(theta_r, theta_i);
+            const float beta = min(theta_r, theta_i);
 
             // Project outgoing and incoming vectors onto the tangent plane
             // and compute the cosine of the angle between them.
-            const Vector3d V_perp_N = normalize(project(outgoing, n));
-            const Vector3d I_perp_N = normalize(incoming - n * cos_in);
-            const double delta_cos_phi = dot(V_perp_N, I_perp_N);
+            const Vector3f V_perp_N = normalize(project(outgoing, n));
+            const Vector3f I_perp_N = normalize(incoming - n * cos_in);
+            const float delta_cos_phi = dot(V_perp_N, I_perp_N);
 
             // Compute C1 coefficient.
-            const double C1 = 1.0 - 0.5 * (sigma2 / (sigma2 + 0.33));
+            const float C1 = 1.0f - 0.5f * (sigma2 / (sigma2 + 0.33f));
 
             // Compute C2 coefficient.
-            const double sigma2_009 = sigma2 / (sigma2 + 0.09);
-            const double C2 =
-                  0.45
+            const float sigma2_009 = sigma2 / (sigma2 + 0.09f);
+            const float C2 =
+                  0.45f
                 * sigma2_009
-                * (delta_cos_phi >= 0.0
+                * (delta_cos_phi >= 0.0f
                       ? sin(alpha)
-                      : sin(alpha) - pow_int<3>(2.0 * beta * RcpPi));
-            assert(C2 >= 0.0);
+                      : sin(alpha) - pow_int<3>(2.0f * beta * RcpPi<float>()));
+            assert(C2 >= 0.0f);
 
             // Compute C3 coefficient.
-            const double C3 =
-                  0.125
+            const float C3 =
+                  0.125f
                 * sigma2_009
-                * square(4.0 * alpha * beta * RcpPiSquare);
-            assert(C3 >= 0.0);
+                * square(4.0f * alpha * beta * RcpPiSquare<float>());
+            assert(C3 >= 0.0f);
 
             // Direct illumination component.
             value = reflectance;
             value *=
-                static_cast<float>(
-                    reflectance_multiplier * RcpPi * (
-                          C1
-                        + delta_cos_phi * C2 * tan(beta)
-                        + (1.0 - abs(delta_cos_phi)) * C3 * tan(0.5 * (alpha + beta))));
+                reflectance_multiplier *
+                RcpPi<float>() * (
+                      C1
+                    + delta_cos_phi * C2 * tan(beta)
+                    + (1.0f - abs(delta_cos_phi)) * C3 * tan(0.5f * (alpha + beta)));
 
             // Add interreflection component.
             Spectrum r2 = reflectance;
             r2 *= r2;
             r2 *=
-                static_cast<float>(
-                      0.17
-                    * square(reflectance_multiplier) * RcpPi
-                    * cos_in
-                    * sigma2 / (sigma2 + 0.13)
-                    * (1.0 - delta_cos_phi * square(2.0 * beta * RcpPi)));
+                  0.17f
+                * square(reflectance_multiplier) * RcpPi<float>()
+                * cos_in
+                * sigma2 / (sigma2 + 0.13f)
+                * (1.0f - delta_cos_phi * square(2.0f * beta * RcpPi<float>()));
             value += r2;
-
-            assert(min_value(value) >= 0.0f);
+            clamp_low_in_place(value, 0.0f);
         }
     };
 
@@ -312,6 +294,11 @@ namespace
 //
 // OrenNayarBRDFFactory class implementation.
 //
+
+void OrenNayarBRDFFactory::release()
+{
+    delete this;
+}
 
 const char* OrenNayarBRDFFactory::get_model() const
 {
@@ -368,13 +355,6 @@ DictionaryArray OrenNayarBRDFFactory::get_input_metadata() const
 auto_release_ptr<BSDF> OrenNayarBRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<BSDF>(new OrenNayarBRDF(name, params));
-}
-
-auto_release_ptr<BSDF> OrenNayarBRDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<BSDF>(new OrenNayarBRDF(name, params));
 }

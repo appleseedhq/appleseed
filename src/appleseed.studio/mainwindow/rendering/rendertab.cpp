@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 #include "rendertab.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/rendering/renderwidget.h"
 #include "utility/miscellaneous.h"
 
@@ -41,6 +42,9 @@
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
+
+// OpenColorIO headers.
+#include <OpenColorIO/OpenColorIO.h>
 
 // Qt headers.
 #include <QComboBox>
@@ -57,6 +61,7 @@
 
 using namespace foundation;
 using namespace renderer;
+namespace OCIO = OCIO_NAMESPACE;
 
 namespace appleseed {
 namespace studio {
@@ -66,10 +71,12 @@ namespace studio {
 //
 
 RenderTab::RenderTab(
-    ProjectExplorer&    project_explorer,
-    Project&            project)
+    ProjectExplorer&        project_explorer,
+    Project&                project,
+    OCIO::ConstConfigRcPtr  ocio_config)
   : m_project_explorer(project_explorer)
   , m_project(project)
+  , m_ocio_config(ocio_config)
 {
     create_render_widget();
     create_toolbar();
@@ -83,6 +90,32 @@ RenderTab::RenderTab(
     layout()->addWidget(m_scroll_area);
 
     recreate_handlers();
+}
+
+RenderWidget* RenderTab::get_render_widget() const
+{
+    return m_render_widget;
+}
+
+CameraController* RenderTab::get_camera_controller() const
+{
+    return m_camera_controller.get();
+}
+
+ScenePickingHandler* RenderTab::get_scene_picking_handler() const
+{
+    return m_scene_picking_handler.get();
+}
+
+void RenderTab::set_clear_frame_button_enabled(const bool enabled)
+{
+    m_clear_frame_button->setEnabled(enabled);
+}
+
+void RenderTab::set_render_region_buttons_enabled(const bool enabled)
+{
+    m_set_render_region_button->setEnabled(enabled);
+    m_clear_render_region_button->setEnabled(enabled);
 }
 
 void RenderTab::clear()
@@ -119,16 +152,6 @@ void RenderTab::update_size()
     recreate_handlers();
 }
 
-RenderWidget* RenderTab::get_render_widget() const
-{
-    return m_render_widget;
-}
-
-CameraController* RenderTab::get_camera_controller() const
-{
-    return m_camera_controller.get();
-}
-
 RenderTab::State RenderTab::save_state() const
 {
     State state;
@@ -151,7 +174,7 @@ void RenderTab::slot_render_widget_context_menu(const QPoint& point)
 
 void RenderTab::slot_toggle_render_region(const bool checked)
 {
-    m_picking_handler->set_enabled(!checked);
+    m_scene_picking_handler->set_enabled(!checked);
     m_render_region_handler->set_enabled(checked);
 }
 
@@ -174,7 +197,8 @@ void RenderTab::create_render_widget()
     m_render_widget =
         new RenderWidget(
             props.m_canvas_width,
-            props.m_canvas_height);
+            props.m_canvas_height,
+            m_ocio_config);
 
     m_render_widget->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -215,8 +239,8 @@ void RenderTab::create_toolbar()
     // Create the Set Render Region button in the render toolbar.
     m_set_render_region_button = new QToolButton();
     m_set_render_region_button->setIcon(load_icons("renderwidget_set_render_region"));
-    m_set_render_region_button->setToolTip("Set Render Region");
     m_set_render_region_button->setShortcut(Qt::Key_R);
+    m_set_render_region_button->setToolTip(combine_name_and_shortcut("Set Render Region", m_set_render_region_button->shortcut()));
     m_set_render_region_button->setCheckable(true);
     connect(
         m_set_render_region_button, SIGNAL(toggled(bool)),
@@ -226,8 +250,8 @@ void RenderTab::create_toolbar()
     // Create the Clear Render Region button in the render toolbar.
     m_clear_render_region_button = new QToolButton();
     m_clear_render_region_button->setIcon(load_icons("renderwidget_clear_render_region"));
-    m_clear_render_region_button->setToolTip("Clear Render Region");
     m_clear_render_region_button->setShortcut(Qt::Key_C);
+    m_clear_render_region_button->setToolTip(combine_name_and_shortcut("Clear Render Region", m_clear_render_region_button->shortcut()));
     connect(
         m_clear_render_region_button, SIGNAL(clicked()),
         SIGNAL(signal_clear_render_region()));
@@ -236,8 +260,8 @@ void RenderTab::create_toolbar()
     // Create the Clear Frame button in the render toolbar.
     m_clear_frame_button = new QToolButton();
     m_clear_frame_button->setIcon(load_icons("renderwidget_clear_frame"));
-    m_clear_frame_button->setToolTip("Clear Frame");
     m_clear_frame_button->setShortcut(Qt::Key_X);
+    m_clear_frame_button->setToolTip(combine_name_and_shortcut("Clear Frame", m_clear_frame_button->shortcut()));
     connect(
         m_clear_frame_button, SIGNAL(clicked()),
         SIGNAL(signal_clear_frame()));
@@ -248,8 +272,8 @@ void RenderTab::create_toolbar()
     // Create the Reset Zoom button in the render toolbar.
     m_reset_zoom_button = new QToolButton();
     m_reset_zoom_button->setIcon(load_icons("renderwidget_reset_zoom"));
-    m_reset_zoom_button->setToolTip("Reset Zoom");
     m_reset_zoom_button->setShortcut(Qt::Key_Asterisk);
+    m_reset_zoom_button->setToolTip(combine_name_and_shortcut("Reset Zoom", m_reset_zoom_button->shortcut()));
     connect(
         m_reset_zoom_button, SIGNAL(clicked()),
         SIGNAL(signal_reset_zoom()));
@@ -260,8 +284,8 @@ void RenderTab::create_toolbar()
     // Create the Pixel Inspector button in the render toolbar.
     m_pixel_inspector_button = new QToolButton();
     m_pixel_inspector_button->setIcon(load_icons("renderwidget_toggle_pixel_inspector"));
-    m_pixel_inspector_button->setToolTip("Toggle Pixel Inspector");
     m_pixel_inspector_button->setShortcut(Qt::Key_I);
+    m_pixel_inspector_button->setToolTip(combine_name_and_shortcut("Toggle Pixel Inspector", m_pixel_inspector_button->shortcut()));
     m_pixel_inspector_button->setCheckable(true);
     m_pixel_inspector_button->setChecked(false);
     connect(
@@ -281,6 +305,37 @@ void RenderTab::create_toolbar()
     m_picking_mode_combo = new QComboBox();
     m_picking_mode_combo->setObjectName("picking_mode_combo");
     m_toolbar->addWidget(m_picking_mode_combo);
+
+    m_toolbar->addSeparator();
+
+    // Create the label preceding the display combobox.
+    QLabel* display_label = new QLabel("Display:");
+    display_label->setObjectName("display_label");
+    m_toolbar->addWidget(display_label);
+
+    // Create the display combobox.
+    m_display_transform_combo = new QComboBox();
+    m_display_transform_combo->setObjectName("display_combo");
+    {
+        const char* display_name = m_ocio_config->getDefaultDisplay();
+        const std::string default_transform = m_ocio_config->getDefaultView(display_name);
+
+        int default_index = 0;
+        for (int i = 0, e = m_ocio_config->getNumViews(display_name); i < e; ++i)
+        {
+            const char* name = m_ocio_config->getView(display_name, i);
+            m_display_transform_combo->addItem(name);
+
+            if (default_transform == name)
+                default_index = i;
+        }
+
+        m_display_transform_combo->setCurrentIndex(default_index);
+    }
+    m_toolbar->addWidget(m_display_transform_combo);
+    connect(
+        m_display_transform_combo, SIGNAL(currentIndexChanged(QString)),
+        m_render_widget, SLOT(slot_display_transform_changed(QString)));
 
     // Add stretchy spacer.
     // This places interactive widgets on the left and info on the right.
@@ -354,7 +409,7 @@ void RenderTab::recreate_handlers()
             m_render_widget,
             m_info_label));
 
-    // Handle for tracking and display the color of the pixel underneath the mouse cursor.
+    // Handle for tracking and displaying the color of the pixel under the mouse cursor.
     m_pixel_color_tracker.reset(
         new PixelColorTracker(
             m_render_widget,
@@ -377,7 +432,7 @@ void RenderTab::recreate_handlers()
     m_camera_controller.reset(
         new CameraController(
             m_render_widget,
-            m_project.get_scene()));
+            m_project));
     connect(
         m_camera_controller.get(), SIGNAL(signal_camera_change_begin()),
         SIGNAL(signal_camera_change_begin()));
@@ -387,9 +442,12 @@ void RenderTab::recreate_handlers()
     connect(
         m_camera_controller.get(), SIGNAL(signal_camera_changed()),
         SIGNAL(signal_camera_changed()));
+    connect(
+        &m_project_explorer, SIGNAL(signal_frame_modified()),
+        m_camera_controller.get(), SLOT(slot_frame_modified()));
 
     // Handler for picking scene entities in the render widget.
-    m_picking_handler.reset(
+    m_scene_picking_handler.reset(
         new ScenePickingHandler(
             m_render_widget,
             m_picking_mode_combo,
@@ -397,10 +455,10 @@ void RenderTab::recreate_handlers()
             m_project_explorer,
             m_project));
     connect(
-        m_picking_handler.get(), SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
+        m_scene_picking_handler.get(), SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
         SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)));
     connect(
-        m_picking_handler.get(), SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
+        m_scene_picking_handler.get(), SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
         m_camera_controller.get(), SLOT(slot_entity_picked(renderer::ScenePicker::PickingResult)));
 
     // Handler for setting render regions with the mouse.
@@ -416,14 +474,9 @@ void RenderTab::recreate_handlers()
     m_clipboard_handler.reset(new RenderClipboardHandler(m_render_widget));
 
     // Set initial state.
-    m_picking_handler->set_enabled(true);
+    m_scene_picking_handler->set_enabled(true);
     m_render_region_handler->set_enabled(false);
     m_pixel_inspector_handler->set_enabled(false);
-}
-
-void RenderTab::set_clear_frame_button_enabled(const bool enabled)
-{
-    m_clear_frame_button->setEnabled(enabled);
 }
 
 }   // namespace studio

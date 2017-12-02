@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,13 @@
 #include "bsdf.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/sourceinputs.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/arena.h"
 
 using namespace foundation;
 
@@ -53,7 +58,7 @@ UniqueID BSDF::get_class_uid()
     return g_class_uid;
 }
 
-const double BSDF::DiracDelta = -1.0;
+const float BSDF::DiracDelta = -1.0f;
 
 BSDF::BSDF(
     const char*             name,
@@ -67,52 +72,47 @@ BSDF::BSDF(
     set_name(name);
 }
 
-bool BSDF::on_frame_begin(
-    const Project&          project,
-    const Assembly&         assembly,
-    IAbortSwitch*           abort_switch)
-{
-    return true;
-}
-
-void BSDF::on_frame_end(
-    const Project&          project,
-    const Assembly&         assembly)
-{
-}
-
-size_t BSDF::compute_input_data_size(
-    const Assembly&         assembly) const
+size_t BSDF::compute_input_data_size() const
 {
     return get_inputs().compute_data_size();
 }
 
-void BSDF::evaluate_inputs(
+void* BSDF::evaluate_inputs(
     const ShadingContext&   shading_context,
-    InputEvaluator&         input_evaluator,
-    const ShadingPoint&     shading_point,
-    const size_t            offset) const
+    const ShadingPoint&     shading_point) const
 {
-    input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0), offset);
-    prepare_inputs(shading_point, input_evaluator.data() + offset);
+    void* data = shading_context.get_arena().allocate(compute_input_data_size());
+
+    get_inputs().evaluate(
+        shading_context.get_texture_cache(),
+        SourceInputs(shading_point.get_uv(0)),
+        data);
+
+    prepare_inputs(
+        shading_context.get_arena(),
+        shading_point,
+        data);
+
+    return data;
 }
 
 void BSDF::prepare_inputs(
+    Arena&                  arena,
     const ShadingPoint&     shading_point,
     void*                   data) const
 {
 }
 
-double BSDF::sample_ior(
+float BSDF::sample_ior(
     SamplingContext&        sampling_context,
     const void*             data) const
 {
-    return 1.0;
+    return 1.0f;
 }
 
 void BSDF::compute_absorption(
     const void*             data,
-    const double            distance,
+    const float             distance,
     Spectrum&               absorption) const
 {
     absorption.set(1.0f);

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,29 +34,20 @@
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/bsdf.h"
-#include "renderer/api/bssrdf.h"
 #include "renderer/api/camera.h"
 #include "renderer/api/color.h"
-#include "renderer/api/edf.h"
 #include "renderer/api/entity.h"
 #include "renderer/api/environment.h"
-#include "renderer/api/environmentedf.h"
-#include "renderer/api/environmentshader.h"
 #include "renderer/api/light.h"
-#include "renderer/api/material.h"
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
-#include "renderer/api/surfaceshader.h"
 #include "renderer/api/texture.h"
-#include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/transform.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/uid.h"
+#include "foundation/utility/containers/dictionary.h"
 
 // Qt headers.
 #include <QObject>
@@ -65,6 +56,9 @@
 #include <cassert>
 #include <cstddef>
 #include <string>
+
+// Forward declarations.
+namespace renderer  { class Frame; }
 
 namespace appleseed {
 namespace studio {
@@ -77,9 +71,6 @@ class ProjectBuilder
 
   public:
     explicit ProjectBuilder(renderer::Project& project);
-
-    template <typename Entity>
-    const typename renderer::EntityTraits<Entity>::FactoryRegistrarType& get_factory_registrar() const;
 
     void notify_project_modification() const;
 
@@ -114,19 +105,7 @@ class ProjectBuilder
     void signal_frame_modified() const;
 
   private:
-    renderer::Project&                              m_project;
-
-    renderer::BSDFFactoryRegistrar                  m_bsdf_factory_registrar;
-    renderer::BSSRDFFactoryRegistrar                m_bssrdf_factory_registrar;
-    renderer::CameraFactoryRegistrar                m_camera_factory_registrar;
-    renderer::EDFFactoryRegistrar                   m_edf_factory_registrar;
-    renderer::EnvironmentEDFFactoryRegistrar        m_environment_edf_factory_registrar;
-    renderer::EnvironmentShaderFactoryRegistrar     m_environment_shader_factory_registrar;
-    renderer::LightFactoryRegistrar                 m_light_factory_registrar;
-    renderer::MaterialFactoryRegistrar              m_material_factory_registrar;
-    renderer::RenderLayerRuleFactoryRegistrar       m_render_layer_rule_factory_registrar;
-    renderer::SurfaceShaderFactoryRegistrar         m_surface_shader_factory_registrar;
-    renderer::TextureFactoryRegistrar               m_texture_factory_registrar;
+    renderer::Project& m_project;
 
     static std::string get_entity_name(const foundation::Dictionary& values);
 
@@ -141,83 +120,6 @@ class ProjectBuilder
 //
 // ProjectBuilder class implementation.
 //
-
-template <>
-inline const renderer::EntityTraits<renderer::BSDF>::FactoryRegistrarType&
-ProjectBuilder::get_factory_registrar<renderer::BSDF>() const
-{
-    return m_bsdf_factory_registrar;
-}
-
-template <>
-inline const renderer::EntityTraits<renderer::BSSRDF>::FactoryRegistrarType&
-ProjectBuilder::get_factory_registrar<renderer::BSSRDF>() const
-{
-    return m_bssrdf_factory_registrar;
-}
-
-template <>
-inline const renderer::EntityTraits<renderer::Camera>::FactoryRegistrarType&
-ProjectBuilder::get_factory_registrar<renderer::Camera>() const
-{
-    return m_camera_factory_registrar;
-}
-
-template <>
-inline const renderer::EntityTraits<renderer::EDF>::FactoryRegistrarType&
-ProjectBuilder::get_factory_registrar<renderer::EDF>() const
-{
-    return m_edf_factory_registrar;
-}
-
-template <>
-inline const renderer::EntityTraits<renderer::EnvironmentEDF>::FactoryRegistrarType&
-ProjectBuilder::get_factory_registrar<renderer::EnvironmentEDF>() const
-{
-    return m_environment_edf_factory_registrar;
-}
-
-template <>
-inline const renderer::EntityTraits<renderer::EnvironmentShader>::FactoryRegistrarType&
-ProjectBuilder::get_factory_registrar<renderer::EnvironmentShader>() const
-{
-    return m_environment_shader_factory_registrar;
-}
-
-template <>
-inline const renderer::EntityTraits<renderer::Light>::FactoryRegistrarType&
-ProjectBuilder::get_factory_registrar<renderer::Light>() const
-{
-    return m_light_factory_registrar;
-}
-
-template <>
-inline const renderer::EntityTraits<renderer::Material>::FactoryRegistrarType&
-ProjectBuilder::get_factory_registrar<renderer::Material>() const
-{
-    return m_material_factory_registrar;
-}
-
-template <>
-inline const renderer::EntityTraits<renderer::RenderLayerRule>::FactoryRegistrarType&
-ProjectBuilder::get_factory_registrar<renderer::RenderLayerRule>() const
-{
-    return m_render_layer_rule_factory_registrar;
-}
-
-template <>
-inline const renderer::EntityTraits<renderer::SurfaceShader>::FactoryRegistrarType&
-ProjectBuilder::get_factory_registrar<renderer::SurfaceShader>() const
-{
-    return m_surface_shader_factory_registrar;
-}
-
-template <>
-inline const renderer::EntityTraits<renderer::Texture>::FactoryRegistrarType&
-ProjectBuilder::get_factory_registrar<renderer::Texture>() const
-{
-    return m_texture_factory_registrar;
-}
 
 template <typename Entity, typename ParentEntity>
 Entity* ProjectBuilder::insert_entity(
@@ -272,9 +174,9 @@ inline renderer::Camera* ProjectBuilder::edit_entity(
 
     new_entity->transform_sequence().clear();
 
-    for (size_t i = 0; i < old_entity->transform_sequence().size(); ++i)
+    for (size_t i = 0, e = old_entity->transform_sequence().size(); i < e; ++i)
     {
-        double time;
+        float time;
         foundation::Transformd transform;
         old_entity->transform_sequence().get_transform(i, time, transform);
         new_entity->transform_sequence().set_transform(time, transform);
@@ -384,7 +286,7 @@ foundation::auto_release_ptr<Entity> ProjectBuilder::create_entity(
     clean_values.strings().remove(EntityEditorFormFactoryType::NameParameter);
     clean_values.strings().remove(EntityEditorFormFactoryType::ModelParameter);
 
-    const FactoryRegistrarType& factory_registrar = get_factory_registrar<Entity>();
+    const FactoryRegistrarType& factory_registrar = m_project.get_factory_registrar<Entity>();
     const FactoryType* factory = factory_registrar.lookup(model.c_str());
     assert(factory);
 
@@ -418,7 +320,7 @@ inline foundation::auto_release_ptr<renderer::Texture> ProjectBuilder::create_en
     clean_values.strings().remove(EntityEditorFormFactoryType::NameParameter);
     clean_values.strings().remove(EntityEditorFormFactoryType::ModelParameter);
 
-    const FactoryRegistrarType& factory_registrar = get_factory_registrar<renderer::Texture>();
+    const FactoryRegistrarType& factory_registrar = m_project.get_factory_registrar<renderer::Texture>();
     const FactoryType* factory = factory_registrar.lookup(model.c_str());
     assert(factory);
 

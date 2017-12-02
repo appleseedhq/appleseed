@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,7 @@ TEST_SUITE(Renderer_Modeling_Input_InputArray)
     TEST_CASE(Find_GivenNameOfExistingInput_ReturnsInputIterator)
     {
         InputArray inputs;
-        inputs.declare("x", InputFormatScalar);
+        inputs.declare("x", InputFormatFloat);
 
         const InputArray::const_iterator i = inputs.find("x");
 
@@ -56,7 +56,7 @@ TEST_SUITE(Renderer_Modeling_Input_InputArray)
     TEST_CASE(Find_GivenNameOfNonExistingInput_ReturnsEndIterator)
     {
         InputArray inputs;
-        inputs.declare("x", InputFormatScalar);
+        inputs.declare("x", InputFormatFloat);
 
         const InputArray::const_iterator i = inputs.find("y");
 
@@ -66,7 +66,7 @@ TEST_SUITE(Renderer_Modeling_Input_InputArray)
     TEST_CASE(Source_GivenNameOfNonExistingInput_ReturnsZero)
     {
         InputArray inputs;
-        inputs.declare("x", InputFormatScalar);
+        inputs.declare("x", InputFormatFloat);
 
         const Source* source = inputs.source("y");
 
@@ -76,7 +76,7 @@ TEST_SUITE(Renderer_Modeling_Input_InputArray)
     TEST_CASE(Source_GivenNameOfUnboundExistingInput_ReturnsZero)
     {
         InputArray inputs;
-        inputs.declare("x", InputFormatScalar);
+        inputs.declare("x", InputFormatFloat);
 
         const Source* source = inputs.source("x");
 
@@ -86,7 +86,7 @@ TEST_SUITE(Renderer_Modeling_Input_InputArray)
     TEST_CASE(Source_GivenNameOfBoundExistingInput_ReturnsBoundSource)
     {
         InputArray inputs;
-        inputs.declare("x", InputFormatScalar);
+        inputs.declare("x", InputFormatFloat);
 
         Source* expected_source = new ScalarSource(1.0);
         inputs.find("x").bind(expected_source);

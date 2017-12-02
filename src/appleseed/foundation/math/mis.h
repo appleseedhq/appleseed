@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -87,7 +87,9 @@ inline T mis_balance(const T q1, const T q2)
     assert(q2 >= T(0.0));
     assert(q1 + q2 > T(0.0));
 
-    return q1 / (q1 + q2);
+    const T r2 = q2 / q1;
+
+    return T(1.0) / (T(1.0) + r2);
 }
 
 template <typename T>
@@ -98,7 +100,10 @@ inline T mis_balance(const T q1, const T q2, const T q3)
     assert(q3 >= T(0.0));
     assert(q1 + q2 + q3 > T(0.0));
 
-    return q1 / (q1 + q2 + q3);
+    const T r2 = q2 / q1;
+    const T r3 = q3 / q1;
+
+    return T(1.0) / (T(1.0) + r2 + r3);
 }
 
 template <typename T>
@@ -110,10 +115,10 @@ inline T mis_power(const T q1, const T q2, const T beta)
 
     assert(beta >= T(0.0));
 
-    const T q1_pow = std::pow(q1, beta);
-    const T q2_pow = std::pow(q2, beta);
+    const T r2 = q2 / q1;
+    const T r2_pow = std::pow(r2, beta);
 
-    return q1_pow / (q1_pow + q2_pow);
+    return T(1.0) / (T(1.0) + r2_pow);
 }
 
 template <typename T>
@@ -126,11 +131,12 @@ inline T mis_power(const T q1, const T q2, const T q3, const T beta)
 
     assert(beta >= T(0.0));
 
-    const T q1_pow = std::pow(q1, beta);
-    const T q2_pow = std::pow(q2, beta);
-    const T q3_pow = std::pow(q3, beta);
+    const T r2 = q2 / q1;
+    const T r3 = q3 / q1;
+    const T r2_pow = std::pow(r2, beta);
+    const T r3_pow = std::pow(r3, beta);
 
-    return q1_pow / (q1_pow + q2_pow + q3_pow);
+    return T(1.0) / (T(1.0) + r2_pow + r3_pow);
 }
 
 template <typename T>
@@ -140,10 +146,10 @@ inline T mis_power2(const T q1, const T q2)
     assert(q2 >= T(0.0));
     assert(q1 + q2 > T(0.0));
 
-    const T q1_pow = q1 * q1;
-    const T q2_pow = q2 * q2;
+    const T r2 = q2 / q1;
+    const T r2_pow = r2 * r2;
 
-    return q1_pow / (q1_pow + q2_pow);
+    return T(1.0) / (T(1.0) + r2_pow);
 }
 
 template <typename T>
@@ -154,11 +160,12 @@ inline T mis_power2(const T q1, const T q2, const T q3)
     assert(q3 >= T(0.0));
     assert(q1 + q2 + q3 > T(0.0));
 
-    const T q1_pow = q1 * q1;
-    const T q2_pow = q2 * q2;
-    const T q3_pow = q3 * q3;
+    const T r2 = q2 / q1;
+    const T r3 = q3 / q1;
+    const T r2_pow = r2 * r2;
+    const T r3_pow = r3 * r3;
 
-    return q1_pow / (q1_pow + q2_pow + q3_pow);
+    return T(1.0) / (T(1.0) + r2_pow + r3_pow);
 }
 
 template <typename T>
@@ -173,11 +180,10 @@ inline T mis_cutoff(const T q1, const T q2, const T alpha)
 
     const T cutoff = std::max(q1, q2) * alpha;
 
-    if (q1 < cutoff)
-         return T(0.0);
-    else if (q2 < cutoff)
-         return T(1.0);
-    else return q1 / (q1 + q2);
+    return
+        q1 < cutoff ? T(0.0) :
+        q2 < cutoff ? T(1.0) :
+        T(1.0) / (T(1.0) + q2 / q1);
 }
 
 template <typename T>
@@ -196,11 +202,11 @@ inline T mis_cutoff(const T q1, const T q2, const T q3, const T alpha)
     if (q1 < cutoff)
          return T(0.0);
 
-    T den = q1;
-    if (q2 >= cutoff) den += q2;
-    if (q3 >= cutoff) den += q3;
+    T den = T(1.0);
+    if (q2 >= cutoff) den += q2 / q1;
+    if (q3 >= cutoff) den += q3 / q1;
 
-    return q1 / den;
+    return T(1.0) / den;
 }
 
 template <typename T>

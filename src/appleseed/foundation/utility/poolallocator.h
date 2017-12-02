@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,7 @@ namespace impl
         size_t ItemsPerPage
     >
     class Pool
-      : public Singleton<Pool<ItemSize, ItemsPerPage> >
+      : public Singleton<Pool<ItemSize, ItemsPerPage>>
     {
       public:
         // Allocate a memory block.
@@ -101,7 +101,7 @@ namespace impl
         }
 
       private:
-        friend class Singleton<Pool<ItemSize, ItemsPerPage> >;
+        friend class Singleton<Pool<ItemSize, ItemsPerPage>>;
 
         union Node
         {
@@ -116,9 +116,9 @@ namespace impl
 
         // Constructor.
         Pool()
-          : m_page(0)
+          : m_page(nullptr)
           , m_page_index(ItemsPerPage)
-          , m_free_head(0)
+          , m_free_head(nullptr)
         {
         }
     };
@@ -185,7 +185,7 @@ class PoolAllocator
         return &x;
     }
 
-    pointer allocate(size_type n, const_pointer hint = 0)
+    pointer allocate(size_type n, const_pointer hint = nullptr)
     {
         return n == 1
             ? static_cast<pointer>(m_pool.allocate())

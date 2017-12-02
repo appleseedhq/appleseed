@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,12 +33,14 @@
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/regularspectrum.h"
+#include "foundation/math/fp.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
+#include "foundation/platform/types.h"
+#include "foundation/utility/poison.h"
 
 // Standard headers.
 #include <algorithm>
@@ -50,7 +52,7 @@ namespace renderer
 {
 
 //
-// A spectrum that can switch between RGB and fully spectral as needed.
+// Internal working spectrum type, either RGB or spectral depending on the thread-local spectrum mode.
 //
 
 template <typename T, size_t N>
@@ -64,64 +66,78 @@ class DynamicSpectrum
     // Number of stored samples such that the size of the sample array is a multiple of 16 bytes.
     static const size_t StoredSamples = (((N * sizeof(T)) + 15) & ~15) / sizeof(T);
 
+    enum Mode
+    {
+        RGB = 0,            // DynamicSpectrum stores and operates on RGB triplets
+        Spectral = 1        // DynamicSpectrum stores and operates on spectra
+    };
+
+    enum Intent
+    {
+        Reflectance = 0,    // this spectrum represents a reflectance in [0, 1]^N
+        Illuminance = 1     // this spectrum represents an illuminance in [0, infinity)^N
+    };
+
+    // Change the current thread-local spectrum mode. Return the previous mode.
+    static Mode set_mode(const Mode mode);
+
+    // Return the current thread-local spectrum mode.
+    static Mode get_mode();
+
+    // Return the number of active color channels for the current spectrum mode.
+    static size_t size();
+
     // Constructors.
-    DynamicSpectrum();                                                          // set size to 3, leave all components uninitialized
-    explicit DynamicSpectrum(const ValueType* rhs);                             // set size to N, initialize with array of N scalars
-    explicit DynamicSpectrum(const ValueType val);                              // set size to 3, set all components to 'val'
-    DynamicSpectrum(const foundation::Color<ValueType, 3>& rhs);                // set size to 3
-    DynamicSpectrum(const foundation::RegularSpectrum<ValueType, N>& rhs);      // set size to N
+    DynamicSpectrum();                                      // leave all components uninitialized
+    explicit DynamicSpectrum(const ValueType val);          // set all components to `val`
+    DynamicSpectrum(
+        const foundation::Color<ValueType, 3>&              rgb,
+        const foundation::LightingConditions&               lighting_conditions,
+        const Intent                                        intent);
+    DynamicSpectrum(
+        const foundation::RegularSpectrum<ValueType, N>&    spectrum,
+        const foundation::LightingConditions&               lighting_conditions,
+        const Intent                                        intent);
 
     // Construct a spectrum from another spectrum of a different type.
     template <typename U>
     DynamicSpectrum(const DynamicSpectrum<U, N>& rhs);
 
-    // Assignment operators.
-    DynamicSpectrum& operator=(const foundation::Color<ValueType, 3>& rhs);
-    DynamicSpectrum& operator=(const foundation::RegularSpectrum<ValueType, N>& rhs);
-
-    // Return true if this spectrum currently stores a linear RGB value.
-    bool is_rgb() const;
-
-    // Return true if this spectrum currently stores a spectral value.
-    bool is_spectral() const;
-
-    // Return the number of active components in the spectrum.
-    size_t size() const;
-
-    // Set the number of active components in the spectrum. Allowed values are 3 and N.
-    void resize(const size_t size);
+    // Construct a spectrum from an array of `s_size` scalars.
+    static DynamicSpectrum from_array(const ValueType* rhs);
 
     // Set all components to a given value.
     void set(const ValueType val);
+
+    // Initialize the spectrum from a linear RGB value.
+    void set(
+        const foundation::Color<ValueType, 3>&              rgb,
+        const foundation::LightingConditions&               lighting_conditions,
+        const Intent                                        intent);
+
+    // Initialize the spectrum from a spectral value.
+    void set(
+        const foundation::RegularSpectrum<ValueType, N>&    spectrum,
+        const foundation::LightingConditions&               lighting_conditions,
+        const Intent                                        intent);
 
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
     const ValueType& operator[](const size_t i) const;
 
-    // Access the spectrum as a linear RGB color.
-    foundation::Color<ValueType, 3>& rgb();
-    const foundation::Color<ValueType, 3>& rgb() const;
-
     // Convert the spectrum to a linear RGB color.
-    foundation::Color<ValueType, 3> convert_to_rgb(
+    foundation::Color<ValueType, 3> to_rgb(
         const foundation::LightingConditions&   lighting_conditions) const;
 
-    // Upgrade a spectrum from RGB to spectral. Returns dest.
-    // 'source' and 'dest' can reference the same instance.
-    static DynamicSpectrum& upgrade(
-        const DynamicSpectrum&                  source,
-        DynamicSpectrum&                        dest);
-
-    // Downgrade a spectrum from spectral to RGB. Returns dest.
-    // 'source' and 'dest' can reference the same instance.
-    static DynamicSpectrum& downgrade(
-        const foundation::LightingConditions&   lighting_conditions,
-        const DynamicSpectrum&                  source,
-        DynamicSpectrum&                        dest);
+    // Convert the spectrum to a CIE XYZ color.
+    foundation::Color<ValueType, 3> to_ciexyz(
+        const foundation::LightingConditions&   lighting_conditions) const;
 
   private:
-    APPLESEED_SSE_ALIGN ValueType   m_samples[StoredSamples];
-    foundation::uint32              m_size;
+    static APPLESEED_TLS Mode       s_mode;
+    static APPLESEED_TLS size_t     s_size;
+
+    APPLESEED_SIMD4_ALIGN ValueType m_samples[StoredSamples];
 };
 
 // Exact inequality and equality tests.
@@ -143,6 +159,10 @@ template <typename T, size_t N> DynamicSpectrum<T, N>& operator*=(DynamicSpectru
 template <typename T, size_t N> DynamicSpectrum<T, N>& operator*=(DynamicSpectrum<T, N>& lhs, const DynamicSpectrum<T, N>& rhs);
 template <typename T, size_t N> DynamicSpectrum<T, N>& operator/=(DynamicSpectrum<T, N>& lhs, const T rhs);
 template <typename T, size_t N> DynamicSpectrum<T, N>& operator/=(DynamicSpectrum<T, N>& lhs, const DynamicSpectrum<T, N>& rhs);
+
+// Multiply-add: a = a + b * c.
+template <typename T, size_t N> void madd(DynamicSpectrum<T, N>& a, const DynamicSpectrum<T, N>& b, const DynamicSpectrum<T, N>& c);
+template <typename T, size_t N> void madd(DynamicSpectrum<T, N>& a, const DynamicSpectrum<T, N>& b, const T c);
 
 
 //
@@ -176,15 +196,19 @@ template <typename T, size_t N> bool is_saturated(const renderer::DynamicSpectru
 
 // Clamp the argument to [0,1].
 template <typename T, size_t N> renderer::DynamicSpectrum<T, N> saturate(const renderer::DynamicSpectrum<T, N>& s);
+template <typename T, size_t N> void saturate_in_place(renderer::DynamicSpectrum<T, N>& s);
 
 // Clamp the argument to [min, max].
 template <typename T, size_t N> renderer::DynamicSpectrum<T, N> clamp(const renderer::DynamicSpectrum<T, N>& s, const T min, const T max);
+template <typename T, size_t N> void clamp_in_place(renderer::DynamicSpectrum<T, N>& s, const T min, const T max);
 
 // Clamp the argument to [min, +infinity).
 template <typename T, size_t N> renderer::DynamicSpectrum<T, N> clamp_low(const renderer::DynamicSpectrum<T, N>& s, const T min);
+template <typename T, size_t N> void clamp_low_in_place(renderer::DynamicSpectrum<T, N>& s, const T min);
 
 // Clamp the argument to (-infinity, max].
 template <typename T, size_t N> renderer::DynamicSpectrum<T, N> clamp_high(const renderer::DynamicSpectrum<T, N>& s, const T max);
+template <typename T, size_t N> void clamp_high_in_place(renderer::DynamicSpectrum<T, N>& s, const T max);
 
 // Component-wise linear interpolation between a and b.
 template <typename T, size_t N> renderer::DynamicSpectrum<T, N> lerp(
@@ -213,6 +237,9 @@ template <typename T, size_t N> T average_value(const renderer::DynamicSpectrum<
 // Return true if a spectrum contains at least one NaN value.
 template <typename T, size_t N> bool has_nan(const renderer::DynamicSpectrum<T, N>& s);
 
+// Return true if all components of a spectrum are finite (not NaN, not infinite).
+template <typename T, size_t N> bool is_finite(const renderer::DynamicSpectrum<T, N>& s);
+
 // Return the square root of a spectrum.
 template <typename T, size_t N> renderer::DynamicSpectrum<T, N> sqrt(const renderer::DynamicSpectrum<T, N>& s);
 
@@ -225,10 +252,10 @@ template <typename T, size_t N> renderer::DynamicSpectrum<T, N> pow(
     const renderer::DynamicSpectrum<T, N>& y);
 
 // Compute the logarithm of a spectrum.
-template <typename T, size_t N> renderer::DynamicSpectrum<T, N> log(const renderer::DynamicSpectrum<T, N>& x);
+template <typename T, size_t N> renderer::DynamicSpectrum<T, N> log(const renderer::DynamicSpectrum<T, N>& s);
 
 // Compute the exponential of a spectrum.
-template <typename T, size_t N> renderer::DynamicSpectrum<T, N> exp(const renderer::DynamicSpectrum<T, N>& x);
+template <typename T, size_t N> renderer::DynamicSpectrum<T, N> exp(const renderer::DynamicSpectrum<T, N>& s);
 
 }   // namespace foundation
 
@@ -240,124 +267,109 @@ template <typename T, size_t N> renderer::DynamicSpectrum<T, N> exp(const render
 namespace renderer
 {
 
+// Full specialization is required in the value for Apple LLVM version 7.0.0 (clang-700.1.76).
 template <typename T, size_t N>
-inline DynamicSpectrum<T, N>::DynamicSpectrum()
-  : m_size(3)
+APPLESEED_TLS typename DynamicSpectrum<T, N>::Mode DynamicSpectrum<T, N>::s_mode = DynamicSpectrum<float, 31>::RGB;
+
+template <typename T, size_t N>
+APPLESEED_TLS size_t DynamicSpectrum<T, N>::s_size = 3;
+
+template <typename T, size_t N>
+typename DynamicSpectrum<T, N>::Mode DynamicSpectrum<T, N>::set_mode(const Mode mode)
 {
-    for (size_t i = N; i < StoredSamples; ++i)
-        m_samples[i] = T(0.0);
+    const Mode old_mode = s_mode;
+
+    s_mode = mode;
+    s_size = mode == RGB ? 3 : N;
+
+    return old_mode;
 }
 
 template <typename T, size_t N>
-inline DynamicSpectrum<T, N>::DynamicSpectrum(const ValueType* rhs)
-  : m_size(N)
+inline typename DynamicSpectrum<T, N>::Mode DynamicSpectrum<T, N>::get_mode()
 {
-    assert(rhs);
+    return s_mode;
+}
 
-    for (size_t i = 0; i < N; ++i)
-        m_samples[i] = rhs[i];
+template <typename T, size_t N>
+inline size_t DynamicSpectrum<T, N>::size()
+{
+    return s_size;
+}
 
-    for (size_t i = N; i < StoredSamples; ++i)
-        m_samples[i] = T(0.0);
+template <typename T, size_t N>
+inline DynamicSpectrum<T, N>::DynamicSpectrum()
+{
+#ifdef APPLESEED_USE_SSE
+    m_samples[s_size] = T(0.0);
+#endif
 }
 
 template <typename T, size_t N>
 inline DynamicSpectrum<T, N>::DynamicSpectrum(const ValueType val)
-  : m_size(3)
 {
     set(val);
 
-    for (size_t i = N; i < StoredSamples; ++i)
-        m_samples[i] = T(0.0);
+#ifdef APPLESEED_USE_SSE
+    m_samples[s_size] = T(0.0);
+#endif
+}
+
+template <typename T, size_t N>
+inline DynamicSpectrum<T, N>::DynamicSpectrum(
+    const foundation::Color<ValueType, 3>&              rgb,
+    const foundation::LightingConditions&               lighting_conditions,
+    const Intent                                        intent)
+{
+    set(rgb, lighting_conditions, intent);
+
+#ifdef APPLESEED_USE_SSE
+    m_samples[s_size] = T(0.0);
+#endif
+}
+
+template <typename T, size_t N>
+inline DynamicSpectrum<T, N>::DynamicSpectrum(
+    const foundation::RegularSpectrum<ValueType, N>&    spectrum,
+    const foundation::LightingConditions&               lighting_conditions,
+    const Intent                                        intent)
+{
+    set(spectrum, lighting_conditions, intent);
+
+#ifdef APPLESEED_USE_SSE
+    m_samples[s_size] = T(0.0);
+#endif
 }
 
 template <typename T, size_t N>
 template <typename U>
 inline DynamicSpectrum<T, N>::DynamicSpectrum(const DynamicSpectrum<U, N>& rhs)
-  : m_size(rhs.m_size)
 {
-    for (size_t i = 0; i < m_size; ++i)
+    for (size_t i = 0; i < s_size; ++i)
         m_samples[i] = static_cast<ValueType>(rhs[i]);
 
-    for (size_t i = N; i < StoredSamples; ++i)
-        m_samples[i] = T(0.0);
+#ifdef APPLESEED_USE_SSE
+    m_samples[s_size] = T(0.0);
+#endif
 }
 
 template <typename T, size_t N>
-inline DynamicSpectrum<T, N>::DynamicSpectrum(const foundation::Color<ValueType, 3>& rhs)
-  : m_size(3)
+inline DynamicSpectrum<T, N> DynamicSpectrum<T, N>::from_array(const ValueType* rhs)
 {
-    m_samples[0] = rhs[0];
-    m_samples[1] = rhs[1];
-    m_samples[2] = rhs[2];
+    assert(rhs);
 
-    for (size_t i = N; i < StoredSamples; ++i)
-        m_samples[i] = T(0.0);
-}
+    DynamicSpectrum result;
 
-template <typename T, size_t N>
-inline DynamicSpectrum<T, N>::DynamicSpectrum(const foundation::RegularSpectrum<ValueType, N>& rhs)
-  : m_size(N)
-{
-    for (size_t i = 0; i < N; ++i)
-        m_samples[i] = rhs[i];
+    for (size_t i = 0; i < s_size; ++i)
+        result.m_samples[i] = rhs[i];
 
-    for (size_t i = N; i < StoredSamples; ++i)
-        m_samples[i] = T(0.0);
-}
-
-template <typename T, size_t N>
-inline DynamicSpectrum<T, N>& DynamicSpectrum<T, N>::operator=(const foundation::Color<ValueType, 3>& rhs)
-{
-    m_size = 3;
-
-    m_samples[0] = rhs[0];
-    m_samples[1] = rhs[1];
-    m_samples[2] = rhs[2];
-
-    return *this;
-}
-
-template <typename T, size_t N>
-inline DynamicSpectrum<T, N>& DynamicSpectrum<T, N>::operator=(const foundation::RegularSpectrum<ValueType, N>& rhs)
-{
-    m_size = N;
-
-    for (size_t i = 0; i < N; ++i)
-        m_samples[i] = rhs[i];
-
-    return *this;
-}
-
-template <typename T, size_t N>
-inline bool DynamicSpectrum<T, N>::is_rgb() const
-{
-    return m_size == 3;
-}
-
-template <typename T, size_t N>
-inline bool DynamicSpectrum<T, N>::is_spectral() const
-{
-    return m_size == N;
-}
-
-template <typename T, size_t N>
-inline size_t DynamicSpectrum<T, N>::size() const
-{
-    return static_cast<size_t>(m_size);
-}
-
-template <typename T, size_t N>
-inline void DynamicSpectrum<T, N>::resize(const size_t size)
-{
-    assert(size == 3 || size == N);
-    m_size = static_cast<foundation::uint32>(size);
+    return result;
 }
 
 template <typename T, size_t N>
 inline void DynamicSpectrum<T, N>::set(const ValueType val)
 {
-    for (size_t i = 0; i < m_size; ++i)
+    for (size_t i = 0; i < s_size; ++i)
         m_samples[i] = val;
 }
 
@@ -370,7 +382,7 @@ APPLESEED_FORCE_INLINE void DynamicSpectrum<float, 31>::set(const float val)
 
     _mm_store_ps(&m_samples[ 0], mval);
 
-    if (m_size > 3)
+    if (s_size > 3)
     {
         _mm_store_ps(&m_samples[ 4], mval);
         _mm_store_ps(&m_samples[ 8], mval);
@@ -385,90 +397,93 @@ APPLESEED_FORCE_INLINE void DynamicSpectrum<float, 31>::set(const float val)
 #endif  // APPLESEED_USE_SSE
 
 template <typename T, size_t N>
+void DynamicSpectrum<T, N>::set(
+    const foundation::Color<ValueType, 3>&              rgb,
+    const foundation::LightingConditions&               lighting_conditions,
+    const Intent                                        intent)
+{
+    if (s_mode == RGB)
+    {
+        m_samples[0] = rgb[0];
+        m_samples[1] = rgb[1];
+        m_samples[2] = rgb[2];
+    }
+    else
+    {
+        if (intent == Reflectance)
+        {
+            foundation::linear_rgb_reflectance_to_spectrum(
+                rgb,
+                reinterpret_cast<foundation::RegularSpectrum<T, N>&>(m_samples[0]));
+        }
+        else
+        {
+            foundation::linear_rgb_illuminance_to_spectrum(
+                rgb,
+                reinterpret_cast<foundation::RegularSpectrum<T, N>&>(m_samples[0]));
+        }
+    }
+}
+
+template <typename T, size_t N>
+void DynamicSpectrum<T, N>::set(
+    const foundation::RegularSpectrum<ValueType, N>&    spectrum,
+    const foundation::LightingConditions&               lighting_conditions,
+    const Intent                                        intent)
+{
+    if (s_mode == Spectral)
+    {
+        for (size_t i = 0; i < N; ++i)
+            m_samples[i] = spectrum[i];
+    }
+    else
+    {
+        reinterpret_cast<foundation::Color<T, 3>&>(m_samples[0]) =
+            foundation::ciexyz_to_linear_rgb(
+                foundation::spectrum_to_ciexyz<T>(lighting_conditions, spectrum));
+    }
+}
+
+template <typename T, size_t N>
 inline T& DynamicSpectrum<T, N>::operator[](const size_t i)
 {
-    assert(i < m_size);
+    assert(i < s_size);
     return m_samples[i];
 }
 
 template <typename T, size_t N>
 inline const T& DynamicSpectrum<T, N>::operator[](const size_t i) const
 {
-    assert(i < m_size);
+    assert(i < s_size);
     return m_samples[i];
 }
 
 template <typename T, size_t N>
-inline foundation::Color<T, 3>& DynamicSpectrum<T, N>::rgb()
-{
-    return reinterpret_cast<foundation::Color<T, 3>&>(m_samples);
-}
-
-template <typename T, size_t N>
-inline const foundation::Color<T, 3>& DynamicSpectrum<T, N>::rgb() const
-{
-    return reinterpret_cast<const foundation::Color<T, 3>&>(m_samples);
-}
-
-template <typename T, size_t N>
-inline foundation::Color<T, 3> DynamicSpectrum<T, N>::convert_to_rgb(
+inline foundation::Color<T, 3> DynamicSpectrum<T, N>::to_rgb(
     const foundation::LightingConditions& lighting_conditions) const
 {
     return
-        foundation::ciexyz_to_linear_rgb(
-            foundation::spectrum_to_ciexyz<float>(lighting_conditions, *this));
+        s_mode == RGB
+            ? foundation::Color<T, 3>(m_samples[0], m_samples[1], m_samples[2])
+            : foundation::ciexyz_to_linear_rgb(
+                  foundation::spectrum_to_ciexyz<T>(lighting_conditions, *this));
 }
 
 template <typename T, size_t N>
-inline DynamicSpectrum<T, N>& DynamicSpectrum<T, N>::upgrade(
-    const DynamicSpectrum&                  source,
-    DynamicSpectrum&                        dest)
+inline foundation::Color<T, 3> DynamicSpectrum<T, N>::to_ciexyz(
+    const foundation::LightingConditions& lighting_conditions) const
 {
-    // source and dest might be the same object.
-
-    if (source.is_rgb())
-    {
-        foundation::linear_rgb_illuminance_to_spectrum(
-            reinterpret_cast<const foundation::Color<ValueType, 3>&>(source[0]),
-            reinterpret_cast<foundation::RegularSpectrum<ValueType, N>&>(dest[0]));
-        dest.m_size = N;
-    }
-    else
-        dest = source;
-
-    return dest;
-}
-
-template <typename T, size_t N>
-inline DynamicSpectrum<T, N>& DynamicSpectrum<T, N>::downgrade(
-    const foundation::LightingConditions&   lighting_conditions,
-    const DynamicSpectrum&                  source,
-    DynamicSpectrum&                        dest)
-{
-    // source and dest might be the same object.
-
-    if (source.is_spectral())
-    {
-        reinterpret_cast<foundation::Color<ValueType, 3>&>(dest[0]) =
-            foundation::ciexyz_to_linear_rgb(
-                foundation::spectrum_to_ciexyz<float>(
-                    lighting_conditions,
-                    reinterpret_cast<const foundation::RegularSpectrum<ValueType, N>&>(source[0])));
-        dest.m_size = 3;
-    }
-    else
-        dest = source;
-
-    return dest;
+    return
+        s_mode == RGB
+            ? linear_rgb_to_ciexyz(
+                  foundation::Color<T, 3>(m_samples[0], m_samples[1], m_samples[2]))
+            : foundation::spectrum_to_ciexyz<T>(lighting_conditions, *this);
 }
 
 template <typename T, size_t N>
 inline bool operator!=(const DynamicSpectrum<T, N>& lhs, const DynamicSpectrum<T, N>& rhs)
 {
-    if (lhs.size() != rhs.size())
-        return true;
-
-    for (size_t i = 0, e = lhs.size(); i < e; ++i)
+    for (size_t i = 0; i < DynamicSpectrum<T, N>::size(); ++i)
     {
         if (lhs[i] != rhs[i])
             return true;
@@ -488,24 +503,8 @@ inline DynamicSpectrum<T, N> operator+(const DynamicSpectrum<T, N>& lhs, const D
 {
     DynamicSpectrum<T, N> result;
 
-    if (lhs.size() == rhs.size())
-    {
-        result.resize(lhs.size());
-
-        for (size_t i = 0, e = lhs.size(); i < e; ++i)
-            result[i] = lhs[i] + rhs[i];
-    }
-    else
-    {
-        result.resize(N);
-
-        DynamicSpectrum<T, N> up_lhs, up_rhs;
-        DynamicSpectrum<T, N>::upgrade(lhs, up_lhs);
-        DynamicSpectrum<T, N>::upgrade(rhs, up_rhs);
-
-        for (size_t i = 0; i < N; ++i)
-            result[i] = up_lhs[i] + up_rhs[i];
-    }
+    for (size_t i = 0; i < DynamicSpectrum<T, N>::size(); ++i)
+        result[i] = lhs[i] + rhs[i];
 
     return result;
 }
@@ -515,24 +514,8 @@ inline DynamicSpectrum<T, N> operator-(const DynamicSpectrum<T, N>& lhs, const D
 {
     DynamicSpectrum<T, N> result;
 
-    if (lhs.size() == rhs.size())
-    {
-        result.resize(lhs.size());
-
-        for (size_t i = 0, e = lhs.size(); i < e; ++i)
-            result[i] = lhs[i] - rhs[i];
-    }
-    else
-    {
-        result.resize(N);
-
-        DynamicSpectrum<T, N> up_lhs, up_rhs;
-        DynamicSpectrum<T, N>::upgrade(lhs, up_lhs);
-        DynamicSpectrum<T, N>::upgrade(rhs, up_rhs);
-
-        for (size_t i = 0; i < N; ++i)
-            result[i] = up_lhs[i] - up_rhs[i];
-    }
+    for (size_t i = 0; i < DynamicSpectrum<T, N>::size(); ++i)
+        result[i] = lhs[i] - rhs[i];
 
     return result;
 }
@@ -541,9 +524,8 @@ template <typename T, size_t N>
 inline DynamicSpectrum<T, N> operator-(const DynamicSpectrum<T, N>& lhs)
 {
     DynamicSpectrum<T, N> result;
-    result.resize(lhs.size());
 
-    for (size_t i = 0, e = lhs.size(); i < e; ++i)
+    for (size_t i = 0; i < DynamicSpectrum<T, N>::size(); ++i)
         result[i] = -lhs[i];
 
     return result;
@@ -553,9 +535,8 @@ template <typename T, size_t N>
 inline DynamicSpectrum<T, N> operator*(const DynamicSpectrum<T, N>& lhs, const T rhs)
 {
     DynamicSpectrum<T, N> result;
-    result.resize(lhs.size());
 
-    for (size_t i = 0, e = lhs.size(); i < e; ++i)
+    for (size_t i = 0; i < DynamicSpectrum<T, N>::size(); ++i)
         result[i] = lhs[i] * rhs;
 
     return result;
@@ -572,24 +553,8 @@ inline DynamicSpectrum<T, N> operator*(const DynamicSpectrum<T, N>& lhs, const D
 {
     DynamicSpectrum<T, N> result;
 
-    if (lhs.size() == rhs.size())
-    {
-        result.resize(lhs.size());
-
-        for (size_t i = 0, e = lhs.size(); i < e; ++i)
-            result[i] = lhs[i] * rhs[i];
-    }
-    else
-    {
-        result.resize(N);
-
-        DynamicSpectrum<T, N> up_lhs, up_rhs;
-        DynamicSpectrum<T, N>::upgrade(lhs, up_lhs);
-        DynamicSpectrum<T, N>::upgrade(rhs, up_rhs);
-
-        for (size_t i = 0; i < N; ++i)
-            result[i] = up_lhs[i] * up_rhs[i];
-    }
+    for (size_t i = 0; i < DynamicSpectrum<T, N>::size(); ++i)
+        result[i] = lhs[i] * rhs[i];
 
     return result;
 }
@@ -598,9 +563,8 @@ template <typename T, size_t N>
 inline DynamicSpectrum<T, N> operator/(const DynamicSpectrum<T, N>& lhs, const T rhs)
 {
     DynamicSpectrum<T, N> result;
-    result.resize(lhs.size());
 
-    for (size_t i = 0, e = lhs.size(); i < e; ++i)
+    for (size_t i = 0; i < DynamicSpectrum<T, N>::size(); ++i)
         result[i] = lhs[i] / rhs;
 
     return result;
@@ -629,24 +593,8 @@ inline DynamicSpectrum<T, N> operator/(const DynamicSpectrum<T, N>& lhs, const D
 {
     DynamicSpectrum<T, N> result;
 
-    if (lhs.size() == rhs.size())
-    {
-        result.resize(lhs.size());
-
-        for (size_t i = 0, e = lhs.size(); i < e; ++i)
-            result[i] = lhs[i] / rhs[i];
-    }
-    else
-    {
-        result.resize(N);
-
-        DynamicSpectrum<T, N> up_lhs, up_rhs;
-        DynamicSpectrum<T, N>::upgrade(lhs, up_lhs);
-        DynamicSpectrum<T, N>::upgrade(rhs, up_rhs);
-
-        for (size_t i = 0; i < N; ++i)
-            result[i] = up_lhs[i] / up_rhs[i];
-    }
+    for (size_t i = 0; i < DynamicSpectrum<T, N>::size(); ++i)
+        result[i] = lhs[i] / rhs[i];
 
     return result;
 }
@@ -654,22 +602,8 @@ inline DynamicSpectrum<T, N> operator/(const DynamicSpectrum<T, N>& lhs, const D
 template <typename T, size_t N>
 inline DynamicSpectrum<T, N>& operator+=(DynamicSpectrum<T, N>& lhs, const DynamicSpectrum<T, N>& rhs)
 {
-    if (lhs.size() <= rhs.size())
-    {
-        if (lhs.size() < rhs.size())
-            DynamicSpectrum<T, N>::upgrade(lhs, lhs);
-
-        for (size_t i = 0, e = lhs.size(); i < e; ++i)
-            lhs[i] += rhs[i];
-    }
-    else
-    {
-        DynamicSpectrum<T, N> up_rhs;
-        DynamicSpectrum<T, N>::upgrade(rhs, up_rhs);
-
-        for (size_t i = 0; i < N; ++i)
-            lhs[i] += up_rhs[i];
-    }
+    for (size_t i = 0; i < DynamicSpectrum<T, N>::size(); ++i)
+        lhs[i] += rhs[i];
 
     return lhs;
 }
@@ -679,37 +613,17 @@ inline DynamicSpectrum<T, N>& operator+=(DynamicSpectrum<T, N>& lhs, const Dynam
 template <>
 APPLESEED_FORCE_INLINE DynamicSpectrum<float, 31>& operator+=(DynamicSpectrum<float, 31>& lhs, const DynamicSpectrum<float, 31>& rhs)
 {
-    if (lhs.size() <= rhs.size())
+    _mm_store_ps(&lhs[ 0], _mm_add_ps(_mm_load_ps(&lhs[ 0]), _mm_load_ps(&rhs[ 0])));
+
+    if (DynamicSpectrum<float, 31>::size() > 3)
     {
-        if (lhs.size() < rhs.size())
-            DynamicSpectrum<float, 31>::upgrade(lhs, lhs);
-
-        _mm_store_ps(&lhs[ 0], _mm_add_ps(_mm_load_ps(&lhs[ 0]), _mm_load_ps(&rhs[ 0])));
-
-        if (lhs.size() > 3)
-        {
-            _mm_store_ps(&lhs[ 4], _mm_add_ps(_mm_load_ps(&lhs[ 4]), _mm_load_ps(&rhs[ 4])));
-            _mm_store_ps(&lhs[ 8], _mm_add_ps(_mm_load_ps(&lhs[ 8]), _mm_load_ps(&rhs[ 8])));
-            _mm_store_ps(&lhs[12], _mm_add_ps(_mm_load_ps(&lhs[12]), _mm_load_ps(&rhs[12])));
-            _mm_store_ps(&lhs[16], _mm_add_ps(_mm_load_ps(&lhs[16]), _mm_load_ps(&rhs[16])));
-            _mm_store_ps(&lhs[20], _mm_add_ps(_mm_load_ps(&lhs[20]), _mm_load_ps(&rhs[20])));
-            _mm_store_ps(&lhs[24], _mm_add_ps(_mm_load_ps(&lhs[24]), _mm_load_ps(&rhs[24])));
-            _mm_store_ps(&lhs[28], _mm_add_ps(_mm_load_ps(&lhs[28]), _mm_load_ps(&rhs[28])));
-        }
-    }
-    else
-    {
-        DynamicSpectrum<float, 31> up_rhs;
-        DynamicSpectrum<float, 31>::upgrade(rhs, up_rhs);
-
-        _mm_store_ps(&lhs[ 0], _mm_add_ps(_mm_load_ps(&lhs[ 0]), _mm_load_ps(&up_rhs[ 0])));
-        _mm_store_ps(&lhs[ 4], _mm_add_ps(_mm_load_ps(&lhs[ 4]), _mm_load_ps(&up_rhs[ 4])));
-        _mm_store_ps(&lhs[ 8], _mm_add_ps(_mm_load_ps(&lhs[ 8]), _mm_load_ps(&up_rhs[ 8])));
-        _mm_store_ps(&lhs[12], _mm_add_ps(_mm_load_ps(&lhs[12]), _mm_load_ps(&up_rhs[12])));
-        _mm_store_ps(&lhs[16], _mm_add_ps(_mm_load_ps(&lhs[16]), _mm_load_ps(&up_rhs[16])));
-        _mm_store_ps(&lhs[20], _mm_add_ps(_mm_load_ps(&lhs[20]), _mm_load_ps(&up_rhs[20])));
-        _mm_store_ps(&lhs[24], _mm_add_ps(_mm_load_ps(&lhs[24]), _mm_load_ps(&up_rhs[24])));
-        _mm_store_ps(&lhs[28], _mm_add_ps(_mm_load_ps(&lhs[28]), _mm_load_ps(&up_rhs[28])));
+        _mm_store_ps(&lhs[ 4], _mm_add_ps(_mm_load_ps(&lhs[ 4]), _mm_load_ps(&rhs[ 4])));
+        _mm_store_ps(&lhs[ 8], _mm_add_ps(_mm_load_ps(&lhs[ 8]), _mm_load_ps(&rhs[ 8])));
+        _mm_store_ps(&lhs[12], _mm_add_ps(_mm_load_ps(&lhs[12]), _mm_load_ps(&rhs[12])));
+        _mm_store_ps(&lhs[16], _mm_add_ps(_mm_load_ps(&lhs[16]), _mm_load_ps(&rhs[16])));
+        _mm_store_ps(&lhs[20], _mm_add_ps(_mm_load_ps(&lhs[20]), _mm_load_ps(&rhs[20])));
+        _mm_store_ps(&lhs[24], _mm_add_ps(_mm_load_ps(&lhs[24]), _mm_load_ps(&rhs[24])));
+        _mm_store_ps(&lhs[28], _mm_add_ps(_mm_load_ps(&lhs[28]), _mm_load_ps(&rhs[28])));
     }
 
     return lhs;
@@ -720,22 +634,8 @@ APPLESEED_FORCE_INLINE DynamicSpectrum<float, 31>& operator+=(DynamicSpectrum<fl
 template <typename T, size_t N>
 inline DynamicSpectrum<T, N>& operator-=(DynamicSpectrum<T, N>& lhs, const DynamicSpectrum<T, N>& rhs)
 {
-    if (lhs.size() <= rhs.size())
-    {
-        if (lhs.size() < rhs.size())
-            DynamicSpectrum<T, N>::upgrade(lhs, lhs);
-
-        for (size_t i = 0, e = lhs.size(); i < e; ++i)
-            lhs[i] -= rhs[i];
-    }
-    else
-    {
-        DynamicSpectrum<T, N> up_rhs;
-        DynamicSpectrum<T, N>::upgrade(rhs, up_rhs);
-
-        for (size_t i = 0; i < N; ++i)
-            lhs[i] -= up_rhs[i];
-    }
+    for (size_t i = 0; i < DynamicSpectrum<T, N>::size(); ++i)
+        lhs[i] -= rhs[i];
 
     return lhs;
 }
@@ -743,7 +643,7 @@ inline DynamicSpectrum<T, N>& operator-=(DynamicSpectrum<T, N>& lhs, const Dynam
 template <typename T, size_t N>
 inline DynamicSpectrum<T, N>& operator*=(DynamicSpectrum<T, N>& lhs, const T rhs)
 {
-    for (size_t i = 0, e = lhs.size(); i < e; ++i)
+    for (size_t i = 0; i < DynamicSpectrum<T, N>::size(); ++i)
         lhs[i] *= rhs;
 
     return lhs;
@@ -758,7 +658,7 @@ APPLESEED_FORCE_INLINE DynamicSpectrum<float, 31>& operator*=(DynamicSpectrum<fl
 
     _mm_store_ps(&lhs[ 0], _mm_mul_ps(_mm_load_ps(&lhs[ 0]), mrhs));
 
-    if (lhs.size() > 3)
+    if (DynamicSpectrum<float, 31>::size() > 3)
     {
         _mm_store_ps(&lhs[ 4], _mm_mul_ps(_mm_load_ps(&lhs[ 4]), mrhs));
         _mm_store_ps(&lhs[ 8], _mm_mul_ps(_mm_load_ps(&lhs[ 8]), mrhs));
@@ -777,22 +677,8 @@ APPLESEED_FORCE_INLINE DynamicSpectrum<float, 31>& operator*=(DynamicSpectrum<fl
 template <typename T, size_t N>
 inline DynamicSpectrum<T, N>& operator*=(DynamicSpectrum<T, N>& lhs, const DynamicSpectrum<T, N>& rhs)
 {
-    if (lhs.size() <= rhs.size())
-    {
-        if (lhs.size() < rhs.size())
-            DynamicSpectrum<T, N>::upgrade(lhs, lhs);
-
-        for (size_t i = 0, e = lhs.size(); i < e; ++i)
-            lhs[i] *= rhs[i];
-    }
-    else
-    {
-        DynamicSpectrum<T, N> up_rhs;
-        DynamicSpectrum<T, N>::upgrade(rhs, up_rhs);
-
-        for (size_t i = 0; i < N; ++i)
-            lhs[i] *= up_rhs[i];
-    }
+    for (size_t i = 0; i < DynamicSpectrum<T, N>::size(); ++i)
+        lhs[i] *= rhs[i];
 
     return lhs;
 }
@@ -802,37 +688,17 @@ inline DynamicSpectrum<T, N>& operator*=(DynamicSpectrum<T, N>& lhs, const Dynam
 template <>
 APPLESEED_FORCE_INLINE DynamicSpectrum<float, 31>& operator*=(DynamicSpectrum<float, 31>& lhs, const DynamicSpectrum<float, 31>& rhs)
 {
-    if (lhs.size() <= rhs.size())
+    _mm_store_ps(&lhs[ 0], _mm_mul_ps(_mm_load_ps(&lhs[ 0]), _mm_load_ps(&rhs[ 0])));
+
+    if (DynamicSpectrum<float, 31>::size() > 3)
     {
-        if (lhs.size() < rhs.size())
-            DynamicSpectrum<float, 31>::upgrade(lhs, lhs);
-
-        _mm_store_ps(&lhs[ 0], _mm_mul_ps(_mm_load_ps(&lhs[ 0]), _mm_load_ps(&rhs[ 0])));
-
-        if (lhs.size() > 3)
-        {
-            _mm_store_ps(&lhs[ 4], _mm_mul_ps(_mm_load_ps(&lhs[ 4]), _mm_load_ps(&rhs[ 4])));
-            _mm_store_ps(&lhs[ 8], _mm_mul_ps(_mm_load_ps(&lhs[ 8]), _mm_load_ps(&rhs[ 8])));
-            _mm_store_ps(&lhs[12], _mm_mul_ps(_mm_load_ps(&lhs[12]), _mm_load_ps(&rhs[12])));
-            _mm_store_ps(&lhs[16], _mm_mul_ps(_mm_load_ps(&lhs[16]), _mm_load_ps(&rhs[16])));
-            _mm_store_ps(&lhs[20], _mm_mul_ps(_mm_load_ps(&lhs[20]), _mm_load_ps(&rhs[20])));
-            _mm_store_ps(&lhs[24], _mm_mul_ps(_mm_load_ps(&lhs[24]), _mm_load_ps(&rhs[24])));
-            _mm_store_ps(&lhs[28], _mm_mul_ps(_mm_load_ps(&lhs[28]), _mm_load_ps(&rhs[28])));
-        }
-    }
-    else
-    {
-        DynamicSpectrum<float, 31> up_rhs;
-        DynamicSpectrum<float, 31>::upgrade(rhs, up_rhs);
-
-        _mm_store_ps(&lhs[ 0], _mm_mul_ps(_mm_load_ps(&lhs[ 0]), _mm_load_ps(&up_rhs[ 0])));
-        _mm_store_ps(&lhs[ 4], _mm_mul_ps(_mm_load_ps(&lhs[ 4]), _mm_load_ps(&up_rhs[ 4])));
-        _mm_store_ps(&lhs[ 8], _mm_mul_ps(_mm_load_ps(&lhs[ 8]), _mm_load_ps(&up_rhs[ 8])));
-        _mm_store_ps(&lhs[12], _mm_mul_ps(_mm_load_ps(&lhs[12]), _mm_load_ps(&up_rhs[12])));
-        _mm_store_ps(&lhs[16], _mm_mul_ps(_mm_load_ps(&lhs[16]), _mm_load_ps(&up_rhs[16])));
-        _mm_store_ps(&lhs[20], _mm_mul_ps(_mm_load_ps(&lhs[20]), _mm_load_ps(&up_rhs[20])));
-        _mm_store_ps(&lhs[24], _mm_mul_ps(_mm_load_ps(&lhs[24]), _mm_load_ps(&up_rhs[24])));
-        _mm_store_ps(&lhs[28], _mm_mul_ps(_mm_load_ps(&lhs[28]), _mm_load_ps(&up_rhs[28])));
+        _mm_store_ps(&lhs[ 4], _mm_mul_ps(_mm_load_ps(&lhs[ 4]), _mm_load_ps(&rhs[ 4])));
+        _mm_store_ps(&lhs[ 8], _mm_mul_ps(_mm_load_ps(&lhs[ 8]), _mm_load_ps(&rhs[ 8])));
+        _mm_store_ps(&lhs[12], _mm_mul_ps(_mm_load_ps(&lhs[12]), _mm_load_ps(&rhs[12])));
+        _mm_store_ps(&lhs[16], _mm_mul_ps(_mm_load_ps(&lhs[16]), _mm_load_ps(&rhs[16])));
+        _mm_store_ps(&lhs[20], _mm_mul_ps(_mm_load_ps(&lhs[20]), _mm_load_ps(&rhs[20])));
+        _mm_store_ps(&lhs[24], _mm_mul_ps(_mm_load_ps(&lhs[24]), _mm_load_ps(&rhs[24])));
+        _mm_store_ps(&lhs[28], _mm_mul_ps(_mm_load_ps(&lhs[28]), _mm_load_ps(&rhs[28])));
     }
 
     return lhs;
@@ -843,7 +709,7 @@ APPLESEED_FORCE_INLINE DynamicSpectrum<float, 31>& operator*=(DynamicSpectrum<fl
 template <typename T, size_t N>
 inline DynamicSpectrum<T, N>& operator/=(DynamicSpectrum<T, N>& lhs, const T rhs)
 {
-    for (size_t i = 0, e = lhs.size(); i < e; ++i)
+    for (size_t i = 0; i < DynamicSpectrum<T, N>::size(); ++i)
         lhs[i] /= rhs;
 
     return lhs;
@@ -870,27 +736,79 @@ inline DynamicSpectrum<long double, N>& operator/=(DynamicSpectrum<long double, 
 template <typename T, size_t N>
 inline DynamicSpectrum<T, N>& operator/=(DynamicSpectrum<T, N>& lhs, const DynamicSpectrum<T, N>& rhs)
 {
-    if (lhs.size() <= rhs.size())
-    {
-        if (lhs.size() < rhs.size())
-            DynamicSpectrum<T, N>::upgrade(lhs, lhs);
-
-        for (size_t i = 0, e = lhs.size(); i < e; ++i)
-            lhs[i] /= rhs[i];
-    }
-    else
-    {
-        DynamicSpectrum<T, N> up_rhs;
-        DynamicSpectrum<T, N>::upgrade(rhs, up_rhs);
-
-        for (size_t i = 0; i < N; ++i)
-            lhs[i] /= up_rhs[i];
-    }
+    for (size_t i = 0; i < DynamicSpectrum<T, N>::size(); ++i)
+        lhs[i] /= rhs[i];
 
     return lhs;
 }
 
-}   // namespace renderer
+template <typename T, size_t N>
+inline void madd(
+    DynamicSpectrum<T, N>&                  a,
+    const DynamicSpectrum<T, N>&            b,
+    const DynamicSpectrum<T, N>&            c)
+{
+    for (size_t i = 0; i < DynamicSpectrum<T, N>::size(); ++i)
+        a[i] += b[i] * c[i];
+}
+
+template <typename T, size_t N>
+inline void madd(
+    DynamicSpectrum<T, N>&                  a,
+    const DynamicSpectrum<T, N>&            b,
+    const T                                 c)
+{
+    for (size_t i = 0; i < DynamicSpectrum<T, N>::size(); ++i)
+        a[i] += b[i] * c;
+}
+
+#ifdef APPLESEED_USE_SSE
+
+template <>
+APPLESEED_FORCE_INLINE void madd(
+    DynamicSpectrum<float, 31>&             a,
+    const DynamicSpectrum<float, 31>&       b,
+    const DynamicSpectrum<float, 31>&       c)
+{
+    _mm_store_ps(&a[0], _mm_add_ps(_mm_load_ps(&a[0]), _mm_mul_ps(_mm_load_ps(&b[0]), _mm_load_ps(&c[0]))));
+
+    if (DynamicSpectrum<float, 31>::size() > 3)
+    {
+        _mm_store_ps(&a[ 4], _mm_add_ps(_mm_load_ps(&a[ 4]), _mm_mul_ps(_mm_load_ps(&b[ 4]), _mm_load_ps(&c[ 4]))));
+        _mm_store_ps(&a[ 8], _mm_add_ps(_mm_load_ps(&a[ 8]), _mm_mul_ps(_mm_load_ps(&b[ 8]), _mm_load_ps(&c[ 8]))));
+        _mm_store_ps(&a[12], _mm_add_ps(_mm_load_ps(&a[12]), _mm_mul_ps(_mm_load_ps(&b[12]), _mm_load_ps(&c[12]))));
+        _mm_store_ps(&a[16], _mm_add_ps(_mm_load_ps(&a[16]), _mm_mul_ps(_mm_load_ps(&b[16]), _mm_load_ps(&c[16]))));
+        _mm_store_ps(&a[20], _mm_add_ps(_mm_load_ps(&a[20]), _mm_mul_ps(_mm_load_ps(&b[20]), _mm_load_ps(&c[20]))));
+        _mm_store_ps(&a[24], _mm_add_ps(_mm_load_ps(&a[24]), _mm_mul_ps(_mm_load_ps(&b[24]), _mm_load_ps(&c[24]))));
+        _mm_store_ps(&a[28], _mm_add_ps(_mm_load_ps(&a[28]), _mm_mul_ps(_mm_load_ps(&b[28]), _mm_load_ps(&c[28]))));
+    }
+}
+
+template <>
+APPLESEED_FORCE_INLINE void madd(
+    DynamicSpectrum<float, 31>&             a,
+    const DynamicSpectrum<float, 31>&       b,
+    const float                             c)
+{
+    const __m128 k = _mm_set_ps1(c);
+
+    _mm_store_ps(&a[0], _mm_add_ps(_mm_load_ps(&a[0]), _mm_mul_ps(_mm_load_ps(&b[0]), k)));
+
+    if (DynamicSpectrum<float, 31>::size() > 3)
+    {
+        _mm_store_ps(&a[ 4], _mm_add_ps(_mm_load_ps(&a[ 4]), _mm_mul_ps(_mm_load_ps(&b[ 4]), k)));
+        _mm_store_ps(&a[ 8], _mm_add_ps(_mm_load_ps(&a[ 8]), _mm_mul_ps(_mm_load_ps(&b[ 8]), k)));
+        _mm_store_ps(&a[12], _mm_add_ps(_mm_load_ps(&a[12]), _mm_mul_ps(_mm_load_ps(&b[12]), k)));
+        _mm_store_ps(&a[16], _mm_add_ps(_mm_load_ps(&a[16]), _mm_mul_ps(_mm_load_ps(&b[16]), k)));
+        _mm_store_ps(&a[20], _mm_add_ps(_mm_load_ps(&a[20]), _mm_mul_ps(_mm_load_ps(&b[20]), k)));
+        _mm_store_ps(&a[24], _mm_add_ps(_mm_load_ps(&a[24]), _mm_mul_ps(_mm_load_ps(&b[24]), k)));
+        _mm_store_ps(&a[28], _mm_add_ps(_mm_load_ps(&a[28]), _mm_mul_ps(_mm_load_ps(&b[28]), k)));
+    }
+}
+
+#endif  // APPLESEED_USE_SSE
+
+}       // namespace renderer
 
 namespace foundation
 {
@@ -898,7 +816,7 @@ namespace foundation
 template <typename T, size_t N>
 inline bool is_zero(const renderer::DynamicSpectrum<T, N>& s)
 {
-    for (size_t i = 0, e = s.size(); i < e; ++i)
+    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
     {
         if (s[i] != T(0.0))
             return false;
@@ -910,10 +828,7 @@ inline bool is_zero(const renderer::DynamicSpectrum<T, N>& s)
 template <typename T, size_t N>
 inline bool feq(const renderer::DynamicSpectrum<T, N>& lhs, const renderer::DynamicSpectrum<T, N>& rhs)
 {
-    if (lhs.size() != rhs.size())
-        return false;
-
-    for (size_t i = 0, e = lhs.size(); i < e; ++i)
+    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
     {
         if (!feq(lhs[i], rhs[i]))
             return false;
@@ -925,10 +840,7 @@ inline bool feq(const renderer::DynamicSpectrum<T, N>& lhs, const renderer::Dyna
 template <typename T, size_t N>
 inline bool feq(const renderer::DynamicSpectrum<T, N>& lhs, const renderer::DynamicSpectrum<T, N>& rhs, const T eps)
 {
-    if (lhs.size() != rhs.size())
-        return false;
-
-    for (size_t i = 0, e = lhs.size(); i < e; ++i)
+    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
     {
         if (!feq(lhs[i], rhs[i], eps))
             return false;
@@ -940,7 +852,7 @@ inline bool feq(const renderer::DynamicSpectrum<T, N>& lhs, const renderer::Dyna
 template <typename T, size_t N>
 inline bool fz(const renderer::DynamicSpectrum<T, N>& s)
 {
-    for (size_t i = 0, e = s.size(); i < e; ++i)
+    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
     {
         if (!fz(s[i]))
             return false;
@@ -952,7 +864,7 @@ inline bool fz(const renderer::DynamicSpectrum<T, N>& s)
 template <typename T, size_t N>
 inline bool fz(const renderer::DynamicSpectrum<T, N>& s, const T eps)
 {
-    for (size_t i = 0, e = s.size(); i < e; ++i)
+    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
     {
         if (!fz(s[i], eps))
             return false;
@@ -965,9 +877,8 @@ template <typename T, size_t N>
 inline renderer::DynamicSpectrum<T, N> rcp(const renderer::DynamicSpectrum<T, N>& s)
 {
     renderer::DynamicSpectrum<T, N> result;
-    result.resize(s.size());
 
-    for (size_t i = 0, e = s.size(); i < e; ++i)
+    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
         result[i] = T(1.0) / s[i];
 
     return result;
@@ -976,7 +887,7 @@ inline renderer::DynamicSpectrum<T, N> rcp(const renderer::DynamicSpectrum<T, N>
 template <typename T, size_t N>
 inline bool is_saturated(const renderer::DynamicSpectrum<T, N>& s)
 {
-    for (size_t i = 0, e = s.size(); i < e; ++i)
+    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
     {
         if (s[i] < T(0.0) || s[i] > T(1.0))
             return false;
@@ -989,48 +900,83 @@ template <typename T, size_t N>
 inline renderer::DynamicSpectrum<T, N> saturate(const renderer::DynamicSpectrum<T, N>& s)
 {
     renderer::DynamicSpectrum<T, N> result;
-    result.resize(s.size());
 
-    for (size_t i = 0, e = s.size(); i < e; ++i)
+    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
         result[i] = saturate(s[i]);
 
     return result;
 }
 
 template <typename T, size_t N>
+inline void saturate_in_place(renderer::DynamicSpectrum<T, N>& s)
+{
+    clamp_in_place(s, T(0.0), T(1.0));
+}
+
+template <typename T, size_t N>
 inline renderer::DynamicSpectrum<T, N> clamp(const renderer::DynamicSpectrum<T, N>& s, const T min, const T max)
 {
     renderer::DynamicSpectrum<T, N> result;
-    result.resize(s.size());
 
-    for (size_t i = 0, e = s.size(); i < e; ++i)
+    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
         result[i] = clamp(s[i], min, max);
 
     return result;
 }
 
 template <typename T, size_t N>
+inline void clamp_in_place(renderer::DynamicSpectrum<T, N>& s, const T min, const T max)
+{
+    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    {
+        if (s[i] < min)
+            s[i] = min;
+
+        if (s[i] > max)
+            s[i] = max;
+    }
+}
+
+template <typename T, size_t N>
 inline renderer::DynamicSpectrum<T, N> clamp_low(const renderer::DynamicSpectrum<T, N>& s, const T min)
 {
     renderer::DynamicSpectrum<T, N> result;
-    result.resize(s.size());
 
-    for (size_t i = 0, e = s.size(); i < e; ++i)
+    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
         result[i] = std::max(s[i], min);
 
     return result;
 }
 
 template <typename T, size_t N>
+inline void clamp_low_in_place(renderer::DynamicSpectrum<T, N>& s, const T min)
+{
+    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    {
+        if (s[i] < min)
+            s[i] = min;
+    }
+}
+
+template <typename T, size_t N>
 inline renderer::DynamicSpectrum<T, N> clamp_high(const renderer::DynamicSpectrum<T, N>& s, const T max)
 {
     renderer::DynamicSpectrum<T, N> result;
-    result.resize(s.size());
 
-    for (size_t i = 0, e = s.size(); i < e; ++i)
+    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
         result[i] = std::min(s[i], max);
 
     return result;
+}
+
+template <typename T, size_t N>
+inline void clamp_high_in_place(renderer::DynamicSpectrum<T, N>& s, const T max)
+{
+    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    {
+        if (s[i] > max)
+            s[i] = max;
+    }
 }
 
 template <typename T, size_t N>
@@ -1039,13 +985,9 @@ inline renderer::DynamicSpectrum<T, N> lerp(
     const renderer::DynamicSpectrum<T, N>& b,
     const renderer::DynamicSpectrum<T, N>& t)
 {
-    assert(a.size() == b.size());
-    assert(a.size() == t.size());
-
     renderer::DynamicSpectrum<T, N> result;
-    result.resize(a.size());
 
-    for (size_t i = 0, e = a.size(); i < e; ++i)
+    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
         result[i] = foundation::lerp(a[i], b[i], t[i]);
 
     return result;
@@ -1059,21 +1001,16 @@ APPLESEED_FORCE_INLINE renderer::DynamicSpectrum<float, 31> lerp(
     const renderer::DynamicSpectrum<float, 31>& b,
     const renderer::DynamicSpectrum<float, 31>& t)
 {
-    assert(a.size() == b.size());
-    assert(a.size() == t.size());
-
     renderer::DynamicSpectrum<float, 31> result;
-    result.resize(a.size());
 
     __m128 one4 = _mm_set1_ps(1.0f);
-
     __m128 t4 = _mm_load_ps(&t[0]);
     __m128 one_minus_t4 = _mm_sub_ps(one4, t4);
     __m128 x = _mm_mul_ps(_mm_load_ps(&a[0]), one_minus_t4);
     __m128 y = _mm_mul_ps(_mm_load_ps(&b[0]), t4);
     _mm_store_ps(&result[0], _mm_add_ps(x, y));
 
-    if (a.size() > 3)
+    if (renderer::DynamicSpectrum<float, 31>::size() > 3)
     {
         for (size_t i = 4; i < a.StoredSamples; i += 4)
         {
@@ -1095,7 +1032,7 @@ inline T min_value(const renderer::DynamicSpectrum<T, N>& s)
 {
     T value = s[0];
 
-    for (size_t i = 1, e = s.size(); i < e; ++i)
+    for (size_t i = 1; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
     {
         if (value > s[i])
             value = s[i];
@@ -1104,12 +1041,37 @@ inline T min_value(const renderer::DynamicSpectrum<T, N>& s)
     return value;
 }
 
+#ifdef APPLESEED_USE_SSE
+
+template <>
+inline float min_value(const renderer::DynamicSpectrum<float, 31>& s)
+{
+    if (renderer::DynamicSpectrum<float, 31>::size() == 3)
+        return std::min(std::min(s[0], s[1]), s[2]);
+
+    const __m128 m1 = _mm_min_ps(_mm_load_ps(&s[ 0]), _mm_load_ps(&s[ 4]));
+    const __m128 m2 = _mm_min_ps(_mm_load_ps(&s[ 8]), _mm_load_ps(&s[12]));
+    const __m128 m3 = _mm_min_ps(_mm_load_ps(&s[16]), _mm_load_ps(&s[20]));
+    const __m128 s28 = _mm_load_ps(&s[28]);
+    const __m128 m4 = _mm_min_ps(_mm_load_ps(&s[24]), _mm_shuffle_ps(s28, s28, _MM_SHUFFLE(2, 2, 1, 0)));
+    const __m128 m5 = _mm_min_ps(m1, m2);
+    const __m128 m6 = _mm_min_ps(m3, m4);
+          __m128 m  = _mm_min_ps(m5, m6);
+
+    m = _mm_min_ps(m, _mm_shuffle_ps(m, m, _MM_SHUFFLE(2, 3, 0, 1)));
+    m = _mm_min_ps(m, _mm_shuffle_ps(m, m, _MM_SHUFFLE(1, 0, 3, 2)));
+
+    return _mm_cvtss_f32(m);
+}
+
+#endif  // APPLESEED_USE_SSE
+
 template <typename T, size_t N>
 inline T max_value(const renderer::DynamicSpectrum<T, N>& s)
 {
     T value = s[0];
 
-    for (size_t i = 1, e = s.size(); i < e; ++i)
+    for (size_t i = 1; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
     {
         if (value < s[i])
             value = s[i];
@@ -1118,13 +1080,38 @@ inline T max_value(const renderer::DynamicSpectrum<T, N>& s)
     return value;
 }
 
+#ifdef APPLESEED_USE_SSE
+
+template <>
+inline float max_value(const renderer::DynamicSpectrum<float, 31>& s)
+{
+    if (renderer::DynamicSpectrum<float, 31>::size() == 3)
+        return std::max(std::max(s[0], s[1]), s[2]);
+
+    const __m128 m1 = _mm_max_ps(_mm_load_ps(&s[ 0]), _mm_load_ps(&s[ 4]));
+    const __m128 m2 = _mm_max_ps(_mm_load_ps(&s[ 8]), _mm_load_ps(&s[12]));
+    const __m128 m3 = _mm_max_ps(_mm_load_ps(&s[16]), _mm_load_ps(&s[20]));
+    const __m128 s28 = _mm_load_ps(&s[28]);
+    const __m128 m4 = _mm_max_ps(_mm_load_ps(&s[24]), _mm_shuffle_ps(s28, s28, _MM_SHUFFLE(2, 2, 1, 0)));
+    const __m128 m5 = _mm_max_ps(m1, m2);
+    const __m128 m6 = _mm_max_ps(m3, m4);
+          __m128 m  = _mm_max_ps(m5, m6);
+
+    m = _mm_max_ps(m, _mm_shuffle_ps(m, m, _MM_SHUFFLE(2, 3, 0, 1)));
+    m = _mm_max_ps(m, _mm_shuffle_ps(m, m, _MM_SHUFFLE(1, 0, 3, 2)));
+
+    return _mm_cvtss_f32(m);
+}
+
+#endif  // APPLESEED_USE_SSE
+
 template <typename T, size_t N>
 inline size_t min_index(const renderer::DynamicSpectrum<T, N>& s)
 {
     size_t index = 0;
     T value = s[0];
 
-    for (size_t i = 1, e = s.size(); i < e; ++i)
+    for (size_t i = 1; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
     {
         const T x = s[i];
 
@@ -1144,7 +1131,7 @@ inline size_t max_index(const renderer::DynamicSpectrum<T, N>& s)
     size_t index = 0;
     T value = s[0];
 
-    for (size_t i = 1, e = s.size(); i < e; ++i)
+    for (size_t i = 1; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
     {
         const T x = s[i];
 
@@ -1164,7 +1151,7 @@ inline size_t min_abs_index(const renderer::DynamicSpectrum<T, N>& s)
     size_t index = 0;
     T value = std::abs(s[0]);
 
-    for (size_t i = 1, e = s.size(); i < e; ++i)
+    for (size_t i = 1; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
     {
         const T x = std::abs(s[i]);
 
@@ -1184,7 +1171,7 @@ inline size_t max_abs_index(const renderer::DynamicSpectrum<T, N>& s)
     size_t index = 0;
     T value = std::abs(s[0]);
 
-    for (size_t i = 1, e = s.size(); i < e; ++i)
+    for (size_t i = 1; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
     {
         const T x = std::abs(s[i]);
 
@@ -1203,7 +1190,7 @@ inline T sum_value(const renderer::DynamicSpectrum<T, N>& s)
 {
     T sum = s[0];
 
-    for (size_t i = 1, e = s.size(); i < e; ++i)
+    for (size_t i = 1; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
         sum += s[i];
 
     return sum;
@@ -1212,13 +1199,13 @@ inline T sum_value(const renderer::DynamicSpectrum<T, N>& s)
 template <typename T, size_t N>
 inline T average_value(const renderer::DynamicSpectrum<T, N>& s)
 {
-    return sum_value(s) / s.size();
+    return sum_value(s) / renderer::DynamicSpectrum<T, N>::size();
 }
 
 template <typename T, size_t N>
 inline bool has_nan(const renderer::DynamicSpectrum<T, N>& s)
 {
-    for (size_t i = 0, e = s.size(); i < e; ++i)
+    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
     {
         if (s[i] != s[i])
             return true;
@@ -1228,12 +1215,23 @@ inline bool has_nan(const renderer::DynamicSpectrum<T, N>& s)
 }
 
 template <typename T, size_t N>
+inline bool is_finite(const renderer::DynamicSpectrum<T, N>& s)
+{
+    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+    {
+        if (!FP<T>::is_finite(s[i]))
+            return false;
+    }
+
+    return true;
+}
+
+template <typename T, size_t N>
 inline renderer::DynamicSpectrum<T, N> sqrt(const renderer::DynamicSpectrum<T, N>& s)
 {
     renderer::DynamicSpectrum<T, N> result;
-    result.resize(s.size());
 
-    for (size_t i = 0, e = s.size(); i < e; ++i)
+    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
         result[i] = std::sqrt(s[i]);
 
     return result;
@@ -1245,11 +1243,10 @@ template <>
 APPLESEED_FORCE_INLINE renderer::DynamicSpectrum<float, 31> sqrt(const renderer::DynamicSpectrum<float, 31>& s)
 {
     renderer::DynamicSpectrum<float, 31> result;
-    result.resize(s.size());
 
     _mm_store_ps(&result[ 0], _mm_sqrt_ps(_mm_load_ps(&s[ 0])));
 
-    if (s.size() > 3)
+    if (renderer::DynamicSpectrum<float, 31>::size() > 3)
     {
         _mm_store_ps(&result[ 4], _mm_sqrt_ps(_mm_load_ps(&s[ 4])));
         _mm_store_ps(&result[ 8], _mm_sqrt_ps(_mm_load_ps(&s[ 8])));
@@ -1269,9 +1266,8 @@ template <typename T, size_t N>
 inline renderer::DynamicSpectrum<T, N> pow(const renderer::DynamicSpectrum<T, N>& x, const T y)
 {
     renderer::DynamicSpectrum<T, N> result;
-    result.resize(x.size());
 
-    for (size_t i = 0, e = x.size(); i < e; ++i)
+    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
         result[i] = std::pow(x[i], y);
 
     return result;
@@ -1282,40 +1278,46 @@ inline renderer::DynamicSpectrum<T, N> pow(
     const renderer::DynamicSpectrum<T, N>& x,
     const renderer::DynamicSpectrum<T, N>& y)
 {
-    assert(x.size() == y.size());
-
     renderer::DynamicSpectrum<T, N> result;
-    result.resize(x.size());
 
-    for (size_t i = 0, e = x.size(); i < e; ++i)
+    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
         result[i] = std::pow(x[i], y[i]);
 
     return result;
 }
 
 template <typename T, size_t N>
-inline renderer::DynamicSpectrum<T, N> log(const renderer::DynamicSpectrum<T, N>& x)
+inline renderer::DynamicSpectrum<T, N> log(const renderer::DynamicSpectrum<T, N>& s)
 {
     renderer::DynamicSpectrum<T, N> result;
-    result.resize(x.size());
 
-    for (size_t i = 0, e = x.size(); i < e; ++i)
-        result[i] = std::log(x[i]);
+    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+        result[i] = std::log(s[i]);
 
     return result;
 }
 
 template <typename T, size_t N>
-inline renderer::DynamicSpectrum<T, N> exp(const renderer::DynamicSpectrum<T, N>& x)
+inline renderer::DynamicSpectrum<T, N> exp(const renderer::DynamicSpectrum<T, N>& s)
 {
     renderer::DynamicSpectrum<T, N> result;
-    result.resize(x.size());
 
-    for (size_t i = 0, e = x.size(); i < e; ++i)
-        result[i] = std::exp(x[i]);
+    for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+        result[i] = std::exp(s[i]);
 
     return result;
 }
+
+template <typename T, size_t N>
+class PoisonImpl<renderer::DynamicSpectrum<T, N>>
+{
+  public:
+    static void do_poison(renderer::DynamicSpectrum<T, N>& s)
+    {
+        for (size_t i = 0; i < renderer::DynamicSpectrum<T, N>::size(); ++i)
+            poison(s[i]);
+    }
+};
 
 }       // namespace foundation
 

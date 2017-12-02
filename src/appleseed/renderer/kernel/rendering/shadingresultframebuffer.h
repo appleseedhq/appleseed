@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -64,7 +64,6 @@ class ShadingResultFrameBuffer
         const foundation::AABB2u&       crop_window,
         const foundation::Filter2f&     filter);
 
-    // The sample must be in the linear RGB color space.
     void add(
         const float                     x,
         const float                     y,
@@ -78,11 +77,7 @@ class ShadingResultFrameBuffer
         const size_t                    source_y,
         const float                     scaling);
 
-    void develop_to_tile_premult_alpha(
-        foundation::Tile&               tile,
-        TileStack&                      aov_tiles) const;
-
-    void develop_to_tile_straight_alpha(
+    void develop_to_tile(
         foundation::Tile&               tile,
         TileStack&                      aov_tiles) const;
 

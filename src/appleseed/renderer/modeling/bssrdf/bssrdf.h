@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -44,13 +44,10 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class Assembly; }
-namespace renderer      { class BSDF; }
+namespace foundation    { class Arena; }
+namespace renderer      { class BSDFSample; }
 namespace renderer      { class BSSRDFSample; }
-namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ParamArray; }
-namespace renderer      { class Project; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 
@@ -58,9 +55,7 @@ namespace renderer
 {
 
 //
-// Profile of a Bidirectional Surface Scattering Reflectance Distribution Function (BSSRDF).
-//
-// The 1/Pi factor and the Fresnel terms at the incoming and outgoing points are not included.
+// Bidirectional Surface Scattering Reflectance Distribution Function (BSSRDF).
 //
 // Conventions (Veach, 3.7.5, figure 3.3 on page 93):
 //
@@ -88,68 +83,56 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const char*                 name,
         const ParamArray&           params);
 
-    // Destructor.
-    ~BSSRDF();
-
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
-    // Return the BRDF associated with this BSSRDF.
-    const BSDF& get_brdf() const;
-
-    // This method is called once before rendering each frame.
-    // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
-        const Project&              project,
-        const Assembly&             assembly,
-        foundation::IAbortSwitch*   abort_switch = 0);
-
-    // This method is called once after rendering each frame.
-    virtual void on_frame_end(
-        const Project&              project,
-        const Assembly&             assembly);
-
-    // Compute the cumulated size in bytes of the values of all inputs of
-    // this BSSRDF and its child BSSRDFs, if any.
-    virtual size_t compute_input_data_size(
-        const Assembly&             assembly) const;
+    // Return the size in bytes to allocate for the input values of this BSSRDF
+    // and its precomputed values, if any. By default, enough space is allocated
+    // for the inputs alone, i.e. this returns get_inputs().compute_data_size().
+    // If a BSSRDF stores additional data such as precomputed values in its input
+    // block, it must override this method and return the correct size.
+    // If evaluate_inputs() is overridden, then this method is irrelevant.
+    virtual size_t compute_input_data_size() const;
 
     // Evaluate the inputs of this BSSRDF and of its child BSSRDFs, if any.
-    // Input values are stored in the input evaluator. This method is called
-    // once per shading point and pair of incoming/outgoing directions.
-    virtual void evaluate_inputs(
+    virtual void* evaluate_inputs(
         const ShadingContext&       shading_context,
-        InputEvaluator&             input_evaluator,
+        const ShadingPoint&         shading_point) const;
+
+    // Precompute data based on already evaluated input values.
+    virtual void prepare_inputs(
+        foundation::Arena&          arena,
         const ShadingPoint&         shading_point,
-        const size_t                offset = 0) const;
+        void*                       data) const;
 
-    // Performs any precomputation needed for this BSSRDF input values.
-    virtual void prepare_inputs(void* data) const;
-
-    // Sample r * R(r).
+    // Sample the BSSRDF.
     virtual bool sample(
+        const ShadingContext&       shading_context,
         SamplingContext&            sampling_context,
         const void*                 data,
-        BSSRDFSample&               sample) const = 0;
+        const ShadingPoint&         outgoing_point,
+        const foundation::Vector3f& outgoing_dir,
+        BSSRDFSample&               bssrdf_sample,
+        BSDFSample&                 bsdf_sample) const = 0;
 
-    // Evaluate r * R(r) for a given pair of points and directions.
+    // Evaluate the BSSRDF.
     virtual void evaluate(
         const void*                 data,
         const ShadingPoint&         outgoing_point,
-        const foundation::Vector3d& outgoing_dir,
+        const foundation::Vector3f& outgoing_dir,
         const ShadingPoint&         incoming_point,
-        const foundation::Vector3d& incoming_dir,
+        const foundation::Vector3f& incoming_dir,
         Spectrum&                   value) const = 0;
 
-    // Evaluate the PDF of r * R(r) for a given radius r.
-    virtual double evaluate_pdf(
-        const void*                 data,
-        const size_t                channel,
-        const double                radius) const = 0;
-
   protected:
-    struct Impl;
-    Impl* impl;
+    static float compute_eta(
+        const ShadingPoint&         shading_point,
+        const float                 ior);
+
+    static void build_cdf_and_pdf(
+        const Spectrum&             src,
+        Spectrum&                   cdf,
+        Spectrum&                   pdf);
 };
 
 }       // namespace renderer

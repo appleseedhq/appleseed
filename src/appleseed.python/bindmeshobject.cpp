@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,6 @@
 //
 
 // appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
 #include "bindentitycontainers.h"
 #include "dict2dict.h"
 
@@ -36,6 +35,7 @@
 #include "renderer/api/object.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/python.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.
@@ -47,13 +47,33 @@ using namespace foundation;
 using namespace renderer;
 using namespace std;
 
+// Work around a regression in Visual Studio 2015 Update 3.
+#if defined(_MSC_VER) && _MSC_VER == 1900
+namespace boost
+{
+    template <> MeshObject const volatile* get_pointer<MeshObject const volatile>(MeshObject const volatile* p) { return p; }
+}
+#endif
+
 namespace
 {
     auto_release_ptr<MeshObject> create_mesh_obj(
         const string&       name,
         const bpy::dict&    params)
     {
-        return MeshObjectFactory::create(name.c_str(), bpy_dict_to_param_array(params));
+        return
+            auto_release_ptr<MeshObject>(
+                MeshObjectFactory().create(name.c_str(), bpy_dict_to_param_array(params)));
+    }
+
+    const Triangle& get_triangle(const MeshObject* object, const size_t index)
+    {
+        return object->get_triangle(index);
+    }
+
+    void set_triangle(MeshObject* object, const size_t index, const Triangle& triangle)
+    {
+        object->get_triangle(index) = triangle;
     }
 
     bpy::list read_mesh_objects(
@@ -103,6 +123,13 @@ namespace
     {
         return MeshObjectWriter::write(*object, object_name.c_str(), filename.c_str());
     }
+
+    auto_release_ptr<MeshObject> create_mesh_prim(
+        const string&       name,
+        const bpy::dict&    params)
+    {
+        return create_primitive_mesh(name.c_str(), bpy_dict_to_param_array(params));
+    }
 }
 
 void bind_mesh_object()
@@ -112,8 +139,6 @@ void bind_mesh_object()
         .def(bpy::init<size_t, size_t, size_t, size_t>())
         .def(bpy::init<size_t, size_t, size_t, size_t, size_t, size_t, size_t>())
         .def(bpy::init<size_t, size_t, size_t, size_t, size_t, size_t, size_t, size_t, size_t, size_t>())
-
-        .def("has_vertex_attributes", &Triangle::has_vertex_attributes)
 
         .def_readwrite("v0", &Triangle::m_v0)
         .def_readwrite("v1", &Triangle::m_v1)
@@ -125,6 +150,8 @@ void bind_mesh_object()
         .def_readwrite("a1", &Triangle::m_a1)
         .def_readwrite("a2", &Triangle::m_a2)
         .def_readwrite("pa", &Triangle::m_pa)
+
+        .def("has_vertex_attributes", &Triangle::has_vertex_attributes)
         ;
 
     bpy::class_<MeshObject, auto_release_ptr<MeshObject>, bpy::bases<Object>, boost::noncopyable>("MeshObject", bpy::no_init)
@@ -140,6 +167,7 @@ void bind_mesh_object()
         .def("get_vertex_normal_count", &MeshObject::get_vertex_normal_count)
         .def("get_vertex_normal", &MeshObject::get_vertex_normal, bpy::return_value_policy<bpy::reference_existing_object>())
 
+        .def("reserve_tex_coords", &MeshObject::reserve_tex_coords)
         .def("push_tex_coords", &MeshObject::push_tex_coords)
         .def("get_tex_coords_count", &MeshObject::get_tex_coords_count)
         .def("get_tex_coords", &MeshObject::get_tex_coords)
@@ -147,7 +175,8 @@ void bind_mesh_object()
         .def("reserve_triangles", &MeshObject::reserve_triangles)
         .def("push_triangle", &MeshObject::push_triangle)
         .def("get_triangle_count", &MeshObject::get_triangle_count)
-        .def("get_triangle", &MeshObject::get_triangle, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_triangle", get_triangle, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("set_triangle", set_triangle)
 
         .def("set_motion_segment_count", &MeshObject::set_motion_segment_count)
         .def("get_motion_segment_count", &MeshObject::get_motion_segment_count)
@@ -155,9 +184,20 @@ void bind_mesh_object()
         .def("set_vertex_pose", &MeshObject::set_vertex_pose)
         .def("get_vertex_pose", &MeshObject::get_vertex_pose)
         .def("clear_vertex_poses", &MeshObject::clear_vertex_poses)
+
+        .def("set_vertex_normal_pose", &MeshObject::set_vertex_normal_pose)
+        .def("get_vertex_normal_pose", &MeshObject::get_vertex_normal_pose)
+        .def("clear_vertex_normal_poses", &MeshObject::clear_vertex_normal_poses)
+
+        .def("set_vertex_tangent_pose", &MeshObject::set_vertex_tangent_pose)
+        .def("get_vertex_tangent_pose", &MeshObject::get_vertex_tangent_pose)
+        .def("clear_vertex_tangent_poses", &MeshObject::clear_vertex_tangent_poses)
+
+        .def("reserve_material_slots", &MeshObject::reserve_material_slots)
+        .def("push_material_slot", &MeshObject::push_material_slot)
         ;
 
-    boost::python::implicitly_convertible<auto_release_ptr<MeshObject>, auto_release_ptr<Object> >();
+    boost::python::implicitly_convertible<auto_release_ptr<MeshObject>, auto_release_ptr<Object>>();
 
     bpy::class_<MeshObjectReader>("MeshObjectReader", bpy::no_init)
         .def("read", read_mesh_objects).staticmethod("read")
@@ -166,4 +206,8 @@ void bind_mesh_object()
     bpy::class_<MeshObjectWriter>("MeshObjectWriter", bpy::no_init)
         .def("write", write_mesh_object).staticmethod("write")
         ;
+
+    bpy::def("compute_smooth_vertex_normals", compute_smooth_vertex_normals);
+    bpy::def("compute_smooth_vertex_tangents", compute_smooth_vertex_tangents);
+    bpy::def("create_primitive_mesh", create_mesh_prim);
 }

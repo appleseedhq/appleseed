@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -60,6 +60,10 @@ namespace foundation
 //     foundation::faster_log()
 //     foundation::fast_exp()
 //     foundation::faster_exp()
+//     foundation::fast_sin()
+//     foundation::fast_sin_full()
+//     foundation::fast_cos()
+//     foundation::fast_cos_full()
 //
 // were borrowed from https://code.google.com/p/fastapprox/ with minor,
 // non-functional changes. The original copyright notice for this code
@@ -119,34 +123,48 @@ namespace foundation
 //     http://www.lomont.org/Math/Papers/2003/InvSqrt.pdf
 //
 
-// Fast approximation of 2^p.
+// Fast approximations of 2^p.
 float fast_pow2(const float p);
 float faster_pow2(const float p);
 
-// Fast approximation of the base-2 logarithm.
+// Fast approximations of the base-2 logarithm.
 float fast_log2(const float x);
 float faster_log2(const float x);
 
-// Fast approximation of x^p.
+// Fast approximations of x^p.
 float fast_pow(const float x, const float p);
 float faster_pow(const float x, const float p);
 
-// Fast approximation of the natural logarithm.
+// Fast approximations of the natural logarithm.
 float fast_log(const float x);
 float faster_log(const float x);
 
-// Fast approximation of e^p.
+// Fast approximations of e^p.
 float fast_exp(const float p);
 float faster_exp(const float p);
 
-// Fast approximation of the square root.
+// Fast sine approximations.
+float fast_sin(const float x);
+float fast_sin_full(const float x);
+float fast_sin_full_positive(const float x);    // x >= 0.0f
+
+// Fast cosine approximations.
+float fast_cos(const float x);
+float fast_cos_full(const float x);
+float fast_cos_full_positive(const float x);    // x >= 0.0f
+
+// Fast reciprocal approximation.
+float fast_rcp(const float x);
+
+// Fast square root approximation.
 float fast_sqrt(const float x);
 
-// Fast approximation of the reciprocal square root.
+// Fast reciprocal square root approximations.
 float fast_rcp_sqrt(const float x);
 double fast_rcp_sqrt(const double x);
+float faster_rcp_sqrt(const float x);
 
-// SSE variants of the functions above.
+// SSE variants of some of the functions above.
 #ifdef APPLESEED_USE_SSE
 __m128 fast_pow2(const __m128 p);
 __m128 faster_pow2(const __m128 p);
@@ -160,7 +178,7 @@ __m128 fast_exp(const __m128 x);
 __m128 faster_exp(const __m128 x);
 #endif
 
-// Vectorized variants of the functions above.
+// Vectorized variants of some of the functions above.
 // When APPLESEED_USE_SSE is defined, all array arguments must be 16-byte aligned.
 void fast_pow2(float p[4]);
 void faster_pow2(float p[4]);
@@ -267,6 +285,59 @@ inline float faster_exp(const float p)
     return faster_pow2(1.442695040f * p);
 }
 
+inline float fast_sin(const float x)
+{
+    static const float Q = 0.77633023248007499f;
+
+    union { float f; uint32 i; } p = { 0.22308510060189463f };
+    union { float f; uint32 i; } vx = { x };
+
+    const uint32 sign = vx.i & 0x80000000;
+    vx.i &= 0x7FFFFFFF;
+    p.i |= sign;
+
+    const float qpprox = FourOverPi<float>() * x - FourOverPiSquare<float>() * x * vx.f;
+    return qpprox * (Q + p.f * qpprox);
+}
+
+inline float fast_sin_full(const float x)
+{
+    const int k = static_cast<int>(x * RcpTwoPi<float>());
+    const float half = (x < 0) ? -0.5f : 0.5f;
+    return fast_sin((half + k) * TwoPi<float>() - x);
+}
+
+inline float fast_sin_full_positive(const float x)
+{
+    assert(x >= 0.0f);
+
+    const int k = static_cast<int>(x * RcpTwoPi<float>());
+    return fast_sin((0.5f + k) * TwoPi<float>() - x);
+}
+
+inline float fast_cos(const float x)
+{
+    static const float P = 0.54641335845679634f;
+
+    union { float f; uint32 i; } vx = { x };
+    vx.i &= 0x7FFFFFFF;
+
+    const float qpprox = 1.0f - TwoOverPi<float>() * vx.f;
+    return qpprox + P * qpprox * (1.0f - qpprox * qpprox);
+}
+
+inline float fast_cos_full(const float x)
+{
+    return fast_sin_full(x + HalfPi<float>());
+}
+
+inline float fast_cos_full_positive(const float x)
+{
+    assert(x >= 0.0f);
+
+    return fast_sin_full_positive(x + HalfPi<float>());
+}
+
 inline float fast_sqrt(const float x)
 {
     assert(x >= 0.0f);
@@ -275,6 +346,37 @@ inline float fast_sqrt(const float x)
     i = i >> 1;                                 // divide by 2
     i += 1 << 29;                               // add 64 to exponent
     return binary_cast<float>(i);
+}
+
+#ifdef APPLESEED_USE_SSE
+
+inline float fast_rcp(const float x)
+{
+    return _mm_cvtss_f32(_mm_rcp_ss(_mm_set_ss(x)));
+}
+
+inline float fast_rcp_sqrt(const float x)
+{
+    float z = faster_rcp_sqrt(x);
+    z = z * (1.5f - x * 0.5f * z * z);          // Newton step, repeating increases accuracy
+    return z;
+}
+
+inline double fast_rcp_sqrt(const double x)
+{
+    return fast_rcp_sqrt(static_cast<float>(x));
+}
+
+inline float faster_rcp_sqrt(const float x)
+{
+    return _mm_cvtss_f32(_mm_rsqrt_ss(_mm_set_ss(x)));
+}
+
+#else
+
+inline float fast_rcp(const float x)
+{
+    return 1.0f / x;
 }
 
 inline float fast_rcp_sqrt(const float x)
@@ -298,6 +400,13 @@ inline double fast_rcp_sqrt(const double x)
     z = z * (1.5 - xhalf * z * z);              // Newton step, repeating increases accuracy
     return z;
 }
+
+inline float faster_rcp_sqrt(const float x)
+{
+    return fast_rcp_sqrt(x);
+}
+
+#endif  // APPLESEED_USE_SSE
 
 #ifdef APPLESEED_USE_SSE
 

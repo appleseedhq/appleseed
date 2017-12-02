@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -55,6 +55,11 @@
 namespace appleseed {
 namespace studio {
 
+//
+// Entity item class for single-model entities such as object instances,
+// texture instances or environments.
+//
+
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 class SingleModelEntityItem
   : public EntityItem<Entity, ParentEntity, CollectionItem>
@@ -66,11 +71,13 @@ class SingleModelEntityItem
         ParentEntity&           parent,
         CollectionItem*         collection_item);
 
+    foundation::Dictionary get_values() const override;
+
   private:
     typedef EntityItem<Entity, ParentEntity, CollectionItem> Base;
     typedef typename renderer::EntityTraits<Entity> EntityTraitsType;
 
-    virtual void slot_edit(AttributeEditor* attribute_editor) APPLESEED_OVERRIDE;
+    void slot_edit(AttributeEditor* attribute_editor) override;
 };
 
 
@@ -89,6 +96,12 @@ SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::SingleModelEntityIt
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
+foundation::Dictionary SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::get_values() const
+{
+    return renderer::EntityTraits<Entity>::get_entity_values(Base::m_entity);
+}
+
+template <typename Entity, typename ParentEntity, typename CollectionItem>
 void SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(AttributeEditor* attribute_editor)
 {
     if (!Base::allows_edition())
@@ -96,24 +109,21 @@ void SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attr
 
     typedef typename EntityTraitsType::FactoryType FactoryType;
 
-    std::auto_ptr<EntityEditor::IFormFactory> form_factory(
+    std::unique_ptr<EntityEditor::IFormFactory> form_factory(
         new SingleModelEntityEditorFormFactory(
             Base::m_entity->get_name(),
             FactoryType::get_input_metadata()));
 
-    std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
+    std::unique_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<ParentEntity>(Base::m_parent));
-
-    const foundation::Dictionary values =
-        EntityTraitsType::get_entity_values(Base::m_entity);
 
     if (attribute_editor)
     {
         attribute_editor->edit(
-            form_factory,
-            entity_browser,
-            std::auto_ptr<CustomEntityUI>(),
-            values,
+            std::move(form_factory),
+            std::move(entity_browser),
+            std::unique_ptr<CustomEntityUI>(),
+            get_values(),
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)));
     }
@@ -127,9 +137,10 @@ void SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attr
             QTreeWidgetItem::treeWidget(),
             window_title,
             Base::m_editor_context.m_project,
-            form_factory,
-            entity_browser,
-            values,
+            Base::m_editor_context.m_settings,
+            std::move(form_factory),
+            std::move(entity_browser),
+            get_values(),
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)),
             SLOT(slot_edit_accepted(foundation::Dictionary)),

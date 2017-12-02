@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,9 +28,9 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/math/microfacet.h"
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/lcg.h"
-#include "foundation/math/microfacet.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/benchmark.h"
 
@@ -42,43 +42,45 @@ BENCHMARK_SUITE(Foundation_Math_Microfacet)
     struct FixtureBase
     {
         LCG         m_rng;
-        Vector3d    m_outgoing;     // view direction, unit-length
-        double      m_dummy;
-        Vector3d    m_dummy_vec;
+        Vector3f    m_outgoing;     // view direction, unit-length
+        float       m_dummy;
+        Vector3f    m_dummy_vec;
 
         FixtureBase()
-          : m_outgoing(normalize(Vector3d(0.1, 0.2, 0.3)))
-          , m_dummy(0.0)
-          , m_dummy_vec(0.0)
+          : m_outgoing(normalize(Vector3f(0.1f, 0.2f, 0.3f)))
+          , m_dummy(0.0f)
+          , m_dummy_vec(0.0f)
         {
         }
 
-        void sample(const double alpha_x, const double alpha_y)
+        void sample(const float alpha_x, const float alpha_y)
         {
-            Vector3d s;
-            s[0] = rand_double2(m_rng);
-            s[1] = rand_double2(m_rng);
-            s[2] = rand_double2(m_rng);
+            Vector3f s;
+            s[0] = rand_float2(m_rng);
+            s[1] = rand_float2(m_rng);
+            s[2] = rand_float2(m_rng);
 
             m_dummy_vec +=
                 MDFType().sample(
                     m_outgoing,
                     s,
                     alpha_x,
-                    alpha_y);
+                    alpha_y,
+                    0.0f);
         }
 
-        void evaluate(const double alpha_x, const double alpha_y)
+        void evaluate(const float alpha_x, const float alpha_y)
         {
-            Vector2d s;
-            s[0] = rand_double2(m_rng);
-            s[1] = rand_double2(m_rng);
+            Vector2f s;
+            s[0] = rand_float2(m_rng);
+            s[1] = rand_float2(m_rng);
 
             m_dummy +=
                 MDFType().D(
-                    normalize(Vector3d(s[0], 0.5, s[1])),
+                    normalize(Vector3f(s[0], 0.5f, s[1])),
                     alpha_x,
-                    alpha_y);
+                    alpha_y,
+                    0.0f);
         }
     };
 
@@ -86,55 +88,55 @@ BENCHMARK_SUITE(Foundation_Math_Microfacet)
     // Blinn-Phong MDF.
     //
 
-    BENCHMARK_CASE_F(BlinnMDF_Sample, FixtureBase<BlinnMDF<double> >)
+    BENCHMARK_CASE_F(BlinnMDF_Sample, FixtureBase<BlinnMDF>)
     {
-        sample(10.0, 10.0);
+        sample(10.0f, 10.0f);
     }
 
-    BENCHMARK_CASE_F(BlinnMDF_Evaluate, FixtureBase<BlinnMDF<double> >)
+    BENCHMARK_CASE_F(BlinnMDF_Evaluate, FixtureBase<BlinnMDF>)
     {
-        evaluate(10.0, 10.0);
+        evaluate(10.0f, 10.0f);
     }
 
     //
     // Beckmann MDF.
     //
 
-    BENCHMARK_CASE_F(BeckmannMDF_Sample, FixtureBase<BeckmannMDF<double> >)
+    BENCHMARK_CASE_F(BeckmannMDF_Sample, FixtureBase<BeckmannMDF>)
     {
-        sample(0.5, 0.5);
+        sample(0.5f, 0.5f);
     }
 
-    BENCHMARK_CASE_F(BeckmannMDF_Evaluate, FixtureBase<BeckmannMDF<double> >)
+    BENCHMARK_CASE_F(BeckmannMDF_Evaluate, FixtureBase<BeckmannMDF>)
     {
-        evaluate(0.5, 0.5);
+        evaluate(0.5f, 0.5f);
     }
 
     //
     // Ward MDF.
     //
 
-    BENCHMARK_CASE_F(WardMDF_Sample, FixtureBase<WardMDF<double> >)
+    BENCHMARK_CASE_F(WardMDF_Sample, FixtureBase<WardMDF>)
     {
-        sample(0.5, 0.5);
+        sample(0.5f, 0.5f);
     }
 
-    BENCHMARK_CASE_F(WardMDF_Evaluate, FixtureBase<WardMDF<double> >)
+    BENCHMARK_CASE_F(WardMDF_Evaluate, FixtureBase<WardMDF>)
     {
-        evaluate(0.5, 0.5);
+        evaluate(0.5f, 0.5f);
     }
 
     //
     // GGX MDF.
     //
 
-    BENCHMARK_CASE_F(GGXMDF_Sample, FixtureBase<GGXMDF<double> >)
+    BENCHMARK_CASE_F(GGXMDF_Sample, FixtureBase<GGXMDF>)
     {
-        sample(0.5, 0.5);
+        sample(0.5f, 0.5f);
     }
 
-    BENCHMARK_CASE_F(GGXMDF_Evaluate, FixtureBase<GGXMDF<double> >)
+    BENCHMARK_CASE_F(GGXMDF_Evaluate, FixtureBase<GGXMDF>)
     {
-        evaluate(0.5, 0.5);
+        evaluate(0.5f, 0.5f);
     }
 }

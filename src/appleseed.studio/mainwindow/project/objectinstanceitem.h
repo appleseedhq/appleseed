@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -79,8 +79,8 @@ class ObjectInstanceItem
 
     const renderer::Assembly& get_assembly() const;
 
-    virtual QMenu* get_single_item_context_menu() const APPLESEED_OVERRIDE;
-    virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const APPLESEED_OVERRIDE;
+    QMenu* get_single_item_context_menu() const override;
+    QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const override;
 
     void assign_material(
         const QString&                  page_name,
@@ -104,7 +104,7 @@ class ObjectInstanceItem
 
     typedef SingleModelEntityItem<renderer::ObjectInstance, renderer::Assembly, ObjectInstanceCollectionItem> Base;
 
-    virtual void delete_multiple(const QList<ItemBase*>& items) APPLESEED_OVERRIDE;
+    void delete_multiple(const QList<ItemBase*>& items) override;
     void do_delete();
 
     void add_material_assignment_menu_actions(
@@ -118,14 +118,12 @@ class ObjectInstanceItem
 
     void do_assign_material(
         const char*                     slot_name,
-        const bool                      font_side,
-        const bool                      back_side,
+        const int                       sides,
         const char*                     material_name);
 
     void do_unassign_material(
         const char*                     slot_name,
-        const bool                      font_side,
-        const bool                      back_side);
+        const int                       sides);
 };
 
 }       // namespace studio

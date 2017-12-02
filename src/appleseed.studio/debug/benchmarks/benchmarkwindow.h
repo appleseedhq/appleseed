@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -61,15 +61,15 @@ class BenchmarkWindow
 
   public:
     // Constructor.
-    explicit BenchmarkWindow(QWidget* parent = 0);
+    explicit BenchmarkWindow(QWidget* parent = nullptr);
 
     // Destructor.
-    ~BenchmarkWindow();
+    ~BenchmarkWindow() override;
 
-    virtual void closeEvent(QCloseEvent* event) APPLESEED_OVERRIDE;
+    void closeEvent(QCloseEvent* event) override;
 
   private:
-    // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
+    // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
     Ui::BenchmarkWindow*                m_ui;
 
     ChartWidget                         m_chart_widget;
@@ -85,7 +85,7 @@ class BenchmarkWindow
 
     void enable_widgets(const bool enabled);
 
-    std::auto_ptr<ChartBase> create_chart(
+    std::unique_ptr<ChartBase> create_chart(
         const foundation::UniqueID      case_uid,
         const size_t                    chart_index) const;
 

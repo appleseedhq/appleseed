@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,7 @@
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/tile.h"
-#include "foundation/platform/types.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/memory.h"
@@ -78,16 +78,19 @@ StatisticsVector TextureStore::get_statistics() const
     return StatisticsVector::make("texture store statistics", stats);
 }
 
+size_t TextureStore::get_default_size()
+{
+    return 1024 * 1024 * 1024;
+}
+
 Dictionary TextureStore::get_params_metadata()
 {
     Dictionary metadata;
-
-    const size_t DefaultTextureStoreSizeMB = 1024;
     metadata.dictionaries().insert(
         "max_size",
         Dictionary()
             .insert("type", "int")
-            .insert("default", DefaultTextureStoreSizeMB * 1024 * 1024)
+            .insert("default", get_default_size())
             .insert("label", "Texture Cache Size")
             .insert("help", "Texture cache size in bytes"));
 
@@ -189,7 +192,7 @@ void TextureStore::TileSwapper::load(const TileKey& key, TileRecord& record)
             "from texture \"%s\"...",
             key.get_tile_x(),
             key.get_tile_y(),
-            texture->get_name());
+            texture->get_path().c_str());
     }
 
     // Load the tile.
@@ -241,7 +244,7 @@ void TextureStore::TileSwapper::load(const TileKey& key, TileRecord& record)
 bool TextureStore::TileSwapper::unload(const TileKey& key, TileRecord& record)
 {
     // Cannot unload tiles that are still in use.
-    if (boost_atomic::atomic_read32(&record.m_owners) > 0)
+    if (atomic_read(&record.m_owners) > 0)
         return false;
 
     // Track the amount of memory used by the tile cache.
@@ -265,7 +268,7 @@ bool TextureStore::TileSwapper::unload(const TileKey& key, TileRecord& record)
             "from texture \"%s\"...",
             key.get_tile_x(),
             key.get_tile_y(),
-            texture->get_name());
+            texture->get_path().c_str());
     }
 
     // Unload the tile.

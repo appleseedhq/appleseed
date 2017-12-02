@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -55,13 +55,13 @@ class APPLESEED_DLLSYMBOL IPassCallback
 {
   public:
     // This method is called at the beginning of a pass.
-    virtual void pre_render(
+    virtual void on_pass_begin(
         const Frame&                frame,
         foundation::JobQueue&       job_queue,
         foundation::IAbortSwitch&   abort_switch) = 0;
 
     // This method is called at the end of a pass.
-    virtual void post_render(
+    virtual void on_pass_end(
         const Frame&                frame,
         foundation::JobQueue&       job_queue,
         foundation::IAbortSwitch&   abort_switch) = 0;

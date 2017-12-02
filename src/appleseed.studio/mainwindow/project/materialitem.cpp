@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
-// Copyright (c) 2014-2016 Marius Avram, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -54,10 +53,13 @@
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 
-using namespace boost;
+// Standard headers.
+#include <utility>
+
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace studio {
@@ -92,37 +94,36 @@ QMenu* MaterialItem::get_single_item_context_menu() const
 
 void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
 {
-    auto_ptr<EntityEditor::IFormFactory> form_factory(
+    unique_ptr<EntityEditor::IFormFactory> form_factory(
         new FixedModelEntityEditorFormFactoryType(
-            m_editor_context.m_project_builder.get_factory_registrar<Material>(),
+            m_editor_context.m_project.get_factory_registrar<Material>(),
             m_entity->get_name(),
             m_entity->get_model()));
 
-    auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
+    unique_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<Assembly>(m_parent));
 
-    auto_ptr<CustomEntityUI> custom_entity_ui;
+    unique_ptr<CustomEntityUI> custom_entity_ui;
 
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
     if (strcmp(m_entity->get_model(), "disney_material") == 0)
     {
         custom_entity_ui =
-            auto_ptr<CustomEntityUI>(
+            unique_ptr<CustomEntityUI>(
                 new DisneyMaterialCustomUI(
                     m_editor_context.m_project,
                     m_editor_context.m_settings));
     }
 #endif
 
-    const Dictionary values =
-        EntityTraitsType::get_entity_values(m_entity);
+    const Dictionary values = get_values();
 
     if (attribute_editor)
     {
         attribute_editor->edit(
-            form_factory,
-            entity_browser,
-            custom_entity_ui,
+            move(form_factory),
+            move(entity_browser),
+            move(custom_entity_ui),
             values,
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)));
@@ -137,9 +138,10 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
             QTreeWidgetItem::treeWidget(),
             window_title,
             m_editor_context.m_project,
-            form_factory,
-            entity_browser,
-            custom_entity_ui,
+            m_editor_context.m_settings,
+            move(form_factory),
+            move(entity_browser),
+            move(custom_entity_ui),
             values,
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)),
@@ -151,13 +153,13 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
 void MaterialItem::slot_export()
 {
     const char* project_path = m_editor_context.m_project.get_path();
-    const filesystem::path project_root_path = filesystem::path(project_path).parent_path();
-    const filesystem::path file_path = absolute("material.dmt", project_root_path);
-    const filesystem::path file_root_path = file_path.parent_path();
+    const bf::path project_root_path = bf::path(project_path).parent_path();
+    const bf::path file_path = absolute("material.dmt", project_root_path);
+    const bf::path file_root_path = file_path.parent_path();
 
     QString filepath =
         get_save_filename(
-            0,
+            nullptr,
             "Export...",
             "Disney Materials (*.dmt)",
             m_editor_context.m_settings,

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -62,10 +62,10 @@
 #include <cassert>
 #include <string>
 
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace studio {
@@ -102,7 +102,7 @@ namespace
     auto_release_ptr<Texture> create_texture(const string& path)
     {
         const string texture_name =
-            filesystem::path(path).replace_extension().filename().string();
+            bf::path(path).replace_extension().filename().string();
 
         ParamArray texture_params;
         texture_params.insert("filename", path);
@@ -124,7 +124,7 @@ namespace
                 texture_instance_name.c_str(),
                 ParamArray(),
                 texture_name.c_str(),
-                Transformd::identity());
+                Transformf::identity());
     }
 }
 
@@ -134,14 +134,14 @@ void TextureCollectionItem::slot_import_textures()
         get_open_filenames(
             treeWidget(),
             "Import Textures...",
-            g_bitmap_files_filter,
+            get_oiio_image_files_filter(),
             m_editor_context.m_settings,
             SETTINGS_FILE_DIALOG_PROJECTS);
 
     if (filepaths.empty())
         return;
 
-    const filesystem::path path(
+    const bf::path path(
         QDir::toNativeSeparators(filepaths.first()).toStdString());
 
     // todo: schedule creation of texture and texture instances when rendering.

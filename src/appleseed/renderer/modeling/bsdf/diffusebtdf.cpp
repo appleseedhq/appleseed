@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,20 +32,22 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/fresnel.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 
 using namespace foundation;
 using namespace std;
@@ -66,93 +68,136 @@ namespace
     {
       public:
         DiffuseBTDFImpl(
-            const char*         name,
-            const ParamArray&   params)
+            const char*                 name,
+            const ParamArray&           params)
           : BSDF(name, Transmissive, ScatteringMode::Diffuse, params)
         {
             m_inputs.declare("transmittance", InputFormatSpectralReflectance);
-            m_inputs.declare("transmittance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("transmittance_multiplier", InputFormatFloat, "1.0");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        APPLESEED_FORCE_INLINE virtual void sample(
-            SamplingContext&    sampling_context,
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            BSDFSample&         sample) const APPLESEED_OVERRIDE
+        size_t compute_input_data_size() const override
         {
-            // Compute the incoming direction in local space.
-            sampling_context.split_in_place(2, 1);
-            const Vector2d s = sampling_context.next_vector2<2>();
-            const Vector3d wi = sample_hemisphere_cosine(s);
+            return sizeof(InputValues);
+        }
 
-            // Transform the incoming direction to parent space.
-            sample.m_incoming = Dual3d(-sample.get_shading_basis().transform_to_parent(wi));
+        void prepare_inputs(
+            Arena&                      arena,
+            const ShadingPoint&         shading_point,
+            void*                       data) const override
+        {
+            InputValues* values = static_cast<InputValues*>(data);
+            new (&values->m_precomputed) InputValues::Precomputed();
+            values->m_precomputed.m_backfacing = !shading_point.is_entering();
+        }
+
+        void sample(
+            SamplingContext&            sampling_context,
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const int                   modes,
+            BSDFSample&                 sample) const override
+        {
+            if (!ScatteringMode::has_diffuse(modes))
+                return;
+
+            const InputValues* values = static_cast<const InputValues*>(data);
+
+            // Compute the incoming direction.
+            sampling_context.split_in_place(2, 1);
+            const Vector2f s = sampling_context.next2<Vector2f>();
+            Vector3f wi = sample_hemisphere_cosine(s);
+            const float cos_in = wi.y;
+
+            // Flip the incoming direction to the other side of the surface.
+            wi.y = -wi.y;
+
+            sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
 
             // Compute the BRDF value.
-            const InputValues* values = static_cast<const InputValues*>(data);
-            sample.m_value = values->m_transmittance;
-            sample.m_value *= static_cast<float>(values->m_transmittance_multiplier * RcpPi);
+            sample.m_value.m_diffuse = values->m_transmittance;
+            sample.m_value.m_diffuse *= values->m_transmittance_multiplier * RcpPi<float>();
+            sample.m_value.m_beauty = sample.m_value.m_diffuse;
 
             // Compute the probability density of the sampled direction.
-            sample.m_probability = wi.y * RcpPi;
-            assert(sample.m_probability > 0.0);
+            sample.m_probability = cos_in * RcpPi<float>();
+            assert(sample.m_probability > 0.0f);
 
             // Set the scattering mode.
             sample.m_mode = ScatteringMode::Diffuse;
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate(
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+        float evaluate(
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes,
+            DirectShadingComponents&    value) const override
         {
             if (!ScatteringMode::has_diffuse(modes))
-                return 0.0;
+                return 0.0f;
 
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = abs(dot(incoming, n));
+            const Vector3f& n = shading_basis.get_normal();
+            const float cos_in = dot(incoming, n);
+            const float cos_on = dot(outgoing, n);
 
-            // Compute the BRDF value.
-            const InputValues* values = static_cast<const InputValues*>(data);
-            value = values->m_transmittance;
-            value *= static_cast<float>(values->m_transmittance_multiplier * RcpPi);
+            if (cos_in * cos_on < 0.0f)
+            {
+                const InputValues* values = static_cast<const InputValues*>(data);
 
-            // Return the probability density of the sampled direction.
-            return cos_in * RcpPi;
+                // Compute the BRDF value.
+                value.m_diffuse = values->m_transmittance;
+                value.m_diffuse *= values->m_transmittance_multiplier * RcpPi<float>();
+                value.m_beauty = value.m_diffuse;
+
+                // Return the probability density of the sampled direction.
+                return abs(cos_in) * RcpPi<float>();
+            }
+            else
+            {
+                // No transmission in the same hemisphere as outgoing.
+                return 0.0f;
+            }
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes) const APPLESEED_OVERRIDE
+        float evaluate_pdf(
+            const void*                 data,
+            const bool                  adjoint,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes) const override
         {
             if (!ScatteringMode::has_diffuse(modes))
-                return 0.0;
+                return 0.0f;
 
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = abs(dot(incoming, n));
+            const Vector3f& n = shading_basis.get_normal();
+            const float cos_in = dot(incoming, n);
+            const float cos_on = dot(outgoing, n);
 
-            return cos_in * RcpPi;
+            if (cos_in * cos_on < 0.0f)
+                return abs(cos_in) * RcpPi<float>();
+            else
+            {
+                // No transmission in the same hemisphere as outgoing.
+                return 0.0f;
+            }
         }
 
       private:
@@ -166,6 +211,11 @@ namespace
 //
 // DiffuseBTDFFactory class implementation.
 //
+
+void DiffuseBTDFFactory::release()
+{
+    delete this;
+}
 
 const char* DiffuseBTDFFactory::get_model() const
 {
@@ -212,13 +262,6 @@ DictionaryArray DiffuseBTDFFactory::get_input_metadata() const
 auto_release_ptr<BSDF> DiffuseBTDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<BSDF>(new DiffuseBTDF(name, params));
-}
-
-auto_release_ptr<BSDF> DiffuseBTDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<BSDF>(new DiffuseBTDF(name, params));
 }

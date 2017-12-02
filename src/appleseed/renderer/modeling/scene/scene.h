@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -53,6 +53,7 @@
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class Project; }
 namespace renderer      { class SurfaceShader; }
 
@@ -72,14 +73,14 @@ class APPLESEED_DLLSYMBOL Scene
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
-    // Set the camera.
-    void set_camera(foundation::auto_release_ptr<Camera> camera);
-
-    // Access the camera.
+    // Access the active camera.
     // Return 0 if the camera does not exist.
-    Camera* get_camera() const;
+    Camera* get_active_camera() const;
+
+    // Access the cameras.
+    CameraContainer& cameras() const;
 
     // Set the environment.
     void set_environment(foundation::auto_release_ptr<Environment> environment);
@@ -103,18 +104,39 @@ class APPLESEED_DLLSYMBOL Scene
     // Return true if at least one of the object instance references a material with an alpha map set.
     bool uses_alpha_mapping() const;
 
-    // Expose asset file paths referenced by this entity to the outside.
-    virtual void collect_asset_paths(foundation::StringArray& paths) const APPLESEED_OVERRIDE;
-    virtual void update_asset_paths(const foundation::StringDictionary& mappings) APPLESEED_OVERRIDE;
+    // Return true if the scene contains participating media.
+    bool has_participating_media() const;
 
-    // Perform pre-frame rendering actions.
+    // Expose asset file paths referenced by this entity to the outside.
+    void collect_asset_paths(foundation::StringArray& paths) const override;
+    void update_asset_paths(const foundation::StringDictionary& mappings) override;
+
+    // Perform pre-render rendering actions.
+    // Returns true on success, false otherwise.
+    bool on_render_begin(
+        const Project&              project,
+        foundation::IAbortSwitch*   abort_switch = nullptr);
+
+    // Perform post-render rendering actions.
+    void on_render_end(const Project& project);
+
+    // Expand all procedural assemblies in the scene.
+    virtual bool expand_procedural_assemblies(
+        const Project&              project,
+        foundation::IAbortSwitch*   abort_switch = nullptr);
+
+    // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     bool on_frame_begin(
         const Project&              project,
-        foundation::IAbortSwitch*   abort_switch = 0);
+        const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
-    // Perform post-frame rendering actions.
-    void on_frame_end(const Project& project);
+    // This method is called once after rendering each frame (only if on_frame_begin() was called).
+    void on_frame_end(
+        const Project&              project,
+        const BaseGroup*            parent) override;
 
     struct RenderData
     {
@@ -135,6 +157,7 @@ class APPLESEED_DLLSYMBOL Scene
     struct Impl;
     Impl* impl;
 
+    Camera*     m_camera;
     bool        m_has_render_data;
     RenderData  m_render_data;
 
@@ -142,7 +165,7 @@ class APPLESEED_DLLSYMBOL Scene
     Scene();
 
     // Destructor.
-    ~Scene();
+    ~Scene() override;
 
     // Create render data, which are then available through get_render_data().
     void create_render_data();

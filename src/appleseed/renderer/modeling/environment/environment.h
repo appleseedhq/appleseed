@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -44,8 +44,10 @@
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace foundation    { class IAbortSwitch; }
+namespace renderer      { class BaseGroup; }
 namespace renderer      { class EnvironmentEDF; }
 namespace renderer      { class EnvironmentShader; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
@@ -64,7 +66,7 @@ class APPLESEED_DLLSYMBOL Environment
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
     // Return a string identifying the model of this environment.
     const char* get_model() const;
@@ -73,10 +75,14 @@ class APPLESEED_DLLSYMBOL Environment
     // Returns true on success, false otherwise.
     bool on_frame_begin(
         const Project&              project,
-        foundation::IAbortSwitch*   abort_switch = 0);
+        const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
-    // This method is called once after rendering each frame.
-    void on_frame_end(const Project& project);
+    // This method is called once after rendering each frame (only if on_frame_begin() was called).
+    void on_frame_end(
+        const Project&              project,
+        const BaseGroup*            parent) override;
 
     //
     // The get_*() methods below retrieve entities that were cached by on_frame_begin().

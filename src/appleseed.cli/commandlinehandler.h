@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,11 @@
 #ifndef APPLESEED_CLI_COMMANDLINEHANDLER_H
 #define APPLESEED_CLI_COMMANDLINEHANDLER_H
 
-// appleseed.foundation headers.
-#include "foundation/utility/commandlineparser.h"
-
 // appleseed.shared headers.
 #include "application/commandlinehandlerbase.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/commandlineparser.h"
 
 // Standard headers.
 #include <string>
@@ -59,15 +59,9 @@ class CommandLineHandler
     // General options.
     foundation::ValueOptionHandler<std::string>     m_configuration;
     foundation::ValueOptionHandler<std::string>     m_params;
-#if defined __APPLE__ || defined _WIN32
-    foundation::FlagOptionHandler                   m_display_output;
-#endif
-    foundation::FlagOptionHandler                   m_disable_autosave;
 
     // Aliases for rendering options.
     foundation::ValueOptionHandler<std::string>     m_threads;  // std::string because we need to handle 'auto'
-    foundation::ValueOptionHandler<std::string>     m_output;
-    foundation::FlagOptionHandler                   m_continuous_saving;
     foundation::ValueOptionHandler<int>             m_resolution;
     foundation::ValueOptionHandler<int>             m_window;
     foundation::ValueOptionHandler<int>             m_samples;
@@ -75,9 +69,15 @@ class CommandLineHandler
     foundation::ValueOptionHandler<std::string>     m_override_shading;
     foundation::ValueOptionHandler<std::string>     m_select_object_instances;
 
-    // Houdini-related options.
-    foundation::FlagOptionHandler                   m_mplay_display;
-    foundation::ValueOptionHandler<int>             m_hrmanpipe_display;
+    // Output options.
+    foundation::ValueOptionHandler<std::string>     m_output;
+#if defined __APPLE__ || defined _WIN32
+    foundation::FlagOptionHandler                   m_display_output;
+#endif
+    foundation::FlagOptionHandler                   m_send_to_stdout;
+    foundation::FlagOptionHandler                   m_send_to_mplay;
+    foundation::ValueOptionHandler<int>             m_send_to_hrmanpipe;
+    foundation::FlagOptionHandler                   m_disable_autosave;
 
     // Developer-oriented options.
     foundation::ValueOptionHandler<std::string>     m_run_unit_tests;
@@ -90,9 +90,9 @@ class CommandLineHandler
 
   private:
     // Emit usage instructions to the logger.
-    virtual void print_program_usage(
-        const char*             program_name,
-        shared::SuperLogger&    logger) const;
+    void print_program_usage(
+        const char*             executable_name,
+        shared::SuperLogger&    logger) const override;
 };
 
 }       // namespace cli

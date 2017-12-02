@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -47,28 +47,28 @@ namespace renderer
 
 void OIIOErrorHandler::operator()(int errcode, const string& msg)
 {
-    const string trimmed_msg = trim_right(msg, "\r\n");
+    const string modified_msg = prefix_all_lines(trim_both(msg), "osl: ");
 
     switch (errcode)
     {
       case EH_WARNING:
-        RENDERER_LOG_WARNING("%s", trimmed_msg.c_str());
+        RENDERER_LOG_WARNING("%s", modified_msg.c_str());
         break;
 
       case EH_ERROR:
-        RENDERER_LOG_ERROR("%s", trimmed_msg.c_str());
+        RENDERER_LOG_ERROR("%s", modified_msg.c_str());
         break;
 
       case EH_SEVERE:
-        RENDERER_LOG_FATAL("%s", trimmed_msg.c_str());
+        RENDERER_LOG_FATAL("%s", modified_msg.c_str());
         break;
 
       case EH_DEBUG:
-        RENDERER_LOG_DEBUG("%s", trimmed_msg.c_str());
+        RENDERER_LOG_DEBUG("%s", modified_msg.c_str());
         break;
 
       default:
-        RENDERER_LOG_DEBUG("%s", trimmed_msg.c_str());
+        RENDERER_LOG_DEBUG("%s", modified_msg.c_str());
         break;
     }
 }

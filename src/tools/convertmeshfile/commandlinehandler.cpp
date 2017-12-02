@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -48,23 +48,26 @@ CommandLineHandler::CommandLineHandler()
 {
     add_default_options();
 
-    m_filenames.set_exact_value_count(2);
-    parser().set_default_option_handler(&m_filenames);
+    parser().set_default_option_handler(
+        &m_filenames
+            .set_exact_value_count(2));
 
-    m_print_bboxes.add_name("--print-bounding-boxes");
-    m_print_bboxes.add_name("-b");
-    m_print_bboxes.set_description("print mesh bounding boxes");
-    parser().add_option_handler(&m_print_bboxes);
+    parser().add_option_handler(
+        &m_print_bboxes
+            .add_name("--print-bounding-boxes")
+            .add_name("-b")
+            .set_description("print mesh bounding boxes"));
 }
 
 void CommandLineHandler::print_program_usage(
-    const char*     program_name,
+    const char*     executable_name,
     SuperLogger&    logger) const
 {
     SaveLogFormatterConfig save_config(logger);
+    logger.set_verbosity_level(LogMessage::Info);
     logger.set_format(LogMessage::Info, "{message}");
 
-    LOG_INFO(logger, "usage: %s [options] input-file output-file", program_name);
+    LOG_INFO(logger, "usage: %s [options] input-file output-file", executable_name);
     LOG_INFO(logger, "options:");
 
     parser().print_usage(logger);

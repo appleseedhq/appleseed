@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -95,16 +95,12 @@ TEST_SUITE(Foundation_Math_MinMax)
 
     float ssemin_reference(const float a, const float b)
     {
-        float ret;
-        _mm_store_ss(&ret, _mm_min_ss(_mm_set_ss(a), _mm_set_ss(b)));
-        return ret;
+        return _mm_cvtss_f32(_mm_min_ss(_mm_set_ss(a), _mm_set_ss(b)));
     }
 
     float ssemax_reference(const float a, const float b)
     {
-        float ret;
-        _mm_store_ss(&ret, _mm_max_ss(_mm_set_ss(a), _mm_set_ss(b)));
-        return ret;
+        return _mm_cvtss_f32(_mm_max_ss(_mm_set_ss(a), _mm_set_ss(b)));
     }
 
     TEST_CASE(SSEMinAndSSEMax_GivenPermutationsOfSpecialFloatingPointNumbers_MatchMINSSAndMAXSS)

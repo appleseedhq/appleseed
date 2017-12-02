@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,12 +32,14 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/color/colorentity.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/color/wavelengths.h"
 #include "renderer/modeling/entity/entity.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/image/regularspectrum.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 
 // Standard headers.
 #include <cassert>
@@ -77,34 +79,41 @@ uint64 ColorSource::compute_signature() const
     return m_color_entity.compute_signature();
 }
 
+ColorSource::Hints ColorSource::get_hints() const
+{
+    Hints hints;
+    hints.m_width = 1;
+    hints.m_height = 1;
+    return hints;
+}
+
 void ColorSource::initialize_from_spectrum(const ColorEntity& color_entity)
 {
     const ColorValueArray& values = color_entity.get_values();
 
     if (values.empty())
     {
-        m_scalar = 0.0;
+        m_scalar = 0.0f;
         m_linear_rgb.set(0.0f);
         m_spectrum.set(0.0f);
         return;
     }
 
-    m_scalar = static_cast<double>(values[0]);
+    m_scalar = values[0];
 
-    m_spectrum.resize(Spectrum::Samples);
+    RegularSpectrum31f s;
     spectral_values_to_spectrum(
         color_entity.get_wavelength_range()[0],
         color_entity.get_wavelength_range()[1],
         values.size(),
         &values[0],
-        &m_spectrum[0]);
+        s);
 
-    // todo: this should be user-settable.
-    const LightingConditions lighting_conditions(
-        IlluminantCIED65,
-        XYZCMFCIE196410Deg);
+    m_linear_rgb =
+        ciexyz_to_linear_rgb(
+            spectrum_to_ciexyz<float>(g_std_lighting_conditions, s));
 
-    m_linear_rgb = m_spectrum.convert_to_rgb(lighting_conditions);
+    m_spectrum.set(s, g_std_lighting_conditions, Spectrum::Reflectance);
 }
 
 void ColorSource::initialize_from_color3(const ColorEntity& color_entity)
@@ -118,13 +127,13 @@ void ColorSource::initialize_from_color3(const ColorEntity& color_entity)
         color = Color3f(values[0], values[1], values[2]);
     else
     {
-        m_scalar = 0.0;
+        m_scalar = 0.0f;
         m_linear_rgb.set(0.0f);
         m_spectrum.set(0.0f);
         return;
     }
 
-    m_scalar = static_cast<double>(color[0]);
+    m_scalar = color[0];
 
     switch (color_entity.get_color_space())
     {
@@ -145,7 +154,7 @@ void ColorSource::initialize_from_color3(const ColorEntity& color_entity)
         break;
     }
 
-    m_spectrum = m_linear_rgb;
+    m_spectrum.set(m_linear_rgb, g_std_lighting_conditions, Spectrum::Reflectance);
 }
 
 }   // namespace renderer

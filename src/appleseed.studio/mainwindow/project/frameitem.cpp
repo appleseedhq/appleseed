@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/attributeeditor.h"
+#include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditor.h"
 #include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/projectbuilder.h"
@@ -51,6 +52,7 @@
 
 // Standard headers.
 #include <memory>
+#include <utility>
 
 using namespace foundation;
 using namespace renderer;
@@ -73,19 +75,28 @@ FrameItem::FrameItem(
     set_allow_deletion(false);
 }
 
+Dictionary FrameItem::get_values() const
+{
+    return m_frame->get_parameters();
+}
+
 void FrameItem::slot_edit(AttributeEditor* attribute_editor)
 {
-    auto_ptr<EntityEditor::IFormFactory> form_factory(
+    unique_ptr<EntityEditor::IFormFactory> form_factory(
         new SingleModelEntityEditorFormFactory(
             m_frame->get_name(),
             FrameFactory::get_input_metadata()));
 
+    const Scene& scene = *m_editor_context.m_project.get_scene();
+    std::unique_ptr<EntityEditor::IEntityBrowser> entity_browser(
+        new EntityBrowser<Scene>(scene));
+
     if (attribute_editor)
     {
         attribute_editor->edit(
-            form_factory,
-            auto_ptr<EntityEditor::IEntityBrowser>(0),
-            auto_ptr<CustomEntityUI>(),
+            move(form_factory),
+            move(entity_browser),
+            unique_ptr<CustomEntityUI>(),
             m_frame->get_parameters(),
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)));
@@ -96,8 +107,9 @@ void FrameItem::slot_edit(AttributeEditor* attribute_editor)
             treeWidget(),
             "Edit Frame",
             m_editor_context.m_project,
-            form_factory,
-            auto_ptr<EntityEditor::IEntityBrowser>(0),
+            m_editor_context.m_settings,
+            move(form_factory),
+            move(entity_browser),
             m_frame->get_parameters(),
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)),
@@ -111,7 +123,7 @@ void FrameItem::slot_edit_accepted(Dictionary values)
     if (m_editor_context.m_rendering_manager.is_rendering())
     {
         m_editor_context.m_rendering_manager.schedule(
-            auto_ptr<RenderingManager::IScheduledAction>(
+            unique_ptr<RenderingManager::IScheduledAction>(
                 new EntityEditionAction<FrameItem>(this, values)));
 
         m_editor_context.m_rendering_manager.reinitialize_rendering();

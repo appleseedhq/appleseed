@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -42,13 +42,14 @@
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
-#include "foundation/math/intersection/planesegment.h"
 #include "foundation/math/dual.h"
+#include "foundation/math/intersection/planesegment.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/api/apistring.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // Standard headers.
@@ -82,21 +83,21 @@ namespace
         {
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
+        bool on_render_begin(
             const Project&      project,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch*       abort_switch) override
         {
-            if (!Camera::on_frame_begin(project, abort_switch))
+            if (!Camera::on_render_begin(project, abort_switch))
                 return false;
 
             // Extract the film dimensions from the camera parameters.
@@ -114,25 +115,25 @@ namespace
 
             // Precompute pixel area.
             const size_t pixel_count = project.get_frame()->image().properties().m_pixel_count;
-            m_rcp_pixel_area = pixel_count / (m_film_dimensions[0] * m_film_dimensions[1]);
+            m_rcp_pixel_area = static_cast<float>(pixel_count / (m_film_dimensions[0] * m_film_dimensions[1]));
 
             print_settings();
 
             return true;
         }
 
-        virtual void spawn_ray(
+        void spawn_ray(
             SamplingContext&    sampling_context,
             const Dual2d&       ndc,
-            ShadingRay&         ray) const APPLESEED_OVERRIDE
+            ShadingRay&         ray) const override
         {
             // Initialize the ray.
             initialize_ray(sampling_context, ray);
 
             // Retrieve the camera transform.
-            Transformd tmp;
+            Transformd scratch;
             const Transformd& transform =
-                m_transform_sequence.evaluate(ray.m_time.m_absolute, tmp);
+                m_transform_sequence.evaluate(ray.m_time.m_absolute, scratch);
 
             // Compute ray origin and direction.
             ray.m_org = transform.point_to_parent(ndc_to_camera(ndc.get_value()));
@@ -154,17 +155,17 @@ namespace
             }
         }
 
-        virtual bool connect_vertex(
+        bool connect_vertex(
             SamplingContext&    sampling_context,
-            const double        time,
+            const float         time,
             const Vector3d&     point,
             Vector2d&           ndc,
             Vector3d&           outgoing,
-            double&             importance) const APPLESEED_OVERRIDE
+            float&              importance) const override
         {
             // Retrieve the camera transform.
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
 
             // Transform the input point to camera space.
             const Vector3d p = transform.point_to_local(point);
@@ -188,9 +189,9 @@ namespace
             return true;
         }
 
-        virtual bool project_camera_space_point(
+        bool project_camera_space_point(
             const Vector3d&     point,
-            Vector2d&           ndc) const APPLESEED_OVERRIDE
+            Vector2d&           ndc) const override
         {
             // Cannot project the point if it is behind the near plane.
             if (point.z > m_near_z)
@@ -203,16 +204,16 @@ namespace
             return true;
         }
 
-        virtual bool project_segment(
-            const double        time,
+        bool project_segment(
+            const float         time,
             const Vector3d&     a,
             const Vector3d&     b,
             Vector2d&           a_ndc,
-            Vector2d&           b_ndc) const APPLESEED_OVERRIDE
+            Vector2d&           b_ndc) const override
         {
             // Retrieve the camera transform.
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
 
             // Transform the segment to camera space.
             Vector3d local_a = transform.point_to_local(a);
@@ -239,18 +240,19 @@ namespace
         double      m_safe_scene_diameter;  // scene diameter plus a safety margin
         double      m_rcp_film_width;       // film width reciprocal in camera space
         double      m_rcp_film_height;      // film height reciprocal in camera space
-        double      m_rcp_pixel_area;       // reciprocal of pixel area in camera space
+        float       m_rcp_pixel_area;       // reciprocal of pixel area in camera space
 
         void print_settings() const
         {
             RENDERER_LOG_INFO(
-                "camera settings:\n"
-                "  model            %s\n"
-                "  film width       %f\n"
-                "  film height      %f\n"
-                "  near z           %f\n"
-                "  shutter open     %f\n"
-                "  shutter close    %f",
+                "camera \"%s\" settings:\n"
+                "  model                         %s\n"
+                "  film width                    %f\n"
+                "  film height                   %f\n"
+                "  near z                        %f\n"
+                "  shutter open                  %f\n"
+                "  shutter close                 %f",
+                get_path().c_str(),
                 Model,
                 m_film_dimensions[0],
                 m_film_dimensions[1],
@@ -282,6 +284,11 @@ namespace
 //
 // OrthographicCameraFactory class implementation.
 //
+
+void OrthographicCameraFactory::release()
+{
+    delete this;
+}
 
 const char* OrthographicCameraFactory::get_model() const
 {
@@ -342,13 +349,6 @@ DictionaryArray OrthographicCameraFactory::get_input_metadata() const
 auto_release_ptr<Camera> OrthographicCameraFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<Camera>(new OrthographicCamera(name, params));
-}
-
-auto_release_ptr<Camera> OrthographicCameraFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<Camera>(new OrthographicCamera(name, params));
 }

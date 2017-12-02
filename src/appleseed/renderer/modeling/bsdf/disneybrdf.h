@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -55,22 +55,25 @@ namespace renderer
 
 APPLESEED_DECLARE_INPUT_VALUES(DisneyBRDFInputValues)
 {
-    Spectrum    m_base_color;
-    double      m_subsurface;
-    double      m_metallic;
-    double      m_specular;
-    double      m_specular_tint;
-    double      m_anisotropic;
-    double      m_roughness;
-    double      m_sheen;
-    double      m_sheen_tint;
-    double      m_clearcoat;
-    double      m_clearcoat_gloss;
+    Spectrum        m_base_color;
+    float           m_subsurface;
+    float           m_metallic;
+    float           m_specular;
+    float           m_specular_tint;
+    float           m_anisotropic;
+    float           m_roughness;
+    float           m_sheen;
+    float           m_sheen_tint;
+    float           m_clearcoat;
+    float           m_clearcoat_gloss;
 
-    // These are not a real params of the BRDF.
-    // Instead, they are used to hold some temporary values.
-    Spectrum    m_tint_color;
-    double      m_base_color_luminance;
+    struct Precomputed
+    {
+        Spectrum    m_tint_color;
+        float       m_base_color_luminance;
+    };
+
+    Precomputed     m_precomputed;
 };
 
 
@@ -82,24 +85,22 @@ class APPLESEED_DLLSYMBOL DisneyBRDFFactory
   : public IBSDFFactory
 {
   public:
+    // Delete this instance.
+    void release() override;
+
     // Return a string identifying this BSDF model.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    const char* get_model() const override;
 
     // Return metadata for this BSDF model.
-    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
+    foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this BSDF model.
-    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
+    foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new BSDF instance.
-    virtual foundation::auto_release_ptr<BSDF> create(
+    foundation::auto_release_ptr<BSDF> create(
         const char*         name,
-        const ParamArray&   params) const APPLESEED_OVERRIDE;
-
-    // Static variant of the create() method above.
-    static foundation::auto_release_ptr<BSDF> static_create(
-        const char*         name,
-        const ParamArray&   params);
+        const ParamArray&   params) const override;
 };
 
 }       // namespace renderer

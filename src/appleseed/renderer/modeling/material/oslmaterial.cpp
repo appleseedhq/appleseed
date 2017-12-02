@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,8 +41,8 @@
 #include "renderer/modeling/shadergroup/shadergroup.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 using namespace foundation;
 
@@ -67,24 +67,24 @@ namespace
           : Material(name, params)
         {
             m_inputs.declare("osl_surface", InputFormatEntity, "");
-            m_inputs.declare("alpha_map", InputFormatScalar, "");
+            m_inputs.declare("alpha_map", InputFormatFloat, "");
 
             m_osl_bsdf = OSLBSDFFactory().create();
             m_osl_bssrdf = OSLBSSRDFFactory().create();
             m_osl_edf = OSLEDFFactory().create();
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool has_emission() const APPLESEED_OVERRIDE
+        bool has_emission() const override
         {
             if (const ShaderGroup* sg = get_uncached_osl_surface())
                 return sg->has_emission();
@@ -92,52 +92,42 @@ namespace
             return false;
         }
 
-        virtual bool on_frame_begin(
+        bool on_frame_begin(
             const Project&          project,
-            const Assembly&         assembly,
-            IAbortSwitch*           abort_switch = 0) APPLESEED_OVERRIDE
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch = nullptr) override
         {
-            if (!Material::on_frame_begin(project, assembly, abort_switch))
+            if (!Material::on_frame_begin(project, parent, recorder, abort_switch))
+                return false;
+
+            if (!m_osl_bsdf->on_frame_begin(project, parent, recorder, abort_switch))
+                return false;
+
+            if (!m_osl_bssrdf->on_frame_begin(project, parent, recorder, abort_switch))
+                return false;
+
+            if (!m_osl_edf->on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             m_render_data.m_shader_group = get_uncached_osl_surface();
+            m_render_data.m_bsdf = nullptr;
+            m_render_data.m_bssrdf = nullptr;
+            m_render_data.m_edf = nullptr;
 
             if (m_render_data.m_shader_group)
             {
-                m_render_data.m_bsdf = m_osl_bsdf.get();
-                m_osl_bsdf->on_frame_begin(project, assembly, abort_switch);
+                if (m_render_data.m_shader_group->has_bsdfs())
+                    m_render_data.m_bsdf = m_osl_bsdf.get();
 
                 if (m_render_data.m_shader_group->has_subsurface())
-                {
                     m_render_data.m_bssrdf = m_osl_bssrdf.get();
-                    m_osl_bssrdf->on_frame_begin(project, assembly, abort_switch);
-                }
 
                 if (m_render_data.m_shader_group->has_emission())
-                {
                     m_render_data.m_edf = m_osl_edf.get();
-                    m_osl_edf->on_frame_begin(project, assembly, abort_switch);
-                }
             }
 
             return true;
-        }
-
-        virtual void on_frame_end(
-            const Project&          project,
-            const Assembly&         assembly) APPLESEED_OVERRIDE
-        {
-            m_osl_bsdf->on_frame_end(project, assembly);
-
-            if (m_render_data.m_shader_group &&
-                m_render_data.m_shader_group->has_subsurface())
-                m_osl_bssrdf->on_frame_end(project, assembly);
-
-            if (m_render_data.m_shader_group &&
-                m_render_data.m_shader_group->has_emission())
-                m_osl_edf->on_frame_end(project, assembly);
-
-            Material::on_frame_end(project, assembly);
         }
 
       private:
@@ -145,12 +135,12 @@ namespace
         auto_release_ptr<BSSRDF>    m_osl_bssrdf;
         auto_release_ptr<EDF>       m_osl_edf;
 
-        virtual const ShaderGroup* get_uncached_osl_surface() const APPLESEED_OVERRIDE
+        const ShaderGroup* get_uncached_osl_surface() const override
         {
             const ShaderGroup* sg =
                 static_cast<const ShaderGroup*>(m_inputs.get_entity("osl_surface"));
 
-            return sg && sg->is_valid() ? sg : 0;
+            return sg && sg->is_valid() ? sg : nullptr;
         }
     };
 }
@@ -159,6 +149,11 @@ namespace
 //
 // OSLMaterialFactory class implementation.
 //
+
+void OSLMaterialFactory::release()
+{
+    delete this;
+}
 
 const char* OSLMaterialFactory::get_model() const
 {
@@ -177,7 +172,7 @@ DictionaryArray OSLMaterialFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
 
-    add_common_input_metadata(metadata);
+    add_surface_shader_metadata(metadata);
 
     metadata.push_back(
         Dictionary()
@@ -189,16 +184,7 @@ DictionaryArray OSLMaterialFactory::get_input_metadata() const
                     .insert("shader_group", "Shader Groups"))
             .insert("use", "optional"));
 
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "alpha_map")
-            .insert("label", "Alpha Map")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary()
-                    .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
-            .insert("use", "optional"));
+    add_alpha_map_metadata(metadata);
 
     return metadata;
 }
@@ -206,13 +192,6 @@ DictionaryArray OSLMaterialFactory::get_input_metadata() const
 auto_release_ptr<Material> OSLMaterialFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<Material>(new OSLMaterial(name, params));
-}
-
-auto_release_ptr<Material> OSLMaterialFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<Material>(new OSLMaterial(name, params));
 }

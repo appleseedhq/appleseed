@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -51,15 +51,34 @@ class APPLESEED_DLLSYMBOL ProjectFileWriter
         Defaults                    = 0,        // none of the flags below
         OmitHeaderComment           = 1 << 0,   // do not write the header comment
         OmitWritingGeometryFiles    = 1 << 1,   // do not write geometry files to disk
-        OmitBringingAssets          = 1 << 2,   // do not copy assets (such as texture files) to the project file directory
-        OmitSearchPaths             = 1 << 3    // do not write search paths
+        OmitHandlingAssetFiles      = 1 << 2,   // do not change paths to asset files (such as texture files)
+        CopyAllAssets               = 1 << 3    // copy all asset files (by default copy asset files with relative paths only)
     };
 
-    // Write a project to disk. Return true on success, false otherwise.
+    // Write a project to disk.
+    // Returns true on success, false otherwise.
     static bool write(
         const Project&  project,
         const char*     filepath,
-        const int       options = Defaults);
+        const int       options = Defaults,
+        const char*     extra_comments = nullptr);
+
+  private:
+    // Write a project to disk as a plain project file.
+    // Returns true on success, false otherwise.
+    static bool write_plain_project_file(
+        const Project&  project,
+        const char*     filepath,
+        const int       options,
+        const char*     comments);
+
+    // Write a project file to disk as a packed project file.
+    // Returns true on success, false otherwise.
+    static bool write_packed_project_file(
+        const Project&  project,
+        const char*     filepath,
+        const int       options,
+        const char*     extra_comments);
 };
 
 }       // namespace renderer

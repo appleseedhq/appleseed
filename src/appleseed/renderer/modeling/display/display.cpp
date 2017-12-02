@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/sharedlibrary.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.
@@ -70,7 +71,7 @@ struct Display::Impl
         const ParamArray&   params)
       : m_plugin(PluginCache::load(plugin_path))
     {
-        typedef ITileCallbackFactory*(*CreateFnType)(const ParamArray*);
+        typedef ITileCallbackFactory* (*CreateFnType)(const ParamArray*);
 
         CreateFnType create_fn =
             reinterpret_cast<CreateFnType>(m_plugin->get_symbol("create_tile_callback_factory", false));
@@ -86,7 +87,7 @@ Display::Display(
     const char*         name,
     const ParamArray&   params)
   : Entity(g_class_uid, params)
-  , impl(0)
+  , impl(nullptr)
 {
     set_name(name);
 }
@@ -103,23 +104,24 @@ void Display::release()
 
 bool Display::open(const Project& project)
 {
-    string plugin;
+    string plugin_path;
 
     try
     {
-        plugin = get_parameters().get("plugin_name");
-        plugin += Plugin::get_default_file_extension();
-        plugin = project.search_paths().qualify(plugin);
+        // Qualify the plugin path.
+        plugin_path = m_params.get("plugin_name");
+        plugin_path += SharedLibrary::get_default_file_extension();
+        plugin_path = to_string(project.search_paths().qualify(plugin_path));
     }
     catch (const ExceptionDictionaryKeyNotFound&)
     {
-        RENDERER_LOG_ERROR("%s", "cannot open display: missing plugin_name parameter.");
+        RENDERER_LOG_ERROR("cannot open display: missing \"plugin_name\" parameter.");
         return false;
     }
 
     try
     {
-        impl = new Impl(plugin.c_str(), get_parameters());
+        impl = new Impl(plugin_path.c_str(), m_params);
     }
     catch (const ExceptionCannotLoadSharedLib& e)
     {
@@ -128,7 +130,7 @@ bool Display::open(const Project& project)
     }
     catch (const ExceptionPluginInitializationFailed&)
     {
-        RENDERER_LOG_ERROR("initialization of display plugin %s failed", plugin.c_str());
+        RENDERER_LOG_ERROR("initialization of display plugin %s failed", plugin_path.c_str());
         return false;
     }
     catch (const ExceptionSharedLibCannotGetSymbol& e)
@@ -143,7 +145,7 @@ bool Display::open(const Project& project)
 void Display::close()
 {
     delete impl;
-    impl = 0;
+    impl = nullptr;
 }
 
 ITileCallbackFactory* Display::get_tile_callback_factory() const
@@ -151,7 +153,7 @@ ITileCallbackFactory* Display::get_tile_callback_factory() const
     if (impl)
         return impl->m_tile_callback_factory.get();
 
-    return 0;
+    return nullptr;
 }
 
 

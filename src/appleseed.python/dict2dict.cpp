@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/string.h"
@@ -61,7 +61,7 @@ namespace
         return dict.dictionaries().get(name);
     }
 
-    template <class Dict>
+    template <typename Dict>
     Dict convert_from_bpy_dict(const bpy::dict& d)
     {
         Dict result;
@@ -164,10 +164,10 @@ namespace
                 }
             }
 
-            // TODO: add conversions from bpy::tuple to Vector<T, N>.
+            // todo: add conversions from bpy::tuple to Vector<T, N>.
             // ...
 
-            // TODO: check more types here if needed...
+            // todo: check more types here if needed...
 
             // dict
             {
@@ -219,7 +219,7 @@ namespace
         }
         catch (ExceptionStringConversionError&) {}
 
-        // TODO: check more types here if needed...
+        // todo: check more types here if needed...
 
         // As a fallback, return a string.
         return bpy::object(str);
@@ -238,11 +238,9 @@ bpy::dict dictionary_to_bpy_dict(const Dictionary& dict)
     for (const_each<StringDictionary> it = dict.strings(); it; ++it)
         result[it->key()] = obj_from_string(it->value());
 
+    // Recurse into subdictionaries.
     for (const_each<DictionaryDictionary> it = dict.dictionaries(); it; ++it)
-    {
-        // Recurse.
         result[it->key()] = dictionary_to_bpy_dict(it->value());
-    }
 
     return result;
 }

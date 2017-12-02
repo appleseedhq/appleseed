@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,11 +33,14 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/object/iregion.h"
+#include "renderer/modeling/object/meshobjectprimitives.h"
+#include "renderer/modeling/object/meshobjectreader.h"
 #include "renderer/modeling/object/triangle.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/api/apiarray.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 
@@ -58,6 +61,8 @@ namespace renderer
 
 namespace
 {
+    const char* Model = "mesh_object";
+
     // A region that simply wraps a static tessellation.
     class MeshRegion
       : public IRegion
@@ -69,12 +74,12 @@ namespace
         {
         }
 
-        virtual GAABB3 compute_local_bbox() const APPLESEED_OVERRIDE
+        GAABB3 compute_local_bbox() const override
         {
             return m_tess->compute_local_bbox();
         }
 
-        virtual Lazy<StaticTriangleTess>& get_static_triangle_tess() const APPLESEED_OVERRIDE
+        Lazy<StaticTriangleTess>& get_static_triangle_tess() const override
         {
             return m_lazy_tess;
         }
@@ -102,12 +107,12 @@ struct MeshObject::Impl
 };
 
 MeshObject::MeshObject(
-    const char*         name,
-    const ParamArray&   params)
+    const char*             name,
+    const ParamArray&       params)
   : Object(name, params)
   , impl(new Impl())
 {
-    m_inputs.declare("alpha_map", InputFormatScalar, "");
+    m_inputs.declare("alpha_map", InputFormatFloat, "");
 }
 
 MeshObject::~MeshObject()
@@ -122,28 +127,28 @@ void MeshObject::release()
 
 const char* MeshObject::get_model() const
 {
-    return MeshObjectFactory::get_model();
+    return Model;
 }
 
 bool MeshObject::on_frame_begin(
-    const Project&  project,
-    const Assembly& assembly,
-    IAbortSwitch*   abort_switch)
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
+    IAbortSwitch*           abort_switch)
 {
-    if (!Object::on_frame_begin(project, assembly, abort_switch))
+    if (!Object::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
     m_alpha_map = get_uncached_alpha_map();
-    m_shade_alpha_cutouts = m_params.get_optional<bool>("shade_alpha_cutouts", false);
     return true;
 }
 
-void MeshObject::on_frame_end(const Project& project)
+void MeshObject::on_frame_end(
+    const Project&          project,
+    const BaseGroup*        parent)
 {
-    m_alpha_map = 0;
-    m_shade_alpha_cutouts = false;
-
-    Object::on_frame_end(project);
+    m_alpha_map = nullptr;
+    Object::on_frame_end(project, parent);
 }
 
 bool MeshObject::has_alpha_map() const
@@ -284,6 +289,11 @@ const Triangle& MeshObject::get_triangle(const size_t index) const
     return impl->m_tess.m_primitives[index];
 }
 
+Triangle& MeshObject::get_triangle(const size_t index)
+{
+    return impl->m_tess.m_primitives[index];
+}
+
 void MeshObject::clear_triangles()
 {
     impl->m_tess.m_primitives.clear();
@@ -300,16 +310,16 @@ size_t MeshObject::get_motion_segment_count() const
 }
 
 void MeshObject::set_vertex_pose(
-    const size_t        vertex_index,
-    const size_t        motion_segment_index,
-    const GVector3&     vertex)
+    const size_t            vertex_index,
+    const size_t            motion_segment_index,
+    const GVector3&         vertex)
 {
     impl->m_tess.set_vertex_pose(vertex_index, motion_segment_index, vertex);
 }
 
 GVector3 MeshObject::get_vertex_pose(
-    const size_t        vertex_index,
-    const size_t        motion_segment_index) const
+    const size_t            vertex_index,
+    const size_t            motion_segment_index) const
 {
     return impl->m_tess.get_vertex_pose(vertex_index, motion_segment_index);
 }
@@ -320,16 +330,16 @@ void MeshObject::clear_vertex_poses()
 }
 
 void MeshObject::set_vertex_normal_pose(
-    const size_t        normal_index,
-    const size_t        motion_segment_index,
-    const GVector3&     normal)
+    const size_t            normal_index,
+    const size_t            motion_segment_index,
+    const GVector3&         normal)
 {
     impl->m_tess.set_vertex_normal_pose(normal_index, motion_segment_index, normal);
 }
 
 GVector3 MeshObject::get_vertex_normal_pose(
-    const size_t        normal_index,
-    const size_t        motion_segment_index) const
+    const size_t            normal_index,
+    const size_t            motion_segment_index) const
 {
     return impl->m_tess.get_vertex_normal_pose(normal_index, motion_segment_index);
 }
@@ -340,16 +350,16 @@ void MeshObject::clear_vertex_normal_poses()
 }
 
 void MeshObject::set_vertex_tangent_pose(
-    const size_t        tangent_index,
-    const size_t        motion_segment_index,
-    const GVector3&     tangent)
+    const size_t            tangent_index,
+    const size_t            motion_segment_index,
+    const GVector3&         tangent)
 {
     impl->m_tess.set_vertex_tangent_pose(tangent_index, motion_segment_index, tangent);
 }
 
 GVector3 MeshObject::get_vertex_tangent_pose(
-    const size_t        tangent_index,
-    const size_t        motion_segment_index) const
+    const size_t            tangent_index,
+    const size_t            motion_segment_index) const
 {
     return impl->m_tess.get_vertex_tangent_pose(tangent_index, motion_segment_index);
 }
@@ -367,7 +377,7 @@ void MeshObject::reserve_material_slots(const size_t count)
 size_t MeshObject::push_material_slot(const char* name)
 {
     const size_t index = impl->m_material_slots.size();
-    impl->m_material_slots.push_back(name);
+    impl->m_material_slots.emplace_back(name);
     return index;
 }
 
@@ -410,16 +420,90 @@ void MeshObject::update_asset_paths(const StringDictionary& mappings)
 // MeshObjectFactory class implementation.
 //
 
-const char* MeshObjectFactory::get_model()
+void MeshObjectFactory::release()
 {
-    return "mesh_object";
+    delete this;
 }
 
-auto_release_ptr<MeshObject> MeshObjectFactory::create(
-    const char*         name,
-    const ParamArray&   params)
+const char* MeshObjectFactory::get_model() const
 {
-    return auto_release_ptr<MeshObject>(new MeshObject(name, params));
+    return Model;
+}
+
+Dictionary MeshObjectFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Mesh Object");
+}
+
+DictionaryArray MeshObjectFactory::get_input_metadata() const
+{
+    DictionaryArray metadata;
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "alpha_map")
+            .insert("label", "Alpha Map")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
+            .insert("use", "optional"));
+
+    return metadata;
+}
+
+auto_release_ptr<Object> MeshObjectFactory::create(
+    const char*             name,
+    const ParamArray&       params) const
+{
+    return auto_release_ptr<Object>(new MeshObject(name, params));
+}
+
+bool MeshObjectFactory::create(
+    const char*             name,
+    const ParamArray&       params,
+    const SearchPaths&      search_paths,
+    const bool              omit_loading_assets,
+    ObjectArray&            objects) const
+{
+    if (params.strings().exist("primitive"))
+    {
+        auto_release_ptr<MeshObject> mesh = create_primitive_mesh(name, params);
+        if (mesh.get() == nullptr)
+            return false;
+
+        objects.push_back(mesh.release());
+        return true;
+    }
+
+    if (omit_loading_assets)
+    {
+        objects.push_back(create(name, params).release());
+        return true;
+    }
+
+    MeshObjectArray object_array;
+    if (!MeshObjectReader::read(
+            search_paths,
+            name,
+            params,
+            object_array))
+        return false;
+
+    objects = array_vector<ObjectArray>(object_array);
+    return true;
 }
 
 }   // namespace renderer

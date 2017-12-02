@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,8 @@
 #include "objmeshfilewriter.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/core/appleseed.h"
+#include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/mesh/imeshwalker.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/otherwise.h"
@@ -49,7 +49,7 @@ namespace foundation
 
 OBJMeshFileWriter::OBJMeshFileWriter(const string& filename)
   : m_filename(filename)
-  , m_file(0)
+  , m_file(nullptr)
   , m_base_vertex_index(1)
   , m_base_vertex_normal_index(1)
   , m_base_tex_coords_index(1)
@@ -63,11 +63,11 @@ OBJMeshFileWriter::~OBJMeshFileWriter()
 
 void OBJMeshFileWriter::write(const IMeshWalker& walker)
 {
-    if (m_file == 0)
+    if (m_file == nullptr)
     {
         // Open the file for writing.
         m_file = fopen(m_filename.c_str(), "wt");
-        if (m_file == 0)
+        if (m_file == nullptr)
             throw ExceptionIOError();
 
         // Write the file header.
@@ -97,7 +97,7 @@ void OBJMeshFileWriter::close()
     if (m_file)
     {
         fclose(m_file);
-        m_file = 0;
+        m_file = nullptr;
     }
 }
 

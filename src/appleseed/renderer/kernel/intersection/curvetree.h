@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Srinath Ravichandran, The appleseedhq Organization
+// Copyright (c) 2014-2017 Srinath Ravichandran, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -105,8 +105,8 @@ class CurveTree
     };
 
     const Arguments         m_arguments;
-    std::vector<CurveType1> m_curves1;
-    std::vector<CurveType3> m_curves3;
+    std::vector<Curve1Type> m_curves1;
+    std::vector<Curve3Type> m_curves3;
     std::vector<CurveKey>   m_curve_keys;
 
     void collect_curves(std::vector<GAABB3>& curve_bboxes);
@@ -140,7 +140,7 @@ class CurveTreeFactory
         const CurveTree::Arguments&  arguments);
 
     // Create the curve tree.
-    virtual std::auto_ptr<CurveTree> create();
+    std::unique_ptr<CurveTree> create() override;
 
   private:
     const CurveTree::Arguments       m_arguments;
@@ -282,13 +282,13 @@ inline bool CurveLeafVisitor::visit(
 
     for (foundation::uint32 i = 0; i < user_data.m_curve1_count; ++i, ++curve_index)
     {
-        const CurveType1& curve = m_tree.m_curves1[user_data.m_curve1_offset + i];
+        const Curve1Type& curve = m_tree.m_curves1[user_data.m_curve1_offset + i];
         if (Curve1IntersectorType::intersect(curve, ray, m_xfm_matrix, u, v, t))
         {
             m_shading_point.m_primitive_type = ShadingPoint::PrimitiveCurve1;
             m_shading_point.m_ray.m_tmax = static_cast<double>(t);
-            m_shading_point.m_bary[0] = static_cast<double>(u);
-            m_shading_point.m_bary[1] = static_cast<double>(v);
+            m_shading_point.m_bary[0] = static_cast<float>(u);
+            m_shading_point.m_bary[1] = static_cast<float>(v);
             hit_curve_index = curve_index;
         }
     }
@@ -297,13 +297,13 @@ inline bool CurveLeafVisitor::visit(
 
     for (foundation::uint32 i = 0; i < user_data.m_curve3_count; ++i, ++curve_index)
     {
-        const CurveType3& curve = m_tree.m_curves3[user_data.m_curve3_offset + i];
+        const Curve3Type& curve = m_tree.m_curves3[user_data.m_curve3_offset + i];
         if (Curve3IntersectorType::intersect(curve, ray, m_xfm_matrix, u, v, t))
         {
             m_shading_point.m_primitive_type = ShadingPoint::PrimitiveCurve3;
             m_shading_point.m_ray.m_tmax = static_cast<double>(t);
-            m_shading_point.m_bary[0] = static_cast<double>(u);
-            m_shading_point.m_bary[1] = static_cast<double>(v);
+            m_shading_point.m_bary[0] = static_cast<float>(u);
+            m_shading_point.m_bary[1] = static_cast<float>(v);
             hit_curve_index = curve_index;
         }
     }
@@ -349,7 +349,7 @@ inline bool CurveLeafProbeVisitor::visit(
 
     for (foundation::uint32 i = 0; i < user_data.m_curve1_count; ++i)
     {
-        const CurveType1& curve = m_tree.m_curves1[user_data.m_curve1_offset + i];
+        const Curve1Type& curve = m_tree.m_curves1[user_data.m_curve1_offset + i];
         if (Curve1IntersectorType::intersect(curve, ray, m_xfm_matrix))
         {
             FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(i + 1));
@@ -362,7 +362,7 @@ inline bool CurveLeafProbeVisitor::visit(
 
     for (foundation::uint32 i = 0; i < user_data.m_curve3_count; ++i)
     {
-        const CurveType3& curve = m_tree.m_curves3[user_data.m_curve3_offset + i];
+        const Curve3Type& curve = m_tree.m_curves3[user_data.m_curve3_offset + i];
         if (Curve3IntersectorType::intersect(curve, ray, m_xfm_matrix))
         {
             FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(i + 1));

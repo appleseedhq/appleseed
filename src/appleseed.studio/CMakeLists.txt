@@ -6,7 +6,7 @@
 # This software is released under the MIT license.
 #
 # Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-# Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+# Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,13 @@
 #--------------------------------------------------------------------------------------------------
 # Packages.
 #--------------------------------------------------------------------------------------------------
+
+# Boost.
+if (NOT PYTHON_MAJOR_VERSION STREQUAL "2")
+    message (FATAL_ERROR "Python 2.x needed")
+else ()
+    find_package (Boost 1.55 COMPONENTS python)
+endif ()
 
 # OpenGL.
 find_package (OpenGL REQUIRED)
@@ -145,6 +152,7 @@ set (mainwindow_project_sources
     mainwindow/project/fixedmodelentityitem.h
     mainwindow/project/frameitem.cpp
     mainwindow/project/frameitem.h
+    mainwindow/project/ientityvalueprovider.h
     mainwindow/project/instancecollectionitem.h
     mainwindow/project/itembase.cpp
     mainwindow/project/itembase.h
@@ -209,11 +217,84 @@ source_group ("mainwindow\\project" FILES
     ${mainwindow_project_sources}
 )
 
+set (appleseedpython_sources
+    ../appleseed.python/__init__.py
+    ../appleseed.python/bindaov.cpp
+    ../appleseed.python/bindassembly.cpp
+    ../appleseed.python/bindbasis.cpp
+    ../appleseed.python/bindbbox.cpp
+    ../appleseed.python/bindbsdf.cpp
+    ../appleseed.python/bindbssrdf.cpp
+    ../appleseed.python/bindcamera.cpp
+    ../appleseed.python/bindcolor.cpp
+    ../appleseed.python/binddisplay.cpp
+    ../appleseed.python/bindedf.cpp
+    ../appleseed.python/bindentity.cpp
+    ../appleseed.python/bindentitycontainers.h
+    ../appleseed.python/bindenvironment.cpp
+    ../appleseed.python/bindframe.cpp
+    ../appleseed.python/bindimage.cpp
+    ../appleseed.python/bindlight.cpp
+    ../appleseed.python/bindlogger.cpp
+    ../appleseed.python/bindmasterrenderer.cpp
+    ../appleseed.python/bindmaterial.cpp
+    ../appleseed.python/bindmatrix.cpp
+    ../appleseed.python/bindmeshobject.cpp
+    ../appleseed.python/bindobject.cpp
+    ../appleseed.python/bindproject.cpp
+    ../appleseed.python/bindquaternion.cpp
+    ../appleseed.python/bindrenderercontroller.cpp
+    ../appleseed.python/bindscene.cpp
+    ../appleseed.python/bindshadergroup.cpp
+    ../appleseed.python/bindsurfaceshader.cpp
+    ../appleseed.python/bindtexture.cpp
+    ../appleseed.python/bindtilecallback.cpp
+    ../appleseed.python/bindtransform.cpp
+    ../appleseed.python/bindutility.cpp
+    ../appleseed.python/bindvector.cpp
+    ../appleseed.python/dict2dict.cpp
+    ../appleseed.python/dict2dict.h
+    ../appleseed.python/gillocks.h
+    ../appleseed.python/gillocks.cpp
+    ../appleseed.python/logtarget.py
+    ../appleseed.python/metadata.h
+    ../appleseed.python/module.cpp
+    ../appleseed.python/unalignedmatrix44.h
+    ../appleseed.python/unalignedtransform.h
+)
+list (APPEND appleseed.studio_sources
+    ${appleseedpython_sources}
+)
+source_group ("appleseed.python" FILES
+    ${appleseedpython_sources}
+)
+
+set (mainwindow_pythonconsole_sources
+    mainwindow/pythonconsole/linenumberarea.cpp
+    mainwindow/pythonconsole/linenumberarea.h
+    mainwindow/pythonconsole/outputredirector.cpp
+    mainwindow/pythonconsole/outputredirector.h
+    mainwindow/pythonconsole/pythonconsolewidget.cpp
+    mainwindow/pythonconsole/pythonconsolewidget.h
+    mainwindow/pythonconsole/pythoneditor.cpp
+    mainwindow/pythonconsole/pythoneditor.h
+    mainwindow/pythonconsole/pythonhighlighter.cpp
+    mainwindow/pythonconsole/pythonhighlighter.h
+    mainwindow/pythonconsole/pythonoutput.cpp
+    mainwindow/pythonconsole/pythonoutput.h
+    mainwindow/pythonconsole/zoomableplaintextedit.cpp
+    mainwindow/pythonconsole/zoomableplaintextedit.h
+)
+list (APPEND appleseed.studio_sources
+    ${mainwindow_pythonconsole_sources}
+)
+source_group ("mainwindow\\pythonconsole" FILES
+    ${mainwindow_pythonconsole_sources}
+)
+
 set (mainwindow_rendering_sources
     mainwindow/rendering/cameracontroller.cpp
     mainwindow/rendering/cameracontroller.h
-    mainwindow/rendering/frozendisplayrenderer.cpp
-    mainwindow/rendering/frozendisplayrenderer.h
     mainwindow/rendering/pixelcolortracker.cpp
     mainwindow/rendering/pixelcolortracker.h
     mainwindow/rendering/pixelinspectorhandler.cpp
@@ -278,6 +359,18 @@ list (APPEND appleseed.studio_sources
 )
 source_group ("meta\\tests" FILES
     ${meta_tests_sources}
+)
+
+set (python_sources
+    python/module.cpp
+    python/pythoninterpreter.cpp
+    python/pythoninterpreter.h
+)
+list (APPEND appleseed.studio_sources
+    ${python_sources}
+)
+source_group ("python" FILES
+    ${python_sources}
 )
 
 set (utility_sources
@@ -464,11 +557,12 @@ add_executable (appleseed.studio
 
 if (WIN32)
     set_target_properties (appleseed.studio PROPERTIES
+        # Build a GUI application instead of a console application on Windows.
         WIN32_EXECUTABLE TRUE
     )
 endif ()
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+if (USE_RPATH_ORIGIN)
     set_target_properties (appleseed.studio PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"
     )
@@ -482,6 +576,8 @@ endif ()
 include_directories (
     .
     ../appleseed.shared
+    ${OPENCOLORIO_INCLUDE_DIRS}
+    ${PYTHON_INCLUDE_DIRS}
 )
 
 
@@ -499,6 +595,7 @@ apply_preprocessor_definitions (appleseed.studio)
 # Static libraries must be specified in order of reverse-dependency.
 link_against_platform (appleseed.studio)
 link_against_openexr (appleseed.studio)
+link_against_ocio (appleseed.studio)
 
 target_link_libraries (appleseed.studio
     appleseed
@@ -506,6 +603,7 @@ target_link_libraries (appleseed.studio
     ${Boost_LIBRARIES}
     ${QT_LIBRARIES}
     ${OPENGL_LIBRARY}
+    ${PYTHON_LIBRARIES}
 )
 
 if (WITH_DISNEY_MATERIAL)
@@ -543,5 +641,9 @@ install (FILES ../../sandbox/settings/appleseed.studio.xml
 )
 
 install (DIRECTORY ../../sandbox/seexpr
+    DESTINATION .
+)
+
+install (DIRECTORY ../../sandbox/ocio
     DESTINATION .
 )

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +28,13 @@
 //
 
 // appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
-#include "unalignedtransformd44.h"
+#include "unalignedtransform.h"
 
 // appleseed.renderer headers.
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/python.h"
 #include "foundation/utility/iostreamop.h"
 
 // Standard headers.
@@ -46,10 +46,50 @@ using namespace renderer;
 
 namespace
 {
+    void bind_typed_transform_extra(bpy::class_<UnalignedTransformf>& X)
+    {
+        X.def(bpy::init<const UnalignedTransformd&>());
+    }
+
+    void bind_typed_transform_extra(bpy::class_<UnalignedTransformd>& X)
+    {
+        X.def(bpy::init<const UnalignedTransformf&>());
+    }
+
+    template <typename T>
+    void bind_typed_transform(const char* class_name)
+    {
+        bpy::class_<UnalignedTransform<T>> X(class_name);
+        X.def(bpy::init<const UnalignedMatrix44<T>&>())
+            .def(bpy::init<const UnalignedMatrix44<T>&>())
+            .def(bpy::init<const UnalignedMatrix44<T>&, const UnalignedMatrix44<T>&>())
+
+            .def("identity", &UnalignedTransform<T>::identity).staticmethod("identity")
+
+            .def("get_local_to_parent", &UnalignedTransform<T>::get_local_to_parent, bpy::return_value_policy<bpy::copy_const_reference>())
+            .def("get_parent_to_local", &UnalignedTransform<T>::get_parent_to_local, bpy::return_value_policy<bpy::copy_const_reference>())
+
+            .def(bpy::self * bpy::self)
+
+            .def("point_to_local",   &UnalignedTransform<T>::point_to_local)
+            .def("point_to_parent",  &UnalignedTransform<T>::point_to_parent)
+            .def("vector_to_local",  &UnalignedTransform<T>::vector_to_local)
+            .def("vector_to_parent", &UnalignedTransform<T>::vector_to_parent)
+            .def("normal_to_local" , &UnalignedTransform<T>::normal_to_local)
+            .def("normal_to_parent", &UnalignedTransform<T>::normal_to_parent)
+
+            // Because of a bug in Boost.Python, this needs the extra self_ns qualification.
+            .def(bpy::self_ns::str(bpy::self))
+            .def(bpy::self_ns::repr(bpy::self))
+            ;
+
+        bind_typed_transform_extra(X);
+    }
+
     void transform_seq_set_transform(
         TransformSequence*              seq,
-        const double                    time,
-        const UnalignedTransformd44&    transform)
+        const float                     time,
+        const UnalignedTransformd&      transform)
     {
         const Transformd xform(
             transform.get_local_to_parent().as_foundation_matrix(),
@@ -62,10 +102,10 @@ namespace
         const TransformSequence*        seq,
         const size_t                    index)
     {
-        double time;
+        float time;
         Transformd xform;
         seq->get_transform(index, time, xform);
-        return bpy::make_tuple(time, UnalignedTransformd44(xform));
+        return bpy::make_tuple(time, UnalignedTransformd(xform));
     }
 
     bpy::list transform_seq_as_list(const TransformSequence* seq)
@@ -74,79 +114,27 @@ namespace
 
         for (size_t i = 0, e = seq->size(); i < e; ++i)
         {
-            double time;
+            float time;
             Transformd xform;
             seq->get_transform(i, time, xform);
-            bpy::tuple t = bpy::make_tuple(time, UnalignedTransformd44(xform));
+            bpy::tuple t = bpy::make_tuple(time, UnalignedTransformd(xform));
             result.append(t);
         }
 
         return result;
     }
 
-    UnalignedTransformd44 transform_seq_get_earliest(const TransformSequence* seq)
+    UnalignedTransformd transform_seq_get_earliest(const TransformSequence* seq)
     {
         const Transformd xform(seq->get_earliest_transform());
-        return UnalignedTransformd44(xform);
+        return UnalignedTransformd(xform);
     }
 }
 
 void bind_transform()
 {
-    Vector<float, 3> (UnalignedTransformd44::*point_to_localf)(const Vector<float, 3>&) const = &UnalignedTransformd44::point_to_local;
-    Vector<double, 3> (UnalignedTransformd44::*point_to_locald)(const Vector<double, 3>&) const = &UnalignedTransformd44::point_to_local;
-
-    Vector<float, 3> (UnalignedTransformd44::*point_to_parentf)(const Vector<float, 3>&) const= &UnalignedTransformd44::point_to_parent;
-    Vector<double, 3> (UnalignedTransformd44::*point_to_parentd)(const Vector<double, 3>&) const= &UnalignedTransformd44::point_to_parent;
-
-    Vector<float, 3> (UnalignedTransformd44::*vector_to_localf)(const Vector<float, 3>&) const= &UnalignedTransformd44::vector_to_local;
-    Vector<double, 3> (UnalignedTransformd44::*vector_to_locald)(const Vector<double, 3>&) const= &UnalignedTransformd44::vector_to_local;
-
-    Vector<float, 3> (UnalignedTransformd44::*vector_to_parentf)(const Vector<float, 3>&) const = &UnalignedTransformd44::vector_to_parent;
-    Vector<double, 3> (UnalignedTransformd44::*vector_to_parentd)(const Vector<double, 3>&) const = &UnalignedTransformd44::vector_to_parent;
-
-    Vector<float, 3> (UnalignedTransformd44::*normal_to_localf)(const Vector<float, 3>&) const = &UnalignedTransformd44::normal_to_local;
-    Vector<double, 3> (UnalignedTransformd44::*normal_to_locald)(const Vector<double, 3>&) const = &UnalignedTransformd44::normal_to_local;
-
-    Vector<float, 3> (UnalignedTransformd44::*normal_to_parentf)(const Vector<float, 3>&) const = &UnalignedTransformd44::normal_to_parent;
-    Vector<double, 3> (UnalignedTransformd44::*normal_to_parentd)(const Vector<double, 3>&) const = &UnalignedTransformd44::normal_to_parent;
-
-    bpy::class_<UnalignedTransformd44>("Transformd")
-        .def(bpy::init<const UnalignedMatrix44<double>&>())
-        .def(bpy::init<const UnalignedMatrix44<double>&, const UnalignedMatrix44<double>&>())
-
-        .def(bpy::init<const UnalignedMatrix44<float>&>())
-        .def(bpy::init<const UnalignedMatrix44<float>&, const UnalignedMatrix44<float>&>())
-
-        .def("identity", &UnalignedTransformd44::identity).staticmethod("identity")
-
-        .def("get_local_to_parent", &UnalignedTransformd44::get_local_to_parent, bpy::return_value_policy<bpy::copy_const_reference>())
-        .def("get_parent_to_local", &UnalignedTransformd44::get_parent_to_local, bpy::return_value_policy<bpy::copy_const_reference>())
-
-        .def(bpy::self * bpy::self)
-
-        .def("point_to_local", point_to_localf)
-        .def("point_to_local", point_to_locald)
-
-        .def("point_to_parent", point_to_parentf)
-        .def("point_to_parent", point_to_parentd)
-
-        .def("vector_to_local", vector_to_localf)
-        .def("vector_to_local", vector_to_locald)
-
-        .def("vector_to_parent", vector_to_parentf)
-        .def("vector_to_parent", vector_to_parentd)
-
-        .def("normal_to_local", normal_to_localf)
-        .def("normal_to_local", normal_to_locald)
-
-        .def("normal_to_parent", normal_to_parentf)
-        .def("normal_to_parent", normal_to_parentd)
-
-        // Because of a bug in Boost.Python, this needs the extra self_ns qualification.
-        .def(bpy::self_ns::str(bpy::self))
-        .def(bpy::self_ns::repr(bpy::self))
-        ;
+    bind_typed_transform<float>("Transformf");
+    bind_typed_transform<double>("Transformd");
 
     bpy::class_<TransformSequence>("TransformSequence")
         .def(bpy::init<>())

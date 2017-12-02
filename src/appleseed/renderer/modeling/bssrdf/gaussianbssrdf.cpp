@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,25 +30,25 @@
 #include "gaussianbssrdf.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/bssrdf/bssrdfsample.h"
-#include "renderer/modeling/bssrdf/separablebssrdf.h"
-#include "renderer/modeling/bssrdf/sss.h"
-#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
-#include "foundation/utility/memory.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
-namespace renderer  { class ShadingContext; }
+namespace foundation    { class Arena; }
+namespace renderer      { class BSDFSample; }
+namespace renderer      { class BSSRDFSample; }
+namespace renderer      { class ShadingContext; }
 
 using namespace foundation;
 using namespace std;
@@ -77,157 +77,248 @@ namespace
     //     R(r) = -----------------
     //               2 * Pi * v
     //
-    //   The integral of this function over R^2 is equal to 1. Since we want to truncate
-    //   this function to a disk of radius Rmax and still have it integrate to 1, we'll
-    //   need an additional scaling factor.
+    //            a
+    //          = -- * exp(-a * r^2)   with a = 1 / (2*v)
+    //            Pi
     //
-    //   Let's compute the value of this integral for a disk of radius Rmax:
+    //   Unlike its 1D counterpart for which the PDF has no closed form solution,
+    //   this function can be importance-sampled analytically.
     //
-    //     /              / 2 Pi   / Rmax
+    //   R(r) is its own PDF, and as such it integrates to 1 over the plane.
+    //
+    //   Let's express this integral as a function of r:
+    //
+    //     /              / 2 Pi   / r
     //     |              |        |
-    //     |  R(r) dA  =  |        |  R(r) r dr dtheta  =  1 - exp(-Rmax^2 / (2*v))
+    //     |  R(r) dA  =  |        |  R(s) s ds dtheta  =  1 - exp(-r^2 / (2*v))
     //     |              |        |
     //     / disk         / 0      / 0
     //
-    //   (Recall that dA = r dr dtheta.)
-    //
-    //   Our (multiplicative) normalization factor is then
-    //
-    //                    1
-    //     K = ------------------------
-    //         1 - exp(-Rmax^2 / (2*v))
-    //
-    //   Rmax is the radius at which the value of the integral of the Gaussian profile
-    //   is low enough, i.e. when the integral over the disk is close enough to one.
-    //   For instance, if we pick 0.999 as a threshold:
+    //   In order to improve sampling efficiency, we will limit our sampling to
+    //   a disk of radius Rmax such that the integral of the PDF over this disk
+    //   is close enough to 1. If we pick 0.999 as a threshold, solving
     //
     //     1 - exp(-Rmax^2 / (2*v)) = 0.999
     //
-    //   We find that
+    //   for Rmax leads to
     //
-    //     Rmax = sqrt(-2 * v * ln(0.001)) = sqrt(v * 13.815510558)
+    //     Rmax = sqrt(-2 * v * ln(0.001))
+    //          = sqrt(v) * sqrt(-2 * ln(0.001))
+    //          = sqrt(v) * RmaxFactor
+    //
+    //   with RmaxFactor = sqrt(-2 * ln(0.001))
+    //
+    //   In order for the PDF to continue integrating to 1, we must then rescale it by
+    //
+    //                     1
+    //     ScaleFactor = -----
+    //                   0.999
     //
 
     const char* Model = "gaussian_bssrdf";
 
-    const double RIntegralThreshold = 0.999;
-    const double RMax2Constant = -2.0 * log(1.0 - RIntegralThreshold);
+    const float IntegralThreshold = 0.999f;
+    const float ScaleFactor = 1.0f / IntegralThreshold;
+    const float RmaxFactor = sqrt(-2.0f * log(1.0f - IntegralThreshold));
 
     class GaussianBSSRDF
       : public SeparableBSSRDF
     {
       public:
         GaussianBSSRDF(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : SeparableBSSRDF(name, params)
         {
+            m_inputs.declare("weight", InputFormatFloat, "1.0");
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("v", InputFormatScalar);
-            m_inputs.declare("outside_ior", InputFormatScalar);
-            m_inputs.declare("inside_ior", InputFormatScalar);
+            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("mfp", InputFormatSpectralReflectance);
+            m_inputs.declare("mfp_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("ior", InputFormatFloat);
+            m_inputs.declare("fresnel_weight", InputFormatFloat, "1.0");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual size_t compute_input_data_size(
-            const Assembly&     assembly) const APPLESEED_OVERRIDE
+        size_t compute_input_data_size() const override
         {
-            return align(sizeof(GaussianBSSRDFInputValues), 16);
+            return sizeof(GaussianBSSRDFInputValues);
         }
 
-        virtual void prepare_inputs(void* data) const APPLESEED_OVERRIDE
+        void prepare_inputs(
+            Arena&                  arena,
+            const ShadingPoint&     shading_point,
+            void*                   data) const override
         {
             GaussianBSSRDFInputValues* values =
-                reinterpret_cast<GaussianBSSRDFInputValues*>(data);
+                static_cast<GaussianBSSRDFInputValues*>(data);
 
-            values->m_rmax2 = values->m_v * RMax2Constant;
-            values->m_eta = values->m_outside_ior / values->m_inside_ior;
-        }
+            new (&values->m_precomputed) GaussianBSSRDFInputValues::Precomputed();
 
-        virtual bool sample(
-            SamplingContext&    sampling_context,
-            const void*         data,
-            BSSRDFSample&       sample) const APPLESEED_OVERRIDE
-        {
-            const GaussianBSSRDFInputValues* values =
-                reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
+            new (&values->m_base_values) SeparableBSSRDF::InputValues();
+            values->m_base_values.m_weight = values->m_weight;
+            values->m_base_values.m_fresnel_weight = values->m_fresnel_weight;
 
-            const double rmax2 = values->m_rmax2;
+            // Precompute the relative index of refraction.
+            values->m_base_values.m_eta = compute_eta(shading_point, values->m_ior);
 
-            if (rmax2 <= 0.0)
-                return false;
+            // Apply multipliers to input values.
+            values->m_reflectance *= values->m_reflectance_multiplier * values->m_weight;
+            values->m_mfp *= values->m_mfp_multiplier;
 
-            sampling_context.split_in_place(2, 1);
-            const Vector2d s = sampling_context.next_vector2<2>();
+            // Clamp input values.
+            clamp_in_place(values->m_reflectance, 0.001f, 0.999f);
+            clamp_low_in_place(values->m_mfp, 1.0e-6f);
 
-            const double v = values->m_v;
-            const double radius =
-                sqrt(-2.0 * v * log(1.0 - s[0] * (1.0 - exp(-rmax2 / (2.0 * v)))));
-            const double phi = TwoPi * s[1];
+            // Build a CDF and PDF for channel sampling.
+            build_cdf_and_pdf(
+                values->m_reflectance,
+                values->m_base_values.m_channel_cdf,
+                values->m_precomputed.m_channel_pdf);
 
-            sample.m_eta = values->m_eta;
-            sample.m_channel = 0;
-            sample.m_point = Vector2d(radius * cos(phi), radius * sin(phi));
-            sample.m_rmax2 = rmax2;
-
-            return true;
-        }
-
-        virtual double get_eta(
-            const void*         data) const APPLESEED_OVERRIDE
-        {
-            return reinterpret_cast<const GaussianBSSRDFInputValues*>(data)->m_eta;
-        }
-
-        virtual void evaluate_profile(
-            const void*         data,
-            const double        square_radius,
-            Spectrum&           value) const APPLESEED_OVERRIDE
-        {
-            const GaussianBSSRDFInputValues* values =
-                reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
-
-            const double rmax2 = values->m_rmax2;
-
-            if (square_radius > rmax2)
+            // Precompute 1/(2v).
+            float max_sqrt_v = 0.0f;
+            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
             {
-                value.set(0.0f);
-                return;
+                // The remapping from mfp to radius comes from alSurface.
+                const float radius = values->m_mfp[i] * 7.0f;
+
+                // The remapping from radius to v comes from Cycles.
+                const float sqrt_v = radius * 0.25f;
+                max_sqrt_v = max(max_sqrt_v, sqrt_v);
+
+                // Precompute 1/(2v).
+                const float v = square(sqrt_v);
+                values->m_precomputed.m_k[i] = 1.0f / (2.0f * v);
             }
 
-            const double v = values->m_v;
-            const double rd = exp(-square_radius / (2.0 * v)) / (TwoPi * v * RIntegralThreshold);
-
-            value = values->m_reflectance;
-            value *= static_cast<float>(values->m_reflectance_multiplier * rd);
+            // Precompute the radius of the sampling disk.
+            values->m_base_values.m_max_disk_radius = max_sqrt_v * RmaxFactor;
         }
 
-        virtual double evaluate_pdf(
-            const void*         data,
-            const size_t        channel,
-            const double        radius) const APPLESEED_OVERRIDE
+        float sample_profile(
+            const void*             data,
+            const size_t            channel,
+            const float             u) const override
         {
             const GaussianBSSRDFInputValues* values =
-                reinterpret_cast<const GaussianBSSRDFInputValues*>(data);
+                static_cast<const GaussianBSSRDFInputValues*>(data);
 
-            const double rmax2 = values->m_rmax2;
-            const double r2 = radius * radius;
+            //
+            // We restrict sampling to the disk of radius Rmax, so we restrict the sampling
+            // parameter u originally in [0, 1) to [0, Umax) such that
+            //
+            //        | -ln(1 - Umax) |
+            //   sqrt | ------------- | = Rmax
+            //        |       a       |
+            //
+            // which leads to
+            //
+            //   Umax = 1 - exp(-a * Rmax^2)
+            //
 
-            if (r2 > rmax2)
-                return 0.0;
+            const float k = values->m_precomputed.m_k[channel];
+            const float umax = 1.0f - exp(-k * square(values->m_base_values.m_max_disk_radius));
 
-            const double v = values->m_v;
-            return exp(-r2 / (2.0 * v)) / (TwoPi * v * RIntegralThreshold);
+            return sample_disk_gaussian(u * umax, k);
+        }
+
+        float evaluate_profile_pdf(
+            const void*             data,
+            const float             disk_radius) const override
+        {
+            const GaussianBSSRDFInputValues* values =
+                static_cast<const GaussianBSSRDFInputValues*>(data);
+
+            if (disk_radius > values->m_base_values.m_max_disk_radius)
+                return 0.0f;
+
+            float pdf = 0.0f;
+
+            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+            {
+                const float channel_pdf = values->m_precomputed.m_channel_pdf[i];
+                const float k = values->m_precomputed.m_k[i];
+                pdf += channel_pdf * sample_disk_gaussian_area_pdf(disk_radius, k) * ScaleFactor;
+            }
+
+            return pdf;
+        }
+
+        void evaluate_profile(
+            const void*             data,
+            const ShadingPoint&     outgoing_point,
+            const Vector3f&         outgoing_dir,
+            const ShadingPoint&     incoming_point,
+            const Vector3f&         incoming_dir,
+            Spectrum&               value) const override
+        {
+            const GaussianBSSRDFInputValues* values =
+                static_cast<const GaussianBSSRDFInputValues*>(data);
+
+            const float radius =
+                static_cast<float>(
+                    norm(outgoing_point.get_point() - incoming_point.get_point()));
+
+            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+            {
+                const float a = values->m_reflectance[i];
+                const float k = values->m_precomputed.m_k[i];
+                value[i] = a * sample_disk_gaussian_area_pdf(radius, k);
+            }
+        }
+
+        bool sample(
+            const ShadingContext&   shading_context,
+            SamplingContext&        sampling_context,
+            const void*             data,
+            const ShadingPoint&     outgoing_point,
+            const Vector3f&         outgoing_dir,
+            BSSRDFSample&           bssrdf_sample,
+            BSDFSample&             bsdf_sample) const override
+        {
+            const GaussianBSSRDFInputValues* values =
+                static_cast<const GaussianBSSRDFInputValues*>(data);
+
+            return do_sample(
+                shading_context,
+                sampling_context,
+                data,
+                values->m_base_values,
+                outgoing_point,
+                outgoing_dir,
+                bssrdf_sample,
+                bsdf_sample);
+        }
+
+        void evaluate(
+            const void*             data,
+            const ShadingPoint&     outgoing_point,
+            const Vector3f&         outgoing_dir,
+            const ShadingPoint&     incoming_point,
+            const Vector3f&         incoming_dir,
+            Spectrum&               value) const override
+        {
+            const GaussianBSSRDFInputValues* values =
+                static_cast<const GaussianBSSRDFInputValues*>(data);
+
+            return do_evaluate(
+                data,
+                values->m_base_values,
+                outgoing_point,
+                outgoing_dir,
+                incoming_point,
+                incoming_dir,
+                value);
         }
     };
 }
@@ -236,6 +327,11 @@ namespace
 //
 // GaussianBSSRDFFactory class implementation.
 //
+
+void GaussianBSSRDFFactory::release()
+{
+    delete this;
+}
 
 const char* GaussianBSSRDFFactory::get_model() const
 {
@@ -253,6 +349,16 @@ Dictionary GaussianBSSRDFFactory::get_model_metadata() const
 DictionaryArray GaussianBSSRDFFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "weight")
+            .insert("label", "Weight")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()
@@ -278,33 +384,57 @@ DictionaryArray GaussianBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "v")
-            .insert("label", "V")
-            .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "10.0")
+            .insert("name", "mfp")
+            .insert("label", "Mean Free Path")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
             .insert("use", "required")
             .insert("default", "0.5"));
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "outside_ior")
-            .insert("label", "Outside Index of Refraction")
-            .insert("type", "numeric")
-            .insert("min_value", "1.0")
-            .insert("max_value", "2.5")
-            .insert("use", "required")
+            .insert("name", "mfp_multiplier")
+            .insert("label", "Mean Free Path Multiplier")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
             .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "inside_ior")
-            .insert("label", "Inside Index of Refraction")
+            .insert("name", "ior")
+            .insert("label", "Index of Refraction")
             .insert("type", "numeric")
-            .insert("min_value", "1.0")
-            .insert("max_value", "2.5")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "2.5")
+                    .insert("type", "hard"))
             .insert("use", "required")
             .insert("default", "1.3"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "fresnel_weight")
+            .insert("label", "Fresnel Weight")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     return metadata;
 }
@@ -312,13 +442,6 @@ DictionaryArray GaussianBSSRDFFactory::get_input_metadata() const
 auto_release_ptr<BSSRDF> GaussianBSSRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<BSSRDF>(new GaussianBSSRDF(name, params));
-}
-
-auto_release_ptr<BSSRDF> GaussianBSSRDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<BSSRDF>(new GaussianBSSRDF(name, params));
 }

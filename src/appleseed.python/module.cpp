@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,13 +27,14 @@
 // THE SOFTWARE.
 //
 
-// appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
-
 // appleseed.renderer headers.
 #include "renderer/api/version.h"
 
+// appleseed.foundation headers.
+#include "foundation/platform/python.h"
+
 // Forward declarations.
+void bind_aov();
 void bind_assembly();
 void bind_basis();
 void bind_bbox();
@@ -58,9 +59,7 @@ void bind_project();
 void bind_quaternion();
 void bind_renderer_controller();
 void bind_scene();
-#ifdef APPLESEED_WITH_OSL
 void bind_shader_group();
-#endif
 void bind_surface_shader();
 void bind_texture();
 void bind_tile_callback();
@@ -68,7 +67,7 @@ void bind_transform();
 void bind_utility();
 void bind_vector();
 
-BOOST_PYTHON_MODULE(_appleseedpython)
+extern "C" void bind_appleseed_python_classes()
 {
     boost::python::scope().attr("APPLESEED_VERSION") = APPLESEED_VERSION;
     boost::python::scope().attr("APPLESEED_VERSION_MAJOR") = APPLESEED_VERSION_MAJOR;
@@ -94,9 +93,8 @@ BOOST_PYTHON_MODULE(_appleseedpython)
     bind_bsdf();
     bind_bssrdf();
     bind_edf();
-#ifdef APPLESEED_WITH_OSL
     bind_shader_group();
-#endif
+
     bind_surface_shader();
     bind_material();
     bind_light();
@@ -109,6 +107,7 @@ BOOST_PYTHON_MODULE(_appleseedpython)
     bind_scene();
 
     bind_image();
+    bind_aov();
     bind_frame();
     bind_display();
     bind_project();
@@ -116,4 +115,9 @@ BOOST_PYTHON_MODULE(_appleseedpython)
     bind_renderer_controller();
     bind_tile_callback();
     bind_master_renderer();
+}
+
+BOOST_PYTHON_MODULE(_appleseedpython)
+{
+    bind_appleseed_python_classes();
 }

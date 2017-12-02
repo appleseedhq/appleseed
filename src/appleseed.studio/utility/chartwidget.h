@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -86,7 +86,7 @@ class ChartBase
 
     void set_grid_brush(const QBrush& brush);
 
-    void set_tooltip_formatter(std::auto_ptr<IToolTipFormatter> formatter);
+    void set_tooltip_formatter(std::unique_ptr<IToolTipFormatter> formatter);
 
     void add_point(const foundation::Vector2d& p);
 
@@ -114,7 +114,7 @@ class ChartBase
     bool                                m_equidistant;
     foundation::Vector2d                m_margin;
     QBrush                              m_grid_brush;
-    std::auto_ptr<IToolTipFormatter>    m_tooltip_formatter;
+    std::unique_ptr<IToolTipFormatter>  m_tooltip_formatter;
 
     std::vector<foundation::Vector2d>   m_original_points;
     std::vector<foundation::Vector2d>   m_points;
@@ -149,15 +149,15 @@ class LineChart
 
     void set_curve_brush(const QBrush& brush);
 
-    virtual void draw_chart(QPainter& painter) const;
+    void draw_chart(QPainter& painter) const override;
 
-    virtual void draw_highlight(
+    void draw_highlight(
         QPainter&       painter,
-        const QPoint&   mouse_position) const;
+        const QPoint&   mouse_position) const override;
 
-    virtual bool on_chart(
+    bool on_chart(
         const QPoint&   mouse_position,
-        size_t&         point_index) const;
+        size_t&         point_index) const override;
 
   private:
     QBrush  m_curve_brush;
@@ -184,11 +184,11 @@ class ChartWidget
   public:
     explicit ChartWidget(QWidget* parent);
 
-    ~ChartWidget();
+    ~ChartWidget() override;
 
     void clear();
 
-    void add_chart(std::auto_ptr<ChartBase> chart);
+    void add_chart(std::unique_ptr<ChartBase> chart);
 
   private:
     typedef std::vector<ChartBase*> ChartCollection;
@@ -197,10 +197,10 @@ class ChartWidget
     bool                m_mouse_inside_widget;
     QPoint              m_mouse_position;
 
-    virtual void mouseMoveEvent(QMouseEvent* event);
-    virtual void leaveEvent(QEvent* event);
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void leaveEvent(QEvent* event) override;
 
-    virtual void paintEvent(QPaintEvent* event);
+    void paintEvent(QPaintEvent* event) override;
 
     void draw_charts(QPainter& painter) const;
     void draw_highlights(QPainter& painter) const;

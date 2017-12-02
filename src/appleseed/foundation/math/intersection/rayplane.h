@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -47,6 +47,13 @@ T intersect(
     const Vector<T, 3>&     point,
     const Vector<T, 3>&     normal);
 
+template <typename T>
+bool intersect(
+    const Ray<T, 3>&        ray,
+    const Vector<T, 3>&     point,
+    const Vector<T, 3>&     normal,
+    T&                      t);
+
 
 //
 // 3D ray-plane intersection implementation.
@@ -60,6 +67,23 @@ inline T intersect(
 {
     const Vector<T, 3> u = point - ray.m_org;
     return dot(u, normal) / dot(ray.m_dir, normal);
+}
+
+template <typename T>
+inline bool intersect(
+    const Ray<T, 3>&        ray,
+    const Vector<T, 3>&     point,
+    const Vector<T, 3>&     normal,
+    T&                      t)
+{
+    const Vector<T, 3> u = point - ray.m_org;
+    const T denom = dot(ray.m_dir, normal);
+
+    if (denom == T(0))
+        return false;
+
+    t = dot(u, normal) / denom;
+    return true;
 }
 
 }       // namespace foundation

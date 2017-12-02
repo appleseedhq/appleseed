@@ -1,0 +1,257 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/mountain.html
+
+#include "appleseed/fractal/as_fractal_helpers.h"
+#include "appleseed/math/as_math_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
+
+shader as_maya_mountain
+[[
+    string as_maya_node_name = "mountain"
+]]
+(
+    color in_snowColor = color(1)
+    [[
+        string as_maya_attribute_name = "snowColor",
+        string label = "Snow Color",
+        string page = "Mountain Attributes"
+    ]],
+    color in_rockColor = color(0.262, 0.102, 0.0)
+    [[
+        string as_maya_attribute_name = "rockColor",
+        string label = "Rock Color",
+        string page = "Mountain Attributes"
+    ]],
+    float in_amplitude = 1.0
+    [[
+        string as_maya_attribute_name = "amplitude",
+        string label = "Amplitude",
+        string page = "Mountain Attributes"
+    ]],
+    float in_snowRoughness = 0.4
+    [[
+        string as_maya_attribute_name = "snowRoughness",
+        string label = "Snow Roughness",
+        string page = "Mountain Attributes"
+    ]],
+    float in_rockRoughness = 0.707
+    [[
+        string as_maya_attribute_name = "rockRoughness",
+        string label = "Rock Roughness",
+        string page = "Mountain Attributes"
+    ]],
+    float in_boundary = 1.0
+    [[
+        string as_maya_attribute_name = "boundary",
+        string label = "Boundary",
+        string page = "Mountain Attributes"
+    ]],
+    float in_snowAltitude = 0.5
+    [[
+        string as_maya_attribute_name = "snowAltitude",
+        string label = "Snow Altitude",
+        string page = "Mountain Attributes"
+    ]],
+    float in_snowDropoff = 2.0
+    [[
+        string as_maya_attribute_name = "snowDropoff",
+        float slidermin = 0.0,
+        float slidermax = 2.0,
+        string label = "Snow Dropoff",
+        string page = "Mountain Attributes"
+    ]],
+    float in_snowSlope = 0.8
+    [[
+        string as_maya_attribute_name = "snowSlope",
+        float slidermin = 0.0,
+        float slidermax = 3.0,
+        string label = "Snow Slope",
+        string page = "Mountain Attributes"
+    ]],
+    float in_depthMax = 20.0
+    [[
+        string as_maya_attribute_name = "depthMax",
+        float slidermin = 0.0,
+        float slidermax = 40.0,
+        string label = "Depth Max",
+        string page = "Mountain Attributes"
+    ]],
+
+    MAYA_COLORBALANCE_PARAMETERS,
+    MAYA_EFFECTS_PARAMETERS,
+    MAYA_UV_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]]
+)
+{
+    if (in_uvCoord[0] == OUTSIDE_UVFRAME || in_uvCoord[1] == OUTSIDE_UVFRAME)
+    {
+        out_outColor = in_defaultColor;
+        out_outAlpha = maya_luminance(in_defaultColor);
+    }
+    else
+    {
+        float st[2] = {in_uvCoord[0], in_uvCoord[1]};
+
+        float dsdt[2] = {
+            in_filter *
+                (in_uvFilterSize[0] == UNDEFINED_UVFILTER
+                    ? filterwidth(st[0])
+                    : in_uvFilterSize[0]),
+            in_filter *
+                (in_uvFilterSize[1] == UNDEFINED_UVFILTER
+                    ? filterwidth(st[1])
+                    : in_uvFilterSize[1])};
+
+        // The factors for filter size and offset match Maya's result better.
+
+        dsdt[0] += 2 * in_filterOffset;
+        dsdt[1] += 2 * in_filterOffset;
+
+        float filter_size = abs(max(dsdt[0], dsdt[1]));
+
+        filter_size = clamp(
+            NOISE_CUBE_SIDE * filter_size,
+            NOISE_CUBE_SIDE * 1.0e-8,
+            0.5);
+
+        float iterate = min(in_depthMax, -log(filter_size) / M_LN2);
+
+        int recursion_level = (int) iterate;
+
+        float height_color = 0, frequency = 1;
+        float slope_x = 0, slope_y = 0, offset_x = 0, offset_y = 0;
+        float amplitude = in_amplitude, height_amplitude = in_amplitude;
+
+        for (int i = 0; i <= recursion_level; ++i)
+        {
+            if (i == recursion_level)
+            {
+                float diff = iterate - (float) recursion_level;
+
+                amplitude *= diff;
+                height_amplitude *= diff;
+            }
+
+            if (amplitude > 0.0)
+            {
+                break;
+            }
+
+            vector slope = (vector) value_noise_2d(
+                st[0] * frequency + offset_x,
+                st[1] * frequency + offset_y);
+
+            offset_x += 0.1;
+            offset_y += 0.03;
+
+            slope_x += amplitude * slope[0];
+            slope_y += amplitude * slope[1];
+
+            frequency *= 2;
+            amplitude *= in_boundary;
+
+            height_color += height_amplitude * (float) value_noise_2d(
+                st[0] * frequency + offset_x,
+                st[1] * frequency + offset_y);
+
+            height_amplitude *= in_rockRoughness;
+        }
+
+        float total_color = sqr(slope_x) + sqr(slope_y);
+        float total_alpha = 0.5 * total_color, ratio;
+
+        float height_alpha = max(0.0, in_snowAltitude * in_snowDropoff);
+
+        int snow_present =
+            (height_alpha + in_snowSlope <= total_alpha) ? 0 : 1;
+
+        if (snow_present)
+        {
+            out_outColor = in_snowColor;
+            ratio = in_snowRoughness;
+        }
+        else
+        {
+            out_outColor = in_rockColor;
+            ratio = in_rockRoughness;
+        }
+
+        offset_x = offset_y = total_color = 0.0;
+        frequency = 1.0;
+
+        for (int i = 0; i <= recursion_level; ++i)
+        {
+            if (i == recursion_level)
+            {
+                amplitude *= iterate - (float) recursion_level;
+            }
+
+            if (amplitude == 0.0)
+            {
+                break;
+            }
+
+            total_color += amplitude * (float) value_noise_2d(
+                st[0] * frequency + offset_x,
+                st[1] * frequency + offset_y);
+
+            offset_x += 0.1;
+            offset_y += 0.03;
+
+            frequency *= 2;
+            amplitude *= ratio;
+        }
+
+        out_outAlpha = 0.5 * (1 + total_color);
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha);
+    }
+}

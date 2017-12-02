@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,18 +32,22 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/input/sourceinputs.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/matrix.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <cassert>
@@ -77,29 +81,31 @@ namespace
     {
       public:
         MirrorBallMapEnvironmentEDF(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : EnvironmentEDF(name, params)
         {
             m_inputs.declare("radiance", InputFormatSpectralIlluminance);
-            m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
-            const Project&      project,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+        bool on_frame_begin(
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) override
         {
-            if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
+            if (!EnvironmentEDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             check_non_zero_emission("radiance", "radiance_multiplier");
@@ -107,70 +113,86 @@ namespace
             return true;
         }
 
-        virtual void sample(
+        void sample(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
-            const Vector2d&         s,
-            Vector3d&               outgoing,
+            const Vector2f&         s,
+            Vector3f&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
-            outgoing = sample_sphere_uniform(s);
-            lookup_envmap(input_evaluator, outgoing, value);
-            probability = RcpFourPi;
+            const Vector3f local_outgoing = sample_sphere_uniform(s);
+            probability = RcpFourPi<float>();
+
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            outgoing = transform.vector_to_parent(local_outgoing);
+
+            lookup_envmap(shading_context, local_outgoing, value);
         }
 
-        virtual void evaluate(
+        void evaluate(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+            const Vector3f&         outgoing,
+            Spectrum&               value) const override
         {
             assert(is_normalized(outgoing));
-            lookup_envmap(input_evaluator, outgoing, value);
+
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            const Vector3f local_outgoing = transform.vector_to_local(outgoing);
+
+            lookup_envmap(shading_context, local_outgoing, value);
         }
 
-        virtual void evaluate(
+        void evaluate(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,
+            const Vector3f&         outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
             assert(is_normalized(outgoing));
-            lookup_envmap(input_evaluator, outgoing, value);
-            probability = RcpFourPi;
+
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            const Vector3f local_outgoing = transform.vector_to_local(outgoing);
+
+            lookup_envmap(shading_context, local_outgoing, value);
+            probability = RcpFourPi<float>();
         }
 
-        virtual double evaluate_pdf(
-            InputEvaluator&     input_evaluator,
-            const Vector3d&     outgoing) const APPLESEED_OVERRIDE
+        float evaluate_pdf(
+            const Vector3f&         outgoing) const override
         {
             assert(is_normalized(outgoing));
-            return RcpFourPi;
+            return RcpFourPi<float>();
         }
 
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
-            double      m_radiance_multiplier;  // emitted radiance multiplier
+            float       m_radiance_multiplier;  // emitted radiance multiplier
         };
 
         void lookup_envmap(
-            InputEvaluator&     input_evaluator,
-            const Vector3d&     direction,
-            Spectrum&           value) const
+            const ShadingContext&   shading_context,
+            const Vector3f&         direction,
+            Spectrum&               value) const
         {
             // Compute the texture coordinates corresponding to this direction.
-            const double d = sqrt(square(direction[0]) + square(direction[1]));
-            const double r = (0.5 / Pi) * acos(direction[2]) / d;
-            const Vector2d uv(0.5 + direction[0] * r, 0.5 + direction[1] * r);
+            const float d = sqrt(square(direction[0]) + square(direction[1]));
+            const float r = RcpTwoPi<float>() * acos(direction[2]) / d;
+            const Vector2f uv(0.5f + direction[0] * r, 0.5f + direction[1] * r);
 
             // Evaluate the input.
-            const InputValues* values = input_evaluator.evaluate<InputValues>(m_inputs, uv);
-            value = values->m_radiance;
-            value *= static_cast<float>(values->m_radiance_multiplier);
+            InputValues values;
+            m_inputs.evaluate(shading_context.get_texture_cache(), SourceInputs(uv), &values);
+            if (is_finite(values.m_radiance))
+            {
+                value = values.m_radiance;
+                value *= values.m_radiance_multiplier;
+            }
+            else value.set(0.0f);
         }
     };
 }
@@ -179,6 +201,11 @@ namespace
 //
 // MirrorBallMapEnvironmentEDFFactory class implementation.
 //
+
+void MirrorBallMapEnvironmentEDFFactory::release()
+{
+    delete this;
+}
 
 const char* MirrorBallMapEnvironmentEDFFactory::get_model() const
 {
@@ -228,15 +255,6 @@ DictionaryArray MirrorBallMapEnvironmentEDFFactory::get_input_metadata() const
 auto_release_ptr<EnvironmentEDF> MirrorBallMapEnvironmentEDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return
-        auto_release_ptr<EnvironmentEDF>(
-            new MirrorBallMapEnvironmentEDF(name, params));
-}
-
-auto_release_ptr<EnvironmentEDF> MirrorBallMapEnvironmentEDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return
         auto_release_ptr<EnvironmentEDF>(

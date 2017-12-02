@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,20 +30,17 @@
 #include "bssrdf.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/bsdf/bsdf.h"
-#include "renderer/modeling/bsdf/lambertianbrdf.h"
-#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/kernel/shading/shadingray.h"
+#include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/sourceinputs.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
-
-// Standard headers.
-#include <string>
+#include "foundation/utility/arena.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -57,11 +54,6 @@ namespace
     const UniqueID g_class_uid = new_guid();
 }
 
-struct BSSRDF::Impl
-{
-    auto_release_ptr<BSDF> m_brdf;
-};
-
 UniqueID BSSRDF::get_class_uid()
 {
     return g_class_uid;
@@ -71,58 +63,70 @@ BSSRDF::BSSRDF(
     const char*             name,
     const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
-  , impl(new Impl())
 {
-    impl->m_brdf =
-        LambertianBRDFFactory().create(
-            (string(name) + "_brdf").c_str(),
-            ParamArray().insert("reflectance", "1.0"));
-
     set_name(name);
 }
 
-BSSRDF::~BSSRDF()
-{
-    delete impl;
-}
-
-const BSDF& BSSRDF::get_brdf() const
-{
-    return impl->m_brdf.ref();
-}
-
-bool BSSRDF::on_frame_begin(
-    const Project&          project,
-    const Assembly&         assembly,
-    IAbortSwitch*           abort_switch)
-{
-    return true;
-}
-
-void BSSRDF::on_frame_end(
-    const Project&          project,
-    const Assembly&         assembly)
-{
-}
-
-size_t BSSRDF::compute_input_data_size(
-    const Assembly&         assembly) const
+size_t BSSRDF::compute_input_data_size() const
 {
     return get_inputs().compute_data_size();
 }
 
-void BSSRDF::evaluate_inputs(
+void* BSSRDF::evaluate_inputs(
     const ShadingContext&   shading_context,
-    InputEvaluator&         input_evaluator,
-    const ShadingPoint&     shading_point,
-    const size_t            offset) const
+    const ShadingPoint&     shading_point) const
 {
-    input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0), offset);
-    prepare_inputs(input_evaluator.data() + offset);
+    void* data = shading_context.get_arena().allocate(compute_input_data_size());
+
+    get_inputs().evaluate(
+        shading_context.get_texture_cache(),
+        SourceInputs(shading_point.get_uv(0)),
+        data);
+
+    prepare_inputs(
+        shading_context.get_arena(),
+        shading_point,
+        data);
+
+    return data;
 }
 
-void BSSRDF::prepare_inputs(void* data) const
+void BSSRDF::prepare_inputs(
+    Arena&                  arena,
+    const ShadingPoint&     shading_point,
+    void*                   data) const
 {
+}
+
+float BSSRDF::compute_eta(
+    const ShadingPoint&     shading_point,
+    const float             ior)
+{
+    const float outside_ior =
+        shading_point.is_entering()
+            ? shading_point.get_ray().get_current_ior()
+            : shading_point.get_ray().get_previous_ior();
+
+    return outside_ior / ior;
+}
+
+void BSSRDF::build_cdf_and_pdf(
+    const Spectrum&         src,
+    Spectrum&               cdf,
+    Spectrum&               pdf)
+{
+    float cumulated_pdf = 0.0f;
+    for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+    {
+        pdf[i] = src[i];
+        cumulated_pdf += pdf[i];
+        cdf[i] = cumulated_pdf;
+    }
+
+    const float rcp_cumulated_pdf = 1.0f / cumulated_pdf;
+    pdf *= rcp_cumulated_pdf;
+    cdf *= rcp_cumulated_pdf;
+    cdf[src.size() - 1] = 1.0f;
 }
 
 }   // namespace renderer

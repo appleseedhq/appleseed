@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2016-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,11 +26,9 @@
 // THE SOFTWARE.
 //
 
-// appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
-
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/platform/python.h"
 #include "foundation/utility/iostreamop.h"
 
 // Standard headers.
@@ -44,16 +42,28 @@ using namespace std;
 namespace
 {
     template <typename T>
+    Vector<T, 3> transform_to_local(const Basis3<T>& basis, const Vector<T, 3>& v)
+    {
+        return basis.transform_to_local(v);
+    }
+
+    template <typename T>
+    Vector<T, 3> transform_to_parent(const Basis3<T>& basis, const Vector<T, 3>& v)
+    {
+        return basis.transform_to_parent(v);
+    }
+
+    template <typename T>
     void do_bind_basis(const char* class_name)
     {
-        bpy::class_<Basis3<T> >(class_name)
+        bpy::class_<Basis3<T>>(class_name)
             .def(bpy::init<>())
-            .def(bpy::init<Vector<T, 3> >())
-            .def(bpy::init<Vector<T, 3>, Vector<T, 3> >())
-            .def(bpy::init<Vector<T, 3>, Vector<T, 3>, Vector<T, 3> >())
+            .def(bpy::init<Vector<T, 3>>())
+            .def(bpy::init<Vector<T, 3>, Vector<T, 3>>())
+            .def(bpy::init<Vector<T, 3>, Vector<T, 3>, Vector<T, 3>>())
 
-            .def("transform_to_local", &Basis3<T>::transform_to_local)
-            .def("transform_to_parent", &Basis3<T>::transform_to_parent)
+            .def("transform_to_local", &transform_to_local<T>)
+            .def("transform_to_parent", &transform_to_parent<T>)
             .def("get_normal", &Basis3<T>::get_normal, bpy::return_value_policy<bpy::copy_const_reference>())
             .def("get_tangent_u", &Basis3<T>::get_tangent_u, bpy::return_value_policy<bpy::copy_const_reference>())
             .def("get_tangent_v", &Basis3<T>::get_tangent_v, bpy::return_value_policy<bpy::copy_const_reference>())

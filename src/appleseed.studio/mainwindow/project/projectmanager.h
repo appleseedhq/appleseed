@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -64,12 +64,19 @@ class ProjectManager
     // If there already is a project open, it is first closed.
     void create_project();
 
+    // Load a project from disk.
+    // If loading was successful, closes the current project, replaces it
+    // with the project loaded from disk, and returns true.  Otherwise,
+    // keeps the current project open and returns false.
+    // Returns true if project is loaded successfully.
+    bool load_project(const std::string& filepath);
+
     // Asynchronously load a project from disk.
     // Emits a signal_load_project_async_complete() signal upon completion.
     // If loading was successful, closes the current project, replaces it
     // with the project loaded from disk, and returns true.  Otherwise,
     // keeps the current project open and returns false.
-    void load_project(const std::string& filepath);
+    void load_project_async(const std::string& filepath);
 
     // Load a built-in project.
     // If loading was successful, closes the current project, replaces it
@@ -78,12 +85,12 @@ class ProjectManager
     bool load_builtin_project(const std::string& name);
 
     // Save the current project to disk.
-    // A project must be open, and it must have its path set.
-    bool save_project();
-
-    // Save the current project to disk.
     // A project must be open.
     bool save_project_as(const std::string& filepath);
+
+    // Pack the current project to appleseedz archive.
+    // A project must be open.
+    bool pack_project_as(const std::string& filepath);
 
     // If a project is currently open, close it.
     void close_project();

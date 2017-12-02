@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_SEARCHPATHS_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-#include "foundation/utility/string.h"
+#include "foundation/utility/api/apistring.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -47,71 +46,84 @@ namespace foundation
 //
 // An ordered collection of search paths.
 //
-// The paths are ordered by ascending priority: paths inserted later have precedence
-// over those inserted earlier).
+// The paths are ordered by ascending priority:
+// paths inserted later have precedence over those inserted earlier.
 //
 
-class APPLESEED_DLLSYMBOL SearchPathsImpl
-  : public NonCopyable
+class APPLESEED_DLLSYMBOL SearchPaths
 {
   public:
-    // Constructor.
-    SearchPathsImpl();
+    // Return the default environment path separator for the platform.
+    static const char environment_path_separator();
+
+    // Return the path separator used by OSL and OpenImageIO.
+    static const char osl_path_separator();
 
     // Constructor.
-    explicit SearchPathsImpl(const char* envvar);
+    SearchPaths();
+
+    // Constructor.
+    // Initializes search paths with the contents of the specified environment variable.
+    SearchPaths(const char* envvar, const char separator);
+
+    // Copy constructor.
+    SearchPaths(const SearchPaths& other);
 
     // Destructor.
-    ~SearchPathsImpl();
+    ~SearchPaths();
 
-    // Remove all search paths and clears the root path.
-    void clear();
+    // Assignment.
+    SearchPaths& operator=(const SearchPaths& other);
 
-    // Return true if empty.
-    bool empty() const;
+    // Swap.
+    void swap(SearchPaths& other);
 
-    // Return the number of paths.
-    size_t size() const;
+    // Set the root path used to resolve relative search paths.
+    void set_root_path(const char* path);
+    void set_root_path(const std::string& path);
+
+    // Return the root path used to resolve relative search paths.
+    APIString get_root_path() const;
 
     // Return true if the root path has been set.
     bool has_root_path() const;
 
+    // Remove all search paths and clears the root path.
+    void clear();
+
+    // Remove all search paths except the root path and paths added from environment variables.
+    void reset();
+
+    // Return true if empty.
+    bool empty() const;
+
+    // Return the number of search paths.
+    size_t get_path_count() const;
+
     // Return the i'th path.
-    const char* operator[](const size_t i) const;
+    const char* get_path(const size_t i) const;
 
-  protected:
-    struct Impl;
-    Impl* impl;
+    // Return the number of explicit search paths.
+    size_t get_explicit_path_count() const;
 
-    void do_set_root_path(const char* path);
-    char* do_get_root_path() const;
-    void do_push_back(const char* path);
-    bool do_exist(const char* filepath) const;
-    char* do_qualify(const char* filepath) const;
-    char* do_to_string(const char separator, const bool reversed) const;
-};
+    // Return the i'th explicit path.
+    const char* get_explicit_path(const size_t i) const;
 
-class SearchPaths
-  : public SearchPathsImpl
-{
-  public:
-    // Constructor.
-    SearchPaths();
+    // Return the number of environment search paths.
+    size_t get_environment_path_count() const;
 
-    // Constructor. Initializes search paths with the contents of the specified
-    // environment variable.
-    explicit SearchPaths(const char* envvar);
-
-    // Set the root path that is used to resolve relative paths.
-    void set_root_path(const char* path);
-    void set_root_path(const std::string& path);
-
-    // Return the root path that is used to resolve relative paths.
-    std::string get_root_path() const;
+    // Return the i'th environment path.
+    const char* get_environment_path(const size_t i) const;
 
     // Insert a search path at the end of the collection.
     void push_back(const char* path);
     void push_back(const std::string& path);
+
+    void split_and_push_back(const char* paths, const char separator);
+    void split_and_push_back(const std::string& paths, const char separator);
+
+    // Remove the i'th path.
+    void remove(const size_t i);
 
     // Return true if a given file exists, that is, if the argument is the absolute
     // path to a file that exists, or it is the name of a file that exists in one of
@@ -121,13 +133,23 @@ class SearchPaths
 
     // Find a file in the search paths. If the file was found, the qualified path to
     // this file is returned. Otherwise the input path is returned.
-    std::string qualify(const std::string& filepath) const;
+    APIString qualify(const char* filepath) const;
+    APIString qualify(const std::string& filepath) const;
 
-    // Return a string with all the search paths separated by the specified separator,
-    // optionally making them absolute and/or listing them in reverse order.
-    std::string to_string(
-        const char separator = ':',
-        const bool reversed = false) const;
+    // Same as above but also returns the search path inside which the file was found.
+    void qualify(const char* filepath, APIString* qualified_filepath, APIString* search_path) const;
+    void qualify(const std::string& filepath, APIString* qualified_filepath, APIString* search_path) const;
+
+    // Return a string with all the search paths separated by the specified separator.
+    // The second variant returns the search paths in reverse order.
+    APIString to_string(const char separator) const;
+    APIString to_string_reversed(const char separator) const;
+
+  protected:
+    struct Impl;
+    Impl* impl;
+
+    APIString do_to_string(const char separator, const bool reversed) const;
 };
 
 
@@ -135,60 +157,44 @@ class SearchPaths
 // SearchPaths class implementation.
 //
 
-inline SearchPaths::SearchPaths()
-{
-}
-
-inline SearchPaths::SearchPaths(const char* envvar)
-  : SearchPathsImpl(envvar)
-{
-}
-
-inline void SearchPaths::set_root_path(const char* path)
-{
-    do_set_root_path(path);
-}
-
 inline void SearchPaths::set_root_path(const std::string& path)
 {
-    do_set_root_path(path.c_str());
-}
-
-inline void SearchPaths::push_back(const char* path)
-{
-    do_push_back(path);
+    set_root_path(path.c_str());
 }
 
 inline void SearchPaths::push_back(const std::string& path)
 {
-    do_push_back(path.c_str());
+    push_back(path.c_str());
 }
 
-inline std::string SearchPaths::get_root_path() const
+inline void SearchPaths::split_and_push_back(const std::string& paths, const char separator)
 {
-    return convert_to_std_string(do_get_root_path());
-}
-
-inline bool SearchPaths::exist(const char* filepath) const
-{
-    return do_exist(filepath);
+    split_and_push_back(paths.c_str(), separator);
 }
 
 inline bool SearchPaths::exist(const std::string& filepath) const
 {
-    return do_exist(filepath.c_str());
+    return exist(filepath.c_str());
 }
 
-inline std::string SearchPaths::qualify(const std::string& filepath) const
+inline APIString SearchPaths::qualify(const std::string& filepath) const
 {
-    return convert_to_std_string(do_qualify(filepath.c_str()));
+    return qualify(filepath.c_str());
 }
 
-inline std::string SearchPaths::to_string(
-    const char separator,
-    const bool reversed) const
+inline void SearchPaths::qualify(const std::string& filepath, APIString* qualified_filepath, APIString* search_path) const
 {
-    return convert_to_std_string(do_to_string(separator, reversed));
+    qualify(filepath.c_str(), qualified_filepath, search_path);
+}
+
+inline APIString SearchPaths::to_string(const char separator) const
+{
+    return do_to_string(separator, false);
+}
+
+inline APIString SearchPaths::to_string_reversed(const char separator) const
+{
+    return do_to_string(separator, true);
 }
 
 }       // namespace foundation

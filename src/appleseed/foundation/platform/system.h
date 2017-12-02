@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -58,6 +58,12 @@ class APPLESEED_DLLSYMBOL System
     static void print_information(Logger& logger);
 
     //
+    // CPU architecture.
+    //
+
+    static const char* get_cpu_architecture();
+
+    //
     // CPU cores.
     //
 
@@ -85,6 +91,67 @@ class APPLESEED_DLLSYMBOL System
 
     // Return the size in bytes of a L3 cache line, or 0 if there's no L3 cache.
     static size_t get_l3_cache_line_size();
+
+    //
+    // CPU features.
+    //
+
+#ifdef APPLESEED_X86
+
+    struct X86CpuFeatures
+    {
+        // Vendor.
+        bool m_vendor_amd;
+        bool m_vendor_intel;
+
+        // OS features.
+        bool m_os_avx;
+        bool m_os_avx512;
+
+        // Miscellaneous instructions and instruction sets.
+        bool m_hw_mmx;
+        bool m_hw_x64;
+        bool m_hw_abm;
+        bool m_hw_rdrand;
+        bool m_hw_bmi1;
+        bool m_hw_bmi2;
+        bool m_hw_adx;
+        bool m_hw_prefetchwt1;
+        bool m_hw_mpx;
+
+        // 128-bit SIMD.
+        bool m_hw_sse;
+        bool m_hw_sse2;
+        bool m_hw_sse3;
+        bool m_hw_ssse3;
+        bool m_hw_sse41;
+        bool m_hw_sse42;
+        bool m_hw_sse4a;
+        bool m_hw_aes;
+        bool m_hw_sha;
+
+        // 256-bit SIMD.
+        bool m_hw_avx;
+        bool m_hw_xop;
+        bool m_hw_fma3;
+        bool m_hw_fma4;
+        bool m_hw_avx2;
+
+        // 512-bit SIMD.
+        bool m_hw_avx512_f;
+        bool m_hw_avx512_pf;
+        bool m_hw_avx512_er;
+        bool m_hw_avx512_cd;
+        bool m_hw_avx512_vl;
+        bool m_hw_avx512_bw;
+        bool m_hw_avx512_dq;
+        bool m_hw_avx512_ifma;
+        bool m_hw_avx512_vbmi;
+    };
+
+    static void detect_x86_cpu_features(X86CpuFeatures& features);
+
+#endif
 
     //
     // Physical memory.

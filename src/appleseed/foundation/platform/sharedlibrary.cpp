@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -80,16 +80,23 @@ ExceptionSharedLibCannotGetSymbol::ExceptionSharedLibCannotGetSymbol(
 
 namespace
 {
-
-string get_last_error_message()
-{
+    string get_last_error_message()
+    {
 #ifdef _WIN32
-    return get_windows_last_error_message();
+        return get_windows_last_error_message();
 #else
-    return dlerror();
+        return dlerror();
 #endif
+    }
 }
 
+const char* SharedLibrary::get_default_file_extension()
+{
+#ifdef _WIN32
+    return ".dll";
+#else
+    return ".so";
+#endif
 }
 
 SharedLibrary::SharedLibrary(const char* path)
@@ -100,7 +107,7 @@ SharedLibrary::SharedLibrary(const char* path)
     m_handle = dlopen(path, RTLD_NOW | RTLD_GLOBAL);
 #endif
 
-    if (m_handle == 0)
+    if (m_handle == nullptr)
     {
         throw ExceptionCannotLoadSharedLib(
             path,
@@ -125,7 +132,7 @@ void* SharedLibrary::get_symbol(const char* name, const bool no_throw) const
     void* symbol = dlsym(m_handle, name);
 #endif
 
-    if (symbol == 0 && !no_throw)
+    if (symbol == nullptr && !no_throw)
     {
         throw ExceptionSharedLibCannotGetSymbol(
             name,

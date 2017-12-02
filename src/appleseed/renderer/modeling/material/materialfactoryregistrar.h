@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,18 +30,19 @@
 #ifndef APPLESEED_RENDERER_MODELING_MATERIAL_MATERIALFACTORYREGISTRAR_H
 #define APPLESEED_RENDERER_MODELING_MATERIAL_MATERIALFACTORYREGISTRAR_H
 
+// appleseed.renderer headers.
+#include "renderer/modeling/entity/entityfactoryregistrar.h"
+
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-#include "foundation/utility/containers/array.h"
+#include "foundation/utility/api/apiarray.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Standard headers.
-#include <memory>
-
 // Forward declarations.
-namespace renderer  { class IMaterialFactory; }
+namespace foundation    { class SearchPaths; }
+namespace renderer      { class IMaterialFactory; }
 
 namespace renderer
 {
@@ -50,7 +51,7 @@ namespace renderer
 // An array of material factories.
 //
 
-APPLESEED_DECLARE_ARRAY(MaterialFactoryArray, IMaterialFactory*);
+APPLESEED_DECLARE_APIARRAY(MaterialFactoryArray, IMaterialFactory*);
 
 
 //
@@ -58,20 +59,21 @@ APPLESEED_DECLARE_ARRAY(MaterialFactoryArray, IMaterialFactory*);
 //
 
 class APPLESEED_DLLSYMBOL MaterialFactoryRegistrar
-  : public foundation::NonCopyable
+  : public EntityFactoryRegistrar
 {
   public:
     typedef IMaterialFactory FactoryType;
     typedef MaterialFactoryArray FactoryArrayType;
 
     // Constructor.
-    MaterialFactoryRegistrar();
+    explicit MaterialFactoryRegistrar(
+        const foundation::SearchPaths& search_paths = foundation::SearchPaths());
 
     // Destructor.
     ~MaterialFactoryRegistrar();
 
-    // Register a material factory.
-    void register_factory(std::auto_ptr<FactoryType> factory);
+    // Reinitialize the registrar; load plugins found in provided search paths.
+    void reinitialize(const foundation::SearchPaths& search_paths);
 
     // Retrieve the registered factories.
     FactoryArrayType get_factories() const;
@@ -82,6 +84,9 @@ class APPLESEED_DLLSYMBOL MaterialFactoryRegistrar
   private:
     struct Impl;
     Impl* impl;
+
+    // Register a factory.
+    void register_factory(foundation::auto_release_ptr<FactoryType> factory);
 };
 
 }       // namespace renderer

@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Srinath Ravichandran, The appleseedhq Organization
+// Copyright (c) 2014-2017 Srinath Ravichandran, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,12 @@
 // Interface header.
 #include "curveobject.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/object/curveobjectreader.h"
+
 // appleseed.foundation headers.
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -49,12 +52,17 @@ namespace renderer
 // CurveObject class implementation.
 //
 
+namespace
+{
+    const char* Model = "curve_object";
+}
+
 struct CurveObject::Impl
 {
     RegionKit           m_region_kit;
     Lazy<RegionKit>     m_lazy_region_kit;
-    vector<CurveType1>  m_curves1;
-    vector<CurveType3>  m_curves3;
+    vector<Curve1Type>  m_curves1;
+    vector<Curve3Type>  m_curves3;
     vector<string>      m_material_slots;
 
     Impl()
@@ -81,8 +89,8 @@ struct CurveObject::Impl
 };
 
 CurveObject::CurveObject(
-    const char*         name,
-    const ParamArray&   params)
+    const char*             name,
+    const ParamArray&       params)
   : Object(name, params)
   , impl(new Impl())
 {
@@ -100,7 +108,7 @@ void CurveObject::release()
 
 const char* CurveObject::get_model() const
 {
-    return CurveObjectFactory::get_model();
+    return Model;
 }
 
 GAABB3 CurveObject::compute_local_bbox() const
@@ -123,14 +131,14 @@ void CurveObject::reserve_curves3(const size_t count)
     impl->m_curves3.reserve(count);
 }
 
-size_t CurveObject::push_curve1(const CurveType1& curve)
+size_t CurveObject::push_curve1(const Curve1Type& curve)
 {
     const size_t index = impl->m_curves1.size();
     impl->m_curves1.push_back(curve);
     return index;
 }
 
-size_t CurveObject::push_curve3(const CurveType3& curve)
+size_t CurveObject::push_curve3(const Curve3Type& curve)
 {
     const size_t index = impl->m_curves3.size();
     impl->m_curves3.push_back(curve);
@@ -147,13 +155,13 @@ size_t CurveObject::get_curve3_count() const
     return impl->m_curves3.size();
 }
 
-const CurveType1& CurveObject::get_curve1(const size_t index) const
+const Curve1Type& CurveObject::get_curve1(const size_t index) const
 {
     assert(index < impl->m_curves1.size());
     return impl->m_curves1[index];
 }
 
-const CurveType3& CurveObject::get_curve3(const size_t index) const
+const Curve3Type& CurveObject::get_curve3(const size_t index) const
 {
     assert(index < impl->m_curves3.size());
     return impl->m_curves3[index];
@@ -181,7 +189,8 @@ void CurveObject::collect_asset_paths(StringArray& paths) const
 
 void CurveObject::update_asset_paths(const StringDictionary& mappings)
 {
-    m_params.set("filepath", mappings.get(m_params.get("filepath")));
+    if (m_params.strings().exist("filepath"))
+        m_params.set("filepath", mappings.get(m_params.get("filepath")));
 }
 
 
@@ -189,16 +198,50 @@ void CurveObject::update_asset_paths(const StringDictionary& mappings)
 // CurveObjectFactory class implementation.
 //
 
-const char* CurveObjectFactory::get_model()
+void CurveObjectFactory::release()
 {
-    return "curve_object";
+    delete this;
 }
 
-auto_release_ptr<CurveObject> CurveObjectFactory::create(
-    const char*         name,
-    const ParamArray&   params)
+const char* CurveObjectFactory::get_model() const
 {
-    return auto_release_ptr<CurveObject>(new CurveObject(name, params));
+    return Model;
+}
+
+Dictionary CurveObjectFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Curve Object");
+}
+
+DictionaryArray CurveObjectFactory::get_input_metadata() const
+{
+    DictionaryArray metadata;
+    return metadata;
+}
+
+auto_release_ptr<Object> CurveObjectFactory::create(
+    const char*             name,
+    const ParamArray&       params) const
+{
+    return auto_release_ptr<Object>(new CurveObject(name, params));
+}
+
+bool CurveObjectFactory::create(
+    const char*             name,
+    const ParamArray&       params,
+    const SearchPaths&      search_paths,
+    const bool              omit_loading_assets,
+    ObjectArray&            objects) const
+{
+    objects.push_back(
+        omit_loading_assets
+            ? create(name, params).release()
+            : CurveObjectReader::read(search_paths, name, params).release());
+
+    return true;
 }
 
 }   // namespace renderer

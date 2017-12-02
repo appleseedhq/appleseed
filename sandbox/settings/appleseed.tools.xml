@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+    <parameter name="message_verbosity" value="info" />
+    <parameter name="message_coloring" value="true" />
+</settings>

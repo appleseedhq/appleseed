@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -61,43 +61,53 @@ class SerialRendererController
         IRendererController*    controller,
         ITileCallback*          tile_callback);
 
-    virtual void on_rendering_begin() APPLESEED_OVERRIDE;
-    virtual void on_rendering_success() APPLESEED_OVERRIDE;
-    virtual void on_rendering_abort() APPLESEED_OVERRIDE;
-    virtual void on_frame_begin() APPLESEED_OVERRIDE;
-    virtual void on_frame_end() APPLESEED_OVERRIDE;
-    virtual void on_progress() APPLESEED_OVERRIDE;
-    virtual Status get_status() const APPLESEED_OVERRIDE;
+    void on_rendering_begin() override;
+    void on_rendering_success() override;
+    void on_rendering_abort() override;
+    void on_frame_begin() override;
+    void on_frame_end() override;
+    void on_progress() override;
+    Status get_status() const override;
 
-    void add_pre_render_tile_callback(
-        const size_t            x,
-        const size_t            y,
-        const size_t            width,
-        const size_t            height);
+    void add_on_tiled_frame_begin_callback(
+        const Frame*            frame);
 
-    void add_post_render_tile_callback(
+    void add_on_tiled_frame_end_callback(
+        const Frame*            frame);
+
+    void add_on_tile_begin_callback(
         const Frame*            frame,
         const size_t            tile_x,
         const size_t            tile_y);
 
-    void add_post_render_tile_callback(const Frame* frame);
+    void add_on_tile_end_callback(
+        const Frame*            frame,
+        const size_t            tile_x,
+        const size_t            tile_y);
+
+    void add_on_progressive_frame_begin_callback(
+        const Frame*            frame);
+
+    void add_on_progressive_frame_end_callback(
+        const Frame*            frame);
 
   private:
     struct PendingTileCallback
     {
         enum CallbackType
         {
-            PreRender,
-            PostRenderTile,
-            PostRender
+            OnTiledFrameBegin,
+            OnTiledFrameEnd,
+            OnTileBegin,
+            OnTileEnd,
+            OnProgressiveFrameBegin,
+            OnProgressiveFrameEnd
         };
 
         CallbackType    m_type;
         const Frame*    m_frame;
-        size_t          m_x;
-        size_t          m_y;
-        size_t          m_width;
-        size_t          m_height;
+        size_t          m_tile_x;
+        size_t          m_tile_y;
     };
 
     IRendererController*                m_controller;

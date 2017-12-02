@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,10 +34,7 @@
 #include "renderer/global/globallogger.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/string.h"
-
-// Standard headers.
-#include <string>
+#include "foundation/platform/types.h"
 
 using namespace foundation;
 
@@ -49,19 +46,8 @@ namespace renderer
 //
 
 PixelRendererBase::PixelRendererBase()
-  : m_invalid_sample_count(0)
+  : m_invalid_pixel_count(0)
 {
-}
-
-PixelRendererBase::~PixelRendererBase()
-{
-    if (m_invalid_sample_count > 0)
-    {
-        RENDERER_LOG_WARNING(
-            "found %s pixel sample%s with NaN or negative values.",
-            pretty_uint(m_invalid_sample_count).c_str(),
-            m_invalid_sample_count > 1 ? "s" : "");
-    }
 }
 
 void PixelRendererBase::on_tile_begin(
@@ -78,12 +64,39 @@ void PixelRendererBase::on_tile_end(
 {
 }
 
-void PixelRendererBase::signal_invalid_sample(const int x, const int y)
+void PixelRendererBase::on_pixel_begin()
+{
+    m_invalid_sample_count = 0;
+}
+
+void PixelRendererBase::on_pixel_end(const Vector2i& pi)
 {
     // todo: mark pixel as faulty in the diagnostic map.
-    if (m_invalid_sample_count++ == 0)
-        RENDERER_LOG_WARNING("at least one sample at pixel (%d, %d) has NaN or negative values.", x, y);
-    else RENDERER_LOG_WARNING("found more pixel samples with NaN or negative values.");
+
+    if (m_invalid_sample_count > 0)
+    {
+        ++m_invalid_pixel_count;
+
+        const size_t MaxWarningsPerThread = 5;
+        if (m_invalid_pixel_count <= MaxWarningsPerThread)
+        {
+            RENDERER_LOG_WARNING(
+                FMT_SIZE_T " sample%s at pixel (%d, %d) had NaN, negative or infinite components and %s ignored.",
+                m_invalid_sample_count,
+                m_invalid_sample_count > 1 ? "s" : "",
+                pi.x, pi.y,
+                m_invalid_sample_count > 1 ? "were" : "was");
+        }
+        else if (m_invalid_pixel_count == MaxWarningsPerThread + 1)
+        {
+            RENDERER_LOG_WARNING("more invalid samples found, omitting warning messages for brevity.");
+        }
+    }
+}
+
+void PixelRendererBase::signal_invalid_sample()
+{
+    ++m_invalid_sample_count;
 }
 
 }   // namespace renderer

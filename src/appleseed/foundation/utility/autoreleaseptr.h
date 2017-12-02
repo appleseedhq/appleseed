@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -62,7 +62,7 @@ class auto_release_ptr
     typedef T element_type;
 
     // Construct from a raw pointer.
-    explicit auto_release_ptr(T* ptr = 0) throw()
+    explicit auto_release_ptr(T* ptr = nullptr) throw()
       : m_ptr(ptr)
     {
     }
@@ -126,14 +126,14 @@ class auto_release_ptr
     template <typename U>
     operator auto_release_ptr_ref<U>() throw()
     {
-        return auto_release_ptr_ref<U>(release());
+        return auto_release_ptr_ref<U>(static_cast<U*>(release()));
     }
 
     // Automatic conversion to an auto_release_ptr of a different type.
     template <typename U>
     operator auto_release_ptr<U>() throw()
     {
-        return auto_release_ptr<U>(release());
+        return auto_release_ptr<U>(static_cast<U*>(release()));
     }
 
     // Dereference the wrapped pointer.
@@ -163,12 +163,12 @@ class auto_release_ptr
     T* release() throw()
     {
         T* rv = m_ptr;
-        m_ptr = 0;
+        m_ptr = nullptr;
         return rv;
     }
 
     // Delete the owned pointer and replace it with the provided raw pointer.
-    void reset(T* ptr = 0) throw()
+    void reset(T* ptr = nullptr) throw()
     {
         if (m_ptr != ptr)
         {

@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,13 +33,18 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/closures.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/bsdf/glassbsdf.h"
+#include "renderer/modeling/bsdf/blinnbrdf.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
+#include "renderer/modeling/bsdf/diffusebtdf.h"
+#include "renderer/modeling/bsdf/glassbsdf.h"
+#include "renderer/modeling/bsdf/glossybrdf.h"
+#include "renderer/modeling/bsdf/metalbrdf.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/utility/paramarray.h"
 
@@ -47,8 +52,9 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/api/specializedapiarrays.h"
+#include "foundation/utility/arena.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <cassert>
@@ -76,103 +82,57 @@ namespace
     {
       public:
         OSLBSDFImpl(
-            const char*             name,
-            const ParamArray&       params)
+            const char*                 name,
+            const ParamArray&           params)
           : BSDF(name, AllBSDFTypes, ScatteringMode::All, params)
         {
             memset(m_all_bsdfs, 0, sizeof(BSDF*) * NumClosuresIDs);
 
-            m_ashikhmin_shirley_brdf =
-                AshikhminBRDFFactory().create(
-                    "ashikhmin_brdf",
-                    ParamArray());
+            m_ashikhmin_shirley_brdf = create_and_register_bsdf(AshikhminShirleyID, "ashikhmin_brdf");
+            m_blinn_brdf = create_and_register_bsdf(BlinnID, "blinn_brdf");
+            m_diffuse_btdf = create_and_register_bsdf(TranslucentID, "diffuse_btdf");
+            m_disney_brdf = create_and_register_bsdf(DisneyID, "disney_brdf");
 
-            m_all_bsdfs[AshikhminShirleyID] = m_ashikhmin_shirley_brdf.get();
+            m_glass_beckmann_bsdf = create_and_register_glass_bsdf(GlassBeckmannID, "beckmann");
+            m_glass_ggx_bsdf = create_and_register_glass_bsdf(GlassGGXID, "ggx");
+            m_glass_std_bsdf = create_and_register_glass_bsdf(GlassSTDID, "std");
 
-            m_diffuse_btdf =
-                create_and_register_bsdf(
-                    TranslucentID,
-                    "diffuse_btdf",
-                    "osl_translucent");
+            m_glossy_beckmann_brdf = create_and_register_glossy_brdf(GlossyBeckmannID, "beckmann");
+            m_glossy_ggx_brdf = create_and_register_glossy_brdf(GlossyGGXID, "ggx");
+            m_glossy_std_brdf = create_and_register_glossy_brdf(GlossySTDID, "std");
 
-            m_disney_brdf =
-                create_and_register_bsdf(
-                    DisneyID,
-                    "disney_brdf",
-                    "osl_disney_brdf");
+            m_metal_beckmann_brdf = create_and_register_metal_brdf(MetalBeckmannID, "beckmann");
+            m_metal_ggx_brdf = create_and_register_metal_brdf(MetalGGXID, "ggx");
+            m_metal_std_brdf = create_and_register_metal_brdf(MetalSTDID, "std");
 
-            m_glossy_beckmann_brdf =
-                create_and_register_glossy_brdf(
-                    GlossyBeckmannID,
-                    "beckmann",
-                    "osl_glossy_beckmann");
-
-            m_glass_ggx_bsdf =
-                create_and_register_glass_bsdf(
-                    GlassGGXID,
-                    "ggx",
-                    "osl_glass_ggx");
-
-            m_glass_beckmann_bsdf =
-                create_and_register_glass_bsdf(
-                    GlassBeckmannID,
-                    "beckmann",
-                    "osl_glass_beckmann");
-
-            m_glossy_ggx_brdf =
-                create_and_register_glossy_brdf(
-                    GlossyGGXID,
-                    "ggx",
-                    "osl_glossy_ggx");
-
-            m_metal_beckmann_brdf =
-                create_and_register_metal_brdf(
-                    MetalBeckmannID,
-                    "beckmann",
-                    "osl_metal_beckmann");
-
-            m_metal_ggx_brdf =
-                create_and_register_metal_brdf(
-                    MetalGGXID,
-                    "ggx",
-                    "osl_metal_ggx");
-
-            m_orennayar_brdf =
-                create_and_register_bsdf(
-                    OrenNayarID,
-                    "orennayar_brdf",
-                    "osl_orennayar");
-
-            m_sheen_brdf =
-                create_and_register_bsdf(
-                    SheenID,
-                    "sheen_brdf",
-                    "osl_sheen");
+            m_orennayar_brdf = create_and_register_bsdf(OrenNayarID, "orennayar_brdf");
+            m_sheen_brdf = create_and_register_bsdf(SheenID, "sheen_brdf");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return "osl_bsdf";
         }
 
-        virtual bool on_frame_begin(
-            const Project&          project,
-            const Assembly&         assembly,
-            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
+        bool on_frame_begin(
+            const Project&              project,
+            const BaseGroup*            parent,
+            OnFrameBeginRecorder&       recorder,
+            IAbortSwitch*               abort_switch) override
         {
-            if (!BSDF::on_frame_begin(project, assembly))
+            if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             for (int i = 0; i < NumClosuresIDs; ++i)
             {
                 if (BSDF* bsdf = m_all_bsdfs[i])
                 {
-                    if (!bsdf->on_frame_begin(project, assembly))
+                    if (!bsdf->on_frame_begin(project, parent, recorder, abort_switch))
                         return false;
                 }
             }
@@ -180,198 +140,244 @@ namespace
             return true;
         }
 
-        virtual void on_frame_end(
-            const Project&          project,
-            const Assembly&         assembly) APPLESEED_OVERRIDE
+        void* evaluate_inputs(
+            const ShadingContext&       shading_context,
+            const ShadingPoint&         shading_point) const override
         {
-            for (int i = 0; i < NumClosuresIDs; ++i)
-            {
-                if (BSDF* bsdf = m_all_bsdfs[i])
-                    bsdf->on_frame_end(project, assembly);
-            }
+            Arena& arena = shading_context.get_arena();
 
-            BSDF::on_frame_end(project, assembly);
-        }
+            CompositeSurfaceClosure* c =
+                arena.allocate_noinit<CompositeSurfaceClosure>();
 
-        virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const APPLESEED_OVERRIDE
-        {
-            return sizeof(CompositeSurfaceClosure);
-        }
-
-        virtual void evaluate_inputs(
-            const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
-            const ShadingPoint&     shading_point,
-            const size_t            offset) const APPLESEED_OVERRIDE
-        {
-            CompositeSurfaceClosure* c = reinterpret_cast<CompositeSurfaceClosure*>(input_evaluator.data());
             new (c) CompositeSurfaceClosure(
-                shading_point.get_shading_basis(),
-                shading_point.get_osl_shader_globals().Ci);
+                Basis3f(shading_point.get_shading_basis()),
+                shading_point.get_osl_shader_globals().Ci,
+                arena);
 
-            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
-                bsdf_from_closure_id(c->get_closure_type(i)).prepare_inputs(
-                    shading_point,
-                    c->get_closure_input_values(i));
+                bsdf_from_closure_id(c->get_closure_type(i))
+                    .prepare_inputs(
+                        arena,
+                        shading_point,
+                        c->get_closure_input_values(i));
             }
+
+            return c;
         }
 
-        APPLESEED_FORCE_INLINE virtual void sample(
-            SamplingContext&        sampling_context,
-            const void*             data,
-            const bool              adjoint,
-            const bool              cosine_mult,
-            BSDFSample&             sample) const APPLESEED_OVERRIDE
+        void sample(
+            SamplingContext&            sampling_context,
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const int                   modes,
+            BSDFSample&                 sample) const override
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
 
-            if (c->get_num_closures() > 0)
+            float pdfs[CompositeSurfaceClosure::MaxClosureEntries];
+            const int num_matching_closures = c->compute_pdfs(modes, pdfs);
+
+            if (num_matching_closures == 0)
+                return;
+
+            sampling_context.split_in_place(1, 1);
+            const size_t closure_index = c->choose_closure(
+                sampling_context.next2<float>(),
+                num_matching_closures,
+                pdfs);
+            const Basis3f& modified_basis = c->get_closure_shading_basis(closure_index);
+
+            sample.m_shading_basis = modified_basis;
+            sample.m_shading_point->set_shading_basis(Basis3d(modified_basis));
+
+            bsdf_from_closure_id(c->get_closure_type(closure_index))
+                .sample(
+                    sampling_context,
+                    c->get_closure_input_values(closure_index),
+                    adjoint,
+                    false,
+                    modes,
+                    sample);
+            sample.m_value *= c->get_closure_weight(closure_index);
+
+            if (sample.m_mode == ScatteringMode::Specular || sample.m_probability == 0.0f)
+                return;
+
+            sample.m_probability *= pdfs[closure_index];
+            pdfs[closure_index] = 0.0f;
+
+            // Evaluate the closures we didn't sample.
+            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
-                sampling_context.split_in_place(1, 1);
-                const double s = sampling_context.next_double2();
-
-                const size_t closure_index = c->choose_closure(s);
-                sample.set_shading_basis(c->get_closure_shading_basis(closure_index));
-                bsdf_from_closure_id(
-                    c->get_closure_type(closure_index)).sample(
-                        sampling_context,
-                        c->get_closure_input_values(closure_index),
-                        adjoint,
-                        false,
-                        sample);
-
-                sample.m_value *= c->get_closure_weight(closure_index);
-            }
-        }
-
-        APPLESEED_FORCE_INLINE virtual double evaluate(
-            const void*             data,
-            const bool              adjoint,
-            const bool              cosine_mult,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
-            const Vector3d&         incoming,
-            const int               modes,
-            Spectrum&               value) const APPLESEED_OVERRIDE
-        {
-            double prob = 0.0;
-            value.set(0.0f);
-
-            const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
-
-            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
-            {
-                Spectrum s;
-                const double bsdf_prob =
-                    bsdf_from_closure_id(c->get_closure_type(i)).evaluate(
-                        c->get_closure_input_values(i),
-                        adjoint,
-                        false,
-                        geometric_normal,
-                        c->get_closure_shading_basis(i),
-                        outgoing,
-                        incoming,
-                        modes,
-                        s);
-
-                if (bsdf_prob > 0.0)
+                if (pdfs[i] > 0.0f)
                 {
-                    s *= c->get_closure_weight(i);
-                    value += s;
-                    prob += bsdf_prob * c->get_closure_pdf_weight(i);
+                    DirectShadingComponents s;
+                    const float pdf =
+                        bsdf_from_closure_id(c->get_closure_type(i))
+                            .evaluate(
+                                c->get_closure_input_values(i),
+                                adjoint,
+                                false,
+                                sample.m_geometric_normal,
+                                c->get_closure_shading_basis(closure_index),
+                                sample.m_outgoing.get_value(),
+                                sample.m_incoming.get_value(),
+                                modes,
+                                s)  * pdfs[i];
+
+                    if (pdf > 0.0f)
+                    {
+                        madd(sample.m_value, s, c->get_closure_weight(i));
+                        sample.m_probability += pdf;
+                    }
+                }
+            }
+        }
+
+        float evaluate(
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes,
+            DirectShadingComponents&    value) const override
+        {
+            const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
+
+            float pdfs[CompositeSurfaceClosure::MaxClosureEntries];
+            c->compute_pdfs(modes, pdfs);
+
+            float prob = 0.0f;
+
+            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
+            {
+                if (pdfs[i] > 0.0f)
+                {
+                    DirectShadingComponents s;
+                    const float pdf =
+                        bsdf_from_closure_id(c->get_closure_type(i))
+                            .evaluate(
+                                c->get_closure_input_values(i),
+                                adjoint,
+                                false,
+                                geometric_normal,
+                                c->get_closure_shading_basis(i),
+                                outgoing,
+                                incoming,
+                                modes,
+                                s) * pdfs[i];
+
+                    if (pdf > 0.0f)
+                    {
+                        madd(value, s, c->get_closure_weight(i));
+                        prob += pdf;
+                    }
                 }
             }
 
             return prob;
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
-            const void*             data,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
-            const Vector3d&         incoming,
-            const int               modes) const APPLESEED_OVERRIDE
+        float evaluate_pdf(
+            const void*                 data,
+            const bool                  adjoint,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes) const override
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
-            double prob = 0.0;
 
-            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            float pdfs[CompositeSurfaceClosure::MaxClosureEntries];
+            c->compute_pdfs(modes, pdfs);
+
+            float prob = 0.0f;
+
+            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
-                const double bsdf_prob =
-                    bsdf_from_closure_id(c->get_closure_type(i)).evaluate_pdf(
-                        c->get_closure_input_values(i),
-                        geometric_normal,
-                        c->get_closure_shading_basis(i),
-                        outgoing,
-                        incoming,
-                        modes);
-
-                if (bsdf_prob > 0.0)
-                    prob += bsdf_prob * c->get_closure_pdf_weight(i);
+                if (pdfs[i] > 0.0f)
+                {
+                    prob +=
+                        bsdf_from_closure_id(c->get_closure_type(i))
+                            .evaluate_pdf(
+                                c->get_closure_input_values(i),
+                                adjoint,
+                                geometric_normal,
+                                c->get_closure_shading_basis(i),
+                                outgoing,
+                                incoming,
+                                modes) * pdfs[i];
+                }
             }
 
             return prob;
         }
 
-        virtual double sample_ior(
+        float sample_ior(
             SamplingContext&            sampling_context,
-            const void*                 data) const APPLESEED_OVERRIDE
+            const void*                 data) const override
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
             sampling_context.split_in_place(1, 1);
-            return c->choose_ior(sampling_context.next_double2());
+            return c->choose_ior(sampling_context.next2<float>());
         }
 
-        virtual void compute_absorption(
+        void compute_absorption(
             const void*                 data,
-            const double                distance,
-            Spectrum&                   absorption) const APPLESEED_OVERRIDE
+            const float                 distance,
+            Spectrum&                   absorption) const override
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
-            absorption.set(0.0f);
-            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
-            {
-                Spectrum a;
-                bsdf_from_closure_id(c->get_closure_type(i)).compute_absorption(
-                    c->get_closure_input_values(i),
-                    distance,
-                    a);
-                const float w = static_cast<float>(c->get_closure_pdf_weight(i));
 
-                // absorption += lerp(1.0, a, w)
-                a *= w;
-                absorption += a;
-                a.set(1.0f - w);
-                absorption += a;
+            absorption.set(1.0f);
+
+            for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
+            {
+                const ClosureID cid = c->get_closure_type(i);
+                if (cid > GlassID && cid <= LastGlassClosure)
+                {
+                    const float w = c->get_closure_scalar_weight(i);
+                    Spectrum a;
+                    bsdf_from_closure_id(cid)
+                        .compute_absorption(
+                            c->get_closure_input_values(i),
+                            distance * w,
+                            a);
+                    absorption *= a;
+                }
             }
         }
 
       private:
+        BSDF*                       m_all_bsdfs[NumClosuresIDs];
         auto_release_ptr<BSDF>      m_ashikhmin_shirley_brdf;
+        auto_release_ptr<BSDF>      m_blinn_brdf;
         auto_release_ptr<BSDF>      m_diffuse_btdf;
         auto_release_ptr<BSDF>      m_disney_brdf;
         auto_release_ptr<BSDF>      m_glass_beckmann_bsdf;
         auto_release_ptr<BSDF>      m_glass_ggx_bsdf;
+        auto_release_ptr<BSDF>      m_glass_std_bsdf;
         auto_release_ptr<BSDF>      m_glossy_beckmann_brdf;
         auto_release_ptr<BSDF>      m_glossy_ggx_brdf;
+        auto_release_ptr<BSDF>      m_glossy_std_brdf;
         auto_release_ptr<BSDF>      m_metal_beckmann_brdf;
         auto_release_ptr<BSDF>      m_metal_ggx_brdf;
+        auto_release_ptr<BSDF>      m_metal_std_brdf;
         auto_release_ptr<BSDF>      m_orennayar_brdf;
         auto_release_ptr<BSDF>      m_sheen_brdf;
-        BSDF*                       m_all_bsdfs[NumClosuresIDs];
 
         auto_release_ptr<BSDF> create_and_register_bsdf(
             const ClosureID         cid,
-            const char*             model,
-            const char*             name,
-            const ParamArray&       params = ParamArray())
+            const char*             model)
         {
             auto_release_ptr<BSDF> bsdf =
-                BSDFFactoryRegistrar().lookup(model)->create(name, params);
+                BSDFFactoryRegistrar().lookup(model)->create(model, ParamArray());
 
             m_all_bsdfs[cid] = bsdf.get();
 
@@ -380,43 +386,45 @@ namespace
 
         auto_release_ptr<BSDF> create_and_register_glass_bsdf(
             const ClosureID         cid,
-            const char*             mdf_name,
-            const char*             name)
+            const char*             mdf_name)
         {
             auto_release_ptr<BSDF> bsdf =
-                GlassBSDFFactory().create_osl(
-                    name,
-                    ParamArray().insert("mdf", mdf_name));
+                GlassBSDFFactory().create(
+                    "glass_bsdf",
+                    ParamArray()
+                        .insert("mdf", mdf_name)
+                        .insert("volume_parameterization", "transmittance"));
 
             m_all_bsdfs[cid] = bsdf.get();
+
             return bsdf;
         }
 
         auto_release_ptr<BSDF> create_and_register_glossy_brdf(
             const ClosureID         cid,
-            const char*             mdf_name,
-            const char*             name)
+            const char*             mdf_name)
         {
             auto_release_ptr<BSDF> bsdf =
                 GlossyBRDFFactory().create(
-                    name,
+                    "glossy_brdf",
                     ParamArray().insert("mdf", mdf_name));
 
             m_all_bsdfs[cid] = bsdf.get();
+
             return bsdf;
         }
 
         auto_release_ptr<BSDF> create_and_register_metal_brdf(
             const ClosureID         cid,
-            const char*             mdf_name,
-            const char*             name)
+            const char*             mdf_name)
         {
             auto_release_ptr<BSDF> bsdf =
                 MetalBRDFFactory().create(
-                    name,
+                    "metal_brdf",
                     ParamArray().insert("mdf", mdf_name));
 
             m_all_bsdfs[cid] = bsdf.get();
+
             return bsdf;
         }
 
@@ -435,7 +443,7 @@ namespace
         }
     };
 
-    typedef BSDFWrapper<OSLBSDFImpl> OSLBSDF;
+    typedef BSDFWrapper<OSLBSDFImpl, false> OSLBSDF;
 }
 
 

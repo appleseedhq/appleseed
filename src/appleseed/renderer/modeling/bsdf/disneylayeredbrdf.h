@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -45,9 +45,9 @@
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class Assembly; }
+namespace renderer      { class BaseGroup; }
 namespace renderer      { class DisneyMaterial; }
-namespace renderer      { class InputEvaluator; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 namespace renderer      { class ShadingContext; }
@@ -64,53 +64,49 @@ class DisneyLayeredBRDF
   : public BSDF
 {
   public:
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    const char* get_model() const override;
 
-    virtual bool on_frame_begin(
+    bool on_frame_begin(
         const Project&                  project,
-        const Assembly&                 assembly,
-        foundation::IAbortSwitch*       abort_switch = 0) APPLESEED_OVERRIDE;
+        const BaseGroup*                parent,
+        OnFrameBeginRecorder&           recorder,
+        foundation::IAbortSwitch*       abort_switch = nullptr) override;
 
-    virtual void on_frame_end(
-        const Project&                  project,
-        const Assembly&                 assembly) APPLESEED_OVERRIDE;
+    size_t compute_input_data_size() const override;
 
-    virtual size_t compute_input_data_size(
-        const Assembly&                 assembly) const APPLESEED_OVERRIDE;
-
-    virtual void evaluate_inputs(
+    void* evaluate_inputs(
         const ShadingContext&           shading_context,
-        InputEvaluator&                 input_evaluator,
-        const ShadingPoint&             shading_point,
-        const size_t                    offset = 0) const APPLESEED_OVERRIDE;
+        const ShadingPoint&             shading_point) const override;
 
-    virtual void sample(
+    void sample(
         SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
-        BSDFSample&                     sample) const APPLESEED_OVERRIDE;
+        const int                       modes,
+        BSDFSample&                     sample) const override;
 
-    virtual double evaluate(
+    float evaluate(
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
-        const foundation::Vector3d&     geometric_normal,
-        const foundation::Basis3d&      shading_basis,
-        const foundation::Vector3d&     outgoing,
-        const foundation::Vector3d&     incoming,
+        const foundation::Vector3f&     geometric_normal,
+        const foundation::Basis3f&      shading_basis,
+        const foundation::Vector3f&     outgoing,
+        const foundation::Vector3f&     incoming,
         const int                       modes,
-        Spectrum&                       value) const APPLESEED_OVERRIDE;
+        DirectShadingComponents&        value) const override;
 
-    virtual double evaluate_pdf(
+    float evaluate_pdf(
         const void*                     data,
-        const foundation::Vector3d&     geometric_normal,
-        const foundation::Basis3d&      shading_basis,
-        const foundation::Vector3d&     outgoing,
-        const foundation::Vector3d&     incoming,
-        const int                       modes) const APPLESEED_OVERRIDE;
+        const bool                      adjoint,
+        const foundation::Vector3f&     geometric_normal,
+        const foundation::Basis3f&      shading_basis,
+        const foundation::Vector3f&     outgoing,
+        const foundation::Vector3f&     incoming,
+        const int                       modes) const override;
 
   private:
     friend class DisneyMaterial;

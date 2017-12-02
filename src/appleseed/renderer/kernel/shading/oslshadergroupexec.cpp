@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,10 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/closures.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
+#include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 
 // Standard headers.
@@ -47,8 +49,9 @@ namespace renderer
 // OSLShaderGroupExec class implementation.
 //
 
-OSLShaderGroupExec::OSLShaderGroupExec(OSL::ShadingSystem& shading_system)
+OSLShaderGroupExec::OSLShaderGroupExec(OSLShadingSystem& shading_system, Arena& arena)
   : m_osl_shading_system(shading_system)
+  , m_arena(arena)
   , m_osl_thread_info(shading_system.create_thread_info())
   , m_osl_shading_context(shading_system.get_context(m_osl_thread_info))
 {
@@ -126,10 +129,10 @@ void OSLShaderGroupExec::execute_emission(
 void OSLShaderGroupExec::execute_bump(
     const ShaderGroup&              shader_group,
     const ShadingPoint&             shading_point,
-    const Vector2d&                 s) const
+    const Vector2f&                 s) const
 {
     // Choose between BSSRDF and BSDF.
-    if (shader_group.has_subsurface() && s[0] < 0.5)
+    if (shader_group.has_subsurface() && s[0] < 0.5f)
     {
         do_execute(
             shader_group,
@@ -137,15 +140,16 @@ void OSLShaderGroupExec::execute_bump(
             VisibilityFlags::SubsurfaceRay);
 
         CompositeSubsurfaceClosure c(
-            shading_point.get_shading_basis(),
-            shading_point.get_osl_shader_globals().Ci);
+            Basis3f(shading_point.get_shading_basis()),
+            shading_point.get_osl_shader_globals().Ci,
+            m_arena);
 
         // Pick a shading basis from one of the BSSRDF closures.
-        if (c.get_num_closures() > 0)
+        if (c.get_closure_count() > 0)
         {
             const size_t index = c.choose_closure(s[1]);
             shading_point.set_shading_basis(
-                c.get_closure_shading_basis(index));
+                Basis3d(c.get_closure_shading_basis(index)));
         }
     }
     else
@@ -155,56 +159,26 @@ void OSLShaderGroupExec::execute_bump(
             shading_point,
             VisibilityFlags::CameraRay);
 
-        CompositeSurfaceClosure c(
-            shading_point.get_shading_basis(),
-            shading_point.get_osl_shader_globals().Ci);
-
-        // Pick a shading basis from one of the BSDF closures.
-        if (c.get_num_closures() > 0)
-        {
-            const size_t index = c.choose_closure(s[1]);
-            shading_point.set_shading_basis(
-                c.get_closure_shading_basis(index));
-        }
-    }
-}
-
-void OSLShaderGroupExec::choose_subsurface_normal(
-    const ShadingPoint&             shading_point,
-    const void*                     bssrdf_data,
-    const double                    s) const
-{
-    const CompositeSubsurfaceClosure* c =
-        reinterpret_cast<const CompositeSubsurfaceClosure*>(bssrdf_data);
-
-    if (c->get_num_closures() > 0)
-    {
-        const size_t index = c->choose_closure(s);
-        shading_point.set_shading_basis(
-            c->get_closure_shading_basis(index));
+        choose_bsdf_closure_shading_basis(shading_point, s);
     }
 }
 
 Color3f OSLShaderGroupExec::execute_background(
     const ShaderGroup&              shader_group,
-    const Vector3d&                 outgoing) const
+    const Vector3f&                 outgoing) const
 {
     assert(m_osl_shading_context);
     assert(m_osl_thread_info);
 
     OSL::ShaderGlobals sg;
     memset(&sg, 0, sizeof(OSL::ShaderGlobals));
-    sg.I = Vector3f(outgoing);
+    sg.I = outgoing;
     sg.renderer = m_osl_shading_system.renderer();
     sg.raytype = VisibilityFlags::CameraRay;
 
     m_osl_shading_system.execute(
-#if OSL_LIBRARY_VERSION_CODE >= 10700
         m_osl_shading_context,
-#else
-        *m_osl_shading_context,
-#endif
-        *shader_group.shader_group_ref(),
+        *reinterpret_cast<OSL::ShaderGroup*>(shader_group.osl_shader_group()),
         sg);
 
     return process_background_tree(sg.Ci);
@@ -224,13 +198,28 @@ void OSLShaderGroupExec::do_execute(
         m_osl_shading_system.renderer());
 
     m_osl_shading_system.execute(
-#if OSL_LIBRARY_VERSION_CODE >= 10700
         m_osl_shading_context,
-#else
-        *m_osl_shading_context,
-#endif
-        *shader_group.shader_group_ref(),
+        *reinterpret_cast<OSL::ShaderGroup*>(shader_group.osl_shader_group()),
         shading_point.get_osl_shader_globals());
+}
+
+void OSLShaderGroupExec::choose_bsdf_closure_shading_basis(
+    const ShadingPoint&             shading_point,
+    const Vector2f&                 s) const
+{
+    CompositeSurfaceClosure c(
+        Basis3f(shading_point.get_shading_basis()),
+        shading_point.get_osl_shader_globals().Ci,
+        m_arena);
+
+    float pdfs[CompositeSurfaceClosure::MaxClosureEntries];
+    const size_t num_closures = c.compute_pdfs(ScatteringMode::All, pdfs);
+    if (num_closures == 0)
+        return;
+
+    const size_t index = c.choose_closure(s[1], num_closures, pdfs);
+    shading_point.set_shading_basis(
+        Basis3d(c.get_closure_shading_basis(index)));
 }
 
 }   // namespace renderer

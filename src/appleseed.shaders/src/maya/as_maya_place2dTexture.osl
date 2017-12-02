@@ -1,0 +1,269 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/place2dTexture.html
+
+#include "appleseed/math/as_math_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
+
+shader as_maya_place2dTexture
+[[
+    string as_maya_node_name = "place2dTexture",
+    string help = "ZOMGER",
+    string URL = "http://www.appleseedhq.net"
+]]
+(
+    float in_coverage[2] = {1.0, 1.0}
+    [[
+        string as_maya_attribute_name = "coverage",
+        string label = "Coverage",
+        string page = "2D Texture Placement Attributes",
+        string help = "FOO BAR"
+    ]],
+    float in_translateFrame[2] = {0.0, 0.0}
+    [[
+        string as_maya_attribute_name = "translateFrame",
+        string label = "UV Frame Translation",
+        string page = "2D Texture Placement Attributes"
+    ]],
+    float in_rotateFrame = 0.0
+    [[
+        string as_maya_attribute_name = "rotateFrame",
+        string widget = "slider",
+        string units = "degrees",
+        string label = "UV Frame Rotation",
+        string page = "2D Texture Placement Attributes"
+    ]],
+    int in_mirrorU = 0
+    [[
+        string as_maya_attribute_name = "mirrorU",
+        string label = "Mirror U",
+        string widget = "checkBox",
+        string page = "2D Texture Placement Attributes"
+    ]],
+    int in_mirrorV = 0
+    [[
+        string as_maya_attribute_name = "mirrorV",
+        string label = "Mirror V",
+        string widget = "checkBox",
+        string page = "2D Texture Placement Attributes"
+    ]],
+    int in_stagger = 0
+    [[
+        string as_maya_attribute_name = "stagger",
+        string label = "Stagger",
+        string widget = "checkBox",
+        string page = "2D Texture Placement Attributes"
+    ]],
+    int in_wrapU = 0
+    [[
+        string as_maya_attribute_name = "wrapU",
+        string label = "Wrap U",
+        string widget = "checkBox",
+        string page = "2D Texture Placement Attributes"
+    ]],
+    int in_wrapV = 0
+    [[
+        string as_maya_attribute_name = "wrapV",
+        string label = "Wrap V",
+        string widget = "checkBox",
+        string page = "2D Texture Placement Attributes"
+    ]],
+    float in_repeatUV[2] = {1.0, 1.0}
+    [[
+        string as_maya_attribute_name = "repeatUV",
+        string label = "Repeat UV",
+        string page = "2D Texture Placement Attributes"
+    ]],
+    float in_offset[2] = {0.0, 0.0}
+    [[
+        string as_maya_attribute_name = "offset",
+        string label = "Offset",
+        string page = "2D Texture Placement Attributes"
+    ]],
+    float in_rotateUV = 0.0
+    [[
+        string as_maya_attribute_name = "rotateUV",
+        string units = "degrees",
+        string label = "Rotate UV",
+        string page = "2D Texture Placement Attributes"
+    ]],
+    float in_noiseUV[2] = {0.0, 0.0}
+    [[
+        string as_maya_attribute_name = "noiseUV",
+        string label = "Noise UV",
+        string page = "2D Texture Placement Attributes"
+    ]],
+    int in_fast = 0
+    [[
+        string as_maya_attribute_name = "fast",
+        string label = "Fast",
+        string widget = "checkBox",
+        string page = "2D Texture Placement Attributes"
+    ]],
+
+    MAYA_UV_PARAMETERS,
+
+    output float out_outUV[2] = {0.0, 0.0}
+    [[
+        string as_maya_attribute_name = "outUV",
+        string label = "Output UV",
+        string widget = "null"
+    ]],
+    output float out_outUvFilterSize[2] = {
+        UNDEFINED_UVFILTER, UNDEFINED_UVFILTER}
+    [[
+        string as_maya_attribute_name = "outUvFilterSize",
+        string label = "Output UV Filter Size",
+        string widget = "null"
+    ]],
+    output int out_doTransform = 1
+    [[
+        string as_maya_attribute_name = "doTransform",
+        string label = "Do Transform",
+        string widget = "null"
+    ]]
+)
+{
+    float st[2] = {in_uvCoord[0], in_uvCoord[1]};
+
+    if (in_noiseUV[0] > 0.0 || in_noiseUV[1] > 0.0)
+    {
+        vector uvnoise = noise("snoise", st[0] * 15, st[1] * 15);
+
+        if (in_noiseUV[0] > 0.0)
+        {
+            st[0] += in_noiseUV[0] * uvnoise[0];
+        }
+
+        if (in_noiseUV[1] > 0.0)
+        {
+            st[1] += in_noiseUV[1] * uvnoise[1];
+        }
+    }
+
+    if (in_rotateFrame != 0.0)
+    {
+        point rot = rotate(
+            point(st[0], st[1], 0.0),
+            radians(in_rotateFrame),
+            point(0.5, 0.5, 0.0),
+            point(0.5, 0.5, 1.0));
+
+        st[0] = rot[0];
+        st[1] = rot[1];
+    }
+
+    float coverage[2] =
+    {
+        max(EPS, in_coverage[0]),
+        max(EPS, in_coverage[1])
+    };
+
+    if (coverage[0] < 1.0 || coverage[1] < 1.0)
+    {
+        st[0] /= coverage[0];
+        st[1] /= coverage[1];
+
+        if (in_translateFrame[0] != 0)
+        {
+            st[0] -= in_translateFrame[0] / coverage[0];
+        }
+        if (in_translateFrame[1] != 0)
+        {
+            st[1] -= in_translateFrame[1] / coverage[1];
+        }
+    }
+
+    if (in_wrapU)
+    {
+        st[0] = mod(st[0], 1.0 / coverage[0]);
+    }
+    if (in_wrapV)
+    {
+        st[1] = mod(st[1], 1.0 / coverage[1]);
+    }
+
+    // Outside the covered UV frame, the downstream nodes use defaultColor.
+    if (st[0] < 0.0 || st[0] > 1.0 || st[1] < 0.0 || st[1] > 1.0)
+    {
+        st[0] = OUTSIDE_UVFRAME;
+        st[1] = OUTSIDE_UVFRAME;
+    }
+    else
+    {
+        st[0] *= in_repeatUV[0];
+        st[1] *= in_repeatUV[1];
+        st[0] += in_offset[0];
+        st[1] += in_offset[1];
+
+        if (in_stagger && mod(st[1], 2) >= 1)
+        {
+            st[0] += 0.5;
+        }
+
+        if (in_mirrorU)
+        {
+            if (mod(st[0], 2) >= 1.0)
+            {
+                st[0] += 0.5;
+            }
+        }
+
+        if (in_mirrorV)
+        {
+            if (mod(st[1], 2) >= 1.0)
+            {
+                st[1] += 0.5;
+            }
+        }
+
+        if (in_rotateUV != 0)
+        {
+            point rot = rotate(
+                point(st[0], st[1], 0.0),
+                radians(in_rotateUV),
+                point(0.5, 0.5, 0.0),
+                point(0.5, 0.5, 1.0));
+
+            st[0] = rot[0];
+            st[1] = rot[1];
+        }
+        out_outUvFilterSize[0] = filterwidth(st[0]);
+        out_outUvFilterSize[1] = filterwidth(st[1]);
+    }
+    out_outUV[0] = st[0];
+    out_outUV[1] = st[1];
+
+    if (in_rotateFrame != 0 || in_offset[0] != 0 || in_offset[1] != 0 ||
+        in_translateFrame[0] != 0 || in_translateFrame[1] != 0 ||
+        in_rotateUV != 0)
+    {
+        out_doTransform = 1;
+    }
+}

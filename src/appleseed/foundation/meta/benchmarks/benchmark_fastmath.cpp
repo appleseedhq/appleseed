@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,9 +28,9 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/math/fastmath.h"
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/mersennetwister.h"
-#include "foundation/math/fastmath.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/benchmark.h"
 
@@ -48,8 +48,8 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
 
     struct Fixture
     {
-        APPLESEED_SSE_ALIGN float m_values[N];
-        APPLESEED_SSE_ALIGN float m_output[N];
+        APPLESEED_SIMD4_ALIGN float m_values[N];
+        APPLESEED_SIMD4_ALIGN float m_output[N];
 
         Fixture()
         {
@@ -60,7 +60,9 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
         }
     };
 
-    // Pow(2, x).
+    //
+    // Pow2(x).
+    //
 
     BENCHMARK_CASE_F(StdPow2, Fixture)
     {
@@ -102,7 +104,9 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
             faster_pow2(&m_output[i]);
     }
 
+    //
     // Log2(x).
+    //
 
     BENCHMARK_CASE_F(ScalarFastLog2, Fixture)
     {
@@ -136,7 +140,9 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
             faster_log2(&m_output[i]);
     }
 
+    //
     // Pow(x).
+    //
 
     const float Exponent = 2.4f;
 
@@ -180,7 +186,9 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
             faster_pow(&m_output[i], Exponent);
     }
 
+    //
     // Log(x).
+    //
 
     BENCHMARK_CASE_F(StdLog, Fixture)
     {
@@ -222,7 +230,9 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
             faster_log(&m_output[i]);
     }
 
+    //
     // Exp(x).
+    //
 
     BENCHMARK_CASE_F(StdExp, Fixture)
     {
@@ -262,5 +272,73 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
 
         for (size_t i = 0; i < N; i += 4)
             faster_exp(&m_output[i]);
+    }
+
+    //
+    // Rcp(x).
+    //
+
+    BENCHMARK_CASE_F(Rcp, Fixture)
+    {
+        memcpy(m_output, m_values, N * sizeof(float));
+
+        for (size_t i = 0; i < N; ++i)
+            m_output[i] = 1.0f / m_output[i];
+    }
+
+    BENCHMARK_CASE_F(FastRcp, Fixture)
+    {
+        memcpy(m_output, m_values, N * sizeof(float));
+
+        for (size_t i = 0; i < N; ++i)
+            m_output[i] = fast_rcp(m_output[i]);
+    }
+
+    //
+    // Sqrt(x).
+    //
+
+    BENCHMARK_CASE_F(Sqrt, Fixture)
+    {
+        memcpy(m_output, m_values, N * sizeof(float));
+
+        for (size_t i = 0; i < N; ++i)
+            m_output[i] = sqrt(m_output[i]);
+    }
+
+    BENCHMARK_CASE_F(FastSqrt, Fixture)
+    {
+        memcpy(m_output, m_values, N * sizeof(float));
+
+        for (size_t i = 0; i < N; ++i)
+            m_output[i] = fast_sqrt(m_output[i]);
+    }
+
+    //
+    // RcpSqrt(x).
+    //
+
+    BENCHMARK_CASE_F(RcpSqrt, Fixture)
+    {
+        memcpy(m_output, m_values, N * sizeof(float));
+
+        for (size_t i = 0; i < N; ++i)
+            m_output[i] = 1.0f / sqrt(m_output[i]);
+    }
+
+    BENCHMARK_CASE_F(FastRcpSqrt, Fixture)
+    {
+        memcpy(m_output, m_values, N * sizeof(float));
+
+        for (size_t i = 0; i < N; ++i)
+            m_output[i] = fast_rcp_sqrt(m_output[i]);
+    }
+
+    BENCHMARK_CASE_F(FasterRcpSqrt, Fixture)
+    {
+        memcpy(m_output, m_values, N * sizeof(float));
+
+        for (size_t i = 0; i < N; ++i)
+            m_output[i] = faster_rcp_sqrt(m_output[i]);
     }
 }

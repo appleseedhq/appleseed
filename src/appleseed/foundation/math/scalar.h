@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 #define APPLESEED_FOUNDATION_MATH_SCALAR_H
 
 // appleseed.foundation headers.
+#include "foundation/platform/arch.h"
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
@@ -41,6 +42,7 @@
 #include <cmath>
 #include <cstddef>
 #ifdef _MSC_VER
+#include <cstdlib>
 #include <intrin.h>
 #endif
 #include <limits>
@@ -49,39 +51,31 @@ namespace foundation
 {
 
 //
-// Interesting reference:
-//
-//   Slerping Clock Cycles
-//   J.M.P. van Waveren
-//   http://fabiensanglard.net/doom3_documentation/37725-293747_293747.pdf
-//
-// todo: implement feq_ulp() and fz_ulp(), to compare scalars with precision
-// expressed in ulp. Most probably an integer based comparison. Reference:
-// http://www.cygnus-software.com/papers/comparingfloats/comparingfloats.htm.
-//
-
-
-//
 // Constants.
 //
 
-// Various constants in double precision.
-static const double Pi              =  3.1415926535897932;
-static const double HalfPi          =  1.5707963267948966;      // Pi / 2
-static const double TwoPi           =  6.2831853071795865;      // 2 * Pi
-static const double RcpPi           =  0.3183098861837907;      // 1 / Pi
-static const double SqrtPi          =  1.7724538509055160;      // sqrt(Pi)
-static const double FourPiSquare    = 39.4784176043574344;      // 4 * Pi^2
-static const double RcpHalfPi       =  0.6366197723675813;      // 1 / (Pi/2) = 2 / Pi
-static const double RcpTwoPi        =  0.1591549430918953;      // 1 / (2 * Pi)
-static const double RcpFourPi       =  0.0795774715459477;      // 1 / (4 * Pi)
-static const double RcpPiSquare     =  0.1013211836423378;      // 1 / (Pi^2) = (1 / Pi)^2
-static const double RcpFourPiSquare =  0.0253302959105844;      // 1 / (4 * Pi^2)
-static const double SqrtTwo         =  1.4142135623730950;      // sqrt(2)
-static const double RcpSqrtTwo      =  0.7071067811865475;      // 1 / sqrt(2) = sqrt(2) / 2
-static const double SqrtThree       =  1.7320508075688773;      // sqrt(3)
-static const double GoldenRatio     =  1.6180339887498948;      // (1 + sqrt(5)) / 2
-static const double Ln10            =  2.3025850929940457;      // ln(10)
+template <typename T> inline T Pi()                 { return static_cast<T>(3.1415926535897932); }
+template <typename T> inline T TwoPi()              { return static_cast<T>(6.2831853071795865); }  // 2 * Pi
+template <typename T> inline T FourPi()             { return static_cast<T>(12.566370614359173); }  // 4 * Pi
+template <typename T> inline T HalfPi()             { return static_cast<T>(1.5707963267948966); }  // Pi / 2
+template <typename T> inline T PiOverFour()         { return static_cast<T>(0.7853981633974483); }  // Pi / 4
+template <typename T> inline T RcpPi()              { return static_cast<T>(0.3183098861837907); }  // 1 / Pi
+template <typename T> inline T TwoOverPi()          { return static_cast<T>(0.6366197723675813); }  // 2 / Pi
+template <typename T> inline T FourOverPi()         { return static_cast<T>(1.2732395447351627); }  // 4 / Pi
+template <typename T> inline T RcpHalfPi()          { return static_cast<T>(0.6366197723675813); }  // 1 / (Pi/2)
+template <typename T> inline T RcpTwoPi()           { return static_cast<T>(0.1591549430918953); }  // 1 / (2 * Pi) = 0.5 / Pi
+template <typename T> inline T RcpFourPi()          { return static_cast<T>(0.0795774715459477); }  // 1 / (4 * Pi)
+template <typename T> inline T SqrtPi()             { return static_cast<T>(1.7724538509055160); }  // sqrt(Pi)
+template <typename T> inline T PiSquare()           { return static_cast<T>(9.8696044010893586); }  // Pi^2
+template <typename T> inline T FourPiSquare()       { return static_cast<T>(39.478417604357434); }  // 4 * Pi^2
+template <typename T> inline T RcpPiSquare()        { return static_cast<T>(0.1013211836423378); }  // 1 / (Pi^2) = (1 / Pi)^2
+template <typename T> inline T RcpFourPiSquare()    { return static_cast<T>(0.0253302959105844); }  // 1 / (4 * Pi^2)
+template <typename T> inline T FourOverPiSquare()   { return static_cast<T>(0.4052847345693511); }  // 1 / (4 * Pi^2)
+template <typename T> inline T SqrtTwo()            { return static_cast<T>(1.4142135623730950); }  // sqrt(2)
+template <typename T> inline T RcpSqrtTwo()         { return static_cast<T>(0.7071067811865475); }  // 1 / sqrt(2) = sqrt(2) / 2
+template <typename T> inline T SqrtThree()          { return static_cast<T>(1.7320508075688773); }  // sqrt(3)
+template <typename T> inline T GoldenRatio()        { return static_cast<T>(1.6180339887498948); }  // (1 + sqrt(5)) / 2
+template <typename T> inline T Ln10()               { return static_cast<T>(2.3025850929940457); }  // ln(10)
 
 
 //
@@ -149,6 +143,14 @@ T log(const T x, const T base);
 template <typename T>
 T next_power(const T x, const T base);
 
+// Round n (n >= 0) to the next multiple of m (m > 0).
+template <typename T>
+T next_multiple(const T n, const T m);
+
+// Round n (n >= 0) to the previous multiple of m (m > 0).
+template <typename T>
+T prev_multiple(const T n, const T m);
+
 // Return the factorial of a given integer.
 template <typename T>
 T factorial(T x);
@@ -194,6 +196,13 @@ Int round(const T x);
 template <typename T>
 T mod(const T a, const T n);
 
+// Rotate an unsigned integer left or right by a given number of bits.
+// Reference: https://stackoverflow.com/a/776523/393756
+uint32 rotl32(const uint32 n, unsigned int shift);
+uint64 rotl64(const uint64 n, unsigned int shift);
+uint32 rotr32(const uint32 n, unsigned int shift);
+uint64 rotr64(const uint64 n, unsigned int shift);
+
 // linearstep() returns 0 for x < a, 1 for x > b, and generates
 // a linear transition from 0 to 1 between x = a and x = b.
 template <typename T>
@@ -237,6 +246,10 @@ V fit(
 //
 // Robust floating-point tests.
 //
+// todo: implement feq_ulp() and fz_ulp(), to compare scalars with precision
+// expressed in ulp. Most probably an integer based comparison. Reference:
+// http://www.cygnus-software.com/papers/comparingfloats/comparingfloats.htm.
+//
 
 // Default epsilon values for floating-point tests.
 template <typename T> T default_eps();                      // intentionally left unimplemented
@@ -278,37 +291,37 @@ template <> inline long double signed_min() { return -std::numeric_limits<long d
 template <>
 inline float deg_to_rad(const float angle)
 {
-    return angle * static_cast<float>(Pi / 180.0);
+    return angle * (Pi<float>() / 180.0f);
 }
 
 template <>
 inline double deg_to_rad(const double angle)
 {
-    return angle * (Pi / 180.0);
+    return angle * (Pi<double>() / 180.0);
 }
 
 template <>
 inline long double deg_to_rad(const long double angle)
 {
-    return angle * static_cast<long double>(Pi / 180.0);
+    return angle * (Pi<long double>() / 180.0);
 }
 
 template <>
 inline float rad_to_deg(const float angle)
 {
-    return angle * static_cast<float>(180.0 / Pi);
+    return angle * (180.0f / Pi<float>());
 }
 
 template <>
 inline double rad_to_deg(const double angle)
 {
-    return angle * (180.0 / Pi);
+    return angle * (180.0 / Pi<double>());
 }
 
 template <>
 inline long double rad_to_deg(const long double angle)
 {
-    return angle * static_cast<long double>(180.0 / Pi);
+    return angle * (180.0 / Pi<long double>());
 }
 
 
@@ -345,7 +358,11 @@ struct PowIntHelper
 {
     static T eval(const T x)
     {
-        return x * PowIntHelper<T, P - 1>::eval(x);
+        // Reference: http://en.wikipedia.org/wiki/Exponentiation_by_squaring
+        if (P % 2 == 0)
+            return PowIntHelper<T, P / 2>::eval(x * x);
+        else
+            return x * PowIntHelper<T, (P - 1) / 2>::eval(x * x);
     }
 };
 
@@ -361,21 +378,30 @@ struct PowIntHelper<T, 0>
 template <size_t P, typename T>
 inline T pow_int(const T x)
 {
-    // todo: implement exponentiation by squaring.
-    // Reference: http://en.wikipedia.org/wiki/Exponentiation_by_squaring.
     return PowIntHelper<T, P>::eval(x);
 }
 
 template <typename T>
-inline T pow_int(const T x, size_t p)
+inline T pow_int(T x, size_t p)
 {
-    // todo: implement exponentiation by squaring.
-    // Reference: http://en.wikipedia.org/wiki/Exponentiation_by_squaring.
+    // Reference: http://en.wikipedia.org/wiki/Exponentiation_by_squaring
 
     T y = T(1);
 
-    while (p--)
-        y *= x;
+    while (p)
+    {
+        if (p % 2 == 0)
+        {
+            x *= x;
+            p /= 2;
+        }
+        else
+        {
+            y *= x;
+            x *= x;
+            p = (p - 1) / 2;
+        }
+    }
 
     return y;
 }
@@ -476,7 +502,6 @@ template <>
 inline unsigned int log2_int(const unsigned int x)
 {
     assert(x > 0);
-
     return 8 * sizeof(unsigned int) - __builtin_clz(x) - 1;
 }
 
@@ -484,7 +509,6 @@ template <>
 inline unsigned long log2_int(const unsigned long x)
 {
     assert(x > 0);
-
     return 8 * sizeof(unsigned long) - __builtin_clzl(x) - 1;
 }
 
@@ -500,6 +524,22 @@ template <typename T>
 inline T next_power(const T x, const T base)
 {
     return std::pow(base, fast_ceil(log(x, base)));
+}
+
+template <typename T>
+inline T next_multiple(const T n, const T m)
+{
+    assert(n >= 0);
+    assert(m > 0);
+    return (n + m - 1) / m * m;
+}
+
+template <typename T>
+inline T prev_multiple(const T n, const T m)
+{
+    assert(n >= 0);
+    assert(m > 0);
+    return n - n % m;
 }
 
 template <typename T>
@@ -550,8 +590,8 @@ inline T wrap(const T x)
 template <typename T>
 inline T normalize_angle(const T angle)
 {
-    const T a = std::fmod(angle, T(TwoPi));
-    return a < T(0.0) ? a + T(TwoPi) : a;
+    const T a = std::fmod(angle, TwoPi<T>());
+    return a < T(0.0) ? a + TwoPi<T>() : a;
 }
 
 template <typename Int, typename T>
@@ -686,6 +726,63 @@ inline double mod(const double a, const double n)
     const double m = std::fmod(a, n);
     return m < 0.0 ? n + m : m;
 }
+
+#pragma warning (push)
+#pragma warning (disable : 4146)    // unary minus operator applied to unsigned type, result still unsigned
+
+inline uint32 rotl32(const uint32 n, unsigned int shift)
+{
+    const unsigned int Mask = 8 * sizeof(n) - 1;
+    assert(shift <= Mask);
+
+#ifdef _MSC_VER
+    return _rotl(n, shift);
+#else
+    shift &= Mask;
+    return (n << shift) | (n >> ((-shift) & Mask));
+#endif
+}
+
+inline uint64 rotl64(const uint64 n, unsigned int shift)
+{
+    const unsigned int Mask = 8 * sizeof(n) - 1;
+    assert(shift <= Mask);
+
+#ifdef _MSC_VER
+    return _rotl64(n, shift);
+#else
+    shift &= Mask;
+    return (n << shift) | (n >> ((-shift) & Mask));
+#endif
+}
+
+inline uint32 rotr32(const uint32 n, unsigned int shift)
+{
+    const unsigned int Mask = 8 * sizeof(n) - 1;
+    assert(shift <= Mask);
+
+#ifdef _MSC_VER
+    return _rotr(n, shift);
+#else
+    shift &= Mask;
+    return (n >> shift) | (n << ((-shift) & Mask));
+#endif
+}
+
+inline uint64 rotr64(const uint64 n, unsigned int shift)
+{
+    const unsigned int Mask = 8 * sizeof(n) - 1;
+    assert(shift <= Mask);
+
+#ifdef _MSC_VER
+    return _rotr64(n, shift);
+#else
+    shift &= Mask;
+    return (n >> shift) | (n << ((-shift) & Mask));
+#endif
+}
+
+#pragma warning (pop)
 
 template <typename T>
 inline T linearstep(const T a, const T b, const T x)

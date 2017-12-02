@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,7 @@ TEST_SUITE(Foundation_Utility_AutoReleasePtr)
         {
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
@@ -68,7 +68,7 @@ TEST_SUITE(Foundation_Utility_AutoReleasePtr)
         {
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             m_release_was_called = true;
             delete this;
@@ -84,7 +84,7 @@ TEST_SUITE(Foundation_Utility_AutoReleasePtr)
 
     TEST_CASE(ConstructFromNullPointer)
     {
-        auto_release_ptr<Derived> ptr(0);
+        auto_release_ptr<Derived> ptr(nullptr);
 
         EXPECT_EQ(0, ptr.get());
     }
@@ -170,7 +170,7 @@ TEST_SUITE(Foundation_Utility_AutoReleasePtr)
         auto_release_ptr<DerivedWithReleaseCheck> ptr(
             new DerivedWithReleaseCheck(release_was_called));
 
-        ptr.reset(0);
+        ptr.reset(nullptr);
 
         EXPECT_TRUE(release_was_called);
     }

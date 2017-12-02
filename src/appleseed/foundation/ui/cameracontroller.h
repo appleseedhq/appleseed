@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -327,7 +327,7 @@ void CameraController<T>::tumble(const Vector<T, 2>& delta)
 {
     const Vector<T, 3> Up(T(0.0), T(1.0), T(0.0));
     const T MinAngleToVertical = deg_to_rad(T(5.0));
-    const T MaxAngleToVertical = T(Pi) - MinAngleToVertical;
+    const T MaxAngleToVertical = Pi<T>() - MinAngleToVertical;
 
     // Compute view vector.
     Vector<T, 3> u = m_view.m_position - m_view.m_target;
@@ -341,7 +341,7 @@ void CameraController<T>::tumble(const Vector<T, 2>& delta)
     const T angle_to_vertical = std::acos(dot(u, Up) / std::sqrt(sq_dist));
 
     // Clamp rotation around X axis.
-    T delta_angle_to_vertical = delta.y * T(HalfPi);
+    T delta_angle_to_vertical = delta.y * HalfPi<T>();
     if (delta_angle_to_vertical + angle_to_vertical < MinAngleToVertical)
         delta_angle_to_vertical = angle_to_vertical - MinAngleToVertical;
     if (delta_angle_to_vertical + angle_to_vertical > MaxAngleToVertical)
@@ -349,7 +349,7 @@ void CameraController<T>::tumble(const Vector<T, 2>& delta)
 
     // Rotate view vector.
     u = rotate(u, m_view.m_x, delta_angle_to_vertical);
-    u = rotate(u, m_view.m_y, -delta.x * T(HalfPi));
+    u = rotate(u, m_view.m_y, -delta.x * HalfPi<T>());
 
     // Prevent numerical drifting of the camera-target distance.
     u *= sq_dist / square_norm(u);

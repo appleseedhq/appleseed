@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 #define APPLESEED_RENDERER_MODELING_MATERIAL_IMATERIALFACTORY_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/core/concepts/iunknown.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
@@ -51,7 +51,7 @@ namespace renderer
 //
 
 class APPLESEED_DLLSYMBOL IMaterialFactory
-  : public foundation::NonCopyable
+  : public foundation::IUnknown
 {
   public:
     // Destructor.
@@ -72,8 +72,10 @@ class APPLESEED_DLLSYMBOL IMaterialFactory
         const ParamArray&   params) const = 0;
 
   protected:
-    // Add the input metadata common to all material models.
-    static void add_common_input_metadata(foundation::DictionaryArray& metadata);
+    // Add input metadata common to several material models.
+    static void add_surface_shader_metadata(foundation::DictionaryArray& metadata);
+    static void add_alpha_map_metadata(foundation::DictionaryArray& metadata);
+    static void add_displacement_metadata(foundation::DictionaryArray& metadata);
 };
 
 }       // namespace renderer

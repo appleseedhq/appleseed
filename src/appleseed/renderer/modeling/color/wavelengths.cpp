@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -48,8 +48,8 @@ namespace renderer
 // Range of wavelengths used throughout the light simulation.
 //
 
-Spectrum g_light_wavelengths_nm;
-Spectrum g_light_wavelengths_um;
+RegularSpectrum31f g_light_wavelengths_nm;
+RegularSpectrum31f g_light_wavelengths_um;
 
 namespace
 {
@@ -57,11 +57,10 @@ namespace
     {
         InitializeLightWavelengths()
         {
-            g_light_wavelengths_nm.resize(Spectrum::Samples);
             generate_wavelengths(
                 LowWavelength,
                 HighWavelength,
-                Spectrum::Samples,
+                g_light_wavelengths_nm.Samples,
                 &g_light_wavelengths_nm[0]);
 
             g_light_wavelengths_um = g_light_wavelengths_nm / 1000.0f;
@@ -77,10 +76,10 @@ namespace
 //
 
 void generate_wavelengths(
-    const float     low_wavelength,
-    const float     high_wavelength,
-    const size_t    count,
-    float           wavelengths[])
+    const float             low_wavelength,
+    const float             high_wavelength,
+    const size_t            count,
+    float                   wavelengths[])
 {
     if (count == 1)
         wavelengths[0] = 0.5f * (low_wavelength + high_wavelength);
@@ -100,11 +99,11 @@ void generate_wavelengths(
 }
 
 void spectral_values_to_spectrum(
-    const float     low_wavelength,
-    const float     high_wavelength,
-    const size_t    input_spectrum_count,
-    const float     input_spectrum[],
-    float           output_spectrum[])
+    const float             low_wavelength,
+    const float             high_wavelength,
+    const size_t            input_spectrum_count,
+    const float             input_spectrum[],
+    RegularSpectrum31f&     output_spectrum)
 {
     assert(low_wavelength < high_wavelength);
 
@@ -121,9 +120,9 @@ void spectral_values_to_spectrum(
         input_spectrum_count,
         &wavelengths[0],
         input_spectrum,
-        Spectrum::Samples,
+        output_spectrum.Samples,
         &g_light_wavelengths_nm[0],
-        output_spectrum);
+        &output_spectrum[0]);
 }
 
 }   // namespace renderer

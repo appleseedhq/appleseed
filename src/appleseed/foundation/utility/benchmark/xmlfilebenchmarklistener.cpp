@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,7 @@ struct XMLFileBenchmarkListener::Impl
     bool        m_has_header;
 
     Impl()
-      : m_file(0)
+      : m_file(nullptr)
       , m_indenter(4)
       , m_has_header(false)
     {
@@ -195,7 +195,7 @@ bool XMLFileBenchmarkListener::open(const char* filename)
 
     impl->m_file = fopen(filename, "wt");
 
-    return impl->m_file != 0;
+    return impl->m_file != nullptr;
 }
 
 void XMLFileBenchmarkListener::close()
@@ -207,13 +207,13 @@ void XMLFileBenchmarkListener::close()
 
         fclose(impl->m_file);
 
-        impl->m_file = 0;
+        impl->m_file = nullptr;
     }
 }
 
 bool XMLFileBenchmarkListener::is_open() const
 {
-    return impl->m_file != 0;
+    return impl->m_file != nullptr;
 }
 
 void XMLFileBenchmarkListener::write_file_header()

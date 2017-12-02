@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,17 @@
 // Interface header.
 #include "entity.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/entity/onframebeginrecorder.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/api/apistring.h"
+
+// OpenImageIO headers.
+#include "foundation/platform/_beginoiioheaders.h"
+#include "OpenImageIO/ustring.h"
+#include "foundation/platform/_endoiioheaders.h"
+
 using namespace foundation;
 using namespace std;
 
@@ -38,48 +49,45 @@ namespace renderer
 
 struct Entity::Impl
 {
-    string m_name;
+    string          m_name;
+    OIIO::ustring   m_oiio_name;
 };
 
 Entity::Entity(
-    const UniqueID      class_uid)
+    const UniqueID          class_uid)
   : impl(new Impl())
   , m_class_uid(class_uid)
-  , m_parent(0)
-  , m_render_layer(~0)
+  , m_parent(nullptr)
 {
 }
 
 Entity::Entity(
-    const UniqueID      class_uid,
-    Entity*             parent)
+    const UniqueID          class_uid,
+    Entity*                 parent)
   : impl(new Impl())
   , m_class_uid(class_uid)
   , m_parent(parent)
-  , m_render_layer(~0)
 {
 }
 
 Entity::Entity(
-    const UniqueID      class_uid,
-    const ParamArray&   params)
+    const UniqueID          class_uid,
+    const ParamArray&       params)
   : impl(new Impl())
   , m_class_uid(class_uid)
-  , m_parent(0)
+  , m_parent(nullptr)
   , m_params(params)
-  , m_render_layer(~0)
 {
 }
 
 Entity::Entity(
-    const UniqueID      class_uid,
-    Entity*             parent,
-    const ParamArray&   params)
+    const UniqueID          class_uid,
+    Entity*                 parent,
+    const ParamArray&       params)
   : impl(new Impl())
   , m_class_uid(class_uid)
   , m_parent(parent)
   , m_params(params)
-  , m_render_layer(~0)
 {
 }
 
@@ -92,6 +100,7 @@ void Entity::set_name(const char* name)
 {
     assert(name);
     impl->m_name = name;
+    impl->m_oiio_name = name;
 }
 
 const char* Entity::get_name() const
@@ -99,11 +108,51 @@ const char* Entity::get_name() const
     return impl->m_name.c_str();
 }
 
+const void* Entity::get_name_as_ustring() const
+{
+    return &impl->m_oiio_name;
+}
+
+APIString Entity::get_path() const
+{
+    std::string path;
+
+    const Entity* entity = this;
+
+    while (entity)
+    {
+        if (!path.empty())
+            path.insert(0, "/");
+
+        path.insert(0, entity->get_name());
+
+        entity = entity->get_parent();
+    }
+
+    return APIString(path.c_str());
+}
+
 void Entity::collect_asset_paths(StringArray& paths) const
 {
 }
 
 void Entity::update_asset_paths(const StringDictionary& mappings)
+{
+}
+
+bool Entity::on_frame_begin(
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
+    IAbortSwitch*           abort_switch)
+{
+    recorder.record(this, parent);
+    return true;
+}
+
+void Entity::on_frame_end(
+    const Project&          project,
+    const BaseGroup*        parent)
 {
 }
 

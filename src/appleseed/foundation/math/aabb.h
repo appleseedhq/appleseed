@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,10 +37,9 @@
 
 // Imath headers.
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
-#include "foundation/platform/exrheaderguards.h"
-BEGIN_EXR_INCLUDES
+#include "foundation/platform/_beginexrheaders.h"
 #include "OpenEXR/ImathBox.h"
-END_EXR_INCLUDES
+#include "foundation/platform/_endexrheaders.h"
 #endif
 
 // Standard headers.
@@ -150,8 +149,14 @@ class AABB
     // Return the diameter of the bounding box.
     ValueType diameter() const;
 
+    // Return the square diameter of the bounding box.
+    ValueType square_diameter() const;
+
     // Return the radius of the bounding box.
     ValueType radius() const;
+    
+    // Return the square radius of the bounding box.
+    ValueType square_radius() const;
 
     // Return the volume of the bounding box.
     T volume() const;
@@ -501,11 +506,27 @@ inline T AABB<T, N>::diameter() const
 }
 
 template <typename T, size_t N>
+inline T AABB<T, N>::square_diameter() const
+{
+    assert(is_valid());
+
+    return square_norm(extent());
+}
+
+template <typename T, size_t N>
 inline T AABB<T, N>::radius() const
 {
     assert(is_valid());
 
     return T(0.5) * diameter();
+}
+
+template <typename T, size_t N>
+inline T AABB<T, N>::square_radius() const
+{
+    assert(is_valid());
+
+    return T(0.25) * square_diameter();
 }
 
 template <typename T, size_t N>

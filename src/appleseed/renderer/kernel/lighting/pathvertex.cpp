@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,14 +33,14 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/edf/edf.h"
-#include "renderer/modeling/input/inputevaluator.h"
+
+using namespace foundation;
 
 namespace renderer
 {
 
 void PathVertex::compute_emitted_radiance(
     const ShadingContext&   shading_context,
-    TextureCache&           texture_cache,
     Spectrum&               radiance) const
 {
     assert(m_edf);
@@ -52,21 +52,15 @@ void PathVertex::compute_emitted_radiance(
         return;
     }
 
-#ifdef APPLESEED_WITH_OSL
     if (const ShaderGroup* sg = get_material()->get_render_data().m_shader_group)
         shading_context.execute_osl_emission(*sg, *m_shading_point);
-#endif
-
-    // Evaluate the EDF inputs.
-    InputEvaluator input_evaluator(texture_cache);
-    m_edf->evaluate_inputs(input_evaluator, *m_shading_point);
 
     // Compute the emitted radiance.
     m_edf->evaluate(
-        input_evaluator.data(),
-        m_shading_point->get_geometric_normal(),
-        m_shading_point->get_shading_basis(),
-        m_outgoing.get_value(),
+        m_edf->evaluate_inputs(shading_context, *m_shading_point),
+        Vector3f(m_shading_point->get_geometric_normal()),
+        Basis3f(m_shading_point->get_shading_basis()),
+        Vector3f(m_outgoing.get_value()),
         radiance);
 }
 

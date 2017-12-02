@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -70,7 +70,7 @@ class IInputWidgetProxy
     Q_OBJECT
 
   public:
-    virtual ~IInputWidgetProxy() {}
+    ~IInputWidgetProxy() override {}
 
     virtual void set(const std::string& value) = 0;
     virtual std::string get() const = 0;
@@ -95,8 +95,8 @@ class LineEditProxy
   public:
     explicit LineEditProxy(QLineEdit* line_edit);
 
-    virtual void set(const std::string& value) APPLESEED_OVERRIDE;
-    virtual std::string get() const APPLESEED_OVERRIDE;
+    void set(const std::string& value) override;
+    std::string get() const override;
 
   private:
     QLineEdit* m_line_edit;
@@ -113,8 +113,8 @@ class SpinBoxProxy
   public:
     explicit SpinBoxProxy(QSpinBox* spinbox);
 
-    virtual void set(const std::string& value) APPLESEED_OVERRIDE;
-    virtual std::string get() const APPLESEED_OVERRIDE;
+    void set(const std::string& value) override;
+    std::string get() const override;
 
   private:
     QSpinBox* m_spinbox;
@@ -131,8 +131,8 @@ class DoubleSpinBoxProxy
   public:
     explicit DoubleSpinBoxProxy(QDoubleSpinBox* spinbox);
 
-    virtual void set(const std::string& value) APPLESEED_OVERRIDE;
-    virtual std::string get() const APPLESEED_OVERRIDE;
+    void set(const std::string& value) override;
+    std::string get() const override;
 
   private:
     QDoubleSpinBox* m_spinbox;
@@ -149,8 +149,8 @@ class CheckBoxProxy
   public:
     explicit CheckBoxProxy(QCheckBox* checkbox);
 
-    virtual void set(const std::string& value) APPLESEED_OVERRIDE;
-    virtual std::string get() const APPLESEED_OVERRIDE;
+    void set(const std::string& value) override;
+    std::string get() const override;
 
   private:
     QCheckBox* m_checkbox;
@@ -167,8 +167,8 @@ class GroupBoxProxy
   public:
     explicit GroupBoxProxy(QGroupBox* groupbox);
 
-    virtual void set(const std::string& value) APPLESEED_OVERRIDE;
-    virtual std::string get() const APPLESEED_OVERRIDE;
+    void set(const std::string& value) override;
+    std::string get() const override;
 
   private:
     QGroupBox* m_groupbox;
@@ -185,8 +185,8 @@ class RadioButtonProxy
   public:
     explicit RadioButtonProxy(QRadioButton* radio_button);
 
-    virtual void set(const std::string& value) APPLESEED_OVERRIDE;
-    virtual std::string get() const APPLESEED_OVERRIDE;
+    void set(const std::string& value) override;
+    std::string get() const override;
 
   private:
     QRadioButton* m_radio_button;
@@ -203,8 +203,8 @@ class ComboBoxProxy
   public:
     explicit ComboBoxProxy(QComboBox* combobox);
 
-    virtual void set(const std::string& value) APPLESEED_OVERRIDE;
-    virtual std::string get() const APPLESEED_OVERRIDE;
+    void set(const std::string& value) override;
+    std::string get() const override;
 
   private:
     QComboBox* m_combobox;
@@ -221,10 +221,10 @@ class ColorPickerProxy
   public:
     ColorPickerProxy(QLineEdit* line_edit, QToolButton* picker_button);
 
-    virtual void set(const std::string& value) APPLESEED_OVERRIDE;
+    void set(const std::string& value) override;
     void set(const std::string& value, const std::string& wavelength_range);
 
-    virtual std::string get() const APPLESEED_OVERRIDE;
+    std::string get() const override;
 
     static foundation::Color3d get_color_from_string(const std::string& s);
     static foundation::Color3d get_color_from_string(const std::string& s, const std::string& wavelength_range);
@@ -245,8 +245,8 @@ class ColorExpressionProxy
   public:
     ColorExpressionProxy(QLineEdit* line_edit, QToolButton* picker_button);
 
-    virtual void set(const std::string& value) APPLESEED_OVERRIDE;
-    virtual std::string get() const APPLESEED_OVERRIDE;
+    void set(const std::string& value) override;
+    std::string get() const override;
 
     static std::string qcolor_to_expression(const QColor& color);
     static QColor expression_to_qcolor(const std::string& color);
@@ -271,7 +271,7 @@ class InputWidgetProxyCollection
 
     void insert(
         const std::string&                  key,
-        std::auto_ptr<IInputWidgetProxy>    proxy);
+        std::unique_ptr<IInputWidgetProxy>  proxy);
 
     IInputWidgetProxy* get(const std::string& key) const;
 

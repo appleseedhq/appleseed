@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -51,6 +51,8 @@
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Assembly; }
+namespace renderer      { class BaseGroup; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
@@ -69,7 +71,7 @@ class APPLESEED_DLLSYMBOL AssemblyInstance
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
     // Return the name of the instantiated assembly.
     const char* get_assembly_name() const;
@@ -99,10 +101,9 @@ class APPLESEED_DLLSYMBOL AssemblyInstance
     // Returns true on success, false otherwise.
     bool on_frame_begin(
         const Project&              project,
-        foundation::IAbortSwitch*   abort_switch);
-
-    // This method is called once after rendering each frame.
-    void on_frame_end(const Project& project);
+        const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
   private:
     friend class AssemblyInstanceFactory;
@@ -121,7 +122,7 @@ class APPLESEED_DLLSYMBOL AssemblyInstance
         const char*                 assembly_name);
 
     // Destructor.
-    ~AssemblyInstance();
+    ~AssemblyInstance() override;
 };
 
 
@@ -162,7 +163,6 @@ inline const TransformSequence& AssemblyInstance::transform_sequence() const
 inline Assembly& AssemblyInstance::get_assembly() const
 {
     assert(m_assembly);
-
     return *m_assembly;
 }
 

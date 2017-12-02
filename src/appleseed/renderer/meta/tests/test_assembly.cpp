@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,8 +41,8 @@
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
@@ -86,8 +86,9 @@ TEST_SUITE(Renderer_Modeling_Scene_Assembly)
                     "inner_assembly"));
 
             inner_assembly_instance->transform_sequence().set_transform(
-                0.0,
-                Transformd::from_local_to_parent(Matrix4d::scaling(Vector3d(10.0))));
+                0.0f,
+                Transformd::from_local_to_parent(
+                    Matrix4d::make_scaling(Vector3d(10.0))));
 
             // Outer assembly.
 

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,14 +32,17 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
+#include "renderer/modeling/bsdf/fresnel.h"
+#include "renderer/modeling/bsdf/specularhelper.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 using namespace foundation;
 using namespace std;
@@ -60,86 +63,75 @@ namespace
     {
       public:
         SpecularBRDFImpl(
-            const char*         name,
-            const ParamArray&   params)
+            const char*                 name,
+            const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Specular, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        APPLESEED_FORCE_INLINE virtual void sample(
-            SamplingContext&    sampling_context,
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            BSDFSample&         sample) const APPLESEED_OVERRIDE
+        void sample(
+            SamplingContext&            sampling_context,
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const int                   modes,
+            BSDFSample&                 sample) const override
         {
-            // No reflection below the shading surface.
-            const Vector3d& shading_normal = sample.get_shading_normal();
-            const double cos_on = dot(sample.m_outgoing.get_value(), shading_normal);
-            if (cos_on < 0.0)
+            if (!ScatteringMode::has_specular(modes))
                 return;
 
-            // Compute the incoming direction.
-            const Vector3d incoming(
-                force_above_surface(
-                    reflect(sample.m_outgoing.get_value(), shading_normal),
-                    sample.get_geometric_normal()));
-
             // No reflection below the shading surface.
-            const double cos_in = dot(incoming, shading_normal);
-            if (cos_in < 0.0)
+            const Vector3f& shading_normal = sample.m_shading_basis.get_normal();
+            const float cos_on = dot(sample.m_outgoing.get_value(), shading_normal);
+            if (cos_on < 0.0f)
                 return;
 
-            // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
-            sample.m_value = values->m_reflectance;
-            sample.m_value *= static_cast<float>(values->m_reflectance_multiplier / cos_in);
 
-            // The probability density of the sampled direction is the Dirac delta.
-            sample.m_probability = DiracDelta;
+            const NoFresnelFun f(
+                values->m_reflectance,
+                values->m_reflectance_multiplier);
 
-            // Set the scattering mode.
-            sample.m_mode = ScatteringMode::Specular;
-
-            sample.m_incoming = Dual3d(incoming);
-            sample.compute_reflected_differentials();
+            SpecularBRDFHelper::sample(f, sample);
+            sample.m_value.m_beauty = sample.m_value.m_glossy;
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate(
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+        float evaluate(
+            const void*                 data,
+            const bool                  adjoint,
+            const bool                  cosine_mult,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes,
+            DirectShadingComponents&    value) const override
         {
-            return 0.0;
+            return 0.0f;
         }
 
-        APPLESEED_FORCE_INLINE virtual double evaluate_pdf(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes) const APPLESEED_OVERRIDE
+        float evaluate_pdf(
+            const void*                 data,
+            const bool                  adjoint,
+            const Vector3f&             geometric_normal,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            const int                   modes) const override
         {
-            return 0.0;
+            return 0.0f;
         }
 
       private:
@@ -153,6 +145,11 @@ namespace
 //
 // SpecularBRDFFactory class implementation.
 //
+
+void SpecularBRDFFactory::release()
+{
+    delete this;
+}
 
 const char* SpecularBRDFFactory::get_model() const
 {
@@ -199,13 +196,6 @@ DictionaryArray SpecularBRDFFactory::get_input_metadata() const
 auto_release_ptr<BSDF> SpecularBRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<BSDF>(new SpecularBRDF(name, params));
-}
-
-auto_release_ptr<BSDF> SpecularBRDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<BSDF>(new SpecularBRDF(name, params));
 }

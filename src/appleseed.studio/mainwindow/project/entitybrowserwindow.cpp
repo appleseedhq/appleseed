@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -194,13 +194,11 @@ void EntityBrowserWindow::slot_filter_text_changed(const QString& pattern)
 {
     m_ui->pushbutton_clear_filter->setEnabled(!pattern.isEmpty());
 
-    const QRegExp regexp(pattern);
+    const QRegExp regexp(pattern, Qt::CaseInsensitive);
     const Page& page = m_pages[m_ui->tab_widget->currentIndex()];
 
     for (int i = 0; i < page.m_list_widget->count(); ++i)
-    {
         filter_item(page.m_list_widget->item(i), regexp);
-    }
 }
 
 void EntityBrowserWindow::slot_clear_filter()

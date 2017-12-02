@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@
 #include "foundation/math/transform.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
-#include "foundation/utility/containers/array.h"
+#include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
@@ -57,6 +57,7 @@ namespace foundation    { class StringDictionary; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class Material; }
 namespace renderer      { class Object; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
@@ -67,7 +68,7 @@ namespace renderer
 // An array of materials.
 //
 
-APPLESEED_DECLARE_ARRAY(MaterialArray, const Material*);
+APPLESEED_DECLARE_APIARRAY(MaterialArray, const Material*);
 
 // Return true if at least one material in the array emits light.
 bool has_emitting_materials(const MaterialArray& materials);
@@ -88,10 +89,10 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
     // Compute and return the unique signature of this instance.
-    virtual foundation::uint64 compute_signature() const;
+    foundation::uint64 compute_signature() const override;
 
     // Return the name of the instantiated object.
     const char* get_object_name() const;
@@ -102,11 +103,14 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     // Return true if the transform of this instance swaps handedness.
     bool transform_swaps_handedness() const;
 
+    // Return true if the normals of this instance must be flipped.
+    bool flip_normals() const;
+
     // Return the visibility flags of this instance.
     foundation::uint32 get_vis_flags() const;
 
     // Return the medium priority of this instance.
-    foundation::uint8 get_medium_priority() const;
+    foundation::int8 get_medium_priority() const;
 
     enum RayBiasMethod
     {
@@ -120,16 +124,21 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     RayBiasMethod get_ray_bias_method() const;
     double get_ray_bias_distance() const;
 
+    // Check if this object instance is in the same SSS set as another.
+    bool is_in_same_sss_set(const ObjectInstance& other) const;
+
     // Find the object bound to this instance.
     Object* find_object() const;
 
     // Compute the parent space bounding box of the instance.
     GAABB3 compute_parent_bbox() const;
 
+    // Sides of this object instance's surface.
     enum Side
     {
-        FrontSide,
-        BackSide
+        FrontSide = 1 << 0,
+        BackSide  = 1 << 1,
+        BothSides = FrontSide | BackSide
     };
 
     // Clear all material assignments.
@@ -171,6 +180,10 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     const MaterialArray& get_front_materials() const;
     const MaterialArray& get_back_materials() const;
 
+    // Return true if at least one of the material referenced by this instance
+    // has a volume assigned to it.
+    bool has_participating_media() const;
+
     // Return true if at least one of the material referenced by this instance has an alpha map set.
     bool uses_alpha_mapping() const;
 
@@ -178,11 +191,9 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     // Returns true on success, false otherwise.
     bool on_frame_begin(
         const Project&              project,
-        const Assembly&             assembly,
-        foundation::IAbortSwitch*   abort_switch);
-
-    // This method is called once after rendering each frame.
-    void on_frame_end(const Project& project);
+        const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
   private:
     friend class ObjectInstanceFactory;
@@ -191,10 +202,11 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     Impl* impl;
 
     foundation::uint32  m_vis_flags;
-    foundation::uint8   m_medium_priority;
+    foundation::int8    m_medium_priority;
     RayBiasMethod       m_ray_bias_method;
     double              m_ray_bias_distance;
     bool                m_transform_swaps_handedness;
+    bool                m_flip_normals;
 
     Object*             m_object;
     MaterialArray       m_front_materials;
@@ -210,7 +222,7 @@ class APPLESEED_DLLSYMBOL ObjectInstance
         const foundation::StringDictionary& back_material_mappings);
 
     // Destructor.
-    ~ObjectInstance();
+    ~ObjectInstance() override;
 };
 
 
@@ -244,12 +256,17 @@ inline bool ObjectInstance::transform_swaps_handedness() const
     return m_transform_swaps_handedness;
 }
 
+inline bool ObjectInstance::flip_normals() const
+{
+    return m_flip_normals;
+}
+
 inline foundation::uint32 ObjectInstance::get_vis_flags() const
 {
     return m_vis_flags;
 }
 
-inline foundation::uint8 ObjectInstance::get_medium_priority() const
+inline foundation::int8 ObjectInstance::get_medium_priority() const
 {
     return m_medium_priority;
 }

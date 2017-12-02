@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -49,10 +49,10 @@ TEST_SUITE(Foundation_Math_Triangulator)
     TEST_CASE_F(ComputePolygonOrientation_GivenLowestLeftmostTriangleIsValid_ReturnsCorrectOrientation, Fixture)
     {
         Polygon2 polygon;
-        polygon.push_back(Vector2Type(0.0, 0.0));
-        polygon.push_back(Vector2Type(0.0, 1.0));
-        polygon.push_back(Vector2Type(1.0, 1.0));
-        polygon.push_back(Vector2Type(1.0, 0.0));
+        polygon.emplace_back(0.0, 0.0);
+        polygon.emplace_back(0.0, 1.0);
+        polygon.emplace_back(1.0, 1.0);
+        polygon.emplace_back(1.0, 0.0);
 
         TriangulatorType triangulator;
         const TriangulatorType::Orientation orientation =
@@ -64,10 +64,10 @@ TEST_SUITE(Foundation_Math_Triangulator)
     TEST_CASE_F(ComputePolygonOrientation_GivenLowestLeftmostTriangleIsDegenerate_ReturnsCorrectOrientation, Fixture)
     {
         Polygon2 polygon;
-        polygon.push_back(Vector2Type(0.0, 1.0));
-        polygon.push_back(Vector2Type(1.0, 1.0));
-        polygon.push_back(Vector2Type(0.0, 0.0));
-        polygon.push_back(Vector2Type(0.0, 0.0));
+        polygon.emplace_back(0.0, 1.0);
+        polygon.emplace_back(1.0, 1.0);
+        polygon.emplace_back(0.0, 0.0);
+        polygon.emplace_back(0.0, 0.0);
 
         TriangulatorType triangulator;
         const TriangulatorType::Orientation orientation =
@@ -79,10 +79,10 @@ TEST_SUITE(Foundation_Math_Triangulator)
     TEST_CASE_F(Triangulate_GivenQuadWithCoincidentVertices_KeepDegenerateTrianglesIsFalse_ReturnsOneTriangle, Fixture)
     {
         Polygon3 polygon;
-        polygon.push_back(Vector3Type(0.0, 0.0, 0.0));
-        polygon.push_back(Vector3Type(0.0, 1.0, 0.0));
-        polygon.push_back(Vector3Type(1.0, 1.0, 0.0));
-        polygon.push_back(Vector3Type(0.0, 0.0, 0.0));
+        polygon.emplace_back(0.0, 0.0, 0.0);
+        polygon.emplace_back(0.0, 1.0, 0.0);
+        polygon.emplace_back(1.0, 1.0, 0.0);
+        polygon.emplace_back(0.0, 0.0, 0.0);
 
         TriangulatorType triangulator;
         TriangulatorType::IndexArray triangles;
@@ -96,10 +96,10 @@ TEST_SUITE(Foundation_Math_Triangulator)
     TEST_CASE_F(Triangulate_GivenQuadWithCoincidentVertices_KeepDegenerateTrianglesIsTrue_ReturnsTwoTriangles, Fixture)
     {
         Polygon3 polygon;
-        polygon.push_back(Vector3Type(0.0, 0.0, 0.0));
-        polygon.push_back(Vector3Type(0.0, 1.0, 0.0));
-        polygon.push_back(Vector3Type(1.0, 1.0, 0.0));
-        polygon.push_back(Vector3Type(0.0, 0.0, 0.0));
+        polygon.emplace_back(0.0, 0.0, 0.0);
+        polygon.emplace_back(0.0, 1.0, 0.0);
+        polygon.emplace_back(1.0, 1.0, 0.0);
+        polygon.emplace_back(0.0, 0.0, 0.0);
 
         TriangulatorType triangulator(TriangulatorType::KeepDegenerateTriangles);
         TriangulatorType::IndexArray triangles;
@@ -113,10 +113,10 @@ TEST_SUITE(Foundation_Math_Triangulator)
     TEST_CASE_F(Triangulate_GivenSelfCrossingTriangle_ReturnsFalse, Fixture)
     {
         Polygon3 polygon;
-        polygon.push_back(Vector3Type(0.0, 0.0, 1.0));
-        polygon.push_back(Vector3Type(3.0, 2.0, 2.0));
-        polygon.push_back(Vector3Type(3.0, 3.0, 3.0));
-        polygon.push_back(Vector3Type(1.0, 0.0, 0.0));
+        polygon.emplace_back(0.0, 0.0, 1.0);
+        polygon.emplace_back(3.0, 2.0, 2.0);
+        polygon.emplace_back(3.0, 3.0, 3.0);
+        polygon.emplace_back(1.0, 0.0, 0.0);
 
         TriangulatorType triangulator;
         TriangulatorType::IndexArray triangles;
@@ -129,18 +129,18 @@ TEST_SUITE(Foundation_Math_Triangulator)
     TEST_CASE_F(Triangulate_GivenComplexConcavePolygon_ReturnsTrue, Fixture)
     {
         Polygon3 polygon;
-        polygon.push_back(Vector3Type(0.137498, -1.09128, 0.0));
-        polygon.push_back(Vector3Type(0.124257, -1.10419, 0.0));
-        polygon.push_back(Vector3Type(0.124257, -1.31878, 0.0));
-        polygon.push_back(Vector3Type(0.240957, -1.30956, 0.0));
-        polygon.push_back(Vector3Type(0.240957, 1.3116, 0.0));
-        polygon.push_back(Vector3Type(0.124256, 1.30447, 0.0));
-        polygon.push_back(Vector3Type(0.124256, 1.08131, 0.0));
-        polygon.push_back(Vector3Type(0.137498, 1.0684, 0.0));
-        polygon.push_back(Vector3Type(0.160558, 1.02428, 0.0));
-        polygon.push_back(Vector3Type(0.168503, 0.975371, 0.0));
-        polygon.push_back(Vector3Type(0.168503, -0.998254, 0.0));
-        polygon.push_back(Vector3Type(0.160558, -1.04716, 0.0));
+        polygon.emplace_back(0.137498, -1.09128, 0.0);
+        polygon.emplace_back(0.124257, -1.10419, 0.0);
+        polygon.emplace_back(0.124257, -1.31878, 0.0);
+        polygon.emplace_back(0.240957, -1.30956, 0.0);
+        polygon.emplace_back(0.240957, 1.3116, 0.0);
+        polygon.emplace_back(0.124256, 1.30447, 0.0);
+        polygon.emplace_back(0.124256, 1.08131, 0.0);
+        polygon.emplace_back(0.137498, 1.0684, 0.0);
+        polygon.emplace_back(0.160558, 1.02428, 0.0);
+        polygon.emplace_back(0.168503, 0.975371, 0.0);
+        polygon.emplace_back(0.168503, -0.998254, 0.0);
+        polygon.emplace_back(0.160558, -1.04716, 0.0);
 
         TriangulatorType triangulator;
         TriangulatorType::IndexArray triangles;

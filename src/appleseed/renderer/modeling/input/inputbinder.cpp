@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -54,14 +54,14 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
-#endif
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/modeling/volume/volume.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
@@ -136,18 +136,13 @@ void InputBinder::build_scene_symbol_table(
 {
     try
     {
-        if (scene.get_camera())
-            symbols.insert(scene.get_camera()->get_name(), SymbolTable::SymbolCamera);
-
+        insert_entities(symbols, scene.cameras(), SymbolTable::SymbolCamera);
         insert_entities(symbols, scene.colors(), SymbolTable::SymbolColor);
         insert_entities(symbols, scene.textures(), SymbolTable::SymbolTexture);
         insert_entities(symbols, scene.texture_instances(), SymbolTable::SymbolTextureInstance);
         insert_entities(symbols, scene.environment_edfs(), SymbolTable::SymbolEnvironmentEDF);
         insert_entities(symbols, scene.environment_shaders(), SymbolTable::SymbolEnvironmentShader);
-
-#ifdef APPLESEED_WITH_OSL
         insert_entities(symbols, scene.shader_groups(), SymbolTable::SymbolShaderGroup);
-#endif
 
         if (scene.get_environment())
             symbols.insert(scene.get_environment()->get_name(), SymbolTable::SymbolEnvironment);
@@ -174,14 +169,13 @@ void InputBinder::build_assembly_symbol_table(
         insert_entities(symbols, assembly.bsdfs(), SymbolTable::SymbolBSDF);
         insert_entities(symbols, assembly.bssrdfs(), SymbolTable::SymbolBSSRDF);
         insert_entities(symbols, assembly.edfs(), SymbolTable::SymbolEDF);
-#ifdef APPLESEED_WITH_OSL
         insert_entities(symbols, assembly.shader_groups(), SymbolTable::SymbolShaderGroup);
-#endif
         insert_entities(symbols, assembly.surface_shaders(), SymbolTable::SymbolSurfaceShader);
         insert_entities(symbols, assembly.materials(), SymbolTable::SymbolMaterial);
         insert_entities(symbols, assembly.lights(), SymbolTable::SymbolLight);
         insert_entities(symbols, assembly.objects(), SymbolTable::SymbolObject);
         insert_entities(symbols, assembly.object_instances(), SymbolTable::SymbolObjectInstance);
+        insert_entities(symbols, assembly.volumes(), SymbolTable::SymbolVolume);
     }
     catch (const SymbolTable::ExceptionDuplicateSymbol& e)
     {
@@ -212,13 +206,13 @@ void InputBinder::bind_scene_entities_inputs(
         *scene.get_default_surface_shader());
 
     // Bind camera inputs.
-    if (scene.get_camera())
+    for (each<CameraContainer> i = scene.cameras(); i; ++i)
     {
         bind_scene_entity_inputs(
             scene,
             scene_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolCamera),
-            *scene.get_camera());
+            *i);
     }
 
     // Bind environment EDFs inputs.
@@ -266,7 +260,7 @@ void InputBinder::bind_scene_entity_inputs(
     const char*                     entity_type,
     ConnectableEntity&              entity)
 {
-    const string entity_path = entity.get_path();
+    const string entity_path(entity.get_path().c_str());
     const ParamArray& entity_params = entity.get_parameters();
 
     for (each<InputArray> i = entity.get_inputs(); i; ++i)
@@ -381,7 +375,16 @@ void InputBinder::bind_assembly_entities_inputs(
             *i);
     }
 
-#ifdef APPLESEED_WITH_OSL
+    // Bind phase punctions inputs.
+    for (each<VolumeContainer> i = assembly.volumes(); i; ++i)
+    {
+        bind_assembly_entity_inputs(
+            scene,
+            scene_symbols,
+            SymbolTable::symbol_name(SymbolTable::SymbolVolume),
+            *i);
+    }
+
     // Bind ShaderGroups inputs.
     for (each<ShaderGroupContainer> i = assembly.shader_groups(); i; ++i)
     {
@@ -391,7 +394,6 @@ void InputBinder::bind_assembly_entities_inputs(
             SymbolTable::symbol_name(SymbolTable::SymbolShaderGroup),
             *i);
     }
-#endif
 
     // Bind surface shaders inputs.
     for (each<SurfaceShaderContainer> i = assembly.surface_shaders(); i; ++i)
@@ -482,7 +484,7 @@ void InputBinder::bind_assembly_entity_inputs(
     const char*                     entity_type,
     ConnectableEntity&              entity)
 {
-    const string entity_path = entity.get_path();
+    const string entity_path(entity.get_path().c_str());
     const ParamArray& entity_params = entity.get_parameters();
 
     for (each<InputArray> i = entity.get_inputs(); i; ++i)
@@ -566,9 +568,7 @@ bool InputBinder::try_bind_scene_entity_to_input(
           BIND(SymbolTable::SymbolColor, scene.colors());
           BIND(SymbolTable::SymbolTexture, scene.textures());
           BIND(SymbolTable::SymbolTextureInstance, scene.texture_instances());
-#ifdef APPLESEED_WITH_OSL
           BIND(SymbolTable::SymbolShaderGroup, scene.shader_groups());
-#endif
           BIND(SymbolTable::SymbolEnvironmentEDF, scene.environment_edfs());
           BIND(SymbolTable::SymbolEnvironmentShader, scene.environment_shaders());
         }
@@ -651,14 +651,13 @@ bool InputBinder::try_bind_assembly_entity_to_input(
           BIND(SymbolTable::SymbolBSDF, assembly.bsdfs());
           BIND(SymbolTable::SymbolBSSRDF, assembly.bssrdfs());
           BIND(SymbolTable::SymbolEDF, assembly.edfs());
-#ifdef APPLESEED_WITH_OSL
           BIND(SymbolTable::SymbolShaderGroup, assembly.shader_groups());
-#endif
           BIND(SymbolTable::SymbolSurfaceShader, assembly.surface_shaders());
           BIND(SymbolTable::SymbolMaterial, assembly.materials());
           BIND(SymbolTable::SymbolLight, assembly.lights());
           BIND(SymbolTable::SymbolObject, assembly.objects());
           BIND(SymbolTable::SymbolObjectInstance, assembly.object_instances());
+          BIND(SymbolTable::SymbolVolume, assembly.volumes());
         }
 
         #undef BIND
@@ -695,7 +694,7 @@ bool InputBinder::try_bind_scalar_to_input(
 {
     try
     {
-        const double value = from_string<double>(param_value);
+        const float value = from_string<float>(param_value);
         input.bind(new ScalarSource(value));
         return true;
     }
@@ -730,7 +729,7 @@ void InputBinder::bind_texture_instance_to_input(
     try
     {
         input.bind(
-            new TextureSource(
+            texture_instance->get_texture().create_source(
                 assembly_uid,
                 *texture_instance));
     }

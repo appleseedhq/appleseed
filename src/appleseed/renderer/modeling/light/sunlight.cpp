@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,23 +32,25 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/color/wavelengths.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/light/lighttarget.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/sampling/mappings.h"
+#include "foundation/image/regularspectrum.h"
 #include "foundation/math/basis.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/api/apistring.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <cmath>
@@ -57,6 +59,7 @@
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Assembly; }
+namespace renderer      { class ShadingContext; }
 
 using namespace foundation;
 using namespace std;
@@ -72,17 +75,18 @@ namespace
     // References:
     //
     //   http://www.cs.utah.edu/~shirley/papers/sunsky/sunsky.pdf
-    //   http://igad2.nhtv.nl/ompf2/viewtopic.php?f=3&t=33
+    //   http://ompf2.com/viewtopic.php?f=3&t=33
     //
 
     const char* Model = "sun_light";
 
     // The smallest valid turbidity value.
-    const double BaseTurbidity = 2.0;
+    const float BaseTurbidity = 2.0f;
 
     // Solid angle sustained by the Sun, as seen from Earth (in steradians).
     // Reference: http://en.wikipedia.org/wiki/Solid_angle#Sun_and_Moon
-    const float SunSolidAngle = 6.87e-5f;
+
+    const float SunRadius = 0.6957f; // millions of km
 
     class SunLight
       : public Light
@@ -94,30 +98,49 @@ namespace
           : Light(name, params)
         {
             m_inputs.declare("environment_edf", InputFormatEntity, "");
-            m_inputs.declare("turbidity", InputFormatScalar);
-            m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("turbidity", InputFormatFloat);
+            m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("size_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("distance", InputFormatFloat, "149.6");
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
+        bool on_frame_begin(
             const Project&          project,
-            const Assembly&         assembly,
-            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) override
         {
-            if (!Light::on_frame_begin(project, assembly, abort_switch))
+            if (!Light::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             // Evaluate uniform inputs.
             m_inputs.evaluate_uniforms(&m_values);
+
+            Source* distance_src = get_inputs().source("distance");
+            assert(distance_src != nullptr);
+            if (distance_src->is_uniform())
+                distance_src->evaluate_uniform(m_values.m_distance);
+            else
+            {
+                RENDERER_LOG_WARNING(
+                    "distance between sun and scene \"%s\" is not uniform, using default value of 149.6 million km.",
+                    get_path().c_str());
+                m_values.m_distance = 149.6f;
+            }
+
+            // Compute SunSolidAngle that depends on distance between Sun and scene.
+            // angular_diameter = 2 * arctan(sun_radius / (distance))
+            m_sun_solid_angle = TwoPi<float>() * (1 - cos(atan(SunRadius / m_values.m_distance)));
 
             // If the Sun light is bound to an environment EDF, let it override the Sun's direction and turbidity.
             const EnvironmentEDF* env_edf = dynamic_cast<EnvironmentEDF*>(m_inputs.get_entity("environment_edf"));
@@ -127,25 +150,39 @@ namespace
             // Apply turbidity bias.
             m_values.m_turbidity += BaseTurbidity;
 
+            const Source* size_multiplier_src = get_inputs().source("size_multiplier");
+            assert(size_multiplier_src != nullptr);
+            if (size_multiplier_src->is_uniform())
+                size_multiplier_src->evaluate_uniform(m_values.m_size_multiplier);
+            else
+            {
+                RENDERER_LOG_WARNING(
+                    "size multiplier of the sun light \"%s\" is not uniform.",
+                    get_path().c_str());
+            }
+
             const Scene::RenderData& scene_data = project.get_scene()->get_render_data();
-            m_scene_center = scene_data.m_center;
+            m_scene_center = Vector3d(scene_data.m_center);
             m_scene_radius = scene_data.m_radius;
             m_safe_scene_diameter = scene_data.m_safe_diameter;
+            m_sun_solid_angle = 6.87e-5f;
 
             precompute_constants();
 
             return true;
         }
 
-        virtual void sample(
-            InputEvaluator&         input_evaluator,
+        void sample(
+            const ShadingContext&   shading_context,
             const Transformd&       light_transform,
             const Vector2d&         s,
             Vector3d&               position,
             Vector3d&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
+            // todo: we need to choose a random direction as well in order to get
+            // soft shadows when using photon mapping.
             sample_disk(
                 light_transform,
                 s,
@@ -157,15 +194,35 @@ namespace
                 probability);
         }
 
-        virtual void sample(
-            InputEvaluator&         input_evaluator,
+        void sample(
+            const ShadingContext&   shading_context,
+            const Transformd&       light_transform,
+            const Vector3d&         target_point,
+            const Vector2d&         s,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            float&                  probability) const override
+        {
+            sample_sun_surface(
+                light_transform,
+                target_point,
+                s,
+                position,
+                outgoing,
+                value,
+                probability);
+        }
+
+        void sample(
+            const ShadingContext&   shading_context,
             const Transformd&       light_transform,
             const Vector2d&         s,
             const LightTargetArray& targets,
             Vector3d&               position,
             Vector3d&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
             const size_t target_count = targets.size();
 
@@ -200,48 +257,31 @@ namespace
             }
         }
 
-        virtual void evaluate(
-            InputEvaluator&         input_evaluator,
-            const Transformd&       light_transform,
+        float compute_distance_attenuation(
             const Vector3d&         target,
-            Vector3d&               position,
-            Vector3d&               outgoing,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+            const Vector3d&         position) const override
         {
-            outgoing = -normalize(light_transform.get_parent_z());
-            position = target - m_safe_scene_diameter * outgoing;
-
-            compute_sun_radiance(
-                outgoing,
-                m_values.m_turbidity,
-                m_values.m_radiance_multiplier,
-                value);
-
-            value *= SunSolidAngle;
-        }
-
-        virtual double compute_distance_attenuation(
-            const Vector3d&         target,
-            const Vector3d&         position) const APPLESEED_OVERRIDE
-        {
-            return 1.0;
+            return 1.0f;
         }
 
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            double      m_turbidity;                // atmosphere turbidity
-            double      m_radiance_multiplier;      // emitted radiance multiplier
+            float           m_turbidity;                // atmosphere turbidity
+            float           m_radiance_multiplier;      // emitted radiance multiplier
+            float           m_size_multiplier;          // sun size multiplier
+            float           m_distance;                 // distance between Sun and scene
         };
 
-        Vector3d        m_scene_center;             // world space
-        double          m_scene_radius;             // world space
-        double          m_safe_scene_diameter;      // world space
+        Vector3d            m_scene_center;             // world space
+        double              m_scene_radius;             // world space
+        double              m_safe_scene_diameter;      // world space
+        float               m_sun_solid_angle;
 
-        InputValues     m_values;
+        InputValues         m_values;
 
-        Spectrum        m_k1;
-        Spectrum        m_k2;
+        RegularSpectrum31f  m_k1;
+        RegularSpectrum31f  m_k2;
 
         void apply_env_edf_overrides(const EnvironmentEDF* env_edf)
         {
@@ -251,15 +291,15 @@ namespace
             if (sun_theta_src && sun_theta_src->is_uniform() &&
                 sun_phi_src && sun_phi_src->is_uniform())
             {
-                double sun_theta, sun_phi;
+                float sun_theta, sun_phi;
                 sun_theta_src->evaluate_uniform(sun_theta);
                 sun_phi_src->evaluate_uniform(sun_phi);
                 set_transform(
                     Transformd::from_local_to_parent(
-                        Matrix4d::rotation(
-                            Quaterniond::rotation(
+                        Matrix4d::make_rotation(
+                            Quaterniond::make_rotation(
                                 Vector3d(0.0, 0.0, -1.0),
-                                -Vector3d::unit_vector(deg_to_rad(sun_theta), deg_to_rad(sun_phi))))));
+                                -Vector3d::make_unit_vector(deg_to_rad(sun_theta), deg_to_rad(sun_phi))))));
             }
 
             // Use the Sun turbidity from the EDF if it has one.
@@ -268,7 +308,7 @@ namespace
             if (turbidity_src && turbidity_src->is_uniform() &&
                 turbidity_multiplier_src && turbidity_multiplier_src->is_uniform())
             {
-                double turbidity_multiplier;
+                float turbidity_multiplier;
                 turbidity_multiplier_src->evaluate_uniform(turbidity_multiplier);
                 turbidity_src->evaluate_uniform(m_values.m_turbidity);
                 m_values.m_turbidity *= turbidity_multiplier;
@@ -277,22 +317,20 @@ namespace
 
         void precompute_constants()
         {
-            m_k1.resize(Spectrum::Samples);
-            for (size_t i = 0; i < Spectrum::Samples; ++i)
+            for (size_t i = 0; i < 31; ++i)
                 m_k1[i] = -0.008735f * pow(g_light_wavelengths_um[i], -4.08f);
 
             const float Alpha = 1.3f;               // ratio of small to large particle sizes (0 to 4, typically 1.3)
 
-            m_k2.resize(Spectrum::Samples);
-            for (size_t i = 0; i < Spectrum::Samples; ++i)
+            for (size_t i = 0; i < 31; ++i)
                 m_k2[i] = pow(g_light_wavelengths_um[i], -Alpha);
         }
 
         void compute_sun_radiance(
             const Vector3d&         outgoing,
-            const double            turbidity,
-            const double            radiance_multiplier,
-            Spectrum&               radiance) const
+            const float             turbidity,
+            const float             radiance_multiplier,
+            RegularSpectrum31f&     radiance) const
         {
             // Compute the relative optical mass.
             const float cos_theta = -static_cast<float>(outgoing.y);
@@ -300,15 +338,13 @@ namespace
             const float m = 1.0f / (cos_theta + 0.15f * pow(93.885f - rad_to_deg(theta), -1.253f));
 
             // Compute transmittance due to Rayleigh scattering.
-            Spectrum tau_r;
-            tau_r.resize(Spectrum::Samples);
+            RegularSpectrum31f tau_r;
             for (size_t i = 0; i < 31; ++i)
                 tau_r[i] = exp(m * m_k1[i]);
 
             // Compute transmittance due to aerosols.
-            const float beta = 0.04608f * static_cast<float>(turbidity) - 0.04586f;
-            Spectrum tau_a;
-            tau_a.resize(Spectrum::Samples);
+            const float beta = 0.04608f * turbidity - 0.04586f;
+            RegularSpectrum31f tau_a;
             for (size_t i = 0; i < 31; ++i)
                 tau_a[i] = exp(-beta * m * m_k2[i]);
 
@@ -325,8 +361,7 @@ namespace
                 0.079f, 0.067f, 0.057f, 0.048f,
                 0.036f, 0.028f, 0.023f
             };
-            Spectrum tau_o;
-            tau_o.resize(Spectrum::Samples);
+            RegularSpectrum31f tau_o;
             for (size_t i = 0; i < 31; ++i)
                 tau_o[i] = exp(-Ko[i] * L * m);
 
@@ -344,8 +379,7 @@ namespace
                 0.000f, 0.000f, 0.000f, 0.000f,
                 0.000f, 0.000f, 0.000f
             };
-            Spectrum tau_g;
-            tau_g.resize(Spectrum::Samples);
+            RegularSpectrum31f tau_g;
             for (size_t i = 0; i < 31; ++i)
                 tau_g[i] = exp(-1.41f * Kg[i] * m / pow(1.0f + 118.93f * Kg[i] * m, 0.45f));
 #endif
@@ -363,8 +397,7 @@ namespace
                 0.000f, 0.000f, 0.000f, 0.000f,
                 0.000f, 0.016f, 0.024f
             };
-            Spectrum tau_wa;
-            tau_wa.resize(Spectrum::Samples);
+            RegularSpectrum31f tau_wa;
             for (size_t i = 0; i < 31; ++i)
                 tau_wa[i] = exp(-0.2385f * Kwa[i] * W * m / pow(1.0f + 20.07f * Kwa[i] * W * m, 0.45f));
 
@@ -385,15 +418,30 @@ namespace
             };
 
             // Compute the attenuated radiance of the Sun.
-            radiance = Spectrum(SunRadianceValues);
-            radiance *= tau_r;
-            radiance *= tau_a;
-            radiance *= tau_o;
+            for (size_t i = 0; i < 31; ++i)
+            {
+                radiance[i] =
+                    SunRadianceValues[i] *
+                    tau_r[i] *
+                    tau_a[i] *
+                    tau_o[i] *
 #ifdef COMPUTE_REDUNDANT
-            radiance *= tau_g;      // always 1.0
+                    tau_g[i] *      // always 1.0
 #endif
-            radiance *= tau_wa;
-            radiance *= static_cast<float>(radiance_multiplier);
+                    tau_wa[i] *
+                    radiance_multiplier;
+            }
+        }
+
+        static double compute_sun_radius(const double distance, const double scene_diameter)
+        {
+            // sun diameter = 1.3914
+            // angular_diameter = 2 * arctan(sun_diameter / (2 * distance))
+            // tan(angular_diameter / 2) * distance = sun_radius
+            // tan(angular_diameter / 2) * scene_diameter = virtual_sun_radius
+            // -> virtual_sun_radius = sun_radius * scene_diameter / distance
+
+            return SunRadius * scene_diameter / distance;
         }
 
         void sample_disk(
@@ -404,7 +452,7 @@ namespace
             Vector3d&               position,
             Vector3d&               outgoing,
             Spectrum&               value,
-            double&                 probability) const
+            float&                  probability) const
         {
             outgoing = -normalize(light_transform.get_parent_z());
 
@@ -417,15 +465,66 @@ namespace
                 + disk_radius * p[0] * basis.get_tangent_u()
                 + disk_radius * p[1] * basis.get_tangent_v();
 
-            probability = 1.0 / (Pi * disk_radius * disk_radius);
+            probability = 1.0f / (Pi<float>() * square(static_cast<float>(disk_radius)));
 
+            RegularSpectrum31f radiance;
             compute_sun_radiance(
                 outgoing,
                 m_values.m_turbidity,
                 m_values.m_radiance_multiplier,
-                value);
+                radiance);
 
-            value *= SunSolidAngle;
+            value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
+            value *= m_sun_solid_angle;
+        }
+
+        void sample_sun_surface(
+            const Transformd&       light_transform,
+            const Vector3d&         target_point,
+            const Vector2d&         s,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            float&                  probability) const
+        {
+            outgoing = -normalize(light_transform.get_parent_z());
+
+            const Basis3d basis(outgoing);
+            const Vector2d p = sample_disk_uniform(s);
+            const double sun_radius = compute_sun_radius(m_values.m_distance, m_safe_scene_diameter) * m_values.m_size_multiplier;
+
+            position =
+                  target_point
+                - m_safe_scene_diameter * basis.get_normal()
+                + sun_radius * p[0] * basis.get_tangent_u()
+                + sun_radius * p[1] * basis.get_tangent_v();
+
+            outgoing = normalize(target_point - position);
+
+            RegularSpectrum31f radiance;
+            compute_sun_radiance(
+                outgoing,
+                m_values.m_turbidity,
+                m_values.m_radiance_multiplier,
+                radiance);
+
+            value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
+            value *= m_sun_solid_angle;
+
+            //
+            // The sun is represented by a disk of finite radius. The sun's illumination
+            // at a given point of the scene is computed by integrating the sun's
+            // contribution over that disk. The probability density of a given sample on
+            // that disk is 1 / sun's disk surface area.
+            //
+            // Since compute_sun_radiance() assumes that the sun is reduced to a point
+            // infinitely far away, it's really returning an irradiance, and we need to
+            // convert it back to a radiance by dividing its return value by the surface
+            // area of the sun's disk, which is equivalent to multiplying the probability
+            // density by the sun disk's surface area, which leaves us with probability = 1.
+            //
+
+            probability = 1.0f;
         }
     };
 }
@@ -434,6 +533,11 @@ namespace
 //
 // SunLightFactory class implementation.
 //
+
+void SunLightFactory::release()
+{
+    delete this;
+}
 
 const char* SunLightFactory::get_model() const
 {
@@ -479,11 +583,51 @@ DictionaryArray SunLightFactory::get_input_metadata() const
             .insert("name", "radiance_multiplier")
             .insert("label", "Radiance Multiplier")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "10.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("help", "Light intensity multiplier"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "size_multiplier")
+            .insert("label", "Size Multiplier")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "100.0")
+                    .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", "1.0")
+            .insert("help", "The size multiplier allows to make the sun bigger or smaller, hence making it cast softer or harder shadows"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "distance")
+            .insert("label", "Distance")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "500.0")
+                    .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", "149.6")
+            .insert("help", "Distance between Sun and scene (millions of km)"));
 
     add_common_input_metadata(metadata);
 
@@ -493,13 +637,6 @@ DictionaryArray SunLightFactory::get_input_metadata() const
 auto_release_ptr<Light> SunLightFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<Light>(new SunLight(name, params));
-}
-
-auto_release_ptr<Light> SunLightFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<Light>(new SunLight(name, params));
 }

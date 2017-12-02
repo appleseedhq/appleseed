@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,10 +31,9 @@
 #define APPLESEED_FOUNDATION_IMAGE_EXRUTILS_H
 
 // OpenEXR headers.
-#include "foundation/platform/exrheaderguards.h"
-BEGIN_EXR_INCLUDES
+#include "foundation/platform/_beginexrheaders.h"
 #include "OpenEXR/ImfHeader.h"
-END_EXR_INCLUDES
+#include "foundation/platform/_endexrheaders.h"
 
 // Forward declarations.
 namespace foundation    { class ImageAttributes; }

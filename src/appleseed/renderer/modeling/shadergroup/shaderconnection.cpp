@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/shading/oslshadingsystem.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
@@ -110,7 +111,7 @@ const char *ShaderConnection::get_dst_param() const
     return impl->m_dst_param.c_str();
 }
 
-bool ShaderConnection::add(OSL::ShadingSystem& shading_system)
+bool ShaderConnection::add(OSLShadingSystem& shading_system)
 {
     if (!shading_system.ConnectShaders(
             get_src_layer(),

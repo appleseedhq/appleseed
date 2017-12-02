@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/uid.h"
 
 // appleseed.main headers.
@@ -44,10 +45,11 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class Assembly; }
-namespace renderer      { class InputEvaluator; }
+namespace renderer      { class BaseGroup; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
+namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 
 namespace renderer
@@ -89,30 +91,31 @@ class APPLESEED_DLLSYMBOL EDF
     int get_flags() const;
 
     // Retrieve the importance multiplier.
-    double get_uncached_importance_multiplier() const;
+    float get_uncached_importance_multiplier() const;
 
     // Get the cached light near start value.
     double get_light_near_start() const;
 
     // Retrieve the light near start value.
     double get_uncached_light_near_start() const;
+    
+    // Retrieve the approximate contribution.
+    virtual float get_uncached_max_contribution() const = 0;
+
+    // Get the cached approximate maximum contribution.
+    float get_max_contribution() const;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
+    bool on_frame_begin(
         const Project&              project,
-        const Assembly&             assembly,
-        foundation::IAbortSwitch*   abort_switch = 0);
-
-    // This method is called once after rendering each frame.
-    virtual void on_frame_end(
-        const Project&              project,
-        const Assembly&             assembly);
+        const BaseGroup*            parent,
+        OnFrameBeginRecorder&       recorder,
+        foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
     // Evaluate the inputs of this EDF.
-    // Input values are stored in the input evaluator.
-    virtual void evaluate_inputs(
-        InputEvaluator&             input_evaluator,
+    virtual void* evaluate_inputs(
+        const ShadingContext&       shading_context,
         const ShadingPoint&         shading_point) const;       // shading point on the light source
 
     // Sample the EDF and compute the emission direction, its probability
@@ -120,38 +123,52 @@ class APPLESEED_DLLSYMBOL EDF
     virtual void sample(
         SamplingContext&            sampling_context,
         const void*                 data,                       // input values
-        const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
-        const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
-        const foundation::Vector2d& s,                          // sample in [0,1)^2
-        foundation::Vector3d&       outgoing,                   // world space emission direction, unit-length
+        const foundation::Vector3f& geometric_normal,           // world space geometric normal, unit-length
+        const foundation::Basis3f&  shading_basis,              // world space orthonormal basis around shading normal
+        const foundation::Vector2f& s,                          // sample in [0,1)^2
+        foundation::Vector3f&       outgoing,                   // world space emission direction, unit-length
         Spectrum&                   value,                      // EDF value for this direction
-        double&                     probability) const = 0;     // PDF value
+        float&                      probability) const = 0;     // PDF value
 
     // Evaluate the EDF for a given emission direction.
     virtual void evaluate(
         const void*                 data,                       // input values
-        const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
-        const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
-        const foundation::Vector3d& outgoing,                   // world space emission direction, unit-length
+        const foundation::Vector3f& geometric_normal,           // world space geometric normal, unit-length
+        const foundation::Basis3f&  shading_basis,              // world space orthonormal basis around shading normal
+        const foundation::Vector3f& outgoing,                   // world space emission direction, unit-length
         Spectrum&                   value) const = 0;           // EDF value for this direction
     virtual void evaluate(
         const void*                 data,                       // input values
-        const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
-        const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
-        const foundation::Vector3d& outgoing,                   // world space emission direction, unit-length
+        const foundation::Vector3f& geometric_normal,           // world space geometric normal, unit-length
+        const foundation::Basis3f&  shading_basis,              // world space orthonormal basis around shading normal
+        const foundation::Vector3f& outgoing,                   // world space emission direction, unit-length
         Spectrum&                   value,                      // EDF value for this direction
-        double&                     probability) const = 0;     // PDF value
+        float&                      probability) const = 0;     // PDF value
 
     // Evaluate the PDF for a given emission direction.
-    virtual double evaluate_pdf(
+    virtual float evaluate_pdf(
         const void*                 data,                       // input values
-        const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
-        const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
-        const foundation::Vector3d& outgoing) const = 0;        // world space emission direction, unit-length
+        const foundation::Vector3f& geometric_normal,           // world space geometric normal, unit-length
+        const foundation::Basis3f&  shading_basis,              // world space orthonormal basis around shading normal
+        const foundation::Vector3f& outgoing) const = 0;        // world space emission direction, unit-length
+
+  protected:
+    float get_max_contribution_scalar(const Source* source) const;
+    float get_max_contribution_spectrum(const Source* source) const;
+
+    float get_max_contribution(
+        const Source*               source,
+        const Source*               multiplier,
+        const Source*               exposure) const;
+    float get_max_contribution(
+        const char*                 input_name,
+        const char*                 multiplier_name,
+        const char*                 exposure_name) const;
 
   private:
     int    m_flags;
     double m_light_near_start;
+    float  m_max_contribution;
 };
 
 
@@ -167,6 +184,11 @@ inline int EDF::get_flags() const
 inline double EDF::get_light_near_start() const
 {
     return m_light_near_start;
+}
+
+inline float EDF::get_max_contribution() const
+{
+    return m_max_contribution;
 }
 
 }       // namespace renderer

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -166,26 +166,26 @@ class ElementHandlerBase
     typedef IElementHandler<ElementID> ElementHandlerType;
 
     // Receive notification of the start of an element.
-    virtual void start_element(
-        const xercesc::Attributes&  attrs);
+    void start_element(
+        const xercesc::Attributes&  attrs) override;
 
     // Receive notification of the end of an element.
-    virtual void end_element();
+    void end_element() override;
 
     // Receive notification of character data inside an element.
-    virtual void characters(
+    void characters(
         const XMLCh* const          chars,
-        const XMLSize_t             length);
+        const XMLSize_t             length) override;
 
     // Receive notification of the start of a child element.
-    virtual void start_child_element(
+    void start_child_element(
         const ElementID             element,
-        ElementHandlerType*         handler);
+        ElementHandlerType*         handler) override;
 
     // Receive notification of the end of a child element.
-    virtual void end_child_element(
+    void end_child_element(
         const ElementID             element,
-        ElementHandlerType*         handler);
+        ElementHandlerType*         handler) override;
 
   protected:
     // Utility function to retrieve the value of an attribute.
@@ -211,7 +211,7 @@ class IElementHandlerFactory
     virtual ~IElementHandlerFactory() {}
 
     // Create a new instance of the element handler.
-    virtual std::auto_ptr<ElementHandlerType> create() = 0;
+    virtual std::unique_ptr<ElementHandlerType> create() = 0;
 };
 
 
@@ -230,31 +230,31 @@ class SAX2ContentHandler
     SAX2ContentHandler();
 
     // Destructor.
-    ~SAX2ContentHandler();
+    ~SAX2ContentHandler() override;
 
     // Register a factory for a given element.
     void register_factory(
         const std::string&                          name,
         const ElementID                             id,
-        std::auto_ptr<ElementHandlerFactoryType>    handler_factory);
+        std::unique_ptr<ElementHandlerFactoryType>  handler_factory);
 
     // Receive notification of the start of an element.
-    virtual void startElement(
+    void startElement(
         const XMLCh* const                          uri,
         const XMLCh* const                          localname,
         const XMLCh* const                          qname,
-        const xercesc::Attributes&                  attrs);
+        const xercesc::Attributes&                  attrs) override;
 
     // Receive notification of the end of an element.
-    virtual void endElement(
+    void endElement(
         const XMLCh* const                          uri,
         const XMLCh* const                          localname,
-        const XMLCh* const                          qname);
+        const XMLCh* const                          qname) override;
 
     // Receive notification of character data inside an element.
-    virtual void characters(
+    void characters(
         const XMLCh* const                          chars,
-        const XMLSize_t                             length);
+        const XMLSize_t                             length) override;
 
   private:
     typedef IElementHandler<ElementID> ElementHandlerType;
@@ -287,16 +287,16 @@ class ErrorLogger
         const std::string&  input_filepath);
 
     // Reset the error handler object on its reuse.
-    virtual void resetErrors();
+    void resetErrors() override;
 
     // Receive notification of a warning.
-    virtual void warning(const xercesc::SAXParseException& e);
+    void warning(const xercesc::SAXParseException& e) override;
 
     // Receive notification of a recoverable error.
-    virtual void error(const xercesc::SAXParseException& e);
+    void error(const xercesc::SAXParseException& e) override;
 
     // Receive notification of a non-recoverable error.
-    virtual void fatalError(const xercesc::SAXParseException& e);
+    void fatalError(const xercesc::SAXParseException& e) override;
 
     // Read the notification counters.
     size_t get_warning_count() const;
@@ -424,7 +424,7 @@ template <typename ElementID>
 void SAX2ContentHandler<ElementID>::register_factory(
     const std::string&                          name,
     const ElementID                             id,
-    std::auto_ptr<ElementHandlerFactoryType>    handler_factory)
+    std::unique_ptr<ElementHandlerFactoryType>  handler_factory)
 {
     FactoryInfo info;
     info.m_id = id;

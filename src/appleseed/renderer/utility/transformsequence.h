@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,7 @@
 #include "main/dllsymbol.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 
 namespace renderer
@@ -73,13 +74,13 @@ class APPLESEED_DLLSYMBOL TransformSequence
     // Set a transform at a given time.
     // Replaces any transform already set at this time.
     void set_transform(
-        const double                    time,
+        const float                     time,
         const foundation::Transformd&   transform);
 
     // Return a given (time, transform) pair.
     void get_transform(
         const size_t                    index,
-        double&                         time,
+        float&                          time,
         foundation::Transformd&         transform) const;
 
     // Return the transform with the lowest time value.
@@ -108,17 +109,17 @@ class APPLESEED_DLLSYMBOL TransformSequence
     bool swaps_handedness(const foundation::Transformd& xform) const;
 
     // Compute the transform for any time value.
-    foundation::Transformd evaluate(const double time) const;
+    foundation::Transformd evaluate(const float time) const;
 
     // A variant of evaluate() that avoids copying transforms in certain cases.
     const foundation::Transformd& evaluate(
-        const double                    time,
-        foundation::Transformd&         tmp) const;
+        const float                     time,
+        foundation::Transformd&         scratch) const;
 
     // Compose two transform sequences.
     TransformSequence operator*(const TransformSequence& rhs) const;
 
-    // Transform a 3D axis-aligned bounding box.
+    // Transform a 3D axis-aligned bounding box across the whole motion described by this sequence.
     // If the bounding box is invalid, it is returned unmodified.
     template <typename T>
     foundation::AABB<T, 3> to_parent(const foundation::AABB<T, 3>& bbox) const;
@@ -126,7 +127,7 @@ class APPLESEED_DLLSYMBOL TransformSequence
   private:
     struct TransformKey
     {
-        double                          m_time;
+        float                           m_time;
         foundation::Transformd          m_transform;
 
         bool operator<(const TransformKey& rhs) const
@@ -145,7 +146,7 @@ class APPLESEED_DLLSYMBOL TransformSequence
     void copy_from(const TransformSequence& rhs);
 
     void interpolate(
-        const double                    time,
+        const float                     time,
         foundation::Transformd&         result) const;
 
     foundation::AABB3d compute_motion_segment_bbox(
@@ -174,15 +175,15 @@ inline bool TransformSequence::can_swap_handedness() const
     return m_can_swap_handedness;
 }
 
-inline foundation::Transformd TransformSequence::evaluate(const double time) const
+inline foundation::Transformd TransformSequence::evaluate(const float time) const
 {
-    foundation::Transformd tmp;
-    return evaluate(time, tmp);
+    foundation::Transformd scratch;
+    return evaluate(time, scratch);
 }
 
 APPLESEED_FORCE_INLINE const foundation::Transformd& TransformSequence::evaluate(
-    const double            time,
-    foundation::Transformd& tmp) const
+    const float             time,
+    foundation::Transformd& scratch) const
 {
     if (m_size == 0)
         return foundation::Transformd::identity();
@@ -202,9 +203,9 @@ APPLESEED_FORCE_INLINE const foundation::Transformd& TransformSequence::evaluate
     if (time >= last->m_time)
         return last->m_transform;
 
-    interpolate(time, tmp);
+    interpolate(time, scratch);
 
-    return tmp;
+    return scratch;
 }
 
 template <typename T>

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -51,8 +51,8 @@
 #include "foundation/image/image.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/types.h"
-#include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/string.h"
 
 // Boost headers.
@@ -65,10 +65,10 @@
 #include <cassert>
 
 using namespace appleseed::shared;
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace studio {
@@ -82,6 +82,8 @@ namespace
     class MasterRendererThread
       : public QThread
     {
+        Q_OBJECT
+
       public:
         // Constructor.
         explicit MasterRendererThread(MasterRenderer* master_renderer)
@@ -89,23 +91,29 @@ namespace
         {
         }
 
+      signals:
+        void signal_rendering_failed();
+
       private:
         MasterRenderer* m_master_renderer;
 
         // The starting point for the thread.
-        virtual void run() APPLESEED_OVERRIDE
+        void run() override
         {
             set_current_thread_name("master_renderer");
 
-            m_master_renderer->render();
+            const auto result = m_master_renderer->render();
+
+            if (result == MasterRenderer::RenderingFailed)
+                emit signal_rendering_failed();
         }
     };
 }
 
 RenderingManager::RenderingManager(StatusBar& status_bar)
   : m_status_bar(status_bar)
-  , m_project(0)
-  , m_render_tab(0)
+  , m_project(nullptr)
+  , m_render_tab(nullptr)
 {
     //
     // The connections below are using the Qt::BlockingQueuedConnection connection type.
@@ -122,36 +130,36 @@ RenderingManager::RenderingManager(StatusBar& status_bar)
 
     connect(
         &m_renderer_controller, SIGNAL(signal_frame_begin()),
-        this, SLOT(slot_frame_begin()),
+        SLOT(slot_frame_begin()),
         Qt::BlockingQueuedConnection);
 
     connect(
         &m_renderer_controller, SIGNAL(signal_frame_end()),
-        this, SLOT(slot_frame_end()),
+        SLOT(slot_frame_end()),
         Qt::BlockingQueuedConnection);
 
     connect(
         &m_renderer_controller, SIGNAL(signal_rendering_begin()),
-        this, SLOT(slot_rendering_begin()),
+        SLOT(slot_rendering_begin()),
         Qt::BlockingQueuedConnection);
 
     connect(
         &m_renderer_controller, SIGNAL(signal_rendering_success()),
-        this, SLOT(slot_rendering_end()),
+        SLOT(slot_rendering_end()),
         Qt::BlockingQueuedConnection);
 
     connect(
         &m_renderer_controller, SIGNAL(signal_rendering_abort()),
-        this, SLOT(slot_rendering_end()),
+        SLOT(slot_rendering_end()),
         Qt::BlockingQueuedConnection);
 
     connect(
         &m_renderer_controller, SIGNAL(signal_rendering_success()),
-        this, SIGNAL(signal_rendering_end()));
+        SIGNAL(signal_rendering_end()));
 
     connect(
         &m_renderer_controller, SIGNAL(signal_rendering_abort()),
-        this, SIGNAL(signal_rendering_end()));
+        SIGNAL(signal_rendering_end()));
 }
 
 RenderingManager::~RenderingManager()
@@ -163,11 +171,15 @@ RenderingManager::~RenderingManager()
 void RenderingManager::start_rendering(
     Project*                    project,
     const ParamArray&           params,
+    const RenderingMode         rendering_mode,
     RenderTab*                  render_tab)
 {
     m_project = project;
     m_params = params;
+    m_rendering_mode = rendering_mode;
     m_render_tab = render_tab;
+
+    m_render_tab->get_render_widget()->start_render();
 
     m_tile_callback_factory.reset(
         new QtTileCallbackFactory(
@@ -184,15 +196,30 @@ void RenderingManager::start_rendering(
         new MasterRendererThread(m_master_renderer.get()));
 
     connect(
+        m_master_renderer_thread.get(), SIGNAL(signal_rendering_failed()),
+        SLOT(slot_frame_end()));
+
+    connect(
+        m_master_renderer_thread.get(), SIGNAL(signal_rendering_failed()),
+        SLOT(slot_rendering_failed()));
+
+    connect(
+        m_master_renderer_thread.get(), SIGNAL(signal_rendering_failed()),
+        SIGNAL(signal_rendering_end()));
+
+    connect(
         m_master_renderer_thread.get(), SIGNAL(finished()),
         SLOT(slot_master_renderer_thread_finished()));
+
+    if (m_rendering_mode == InteractiveRendering)
+        m_render_tab->get_camera_controller()->set_enabled(true);
 
     m_master_renderer_thread->start();
 }
 
 bool RenderingManager::is_rendering() const
 {
-    return m_master_renderer.get() != 0;
+    return m_master_renderer.get() != nullptr;
 }
 
 void RenderingManager::wait_until_rendering_end()
@@ -228,12 +255,12 @@ void RenderingManager::resume_rendering()
     m_renderer_controller.set_status(IRendererController::ContinueRendering);
 }
 
-void RenderingManager::schedule(auto_ptr<IScheduledAction> action)
+void RenderingManager::schedule(unique_ptr<IScheduledAction> action)
 {
     m_scheduled_actions.push_back(action.release());
 }
 
-void RenderingManager::schedule_or_execute(auto_ptr<IScheduledAction> action)
+void RenderingManager::schedule_or_execute(unique_ptr<IScheduledAction> action)
 {
     if (is_rendering())
     {
@@ -266,7 +293,7 @@ void RenderingManager::clear_scheduled_actions()
 
 void RenderingManager::set_sticky_action(
     const string&               key,
-    auto_ptr<IStickyAction>     action)
+    unique_ptr<IStickyAction>   action)
 {
     m_sticky_actions[key] = action.release();
 }
@@ -306,10 +333,7 @@ void RenderingManager::print_final_rendering_time()
 
 void RenderingManager::print_average_luminance()
 {
-    Image final_image(m_project->get_frame()->image());
-    m_project->get_frame()->transform_to_output_color_space(final_image);
-
-    const double average_luminance = compute_average_luminance(final_image);
+    const double average_luminance = compute_average_luminance(m_project->get_frame()->image());
 
     RENDERER_LOG_DEBUG(
         "final average luminance is %s.",
@@ -320,8 +344,8 @@ void RenderingManager::archive_frame_to_disk()
 {
     RENDERER_LOG_INFO("archiving frame to disk...");
 
-    const filesystem::path autosave_path =
-          filesystem::path(Application::get_root_path())
+    const bf::path autosave_path =
+          bf::path(Application::get_root_path())
         / "images" / "autosave";
 
     m_project->get_frame()->archive(autosave_path.string().c_str());
@@ -364,6 +388,9 @@ void RenderingManager::slot_rendering_begin()
 
 void RenderingManager::slot_rendering_end()
 {
+    if (m_rendering_mode == InteractiveRendering)
+        m_render_tab->get_camera_controller()->set_enabled(false);
+
     // Save the controller target point into the camera when rendering ends.
     m_render_tab->get_camera_controller()->save_camera_target();
 
@@ -374,6 +401,15 @@ void RenderingManager::slot_rendering_end()
 
     if (m_params.get_optional<bool>("autosave", true))
         archive_frame_to_disk();
+}
+
+void RenderingManager::slot_rendering_failed()
+{
+    if (m_rendering_mode == InteractiveRendering)
+        m_render_tab->get_camera_controller()->set_enabled(false);
+
+    // Save the controller target point into the camera when rendering ends.
+    m_render_tab->get_camera_controller()->save_camera_target();
 }
 
 void RenderingManager::slot_frame_begin()
@@ -402,57 +438,16 @@ void RenderingManager::slot_frame_end()
 
 void RenderingManager::slot_camera_change_begin()
 {
-    if (m_params.get_optional<bool>("freeze_display_during_navigation", false))
-    {
-        pause_rendering();
-
-        assert(m_frozen_display_func.get() == 0);
-        assert(m_frozen_display_thread.get() == 0);
-
-        m_frozen_display_abort_switch.clear();
-
-        m_frozen_display_func.reset(
-            new FrozenDisplayFunc(
-                get_sampling_context_mode(m_params),
-                *m_project->get_scene()->get_camera(),
-                *m_project->get_frame(),
-                *m_tile_callback_factory.get(),
-                m_frozen_display_abort_switch));
-
-        m_frozen_display_thread.reset(
-            new boost::thread(
-                ThreadFunctionWrapper<FrozenDisplayFunc>(m_frozen_display_func.get())));
-    }
 }
 
 void RenderingManager::slot_camera_changed()
 {
     m_has_camera_changed = true;
-
-    if (m_frozen_display_func.get())
-    {
-        m_frozen_display_func->set_camera_transform(
-            m_render_tab->get_camera_controller()->get_transform());
-    }
-    else
-    {
-        restart_rendering();
-    }
+    restart_rendering();
 }
 
 void RenderingManager::slot_camera_change_end()
 {
-    if (m_frozen_display_func.get())
-    {
-        m_frozen_display_abort_switch.abort();
-        m_frozen_display_thread->join();
-        m_frozen_display_thread.reset();
-        m_frozen_display_func.reset();
-
-        m_project->get_frame()->clear_main_image();
-
-        restart_rendering();
-    }
 }
 
 void RenderingManager::slot_master_renderer_thread_finished()
@@ -460,60 +455,7 @@ void RenderingManager::slot_master_renderer_thread_finished()
     m_master_renderer.reset();
 }
 
-
-//
-// RenderingManager::FrozenDisplayFunc class implementation.
-//
-
-RenderingManager::FrozenDisplayFunc::FrozenDisplayFunc(
-    const SamplingContext::Mode sampling_mode,
-    const Camera&               camera,
-    const Frame&                frame,
-    ITileCallbackFactory&       tile_callback_factory,
-    IAbortSwitch&               abort_switch)
-  : m_renderer(sampling_mode, camera, frame)
-  , m_frame(frame)
-  , m_tile_callback(tile_callback_factory.create())
-  , m_abort_switch(abort_switch)
-{
-    // Start by capturing the current frame as a point cloud.
-    m_renderer.capture();
-}
-
-void RenderingManager::FrozenDisplayFunc::set_camera_transform(const Transformd& transform)
-{
-    m_renderer.set_camera_transform(transform);
-}
-
-void RenderingManager::FrozenDisplayFunc::operator()()
-{
-    set_current_thread_name("frozen_display");
-
-    const double TargetElapsed = 1.0 / 30.0;
-
-    DefaultWallclockTimer timer;
-    const double rcp_timer_freq = 1.0 / timer.frequency();
-    uint64 last_time = timer.read();
-
-    while (!m_abort_switch.is_aborted())
-    {
-        // Render the point cloud to the frame.
-        m_renderer.render();
-
-        // Display the frame.
-        m_tile_callback->post_render(&m_frame);
-
-        // Limit frame rate.
-        const uint64 time = timer.read();
-        const double elapsed = (time - last_time) * rcp_timer_freq;
-        if (elapsed < TargetElapsed)
-        {
-            const double ms = ceil(1000.0 * (TargetElapsed - elapsed));
-            sleep(truncate<uint32>(ms), m_abort_switch);
-        }
-        last_time = time;
-    }
-}
-
 }   // namespace studio
 }   // namespace appleseed
+
+#include "mainwindow/rendering/moc_cpp_renderingmanager.cxx"

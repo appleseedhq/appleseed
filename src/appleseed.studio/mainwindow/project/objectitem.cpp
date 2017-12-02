@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -107,7 +107,7 @@ namespace
             collect_object_instances(object_instances, object_uid);
 
         // Remove object instances and their corresponding project items.
-        for (const_each<vector<UniqueID> > i = remove_list; i; ++i)
+        for (const_each<vector<UniqueID>> i = remove_list; i; ++i)
         {
             object_instances.remove(object_instances.get_by_uid(*i));
             delete item_registry.get_item(*i);
@@ -150,7 +150,7 @@ void ObjectItem::slot_instantiate()
     if (!instance_name.empty())
     {
         m_editor_context.m_rendering_manager.schedule_or_execute(
-            auto_ptr<RenderingManager::IScheduledAction>(
+            unique_ptr<RenderingManager::IScheduledAction>(
                 new EntityInstantiationAction<ObjectItem>(this, instance_name)));
     }
 }
@@ -175,7 +175,7 @@ void ObjectItem::do_instantiate(const string& name)
 void ObjectItem::delete_multiple(const QList<ItemBase*>& items)
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        auto_ptr<RenderingManager::IScheduledAction>(
+        unique_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<ObjectItem>(
                 qlist_static_cast<ObjectItem*>(items))));
 }

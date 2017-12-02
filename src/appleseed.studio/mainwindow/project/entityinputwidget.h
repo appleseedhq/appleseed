@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2016-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,9 +37,12 @@
 #include <QStackedWidget>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class DoubleSlider; }}
+namespace appleseed { namespace studio { class LineEditDoubleSliderAdaptor; }}
 class QLineEdit;
 class QPushButton;
 class QString;
+class QValidator;
 class QWidget;
 
 namespace appleseed {
@@ -55,7 +58,7 @@ class EntityInputWidget
     Q_OBJECT
 
   public:
-    explicit EntityInputWidget(QWidget* parent = 0);
+    explicit EntityInputWidget(QWidget* parent = nullptr);
 
     void set_focus();
 
@@ -83,8 +86,8 @@ class EntityInputProxy
   public:
     explicit EntityInputProxy(EntityInputWidget* input_widget);
 
-    virtual void set(const std::string& value) APPLESEED_OVERRIDE;
-    virtual std::string get() const APPLESEED_OVERRIDE;
+    void set(const std::string& value) override;
+    std::string get() const override;
 
   private:
     EntityInputWidget* m_input_widget;
@@ -101,11 +104,12 @@ class ColorMapInputWidget
     Q_OBJECT
 
   public:
-    explicit ColorMapInputWidget(QWidget* parent = 0);
+    explicit ColorMapInputWidget(QWidget* parent = nullptr);
+
+    void set_validator(QValidator* validator);
+    void set_default_value(const QString& default_value);
 
     void set_focus();
-
-    void set_default_value(const QString& default_value);
 
     QString get_value() const;
 
@@ -121,9 +125,11 @@ class ColorMapInputWidget
     void slot_unbind();
 
   private:
-    QString         m_default_value;
-    QLineEdit*      m_line_edit;
-    QPushButton*    m_entity_button;
+    QString                         m_default_value;
+    QLineEdit*                      m_line_edit;
+    DoubleSlider*                   m_slider;
+    QPushButton*                    m_entity_button;
+    LineEditDoubleSliderAdaptor*    m_adaptor;
 };
 
 class ColorMapInputProxy
@@ -132,8 +138,8 @@ class ColorMapInputProxy
   public:
     explicit ColorMapInputProxy(ColorMapInputWidget* input_widget);
 
-    virtual void set(const std::string& value) APPLESEED_OVERRIDE;
-    virtual std::string get() const APPLESEED_OVERRIDE;
+    void set(const std::string& value) override;
+    std::string get() const override;
 
   private:
     ColorMapInputWidget* m_input_widget;

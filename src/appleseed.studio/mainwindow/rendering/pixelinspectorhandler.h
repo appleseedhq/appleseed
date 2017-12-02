@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Freddy Chaleur, The appleseedhq Organization
+// Copyright (c) 2014-2017 Freddy Chaleur, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -54,7 +54,7 @@ class PixelInspectorHandler
         const ProjectExplorer&              project_explorer,
         const renderer::Project&            project);
 
-    ~PixelInspectorHandler();
+    ~PixelInspectorHandler() override;
 
     void set_enabled(const bool enabled);
 
@@ -67,7 +67,7 @@ class PixelInspectorHandler
     const renderer::Project&                m_project;
     bool                                    m_enabled;
 
-    virtual bool eventFilter(QObject* object, QEvent* event);
+    bool eventFilter(QObject* object, QEvent* event) override;
 
     void show_tooltip();
 };

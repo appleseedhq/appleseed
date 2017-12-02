@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -38,10 +38,12 @@
 #include "renderer/kernel/rendering/serialtilecallback.h"
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/display/display.h"
+#include "renderer/modeling/entity/onframebeginrecorder.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/utility/settingsparsing.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -73,20 +75,18 @@ MasterRenderer::MasterRenderer(
   : BaseRenderer(project, params)
   , m_renderer_controller(renderer_controller)
   , m_tile_callback_factory(tile_callback_factory)
-  , m_serial_renderer_controller(0)
-  , m_serial_tile_callback_factory(0)
-  , m_display(0)
+  , m_serial_renderer_controller(nullptr)
+  , m_serial_tile_callback_factory(nullptr)
+  , m_display(nullptr)
 {
-    if (!m_tile_callback_factory)
+    if (m_tile_callback_factory == nullptr)
     {
         // Try to use the display if there is one in the project
         // and no tile callback factory was specified.
         m_display = m_project.get_display();
-
         if (m_display && m_display->open(m_project))
             m_tile_callback_factory = m_display->get_tile_callback_factory();
-        else
-            m_display = 0;
+        else m_display = nullptr;
     }
 }
 
@@ -100,7 +100,7 @@ MasterRenderer::MasterRenderer(
         new SerialRendererController(renderer_controller, tile_callback))
   , m_serial_tile_callback_factory(
         new SerialTileCallbackFactory(m_serial_renderer_controller))
-  , m_display(0)
+  , m_display(nullptr)
 {
     m_renderer_controller = m_serial_renderer_controller;
     m_tile_callback_factory = m_serial_tile_callback_factory;
@@ -115,36 +115,38 @@ MasterRenderer::~MasterRenderer()
     delete m_serial_renderer_controller;
 }
 
-bool MasterRenderer::render()
+MasterRenderer::RenderingResult MasterRenderer::render()
 {
+    // Initialize thread-local variables.
+    Spectrum::set_mode(get_spectrum_mode(m_params));
+
     try
     {
-        do_render();
-        return true;
+        return do_render();
     }
     catch (const bad_alloc&)
     {
         m_renderer_controller->on_rendering_abort();
         RENDERER_LOG_ERROR("rendering failed (ran out of memory).");
-        return false;
+        return RenderingFailed;
     }
 #ifdef NDEBUG
     catch (const exception& e)
     {
         m_renderer_controller->on_rendering_abort();
         RENDERER_LOG_ERROR("rendering failed (%s).", e.what());
-        return false;
+        return RenderingFailed;
     }
     catch (...)
     {
         m_renderer_controller->on_rendering_abort();
         RENDERER_LOG_ERROR("rendering failed (unknown exception).");
-        return false;
+        return RenderingFailed;
     }
 #endif
 }
 
-void MasterRenderer::do_render()
+MasterRenderer::RenderingResult MasterRenderer::do_render()
 {
     while (true)
     {
@@ -156,11 +158,11 @@ void MasterRenderer::do_render()
         {
           case IRendererController::TerminateRendering:
             m_renderer_controller->on_rendering_success();
-            return;
+            return RenderingSucceeded;
 
           case IRendererController::AbortRendering:
             m_renderer_controller->on_rendering_abort();
-            return;
+            return RenderingAborted;
 
           case IRendererController::ReinitializeRendering:
             break;
@@ -182,7 +184,7 @@ namespace
         {
         }
 
-        virtual bool is_aborted() const APPLESEED_OVERRIDE
+        bool is_aborted() const override
         {
             const IRendererController::Status status = m_renderer_controller.get_status();
             return
@@ -198,17 +200,21 @@ namespace
 
 IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence()
 {
-    assert(m_project.get_scene());
-    assert(m_project.get_frame());
+    // Perform basic integrity checks on the scene.
+    if (!check_scene())
+        return IRendererController::AbortRendering;
 
     // Construct an abort switch based on the renderer controller.
     RendererControllerAbortSwitch abort_switch(*m_renderer_controller);
 
-    // We start by binding entities inputs. This must be done before creating/updating the trace context.
+    // We start by expanding all procedural assemblies.
+    if (!m_project.get_scene()->expand_procedural_assemblies(m_project, &abort_switch))
+        return IRendererController::AbortRendering;
+
+    // Bind entities inputs. This must be done before creating/updating the trace context.
     if (!bind_scene_entities_inputs())
         return IRendererController::AbortRendering;
 
-    m_project.create_aov_images();
     m_project.update_trace_context();
     m_project.get_frame()->print_settings();
 
@@ -224,27 +230,27 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     if (abort_switch.is_aborted())
         return m_renderer_controller->get_status();
 
+    // Perform pre-render rendering actions. Don't proceed if that failed.
+    if (!m_project.get_scene()->on_render_begin(m_project, &abort_switch))
+        return IRendererController::AbortRendering;
+
     // Create the renderer components.
     RendererComponents components(
         m_project,
         m_params,
         m_tile_callback_factory,
-        texture_store
-#ifdef APPLESEED_WITH_OIIO
-        , *m_texture_system
-#endif
-#ifdef APPLESEED_WITH_OSL
-        , *m_shading_system
-#endif
-        );
-    if (!components.initialize())
+        texture_store,
+        *m_texture_system,
+        *m_shading_system);
+    if (!components.create())
         return IRendererController::AbortRendering;
 
     // Execute the main rendering loop.
     const IRendererController::Status status =
-        render_frame_sequence(
-            components.get_frame_renderer(),
-            abort_switch);
+        render_frame_sequence(components, abort_switch);
+
+    // Perform post-render rendering actions.
+    m_project.get_scene()->on_render_end(m_project);
 
     // Print texture store performance statistics.
     RENDERER_LOG_DEBUG("%s", texture_store.get_statistics().to_string().c_str());
@@ -252,12 +258,36 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     return status;
 }
 
+bool MasterRenderer::check_scene() const
+{
+    if (m_project.get_scene() == nullptr)
+    {
+        RENDERER_LOG_ERROR("project does not contain a scene.");
+        return false;
+    }
+
+    if (m_project.get_frame() == nullptr)
+    {
+        RENDERER_LOG_ERROR("project does not contain a frame.");
+        return false;
+    }
+
+    if (m_project.get_uncached_active_camera() == nullptr)
+    {
+        RENDERER_LOG_ERROR("no active camera in project.");
+        return false;
+    }
+
+    return true;
+}
+
 IRendererController::Status MasterRenderer::render_frame_sequence(
-    IFrameRenderer&         frame_renderer,
+    RendererComponents&     components,
     IAbortSwitch&           abort_switch)
 {
     while (true)
     {
+        IFrameRenderer& frame_renderer = components.get_frame_renderer();
         assert(!frame_renderer.is_rendering());
 
         // The on_frame_begin() method of the renderer controller might alter the scene
@@ -265,9 +295,12 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
         // of the scene which assumes the scene is up-to-date and ready to be rendered.
         m_renderer_controller->on_frame_begin();
 
-        // Prepare the scene for rendering. Don't proceed if that failed.
-        if (!m_project.get_scene()->on_frame_begin(m_project, &abort_switch))
+        // Perform pre-frame rendering actions. Don't proceed if that failed.
+        OnFrameBeginRecorder recorder;
+        if (!components.get_shading_engine().on_frame_begin(m_project, recorder, &abort_switch) ||
+            !m_project.get_scene()->on_frame_begin(m_project, nullptr, recorder, &abort_switch))
         {
+            recorder.on_frame_end(m_project);
             m_renderer_controller->on_frame_end();
             return IRendererController::AbortRendering;
         }
@@ -275,7 +308,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
         // Don't proceed with rendering if scene preparation was aborted.
         if (abort_switch.is_aborted())
         {
-            m_project.get_scene()->on_frame_end(m_project);
+            recorder.on_frame_end(m_project);
             m_renderer_controller->on_frame_end();
             return m_renderer_controller->get_status();
         }
@@ -301,7 +334,8 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
 
         assert(!frame_renderer.is_rendering());
 
-        m_project.get_scene()->on_frame_end(m_project);
+        // Perform post-frame rendering actions
+        recorder.on_frame_end(m_project);
         m_renderer_controller->on_frame_end();
 
         switch (status)

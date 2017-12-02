@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,6 @@
 //
 
 // appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
 #include "gillocks.h"
 
 // appleseed.renderer headers.
@@ -37,6 +36,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/python.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -49,7 +49,7 @@ namespace
       , public bpy::wrapper<IRendererController>
     {
       public:
-        virtual void on_rendering_begin() APPLESEED_OVERRIDE
+        void on_rendering_begin() override
         {
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
@@ -65,7 +65,7 @@ namespace
             }
         }
 
-        virtual void on_rendering_success() APPLESEED_OVERRIDE
+        void on_rendering_success() override
         {
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
@@ -81,7 +81,7 @@ namespace
             }
         }
 
-        virtual void on_rendering_abort() APPLESEED_OVERRIDE
+        void on_rendering_abort() override
         {
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
@@ -97,7 +97,7 @@ namespace
             }
         }
 
-        virtual void on_frame_begin() APPLESEED_OVERRIDE
+        void on_frame_begin() override
         {
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
@@ -113,7 +113,7 @@ namespace
             }
         }
 
-        virtual void on_frame_end() APPLESEED_OVERRIDE
+        void on_frame_end() override
         {
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
@@ -129,7 +129,7 @@ namespace
             }
         }
 
-        virtual void on_progress() APPLESEED_OVERRIDE
+        void on_progress() override
         {
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
@@ -145,7 +145,7 @@ namespace
             }
         }
 
-        virtual Status get_status() const APPLESEED_OVERRIDE
+        Status get_status() const override
         {
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.

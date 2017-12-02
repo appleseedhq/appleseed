@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,11 +31,12 @@
 #include "logger.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/platform/snprintf.h"
 #include "foundation/platform/system.h"
 #include "foundation/platform/thread.h"
-#include "foundation/utility/log/ilogtarget.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/log/ilogtarget.h"
 #include "foundation/utility/string.h"
 
 // Boost headers.
@@ -72,7 +73,8 @@ namespace
             const ptime&                datetime,
             const size_t                thread,
             const string&               message)
-          : m_category(LogMessage::get_padded_category_name(category))
+          : m_category(LogMessage::get_category_name(category))
+          , m_padded_category(LogMessage::get_padded_category_name(category))
           , m_datetime(to_iso_extended_string(datetime) + 'Z')
           , m_thread(pad_left(to_string(thread), '0', 3))
           , m_process_size(pad_left(to_string(System::get_process_virtual_memory_size() / (1024 * 1024)) + " MB", ' ', 8))
@@ -84,6 +86,7 @@ namespace
         {
             string result = format;
             result = replace(result, "{category}", m_category);
+            result = replace(result, "{padded-category}", m_padded_category);
             result = replace(result, "{datetime-utc}", m_datetime);
             result = replace(result, "{thread}", m_thread);
             result = replace(result, "{process-size}", m_process_size);
@@ -93,6 +96,7 @@ namespace
 
       private:
         const string    m_category;
+        const string    m_padded_category;
         const string    m_datetime;
         const string    m_thread;
         const string    m_process_size;
@@ -116,7 +120,7 @@ namespace
 
         void reset_format(const LogMessage::Category category)
         {
-            set_format(category, "{datetime-utc} <{thread}> {process-size} {category} | {message}");
+            set_format(category, "{datetime-utc} <{thread}> {process-size} {padded-category} | {message}");
         }
 
         void set_all_formats(const string& format)
@@ -203,12 +207,13 @@ struct Logger::Impl
 {
     typedef list<ILogTarget*> LogTargetContainer;
 
-    boost::mutex        m_mutex;
-    bool                m_enabled;
-    LogTargetContainer  m_targets;
-    vector<char>        m_message_buffer;
-    ThreadMap           m_thread_map;
-    Formatter           m_formatter;
+    boost::mutex            m_mutex;
+    bool                    m_enabled;
+    LogMessage::Category    m_verbosity_level;
+    LogTargetContainer      m_targets;
+    vector<char>            m_message_buffer;
+    ThreadMap               m_thread_map;
+    Formatter               m_formatter;
 };
 
 namespace
@@ -221,6 +226,7 @@ Logger::Logger()
   : impl(new Impl())
 {
     impl->m_enabled = true;
+    impl->m_verbosity_level = LogMessage::Info;
     impl->m_message_buffer.resize(InitialBufferSize);
 }
 
@@ -229,10 +235,41 @@ Logger::~Logger()
     delete impl;
 }
 
+void Logger::initialize_from(const Logger& source)
+{
+    boost::mutex::scoped_lock source_lock(source.impl->m_mutex);
+    boost::mutex::scoped_lock this_lock(impl->m_mutex);
+
+    impl->m_enabled = source.impl->m_enabled;
+    impl->m_verbosity_level = source.impl->m_verbosity_level;
+
+    impl->m_targets.clear();
+    for (const_each<Impl::LogTargetContainer> i = source.impl->m_targets; i; ++i)
+        impl->m_targets.push_back(*i);
+
+    for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
+    {
+        const LogMessage::Category category = static_cast<LogMessage::Category>(i);
+        impl->m_formatter.set_format(category, source.impl->m_formatter.get_format(category));
+    }
+}
+
 void Logger::set_enabled(const bool enabled)
 {
     boost::mutex::scoped_lock lock(impl->m_mutex);
     impl->m_enabled = enabled;
+}
+
+void Logger::set_verbosity_level(const LogMessage::Category level)
+{
+    boost::mutex::scoped_lock lock(impl->m_mutex);
+    impl->m_verbosity_level = level;
+}
+
+LogMessage::Category Logger::get_verbosity_level() const
+{
+    boost::mutex::scoped_lock lock(impl->m_mutex);
+    return impl->m_verbosity_level;
 }
 
 void Logger::reset_all_formats()
@@ -330,21 +367,31 @@ void Logger::write(
 {
     boost::mutex::scoped_lock lock(impl->m_mutex);
 
+    if (category < impl->m_verbosity_level)
+        return;
+
+    LogMessage::Category effective_category = category;
+
     if (impl->m_enabled)
     {
-        // Print the message into the temporary buffer.
+        // Format the message into the temporary buffer.
         va_list argptr;
         va_start(argptr, format);
-        write_to_buffer(impl->m_message_buffer, MaxBufferSize, format, argptr);
+        const bool formatting_succeeded =
+            write_to_buffer(impl->m_message_buffer, MaxBufferSize, format, argptr);
+
+        // If formatting failed, print the message as an error.
+        if (!formatting_succeeded)
+            effective_category = LogMessage::Error;
 
         // Retrieve the current UTC time.
         const ptime datetime(microsec_clock::universal_time());
 
         // Format the header and message.
         const size_t thread = impl->m_thread_map.thread_id_to_int(boost::this_thread::get_id());
-        const FormatEvaluator format_evaluator(category, datetime, thread, &impl->m_message_buffer[0]);
-        const string header = format_evaluator.evaluate(impl->m_formatter.get_header_format(category));
-        const string message = format_evaluator.evaluate(impl->m_formatter.get_message_format(category));
+        const FormatEvaluator format_evaluator(effective_category, datetime, thread, &impl->m_message_buffer[0]);
+        const string header = format_evaluator.evaluate(impl->m_formatter.get_header_format(effective_category));
+        const string message = format_evaluator.evaluate(impl->m_formatter.get_message_format(effective_category));
 
         if (!message.empty())
         {
@@ -353,7 +400,7 @@ void Logger::write(
             {
                 ILogTarget* target = *i;
                 target->write(
-                    category,
+                    effective_category,
                     file,
                     line,
                     header.c_str(),
@@ -363,7 +410,7 @@ void Logger::write(
     }
 
     // Terminate the application if the message category is 'Fatal'.
-    if (category == LogMessage::Fatal)
+    if (effective_category == LogMessage::Fatal)
         exit(EXIT_FAILURE);
 }
 

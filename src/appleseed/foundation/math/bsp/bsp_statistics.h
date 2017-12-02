@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -139,12 +139,12 @@ void TreeStatistics<Tree, Builder>::print(Logger& logger)
 {
     LOG_DEBUG(
         logger,
-        "  build time       %s\n"
-        "  size             %s  %s %s\n"
-        "  nodes            total %s  interior %s  leaves %s\n"
-        "  empty leaves     leaves %s  volume %s\n"
-        "  leaf depth       avg %.1f  min %s  max %s  dev %.1f\n"
-        "  leaf size        avg %.1f  min %s  max %s  dev %.1f",
+        "  build time                    %s\n"
+        "  size                          %s  %s %s\n"
+        "  nodes                         total %s  interior %s  leaves %s\n"
+        "  empty leaves                  leaves %s  volume %s\n"
+        "  leaf depth                    avg %.1f  min %s  max %s  dev %.1f\n"
+        "  leaf size                     avg %.1f  min %s  max %s  dev %.1f",
         pretty_time(m_build_time).c_str(),
         pretty_size(m_memory_size).c_str(),
         pretty_uint(m_tree_size).c_str(),

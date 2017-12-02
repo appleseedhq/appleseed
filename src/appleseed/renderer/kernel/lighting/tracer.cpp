@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,16 +32,14 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/shading/oslshadergroupexec.h"
-#endif
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/scene.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
-#endif
+#include "renderer/modeling/volume/volume.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/string.h"
@@ -58,46 +56,48 @@ Tracer::Tracer(
     const Scene&                scene,
     const Intersector&          intersector,
     TextureCache&               texture_cache,
-#ifdef APPLESEED_WITH_OSL
     OSLShaderGroupExec&         shadergroup_exec,
-#endif
     const float                 transparency_threshold,
     const size_t                max_iterations,
     const bool                  print_details)
   : m_intersector(intersector)
   , m_texture_cache(texture_cache)
-#ifdef APPLESEED_WITH_OSL
   , m_shadergroup_exec(shadergroup_exec)
-#endif
   , m_assume_no_alpha_mapping(!scene.uses_alpha_mapping())
-  , m_transmission_threshold(static_cast<double>(transparency_threshold))
+  , m_assume_no_participating_media(!scene.has_participating_media())
+  , m_transmission_threshold(transparency_threshold)
   , m_max_iterations(max_iterations)
 {
     if (print_details)
     {
-        if (m_assume_no_alpha_mapping)
-            RENDERER_LOG_DEBUG("the scene does not rely on alpha mapping; using probe tracing.");
-        else RENDERER_LOG_DEBUG("the scene uses alpha mapping; using standard tracing.");
+        if (m_assume_no_alpha_mapping && m_assume_no_participating_media)
+            RENDERER_LOG_DEBUG("the scene does not rely on alpha mapping "
+                               "and does not contain participating media; using probe tracing.");
+        else RENDERER_LOG_DEBUG("the scene uses alpha mapping "
+                                "or contains participating media; using standard tracing.");
     }
 }
 
 const ShadingPoint& Tracer::do_trace(
-    const Vector3d&             origin,
-    const Vector3d&             direction,
-    const ShadingRay::Time&     ray_time,
-    const VisibilityFlags::Type ray_flags,
-    const ShadingRay::DepthType ray_depth,
-    double&                     transmission,
+    const ShadingContext&       shading_context,
+    const ShadingRay&           ray,
+    Spectrum&                   transmission,
     const ShadingPoint*         parent_shading_point)
 {
-    assert(is_normalized(direction));
+    assert(is_normalized(ray.m_dir));
 
-    transmission = 1.0;
+    transmission.set(1.0f);
 
     const ShadingPoint* shading_point_ptr = parent_shading_point;
     size_t shading_point_index = 0;
-    Vector3d point = origin;
+    Vector3d point = ray.m_org;
     size_t iterations = 0;
+
+    m_shading_points[shading_point_index].clear();
+    m_intersector.trace(
+        ray,
+        m_shading_points[shading_point_index],
+        shading_point_ptr);
 
     while (true)
     {
@@ -110,70 +110,116 @@ const ShadingPoint& Tracer::do_trace(
             break;
         }
 
-        // Construct the visibility ray.
-        const ShadingRay ray(
-            point,
-            direction,
-            ray_time,
-            ray_flags,
-            ray_depth);         // ray depth does not increase when passing through an alpha-mapped surface
-
-        // Trace the ray.
-        m_shading_points[shading_point_index].clear();
-        m_intersector.trace(
-            ray,
-            m_shading_points[shading_point_index],
-            shading_point_ptr);
-
         // Update the pointers to the shading points.
         shading_point_ptr = &m_shading_points[shading_point_index];
         shading_point_index = 1 - shading_point_index;
 
+        const ShadingRay& current_ray = shading_point_ptr->get_ray();
+
+        const ShadingRay::Medium* medium = current_ray.get_current_medium();
+        const Volume* volume = medium == nullptr ? nullptr : medium->get_volume();
+
         // Stop if the ray escaped the scene.
-        if (!shading_point_ptr->hit())
+        if (!shading_point_ptr->hit_surface())
+        {
+            if (volume != nullptr)
+            {
+                // The ray escaped the scene filled with volume, thus its transmission is 0.
+                transmission.set(0.0f);
+            }
             break;
+        }
 
         // Retrieve the material at the shading point.
         const Material* material = shading_point_ptr->get_material();
-        if (material == 0)
+        if (material == nullptr)
             break;
 
+        const Material::RenderData& render_data = material->get_render_data();
+
+        // Compute transmission of participating media.
+        const ShadingRay& volume_ray = shading_point_ptr->get_ray();
+        if (volume != nullptr)
+        {
+            Spectrum volume_transmission;
+            void* data = volume->evaluate_inputs(shading_context, volume_ray);
+            volume->prepare_inputs(shading_context.get_arena(), volume_ray, data);
+            volume->evaluate_transmission(data, volume_ray, volume_transmission);
+            transmission *= volume_transmission;
+        }
+
+        // Compute alpha.
         Alpha alpha;
         evaluate_alpha(*material, *shading_point_ptr, alpha);
+        if (render_data.m_bsdf == nullptr &&
+            render_data.m_bssrdf == nullptr &&
+            render_data.m_volume != nullptr)
+        {
+            alpha[0] = 0.0f;
+        }
 
         // Stop at the first fully opaque occluder.
         if (alpha[0] >= 1.0f)
             break;
 
         // Update the transmission factor.
-        transmission *= 1.0 - static_cast<double>(alpha[0]);
+        transmission *= 1.0f - alpha[0];
 
         // Stop once we hit full opacity.
-        if (transmission < m_transmission_threshold)
+        if (max_value(transmission) < m_transmission_threshold)
             break;
 
         // Move past this partial occluder.
         point = shading_point_ptr->get_point();
+
+        // Continue the ray in the same direction.
+        ShadingRay next_ray(
+            point,
+            current_ray.m_dir,
+            current_ray.m_time,
+            current_ray.m_flags,
+            current_ray.m_depth + (volume == nullptr ? 0 : 1));
+
+        // Determine whether the ray is entering or leaving a medium.
+        const bool entering = shading_point_ptr->is_entering();
+
+        // Update the medium list.
+        const ObjectInstance& object_instance = shading_point_ptr->get_object_instance();
+        if (entering)
+            next_ray.add_medium(current_ray, &object_instance, material, 1.0f);
+        else
+            next_ray.remove_medium(current_ray, &object_instance);
+
+        // Trace ray further.
+        m_shading_points[shading_point_index].clear();
+        m_intersector.trace(
+            next_ray,
+            m_shading_points[shading_point_index],
+            shading_point_ptr);
     }
 
     return *shading_point_ptr;
 }
 
 const ShadingPoint& Tracer::do_trace_between(
-    const Vector3d&             origin,
-    const Vector3d&             target,
-    const ShadingRay::Time&     ray_time,
-    const VisibilityFlags::Type ray_flags,
-    const ShadingRay::DepthType ray_depth,
-    double&                     transmission,
+    const ShadingContext&       shading_context,
+    const foundation::Vector3d& target,
+    const ShadingRay&           ray,
+    Spectrum&                   transmission,
     const ShadingPoint*         parent_shading_point)
 {
-    transmission = 1.0;
+    transmission.set(1.0f);
 
     const ShadingPoint* shading_point_ptr = parent_shading_point;
     size_t shading_point_index = 0;
-    Vector3d point = origin;
+    Vector3d point = ray.m_org;
     size_t iterations = 0;
+
+    m_shading_points[shading_point_index].clear();
+    m_intersector.trace(
+        ray,
+        m_shading_points[shading_point_index],
+        shading_point_ptr);
 
     while (true)
     {
@@ -186,56 +232,93 @@ const ShadingPoint& Tracer::do_trace_between(
             break;
         }
 
-        // Construct the visibility ray.
-        const Vector3d direction = target - point;
-        const double dist = norm(direction);
-
-        const ShadingRay ray(
-            point,
-            direction / dist,
-            0.0,                    // ray tmin
-            dist * (1.0 - 1.0e-6),  // ray tmax
-            ray_time,
-            ray_flags,
-            ray_depth);         // ray depth does not increase when passing through an alpha-mapped surface
-
-        // Trace the ray.
-        m_shading_points[shading_point_index].clear();
-        m_intersector.trace(
-            ray,
-            m_shading_points[shading_point_index],
-            shading_point_ptr);
-
         // Update the pointers to the shading points.
         shading_point_ptr = &m_shading_points[shading_point_index];
         shading_point_index = 1 - shading_point_index;
 
-        // Stop if the ray reached the target point.
-        if (!shading_point_ptr->hit())
+        const ShadingRay& current_ray = shading_point_ptr->get_ray();
+
+        // Get information about the medium that contains the shadow ray.
+        const ShadingRay::Medium* medium = current_ray.get_current_medium();
+        const Volume* volume =
+            (medium == nullptr) ? nullptr : medium->get_volume();
+        const ShadingRay& volume_ray = shading_point_ptr->get_ray();
+
+        // Compute transmission of participating media.
+        if (volume != nullptr)
+        {
+            Spectrum volume_transmission;
+            void* data = volume->evaluate_inputs(shading_context, volume_ray);
+            volume->prepare_inputs(shading_context.get_arena(), volume_ray, data);
+            volume->evaluate_transmission(data, volume_ray, volume_transmission);
+            transmission *= volume_transmission;
+        }
+
+        // Stop if the ray hit the target.
+        if (!shading_point_ptr->hit_surface())
             break;
 
         // Retrieve the material at the shading point.
         const Material* material = shading_point_ptr->get_material();
-        if (material == 0)
+        if (material == nullptr)
             break;
 
-        // Evaluate the alpha map at the shading point.
+        const Material::RenderData& render_data = material->get_render_data();
+
+        // Compute alpha.
         Alpha alpha;
         evaluate_alpha(*material, *shading_point_ptr, alpha);
+        if (
+            render_data.m_bsdf == nullptr &&
+            render_data.m_bssrdf == nullptr &&
+            render_data.m_volume != nullptr)
+        {
+            alpha[0] = 0.0f;
+        }
 
         // Stop at the first fully opaque occluder.
         if (alpha[0] >= 1.0f)
             break;
 
         // Update the transmission factor.
-        transmission *= 1.0 - static_cast<double>(alpha[0]);
+        transmission *= 1.0f - alpha[0];
 
         // Stop once we hit full opacity.
-        if (transmission < m_transmission_threshold)
+        if (max_value(transmission) < m_transmission_threshold)
             break;
 
         // Move past this partial occluder.
         point = shading_point_ptr->get_point();
+
+        // Continue the ray in the same direction.
+        const Vector3d direction = target - point;
+        const double dist = norm(direction);
+
+        ShadingRay next_ray(
+            point,
+            direction / dist,
+            0.0,                    // ray tmin
+            dist * (1.0 - 1.0e-6),  // ray tmax
+            current_ray.m_time,
+            current_ray.m_flags,
+            current_ray.m_depth + (volume == nullptr ? 0 : 1));
+
+        // Determine whether the ray is entering or leaving a medium.
+        const bool entering = shading_point_ptr->is_entering();
+
+        // Update the medium list.
+        const ObjectInstance& object_instance = shading_point_ptr->get_object_instance();
+        if (entering)
+            next_ray.add_medium(current_ray, &object_instance, material, 1.0f);
+        else
+            next_ray.remove_medium(current_ray, &object_instance);
+
+        // Trace ray further.
+        m_shading_points[shading_point_index].clear();
+        m_intersector.trace(
+            next_ray,
+            m_shading_points[shading_point_index],
+            shading_point_ptr);
     }
 
     return *shading_point_ptr;
@@ -248,7 +331,6 @@ void Tracer::evaluate_alpha(
 {
     alpha = shading_point.get_alpha();
 
-#ifdef APPLESEED_WITH_OSL
     // Apply OSL transparency if needed.
     if (const ShaderGroup* sg = material.get_render_data().m_shader_group)
     {
@@ -259,7 +341,6 @@ void Tracer::evaluate_alpha(
             alpha *= a;
         }
     }
-#endif
 }
 
 }   // namespace renderer

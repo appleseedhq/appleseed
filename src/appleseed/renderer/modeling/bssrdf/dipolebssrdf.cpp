@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,20 +28,14 @@
 
 // Interface header.
 #include "dipolebssrdf.h"
-#include "dipolebssrdffactory.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/bssrdf/bssrdfsample.h"
-#include "renderer/modeling/bssrdf/sss.h"
-#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/bssrdf/dipolebssrdffactory.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/sampling/mappings.h"
-#include "foundation/math/cdf.h"
-#include "foundation/math/scalar.h"
-#include "foundation/math/vector.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 using namespace foundation;
 using namespace std;
@@ -54,81 +48,109 @@ namespace renderer
 //
 
 DipoleBSSRDF::DipoleBSSRDF(
-    const char*         name,
-    const ParamArray&   params)
+    const char*             name,
+    const ParamArray&       params)
   : SeparableBSSRDF(name, params)
+  , m_has_sigma_sources(false)
 {
-    m_inputs.declare("weight", InputFormatScalar, "1.0");
+    m_inputs.declare("weight", InputFormatFloat, "1.0");
     m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-    m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
-    m_inputs.declare("dmfp", InputFormatSpectralReflectance);
-    m_inputs.declare("dmfp_multiplier", InputFormatScalar, "1.0");
+    m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
+    m_inputs.declare("mfp", InputFormatSpectralReflectance);
+    m_inputs.declare("mfp_multiplier", InputFormatFloat, "1.0");
     m_inputs.declare("sigma_a", InputFormatSpectralReflectance, "");
     m_inputs.declare("sigma_s", InputFormatSpectralReflectance, "");
-    m_inputs.declare("anisotropy", InputFormatScalar);
-    m_inputs.declare("outside_ior", InputFormatScalar);
-    m_inputs.declare("inside_ior", InputFormatScalar);
+    m_inputs.declare("g", InputFormatFloat, "0.0");
+    m_inputs.declare("ior", InputFormatFloat);
+    m_inputs.declare("fresnel_weight", InputFormatFloat, "1.0");
+}
+
+size_t DipoleBSSRDF::compute_input_data_size() const
+{
+    return sizeof(DipoleBSSRDFInputValues);
+}
+
+float DipoleBSSRDF::sample_profile(
+    const void*             data,
+    const size_t            channel,
+    const float             u) const
+{
+    const DipoleBSSRDFInputValues* values =
+        static_cast<const DipoleBSSRDFInputValues*>(data);
+
+    const float sigma_tr = values->m_precomputed.m_sigma_tr[channel];
+
+    return sample_exponential_distribution(u, sigma_tr);
+}
+
+float DipoleBSSRDF::evaluate_profile_pdf(
+    const void*             data,
+    const float             disk_radius) const
+{
+    const DipoleBSSRDFInputValues* values =
+        static_cast<const DipoleBSSRDFInputValues*>(data);
+
+    if (disk_radius > values->m_base_values.m_max_disk_radius)
+        return 0.0f;
+
+    float pdf = 0.0f;
+
+    for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+    {
+        const float channel_pdf = values->m_precomputed.m_channel_pdf[i];
+        const float sigma_tr = values->m_precomputed.m_sigma_tr[i];
+        pdf += channel_pdf * exponential_distribution_pdf(disk_radius, sigma_tr);
+    }
+
+    // Convert PDF to area measure (intuitively, multiply the PDF by the probability
+    // of choosing a particular point on the circle of radius 'disk_radius').
+    pdf /= TwoPi<float>() * disk_radius;
+
+    return pdf;
 }
 
 bool DipoleBSSRDF::sample(
-    SamplingContext&    sampling_context,
-    const void*         data,
-    BSSRDFSample&       sample) const
+    const ShadingContext&   shading_context,
+    SamplingContext&        sampling_context,
+    const void*             data,
+    const ShadingPoint&     outgoing_point,
+    const Vector3f&         outgoing_dir,
+    BSSRDFSample&           bssrdf_sample,
+    BSDFSample&             bsdf_sample) const
 {
     const DipoleBSSRDFInputValues* values =
-        reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
+        static_cast<const DipoleBSSRDFInputValues*>(data);
 
-    if (values->m_weight == 0.0)
-        return false;
-
-    sampling_context.split_in_place(3, 1);
-    const Vector3d s = sampling_context.next_vector2<3>();
-
-    // Sample a channel.
-    const size_t channel =
-        sample_cdf(
-            &values->m_channel_cdf[0],
-            &values->m_channel_cdf[0] + values->m_channel_cdf.size(),
-            s[0]);
-
-    // Sample a radius.
-    const double sigma_tr = values->m_sigma_tr[channel];
-    const double radius = sample_exponential_distribution(s[1], sigma_tr);
-
-    // Sample an angle.
-    const double phi = TwoPi * s[2];
-
-    sample.m_eta = values->m_eta;
-    sample.m_channel = channel;
-    sample.m_point = Vector2d(radius * cos(phi), radius * sin(phi));
-    sample.m_rmax2 = values->m_rmax2;
-
-    return true;
+    return do_sample(
+        shading_context,
+        sampling_context,
+        data,
+        values->m_base_values,
+        outgoing_point,
+        outgoing_dir,
+        bssrdf_sample,
+        bsdf_sample);
 }
 
-double DipoleBSSRDF::evaluate_pdf(
-    const void*         data,
-    const size_t        channel,
-    const double        radius) const
+void DipoleBSSRDF::evaluate(
+    const void*             data,
+    const ShadingPoint&     outgoing_point,
+    const Vector3f&         outgoing_dir,
+    const ShadingPoint&     incoming_point,
+    const Vector3f&         incoming_dir,
+    Spectrum&               value) const
 {
     const DipoleBSSRDFInputValues* values =
-        reinterpret_cast<const DipoleBSSRDFInputValues*>(data);
+        static_cast<const DipoleBSSRDFInputValues*>(data);
 
-    // PDF of the sampled radius.
-    double pdf_radius = 0.0;
-    for (size_t i = 0, e = values->m_sigma_tr.size(); i < e; ++i)
-    {
-        const double sigma_tr = values->m_sigma_tr[i];
-        pdf_radius +=
-              exponential_distribution_pdf(radius, sigma_tr)
-            * values->m_channel_pdf[i];
-    }
-
-    // PDF of the sampled angle.
-    const double pdf_angle = RcpTwoPi;
-
-    // Compute and return the final PDF.
-    return pdf_radius * pdf_angle;
+    return do_evaluate(
+        data,
+        values->m_base_values,
+        outgoing_point,
+        outgoing_dir,
+        incoming_point,
+        incoming_dir,
+        value);
 }
 
 
@@ -174,8 +196,8 @@ DictionaryArray DipoleBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "dmfp")
-            .insert("label", "Diffuse Mean Free Path")
+            .insert("name", "mfp")
+            .insert("label", "Mean Free Path")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
@@ -186,8 +208,8 @@ DictionaryArray DipoleBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "dmfp_multiplier")
-            .insert("label", "Diffuse Mean Free Path Multiplier")
+            .insert("name", "mfp_multiplier")
+            .insert("label", "Mean Free Path Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
@@ -196,33 +218,35 @@ DictionaryArray DipoleBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "anisotropy")
-            .insert("label", "Anisotropy")
+            .insert("name", "ior")
+            .insert("label", "Index of Refraction")
             .insert("type", "numeric")
-            .insert("min_value", "-1.0")
-            .insert("max_value", "1.0")
-            .insert("use", "required")
-            .insert("default", "0.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "outside_ior")
-            .insert("label", "Outside Index of Refraction")
-            .insert("type", "numeric")
-            .insert("min_value", "1.0")
-            .insert("max_value", "2.5")
-            .insert("use", "required")
-            .insert("default", "1.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "inside_ior")
-            .insert("label", "Inside Index of Refraction")
-            .insert("type", "numeric")
-            .insert("min_value", "1.0")
-            .insert("max_value", "2.5")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "2.5")
+                    .insert("type", "hard"))
             .insert("use", "required")
             .insert("default", "1.3"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "fresnel_weight")
+            .insert("label", "Fresnel Weight")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     return metadata;
 }

@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2016-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,9 @@
 // Standard headers.
 #include <cstddef>
 
+// appleseed.renderer headers.
+#include "renderer/modeling/material/material.h"
+
 using namespace foundation;
 
 namespace renderer
@@ -52,12 +55,12 @@ void ShadingRay::copy_media_from(const ShadingRay& source)
 void ShadingRay::add_medium(
     const ShadingRay&       source,
     const ObjectInstance*   object_instance,
-    const BSDF*             bsdf,
-    const double            ior)
+    const Material*         material,
+    const float             ior)
 {
     assert(m_medium_count == 0);
 
-    const uint8 medium_priority = object_instance->get_medium_priority();
+    const int8 medium_priority = object_instance->get_medium_priority();
     const uint8 n = source.m_medium_count;
     uint8 i = 0, j = 0;
 
@@ -67,7 +70,7 @@ void ShadingRay::add_medium(
     if (j < MaxMediumCount)
     {
         m_media[j].m_object_instance = object_instance;
-        m_media[j].m_bsdf = bsdf;
+        m_media[j].m_material = material;
         m_media[j].m_ior = ior;
         ++j;
     }
@@ -84,16 +87,23 @@ void ShadingRay::remove_medium(
 {
     assert(m_medium_count == 0);
 
-    const uint8 n = source.m_medium_count;
     uint8 j = 0;
 
-    for (uint8 i = 0; i < n; ++i)
+    for (uint8 i = 0, e = source.m_medium_count; i < e; ++i)
     {
         if (source.m_media[i].m_object_instance != object_instance)
             m_media[j++] = source.m_media[i];
     }
 
     m_medium_count = j;
+}
+
+const Volume* ShadingRay::Medium::get_volume() const
+{
+    if (m_material == nullptr)
+        return nullptr;
+
+    return m_material->get_render_data().m_volume;
 }
 
 }   // namespace renderer

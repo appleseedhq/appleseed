@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -67,7 +67,7 @@ class EntityBrowser<renderer::Project>
   public:
     explicit EntityBrowser(const renderer::Project& scene);
 
-    virtual foundation::StringDictionary get_entities(const std::string& type) const APPLESEED_OVERRIDE;
+    foundation::StringDictionary get_entities(const std::string& type) const override;
 
   private:
     const renderer::Project& m_project;
@@ -85,7 +85,7 @@ class EntityBrowser<renderer::BaseGroup>
   public:
     explicit EntityBrowser(const renderer::BaseGroup& base_group);
 
-    virtual foundation::StringDictionary get_entities(const std::string& type) const APPLESEED_OVERRIDE;
+    foundation::StringDictionary get_entities(const std::string& type) const override;
 
   private:
     const renderer::BaseGroup& m_base_group;
@@ -103,7 +103,7 @@ class EntityBrowser<renderer::Scene>
   public:
     explicit EntityBrowser(const renderer::Scene& scene);
 
-    virtual foundation::StringDictionary get_entities(const std::string& type) const APPLESEED_OVERRIDE;
+    foundation::StringDictionary get_entities(const std::string& type) const override;
 
   private:
     const renderer::Scene& m_scene;
@@ -121,7 +121,7 @@ class EntityBrowser<renderer::Assembly>
   public:
     explicit EntityBrowser(const renderer::Assembly& assembly);
 
-    virtual foundation::StringDictionary get_entities(const std::string& type) const APPLESEED_OVERRIDE;
+    foundation::StringDictionary get_entities(const std::string& type) const override;
 
   private:
     const renderer::Assembly& m_assembly;

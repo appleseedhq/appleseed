@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,6 @@
 //
 
 // appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
 #include "gillocks.h"
 
 // appleseed.renderer headers.
@@ -36,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/python.h"
 #include "foundation/utility/log.h"
 
 // Standard headers.
@@ -47,41 +47,51 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
+struct ILogTargetWrap
+  : public ILogTarget
+  , public bpy::wrapper<ILogTarget>
+{
+    ILogTargetWrap() {}
+    ~ILogTargetWrap() override {}
+
+    void release() override
+    {
+        delete this;
+    }
+
+    void write(
+        const LogMessage::Category  category,
+        const char*                 file,
+        const size_t                line,
+        const char*                 header,
+        const char*                 message) override
+    {
+        // Because this can be called from multiple threads
+        // we need to lock Python here.
+        ScopedGILLock lock;
+
+        try
+        {
+            this->get_override("write")(category, file, line, header, message);
+        }
+        catch (bpy::error_already_set)
+        {
+            PyErr_Print();
+        }
+    }
+};
+
+// Work around a regression in Visual Studio 2015 Update 3.
+#if defined(_MSC_VER) && _MSC_VER == 1900
+namespace boost
+{
+    template <> ILogTargetWrap const volatile* get_pointer<ILogTargetWrap const volatile>(ILogTargetWrap const volatile* p) { return p; }
+    template <> Logger const volatile* get_pointer<Logger const volatile>(Logger const volatile* p) { return p; }
+}
+#endif
+
 namespace
 {
-    struct ILogTargetWrap
-      : public ILogTarget
-      , public bpy::wrapper<ILogTarget>
-    {
-        ILogTargetWrap() {}
-        ~ILogTargetWrap() {}
-
-        virtual void release() APPLESEED_OVERRIDE
-        {
-            delete this;
-        }
-
-        virtual void write(
-            const LogMessage::Category  category,
-            const char*                 file,
-            const size_t                line,
-            const char*                 header,
-            const char*                 message) APPLESEED_OVERRIDE
-        {
-            // Because this can be called from multiple threads
-            // we need to lock Python here.
-            ScopedGILLock lock;
-
-            try
-            {
-                this->get_override("write")(category, file, line, header, message);
-            }
-            catch (bpy::error_already_set)
-            {
-                PyErr_Print();
-            }
-        }
-    };
 
     Logger* get_global_logger()
     {
@@ -131,6 +141,8 @@ void bind_logger()
 
     bpy::class_<Logger, boost::noncopyable>("Logger", bpy::no_init)
         .def("set_enabled", &Logger::set_enabled)
+        .def("set_verbosity_level", &Logger::set_verbosity_level)
+        .def("get_verbosity_level", &Logger::get_verbosity_level)
         .def("reset_all_formats", &Logger::reset_all_formats)
         .def("reset_format", &Logger::reset_format)
         .def("set_all_formats", logger_set_all_formats)

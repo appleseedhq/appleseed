@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -148,7 +148,7 @@ class APPLESEED_DLLSYMBOL EntityVector
     };
 
     // Constructor.
-    explicit EntityVector(Entity* parent = 0);
+    explicit EntityVector(Entity* parent = nullptr);
 
     // Destructor.
     ~EntityVector();
@@ -249,7 +249,7 @@ class TypedEntityVector
     };
 
     // Constructor.
-    explicit TypedEntityVector(Entity* parent = 0);
+    explicit TypedEntityVector(Entity* parent = nullptr);
 
     // Insert an entity into the container and return its index.
     size_t insert(foundation::auto_release_ptr<T> entity);

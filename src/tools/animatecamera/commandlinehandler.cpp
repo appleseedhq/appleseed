@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -52,74 +52,83 @@ CommandLineHandler::CommandLineHandler()
     m_filenames.set_exact_value_count(2);
     parser().set_default_option_handler(&m_filenames);
 
-    m_animation_path.add_name("--animation-path");
-    m_animation_path.add_name("-a");
-    m_animation_path.set_description("load an animation path file");
-    m_animation_path.set_syntax("filename.txt");
-    m_animation_path.set_exact_value_count(1);
-    parser().add_option_handler(&m_animation_path);
+    parser().add_option_handler(
+        &m_animation_path
+            .add_name("--animation-path")
+            .add_name("-a")
+            .set_description("load an animation path file")
+            .set_syntax("filename.txt")
+            .set_exact_value_count(1));
 
-    m_3dsmax_mode.add_name("--3dsmax");
-    m_3dsmax_mode.set_description("assume the animation path file uses Autodesk 3ds Max's coordinate system");
-    parser().add_option_handler(&m_3dsmax_mode);
+    parser().add_option_handler(
+        &m_3dsmax_mode
+            .add_name("--3dsmax")
+            .set_description("assume the animation path file uses Autodesk 3ds Max's coordinate system"));
 
-    m_output_format.add_name("--output-format");
-    m_output_format.add_name("-o");
-    m_output_format.set_description("set the format of the output frames");
-    m_output_format.set_syntax("format");
-    m_output_format.set_exact_value_count(1);
-    m_output_format.set_default_value("exr");
-    parser().add_option_handler(&m_output_format);
+    parser().add_option_handler(
+        &m_output_format
+            .add_name("--output-format")
+            .add_name("-o")
+            .set_description("set the format of the output frames")
+            .set_syntax("format")
+            .set_exact_value_count(1)
+            .set_default_value("exr"));
 
-    m_frame_count.add_name("--frame-count");
-    m_frame_count.add_name("-f");
-    m_frame_count.set_description("set the number of frames in the animation");
-    m_frame_count.set_syntax("count");
-    m_frame_count.set_exact_value_count(1);
-    m_frame_count.set_default_value(20);
-    parser().add_option_handler(&m_frame_count);
+    parser().add_option_handler(
+        &m_frame_count
+            .add_name("--frame-count")
+            .add_name("-f")
+            .set_description("set the number of frames in the animation")
+            .set_syntax("count")
+            .set_exact_value_count(1)
+            .set_default_value(20));
 
-    m_part_count.add_name("--part-count");
-    m_part_count.add_name("-p");
-    m_part_count.set_description("split the render script in that many parts");
-    m_part_count.set_syntax("count");
-    m_part_count.set_exact_value_count(1);
-    m_part_count.set_default_value(1);
-    parser().add_option_handler(&m_part_count);
+    parser().add_option_handler(
+        &m_part_count
+            .add_name("--part-count")
+            .add_name("-p")
+            .set_description("split the render script in that many parts")
+            .set_syntax("count")
+            .set_exact_value_count(1)
+            .set_default_value(1));
 
-    m_camera_target.add_name("--target");
-    m_camera_target.add_name("-t");
-    m_camera_target.set_description("set the target of the camera relatively to the center of the scene");
-    m_camera_target.set_syntax("x y z");
-    m_camera_target.set_exact_value_count(3);
-    m_camera_target.set_default_values(make_vector(0.0, 0.0, 0.0));
-    parser().add_option_handler(&m_camera_target);
+    parser().add_option_handler(
+        &m_camera_target
+            .add_name("--target")
+            .add_name("-t")
+            .set_description("set the target of the camera relatively to the center of the scene")
+            .set_syntax("x y z")
+            .set_exact_value_count(3)
+            .set_default_values(make_vector(0.0, 0.0, 0.0)));
 
-    m_camera_distance.add_name("--distance");
-    m_camera_distance.add_name("-d");
-    m_camera_distance.set_description("set the normalized distance from the camera to the scene");
-    m_camera_distance.set_syntax("scalar");
-    m_camera_distance.set_exact_value_count(1);
-    m_camera_distance.set_default_value(10.0);
-    parser().add_option_handler(&m_camera_distance);
+    parser().add_option_handler(
+        &m_camera_distance
+            .add_name("--distance")
+            .add_name("-d")
+            .set_description("set the normalized distance from the camera to the scene")
+            .set_syntax("scalar")
+            .set_exact_value_count(1)
+            .set_default_value(10.0));
 
-    m_camera_elevation.add_name("--elevation");
-    m_camera_elevation.add_name("-e");
-    m_camera_elevation.set_description("set the normalized elevation of the camera");
-    m_camera_elevation.set_syntax("scalar");
-    m_camera_elevation.set_exact_value_count(1);
-    m_camera_elevation.set_default_value(2.0);
-    parser().add_option_handler(&m_camera_elevation);
+    parser().add_option_handler(
+        &m_camera_elevation
+            .add_name("--elevation")
+            .add_name("-e")
+            .set_description("set the normalized elevation of the camera")
+            .set_syntax("scalar")
+            .set_exact_value_count(1)
+            .set_default_value(2.0));
 }
 
 void CommandLineHandler::print_program_usage(
-    const char*     program_name,
+    const char*     executable_name,
     SuperLogger&    logger) const
 {
     SaveLogFormatterConfig save_config(logger);
+    logger.set_verbosity_level(LogMessage::Info);
     logger.set_format(LogMessage::Info, "{message}");
 
-    LOG_INFO(logger, "usage: %s [options] master.appleseed output.appleseed", program_name);
+    LOG_INFO(logger, "usage: %s [options] master.appleseed output.appleseed", executable_name);
     LOG_INFO(logger, "options:");
 
     parser().print_usage(logger);

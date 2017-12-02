@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -42,13 +42,14 @@
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
-#include "foundation/math/intersection/planesegment.h"
 #include "foundation/math/dual.h"
+#include "foundation/math/intersection/planesegment.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/api/apistring.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // Standard headers.
@@ -109,21 +110,21 @@ namespace
         {
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
+        bool on_render_begin(
             const Project&      project,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch*       abort_switch) override
         {
-            if (!Camera::on_frame_begin(project, abort_switch))
+            if (!Camera::on_render_begin(project, abort_switch))
                 return false;
 
             // Extract the film dimensions from the camera parameters.
@@ -148,10 +149,10 @@ namespace
             return true;
         }
 
-        virtual void spawn_ray(
+        void spawn_ray(
             SamplingContext&    sampling_context,
             const Dual2d&       ndc,
-            ShadingRay&         ray) const APPLESEED_OVERRIDE
+            ShadingRay&         ray) const override
         {
             //
             // We do as if the ray originated on the film plane at Z = m_focal_length
@@ -164,9 +165,9 @@ namespace
             initialize_ray(sampling_context, ray);
 
             // Retrieve the camera transform.
-            Transformd tmp;
+            Transformd scratch;
             const Transformd& transform =
-                m_transform_sequence.evaluate(ray.m_time.m_absolute, tmp);
+                m_transform_sequence.evaluate(ray.m_time.m_absolute, scratch);
 
             // Compute ray origin and direction.
             ray.m_org = transform.get_local_to_parent().extract_translation();
@@ -177,24 +178,21 @@ namespace
             {
                 const Vector2d px(ndc.get_value() + ndc.get_dx());
                 const Vector2d py(ndc.get_value() + ndc.get_dy());
-
                 ray.m_rx.m_org = ray.m_org;
                 ray.m_ry.m_org = ray.m_org;
-
                 ray.m_rx.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(px)));
                 ray.m_ry.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(py)));
-
                 ray.m_has_differentials = true;
             }
         }
 
-        virtual bool connect_vertex(
+        bool connect_vertex(
             SamplingContext&    sampling_context,
-            const double        time,
+            const float         time,
             const Vector3d&     point,
             Vector2d&           ndc,
             Vector3d&           outgoing,
-            double&             importance) const APPLESEED_OVERRIDE
+            float&              importance) const override
         {
             // Project the point onto the film plane.
             if (!project_point(time, point, ndc))
@@ -206,8 +204,8 @@ namespace
                 return false;
 
             // Retrieve the camera transform.
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
 
             // Compute the outgoing direction vector in world space.
             outgoing = point - transform.get_local_to_parent().extract_translation();
@@ -218,15 +216,15 @@ namespace
             const double dist_film_lens = sqrt(square_dist_film_lens);
             const double cos_theta = m_focal_length / dist_film_lens;
             const double solid_angle = m_pixel_area * cos_theta / square_dist_film_lens;
-            importance = 1.0 / (square_norm(outgoing) * solid_angle);
+            importance = 1.0f / static_cast<float>(square_norm(outgoing) * solid_angle);
 
             // The connection was possible.
             return true;
         }
 
-        virtual bool project_camera_space_point(
+        bool project_camera_space_point(
             const Vector3d&     point,
-            Vector2d&           ndc) const APPLESEED_OVERRIDE
+            Vector2d&           ndc) const override
         {
             // Cannot project the point if it is behind the near plane.
             if (point.z > m_near_z)
@@ -239,16 +237,16 @@ namespace
             return true;
         }
 
-        virtual bool project_segment(
-            const double        time,
+        bool project_segment(
+            const float         time,
             const Vector3d&     a,
             const Vector3d&     b,
             Vector2d&           a_ndc,
-            Vector2d&           b_ndc) const APPLESEED_OVERRIDE
+            Vector2d&           b_ndc) const override
         {
             // Retrieve the camera transform.
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
 
             // Transform the segment to camera space.
             Vector3d local_a = transform.point_to_local(a);
@@ -280,14 +278,15 @@ namespace
         void print_settings() const
         {
             RENDERER_LOG_INFO(
-                "camera settings:\n"
-                "  model            %s\n"
-                "  film width       %f\n"
-                "  film height      %f\n"
-                "  focal length     %f\n"
-                "  near z           %f\n"
-                "  shutter open     %f\n"
-                "  shutter close    %f",
+                "camera \"%s\" settings:\n"
+                "  model                         %s\n"
+                "  film width                    %f\n"
+                "  film height                   %f\n"
+                "  focal length                  %f\n"
+                "  near z                        %f\n"
+                "  shutter open                  %f\n"
+                "  shutter close                 %f",
+                get_path().c_str(),
                 Model,
                 m_film_dimensions[0],
                 m_film_dimensions[1],
@@ -321,6 +320,11 @@ namespace
 //
 // PinholeCameraFactory class implementation.
 //
+
+void PinholeCameraFactory::release()
+{
+    delete this;
+}
 
 const char* PinholeCameraFactory::get_model() const
 {
@@ -380,8 +384,14 @@ DictionaryArray PinholeCameraFactory::get_input_metadata() const
             .insert("name", "horizontal_fov")
             .insert("label", "Horizontal FOV")
             .insert("type", "numeric")
-            .insert("min_value", "1.0")
-            .insert("max_value", "180.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "180.0")
+                    .insert("type", "soft"))
             .insert("use", "required"));
 
     metadata.push_back(
@@ -398,13 +408,6 @@ DictionaryArray PinholeCameraFactory::get_input_metadata() const
 auto_release_ptr<Camera> PinholeCameraFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return auto_release_ptr<Camera>(new PinholeCamera(name, params));
-}
-
-auto_release_ptr<Camera> PinholeCameraFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return auto_release_ptr<Camera>(new PinholeCamera(name, params));
 }

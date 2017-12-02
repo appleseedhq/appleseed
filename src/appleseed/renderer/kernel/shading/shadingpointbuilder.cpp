@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,14 +40,29 @@ ShadingPointBuilder::ShadingPointBuilder(ShadingPoint& shading_point)
 {
 }
 
+void ShadingPointBuilder::set_scene(const Scene* scene)
+{
+    m_shading_point.m_scene = scene;
+}
+
+void ShadingPointBuilder::set_ray(const ShadingRay& ray)
+{
+    m_shading_point.m_ray = ray;
+}
+
 void ShadingPointBuilder::set_primitive_type(const ShadingPoint::PrimitiveType primitive_type)
 {
     m_shading_point.m_primitive_type = primitive_type;
 }
 
-void ShadingPointBuilder::set_scene(const Scene* scene)
+void ShadingPointBuilder::set_distance(const double distance)
 {
-    m_shading_point.m_scene = scene;
+    m_shading_point.m_ray.m_tmax = distance;
+}
+
+void ShadingPointBuilder::set_bary(const foundation::Vector2f& bary)
+{
+    m_shading_point.m_bary = bary;
 }
 
 void ShadingPointBuilder::set_point(const Vector3d& point)
@@ -62,13 +77,18 @@ void ShadingPointBuilder::set_geometric_normal(const Vector3d& n)
     m_shading_point.m_members |= ShadingPoint::HasGeometricNormal;
 }
 
+void ShadingPointBuilder::set_side(const ObjectInstance::Side side)
+{
+    m_shading_point.m_side = side;
+}
+
 void ShadingPointBuilder::set_shading_basis(const Basis3d& basis)
 {
     m_shading_point.m_shading_basis = basis;
     m_shading_point.m_members |= ShadingPoint::HasShadingBasis;
 }
 
-void ShadingPointBuilder::set_uvs(const foundation::Vector2d& uv)
+void ShadingPointBuilder::set_uvs(const Vector2f& uv)
 {
     m_shading_point.m_uv = uv;
     m_shading_point.m_members |= ShadingPoint::HasUV0;

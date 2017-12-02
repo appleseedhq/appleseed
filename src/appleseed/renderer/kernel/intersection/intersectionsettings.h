@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,8 +34,8 @@
 #include "renderer/global/globaltypes.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/intersection/raytrianglemt.h"
 #include "foundation/math/beziercurve.h"
+#include "foundation/math/intersection/raytrianglemt.h"
 #include "foundation/math/matrix.h"
 
 // Standard headers.
@@ -119,12 +119,12 @@ const size_t TriangleTreeStackSize = 64;
 //
 
 // Curve formats used for storage and intersection.
-typedef foundation::BezierCurve3<GScalar> CurveType3;
-typedef foundation::BezierCurve1<GScalar> CurveType1;
+typedef foundation::BezierCurve1<GScalar> Curve1Type;
+typedef foundation::BezierCurve3<GScalar> Curve3Type;
 
 // Curve intersectors.
-typedef foundation::BezierCurveIntersector<CurveType3> Curve3IntersectorType;
-typedef foundation::BezierCurveIntersector<CurveType1> Curve1IntersectorType;
+typedef foundation::BezierCurveIntersector<Curve1Type> Curve1IntersectorType;
+typedef foundation::BezierCurveIntersector<Curve3Type> Curve3IntersectorType;
 
 // Matrix used in curve intersections
 typedef foundation::Matrix<GScalar, 4, 4> CurveMatrixType;

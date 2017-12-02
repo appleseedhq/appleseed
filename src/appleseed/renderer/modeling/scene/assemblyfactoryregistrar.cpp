@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,9 @@
 #include "assemblyfactoryregistrar.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/scene/archiveassembly.h"
 #include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/assemblytraits.h"
 #include "renderer/modeling/scene/iassemblyfactory.h"
 
 // appleseed.foundation headers.
@@ -40,6 +42,7 @@
 // Standard headers.
 #include <cassert>
 #include <string>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -47,17 +50,17 @@ using namespace std;
 namespace renderer
 {
 
-APPLESEED_DEFINE_ARRAY(AssemblyFactoryArray);
+APPLESEED_DEFINE_APIARRAY(AssemblyFactoryArray);
 
 struct AssemblyFactoryRegistrar::Impl
 {
     Registrar<IAssemblyFactory> m_registrar;
 };
 
-AssemblyFactoryRegistrar::AssemblyFactoryRegistrar()
+AssemblyFactoryRegistrar::AssemblyFactoryRegistrar(const SearchPaths& search_paths)
   : impl(new Impl())
 {
-    register_factory(auto_ptr<FactoryType>(new AssemblyFactory()));
+    reinitialize(search_paths);
 }
 
 AssemblyFactoryRegistrar::~AssemblyFactoryRegistrar()
@@ -65,10 +68,24 @@ AssemblyFactoryRegistrar::~AssemblyFactoryRegistrar()
     delete impl;
 }
 
-void AssemblyFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+void AssemblyFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 {
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, factory);
+    // The registrar must be cleared before the plugins are unloaded.
+    impl->m_registrar.clear();
+    unload_all_plugins();
+
+    // Register built-in factories.
+    register_factory(auto_release_ptr<FactoryType>(new ArchiveAssemblyFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new AssemblyFactory()));
+
+    // Register factories defined in plugins.
+    register_factories_from_plugins<Assembly>(
+        search_paths,
+        [this](void* plugin_entry_point)
+        {
+            auto create_fn = reinterpret_cast<IAssemblyFactory* (*)()>(plugin_entry_point);
+            register_factory(foundation::auto_release_ptr<IAssemblyFactory>(create_fn()));
+        });
 }
 
 AssemblyFactoryArray AssemblyFactoryRegistrar::get_factories() const
@@ -85,8 +102,13 @@ const AssemblyFactoryRegistrar::FactoryType*
 AssemblyFactoryRegistrar::lookup(const char* name) const
 {
     assert(name);
-
     return impl->m_registrar.lookup(name);
+}
+
+void AssemblyFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
+{
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, move(factory));
 }
 
 }   // namespace renderer

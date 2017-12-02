@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,17 +34,14 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/input/source.h"
-#include "renderer/modeling/input/texturesource.h"
+#include "renderer/modeling/input/sourceinputs.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/scene/objectinstance.h"
-#include "renderer/modeling/scene/textureinstance.h"
-#include "renderer/modeling/texture/texture.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/canvasproperties.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/lazy.h"
 
@@ -86,15 +83,15 @@ namespace
                 const Vector2f uv1(tess.get_tex_coords(i->m_a1));
                 const Vector2f uv2(tess.get_tex_coords(i->m_a2));
 
-                uv.push_back(Vector2f(uv0[0], 1.0f - uv0[1]));
-                uv.push_back(Vector2f(uv1[0], 1.0f - uv1[1]));
-                uv.push_back(Vector2f(uv2[0], 1.0f - uv2[1]));
+                uv.emplace_back(uv0[0], 1.0f - uv0[1]);
+                uv.emplace_back(uv1[0], 1.0f - uv1[1]);
+                uv.emplace_back(uv2[0], 1.0f - uv2[1]);
             }
             else
             {
-                uv.push_back(Vector2f(0.0f));
-                uv.push_back(Vector2f(0.0f));
-                uv.push_back(Vector2f(0.0f));
+                uv.emplace_back(0.0f);
+                uv.emplace_back(0.0f);
+                uv.emplace_back(0.0f);
             }
         }
     }
@@ -117,12 +114,12 @@ IntersectionFilter::IntersectionFilter(
     Object&                 object,
     const MaterialArray&    materials,
     TextureCache&           texture_cache)
-  : m_obj_alpha_mask(0)
+  : m_obj_alpha_mask(nullptr)
   , m_obj_alpha_map_signature(0)
 {
     // Initialize the material -> alpha mask mapping.
     m_material_alpha_map_signatures.assign(materials.size(), 0);
-    m_material_alpha_masks.assign(materials.size(), 0);
+    m_material_alpha_masks.assign(materials.size(), nullptr);
 
     // Create alpha masks.
     update(object, materials, texture_cache);
@@ -149,7 +146,7 @@ namespace
     void delete_and_clear(T*& ptr)
     {
         delete ptr;
-        ptr = 0;
+        ptr = nullptr;
     }
 }
 
@@ -160,18 +157,13 @@ void IntersectionFilter::do_update(
     IntersectionFilter::AlphaMask*& mask,
     uint64&                         signature)
 {
-    // Intersection filters would prevent shading fully transparent shading points,
-    // so don't create one if shading fully transparent shading points is enabled.
-    if (entity.shade_alpha_cutouts())
-        delete_and_clear(mask);
-
     // Use the uncached version of get_alpha_map() since at this point
     // on_frame_begin() hasn't been called on the materials, when
     // intersection filters are updated on existing triangle trees
     // prior to rendering.
     const Source* alpha_map = entity.get_uncached_alpha_map();
 
-    if (alpha_map == 0)
+    if (alpha_map == nullptr)
     {
         delete_and_clear(mask);
         return;
@@ -179,12 +171,12 @@ void IntersectionFilter::do_update(
 
     // Don't do anything if there is already an alpha mask and it is up-to-date.
     const uint64 alpha_map_sig = alpha_map->compute_signature();
-    if (mask != 0 && alpha_map_sig == signature)
+    if (mask != nullptr && alpha_map_sig == signature)
         return;
 
     // Build the alpha mask.
     double transparency;
-    auto_ptr<AlphaMask> alpha_mask(
+    unique_ptr<AlphaMask> alpha_mask(
         create_alpha_mask(
             alpha_map,
             texture_cache,
@@ -270,39 +262,25 @@ IntersectionFilter::AlphaMask* IntersectionFilter::create_alpha_mask(
 {
     assert(alpha_map);
 
-    // Compute the dimensions of the alpha mask.
-    size_t width, height;
-    if (dynamic_cast<const TextureSource*>(alpha_map))
-    {
-        const CanvasProperties& texture_props =
-            static_cast<const TextureSource*>(alpha_map)->get_texture_instance().get_texture().properties();
-        width = texture_props.m_canvas_width;
-        height = texture_props.m_canvas_height;
-    }
-    else
-    {
-        width = 1;
-        height = 1;
-    }
-
     // Create and initialize the alpha mask.
-    AlphaMask* alpha_mask = new AlphaMask(width, height);
+    const Source::Hints hints = alpha_map->get_hints();
+    AlphaMask* alpha_mask = new AlphaMask(hints.m_width, hints.m_height);
 
-    const double rcp_width = 1.0 / width;
-    const double rcp_height = 1.0 / height;
+    const float rcp_width = 1.0f / hints.m_width;
+    const float rcp_height = 1.0f / hints.m_height;
     size_t transparent_texel_count = 0;
 
     // Compute the alpha mask.
-    for (size_t y = 0; y < height; ++y)
+    for (size_t y = 0; y < hints.m_height; ++y)
     {
-        for (size_t x = 0; x < width; ++x)
+        for (size_t x = 0; x < hints.m_width; ++x)
         {
             // Evaluate the alpha map at the center of the texel.
-            const Vector2d uv(
-                (x + 0.5) * rcp_width,
-                1.0 - (y + 0.5) * rcp_height);
+            const Vector2f uv(
+                (x + 0.5f) * rcp_width,
+                1.0f - (y + 0.5f) * rcp_height);
             Alpha alpha;
-            alpha_map->evaluate(texture_cache, uv, alpha);
+            alpha_map->evaluate(texture_cache, SourceInputs(uv), alpha);
 
             // Mark this texel as opaque or transparent in the alpha mask.
             const bool opaque = alpha[0] > 0.0f;
@@ -314,7 +292,7 @@ IntersectionFilter::AlphaMask* IntersectionFilter::create_alpha_mask(
     }
 
     // Compute the ratio of transparent texels to the total number of texels.
-    transparency = static_cast<double>(transparent_texel_count) / (width * height);
+    transparency = static_cast<double>(transparent_texel_count) / (hints.m_width * hints.m_height);
 
     return alpha_mask;
 }

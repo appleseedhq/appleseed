@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +41,8 @@
 #define SETTINGS_FILE_DIALOG_FRAMES                 "ui.file_dialog.frames"
 #define SETTINGS_FILE_DIALOG_PROJECTS               "ui.file_dialog.projects"
 #define SETTINGS_FILE_DIALOG_OIIO_TEXTURES          "ui.file_dialog.oiio_textures"
+#define SETTINGS_FILE_DIALOG_PYTHON_SCRIPTS         "ui.file_dialog.python_editor"
+#define SETTINGS_FILE_DIALOG_ENTITIES               "ui.file_dialog.entities"
 
 #define SETTINGS_RENDER_REGION_TRIGGERS_RENDERING   "ui.render_region.triggers_rendering"
 #define SETTINGS_WATCH_FILE_CHANGES                 "ui.watch_file_changes"

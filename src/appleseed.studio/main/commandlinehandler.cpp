@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -51,24 +51,27 @@ CommandLineHandler::CommandLineHandler()
 {
     add_help_option();
 
-    m_filename.set_min_value_count(0);
-    m_filename.set_max_value_count(1);
-    parser().set_default_option_handler(&m_filename);
+    parser().set_default_option_handler(
+        &m_filename
+            .set_min_value_count(0)
+            .set_max_value_count(1));
 
-    m_render.add_name("--render");
-    m_render.set_description("start rendering using the specified configuration");
-    m_render.set_exact_value_count(1);
-    parser().add_option_handler(&m_render);
+    parser().add_option_handler(
+        &m_render
+            .add_name("--render")
+            .set_description("start rendering using the specified configuration")
+            .set_exact_value_count(1));
 }
 
 void CommandLineHandler::print_program_usage(
-    const char*     program_name,
+    const char*     executable_name,
     SuperLogger&    logger) const
 {
     SaveLogFormatterConfig save_config(logger);
+    logger.set_verbosity_level(LogMessage::Info);
     logger.set_format(LogMessage::Info, "{message}");
 
-    LOG_INFO(logger, "usage: %s [project.appleseed]", program_name);
+    LOG_INFO(logger, "usage: %s [project.appleseed]", executable_name);
     LOG_INFO(logger, "options:");
 
     parser().print_usage(logger);

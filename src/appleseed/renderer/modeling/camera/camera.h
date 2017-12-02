@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/uid.h"
 
 // appleseed.main headers.
@@ -46,7 +47,9 @@
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace foundation    { class IAbortSwitch; }
+namespace renderer      { class BaseGroup; }
 namespace renderer      { class Frame; }
+namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 namespace renderer      { class ShadingRay; }
@@ -78,25 +81,33 @@ class APPLESEED_DLLSYMBOL Camera
     const TransformSequence& transform_sequence() const;
 
     // Get the shutter open time.
-    double get_shutter_open_time() const;
+    float get_shutter_open_time() const;
 
     // Get the shutter close time.
-    double get_shutter_close_time() const;
+    float get_shutter_close_time() const;
 
     // Get the time at the middle of the shutter interval.
-    double get_shutter_middle_time() const;
+    float get_shutter_middle_time() const;
 
     // Get the amount of time the shutter is open.
-    double get_shutter_open_time_interval() const;
+    float get_shutter_open_time_interval() const;
+
+    // This method is called once before rendering.
+    // Returns true on success, false otherwise.
+    virtual bool on_render_begin(
+        const Project&                  project,
+        foundation::IAbortSwitch*       abort_switch = nullptr);
+
+    // This method is called once after rendering.
+    virtual void on_render_end(const Project& project);
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(
+    bool on_frame_begin(
         const Project&                  project,
-        foundation::IAbortSwitch*       abort_switch = 0);
-
-    // This method is called once after rendering each frame.
-    virtual void on_frame_end(const Project& project);
+        const BaseGroup*                parent,
+        OnFrameBeginRecorder&           recorder,
+        foundation::IAbortSwitch*       abort_switch = nullptr) override;
 
     // Generate a ray directed toward a given point on the film plane,
     // expressed in normalized device coordinates
@@ -115,17 +126,17 @@ class APPLESEED_DLLSYMBOL Camera
     // world space. Returns true if the connection was possible, false otherwise.
     virtual bool connect_vertex(
         SamplingContext&                sampling_context,
-        const double                    time,
+        const float                     time,
         const foundation::Vector3d&     point,
         foundation::Vector2d&           ndc,
         foundation::Vector3d&           outgoing,
-        double&                         importance) const = 0;
+        float&                          importance) const = 0;
 
     // Project a 3D point back to the film plane. The input point is expressed in
     // world space. The returned point is expressed in normalized device coordinates.
     // Returns true if the projection was possible, false otherwise.
     bool project_point(
-        const double                    time,
+        const float                     time,
         const foundation::Vector3d&     point,
         foundation::Vector2d&           ndc) const;
 
@@ -138,7 +149,7 @@ class APPLESEED_DLLSYMBOL Camera
     // world space. The returned segment is expressed in normalized device coordinates.
     // Returns true if the projection was possible, false otherwise.
     virtual bool project_segment(
-        const double                    time,
+        const float                     time,
         const foundation::Vector3d&     a,
         const foundation::Vector3d&     b,
         foundation::Vector2d&           a_ndc,
@@ -146,9 +157,9 @@ class APPLESEED_DLLSYMBOL Camera
 
   protected:
     TransformSequence   m_transform_sequence;
-    double              m_shutter_open_time;
-    double              m_shutter_close_time;
-    double              m_shutter_open_time_interval;
+    float               m_shutter_open_time;
+    float               m_shutter_close_time;
+    float               m_shutter_open_time_interval;
 
     // Utility function to retrieve the film dimensions (in meters) from the camera parameters.
     foundation::Vector2d extract_film_dimensions() const;
@@ -210,22 +221,22 @@ inline const TransformSequence& Camera::transform_sequence() const
     return m_transform_sequence;
 }
 
-inline double Camera::get_shutter_open_time() const
+inline float Camera::get_shutter_open_time() const
 {
     return m_shutter_open_time;
 }
 
-inline double Camera::get_shutter_close_time() const
+inline float Camera::get_shutter_close_time() const
 {
     return m_shutter_close_time;
 }
 
-inline double Camera::get_shutter_middle_time() const
+inline float Camera::get_shutter_middle_time() const
 {
-    return 0.5 * (m_shutter_open_time + m_shutter_close_time);
+    return 0.5f * (m_shutter_open_time + m_shutter_close_time);
 }
 
-inline double Camera::get_shutter_open_time_interval() const
+inline float Camera::get_shutter_open_time_interval() const
 {
     return m_shutter_open_time_interval;
 }

@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,15 +34,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/sharedlibrary.h"
-
-// Boost headers.
-#include <boost/shared_ptr.hpp>
-#include <boost/thread/locks.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/weak_ptr.hpp>
+#include "foundation/platform/thread.h"
 
 // Standard headers.
-#include <algorithm>
+#include <cassert>
 #include <map>
 #include <memory>
 #include <string>
@@ -59,8 +54,8 @@ namespace renderer
 //
 
 ExceptionPluginInitializationFailed::ExceptionPluginInitializationFailed()
+  : Exception("plugin initialization failed")
 {
-    set_what("Plugin initialization failed");
 }
 
 
@@ -70,13 +65,13 @@ ExceptionPluginInitializationFailed::ExceptionPluginInitializationFailed()
 
 struct Plugin::Impl
 {
-    explicit Impl(boost::shared_ptr<SharedLibrary> p)
+    explicit Impl(std::shared_ptr<SharedLibrary> p)
       : m_library(p)
     {
         assert(m_library);
     }
 
-    boost::shared_ptr<SharedLibrary> m_library;
+    std::shared_ptr<SharedLibrary> m_library;
 };
 
 Plugin::Plugin(Impl* impl)
@@ -100,15 +95,6 @@ void* Plugin::get_symbol(const char* name, const bool no_throw) const
     return impl->m_library->get_symbol(name, no_throw);
 }
 
-const char* Plugin::get_default_file_extension()
-{
-#ifdef _WIN32
-    return ".dll";
-#else
-    return ".so";
-#endif
-}
-
 
 //
 // PluginCache class implementation.
@@ -116,25 +102,25 @@ const char* Plugin::get_default_file_extension()
 
 namespace
 {
-    typedef map<string, boost::weak_ptr<SharedLibrary> > PluginCacheType;
+    typedef map<string, std::weak_ptr<SharedLibrary>> PluginCacheType;
 
     PluginCacheType g_plugin_cache;
-    boost::mutex g_plugin_cache_mutex;
+    boost::mutex    g_plugin_cache_mutex;
 
     struct PluginDeleter
     {
-        void operator()(SharedLibrary* p)
+        void operator()(SharedLibrary* lib)
         {
             boost::lock_guard<boost::mutex> lock(g_plugin_cache_mutex);
 
-            // Try to call the plugin uninitialize function if defined.
+            // Try to call the plugin's uninitialization function if defined.
             Plugin::UnInitPluginFnType uninit_fn =
                 reinterpret_cast<Plugin::UnInitPluginFnType>(
-                    p->get_symbol("uninitialize_plugin"));
+                    lib->get_symbol("uninitialize_plugin"));
             if (uninit_fn)
                 uninit_fn();
 
-            delete p;
+            delete lib;
         }
     };
 }
@@ -147,7 +133,7 @@ auto_release_ptr<Plugin> PluginCache::load(const char* path)
     PluginCacheType::iterator it = g_plugin_cache.find(path);
     if (it != g_plugin_cache.end())
     {
-        if (boost::shared_ptr<SharedLibrary> lib = it->second.lock())
+        if (std::shared_ptr<SharedLibrary> lib = it->second.lock())
         {
             Plugin::Impl* impl = new Plugin::Impl(lib);
             return auto_release_ptr<Plugin>(new Plugin(impl));
@@ -155,9 +141,9 @@ auto_release_ptr<Plugin> PluginCache::load(const char* path)
     }
 
     // If this plugin is not in the cache, load the shared lib.
-    boost::shared_ptr<SharedLibrary> lib(new SharedLibrary(path), PluginDeleter());
+    std::shared_ptr<SharedLibrary> lib(new SharedLibrary(path), PluginDeleter());
 
-    // Try to call the initialization function if defined.
+    // Try to call the plugin's initialization function if defined.
     Plugin::InitPluginFnType init_fn =
         reinterpret_cast<Plugin::InitPluginFnType>(
             lib->get_symbol("initialize_plugin"));
@@ -168,7 +154,7 @@ auto_release_ptr<Plugin> PluginCache::load(const char* path)
     }
 
     Plugin::Impl* impl = new Plugin::Impl(lib);
-    g_plugin_cache[path] = boost::weak_ptr<SharedLibrary>(lib);
+    g_plugin_cache[path] = std::weak_ptr<SharedLibrary>(lib);
     return auto_release_ptr<Plugin>(new Plugin(impl));
 }
 

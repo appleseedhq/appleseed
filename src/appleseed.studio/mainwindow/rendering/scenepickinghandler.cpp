@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,11 @@
 #include "renderer/api/surfaceshader.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/fp.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/api/apistring.h"
+#include "foundation/utility/iostreamop.h"
+#include "foundation/utility/string.h"
 
 // Qt headers.
 #include <QComboBox>
@@ -61,6 +65,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstddef>
 #include <ostream>
 #include <sstream>
 
@@ -159,16 +164,34 @@ namespace
         }
     }
 
-    string print_entity(const char* label, const Entity* entity)
+    const char* get_side_name(const ObjectInstance::Side side)
     {
-        stringstream sstr;
-        sstr << label;
+        switch (side)
+        {
+          case ObjectInstance::FrontSide: return "front";
+          case ObjectInstance::BackSide: return "back";
+          case ObjectInstance::BothSides: return "front+back";
+          default: return "unknown";
+        }
+    }
 
-        if (entity)
-            sstr << "\"" << entity->get_name() << "\" (#" << entity->get_uid() << ")";
-        else sstr << "n/a";
+    template <typename T, size_t N>
+    Vector<T, N> filter_neg_zero(const Vector<T, N>& v)
+    {
+        Vector<T, N> result;
 
-        return sstr.str();
+        for (size_t i = 0; i < N; ++i)
+            result[i] = FP<T>::is_neg_zero(v[i]) ? T(0.0) : v[i];
+
+        return result;
+    }
+
+    string print_entity(const char* prefix, const Entity* entity)
+    {
+        return
+            entity
+                ? format("{0}\"{1}\" (#{2})", prefix, entity->get_path(), entity->get_uid())
+                : format("{0}n/a", prefix);
     }
 
     const Entity* get_picked_entity(
@@ -196,7 +219,7 @@ namespace
         else
         {
             assert(!"Invalid picking mode.");
-            return 0;
+            return nullptr;
         }
     }
 }
@@ -206,34 +229,49 @@ ItemBase* ScenePickingHandler::pick(const QPoint& point)
     if (!m_project.has_trace_context())
     {
         RENDERER_LOG_INFO("the scene must be rendering or must have been rendered at least once for picking to be available.");
-        return 0;
+        return nullptr;
     }
 
     const Vector2i pix = m_mouse_tracker.widget_to_pixel(point);
     const Vector2d ndc = m_mouse_tracker.widget_to_ndc(point);
 
-    const ScenePicker scene_picker(m_project.get_trace_context());
+    const ScenePicker scene_picker(m_project);
     const ScenePicker::PickingResult result = scene_picker.pick(ndc);
 
     stringstream sstr;
 
     sstr << "picking details:" << endl;
-    sstr << "  pixel coords     " << pix.x << ", " << pix.y << endl;
-    sstr << "  ndc coords       " << ndc.x << ", " << ndc.y << endl;
-    sstr << "  world coords     " << result.m_point.x << ", " << result.m_point.y << ", " << result.m_point.z << endl;
-    sstr << "  depth            " << result.m_distance << endl;
-    sstr << "  primitive type   " << get_primitive_type_name(result.m_primitive_type) << endl;
 
-    sstr << print_entity("  camera           ", result.m_camera) << endl;
-    sstr << print_entity("  assembly inst.   ", result.m_assembly_instance) << endl;
-    sstr << print_entity("  assembly         ", result.m_assembly) << endl;
-    sstr << print_entity("  object inst.     ", result.m_object_instance) << endl;
-    sstr << print_entity("  object           ", result.m_object) << endl;
-    sstr << print_entity("  material         ", result.m_material) << endl;
-    sstr << print_entity("  surface shader   ", result.m_surface_shader) << endl;
-    sstr << print_entity("  bsdf             ", result.m_bsdf) << endl;
-    sstr << print_entity("  bssrdf           ", result.m_bssrdf) << endl;
-    sstr << print_entity("  edf              ", result.m_edf);
+    sstr << "  pixel coordinates             " << pix << endl;
+    sstr << "  ndc coordinates               " << ndc << endl;
+    sstr << "  primitive type                " << get_primitive_type_name(result.m_primitive_type) << endl;
+    sstr << "  distance                      " << result.m_distance << endl;
+
+    sstr << "  barycentric coordinates       " << filter_neg_zero(result.m_bary) << endl;
+    sstr << "  uv coordinates                " << filter_neg_zero(result.m_uv) << endl;
+    sstr << "  duvdx                         " << filter_neg_zero(result.m_duvdx) << endl;
+    sstr << "  duvdy                         " << filter_neg_zero(result.m_duvdy) << endl;
+    sstr << "  point                         " << filter_neg_zero(result.m_point) << endl;
+    sstr << "  dpdu                          " << filter_neg_zero(result.m_dpdu) << endl;
+    sstr << "  dpdv                          " << filter_neg_zero(result.m_dpdv) << endl;
+    sstr << "  dndu                          " << filter_neg_zero(result.m_dndu) << endl;
+    sstr << "  dndv                          " << filter_neg_zero(result.m_dndv) << endl;
+    sstr << "  dpdx                          " << filter_neg_zero(result.m_dpdx) << endl;
+    sstr << "  dpdy                          " << filter_neg_zero(result.m_dpdy) << endl;
+    sstr << "  geometric normal              " << filter_neg_zero(result.m_geometric_normal) << endl;
+    sstr << "  shading normal                " << filter_neg_zero(result.m_original_shading_normal) << endl;
+    sstr << "  side                          " << get_side_name(result.m_side) << endl;
+
+    sstr << print_entity("  camera                        ", result.m_camera) << endl;
+    sstr << print_entity("  assembly instance             ", result.m_assembly_instance) << endl;
+    sstr << print_entity("  assembly                      ", result.m_assembly) << endl;
+    sstr << print_entity("  object instance               ", result.m_object_instance) << endl;
+    sstr << print_entity("  object                        ", result.m_object) << endl;
+    sstr << print_entity("  material                      ", result.m_material) << endl;
+    sstr << print_entity("  surface shader                ", result.m_surface_shader) << endl;
+    sstr << print_entity("  bsdf                          ", result.m_bsdf) << endl;
+    sstr << print_entity("  bssrdf                        ", result.m_bssrdf) << endl;
+    sstr << print_entity("  edf                           ", result.m_edf);
 
     RENDERER_LOG_INFO("%s", sstr.str().c_str());
 
@@ -252,7 +290,7 @@ ItemBase* ScenePickingHandler::pick(const QPoint& point)
     else
     {
         m_project_explorer.clear_selection();
-        item = 0;
+        item = nullptr;
     }
 
     m_widget->setFocus();

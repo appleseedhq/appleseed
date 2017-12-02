@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,12 +40,14 @@
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/poison.h"
 
 // Standard headers.
+#include <array>
 #include <cassert>
 
 // Forward declarations.
-namespace renderer  { class BSDF; }
+namespace renderer  { class Material; }
 
 namespace renderer
 {
@@ -61,7 +63,6 @@ class ShadingRay
 {
   public:
     // Types.
-    typedef double                  ValueType;
     typedef foundation::Vector3d    VectorType;
     typedef foundation::Ray3d       RayType;
     typedef foundation::RayInfo3d   RayInfoType;
@@ -70,20 +71,20 @@ class ShadingRay
     class Time
     {
       public:
-        double                      m_absolute;                     // absolute time of the ray
-        double                      m_normalized;                   // time of the ray, relative to shutter open / close times
+        float                       m_absolute;                     // absolute time of the ray
+        float                       m_normalized;                   // time of the ray, relative to shutter open / close times
 
         static Time create_with_normalized_time(
-            const double            time,
-            const double            shutter_open,
-            const double            shutter_close);
+            const float             time,
+            const float             shutter_open,
+            const float             shutter_close);
 
         Time();                     // leave all fields uninitialized
 
       private:
         Time(
-            const double            absolute,
-            const double            normalized);
+            const float             absolute,
+            const float             normalized);
     };
 
     enum { MaxMediumCount = 8 };
@@ -91,8 +92,10 @@ class ShadingRay
     struct Medium
     {
         const ObjectInstance*       m_object_instance;
-        const BSDF*                 m_bsdf;
-        double                      m_ior;
+        const Material*             m_material;
+        float                       m_ior;
+
+        const Volume* get_volume() const;
     };
 
     // Public members, in an order that optimizes packing.
@@ -106,7 +109,7 @@ class ShadingRay
     bool                            m_has_differentials;
 
     // Constructors.
-    ShadingRay();                   // leave all fields uninitialized
+    ShadingRay();                   // only partially initialize the object
     ShadingRay(
         const VectorType&           org,
         const VectorType&           dir,
@@ -116,8 +119,8 @@ class ShadingRay
     ShadingRay(
         const VectorType&           org,
         const VectorType&           dir,
-        const ValueType             tmin,
-        const ValueType             tmax,
+        const double                tmin,
+        const double                tmax,
         const Time&                 time,
         const VisibilityFlags::Type flags,
         const DepthType             depth);
@@ -129,8 +132,8 @@ class ShadingRay
     void add_medium(
         const ShadingRay&           source,
         const ObjectInstance*       object_instance,
-        const BSDF*                 bsdf,
-        const double                ior);
+        const Material*             material,
+        const float                 ior);
 
     // Copy all media from the source ray except a given medium.
     void remove_medium(
@@ -144,10 +147,10 @@ class ShadingRay
     const ShadingRay::Medium* get_previous_medium() const;
 
     // Return the IOR of the medium the ray is currently in.
-    double get_current_ior() const;
+    float get_current_ior() const;
 
     // Return the IOR of the medium the ray would be in if it would leave the currently active medium.
-    double get_previous_ior() const;
+    float get_previous_ior() const;
 };
 
 
@@ -179,8 +182,8 @@ inline ShadingRay::ShadingRay(
 inline ShadingRay::ShadingRay(
     const VectorType&               org,
     const VectorType&               dir,
-    const ValueType                 tmin,
-    const ValueType                 tmax,
+    const double                    tmin,
+    const double                    tmax,
     const Time&                     time,
     const VisibilityFlags::Type     flags,
     const DepthType                 depth)
@@ -195,22 +198,22 @@ inline ShadingRay::ShadingRay(
 
 inline const ShadingRay::Medium* ShadingRay::get_current_medium() const
 {
-    return m_medium_count > 0 ? &m_media[0] : 0;
+    return m_medium_count > 0 ? &m_media[0] : nullptr;
 }
 
 inline const ShadingRay::Medium* ShadingRay::get_previous_medium() const
 {
-    return m_medium_count > 1 ? &m_media[1] : 0;
+    return m_medium_count > 1 ? &m_media[1] : nullptr;
 }
 
-inline double ShadingRay::get_current_ior() const
+inline float ShadingRay::get_current_ior() const
 {
-    return m_medium_count > 0 ? m_media[0].m_ior : 1.0;
+    return m_medium_count > 0 ? m_media[0].m_ior : 1.0f;
 }
 
-inline double ShadingRay::get_previous_ior() const
+inline float ShadingRay::get_previous_ior() const
 {
-    return m_medium_count > 1 ? m_media[1].m_ior : 1.0;
+    return m_medium_count > 1 ? m_media[1].m_ior : 1.0f;
 }
 
 
@@ -219,9 +222,9 @@ inline double ShadingRay::get_previous_ior() const
 //
 
 inline ShadingRay::Time ShadingRay::Time::create_with_normalized_time(
-    const double                    time,
-    const double                    shutter_open,
-    const double                    shutter_close)
+    const float                     time,
+    const float                     shutter_open,
+    const float                     shutter_close)
 {
     return
         Time(
@@ -234,15 +237,44 @@ inline ShadingRay::Time::Time()
 }
 
 inline ShadingRay::Time::Time(
-    const double                    absolute,
-    const double                    normalized)
+    const float                     absolute,
+    const float                     normalized)
   : m_absolute(absolute)
   , m_normalized(normalized)
 {
-    assert(m_normalized >= 0.0);
-    assert(m_normalized < 1.0);
+    assert(m_normalized >= 0.0f);
+    assert(m_normalized < 1.0f);
 }
 
 }       // namespace renderer
+
+namespace foundation
+{
+    template <>
+    class PoisonImpl<renderer::ShadingRay>
+    {
+      public:
+        static void do_poison(renderer::ShadingRay& ray)
+        {
+            poison(ray.m_rx);
+            poison(ray.m_ry);
+            poison(ray.m_time.m_absolute);
+            poison(ray.m_time.m_normalized);
+
+            for (size_t i = 0; i < renderer::ShadingRay::MaxMediumCount; ++i)
+            {
+                poison(ray.m_media[i].m_object_instance);
+                poison(ray.m_media[i].m_material);
+                poison(ray.m_media[i].m_ior);
+            }
+
+            poison(ray.m_flags);
+            poison(ray.m_depth);
+
+            // Don't poison m_medium_count or m_has_differentials since
+            // they are properly initialized by the default constructor.
+        }
+    };
+}       // namespace foundation
 
 #endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRAY_H

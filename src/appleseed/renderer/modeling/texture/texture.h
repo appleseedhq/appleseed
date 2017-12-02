@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -47,6 +47,8 @@
 namespace foundation    { class CanvasProperties; }
 namespace foundation    { class Tile; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class Source; }
+namespace renderer      { class TextureInstance; }
 
 namespace renderer
 {
@@ -64,8 +66,8 @@ class APPLESEED_DLLSYMBOL Texture
 
     // Constructor.
     Texture(
-        const char*             name,
-        const ParamArray&       params);
+        const char*                 name,
+        const ParamArray&           params);
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
@@ -76,16 +78,21 @@ class APPLESEED_DLLSYMBOL Texture
     // Access canvas properties.
     virtual const foundation::CanvasProperties& properties() = 0;
 
+    // Create and return a new source that allows to bind this texture to an entity's input.
+    virtual Source* create_source(
+        const foundation::UniqueID  assembly_uid,
+        const TextureInstance&      texture_instance) = 0;
+
     // Load a given tile.
     virtual foundation::Tile* load_tile(
-        const size_t            tile_x,
-        const size_t            tile_y) = 0;
+        const size_t                tile_x,
+        const size_t                tile_y) = 0;
 
     // Unload a given tile.
     virtual void unload_tile(
-        const size_t            tile_x,
-        const size_t            tile_y,
-        const foundation::Tile* tile) = 0;
+        const size_t                tile_x,
+        const size_t                tile_y,
+        const foundation::Tile*     tile) = 0;
 };
 
 }       // namespace renderer

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,20 +33,19 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/aov/spectrumstack.h"
+#include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/lighting/tracer.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/shading/oslshadergroupexec.h"
-#endif
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingengine.h"
-#include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/shading/shadingresult.h"
+#include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/frame/frame.h"
@@ -54,11 +53,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
-#include "foundation/image/colorspace.h"
 #include "foundation/image/image.h"
 #include "foundation/image/regularspectrum.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/arena.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
@@ -97,71 +96,65 @@ namespace
             TextureStore&           texture_store,
             ILightingEngineFactory* lighting_engine_factory,
             ShadingEngine&          shading_engine,
-#ifdef APPLESEED_WITH_OIIO
-            OIIO::TextureSystem&    oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
-            OSL::ShadingSystem&     shading_system,
-#endif
+            OIIOTextureSystem&      oiio_texture_system,
+            OSLShadingSystem&       shading_system,
             const size_t            thread_index,
             const ParamArray&       params)
           : m_params(params)
           , m_scene(scene)
-          , m_lighting_conditions(frame.get_lighting_conditions())
           , m_opacity_threshold(1.0f - m_params.m_transparency_threshold)
           , m_texture_cache(texture_store)
-          , m_intersector(trace_context, m_texture_cache, m_params.m_report_self_intersections)
-#ifdef APPLESEED_WITH_OSL
-          , m_shadergroup_exec(shading_system)
-#endif
+          , m_lighting_engine(lighting_engine_factory->create())
+          , m_shading_engine(shading_engine)
+          , m_oiio_texture_system(oiio_texture_system)
+          , m_thread_index(thread_index)
+          , m_shadergroup_exec(shading_system, m_arena)
+          , m_intersector(
+                trace_context,
+                m_texture_cache,
+                m_params.m_report_self_intersections)
           , m_tracer(
                 m_scene,
                 m_intersector,
                 m_texture_cache,
-#ifdef APPLESEED_WITH_OSL
                 m_shadergroup_exec,
-#endif
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations,
                 thread_index == 0)
-          , m_lighting_engine(lighting_engine_factory->create())
           , m_shading_context(
                 m_intersector,
                 m_tracer,
                 m_texture_cache,
-#ifdef APPLESEED_WITH_OIIO
-                oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
+                m_oiio_texture_system,
                 m_shadergroup_exec,
-#endif
-                thread_index,
+                m_arena,
+                m_thread_index,
                 m_lighting_engine,
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations)
-          , m_shading_engine(shading_engine)
         {
-            // 1/4 of a pixel, like in Renderman RIS.
+            // 1/4 of a pixel, like in RenderMan RIS.
             const CanvasProperties& c = frame.image().properties();
             m_image_point_dx = Vector2d(1.0 / (4.0 * c.m_canvas_width), 0.0);
             m_image_point_dy = Vector2d(0.0, -1.0 / (4.0 * c.m_canvas_height));
         }
 
-        ~GenericSampleRenderer()
+        ~GenericSampleRenderer() override
         {
             m_lighting_engine->release();
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual void render_sample(
-            SamplingContext&        sampling_context,
-            const PixelContext&     pixel_context,
-            const Vector2d&         image_point,
-            ShadingResult&          shading_result) APPLESEED_OVERRIDE
+        void render_sample(
+            SamplingContext&            sampling_context,
+            const PixelContext&         pixel_context,
+            const Vector2d&             image_point,
+            AOVAccumulatorContainer&    aov_accumulators,
+            ShadingResult&              shading_result) override
         {
 #ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
 
@@ -172,15 +165,18 @@ namespace
 
             // Construct a primary ray.
             ShadingRay primary_ray;
-            m_scene.get_camera()->spawn_ray(
+            m_scene.get_active_camera()->spawn_ray(
                 sampling_context,
                 Dual2d(image_point, m_image_point_dx, m_image_point_dy),
                 primary_ray);
 
             ShadingPoint shading_points[2];
             size_t shading_point_index = 0;
-            const ShadingPoint* shading_point_ptr = 0;
+            const ShadingPoint* shading_point_ptr = nullptr;
             size_t iterations = 0;
+
+            // Inform the AOV accumulators that we are about to render a sample.
+            aov_accumulators.on_sample_begin();
 
             while (true)
             {
@@ -192,6 +188,8 @@ namespace
                         pretty_int(m_params.m_max_iterations).c_str());
                     break;
                 }
+
+                m_arena.clear();
 
                 // Trace the ray.
                 shading_points[shading_point_index].clear();
@@ -212,61 +210,53 @@ namespace
                         pixel_context,
                         m_shading_context,
                         *shading_point_ptr,
+                        aov_accumulators,
                         shading_result);
 
-                    // Transform the result to the linear RGB color space.
-                    shading_result.transform_to_linear_rgb(m_lighting_conditions);
-
                     // Apply alpha premultiplication.
-                    if (shading_point_ptr->hit())
-                        shading_result.apply_alpha_premult_linear_rgb();
-
-                    // Store the depth value.
-                    shading_result.m_depth =
-                        shading_point_ptr->hit()
-                            ? shading_point_ptr->get_distance()
-                            : -1.0;
+                    if (shading_point_ptr->hit_surface())
+                        shading_result.apply_alpha_premult();
                 }
                 else
                 {
                     // Shade the intersection point.
-                    ShadingResult local_result(shading_result.m_aovs.size());
+                    ShadingResult local_result(shading_result.m_aov_count);
                     m_shading_engine.shade(
                         sampling_context,
                         pixel_context,
                         m_shading_context,
                         *shading_point_ptr,
+                        aov_accumulators,
                         local_result);
 
-                    // Transform the result to the linear RGB color space.
-                    local_result.transform_to_linear_rgb(m_lighting_conditions);
-
                     // Apply alpha premultiplication.
-                    if (shading_point_ptr->hit())
-                        local_result.apply_alpha_premult_linear_rgb();
+                    if (shading_point_ptr->hit_surface())
+                        local_result.apply_alpha_premult();
 
                     // Compositing.
-                    shading_result.composite_over_linear_rgb(local_result);
+                    shading_result.composite_over(local_result);
                 }
 
                 // Stop once we hit the environment.
-                if (!shading_point_ptr->hit())
+                if (!shading_point_ptr->hit_surface())
                     break;
 
                 // Stop once we hit full opacity.
-                if (max_value(shading_result.m_main.m_alpha) > m_opacity_threshold)
+                if (shading_result.m_main.a > m_opacity_threshold)
                     break;
 
                 // Move the ray origin to the intersection point.
                 primary_ray.m_org = shading_point_ptr->get_point();
                 if (primary_ray.m_has_differentials)
                 {
-                    primary_ray.m_rx.m_org = primary_ray.m_rx.point_at(primary_ray.m_tmax);
-                    primary_ray.m_ry.m_org = primary_ray.m_ry.point_at(primary_ray.m_tmax);
+                    const double t = shading_point_ptr->get_distance();
+                    primary_ray.m_rx.m_org = primary_ray.m_rx.point_at(t);
+                    primary_ray.m_ry.m_org = primary_ray.m_ry.point_at(t);
                 }
-
-                primary_ray.m_tmax = numeric_limits<double>::max();
             }
+
+            // Inform the AOV accumulators that we are done rendering a sample.
+            aov_accumulators.on_sample_end();
 
 #ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
 
@@ -276,23 +266,23 @@ namespace
             if (delta_hit_count + delta_miss_count == 0)
             {
                 // In black: no access to the texture cache.
-                shading_result.set_main_to_linear_rgba(Color4f(0.0f, 0.0f, 0.0f, 1.0f));
+                shading_result.m_main = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
             }
             else if (delta_hit_count > delta_miss_count)
             {
                 // In green: a majority of cache hits.
-                shading_result.set_main_to_linear_rgba(Color4f(0.0f, 1.0f, 0.0f, 1.0f));
+                shading_result.m_main = Color4f(0.0f, 1.0f, 0.0f, 1.0f);
             }
             else
             {
                 // In red: a majority of cache misses.
-                shading_result.set_main_to_linear_rgba(Color4f(1.0f, 0.0f, 0.0f, 1.0f));
+                shading_result.m_main = Color4f(1.0f, 0.0f, 0.0f, 1.0f);
             }
 
 #endif
         }
 
-        virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
+        StatisticsVector get_statistics() const override
         {
             StatisticsVector stats;
             stats.merge(m_texture_cache.get_statistics());
@@ -310,7 +300,7 @@ namespace
 
             explicit Parameters(const ParamArray& params)
               : m_transparency_threshold(params.get_optional<float>("transparency_threshold", 0.001f))
-              , m_max_iterations(params.get_optional<size_t>("max_iterations", 1000))
+              , m_max_iterations(params.get_optional<size_t>("max_iterations", 100))
               , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
             {
             }
@@ -318,18 +308,19 @@ namespace
 
         const Parameters            m_params;
         const Scene&                m_scene;
-        const LightingConditions&   m_lighting_conditions;
         const float                 m_opacity_threshold;
-
         TextureCache                m_texture_cache;
-        Intersector                 m_intersector;
-#ifdef APPLESEED_WITH_OSL
-        OSLShaderGroupExec          m_shadergroup_exec;
-#endif
-        Tracer                      m_tracer;
         ILightingEngine*            m_lighting_engine;
-        const ShadingContext        m_shading_context;
         ShadingEngine&              m_shading_engine;
+        OIIOTextureSystem&          m_oiio_texture_system;
+        const size_t                m_thread_index;
+
+        Arena                       m_arena;
+        OSLShaderGroupExec          m_shadergroup_exec;
+        const Intersector           m_intersector;
+        Tracer                      m_tracer;
+        const ShadingContext        m_shading_context;
+
         Vector2d                    m_image_point_dx;
         Vector2d                    m_image_point_dy;
     };
@@ -347,12 +338,8 @@ GenericSampleRendererFactory::GenericSampleRendererFactory(
     TextureStore&           texture_store,
     ILightingEngineFactory* lighting_engine_factory,
     ShadingEngine&          shading_engine,
-#ifdef APPLESEED_WITH_OIIO
-    OIIO::TextureSystem&    oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
-    OSL::ShadingSystem&     shading_system,
-#endif
+    OIIOTextureSystem&      oiio_texture_system,
+    OSLShadingSystem&       shading_system,
     const ParamArray&       params)
   : m_scene(scene)
   , m_frame(frame)
@@ -360,12 +347,8 @@ GenericSampleRendererFactory::GenericSampleRendererFactory(
   , m_texture_store(texture_store)
   , m_lighting_engine_factory(lighting_engine_factory)
   , m_shading_engine(shading_engine)
-#ifdef APPLESEED_WITH_OIIO
   , m_oiio_texture_system(oiio_texture_system)
-#endif
-#ifdef APPLESEED_WITH_OSL
   , m_shading_system(shading_system)
-#endif
   , m_params(params)
 {
 }
@@ -385,12 +368,8 @@ ISampleRenderer* GenericSampleRendererFactory::create(const size_t thread_index)
             m_texture_store,
             m_lighting_engine_factory,
             m_shading_engine,
-#ifdef APPLESEED_WITH_OIIO
             m_oiio_texture_system,
-#endif
-#ifdef APPLESEED_WITH_OSL
             m_shading_system,
-#endif
             thread_index,
             m_params);
 }

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -42,9 +42,10 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer      { class Entity; }
-namespace renderer      { class Source; }
-namespace renderer      { class TextureCache; }
+namespace renderer  { class Entity; }
+namespace renderer  { class Source; }
+namespace renderer  { class SourceInputs; }
+namespace renderer  { class TextureCache; }
 
 namespace renderer
 {
@@ -55,7 +56,7 @@ namespace renderer
 
 enum InputFormat
 {
-    InputFormatScalar,
+    InputFormatFloat,
     InputFormatSpectralReflectance,
     InputFormatSpectralIlluminance,
     InputFormatSpectralReflectanceWithAlpha,
@@ -188,7 +189,7 @@ class APPLESEED_DLLSYMBOL InputArray
     void declare(
         const char*                 name,
         const InputFormat           format,
-        const char*                 default_value = 0);
+        const char*                 default_value = nullptr);
 
     // Return mutable begin and end input iterators.
     iterator begin();
@@ -215,18 +216,16 @@ class APPLESEED_DLLSYMBOL InputArray
     size_t compute_data_size() const;
 
     // Evaluate all inputs into a preallocated block of memory.
-    // The address 'values + offset' must be 16-byte aligned.
+    // 'values' must be 16-byte aligned.
     void evaluate(
         TextureCache&               texture_cache,
-        const foundation::Vector2d& uv,
-        void*                       values,
-        const size_t                offset = 0) const;
+        const SourceInputs&         source_inputs,
+        void*                       values) const;
 
     // Evaluate all uniform inputs into a preallocated block of memory.
-    // The address 'values + offset' must be 16-byte aligned.
+    // 'values' must be 16-byte aligned.
     void evaluate_uniforms(
-        void*                       values,
-        const size_t                offset = 0) const;
+        void*                       values) const;
 
   private:
     struct Impl;
@@ -241,9 +240,9 @@ class APPLESEED_DLLSYMBOL InputArray
 //
 //     APPLESEED_DECLARE_INPUT_VALUES(InputValues)
 //     {
-//         Spectrum    m_color;
-//         Alpha       m_alpha;
-//         double      m_multiplier;
+//         Spectrum m_color;
+//         Alpha    m_alpha;
+//         float    m_multiplier;
 //     };
 //
 

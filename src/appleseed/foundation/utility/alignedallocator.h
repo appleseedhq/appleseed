@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -112,14 +112,14 @@ class AlignedAllocator
         return &x;
     }
 
-    pointer allocate(size_type n, const_pointer hint = 0)
+    pointer allocate(size_type n, const_pointer hint = nullptr)
     {
         if (n == 0)
-            return 0;
+            return nullptr;
 
         pointer p = static_cast<pointer>(aligned_malloc(n * sizeof(T), m_alignment));
 
-        if (p == 0)
+        if (p == nullptr)
              throw std::bad_alloc();
 
         return p;

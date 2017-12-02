@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -64,11 +64,13 @@
 
 // Standard headers.
 #include <string>
+#include <utility>
 
 using namespace appleseed::shared;
 using namespace boost;
 using namespace foundation;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace studio {
@@ -180,8 +182,8 @@ void BenchmarkWindow::populate_benchmarks_treeview()
 
 void BenchmarkWindow::reload_benchmarks()
 {
-    const filesystem::path benchmarks_path =
-          filesystem::path(Application::get_tests_root_path())
+    const bf::path benchmarks_path =
+          bf::path(Application::get_tests_root_path())
         / "unit benchmarks/results/";
 
     m_benchmark_aggregator.clear();
@@ -201,7 +203,7 @@ namespace
     struct ToolTipFormatter
       : public IToolTipFormatter
     {
-        virtual QString format(const Vector2d& point) const
+        QString format(const Vector2d& point) const override
         {
             const uint64 date_microseconds = static_cast<uint64>(point.x);
             const posix_time::ptime date =
@@ -221,11 +223,11 @@ namespace
     };
 }
 
-auto_ptr<ChartBase> BenchmarkWindow::create_chart(
+unique_ptr<ChartBase> BenchmarkWindow::create_chart(
     const UniqueID      case_uid,
     const size_t        chart_index) const
 {
-    auto_ptr<LineChart> chart(new LineChart());
+    unique_ptr<LineChart> chart(new LineChart());
 
     chart->set_equidistant(m_ui->checkbox_equidistant->isChecked());
 
@@ -245,8 +247,8 @@ auto_ptr<ChartBase> BenchmarkWindow::create_chart(
 
     chart->set_curve_brush(QBrush(CurveColors[chart_index % COUNT_OF(CurveColors)]));
 
-    auto_ptr<IToolTipFormatter> formatter(new ToolTipFormatter());
-    chart->set_tooltip_formatter(formatter);
+    unique_ptr<IToolTipFormatter> formatter(new ToolTipFormatter());
+    chart->set_tooltip_formatter(std::move(formatter));
 
     const BenchmarkSerie serie = m_benchmark_aggregator.get_serie(case_uid);
 
@@ -261,7 +263,7 @@ auto_ptr<ChartBase> BenchmarkWindow::create_chart(
         chart->add_point(x, point.get_ticks());
     }
 
-    return auto_ptr<ChartBase>(chart);
+    return unique_ptr<ChartBase>(std::move(chart));
 }
 
 void BenchmarkWindow::slot_run_benchmarks()

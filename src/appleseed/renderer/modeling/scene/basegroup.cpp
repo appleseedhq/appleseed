@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,18 +31,17 @@
 #include "basegroup.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/textureinstance.h"
-#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
-#endif
 #include "renderer/modeling/texture/texture.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/job/abortswitch.h"
 
 using namespace foundation;
 
@@ -54,9 +53,7 @@ struct BaseGroup::Impl
     ColorContainer              m_colors;
     TextureContainer            m_textures;
     TextureInstanceContainer    m_texture_instances;
-#ifdef APPLESEED_WITH_OSL
     ShaderGroupContainer        m_shader_groups;
-#endif
     AssemblyContainer           m_assemblies;
     AssemblyInstanceContainer   m_assembly_instances;
 
@@ -64,9 +61,7 @@ struct BaseGroup::Impl
       : m_colors(parent)
       , m_textures(parent)
       , m_texture_instances(parent)
-#ifdef APPLESEED_WITH_OSL
       , m_shader_groups(parent)
-#endif
       , m_assemblies(parent)
       , m_assembly_instances(parent)
     {
@@ -98,15 +93,13 @@ TextureInstanceContainer& BaseGroup::texture_instances() const
     return impl->m_texture_instances;
 }
 
-#ifdef APPLESEED_WITH_OSL
-
 ShaderGroupContainer& BaseGroup::shader_groups() const
 {
     return impl->m_shader_groups;
 }
 
 bool BaseGroup::create_optimized_osl_shader_groups(
-    OSL::ShadingSystem& shading_system,
+    OSLShadingSystem&   shading_system,
     IAbortSwitch*       abort_switch)
 {
     bool success = true;
@@ -142,8 +135,6 @@ void BaseGroup::release_optimized_osl_shader_groups()
     for (each<ShaderGroupContainer> i = shader_groups(); i; ++i)
         i->release_optimized_osl_shader_group();
 }
-
-#endif
 
 AssemblyContainer& BaseGroup::assemblies() const
 {
@@ -181,9 +172,7 @@ void BaseGroup::collect_asset_paths(StringArray& paths) const
     do_collect_asset_paths(paths, colors());
     do_collect_asset_paths(paths, textures());
     do_collect_asset_paths(paths, texture_instances());
-#ifdef APPLESEED_WITH_OSL
     do_collect_asset_paths(paths, shader_groups());
-#endif
     do_collect_asset_paths(paths, assemblies());
     do_collect_asset_paths(paths, assembly_instances());
 }
@@ -193,9 +182,7 @@ void BaseGroup::update_asset_paths(const StringDictionary& mappings)
     do_update_asset_paths(mappings, colors());
     do_update_asset_paths(mappings, textures());
     do_update_asset_paths(mappings, texture_instances());
-#ifdef APPLESEED_WITH_OSL
     do_update_asset_paths(mappings, shader_groups());
-#endif
     do_update_asset_paths(mappings, assemblies());
     do_update_asset_paths(mappings, assembly_instances());
 }

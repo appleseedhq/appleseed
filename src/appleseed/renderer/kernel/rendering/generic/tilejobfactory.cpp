@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -58,6 +58,7 @@ void TileJobFactory::create(
     const TileJob::TileRendererVector&  tile_renderers,
     const TileJob::TileCallbackVector&  tile_callbacks,
     const size_t                        pass_hash,
+    const Spectrum::Mode                spectrum_mode,
     TileJobVector&                      tile_jobs,
     IAbortSwitch&                       abort_switch)
 {
@@ -90,6 +91,7 @@ void TileJobFactory::create(
                 tile_x,
                 tile_y,
                 pass_hash,
+                spectrum_mode,
                 abort_switch));
     }
 }

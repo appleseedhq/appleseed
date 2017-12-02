@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,14 +35,17 @@
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/matrix.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <cassert>
@@ -71,29 +74,31 @@ namespace
     {
       public:
         GradientEnvironmentEDF(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : EnvironmentEDF(name, params)
         {
             m_inputs.declare("horizon_radiance", InputFormatSpectralIlluminance);
             m_inputs.declare("zenith_radiance", InputFormatSpectralIlluminance);
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual const char* get_model() const APPLESEED_OVERRIDE
+        const char* get_model() const override
         {
             return Model;
         }
 
-        virtual bool on_frame_begin(
-            const Project&      project,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+        bool on_frame_begin(
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) override
         {
-            if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
+            if (!EnvironmentEDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
             if (!check_uniform("horizon_radiance") || !check_uniform("zenith_radiance"))
@@ -107,47 +112,66 @@ namespace
             return true;
         }
 
-        virtual void sample(
+        void sample(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
-            const Vector2d&         s,
-            Vector3d&               outgoing,
+            const Vector2f&         s,
+            Vector3f&               outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
-            outgoing = sample_sphere_uniform(s);
-            compute_gradient(outgoing.y, value);
-            probability = RcpFourPi;
+            const Vector3f local_outgoing = sample_sphere_uniform(s);
+            probability = RcpFourPi<float>();
+
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            outgoing = transform.vector_to_parent(local_outgoing);
+
+            compute_gradient(local_outgoing.y, value);
         }
 
-        virtual void evaluate(
+        void evaluate(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+            const Vector3f&         outgoing,
+            Spectrum&               value) const override
         {
             assert(is_normalized(outgoing));
-            compute_gradient(outgoing.y, value);
+
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            const Transformd::MatrixType& parent_to_local = transform.get_parent_to_local();
+            const float local_outgoing_y =
+                static_cast<float>(parent_to_local[ 4]) * outgoing.x +
+                static_cast<float>(parent_to_local[ 5]) * outgoing.y +
+                static_cast<float>(parent_to_local[ 6]) * outgoing.z;
+
+            compute_gradient(local_outgoing_y, value);
         }
 
-        virtual void evaluate(
+        void evaluate(
             const ShadingContext&   shading_context,
-            InputEvaluator&         input_evaluator,
-            const Vector3d&         outgoing,
+            const Vector3f&         outgoing,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            float&                  probability) const override
         {
             assert(is_normalized(outgoing));
-            compute_gradient(outgoing.y, value);
-            probability = RcpFourPi;
+
+            Transformd scratch;
+            const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+            const Transformd::MatrixType& parent_to_local = transform.get_parent_to_local();
+            const float local_outgoing_y =
+                static_cast<float>(parent_to_local[ 4]) * outgoing.x +
+                static_cast<float>(parent_to_local[ 5]) * outgoing.y +
+                static_cast<float>(parent_to_local[ 6]) * outgoing.z;
+
+            compute_gradient(local_outgoing_y, value);
+            probability = RcpFourPi<float>();
         }
 
-        virtual double evaluate_pdf(
-            InputEvaluator&     input_evaluator,
-            const Vector3d&     outgoing) const APPLESEED_OVERRIDE
+        float evaluate_pdf(
+            const Vector3f&         outgoing) const override
         {
             assert(is_normalized(outgoing));
-            return RcpFourPi;
+            return RcpFourPi<float>();
         }
 
       private:
@@ -159,18 +183,17 @@ namespace
 
         InputValues     m_values;
 
-        void compute_gradient(const double y, Spectrum& output) const
+        void compute_gradient(const float y, Spectrum& output) const
         {
             // Compute the blending factor between the horizon and zenith colors.
-            const double angle = acos(abs(y));
-            const double blend = angle * (1.0 / HalfPi);
+            const float angle = acos(abs(y));
+            const float blend = angle * (1.0f / HalfPi<float>());
 
             // Blend the horizon and zenith radiances.
-            const float k = static_cast<float>(blend);
             Spectrum horizon_radiance = m_values.m_horizon_radiance;
-            horizon_radiance *= k;
+            horizon_radiance *= blend;
             output = m_values.m_zenith_radiance;
-            output *= 1.0f - k;
+            output *= 1.0f - blend;
             output += horizon_radiance;
         }
     };
@@ -180,6 +203,11 @@ namespace
 //
 // GradientEnvironmentEDFFactory class implementation.
 //
+
+void GradientEnvironmentEDFFactory::release()
+{
+    delete this;
+}
 
 const char* GradientEnvironmentEDFFactory::get_model() const
 {
@@ -229,15 +257,6 @@ DictionaryArray GradientEnvironmentEDFFactory::get_input_metadata() const
 auto_release_ptr<EnvironmentEDF> GradientEnvironmentEDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
-{
-    return
-        auto_release_ptr<EnvironmentEDF>(
-            new GradientEnvironmentEDF(name, params));
-}
-
-auto_release_ptr<EnvironmentEDF> GradientEnvironmentEDFFactory::static_create(
-    const char*         name,
-    const ParamArray&   params)
 {
     return
         auto_release_ptr<EnvironmentEDF>(

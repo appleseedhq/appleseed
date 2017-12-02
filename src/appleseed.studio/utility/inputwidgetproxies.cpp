@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
+#include "foundation/image/regularspectrum.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iostreamop.h"
@@ -297,7 +298,7 @@ namespace
                 return Color3f(values[0], values[1], values[2]);
             else if (low_wavelength < high_wavelength)
             {
-                float output_spectrum[Spectrum::Samples];
+                RegularSpectrum31f output_spectrum;
                 spectral_values_to_spectrum(
                     low_wavelength,
                     high_wavelength,
@@ -417,8 +418,8 @@ void InputWidgetProxyCollection::clear()
 }
 
 void InputWidgetProxyCollection::insert(
-    const string&               key,
-    auto_ptr<IInputWidgetProxy> proxy)
+    const string&                   key,
+    unique_ptr<IInputWidgetProxy>   proxy)
 {
     m_proxies[key] = proxy.release();
 }
@@ -426,7 +427,7 @@ void InputWidgetProxyCollection::insert(
 IInputWidgetProxy* InputWidgetProxyCollection::get(const string& key) const
 {
     const ProxyCollection::const_iterator i = m_proxies.find(key);
-    return i != m_proxies.end() ? i->second : 0;
+    return i != m_proxies.end() ? i->second : nullptr;
 }
 
 Dictionary InputWidgetProxyCollection::get_values() const

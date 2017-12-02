@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,9 @@
 
 //
 // Define APPLESEED_ARCH32 or APPLESEED_ARCH64 appropriately, if necessary.
+//
+// This cannot be done in the CMake scripts because we might be compiling
+// in 32-bit mode on a 64-bit machine.
 //
 // This code is inspired by the LZ4 implementation.
 //

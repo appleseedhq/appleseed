@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -102,14 +102,14 @@ TEST_SUITE(Foundation_Math_BVH_SpatialBuilder)
 
     TEST_CASE(InstantiateSpatialBuilderAndSBVHPartitioner)
     {
-        typedef AlignedVector<bvh::Node<AABB3d> > NodeVector;
+        typedef AlignedVector<bvh::Node<AABB3d>> NodeVector;
         typedef vector<AABB3d> AABBVector;
 
         typedef bvh::Tree<NodeVector> Tree;
         typedef bvh::SBVHPartitioner<ItemHandler, AABBVector> Partitioner;
 
         AABBVector bboxes;
-        bboxes.push_back(AABB3d(Vector3d(0.0), Vector3d(1.0)));
+        bboxes.emplace_back(Vector3d(0.0), Vector3d(1.0));
 
         ItemHandler item_handler;
         Partitioner partitioner(item_handler, bboxes);
@@ -142,7 +142,7 @@ TEST_SUITE(Foundation_Math_BVH_Intersector_2D)
     TEST_CASE(InstantiateIntersectorIn2DCase)
     {
         bvh::Intersector<
-            bvh::Tree<AlignedVector<NodeType> >,
+            bvh::Tree<AlignedVector<NodeType>>,
             Ray2d,
             Visitor
         > intersector;

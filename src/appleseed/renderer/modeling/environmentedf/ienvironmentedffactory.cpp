@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,8 @@
 #include "ienvironmentedffactory.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 
 using namespace foundation;
 
@@ -45,8 +45,14 @@ void IEnvironmentEDFFactory::add_common_sky_input_metadata(DictionaryArray& meta
             .insert("name", "sun_theta")
             .insert("label", "Sun Theta Angle")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "90.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "90.0")
+                    .insert("type", "hard"))
             .insert("use", "required")
             .insert("default", "45.0")
             .insert("help", "Sun polar (vertical) angle in degrees"));
@@ -56,8 +62,14 @@ void IEnvironmentEDFFactory::add_common_sky_input_metadata(DictionaryArray& meta
             .insert("name", "sun_phi")
             .insert("label", "Sun Phi Angle")
             .insert("type", "numeric")
-            .insert("min_value", "-360.0")
-            .insert("max_value", "360.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "-360.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "360.0")
+                    .insert("type", "soft"))
             .insert("use", "required")
             .insert("default", "0.0")
             .insert("help", "Sun azimuthal (horizontal) angle in degrees"));
@@ -78,8 +90,14 @@ void IEnvironmentEDFFactory::add_common_sky_input_metadata(DictionaryArray& meta
             .insert("name", "turbidity_multiplier")
             .insert("label", "Turbidity Multiplier")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "8.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "8.0")
+                    .insert("type", "hard"))
             .insert("use", "optional")
             .insert("default", "2.0")
             .insert("help", "Atmospheric haziness multiplier"));
@@ -89,8 +107,14 @@ void IEnvironmentEDFFactory::add_common_sky_input_metadata(DictionaryArray& meta
             .insert("name", "luminance_multiplier")
             .insert("label", "Luminance Multiplier")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "10.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("help", "Sky luminance multiplier"));
@@ -100,8 +124,14 @@ void IEnvironmentEDFFactory::add_common_sky_input_metadata(DictionaryArray& meta
             .insert("name", "luminance_gamma")
             .insert("label", "Luminance Gamma")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "3.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "3.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("help", "Sky luminance gamma"));
@@ -111,8 +141,14 @@ void IEnvironmentEDFFactory::add_common_sky_input_metadata(DictionaryArray& meta
             .insert("name", "saturation_multiplier")
             .insert("label", "Saturation Multiplier")
             .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "10.0")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("help", "Sky color saturation multiplier"));

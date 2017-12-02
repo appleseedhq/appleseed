@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -58,8 +58,8 @@ namespace studio {
 QtTestListener::QtTestListener(
     TestOutputWidgetDecorator*  output_widget,
     TestResultWidgetDecorator*  result_widget)
-  : m_suite_item(0)
-  , m_case_item(0)
+  : m_suite_item(nullptr)
+  , m_case_item(nullptr)
 {
     connect(
         this, SIGNAL(signal_add_top_level_item(TestOutputItem*)),
@@ -97,7 +97,7 @@ void QtTestListener::end_suite(
 
     emit signal_add_top_level_item(m_suite_item);
 
-    m_suite_item = 0;
+    m_suite_item = nullptr;
 }
 
 void QtTestListener::begin_case(
@@ -125,7 +125,7 @@ void QtTestListener::end_case(
 
     m_suite_item->addChild(m_case_item);
 
-    m_case_item = 0;
+    m_case_item = nullptr;
 
     const int failed_count = static_cast<int>(cumulated_result.get_case_failure_count());
     const int passed_count = static_cast<int>(cumulated_result.get_case_execution_count()) - failed_count;
@@ -153,10 +153,8 @@ namespace
         split(message, "\n", tokens);
 
         // Print the message.
-        for (const_each<vector<string> > i = tokens; i; ++i)
-        {
+        for (const_each<vector<string>> i = tokens; i; ++i)
             sstr << "  " << *i << endl;
-        }
 
         // Print the message footer.
         sstr << file << ", line " << line;

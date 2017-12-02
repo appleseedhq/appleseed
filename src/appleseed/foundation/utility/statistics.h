@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -86,7 +86,7 @@ class Statistics
         template <typename T>
         const T* cast(const Entry* entry);
 
-        virtual std::auto_ptr<Entry> clone() const = 0;
+        virtual std::unique_ptr<Entry> clone() const = 0;
         virtual void merge(const Entry* other) = 0;
         virtual std::string to_string() const = 0;
     };
@@ -101,9 +101,9 @@ class Statistics
             const std::string&          unit,
             const int64                 value);
 
-        virtual std::auto_ptr<Entry> clone() const APPLESEED_OVERRIDE;
-        virtual void merge(const Entry* other) APPLESEED_OVERRIDE;
-        virtual std::string to_string() const APPLESEED_OVERRIDE;
+        std::unique_ptr<Entry> clone() const override;
+        void merge(const Entry* other) override;
+        std::string to_string() const override;
     };
 
     struct UnsignedIntegerEntry
@@ -116,9 +116,9 @@ class Statistics
             const std::string&          unit,
             const uint64                value);
 
-        virtual std::auto_ptr<Entry> clone() const APPLESEED_OVERRIDE;
-        virtual void merge(const Entry* other) APPLESEED_OVERRIDE;
-        virtual std::string to_string() const APPLESEED_OVERRIDE;
+        std::unique_ptr<Entry> clone() const override;
+        void merge(const Entry* other) override;
+        std::string to_string() const override;
     };
 
     struct FloatingPointEntry
@@ -131,9 +131,9 @@ class Statistics
             const std::string&          unit,
             const double                value);
 
-        virtual std::auto_ptr<Entry> clone() const APPLESEED_OVERRIDE;
-        virtual void merge(const Entry* other) APPLESEED_OVERRIDE;
-        virtual std::string to_string() const APPLESEED_OVERRIDE;
+        std::unique_ptr<Entry> clone() const override;
+        void merge(const Entry* other) override;
+        std::string to_string() const override;
     };
 
     struct StringEntry
@@ -146,9 +146,9 @@ class Statistics
             const std::string&          unit,
             const std::string&          value);
 
-        virtual std::auto_ptr<Entry> clone() const APPLESEED_OVERRIDE;
-        virtual void merge(const Entry* other) APPLESEED_OVERRIDE;
-        virtual std::string to_string() const APPLESEED_OVERRIDE;
+        std::unique_ptr<Entry> clone() const override;
+        void merge(const Entry* other) override;
+        std::string to_string() const override;
     };
 
     template <typename T>
@@ -162,9 +162,9 @@ class Statistics
             const std::string&          unit,
             const Population<T>&        value);
 
-        virtual std::auto_ptr<Entry> clone() const APPLESEED_OVERRIDE;
-        virtual void merge(const Entry* other) APPLESEED_OVERRIDE;
-        virtual std::string to_string() const APPLESEED_OVERRIDE;
+        std::unique_ptr<Entry> clone() const override;
+        void merge(const Entry* other) override;
+        std::string to_string() const override;
     };
 
     Statistics();
@@ -177,7 +177,7 @@ class Statistics
     void clear();
 
     template <typename T>
-    void insert(std::auto_ptr<T> entry);
+    void insert(std::unique_ptr<T> entry);
 
     template <typename T>
     void insert(
@@ -217,7 +217,7 @@ class Statistics
 
     void merge(const Statistics& other);
 
-    std::string to_string(const size_t max_header_length = 16) const;
+    std::string to_string(const size_t max_header_length = 30) const;
 
   private:
     typedef std::vector<Entry*> EntryVector;
@@ -248,7 +248,7 @@ class StatisticsVector
 
     void merge(const StatisticsVector& other);
 
-    std::string to_string(const size_t max_header_length = 16) const;
+    std::string to_string(const size_t max_header_length = 30) const;
 
   private:
     struct NamedStatistics
@@ -270,7 +270,7 @@ class StatisticsVector
 //
 
 template <typename T>
-void Statistics::insert(std::auto_ptr<T> entry)
+void Statistics::insert(std::unique_ptr<T> entry)
 {
     if (m_index.find(entry->m_name) != m_index.end())
         throw ExceptionDuplicateName(entry->m_name.c_str());
@@ -297,7 +297,7 @@ inline void Statistics::insert<int32>(
     const std::string&                  unit)
 {
     insert(
-        std::auto_ptr<IntegerEntry>(
+        std::unique_ptr<IntegerEntry>(
             new IntegerEntry(name, unit, value)));
 }
 
@@ -308,7 +308,7 @@ inline void Statistics::insert<uint32>(
     const std::string&                  unit)
 {
     insert(
-        std::auto_ptr<UnsignedIntegerEntry>(
+        std::unique_ptr<UnsignedIntegerEntry>(
             new UnsignedIntegerEntry(name, unit, value)));
 }
 
@@ -319,7 +319,7 @@ inline void Statistics::insert<int64>(
     const std::string&                  unit)
 {
     insert(
-        std::auto_ptr<IntegerEntry>(
+        std::unique_ptr<IntegerEntry>(
             new IntegerEntry(name, unit, value)));
 }
 
@@ -330,7 +330,7 @@ inline void Statistics::insert<uint64>(
     const std::string&                  unit)
 {
     insert(
-        std::auto_ptr<UnsignedIntegerEntry>(
+        std::unique_ptr<UnsignedIntegerEntry>(
             new UnsignedIntegerEntry(name, unit, value)));
 }
 
@@ -341,7 +341,7 @@ inline void Statistics::insert<double>(
     const std::string&                  unit)
 {
     insert(
-        std::auto_ptr<FloatingPointEntry>(
+        std::unique_ptr<FloatingPointEntry>(
             new FloatingPointEntry(name, unit, value)));
 }
 
@@ -352,7 +352,7 @@ inline void Statistics::insert<std::string>(
     const std::string&                  unit)
 {
     insert(
-        std::auto_ptr<StringEntry>(
+        std::unique_ptr<StringEntry>(
             new StringEntry(name, unit, value)));
 }
 
@@ -363,7 +363,7 @@ inline void Statistics::insert(
     const std::string&                  unit)
 {
     insert(
-        std::auto_ptr<PopulationEntry<T> >(
+        std::unique_ptr<PopulationEntry<T>>(
             new PopulationEntry<T>(name, unit, value)));
 }
 
@@ -405,7 +405,7 @@ const T* Statistics::Entry::cast(const Entry* entry)
 
     const T* typed_entry = dynamic_cast<const T*>(entry);
 
-    if (typed_entry == 0)
+    if (typed_entry == nullptr)
         throw ExceptionTypeMismatch(entry->m_name.c_str());
 
     return typed_entry;
@@ -427,9 +427,9 @@ Statistics::PopulationEntry<T>::PopulationEntry(
 }
 
 template <typename T>
-std::auto_ptr<Statistics::Entry> Statistics::PopulationEntry<T>::clone() const
+std::unique_ptr<Statistics::Entry> Statistics::PopulationEntry<T>::clone() const
 {
-    return std::auto_ptr<Statistics::Entry>(new PopulationEntry(*this));
+    return std::unique_ptr<Statistics::Entry>(new PopulationEntry(*this));
 }
 
 template <typename T>

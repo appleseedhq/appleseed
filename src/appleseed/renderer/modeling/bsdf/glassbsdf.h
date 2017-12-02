@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2016-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -56,23 +56,31 @@ namespace renderer
 
 APPLESEED_DECLARE_INPUT_VALUES(GlassBSDFInputValues)
 {
-    Spectrum    m_surface_transmittance;
-    double      m_surface_transmittance_multiplier;
-    Spectrum    m_reflection_tint;
-    Spectrum    m_refraction_tint;
-    double      m_roughness;
-    double      m_anisotropic;
-    double      m_ior;
-    Spectrum    m_volume_transmittance;
-    double      m_volume_transmittance_distance;
+    Spectrum        m_surface_transmittance;
+    float           m_surface_transmittance_multiplier;
+    Spectrum        m_reflection_tint;
+    Spectrum        m_refraction_tint;
+    float           m_roughness;
+    float           m_highlight_falloff;
+    float           m_anisotropy;
+    float           m_ior;
+    Spectrum        m_volume_transmittance;
+    float           m_volume_transmittance_distance;
+    Spectrum        m_volume_absorption;
+    float           m_volume_density;
+    float           m_volume_scale;
 
-    // Precomputed values.
-    bool        m_backfacing;
-    double      m_from_ior;
-    double      m_to_ior;
-    Spectrum    m_reflection_color;
-    Spectrum    m_refraction_color;
-    Spectrum    m_absorption;
+    struct Precomputed
+    {
+        bool        m_backfacing;
+        float       m_eta;
+        Spectrum    m_reflection_color;
+        Spectrum    m_refraction_color;
+        float       m_reflection_weight;
+        float       m_refraction_weight;
+    };
+
+    Precomputed     m_precomputed;
 };
 
 
@@ -84,29 +92,22 @@ class APPLESEED_DLLSYMBOL GlassBSDFFactory
   : public IBSDFFactory
 {
   public:
+    // Delete this instance.
+    void release() override;
+
     // Return a string identifying this BSDF model.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    const char* get_model() const override;
 
     // Return metadata for this BSDF model.
-    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
+    foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this BSDF model.
-    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
+    foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new BSDF instance.
-    virtual foundation::auto_release_ptr<BSDF> create(
+    foundation::auto_release_ptr<BSDF> create(
         const char*         name,
-        const ParamArray&   params) const APPLESEED_OVERRIDE;
-
-    // Create a new BSDF instance for use with OSL.
-    foundation::auto_release_ptr<BSDF> create_osl(
-        const char*         name,
-        const ParamArray&   params) const;
-
-    // Static variant of the create() method above.
-    static foundation::auto_release_ptr<BSDF> static_create(
-        const char*         name,
-        const ParamArray&   params);
+        const ParamArray&   params) const override;
 };
 
 }       // namespace renderer

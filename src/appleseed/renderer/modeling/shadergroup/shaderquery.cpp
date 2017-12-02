@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,20 +29,17 @@
 // Interface header.
 #include "shaderquery.h"
 
-// appleseed.renderer headers.
-#include "renderer/global/globallogger.h"
-
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/searchpaths.h"
 
 // OSL headers.
-#include "foundation/platform/oslheaderguards.h"
-BEGIN_OSL_INCLUDES
+#include "foundation/platform/_beginoslheaders.h"
 #include "OSL/oslquery.h"
-END_OSL_INCLUDES
+#include "foundation/platform/_endoslheaders.h"
 
 // Boost headers.
 #include "boost/optional.hpp"
@@ -104,15 +101,7 @@ struct ShaderQuery::Impl
         Dictionary dictionary;
         dictionary.insert("name", param.name.c_str());
         dictionary.insert("type", param.type.c_str());
-
-        if (!copy_value_to_dict(param, "value", dictionary))
-        {
-            RENDERER_LOG_WARNING(
-                "skipping metadata value for entry %s of type %s.",
-                param.name.c_str(),
-                param.type.c_str());
-        }
-
+        copy_value_to_dict(param, "value", dictionary);
         return dictionary;
     }
 
@@ -135,26 +124,8 @@ struct ShaderQuery::Impl
         if (is_array)
             dictionary.insert("arraylen", param.type.arraylen);
 
-        if (param.validdefault)
-        {
-            if (is_array)
-            {
-                RENDERER_LOG_WARNING(
-                    "skipping default value for param %s of type %s array.",
-                    param.name.c_str(),
-                    param.type.c_str());
-            }
-            else
-            {
-                if (!copy_value_to_dict(param, "default", dictionary))
-                {
-                    RENDERER_LOG_WARNING(
-                        "skipping default value for param %s of type %s.",
-                        param.name.c_str(),
-                        param.type.c_str());
-                }
-            }
-        }
+        if (param.validdefault && is_array == false)
+            copy_value_to_dict(param, "default", dictionary);
 
         if (!param.metadata.empty())
         {
@@ -203,7 +174,8 @@ ShaderQuery::ShaderQuery(const char* search_path)
 ShaderQuery::ShaderQuery(const SearchPaths& search_paths)
   : impl(new Impl())
 {
-    impl->m_search_path = search_paths.to_string();
+    impl->m_search_path =
+        to_string(search_paths.to_string_reversed(SearchPaths::osl_path_separator()));
 }
 
 ShaderQuery::~ShaderQuery()
@@ -231,14 +203,14 @@ const char* ShaderQuery::get_shader_type() const
     return impl->m_query.shadertype().c_str();
 }
 
-size_t ShaderQuery::get_num_params() const
+size_t ShaderQuery::get_param_count() const
 {
     return impl->m_query.nparams();
 }
 
 const Dictionary& ShaderQuery::get_param_info(const size_t param_index) const
 {
-    assert(param_index < get_num_params());
+    assert(param_index < get_param_count());
 
     if (!impl->m_param_info[param_index])
     {

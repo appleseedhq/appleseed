@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -57,25 +57,37 @@ class APPLESEED_DLLSYMBOL ITileCallback
   : public foundation::IUnknown
 {
   public:
-    // This method is called before a region of the frame is rendered.
-    // All renderers call this method.
-    virtual void pre_render(
-        const size_t    x,
-        const size_t    y,
-        const size_t    width,
-        const size_t    height) = 0;
+    //
+    // Methods called by tile-based renderers.
+    //
 
-    // This method is called after a tile is rendered.
-    // Only tile-based renderers call this method.
-    virtual void post_render_tile(
+    // This method is called before a frame is rendered.
+    virtual void on_tiled_frame_begin(const Frame* frame) = 0;
+
+    // This method is called after a frame is rendered.
+    virtual void on_tiled_frame_end(const Frame* frame) = 0;
+
+    // This method is called before a tile is rendered.
+    virtual void on_tile_begin(
         const Frame*    frame,
         const size_t    tile_x,
         const size_t    tile_y) = 0;
 
-    // This method is called after a whole frame is rendered.
-    // Only whole-frame (progressive) renderers call this method.
-    virtual void post_render(
-        const Frame*    frame) = 0;
+    // This method is called after a tile is rendered.
+    virtual void on_tile_end(
+        const Frame*    frame,
+        const size_t    tile_x,
+        const size_t    tile_y) = 0;
+
+    //
+    // Methods called by progressive (whole-frame) renderers.
+    //
+
+    // This method is called before a frame is rendered.
+    virtual void on_progressive_frame_begin(const Frame* frame) = 0;
+
+    // This method is called after a frame is rendered.
+    virtual void on_progressive_frame_end(const Frame* frame) = 0;
 };
 
 

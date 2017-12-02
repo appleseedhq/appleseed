@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -58,13 +58,13 @@ class APPLESEED_DLLSYMBOL Tile
         const size_t        height,             // tile height, in pixels
         const size_t        channel_count,      // number of channels
         const PixelFormat   pixel_format,       // pixel format
-        uint8*              storage = 0);       // if provided, use this memory for pixel storage
+        uint8*              storage = nullptr); // if provided, use this memory for pixel storage
 
     // Construct a tile by converting an existing tile to a given pixel format.
     Tile(
         const Tile&         tile,               // source tile
         const PixelFormat   pixel_format,       // new pixel format
-        uint8*              storage = 0);       // if provided, use this memory for pixel storage
+        uint8*              storage = nullptr); // if provided, use this memory for pixel storage
 
     // Construct a tile by converting an existing tile to a given pixel format,
     // and allowing reordering, replication and deletion of channels.
@@ -72,7 +72,7 @@ class APPLESEED_DLLSYMBOL Tile
         const Tile&         tile,               // source tile
         const PixelFormat   pixel_format,       // new pixel format
         const size_t*       shuffle_table,      // channel shuffling table
-        uint8*              storage = 0);       // if provided, use this memory for pixel storage
+        uint8*              storage = nullptr); // if provided, use this memory for pixel storage
 
     // Copy constructor.
     Tile(const Tile& rhs);

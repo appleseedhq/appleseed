@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -145,7 +145,7 @@ BENCHMARK_SUITE(SameSign)
 
     APPLESEED_NO_INLINE bool same_sign_multiplication_sse(const float a, const float b, const float c)
     {
-        APPLESEED_SSE_ALIGN float u[4] = { a, a, b, c };
+        APPLESEED_SIMD4_ALIGN float u[4] = { a, a, b, c };
 
         const __m128 mu = _mm_load_ps(u);
         const __m128 mv = _mm_shuffle_ps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));

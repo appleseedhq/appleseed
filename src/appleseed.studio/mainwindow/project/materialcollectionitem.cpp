@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
-// Copyright (c) 2014-2016 Marius Avram, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -45,15 +44,15 @@
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
 
+// appleseed.shared headers.
+#include "application/application.h"
+
 // appleseed.renderer headers.
 #include "renderer/api/material.h"
 #include "renderer/api/scene.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/settings/settingsfilereader.h"
-
-// appleseed.shared headers.
-#include "application/application.h"
 
 // Qt headers.
 #include <QString>
@@ -67,12 +66,13 @@
 #include <cstring>
 #include <memory>
 #include <string>
+#include <utility>
 
 using namespace appleseed::shared;
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
+namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace studio {
@@ -121,9 +121,7 @@ QMenu* MaterialCollectionItem::get_single_item_context_menu() const
 
     menu->addSeparator();
     menu->addAction("Create Generic Material...", this, SLOT(slot_create_generic()));
-#ifdef APPLESEED_WITH_OSL
     menu->addAction("Create OSL Material...", this, SLOT(slot_create_osl()));
-#endif
 
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
     menu->addSeparator();
@@ -167,7 +165,7 @@ void MaterialCollectionItem::slot_import_disney()
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
     QString filepath =
         get_open_filename(
-            0,
+            nullptr,
             "Import...",
             "Disney Material (*.dmt);;All Files (*.*)",
             m_editor_context.m_settings,
@@ -177,8 +175,8 @@ void MaterialCollectionItem::slot_import_disney()
     {
         filepath = QDir::toNativeSeparators(filepath);
 
-        const filesystem::path root_path(Application::get_root_path());
-        const filesystem::path schema_file_path = root_path / "schemas" / "settings.xsd";
+        const bf::path root_path(Application::get_root_path());
+        const bf::path schema_file_path = root_path / "schemas" / "settings.xsd";
 
         SettingsFileReader reader(global_logger());
         ParamArray parameters;
@@ -235,9 +233,7 @@ void MaterialCollectionItem::slot_import_disney()
 
 void MaterialCollectionItem::slot_create_osl()
 {
-#ifdef APPLESEED_WITH_OSL
     do_create_material("osl_material");
-#endif
 }
 
 void MaterialCollectionItem::do_create_material(const char* model)
@@ -255,16 +251,16 @@ void MaterialCollectionItem::do_create_material(const char* model)
 
     typedef EntityTraits::FactoryRegistrarType FactoryRegistrarType;
 
-    auto_ptr<EntityEditor::IFormFactory> form_factory(
+    unique_ptr<EntityEditor::IFormFactory> form_factory(
         new FixedModelEntityEditorFormFactory<FactoryRegistrarType>(
-            m_editor_context.m_project_builder.get_factory_registrar<Material>(),
+            m_editor_context.m_project.get_factory_registrar<Material>(),
             name_suggestion,
             model));
 
-    auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
+    unique_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<Assembly>(Base::m_parent));
 
-    auto_ptr<CustomEntityUI> custom_entity_ui;
+    unique_ptr<CustomEntityUI> custom_entity_ui;
 
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
     if (strcmp(model, "disney_material") == 0)
@@ -280,9 +276,10 @@ void MaterialCollectionItem::do_create_material(const char* model)
         QTreeWidgetItem::treeWidget(),
         window_title,
         m_editor_context.m_project,
-        form_factory,
-        entity_browser,
-        custom_entity_ui,
+        m_editor_context.m_settings,
+        move(form_factory),
+        move(entity_browser),
+        move(custom_entity_ui),
         Dictionary(),
         this,
         SLOT(slot_create_applied(foundation::Dictionary)),

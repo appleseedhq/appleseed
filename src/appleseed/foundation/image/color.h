@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,15 +31,17 @@
 #define APPLESEED_FOUNDATION_IMAGE_COLOR_H
 
 // appleseed.foundation headers.
+#include "foundation/math/fp.h"
+#include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/poison.h"
 
 // Imath headers.
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
-#include "foundation/platform/exrheaderguards.h"
-BEGIN_EXR_INCLUDES
+#include "foundation/platform/_beginexrheaders.h"
 #include "OpenEXR/ImathColor.h"
-END_EXR_INCLUDES
+#include "foundation/platform/_endexrheaders.h"
 #endif
 
 // Standard headers.
@@ -65,12 +67,14 @@ class Color
 
     // Constructors.
     Color();                                    // leave all components uninitialized
-    explicit Color(const ValueType* rhs);       // initialize with array of N scalars
-    explicit Color(const ValueType val);        // set all components to 'val'
+    explicit Color(const ValueType val);        // set all components to `val`
 
     // Construct a color from another color of a different type.
     template <typename U>
-    Color(const Color<U, N>& rhs);
+    explicit Color(const Color<U, N>& rhs);
+
+    // Construct a color from an array of N scalars.
+    static Color from_array(const ValueType* rhs);
 
     // Set all components to a given value.
     void set(const ValueType val);
@@ -82,6 +86,14 @@ class Color
   private:
     // Color components.
     ValueType m_comp[N];
+};
+
+// Poisoning.
+template <typename T, size_t N>
+class PoisonImpl<Color<T, N>>
+{
+  public:
+    static void do_poison(Color<T, N>& c);
 };
 
 // Exact inequality and equality tests.
@@ -155,6 +167,9 @@ template <typename T, size_t N> T average_value(const Color<T, N>& c);
 // Return true if a color contains at least one NaN value.
 template <typename T, size_t N> bool has_nan(const Color<T, N>& c);
 
+// Return true if all components of a color are finite (not NaN, not infinite).
+template <typename T, size_t N> bool is_finite(const Color<T, N>& c);
+
 
 //
 // RGB color class of arbitrary type.
@@ -173,8 +188,7 @@ class Color<T, 3>
 
     // Constructors.
     Color();                                    // leave all components uninitialized
-    explicit Color(const ValueType* rhs);       // initialize with array of 3 scalars
-    explicit Color(const ValueType val);        // set all components to 'val'
+    explicit Color(const ValueType val);        // set all components to `val`
     Color(                                      // set individual components
         const ValueType r,
         const ValueType g,
@@ -195,6 +209,9 @@ class Color<T, 3>
 
 #endif
 
+    // Construct a color from an array of 3 scalars.
+    static Color from_array(const ValueType* rhs);
+
     // Set all components to a given value.
     void set(const ValueType val);
 
@@ -203,6 +220,16 @@ class Color<T, 3>
     const ValueType& operator[](const size_t i) const;
 };
 
+// Matrix-color multiplication.
+template <typename T>
+Color<T, 3> operator*(
+    const Matrix<T, 3, 3>&  m,
+    const Color<T, 3>&      c);
+
+template <typename T>
+Color<T, 3> operator*(
+    const Color<T, 3>&      c,
+    const Matrix<T, 3, 3>&  m);
 
 //
 // RGBA color class of arbitrary type.
@@ -221,8 +248,7 @@ class Color<T, 4>
 
     // Constructors.
     Color();                                    // leave all components uninitialized
-    explicit Color(const ValueType* rhs);       // initialize with array of 4 scalars
-    explicit Color(const ValueType val);        // set all components to 'val'
+    explicit Color(const ValueType val);        // set all components to `val`
     Color(
         const Color<T, 3>&  rgb,
         const ValueType     a);
@@ -247,6 +273,9 @@ class Color<T, 4>
 
 #endif
 
+    // Construct a color from an array of 4 scalars.
+    static Color from_array(const ValueType* rhs);
+
     // Set all components to a given value.
     void set(const ValueType val);
 
@@ -257,6 +286,10 @@ class Color<T, 4>
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
     const ValueType& operator[](const size_t i) const;
+
+    // Apply/undo alpha premultiplication.
+    void premultiply();
+    void unpremultiply();
 };
 
 
@@ -283,15 +316,6 @@ inline Color<T, N>::Color()
 }
 
 template <typename T, size_t N>
-inline Color<T, N>::Color(const ValueType* rhs)
-{
-    assert(rhs);
-
-    for (size_t i = 0; i < N; ++i)
-        m_comp[i] = rhs[i];
-}
-
-template <typename T, size_t N>
 inline Color<T, N>::Color(const ValueType val)
 {
     set(val);
@@ -303,6 +327,19 @@ inline Color<T, N>::Color(const Color<U, N>& rhs)
 {
     for (size_t i = 0; i < N; ++i)
         m_comp[i] = static_cast<ValueType>(rhs.m_comp[i]);
+}
+
+template <typename T, size_t N>
+inline Color<T, N> Color<T, N>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+
+    Color result;
+
+    for (size_t i = 0; i < N; ++i)
+        result.m_comp[i] = rhs[i];
+
+    return result;
 }
 
 template <typename T, size_t N>
@@ -324,6 +361,13 @@ inline const T& Color<T, N>::operator[](const size_t i) const
 {
     assert(i < Components);
     return m_comp[i];
+}
+
+template <typename T, size_t N>
+void PoisonImpl<Color<T, N>>::do_poison(Color<T, N>& c)
+{
+    for (size_t i = 0; i < N; ++i)
+        poison(c[i]);
 }
 
 template <typename T, size_t N>
@@ -797,6 +841,18 @@ inline bool has_nan(const Color<T, N>& c)
     return false;
 }
 
+template <typename T, size_t N>
+inline bool is_finite(const Color<T, N>& c)
+{
+    for (size_t i = 0; i < N; ++i)
+    {
+        if (!FP<T>::is_finite(c[i]))
+            return false;
+    }
+
+    return true;
+}
+
 
 //
 // RGB color implementation.
@@ -805,15 +861,6 @@ inline bool has_nan(const Color<T, N>& c)
 template <typename T>
 inline Color<T, 3>::Color()
 {
-}
-
-template <typename T>
-inline Color<T, 3>::Color(const ValueType* rhs)
-{
-    assert(rhs);
-    r = rhs[0];
-    g = rhs[1];
-    b = rhs[2];
 }
 
 template <typename T>
@@ -869,6 +916,13 @@ inline Color<T, 3>::operator const Imath::Color3<T>&() const
 #endif
 
 template <typename T>
+inline Color<T, 3> Color<T, 3>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+    return Color(rhs[0], rhs[1], rhs[2]);
+}
+
+template <typename T>
 inline void Color<T, 3>::set(const ValueType val)
 {
     r = g = b = val;
@@ -888,6 +942,33 @@ inline const T& Color<T, 3>::operator[](const size_t i) const
     return (&r)[i];
 }
 
+template <typename T>
+inline Color<T, 3> operator*(
+    const Matrix<T, 3, 3>&  m,
+    const Color<T, 3>&      c)
+{
+    Color<T, 3> res;
+
+    res[0] = m[0] * c[0] + m[1] * c[1] + m[2] * c[2];
+    res[1] = m[3] * c[0] + m[4] * c[1] + m[5] * c[2];
+    res[2] = m[6] * c[0] + m[7] * c[1] + m[8] * c[2];
+
+    return res;
+}
+
+template <typename T>
+inline Color<T, 3> operator*(
+    const Color<T, 3>&      c,
+    const Matrix<T, 3, 3>&  m)
+{
+    Color<T, 3> res;
+
+    res[0] = c[0] * m[0] + c[1] * m[3] + c[2] * m[6];
+    res[1] = c[0] * m[1] + c[1] * m[4] + c[2] * m[7];
+    res[2] = c[0] * m[2] + c[1] * m[5] + c[2] * m[8];
+
+    return res;
+}
 
 //
 // RGBA color implementation.
@@ -896,16 +977,6 @@ inline const T& Color<T, 3>::operator[](const size_t i) const
 template <typename T>
 inline Color<T, 4>::Color()
 {
-}
-
-template <typename T>
-inline Color<T, 4>::Color(const ValueType* rhs)
-{
-    assert(rhs);
-    r = rhs[0];
-    g = rhs[1];
-    b = rhs[2];
-    a = rhs[3];
 }
 
 template <typename T>
@@ -977,6 +1048,13 @@ inline Color<T, 4>::operator const Imath::Color4<T>&() const
 #endif
 
 template <typename T>
+inline Color<T, 4> Color<T, 4>::from_array(const ValueType* rhs)
+{
+    assert(rhs);
+    return Color(rhs[0], rhs[1], rhs[2], rhs[3]);
+}
+
+template <typename T>
 inline void Color<T, 4>::set(const ValueType val)
 {
     r = g = b = a = val;
@@ -1006,6 +1084,26 @@ inline const T& Color<T, 4>::operator[](const size_t i) const
 {
     assert(i < Components);
     return (&r)[i];
+}
+
+template <typename T>
+inline void Color<T, 4>::premultiply()
+{
+    r *= a;
+    g *= a;
+    b *= a;
+}
+
+template <typename T>
+inline void Color<T, 4>::unpremultiply()
+{
+    if (a > T(0.0))
+    {
+        const T rcp_a = T(1.0) / a;
+        r *= rcp_a;
+        g *= rcp_a;
+        b *= rcp_a;
+    }
 }
 
 }       // namespace foundation

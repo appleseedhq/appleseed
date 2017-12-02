@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/poison.h"
 
 // Standard headers.
 #include <cassert>
@@ -66,6 +67,10 @@ class Basis3
         const VectorType&   u,                      // must be unit-length
         const VectorType&   v);                     // must be unit-length
 
+    // Construct a basis from another basis of a different type.
+    template <typename U>
+    explicit Basis3(const Basis3<U>& rhs);
+
     // Rebuild the basis for a given unit-length normal vector.
     void build(const VectorType& normal);           // normal must be unit-length
 
@@ -86,18 +91,35 @@ class Basis3
     VectorType transform_to_local(const VectorType& v) const;
     VectorType transform_to_parent(const VectorType& v) const;
 
+    // Transform a 3D vector of a different type.
+    template <typename U>
+    Vector<U, 3> transform_to_local(const Vector<U, 3>& v) const;
+    template <typename U>
+    Vector<U, 3> transform_to_parent(const Vector<U, 3>& v) const;
+
     // Retrieve the individual basis vectors.
     const VectorType& get_normal() const;
     const VectorType& get_tangent_u() const;
     const VectorType& get_tangent_v() const;
 
   private:
+    template <typename> friend class Basis3;
+    template <typename> friend class PoisonImpl;
+
     VectorType m_n, m_u, m_v;
 
 #ifndef NDEBUG
     // Run a bunch of assertions on the basis vectors.
     void checks();
 #endif
+};
+
+// Poisoning.
+template <typename T>
+class PoisonImpl<Basis3<T>>
+{
+  public:
+    static void do_poison(Basis3<T>& basis);
 };
 
 
@@ -142,62 +164,41 @@ inline Basis3<T>::Basis3(
 }
 
 template <typename T>
+template <typename U>
+inline Basis3<T>::Basis3(const Basis3<U>& rhs)
+  : m_n(rhs.m_n)
+  , m_u(rhs.m_u)
+  , m_v(rhs.m_v)
+{
+}
+
+template <typename T>
 inline void Basis3<T>::build(const VectorType& normal)
 {
     //
     // Reference:
     //
-    //   Hughes, J. F., and Moller, T. Building an Orthonormal Basis from a Unit Vector.
-    //   Journal of Graphics Tools 4, 4 (1999), 33-35.
-    //   http://www.cs.brown.edu/research/pubs/pdfs/1999/Hughes-1999-BAO.pdf
+    //   Tom Duff, James Burgess, Per Christensen, Christophe Hery, Andrew Kensler,
+    //   Max Liani, and Ryusuke Villemin, Building an Orthonormal Basis, Revisited,
+    //   Journal of Computer Graphics Techniques (JCGT), vol. 6, no. 1, 1-8, 2017
+    //   http://jcgt.org/published/0006/01/01/paper-lowres.pdf
     //
 
     assert(is_normalized(normal));
 
-    // n is simply the input vector.
     m_n = normal;
 
-    // Compute u so that it is orthogonal to n.
-    if (std::abs(m_n[0]) < std::abs(m_n[1]))
-    {
-        if (std::abs(m_n[0]) < std::abs(m_n[2]))
-        {
-            // m_n[0] is the smallest component.
-            m_u[0] =  T(0.0);
-            m_u[1] = -m_n[2];
-            m_u[2] =  m_n[1];
-        }
-        else
-        {
-            // m_n[2] is the smallest component.
-            m_u[0] = -m_n[1];
-            m_u[1] =  m_n[0];
-            m_u[2] =  T(0.0);
-        }
-    }
-    else
-    {
-        if (std::abs(m_n[1]) < std::abs(m_n[2]))
-        {
-            // m_n[1] is the smallest component.
-            m_u[0] = -m_n[2];
-            m_u[1] =  T(0.0);
-            m_u[2] =  m_n[0];
-        }
-        else
-        {
-            // m_n[2] is the smallest component.
-            m_u[0] = -m_n[1];
-            m_u[1] =  m_n[0];
-            m_u[2] =  T(0.0);
-        }
-    }
+#if !defined(_MSC_VER) || _MSC_VER >= 1800
+    const T sign = std::copysign(T(1.0), m_n[2]);
+#else
+    const T sign = m_n[2] < T(0.0) ? T(-1.0) : T(1.0);
+#endif
 
-    // u is orthogonal to n, but not unit-length. Normalize it.
-    m_u = normalize(m_u);
+    const T a = T(-1.0) / (sign + m_n[2]);
+    const T b = m_n[0] * m_n[1] * a;
 
-    // Compute v.
-    m_v = cross(m_u, m_n);
+    m_u = VectorType(b, sign + m_n[1] * m_n[1] * a, -m_n[1]);
+    m_v = VectorType(T(1.0) + sign * m_n[0] * m_n[0] * a, sign * b, -sign * m_n[0]);
 
 #ifndef NDEBUG
     checks();
@@ -242,13 +243,41 @@ inline void Basis3<T>::build(
 template <typename T>
 inline Vector<T, 3> Basis3<T>::transform_to_local(const VectorType& v) const
 {
-    return Vector<T, 3>(dot(v, m_u), dot(v, m_n), dot(v, m_v));
+    return
+        Vector<T, 3>(
+            dot(v, m_u),
+            dot(v, m_n),
+            dot(v, m_v));
 }
 
 template <typename T>
 inline Vector<T, 3> Basis3<T>::transform_to_parent(const VectorType& v) const
 {
-    return v[0] * m_u + v[1] * m_n + v[2] * m_v;
+    return
+        v[0] * m_u +
+        v[1] * m_n +
+        v[2] * m_v;
+}
+
+template <typename T>
+template <typename U>
+inline Vector<U, 3> Basis3<T>::transform_to_local(const Vector<U, 3>& v) const
+{
+    return
+        Vector<U, 3>(
+            dot(v, Vector<U, 3>(m_u)),
+            dot(v, Vector<U, 3>(m_n)),
+            dot(v, Vector<U, 3>(m_v)));
+}
+
+template <typename T>
+template <typename U>
+inline Vector<U, 3> Basis3<T>::transform_to_parent(const Vector<U, 3>& v) const
+{
+    return
+        v[0] * Vector<U, 3>(m_u) +
+        v[1] * Vector<U, 3>(m_n) +
+        v[2] * Vector<U, 3>(m_v);
 }
 
 template <typename T>
@@ -269,6 +298,14 @@ inline const Vector<T, 3>& Basis3<T>::get_tangent_v() const
     return m_v;
 }
 
+template <typename T>
+void PoisonImpl<Basis3<T>>::do_poison(Basis3<T>& basis)
+{
+    poison(basis.m_n);
+    poison(basis.m_u);
+    poison(basis.m_v);
+}
+
 #ifndef NDEBUG
 
 template <typename T>
@@ -278,12 +315,12 @@ void Basis3<T>::checks()
     assert(is_normalized(m_u));
     assert(is_normalized(m_n));
     assert(is_normalized(m_v));
-    assert(fz(dot(m_u, m_n)));
-    assert(fz(dot(m_u, m_v)));
-    assert(fz(dot(m_n, m_v)));
+    assert(fz(dot(m_u, m_n), make_eps<T>(1.0e-4f, 1.0e-6)));
+    assert(fz(dot(m_u, m_v), make_eps<T>(1.0e-4f, 1.0e-6)));
+    assert(fz(dot(m_n, m_v), make_eps<T>(1.0e-4f, 1.0e-6)));
 
     // Make sure (m_u, m_n, m_v) is right-handed.
-    assert(feq(dot(cross(m_u, m_n), m_v), T(1.0)));
+    assert(feq(dot(cross(m_u, m_n), m_v), T(1.0), make_eps<T>(1.0e-4f, 1.0e-5)));
 }
 
 #endif

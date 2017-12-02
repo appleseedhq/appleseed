@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -78,9 +78,17 @@ class ShaderParamParser
     template <typename T>
     void parse_n_values(size_t n, T* values);
 
+    void parse_int_array(std::vector<int>& values);
+
+    void parse_float_array(std::vector<float>& values);
+    void parse_float3_array(std::vector<float>& values);
+
+    void parse_matrix_array(std::vector<float>& values);
+
     std::string parse_string_value();
 
   private:
+    std::string                                 m_original_string;
     std::vector<std::string>                    m_tokens;
     OSLParamType                                m_param_type;
     std::vector<std::string>::const_iterator    m_tok_it;

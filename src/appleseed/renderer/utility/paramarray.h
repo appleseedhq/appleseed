@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -149,7 +149,7 @@ class APPLESEED_DLLSYMBOL ParamArray
         const T&                default_value = T()) const;
 
     //
-    // Insert an item through a given hierarchy, creating branches as needed.
+    // Insert or set an item with a given path, creating branches as needed.
     //
     // For instance, insert_path("a.b.c", 12) will insert the value 12 with key 'c'
     // inside a dictionary named 'b' itself contained inside a dictionary named 'a'.
@@ -159,10 +159,10 @@ class APPLESEED_DLLSYMBOL ParamArray
     template <typename T> ParamArray& insert_path(const char* path, const T& value);
     template <typename T> ParamArray& insert_path(const std::string& path, const T& value);
 
-    // Return true if an item at a given path exists.
+    // Return true if a parameter with a given path exists.
     bool exist_path(const char* path) const;
 
-    // Retrieve an item in a given hierarchy.
+    // Retrieve a parameter at a given path.
     const char* get_path(const char* path) const;
 
     // Like get_required() but given a path instead of a key.
@@ -199,7 +199,7 @@ class APPLESEED_DLLSYMBOL ParamArray
         const char*             path,
         const T&                default_value = T()) const;
 
-    // Remove an item at a given path, if it exists.
+    // Remove a parameter at a given path, if it exists.
     ParamArray& remove_path(const char* path);
 
     // Return a child set of parameters, or create it if it doesn't exist.

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -38,8 +38,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
+#include "foundation/utility/api/apistring.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/iostreamop.h"
 
 // Standard headers.
@@ -67,41 +68,53 @@ UniqueID Camera::get_class_uid()
 }
 
 Camera::Camera(
-    const char*         name,
-    const ParamArray&   params)
+    const char*             name,
+    const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
 {
     set_name(name);
 }
 
-bool Camera::on_frame_begin(
-    const Project&      project,
-    IAbortSwitch*       abort_switch)
+bool Camera::on_render_begin(
+    const Project&          project,
+    IAbortSwitch*           abort_switch)
 {
-    m_transform_sequence.optimize();
-
-    if (!m_transform_sequence.prepare())
-        RENDERER_LOG_WARNING("camera \"%s\" has one or more invalid transforms.", get_name());
-
-    m_shutter_open_time = m_params.get_optional<double>("shutter_open_time", 0.0);
-    m_shutter_close_time = m_params.get_optional<double>("shutter_close_time", 1.0);
+    m_shutter_open_time = m_params.get_optional<float>("shutter_open_time", 0.0f);
+    m_shutter_close_time = m_params.get_optional<float>("shutter_close_time", 1.0f);
     m_shutter_open_time_interval = m_shutter_close_time - m_shutter_open_time;
 
     return true;
 }
 
-void Camera::on_frame_end(const Project& project)
+void Camera::on_render_end(const Project& project)
 {
 }
 
+bool Camera::on_frame_begin(
+    const Project&          project,
+    const BaseGroup*        parent,
+    OnFrameBeginRecorder&   recorder,
+    IAbortSwitch*           abort_switch)
+{
+    if (!ConnectableEntity::on_frame_begin(project, parent, recorder, abort_switch))
+        return false;
+
+    m_transform_sequence.optimize();
+
+    if (!m_transform_sequence.prepare())
+        RENDERER_LOG_WARNING("camera \"%s\" has one or more invalid transforms.", get_path().c_str());
+
+    return true;
+}
+
 bool Camera::project_point(
-    const double        time,
-    const Vector3d&     point,
-    Vector2d&           ndc) const
+    const float             time,
+    const Vector3d&         point,
+    Vector2d&               ndc) const
 {
     // Retrieve the camera transform.
-    Transformd tmp;
-    const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+    Transformd scratch;
+    const Transformd& transform = m_transform_sequence.evaluate(time, scratch);
 
     // Transform the point from world space to camera space.
     const Vector3d point_camera = transform.point_to_local(point);
@@ -143,7 +156,7 @@ Vector2d Camera::extract_film_dimensions() const
             RENDERER_LOG_ERROR(
                 "while defining camera \"%s\": invalid value \"%f %f\" for parameter \"%s\"; "
                 "using default value \"%f %f\".",
-                get_name(),
+                get_path().c_str(),
                 film_dimensions[0],
                 film_dimensions[1],
                 "film_dimensions",
@@ -179,7 +192,7 @@ double Camera::extract_focal_length(const double film_width) const
             RENDERER_LOG_WARNING(
                 "while defining camera \"%s\": the parameter \"horizontal_fov\" "
                 "has precedence over \"focal_length\".",
-                get_name());
+                get_path().c_str());
 
             const double hfov = get_greater_than_zero("horizontal_fov", DefaultHFov);
             return hfov_to_focal_length(film_width, hfov);
@@ -199,7 +212,7 @@ double Camera::extract_focal_length(const double film_width) const
         RENDERER_LOG_ERROR(
             "while defining camera \"%s\": no \"horizontal_fov\" or \"focal_length\" parameter found; "
             "using default focal length value \"%f\".",
-            get_name(),
+            get_path().c_str(),
             DefaultFocalLength);
 
         return DefaultFocalLength;
@@ -214,9 +227,9 @@ double Camera::extract_f_stop() const
 }
 
 void Camera::extract_focal_distance(
-    bool&               autofocus_enabled,
-    Vector2d&           autofocus_target,
-    double&             focal_distance) const
+    bool&                   autofocus_enabled,
+    Vector2d&               autofocus_target,
+    double&                 focal_distance) const
 {
     const Vector2d DefaultAFTarget(0.5);        // in NDC
     const double DefaultFocalDistance = 1.0;    // in meters
@@ -228,7 +241,7 @@ void Camera::extract_focal_distance(
             RENDERER_LOG_WARNING(
                 "while defining camera \"%s\": autofocus is enabled; \"focal_distance\" parameter "
                 "will be ignored.",
-                get_name());
+                get_path().c_str());
 
             autofocus_enabled = true;
             autofocus_target = m_params.get_required<Vector2d>("autofocus_target", DefaultAFTarget);
@@ -252,7 +265,7 @@ void Camera::extract_focal_distance(
         RENDERER_LOG_ERROR(
             "while defining camera \"%s\": no \"focal_distance\" or \"autofocus_target\" parameter found; "
             "using default focal distance value \"%f\".",
-            get_name(),
+            get_path().c_str(),
             DefaultFocalDistance);
 
         autofocus_enabled = false;
@@ -272,7 +285,7 @@ double Camera::extract_near_z() const
         RENDERER_LOG_ERROR(
             "while defining camera \"%s\": invalid near-Z value \"%f\", near-Z values must be negative or zero; "
             "using default value \"%f\".",
-            get_name(),
+            get_path().c_str(),
             near_z,
             DefaultNearZ);
 
@@ -283,8 +296,8 @@ double Camera::extract_near_z() const
 }
 
 void Camera::initialize_ray(
-    SamplingContext&    sampling_context,
-    ShadingRay&         ray) const
+    SamplingContext&        sampling_context,
+    ShadingRay&             ray) const
 {
     ray.m_tmin = 0.0;
     ray.m_tmax = numeric_limits<double>::max();
@@ -293,18 +306,20 @@ void Camera::initialize_ray(
 
     if (m_shutter_open_time == m_shutter_close_time)
     {
-        ray.m_time = ShadingRay::Time::create_with_normalized_time(
-            0.0,
-            m_shutter_open_time,
-            m_shutter_close_time);
+        ray.m_time =
+            ShadingRay::Time::create_with_normalized_time(
+                0.0f,
+                m_shutter_open_time,
+                m_shutter_close_time);
     }
     else
     {
         sampling_context.split_in_place(1, 1);
-        ray.m_time = ShadingRay::Time::create_with_normalized_time(
-            sampling_context.next_double2(),
-            m_shutter_open_time,
-            m_shutter_close_time);
+        ray.m_time =
+            ShadingRay::Time::create_with_normalized_time(
+                sampling_context.next2<float>(),
+                m_shutter_open_time,
+                m_shutter_close_time);
     }
 }
 
@@ -329,7 +344,7 @@ double Camera::get_greater_than_zero(
         RENDERER_LOG_ERROR(
             "while defining camera \"%s\": invalid value \"%f\" for parameter \"%s\"; "
             "using default value \"%f\".",
-            get_name(),
+            get_path().c_str(),
             value,
             name,
             default_value);
@@ -353,7 +368,15 @@ DictionaryArray CameraFactory::get_input_metadata()
         Dictionary()
             .insert("name", "shutter_open_time")
             .insert("label", "Shutter Open Time")
-            .insert("type", "text")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "0.0"));
 
@@ -361,7 +384,15 @@ DictionaryArray CameraFactory::get_input_metadata()
         Dictionary()
             .insert("name", "shutter_close_time")
             .insert("label", "Shutter Close Time")
-            .insert("type", "text")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 

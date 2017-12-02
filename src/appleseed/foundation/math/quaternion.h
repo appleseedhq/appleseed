@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -37,10 +37,9 @@
 
 // Imath headers.
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
-#include "foundation/platform/exrheaderguards.h"
-BEGIN_EXR_INCLUDES
+#include "foundation/platform/_beginexrheaders.h"
 #include "OpenEXR/ImathQuat.h"
-END_EXR_INCLUDES
+#include "foundation/platform/_endexrheaders.h"
 #endif
 
 // Standard headers.
@@ -86,16 +85,16 @@ class Quaternion
 
 #endif
 
-    // Return the identity quaternion.
-    static QuaternionType identity();
+    // Construct and return the identity quaternion.
+    static QuaternionType make_identity();
 
     // Build a rotation quaternion from an axis and an angle.
-    static QuaternionType rotation(
+    static QuaternionType make_rotation(
         const VectorType&   axis,                           // rotation axis, unit-length
         const ValueType     angle);                         // rotation angle, in radians
 
     // Build a rotation quaternion from two point on the unit sphere.
-    static QuaternionType rotation(
+    static QuaternionType make_rotation(
         const VectorType&   from,
         const VectorType&   to);
 
@@ -157,6 +156,10 @@ template <typename T> Quaternion<T> slerp(const Quaternion<T>& p, const Quaterni
 
 // Approximate but faster spherical linear interpolation between two unit-length quaternions.
 // See http://zeuxcg.org/2015/07/23/approximating-slerp/ for derivation and error analysis.
+// Another interesting reference:
+//   Slerping Clock Cycles
+//   J.M.P. van Waveren
+//   http://fabiensanglard.net/doom3_documentation/37725-293747_293747.pdf
 template <typename T> Quaternion<T> fast_slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T t);
 
 // Rotation of a vector by a quaternion.
@@ -219,13 +222,13 @@ inline Quaternion<T>::operator const Imath::Quat<T>&() const
 #endif
 
 template <typename T>
-inline Quaternion<T> Quaternion<T>::identity()
+inline Quaternion<T> Quaternion<T>::make_identity()
 {
     return QuaternionType(ValueType(1.0), VectorType(0.0));
 }
 
 template <typename T>
-inline Quaternion<T> Quaternion<T>::rotation(
+inline Quaternion<T> Quaternion<T>::make_rotation(
     const VectorType&   axis,
     const ValueType     angle)
 {
@@ -239,7 +242,7 @@ inline Quaternion<T> Quaternion<T>::rotation(
 }
 
 template <typename T>
-inline Quaternion<T> Quaternion<T>::rotation(
+inline Quaternion<T> Quaternion<T>::make_rotation(
     const VectorType&   from,
     const VectorType&   to)
 {

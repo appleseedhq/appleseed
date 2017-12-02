@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -49,10 +49,7 @@
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
-namespace foundation    { class IAbortSwitch; }
-namespace foundation    { class LightingConditions; }
 namespace renderer      { class ParamArray; }
-namespace renderer      { class Project; }
 namespace renderer      { class Texture; }
 
 namespace renderer
@@ -99,24 +96,21 @@ class APPLESEED_DLLSYMBOL TextureInstance
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
     // Compute and return the unique signature of this instance.
-    virtual foundation::uint64 compute_signature() const;
+    foundation::uint64 compute_signature() const override;
 
     // Return the name of the instantiated texture.
     const char* get_texture_name() const;
 
     // Return the texture transform.
-    const foundation::Transformd& get_transform() const;
+    const foundation::Transformf& get_transform() const;
 
     // Return the modes.
     TextureAddressingMode get_addressing_mode() const;
     TextureFilteringMode get_filtering_mode() const;
     TextureAlphaMode get_alpha_mode() const;
-
-    // Return the lighting conditions of the texture.
-    const foundation::LightingConditions& get_lighting_conditions() const;
 
     // Find the texture bound to this instance.
     Texture* find_texture() const;
@@ -132,15 +126,6 @@ class APPLESEED_DLLSYMBOL TextureInstance
     // Return the effective (detected) alpha mode.
     // A texture must be bound to this instance.
     TextureAlphaMode get_effective_alpha_mode() const;
-
-    // This method is called once before rendering each frame.
-    // Returns true on success, false otherwise.
-    bool on_frame_begin(
-        const Project&                  project,
-        foundation::IAbortSwitch*       abort_switch = 0);
-
-    // This method is called once after rendering each frame.
-    void on_frame_end(const Project& project);
 
   private:
     friend class TextureInstanceFactory;
@@ -159,10 +144,10 @@ class APPLESEED_DLLSYMBOL TextureInstance
         const char*                     name,
         const ParamArray&               params,
         const char*                     texture_name,
-        const foundation::Transformd&   transform);
+        const foundation::Transformf&   transform);
 
     // Destructor.
-    ~TextureInstance();
+    ~TextureInstance() override;
 };
 
 
@@ -181,7 +166,7 @@ class APPLESEED_DLLSYMBOL TextureInstanceFactory
         const char*                     name,
         const ParamArray&               params,
         const char*                     texture_name,
-        const foundation::Transformd&   transform = foundation::Transformd::identity());
+        const foundation::Transformf&   transform = foundation::Transformf::identity());
 };
 
 

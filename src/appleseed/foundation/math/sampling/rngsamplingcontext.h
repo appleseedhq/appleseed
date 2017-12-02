@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -78,19 +78,9 @@ class RNGSamplingContext
         const size_t    dimension,
         const size_t    sample_count);
 
-    // Return the next sample in [0,1].
-    double next_double1();
-
-    // Return the next sample in [0,1).
-    double next_double2();
-
-    // Return the next sample in [0,1]^N.
-    void next_vector1(const size_t n, double v[]);
-    template <size_t N> Vector<double, N> next_vector1();
-
     // Return the next sample in [0,1)^N.
-    void next_vector2(const size_t n, double v[]);
-    template <size_t N> Vector<double, N> next_vector2();
+    // Works for scalars and foundation::Vector<>.
+    template <typename T> T next2();
 
     // Return the total dimension of this sampler.
     size_t get_total_dimension() const;
@@ -100,6 +90,11 @@ class RNGSamplingContext
 
   private:
     RNG& m_rng;
+
+    template <typename T> struct Tag {};
+
+    template <typename T> T next2(Tag<T>);
+    template <typename T, size_t N> Vector<T, N> next2(Tag<Vector<T, N>>);
 };
 
 
@@ -150,51 +145,10 @@ inline void RNGSamplingContext<RNG>::split_in_place(
 }
 
 template <typename RNG>
-inline double RNGSamplingContext<RNG>::next_double1()
+template <typename T>
+inline T RNGSamplingContext<RNG>::next2()
 {
-    return rand_double1(m_rng);
-}
-
-template <typename RNG>
-inline double RNGSamplingContext<RNG>::next_double2()
-{
-    return rand_double2(m_rng);
-}
-
-template <typename RNG>
-inline void RNGSamplingContext<RNG>::next_vector1(const size_t n, double v[])
-{
-    for (size_t i = 0; i < n; ++i)
-        v[i] = rand_double1(m_rng);
-}
-
-template <typename RNG>
-template <size_t N>
-inline Vector<double, N> RNGSamplingContext<RNG>::next_vector1()
-{
-    Vector<double, N> v;
-
-    next_vector1(N, &v[0]);
-
-    return v;
-}
-
-template <typename RNG>
-inline void RNGSamplingContext<RNG>::next_vector2(const size_t n, double v[])
-{
-    for (size_t i = 0; i < n; ++i)
-        v[i] = rand_double2(m_rng);
-}
-
-template <typename RNG>
-template <size_t N>
-inline Vector<double, N> RNGSamplingContext<RNG>::next_vector2()
-{
-    Vector<double, N> v;
-
-    next_vector2(N, &v[0]);
-
-    return v;
+    return next2(Tag<T>());
 }
 
 template <typename RNG>
@@ -207,6 +161,25 @@ template <typename RNG>
 inline size_t RNGSamplingContext<RNG>::get_total_instance() const
 {
     return 0;
+}
+
+template <typename RNG>
+template <typename T>
+inline T RNGSamplingContext<RNG>::next2(Tag<T>)
+{
+    return rand_double2(m_rng);
+}
+
+template <typename RNG>
+template <typename T, size_t N>
+inline Vector<T, N> RNGSamplingContext<RNG>::next2(Tag<Vector<T, N>>)
+{
+    Vector<T, N> v;
+
+    for (size_t i = 0; i < N; ++i)
+        v[i] = rand_double2(m_rng);
+
+    return v;
 }
 
 }       // namespace foundation

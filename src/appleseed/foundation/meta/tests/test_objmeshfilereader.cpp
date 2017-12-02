@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -60,33 +60,33 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileReader)
     {
         vector<Mesh>        m_meshes;
 
-        virtual void begin_mesh(const char* name) APPLESEED_OVERRIDE
+        void begin_mesh(const char* name) override
         {
-            m_meshes.push_back(Mesh());
+            m_meshes.emplace_back();
             m_meshes.back().m_name = name;
         }
 
-        virtual size_t push_vertex(const Vector3d& v) APPLESEED_OVERRIDE
+        size_t push_vertex(const Vector3d& v) override
         {
             m_meshes.back().m_vertices.push_back(v);
             return m_meshes.back().m_vertices.size() - 1;
         }
 
-        virtual size_t push_vertex_normal(const Vector3d& v) APPLESEED_OVERRIDE
+        size_t push_vertex_normal(const Vector3d& v) override
         {
             m_meshes.back().m_vertex_normals.push_back(safe_normalize(v));
             return m_meshes.back().m_vertex_normals.size() - 1;
         }
 
-        virtual size_t push_tex_coords(const Vector2d& v) APPLESEED_OVERRIDE
+        size_t push_tex_coords(const Vector2d& v) override
         {
             m_meshes.back().m_tex_coords.push_back(v);
             return m_meshes.back().m_tex_coords.size() - 1;
         }
 
-        virtual void begin_face(const size_t vertex_count) APPLESEED_OVERRIDE
+        void begin_face(const size_t vertex_count) override
         {
-            m_meshes.back().m_faces.push_back(Face());
+            m_meshes.back().m_faces.emplace_back();
         }
     };
 

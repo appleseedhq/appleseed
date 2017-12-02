@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,12 +32,14 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/rendering/generic/tilejob.h"
 #include "renderer/kernel/rendering/generic/tilejobfactory.h"
-#include "renderer/kernel/rendering/framerendererbase.h"
+#include "renderer/kernel/rendering/iframerenderer.h"
 #include "renderer/kernel/rendering/ipasscallback.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/kernel/rendering/itilerenderer.h"
+#include "renderer/utility/settingsparsing.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -48,6 +50,7 @@
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job.h"
 #include "foundation/utility/statistics.h"
+#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
@@ -70,7 +73,7 @@ namespace
     //
 
     class GenericFrameRenderer
-      : public FrameRendererBase
+      : public IFrameRenderer
     {
       public:
         GenericFrameRenderer(
@@ -108,10 +111,17 @@ namespace
                     m_tile_callbacks.push_back(tile_callback_factory->create());
             }
 
-            print_rendering_thread_count(m_params.m_thread_count);
+            RENDERER_LOG_INFO(
+                "rendering settings:\n"
+                "  spectrum mode                 %s\n"
+                "  sampling mode                 %s\n"
+                "  threads                       %s",
+                get_spectrum_mode_name(get_spectrum_mode(params)).c_str(),
+                get_sampling_context_mode_name(get_sampling_context_mode(params)).c_str(),
+                pretty_int(m_params.m_thread_count).c_str());
         }
 
-        virtual ~GenericFrameRenderer()
+        ~GenericFrameRenderer() override
         {
             // Tell the pass manager thread to stop.
             m_abort_switch.abort();
@@ -129,23 +139,23 @@ namespace
                 m_tile_renderers[i]->release();
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual void render() APPLESEED_OVERRIDE
+        void render() override
         {
             start_rendering();
             m_job_queue.wait_until_completion();
         }
 
-        virtual bool is_rendering() const APPLESEED_OVERRIDE
+        bool is_rendering() const override
         {
             return m_is_rendering;
         }
 
-        virtual void start_rendering() APPLESEED_OVERRIDE
+        void start_rendering() override
         {
             assert(!is_rendering());
             assert(!m_job_queue.has_scheduled_or_running_jobs());
@@ -162,6 +172,7 @@ namespace
                     m_frame,
                     m_params.m_tile_ordering,
                     m_params.m_pass_count,
+                    m_params.m_spectrum_mode,
                     m_tile_renderers,
                     m_tile_callbacks,
                     m_pass_callback,
@@ -172,7 +183,7 @@ namespace
             m_pass_manager_thread.reset(new boost::thread(wrapper));
         }
 
-        virtual void stop_rendering() APPLESEED_OVERRIDE
+        void stop_rendering() override
         {
             // First, delete scheduled jobs to prevent worker threads from picking them up.
             m_job_queue.clear_scheduled_jobs();
@@ -187,17 +198,17 @@ namespace
             m_job_manager->stop();
         }
 
-        virtual void pause_rendering() APPLESEED_OVERRIDE
+        void pause_rendering() override
         {
             m_job_manager->pause();
         }
 
-        virtual void resume_rendering() APPLESEED_OVERRIDE
+        void resume_rendering() override
         {
             m_job_manager->resume();
         }
 
-        virtual void terminate_rendering() APPLESEED_OVERRIDE
+        void terminate_rendering() override
         {
             stop_rendering();
 
@@ -207,12 +218,14 @@ namespace
       private:
         struct Parameters
         {
+            const Spectrum::Mode                m_spectrum_mode;
             const size_t                        m_thread_count;     // number of rendering threads
             const TileJobFactory::TileOrdering  m_tile_ordering;    // tile rendering order
             const size_t                        m_pass_count;       // number of rendering passes
 
             explicit Parameters(const ParamArray& params)
-              : m_thread_count(FrameRendererBase::get_rendering_thread_count(params))
+              : m_spectrum_mode(get_spectrum_mode(params))
+              , m_thread_count(get_rendering_thread_count(params))
               , m_tile_ordering(get_tile_ordering(params))
               , m_pass_count(params.get_optional<size_t>("passes", 1))
             {
@@ -221,7 +234,7 @@ namespace
             static TileJobFactory::TileOrdering get_tile_ordering(const ParamArray& params)
             {
                 const string tile_ordering =
-                    params.get_optional<string>("tile_ordering", "hilbert");
+                    params.get_optional<string>("tile_ordering", "spiral");
 
                 if (tile_ordering == "linear")
                 {
@@ -260,6 +273,7 @@ namespace
                 const Frame&                        frame,
                 const TileJobFactory::TileOrdering  tile_ordering,
                 const size_t                        pass_count,
+                const Spectrum::Mode                spectrum_mode,
                 vector<ITileRenderer*>&             tile_renderers,
                 vector<ITileCallback*>&             tile_callbacks,
                 IPassCallback*                      pass_callback,
@@ -269,6 +283,7 @@ namespace
               : m_frame(frame)
               , m_tile_ordering(tile_ordering)
               , m_pass_count(pass_count)
+              , m_spectrum_mode(spectrum_mode)
               , m_tile_renderers(tile_renderers)
               , m_tile_callbacks(tile_callbacks)
               , m_pass_callback(pass_callback)
@@ -280,6 +295,8 @@ namespace
 
             void operator()()
             {
+                set_current_thread_name("pass_manager");
+
                 for (size_t pass = 0; pass < m_pass_count && !m_abort_switch.is_aborted(); ++pass)
                 {
                     if (m_pass_count > 1)
@@ -289,7 +306,7 @@ namespace
                     if (m_pass_callback)
                     {
                         assert(!m_job_queue.has_scheduled_or_running_jobs());
-                        m_pass_callback->pre_render(m_frame, m_job_queue, m_abort_switch);
+                        m_pass_callback->on_pass_begin(m_frame, m_job_queue, m_abort_switch);
                         assert(!m_job_queue.has_scheduled_or_running_jobs());
                     }
 
@@ -302,6 +319,7 @@ namespace
                         m_tile_renderers,
                         m_tile_callbacks,
                         pass_hash,
+                        m_spectrum_mode,
                         tile_jobs,
                         m_abort_switch);
 
@@ -316,7 +334,7 @@ namespace
                     if (m_pass_callback)
                     {
                         assert(!m_job_queue.has_scheduled_or_running_jobs());
-                        m_pass_callback->post_render(m_frame, m_job_queue, m_abort_switch);
+                        m_pass_callback->on_pass_end(m_frame, m_job_queue, m_abort_switch);
                         assert(!m_job_queue.has_scheduled_or_running_jobs());
                     }
                 }
@@ -331,6 +349,7 @@ namespace
             vector<ITileCallback*>&                 m_tile_callbacks;
             IPassCallback*                          m_pass_callback;
             const size_t                            m_pass_count;
+            const Spectrum::Mode                    m_spectrum_mode;
             JobQueue&                               m_job_queue;
             IAbortSwitch&                           m_abort_switch;
             bool&                                   m_is_rendering;
@@ -341,7 +360,7 @@ namespace
         const Parameters            m_params;
 
         JobQueue                    m_job_queue;
-        auto_ptr<JobManager>        m_job_manager;
+        unique_ptr<JobManager>      m_job_manager;
         AbortSwitch                 m_abort_switch;
 
         vector<ITileRenderer*>      m_tile_renderers;   // tile renderers, one per thread
@@ -351,8 +370,8 @@ namespace
         TileJobFactory              m_tile_job_factory;
 
         bool                        m_is_rendering;
-        auto_ptr<PassManagerFunc>   m_pass_manager_func;
-        auto_ptr<boost::thread>     m_pass_manager_thread;
+        unique_ptr<PassManagerFunc> m_pass_manager_func;
+        unique_ptr<boost::thread>   m_pass_manager_thread;
 
         void print_tile_renderers_stats() const
         {
@@ -436,7 +455,7 @@ Dictionary GenericFrameRendererFactory::get_params_metadata()
         Dictionary()
             .insert("type", "enum")
             .insert("values", "linear|spiral|hilbert|random")
-            .insert("default", "hilbert")
+            .insert("default", "spiral")
             .insert("label", "Tile Order")
             .insert("help", "Tile rendering order")
             .insert(

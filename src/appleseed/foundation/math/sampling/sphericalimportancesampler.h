@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,9 +31,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/area.h"
 #include "foundation/math/cdf.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/sphericaltriangle.h"
 #include "foundation/math/vector.h"
@@ -42,9 +42,9 @@
 
 // Standard headers.
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <cstdio>
-#include <cmath>
 #include <map>
 #include <vector>
 
@@ -80,7 +80,7 @@ class SphericalImportanceSampler
 
     typedef std::map<uint64, size_t> PointCache;
 
-    std::vector<Vector<T, 3> >  m_verts;
+    std::vector<Vector<T, 3>>   m_verts;
     std::vector<Tri>            m_tris;
     CDF<size_t, T>              m_cdf;
 
@@ -128,7 +128,7 @@ bool SphericalImportanceSampler<T>::dump_as_obj(const char* filepath) const
 {
     std::FILE* file = std::fopen(filepath, "wt");
 
-    if (file == 0)
+    if (file == nullptr)
         return false;
 
     for (size_t i = 0; i < m_verts.size(); ++i)
@@ -175,20 +175,20 @@ void SphericalImportanceSampler<T>::create_regular_icosahedron()
     m_verts.reserve(12);
     m_tris.reserve(20);
 
-    m_verts.push_back(normalize(Vector<T, 3>(T(-1.0), T( GoldenRatio), T(0.0))));
-    m_verts.push_back(normalize(Vector<T, 3>(T( 1.0), T( GoldenRatio), T(0.0))));
-    m_verts.push_back(normalize(Vector<T, 3>(T(-1.0), T(-GoldenRatio), T(0.0))));
-    m_verts.push_back(normalize(Vector<T, 3>(T( 1.0), T(-GoldenRatio), T(0.0))));
+    m_verts.push_back(normalize(Vector<T, 3>(T(-1.0),  GoldenRatio<T>(), T(0.0))));
+    m_verts.push_back(normalize(Vector<T, 3>(T( 1.0),  GoldenRatio<T>(), T(0.0))));
+    m_verts.push_back(normalize(Vector<T, 3>(T(-1.0), -GoldenRatio<T>(), T(0.0))));
+    m_verts.push_back(normalize(Vector<T, 3>(T( 1.0), -GoldenRatio<T>(), T(0.0))));
 
-    m_verts.push_back(normalize(Vector<T, 3>(T(0.0), T(-1.0), T( GoldenRatio))));
-    m_verts.push_back(normalize(Vector<T, 3>(T(0.0), T( 1.0), T( GoldenRatio))));
-    m_verts.push_back(normalize(Vector<T, 3>(T(0.0), T(-1.0), T(-GoldenRatio))));
-    m_verts.push_back(normalize(Vector<T, 3>(T(0.0), T( 1.0), T(-GoldenRatio))));
+    m_verts.push_back(normalize(Vector<T, 3>(T(0.0), T(-1.0),  GoldenRatio<T>())));
+    m_verts.push_back(normalize(Vector<T, 3>(T(0.0), T( 1.0),  GoldenRatio<T>())));
+    m_verts.push_back(normalize(Vector<T, 3>(T(0.0), T(-1.0), -GoldenRatio<T>())));
+    m_verts.push_back(normalize(Vector<T, 3>(T(0.0), T( 1.0), -GoldenRatio<T>())));
 
-    m_verts.push_back(normalize(Vector<T, 3>(T( GoldenRatio), T(0.0), T(-1.0))));
-    m_verts.push_back(normalize(Vector<T, 3>(T( GoldenRatio), T(0.0), T( 1.0))));
-    m_verts.push_back(normalize(Vector<T, 3>(T(-GoldenRatio), T(0.0), T(-1.0))));
-    m_verts.push_back(normalize(Vector<T, 3>(T(-GoldenRatio), T(0.0), T( 1.0))));
+    m_verts.push_back(normalize(Vector<T, 3>( GoldenRatio<T>(), T(0.0), T(-1.0))));
+    m_verts.push_back(normalize(Vector<T, 3>( GoldenRatio<T>(), T(0.0), T( 1.0))));
+    m_verts.push_back(normalize(Vector<T, 3>(-GoldenRatio<T>(), T(0.0), T(-1.0))));
+    m_verts.push_back(normalize(Vector<T, 3>(-GoldenRatio<T>(), T(0.0), T( 1.0))));
 
     // 5 faces around point 0.
     m_tris.push_back(Tri(0, 11, 5));

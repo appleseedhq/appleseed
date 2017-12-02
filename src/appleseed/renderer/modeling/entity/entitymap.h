@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -148,7 +148,7 @@ class APPLESEED_DLLSYMBOL EntityMap
     };
 
     // Constructor.
-    explicit EntityMap(Entity* parent = 0);
+    explicit EntityMap(Entity* parent = nullptr);
 
     // Destructor.
     ~EntityMap();
@@ -171,6 +171,7 @@ class APPLESEED_DLLSYMBOL EntityMap
     // Remove an entity from the container.
     // Note that if nothing is done with the return value, the entity will be deleted.
     foundation::auto_release_ptr<Entity> remove(const foundation::UniqueID id);
+    foundation::auto_release_ptr<Entity> remove(Entity* entity);
 
     // Return a given entity.
     // Return 0 if the requested entity does not exist.
@@ -248,7 +249,7 @@ class TypedEntityMap
     };
 
     // Constructor.
-    explicit TypedEntityMap(Entity* parent = 0);
+    explicit TypedEntityMap(Entity* parent = nullptr);
 
     // Insert an entity into the container and return its index.
     void insert(foundation::auto_release_ptr<T> entity);
@@ -256,6 +257,7 @@ class TypedEntityMap
     // Remove an entity from the container.
     // Note that if nothing is done with the return value, the entity will be deleted.
     foundation::auto_release_ptr<T> remove(const foundation::UniqueID id);
+    foundation::auto_release_ptr<T> remove(T* entity);
 
     // Return a given entity.
     // Return 0 if the requested entity does not exist.
@@ -270,6 +272,16 @@ class TypedEntityMap
     const_iterator begin() const;
     const_iterator end() const;
 };
+
+
+//
+// EntityMap class implementation.
+//
+
+inline foundation::auto_release_ptr<Entity> EntityMap::remove(Entity* entity)
+{
+    return remove(entity->get_uid());
+}
 
 
 //
@@ -341,6 +353,14 @@ inline foundation::auto_release_ptr<T> TypedEntityMap<T>::remove(const foundatio
     return
         foundation::auto_release_ptr<T>(
             reinterpret_cast<T*>(EntityMap::remove(id).release()));
+}
+
+template <typename T>
+inline foundation::auto_release_ptr<T> TypedEntityMap<T>::remove(T* entity)
+{
+    return
+        foundation::auto_release_ptr<T>(
+            reinterpret_cast<T*>(EntityMap::remove(entity).release()));
 }
 
 template <typename T>

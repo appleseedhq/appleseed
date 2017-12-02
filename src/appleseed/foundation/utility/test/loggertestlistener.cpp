@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,13 +33,13 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
-#include "foundation/utility/test/testlistenerbase.h"
-#include "foundation/utility/test/testsuite.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
+#include "foundation/utility/test/testlistenerbase.h"
+#include "foundation/utility/test/testsuite.h"
 
 // Standard headers.
 #include <cstddef>
@@ -69,30 +69,30 @@ namespace
         {
         }
 
-        virtual void release() APPLESEED_OVERRIDE
+        void release() override
         {
             delete this;
         }
 
-        virtual void begin_suite(
-            const TestSuite&        test_suite) APPLESEED_OVERRIDE
+        void begin_suite(
+            const TestSuite&        test_suite) override
         {
             m_suite_name_printed = false;
         }
 
-        virtual void begin_case(
+        void begin_case(
             const TestSuite&        test_suite,
-            const char*             test_case_name) APPLESEED_OVERRIDE
+            const char*             test_case_name) override
         {
             m_case_name_printed = false;
         }
 
-        virtual void end_case(
+        void end_case(
             const TestSuite&        test_suite,
             const char*             test_case_name,
             const TestResult&       test_suite_result,
             const TestResult&       test_case_result,
-            const TestResult&       cumulated_result) APPLESEED_OVERRIDE
+            const TestResult&       cumulated_result) override
         {
             if (m_verbose)
             {
@@ -110,13 +110,13 @@ namespace
             }
         }
 
-        virtual void write(
+        void write(
             const TestSuite&        test_suite,
             const char*             test_case_name,
             const char*             file,
             const size_t            line,
             const TestMessage::Type message_type,
-            const char*             message) APPLESEED_OVERRIDE
+            const char*             message) override
         {
             if (!m_case_name_printed)
             {
@@ -154,7 +154,7 @@ namespace
             split(message, "\n", tokens);
 
             // Print the message.
-            for (const_each<vector<string> > i = tokens; i; ++i)
+            for (const_each<vector<string>> i = tokens; i; ++i)
                 LOG_ERROR(m_logger, "      %s", i->c_str());
         }
 

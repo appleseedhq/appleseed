@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -71,7 +71,7 @@ class APPLESEED_DLLSYMBOL ShaderQuery
     const char* get_shader_type() const;
 
     // Return number of shader parameters.
-    size_t get_num_params() const;
+    size_t get_param_count() const;
 
     // Return shader parameter information.
     const foundation::Dictionary& get_param_info(const size_t param_index) const;

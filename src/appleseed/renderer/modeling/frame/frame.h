@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,8 @@
 #define APPLESEED_RENDERER_MODELING_FRAME_FRAME_H
 
 // appleseed.renderer headers.
+#include "renderer/modeling/aov/aov.h"
+#include "renderer/modeling/aov/aovcontainer.h"
 #include "renderer/modeling/entity/entity.h"
 
 // appleseed.foundation headers.
@@ -54,8 +56,8 @@
 namespace foundation    { class DictionaryArray; }
 namespace foundation    { class Image; }
 namespace foundation    { class ImageAttributes; }
-namespace foundation    { class LightingConditions; }
 namespace foundation    { class Tile; }
+namespace renderer      { class AOV; }
 namespace renderer      { class ImageStack; }
 namespace renderer      { class ParamArray; }
 
@@ -76,28 +78,31 @@ class APPLESEED_DLLSYMBOL Frame
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release() override;
 
     // Print frame settings to the renderer's global logger.
     void print_settings();
 
+    // Return the name of the active camera.
+    const char* get_active_camera_name() const;
+
     // Access the main underlying image.
     foundation::Image& image() const;
+
+    // Clear the main and AOV images to transparent black.
+    void clear_main_and_aov_images();
 
     // Access the AOV images.
     ImageStack& aov_images() const;
 
+    // Access the AOVs.
+    const AOVContainer& aovs() const;
+
+    // Create an extra AOV image if it does not exist.
+    size_t create_extra_aov_image(const char* name) const;
+
     // Return the reconstruction filter used by the main image and the AOV images.
     const foundation::Filter2f& get_filter() const;
-
-    // Return the color space the frame should be converted to for display.
-    foundation::ColorSpace get_color_space() const;
-
-    // Return the lighting conditions for spectral-to-RGB conversions.
-    const foundation::LightingConditions& get_lighting_conditions() const;
-
-    // Return true if the frame uses premultiplied alpha, false if it uses straight alpha.
-    bool is_premultiplied_alpha() const;
 
     // Set/get the crop window. The crop window is inclusive on all sides.
     void reset_crop_window();
@@ -107,10 +112,6 @@ class APPLESEED_DLLSYMBOL Frame
 
     // Return the number of pixels in the frame, taking into account the crop window.
     size_t get_pixel_count() const;
-
-    // Convert a tile or an image from linear RGB to the output color space.
-    void transform_to_output_color_space(foundation::Tile& tile) const;
-    void transform_to_output_color_space(foundation::Image& image) const;
 
     // Return the normalized device coordinates of a given sample.
     foundation::Vector2d get_sample_position(
@@ -129,13 +130,19 @@ class APPLESEED_DLLSYMBOL Frame
         const double    sample_x,               // x coordinate of the sample in the pixel, in [0,1)
         const double    sample_y) const;        // y coordinate of the sample in the pixel, in [0,1)
 
-    // Clear the main image to transparent black.
-    void clear_main_image();
-
     // Write the main image / the AOV images to disk.
     // Return true if successful, false otherwise.
     bool write_main_image(const char* file_path) const;
     bool write_aov_images(const char* file_path) const;
+    bool write_aov_image(const char* file_path, const size_t aov_index) const;
+
+    // Write the main image and the AOV images to disk.
+    // The images file paths are taken from the frame and AOV "output_filename" parameters.
+    // Return true if successful, false otherwise.
+    bool write_main_and_aov_images() const;
+
+    // Write the main image and the AOVs to a multipart OpenEXR file.
+    void write_main_and_aov_images_to_multipart_exr(const char* file_path) const;
 
     // Archive the frame to a given directory on disk. If output_path is provided,
     // the full path to the output file will be returned. The returned string must
@@ -143,7 +150,7 @@ class APPLESEED_DLLSYMBOL Frame
     // Return true if successful, false otherwise.
     bool archive(
         const char*     directory,
-        char**          output_path = 0) const;
+        char**          output_path = nullptr) const;
 
   private:
     friend class FrameFactory;
@@ -152,25 +159,17 @@ class APPLESEED_DLLSYMBOL Frame
     Impl* impl;
 
     foundation::CanvasProperties    m_props;
-    foundation::ColorSpace          m_color_space;
-    bool                            m_is_premultiplied_alpha;
 
     // Constructor.
     Frame(
         const char*         name,
-        const ParamArray&   params);
+        const ParamArray&   params,
+        const AOVContainer& aovs);
 
     // Destructor.
-    ~Frame();
+    ~Frame() override;
 
     void extract_parameters();
-
-    // Write an image to disk after transformation to the frame's color space.
-    // Return true if successful, false otherwise.
-    bool write_image(
-        const char*                         file_path,
-        const foundation::Image&            image,
-        const foundation::ImageAttributes&  image_attributes) const;
 };
 
 
@@ -188,22 +187,18 @@ class APPLESEED_DLLSYMBOL FrameFactory
     static foundation::auto_release_ptr<Frame> create(
         const char*         name,
         const ParamArray&   params);
+
+    // Create a new frame.
+    static foundation::auto_release_ptr<Frame> create(
+        const char*         name,
+        const ParamArray&   params,
+        const AOVContainer& aovs);
 };
 
 
 //
 // Frame class implementation.
 //
-
-inline foundation::ColorSpace Frame::get_color_space() const
-{
-    return m_color_space;
-}
-
-inline bool Frame::is_premultiplied_alpha() const
-{
-    return m_is_premultiplied_alpha;
-}
 
 inline foundation::Vector2d Frame::get_sample_position(
     const double    sample_x,

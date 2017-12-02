@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,6 @@
 #define APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERINGMANAGER_H
 
 // appleseed.studio headers.
-#include "mainwindow/rendering/frozendisplayrenderer.h"
 #include "mainwindow/rendering/qtrenderercontroller.h"
 #include "mainwindow/rendering/qttilecallback.h"
 #include "mainwindow/rendering/renderingtimer.h"
@@ -44,8 +43,8 @@
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
 #include "foundation/platform/thread.h"
-#include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/job/abortswitch.h"
 
 // Qt headers.
 #include <QObject>
@@ -73,16 +72,23 @@ class RenderingManager
     Q_OBJECT
 
   public:
+    enum RenderingMode
+    {
+        InteractiveRendering,
+        FinalRendering
+    };
+
     // Constructor.
     explicit RenderingManager(StatusBar& status_bar);
 
     // Destructor.
-    ~RenderingManager();
+    ~RenderingManager() override;
 
     // Start rendering.
     void start_rendering(
         renderer::Project*              project,
         const renderer::ParamArray&     params,
+        const RenderingMode             rendering_mode,
         RenderTab*                      render_tab);
 
     // Return true if currently rendering, false otherwise.
@@ -111,11 +117,11 @@ class RenderingManager
     // Schedule an action for execution.
     // Actions are executed once, right before rendering begins, in the order in which
     // they were scheduled. They are then deleted.
-    void schedule(std::auto_ptr<IScheduledAction> action);
+    void schedule(std::unique_ptr<IScheduledAction> action);
 
     // Schedule an action for execution if currently rendering, or execute the action
     // right away if not.
-    void schedule_or_execute(std::auto_ptr<IScheduledAction> action);
+    void schedule_or_execute(std::unique_ptr<IScheduledAction> action);
 
     // Remove all actions scheduled since rendering has begun.
     void clear_scheduled_actions();
@@ -137,7 +143,7 @@ class RenderingManager
     // There are no guarantees regarding the order of execution of sticky actions.
     void set_sticky_action(
         const std::string&              key,
-        std::auto_ptr<IStickyAction>    action);
+        std::unique_ptr<IStickyAction>  action);
 
     // Remove all sticky actions.
     void clear_sticky_actions();
@@ -157,11 +163,12 @@ class RenderingManager
 
     renderer::Project*                          m_project;
     renderer::ParamArray                        m_params;
+    RenderingMode                               m_rendering_mode;
     RenderTab*                                  m_render_tab;
 
-    std::auto_ptr<QtTileCallbackFactory>        m_tile_callback_factory;
-    std::auto_ptr<renderer::MasterRenderer>     m_master_renderer;
-    std::auto_ptr<QThread>                      m_master_renderer_thread;
+    std::unique_ptr<QtTileCallbackFactory>      m_tile_callback_factory;
+    std::unique_ptr<renderer::MasterRenderer>   m_master_renderer;
+    std::unique_ptr<QThread>                    m_master_renderer_thread;
 
     RenderingTimer                              m_rendering_timer;
 
@@ -173,32 +180,6 @@ class RenderingManager
 
     bool                                        m_has_camera_changed;
 
-    class FrozenDisplayFunc
-    {
-      public:
-        FrozenDisplayFunc(
-            const renderer::SamplingContext::Mode   sampling_mode,
-            const renderer::Camera&                 camera,
-            const renderer::Frame&                  frame,
-            renderer::ITileCallbackFactory&         tile_callback_factory,
-            foundation::IAbortSwitch&               abort_switch);
-
-        void set_camera_transform(
-            const foundation::Transformd&           transform);
-
-        void operator()();
-
-      private:
-        FrozenDisplayRenderer                                   m_renderer;
-        const renderer::Frame&                                  m_frame;
-        foundation::auto_release_ptr<renderer::ITileCallback>   m_tile_callback;
-        foundation::IAbortSwitch&                               m_abort_switch;
-    };
-
-    std::auto_ptr<FrozenDisplayFunc>            m_frozen_display_func;
-    std::auto_ptr<boost::thread>                m_frozen_display_thread;
-    foundation::AbortSwitch                     m_frozen_display_abort_switch;
-
     void print_final_rendering_time();
     void print_average_luminance();
     void archive_frame_to_disk();
@@ -209,6 +190,7 @@ class RenderingManager
   private slots:
     void slot_rendering_begin();
     void slot_rendering_end();
+    void slot_rendering_failed();
     void slot_frame_begin();
     void slot_frame_end();
     void slot_camera_change_begin();

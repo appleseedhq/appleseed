@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -46,8 +46,12 @@ BENCHMARK_SUITE(Foundation_Math_Transform_TransformInterpolator)
         Transformd              m_result;
 
         Fixture()
-          : m_from(Transformd::from_local_to_parent(Matrix4d::rotation(Vector3d(1.0, 0.0, 0.0), 0.0)))
-          , m_to(Transformd::from_local_to_parent(Matrix4d::rotation(Vector3d(1.0, 0.0, 0.0), HalfPi)))
+          : m_from(
+              Transformd::from_local_to_parent(
+                  Matrix4d::make_rotation(Vector3d(1.0, 0.0, 0.0), 0.0)))
+          , m_to(
+              Transformd::from_local_to_parent(
+                  Matrix4d::make_rotation(Vector3d(1.0, 0.0, 0.0), HalfPi<double>())))
           , m_interpolator(m_from, m_to)
         {
         }

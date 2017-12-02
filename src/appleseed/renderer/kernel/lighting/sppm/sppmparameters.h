@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,9 @@ struct SPPMParameters
     enum PhotonType { Monochromatic, Polychromatic };
     enum Mode { RayTraced, SPPM, Off };
 
+    const Spectrum::Mode        m_spectrum_mode;
     const SamplingContext::Mode m_sampling_mode;
+
     const PhotonType            m_photon_type;
 
     const Mode                  m_dl_mode;                              // direct lighting mode
@@ -58,10 +60,10 @@ struct SPPMParameters
     const size_t                m_env_photon_count;                     // number of photons emitted from the environment
     const size_t                m_photon_packet_size;                   // number of photons per tracing job
 
-    const size_t                m_photon_tracing_max_path_length;       // maximum photon tracing path length, ~0 for unlimited
+    const size_t                m_photon_tracing_max_bounces;           // maximum number of photon bounces, ~0 for unlimited
     const size_t                m_photon_tracing_rr_min_path_length;    // minimum photon tracing path length before Russian Roulette kicks in, ~0 for unlimited
 
-    const size_t                m_path_tracing_max_path_length;         // maximum path tracing path length, ~0 for unlimited
+    const size_t                m_path_tracing_max_bounces;             // maximum number of path bounces, ~0 for unlimited
     const size_t                m_path_tracing_rr_min_path_length;      // minimum path tracing path length before Russian Roulette kicks in, ~0 for unlimited
 
     const float                 m_transparency_threshold;
@@ -70,7 +72,8 @@ struct SPPMParameters
     const float                 m_initial_radius_percents;              // initial lookup radius as a percentage of the scene diameter
     const float                 m_alpha;                                // radius shrinking control
     const size_t                m_max_photons_per_estimate;             // maximum number of photons per density estimation
-    const double                m_dl_light_sample_count;                // number of light samples used to estimate direct illumination in ray traced mode
+    const float                 m_dl_light_sample_count;                // number of light samples used to estimate direct illumination in ray traced mode
+    const float                 m_dl_low_light_threshold;               // light contribution threshold to disable shadow rays
     float                       m_rcp_dl_light_sample_count;
 
     const bool                  m_view_photons;                         // debug mode to visualize the photons

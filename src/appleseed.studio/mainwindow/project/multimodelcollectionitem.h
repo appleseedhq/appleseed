@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -81,9 +81,9 @@ class MultiModelCollectionItem
     typedef CollectionItem<Entity, ParentEntity, ParentItem> Base;
     typedef MultiModelCollectionItem<Entity, ParentEntity, ParentItem> This;
 
-    virtual ItemBase* create_item(Entity* entity) APPLESEED_OVERRIDE;
+    ItemBase* create_item(Entity* entity) override;
 
-    virtual void slot_create() APPLESEED_OVERRIDE;
+    void slot_create() override;
 };
 
 
@@ -135,20 +135,21 @@ void MultiModelCollectionItem<Entity, ParentEntity, ParentItem>::slot_create()
 
     typedef typename EntityTraits::FactoryRegistrarType FactoryRegistrarType;
 
-    std::auto_ptr<EntityEditor::IFormFactory> form_factory(
+    std::unique_ptr<EntityEditor::IFormFactory> form_factory(
         new MultiModelEntityEditorFormFactory<FactoryRegistrarType>(
-            Base::m_editor_context.m_project_builder.template get_factory_registrar<Entity>(),
+            Base::m_editor_context.m_project.template get_factory_registrar<Entity>(),
             name_suggestion));
 
-    std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
+    std::unique_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<ParentEntity>(Base::m_parent));
 
     open_entity_editor(
         QTreeWidgetItem::treeWidget(),
         window_title,
         Base::m_editor_context.m_project,
-        form_factory,
-        entity_browser,
+        Base::m_editor_context.m_settings,
+        std::move(form_factory),
+        std::move(entity_browser),
         this,
         SLOT(slot_create_applied(foundation::Dictionary)),
         SLOT(slot_create_accepted(foundation::Dictionary)),

@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,11 +31,14 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/ibssrdffactory.h"
+#include "renderer/modeling/bssrdf/separablebssrdf.h"
 #include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -43,7 +46,6 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
-namespace renderer      { class BSSRDF;  }
 namespace renderer      { class ParamArray; }
 
 namespace renderer
@@ -55,20 +57,22 @@ namespace renderer
 
 APPLESEED_DECLARE_INPUT_VALUES(NormalizedDiffusionBSSRDFInputValues)
 {
-    double      m_weight;
-    Spectrum    m_reflectance;
-    double      m_reflectance_multiplier;
-    Spectrum    m_dmfp;
-    double      m_dmfp_multiplier;
-    double      m_outside_ior;
-    double      m_inside_ior;
+    float           m_weight;
+    Spectrum        m_reflectance;
+    float           m_reflectance_multiplier;
+    Spectrum        m_mfp;
+    float           m_mfp_multiplier;
+    float           m_ior;
+    float           m_fresnel_weight;
 
-    // Precomputed values.
-    Spectrum    m_s;
-    Spectrum    m_channel_pdf;
-    Spectrum    m_channel_cdf;
-    double      m_rmax2;
-    double      m_eta;
+    struct Precomputed
+    {
+        Spectrum    m_channel_pdf;
+        Spectrum    m_s;
+    };
+
+    Precomputed                     m_precomputed;
+    SeparableBSSRDF::InputValues    m_base_values;
 };
 
 
@@ -80,24 +84,22 @@ class APPLESEED_DLLSYMBOL NormalizedDiffusionBSSRDFFactory
   : public IBSSRDFFactory
 {
   public:
+    // Delete this instance.
+    void release() override;
+
     // Return a string identifying this BSSRDF model.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
+    const char* get_model() const override;
 
     // Return metadata for this BSSRDF model.
-    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
+    foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this BSSRDF model.
-    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
+    foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new BSSRDF instance.
-    virtual foundation::auto_release_ptr<BSSRDF> create(
+    foundation::auto_release_ptr<BSSRDF> create(
         const char*         name,
-        const ParamArray&   params) const APPLESEED_OVERRIDE;
-
-    // Static variant of the create() method above.
-    static foundation::auto_release_ptr<BSSRDF> static_create(
-        const char*         name,
-        const ParamArray&   params);
+        const ParamArray&   params) const override;
 };
 
 }       // namespace renderer

@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Srinath Ravichandran, The appleseedhq Organization
+// Copyright (c) 2014-2017 Srinath Ravichandran, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -67,7 +67,12 @@ class APPLESEED_DLLSYMBOL CurveObjectReader
         const char*                     name,
         const ParamArray&               params);
 
-    static foundation::auto_release_ptr<CurveObject> load_curve_file(
+    static foundation::auto_release_ptr<CurveObject> load_text_curve_file(
+        const foundation::SearchPaths&  search_paths,
+        const char*                     name,
+        const ParamArray&               params);
+
+    static foundation::auto_release_ptr<CurveObject> load_mitsuba_curve_file(
         const foundation::SearchPaths&  search_paths,
         const char*                     name,
         const ParamArray&               params);

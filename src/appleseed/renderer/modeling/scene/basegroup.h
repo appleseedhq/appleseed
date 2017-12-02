@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -36,19 +36,12 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// OSL headers.
-#ifdef APPLESEED_WITH_OSL
-#include "foundation/platform/oslheaderguards.h"
-BEGIN_OSL_INCLUDES
-#include "OSL/oslexec.h"
-END_OSL_INCLUDES
-#endif
-
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
 namespace renderer      { class Entity; }
+namespace renderer      { class OSLShadingSystem; }
 
 namespace renderer
 {
@@ -61,7 +54,7 @@ class APPLESEED_DLLSYMBOL BaseGroup
 {
   public:
     // Constructor.
-    explicit BaseGroup(Entity* parent = 0);
+    explicit BaseGroup(Entity* parent = nullptr);
 
     // Destructor.
     ~BaseGroup();
@@ -75,20 +68,16 @@ class APPLESEED_DLLSYMBOL BaseGroup
     // Access the texture instances.
     TextureInstanceContainer& texture_instances() const;
 
-#ifdef APPLESEED_WITH_OSL
-
     // Access the OSL shader groups.
     ShaderGroupContainer& shader_groups() const;
 
     // Create OSL shader groups and optimize them.
     bool create_optimized_osl_shader_groups(
-        OSL::ShadingSystem&         shading_system,
-        foundation::IAbortSwitch*   abort_switch = 0);
+        OSLShadingSystem&           shading_system,
+        foundation::IAbortSwitch*   abort_switch = nullptr);
 
     // Release internal OSL shader groups.
     void release_optimized_osl_shader_groups();
-
-#endif
 
     // Access the assemblies.
     AssemblyContainer& assemblies() const;

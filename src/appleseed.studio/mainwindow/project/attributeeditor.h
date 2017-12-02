@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,9 @@
 #include <memory>
 
 // Forward declarations.
+namespace appleseed     { namespace studio { class IEntityValueProvider; } }
 namespace foundation    { class Dictionary; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 class QObject;
 class QWidget;
@@ -54,22 +56,27 @@ class AttributeEditor
   public:
     AttributeEditor(
         QWidget*                parent,
-        renderer::Project&      project);
+        renderer::Project&      project,
+        renderer::ParamArray&   settings);
 
     void clear();
 
     void edit(
-        std::auto_ptr<EntityEditor::IFormFactory>       form_factory,
-        std::auto_ptr<EntityEditor::IEntityBrowser>     entity_browser,
-        std::auto_ptr<CustomEntityUI>                   custom_ui,
+        std::unique_ptr<EntityEditor::IFormFactory>     form_factory,
+        std::unique_ptr<EntityEditor::IEntityBrowser>   entity_browser,
+        std::unique_ptr<CustomEntityUI>                 custom_ui,
         const foundation::Dictionary&                   values,
         QObject*                                        receiver,
         const char*                                     slot_apply);
 
+    void refresh() const;
+
   private:
-    QWidget*                    m_parent;
-    renderer::Project&          m_project;
-    std::auto_ptr<EntityEditor> m_entity_editor;
+    QWidget*                      m_parent;
+    IEntityValueProvider*         m_value_provider;
+    renderer::Project&            m_project;
+    renderer::ParamArray&         m_settings;
+    std::unique_ptr<EntityEditor> m_entity_editor;
 };
 
 }       // namespace studio

@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -172,7 +172,7 @@ namespace cache_impl
                     return &m_entries[i];
             }
 
-            return 0;
+            return nullptr;
         }
 
         // Update the timestamp of a given entry in this cache line.
@@ -239,7 +239,7 @@ namespace cache_impl
         // Return a pointer to the entry corresponding to a given key, or 0 if this key was not found.
         EntryType* find_entry(const KeyType& key)
         {
-            return m_entry.m_key == key ? &m_entry : 0;
+            return m_entry.m_key == key ? &m_entry : nullptr;
         }
 
         // Update the timestamp of a given entry in this cache line.
@@ -297,7 +297,7 @@ namespace cache_impl
         {
             return
                 m_entries[0].m_key == key ? &m_entries[0] :
-                m_entries[1].m_key == key ? &m_entries[1] : 0;
+                m_entries[1].m_key == key ? &m_entries[1] : nullptr;
         }
 
         // Update the timestamp of a given entry in this cache line.
@@ -787,8 +787,10 @@ get(const KeyType& key)
             m_element_swapper.unload(entry->m_key, entry->m_element);
 
         // Load the new element.
+        m_element_swapper.load(key, entry->m_element);
+
+        // Set the entry's key only after loading succeeded (it might have failed with an exception).
         entry->m_key = key;
-        m_element_swapper.load(entry->m_key, entry->m_element);
     }
 
     // Update the timestamp of this entry.
@@ -1103,9 +1105,9 @@ namespace cache_impl
             const uint64        hit_count,
             const uint64        miss_count);
 
-        virtual std::auto_ptr<Entry> clone() const APPLESEED_OVERRIDE;
-        virtual void merge(const Entry* other) APPLESEED_OVERRIDE;
-        virtual std::string to_string() const APPLESEED_OVERRIDE;
+        std::unique_ptr<Entry> clone() const override;
+        void merge(const Entry* other) override;
+        std::string to_string() const override;
     };
 }
 
@@ -1115,7 +1117,7 @@ Statistics make_single_stage_cache_stats(const Cache& cache)
     Statistics stats;
 
     stats.insert(
-        std::auto_ptr<cache_impl::CacheStatisticsEntry>(
+        std::unique_ptr<cache_impl::CacheStatisticsEntry>(
             new cache_impl::CacheStatisticsEntry(
                 "performances",
                 cache.get_hit_count(),
@@ -1130,21 +1132,21 @@ Statistics make_dual_stage_cache_stats(const Cache& cache)
     Statistics stats;
 
     stats.insert(
-        std::auto_ptr<cache_impl::CacheStatisticsEntry>(
+        std::unique_ptr<cache_impl::CacheStatisticsEntry>(
             new cache_impl::CacheStatisticsEntry(
                 "combined",
                 cache.get_stage0_hit_count() + cache.get_stage1_hit_count(),
                 cache.get_stage1_miss_count())));
 
     stats.insert(
-        std::auto_ptr<cache_impl::CacheStatisticsEntry>(
+        std::unique_ptr<cache_impl::CacheStatisticsEntry>(
             new cache_impl::CacheStatisticsEntry(
                 "stage-0",
                 cache.get_stage0_hit_count(),
                 cache.get_stage0_miss_count())));
 
     stats.insert(
-        std::auto_ptr<cache_impl::CacheStatisticsEntry>(
+        std::unique_ptr<cache_impl::CacheStatisticsEntry>(
             new cache_impl::CacheStatisticsEntry(
                 "stage-1",
                 cache.get_stage1_hit_count(),

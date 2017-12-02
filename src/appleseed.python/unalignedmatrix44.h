@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,13 +30,11 @@
 #ifndef APPLESEED_PYTHON_UNALIGNEDMATRIX44_H
 #define APPLESEED_PYTHON_UNALIGNEDMATRIX44_H
 
-// appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
-
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
 #include "foundation/math/quaternion.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/python.h"
 #include "foundation/utility/iostreamop.h"
 
 // Standard headers.
@@ -45,7 +43,7 @@
 namespace foundation
 {
 
-template <class T>
+template <typename T>
 class UnalignedMatrix44
 {
   public:
@@ -54,49 +52,49 @@ class UnalignedMatrix44
         return UnalignedMatrix44<T>(Matrix<T, 4, 4>::identity());
     }
 
-    static UnalignedMatrix44<T> translation(const Vector<T, 3>& v)
+    static UnalignedMatrix44<T> make_translation(const Vector<T, 3>& v)
     {
-        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::translation(v));
+        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::make_translation(v));
     }
 
-    static UnalignedMatrix44<T> scaling(const Vector<T, 3>& s)
+    static UnalignedMatrix44<T> make_scaling(const Vector<T, 3>& s)
     {
-        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::scaling(s));
+        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::make_scaling(s));
     }
 
-    static UnalignedMatrix44<T> rotation_x(const T angle)
+    static UnalignedMatrix44<T> make_rotation_x(const T angle)
     {
-        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::rotation_x(angle));
+        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::make_rotation_x(angle));
     }
 
-    static UnalignedMatrix44<T> rotation_y(const T angle)
+    static UnalignedMatrix44<T> make_rotation_y(const T angle)
     {
-        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::rotation_y(angle));
+        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::make_rotation_y(angle));
     }
 
-    static UnalignedMatrix44<T> rotation_z(const T angle)
+    static UnalignedMatrix44<T> make_rotation_z(const T angle)
     {
-        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::rotation_z(angle));
+        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::make_rotation_z(angle));
     }
 
-    static UnalignedMatrix44<T> rotation(const T yaw, const T pitch, const T roll)
+    static UnalignedMatrix44<T> make_rotation(const T yaw, const T pitch, const T roll)
     {
-        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::rotation(yaw, pitch, roll));
+        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::make_rotation(yaw, pitch, roll));
     }
 
-    static UnalignedMatrix44<T> rotation(const Vector<T, 3>& axis, const T angle)
+    static UnalignedMatrix44<T> make_rotation(const Vector<T, 3>& axis, const T angle)
     {
-        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::rotation(axis, angle));
+        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::make_rotation(axis, angle));
     }
 
-    static UnalignedMatrix44<T> rotation(const Quaternion<T>& q)
+    static UnalignedMatrix44<T> make_rotation(const Quaternion<T>& q)
     {
-        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::rotation(q));
+        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::make_rotation(q));
     }
 
-    static UnalignedMatrix44<T> lookat(const Vector<T, 3>& origin, const Vector<T, 3>& target, const Vector<T, 3>& up)
+    static UnalignedMatrix44<T> make_lookat(const Vector<T, 3>& origin, const Vector<T, 3>& target, const Vector<T, 3>& up)
     {
-        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::lookat(origin, target, up));
+        return UnalignedMatrix44<T>(Matrix<T, 4, 4>::make_lookat(origin, target, up));
     }
 
     UnalignedMatrix44() {}
@@ -107,14 +105,14 @@ class UnalignedMatrix44
             m_data[i] = x;
     }
 
-    template <class U>
+    template <typename U>
     explicit UnalignedMatrix44(const Matrix<U, 4, 4>& m)
     {
         for (size_t i = 0; i < 16; ++i)
             m_data[i] = static_cast<T>(m[i]);
     }
 
-    template <class U>
+    template <typename U>
     explicit UnalignedMatrix44(const UnalignedMatrix44<U>& m)
     {
         for (size_t i = 0; i < 16; ++i)
@@ -141,7 +139,7 @@ class UnalignedMatrix44
 
 #endif
 
-    template <class U>
+    template <typename U>
     UnalignedMatrix44<T>& operator=(const UnalignedMatrix44<U>& m)
     {
         for (size_t i = 0; i < 16; ++i)
@@ -152,7 +150,7 @@ class UnalignedMatrix44
 
     Matrix<T, 4, 4> as_foundation_matrix() const
     {
-        return Matrix<T, 4, 4>(m_data);
+        return Matrix<T, 4, 4>::from_array(m_data);
     }
 
     T operator[](const size_t index) const
@@ -192,6 +190,25 @@ class UnalignedMatrix44
         res[0] = m_data[0] * v[0] + m_data[1] * v[1] + m_data[ 2] * v[2];
         res[1] = m_data[4] * v[0] + m_data[5] * v[1] + m_data[ 6] * v[2];
         res[2] = m_data[8] * v[0] + m_data[9] * v[1] + m_data[10] * v[2];
+
+        return res;
+    }
+
+    Vector<T, 3> transform_normal(const Vector<T, 3>& n) const
+    {
+        Vector<T, 3> res;
+
+        res.x = m_data[ 0] * n.x +
+                m_data[ 4] * n.y +
+                m_data[ 8] * n.z;
+
+        res.y = m_data[ 1] * n.x +
+                m_data[ 5] * n.y +
+                m_data[ 9] * n.z;
+
+        res.z = m_data[ 2] * n.x +
+                m_data[ 6] * n.y +
+                m_data[10] * n.z;
 
         return res;
     }
@@ -236,19 +253,19 @@ class UnalignedMatrix44
     T m_data[16];
 };
 
-template <class T>
+template <typename T>
 UnalignedMatrix44<T> operator*(const UnalignedMatrix44<T>& a, const UnalignedMatrix44<T>& b)
 {
     return UnalignedMatrix44<T>(a.as_foundation_matrix() * b.as_foundation_matrix());
 }
 
-template <class T>
+template <typename T>
 Vector<T, 4> operator*(const UnalignedMatrix44<T>& a, const Vector<T, 4>& v)
 {
     return a.as_foundation_matrix() * v;
 }
 
-template <class T>
+template <typename T>
 UnalignedMatrix44<T> invert_matrix(const UnalignedMatrix44<T>& mat)
 {
     try
@@ -264,7 +281,7 @@ UnalignedMatrix44<T> invert_matrix(const UnalignedMatrix44<T>& mat)
     return UnalignedMatrix44<T>();
 }
 
-template <class T>
+template <typename T>
 std::ostream& operator<<(std::ostream& s, const UnalignedMatrix44<T>& matrix)
 {
     return s << matrix.as_foundation_matrix();

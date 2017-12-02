@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 #define APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTREADER_H
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/array.h"
+#include "foundation/utility/api/apiarray.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -48,7 +48,7 @@ namespace renderer
 // An array of mesh objects.
 //
 
-APPLESEED_DECLARE_ARRAY(MeshObjectArray, MeshObject*);
+APPLESEED_DECLARE_APIARRAY(MeshObjectArray, MeshObject*);
 
 
 //

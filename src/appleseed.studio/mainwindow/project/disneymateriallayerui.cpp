@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2016 Marius Avram, The appleseedhq Organization
+// Copyright (c) 2014-2017 Marius Avram, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -70,6 +70,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <utility>
 
 using namespace boost;
 using namespace foundation;
@@ -185,19 +186,19 @@ void DisneyMaterialLayerUI::create_input_widgets(const Dictionary& values)
             im.strings().exist("default") ? im.get<string>("default") :
             "");
 
-        auto_ptr<IInputWidgetProxy> widget_proxy =
+        unique_ptr<IInputWidgetProxy> widget_proxy =
             input_type == "colormap" ?
                 im.dictionaries().exist("entity_types") &&
                 im.dictionaries().get("entity_types").strings().exist("color")
                     ? create_color_input_widgets(im)
                     : create_colormap_input_widgets(im) :
             input_type == "text" ? create_text_input_widgets(im) :
-            auto_ptr<IInputWidgetProxy>(0);
+            unique_ptr<IInputWidgetProxy>(nullptr);
 
         assert(widget_proxy.get());
         connect(widget_proxy.get(), SIGNAL(signal_changed()), SIGNAL(signal_apply()));
 
-        m_widget_proxies.insert(input_name, widget_proxy);
+        m_widget_proxies.insert(input_name, std::move(widget_proxy));
     }
 }
 
@@ -247,12 +248,18 @@ void DisneyMaterialLayerUI::slot_open_color_picker(const QString& widget_name)
     dialog->setOptions(QColorDialog::DontUseNativeDialog);
 
     ForwardColorChangedSignal* forward_signal =
-        new ForwardColorChangedSignal(dialog, widget_name);
+        new ForwardColorChangedSignal(dialog, widget_name, initial_color);
     connect(
         dialog, SIGNAL(currentColorChanged(const QColor&)),
         forward_signal, SLOT(slot_color_changed(const QColor&)));
     connect(
         forward_signal, SIGNAL(signal_color_changed(const QString&, const QColor&)),
+        SLOT(slot_color_changed(const QString&, const QColor&)));
+    connect(
+        dialog, SIGNAL(rejected()),
+        forward_signal, SLOT(slot_color_reset()));
+    connect(
+        forward_signal, SIGNAL(signal_color_reset(const QString&, const QColor&)),
         SLOT(slot_color_changed(const QString&, const QColor&)));
 
     dialog->exec();
@@ -290,10 +297,11 @@ namespace
         const QFileInfo file_info(filename);
         assert(file_info.isAbsolute());
 
-        for (size_t i = 0; i < s.size(); ++i)
+        for (size_t i = 0; i < s.get_explicit_path_count(); ++i)
         {
             // Iterate in reverse order, to match search paths priorities.
-            QString search_path(QString::fromStdString(s[s.size() - 1 - i]));
+            QString search_path(QString::fromStdString(
+                s.get_explicit_path(s.get_explicit_path_count() - 1 - i)));
             const QFileInfo search_path_info(search_path);
 
             if (search_path_info.isRelative())
@@ -302,7 +310,7 @@ namespace
 
                 search_path =
                     QDir::cleanPath(
-                        QString::fromStdString(s.get_root_path()) +
+                        QString::fromAscii(s.get_root_path().c_str()) +
                         QDir::separator() +
                         search_path);
             }
@@ -316,7 +324,7 @@ namespace
 
         if (s.has_root_path())
         {
-            const QDir root_dir(QString::fromStdString(s.get_root_path()));
+            const QDir root_dir(QString::fromAscii(s.get_root_path().c_str()));
             assert(root_dir.isAbsolute());
 
             QString relative_path;
@@ -342,7 +350,7 @@ void DisneyMaterialLayerUI::slot_open_file_picker(const QString& widget_name)
         get_open_filename(
             m_content_widget,
             "Pick Texture File...",
-            compute_oiio_files_filter(),
+            get_oiio_image_files_filter(),
             m_settings,
             SETTINGS_FILE_DIALOG_OIIO_TEXTURES);
 
@@ -411,7 +419,7 @@ namespace
     }
 }
 
-auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_text_input_widgets(const Dictionary& metadata)
+unique_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_text_input_widgets(const Dictionary& metadata)
 {
     QLineEdit* line_edit = new QLineEdit(m_content_widget);
 
@@ -423,13 +431,13 @@ auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_text_input_widgets(con
 
     m_content_layout->addRow(create_label(metadata), line_edit);
 
-    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
+    unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
     widget_proxy->set(metadata.strings().get<string>("value"));
 
-    return widget_proxy;
+    return std::move(widget_proxy);
 }
 
-auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_color_input_widgets(const Dictionary& metadata)
+unique_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_color_input_widgets(const Dictionary& metadata)
 {
     QLineEdit* line_edit = new QLineEdit(m_content_widget);
 
@@ -454,13 +462,13 @@ auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_color_input_widgets(co
     layout->addWidget(create_expression_button(name));
     m_content_layout->addRow(create_label(metadata), layout);
 
-    auto_ptr<IInputWidgetProxy> widget_proxy(new ColorExpressionProxy(line_edit, picker_button));
+    unique_ptr<IInputWidgetProxy> widget_proxy(new ColorExpressionProxy(line_edit, picker_button));
     widget_proxy->set(metadata.strings().get<string>("value"));
 
-    return widget_proxy;
+    return std::move(widget_proxy);
 }
 
-auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_colormap_input_widgets(const Dictionary& metadata)
+unique_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_colormap_input_widgets(const Dictionary& metadata)
 {
     QLineEdit* line_edit = new QLineEdit(m_content_widget);
     line_edit->setMaximumWidth(120);
@@ -488,10 +496,10 @@ auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_colormap_input_widgets
     layout->addWidget(create_expression_button(name));
     m_content_layout->addRow(create_label(metadata), layout);
 
-    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
+    unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
     widget_proxy->set(metadata.strings().get<string>("value"));
 
-    return widget_proxy;
+    return std::move(widget_proxy);
 }
 
 QWidget* DisneyMaterialLayerUI::create_texture_button(const string& name)

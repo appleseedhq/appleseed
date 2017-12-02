@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -68,7 +68,7 @@ class ObjectCollectionItem
         renderer::Assembly&         parent,
         AssemblyItem*               parent_item);
 
-    virtual QMenu* get_single_item_context_menu() const APPLESEED_OVERRIDE;
+    QMenu* get_single_item_context_menu() const override;
 
     void import_objects(const QStringList& filepaths);
 
@@ -79,7 +79,7 @@ class ObjectCollectionItem
     renderer::Assembly&             m_parent;
     AssemblyItem*                   m_parent_item;
 
-    virtual ItemBase* create_item(renderer::Object* object) APPLESEED_OVERRIDE;
+    ItemBase* create_item(renderer::Object* object) override;
 
     void insert_objects(const std::string& path) const;
 };

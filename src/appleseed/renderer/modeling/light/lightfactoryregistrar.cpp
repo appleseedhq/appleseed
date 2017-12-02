@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/light/directionallight.h"
-#include "renderer/modeling/light/ilightfactory.h"
+#include "renderer/modeling/light/lighttraits.h"
 #include "renderer/modeling/light/maxomnilight.h"
 #include "renderer/modeling/light/maxspotlight.h"
 #include "renderer/modeling/light/pointlight.h"
@@ -46,6 +46,7 @@
 // Standard headers.
 #include <cassert>
 #include <string>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -53,22 +54,17 @@ using namespace std;
 namespace renderer
 {
 
-APPLESEED_DEFINE_ARRAY(LightFactoryArray);
+APPLESEED_DEFINE_APIARRAY(LightFactoryArray);
 
 struct LightFactoryRegistrar::Impl
 {
     Registrar<ILightFactory> m_registrar;
 };
 
-LightFactoryRegistrar::LightFactoryRegistrar()
+LightFactoryRegistrar::LightFactoryRegistrar(const SearchPaths& search_paths)
   : impl(new Impl())
 {
-    register_factory(auto_ptr<FactoryType>(new DirectionalLightFactory()));
-    register_factory(auto_ptr<FactoryType>(new MaxOmniLightFactory()));
-    register_factory(auto_ptr<FactoryType>(new MaxSpotLightFactory()));
-    register_factory(auto_ptr<FactoryType>(new PointLightFactory()));
-    register_factory(auto_ptr<FactoryType>(new SpotLightFactory()));
-    register_factory(auto_ptr<FactoryType>(new SunLightFactory()));
+    reinitialize(search_paths);
 }
 
 LightFactoryRegistrar::~LightFactoryRegistrar()
@@ -76,10 +72,28 @@ LightFactoryRegistrar::~LightFactoryRegistrar()
     delete impl;
 }
 
-void LightFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+void LightFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
 {
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, factory);
+    // The registrar must be cleared before the plugins are unloaded.
+    impl->m_registrar.clear();
+    unload_all_plugins();
+
+    // Register built-in factories.
+    register_factory(auto_release_ptr<FactoryType>(new DirectionalLightFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new MaxOmniLightFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new MaxSpotLightFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new PointLightFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new SpotLightFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new SunLightFactory()));
+
+    // Register factories defined in plugins.
+    register_factories_from_plugins<Light>(
+        search_paths,
+        [this](void* plugin_entry_point)
+        {
+            auto create_fn = reinterpret_cast<ILightFactory* (*)()>(plugin_entry_point);
+            register_factory(foundation::auto_release_ptr<ILightFactory>(create_fn()));
+        });
 }
 
 LightFactoryArray LightFactoryRegistrar::get_factories() const
@@ -95,8 +109,13 @@ LightFactoryArray LightFactoryRegistrar::get_factories() const
 const LightFactoryRegistrar::FactoryType* LightFactoryRegistrar::lookup(const char* name) const
 {
     assert(name);
-
     return impl->m_registrar.lookup(name);
+}
+
+void LightFactoryRegistrar::register_factory(auto_release_ptr<FactoryType> factory)
+{
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, move(factory));
 }
 
 }   // namespace renderer

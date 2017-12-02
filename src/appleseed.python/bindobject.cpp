@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014-2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,16 +28,17 @@
 //
 
 // appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
 #include "bindentitycontainers.h"
 #include "dict2dict.h"
-#include "unalignedtransformd44.h"
+#include "unalignedtransform.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/object.h"
 #include "renderer/api/scene.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/python.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/searchpaths.h"
 
 namespace bpy = boost::python;
@@ -45,8 +46,27 @@ using namespace foundation;
 using namespace renderer;
 using namespace std;
 
+// Work around a regression in Visual Studio 2015 Update 3.
+#if defined(_MSC_VER) && _MSC_VER == 1900
+namespace boost
+{
+    template <> Object const volatile* get_pointer<Object const volatile>(Object const volatile* p) { return p; }
+    template <> IObjectFactory const volatile* get_pointer<IObjectFactory const volatile>(IObjectFactory const volatile* p) { return p; }
+    template <> ObjectFactoryRegistrar const volatile* get_pointer<ObjectFactoryRegistrar const volatile>(ObjectFactoryRegistrar const volatile* p) { return p; }
+    template <> ObjectInstance const volatile* get_pointer<ObjectInstance const volatile>(ObjectInstance const volatile* p) { return p; }
+}
+#endif
+
 namespace
 {
+    auto_release_ptr<Object> factory_create_object(
+        const IObjectFactory*   factory,
+        const char*             name,
+        const bpy::dict&        params)
+    {
+        return factory->create(name, bpy_dict_to_param_array(params));
+    }
+
     void bpy_list_to_string_array(const bpy::list& l, StringArray& strings)
     {
         strings.clear();
@@ -78,7 +98,7 @@ namespace
         const string&                   name,
         const bpy::dict&                params,
         const string&                   object_name,
-        const UnalignedTransformd44&    transform,
+        const UnalignedTransformd&      transform,
         const bpy::dict&                front_material_mappings,
         const bpy::dict&                back_material_mappings)
     {
@@ -96,7 +116,7 @@ namespace
         const string&                   name,
         const bpy::dict&                params,
         const string&                   object_name,
-        const UnalignedTransformd44&    transform,
+        const UnalignedTransformd&      transform,
         const bpy::dict&                front_material_mappings)
     {
         return
@@ -109,9 +129,9 @@ namespace
                 bpy::dict());
     }
 
-    UnalignedTransformd44 obj_inst_get_transform(const ObjectInstance* obj)
+    UnalignedTransformd obj_inst_get_transform(const ObjectInstance* obj)
     {
-        return UnalignedTransformd44(obj->get_transform());
+        return UnalignedTransformd(obj->get_transform());
     }
 
     string obj_inst_get_obj_name(const ObjectInstance* obj)
@@ -146,7 +166,8 @@ void bind_object()
         .def("get_model", &Object::get_model)
         .def("compute_local_bbox", &Object::compute_local_bbox)
         .def("material_slots", &obj_material_slots)
-        ;
+        .def("get_material_slot_count", &Object::get_material_slot_count)
+        .def("get_material_slot", &Object::get_material_slot);
 
     bind_typed_entity_vector<Object>("ObjectContainer");
 
@@ -158,8 +179,13 @@ void bind_object()
         .def("get_transform", &obj_inst_get_transform)
         .def("bbox", &ObjectInstance::compute_parent_bbox)
         .def("get_front_material_mappings", &obj_inst_get_front_material_mappings)
-        .def("get_back_material_mappings", &obj_inst_get_back_material_mappings)
-        ;
+        .def("get_back_material_mappings", &obj_inst_get_back_material_mappings);
 
     bind_typed_entity_vector<ObjectInstance>("ObjectInstanceContainer");
+
+    bpy::class_<IObjectFactory, boost::noncopyable>("IObjectFactory", bpy::no_init)
+        .def("create", &factory_create_object);
+
+    bpy::class_<ObjectFactoryRegistrar, boost::noncopyable>("ObjectFactoryRegistrar", bpy::no_init)
+        .def("lookup", &ObjectFactoryRegistrar::lookup, bpy::return_value_policy<bpy::reference_existing_object>());
 }

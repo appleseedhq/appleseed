@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2016 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,9 +31,10 @@
 #include "configuration.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/lighting/drt/drtlightingengine.h"
+#include "renderer/kernel/lighting/backwardlightsampler.h"
 #include "renderer/kernel/lighting/pt/ptlightingengine.h"
 #include "renderer/kernel/lighting/sppm/sppmlightingengine.h"
+#include "renderer/kernel/rendering/final/adaptivepixelrenderer.h"
 #include "renderer/kernel/rendering/final/uniformpixelrenderer.h"
 #include "renderer/kernel/rendering/generic/genericframerenderer.h"
 #include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
@@ -69,7 +70,7 @@ UniqueID Configuration::get_class_uid()
 
 Configuration::Configuration(const char* name)
   : Entity(g_class_uid)
-  , m_base(0)
+  , m_base(nullptr)
 {
     set_name(name);
 }
@@ -108,13 +109,35 @@ Dictionary Configuration::get_metadata()
     Dictionary metadata;
 
     metadata.insert(
+        "spectrum_mode",
+        Dictionary()
+        .insert("type", "enum")
+        .insert("values", "rgb|spectral")
+        .insert("default", "rgb")
+        .insert("label", "Color Pipeline")
+        .insert("help", "Color pipeline used throughout the renderer")
+        .insert(
+            "options",
+            Dictionary()
+            .insert(
+                "rgb",
+                Dictionary()
+                .insert("label", "RGB")
+                .insert("help", "RGB pipeline"))
+            .insert(
+                "spectral",
+                Dictionary()
+                .insert("label", "Spectral")
+                .insert("help", "Spectral pipeline using 31 equidistant components in the 400-700 nm range"))));
+
+    metadata.insert(
         "sampling_mode",
         Dictionary()
             .insert("type", "enum")
             .insert("values", "rng|qmc")
-            .insert("default", "rng")
+            .insert("default", "qmc")
             .insert("label", "Sampler")
-            .insert("help", "Sampler to use when generating samples")
+            .insert("help", "Sampling algorithm used in Monte Carlo integration")
             .insert(
                 "options",
                 Dictionary()
@@ -133,18 +156,13 @@ Dictionary Configuration::get_metadata()
         "lighting_engine",
         Dictionary()
             .insert("type", "enum")
-            .insert("values", "drt|pt|sppm")
+            .insert("values", "pt|sppm")
             .insert("default", "pt")
             .insert("label", "Lighting Engine")
             .insert("help", "Lighting engine used when rendering")
             .insert(
                 "options",
                 Dictionary()
-                    .insert(
-                        "drt",
-                        Dictionary()
-                            .insert("label", "Distribution Ray Tracer")
-                            .insert("help", "Distribution ray tracing"))
                     .insert(
                         "pt",
                         Dictionary()
@@ -164,12 +182,20 @@ Dictionary Configuration::get_metadata()
             .insert("help", "Number of threads to use for rendering"));
 
     metadata.dictionaries().insert(
+        "light_sampler",
+        BackwardLightSampler::get_params_metadata());
+
+    metadata.dictionaries().insert(
         "texture_store",
         TextureStore::get_params_metadata());
 
     metadata.dictionaries().insert(
         "uniform_pixel_renderer",
         UniformPixelRendererFactory::get_params_metadata());
+
+    metadata.dictionaries().insert(
+        "adaptive_pixel_renderer",
+        AdaptivePixelRendererFactory::get_params_metadata());
 
     metadata.dictionaries().insert(
         "generic_frame_renderer",
@@ -179,7 +205,6 @@ Dictionary Configuration::get_metadata()
         "progressive_frame_renderer",
         ProgressiveFrameRendererFactory::get_params_metadata());
 
-    metadata.dictionaries().insert("drt", DRTLightingEngineFactory::get_params_metadata());
     metadata.dictionaries().insert("pt", PTLightingEngineFactory::get_params_metadata());
     metadata.dictionaries().insert("sppm", SPPMLightingEngineFactory::get_params_metadata());
 
@@ -222,7 +247,8 @@ auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_final()
 
     ParamArray& parameters = configuration->get_parameters();
 
-    parameters.insert("sampling_mode", "rng");
+    parameters.insert("spectrum_mode", "rgb");
+    parameters.insert("sampling_mode", "qmc");
 
     parameters.insert("frame_renderer", "generic");
     parameters.insert("tile_renderer", "generic");
@@ -245,7 +271,8 @@ auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_interactiv
 
     ParamArray& parameters = configuration->get_parameters();
 
-    parameters.insert("sampling_mode", "rng");
+    parameters.insert("spectrum_mode", "rgb");
+    parameters.insert("sampling_mode", "qmc");
 
     parameters.insert("frame_renderer", "progressive");
     parameters.insert("sample_generator", "generic");
