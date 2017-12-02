@@ -438,10 +438,10 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
             foundation::Dual3f(vertex.m_outgoing));
 
         // Subsurface scattering.
+        BSSRDFSample bssrdf_sample;
         if (vertex.m_bssrdf)
         {
             // Sample the BSSRDF and terminate the path if no incoming point is found.
-            BSSRDFSample bssrdf_sample;
             if (!vertex.m_bssrdf->sample(
                     shading_context,
                     sampling_context,
