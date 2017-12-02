@@ -429,7 +429,7 @@ namespace
                     Spectrum emitted_radiance(Spectrum::Illuminance);
                     vertex.compute_emitted_radiance(m_shading_context, emitted_radiance);
 
-                    // Update the path radiance.
+                    // Update path radiance.
                     emitted_radiance *= vertex.m_throughput;
                     m_path_radiance.add_emission(
                         vertex.m_path_length,
@@ -526,7 +526,7 @@ namespace
                 if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1)
                     clamp_contribution(env_radiance);
 
-                // Update the path radiance.
+                // Update path radiance.
                 m_path_radiance.add_emission(
                     vertex.m_path_length,
                     vertex.m_aov_mode,
@@ -546,8 +546,14 @@ namespace
                     Spectrum emitted_radiance(0.0f);
                     add_emitted_light_contribution(vertex, emitted_radiance);
 
-                    // Update the path radiance.
+                    // Apply path throughput.
                     emitted_radiance *= vertex.m_throughput;
+
+                    // Optionally clamp secondary rays contribution.
+                    if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1)
+                        clamp_contribution(emitted_radiance);
+
+                    // Update path radiance.
                     m_path_radiance.add_emission(
                         vertex.m_path_length,
                         vertex.m_aov_mode,
@@ -633,7 +639,10 @@ namespace
                     clamp_contribution(vertex_radiance);
 
                 // Update path radiance.
-                m_path_radiance.add(vertex.m_path_length, vertex.m_aov_mode, vertex_radiance);
+                m_path_radiance.add(
+                    vertex.m_path_length,
+                    vertex.m_aov_mode,
+                    vertex_radiance);
             }
 
             void add_emitted_light_contribution(
@@ -680,7 +689,7 @@ namespace
                 const BSDFSampler bsdf_sampler(
                     bsdf,
                     bsdf_data,
-                    scattering_modes,   // bsdf_sampling_modes (unused)
+                    scattering_modes,       // bsdf_sampling_modes (unused)
                     shading_point);
 
                 // This path will be extended via BSDF sampling: sample the lights only.
@@ -689,8 +698,8 @@ namespace
                     m_light_sampler,
                     bsdf_sampler,
                     shading_point.get_time(),
-                    scattering_modes,   // light_sampling_modes
-                    1,                  // material_sample_count
+                    scattering_modes,       // light_sampling_modes
+                    1,                      // material_sample_count
                     light_sample_count,
                     m_params.m_dl_low_light_threshold,
                     m_is_indirect_lighting);
@@ -726,7 +735,7 @@ namespace
                 const BSDFSampler bsdf_sampler(
                     bsdf,
                     bsdf_data,
-                    scattering_modes,   // bsdf_sampling_modes (unused)
+                    scattering_modes,       // bsdf_sampling_modes (unused)
                     shading_point);
 
                 // This path will be extended via BSDF sampling: sample the environment only.
@@ -737,7 +746,7 @@ namespace
                     outgoing,
                     bsdf_sampler,
                     scattering_modes,
-                    1,                  // bsdf_sample_count
+                    1,                      // bsdf_sample_count
                     env_sample_count,
                     ibl_radiance);
 
