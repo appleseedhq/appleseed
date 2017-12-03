@@ -565,7 +565,7 @@ shader as_standard_surface
     {
         vector In = normalize(I);
 
-        normal Nn = (isconnected(in_bump_normal_coating))
+        normal Nn = isconnected(in_bump_normal_coating)
             ? normalize(in_bump_normal_coating)
             : normalize(in_bump_normal_substrate);
 
@@ -574,7 +574,7 @@ shader as_standard_surface
         if (in_coating_ior > 1.0)
         {
             out_outColor += opacity *
-                in_coating_reflectivity *microfacet(
+                in_coating_reflectivity * microfacet(
                     "beckmann",
                     Nn,
                     in_coating_roughness,
@@ -602,7 +602,7 @@ shader as_standard_surface
             // Restrict range to avoid pure saturated colors.
             absorption_coeff = clamp(absorption_coeff, 0.0, 0.99);
 
-            color fake_absorption=exp(-tau * absorption_coeff);
+            color fake_absorption = exp(-tau * absorption_coeff);
 
             coating_transmittance *= clamp(fake_absorption, 0.0, 1.0);
         }
@@ -807,7 +807,7 @@ shader as_standard_surface
 
         if (max(edf_color) > 0.0)
         {
-            float normalization = (in_area_normalize_edf)
+            float normalization = in_area_normalize_edf
                 ? 1.0 / surfacearea()
                 : 1.0;
 

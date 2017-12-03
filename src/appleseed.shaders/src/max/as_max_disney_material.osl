@@ -43,10 +43,11 @@ surface as_max_disney_material
     float  Sheen = 0.0,
     float  SheenTint = 0.5,
     float  Clearcoat = 0.0,
-    float  ClearcoatGloss = 1.0
+    float  ClearcoatGloss = 1.0,
+    output closure color ClosureOut = 0
 )
 {
-    Ci = as_disney(
+    ClosureOut = as_disney(
         Normal,
         Tn,
         BaseColor,
@@ -60,4 +61,5 @@ surface as_max_disney_material
         SheenTint,
         Clearcoat,
         ClearcoatGloss);
+    Ci = ClosureOut;
 }
