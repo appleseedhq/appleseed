@@ -217,6 +217,7 @@ set (src_gaffer_surface_sources
      src/gaffer/surface/as_glass_surface.osl
      src/gaffer/surface/as_glossy_surface.osl
      src/gaffer/surface/as_metal_surface.osl
+     src/gaffer/surface/as_plastic_surface.osl
      src/gaffer/surface/as_sheen_surface.osl
      src/gaffer/surface/as_subsurface_surface.osl
      src/gaffer/surface/as_surface_add.osl
@@ -409,6 +410,7 @@ set (src_appleseed_sources
      src/appleseed/as_luminance.osl
      src/appleseed/as_noise2d.osl
      src/appleseed/as_noise3d.osl
+     src/appleseed/as_plastic.osl
      src/appleseed/as_standard_surface.osl
      src/appleseed/as_voronoi2d.osl
      src/appleseed/as_voronoi3d.osl
