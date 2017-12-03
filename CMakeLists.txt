@@ -110,6 +110,10 @@ option (USE_EXTERNAL_ZLIB                   "Use external zlib library"         
 option (WITH_CLI                            "Build appleseed.cli"                                   ON)
 option (WITH_STUDIO                         "Build appleseed.studio"                                ON)
 option (WITH_TOOLS                          "Build appleseed tools"                                 ON)
+option (WITH_DOXYGEN                        "Generate API Reference with Doxygen"                   ON)
+option (WITH_HEADERS                        "Install header files (to build samples)"               ON)
+option (WITH_SAMPLES                        "Install sample files (requires headers)"               ON)
+option (WITH_TESTS                          "Install unit tests and benchmarks"                     ON)
 option (WITH_PYTHON                         "Build Python bindings"                                 ON)
 option (WITH_DISNEY_MATERIAL                "Build Disney material"                                 OFF)
 
@@ -610,7 +614,7 @@ endif ()
 
 find_package (Doxygen)
 
-if (DOXYGEN_FOUND)
+if (DOXYGEN_FOUND AND WITH_DOXYGEN)
     configure_file (${PROJECT_SOURCE_DIR}/scripts/appleseed.doxyfile.in ${PROJECT_BINARY_DIR}/appleseed.doxyfile @ONLY)
     add_custom_target (
         doc ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/appleseed.doxyfile
@@ -659,7 +663,6 @@ install (
     DIRECTORY
         sandbox/docs
         sandbox/icons
-        sandbox/samples
         sandbox/settings
         sandbox/share
         sandbox/stylesheets
@@ -671,13 +674,24 @@ install (
     CODE "FILE (MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/images/autosave)"
 )
 
+if (WITH_SAMPLES)
+install (
+    DIRECTORY
+        sandbox/samples
+    DESTINATION .
+)
+endif ()
+
+if (WITH_TESTS)
 install (
     DIRECTORY
         "sandbox/tests/unit benchmarks"
         "sandbox/tests/unit tests"
     DESTINATION tests
 )
+endif ()
 
+if (WITH_HEADERS)
 install (
     DIRECTORY src/appleseed/foundation
     DESTINATION include
@@ -695,3 +709,4 @@ install (
     DESTINATION include
     FILES_MATCHING PATTERN "*.h"
 )
+endif ()

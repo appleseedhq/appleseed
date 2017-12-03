@@ -92,7 +92,7 @@ namespace
         PlasticBRDFImpl(
             const char*                 name,
             const ParamArray&           params)
-          : BSDF(name, Reflective, ScatteringMode::All, params)
+          : BSDF(name, Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy | ScatteringMode::Specular, params)
         {
             m_inputs.declare("specular_reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("specular_reflectance_multiplier", InputFormatFloat, "1.0");

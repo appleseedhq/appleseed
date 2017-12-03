@@ -44,6 +44,7 @@
 #include "renderer/modeling/bsdf/glassbsdf.h"
 #include "renderer/modeling/bsdf/glossybrdf.h"
 #include "renderer/modeling/bsdf/metalbrdf.h"
+#include "renderer/modeling/bsdf/plasticbrdf.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/utility/paramarray.h"
@@ -106,6 +107,12 @@ namespace
             m_metal_std_brdf = create_and_register_metal_brdf(MetalSTDID, "std");
 
             m_orennayar_brdf = create_and_register_bsdf(OrenNayarID, "orennayar_brdf");
+
+            m_plastic_beckmann_brdf = create_and_register_plastic_brdf(PlasticBeckmannID, "beckmann");
+            m_plastic_ggx_brdf = create_and_register_plastic_brdf(PlasticGGXID, "ggx");
+            m_plastic_gtr1_brdf = create_and_register_plastic_brdf(PlasticGTR1ID, "gtr1");
+            m_plastic_std_brdf = create_and_register_plastic_brdf(PlasticSTDID, "std");
+
             m_sheen_brdf = create_and_register_bsdf(SheenID, "sheen_brdf");
         }
 
@@ -370,6 +377,10 @@ namespace
         auto_release_ptr<BSDF>      m_metal_ggx_brdf;
         auto_release_ptr<BSDF>      m_metal_std_brdf;
         auto_release_ptr<BSDF>      m_orennayar_brdf;
+        auto_release_ptr<BSDF>      m_plastic_beckmann_brdf;
+        auto_release_ptr<BSDF>      m_plastic_ggx_brdf;
+        auto_release_ptr<BSDF>      m_plastic_gtr1_brdf;
+        auto_release_ptr<BSDF>      m_plastic_std_brdf;
         auto_release_ptr<BSDF>      m_sheen_brdf;
 
         auto_release_ptr<BSDF> create_and_register_bsdf(
@@ -421,6 +432,20 @@ namespace
             auto_release_ptr<BSDF> bsdf =
                 MetalBRDFFactory().create(
                     "metal_brdf",
+                    ParamArray().insert("mdf", mdf_name));
+
+            m_all_bsdfs[cid] = bsdf.get();
+
+            return bsdf;
+        }
+
+        auto_release_ptr<BSDF> create_and_register_plastic_brdf(
+            const ClosureID         cid,
+            const char*             mdf_name)
+        {
+            auto_release_ptr<BSDF> bsdf =
+                PlasticBRDFFactory().create(
+                    "plastic_brdf",
                     ParamArray().insert("mdf", mdf_name));
 
             m_all_bsdfs[cid] = bsdf.get();
