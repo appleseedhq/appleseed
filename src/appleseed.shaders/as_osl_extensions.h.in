@@ -140,6 +140,21 @@ closure color as_disney(
     float   clearcoat_gloss) BUILTIN;
 
 //
+// Plastic BSDF, distribution = beckmann | ggx | gtr1 | std
+//
+closure color as_plastic(
+    string  distribution,
+    normal  N,
+    color   specular_color,
+    float   specular_weight,
+    float   specular_roughness,
+    float   highlight_falloff,
+    float   ior,
+    color   diffuse_color,
+    float   diffuse_weight,
+    float   scattering) BUILTIN;
+
+//
 // AlSurface specular layer.
 //
 //  We use ints instead of strings for closure params

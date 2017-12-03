@@ -92,6 +92,12 @@ enum ClosureID
     MetalGGXID,
     MetalSTDID,
 
+    PlasticID,
+    PlasticBeckmannID,
+    PlasticGGXID,
+    PlasticGTR1ID,
+    PlasticSTDID,
+
     // BSSRDF closures.
     SubsurfaceID,
     SubsurfaceBetterDipoleID,
