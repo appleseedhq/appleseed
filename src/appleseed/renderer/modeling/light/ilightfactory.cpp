@@ -54,7 +54,15 @@ void ILightFactory::add_common_input_metadata(DictionaryArray& metadata)
         Dictionary()
             .insert("name", "importance_multiplier")
             .insert("label", "Importance Multiplier")
-            .insert("type", "text")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("help", "Adjust the sampling effort for this light with respect to the other lights"));

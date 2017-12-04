@@ -47,7 +47,8 @@ void IEDFFactory::add_common_input_metadata(DictionaryArray& metadata)
             .insert("label", "Cast Indirect Light")
             .insert("type", "boolean")
             .insert("use", "optional")
-            .insert("default", "true"));
+            .insert("default", "true")
+            .insert("help", "If enabled, area lights using this material contribute to indirect lighting"));
 
     metadata.push_back(
         Dictionary()
@@ -63,7 +64,8 @@ void IEDFFactory::add_common_input_metadata(DictionaryArray& metadata)
                     .insert("value", "10.0")
                     .insert("type", "soft"))
             .insert("use", "optional")
-            .insert("default", "1.0"));
+            .insert("default", "1.0")
+            .insert("help", "Adjust the sampling effort for area lights using this material with respect to the other area lights"));
 
     metadata.push_back(
         Dictionary()
