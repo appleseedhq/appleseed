@@ -409,7 +409,9 @@ class GTR1MDF
 //
 // Reference:
 //
-//   https://bv.univ-poitiers.fr/access/content/user/mribar03/website/projects/eg_2017/distribution.pdf
+//   STD: Student's t-Distribution of Slopes for Microfacet Based BSDFs
+//   Mickael Ribardiere, Benjamin Bringier, Daniel Meneveaux, Lionel Simonot
+//   https://mribar03.bitbucket.io/projects/eg_2017/
 //
 
 class StdMDF

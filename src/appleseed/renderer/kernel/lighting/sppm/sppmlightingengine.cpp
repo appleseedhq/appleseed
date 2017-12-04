@@ -769,7 +769,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
             .insert("type", "int")
             .insert("default", "1000000")
             .insert("label", "Light Photons per Pass")
-            .insert("help", "Number of photons per render pass"));
+            .insert("help", "Number of light photons per render pass"));
 
     metadata.dictionaries().insert(
         "env_photons_per_pass",
