@@ -371,8 +371,9 @@ namespace
                     gamma,
                     F,
                     value.m_glossy);
+                value.m_beauty = value.m_glossy;
 
-                pdf =
+                return
                     choose_reflection_probability(values, F) *
                     reflection_pdf(wo, m, cos_wom, alpha_x, alpha_y, gamma);
             }
@@ -396,13 +397,10 @@ namespace
                     value.m_glossy);
                 value.m_beauty = value.m_glossy;
 
-                pdf =
+                return
                     (1.0f - choose_reflection_probability(values, F)) *
                     refraction_pdf(wi, wo, m, alpha_x, alpha_y, gamma, values->m_precomputed.m_eta);
             }
-
-            value.m_beauty = value.m_glossy;
-            return pdf;
         }
 
         float evaluate_pdf(
@@ -643,7 +641,6 @@ namespace
             // [1] eq. 21.
             const float cos_ih = dot(h, wi);
             const float cos_oh = dot(h, wo);
-            const float dots = (cos_ih * cos_oh) / (wi.y * wo.y);
 
             const float sqrt_denom = cos_oh + values->m_precomputed.m_eta * cos_ih;
             if (abs(sqrt_denom) < 1.0e-9f)
@@ -652,6 +649,7 @@ namespace
                 return;
             }
 
+            const float dots = (cos_ih * cos_oh) / (wi.y * wo.y);
             const float D = m_mdf->D(h, alpha_x, alpha_y, gamma);
             const float G = m_mdf->G(wi, wo, h, alpha_x, alpha_y, gamma);
             const float multiplier = abs(dots) * square(values->m_precomputed.m_eta / sqrt_denom) * T * D * G;
