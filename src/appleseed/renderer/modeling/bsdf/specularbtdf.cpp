@@ -36,7 +36,6 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
-#include "renderer/modeling/bsdf/bsdfwrapper.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -65,11 +64,11 @@ namespace
 
     const char* Model = "specular_btdf";
 
-    class SpecularBTDFImpl
+    class SpecularBTDF
       : public BSDF
     {
       public:
-        SpecularBTDFImpl(
+        SpecularBTDF(
             const char*                 name,
             const ParamArray&           params)
           : BSDF(name, Transmissive, ScatteringMode::Specular, params)
@@ -120,6 +119,9 @@ namespace
             const int                   modes,
             BSDFSample&                 sample) const override
         {
+            assert(is_normalized(sample.m_geometric_normal));
+            assert(is_normalized(sample.m_outgoing.get_value()));
+
             if (!ScatteringMode::has_specular(modes))
                 return;
 
@@ -183,9 +185,6 @@ namespace
                 }
             }
 
-            // todo: we could get rid of this by not wrapping this BTDF in BSDFWrapper<>.
-            const float cos_in = abs(dot(incoming, shading_normal));
-            sample.m_value.m_glossy /= cos_in;
             sample.m_value.m_beauty = sample.m_value.m_glossy;
 
             // The probability density of the sampled direction is the Dirac delta.
@@ -197,6 +196,7 @@ namespace
             // Set the incoming direction.
             incoming = improve_normalization(incoming);
             sample.m_incoming = Dual3f(incoming);
+            assert(is_normalized(sample.m_incoming.get_value(), 1.0e-5f));
 
             // Compute the ray differentials.
             if (refract_differentials)
@@ -263,8 +263,6 @@ namespace
       private:
         typedef SpecularBTDFInputValues InputValues;
     };
-
-    typedef BSDFWrapper<SpecularBTDFImpl> SpecularBTDF;
 }
 
 
