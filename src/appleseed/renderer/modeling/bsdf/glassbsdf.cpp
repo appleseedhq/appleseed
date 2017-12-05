@@ -255,8 +255,7 @@ namespace
                 // Compute the reflected direction.
                 wi = improve_normalization(reflect(wo, m));
 
-                // If incoming and outgoing are on different sides
-                // of the surface, this is not a reflection.
+                // If incoming and outgoing are on different sides of the surface, this is not a reflection.
                 if (wi.y * wo.y <= 0.0f)
                     return;
 
@@ -287,8 +286,7 @@ namespace
                         : (values->m_precomputed.m_eta * cos_wom + cos_theta_t) * m - values->m_precomputed.m_eta * wo;
                 wi = improve_normalization(wi);
 
-                // If incoming and outgoing are on the same side
-                // of the surface, this is not a refraction.
+                // If incoming and outgoing are on the same side of the surface, this is not a refraction.
                 if (wi.y * wo.y > 0.0f)
                     return;
 
@@ -524,8 +522,8 @@ namespace
         VolumeParameterization  m_volume_parameterization;
 
         static float choose_reflection_probability(
-            const InputValues*      values,
-            const float             F)
+            const InputValues*          values,
+            const float                 F)
         {
             const float r_probability = F * values->m_precomputed.m_reflection_weight;
             const float t_probability = (1.0f - F) * values->m_precomputed.m_refraction_weight;
@@ -538,9 +536,9 @@ namespace
         }
 
         static float fresnel_reflectance(
-            const float             cos_theta_i,
-            const float             eta,
-            float&                  cos_theta_t)
+            const float                 cos_theta_i,
+            const float                 eta,
+            float&                      cos_theta_t)
         {
             const float sin_theta_t2 = (1.0f - square(cos_theta_i)) * square(eta);
 
@@ -562,16 +560,16 @@ namespace
         }
 
         static float fresnel_reflectance(
-            const float             cos_theta_i,
-            const float             eta)
+            const float                 cos_theta_i,
+            const float                 eta)
         {
             float cos_theta_t;
             return fresnel_reflectance(cos_theta_i, eta, cos_theta_t);
         }
 
         static Vector3f half_reflection_vector(
-            const Vector3f&         wi,
-            const Vector3f&         wo)
+            const Vector3f&             wi,
+            const Vector3f&             wo)
         {
             // [1] eq. 13.
             const Vector3f h = normalize(wi + wo);
@@ -579,15 +577,15 @@ namespace
         }
 
         void evaluate_reflection(
-            const InputValues*      values,
-            const Vector3f&         wi,
-            const Vector3f&         wo,
-            const Vector3f&         h,
-            const float             alpha_x,
-            const float             alpha_y,
-            const float             gamma,
-            const float             F,
-            Spectrum&               value) const
+            const InputValues*          values,
+            const Vector3f&             wi,
+            const Vector3f&             wo,
+            const Vector3f&             h,
+            const float                 alpha_x,
+            const float                 alpha_y,
+            const float                 gamma,
+            const float                 F,
+            Spectrum&                   value) const
         {
             // [1] eq. 20.
             const float denom = abs(4.0f * wo.y * wi.y);
@@ -605,12 +603,12 @@ namespace
         }
 
         float reflection_pdf(
-            const Vector3f&         wo,
-            const Vector3f&         h,
-            const float             cos_oh,
-            const float             alpha_x,
-            const float             alpha_y,
-            const float             gamma) const
+            const Vector3f&             wo,
+            const Vector3f&             h,
+            const float                 cos_oh,
+            const float                 alpha_x,
+            const float                 alpha_y,
+            const float                 gamma) const
         {
             // [1] eq. 14.
             if (cos_oh == 0.0f)
@@ -621,9 +619,9 @@ namespace
         }
 
         static Vector3f half_refraction_vector(
-            const Vector3f&         wi,
-            const Vector3f&         wo,
-            const float             eta)
+            const Vector3f&             wi,
+            const Vector3f&             wo,
+            const float                 eta)
         {
             // [1] eq. 16.
             const Vector3f h = normalize(wo + eta * wi);
@@ -631,16 +629,16 @@ namespace
         }
 
         void evaluate_refraction(
-            const InputValues*      values,
-            const bool              adjoint,
-            const Vector3f&         wi,
-            const Vector3f&         wo,
-            const Vector3f&         h,
-            const float             alpha_x,
-            const float             alpha_y,
-            const float             gamma,
-            const float             T,
-            Spectrum&               value) const
+            const InputValues*          values,
+            const bool                  adjoint,
+            const Vector3f&             wi,
+            const Vector3f&             wo,
+            const Vector3f&             h,
+            const float                 alpha_x,
+            const float                 alpha_y,
+            const float                 gamma,
+            const float                 T,
+            Spectrum&                   value) const
         {
             // [1] eq. 21.
             const float cos_ih = dot(h, wi);
@@ -663,13 +661,13 @@ namespace
         }
 
         float refraction_pdf(
-            const Vector3f&         wi,
-            const Vector3f&         wo,
-            const Vector3f&         h,
-            const float             alpha_x,
-            const float             alpha_y,
-            const float             gamma,
-            const float             eta) const
+            const Vector3f&             wi,
+            const Vector3f&             wo,
+            const Vector3f&             h,
+            const float                 alpha_x,
+            const float                 alpha_y,
+            const float                 gamma,
+            const float                 eta) const
         {
             // [1] eq. 17.
             const float cos_ih = dot(h, wi);
