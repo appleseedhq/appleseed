@@ -39,6 +39,7 @@
 #include "renderer/modeling/bsdf/blinnbrdf.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
+#include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/diffusebtdf.h"
 #include "renderer/modeling/bsdf/glassbsdf.h"

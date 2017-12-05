@@ -33,7 +33,9 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 
 // appleseed.foundation headers.

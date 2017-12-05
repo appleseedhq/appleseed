@@ -34,6 +34,7 @@
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/fresnel.h"
 #include "renderer/modeling/bsdf/specularhelper.h"
