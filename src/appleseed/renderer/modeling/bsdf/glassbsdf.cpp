@@ -214,7 +214,10 @@ namespace
 
             const Basis3f basis(
                 values->m_precomputed.m_backfacing
-                    ? Basis3f(-sample.m_shading_basis.get_normal(), sample.m_shading_basis.get_tangent_u(), -sample.m_shading_basis.get_tangent_v())
+                    ? Basis3f(
+                          -sample.m_shading_basis.get_normal(),
+                           sample.m_shading_basis.get_tangent_u(),
+                          -sample.m_shading_basis.get_tangent_v())
                     : sample.m_shading_basis);
 
             float alpha_x, alpha_y;
