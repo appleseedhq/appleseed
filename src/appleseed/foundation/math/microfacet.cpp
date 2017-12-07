@@ -645,7 +645,8 @@ float GTR1MDF::D(
     const float         alpha_y,
     const float         gamma) const
 {
-    const float alpha_x_2 = square(alpha_x);
+    const float alpha = clamp(alpha_x, 0.001f, 0.999f);
+    const float alpha_x_2 = square(alpha);
     const float cos_theta_2 = square(h.y);
     const float a = (alpha_x_2 - 1.0f) / (Pi<float>() * std::log(alpha_x_2));
     const float b = (1.0f / (1.0f + (alpha_x_2 - 1.0f) * cos_theta_2));
@@ -693,7 +694,8 @@ float GTR1MDF::lambda(
 
     const float cot_theta_2 = cos_theta_2 / square(sin_theta);
     const float cot_theta = sqrt(cot_theta_2);
-    const float alpha_2 = square(alpha_x);
+    const float alpha = clamp(alpha_x, 0.001f, 0.999f);
+    const float alpha_2 = square(alpha);
 
     const float a = sqrt(cot_theta_2 + alpha_2);
     const float b = sqrt(cot_theta_2 + 1.0f);
@@ -710,9 +712,10 @@ Vector3f GTR1MDF::sample(
     const float         alpha_y,
     const float         gamma) const
 {
-    const float alpha2 = square(alpha_x);
-    const float a = 1.0f - pow(alpha2, 1.0f - s[0]);
-    const float cos_theta_2 = a / (1.0f - alpha2);
+    const float alpha = clamp(alpha_x, 0.001f, 0.999f);
+    const float alpha_2 = square(alpha);
+    const float a = 1.0f - pow(alpha_2, 1.0f - s[0]);
+    const float cos_theta_2 = a / (1.0f - alpha_2);
     const float cos_theta = sqrt(cos_theta_2);
     const float sin_theta = sqrt(max(0.0f, 1.0f - cos_theta_2));
 
@@ -799,7 +802,7 @@ float StdMDF::lambda(
     const float         alpha_y,
     const float         gamma) const
 {
-    const float cos_theta = v.y;
+    const float cos_theta = abs(v.y);
     if (cos_theta == 0.0f)
         return 0.0f;
 
