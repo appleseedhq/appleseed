@@ -31,6 +31,7 @@
 #include "texturefactoryregistrar.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/entity/registerentityfactories.h"
 #include "renderer/modeling/texture/disktexture2d.h"
 #include "renderer/modeling/texture/memorytexture2d.h"
 #include "renderer/modeling/texture/texturetraits.h"

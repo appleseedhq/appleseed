@@ -36,6 +36,7 @@
 #include "renderer/modeling/bssrdf/gaussianbssrdf.h"
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
+#include "renderer/modeling/entity/registerentityfactories.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
