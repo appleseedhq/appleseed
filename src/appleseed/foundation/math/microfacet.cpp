@@ -713,9 +713,9 @@ Vector3f GTR1MDF::sample(
     const float         gamma) const
 {
     const float alpha = clamp(alpha_x, 0.001f, 0.999f);
-    const float alpha2 = square(alpha);
-    const float a = 1.0f - pow(alpha2, 1.0f - s[0]);
-    const float cos_theta_2 = a / (1.0f - alpha2);
+    const float alpha_2 = square(alpha);
+    const float a = 1.0f - pow(alpha_2, 1.0f - s[0]);
+    const float cos_theta_2 = a / (1.0f - alpha_2);
     const float cos_theta = sqrt(cos_theta_2);
     const float sin_theta = sqrt(max(0.0f, 1.0f - cos_theta_2));
 
