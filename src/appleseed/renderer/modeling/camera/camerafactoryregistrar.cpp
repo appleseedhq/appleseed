@@ -36,6 +36,7 @@
 #include "renderer/modeling/camera/pinholecamera.h"
 #include "renderer/modeling/camera/sphericalcamera.h"
 #include "renderer/modeling/camera/thinlenscamera.h"
+#include "renderer/modeling/entity/registerentityfactories.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"

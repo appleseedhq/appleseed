@@ -29,6 +29,12 @@
 // Interface header.
 #include "entityfactoryregistrar.h"
 
+// appleseed.renderer headers.
+#include "renderer/utility/plugin.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/searchpaths.h"
+
 // Standard headers.
 #include <vector>
 

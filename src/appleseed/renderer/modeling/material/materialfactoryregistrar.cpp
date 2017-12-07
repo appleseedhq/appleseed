@@ -31,6 +31,7 @@
 #include "materialfactoryregistrar.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/entity/registerentityfactories.h"
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
 #include "renderer/modeling/material/disneymaterial.h"
 #endif

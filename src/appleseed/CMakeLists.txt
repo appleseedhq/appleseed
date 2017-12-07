@@ -1494,6 +1494,7 @@ set (renderer_modeling_entity_sources
     renderer/modeling/entity/entityvector.h
     renderer/modeling/entity/onframebeginrecorder.cpp
     renderer/modeling/entity/onframebeginrecorder.h
+    renderer/modeling/entity/registerentityfactories.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_entity_sources}

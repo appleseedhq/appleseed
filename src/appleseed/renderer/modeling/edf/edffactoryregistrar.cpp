@@ -34,6 +34,7 @@
 #include "renderer/modeling/edf/coneedf.h"
 #include "renderer/modeling/edf/diffuseedf.h"
 #include "renderer/modeling/edf/edftraits.h"
+#include "renderer/modeling/entity/registerentityfactories.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
