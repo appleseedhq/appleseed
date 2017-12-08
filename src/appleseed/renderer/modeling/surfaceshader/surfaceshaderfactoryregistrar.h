@@ -36,12 +36,12 @@
 // appleseed.foundation headers.
 #include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/searchpaths.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace foundation    { class SearchPaths; }
 namespace renderer      { class ISurfaceShaderFactory; }
 
 namespace renderer

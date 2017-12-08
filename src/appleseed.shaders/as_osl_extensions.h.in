@@ -64,13 +64,16 @@ closure color mix(closure color A, closure color B, color w)
 closure color as_sheen(normal N) BUILTIN;
 
 closure color as_glossy(
-    string      distribution,
+    string      distribution,           // "beckmann", "ggx" or "std"
     normal      N,
     vector      T,
     float       roughness,
     float       highlight_falloff,
     float       anisotropic,
-    float       ior) BUILTIN;
+    float       ior
+    // keyword arguments:
+    //   float "energy_compensation" = 0
+    ) BUILTIN;
 
 closure color as_blinn(
     normal      N,
@@ -78,17 +81,20 @@ closure color as_blinn(
     float       ior) BUILTIN;
 
 closure color as_metal(
-    string      distribution,
+    string      distribution,           // "beckmann", "ggx" or "std"
     normal      N,
     vector      T,
     color       normal_reflectance,
     color       edge_tint,
     float       roughness,
     float       highlight_falloff,
-    float       anisotropic) BUILTIN;
+    float       anisotropic
+    // keyword arguments:
+    //   float "energy_compensation" = 0
+    ) BUILTIN;
 
 closure color as_glass(
-    string      distribution,
+    string      distribution,           // "beckmann", "ggx" or "std"
     normal      N,
     vector      T,
     color       surface_transmittance,

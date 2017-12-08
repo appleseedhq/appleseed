@@ -76,7 +76,7 @@ if (USE_STATIC_BOOST)
     set (Boost_USE_STATIC_LIBS TRUE)
 endif ()
 
-set (BOOST_NEEDED_LIBS )
+set (BOOST_NEEDED_LIBS system)
 
 find_package (Boost 1.55 REQUIRED ${BOOST_NEEDED_LIBS})
 
@@ -156,4 +156,5 @@ target_link_libraries (basic
     ${APPLESEED_LIBRARIES}
     ${IMATH_LIBRARIES}
     ${OPENEXR_LIBRARIES}
+    ${Boost_LIBRARIES}
 )

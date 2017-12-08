@@ -344,6 +344,18 @@ Vector3f BeckmannMDF::sample(
     return normalize(m);
 }
 
+Vector3f BeckmannMDF::sample(const Vector2f& s, const float alpha) const
+{
+    const float tan_theta_alpha_2 = -square(alpha) * std::log(1.0f - s[0]);
+    const float cos_theta = 1.0f / sqrt(1.0f + tan_theta_alpha_2);
+    const float sin_theta = sqrt(1.0f - square(cos_theta));
+
+    float cos_phi, sin_phi;
+    sample_phi(s[1], cos_phi, sin_phi);
+
+    return Vector3f::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
+}
+
 // This code comes from OpenShadingLanguage test render.
 Vector2f BeckmannMDF::sample_slope(
     const float         cos_theta,
@@ -541,6 +553,18 @@ Vector3f GGXMDF::sample(
     return normalize(m);
 }
 
+Vector3f GGXMDF::sample(const Vector2f& s, const float alpha) const
+{
+    const float tan_theta_alpha_2 = square(alpha) * s[0] / (1.0f - s[0]);
+    const float cos_theta = 1.0f / sqrt(1.0f + tan_theta_alpha_2);
+    const float sin_theta = sqrt(1.0f - square(cos_theta));
+
+    float cos_phi, sin_phi;
+    sample_phi(s[1], cos_phi, sin_phi);
+
+    return Vector3f::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
+}
+
 float GGXMDF::pdf(
     const Vector3f&     v,
     const Vector3f&     h,
@@ -645,7 +669,8 @@ float GTR1MDF::D(
     const float         alpha_y,
     const float         gamma) const
 {
-    const float alpha_x_2 = square(alpha_x);
+    const float alpha = clamp(alpha_x, 0.001f, 0.999f);
+    const float alpha_x_2 = square(alpha);
     const float cos_theta_2 = square(h.y);
     const float a = (alpha_x_2 - 1.0f) / (Pi<float>() * std::log(alpha_x_2));
     const float b = (1.0f / (1.0f + (alpha_x_2 - 1.0f) * cos_theta_2));
@@ -693,7 +718,8 @@ float GTR1MDF::lambda(
 
     const float cot_theta_2 = cos_theta_2 / square(sin_theta);
     const float cot_theta = sqrt(cot_theta_2);
-    const float alpha_2 = square(alpha_x);
+    const float alpha = clamp(alpha_x, 0.001f, 0.999f);
+    const float alpha_2 = square(alpha);
 
     const float a = sqrt(cot_theta_2 + alpha_2);
     const float b = sqrt(cot_theta_2 + 1.0f);
@@ -710,9 +736,10 @@ Vector3f GTR1MDF::sample(
     const float         alpha_y,
     const float         gamma) const
 {
-    const float alpha2 = square(alpha_x);
-    const float a = 1.0f - pow(alpha2, 1.0f - s[0]);
-    const float cos_theta_2 = a / (1.0f - alpha2);
+    const float alpha = clamp(alpha_x, 0.001f, 0.999f);
+    const float alpha_2 = square(alpha);
+    const float a = 1.0f - pow(alpha_2, 1.0f - s[0]);
+    const float cos_theta_2 = a / (1.0f - alpha_2);
     const float cos_theta = sqrt(cos_theta_2);
     const float sin_theta = sqrt(max(0.0f, 1.0f - cos_theta_2));
 
@@ -799,7 +826,7 @@ float StdMDF::lambda(
     const float         alpha_y,
     const float         gamma) const
 {
-    const float cos_theta = v.y;
+    const float cos_theta = abs(v.y);
     if (cos_theta == 0.0f)
         return 0.0f;
 

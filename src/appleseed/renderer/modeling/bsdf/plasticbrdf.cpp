@@ -392,7 +392,7 @@ namespace
             fresnel_reflectance_dielectric(
                 F,
                 eta,
-                min(dot(w, m), 1.0f));
+                min(cos_wm, 1.0f));
 
             return F;
         }

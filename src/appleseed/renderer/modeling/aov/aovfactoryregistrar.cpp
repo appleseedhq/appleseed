@@ -37,6 +37,7 @@
 #include "renderer/modeling/aov/glossyaov.h"
 #include "renderer/modeling/aov/normalaov.h"
 #include "renderer/modeling/aov/uvaov.h"
+#include "renderer/modeling/entity/registerentityfactories.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"

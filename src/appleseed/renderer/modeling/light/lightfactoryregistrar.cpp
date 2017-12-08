@@ -31,6 +31,7 @@
 #include "lightfactoryregistrar.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/entity/registerentityfactories.h"
 #include "renderer/modeling/light/directionallight.h"
 #include "renderer/modeling/light/lighttraits.h"
 #include "renderer/modeling/light/maxomnilight.h"
