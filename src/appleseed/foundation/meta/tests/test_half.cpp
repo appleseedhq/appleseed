@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2017 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,72 +27,62 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/image/pixel.h"
+#include "foundation/math/fp.h"
 #include "foundation/math/half.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/test.h"
 
+// OpenEXR headers.
+#include "foundation/platform/_beginexrheaders.h"
+#include "OpenEXR/half.h"
+#include "foundation/platform/_endexrheaders.h"
+
 using namespace foundation;
 
-TEST_SUITE(Foundation_Image_Pixel)
+TEST_SUITE(Foundation_Math_Half)
 {
-    TEST_CASE(ConvertToFormat_HalfToUInt32)
+    TEST_CASE(BitsToFloatMatch)
     {
-        const Half input = 1.0f;
+        half imath_half;
+        Half as_half;
 
-        uint32 output;
-        Pixel::convert_to_format(
-            &input, &input + 1,
-            1,
-            PixelFormatUInt32,
-            &output,
-            1);
+        for (uint16_t i = 0; i < 0xFFFF; ++i)
+        {
+            imath_half.setBits(i);
+            as_half.set_bits(i);
 
-        EXPECT_EQ(4294967295UL, output);
+            const float x = imath_half;
+            const float y = as_half;
+
+            if (FP<float>::is_nan(x))
+                EXPECT_TRUE(FP<float>::is_nan(y));
+            else
+                EXPECT_EQ(x, y);
+        }
     }
 
-    TEST_CASE(ConvertToFormat_FloatToUInt32)
+    TEST_CASE(FloatToBitsMatch)
     {
-        const float input = 1.0f;
+        half imath_half;
+        Half as_half;
 
-        uint32 output;
-        Pixel::convert_to_format(
-            &input, &input + 1,
-            1,
-            PixelFormatUInt32,
-            &output,
-            1);
+        for (uint16_t i = 0; i < 0xFFFF; ++i)
+        {
+            half x;
+            x.setBits(i);
 
-        EXPECT_EQ(4294967295UL, output);
-    }
+            const float xf = x;
 
-    TEST_CASE(ConvertFromFormat_HalfToUInt32)
-    {
-        const Half input = 1.0f;
+            imath_half = xf;
+            as_half = xf;
 
-        uint32 output;
-        Pixel::convert_from_format(
-            PixelFormatHalf,
-            &input, &input + 1,
-            1,
-            &output,
-            1);
-
-        EXPECT_EQ(4294967295UL, output);
-    }
-
-    TEST_CASE(ConvertFromFormat_FloatToUInt32)
-    {
-        const float input = 1.0f;
-
-        uint32 output;
-        Pixel::convert_from_format(
-            PixelFormatFloat,
-            &input, &input + 1,
-            1,
-            &output,
-            1);
-
-        EXPECT_EQ(4294967295UL, output);
+            if (FP<float>::is_neg_zero(xf))
+            {
+                // PtexHalf and our Half class convert -0.0f to 0.
+                EXPECT_EQ(as_half.bits(), 0);
+            }
+            else
+                EXPECT_EQ(imath_half.bits(), as_half.bits());
+        }
     }
 }
