@@ -147,14 +147,11 @@ void compute_ibl_bsdf_sampling(
             shading_point.get_ray().m_depth + 1);
         shadow_ray.m_media = shading_point.get_ray().m_media;
 
-        const ShadingPoint& shading_point =
-            shading_context.get_tracer().trace_full(
-                shading_context,
-                shadow_ray,
-                transmission);
-
-        if (shading_point.hit_surface())
-            continue;
+        shading_context.get_tracer().trace_simple(
+            shading_context,
+            shading_point,
+            shadow_ray,
+            transmission);
 
         if (max_value(transmission) == 0.0f)
             continue;
@@ -242,15 +239,12 @@ void compute_ibl_environment_sampling(
             shading_point.get_ray().m_depth + 1);
         shadow_ray.m_media = shading_point.get_ray().m_media;
 
-        const ShadingPoint& shading_point =
-            shading_context.get_tracer().trace_full(
-                shading_context,
-                shadow_ray,
-                transmission);
+        shading_context.get_tracer().trace_simple(
+            shading_context,
+            shading_point,
+            shadow_ray,
+            transmission);
 
-        if (shading_point.hit_surface())
-            continue;
-        
         if (max_value(transmission) == 0.0f)
             continue;
 
