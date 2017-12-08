@@ -639,6 +639,7 @@ namespace
             float           highlight_falloff;
             float           anisotropy;
             float           ior;
+            float           energy_compensation;
         };
 
         static const char* name()
@@ -656,6 +657,16 @@ namespace
             return ScatteringMode::Glossy | ScatteringMode::Specular;
         }
 
+        static void prepare_closure(
+            OSL::RendererServices*      render_services,
+            int                         id,
+            void*                       data)
+        {
+            // Initialize keyword parameter defaults.
+            Params* params = new (data) Params();
+            params->energy_compensation = 0.0f;
+        }
+
         static void register_closure(OSLShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
@@ -667,10 +678,11 @@ namespace
                 CLOSURE_FLOAT_PARAM(Params, highlight_falloff),
                 CLOSURE_FLOAT_PARAM(Params, anisotropy),
                 CLOSURE_FLOAT_PARAM(Params, ior),
+                CLOSURE_FLOAT_KEYPARAM(Params, energy_compensation, "energy_compensation"),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
+            shading_system.register_closure(name(), id(), params, &prepare_closure, nullptr);
 
             g_closure_convert_funs[id()] = &convert_closure;
 
@@ -720,6 +732,8 @@ namespace
             values->m_highlight_falloff = saturate(p->highlight_falloff);
             values->m_anisotropy = clamp(p->anisotropy, -1.0f, 1.0f);
             values->m_ior = max(p->ior, 0.001f);
+            values->m_fresnel_weight = 1.0f;
+            values->m_energy_compensation = saturate(p->energy_compensation);
         }
     };
 
@@ -762,6 +776,7 @@ namespace
             float           roughness;
             float           highlight_falloff;
             float           anisotropy;
+            float           energy_compensation;
         };
 
         static const char* name()
@@ -779,6 +794,16 @@ namespace
             return ScatteringMode::Glossy | ScatteringMode::Specular;
         }
 
+        static void prepare_closure(
+            OSL::RendererServices*      render_services,
+            int                         id,
+            void*                       data)
+        {
+            // Initialize keyword parameter defaults.
+            Params* params = new (data) Params();
+            params->energy_compensation = 0.0f;
+        }
+
         static void register_closure(OSLShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
@@ -791,10 +816,11 @@ namespace
                 CLOSURE_FLOAT_PARAM(Params, roughness),
                 CLOSURE_FLOAT_PARAM(Params, highlight_falloff),
                 CLOSURE_FLOAT_PARAM(Params, anisotropy),
+                CLOSURE_FLOAT_KEYPARAM(Params, energy_compensation, "energy_compensation"),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
+            shading_system.register_closure(name(), id(), params, &prepare_closure, nullptr);
 
             g_closure_convert_funs[id()] = &convert_closure;
 
@@ -844,6 +870,7 @@ namespace
             values->m_roughness = max(p->roughness, 0.0f);
             values->m_highlight_falloff = saturate(p->highlight_falloff);
             values->m_anisotropy = clamp(p->anisotropy, -1.0f, 1.0f);
+            values->m_energy_compensation = saturate(p->energy_compensation);
         }
     };
 
@@ -1140,6 +1167,7 @@ namespace
             values->m_roughness = 0.0f;
             values->m_anisotropy = 0.0f;
             values->m_ior = max(p->ior, 0.001f);
+            values->m_energy_compensation = 0.0f;
         }
     };
 

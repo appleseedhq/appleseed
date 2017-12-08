@@ -39,6 +39,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/microfacet.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
@@ -127,6 +128,7 @@ class MicrofacetBRDFHelper
 
         f(sample.m_outgoing.get_value(), h, sample.m_shading_basis.get_normal(), sample.m_value.m_glossy);
         sample.m_value.m_glossy *= D * G / (4.0f * cos_on * cos_in);
+
         sample.m_probability = mdf.pdf(wo, m, alpha_x, alpha_y, gamma) / (4.0f * cos_oh);
         sample.m_mode = ScatteringMode::Glossy;
         sample.m_incoming = foundation::Dual<foundation::Vector3f>(incoming);
@@ -164,6 +166,7 @@ class MicrofacetBRDFHelper
         const float cos_oh = foundation::dot(outgoing, h);
         f(outgoing, h, shading_basis.get_normal(), value);
         value *= D * G / (4.0f * cos_on * cos_in);
+
         return mdf.pdf(wo, m, alpha_x, alpha_y, gamma) / (4.0f * cos_oh);
     }
 
@@ -188,6 +191,24 @@ class MicrofacetBRDFHelper
                 gamma) / (4.0f * cos_oh);
     }
 };
+
+void microfacet_energy_compensation_term(
+    const foundation::GGXMDF&       mdf,
+    const float                     roughness,
+    const float                     cos_in,
+    const float                     cos_on,
+    float&                          fms,
+    float&                          eavg);
+
+void microfacet_energy_compensation_term(
+    const foundation::BeckmannMDF&  mdf,
+    const float                     roughness,
+    const float                     cos_in,
+    const float                     cos_on,
+    float&                          fms,
+    float&                          eavg);
+
+void write_microfacet_directional_albedo_tables_to_exr(const char* directory);
 
 }       // namespace renderer
 

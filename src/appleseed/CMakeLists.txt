@@ -1249,6 +1249,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_backwardlightsampler.cpp
     renderer/meta/tests/test_containers.cpp
     renderer/meta/tests/test_dynamicspectrum.cpp
+    renderer/meta/tests/test_energycompensation.cpp
     renderer/meta/tests/test_entitymap.cpp
     renderer/meta/tests/test_entityvector.cpp
     renderer/meta/tests/test_environmentedf.cpp
@@ -1344,6 +1345,7 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/lambertianbrdf.h
     renderer/modeling/bsdf/metalbrdf.cpp
     renderer/modeling/bsdf/metalbrdf.h
+    renderer/modeling/bsdf/microfacethelper.cpp
     renderer/modeling/bsdf/microfacethelper.h
     renderer/modeling/bsdf/nullbsdf.h
     renderer/modeling/bsdf/orennayarbrdf.cpp

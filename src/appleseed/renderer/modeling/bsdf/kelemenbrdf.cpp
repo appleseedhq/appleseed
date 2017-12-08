@@ -124,6 +124,7 @@ namespace
     //
     // Reference:
     //
+    //   A Microfacet Based Coupled Specular-Matte BRDF Model with Importance Sampling
     //   http://sirkan.iit.bme.hu/~szirmay/scook.pdf
     //
 

@@ -344,6 +344,18 @@ Vector3f BeckmannMDF::sample(
     return normalize(m);
 }
 
+Vector3f BeckmannMDF::sample(const Vector2f& s, const float alpha) const
+{
+    const float tan_theta_alpha_2 = -square(alpha) * std::log(1.0f - s[0]);
+    const float cos_theta = 1.0f / sqrt(1.0f + tan_theta_alpha_2);
+    const float sin_theta = sqrt(1.0f - square(cos_theta));
+
+    float cos_phi, sin_phi;
+    sample_phi(s[1], cos_phi, sin_phi);
+
+    return Vector3f::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
+}
+
 // This code comes from OpenShadingLanguage test render.
 Vector2f BeckmannMDF::sample_slope(
     const float         cos_theta,
@@ -539,6 +551,18 @@ Vector3f GGXMDF::sample(
         max(0.0f, h.y),
         h.z * alpha_y);
     return normalize(m);
+}
+
+Vector3f GGXMDF::sample(const Vector2f& s, const float alpha) const
+{
+    const float tan_theta_alpha_2 = square(alpha) * s[0] / (1.0f - s[0]);
+    const float cos_theta = 1.0f / sqrt(1.0f + tan_theta_alpha_2);
+    const float sin_theta = sqrt(1.0f - square(cos_theta));
+
+    float cos_phi, sin_phi;
+    sample_phi(s[1], cos_phi, sin_phi);
+
+    return Vector3f::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
 }
 
 float GGXMDF::pdf(

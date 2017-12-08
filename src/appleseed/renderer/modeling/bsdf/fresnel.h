@@ -75,10 +75,12 @@ class FresnelDielectricFun
     FresnelDielectricFun(
         const Spectrum&             reflectance,
         const float                 reflectance_multiplier,
-        const float                 eta)
+        const float                 eta,
+        const float                 weight)
       : m_reflectance(reflectance)
       , m_reflectance_multiplier(reflectance_multiplier)
       , m_eta(eta)
+      , m_weight(weight)
     {
     }
 
@@ -92,6 +94,7 @@ class FresnelDielectricFun
 
         float f;
         foundation::fresnel_reflectance_dielectric(f, m_eta, cos_oh);
+        f = foundation::lerp(1.0f, f, m_weight);
 
         value = m_reflectance;
         value *= f * m_reflectance_multiplier;
@@ -101,6 +104,7 @@ class FresnelDielectricFun
     const Spectrum& m_reflectance;
     const float     m_reflectance_multiplier;
     const float     m_eta;
+    const float     m_weight;
 };
 
 class FresnelDielectricSchlickFun
