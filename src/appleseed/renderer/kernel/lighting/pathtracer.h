@@ -200,6 +200,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
     vertex.m_shading_point = &shading_point;
     vertex.m_prev_mode = ScatteringMode::Specular;
     vertex.m_prev_prob = BSDF::DiracDelta;
+    vertex.m_distance = shading_point.get_distance();
     vertex.m_aov_mode = ScatteringMode::None;
 
     // This variable tracks the beginning of the path segment inside the current medium.
@@ -679,6 +680,7 @@ bool PathTracer<PathVisitor, Adjoint>::process_bounce(
     // Save the scattering properties for MIS at light-emitting vertices.
     vertex.m_prev_mode = sample.m_mode;
     vertex.m_prev_prob = sample.m_probability;
+    vertex.m_distance = 0.0;
 
     // Update the AOV scattering mode only for the first bounce.
     if (vertex.m_path_length == 1)

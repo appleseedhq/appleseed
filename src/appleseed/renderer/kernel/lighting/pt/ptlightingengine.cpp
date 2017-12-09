@@ -371,85 +371,99 @@ namespace
                     // This ray is being cast into a participating medium.
                     //
 
-                    // Determine the pivot for better importance sampling.
-                    Vector3d pivot;
-                    const Vector3d* pivot_ptr = &pivot;
-                    const size_t light_count = m_light_sampler.get_non_physical_light_count();
-                    m_sampling_context.split_in_place(1, 1);
-                    const float s = m_sampling_context.next2<float>();
-                    bool sample_non_physical_lights = 
-                        light_count > 0 &&
-                        (s < 0.5f || !m_light_sampler.has_lightset());
-                    if (sample_non_physical_lights)
+                    // Prepare volume for sampling.
+                    const Volume* volume = current_medium->get_volume();
+                    void* volume_data = volume->evaluate_inputs(m_shading_context, next_shading_point->get_ray());
+                    volume->prepare_inputs(m_shading_context.get_arena(), next_shading_point->get_ray(), volume_data);
+                    vertex->m_volume_data = volume_data;
+
+                    if (vertex->m_scattering_modes & ScatteringMode::Volume)
                     {
-                        LightSample light_sample;
+                        // Determine the pivot for better importance sampling.
+                        Vector3d pivot;
+                        const Vector3d* pivot_ptr = &pivot;
                         const size_t light_count = m_light_sampler.get_non_physical_light_count();
                         m_sampling_context.split_in_place(1, 1);
-                        const size_t light_idx = static_cast<size_t>(
-                            m_sampling_context.next2<float>() * light_count);
-                        m_light_sampler.sample_non_physical_light(ray.m_time, light_idx, light_sample);
-                        m_sampling_context.split_in_place(2, 1);
-                        Vector3d emission_direction;  // not used
-                        Spectrum light_value(Spectrum::Illuminance);
-                        float probability;
-                        light_sample.m_light->sample(
+                        const float s = m_sampling_context.next2<float>();
+                        bool sample_non_physical_lights =
+                            light_count > 0 &&
+                            (s < 0.5f || !m_light_sampler.has_lightset());
+                        if (sample_non_physical_lights)
+                        {
+                            LightSample light_sample;
+                            const size_t light_count = m_light_sampler.get_non_physical_light_count();
+                            m_sampling_context.split_in_place(1, 1);
+                            const size_t light_idx = static_cast<size_t>(
+                                m_sampling_context.next2<float>() * light_count);
+                            m_light_sampler.sample_non_physical_light(ray.m_time, light_idx, light_sample);
+                            m_sampling_context.split_in_place(2, 1);
+                            Vector3d emission_direction;  // not used
+                            Spectrum light_value(Spectrum::Illuminance);
+                            float probability;
+                            light_sample.m_light->sample(
+                                m_shading_context,
+                                light_sample.m_light_transform,
+                                m_sampling_context.next2<Vector2d>(),
+                                pivot,
+                                emission_direction,
+                                light_value,
+                                probability);
+                        }
+                        else if (m_light_sampler.has_lightset())
+                        {
+                            LightSample light_sample;
+                            m_sampling_context.split_in_place(3, 1);
+                            m_light_sampler.sample_lightset(
+                                ray.m_time,
+                                m_sampling_context.next2<Vector3f>(),
+                                *vertex->m_shading_point,
+                                light_sample);
+                            pivot = light_sample.m_point;
+                        }
+                        else
+                        {
+                            pivot_ptr = nullptr;
+                        }
+
+                        // Sample the distance.
+                        DistanceSample distance_sample;
+                        distance_sample.m_volume_ray = &next_shading_point->get_ray();
+                        distance_sample.m_shading_point = vertex->m_shading_point;
+                        distance_sample.m_pivot = pivot_ptr;
+                        volume->sample_distance(
                             m_shading_context,
-                            light_sample.m_light_transform,
-                            m_sampling_context.next2<Vector2d>(),
-                            pivot,
-                            emission_direction,
-                            light_value,
-                            probability);
-                    }
-                    else if (m_light_sampler.has_lightset())
-                    {
-                        LightSample light_sample;
-                        m_sampling_context.split_in_place(3, 1);
-                        m_light_sampler.sample_lightset(
-                            ray.m_time,
-                            m_sampling_context.next2<Vector3f>(),
-                            *vertex->m_shading_point,
-                            light_sample);
-                        pivot = light_sample.m_point;
+                            m_sampling_context,
+                            vertex->m_volume_data,
+                            distance_sample);
+
+                        // Update the throughput of the path and create volume shading point if neccessary.
+                        vertex->m_throughput *= distance_sample.m_value;
+                        if (!distance_sample.m_transmitted)
+                        {
+                            vertex->m_throughput /= distance_sample.m_probability;
+                            m_shading_context.get_intersector().make_volume_shading_point(
+                                *next_shading_point,
+                                ray,
+                                distance_sample.m_distance);
+                        }
+
+                        // Assign vertex BSDF.
+                        vertex->m_bsdf = distance_sample.m_bsdf;
+                        vertex->m_bsdf_data = distance_sample.m_bsdf_data;
+                        vertex->m_edf = nullptr;
                     }
                     else
                     {
-                        pivot_ptr = nullptr;
+                        Spectrum transmission;
+                        volume->evaluate_transmission(
+                            volume_data,
+                            next_shading_point->get_ray(),
+                            transmission);
+                        vertex->m_throughput *= transmission;
                     }
-
-                    // Prepare volume for sampling.
-                    const Volume* volume = current_medium->get_volume();
-                    void* volume_data = volume->evaluate_inputs(m_shading_context, ray);
-                    volume->prepare_inputs(m_shading_context.get_arena(), ray, volume_data);
-                    vertex->m_volume_data = volume_data;
-
-                    // Sample the distance.
-                    DistanceSample distance_sample;
-                    distance_sample.m_volume_ray = &next_shading_point->get_ray();
-                    distance_sample.m_shading_point = vertex->m_shading_point;
-                    distance_sample.m_pivot = pivot_ptr;
-                    volume->sample_distance(
-                        m_shading_context,
-                        m_sampling_context,
-                        vertex->m_volume_data,
-                        distance_sample);
-
-                    // Update the throughput of the path and create volume shading point if neccessary.
-                    vertex->m_throughput *= distance_sample.m_value;
-                    if (!distance_sample.m_transmitted)
-                    {
-                        vertex->m_throughput /= distance_sample.m_probability;
-                        m_shading_context.get_intersector().make_volume_shading_point(
-                            *next_shading_point,
-                            ray,
-                            distance_sample.m_distance);
-                    }
-
-                    // Assign vertex BSDF.
-                    vertex->m_bsdf = distance_sample.m_bsdf;
-                    vertex->m_bsdf_data = distance_sample.m_bsdf_data;
-                    vertex->m_edf = nullptr;
                 }
+
+                vertex->m_distance += next_shading_point->get_distance();
             }
         };
 
