@@ -258,6 +258,9 @@ set (foundation_math_sources
     foundation/math/fp.h
     foundation/math/fresnel.h
     foundation/math/frustum.h
+    foundation/math/half.cpp
+    foundation/math/half.h
+    foundation/math/halftables.h
     foundation/math/hash.h
     foundation/math/knn.h
     foundation/math/matrix.h
@@ -401,6 +404,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_fp.cpp
     foundation/meta/tests/test_fresnel.cpp
     foundation/meta/tests/test_genericprogressiveimagefilereader.cpp
+    foundation/meta/tests/test_half.cpp
     foundation/meta/tests/test_hash.cpp
     foundation/meta/tests/test_iesparser.cpp
     foundation/meta/tests/test_image.cpp
