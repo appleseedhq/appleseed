@@ -42,7 +42,7 @@ namespace renderer
 
 void ShadingRay::MediaList::copy_from(const ShadingRay::MediaList& source)
 {
-    assert(m_medium_count == 0);
+    assert(m_size == 0);
 
     const uint8 n = source.m_size;
 
@@ -58,7 +58,7 @@ void ShadingRay::MediaList::add(
     const Material*                 material,
     const float                     ior)
 {
-    assert(m_medium_count == 0);
+    assert(m_size == 0);
 
     const int8 medium_priority = object_instance->get_medium_priority();
     const uint8 n = source.m_size;
@@ -85,7 +85,7 @@ void ShadingRay::MediaList::remove(
     const ShadingRay::MediaList&    source,
     const ObjectInstance*           object_instance)
 {
-    assert(m_medium_count == 0);
+    assert(m_size == 0);
 
     uint8 j = 0;
 

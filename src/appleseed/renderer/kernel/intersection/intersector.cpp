@@ -406,7 +406,7 @@ void Intersector::make_volume_shading_point(
 #endif
 
     assert(is_normalized(volume_ray.m_dir));
-    assert(volume_ray.get_current_medium() != nullptr);
+    assert(volume_ray.m_media.get_current() != nullptr);
 
     // Context.
     shading_point.m_region_kit_cache = &m_region_kit_cache;
