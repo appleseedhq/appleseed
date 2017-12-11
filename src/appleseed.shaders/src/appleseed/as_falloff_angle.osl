@@ -117,11 +117,11 @@ shader as_falloff_angle
     ]]
 )
 {
-    vector v1 = (in_normalize_input_1)
+    vector v1 = in_normalize_input_1
         ? normalize(in_vector_1)
         : in_vector_1;
 
-    vector v2 = (in_normalize_input_2)
+    vector v2 = in_normalize_input_2
         ? normalize(in_vector_2)
         : in_vector_2;
 
