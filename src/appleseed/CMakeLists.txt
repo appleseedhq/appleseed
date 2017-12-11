@@ -1413,6 +1413,8 @@ set (renderer_modeling_bssrdf_sources
     renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h
     renderer/modeling/bssrdf/oslbssrdf.cpp
     renderer/modeling/bssrdf/oslbssrdf.h
+    renderer/modeling/bssrdf/randomwalkbssrdf.cpp
+    renderer/modeling/bssrdf/randomwalkbssrdf.h
     renderer/modeling/bssrdf/separablebssrdf.cpp
     renderer/modeling/bssrdf/separablebssrdf.h
     renderer/modeling/bssrdf/sss.cpp
