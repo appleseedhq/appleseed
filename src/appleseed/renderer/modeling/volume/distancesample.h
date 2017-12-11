@@ -53,11 +53,12 @@ class DistanceSample
 {
   public:
     // Inputs.
-    const ShadingPoint*             m_shading_point;
+    const ShadingPoint*             m_outgoing_point;
     const ShadingRay*               m_volume_ray;           // ray that is being traced through the volume
     const foundation::Vector3d*	    m_pivot;                // pivot that can be used for better importance sampling 
 
     // Outputs.
+    ShadingPoint*                   m_incoming_point;
     bool                            m_transmitted;          // if ray reached the next surface
     double                          m_distance;             // sampled distance
     float                           m_probability;          // PDF value, defined only if m_transmitted is false

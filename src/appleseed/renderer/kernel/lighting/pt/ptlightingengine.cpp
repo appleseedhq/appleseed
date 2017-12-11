@@ -358,11 +358,6 @@ namespace
                 PathVertex*                 vertex,
                 ShadingPoint*               next_shading_point)
             {
-                m_shading_context.get_intersector().trace(
-                    ray,
-                    *next_shading_point,
-                    vertex->m_shading_point);
-
                 const ShadingRay::Medium* current_medium = ray.m_media.get_current();
                 if (current_medium != nullptr &&
                     current_medium->get_volume() != nullptr)
@@ -373,8 +368,10 @@ namespace
 
                     // Prepare volume for sampling.
                     const Volume* volume = current_medium->get_volume();
-                    void* volume_data = volume->evaluate_inputs(m_shading_context, next_shading_point->get_ray());
-                    volume->prepare_inputs(m_shading_context.get_arena(), next_shading_point->get_ray(), volume_data);
+                    void* volume_data = volume->evaluate_inputs(
+                        m_shading_context, ray);
+                    volume->prepare_inputs(
+                        m_shading_context.get_arena(), ray, volume_data);
                     vertex->m_volume_data = volume_data;
 
                     if (vertex->m_scattering_modes & ScatteringMode::Volume)
@@ -427,8 +424,9 @@ namespace
 
                         // Sample the distance.
                         DistanceSample distance_sample;
-                        distance_sample.m_volume_ray = &next_shading_point->get_ray();
-                        distance_sample.m_shading_point = vertex->m_shading_point;
+                        distance_sample.m_volume_ray = &ray;
+                        distance_sample.m_outgoing_point = vertex->m_shading_point;
+                        distance_sample.m_incoming_point = next_shading_point;
                         distance_sample.m_pivot = pivot_ptr;
                         volume->sample_distance(
                             m_shading_context,
@@ -436,15 +434,11 @@ namespace
                             vertex->m_volume_data,
                             distance_sample);
 
-                        // Update the throughput of the path and create volume shading point if neccessary.
+                        // Update the throughput of the path.
                         vertex->m_throughput *= distance_sample.m_value;
                         if (!distance_sample.m_transmitted)
                         {
                             vertex->m_throughput /= distance_sample.m_probability;
-                            m_shading_context.get_intersector().make_volume_shading_point(
-                                *next_shading_point,
-                                ray,
-                                distance_sample.m_distance);
                         }
 
                         // Assign vertex BSDF.
@@ -454,6 +448,11 @@ namespace
                     }
                     else
                     {
+                        m_shading_context.get_intersector().trace(
+                            ray,
+                            *next_shading_point,
+                            vertex->m_shading_point);
+
                         Spectrum transmission;
                         volume->evaluate_transmission(
                             volume_data,
@@ -462,9 +461,17 @@ namespace
                         vertex->m_throughput *= transmission;
                     }
                 }
-
-                vertex->m_distance += next_shading_point->get_distance();
+                else
+                {
+                    m_shading_context.get_intersector().trace(
+                        ray,
+                        *next_shading_point,
+                        vertex->m_shading_point);
+                }
+                if (next_shading_point->is_valid())
+                    vertex->m_distance += next_shading_point->get_distance();
             }
+
         };
 
         //

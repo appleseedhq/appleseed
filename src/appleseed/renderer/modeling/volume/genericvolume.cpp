@@ -43,6 +43,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -177,9 +178,14 @@ class GenericVolume
         const void*                 data,
         DistanceSample&             sample) const override
     {
-        if (sample.m_pivot != nullptr)
-            sample_distance_combined_sampling(sampling_context, data, sample);
-        else
+        shading_context.get_intersector().trace(
+            *sample.m_volume_ray,
+            *sample.m_incoming_point,
+            sample.m_outgoing_point);
+
+        //if (sample.m_pivot != nullptr)
+        //    sample_distance_combined_sampling(sampling_context, data, sample);
+        // else
             sample_distance_exponential_sampling(sampling_context, data, sample);
 
         const InputValues* values = static_cast<const InputValues*>(data);
@@ -195,6 +201,10 @@ class GenericVolume
                     values->m_scattering[i] / values->m_precomputed.m_extinction[i];
             }
             sample.m_bsdf_data = bsdf_inputs;
+            shading_context.get_intersector().make_volume_shading_point(
+                *sample.m_incoming_point,
+                *sample.m_volume_ray,
+                sample.m_distance);
         }
     }
 
@@ -205,6 +215,7 @@ class GenericVolume
     {
         const InputValues* values = static_cast<const InputValues*>(data);
         const Spectrum& extinction_coef = values->m_precomputed.m_extinction;
+        const ShadingRay& volume_ray = sample.m_incoming_point->get_ray();
 
         sampling_context.split_in_place(1, 2);
 
@@ -218,10 +229,10 @@ class GenericVolume
 
         // Check if the sampled point is a surface point or a point in infinity.
         if (extinction_coef[channel] == 0.0f ||
-            sample.m_volume_ray->is_finite() && sample.m_distance > sample.m_volume_ray->m_tmax)
+            volume_ray.is_finite() && sample.m_distance > volume_ray.m_tmax)
         {
-            sample.m_distance = sample.m_volume_ray->m_tmax;
-            evaluate_transmission(data, *sample.m_volume_ray, sample.m_value);
+            sample.m_distance = volume_ray.m_tmax;
+            evaluate_transmission(data, volume_ray, sample.m_value);
             sample.m_value /= foundation::average_value(sample.m_value);
             sample.m_transmitted = true;
             return;
@@ -258,7 +269,7 @@ class GenericVolume
                 m_mis_heuristic, exponential_prob_mis, equiangular_prob_mis);
 
             sample.m_distance = exponential_sample;
-            evaluate_transmission(data, *sample.m_volume_ray, exponential_sample, sample.m_value);
+            evaluate_transmission(data, volume_ray, exponential_sample, sample.m_value);
             sample.m_value *= mis_weight_channel * mis_weight_distance;
             sample.m_probability = exponential_prob;
             assert(exponential_prob > 0);
@@ -275,16 +286,16 @@ class GenericVolume
             const float equiangular_prob_mis =
                 equiangular_distance_sampler.evaluate(equiangular_sample);
             const float exponential_prob_mis = evaluate_exponential_sample(
-                equiangular_sample, *sample.m_volume_ray, extinction_coef[channel]);
+                equiangular_sample, volume_ray, extinction_coef[channel]);
 
             // Calculate MIS weight for distance sampling.
             sample.m_distance = equiangular_sample;
-            evaluate_transmission(data, *sample.m_volume_ray, equiangular_sample, sample.m_value);
+            evaluate_transmission(data, volume_ray, equiangular_sample, sample.m_value);
             sample.m_value *= 2.0f * mis(m_mis_heuristic, equiangular_prob_mis, exponential_prob_mis);
             assert(equiangular_prob_mis > 0);
             assert(equiangular_sample > 0);
             const float transmission_prob =
-                std::exp(-extinction_coef[channel] * static_cast<float>(sample.m_volume_ray->m_tmax));
+                std::exp(-extinction_coef[channel] * static_cast<float>(volume_ray.m_tmax));
             sample.m_probability = equiangular_prob_mis * (1.0f - transmission_prob);
         }
         sample.m_value *= extinction_coef;
@@ -297,6 +308,7 @@ class GenericVolume
     {
         const InputValues* values = static_cast<const InputValues*>(data);
         const Spectrum& extinction_coef = values->m_precomputed.m_extinction;
+        const ShadingRay& volume_ray = sample.m_incoming_point->get_ray();
 
         sampling_context.split_in_place(1, 2);
 
@@ -310,10 +322,10 @@ class GenericVolume
 
         // Check if the sampled point is a surface point or a point in infinity.
         if (extinction_coef[channel] == 0.0f ||
-            sample.m_volume_ray->is_finite() && sample.m_distance > sample.m_volume_ray->m_tmax)
+            volume_ray.is_finite() && sample.m_distance > volume_ray.m_tmax)
         {
-            sample.m_distance = sample.m_volume_ray->m_tmax;
-            evaluate_transmission(data, *sample.m_volume_ray, sample.m_value);
+            sample.m_distance = volume_ray.m_tmax;
+            evaluate_transmission(data, volume_ray, sample.m_value);
             sample.m_value /= foundation::average_value(sample.m_value);
             sample.m_transmitted = true;
             return;
@@ -330,7 +342,7 @@ class GenericVolume
             extinction_coef, exponential_sample, exponential_probability);
 
         // Compute transmission value for the distance sample.
-        evaluate_transmission(data, *sample.m_volume_ray, exponential_sample, sample.m_value);
+        evaluate_transmission(data, volume_ray, exponential_sample, sample.m_value);
         sample.m_value *= mis_weight_channel;
         // When we compute transmission value for further direction sampling
         // it is multiplied by extinction coefficient;

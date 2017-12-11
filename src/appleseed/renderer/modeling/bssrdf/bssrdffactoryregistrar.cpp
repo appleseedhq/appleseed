@@ -35,6 +35,7 @@
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #include "renderer/modeling/bssrdf/gaussianbssrdf.h"
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
+#include "renderer/modeling/bssrdf/randomwalkbssrdf.h"
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
 
 // appleseed.foundation headers.
@@ -81,6 +82,7 @@ void BSSRDFFactoryRegistrar::reinitialize(const SearchPaths& search_paths)
     register_factory(auto_release_ptr<FactoryType>(new DirectionalDipoleBSSRDFFactory()));
     register_factory(auto_release_ptr<FactoryType>(new GaussianBSSRDFFactory()));
     register_factory(auto_release_ptr<FactoryType>(new NormalizedDiffusionBSSRDFFactory()));
+    register_factory(auto_release_ptr<FactoryType>(new RandomWalkBSSRDFFactory()));
     register_factory(auto_release_ptr<FactoryType>(new StandardDipoleBSSRDFFactory()));
 
     // Register factories defined in plugins.
