@@ -176,7 +176,7 @@ float smootherstep(float edge0, float edge1, float x)
 float smootheststep(float edge0, float edge1, float x)
 {
     x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
-    return x * x * x * x *(x *(x * (-20.0 * x + 70.0) - 84.0) + 35.0);
+    return x * x * x * x * (x * (x * (-20.0 * x + 70.0) - 84.0) + 35.0);
 }
 
 #endif // !AS_PATTERN_HELPERS_H
