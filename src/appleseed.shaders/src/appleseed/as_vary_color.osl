@@ -1,0 +1,314 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/color/as_color_transforms.h"
+#include "appleseed/math/as_math_helpers.h"
+#include "appleseed/transform/as_transform_helpers.h"
+
+shader as_varyColor
+[[
+    string as_maya_node_name = "asVaryColor",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility:swatch/AppleseedRenderSwatch",
+    string help = "Color variation utility shader",
+    string URL = "https://appleseedhq.net",
+    int as_maya_type_id = 0x001279d3
+]]
+(
+    color in_color = color(0)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Input Color",
+        string page = "Color",
+        string help = "Scene-linear input color.",
+        int divider = 1
+    ]],
+    int in_color_mode = 0
+    [[
+        string as_maya_attribute_name = "colorMode",
+        string as_maya_attribute_short_name = "icm",
+        string widget = "mapper",
+        string options = "Add:0|Scale:1|Override:2",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Color Mode",
+        string page = "Color",
+        string help ="Add manifold generated color to input color. Or scale it, or ignore it, setting as output the manifold generated color."
+    ]],
+    int in_manifold_type = 0
+    [[
+        string as_maya_attribute_name = "manifoldType",
+        string as_maya_attribute_short_name = "mty",
+        string widget = "mapper",
+        string options = "Object Name:0|Object Instance Name:1|Assembly Name:2|Assembly Instance Name:3|Face ID:4|String Prefix:5|String Suffix:6|Find String:7",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Type",
+        string page = "Manifold",
+        int divider = 1
+    ]],
+    string in_expression = ""
+    [[
+        string as_maya_attribute_name = "expression",
+        string as_maya_attribute_short_name = "xpr",
+        string widget = "string",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Expression",
+        string page = "Manifold.String",
+        string help = "String expression to search in the object or object instance name"
+    ]],
+    int in_domain = 0
+    [[
+        string as_maya_attribute_name = "domain",
+        string as_maya_attribute_short_name = "dmn",
+        string widget = "mapper",
+        string options = "Object Name:0|Object Instance Name:1|Assembly Name:2|Assembly Instance Name:3",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Domain",
+        string page = "Manifold.String",
+        int divider = 1
+    ]],
+    int in_seed = 0xcafe
+    [[
+        string as_maya_attribute_name = "seed",
+        string as_maya_attribute_short_name = "see",
+        string widget = "number",
+        int min = 0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 0,
+        int gafferNoduleLayoutVisible = 1,
+        string label = "Seed",
+        string page = "Manifold.String"
+    ]],
+    int in_variation_mode = 0
+    [[
+        string as_maya_attribute_name = "variationMode",
+        string as_maya_attribute_short_name = "vmd",
+        string widget = "mapper",
+        string options = "HSV:0|RGB:1|CIE L*a*b* 1976:2",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Variation Mode",
+        string page = "Variation"
+    ]],
+    float in_vary_hue = 0.0
+    [[
+        string as_maya_attribute_name = "varyHue",
+        string as_maya_attribute_short_name = "vhu",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Vary Hue",
+        string page = "Variation.HSV"
+    ]],
+    float in_vary_saturation = 0.0
+    [[
+        string as_maya_attribute_name = "varySaturation",
+        string as_maya_attribute_short_name = "vsa",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Vary Saturation",
+        string page = "Variation.HSV"
+    ]],
+    float in_vary_value = 0.0
+    [[
+        string as_maya_attribute_name = "varyValue",
+        string as_maya_attribute_short_name = "vva",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Vary Value",
+        string page = "Variation.HSV"
+    ]],
+    float in_vary_red = 0.0
+    [[
+        string as_maya_attribute_name = "varyRed",
+        string as_maya_attribute_short_name = "vre",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Vary Red",
+        string page = "Variation.RGB"
+    ]],
+    float in_vary_green = 0.0
+    [[
+        string as_maya_attribute_name = "varyGreen",
+        string as_maya_attribute_short_name = "vgr",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Vary Green",
+        string page = "Variation.RGB"
+    ]],
+    float in_vary_blue = 0.0
+    [[
+        string as_maya_attribute_name = "varyBlue",
+        string as_maya_attribute_short_name = "vbl",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Vary Blue",
+        string page = "Variation.RGB"
+    ]],
+    float in_vary_lstar = 0.0
+    [[
+        string as_maya_attribute_name = "varyLStar",
+        string as_maya_attribute_short_name = "vls",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Vary L*",
+        string page = "Variation.CIE L*a*b* 1976"
+    ]],
+    float in_vary_astar = 0.0
+    [[
+        string as_maya_attribute_name = "varyAStar",
+        string as_maya_attribute_short_name = "vas",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Vary a*",
+        string page = "Variation.CIE L*a*b* 1976"
+    ]],
+    float in_vary_bstar = 0.0
+    [[
+        string as_maya_attribute_name = "varyBStar",
+        string as_maya_attribute_short_name = "vbs",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Vary b*",
+        string page = "Variation.CIE L*a*b* 1976"
+    ]],
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string label = "Output Color"
+    ]],
+    output int out_outHash = 0
+    [[
+        string as_maya_attribute_name = "outHash",
+        string as_maya_attribute_short_name = "osh",
+        string label = "Output Hash"
+    ]],
+    output color out_outID = color(0)
+    [[
+        string as_maya_attribute_name = "outID",
+        string as_maya_attribute_short_name = "oid",
+        string label = "Output ID"
+    ]],
+    output float out_outGreyscale = 0.0
+    [[
+        string as_maya_attribute_name = "outGreyscale",
+        string as_maya_attribute_short_name = "ogr",
+        string label = "Output Greyscale"
+    ]]
+)
+{
+    if (in_color == color(0) && in_color_mode == 1)
+    {
+        out_outColor = color(0); // scaling mode w/input color zero
+        return;
+    }
+
+    compute_id_manifold(
+        in_manifold_type,
+        in_domain,
+        in_seed,
+        in_expression,
+        out_outHash,
+        out_outID,
+        out_outGreyscale);
+    
+    // Input color has a <color model> offset, generated the manifold IDs,
+    // whose offset is scaled on a per-component basis, and can then be
+    // added back to the original color, scale it, or override it.
+
+    color offset_color = out_outID;
+
+    if (in_variation_mode == 0)
+    {
+        color offset_hsv = transform_RGB_to_HSV(offset_color);
+
+        offset_hsv *= color(in_vary_hue, in_vary_saturation, in_vary_value);
+
+        offset_color = transform_HSV_to_RGB(offset_hsv);
+    }
+    else if (in_variation_mode == 1)
+    {
+        offset_color *= color(in_vary_red, in_vary_green, in_vary_blue);
+    }
+    else if (in_variation_mode == 2)
+    {
+        // We have to get the working space RGBW primaries. For now, set
+        // RGB primaries to sRGB|Rec.709, white point to D65.
+        //
+        color CIELAB = transform_linear_RGB_to_Lab(
+            in_color,
+            "Rec.709",
+            "D65");
+
+        CIELAB *= color(in_vary_lstar, in_vary_astar, in_vary_bstar);
+
+        offset_color *= transform_Lab_to_linear_RGB(
+            CIELAB,
+            "Rec.709",
+            "D65");
+    }
+    else
+    {
+#ifdef DEBUG
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+
+        warning("[WARNING]: Invalid variation mode set in %s,\t%s:%d\n",
+                shadername, __FILE__, __LINE__);
+#endif
+    }
+    
+    if (in_color_mode == 0)
+    {
+        out_outColor = in_color + offset_color;
+    }
+    else if (in_color_mode == 1)
+    {
+        out_outColor = in_color * offset_color;
+    }
+    else
+    {
+        out_outColor = offset_color;
+    }
+
+    out_outColor = clamp(out_outColor, color(0), color(1));
+}

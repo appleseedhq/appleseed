@@ -97,6 +97,7 @@ PERCOMP1 (cosh)
 PERCOMP1 (sinh)
 PERCOMP1 (tanh)
 PERCOMP2F (pow)
+PERCOMP2 (pow)
 PERCOMP1 (exp)
 PERCOMP1 (exp2)
 PERCOMP1 (expm1)
@@ -164,6 +165,23 @@ color  mix (color  x, color  y, color  a) BUILTIN;
 color  mix (color  x, color  y, float  a) BUILTIN;
 float  mix (float  x, float  y, float  a) BUILTIN;
 #endif
+closure color mix (closure color x, closure color y, float a) { return x*(1-a) + y*a; }
+closure color mix (closure color x, closure color y, color a) { return x*(1-a) + y*a; }
+
+normal select (normal x, normal y, normal cond) BUILTIN;
+vector select (vector x, vector y, vector cond) BUILTIN;
+point  select (point  x, point  y, point  cond) BUILTIN;
+color  select (color  x, color  y, color  cond) BUILTIN;
+float  select (float  x, float  y, float  cond) BUILTIN;
+normal select (normal x, normal y, float cond) BUILTIN;
+vector select (vector x, vector y, float cond) BUILTIN;
+point  select (point  x, point  y, float cond) BUILTIN;
+color  select (color  x, color  y, float cond) BUILTIN;
+normal select (normal x, normal y, int cond) BUILTIN;
+vector select (vector x, vector y, int cond) BUILTIN;
+point  select (point  x, point  y, int cond) BUILTIN;
+color  select (color  x, color  y, int cond) BUILTIN;
+float  select (float  x, float  y, int cond) BUILTIN;
 int isnan (float x) BUILTIN;
 int isinf (float x) BUILTIN;
 int isfinite (float x) BUILTIN;
@@ -187,8 +205,14 @@ float distance (point a, point b, point q)
 }
 normal normalize (normal v) BUILTIN;
 vector normalize (vector v) BUILTIN;
-vector faceforward (vector N, vector I, vector Nref) BUILTIN;
-vector faceforward (vector N, vector I) BUILTIN;
+vector faceforward (vector N, vector I, vector Nref)
+{
+    return (dot(I, Nref) > 0) ? -N : N;
+}
+vector faceforward (vector N, vector I)
+{
+    return faceforward(N, I, Ng);
+}
 vector reflect (vector I, vector N) { return I - 2*dot(N,I)*N; }
 vector refract (vector I, vector N, float eta) {
     float IdotN = dot (I, N);
@@ -419,6 +443,19 @@ normal step (normal edge, normal x) BUILTIN;
 float step (float edge, float x) BUILTIN;
 float smoothstep (float edge0, float edge1, float x) BUILTIN;
 
+color smoothstep (color edge0, color edge1, color in)
+{
+    return color (smoothstep(edge0[0], edge1[0], in[0]),
+                  smoothstep(edge0[1], edge1[1], in[1]),
+                  smoothstep(edge0[2], edge1[2], in[2]));
+}
+vector smoothstep (vector edge0, vector edge1, vector in)
+{
+    return vector (smoothstep(edge0[0], edge1[0], in[0]),
+                   smoothstep(edge0[1], edge1[1], in[1]),
+                   smoothstep(edge0[2], edge1[2], in[2]));
+}
+
 float linearstep (float edge0, float edge1, float x) {
     float result;
     if (edge0 != edge1) {
@@ -462,6 +499,14 @@ float aastep (float edge, float s) {
     return aastep (edge, s, filterwidth(edge), filterwidth(s));
 }
 
+
+// Noise and related functions
+
+int hash (int u) BUILTIN;
+int hash (float u) BUILTIN;
+int hash (float u, float v) BUILTIN;
+int hash (point p) BUILTIN;
+int hash (point p, float t) BUILTIN;
 
 // Derivatives and area operators
 
@@ -510,6 +555,7 @@ closure color diffuse(normal N) BUILTIN;
 closure color oren_nayar (normal N, float sigma) BUILTIN;
 closure color translucent(normal N) BUILTIN;
 closure color phong(normal N, float exponent) BUILTIN;
+//closure color ward(normal N, vector T,float ax, float ay) BUILTIN;
 closure color microfacet(
     string  distribution,
     normal  N,
@@ -566,7 +612,6 @@ closure color microfacet(
         eta,
         refr);
 }
-
 closure color reflection(normal N, float eta) BUILTIN;
 closure color reflection(normal N) { return reflection (N, 50.0); }
 closure color refraction(normal N, float eta)
@@ -592,9 +637,6 @@ closure color subsurface(float eta, float g, color mfp, color albedo)
 {
     return as_subsurface("better_dipole", N, albedo, mfp, eta);
 }
-
-// Not supported.
-//closure color ward(normal N, vector T,float ax, float ay) BUILTIN;
 
 // Renderer state
 int backfacing () BUILTIN;
