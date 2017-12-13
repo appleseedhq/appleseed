@@ -159,7 +159,7 @@ Dictionary Configuration::get_metadata()
             .insert("values", "pt|sppm")
             .insert("default", "pt")
             .insert("label", "Lighting Engine")
-            .insert("help", "Lighting engine used when rendering")
+            .insert("help", "Light transport engine")
             .insert(
                 "options",
                 Dictionary()
@@ -171,8 +171,8 @@ Dictionary Configuration::get_metadata()
                     .insert(
                         "sppm",
                         Dictionary()
-                            .insert("label", "Progressive Photon Mapping")
-                            .insert("help", "Stochastic progressive photon mapping"))));
+                            .insert("label", "Stochastic Progressive Photon Mapping")
+                            .insert("help", "Stochastic Progressive Photon Mapping"))));
 
     metadata.insert(
         "rendering_threads",

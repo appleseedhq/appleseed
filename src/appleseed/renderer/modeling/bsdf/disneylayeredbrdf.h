@@ -46,6 +46,7 @@
 namespace foundation    { class DictionaryArray; }
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class BaseGroup; }
+namespace renderer      { class BSDFSample; }
 namespace renderer      { class DisneyMaterial; }
 namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class ParamArray; }

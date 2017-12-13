@@ -32,7 +32,9 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/fresnel.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
@@ -204,7 +206,7 @@ namespace
 
                 switch (m_mdf_type)
                 {
-                    case GGX:
+                  case GGX:
                     {
                         const GGXMDF mdf;
                         MicrofacetBRDFHelper::sample(
@@ -222,7 +224,7 @@ namespace
                     }
                     break;
 
-                    case Beckmann:
+                  case Beckmann:
                     {
                         const BeckmannMDF mdf;
                         MicrofacetBRDFHelper::sample(
@@ -240,7 +242,7 @@ namespace
                     }
                     break;
 
-                    case Std:
+                  case Std:
                     {
                         const StdMDF mdf;
                         MicrofacetBRDFHelper::sample(
@@ -255,7 +257,7 @@ namespace
                     }
                     break;
 
-                    assert_otherwise;
+                  assert_otherwise;
                 }
 
                 sample.m_value.m_beauty = sample.m_value.m_glossy;
@@ -310,7 +312,7 @@ namespace
 
             switch (m_mdf_type)
             {
-                case GGX:
+              case GGX:
                 {
                     const GGXMDF mdf;
                     pdf = MicrofacetBRDFHelper::evaluate(
@@ -329,7 +331,7 @@ namespace
                 }
                 break;
 
-                case Beckmann:
+              case Beckmann:
                 {
                     const BeckmannMDF mdf;
                     pdf = MicrofacetBRDFHelper::evaluate(
@@ -348,7 +350,7 @@ namespace
                 }
                 break;
 
-                case Std:
+              case Std:
                 {
                     const StdMDF mdf;
                     pdf = MicrofacetBRDFHelper::evaluate(
@@ -366,7 +368,10 @@ namespace
                 }
                 break;
 
-                assert_otherwise;
+              default:
+                assert(false);
+                pdf = 0.0f;
+                break;
             }
 
             value.m_beauty = value.m_glossy;
@@ -409,7 +414,7 @@ namespace
 
             switch (m_mdf_type)
             {
-                case GGX:
+              case GGX:
                 {
                     const GGXMDF mdf;
                     return MicrofacetBRDFHelper::pdf(
@@ -423,7 +428,7 @@ namespace
                 }
                 break;
 
-                case Beckmann:
+              case Beckmann:
                 {
                     const BeckmannMDF mdf;
                     return MicrofacetBRDFHelper::pdf(
@@ -437,7 +442,7 @@ namespace
                 }
                 break;
 
-                case Std:
+              case Std:
                 {
                     const StdMDF mdf;
                     return MicrofacetBRDFHelper::pdf(
@@ -451,7 +456,9 @@ namespace
                 }
                 break;
 
-                assert_otherwise;
+              default:
+                assert(false);
+                return 0.0f;
             }
         }
 

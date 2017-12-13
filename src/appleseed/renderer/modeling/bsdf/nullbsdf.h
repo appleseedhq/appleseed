@@ -41,6 +41,9 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 
+// Forward declarations.
+namespace renderer  { class BSDFSample; }
+
 namespace renderer
 {
 

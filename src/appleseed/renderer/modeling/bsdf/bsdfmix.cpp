@@ -55,6 +55,7 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
+namespace renderer      { class BSDFSample; }
 namespace renderer      { class ShadingPoint; }
 
 using namespace foundation;
