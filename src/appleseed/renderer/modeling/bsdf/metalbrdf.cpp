@@ -208,7 +208,7 @@ namespace
 
                 switch (m_mdf_type)
                 {
-                    case GGX:
+                  case GGX:
                     {
                         GGXMDF mdf;
                         MicrofacetBRDFHelper::sample(
@@ -226,7 +226,7 @@ namespace
                     }
                     break;
 
-                    case Beckmann:
+                  case Beckmann:
                     {
                         BeckmannMDF mdf;
                         MicrofacetBRDFHelper::sample(
@@ -244,7 +244,7 @@ namespace
                     }
                     break;
 
-                    case Std:
+                  case Std:
                     {
                         StdMDF mdf;
                         MicrofacetBRDFHelper::sample(
@@ -259,7 +259,7 @@ namespace
                     }
                     break;
 
-                    assert_otherwise;
+                  assert_otherwise;
                 }
 
                 sample.m_value.m_beauty = sample.m_value.m_glossy;
@@ -303,7 +303,7 @@ namespace
 
             switch (m_mdf_type)
             {
-                case GGX:
+              case GGX:
                 {
                     GGXMDF mdf;
                     pdf = MicrofacetBRDFHelper::evaluate(
@@ -322,7 +322,7 @@ namespace
                 }
                 break;
 
-                case Beckmann:
+              case Beckmann:
                 {
                     BeckmannMDF mdf;
                     pdf = MicrofacetBRDFHelper::evaluate(
@@ -341,7 +341,7 @@ namespace
                 }
                 break;
 
-                case Std:
+              case Std:
                 {
                     StdMDF mdf;
                     pdf = MicrofacetBRDFHelper::evaluate(
@@ -359,7 +359,10 @@ namespace
                 }
                 break;
 
-                assert_otherwise;
+              default:
+                assert(false);
+                pdf = 0.0f;
+                break;
             }
 
             value.m_beauty = value.m_glossy;
@@ -389,7 +392,7 @@ namespace
 
             switch (m_mdf_type)
             {
-                case GGX:
+              case GGX:
                 {
                     GGXMDF mdf;
                     return MicrofacetBRDFHelper::pdf(
@@ -403,7 +406,7 @@ namespace
                 }
                 break;
 
-                case Beckmann:
+              case Beckmann:
                 {
                     BeckmannMDF mdf;
                     return MicrofacetBRDFHelper::pdf(
@@ -417,7 +420,7 @@ namespace
                 }
                 break;
 
-                case Std:
+              case Std:
                 {
                     StdMDF mdf;
                     return MicrofacetBRDFHelper::pdf(
@@ -431,12 +434,23 @@ namespace
                 }
                 break;
 
-                assert_otherwise;
+              default:
+                assert(false);
+                return 0.0f;
             }
         }
 
       private:
         typedef MetalBRDFInputValues InputValues;
+
+        enum MDFType
+        {
+            GGX = 0,
+            Beckmann,
+            Std
+        };
+
+        MDFType m_mdf_type;
 
         template <typename MDF>
         static void add_energy_compensation_term(
@@ -470,15 +484,6 @@ namespace
                     values->m_energy_compensation * values->m_reflectance_multiplier * fms);
             }
         }
-
-        enum MDFType
-        {
-            GGX = 0,
-            Beckmann,
-            Std
-        };
-
-        MDFType m_mdf_type;
     };
 
     typedef BSDFWrapper<MetalBRDFImpl> MetalBRDF;

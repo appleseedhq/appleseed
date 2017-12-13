@@ -352,8 +352,6 @@ namespace
             const Vector3f wi = basis.transform_to_local(incoming);
             const Vector3f wo = basis.transform_to_local(outgoing);
 
-            float pdf;
-
             if (wi.y * wo.y >= 0.0f)
             {
                 // Reflection.
