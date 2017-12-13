@@ -35,6 +35,7 @@ shader as_create_mask
     string as_maya_node_name = "asCreateMask",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility:swatch/AppleseedRenderSwatch",
     string help = "Creates a greyscale mask from an input color or grey value.",
+    string icon = "asCreateMask",
     int as_maya_type_id = 0x001279e1
 ]]
 (

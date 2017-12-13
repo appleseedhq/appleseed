@@ -31,6 +31,7 @@ shader as_globals
     string as_maya_node_name = "asGlobals",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility:swatch/AppleseedRenderSwatch",
     string help = "OSL global variables.",
+    string icon = "asGlobals.png",
     int as_maya_type_id = 0x001279ef
 ]]
 (

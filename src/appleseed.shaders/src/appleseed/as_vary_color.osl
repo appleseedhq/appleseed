@@ -35,7 +35,7 @@ shader as_varyColor
     string as_maya_node_name = "asVaryColor",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility:swatch/AppleseedRenderSwatch",
     string help = "Color variation utility shader",
-    string URL = "https://appleseedhq.net",
+    string icon = "asVaryColor.png",
     int as_maya_type_id = 0x001279d3
 ]]
 (

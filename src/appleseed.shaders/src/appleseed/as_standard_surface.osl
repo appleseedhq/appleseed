@@ -34,6 +34,7 @@ shader as_standard_surface
     string as_maya_node_name = "asStandardSurface",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
     string help = "Standard Surface Shader",
+    string icon = "asStandardSurface",
     int as_maya_type_id = 0x001279d4
 ]]
 (
