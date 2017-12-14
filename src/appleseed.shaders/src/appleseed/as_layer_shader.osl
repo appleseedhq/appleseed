@@ -1,0 +1,316 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+shader as_layer_shader
+[[
+    string as_maya_node_name = "asLayerShader",
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
+    string help = "Shader layering node.",
+    string icon = "asLayerShader.png",
+    int as_maya_type_id = 0x001279dd
+]]
+(
+    closure color in_color = 0
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Layer 0",
+        string page = "Layers"
+    ]],
+    float in_weight = 1.0
+    [[
+        string as_maya_attribute_name = "weight",
+        string as_maya_attribute_short_name = "w",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Layer 0 Weight",
+        string page = "Layers"
+    ]],
+    int in_layer_visibility = 1
+    [[
+        string as_maya_attribute_name = "layerVisibility",
+        string as_maya_attribute_short_name = "lv",
+        string widget = "checkBox",
+        string label = "Layer 0 Visibility",
+        string page = "Layers",
+        int divider = 1,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    closure color in_color1 = 0
+    [[
+        string as_maya_attribute_name = "color1",
+        string as_maya_attribute_short_name = "c1",
+        string label = "Layer 1",
+        string page = "Layers"
+    ]],
+    float in_weight1 = 1.0
+    [[
+        string as_maya_attribute_name = "weight1",
+        string as_maya_attribute_short_name = "w1",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Layer 1 Weight",
+        string page = "Layers"
+    ]],
+    int in_layer_visibility1 = 0
+    [[
+        string as_maya_attribute_name = "layerVisibility1",
+        string as_maya_attribute_short_name = "lv1",
+        string widget = "checkBox",
+        string label = "Layer 1 Visibility",
+        string page = "Layers",
+        int divider = 1,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],  
+    closure color in_color2 = 0
+    [[
+        string as_maya_attribute_name = "color2",
+        string as_maya_attribute_short_name = "c2",
+        string label = "Layer 2",
+        string page = "Layers"
+    ]],
+    float in_weight2 = 1.0
+    [[
+        string as_maya_attribute_name = "weight2",
+        string as_maya_attribute_short_name = "w2",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Layer 2 Weight",
+        string page = "Layers"
+    ]],
+    int in_layer_visibility2 = 0
+    [[
+        string as_maya_attribute_name = "layerVisibility2",
+        string as_maya_attribute_short_name = "lv2",
+        string widget = "checkBox",
+        string label = "Layer 2 Visibility",
+        string page = "Layers",
+        int divider = 2,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    closure color in_color3 = 0
+    [[
+        string as_maya_attribute_name = "color3",
+        string as_maya_attribute_short_name = "c3",
+        string label = "Layer 3",
+        string page = "Layers"
+    ]],
+    float in_weight3 = 1.0
+    [[
+        string as_maya_attribute_name = "weight3",
+        string as_maya_attribute_short_name = "w3",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Layer 3 Weight",
+        string page = "Layers"
+    ]],
+    int in_layer_visibility3 = 0
+    [[
+        string as_maya_attribute_name = "layerVisibility3",
+        string as_maya_attribute_short_name = "lv3",
+        string widget = "checkBox",
+        string label = "Layer 3 Visibility",
+        string page = "Layers",
+        int divider = 3,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    closure color in_color4 = 0
+    [[
+        string as_maya_attribute_name = "color4",
+        string as_maya_attribute_short_name = "c4",
+        string label = "Layer 4",
+        string page = "Layers"
+    ]],
+    float in_weight4 = 1.0
+    [[
+        string as_maya_attribute_name = "weight4",
+        string as_maya_attribute_short_name = "w4",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Layer 4 Weight",
+        string page = "Layers"
+    ]],
+    int in_layer_visibility4 = 0
+    [[
+        string as_maya_attribute_name = "layerVisibility4",
+        string as_maya_attribute_short_name = "lv4",
+        string widget = "checkBox",
+        string label = "Layer 4 Visibility",
+        string page = "Layers",
+        int divider = 4,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    closure color in_color5 = 0
+    [[
+        string as_maya_attribute_name = "color5",
+        string as_maya_attribute_short_name = "c5",
+        string label = "Layer 5",
+        string page = "Layers"
+    ]],
+    float in_weight5 = 1.0
+    [[
+        string as_maya_attribute_name = "weight5",
+        string as_maya_attribute_short_name = "w5",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Layer 5 Weight",
+        string page = "Layers"
+    ]],
+    int in_layer_visibility5 = 0
+    [[
+        string as_maya_attribute_name = "layerVisibility5",
+        string as_maya_attribute_short_name = "lv5",
+        string widget = "checkBox",
+        string label = "Layer 5 Visibility",
+        string page = "Layers",
+        int divider = 5,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]], 
+    closure color in_color6 = 0
+    [[
+        string as_maya_attribute_name = "color6",
+        string as_maya_attribute_short_name = "c6",
+        string label = "Layer 6",
+        string page = "Layers"
+    ]],
+    float in_weight6 = 1.0
+    [[
+        string as_maya_attribute_name = "weight6",
+        string as_maya_attribute_short_name = "w6",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Layer 6 Weight",
+        string page = "Layers"
+    ]],
+    int in_layer_visibility6 = 0
+    [[
+        string as_maya_attribute_name = "layerVisibility6",
+        string as_maya_attribute_short_name = "lv6",
+        string widget = "checkBox",
+        string label = "Layer 6 Visibility",
+        string page = "Layers",
+        int divider = 6,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]], 
+    closure color in_color7 = 0
+    [[
+        string as_maya_attribute_name = "color7",
+        string as_maya_attribute_short_name = "c7",
+        string label = "Layer 7",
+        string page = "Layers"
+    ]],
+    float in_weight7 = 1.0
+    [[
+        string as_maya_attribute_name = "weight7",
+        string as_maya_attribute_short_name = "w7",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Layer 7 Weight",
+        string page = "Layers"
+    ]],
+    int in_layer_visibility7 = 0
+    [[
+        string as_maya_attribute_name = "layerVisibility7",
+        string as_maya_attribute_short_name = "lv7",
+        string widget = "checkBox",
+        string label = "Layer 7 Visibility",
+        string page = "Layers",
+        int divider = 7,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+
+    output closure color out_color = 0
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string widget = "null",
+        string label = "Output"
+    ]]
+)
+{
+    closure color result = 0;
+
+    if (in_layer_visibility)
+    {
+        result += in_weight * in_color;
+    }
+    if (in_layer_visibility1)
+    {
+        result = mix(result, in_color1, in_weight1);
+    }
+    if (in_layer_visibility2)
+    {
+        result = mix(result, in_color2, in_weight2);
+    }
+    if (in_layer_visibility3)
+    {
+        result = mix(result, in_color3, in_weight3);
+    }
+    if (in_layer_visibility4)
+    {
+        result = mix(result, in_color4, in_weight4);
+    }
+    if (in_layer_visibility5)
+    {
+        result = mix(result, in_color5, in_weight5);
+    }
+    if (in_layer_visibility6)
+    {
+        result = mix(result, in_color6, in_weight6);
+    }
+    if (in_layer_visibility7)
+    {
+        result = mix(result, in_color7, in_weight7);
+    }
+
+    out_color = result;
+}

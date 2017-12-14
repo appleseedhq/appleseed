@@ -33,6 +33,7 @@ shader as_disney_material
     string as_maya_node_name = "asDisneyMaterial",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
     string help = "Disney material",
+    string icon = "asDisneyMaterial.png",
     int as_maya_type_id = 0x001279c3
 ]]
 (

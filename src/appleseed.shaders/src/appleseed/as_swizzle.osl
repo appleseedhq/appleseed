@@ -31,6 +31,7 @@ shader as_swizzle
     string as_maya_node_name = "asSwizzle",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility:swatch/AppleseedRenderSwatch",
     string help = "RGBA or vector swizzle node.",
+    string icon = "asSwizzle.png",
     int as_maya_type_id = 0x001279f2
 ]]
 (
