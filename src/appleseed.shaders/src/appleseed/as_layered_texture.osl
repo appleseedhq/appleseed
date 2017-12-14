@@ -1,0 +1,468 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/color/as_color_helpers.h"
+
+shader as_layered_texture
+[[
+    string as_maya_node_name = "asLayeredTexture",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility:swatch/AppleseedRenderSwatch",
+    string help = "Double shading node.",
+    int as_maya_type_id = 0x001279de
+]]
+(
+    color in_color = color(0)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Layer 0",
+        string page = "Color",
+        string help = "Layer 0 color, or base layer."
+    ]],
+    float in_alpha = 1.0
+    [[
+        string as_maya_attribute_name = "alpha",
+        string as_maya_attribute_short_name = "a",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Layer 0 Alpha",
+        string page = "Color"
+    ]],
+    int in_visibility = 1
+    [[
+        string as_maya_attribute_name = "visibility",
+        string as_maya_attribute_short_name = "v0",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Layer 0 Visible",
+        string page = "Color",
+        int divider = 1
+    ]],
+    color in_color1 = color(0)
+    [[
+        string as_maya_attribute_name = "color1",
+        string as_maya_attribute_short_name = "c1",
+        string label = "Layer 1",
+        string page = "Color"
+    ]],
+    float in_alpha1 = 0.0
+    [[
+        string as_maya_attribute_name = "alpha1",
+        string as_maya_attribute_short_name = "w1",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Layer 1 Alpha",
+        string page = "Color"
+    ]],
+    int in_blend_mode1 = 0
+    [[
+        string as_maya_attribute_name = "blendMode1",
+        string as_maya_attribute_short_name = "bm1",
+        string widget = "mapper",
+        string options = "Mix:0|Add:1|Subtract:2|Multiply:3|Divide:4",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int label = "Layer 1 Blend Mode",
+        string page = "Color"
+    ]],
+    int in_visibility1 = 1
+    [[
+        string as_maya_attribute_name = "visibility1",
+        string as_maya_attribute_short_name = "v1",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Layer 1 Visible",
+        string page = "Color",
+        int divider = 1
+    ]], 
+    color in_color2 = color(0)
+    [[
+        string as_maya_attribute_name = "color2",
+        string as_maya_attribute_short_name = "c2",
+        string label = "Layer 2",
+        string page = "Color"
+    ]],
+    float in_alpha2 = 0.0
+    [[
+        string as_maya_attribute_name = "alpha2",
+        string as_maya_attribute_short_name = "w2",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Layer 2 Alpha",
+        string page = "Color"
+    ]],
+    int in_blend_mode2 = 0
+    [[
+        string as_maya_attribute_name = "blendMode2",
+        string as_maya_attribute_short_name = "bm2",
+        string widget = "mapper",
+        string options = "Mix:0|Add:1|Subtract:2|Multiply:3|Divide:4",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int label = "Layer 2 Blend Mode",
+        string page = "Color"
+    ]],
+    int in_visibility2 = 1
+    [[
+        string as_maya_attribute_name = "visibility2",
+        string as_maya_attribute_short_name = "v2",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Layer 2 Visible",
+        string page = "Color",
+        int divider = 1
+    ]],   
+    color in_color3 = color(0)
+    [[
+        string as_maya_attribute_name = "color3",
+        string as_maya_attribute_short_name = "c3",
+        string label = "Layer 3",
+        string page = "Color"
+    ]],
+    float in_alpha3 = 0.0
+    [[
+        string as_maya_attribute_name = "alpha3",
+        string as_maya_attribute_short_name = "w3",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Layer 3 Alpha",
+        string page = "Color"
+    ]],
+    int in_blend_mode3 = 0
+    [[
+        string as_maya_attribute_name = "blendMode3",
+        string as_maya_attribute_short_name = "bm3",
+        string widget = "mapper",
+        string options = "Mix:0|Add:1|Subtract:3|Multiply:3|Divide:4",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int label = "Layer 3 Blend Mode",
+        string page = "Color"
+    ]],
+    int in_visibility3 = 1
+    [[
+        string as_maya_attribute_name = "visibility3",
+        string as_maya_attribute_short_name = "v3",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Layer 3 Visible",
+        string page = "Color",
+        int divider = 1
+    ]], 
+    color in_color4 = color(0)
+    [[
+        string as_maya_attribute_name = "color4",
+        string as_maya_attribute_short_name = "c4",
+        string label = "Layer 4",
+        string page = "Color"
+    ]],
+    float in_alpha4 = 0.0
+    [[
+        string as_maya_attribute_name = "alpha4",
+        string as_maya_attribute_short_name = "w4",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Layer 4 Alpha",
+        string page = "Color"
+    ]],
+    int in_blend_mode4 = 0
+    [[
+        string as_maya_attribute_name = "blendMode4",
+        string as_maya_attribute_short_name = "bm4",
+        string widget = "mapper",
+        string options = "Mix:0|Add:1|Subtract:4|Multiply:3|Divide:4",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int label = "Layer 4 Blend Mode",
+        string page = "Color"
+    ]],
+    int in_visibility4 = 1
+    [[
+        string as_maya_attribute_name = "visibility4",
+        string as_maya_attribute_short_name = "v4",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Layer 4 Visible",
+        string page = "Color",
+        int divider = 1
+    ]], 
+    color in_color5 = color(0)
+    [[
+        string as_maya_attribute_name = "color5",
+        string as_maya_attribute_short_name = "c5",
+        string label = "Layer 5",
+        string page = "Color"
+    ]],
+    float in_alpha5 = 0.0
+    [[
+        string as_maya_attribute_name = "alpha5",
+        string as_maya_attribute_short_name = "w5",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Layer 5 Alpha",
+        string page = "Color"
+    ]],
+    int in_blend_mode5 = 0
+    [[
+        string as_maya_attribute_name = "blendMode5",
+        string as_maya_attribute_short_name = "bm5",
+        string widget = "mapper",
+        string options = "Mix:0|Add:1|Subtract:5|Multiply:3|Divide:4",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int label = "Layer 5 Blend Mode",
+        string page = "Color"
+    ]],
+    int in_visibility5 = 1
+    [[
+        string as_maya_attribute_name = "visibility5",
+        string as_maya_attribute_short_name = "v5",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Layer 5 Visible",
+        string page = "Color",
+        int divider = 1
+    ]],
+    color in_color6 = color(0)
+    [[
+        string as_maya_attribute_name = "color6",
+        string as_maya_attribute_short_name = "c6",
+        string label = "Layer 6",
+        string page = "Color"
+    ]],
+    float in_alpha6 = 0.0
+    [[
+        string as_maya_attribute_name = "alpha6",
+        string as_maya_attribute_short_name = "w6",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Layer 6 Alpha",
+        string page = "Color"
+    ]],
+    int in_blend_mode6 = 0
+    [[
+        string as_maya_attribute_name = "blendMode6",
+        string as_maya_attribute_short_name = "bm6",
+        string widget = "mapper",
+        string options = "Mix:0|Add:1|Subtract:6|Multiply:3|Divide:4",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int label = "Layer 6 Blend Mode",
+        string page = "Color"
+    ]],
+    int in_visibility6 = 1
+    [[
+        string as_maya_attribute_name = "visibility6",
+        string as_maya_attribute_short_name = "v6",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Layer 6 Visible",
+        string page = "Color",
+        int divider = 1
+    ]], 
+    color in_color7 = color(0)
+    [[
+        string as_maya_attribute_name = "color7",
+        string as_maya_attribute_short_name = "c7",
+        string label = "Layer 7",
+        string page = "Color"
+    ]],
+    float in_alpha7 = 0.0
+    [[
+        string as_maya_attribute_name = "alpha7",
+        string as_maya_attribute_short_name = "w7",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Layer 7 Alpha",
+        string page = "Color"
+    ]],
+    int in_blend_mode7 = 0
+    [[
+        string as_maya_attribute_name = "blendMode7",
+        string as_maya_attribute_short_name = "bm7",
+        string widget = "mapper",
+        string options = "Mix:0|Add:1|Subtract:7|Multiply:3|Divide:4",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int label = "Layer 7 Blend Mode",
+        string page = "Color"
+    ]],
+    int in_visibility7 = 1
+    [[
+        string as_maya_attribute_name = "visibility7",
+        string as_maya_attribute_short_name = "v7",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Layer 7 Visible",
+        string page = "Color",
+        int divider = 1
+    ]],
+    int in_clamp_output = 1
+    [[
+        string as_maya_attribute_name = "clampOutput",
+        string as_maya_attribute_short_name = "cla",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int label = "Clamp Output",
+        string page = "Color",
+        string help = "Clamp the output to the [0,1] range, since some operations might cause values to exceed this."
+    ]],
+
+    output color out_color = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string widget = "null",
+        string label = "Output Color"
+    ]]      
+)
+{
+    color tex0 = in_visibility * in_color;
+    float alpha = in_visibiluty * in_alpha;
+
+    if (in_visibility1)
+    {
+        tex0 = texture_blend(
+            tex0,
+            alpha,
+            in_color1,
+            in_alpha1,
+            in_blend_mode1,
+            in_clamp_output,
+            out_layer_alpha);
+    }
+    if (in_visibility2)
+    {
+        tex0 = texture_blend(
+            tex0,
+            out_layer_alpha,
+            in_color2,
+            in_alpha2,
+            in_blend_mode2,
+            in_clamp_output,
+            out_layer_alpha);
+    }
+    if (in_visibility3)
+    {
+        tex0 = texture_blend(
+            tex0,
+            out_layer_alpha,
+            in_color3,
+            in_alpha3,
+            in_blend_mode3,
+            in_clamp_output,
+            out_layer_alpha);
+    }
+    if (in_visibility4)
+    {
+        tex0 = texture_blend(
+            tex0,
+            out_layer_alpha,
+            in_color4,
+            in_alpha4,
+            in_blend_mode4,
+            in_clamp_output,
+            out_layer_alpha);
+    }
+    if (in_visibility5)
+    {
+        tex0 = texture_blend(
+            tex0,
+            out_layer_alpha,
+            in_color5,
+            in_alpha5,
+            in_blend_mode5,
+            in_clamp_output,
+            out_layer_alpha);
+    }
+    if (in_visibility6)
+    {
+        tex0 = texture_blend(
+            tex0,
+            out_layer_alpha,
+            in_color6,
+            in_alpha6,
+            in_blend_mode6,
+            in_clamp_output,
+            out_layer_alpha);
+    }
+    if (in_visibility7)
+    {
+        tex0 = texture_blend(
+            tex0,
+            out_layer_alpha
+            in_color7,
+            in_alpha7,
+            in_blend_mode7,
+            in_clamp_output,
+            out_layer_alpha);
+    }
+
+    out_color = tex0;
+}
