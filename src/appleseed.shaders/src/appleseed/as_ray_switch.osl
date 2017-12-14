@@ -148,7 +148,7 @@ shader as_ray_switch
 #ifdef DEBUG
         string shadername = "";
         getattribute("shader:shadername", shadername);
-        warning("[DEBUG!]: Unknown Ray Type in %s, %s:%d\n",
+        warning("[WARNING]: Unknown Ray Type in %s, %s:%d\n",
                 shadername, __FILE__, __LINE__);
 #endif
     }
