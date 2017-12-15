@@ -159,6 +159,9 @@ namespace
     public:
         template <typename MDF>
         explicit AlbedoTable(const MDF& mdf)
+            : TableSize(32)
+            , TableHeight(33)
+            , SampleCount(1024)
         {
             m_albedo_table = new float[TableSize * TableHeight];
             m_avg_table = m_albedo_table + TableSize * TableSize;
@@ -255,9 +258,9 @@ namespace
         }
 
     private:
-        const size_t    TableSize = 32;
-        const size_t    TableHeight = 33;
-        const size_t    SampleCount = 1024;
+        const size_t    TableSize;
+        const size_t    TableHeight;
+        const size_t    SampleCount;
 
         float*          m_albedo_table;
         float*          m_avg_table;
