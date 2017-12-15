@@ -67,8 +67,13 @@ APPLESEED_DECLARE_INPUT_VALUES(RandomWalkBSSRDFInputValues)
     float           m_mfp_multiplier;
     float           m_ior;
     float           m_fresnel_weight;
+    float           m_zero_scattering_weight;
+    float           m_single_scattering_weight;
+    float           m_multiple_scattering_weight;
 
-    GenericVolumeInputValues m_volume_data;
+    Spectrum        m_albedo;
+    Spectrum        m_extinction;
+    Spectrum        m_scattering;
 };
 
 

@@ -41,11 +41,13 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/sampling/mappings.h"
+#include "foundation/math/rr.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
 
+#include "foundation/math/cdf.h"
 // Standard headers.
 #include <algorithm>
 #include <cstddef>
@@ -92,9 +94,11 @@ namespace
             m_inputs.declare("mfp_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("ior", InputFormatFloat);
             m_inputs.declare("fresnel_weight", InputFormatFloat, "1.0");
+            m_inputs.declare("zero_scattering_weight", InputFormatFloat, "1.0");
+            m_inputs.declare("single_scattering_weight", InputFormatFloat, "1.0");
+            m_inputs.declare("multiple_scattering_weight", InputFormatFloat, "1.0");
 
             const string volume_name = string(name) + "_volume";
-            m_volume = GenericVolumeFactory().create(volume_name.c_str(), ParamArray()).release();
 
             const string brdf_name = string(name) + "_brdf";
             m_brdf = LambertianBRDFFactory().create(brdf_name.c_str(), ParamArray()).release();
@@ -125,8 +129,6 @@ namespace
             RandomWalkBSSRDFInputValues* values =
                 static_cast<RandomWalkBSSRDFInputValues*>(data);
 
-            new (&values->m_volume_data) GenericVolumeInputValues();
-
             // Apply multipliers to input values.
             values->m_reflectance *= values->m_reflectance_multiplier;
             values->m_mfp *= values->m_mfp_multiplier;
@@ -135,22 +137,57 @@ namespace
             clamp_in_place(values->m_reflectance, 0.001f, 0.999f);
             clamp_low_in_place(values->m_mfp, 1.0e-6f);
 
-            // Precompute scaling factor. 
             for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
             {
+                // Compute single-scattering albedo from multiple-scattering albedo.
                 const float albedo = albedo_from_reflectance(values->m_reflectance[i]);
+
+                // Compute extinction coefficient.
                 const float s = normalized_diffusion_s_mfp(values->m_reflectance[i]);
                 const float extinction = rcp(values->m_mfp[i] * s);
 
-                values->m_volume_data.m_precomputed.m_extinction[i] = extinction;
-                values->m_volume_data.m_scattering[i] = albedo * extinction;
-                values->m_volume_data.m_absorption[i] = (1.0f - albedo) * extinction;
+                values->m_albedo[i] = albedo;
+                values->m_extinction[i] = extinction;
+                values->m_scattering[i] = albedo * extinction;
             }
         }
 
         static float albedo_from_reflectance(const float r)
         {
             return 1.0f - exp(r * (-5.09406f + r * (2.61188f - 4.31805f * r)));
+        }
+
+        static bool test_rr(
+            SamplingContext&    sampling_context,
+            BSSRDFSample&       bssrdf_sample)
+        {
+            // Generate a uniform sample in [0,1).
+            sampling_context.split_in_place(1, 1);
+            const float s = sampling_context.next2<float>();
+
+            // Compute the probability of extending this path.
+            const float scattering_prob =
+                std::min(max_value(bssrdf_sample.m_value), 0.99f);
+
+            // Russian Roulette.
+            if (!pass_rr(scattering_prob, s))
+                return false;
+
+            // Adjust throughput to account for terminated paths.
+            assert(scattering_prob > 0.0f);
+            bssrdf_sample.m_value /= scattering_prob;
+
+            return true;
+        }
+
+        static void channel_mis(const Spectrum& pdf, Spectrum& values)
+        {
+            float avg_value = 0.0f;
+            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+            {
+                avg_value += pdf[i] * values[i];
+            }
+            if (avg_value > 0.0f) values /= avg_value;
         }
 
         bool sample(
@@ -179,17 +216,6 @@ namespace
                 outgoing_point.get_ray().m_depth + 1
             );
 
-            ShadingPoint shading_points[2];
-            int next_shading_point_idx = 0;
-
-            DistanceSample distance_sample;
-            distance_sample.m_pivot = nullptr;
-            distance_sample.m_outgoing_point = &outgoing_point;
-            distance_sample.m_incoming_point = &shading_points[next_shading_point_idx];
-            distance_sample.m_incoming_point->clear();
-            distance_sample.m_volume_ray = &ray;
-            distance_sample.m_transmitted = false;
-
             // Initialize BSSRDF value.
             bssrdf_sample.m_value.set(1.0f);
             bssrdf_sample.m_probability = 1.0f;
@@ -197,53 +223,91 @@ namespace
             // Do random walk until we reach the surface from inside.
             int n_iteration = 0;
             const int MaxIterationsCount = 64;
-            while (!distance_sample.m_transmitted)
+            const int MinRRIteration = 8;
+            while (true)
             {
-                if (++n_iteration > MaxIterationsCount) break;
+                if (++n_iteration > MaxIterationsCount)
+                    return false;   // path got lost inside the object
 
-                m_volume->sample_distance(
-                    shading_context,
-                    sampling_context,
-                    &values->m_volume_data,
-                    distance_sample);
+                if (n_iteration > MinRRIteration && !test_rr(sampling_context, bssrdf_sample))
+                    return false;   // sample has not passed Rusian Roulette test
 
-                assert(distance_sample.m_incoming_point->is_valid());
+                sampling_context.split_in_place(1, 2);
 
-                if (!distance_sample.m_transmitted)
+                // Choose a channel.
+                Spectrum cdf, pdf;
+                build_cdf_and_pdf(bssrdf_sample.m_value, cdf, pdf);
+                const float s_channel = sampling_context.next2<float>();
+                const size_t channel = sample_cdf(&cdf[0], &cdf[0] + cdf.size(), s_channel);
+                if (values->m_scattering[channel] == 0.0f ||
+                    bssrdf_sample.m_value[channel] == 0.0f)
                 {
-                    bssrdf_sample.m_value *= values->m_volume_data.m_scattering;
-                    bssrdf_sample.m_value /= values->m_volume_data.m_precomputed.m_extinction;
-
-                    // Find next random-walk direction using isotropic scattering.
-                    sampling_context.split_in_place(2, 1);
-                    const Vector2d s = sampling_context.next2<Vector2d>();
-                    ray = ShadingRay(
-                        shading_points[next_shading_point_idx].get_point(),
-                        sample_sphere_uniform(s),
-                        outgoing_point.get_time(),
-                        VisibilityFlags::ShadowRay,
-                        outgoing_point.get_ray().m_depth + 1
-                    );
-                    distance_sample.m_value.set(1.0f);
-                    distance_sample.m_volume_ray = &ray;
-
-                    // Update shading points.
-                    next_shading_point_idx = 1 - next_shading_point_idx;
-                    distance_sample.m_outgoing_point = distance_sample.m_incoming_point;
-                    distance_sample.m_incoming_point = &shading_points[next_shading_point_idx];
-                    distance_sample.m_incoming_point->clear();
+                    bssrdf_sample.m_value.set(0.0f);
+                    return false; // path got lost inside the object
                 }
+
+                // Sample distance exponentially, assuming that the ray is infinite.
+                const float s_distance = sampling_context.next2<float>();
+                const float distance = sample_exponential_distribution(
+                    s_distance, values->m_extinction[channel]);
+                assert(distance > 0.0f && !isnan(distance) && !isinf(distance));
+                ray.m_tmax = distance;
+
+                // Trace ray up to the sampled distance.
+                bssrdf_sample.m_incoming_point.clear();
+                shading_context.get_intersector().trace(
+                    ray,
+                    bssrdf_sample.m_incoming_point,
+                    n_iteration == 1 ? &outgoing_point : nullptr);
+
+                // Stop random walk in case we crossed the surface.
+                if (bssrdf_sample.m_incoming_point.hit_surface())
+                {
+                    const float distance = static_cast<float>(
+                        bssrdf_sample.m_incoming_point.get_distance());
+                    Spectrum transmission;
+                    for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+                    {
+                        const float x = -distance * values->m_extinction[i];
+                        assert(FP<float>::is_finite(x));
+                        transmission[i] = std::exp(x);
+                    }
+                    channel_mis(pdf, transmission);
+                    bssrdf_sample.m_value *= transmission;
+                    break;
+                }
+
+                // Compute transmission value for the distance sample.
+                Spectrum transmission;
+                for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+                {
+                    transmission[i] = exponential_distribution_pdf(distance, values->m_extinction[i]);
+                }
+                channel_mis(pdf, transmission);
+                bssrdf_sample.m_value *= transmission;
+                bssrdf_sample.m_value *= values->m_albedo;
+
+                // Find next random-walk direction using isotropic scattering.
+                sampling_context.split_in_place(2, 1);
+                const Vector2d s_direction = sampling_context.next2<Vector2d>();
+                ray = ShadingRay(
+                    ray.point_at(distance),
+                    sample_sphere_uniform(s_direction),
+                    outgoing_point.get_time(),
+                    VisibilityFlags::ShadowRay,
+                    ray.m_depth + 1
+                );
             }
 
-            if (!distance_sample.m_transmitted)
-            {
-                bssrdf_sample.m_value.set(0.0f);
-                return false; // path got lost inside the object
-            }
+            if (n_iteration == 1)
+                bssrdf_sample.m_value *= values->m_zero_scattering_weight;
+            else if (n_iteration == 2)
+                bssrdf_sample.m_value *= values->m_single_scattering_weight;
+            else
+                bssrdf_sample.m_value *= values->m_multiple_scattering_weight;
 
             bssrdf_sample.m_brdf = m_brdf;
             bssrdf_sample.m_brdf_data = &m_brdf_data;
-            bssrdf_sample.m_incoming_point = *distance_sample.m_incoming_point;
             bssrdf_sample.m_incoming_point.flip_side();
 
             // Sample the BSDF at the incoming point.
@@ -276,7 +340,6 @@ namespace
             throw ExceptionNotImplemented();
         }
 
-        const Volume* m_volume;
         const BSDF*                     m_brdf;
         LambertianBRDFInputValues       m_brdf_data;
     };
@@ -394,6 +457,54 @@ DictionaryArray RandomWalkBSSRDFFactory::get_input_metadata() const
                     .insert("type", "hard"))
             .insert("use", "optional")
             .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+        .insert("name", "zero_scattering_weight")
+        .insert("label", "Zero Scattering Weight")
+        .insert("type", "numeric")
+        .insert("min",
+            Dictionary()
+            .insert("value", "0.0")
+            .insert("type", "hard"))
+        .insert("max",
+            Dictionary()
+            .insert("value", "1.0")
+            .insert("type", "hard"))
+        .insert("use", "optional")
+        .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+        .insert("name", "single_scattering_weight")
+        .insert("label", "Single Scattering Weight")
+        .insert("type", "numeric")
+        .insert("min",
+            Dictionary()
+            .insert("value", "0.0")
+            .insert("type", "hard"))
+        .insert("max",
+            Dictionary()
+            .insert("value", "1.0")
+            .insert("type", "hard"))
+        .insert("use", "optional")
+        .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+        .insert("name", "multiple_scattering_weight")
+        .insert("label", "Multiple Scattering Weight")
+        .insert("type", "numeric")
+        .insert("min",
+            Dictionary()
+            .insert("value", "0.0")
+            .insert("type", "hard"))
+        .insert("max",
+            Dictionary()
+            .insert("value", "1.0")
+            .insert("type", "hard"))
+        .insert("use", "optional")
+        .insert("default", "1.0"));
 
     return metadata;
 }
