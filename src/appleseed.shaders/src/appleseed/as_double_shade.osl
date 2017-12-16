@@ -29,7 +29,7 @@
 shader as_double_shade
 [[
     string as_maya_node_name = "asDoubleShade",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility:swatch/AppleseedRenderSwatch",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string help = "Double shading node.",
     string icon = "asDoubleShade.png",
     int as_maya_type_id = 0x001279db
@@ -55,7 +55,7 @@ shader as_double_shade
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
         string label = "Output Color"
-    ]]      
+    ]]
 )
 {
     out_color = backfacing() ? in_color2 : in_color;

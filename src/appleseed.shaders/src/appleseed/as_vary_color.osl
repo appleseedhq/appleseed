@@ -33,7 +33,7 @@
 shader as_varyColor
 [[
     string as_maya_node_name = "asVaryColor",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility:swatch/AppleseedRenderSwatch",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string help = "Color variation utility shader",
     string icon = "asVaryColor.png",
     int as_maya_type_id = 0x001279d3
@@ -250,7 +250,7 @@ shader as_varyColor
         out_outHash,
         out_outID,
         out_outGreyscale);
-    
+
     // Input color has a <color model> offset, generated the manifold IDs,
     // whose offset is scaled on a per-component basis, and can then be
     // added back to the original color, scale it, or override it.
@@ -296,7 +296,7 @@ shader as_varyColor
                 shadername, __FILE__, __LINE__);
 #endif
     }
-    
+
     if (in_color_mode == 0)
     {
         out_outColor = in_color + offset_color;

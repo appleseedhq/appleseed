@@ -31,7 +31,7 @@
 shader as_falloff_angle
 [[
     string as_maya_node_name = "asFalloffAngle",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility:swatch/AppleseedRenderSwatch",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string help = "Double shading node.",
     string icon = "asFalloffAngle",
     int as_maya_type_id = 0x001279f7

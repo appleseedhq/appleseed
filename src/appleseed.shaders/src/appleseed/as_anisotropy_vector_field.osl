@@ -29,7 +29,7 @@
 shader as_anisotropy_vector_field
 [[
     string as_maya_node_name = "asAnisotropyVectorField",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility:swatch/AppleseedRenderSwatch",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string help = "Anisotropy vector field node.",
     string icon = "asAnisotropyVectorField.png",
     int as_maya_type_id = 0x001278e0
@@ -136,7 +136,7 @@ shader as_anisotropy_vector_field
         string as_maya_attribute_name = "anisotropyVector",
         string as_maya_attribute_short_name = "av",
         string label = "Anisotropy Vector"
-    ]]     
+    ]]
 )
 {
     normal Nn = normalize(in_surface_normal);
@@ -150,14 +150,14 @@ shader as_anisotropy_vector_field
             point(0),
             point(Nn));
     }
-    
+
     if (isconnected(in_color))
     {
         vector vector_map = normalize((vector) in_color * 2.0 - 1.0);
 
         tangent = normalize(
             vector_map[0] * Tn +
-            vector_map[1] * Bn + 
+            vector_map[1] * Bn +
             vector_map[2] * Nn);
     }
 

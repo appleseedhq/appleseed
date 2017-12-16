@@ -29,7 +29,7 @@
 shader as_space_transform
 [[
     string as_maya_node_name = "asSpaceTransform",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility:swatch/AppleseedRenderSwatch",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string help = "Coordinate system transform node.",
     string icon = "asSpaceTransform.png",
     int as_maya_type_id = 0x001279f0

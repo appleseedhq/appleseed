@@ -31,7 +31,7 @@
 shader as_id_manifold
 [[
     string as_maya_node_name = "asIdManifold",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility:swatch/AppleseedRenderSwatch",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string help = "ID manifold utility shader",
     string icon = "asIdManifold",
     int as_maya_type_id = 0x001279d9

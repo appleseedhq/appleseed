@@ -29,7 +29,7 @@
 shader as_ray_switch
 [[
     string as_maya_node_name = "asRaySwitch",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility:swatch/AppleseedRenderSwatch",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string help = "Ray switch utility node.",
     string icon = "asRaySwitch.png",
     int as_maya_type_id = 0x001279dc
@@ -104,7 +104,7 @@ shader as_ray_switch
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
         string label = "Output Color"
-    ]]      
+    ]]
 )
 {
     if (raytype("camera"))
