@@ -258,6 +258,16 @@ color Rec2020_OETF(color value, int bitdepth)
         Rec2020_OETF(value[2], bitdepth));
 }
 
+color Rec2020_EOTF(color value)
+{
+    return Rec2020_EOTF(value, 12);
+}
+
+color Rec2020_OETF(color value)
+{
+    return Rec2020_OETF(value, 12);
+}
+
 //
 // Reference:
 //

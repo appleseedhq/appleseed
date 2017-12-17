@@ -60,18 +60,21 @@ color transform_color_space_to_Rec709(
     {
         transformed_color = sRGB_EOTF(input_color);
     }
-    else if (color_space == "scene-linear Rec 709/sRGB")
+    else if (color_space == "scene-linear Rec 709/sRGB" ||
+             color_space == "sRGB/Rec.709")
     {
         transformed_color = input_color;
     }
-    else if (color_space == "scene-linear Rec 2020")
+    else if (color_space == "scene-linear Rec 2020" ||
+             color_space == "Rec.2020")
     {
         transformed_color = color(
             dot(vector(REC2020_TO_REC709_X), v_color),
             dot(vector(REC2020_TO_REC709_Y), v_color),
             dot(vector(REC2020_TO_REC709_Z), v_color));
     }
-    else if (color_space == "scene-linear DCI-P3")
+    else if (color_space == "scene-linear DCI-P3" ||
+             color_space == "DCI-P3")
     {
         transformed_color = color(
             dot(vector(DCIP3_TO_REC709_X), v_color),
@@ -94,7 +97,7 @@ color transform_color_space_to_Rec709(
     {
         transformed_color = gamma_CCTF(input_color, REC709_GAMMA);
     }
-    else if (color_space == "ACES2065-1")
+    else if (color_space == "ACES2065-1" || color_space == "ACES")
     {
         transformed_color = color(
             dot(vector(ACES_TO_REC709_X), v_color),
@@ -142,18 +145,21 @@ color transform_color_space_to_Rec2020(
             dot(vector(REC709_TO_REC2020_Y), v_color),
             dot(vector(REC709_TO_REC2020_Z), v_color));
     }
-    else if (color_space == "scene-linear Rec 709/sRGB")
+    else if (color_space == "scene-linear Rec 709/sRGB" ||
+             color_space == "sRGB/Rec.709")
     {
         transformed_color = color(
             dot(vector(REC709_TO_REC2020_X), v_color),
             dot(vector(REC709_TO_REC2020_Y), v_color),
             dot(vector(REC709_TO_REC2020_Z), v_color));
     }
-    else if (color_space == "scene-linear Rec 2020")
+    else if (color_space == "scene-linear Rec 2020" ||
+             color_space == "Rec.2020")
     {
         transformed_color = input_color;
     }
-    else if (color_space == "scene-linear DCI-P3")
+    else if (color_space == "scene-linear DCI-P3" ||
+             color_space == "DCI-P3")
     {
         transformed_color = color(
             dot(vector(DCIP3_TO_REC2020_X), v_color),
@@ -181,7 +187,7 @@ color transform_color_space_to_Rec2020(
     else if (color_space == "gamma 2.2 Rec 709")
     {
         v_color = (vector) gamma_CCTF(input_color, 2.2);
-
+                             i
         transformed_color = color(
             dot(vector(REC709_TO_REC2020_X), v_color),
             dot(vector(REC709_TO_REC2020_Y), v_color),
@@ -196,7 +202,7 @@ color transform_color_space_to_Rec2020(
             dot(vector(REC709_TO_REC2020_Y), v_color),
             dot(vector(REC709_TO_REC2020_Z), v_color));
     }
-    else if (color_space == "ACES2065-1")
+    else if (color_space == "ACES2065-1" || color_space == "ACES")
     {
         transformed_color = color(
             dot(vector(ACES_TO_REC2020_X), v_color),
@@ -244,21 +250,24 @@ color transform_color_space_to_DCIP3(
             dot(vector(REC709_TO_DCIP3_Y), v_color),
             dot(vector(REC709_TO_DCIP3_Z), v_color));
     }
-    else if (color_space == "scene-linear Rec 709/sRGB")
+    else if (color_space == "scene-linear Rec 709/sRGB" ||
+             color_space == "sRGB/Rec.709")
     {
         transformed_color = color(
             dot(vector(REC709_TO_DCIP3_X), v_color),
             dot(vector(REC709_TO_DCIP3_Y), v_color),
             dot(vector(REC709_TO_DCIP3_Z), v_color));
     }
-    else if (color_space == "scene-linear Rec 2020")
+    else if (color_space == "scene-linear Rec 2020" ||
+             color_space == "Rec.2020")
     {
         transformed_color = color(
             dot(vector(REC2020_TO_DCIP3_X), v_color),
             dot(vector(REC2020_TO_DCIP3_Y), v_color),
             dot(vector(REC2020_TO_DCIP3_Z), v_color));
     }
-    else if (color_space == "scene-linear DCI-P3")
+    else if (color_space == "scene-linear DCI-P3" ||
+             color_space == "DCI-P3")
     {
         transformed_color = input_color;
     }
@@ -298,7 +307,7 @@ color transform_color_space_to_DCIP3(
             dot(vector(REC709_TO_DCIP3_Y), v_color),
             dot(vector(REC709_TO_DCIP3_Z), v_color));
     }
-    else if (color_space == "ACES2065-1")
+    else if (color_space == "ACES2065-1" || color_space == "ACES")
     {
         transformed_color = color(
             dot(vector(ACES_TO_DCIP3_X), v_color),
@@ -346,21 +355,24 @@ color transform_color_space_to_ACES(
             dot(vector(REC709_TO_ACES_Y), v_color),
             dot(vector(REC709_TO_ACES_Z), v_color));
     }
-    else if (color_space == "scene-linear Rec 709/sRGB")
+    else if (color_space == "scene-linear Rec 709/sRGB" ||
+             color_space == "sRGB/Rec.709")
     {
         transformed_color = color(
             dot(vector(REC709_TO_ACES_X), v_color),
             dot(vector(REC709_TO_ACES_Y), v_color),
             dot(vector(REC709_TO_ACES_Z), v_color));
     }
-    else if (color_space == "scene-linear Rec 2020")
+    else if (color_space == "scene-linear Rec 2020" ||
+             color_space == "Rec.2020")
     {
         transformed_color = color(
             dot(vector(REC2020_TO_ACES_X), v_color),
             dot(vector(REC2020_TO_ACES_Y), v_color),
             dot(vector(REC2020_TO_ACES_Z), v_color));
     }
-    else if (color_space == "scene-linear DCI-P3")
+    else if (color_space == "scene-linear DCI-P3" ||
+             color_space == "DCI-P3")
     {
         transformed_color = color(
             dot(vector(DCIP3_TO_ACES_X), v_color),
@@ -403,7 +415,7 @@ color transform_color_space_to_ACES(
             dot(vector(REC709_TO_ACES_Y), v_color),
             dot(vector(REC709_TO_ACES_Z), v_color));
     }
-    else if (color_space == "ACES2065-1")
+    else if (color_space == "ACES2065-1" || color_space == "ACES")
     {
         transformed_color = input_color;
     }
@@ -448,21 +460,24 @@ color transform_color_space_to_ACEScg(
             dot(vector(REC709_TO_ACESCG_Y), v_color),
             dot(vector(REC709_TO_ACESCG_Z), v_color));
     }
-    else if (color_space == "scene-linear Rec 709/sRGB")
+    else if (color_space == "scene-linear Rec 709/sRGB" ||
+             color_space == "sRGB/Rec.709")
     {
         transformed_color = color(
             dot(vector(REC709_TO_ACESCG_X), v_color),
             dot(vector(REC709_TO_ACESCG_Y), v_color),
             dot(vector(REC709_TO_ACESCG_Z), v_color));
     }
-    else if (color_space == "scene-linear Rec 2020")
+    else if (color_space == "scene-linear Rec 2020" ||
+             color_space == "Rec.2020")
     {
         transformed_color = color(
             dot(vector(REC2020_TO_ACESCG_X), v_color),
             dot(vector(REC2020_TO_ACESCG_Y), v_color),
             dot(vector(REC2020_TO_ACESCG_Z), v_color));
     }
-    else if (color_space == "scene-linear DCI-P3")
+    else if (color_space == "scene-linear DCI-P3" ||
+             color_space == "DCI-P3")
     {
         transformed_color = color(
             dot(vector(DCIP3_TO_ACESCG_X), v_color),
@@ -505,7 +520,7 @@ color transform_color_space_to_ACEScg(
             dot(vector(REC709_TO_ACESCG_Y), v_color),
             dot(vector(REC709_TO_ACESCG_Z), v_color));
     }
-    else if (color_space == "ACES2065-1")
+    else if (color_space == "ACES2065-1" || color_space == "ACES")
     {
         transformed_color = color(
             dot(vector(ACES_TO_ACESCG_X), v_color),
@@ -537,19 +552,22 @@ color transform_colorspace_to_workingspace(
 {
     color C;
 
-    if (working_space == "scene-linear Rec 709/sRGB")
+    if (working_space == "scene-linear Rec 709/sRGB" ||
+        working_space == "sRGB/Rec.709")
     {
         C = transform_color_space_to_Rec709(input_color, color_space);
     }
-    else if (working_space == "scene-linear Rec 2020")
+    else if (working_space == "scene-linear Rec 2020" ||
+             working_space == "Rec.2020")
     {
         C = transform_color_space_to_Rec2020(input_color, color_space);
     }
-    else if (working_space == "scene-linear DCI-P3")
+    else if (working_space == "scene-linear DCI-P3" ||
+             working_space == "DCI-P3")
     {
         C = transform_color_space_to_DCIP3(input_color, color_space);
     }
-    else if (working_space == "ACES2065-1")
+    else if (working_space == "ACES2065-1" || working_space == "ACES")
     {
         C = transform_color_space_to_ACES(input_color, color_space);
     }

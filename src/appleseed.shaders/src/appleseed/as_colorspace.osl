@@ -1,0 +1,620 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/color/as_chromatic_adaptation.h"
+#include "appleseed/color/as_transfer_functions.h"
+#include "appleseed/maya/as_maya_cms_syncolor_idt.h"
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/texture/as_texture_helpers.h"
+
+shader as_color_space
+[[
+    string as_maya_node_name = "asColorSpace",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string help = "Color space utility node",
+    string icon = "asColorSpace.png",
+    int as_maya_type_id = 0x001279cf
+]]
+(
+    color in_color = color(0)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Default Color",
+        string page = "Texture",
+        string help = "Default Fill color to use if the texture lookup fails."
+    ]],
+    int in_eotf = 1
+    [[
+        string as_maya_attribute_name = "optoElectronicTransferFunction",
+        string as_maya_attribute_short_name = "oet",
+        string label = "Input Transfer Function",
+        string page = "Color Management",
+        string widget = "mapper",
+        string options = "None (scene-linear):0|sRGB:1|Rec.709:2|Gamma 2.2:3|Gamma 2.4:4|Gamma 2.6 (DCI):5|Rec.2020:6",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Transfer function of the ingested material, refers to the Opto-Electronic Transfer Function required to transform the input into scene-linear values."
+    ]],
+    
+    int in_rgb_primaries = 0
+    [[
+        string as_maya_attribute_name = "rgbPrimaries",
+        string as_maya_attribute_short_name = "rgb",
+        string label = "RGB primaries",
+        string page = "Color Management",
+        string widget = "mapper",
+        string options =
+        "sRGB/Rec.709:0|AdobeRGB:1:Rec.2020:2|DCI-P3:3|ACEScg:4|User-set CIE xy:5",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "RGB primaries, or uset-set CIE xy chromaticity coordinates for a custom set of RGB primaries."
+    ]],
+    float in_CIExy_red[2] = {0.640, 0.330}
+    [[
+        string as_maya_attribute_name = "chromaticityCoordsR",
+        string as_maya_attribute_short_name = "pr",
+        int as_maya_attribute_keyable = 0,
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Red CIE xy Coords",
+        string page = "Color Management.RGB Primaries"
+    ]],
+    float in_CIExy_green[2] = {0.300, 0.600}
+    [[
+        string as_maya_attribute_name = "chromaticityCoordsG",
+        string as_maya_attribute_short_name = "pg",
+        int as_maya_attribute_keyable = 0,
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Green CIE xy Coords",
+        string page = "Color Management.RGB Primaries"
+    ]],
+    float in_CIExy_blue[2] = {0.150, 0.060}
+    [[
+        string as_maya_attribute_name = "chromaticityCoordsB",
+        string as_maya_attribute_short_name = "pb",
+        int as_maya_attribute_keyable = 0,
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Blue CIE xy Coords",
+        string page = "Color Management.RGB Primaries",
+        int divider = 1
+    ]],
+    int in_illuminants = 1
+    [[
+        string as_maya_attribute_name = "illuminants",
+        string as_maya_attribute_short_name = "ii",
+        string widget = "mapper",
+        string options = "Standard Illuminant D60:0|Standard Illuminant D65:1|DCI White Point:2|Correlated Color Temperature:3|WP Chromaticity Coordinates:4",
+        string label = "Illuminants",
+        string page = "Color Management.Illuminants",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Preset illuminants, correlated color temperature or explicit white point CIE xy chromaticity coordinates.",
+        int divider = 1
+    ]],
+    int in_color_temperature = 6504
+    [[
+        string as_maya_attribute_name = "colorTemperature",
+        string as_maya_attribute_short_name = "ct",
+        int as_maya_attribute_keyable = 0,
+        int min = 1667,
+        int max = 25000,
+        string label = "Color Temperature",
+        string page = "Color Management.Illuminants"
+    ]],
+    float in_CIExy_white[2] = {0.3127, 0.329}
+    [[
+        string as_maya_attribute_name = "chromaticityCoordsW",
+        string as_maya_attribute_short_name = "pw",
+        int as_maya_attribute_keyable = 0,
+        float min = 0.0,
+        float max = 1.0,
+        string label = "White-Point CIE xy Coords",
+        string page = "Color Management.Illuminants"
+    ]],    
+
+    int in_workingspace_rgb_primaries = 0
+    [[
+        string as_maya_attribute_name = "rgbPrimaries",
+        string as_maya_attribute_short_name = "rgb",
+        string label = "RGB primaries",
+        string page = "Color Management",
+        string widget = "mapper",
+        string options = "sRGB/Rec.709:0|Rec.2020:1|P3:2|ACEScg:3|User-set CIE xy:4",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "RGB primaries, or uset-set CIE xy chromaticity coordinates for a custom set of RGB primaries."
+    ]],
+    float in_workingspace_CIExy_red[2] = {0.640, 0.330}
+    [[
+        string as_maya_attribute_name = "wsChromaticityCoordsR",
+        string as_maya_attribute_short_name = "pr",
+        int as_maya_attribute_keyable = 0,
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Red CIE xy Coords",
+        string page = "Color Management.RGB Primaries"
+    ]],
+    float in_workingspace_CIExy_green[2] = {0.300, 0.600}
+    [[
+        string as_maya_attribute_name = "wsChromaticityCoordsG",
+        string as_maya_attribute_short_name = "pg",
+        int as_maya_attribute_keyable = 0,
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Green CIE xy Coords",
+        string page = "Color Management.RGB Primaries"
+    ]],
+    float in_workingspace_CIExy_blue[2] = {0.150, 0.060}
+    [[
+        string as_maya_attribute_name = "wsChromaticityCoordsB",
+        string as_maya_attribute_short_name = "pb",
+        int as_maya_attribute_keyable = 0,
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Blue CIE xy Coords",
+        string page = "Color Management.RGB Primaries",
+        int divider = 1
+    ]],
+    int in_workingspace_illuminants = 0
+    [[
+        string as_maya_attribute_name = "illuminants",
+        string as_maya_attribute_short_name = "ii",
+        string widget = "mapper",
+        string options = "Standard Illuminant D60:0|Standard Illuminant D65:1|DCI White Point:2",
+        string label = "Illuminants",
+        string page = "Color Management.Illuminants.Rendering Space",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Preset illuminants, correlated color temperature or explicit white point CIE xy chromaticity coordinates.",
+        int divider = 1
+    ]],
+    int in_workingspace_color_temperature = 6504
+    [[
+        string as_maya_attribute_name = "colorTemperature",
+        string as_maya_attribute_short_name = "ct",
+        int as_maya_attribute_keyable = 0,
+        int min = 1667,
+        int max = 25000,
+        string label = "Color Temperature",
+        string page = "Color Management.Illuminants.Rendering Space"
+    ]],
+    float in_workingspace_CIExy_white[2] = {0.3127, 0.329}
+    [[
+        string as_maya_attribute_name = "wsChromaticityCoordsW",
+        string as_maya_attribute_short_name = "pw",
+        int as_maya_attribute_keyable = 0,
+        float min = 0.0,
+        float max = 1.0,
+        string label = "White-Point CIE xy Coords",
+        string page = "Color Management.Illuminants.Rendering Space"
+    ]],
+    output color out_color = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string widget = "null"
+    ]],
+    output matrix out_CIEXYZ_to_RGB_matrix = matrix(1)
+    [[
+        string as_maya_attribute_name = "outCieXyzToRgbMatrix",
+        string as_maya_attribute_short_name = "oxm",
+        string widget = "null"
+    ]],
+    output matrix out_RGB_to_CIEXYZ_matrix = matrix(1)
+    [[
+        string as_maya_attribute_name = "outRgbToCieXyzMatrix",
+        string as_maya_attribute_short_name = "orm",
+        string widget = "null"
+    ]]
+)
+{
+    if (max(out_color) > EPS)
+    {
+        color linearized_color = color(0);
+
+        if (in_eotf == 0)
+        {
+            linearized_color = out_color;
+        }
+        else if (in_eotf == 1)
+        {
+            linearized_color = sRGB_EOTF(out_color);
+        }
+        else if (in_eotf == 2)
+        {
+            linearized_color == Rec709_EOTF(out_color);
+        }
+        else if (in_eotf == 3)
+        {
+            linearized_color == gamma_CCTF(out_color, 2.2);
+        }
+        else if (in_eotf == 4)
+        {
+            linearized_color == gamma_CCTF(out_color, 2.4);
+        }
+        else if (in_eotf == 5)
+        {
+            linearized_color == gamma_CCTF(out_color, DCIP3_GAMMA);
+        }
+        else if (in_eotf == 6)
+        {
+            linearized_color == Rec2020_EOTF(out_color);
+        }
+        else
+        {
+            linearized_color = color(0);
+
+#ifdef DEBUG
+            string shadername = "";
+            getattribute("shader:shadername", shadername);
+            warning("[WARNING!]: Unknown EOTF mode %d, in %s, %s:%d\n",
+                    in_eotf, shadername, __FILE__, __LINE__);
+#endif
+        }
+
+        // assuming ingested material was in [0,1]
+        // if not, we need to check extension (i.e, *.hdr, *.exr), and 
+        // bitdepth, encoding (int, float, half-float), and transform to a
+        // log representation, before applying the color xform, then expanding
+        // back.
+
+        color RGBW[4];
+
+        if (in_rgb_primaries == 0)
+
+
+
+
+
+        color RGBW[4];
+
+        if (in_rgb_primaries == 0)
+        {
+            space = "Rec.709";
+        }
+        else if (in_rgb_primaries == 1)
+        {
+            space = "AdobeRGB";
+        }
+        else if (in_rgb_primaries == 2)
+        {
+            space = "Rec.2020";
+        }
+        else if (in_rgb_primaries == 3)
+        {
+            space = "DCI-P3";
+        }
+        else if (in_rgb_primaries == 4)
+        {
+            space = "ACEScg";
+        }
+        else
+        {
+            space = "custom_primaries";
+
+            RGBW[0] = transform_xyY_to_XYZ(
+                color(in_CIExy_red[0], in_CIExy_red[1], 1.0));
+
+            RGBW[1] = transform_xyY_to_XYZ(
+                color(in_CIExy_green[0], in_CIExy_green[1], 1.0));
+
+            RGBW[2] = transform_xyY_to_XYZ(
+                color(in_CIExy_blue[0], in_CIExy_blue[1], 1.0));
+        }
+
+        string illuminant = "", ws_illuminant = "";
+
+        if (in_illuminant == 0)
+        {
+            illuminant = "D65";
+        }
+        else if (in_illuminant == 1)
+        {
+            illuminant = "D60";
+        }
+        else if (in_illuminant == 2)
+        {
+            illuminant == "DCI"
+        }
+        else if (in_illuminant == 3)
+        {
+            float cct_CIExy[2];
+
+            get_xy_from_CCT_Kang(in_color_temperature, cct_CIExy);
+
+            RGBW[3] = transform_xyY_to_XYZ(
+                color(cct_CIExy[0], cct_CIExy[1], cct_CIExy[2]));
+        }
+        else
+        {
+            RGBW[3] = transform_xyY_to_XYZ(
+                color(in_CIExy_white[0], in_CIExy_white[1], 1.0));
+        }
+
+        if (in_workingspace_illuminant == 0)
+        {
+            ws_illuminant = "D65";
+        }
+        else if (in_illuminant == 1)
+        {
+            illumi
+
+        // Apply chromatic adaptation if the white points differ.
+
+        if (in_illuminant != in_workingspace_illuminant)
+        {
+            vector source_wp = vector(RGBW[3][0], RGBW[3][1], RGBW[3][2]);
+            vector target_wp = vector(toRGBW[3][0], toRGBW[3][1], toRGBW[3][2]);
+        }
+
+        matrix M = inverse(matrix(
+            RGBW[0][0], RGBW[1][0], RGBW[2][0], 0.0,
+            RGBW[0][1], RGBW[1][1], RGBW[2][1], 0.0,
+            RGBW[0][2], RGBW[1][2], RGBW[2][2], 0.0,
+            0.0, 0.0, 0.0, 1.0));
+
+        float Sr = M[0][0] * RGBW[3][0] +
+                   M[0][1] * RGBW[3][1] +
+                   M[0][2] * RGBW[3][2];
+
+        float Sg = M[1][0] * RGBW[3][0] +
+                   M[1][1] * RGBW[3][1] +
+                   M[1][2] * RGBW[3][2];
+
+        float Sb = M[2][0] + RGBW[3][0] +
+                   M[2][1] + RGBW[3][1] +
+                   M[2][2] + RGBW[3][2];
+
+        // XYZ->RGB matrix would be
+        //
+        // |SrXr SgXg SbXb|
+        // |SrYr SgYg SbYb|
+        // |SrZr SgZg SbZb|
+        //
+        // but we only want the Y coefficients.
+        
+        coeffs = color(Sr * RGBW[0][1],
+                       Sg * RGBW[1][1],
+                       Sb * RGBW[2][1]);                     
+
+
+
+
+
+
+
+        color coeffs;
+
+        if (in_deriveFromMayaCMS)
+        {
+            if (!in_colorManagementEnabled)
+            {
+                // CMS is off, default to Rec.709 fallback.
+                coeffs = color(REC709_D65_LUMINANCE_COEFFS);
+            }
+            else
+            {
+                if (in_workingSpace == "ACES2065-1")
+                {
+                    coeffs = color(ACES_D60_LUMINANCE_COEFFS);
+                }
+                else if (in_workingSpace == "ACEScg")
+                {
+                    coeffs = color(ACESCG_D60_LUMINANCE_COEFFS);
+                }
+                else if (in_workingSpace == "scene-linear Rec 2020")
+                {
+                    coeffs = color(REC2020_D65_LUMINANCE_COEFFS);
+                }
+                else if (in_workingSpace == "scene-linear DCI-P3")
+                {
+                    coeffs = color(DCIP3_DCI_LUMINANCE_COEFFS);
+                }
+                else if (in_workingSpace == "scene-linear Rec 709/sRGB")
+                {
+                    coeffs = color(REC709_D65_LUMINANCE_COEFFS);
+                }
+                else
+                {
+                    coeffs = color(0);
+#ifdef DEBUG
+                    string shadername = "";
+                    getattribute("shader:shadername", shadername);
+
+                    warning("[WARNING]:Invalid Maya renderspace in %s, %s:%i\n",
+                            shadername, __FILE__, __LINE__);
+#endif
+                }
+            }
+        }
+        else
+        {
+            if (in_inputColorSpace == 5)
+            {
+                color RGBW[4]; // explicit R,G,B,W chromaticity coordinates
+
+                RGBW[0] = transform_xyY_to_XYZ(
+                    color(in_chromaticityCoordsR[0],
+                          in_chromaticityCoordsR[1],
+                          1.0));
+
+                RGBW[1] = transform_xyY_to_XYZ(
+                    color(in_chromaticityCoordsG[0],
+                          in_chromaticityCoordsG[1],
+                          1.0));
+
+                RGBW[2] = transform_xyY_to_XYZ(
+                    color(in_chromaticityCoordsB[0],
+                          in_chromaticityCoordsB[1],
+                          1.0));
+
+                if (in_inputIlluminants < 6)
+                {
+                    string illuminant = "";
+
+                    if (in_inputIlluminants == 0)
+                    {
+                        illuminant = "D50";
+                    }
+                    else if (in_inputIlluminants == 1)
+                    {
+                        illuminant = "D55";
+                    }
+                    else if (in_inputIlluminants == 2)
+                    {
+                        illuminant = "D60";
+                    }
+                    else if (in_inputIlluminants == 3)
+                    {
+                        illuminant = "D65";
+                    }
+                    else if (in_inputIlluminants == 4)
+                    {
+                        illuminant = "D75";
+                    }
+                    else if (in_inputIlluminants == 5)
+                    {
+                        illuminant = "DCI";
+                    }
+
+                    RGBW[3] = get_illuminant_XYZ(illuminant);
+                }
+                else if (in_inputIlluminants == 6)
+                {
+                    RGBW[3] = transform_xyY_to_XYZ(
+                        color(ILLUMINANT_E_WHITEPOINT_xy, 1.0));
+                }
+                else if (in_inputIlluminants == 7)
+                {
+                    // Convert from CCT to xy chromaticity coordinates.
+
+                    if (in_colorTemperature != 6504) // D65
+                    {
+                        RGBW[3] = transform_xyY_to_XYZ(
+                            color(D65_WHITEPOINT_CIE1931_2DEG_xy, 1.0));
+                    }
+                    else
+                    {
+                        float Tc_xy[2];
+
+                        get_xy_from_CCT_Kang(in_colorTemperature, Tc_xy);
+
+                        RGBW[3] = transform_xyY_to_XYZ(
+                            color(Tc_xy[0], Tc_xy[1], 1.0));
+                    }
+                }
+                else
+                {
+                    // Explicit white point xy chromaticity coordinates.
+
+                    RGBW[3] = transform_xyY_to_XYZ(
+                        color(in_chromaticityCoordsW[0],
+                              in_chromaticityCoordsW[1],
+                              1.0));
+                }
+
+                matrix M = inverse(matrix(
+                    RGBW[0][0], RGBW[1][0], RGBW[2][0], 0.0,
+                    RGBW[0][1], RGBW[1][1], RGBW[2][1], 0.0,
+                    RGBW[0][2], RGBW[1][2], RGBW[2][2], 0.0,
+                    0, 0, 0, 1));
+
+                float Sr = M[0][0] * RGBW[4][0] +
+                           M[0][1] * RGBW[4][1] +
+                           M[0][2] * RGBW[4][2];
+
+                float Sg = M[1][0] * RGBW[4][0] +
+                           M[1][1] * RGBW[4][1] +
+                           M[1][2] * RGBW[4][2];
+
+                float Sb = M[2][0] * RGBW[4][0] +
+                           M[2][1] * RGBW[4][1] +
+                           M[2][2] * RGBW[4][2];
+
+                // XYZ->RGB matrix would be
+                //
+                // |SrXr SgXg SbXb|
+                // |SrYr SgYg SbYb|
+                // |SrZr SgZg SbZb|
+                //
+                // but we only want the Y coefficients.
+
+                coeffs = color(Sr * RGBW[0][1],
+                               Sg * RGBW[1][1],
+                               Sb * RGBW[2][1]);
+            }
+            else
+            {
+                if (in_inputColorSpace == 0)
+                {
+                    coeffs = color(ACES_D60_LUMINANCE_COEFFS);
+                }
+                else if (in_inputColorSpace == 1)
+                {
+                    coeffs = color(ACESCG_D60_LUMINANCE_COEFFS);
+                }
+                else if (in_inputColorSpace == 2)
+                {
+                    coeffs = color(REC2020_D65_LUMINANCE_COEFFS);
+                }
+                else if (in_inputColorSpace == 3)
+                {
+                    coeffs = color(DCIP3_DCI_LUMINANCE_COEFFS);
+                }
+                else if (in_inputColorSpace == 4)
+                {
+                    coeffs = color(REC709_D65_LUMINANCE_COEFFS);
+                }
+                else
+                {
+                    coeffs = color(0);
+                }
+            }
+        }
+        out_result = coeffs[0] * in_color[0] +
+                     coeffs[1] * in_color[1] +
+                     coeffs[2] * in_color[2];
+    }
+    else
+    {
+        out_result = 0.0;
+    }
+}

@@ -422,6 +422,7 @@ source_group ("src\\maya" FILES
 set (src_appleseed_sources
      src/appleseed/as_anisotropy_vector_field.osl
      src/appleseed/as_attributes.osl
+     src/appleseed/as_blackbody.osl
      src/appleseed/as_color_transform.osl
      src/appleseed/as_create_mask.osl
      src/appleseed/as_disney_material.osl
@@ -441,7 +442,9 @@ set (src_appleseed_sources
      src/appleseed/as_standard_surface.osl
      src/appleseed/as_subsurface.osl
      src/appleseed/as_swizzle.osl
+     src/appleseed/as_triplanar.osl
      src/appleseed/as_vary_color.osl
+     src/appleseed/as_vary_texture.osl
      src/appleseed/as_voronoi2d.osl
      src/appleseed/as_voronoi3d.osl
 )

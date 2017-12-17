@@ -68,7 +68,7 @@ shader as_luminance
         int divider = 1,
         int gafferNoduleLayoutVisible = 0
     ]],
-    float in_chromaticityCoordsR[2] = {0.317, 0.329}
+    float in_chromaticityCoordsR[2] = {0.640, 0.330}
     [[
         string as_maya_attribute_name = "chromaticityCoordsR",
         string as_maya_attribute_short_name = "pr",
@@ -78,7 +78,7 @@ shader as_luminance
         string label = "R xy Coordinates",
         string page = "Color Space.RGB Primaries"
     ]],
-    float in_chromaticityCoordsG[2] = {0.317, 0.329}
+    float in_chromaticityCoordsG[2] = {0.300, 0.600}
     [[
         string as_maya_attribute_name = "chromaticityCoordsG",
         string as_maya_attribute_short_name = "pg",
@@ -88,7 +88,7 @@ shader as_luminance
         string label = "G xy Coordinates",
         string page = "Color Space.RGB Primaries"
     ]],
-    float in_chromaticityCoordsB[2] = {0.317, 0.329}
+    float in_chromaticityCoordsB[2] = {0.150, 0.060}
     [[
         string as_maya_attribute_name = "chromaticityCoordsB",
         string as_maya_attribute_short_name = "pb",
@@ -250,7 +250,7 @@ shader as_luminance
                 {
                     // Convert from CCT to xy chromaticity coordinates.
 
-                    if (in_colorTemperature != 6504) // D65
+                    if (in_colorTemperature == 6504) // D65
                     {
                         RGBW[3] = transform_xyY_to_XYZ(
                             color(D65_WHITEPOINT_CIE1931_2DEG_xy, 1.0));
@@ -281,17 +281,17 @@ shader as_luminance
                     RGBW[0][2], RGBW[1][2], RGBW[2][2], 0.0,
                     0, 0, 0, 1));
 
-                float Sr = M[0][0] * RGBW[4][0] +
-                           M[0][1] * RGBW[4][1] +
-                           M[0][2] * RGBW[4][2];
+                float Sr = M[0][0] * RGBW[3][0] +
+                           M[0][1] * RGBW[3][1] +
+                           M[0][2] * RGBW[3][2];
 
-                float Sg = M[1][0] * RGBW[4][0] +
-                           M[1][1] * RGBW[4][1] +
-                           M[1][2] * RGBW[4][2];
+                float Sg = M[1][0] * RGBW[3][0] +
+                           M[1][1] * RGBW[3][1] +
+                           M[1][2] * RGBW[3][2];
 
-                float Sb = M[2][0] * RGBW[4][0] +
-                           M[2][1] * RGBW[4][1] +
-                           M[2][2] * RGBW[4][2];
+                float Sb = M[2][0] * RGBW[3][0] +
+                           M[2][1] * RGBW[3][1] +
+                           M[2][2] * RGBW[3][2];
 
                 // XYZ->RGB matrix would be
                 //

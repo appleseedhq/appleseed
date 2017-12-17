@@ -215,6 +215,137 @@ float as_luminance(color in_C, string colorspace)
     return as_luminance_D65(in_C, colorspace);
 }
 
+void initialize_RGBW_primaries(
+    string RGB_primaries,
+    string illuminant,
+    float R_CIExy[2],
+    float G_CIExy[2],
+    float B_CIExy[2],
+    float W_CIExy[2],
+    output vector RGBW_CIExyz[4])
+{
+    if (RGB_primaries == "Rec.601")
+    {
+        RGBW_CIExyz[0] = REC601_CHROMATICITIES_Rxyz;
+        RGBW_CIExyz[1] = REC601_CHROMATICITIES_Gxyz;
+        RGBW_CIExyz[2] = REC601_CHROMATICITIES_Bxyz;
+    }
+    else if (RGB_primaries == "Rec.709" || RGB_primaries == "sRGB")
+    {
+        RGBW_CIExyz[0] = REC709_CHROMATICITIES_Rxyz;
+        RGBW_CIExyz[1] = REC709_CHROMATITICIES_Gxyz;
+        RGBW_CIExyz[2] = REC709_CHROMATICITIES_Bxyz;
+    }
+    else if (RGB_primaries == "AdobeRGB")
+    {
+        RGBW_CIExyz[0] = ADOBERGB98_CHROMATICITIES_Rxyz;
+        RGBW_CIExyz[1] = ADOBERGB98_CHROMATICITIES_Gxyz;
+        RGBW_CIExyz[2] = ADOBERGB98_CHROMATICITIES_Bxyz;
+    }
+    else if (RGB_primaries == "Rec.2020")
+    {
+        RGBW_CIExyz[0] = REC2020_CHROMATICITIES_Rxyz;
+        RGBW_CIExyz[1] = REC2020_CHROMATICITIES_Gxyz;
+        RGBW_CIExyz[2] = REC2020_CHROMATICITIES_Bxyz;
+    }
+    else if (RGB_primaries == "DCI-P3")
+    {
+        RGBW_CIExyz[0] = DCIP3_CHROMATICITIES_Rxyz;
+        RGBW_CIExyz[1] = DCIP3_CHROMATICITIES_Gxyz;
+        RGBW_CIExyz[2] = DCIP3_CHROMATICITIES_Bxyz;
+    }
+    else if (RGB_primaries == "ACES")
+    {
+        RGBW_CIExyz[0] = ACES_AP0_CHROMATICITIES_Rxyz;
+        RGBW_CIExyz[1] = ACES_AP0_CHROMATICITIES_Gxyz;
+        RGBW_CIExyz[2] = ACES_AP0_CHROMATICITIES_Bxyz;
+    }
+    else if (RGB_primaries == "ACEScg")
+    {
+        RGBW_CIExyz[0] = ACEScg_AP1_CHROMATICITIES_Rxyz;
+        RGBW_CIExyz[1] = ACEScg_AP1_CHROMATICITIES_Gxyz;
+        RGBW_CIExyz[2] = ACEScg_AP1_CHROMATICITIES_Bxyz;
+    }
+    else if (RGB_primaries == "custom")
+    {
+        RGBW_CIExyz[0] = get_xyz_from_xy(R_CIExy[0], R_CIExy[1]);
+        RGBW_CIExyz[1] = get_xyz_from_xy(G_CIExy[0], G_CIExy[1]);
+        RGBW_CIExyz[2] = get_xyz_from_xy(B_CIExy[0], B_CIExy[1]);
+    }
+    else
+    {
+        RGBW_CIExyz[0] = RGBW_CIExyz[1] =
+        RGBW_CIExyz[2] = RGBW_CIExyz[3] = 0;
+
+#ifdef DEBUG
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+        warning("[WARNING!]: Unknown primaries %s requested, in %s, %s:%d\n",
+                RGB_primaries, shadername, __FILE__, __LINE__);
+#endif
+    }
+
+    RGBW_CIExyz[3] = get_illuminant_xyz(illuminant, W_CIExy);
+}
+
+void initialize_RGB_primaries(
+    string RGB_primaries,
+    output vector RGB_CIExyz[3])
+{
+    if (RGB_primaries == "Rec.601")
+    {
+        RGB_CIExyz[0] = REC601_CHROMATICITIES_Rxyz;
+        RGB_CIExyz[1] = REC601_CHROMATICITIES_Gxyz;
+        RGB_CIExyz[2] = REC601_CHROMATICITIES_Bxyz;
+    }
+    else if (RGB_primaries == "Rec.709" || RGB_primaries == "sRGB")
+    {
+        RGB_CIExyz[0] = REC709_CHROMATICITIES_Rxyz;
+        RGB_CIExyz[1] = REC709_CHROMATITICIES_Gxyz;
+        RGB_CIExyz[2] = REC709_CHROMATICITIES_Bxyz;
+    }
+    else if (RGB_primaries == "AdobeRGB")
+    {
+        RGB_CIExyz[0] = ADOBERGB98_CHROMATICITIES_Rxyz;
+        RGB_CIExyz[1] = ADOBERGB98_CHROMATICITIES_Gxyz;
+        RGB_CIExyz[2] = ADOBERGB98_CHROMATICITIES_Bxyz;
+    }
+    else if (RGB_primaries == "Rec.2020")
+    {
+        RGB_CIExyz[0] = REC2020_CHROMATICITIES_Rxyz;
+        RGB_CIExyz[1] = REC2020_CHROMATICITIES_Gxyz;
+        RGB_CIExyz[2] = REC2020_CHROMATICITIES_Bxyz;
+    }
+    else if (RGB_primaries == "DCI-P3")
+    {
+        RGB_CIExyz[0] = DCIP3_CHROMATICITIES_Rxyz;
+        RGB_CIExyz[1] = DCIP3_CHROMATICITIES_Gxyz;
+        RGB_CIExyz[2] = DCIP3_CHROMATICITIES_Bxyz;
+    }
+    else if (RGB_primaries == "ACES")
+    {
+        RGB_CIExyz[0] = ACES_AP0_CHROMATICITIES_Rxyz;
+        RGB_CIExyz[1] = ACES_AP0_CHROMATICITIES_Gxyz;
+        RGB_CIExyz[2] = ACES_AP0_CHROMATICITIES_Bxyz;
+    }
+    else if (RGB_primaries == "ACEScg")
+    {
+        RGB_CIExyz[0] = ACEScg_AP1_CHROMATICITIES_Rxyz;
+        RGB_CIExyz[1] = ACEScg_AP1_CHROMATICITIES_Gxyz;
+        RGB_CIExyz[2] = ACEScg_AP1_CHROMATICITIES_Bxyz;
+    }
+    else
+    {
+        RGB_CIExyz[0] = RGB_CIExyz[1] = RGB_CIExyz[2] = 0.0;
+#ifdef DEBUG
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+        warning("[WARNING!]: Unknown primaries %s requested, in %s, %s:%d\n",
+                RGB_primaries, shadername, __FILE__, __LINE__);
+#endif
+    }
+}
+
 //
 // Reference:
 //

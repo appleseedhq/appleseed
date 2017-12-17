@@ -1,0 +1,441 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/color/as_chromatic_adaptation.h"
+#include "appleseed/color/as_transfer_functions.h"
+#include "appleseed/maya/as_maya_cms_syncolor_idt.h"
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/texture/as_texture_helpers.h"
+
+shader as_texture
+[[
+    string as_maya_node_name = "asTexture",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/2d:swatch/AppleseedRenderSwatch:texture",
+    string help = "Texture lookup node",
+    string icon = "asTexture.png",
+    int as_maya_type_id = 0x001279fa
+]]
+(
+    string in_filename = ""
+    [[
+        string as_maya_attribute_name = "filename",
+        string as_maya_attribute_short_name = "fil",
+        string label = "Filename",
+        string page = "Texture",
+        string widget = "filename",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    int in_atlas_type = 0
+    [[
+        string as_maya_attribute_name = "atlasType",
+        string as_maya_attribute_short_name = "atl",
+        string label = "Atlas Type",
+        string page = "Texture",
+        string widget = "mapper",
+        string options = "None:0|ZBrush:1|Mudbox:2|Mari:3",
+        string help = "Texture atlas type (UDIM).",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    int in_starting_channel = 0
+    [[
+        string as_maya_attribute_name = "startingChannel",
+        string as_maya_attribute_short_name = "sch",
+        string label = "Starting Channel",
+        string page = "Texture",
+        int min = 0,
+        int softmax = 4,
+        string help = "Starting channel for the texture lookup, usually 0 for a
+        ordinary RGB texture.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    color in_color = color(0)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Default Color",
+        string page = "Texture",
+        string help = "Default Fill color to use if the texture lookup fails."
+    ]],
+    float in_alpha = 1.0
+    [[
+        string as_maya_attribute_name = "alpha",
+        string as_maya_attribute_short_name = "a",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Default Alpha",
+        string page = "Texture",
+        string help = "Default Fill alpha value to use if the texture lookup fails."
+    ]],
+    float in_s_blur_amount = 0.0
+    [[
+        string as_maya_attribute_name = "sBlurAmount",
+        string as_maya_attribute_short_name = "sbl",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "S Blur",
+        string page = "Texture",
+        string help = "Additional blur for texture lookup, along the S direction."
+    ]],
+    float in_t_blur_amount = 0.0
+    [[
+        string as_maya_attribute_name = "tBlurAmount",
+        string as_maya_attribute_short_name = "tbl",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "T Blur",
+        string page = "Texture",
+        string help = "Additional blur for texture lookup, along the T direction."
+    ]],
+    float in_s_filter_width = 1.0
+    [[
+        string as_maya_attribute_name = "sFilterWidth",
+        string as_maya_attribute_short_name = "sfw",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "S Filter Width",
+        string page = "Texture",
+        string help = "Multiplier to scale the size of the filter width along the S direction."
+    ]],
+    float in_t_filter_width = 1.0
+    [[
+        string as_maya_attribute_name = "tFilterWidth",
+        string as_maya_attribute_short_name = "tfw",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "T Filter Width",
+        string page = "Texture",
+        string help = "Multiplier to scale the size of the filter width along the S direction."
+    ]],
+    int in_s_wrap = 0
+    [[
+        string as_maya_attribute_name = "sWrap",
+        string as_maya_attribute_short_name = "swa",
+        string label = "S Wrapping",
+        string page = "Texture",
+        string widget = "mapper",
+        string options = "Default:0|Black:1|Periodic:2|Clamp:3|Mirror:4",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1,
+        string help = "Use the wrapping mode set on the texture, or override it"
+    ]],
+    int in_t_wrap = 0
+    [[
+        string as_maya_attribute_name = "tWrap",
+        string as_maya_attribute_short_name = "twa",
+        string label = "T Wrapping",
+        string page = "Texture",
+        string widget = "mapper",
+        string options = "Default:0|Black:1|Periodic:2|Clamp:3|Mirror:4",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1,
+        string help = "Use the wrapping mode set on the texture, or override it"
+    ]],
+    int in_interpolation_method = 0
+    [[
+        string as_maya_attribute_name = "interpolationMethod",
+        string as_maya_attribute_short_name = "ft",
+        string label = "Interpolation Method",
+        string page = "Texture",
+        string widget = "mapper",
+        string options = "Smart Cubic:0|Cubic:1|Linear:2|Closest:3",
+        string help = "Interpolation method to use for the lookup.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],    
+    int in_enable_cms = 0
+    [[
+        string as_maya_attribute_name = "enableCms",
+        string as_maya_attribute_short_name = "cms",
+        string label = "Enable CMS",
+        string page = "Color Management",
+        string widget = "checkBox",
+        string help = "Enable color management. Ideally you use *.tx textures already converted instead, hence this is disabled by default.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    int in_eotf = 1
+    [[
+        string as_maya_attribute_name = "electroOpticalTransferFunction",
+        string as_maya_attribute_short_name = "eot",
+        string label = "Input Transfer Function",
+        string page = "Color Management",
+        string widget = "mapper",
+        string options = "None/Raw:0|sRGB:1|Rec.709:2|Gamma 2.2:3|Gamma 2.4:4|Gamma 2.6 (DCI):5|Rec.1886:6|Rec.2020:7",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Transfer function of the ingested material, refers to the Opto-Electronic Transfer Function required to transform the input into scene-linear values."
+    ]],    
+    int in_rgb_primaries = 1
+    [[
+        string as_maya_attribute_name = "rgbPrimaries",
+        string as_maya_attribute_short_name = "rgb",
+        string label = "RGB primaries",
+        string page = "Color Management",
+        string widget = "popup",
+        string options = "Raw|sRGB/Rec.709|AdobeRGB|Rec.2020|DCI-P3|ACES|ACEScg",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help "RGB primaries, note that Rec.709 and sRGB share the same CIE xy chromaticity coordinates."
+    ]],
+    int in_workingspace_rgb_primaries = 1
+    [[
+        string as_maya_attribute_name = "rgbPrimaries",
+        string as_maya_attribute_short_name = "rgb",
+        string label = "RGB primaries",
+        string page = "Color Management",
+        string widget = "popup",
+        string options = "sRGB/Rec.709|Rec.2020|DCI-P3|ACES|ACEScg",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Working or rendering space RGB primaries. Note that Rec.709 and sRGB share the same CIE xy chromaticity coordinates."
+    ]],
+    vector in_texture_coords = vector(u, v, 0)
+    [[
+        string as_maya_attribute_name = "textureCoords",
+        string as_maya_attribute_short_name = "tco",
+        string label = "UV Texture Coords",
+        string page = "Manifold"
+    ]],
+    vector in_texture_coords_filter = vector(0)
+    [[
+        string as_maya_attribute_name = "textureCoordsFilter",
+        string as_maya_attribute_short_name = "tfi",
+        string label = "UV Coords Filter",
+        string page = "Manifold"
+    ]],
+    int in_invert_s = 0
+    [[
+        string as_maya_attribute_name = "invertS",
+        string as_maya_attribute_short_name = "ivs",
+        string label = "Invert S",
+        string page = "Manifold",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_invert_t = 0
+    [[
+        string as_maya_attribute_name = "invertT",
+        string as_maya_attribute_short_name = "ivt",
+        string label = "Invert T",
+        string page = "Manifold",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+
+    output color out_color = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string widget = "null"
+    ]],
+    output float out_alpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
+        string widget = "null"
+    ]],
+    output vector out_texture_coords = in_texture_coords
+    [[
+        string as_maya_attribute_name = "outTextureCoords",
+        string as_maya_attribute_short_name = "otc",
+        string widget = "null"
+    ]],
+    output vector out_texture_coords_filter = in_texture_coords_filter
+    [[
+        string as_maya_attribute_name = "outTextureCoordsFilter",
+        string as_maya_attribute_short_name = "otf",
+        string widget = "null"
+    ]]
+)
+{
+    if (in_filename == "" || !gettextureinfo(in_filename, "exists", 0))
+    {
+        return;
+    }
+
+    string wrap_mode[2];
+    float uv_coords[2];
+
+    if (in_atlas_type == 0 && isconnected(in_texture_coords))
+    {
+        uv_coords[0] = mod(in_texture_coords[0], UVWRAP);
+        uv_coords[1] = mod(in_texture_coords[1], UVWRAP);
+        
+        set_wrap_mode(in_s_wrap, in_t_wrap, wrap_mode);
+    }
+    else
+    {
+        uv_coords[0] = u;
+        uv_coords[1] = v;        
+        wrap_mode[0] = "default";
+        wrap_mode[1] = "default";
+    }
+
+    if (in_invert_s)
+    {
+        uv_coords = 1.0 - uv_coords[0];
+    }
+    if (in_invert_t)
+    {
+        uv_coords = 1.0 - uv_coords[1];
+    }
+
+    if (isconnected(in_texture_coords_filter))
+    {
+        out_texture_coords_filter = in_texture_coords_filter;
+    }
+    else
+    {
+        out_texture_coords_filter[0] = filterwidth(uv_coords[0]);
+        out_texture_coords_filter[1] = filterwidth(uv_coords[1]);
+    }
+
+    string interpolation = get_interpolation_method(in_interpolation_method);
+
+    if (in_atlas_type == 0)
+    {
+        out_color = texture(
+            in_filename,
+            uv_coords[0],
+            uv_coords[1],
+            "sblur", in_s_blur_amount,
+            "tblur", in_t_blur_amount,
+            "swidth", in_s_filter_width,
+            "twidth", in_t_filter_width,
+            "swrap", wrap_mode[0],
+            "twrap", wrap_mode[1],
+            "missingcolor", in_color,
+            "missingalpha", in_alpha,
+            "alpha", out_alpha,
+            "interp", interpolation);
+    }
+    else
+    {
+        ; // texture atlas
+    }
+
+    if (in_enable_cms && max(out_color) > 0.0)
+    {
+        color linearized_color = color(0);
+
+        if (in_eotf == 0)
+        {
+            linearized_color = out_color;
+        }
+        else if (in_eotf == 1)
+        {
+            linearized_color = sRGB_EOTF(out_color);
+        }
+        else if (in_eotf == 2)
+        {
+            linearized_color == Rec709_EOTF(out_color);
+        }
+        else if (in_eotf == 3)
+        {
+            linearized_color == gamma_CCTF(out_color, 2.2);
+        }
+        else if (in_eotf == 4)
+        {
+            linearized_color == gamma_CCTF(out_color, 2.4);
+        }
+        else if (in_eotf == 5)
+        {
+            linearized_color == gamma_CCTF(out_color, DCIP3_GAMMA);
+        }
+        else if (in_eotf == 6)
+        {
+            linearized_color = Rec1886_EOTF(out_color);
+        }
+        else if (in_eotf == 7)
+        {
+            linearized_color == Rec2020_EOTF(out_color);
+        }
+        else
+        {
+            linearized_color = color(0);
+
+#ifdef DEBUG
+            string shadername = "";
+            getattribute("shader:shadername", shadername);
+            warning("[WARNING!]: Unknown OETF mode %d, in %s, %s:%d\n",
+                    in_eotf, shadername, __FILE__, __LINE__);
+#endif
+        }
+
+        // assuming ingested material was in [0,1]
+        // if not, we need to check extension (i.e, *.hdr, *.exr), and 
+        // bitdepth, encoding (int, float, half-float), and transform to a
+        // log representation, before applying the color xform, then expanding
+        // back.
+
+        if (in_rgb_primaries != "Raw" && max(linearized_color) > 0.0)
+        {
+            linearized_color = transform_colorspace_to_workingspace(
+                linearized_color,
+                in_rgb_primaries,
+                in_workingspace_rgb_primaries);
+        }
+
+        out_color = linearized_color;
+    }
+}

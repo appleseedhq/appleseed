@@ -33,33 +33,45 @@
 #include "appleseed/color/as_colorimetry.h"
 #include "appleseed/math/as_math_helpers.h"
 
-color get_illuminant_xyY(string illuminant)
+vector get_xyz_from_xy(float CIExy[2])
 {
-    color white_xyY;
+    return vector(CIExy[0], CIExy[1], 1.0 - (CIExy[0] + CIExy[1]));
+}
+
+void get_xyz_from_xy(float CIExy[2], output float CIExyz[3])
+{
+    CIExyz[0] = CIExy[0];
+    CIExyz[1] = CIEzy[1];
+    CIExyz[2] = 1.0 - (CIExy[0] + CIExy[1]);
+}
+
+color get_illuminant_xy(string illuminant)
+{
+    color white_xy;
 
     if (illuminant == "D50")
     {
-        white_xyY = color(D50_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
+        white_xy = color(D50_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
     }
     else if (illuminant == "D55")
     {
-        white_xyY = color(D55_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
+        white_xy = color(D55_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
     }
     else if (illuminant == "D60")
     {
-        white_xyY = color(D60_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
+        white_xy = color(D60_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
     }
     else if (illuminant == "D65")
     {
-        white_xyY = color(D65_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
+        white_xy = color(D65_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
     }
     else if (illuminant == "D75")
     {
-        white_xyY = color(D65_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
+        white_xy = color(D65_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
     }
     else if (illuminant == "DCIP3")
     {
-        white_xyY = color(DCIP3_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
+        white_xy = color(DCIP3_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
     }
     else
     {
@@ -72,7 +84,7 @@ color get_illuminant_xyY(string illuminant)
 #endif
         return color(0);
     }
-    return white_xyY;
+    return white_xy;
 }
 
 void get_illuminant_xyY(string illuminant, output float white_xy[2])
@@ -80,6 +92,42 @@ void get_illuminant_xyY(string illuminant, output float white_xy[2])
     color white_xyY = get_illuminant_xyY(illuminant);
     white_xy[0] = white_xyY[0];
     white_xy[1] = white_xyY[1];
+}
+
+vector get_illuminant_xyz(string illuminant)
+{
+    color white_xyY = get_illuminant_xyY(illuminant);
+
+    return vector(white_xyY[0],
+                  white_xyY[1],
+                  1.0 - (white_xyY[0] + white_xyY[1]));
+}
+
+void get_illuminant_xyz(string illuminant, output float white_xyz[2])
+{
+    color white_xyY = get_illuminant_xyY(illuminant);
+    white_xy[0] = white_xyY[0];
+    white_xy[1] = white_xyY[1];
+    white_xy[2] = 1.0 - (white_xyY[0] + white_xyY[1]);
+}
+
+
+color get_illuminant_xyz(string illuminant, float W_CIExy[2])
+{
+    color white_xyz;
+
+    if (illuminant != "custom")
+    {
+        white_xyz = get_illuminant_xy(illuminant);
+    }
+    else
+    {
+        white_xyz = color(
+            W_CIExy[0],
+            W_CIExy[1],
+            1.0 - (W_CIExy[0] + W_CIExy[1]));
+    }
+    return white_xyz;
 }
 
 //
