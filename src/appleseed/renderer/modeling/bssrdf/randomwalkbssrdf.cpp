@@ -152,6 +152,44 @@ namespace
             }
         }
 
+        static float compute_rcp_diffusion_length_low_albedo(const float albedo)
+        {
+            const float a = rcp(albedo);
+            const float b = exp(-2.0f * a);
+
+            const float x[4] = {
+                1.0f,
+                a * 4.0f - 1.0f,
+                a * (a * 24.0f - 12.0f) + 1.0f,
+                a * (a * (a * 512.0f - 384.0f) + 72.0f) - 3.0f };
+
+            return 1.0f - 2.0f * b * (x[0] + b * (x[1] + b * (x[2] + b * x[3])));
+        }
+
+        static float compute_rcp_diffusion_length_high_albedo(const float albedo)
+        {
+            const float a = 1.0f - albedo;
+            const float b = sqrt(3.0 * a);
+
+            const float x[5] = {
+                +1.0000000000f,
+                -0.4000000000f,
+                -0.0685714286f,
+                -0.0160000000f,
+                -0.0024638218f
+            };
+
+            return b * (x[0] + a * (x[1] + a * (x[2] + a * (x[3] + a * x[4]))));
+        }
+
+        static float compute_rcp_diffusion_length(const float albedo)
+        {
+            const float a = clamp(albedo, 0.0f, 0.999f);
+            return a < 0.56f ?
+                compute_rcp_diffusion_length_low_albedo(a) :
+                compute_rcp_diffusion_length_high_albedo(a);
+        }
+
         static float albedo_from_reflectance(const float r)
         {
             return 1.0f - exp(r * (-5.09406f + r * (2.61188f - 4.31805f * r)));
@@ -190,6 +228,11 @@ namespace
             if (avg_value > 0.0f) values /= avg_value;
         }
 
+        static float compute_classical_sampling_probability(const float anisotropy)
+        {
+            return max(0.1f, pow(abs(anisotropy), 3.0f));
+        }
+
         bool sample(
             const ShadingContext&   shading_context,
             SamplingContext&        sampling_context,
@@ -201,6 +244,8 @@ namespace
         {
             const RandomWalkBSSRDFInputValues* values =
                 static_cast<const RandomWalkBSSRDFInputValues*>(data);
+
+            const float classical_sampling_prob = compute_classical_sampling_probability(0.0f);
 
             // Pick initial random-walk direction.
             sampling_context.split_in_place(2, 1);
