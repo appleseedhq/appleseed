@@ -103,7 +103,23 @@ shader as_metal
         float max = 1.0,
         string label = "Anisotropy Angle",
         string page = "Specular.Anisotropy",
-        string help = "Anisotropy angle in [0,1], mapping to [0,360] degrees"
+        string help = "Anisotropy angle in [0,1], mapping to [0,360] degrees",
+        int divider = 1
+    ]],
+    int in_anisotropy_mode = 0
+    [[
+        string as_maya_attribute_name = "anisotropyMode",
+        string as_maya_attribute_short_name = "anm",
+        string widget = "mapper",
+        string options = "Anisotropy Map:0|Explicit Vector:1",
+        string label = "Anisotropy Mode",
+        string page = "Specular.Anisotropy",
+        string help = "Use tangent vector field map, or explicit vector.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
     ]],
     color in_anisotropy_map = color(0)
     [[
@@ -111,7 +127,16 @@ shader as_metal
         string as_maya_attribute_short_name = "ama",
         string label = "Anisotropy Vector Map",
         string page = "Specular.Anisotropy",
-        string help = "Anisotropy vector map, with XY encoded in RG channels"
+        string help = "Anisotropy vector map, with XY encoded in RG channels",
+        int divider = 1
+    ]],
+    vector in_anisotropy_direction = vector(0)
+    [[
+        string as_maya_attribute_name = "anisotropyDirection",
+        string as_maya_attribute_short_name = "and",
+        string label = "Anisotropy Vector",
+        string page = "Specular.Anisotropy",
+        string help = "Explicit anisotropy vector, such as the vector output by a tangent field node."
     ]],
 #if 0
     float in_thinfilm_thickness = 0.0
@@ -305,15 +330,22 @@ shader as_metal
 
     if (in_anisotropy_amount > 0.0)
     {
-        if (isconnected(in_anisotropy_map))
+        if (in_anisotropy_mode == 0)
         {
-            vector vector_map = normalize(
-                (vector) in_anisotropy_map * 2.0 - 1.0);
+            if (isconnected(in_anisotropy_map))
+            {
+                vector vector_map = normalize(
+                    (vector) in_anisotropy_map * 2.0 - 1.0);
 
-            tangent = normalize(
-                vector_map[0] * Tn +
-                vector_map[1] * Bn +
-                vector_map[2] * Nn);
+                tangent = normalize(
+                    vector_map[0] * Tn +
+                    vector_map[1] * Bn +
+                    vector_map[2] * Nn);
+            }
+        }
+        else
+        {
+            tangent = in_anisotropy_direction;
         }
 
         if (in_anisotropy_angle > 0.0)

@@ -439,6 +439,7 @@ set (src_appleseed_sources
      src/appleseed/as_ray_switch.osl
      src/appleseed/as_space_transform.osl
      src/appleseed/as_standard_surface.osl
+     src/appleseed/as_subsurface.osl
      src/appleseed/as_swizzle.osl
      src/appleseed/as_vary_color.osl
      src/appleseed/as_voronoi2d.osl
