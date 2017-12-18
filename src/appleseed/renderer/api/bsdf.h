@@ -47,6 +47,7 @@
 #include "renderer/modeling/bsdf/metalbrdf.h"
 #include "renderer/modeling/bsdf/nullbsdf.h"
 #include "renderer/modeling/bsdf/orennayarbrdf.h"
+#include "renderer/modeling/bsdf/plasticbrdf.h"
 #include "renderer/modeling/bsdf/sheenbrdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
