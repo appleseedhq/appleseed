@@ -208,6 +208,8 @@ void microfacet_energy_compensation_term(
     float&                          fms,
     float&                          eavg);
 
+// Write the computed tables to OpenEXR images.
+// Used in Renderer_Modeling_BSDF_EnergyCompensation unit test.
 void write_microfacet_directional_albedo_tables_to_exr(const char* directory);
 
 }       // namespace renderer
