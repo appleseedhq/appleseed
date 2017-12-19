@@ -32,6 +32,7 @@
 
 // API headers.
 #include "renderer/modeling/bsdf/ashikhminbrdf.h"
+#include "renderer/modeling/bsdf/blinnbrdf.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfblend.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
@@ -47,6 +48,7 @@
 #include "renderer/modeling/bsdf/metalbrdf.h"
 #include "renderer/modeling/bsdf/nullbsdf.h"
 #include "renderer/modeling/bsdf/orennayarbrdf.h"
+#include "renderer/modeling/bsdf/oslbsdf.h"
 #include "renderer/modeling/bsdf/plasticbrdf.h"
 #include "renderer/modeling/bsdf/sheenbrdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
