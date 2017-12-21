@@ -31,6 +31,7 @@
 
 #include "appleseed/color/as_chromatic_adaptation.h"
 #include "appleseed/color/as_colorimetry.h"
+#include "appleseed/color/as_color_transforms.h"
 
 // The luminance coefficients are provided by the Y value, so when the
 // white points of the color space differ from the requested white point,
@@ -70,13 +71,6 @@ float as_luminance_D65(color in_C, string colorspace)
     }
     else
     {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]: Unknown color space in shader %s, %s:%i\n",
-                shadername, __FILE__, __LINE__);
-#endif
         coeffs = color(0);
     }
     return coeffs[0] * in_C[0] +
@@ -94,37 +88,30 @@ float as_luminance_D60(color in_C, string colorspace)
     }
     else if (colorspace == "Rec.709" || colorspace == "sRGB")
     {
-        coeffs = color(REC709_D65_LUMINANCE_COEFFS);
+        coeffs = color(REC709_D60_LUMINANCE_COEFFS);
     }
     else if (colorspace == "AdobeRGB")
     {
-        coeffs = color(ADOBERGB_D65_LUMINANCE_COEFFS);
+        coeffs = color(ADOBERGB_D60_LUMINANCE_COEFFS);
     }
     else if (colorspace == "Rec.2020")
     {
-        coeffs = color(REC2020_D65_LUMINANCE_COEFFS);
+        coeffs = color(REC2020_D60_LUMINANCE_COEFFS);
     }
     else if (colorspace == "ACES")
     {
-        coeffs = color(ACES_D65_LUMINANCE_COEFFS);
+        coeffs = color(ACES_D60_LUMINANCE_COEFFS);
     }
     else if (colorspace == "ACEScg")
     {
-        coeffs = color(ACESCG_D65_LUMINANCE_COEFFS);
+        coeffs = color(ACESCG_D60_LUMINANCE_COEFFS);
     }
     else if (colorspace == "DCI-P3")
     {
-        coeffs = color(DCIP3_D65_LUMINANCE_COEFFS);
+        coeffs = color(DCIP3_D60_LUMINANCE_COEFFS);
     }
     else
     {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]: Unknown color space in shader %s, %s:%i\n",
-                shadername, __FILE__, __LINE__);
-#endif
         coeffs = color(0);
     }
     return coeffs[0] * in_C[0] +
@@ -166,13 +153,6 @@ float as_luminance_DCI(color in_C, string colorspace)
     }
     else
     {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]: Unknown color space in shader %s, %s:%i\n",
-                shadername, __FILE__, __LINE__);
-#endif
         coeffs = color(0);
     }
     return coeffs[0] * in_C[0] +
@@ -198,14 +178,7 @@ float as_luminance(color in_C, string colorspace, string illuminant)
     }
     else
     {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]: Unsupported illuminant in %s, %s:%i\n",
-                shadername, __FILE__, __LINE__);
-#endif
-        Y = 0;
+        Y = 0.0;
     }
     return Y;
 }
@@ -233,7 +206,7 @@ void initialize_RGBW_primaries(
     else if (RGB_primaries == "Rec.709" || RGB_primaries == "sRGB")
     {
         RGBW_CIExyz[0] = REC709_CHROMATICITIES_Rxyz;
-        RGBW_CIExyz[1] = REC709_CHROMATITICIES_Gxyz;
+        RGBW_CIExyz[1] = REC709_CHROMATICITIES_Gxyz;
         RGBW_CIExyz[2] = REC709_CHROMATICITIES_Bxyz;
     }
     else if (RGB_primaries == "AdobeRGB")
@@ -262,30 +235,22 @@ void initialize_RGBW_primaries(
     }
     else if (RGB_primaries == "ACEScg")
     {
-        RGBW_CIExyz[0] = ACEScg_AP1_CHROMATICITIES_Rxyz;
-        RGBW_CIExyz[1] = ACEScg_AP1_CHROMATICITIES_Gxyz;
-        RGBW_CIExyz[2] = ACEScg_AP1_CHROMATICITIES_Bxyz;
+        RGBW_CIExyz[0] = ACESCG_AP1_CHROMATICITIES_Rxyz;
+        RGBW_CIExyz[1] = ACESCG_AP1_CHROMATICITIES_Gxyz;
+        RGBW_CIExyz[2] = ACESCG_AP1_CHROMATICITIES_Bxyz;
     }
     else if (RGB_primaries == "custom")
     {
-        RGBW_CIExyz[0] = get_xyz_from_xy(R_CIExy[0], R_CIExy[1]);
-        RGBW_CIExyz[1] = get_xyz_from_xy(G_CIExy[0], G_CIExy[1]);
-        RGBW_CIExyz[2] = get_xyz_from_xy(B_CIExy[0], B_CIExy[1]);
+        RGBW_CIExyz[0] = transform_CIExy_to_CIEXYZ(R_CIExy);
+        RGBW_CIExyz[1] = transform_CIExy_to_CIEXYZ(G_CIExy);
+        RGBW_CIExyz[2] = transform_CIExy_to_CIEXYZ(B_CIExy);
     }
     else
     {
         RGBW_CIExyz[0] = RGBW_CIExyz[1] =
-        RGBW_CIExyz[2] = RGBW_CIExyz[3] = 0;
-
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-        warning("[WARNING!]: Unknown primaries %s requested, in %s, %s:%d\n",
-                RGB_primaries, shadername, __FILE__, __LINE__);
-#endif
+        RGBW_CIExyz[2] = RGBW_CIExyz[3] = 0.0;
     }
-
-    RGBW_CIExyz[3] = get_illuminant_xyz(illuminant, W_CIExy);
+    RGBW_CIExyz[3] = get_illuminant_CIExyz(illuminant, W_CIExy);
 }
 
 void initialize_RGB_primaries(
@@ -301,7 +266,7 @@ void initialize_RGB_primaries(
     else if (RGB_primaries == "Rec.709" || RGB_primaries == "sRGB")
     {
         RGB_CIExyz[0] = REC709_CHROMATICITIES_Rxyz;
-        RGB_CIExyz[1] = REC709_CHROMATITICIES_Gxyz;
+        RGB_CIExyz[1] = REC709_CHROMATICITIES_Gxyz;
         RGB_CIExyz[2] = REC709_CHROMATICITIES_Bxyz;
     }
     else if (RGB_primaries == "AdobeRGB")
@@ -330,19 +295,13 @@ void initialize_RGB_primaries(
     }
     else if (RGB_primaries == "ACEScg")
     {
-        RGB_CIExyz[0] = ACEScg_AP1_CHROMATICITIES_Rxyz;
-        RGB_CIExyz[1] = ACEScg_AP1_CHROMATICITIES_Gxyz;
-        RGB_CIExyz[2] = ACEScg_AP1_CHROMATICITIES_Bxyz;
+        RGB_CIExyz[0] = ACESCG_AP1_CHROMATICITIES_Rxyz;
+        RGB_CIExyz[1] = ACESCG_AP1_CHROMATICITIES_Gxyz;
+        RGB_CIExyz[2] = ACESCG_AP1_CHROMATICITIES_Bxyz;
     }
     else
     {
         RGB_CIExyz[0] = RGB_CIExyz[1] = RGB_CIExyz[2] = 0.0;
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-        warning("[WARNING!]: Unknown primaries %s requested, in %s, %s:%d\n",
-                RGB_primaries, shadername, __FILE__, __LINE__);
-#endif
     }
 }
 

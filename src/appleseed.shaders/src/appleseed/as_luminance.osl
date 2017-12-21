@@ -182,7 +182,6 @@ shader as_luminance
 #ifdef DEBUG
                     string shadername = "";
                     getattribute("shader:shadername", shadername);
-
                     warning("[WARNING]:Invalid Maya renderspace in %s, %s:%i\n",
                             shadername, __FILE__, __LINE__);
 #endif
@@ -195,17 +194,17 @@ shader as_luminance
             {
                 color RGBW[4]; // explicit R,G,B,W chromaticity coordinates
 
-                RGBW[0] = transform_xyY_to_XYZ(
+                RGBW[0] = transform_CIExyY_to_CIEXYZ(
                     color(in_chromaticityCoordsR[0],
                           in_chromaticityCoordsR[1],
                           1.0));
 
-                RGBW[1] = transform_xyY_to_XYZ(
+                RGBW[1] = transform_CIExyY_to_CIEXYZ(
                     color(in_chromaticityCoordsG[0],
                           in_chromaticityCoordsG[1],
                           1.0));
 
-                RGBW[2] = transform_xyY_to_XYZ(
+                RGBW[2] = transform_CIExyY_to_CIEXYZ(
                     color(in_chromaticityCoordsB[0],
                           in_chromaticityCoordsB[1],
                           1.0));
@@ -239,37 +238,37 @@ shader as_luminance
                         illuminant = "DCI";
                     }
 
-                    RGBW[3] = get_illuminant_XYZ(illuminant);
+                    RGBW[3] = get_illuminant_CIEXYZ(illuminant);
                 }
                 else if (in_inputIlluminants == 6)
                 {
-                    RGBW[3] = transform_xyY_to_XYZ(
+                    RGBW[3] = transform_CIExyY_to_CIEXYZ(
                         color(ILLUMINANT_E_WHITEPOINT_xy, 1.0));
                 }
                 else if (in_inputIlluminants == 7)
                 {
-                    // Convert from CCT to xy chromaticity coordinates.
+                    // Convert from CCT to CIExy chromaticity coordinates.
 
                     if (in_colorTemperature == 6504) // D65
                     {
-                        RGBW[3] = transform_xyY_to_XYZ(
+                        RGBW[3] = transform_CIExyY_to_CIEXYZ(
                             color(D65_WHITEPOINT_CIE1931_2DEG_xy, 1.0));
                     }
                     else
                     {
                         float Tc_xy[2];
 
-                        get_xy_from_CCT_Kang(in_colorTemperature, Tc_xy);
+                        get_CIExy_from_CCT_Kang(in_colorTemperature, Tc_xy);
 
-                        RGBW[3] = transform_xyY_to_XYZ(
+                        RGBW[3] = transform_CIExyY_to_CIEXYZ(
                             color(Tc_xy[0], Tc_xy[1], 1.0));
                     }
                 }
                 else
                 {
-                    // Explicit white point xy chromaticity coordinates.
+                    // Explicit white point CIExy chromaticity coordinates.
 
-                    RGBW[3] = transform_xyY_to_XYZ(
+                    RGBW[3] = transform_CIExyY_to_CIEXYZ(
                         color(in_chromaticityCoordsW[0],
                               in_chromaticityCoordsW[1],
                               1.0));

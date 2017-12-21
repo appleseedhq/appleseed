@@ -196,7 +196,6 @@ shader as_maya_file
 #ifdef DEBUG
             string shadername = "";
             getattribute("shader:shadername", shadername);
-
             error("[WARNING]: No face indices found for Ptex in %s, %s:%i\n",
                     shadername, __FILE__, __LINE__);
 #endif
@@ -225,20 +224,20 @@ shader as_maya_file
                 "ptexinterpolate", in_ptexFilterInterpolateLevels
                 );
 
-        if (in_exposure > 0.0)
-        {
-            out_outColor *= pow(2, in_exposure);
-        }
-
         if (in_colorManagementEnabled == 1 &&
             in_ignoreColorSpaceFileRules == 0 &&
-            in_colorSpace != "Raw")
+            in_colorSpace != "Raw" && max(out_outColor) > 0.0)
         {
             out_outColor =
                 transform_colorspace_to_workingspace(
                     out_outColor,
                     in_colorSpace,
                     in_workingSpace);
+        }
+
+        if (in_exposure > 0.0)
+        {
+            out_outColor *= pow(2, in_exposure);
         }
 #endif
     }
@@ -365,11 +364,6 @@ shader as_maya_file
                     "interp", filter);
         }
 
-        if (in_exposure > 0.0)
-        {
-            out_outColor *= pow(2, in_exposure);
-        }
-
 #ifdef DEBUG
         warning("[CMS] : Color profile = %i\n",
                 in_colorProfile);
@@ -392,7 +386,7 @@ shader as_maya_file
 
         if (in_colorManagementEnabled == 1 &&
             in_ignoreColorSpaceFileRules == 0 &&
-            in_colorSpace != "Raw")
+            in_colorSpace != "Raw" && max(out_outColor) > 0.0)
         {
             out_outColor =
                 transform_colorspace_to_workingspace(
@@ -400,8 +394,12 @@ shader as_maya_file
                     in_colorSpace,
                     in_workingSpace);
         }
-    }
 
+        if (in_exposure > 0.0)
+        {
+            out_outColor *= pow(2, in_exposure);
+        }
+    }
     out_outColor = max(0, out_outColor);
 
     maya_colorBalance(

@@ -27,6 +27,7 @@
 //
 
 #include "appleseed/math/as_math_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
 
 shader as_triplanar
 [[
@@ -139,13 +140,51 @@ shader as_triplanar
     //
 
     // NOTE: do the lookup only if blending > 0, alternatively try a cubemap
-    
-    color x_axis = texture(in_filename, xform_P[1], xform_P[2],
-        "wrap", "periodic");
-    color y_axis = texture(in_filename, xform_P[0], xform_P[2],
-        "wrap", "periodic");
-    color z_axis = texture(in_filename, xform_P[0], xform_P[1],
-        "wrap", "periodic");
+void rotate2d(
+    float         x,
+    float         y,
+    float         angle_in_degrees,
+    output float  rx,
+    output float  ry)
+{
+    if (angle_in_degrees != 0)
+    {
+        float angle_in_rad = radians(angle_in_degrees);
+        float c, s;
+        sincos(angle_in_rad, s, c);
+        float xx = x * c - s * y;
+        float yy = x * s + c * y;
+        rx = xx;
+        ry = yy;
+    }
+    else
+    {
+        rx = x;
+        ry = y;
+    }
+}   
+
+    float st[2] = {
+        mod(xform_P[1], UVWRAP) * in_scale[1] + in_translation[1],
+        mod(xform_P[2], UVWRAP) * in_scale[2] + in_translation[2]};
+
+    rotate2d(st[0], st[1], in_rotation[0], st[0], st[1]);
+
+    color x_axis = texture(in_filename, st[0], st[1], "wrap", "periodic");
+
+    st[0] = mod(xform_P[0], UVWRAP) * in_scale[0] + in_translation[0];
+    st[1] = mod(xform_P[2], UVWRAP) * in_scale[2] + in_translation[2];
+
+    rotate2d(st[0], st[1], in_rotation[1], st[0], st[1]);
+
+    color y_axis = texture(in_filename, st[0], st[1], "wrap", "periodic");
+
+    st[0] = mod(xform_P[0], UVWRAP) * in_scale[0] + in_translation[0];
+    st[1] = mod(xform_P[1], UVWRAP) * in_scale[1] + in_translation[1];
+
+    rotate2d(st[0], st[1], in_rotation[2], st[0], st[1]);
+
+    color z_axis = texture(in_filename, st[0], st[1], "wrap", "periodic");
 
     out_color = color(
         x_axis * blending[0] +

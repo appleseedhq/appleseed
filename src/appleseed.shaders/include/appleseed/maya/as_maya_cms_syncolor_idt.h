@@ -40,15 +40,6 @@
 //      $MAYA_LOCATION/docs/files/GUID-BB4F38CF-6AA8-4D35-96DD-7F75D62FD3A7.htm
 //
 
-// Different working spaces might have different illuminants, and require a
-// chromatic adaptation transform. Though we can use
-// chromatic_adaptation_vonKries() in the respective header, that is costly
-// and envolves the use of CIE XYZ as an intermediary space.
-// With that in mind, some RGB<>RGB matrices were precomputed, and these
-// already take into account the potential chromatic adaptation.
-// They are limited to D60, D65, DCIP3 illuminants, and Rec.709, Rec.2020,
-// AdobeRGB, ACES 2065-1 AP0, ACEScg AP1, DCI-P3 color spaces.
-
 color transform_color_space_to_Rec709(
     color input_color,
     string color_space)
@@ -113,13 +104,6 @@ color transform_color_space_to_Rec709(
     }
     else
     {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]:Unsupported color space %s selected in %s, %s:%i\n",
-                color_space, shadername, __FILE__, __LINE__);
-#endif
         transformed_color = color(0);
     }
     return transformed_color;
@@ -187,7 +171,7 @@ color transform_color_space_to_Rec2020(
     else if (color_space == "gamma 2.2 Rec 709")
     {
         v_color = (vector) gamma_CCTF(input_color, 2.2);
-                             i
+                             
         transformed_color = color(
             dot(vector(REC709_TO_REC2020_X), v_color),
             dot(vector(REC709_TO_REC2020_Y), v_color),
@@ -218,13 +202,6 @@ color transform_color_space_to_Rec2020(
     }
     else
     {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]:Invalid color space %s selected in %s, %s:%i\n",
-                color_space, shadername, __FILE__, __LINE__);
-#endif
         transformed_color = color(0);
     }
     return transformed_color;
@@ -323,13 +300,6 @@ color transform_color_space_to_DCIP3(
     }
     else
     {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]:Invalid color space %s selected in %s, %s:%i\n",
-                color_space, shadername, __FILE__, __LINE__);
-#endif
         transformed_color = color(0);
     }
     return transformed_color;
@@ -428,13 +398,6 @@ color transform_color_space_to_ACES(
     }
     else
     {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]:Invalid color space %s selected in %s, %s:%i\n",
-                color_space, shadername, __FILE__, __LINE__);
-#endif
         transformed_color = color(0);
     }
     return transformed_color;
@@ -533,13 +496,6 @@ color transform_color_space_to_ACEScg(
     }
     else
     {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]:Invalid color space %s selected in %s, %s:%i\n",
-                color_space, shadername, __FILE__, __LINE__);
-#endif
         transformed_color = color(0);
     }
     return transformed_color;
@@ -577,13 +533,6 @@ color transform_colorspace_to_workingspace(
     }
     else
     {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]:Unsupported working space %s in %s, %s:%i\n",
-                working_space, shadername, __FILE__, __LINE__);
-#endif
         C = color(0);
     }
     return C;
