@@ -185,6 +185,12 @@ namespace
                 }
             }
 
+            if (!cosine_mult)
+            {
+                const float cos_in = abs(dot(incoming, shading_normal));
+                sample.m_value.m_glossy /= cos_in;
+            }
+
             sample.m_value.m_beauty = sample.m_value.m_glossy;
 
             // The probability density of the sampled direction is the Dirac delta.
