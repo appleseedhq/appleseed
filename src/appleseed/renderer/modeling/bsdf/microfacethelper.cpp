@@ -53,9 +53,9 @@ namespace bfs = boost::filesystem;
 
 namespace renderer
 {
+
 namespace
 {
-
     //
     // References:
     //
@@ -66,10 +66,8 @@ namespace
     //       http://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_slides.pdf
     //
 
-
     // Compute the albedo for a given outgoing direction.
     // See Physically Based Rendering, first edition, pp. 689-690.
-
     template <typename MDF>
     float directional_albedo(
         const float     cos_theta,
@@ -124,10 +122,10 @@ namespace
 
     template <typename MDF>
     void directional_albedo(
-        const float             roughness,
-        const size_t            table_size,
-        const size_t            sample_count,
-        float*                  values)
+        const float     roughness,
+        const size_t    table_size,
+        const size_t    sample_count,
+        float*          values)
     {
         const float alpha = square(roughness);
 
@@ -139,8 +137,8 @@ namespace
     }
 
     float average_albedo(
-        const size_t            table_size,
-        const float*            directional_albedo)
+        const size_t    table_size,
+        const float*    directional_albedo)
     {
         float avg = 0.0f;
 
@@ -154,14 +152,14 @@ namespace
     }
 
     class AlbedoTable
-    : public NonCopyable
+      : public NonCopyable
     {
-    public:
+      public:
         template <typename MDF>
         explicit AlbedoTable(const MDF& mdf)
-            : TableSize(32)
-            , TableHeight(33)
-            , SampleCount(1024)
+          : TableSize(32)
+          , TableHeight(33)
+          , SampleCount(1024)
         {
             m_albedo_table = new float[TableSize * TableHeight];
             m_avg_table = m_albedo_table + TableSize * TableSize;
@@ -280,7 +278,7 @@ namespace
     };
 
     struct AlbedoTables
-    : public NonCopyable
+      : public NonCopyable
     {
         AlbedoTable m_ggx;
         AlbedoTable m_beckmann;
@@ -357,8 +355,6 @@ void microfacet_energy_compensation_term(
         eavg);
 }
 
-// Write the computed tables to OpenEXR images.
-// Used in Renderer_Modeling_BSDF_EnergyCompensation unit test.
 void write_microfacet_directional_albedo_tables_to_exr(
     const char*         directory)
 {
