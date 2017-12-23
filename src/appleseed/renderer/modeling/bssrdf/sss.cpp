@@ -190,10 +190,9 @@ namespace
 {
     const size_t NDCDFTableSize = 128;
     const float NDCDFTableRmax = 55.0f;
-    const float NDCDFTableStep = NDCDFTableRmax / NDCDFTableSize;
 
-    float nd_cdf_table[NDCDFTableSize];
-    float nd_cdf_rmax;
+    float g_nd_cdf_table[NDCDFTableSize];
+    float g_nd_cdf_rmax;
 
     struct InitializeNDCDFTable
     {
@@ -202,14 +201,14 @@ namespace
             for (size_t i = 0; i < NDCDFTableSize; ++i)
             {
                 const float r = fit<size_t, float>(i, 0, NDCDFTableSize - 1, 0.0f, NDCDFTableRmax);
-                nd_cdf_table[i] = normalized_diffusion_cdf(r, 1.0f);
+                g_nd_cdf_table[i] = normalized_diffusion_cdf(r, 1.0f);
             }
 
             // Save the real value of cdf(Rmax, 1).
-            nd_cdf_rmax = nd_cdf_table[NDCDFTableSize - 1];
+            g_nd_cdf_rmax = g_nd_cdf_table[NDCDFTableSize - 1];
 
             // Make sure the last value is exactly 1.
-            nd_cdf_table[NDCDFTableSize - 1] = 1.0f;
+            g_nd_cdf_table[NDCDFTableSize - 1] = 1.0f;
         }
     };
 
@@ -259,14 +258,14 @@ float normalized_diffusion_sample(
     const float d = l / s;
 
     // Handle the case where u is greater than the value we consider 1 in our CDF.
-    if (u >= nd_cdf_rmax)
+    if (u >= g_nd_cdf_rmax)
         return NDCDFTableRmax * d;
 
     // Use the CDF to find an initial interval for the root of cdf(r, 1) - u = 0.
-    const size_t i = sample_cdf(nd_cdf_table, nd_cdf_table + NDCDFTableSize, u);
+    const size_t i = sample_cdf(g_nd_cdf_table, g_nd_cdf_table + NDCDFTableSize, u);
     assert(i > 0);
-    assert(nd_cdf_table[i - 1] <= u);
-    assert(nd_cdf_table[i] > u);
+    assert(g_nd_cdf_table[i - 1] <= u);
+    assert(g_nd_cdf_table[i] > u);
 
     // Transform the cdf(r, 1) interval to cdf(r, d) using the fact that cdf(r, d) == cdf(r/d, 1).
     const float rmin = fit<size_t, float>(i - 1, 0, NDCDFTableSize - 1, 0.0f, NDCDFTableRmax) * d;
@@ -278,7 +277,7 @@ float normalized_diffusion_sample(
         u,
         rmin,
         rmax,
-        (rmax + rmin) * 0.5f,
+        (rmin + rmax) * 0.5f,
         eps,
         max_iterations);
 }
