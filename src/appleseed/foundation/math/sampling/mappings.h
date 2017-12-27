@@ -611,7 +611,7 @@ T sample_rcp_distribution(
     assert(l > 0.0f);
     assert(r > l);
 
-    return l * std::pow(r / l, s);
+    return clamp(l * std::pow(r / l, s), l, r);
 }
 
 template <typename T>
@@ -621,10 +621,10 @@ T rcp_distribution_pdf(
     const T r)
 {
     assert(x < r);
-    assert(x >= l);
+    // assert(x >= l);
     assert(l > 0.0f);
 
-    return rcp(x * log(r / l));
+    return rcp(x * std::log(r / l));
 }
 
 }       // namespace foundation
