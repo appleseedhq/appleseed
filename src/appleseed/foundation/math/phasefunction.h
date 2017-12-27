@@ -72,6 +72,7 @@ class HenyeyPhaseFunction final
 class IsotropicPhaseFunction final
   : public PhaseFunction
 {
+  public:
     float evaluate(const Vector3f& outgoing, const Vector3f& incoming) const override;
     float sample(const Vector3f& outgoing, const Vector2f& s, Vector3f& incoming) const override;
 };

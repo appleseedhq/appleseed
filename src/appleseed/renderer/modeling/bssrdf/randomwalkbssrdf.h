@@ -71,9 +71,16 @@ APPLESEED_DECLARE_INPUT_VALUES(RandomWalkBSSRDFInputValues)
     float           m_single_scattering_weight;
     float           m_multiple_scattering_weight;
 
-    Spectrum        m_albedo;
-    Spectrum        m_extinction;
-    Spectrum        m_scattering;
+    struct Precomputed
+    {
+        Spectrum        m_albedo;
+        Spectrum        m_extinction;
+        Spectrum        m_scattering;
+
+        Spectrum        m_rcp_diffusion_length;
+    };
+
+    Precomputed     m_precomputed;
 };
 
 

@@ -33,13 +33,13 @@
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bssrdf/sss.h"
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
-#include "renderer/modeling/volume/distancesample.h"
-#include "renderer/modeling/volume/volume.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/phasefunction.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/rr.h"
 #include "foundation/math/scalar.h"
@@ -129,6 +129,8 @@ namespace
             RandomWalkBSSRDFInputValues* values =
                 static_cast<RandomWalkBSSRDFInputValues*>(data);
 
+            auto& precomputed = values->m_precomputed;
+
             // Apply multipliers to input values.
             values->m_reflectance *= values->m_reflectance_multiplier;
             values->m_mfp *= values->m_mfp_multiplier;
@@ -146,9 +148,14 @@ namespace
                 const float s = normalized_diffusion_s_mfp(values->m_reflectance[i]);
                 const float extinction = rcp(values->m_mfp[i] * s);
 
-                values->m_albedo[i] = albedo;
-                values->m_extinction[i] = extinction;
-                values->m_scattering[i] = albedo * extinction;
+                precomputed.m_albedo[i] = albedo;
+                precomputed.m_extinction[i] = extinction;
+                precomputed.m_scattering[i] = albedo * extinction;
+
+                // Compute diffusion length, required by Dwivedi sampling.
+                const float kappa = compute_rcp_diffusion_length(albedo);
+                precomputed.m_rcp_diffusion_length[i] = kappa;
+                assert(abs(atanhf(kappa) * albedo - kappa) < 0.01f);
             }
         }
 
@@ -169,7 +176,7 @@ namespace
         static float compute_rcp_diffusion_length_high_albedo(const float albedo)
         {
             const float a = 1.0f - albedo;
-            const float b = sqrt(3.0 * a);
+            const float b = sqrt(3.0f * a);
 
             const float x[5] = {
                 +1.0000000000f,
@@ -218,16 +225,6 @@ namespace
             return true;
         }
 
-        static void channel_mis(const Spectrum& pdf, Spectrum& values)
-        {
-            float avg_value = 0.0f;
-            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
-            {
-                avg_value += pdf[i] * values[i];
-            }
-            if (avg_value > 0.0f) values /= avg_value;
-        }
-
         static float compute_classical_sampling_probability(const float anisotropy)
         {
             return max(0.1f, pow(abs(anisotropy), 3.0f));
@@ -242,15 +239,25 @@ namespace
             BSSRDFSample&           bssrdf_sample,
             BSDFSample&             bsdf_sample) const override
         {
+            // Get input values.
             const RandomWalkBSSRDFInputValues* values =
                 static_cast<const RandomWalkBSSRDFInputValues*>(data);
+            const Spectrum& extinction = values->m_precomputed.m_extinction;
+            const Spectrum& albedo = values->m_precomputed.m_albedo;
+            const Spectrum& scattering = values->m_precomputed.m_scattering;
+            const Spectrum& rcp_diffusion_length = values->m_precomputed.m_rcp_diffusion_length;
 
-            const float classical_sampling_prob = compute_classical_sampling_probability(0.0f);
+            // Compute the probability of classical sampling.
+            // The probability of classical sampling is high if phase function is anisotropic.
+            const float classical_sampling_prob = 1.0f; // compute_classical_sampling_probability(0.0f);
 
-            // Pick initial random-walk direction.
+            // Initialize BSSRDF value.
+            bssrdf_sample.m_value.set(1.0f);
+            bssrdf_sample.m_probability = 1.0f;
+
+            // Pick initial random-walk direction uniformly.
             sampling_context.split_in_place(2, 1);
-            const Vector2d s = sampling_context.next2<Vector2d>();
-            Vector3d initial_dir = sample_hemisphere_cosine(s);
+            Vector3d initial_dir = sample_hemisphere_cosine(sampling_context.next2<Vector2d>());
             initial_dir.y = -initial_dir.y;
             initial_dir = outgoing_point.get_shading_basis().transform_to_parent(initial_dir);
             ShadingRay ray = ShadingRay(
@@ -258,18 +265,58 @@ namespace
                 initial_dir,
                 outgoing_point.get_time(),
                 VisibilityFlags::ShadowRay,
-                outgoing_point.get_ray().m_depth + 1
-            );
+                outgoing_point.get_ray().m_depth + 1);
 
-            // Initialize BSSRDF value.
-            bssrdf_sample.m_value.set(1.0f);
-            bssrdf_sample.m_probability = 1.0f;
+            // Choose color channel used for distance sampling.
+            sampling_context.split_in_place(1, 1);
+            Spectrum channel_cdf, channel_pdf;
+            build_cdf_and_pdf(bssrdf_sample.m_value, channel_cdf, channel_pdf);
+            const size_t channel = sample_cdf(
+                &channel_cdf[0],
+                &channel_cdf[0] + channel_cdf.size(),
+                sampling_context.next2<float>());
+
+            // Sample distance (we always use classical sampling here).
+            sampling_context.split_in_place(1, 1);
+            const float distance = sample_exponential_distribution(
+                sampling_context.next2<float>(), extinction[channel]);
+
+            // Trace the initial ray till we reach the surface from inside.
+            bssrdf_sample.m_incoming_point.clear();
+            shading_context.get_intersector().trace(
+                ray,
+                bssrdf_sample.m_incoming_point,
+                &outgoing_point);
+            if (!bssrdf_sample.m_incoming_point.is_valid())
+                return false;
+            const float ray_length = static_cast<float>(bssrdf_sample.m_incoming_point.get_distance());
+            bool transmitted = ray_length <= distance;
+            const float mis_weight = compute_transmission_classical_sampling(
+                transmitted ? ray_length : distance,
+                extinction,
+                channel_pdf,
+                transmitted,
+                bssrdf_sample.m_value);
+            bssrdf_sample.m_value *= rcp(mis_weight);
 
             // Do random walk until we reach the surface from inside.
             int n_iteration = 0;
             const int MaxIterationsCount = 64;
             const int MinRRIteration = 8;
-            while (true)
+
+            // Determine the closest surface point and corresponding slab normal.
+            const bool outgoing_point_is_closer = 2.0f * distance < ray_length;
+            const Vector3f closest_surface_point = Vector3f(
+                outgoing_point_is_closer ?
+                outgoing_point.get_point() :
+                bssrdf_sample.m_incoming_point.get_point());
+            const Vector3f slab_normal = Vector3f(
+                outgoing_point_is_closer ?
+                outgoing_point.get_geometric_normal() :
+                bssrdf_sample.m_incoming_point.get_geometric_normal());
+            Vector3d current_point = ray.point_at(distance);
+
+            while (!transmitted)
             {
                 if (++n_iteration > MaxIterationsCount)
                     return false;   // path got lost inside the object
@@ -279,69 +326,91 @@ namespace
 
                 sampling_context.split_in_place(1, 2);
 
-                // Choose a channel.
-                Spectrum cdf, pdf;
-                build_cdf_and_pdf(bssrdf_sample.m_value, cdf, pdf);
-                const float s_channel = sampling_context.next2<float>();
-                const size_t channel = sample_cdf(&cdf[0], &cdf[0] + cdf.size(), s_channel);
-                if (values->m_scattering[channel] == 0.0f ||
-                    bssrdf_sample.m_value[channel] == 0.0f)
-                {
-                    bssrdf_sample.m_value.set(0.0f);
+                // Choose color channel used for distance sampling.
+                Spectrum channel_cdf, channel_pdf;
+                build_cdf_and_pdf(bssrdf_sample.m_value, channel_cdf, channel_pdf);
+                const size_t channel = sample_cdf(
+                    &channel_cdf[0],
+                    &channel_cdf[0] + channel_cdf.size(),
+                    sampling_context.next2<float>());
+                if (scattering[channel] == 0.0f || bssrdf_sample.m_value[channel] == 0.0f)
                     return false; // path got lost inside the object
-                }
 
-                // Sample distance exponentially, assuming that the ray is infinite.
-                const float s_distance = sampling_context.next2<float>();
-                const float distance = sample_exponential_distribution(
-                    s_distance, values->m_extinction[channel]);
-                assert(distance > 0.0f && !isnan(distance) && !isinf(distance));
-                ray.m_tmax = distance;
+                // Determine if we do Dwivedi (biased) sampling or classical sampling.
+                bool is_biased = classical_sampling_prob < sampling_context.next2<float>();
 
-                // Trace ray up to the sampled distance.
-                bssrdf_sample.m_incoming_point.clear();
-                shading_context.get_intersector().trace(
-                    ray,
-                    bssrdf_sample.m_incoming_point,
-                    n_iteration == 1 ? &outgoing_point : nullptr);
-
-                // Stop random walk in case we crossed the surface.
-                if (bssrdf_sample.m_incoming_point.hit_surface())
-                {
-                    const float distance = static_cast<float>(
-                        bssrdf_sample.m_incoming_point.get_distance());
-                    Spectrum transmission;
-                    for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
-                    {
-                        const float x = -distance * values->m_extinction[i];
-                        assert(FP<float>::is_finite(x));
-                        transmission[i] = std::exp(x);
-                    }
-                    channel_mis(pdf, transmission);
-                    bssrdf_sample.m_value *= transmission;
-                    break;
-                }
-
-                // Compute transmission value for the distance sample.
-                Spectrum transmission;
-                for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
-                {
-                    transmission[i] = exponential_distribution_pdf(distance, values->m_extinction[i]);
-                }
-                channel_mis(pdf, transmission);
-                bssrdf_sample.m_value *= transmission;
-                bssrdf_sample.m_value *= values->m_albedo;
-
-                // Find next random-walk direction using isotropic scattering.
+                // Find next random-walk direction.
                 sampling_context.split_in_place(2, 1);
-                const Vector2d s_direction = sampling_context.next2<Vector2d>();
+                const Vector2f s_direction = sampling_context.next2<Vector2f>();
+                Vector3f incoming;
+                if (is_biased)
+                {
+                    DwivediPhaseFunction phase_function(rcp(rcp_diffusion_length[channel]));
+                    phase_function.sample(slab_normal, s_direction, incoming);
+                }
+                else
+                {
+                    incoming = sample_sphere_uniform(s_direction);
+                }
+
+                // Update transmission by albedo.
+                bssrdf_sample.m_value *= albedo;
+
+                // Construct ray in the sampled direction.
                 ray = ShadingRay(
-                    ray.point_at(distance),
-                    sample_sphere_uniform(s_direction),
+                    current_point,
+                    Vector3d(incoming),
                     outgoing_point.get_time(),
                     VisibilityFlags::ShadowRay,
                     ray.m_depth + 1
                 );
+
+                // Sample distance, assuming that the ray is infinite.
+                sampling_context.split_in_place(1, 1);
+                const float cosine = dot(incoming, slab_normal);
+                const float s_distance = sampling_context.next2<float>();
+                const float effective_extinction = is_biased ?
+                    extinction[channel] * (1.0f - cosine * rcp_diffusion_length[channel]) :
+                    extinction[channel];
+                float distance = sample_exponential_distribution(s_distance, effective_extinction);
+                assert(distance > 0.0f && !isnan(distance) && !isinf(distance));
+
+                // Trace ray up to the sampled distance.
+                ray.m_tmax = distance;
+                bssrdf_sample.m_incoming_point.clear();
+                shading_context.get_intersector().trace(
+                    ray,
+                    bssrdf_sample.m_incoming_point);
+                transmitted = bssrdf_sample.m_incoming_point.hit_surface();
+                current_point = ray.point_at(distance);
+                if (transmitted)
+                {
+                    distance = static_cast<float>(
+                        bssrdf_sample.m_incoming_point.get_distance());
+                }
+
+                // Compute transmission for the distance sample.
+                Spectrum transmission;
+                const float mis_classical = compute_transmission_classical_sampling(
+                    distance,
+                    extinction,
+                    channel_pdf,
+                    transmitted,
+                    transmission);
+                const float mis_dwivedi = compute_mis_dwivedi_sampling(
+                    distance,
+                    extinction,
+                    rcp_diffusion_length,
+                    cosine,
+                    channel_pdf,
+                    transmitted,
+                    slab_normal,
+                    incoming);
+                transmission *= rcp(mix(
+                    mis_dwivedi,
+                    mis_classical,
+                    classical_sampling_prob));
+                bssrdf_sample.m_value *= transmission;
             }
 
             if (n_iteration == 1)
@@ -369,6 +438,55 @@ namespace
                 bsdf_sample);
 
             return true;
+        }
+
+        static float compute_transmission_classical_sampling(
+            const float         distance,
+            const Spectrum&     extinction,
+            const Spectrum&     channel_pdf,
+            const bool          transmitted,
+            Spectrum&           transmission)
+        {
+            float mis_base = 0.0f;
+            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+            {
+                const float x = -distance * extinction[i];
+                assert(FP<float>::is_finite(x));
+                transmission[i] = std::exp(x);
+                if (!transmitted) transmission[i] *= extinction[i];
+
+                mis_base += transmission[i] * channel_pdf[i];
+            }
+            return mis_base;
+        }
+
+        static float compute_mis_dwivedi_sampling(
+            const float         distance,
+            const Spectrum&     extinction,
+            const Spectrum&     rcp_diffusion_length,
+            const float         cosine,
+            const Spectrum&     channel_pdf,
+            const bool          transmitted,
+            const Vector3f&     outgoing,
+            const Vector3f&     incoming)
+        {
+            float mis_base = 0.0f;
+            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+            {
+                const float effective_extinction = extinction[i] * (1.0f - cosine * rcp_diffusion_length[i]);
+                const float x = -distance * effective_extinction;
+                assert(FP<float>::is_finite(x));
+                const float distance_prob = (transmitted ? 1.0f : effective_extinction) * std::exp(x);
+
+                DwivediPhaseFunction phase_function(rcp(rcp_diffusion_length[i]));
+                const float direction_prob = phase_function.evaluate(outgoing, incoming);
+
+                mis_base +=
+                    distance_prob *
+                    channel_pdf[i] *
+                    direction_prob;
+            }
+            return mis_base * FourPi<float>();
         }
 
         void evaluate(
