@@ -179,6 +179,10 @@ namespace
         // Sample a radius.
         const float disk_radius = bssrdf.sample_profile(bssrdf_data, channel, u[0]);
 
+        // Reject the limit case where there is no subsurface travel.
+        if (disk_radius == 0.0f)
+            return false;
+
         // Reject points outside the sampling disk.
         // This introduces negligible bias in comparison to the other approximations.
         if (disk_radius > max_disk_radius)
