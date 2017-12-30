@@ -28,8 +28,9 @@
 #define APPLESEED_ENABLE_IMATH_INTEROP
 
 // appleseed.renderer headers.
-#include "renderer/api/object.h"
+#include "renderer/api/camera.h"
 #include "renderer/api/log.h"
+#include "renderer/api/object.h"
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
 #include "renderer/api/utility.h"
@@ -40,6 +41,7 @@
 #include "foundation/math/transform.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/string.h"
@@ -47,10 +49,7 @@
 // appleseed.main headers.
 #include "main/dllvisibility.h"
 
-// AlembicAssembly headers.
-#include "alembicassembly.h"
-
-#include <Alembic/Abc/All.h>
+// Alembic headers.
 #include <Alembic/AbcCoreFactory/All.h>
 #include <Alembic/AbcGeom/All.h>
 
@@ -70,10 +69,10 @@ namespace
 asf::Matrix4d flatten_xform(const std::vector<asf::Matrix4d>& mtx_stack)
 {
     // the matrix we will return
-    auto out_mtx = asf::Matrix4d::identity();
+    asf::Matrix4d out_mtx = asf::Matrix4d::identity();
 
-    // mutiply the each matrix of the stack from bottom to top
-    for (auto mtx : mtx_stack)
+    // multiply the each matrix of the stack from bottom to top
+    for (const asf::Matrix4d& mtx : mtx_stack)
     {
         out_mtx = mtx * out_mtx;
     }
@@ -84,42 +83,48 @@ asf::Matrix4d flatten_xform(const std::vector<asf::Matrix4d>& mtx_stack)
 // roll into given xform sequence stack and return the flatten one
 asr::TransformSequence flatten_xform_seq(const std::vector<asr::TransformSequence>& xform_seq_stack)
 {
-    asr::TransformSequence out_xform_seq;
+    assert(xform_seq_stack.size() > 0);
 
     if (xform_seq_stack.size() == 1)
     {
-        // we don't need to flatten anything
+        // one item, we don't need to flatten anything
         return xform_seq_stack.back();
     }
     else
     {
-        for (auto xform_seq : xform_seq_stack)
+        // xform sequence we will return
+        asr::TransformSequence out_xform_seq;
+
+        for (const asr::TransformSequence& xform_seq : xform_seq_stack)
         {
             out_xform_seq = xform_seq * out_xform_seq;
         }
-    }
-    out_xform_seq.optimize();
-    out_xform_seq.prepare();
 
-    return out_xform_seq;
+        out_xform_seq.optimize();
+        out_xform_seq.prepare();
+
+        return out_xform_seq;
+    }
 }
 
-// return if given time samples are linearly time spaced
-bool are_linearly_sampled(const Alembic::Abc::chrono_t start_time,
-                          const Alembic::Abc::chrono_t end_time,
-                          const std::vector<Alembic::Abc::chrono_t>& samples)
+// return if given time samples are linearly time spaced between start_time and
+// end_time.
+const bool are_linearly_sampled(const Alembic::Abc::chrono_t start_time,
+                                const Alembic::Abc::chrono_t end_time,
+                                const std::vector<Alembic::Abc::chrono_t>& samples)
 {
     assert(samples.size() > 1);
 
     // compute time supposed to be between each samples if samples are linearly
     // sampled.
-    const auto increm = (end_time - start_time) / (samples.size()-1);
+    const Alembic::Abc::chrono_t increm =
+        (end_time - start_time) / (samples.size()-1);
 
     // start sample
-    auto t_accum = samples[0];
+    Alembic::Abc::chrono_t t_accum = samples[0];
 
     // get each sample time and compare with a linearly sampled time
-    for (const auto t : samples)
+    for (const Alembic::Abc::chrono_t t : samples)
     {
         if (asf::feq(t, t_accum))
         {
@@ -131,56 +136,18 @@ bool are_linearly_sampled(const Alembic::Abc::chrono_t start_time,
     return true;
 }
 
-// return sample times (with border samples) in given shutter for given schema
+
+// return sample indices (with border samples) in given shutter
 // returned samples  ------|-----------|---------|--------->
 //                   ---------|--------------|------------->
 // shutter times             open          close
-std::vector<Alembic::Abc::chrono_t> schema_to_sample_timesOO(const float shutter_open_time,
-                                                           const float shutter_close_time,
-                                                           //const Alembic::AbcGeom::IPolyMeshSchema schema,
-                                                           const size_t num_samples,
-                                                           const Alembic::AbcCoreAbstract::TimeSamplingPtr time_sampling)
-{
-    std::cout << "schema num_samples " << num_samples << std::endl;
-
-    std::vector<Alembic::Abc::chrono_t> sample_times;
-
-    if (num_samples < 2)
-    {
-        std::cout << "No sampling " << std::endl;
-        sample_times.push_back(0.0f);
-    }
-    else  // more than 1 sample
-    {
-        // get floor and ceil sample idss to don't miss any
-        const std::pair<Alembic::Abc::index_t,
-                        Alembic::Abc::chrono_t> open_pair = time_sampling->getFloorIndex(shutter_open_time, num_samples);
-        const std::pair<Alembic::Abc::index_t,
-                        Alembic::Abc::chrono_t> close_pair = time_sampling->getCeilIndex(shutter_close_time, num_samples);
-
-        std::cout << "open_pair.first " << open_pair.first << std::endl;
-        std::cout << "close_pair.first " << close_pair.first << std::endl;
-
-        sample_times.reserve(close_pair.first-open_pair.first+1);
-
-        // get _every_ sample times between open and close
-        for (auto i = open_pair.first; i <= close_pair.first; i++)
-        {
-            const auto t = time_sampling->getSampleTime(i);
-            sample_times.push_back(t);
-        }
-    }
-    return sample_times;
-}
-
-// return sample indices contained in given shutter
 std::vector<Alembic::Abc::index_t> schema_to_sample_times(
-    const float shutter_open_time,
-    const float shutter_close_time,
+    const float shutter_open,
+    const float shutter_close,
     const size_t num_samples,
     const Alembic::AbcCoreAbstract::TimeSamplingPtr time_sampling)
 {
-    assert(shutter_open_time <= shutter_close_time);
+    assert(shutter_open <= shutter_close);
 
     // the index array we will return
     std::vector<Alembic::Abc::index_t> sample_indices;
@@ -195,15 +162,15 @@ std::vector<Alembic::Abc::index_t> schema_to_sample_times(
         // get floor and ceil sample indices to don't miss any
         const std::pair<Alembic::Abc::index_t,
                         Alembic::Abc::chrono_t> open_pair =
-            time_sampling->getFloorIndex(shutter_open_time, num_samples);
+            time_sampling->getFloorIndex(shutter_open, num_samples);
         const std::pair<Alembic::Abc::index_t,
                         Alembic::Abc::chrono_t> close_pair =
-            time_sampling->getCeilIndex(shutter_close_time, num_samples);
+            time_sampling->getCeilIndex(shutter_close, num_samples);
 
         sample_indices.reserve(close_pair.first-open_pair.first+1);
 
         // get _every_ sample indices between open and close
-        for (auto i = open_pair.first; i <= close_pair.first; i++)
+        for (Alembic::Abc::index_t i = open_pair.first; i <= close_pair.first; i++)
         {
             sample_indices.push_back(i);
         }
@@ -211,7 +178,199 @@ std::vector<Alembic::Abc::index_t> schema_to_sample_times(
     return sample_indices;
 }
 
+// extract an appleseed xform sequence from given alembic xform schema
+asr::TransformSequence extract_xform_seq(
+        const Alembic::AbcGeom::IXformSchema& schema,
+        const Alembic::Abc::chrono_t shutter_open,
+        const Alembic::Abc::chrono_t shutter_close,
+        const Alembic::Abc::chrono_t time_offset)
+{
+    assert(schema.getNumOps() > 0);
+    assert(shutter_open <= shutter_close);
 
+    const Alembic::Abc::TimeSamplingPtr time_sampling = schema.getTimeSampling();
+
+    // find samples in shutter
+    const auto sample_indices = schema_to_sample_times(
+        shutter_open  + time_offset,
+        shutter_close + time_offset,
+        schema.getNumSamples(),
+        time_sampling);
+
+    // create and return the xform sequence from sample founds.
+    asr::TransformSequence xform_seq;
+
+    for (const Alembic::Abc::index_t i : sample_indices)
+    {
+        // time
+        const Alembic::Abc::chrono_t t = time_sampling->getSampleTime(i);
+
+        // alembic xform -> appleseed xform
+        const auto sample = schema.getValue(i);
+        const auto abc_mtx = sample.getMatrix();
+        const auto mtx = asf::Matrix4d(abc_mtx);
+        const auto xform = asf::Transformd::from_local_to_parent(mtx);
+
+        // as all samples are time offsetted, we offset them back
+        xform_seq.set_transform(t-time_offset, xform);
+    }
+
+    return xform_seq;
+}
+
+// log information for given alembic archive
+void log_archive(Alembic::Abc::IArchive& archive,
+                 Alembic::AbcCoreFactory::IFactory::CoreType core_type)
+{
+    RENDERER_LOG_INFO("archive name: %s\n"
+                      "        time sampling count: %d\n"
+                      "        version: %d",
+        archive.getName().c_str(),
+        archive.getNumTimeSamplings(),
+        archive.getArchiveVersion());
+    switch(core_type)
+    {
+        case Alembic::AbcCoreFactory::IFactory::kHDF5:
+            RENDERER_LOG_INFO("        core type: HDF5");
+            break;
+        case Alembic::AbcCoreFactory::IFactory::kOgawa:
+            RENDERER_LOG_INFO("        core type: Ogawa");
+            break;
+        case Alembic::AbcCoreFactory::IFactory::kLayer:
+            RENDERER_LOG_INFO("        core type: Layer");
+            break;
+        case Alembic::AbcCoreFactory::IFactory::kUnknown:
+            RENDERER_LOG_WARNING("        core type: Unknown");
+            break;
+        default:
+            break;  // this should never happen (tm)
+    }
+}
+
+// log information for given alembic object
+void log_obj(const Alembic::Abc::IObject& obj)
+{
+    RENDERER_LOG_INFO("%s\n"
+                      "  children count: %zd",
+        obj.getFullName().c_str(),
+        obj.getNumChildren());
+
+    const Alembic::Abc::MetaData& metadata = obj.getMetaData();
+
+    RENDERER_LOG_INFO("  metadata size: %zd", metadata.size());
+
+    if(metadata.size())
+    {
+        for(const std::pair<std::string, std::string>& it : metadata)
+        {
+            const std::string& key   = it.first;
+            const std::string& value = it.second;
+
+            RENDERER_LOG_INFO("           %s = %s",
+                    key.c_str(),
+                    value.c_str());
+        }
+    }
+}
+
+void log_data_type(const Alembic::Abc::DataType& data_type)
+{
+    switch(data_type.getPod())
+    {
+        case Alembic::Util::kBooleanPOD:
+            RENDERER_LOG_INFO("                     data type POD type: boolean");
+            break;
+        case Alembic::Util::kUint8POD:
+            RENDERER_LOG_INFO("                     data type POD type: 8bit unsigned integer");
+            break;
+        case Alembic::Util::kInt8POD:
+            RENDERER_LOG_INFO("                     data type POD type: 8bit integer");
+            break;
+        case Alembic::Util::kUint16POD:
+            RENDERER_LOG_INFO("                     data type POD type: 16bit unsigned integer");
+            break;
+        case Alembic::Util::kInt16POD:
+            RENDERER_LOG_INFO("                     data type POD type: 16bit integer");
+            break;
+        case Alembic::Util::kUint32POD:
+            RENDERER_LOG_INFO("                     data type POD type: 32bit unsigned integer");
+            break;
+        case Alembic::Util::kInt32POD:
+            RENDERER_LOG_INFO("                     data type POD type: 32bit integer");
+            break;
+        case Alembic::Util::kFloat16POD:
+            RENDERER_LOG_INFO("                     data type POD type: 16bit float");
+            break;
+        case Alembic::Util::kFloat32POD:
+            RENDERER_LOG_INFO("                     data type POD type: 32bit float");
+            break;
+        case Alembic::Util::kFloat64POD:
+            RENDERER_LOG_INFO("                     data type POD type: 64bit float");
+            break;
+        case Alembic::Util::kStringPOD:
+            RENDERER_LOG_INFO("                     data type POD type: string pointer");
+            break;
+        case Alembic::Util::kWstringPOD:
+            RENDERER_LOG_INFO("                     data type POD type: wide string pointer");
+            break;
+        case Alembic::Util::kNumPlainOldDataTypes:
+            RENDERER_LOG_INFO("                     data type POD type: number of POD");
+            break;
+        case Alembic::Util::kUnknownPOD:
+            RENDERER_LOG_WARNING("                  data type POD type: unknown");
+            break;
+        default:
+            break;  // should never happen
+    }
+
+    RENDERER_LOG_INFO("                            extent: %d", data_type.getExtent());
+    //RENDERER_LOG_INFO("                            byte count (POD type size * extent): %zd", data_type.getNumBytes());
+}
+
+void log_polymesh_schema(const Alembic::AbcGeom::IPolyMeshSchema& schema)
+{
+    RENDERER_LOG_INFO("  schema sample count: %zd", schema.getNumSamples());
+    RENDERER_LOG_INFO("         property count: %zd", schema.getNumProperties());
+
+    switch(schema.getTopologyVariance())
+    {
+        case Alembic::AbcGeom::kConstantTopology:
+            RENDERER_LOG_INFO("         topology variance: constant (non deformed)");
+            break;
+        case Alembic::AbcGeom::kHomogeneousTopology:
+            RENDERER_LOG_INFO("         topology variance: homogeneous (deformed but no topology change)");
+            break;
+        case Alembic::AbcGeom::kHeterogeneousTopology:
+            RENDERER_LOG_INFO("         topology variance: heterogeneous (fluid geos like realflow bins, etc.)");
+            break;
+        default:
+            RENDERER_LOG_WARNING("         topology variance: unknown");
+            break;
+    }
+
+    for (auto i = 0; i < schema.getNumProperties(); i++)
+    {
+        const Alembic::Abc::PropertyHeader& prop_header = schema.getPropertyHeader(i);
+
+        RENDERER_LOG_INFO("         property name: %s", prop_header.getName().c_str());
+        //RENDERER_LOG_INFO("                  num samples: %zd", prop_header.getNumSamples());
+
+        switch(prop_header.getPropertyType())
+        {
+            case Alembic::Abc::kCompoundProperty:
+                RENDERER_LOG_INFO("                  type: compound");
+                break;
+            case Alembic::Abc::kScalarProperty:
+                RENDERER_LOG_INFO("                  type: scalar");
+                break;
+            case Alembic::Abc::kArrayProperty:
+                RENDERER_LOG_INFO("                  type: array");
+                break;
+        }
+
+        log_data_type(prop_header.getDataType());
+    }
+}
 
 //
 // Alembic Assembly
@@ -256,7 +415,7 @@ class AlembicAssembly
 
         if (m_file_path.empty())
         {
-            RENDERER_LOG_WARNING("Empty 'file_path' property: \"%s\"", get_name());
+            RENDERER_LOG_ERROR("empty 'file_path' property: %s", get_name());
             return false;
         }
 
@@ -267,47 +426,79 @@ class AlembicAssembly
         // time offset
         m_time_offset = params.get_optional<float>("time_offset", 0.0f);
 
+        // verbose mode
+        m_verbose = params.get_optional<bool>("verbose", true);
+
+        if (m_verbose)
+        {
+            RENDERER_LOG_INFO("file_path: %s\n"
+                              "shutter_open: %f\n"
+                              "shutter_close: %f\n"
+                              "time_offset: %f\n"
+                              "verbose: %s",
+                m_file_path.c_str(),
+                m_shutter_open_time,
+                m_shutter_close_time,
+                m_time_offset,
+                m_verbose ? "true" : "false");
+        }
 
         Alembic::AbcCoreFactory::IFactory factory;
         Alembic::AbcCoreFactory::IFactory::CoreType core_type;
 
-        const Alembic::Abc::IArchive& archive = factory.getArchive(m_file_path, core_type);
+        Alembic::Abc::IArchive archive = factory.getArchive(m_file_path, core_type);
 
         if (!archive.valid())
         {
-            RENDERER_LOG_WARNING("Invalid archive: \"%s\"", m_file_path.c_str());
+            RENDERER_LOG_WARNING("invalid archive: %s", m_file_path.c_str());
             return false;
         }
+
+        if (m_verbose)
+            log_archive(archive, core_type);
 
         m_xform_seq_stack.push_back(asr::TransformSequence());
 
         // retrieve archive root object
         const Alembic::Abc::IObject& root = archive.getTop();
 
-        // root children
-        for (auto i = 0; i < root.getNumChildren(); i++)
+        if (!root.valid())
         {
-            const Alembic::Abc::IObject& child = root.getChild(i);
-            std::cout << std::endl << "child name: " << child.getFullName() << std::endl;
-            foo(this, child);
+            RENDERER_LOG_WARNING("invalid root: %s", m_file_path.c_str());
+            return false;
         }
 
-        //foo(top);
+        if (m_verbose)
+            log_obj(root);
+
+        // root children
+        for (size_t i = 0; i < root.getNumChildren(); i++)
+        {
+            const Alembic::Abc::IObject& child = root.getChild(i);
+            walk(child);
+        }
 
         return true;
     }
 
   private:
 
-    void foo(const asr::Assembly* assembly, const Alembic::Abc::IObject& obj)
+    void walk(const Alembic::Abc::IObject& obj)
     {
-        const auto name = obj.getFullName();
+        if(!obj.valid())
+        {
+            RENDERER_LOG_WARNING("invalid object detected!");
+            return;  // stop here
+        }
 
-        std::cout << "full name: " << obj.getFullName() << std::endl;
+        if (m_verbose)
+            log_obj(obj);
 
-        auto h = obj.getHeader();
+        const std::string obj_name = obj.getFullName();
 
-        // we track if a transform sequence has been generated or not to remove it
+        const Alembic::AbcGeom::ObjectHeader& h = obj.getHeader();
+
+        // we track if a xform sequence has been generated or not to remove it
         // after we reached every children.
         bool gen_xform = false;
 
@@ -315,33 +506,17 @@ class AlembicAssembly
         {
             const auto& abc_xform = Alembic::AbcGeom::IXform(obj);
 
-            const auto& xform_schema = abc_xform.getSchema();
+            const Alembic::AbcGeom::IXformSchema& xform_schema = abc_xform.getSchema();
 
-            if (xform_schema.getNumOps() > 0)
+            if (xform_schema.getNumOps() > 0 &&
+                !xform_schema.isConstantIdentity())
             {
-                const auto sample_times = schema_to_sample_timesOO(
-                    m_shutter_open_time+m_time_offset,
-                    m_shutter_close_time+m_time_offset,
-                    xform_schema.getNumSamples(),
-                    xform_schema.getTimeSampling());
+                asr::TransformSequence xform_seq = extract_xform_seq(
+                        xform_schema,
+                        m_shutter_open_time,
+                        m_shutter_close_time,
+                        m_time_offset);
 
-                asr::TransformSequence xform_seq;
-
-                // put every xform samples founds into the TransformSequence
-                for (const auto t : sample_times)
-                {
-                    const auto sample_sel = Alembic::Abc::ISampleSelector(t);
-
-                    const auto xform_sample = xform_schema.getValue(sample_sel);
-                    const auto xform_mtx = xform_sample.getMatrix();
-                    const auto mtx = asf::Matrix4d(xform_mtx);
-                    const auto xform = asf::Transformd::from_local_to_parent(mtx);
-
-                    // as all samples are time offsetted, we offset them back
-                    xform_seq.set_transform(t-m_time_offset, xform);
-                }
-
-                // and put our filled xform sequence to the main xform stack
                 m_xform_seq_stack.push_back(xform_seq);
 
                 gen_xform = true;
@@ -352,92 +527,71 @@ class AlembicAssembly
         {
             const auto polymesh = Alembic::AbcGeom::IPolyMesh(obj);
 
-            const auto &schema = polymesh.getSchema();
+            const Alembic::AbcGeom::IPolyMeshSchema& schema = polymesh.getSchema();
 
-            switch(schema.getTopologyVariance())
-            {
-                case Alembic::AbcGeom::kConstantTopology:
-                    // non deformed
-                    std::cout << "Constant topology" << std::endl;
-                    break;
-                case Alembic::AbcGeom::kHomogeneousTopology:
-                    // deformed but no topology change
-                    std::cout << "Homogeneous topology variance" << std::endl;
-                    break;
-                case Alembic::AbcGeom::kHeterogeneousTopology:
-                    // fluid geos (realflow bins, etc.)
-                    std::cout << "Heterogeneous topology variance" << std::endl;
-                    break;
-                default:
-                    std::cout << "Unknown topology variance type" << std::endl;
-                    break;
-            }
+            if (m_verbose)
+                log_polymesh_schema(schema);
 
-            const auto sample_times = schema_to_sample_timesOO(m_shutter_open_time+m_time_offset,
+            /*const auto sample_times = schema_to_sample_timesOO(m_shutter_open_time+m_time_offset,
                                                                m_shutter_close_time+m_time_offset,
                                                                schema.getNumSamples(),
-                                                               schema.getTimeSampling());
+                                                               schema.getTimeSampling());*/
+
+
+            const auto sample_times = schema_to_sample_times(m_shutter_open_time+m_time_offset,
+                                                             m_shutter_close_time+m_time_offset,
+                                                             schema.getNumSamples(),
+                                                             schema.getTimeSampling());
 
             // compute appleseed number of motion segment
             const auto motion_segment_count = sample_times.size() - 1;
 
-            if (motion_segment_count)
+            /*if (motion_segment_count &&
+                !are_linearly_sampled(m_shutter_open_time,
+                                      m_shutter_close_time,
+                                      sample_times))
             {
-                if (!are_linearly_sampled(m_shutter_open_time, m_shutter_close_time, sample_times))
-                {
-                    std::cout << "not linearly sampled!" << std::endl;
-                    RENDERER_LOG_WARNING("Motion samples are not matching shutters.");  // TODO: logs doesn't work.
-                }
-            }
+                RENDERER_LOG_WARNING("polymesh motion samples does not match shutters: \"%s\"",
+                                     obj_name.c_str());
+            }*/
 
-            std::cout << "sample_times.size() " << sample_times.size() << std::endl;
-            for (const auto t : sample_times)
-            {
-                std::cout << "  t: " << t << " - frame: " << t * 24.0f << std::endl;
-            }
-
-            //getVelocities()
-
-            // Create a new mesh object
-            auto object = asf::auto_release_ptr<asr::MeshObject>(
+            // Create a new appleseed mesh object
+            auto as_obj = asf::auto_release_ptr<asr::MeshObject>(
                 asr::MeshObjectFactory().create(
-                    name.c_str(),
+                    obj_name.c_str(),
                     asr::ParamArray()));
 
-            object->set_motion_segment_count(motion_segment_count);
+            as_obj->set_motion_segment_count(motion_segment_count);
 
             ///////////////////////////////////////////////////////////////
             // vertex positions
             ///////////////////////////////////////////////////////////////
-            auto sample_id = 0;
-            for (const auto sample_time : sample_times)
+            size_t v_segment_id = 0;
+            for (const Alembic::Abc::index_t i : sample_times)
             {
-                const auto sample_sel = Alembic::AbcGeom::ISampleSelector(sample_time);
-
-                const auto sample = schema.getValue(sample_sel);
+                const auto sample = schema.getValue(i);
 
                 const auto pos = sample.getPositions()->get();
                 const auto pos_count = sample.getPositions()->size();
-                std::cout << "pos_count " << pos_count << std::endl;
 
                 // reserve space to optimize allocation
-                object->reserve_vertices(pos_count);
+                as_obj->reserve_vertices(pos_count);
 
                 for (auto i = 0; i < pos_count; i++)
                 {
                     const asr::GVector3 v(pos[i][0], pos[i][1], pos[i][2]);
 
-                    if (sample_id == 0)  // first sample
+                    if (v_segment_id == 0)  // first sample
                     {
-                        object->push_vertex(v);
+                        as_obj->push_vertex(v);
                     }
                     else  // all other samples
                     {
-                        object->set_vertex_pose(i, sample_id-1, v);
+                        as_obj->set_vertex_pose(i, v_segment_id-1, v);
                     }
                 }
 
-                sample_id++;
+                v_segment_id++;
             }
 
             ///////////////////////////////////////////////////////////////
@@ -448,7 +602,6 @@ class AlembicAssembly
             const auto uv_param = schema.getUVsParam();
             if (uv_param.valid())
             {
-                std::cout << "uv!!! " << std::endl;
                 auto uv_sample = uv_param.getIndexedValue();
                 if (uv_sample.valid())
                 {
@@ -466,15 +619,14 @@ class AlembicAssembly
                     // uv vectors
                     const auto uvs = uv_sample.getVals()->get();
                     const auto uv_count = uv_sample.getVals()->size();
-                    std::cout << "uv_count " << uv_count << std::endl;
 
                     // and reserve for optimization purpose
-                    object->reserve_tex_coords(uv_count);
+                    as_obj->reserve_tex_coords(uv_count);
 
                     for (auto i = 0; i < uv_count; ++i)
                     {
                         const asf::Vector2f uv(uvs[i]);
-                        object->push_tex_coords(uv);
+                        as_obj->push_tex_coords(uv);
                     }
                 }
             }
@@ -489,11 +641,9 @@ class AlembicAssembly
             if (normal_param.valid())
             {
                 auto sample_id = 0;
-                for (const auto sample_time : sample_times)
+                for (const Alembic::Abc::index_t i : sample_times)
                 {
-                    const auto sample_sel = Alembic::AbcGeom::ISampleSelector(sample_time);
-
-                    const auto sample = schema.getValue(sample_sel);
+                    const auto sample = schema.getValue(i);
 
                     switch(normal_param.getScope())
                     {
@@ -541,24 +691,21 @@ class AlembicAssembly
                         const auto normals = normal_sample.getVals()->get();
                         const auto normal_count = normal_sample.getVals()->size();
 
-                        std::cout << "normal_count: " << normal_count << std::endl;
-                        std::cout << "n_idxs_count: " << normal_count << std::endl;
-
                         // reserve space to optimize allocation
-                        object->reserve_vertex_normals(normal_count);
+                        as_obj->reserve_vertex_normals(normal_count);
 
                         if (sample_id == 0)  // first sample
                         {
                             for (auto i = 0; i < normal_count; ++i)
                             {
-                                object->push_vertex_normal(normals[i]);
+                                as_obj->push_vertex_normal(normals[i]);
                             }
                         }
                         else  // other samples are put in motion poses
                         {
                             for (auto i = 0; i < normal_count; ++i)
                             {
-                                object->set_vertex_normal_pose(i, sample_id-1, normals[i]);
+                                as_obj->set_vertex_normal_pose(i, sample_id-1, normals[i]);
                             }
                         }
                     }
@@ -569,15 +716,11 @@ class AlembicAssembly
             ///////////////////////////////////////////////////////////////
             // triangles
             ///////////////////////////////////////////////////////////////
-            const auto sample_sel = Alembic::AbcGeom::ISampleSelector(0.0);
-            const auto sample = schema.getValue(sample_sel);
+            const auto sample = schema.getValue(0);
             const auto face_sizes = sample.getFaceCounts()->get();  // [3,4,4,3,...]
             const auto face_count = sample.getFaceCounts()->size();
             const auto face_indices = sample.getFaceIndices()->get();
             const auto face_indices_count = sample.getFaceIndices()->size();
-
-            std::cout << "face_count: " << face_count << std::endl;
-            std::cout << "face_indices_count: " << face_indices_count << std::endl;
 
             // compute the number of triangles to reserve proper space
             size_t tri_count = 0;
@@ -587,9 +730,7 @@ class AlembicAssembly
             }
 
             // and reserve for optimization purpose
-            object->reserve_triangles(tri_count);
-
-            std::cout << "tri_count: " << tri_count << std::endl;
+            as_obj->reserve_triangles(tri_count);
 
             // iterators
             auto f_i = 0;  // face indices
@@ -603,7 +744,9 @@ class AlembicAssembly
 
                 if (face_size < 3)
                 {
-                    std::cout << "less than 3 point face detected!!! " << face_size << std::endl;
+                    RENDERER_LOG_WARNING("face with less than 3 points "
+                                         "detected: \"%s\"",
+                                         obj_name.c_str());
                     f_i += face_size;
                     n_i += face_size;
                     uv_i += face_size;
@@ -637,7 +780,7 @@ class AlembicAssembly
                         tri0.m_a2 = uv1;
                     }
 
-                    object->push_triangle(tri0);
+                    as_obj->push_triangle(tri0);
                 }
                 else if (face_size == 4)
                 {
@@ -681,13 +824,11 @@ class AlembicAssembly
                         tri1.m_a2 = uv3;
                     }
 
-                    object->push_triangle(tri0);
-                    object->push_triangle(tri1);
+                    as_obj->push_triangle(tri0);
+                    as_obj->push_triangle(tri1);
                 }
                 else  // arbitrary sized polygon
                 {
-                    std::cout << "face_size: " << face_size << std::endl;
-
                     // we create a polygon and will store it's various
                     // positions.
                     asf::Triangulator<float>::Polygon3 polygon;
@@ -698,7 +839,7 @@ class AlembicAssembly
                         const auto id = face_indices[f_i++];
 
                         // put the vertex position to the polygon
-                        polygon.emplace_back(object->get_vertex(id));
+                        polygon.emplace_back(as_obj->get_vertex(id));
                     }
 
                     asf::Triangulator<float> triangulator;
@@ -708,8 +849,6 @@ class AlembicAssembly
 
                     if (success)
                     {
-                        std::cout << "tris.size(): " << tris.size() << std::endl;
-
                         // Insert all triangles of the triangulation into
                         // the mesh.
                         for (auto k = 0; k < tris.size(); k += 3)
@@ -741,7 +880,7 @@ class AlembicAssembly
                             }
 
                             // and finally push the triangle
-                            object->push_triangle(tri);
+                            as_obj->push_triangle(tri);
                         }
 
                         // important step, increment iterators
@@ -751,46 +890,43 @@ class AlembicAssembly
                         if (!uv_idxs.empty())
                             uv_i += face_size;
                     }
-                    else  // triangulator fail
+                    else
                     {
-                        std::cout << "Invalid polygon for: " << name << std::endl;
+                        RENDERER_LOG_WARNING("triangulator failed, "
+                                             "invalid polymesh: \"%s\"",
+                                             obj_name.c_str());
                     }
                 }
             }
-            std::cout << "f_i: " << f_i << std::endl;
-            std::cout << "n_i: " << n_i << std::endl;
-            std::cout << "uv_i: " << uv_i << std::endl;
 
+            // TODO: For now, no material are assigned...
             auto front_material_mappings = asf::StringDictionary();
-                        /*.insert("white_material", "white_material")*/
-
 
             // Create an instance of the assembly.
             asf::auto_release_ptr<asr::Assembly> xform_assembly(
                 asr::AssemblyFactory().create(  // TODO: Do I really have to instanciate AssemblyFactory?
-                    (name+"_assembly").c_str(),  // assembly instance
+                    (obj_name+"_assembly").c_str(),  // assembly instance
                     asr::ParamArray()));
 
             // Insert the object into the assembly.
-            xform_assembly->objects().insert(asf::auto_release_ptr<asr::Object>(object));
+            xform_assembly->objects().insert(
+                asf::auto_release_ptr<asr::Object>(as_obj));
 
             // Create an instance of this object and insert it into the assembly.
             xform_assembly->object_instances().insert(
                 asr::ObjectInstanceFactory::create(
-                    (name+"_inst").c_str(), // instance name
+                    (obj_name+"_inst").c_str(), // instance name
                     asr::ParamArray(),
-                    name.c_str(), // object name
+                    obj_name.c_str(), // object name
                     asf::Transformd::identity(),
                     front_material_mappings));
 
             // Create an instance of the assembly.
             asf::auto_release_ptr<asr::AssemblyInstance> xform_assembly_inst(
                 asr::AssemblyInstanceFactory::create(
-                    (name+"_assembly_inst").c_str(),  // assembly instance
+                    (obj_name+"_assembly_inst").c_str(),  // assembly instance
                     asr::ParamArray(),
-                    (name+"_assembly").c_str()));
-
-            std::cout << "xform_seq_stack " << m_xform_seq_stack.size() << std::endl;
+                    (obj_name+"_assembly").c_str()));
 
             if (m_xform_seq_stack.size())
             {
@@ -799,19 +935,18 @@ class AlembicAssembly
                 xform_assembly_inst->transform_sequence() = xform_seq;
             }
 
-            assembly->assemblies().insert(xform_assembly);
-            assembly->assembly_instances().insert(xform_assembly_inst);
-        }
+            this->assemblies().insert(xform_assembly);
+            this->assembly_instances().insert(xform_assembly_inst);
+
+        }  // IPolyMesh
 
         // iterate over children
-        for (auto i = 0; i < obj.getNumChildren(); i++)
+        for (size_t i = 0; i < obj.getNumChildren(); i++)
         {
-            const auto& child = obj.getChild(i);
-            foo(assembly, child);
+            const Alembic::Abc::IObject& child = obj.getChild(i);
+            walk(child);
         }
 
-        std::cout << "gen_xform " << gen_xform << std::endl;
-        std::cout << "end xform_seq_stack " << m_xform_seq_stack.size() << std::endl;
         if (gen_xform)
         {
             // remove the bottom transform as we move up
@@ -825,6 +960,7 @@ class AlembicAssembly
     float m_shutter_open_time;
     float m_shutter_close_time;
     float m_time_offset;
+    bool m_verbose;
     std::vector<asr::TransformSequence> m_xform_seq_stack;
 };
 
@@ -880,15 +1016,17 @@ float get_weight_and_index(
 
 
 // move from given obj to the root storing every xform then return them as a
-// sequence.
+// sequence array (returned array can be empty).
 std::vector<asr::TransformSequence> xform_seq_for_obj(
-    const Alembic::AbcGeom::IObject obj,
-    const float shutter_open_time,
-    const float shutter_close_time,
-    const float time_offset = 0.0f)
+    const Alembic::AbcGeom::IObject& obj,
+    const Alembic::Abc::chrono_t shutter_open,
+    const Alembic::Abc::chrono_t shutter_close,
+    const Alembic::Abc::chrono_t time_offset = 0.0f)
 {
+    // xform sequence stack we will return
     std::vector<asr::TransformSequence> xform_seq_stack;
 
+    // start of the reverse recursion
     Alembic::AbcGeom::IObject cur_obj = obj;
 
     while(cur_obj.valid())
@@ -901,54 +1039,37 @@ std::vector<asr::TransformSequence> xform_seq_for_obj(
 
             const Alembic::AbcGeom::IXformSchema& xform_schema = abc_xform.getSchema();
 
-            if (xform_schema.getNumOps() < 1)
-                continue;
-
-            const auto xform_time_sampling = xform_schema.getTimeSampling();
-            const auto xform_num_samples = xform_schema.getNumSamples();
-
-            const auto sample_times = schema_to_sample_times(
-                shutter_open_time+time_offset,
-                shutter_close_time+time_offset,
-                xform_num_samples,
-                xform_time_sampling);
-
-
-            // we will put every xform samples founds into this xform sequence
-            asr::TransformSequence xform_seq;
-
-            for (const auto i : sample_times)
+            if ((xform_schema.getNumOps() > 0) &&
+                 !xform_schema.isConstantIdentity())
             {
-                // sample time
-                const auto t = xform_time_sampling->getSampleTime(i);
+                asr::TransformSequence xform_seq = extract_xform_seq(
+                        xform_schema,
+                        shutter_open,
+                        shutter_close,
+                        time_offset);
 
-                // sample xform
-                const auto xform_sample = xform_schema.getValue(i);
-                const auto xform_mtx = xform_sample.getMatrix();
-                const auto mtx = asf::Matrix4d(xform_mtx);
-                const auto xform = asf::Transformd::from_local_to_parent(mtx);
-
-                // as all samples are time offsetted, we offset them back
-                xform_seq.set_transform(t-time_offset, xform);
+                xform_seq_stack.push_back(xform_seq);
             }
-
-            // and put our filled xform sequence to the main xform stack
-            xform_seq_stack.push_back(xform_seq);
         }
 
         // move to parent
         cur_obj = cur_obj.getParent();
     }
 
-    // as we moved from bottom (object) to top (root), we have to revert the
-    // xform stack before return it.
-    std::reverse(std::begin(xform_seq_stack), std::end(xform_seq_stack));
+    if (xform_seq_stack.size())
+    {
+        // as we moved from bottom (object) to top (root), we have to revert the
+        // xform stack before return it.
+        std::reverse(std::begin(xform_seq_stack), std::end(xform_seq_stack));
+    }
 
     return xform_seq_stack;
 }
 
-bool path_to_obj(const Alembic::Abc::IArchive& archive,
-                 const std::string& path)
+// return object in given archive from given path
+const bool path_to_obj(const Alembic::Abc::IArchive& archive,
+                       const std::string& path,
+                       Alembic::Abc::IObject& obj)
 {
     // retrieve root of the hierarchy
     Alembic::Abc::IObject cur_obj = archive.getTop();
@@ -959,7 +1080,7 @@ bool path_to_obj(const Alembic::Abc::IArchive& archive,
 
     if (obj_names.size() < 2)
     {
-        RENDERER_LOG_ERROR("Can't find object '%s' in archivef '%s'",
+        RENDERER_LOG_ERROR("can't find object '%s' in archive '%s'",
                 path.c_str(), archive.getName().c_str());
         return false;
     }
@@ -972,7 +1093,7 @@ bool path_to_obj(const Alembic::Abc::IArchive& archive,
 
         for (size_t j = 0; j < cur_obj.getNumChildren(); j++)
         {
-            auto child = cur_obj.getChild(j);
+            Alembic::Abc::IObject child = cur_obj.getChild(j);
 
             if (child.getName() == obj_name)
             {
@@ -984,11 +1105,15 @@ bool path_to_obj(const Alembic::Abc::IArchive& archive,
         }
         if (!found)
         {
-            RENDERER_LOG_ERROR("Can't find '%s' child of '%s'",
+            RENDERER_LOG_ERROR("can't find '%s' child of '%s'",
                     obj_name.c_str(), cur_obj.getFullName().c_str());
             return false;
         }
     }
+
+    obj = cur_obj;
+
+    return true;
 }
 
 
@@ -1041,8 +1166,6 @@ class AlembicCamera
 
         m_obj_path = params.get<std::string>("obj_path");
 
-        m_time_offset = params.get_optional<float>("time_offset", 0.0f);
-
         m_camera = asr::PinholeCameraFactory().create("cam", asr::ParamArray());
     }
 
@@ -1071,13 +1194,13 @@ class AlembicCamera
     {
         if (m_file_path.empty())
         {
-            RENDERER_LOG_ERROR("Empty 'file_path' property: \"%s\"", get_name());
+            RENDERER_LOG_ERROR("empty 'file_path' property: \"%s\"", get_name());
             return false;
         }
 
         if (m_obj_path.empty())
         {
-            RENDERER_LOG_ERROR("Empty 'obj_path' property: \"%s\"", get_name());
+            RENDERER_LOG_ERROR("empty 'obj_path' property: \"%s\"", get_name());
             return false;
         }
 
@@ -1093,10 +1216,13 @@ class AlembicCamera
             shutter_close_time = shutter_open_time;
 
             RENDERER_LOG_WARNING(
-                "Shutter close (%f) is smaller than shutter open (%f) "
+                "shutter close (%f) is smaller than shutter open (%f) "
                 "for camera \"%s\", only shutter open will be use.",
                     shutter_close_time, shutter_open_time, get_path().c_str());
         }
+
+        // time offset
+        const float time_offset = params.get_optional<float>("time_offset", 0.0f);
 
         // alembic archive
         Alembic::AbcCoreFactory::IFactory factory;
@@ -1106,61 +1232,35 @@ class AlembicCamera
 
         if (!archive.valid())
         {
-            RENDERER_LOG_ERROR("Invalid alembic archive: \"%s\"", m_file_path.c_str());
+            RENDERER_LOG_ERROR("invalid alembic archive: \"%s\"", m_file_path.c_str());
             return false;
         }
 
-        // retrieve root of the hierarchy
-        Alembic::Abc::IObject cur_obj = archive.getTop();
+        Alembic::Abc::IObject cam_obj;
 
-        std::vector<std::string> obj_names;
-        asf::split(m_obj_path, "/", obj_names);
-
-        for (size_t i = 1; i < obj_names.size(); i++)
+        // find alembic object at given path
+        if (!path_to_obj(archive, m_obj_path, cam_obj))
         {
-            const std::string& obj_name = obj_names[i];
-
-            bool found = false;
-
-            for (size_t j = 0; j < cur_obj.getNumChildren(); j++)
-            {
-                auto child = cur_obj.getChild(j);
-
-                if (child.getName() == obj_name)
-                {
-                    // we have a winner!
-                    cur_obj = child;
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
-            {
-                RENDERER_LOG_ERROR("Can't find '%s' child of '%s'",
-                        obj_name.c_str(), cur_obj.getFullName().c_str());
-                return false;
-            }
+            return false;
         }
 
-        // we have our object, get its schema
-        const Alembic::AbcGeom::ObjectHeader cam_header = cur_obj.getHeader();
-
-        if (!Alembic::AbcGeom::ICamera::matches(cam_header))
+        // we have our object, check its a camera
+        if (!Alembic::AbcGeom::ICamera::matches(cam_obj.getHeader()))
         {
-            RENDERER_LOG_ERROR("Not a camera; '%s'", cur_obj.getFullName().c_str());
+            RENDERER_LOG_ERROR("not a camera; '%s'", cam_obj.getFullName().c_str());
             return false;
         }
 
         ///////////////////////////////////////////////////////////////////////////
         // Static values
         ///////////////////////////////////////////////////////////////////////////
-        const auto abc_cam = Alembic::AbcGeom::ICamera(cur_obj);
+        const auto abc_cam = Alembic::AbcGeom::ICamera(cam_obj);
 
         const Alembic::AbcGeom::ICameraSchema& cam_schema = abc_cam.getSchema();
 
         // we need middle shutter to find the best value for non-motion blurred
         // variables.
-        const float mid_shutter_time = (0.5f * (shutter_open_time+shutter_close_time))+m_time_offset;
+        const float mid_shutter_time = (0.5f * (shutter_open_time+shutter_close_time))+time_offset;
 
         // get floor and ceil sample indices from mid shutter
         Alembic::AbcCoreAbstract::index_t floor_index;
@@ -1233,15 +1333,18 @@ class AlembicCamera
         // xform
         ///////////////////////////////////////////////////////////////////////////
         // generate xform sequence stack from our camera
-        std::vector<asr::TransformSequence> xform_seq_stack = xform_seq_for_obj(
-            cur_obj,
+        const std::vector<asr::TransformSequence> xform_seq_stack = xform_seq_for_obj(
+            cam_obj,
             shutter_open_time,
             shutter_close_time,
-            m_time_offset);
+            time_offset);
 
-        const asr::TransformSequence xform_seq = flatten_xform_seq(xform_seq_stack);
+        if (xform_seq_stack.size())
+        {
+            const asr::TransformSequence xform_seq = flatten_xform_seq(xform_seq_stack);
 
-        m_camera->transform_sequence() = xform_seq;
+            m_camera->transform_sequence() = xform_seq;
+        }
 
         // of course, we don't forget to call the camera method
         return m_camera->on_render_begin(project, abort_switch);
@@ -1287,7 +1390,6 @@ class AlembicCamera
     // Parameters.
     std::string m_file_path;
     std::string m_obj_path;
-    float m_time_offset;
 
     const char* Model = "alembic_camera";
 
