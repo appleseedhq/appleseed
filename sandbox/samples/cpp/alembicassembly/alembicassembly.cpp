@@ -434,7 +434,7 @@ namespace
             m_time_offset = params.get_optional<float>("time_offset", 0.0f);
 
             // verbose mode
-            m_verbose = params.get_optional<bool>("verbose", true);
+            m_verbose = params.get_optional<bool>("verbose", false);
 
             if (m_verbose)
             {

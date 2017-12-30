@@ -75,6 +75,7 @@
                 <!--<parameter name="file_path" value="/home/narann/storage/alembic/201710_fan/fans.abc" />-->
                 <!--<parameter name="file_path" value="/home/narann/storage/alembic/ep214.sq024.cm082._animation_.r001.abc" />-->
                 <!--<parameter name="time_offset" value="0.04" />-->
+                <parameter name="verbose" value="true" />
             </assembly>
             <assembly_instance name="alembic_assembly_instance" assembly="alembic_assembly">
             </assembly_instance>
