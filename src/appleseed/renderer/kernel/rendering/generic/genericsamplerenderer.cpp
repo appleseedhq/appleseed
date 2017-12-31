@@ -176,7 +176,7 @@ namespace
             size_t iterations = 0;
 
             // Inform the AOV accumulators that we are about to render a sample.
-            aov_accumulators.on_sample_begin();
+            aov_accumulators.on_sample_begin(pixel_context);
 
             while (true)
             {
@@ -256,7 +256,7 @@ namespace
             }
 
             // Inform the AOV accumulators that we are done rendering a sample.
-            aov_accumulators.on_sample_end();
+            aov_accumulators.on_sample_end(pixel_context);
 
 #ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
 

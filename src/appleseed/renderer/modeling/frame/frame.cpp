@@ -34,7 +34,10 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/aov/aovsettings.h"
 #include "renderer/kernel/aov/imagestack.h"
+#include "renderer/kernel/denoising/denoiser.h"
+#include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/modeling/aov/aovfactoryregistrar.h"
+#include "renderer/modeling/aov/denoiseraov.h"
 #include "renderer/modeling/aov/iaovfactory.h"
 #include "renderer/utility/paramarray.h"
 
@@ -68,6 +71,7 @@
 #include <memory>
 #include <string>
 
+using namespace bcd;
 using namespace foundation;
 using namespace std;
 namespace bf = boost::filesystem;
@@ -83,6 +87,13 @@ namespace renderer
 namespace
 {
     const UniqueID g_class_uid = new_guid();
+
+    enum class DenoiseMode
+    {
+        Off,
+        WriteOutputs,
+        Denoise
+    };
 }
 
 UniqueID Frame::get_class_uid()
@@ -103,6 +114,11 @@ struct Frame::Impl
     unique_ptr<Image>       m_image;
     unique_ptr<ImageStack>  m_aov_images;
     AOVContainer            m_aovs;
+    AOVContainer            m_internal_aovs;
+
+    // Denoiser.
+    DenoiseMode             m_denoise_mode;
+    DenoiserAOV*            m_denoiser_aov;
 };
 
 Frame::Frame(
@@ -161,6 +177,24 @@ Frame::Frame(
             aov_images());
         impl->m_aovs.insert(aov);
     }
+
+    // Create internal AOVs.
+    if (impl->m_denoise_mode != DenoiseMode::Off)
+    {
+        auto_release_ptr<DenoiserAOV> aov = DenoiserAOVFactory::create();
+        impl->m_denoiser_aov = aov.get();
+
+        aov->create_image(
+            impl->m_frame_width,
+            impl->m_frame_height,
+            impl->m_tile_width,
+            impl->m_tile_height,
+            aov_images());
+
+        impl->m_internal_aovs.insert(auto_release_ptr<AOV>(aov));
+    }
+    else
+        impl->m_denoiser_aov = nullptr;
 }
 
 Frame::~Frame()
@@ -227,6 +261,11 @@ ImageStack& Frame::aov_images() const
 const AOVContainer& Frame::aovs() const
 {
     return impl->m_aovs;
+}
+
+const AOVContainer& Frame::internal_aovs() const
+{
+    return impl->m_internal_aovs;
 }
 
 size_t Frame::create_extra_aov_image(const char* name) const
@@ -458,7 +497,18 @@ bool Frame::write_main_image(const char* file_path) const
     const Image& image = *impl->m_image;
     const CanvasProperties& props = image.properties();
     const Image half_image(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
-    return write_image(file_path, half_image, nullptr);
+    bool result = write_image(file_path, half_image, nullptr);
+
+    // Write BCD histograms and covariances if enabled.
+    if (result && impl->m_denoise_mode == DenoiseMode::WriteOutputs)
+    {
+        if (ends_with(file_path, ".exr"))
+            impl->m_denoiser_aov->write_images(file_path);
+        else
+            RENDERER_LOG_WARNING("denoiser outputs can only be saved to EXR images.");
+    }
+
+    return result;
 }
 
 bool Frame::write_aov_images(const char* file_path) const
@@ -490,17 +540,6 @@ bool Frame::write_aov_images(const char* file_path) const
     return result;
 }
 
-bool Frame::write_aov_image(const char* file_path, const size_t aov_index) const
-{
-    assert(file_path);
-
-    if (aov_index >= impl->m_aovs.size())
-        return true;
-
-    const AOV* aov = impl->m_aovs.get_by_index(aov_index);
-    return write_image(file_path, aov->get_image(), aov);
-}
-
 bool Frame::write_main_and_aov_images() const
 {
     bool result = true;
@@ -519,7 +558,7 @@ bool Frame::write_main_and_aov_images() const
         const string filepath = aov->get_parameters().get_optional<string>("output_filename");
 
         if (!filepath.empty())
-            result = result && write_aov_image(filepath.c_str(), i);
+            result = result && write_image(filepath.c_str(), aov->get_image(), aov);
     }
 
     return result;
@@ -680,6 +719,101 @@ void Frame::extract_parameters()
         Vector2u(0, 0),
         Vector2u(impl->m_frame_width - 1, impl->m_frame_height - 1));
     impl->m_crop_window = m_params.get_optional<AABB2u>("crop_window", default_crop_window);
+
+    // Retrieve the denoiser parameters.
+    {
+        string denoise_mode = m_params.get_optional<string>("denoiser", "off");
+
+        if (denoise_mode == "off")
+            impl->m_denoise_mode = DenoiseMode::Off;
+        else if (denoise_mode == "on")
+            impl->m_denoise_mode = DenoiseMode::Denoise;
+        else if (denoise_mode == "write_outputs")
+            impl->m_denoise_mode = DenoiseMode::WriteOutputs;
+        else
+        {
+            RENDERER_LOG_ERROR(
+                "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
+                denoise_mode.c_str(),
+                "denoiser",
+                "off");
+            impl->m_denoise_mode = DenoiseMode::Off;
+        }
+    }
+}
+
+void Frame::denoise(ITileCallback* tile_callback) const
+{
+    if (impl->m_denoise_mode != DenoiseMode::Denoise)
+        return;
+
+    if (has_crop_window())
+    {
+        RENDERER_LOG_WARNING("denoising does not work with crop windows.");
+        return;
+    }
+
+    // Fill denoiser options.
+    DenoiserOptions options;
+    options.m_histogram_patch_distance_threshold =
+        get_parameters().get_optional<float>("patch_distance_threshold", 1.0f);
+
+    options.m_num_scales =
+        get_parameters().get_optional<int>("denoise_scales", 3);
+
+    if (options.m_histogram_patch_distance_threshold < 0.05f)
+        return;
+
+    RENDERER_LOG_INFO("--- beginning denoising pass ---");
+
+    if (tile_callback)
+    {
+        const CanvasProperties& frame_props = image().properties();
+
+        for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
+            for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
+                tile_callback->on_tile_begin(this, tx, ty);
+    }
+
+    Deepimf num_samples;
+    Deepimf covariances;
+
+    assert(impl->m_denoiser_aov);
+    impl->m_denoiser_aov->extract_num_samples_image(num_samples);
+    impl->m_denoiser_aov->compute_covariances_image(covariances);
+
+    RENDERER_LOG_INFO("denoising beauty image...");
+    denoise_image(
+        image(),
+        num_samples,
+        impl->m_denoiser_aov->histograms_image(),
+        covariances,
+        options);
+
+    for (size_t i = 0, e = aovs().size(); i < e; ++i)
+    {
+        const AOV* aov = aovs().get_by_index(i);
+
+        if (aov->has_color_data())
+        {
+            RENDERER_LOG_INFO("denoising %s aov...", aov->get_name());
+            denoise_image(
+                aov->get_image(),
+                num_samples,
+                impl->m_denoiser_aov->histograms_image(),
+                covariances,
+                options);
+        }
+    }
+
+    if (tile_callback)
+    {
+        const CanvasProperties& frame_props = image().properties();
+
+        for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
+            for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
+                tile_callback->on_tile_end(this, tx, ty);
+    }
 }
 
 
@@ -746,6 +880,58 @@ DictionaryArray FrameFactory::get_input_metadata()
             .insert("type", "text")
             .insert("use", "optional")
             .insert("default", "1.5"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "denoiser")
+            .insert("label", "Denoiser")
+            .insert("type", "enumeration")
+            .insert("items",
+                Dictionary()
+                    .insert("Off", "off")
+                    .insert("On", "on")
+                    .insert("Write Outputs", "write_outputs"))
+            .insert("use", "required")
+            .insert("default", "off")
+            .insert("on_change", "rebuild_form"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "patch_distance_threshold")
+            .insert("label", "Denoise Amount")
+            .insert("type", "text")
+            .insert("use", "optional")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "3.0")
+                    .insert("type", "hard"))
+            .insert("default", "1.0")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("denoiser", "on")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "denoise_scales")
+            .insert("label", "Denoise Scales")
+            .insert("type", "text")
+            .insert("use", "optional")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "1")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10")
+                    .insert("type", "hard"))
+            .insert("default", "3")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("denoiser", "on")));
 
     return metadata;
 }

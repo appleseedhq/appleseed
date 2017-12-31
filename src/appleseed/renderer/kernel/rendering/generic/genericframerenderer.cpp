@@ -39,6 +39,7 @@
 #include "renderer/kernel/rendering/ipasscallback.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/kernel/rendering/itilerenderer.h"
+#include "renderer/modeling/frame/frame.h"
 #include "renderer/utility/settingsparsing.h"
 
 // appleseed.foundation headers.
@@ -282,11 +283,11 @@ namespace
                 bool&                               is_rendering)
               : m_frame(frame)
               , m_tile_ordering(tile_ordering)
-              , m_pass_count(pass_count)
-              , m_spectrum_mode(spectrum_mode)
               , m_tile_renderers(tile_renderers)
               , m_tile_callbacks(tile_callbacks)
               , m_pass_callback(pass_callback)
+              , m_pass_count(pass_count)
+              , m_spectrum_mode(spectrum_mode)
               , m_job_queue(job_queue)
               , m_abort_switch(abort_switch)
               , m_is_rendering(is_rendering)
@@ -297,8 +298,14 @@ namespace
             {
                 set_current_thread_name("pass_manager");
 
-                for (size_t pass = 0; pass < m_pass_count && !m_abort_switch.is_aborted(); ++pass)
+                for (size_t pass = 0; pass < m_pass_count; ++pass)
                 {
+                    if (m_abort_switch.is_aborted())
+                    {
+                        m_is_rendering = false;
+                        return;
+                    }
+
                     if (m_pass_count > 1)
                         RENDERER_LOG_INFO("--- beginning pass %s ---", pretty_uint(pass + 1).c_str());
 
@@ -338,6 +345,10 @@ namespace
                         assert(!m_job_queue.has_scheduled_or_running_jobs());
                     }
                 }
+
+                // Run the denoiser if needed.
+                if (!m_abort_switch.is_aborted())
+                    m_frame.denoise(m_tile_callbacks.empty() ? nullptr : m_tile_callbacks[0]);
 
                 m_is_rendering = false;
             }
