@@ -169,10 +169,10 @@ namespace
             return DiffuseModel;
         }
 
-        auto_release_ptr<AOVAccumulator> create_accumulator(
-            const size_t index) const override
+        auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
-            return auto_release_ptr<AOVAccumulator>(new DiffuseAOVAccumulator(index));
+            return auto_release_ptr<AOVAccumulator>(
+                new DiffuseAOVAccumulator(m_image_index));
         }
     };
 
@@ -202,10 +202,10 @@ namespace
             return DirectDiffuseModel;
         }
 
-        auto_release_ptr<AOVAccumulator> create_accumulator(
-            const size_t index) const override
+        auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
-            return auto_release_ptr<AOVAccumulator>(new DirectDiffuseAOVAccumulator(index));
+            return auto_release_ptr<AOVAccumulator>(
+                new DirectDiffuseAOVAccumulator(m_image_index));
         }
     };
 
@@ -235,10 +235,10 @@ namespace
             return IndirectDiffuseModel;
         }
 
-        auto_release_ptr<AOVAccumulator> create_accumulator(
-            const size_t index) const override
+        auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
-            return auto_release_ptr<AOVAccumulator>(new IndirectDiffuseAOVAccumulator(index));
+            return auto_release_ptr<AOVAccumulator>(
+                new IndirectDiffuseAOVAccumulator(m_image_index));
         }
     };
 }

@@ -169,10 +169,10 @@ namespace
             return GlossyModel;
         }
 
-        auto_release_ptr<AOVAccumulator> create_accumulator(
-            const size_t index) const override
+        auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
-            return auto_release_ptr<AOVAccumulator>(new GlossyAOVAccumulator(index));
+            return auto_release_ptr<AOVAccumulator>(
+                new GlossyAOVAccumulator(m_image_index));
         }
     };
 
@@ -202,10 +202,10 @@ namespace
             return DirectGlossyModel;
         }
 
-        auto_release_ptr<AOVAccumulator> create_accumulator(
-            const size_t index) const override
+        auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
-            return auto_release_ptr<AOVAccumulator>(new DirectGlossyAOVAccumulator(index));
+            return auto_release_ptr<AOVAccumulator>(
+                new DirectGlossyAOVAccumulator(m_image_index));
         }
     };
 
@@ -235,10 +235,10 @@ namespace
             return IndirectGlossyModel;
         }
 
-        auto_release_ptr<AOVAccumulator> create_accumulator(
-            const size_t index) const override
+        auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
-            return auto_release_ptr<AOVAccumulator>(new IndirectGlossyAOVAccumulator(index));
+            return auto_release_ptr<AOVAccumulator>(
+                new IndirectGlossyAOVAccumulator(m_image_index));
         }
     };
 }

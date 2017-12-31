@@ -81,11 +81,13 @@ void AOVAccumulator::on_tile_end(
 {
 }
 
-void AOVAccumulator::on_sample_begin()
+void AOVAccumulator::on_sample_begin(
+    const PixelContext&         pixel_context)
 {
 }
 
-void AOVAccumulator::on_sample_end()
+void AOVAccumulator::on_sample_end(
+    const PixelContext&         pixel_context)
 {
 }
 
@@ -156,15 +158,22 @@ AOVAccumulatorContainer::AOVAccumulatorContainer()
     init();
 }
 
-AOVAccumulatorContainer::AOVAccumulatorContainer(const AOVContainer& aovs)
+AOVAccumulatorContainer::AOVAccumulatorContainer(const Frame& frame)
 {
     init();
 
-    // Create the remaining accumulators.
-    for (size_t i = 0, e = aovs.size(); i < e; ++i)
+    // Create accumulators for AOVs.
+    for (size_t i = 0, e = frame.aovs().size(); i < e; ++i)
     {
-        const AOV* aov = aovs.get_by_index(i);
-        insert(aov->create_accumulator(i));
+        const AOV* aov = frame.aovs().get_by_index(i);
+        insert(aov->create_accumulator());
+    }
+
+    // Create accumulators for internal AOVs.
+    for (size_t i = 0, e = frame.internal_aovs().size(); i < e; ++i)
+    {
+        const AOV* aov = frame.internal_aovs().get_by_index(i);
+        insert(aov->create_accumulator());
     }
 }
 
@@ -202,16 +211,18 @@ void AOVAccumulatorContainer::on_tile_end(
         m_accumulators[i]->on_tile_end(frame, tile_x, tile_y);
 }
 
-void AOVAccumulatorContainer::on_sample_begin()
+void AOVAccumulatorContainer::on_sample_begin(
+    const PixelContext&         pixel_context)
 {
     for (size_t i = 0, e = m_size; i < e; ++i)
-        m_accumulators[i]->on_sample_begin();
+        m_accumulators[i]->on_sample_begin(pixel_context);
 }
 
-void AOVAccumulatorContainer::on_sample_end()
+void AOVAccumulatorContainer::on_sample_end(
+    const PixelContext&         pixel_context)
 {
     for (size_t i = 0, e = m_size; i < e; ++i)
-        m_accumulators[i]->on_sample_end();
+        m_accumulators[i]->on_sample_end(pixel_context);
 }
 
 void AOVAccumulatorContainer::write(
