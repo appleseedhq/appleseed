@@ -1,0 +1,37 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.8.10
+# options: 
+surface ndc_tex
+param	string	filename	""		%read{5,5} %write{2147483647,-1}
+global	point	P	%read{0,0} %write{2147483647,-1} %derivs
+global	normal	N	%read{4,4} %write{2147483647,-1}
+global	closure color	Ci	%read{2147483647,-1} %write{6,6}
+local	point	PNDC	%read{1,2} %write{0,0} %derivs
+local	float	s	%read{5,5} %write{1,1} %derivs
+local	float	t	%read{5,5} %write{3,3} %derivs
+const	string	$const1	"common"		%read{0,0} %write{2147483647,-1}
+const	string	$const2	"NDC"		%read{0,0} %write{2147483647,-1}
+const	int	$const3	0		%read{1,1} %write{2147483647,-1}
+const	float	$const4	1		%read{3,3} %write{2147483647,-1}
+const	int	$const5	1		%read{2,2} %write{2147483647,-1}
+temp	float	$tmp1	%read{3,3} %write{2,2} %derivs
+temp	closure color	$tmp2	%read{6,6} %write{4,4}
+const	string	$const6	"diffuse"		%read{4,4} %write{2147483647,-1}
+temp	float	$tmp3	%read{6,6} %write{5,5}
+code ___main___
+# ndc_text.osl:4
+#     point PNDC = transform("common", "NDC", P);
+	transform	PNDC $const1 $const2 P 	%filename{"ndc_text.osl"} %line{4} %argrw{"wrrr"}
+# ndc_text.osl:5
+#     float s = PNDC[0];
+	compref		s PNDC $const3 	%line{5} %argrw{"wrr"}
+# ndc_text.osl:6
+#     float t = 1.0 - PNDC[1]; // <- Flip because NDC is v down.
+	compref		$tmp1 PNDC $const5 	%line{6} %argrw{"wrr"}
+	sub		t $const4 $tmp1 	%argrw{"wrr"}
+# ndc_text.osl:7
+#     Ci = texture(filename, s, t) * diffuse(N);
+	closure		$tmp2 $const6 N 	%line{7} %argrw{"wrr"}
+	texture		$tmp3 filename s t 	%argrw{"wrrr"} %argderivs{2,3}
+	mul		Ci $tmp2 $tmp3 	%argrw{"wrr"}
+	end
