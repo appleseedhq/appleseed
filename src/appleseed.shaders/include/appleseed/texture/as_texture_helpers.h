@@ -4,7 +4,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017-2018 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -79,7 +79,7 @@ void set_wrap_mode(
 void set_wrap_mode(
     int wrap_smode,
     int wrap_tmode,
-    output stirng mode[2])
+    output string mode[2])
 {
     mode[0] = set_wrap_mode(wrap_smode);
     mode[1] = set_wrap_mode(wrap_tmode);

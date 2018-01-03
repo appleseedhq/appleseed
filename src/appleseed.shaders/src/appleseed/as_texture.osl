@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2018 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -69,21 +69,6 @@ shader as_texture
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
-    int in_starting_channel = 0
-    [[
-        string as_maya_attribute_name = "startingChannel",
-        string as_maya_attribute_short_name = "sch",
-        string label = "Starting Channel",
-        string page = "Texture",
-        int min = 0,
-        int softmax = 4,
-        string help = "Starting channel for the texture lookup, usually 0 for a
-        ordinary RGB texture.",
-        int as_maya_attribute_connectable = 0,
-        int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1,
-        int gafferNoduleLayoutVisible = 0
-    ]],
     color in_color = color(0)
     [[
         string as_maya_attribute_name = "color",
@@ -100,7 +85,23 @@ shader as_texture
         float max = 1.0,
         string label = "Default Alpha",
         string page = "Texture",
-        string help = "Default Fill alpha value to use if the texture lookup fails."
+        string help = "Default Fill alpha value to use if the texture lookup fails.",
+        int divider = 1
+    ]],
+    int in_starting_channel = 0
+    [[
+        string as_maya_attribute_name = "startingChannel",
+        string as_maya_attribute_short_name = "sch",
+        string label = "Starting Channel",
+        string page = "Texture",
+        int min = 0,
+        int softmax = 4,
+        string help = "Starting channel for the texture lookup, usually 0 for an ordinary RGB texture.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
     ]],
     float in_s_blur_amount = 0.0
     [[
@@ -140,7 +141,8 @@ shader as_texture
         float softmax = 1.0,
         string label = "T Filter Width",
         string page = "Texture",
-        string help = "Multiplier to scale the size of the filter width along the S direction."
+        string help = "Multiplier to scale the size of the filter width along the S direction.",
+        int divider = 1
     ]],
     int in_s_wrap = 0
     [[
@@ -154,7 +156,6 @@ shader as_texture
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1,
         string help = "Use the wrapping mode set on the texture, or override it"
     ]],
     int in_t_wrap = 0
@@ -169,8 +170,8 @@ shader as_texture
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1,
-        string help = "Use the wrapping mode set on the texture, or override it"
+        string help = "Use the wrapping mode set on the texture, or override it",
+        int divider = 1
     ]],
     int in_interpolation_method = 0
     [[
@@ -184,9 +185,8 @@ shader as_texture
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
-        int gafferNoduleLayoutVisible = 0,
-        int divider = 1
-    ]],    
+        int gafferNoduleLayoutVisible = 0
+    ]],
     int in_enable_cms = 0
     [[
         string as_maya_attribute_name = "enableCms",
@@ -214,12 +214,12 @@ shader as_texture
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
         string help = "Transfer function of the ingested material, refers to the Opto-Electronic Transfer Function required to transform the input into scene-linear values."
-    ]],    
-    int in_rgb_primaries = 1
+    ]],
+    string in_rgb_primaries = "sRGB/Rec.709"
     [[
-        string as_maya_attribute_name = "rgbPrimaries",
+        string as_maya_attribute_name = "RGBPrimaries",
         string as_maya_attribute_short_name = "rgb",
-        string label = "RGB primaries",
+        string label = "RGB Primaries",
         string page = "Color Management",
         string widget = "popup",
         string options = "Raw|sRGB/Rec.709|AdobeRGB|Rec.2020|DCI-P3|ACES|ACEScg",
@@ -227,13 +227,13 @@ shader as_texture
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
-        string help "RGB primaries, note that Rec.709 and sRGB share the same CIE xy chromaticity coordinates."
+        string help = "RGB primaries, note that Rec.709 and sRGB share the same CIE xy chromaticity coordinates."
     ]],
-    int in_workingspace_rgb_primaries = 1
+    string in_workingspace_rgb_primaries = "sRGB/Rec.709"
     [[
-        string as_maya_attribute_name = "rgbPrimaries",
-        string as_maya_attribute_short_name = "rgb",
-        string label = "RGB primaries",
+        string as_maya_attribute_name = "workingSpaceRGBPrimaries",
+        string as_maya_attribute_short_name = "wpr",
+        string label = "Rendering RGB Primaries",
         string page = "Color Management",
         string widget = "popup",
         string options = "sRGB/Rec.709|Rec.2020|DCI-P3|ACES|ACEScg",
@@ -243,26 +243,26 @@ shader as_texture
         int gafferNoduleLayoutVisible = 0,
         string help = "Working or rendering space RGB primaries. Note that Rec.709 and sRGB share the same CIE xy chromaticity coordinates."
     ]],
-    vector in_texture_coords = vector(u, v, 0)
+    float in_texture_coords[2] = {u, v}
     [[
-        string as_maya_attribute_name = "textureCoords",
-        string as_maya_attribute_short_name = "tco",
-        string label = "UV Texture Coords",
-        string page = "Manifold"
+        string as_maya_attribute_name = "uvCoord",
+        string as_maya_attribute_short_name = "uv",
+        string label = "UV Coords",
+        string page = "Texture Coordinates"
     ]],
-    vector in_texture_coords_filter = vector(0)
+    float in_texture_coords_filter[2] = {0.0, 0.0}
     [[
-        string as_maya_attribute_name = "textureCoordsFilter",
-        string as_maya_attribute_short_name = "tfi",
-        string label = "UV Coords Filter",
-        string page = "Manifold"
+        string as_maya_attribute_name = "uvFilterSize",
+        string as_maya_attribute_short_name = "fs",
+        string label = "UV Filter Size",
+        string page = "Texture Coordinates"
     ]],
     int in_invert_s = 0
     [[
         string as_maya_attribute_name = "invertS",
         string as_maya_attribute_short_name = "ivs",
         string label = "Invert S",
-        string page = "Manifold",
+        string page = "Texture Coordinates",
         string widget = "checkBox",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
@@ -274,7 +274,7 @@ shader as_texture
         string as_maya_attribute_name = "invertT",
         string as_maya_attribute_short_name = "ivt",
         string label = "Invert T",
-        string page = "Manifold",
+        string page = "Texture Coordinates",
         string widget = "checkBox",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
@@ -293,30 +293,30 @@ shader as_texture
         string as_maya_attribute_name = "outAlpha",
         string as_maya_attribute_short_name = "oa",
         string widget = "null"
-    ]],
-    output vector out_texture_coords = in_texture_coords
-    [[
-        string as_maya_attribute_name = "outTextureCoords",
-        string as_maya_attribute_short_name = "otc",
-        string widget = "null"
-    ]],
-    output vector out_texture_coords_filter = in_texture_coords_filter
-    [[
-        string as_maya_attribute_name = "outTextureCoordsFilter",
-        string as_maya_attribute_short_name = "otf",
-        string widget = "null"
     ]]
 )
 {
-    if (in_filename == "" || !gettextureinfo(in_filename, "exists", 0))
+    if (in_filename == "")
     {
         return;
+    }
+    else
+    {
+        int valid_file = 0;
+        gettextureinfo(in_filename, "exists", valid_file);
+
+        if (!valid_file)
+        {
+            return;
+        }
     }
 
     string wrap_mode[2];
     float uv_coords[2];
 
-    if (in_atlas_type == 0 && isconnected(in_texture_coords))
+    if (in_atlas_type == 0 &&
+        isconnected(in_texture_coords[0]) &&
+        isconnected(in_texture_coords[1]))
     {
         uv_coords[0] = mod(in_texture_coords[0], UVWRAP);
         uv_coords[1] = mod(in_texture_coords[1], UVWRAP);
@@ -333,21 +333,11 @@ shader as_texture
 
     if (in_invert_s)
     {
-        uv_coords = 1.0 - uv_coords[0];
+        uv_coords[0] = 1.0 - uv_coords[0];
     }
     if (in_invert_t)
     {
-        uv_coords = 1.0 - uv_coords[1];
-    }
-
-    if (isconnected(in_texture_coords_filter))
-    {
-        out_texture_coords_filter = in_texture_coords_filter;
-    }
-    else
-    {
-        out_texture_coords_filter[0] = filterwidth(uv_coords[0]);
-        out_texture_coords_filter[1] = filterwidth(uv_coords[1]);
+        uv_coords[1] = 1.0 - uv_coords[1];
     }
 
     string interpolation = get_interpolation_method(in_interpolation_method);
