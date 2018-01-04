@@ -33,6 +33,10 @@
 #include "appleseed/color/as_colorimetry.h"
 #include "appleseed/color/as_color_transforms.h"
 
+#ifndef NCOMPS
+#define NCOMPS  3
+#endif
+
 // The luminance coefficients are provided by the Y value, so when the
 // white points of the color space differ from the requested white point,
 // the RGB->XYZ matrices are adjusted with the Bradford CAT.
@@ -309,8 +313,25 @@ void initialize_RGB_primaries(
 // Reference:
 //
 //      https://help.thefoundry.co.uk/nuke/8.0/content/user_guide/merging/merge_operations.html
-//      https://support.solidangle.com/display/A5AFMUG/Composite
-//      https://renderman.pixar.com/resources/RenderMan_20/PxrBlend.html
+//      Ughh.., to use the hopefully known Nuke blend modes, or to reduce 
+//      the profusion of blend modes into a minimal set of more common
+//      operations? That is the question...
+//      Also, some operations in alpha make no sense.
+//      Note: prman, arnold, also have nodes with plenty of blend-ops, but
+//      this seems an awfully ungrateful task for a OSL shader.
+//
+
+float blend_mode_screen(float A, float B)
+{
+    if (B < 0.5)
+    {
+        return A * B;
+    }
+    else
+    {
+        return (A <= 1.0 || B <= 1.0) ? A + B - A * B : max(A, B);
+    }
+}
 
 color texture_blend(
     color A,
@@ -321,225 +342,257 @@ color texture_blend(
     int clamp_output,
     output float out_alpha)
 {
-    // NUke modes, or prman
-    // burn, dodge, darken, darker color
-
     color out_rgb = color(0);
+    out_alpha = B_alpha;
 
     if (mode == 0)
     {
-        // passthrough A
+        // Passthrough A.
         out_rgb = A;
-        //out_alpha = A_alpha;
+        out_alpha = A_alpha;
     }
     else if (mode == 1)
     {
-        // passthrough B
+        // Passthrough B.
         out_rgb = B;
-        //out_alpha = B_alpha;
+        out_alpha = B_alpha;
     }
     else if (mode == 2)
     {
-        // Atop: Ab + B(1-a)
-        //out_rgb = A * B_alpha + B * (1.0 - A_alpha);
+        // Atop: Ab + B(1 - a).
+        out_rgb = A * B_alpha + B * (1.0 - A_alpha);
+        out_alpha = A_alpha + B_alpha;
     }
     else if (mode == 3)
     {
-        // average: (A+B)/2
+        // Average: (A + B) / 2.
         out_rgb = (A + B) / 2.0;
-        //out_alpha = (A_alpha + B_alpha) / 2.0;
+        out_alpha = (A_alpha + B_alpha) / 2.0;
     }
     else if (mode == 4)
     {
-        // color-burn:
-        out_rgb = 1.0 - (1.0 - B) / A;
-        //out_alpha = 1.0 - (1.0 - B_alpha) / A_alpha;
+        // Color-burn:
+        for (int i = 0; i < NCOMPS; ++i)
+        {
+            out_rgb[i] = (A[i] > 0.0)
+                ? 1.0 - (1.0 - B[i]) / A[i]
+                : 0.0;
+        }
+        out_alpha = (A_alpha > 0.0) ? 1.0 - (1.0 - B_alpha) / A_alpha : 0.0;
     }
     else if (mode == 5)
     {
-        // color dodge:
-        out_rgb = B / (1.0 - A);
-        //out_alpha = B_alpha / (1.0 - A_alpha);
+        // Color-dodge:
+        for (int i = 0; i < NCOMPS; ++i)
+        {
+            out_rgb[i] = (A[i] != 1.0)
+                ? B[i] / (1.0 - A[i])
+                : 0.0;
+        }
+        out_alpha = (A_alpha != 1.0) ? B_alpha / (1.0 - A_alpha) : 0.0;
     }
     else if (mode == 6)
     {
-        // conjoint-over
-        out_rgb = (A_alpha > B_alpha)
-            ? A + B * (1.0 - A_alpha) / B_alpha
-            : A;
-    }
-    else if (mode == 7)
-    {
-        // difference
-        out_rgb = abs(A - B);
-        //out_alpha = abs(A_alpha - B_alpha);
-    }
-    else if (mode == 8)
-    {
-        // disjoint over
-        out_rgb = (A_alpha + B_alpha < 1.0)
-            ? A + B
-            : A + B * (1.0 - A_alpha) / B_alpha;
-    }
-    else if (mode == 9)
-    {
-        // divide
-        out_rgb = (B != 0) ? A / B : color(0);
-        //out_alpha = (B_alpha != 0) ? A_alpha / B_alpha : 0.0;
-    }
-    else if (mode == 10)
-    {
-        // exclusion
-        out_rgb = A + B - 2.0 * A * B;
-        //out_alpha = A_alpha + B_alpha - 2.0 * A_alpha * B_alpha;
-    }
-    else if (mode == 11)
-    {
-        // from
-        out_rgb = B - A;
-        //out_alpha = B_alpha - A_alpha;
-    }
-    else if (mode == 12)
-    {
-        // geometric
-        out_rgb = 2.0 * A * B / (A + B);
-        //out_alpha = 2.0 * A_alpha * B_alpha / (A_alpha + B_alpha);
-    }
-    else if (mode == 13)
-    {
-        // hard light, if A<0.5 A * B, else screen
-        // screen A + B - A * B, if A and B in [0,1] else max(A, B)
-
-        if (max(A) < 0.5)
+        // Conjoint-over:
+        if (B_alpha > 0.0)
         {
-            out_rgb = A * B;
+            out_rgb = (A_alpha > B_alpha)
+                ? A
+                : A + B * (1.0 - A_alpha / B_alpha);
         }
         else
         {
-            out_rgb =
-                (min(A) < 0.0 && min(B) < 0.0 && max(A) > 1.0 && max(B) > 1.0)
-                ? max(A, B)
-                : A + B - A * B;
+            out_rgb = (A_alpha > B_alpha) ? A : color(0);
         }
+        // alpha is what?
+    }
+    else if (mode == 7)
+    {
+        // Difference:
+        out_rgb = abs(A - B);
+        out_alpha = abs(A_alpha - B_alpha);
+    }
+    else if (mode == 8)
+    {
+        // Disjoint over:
+        if (B_alpha == 0.0)
+        {
+            out_rgb = (A_alpha < 1.0) ? A + B : color(0);
+        }
+        else
+        {
+            out_rgb = (A_alpha + B_alpha < 1.0)
+                ? A + B
+                : A + B * (1.0 - A_alpha) / B_alpha;
+        }
+        // alpha is what?
+    }
+    else if (mode == 9)
+    {
+        // Divide:
+        out_rgb = (B != 0) ? A / B : color(0);
+        out_alpha = (B_alpha != 0) ? A_alpha / B_alpha : 0.0;
+    }
+    else if (mode == 10)
+    {
+        // Exclusion:
+        for (int i = 0; i < NCOMPS; ++i)
+        {
+            out_rgb[i] = A[i] + B[i] - 2.0 * A[i] * B[i];
+        }
+        out_alpha = A_alpha + B_alpha - 2.0 * A_alpha * B_alpha;
+    }
+    else if (mode == 11)
+    {
+        // From.
+        out_rgb = B - A;
+        out_alpha = B_alpha - A_alpha;
+    }
+    else if (mode == 12)
+    {
+        // Geometric.
+        out_rgb = 2.0 * A * B / (A + B);
+        out_alpha = 2.0 * A_alpha * B_alpha / (A_alpha + B_alpha);
+    }
+    else if (mode == 13)
+    {
+        // Hard light, if A < 0.5 A * B, else screen, where:
+        // screen A + B - A * B, if A and B in [0,1] else max(A, B).
+
+        for (int i = 0; i < NCOMPS; ++i)
+        {
+            out_rgb[i] = (A[i] < 0.5)
+                ? A[i] * B[i]
+                : blend_mode_screen(A[i], B[i]);
+        }
+        
+        out_alpha = (A_alpha < 0.5)
+            ? A_alpha * B_alpha
+            : blend_mode_screen(A_alpha, B_alpha);
     }
     else if (mode == 14)
     {
-        // hypot diagonal
+        // Hypot.
         out_rgb = color(hypot(A[0], B[0]),
                         hypot(A[1], B[1]),
                         hypot(A[2], B[2]));
 
-        //out_alpha = hypot(A_alpha, B_alpha);
+        out_alpha = hypot(A_alpha, B_alpha);
     }
     else if (mode == 15)
     {
-        // In
+        // In.
         out_rgb = A * B_alpha;
+        out_alpha = B_alpha; // ? or A_alpha * B_alpha?
     }
     else if (mode == 16)
     {
-        // Mask
+        // Mask.
         out_rgb = B * A_alpha;
+        out_alpha = A_alpha; // same as above, A_alpha or A_alpha * B_alpha?
     }
     else if (mode == 17)
     {
-        // Matte
+        // Matte.
         out_rgb = mix(B, A, A_alpha);
+        // alpha is what? Ba*(1-Aa) + Aa? Aa?
     }
     else if (mode == 18)
     {
-        // Max
+        // Max.
         out_rgb = max(A, B);
-        //out_alpha = max(A_alpha, B_alpha);
+        out_alpha = max(A_alpha, B_alpha);
     }
     else if (mode == 19)
     {
-        // Min
+        // Min.
         out_rgb = min(A, B);
-        //out_alpha = min(A_alpha, B_alpha);
+        out_alpha = min(A_alpha, B_alpha);
     }
     else if (mode == 20)
     {
-        // Minus
+        // Minus.
         out_rgb = A - B;
-        //out_alpha = A_alpha - B_alpha;
+        out_alpha = A_alpha - B_alpha;
     }
     else if (mode == 21)
     {
-        // Multiply
-        out_rgb = A * B;
-        //out_alpha = A_alpha * B_alpha;
+        // Multiply.
+        out_rgb = (min(A) < 0 && min(B) < 0) ? A : A * B;
+        out_alpha = A_alpha * B_alpha;
     }
     else if (mode == 22)
     {
         // Out
-        out_rgb = A * (1 - B_alpha);
+        out_rgb = A * (1.0 - B_alpha);
+        // alpha is what? Aa * (1-Ba)? Or just Ba?
     }
     else if (mode == 23)
     {
         // Over
         out_rgb = A + B * (1.0 - A_alpha);
+        // Alpha? Aa+Ba(1-Aa)?
     }
     else if (mode == 24)
     {
-        // Overlay
-        //  if B < 0.5 A * B, else screen
-        // screen A + B - A * B, if A and B in [0,1] else max(A, B)
+        // Overlay, f B < 0.5 A * B, else screen, where screen:
+        // screen A + B - A * B, if A and B in [0,1] else max(A, B).
 
-        if (max(B) < 0.5)
+        for (int i = 0; i < NCOMPS; ++i)
         {
-            out_rgb = A * B;
+            out_rgb[i] = (B[i] < 0.5)
+                ? A[i] * B[i]
+                : blend_mode_screen(A[i], B[i]);
         }
-        else
-        {
-            out_rgb = (min(A) < 0.0 && min(B) < 0.0 &&
-                       max(A) > 1.0 && max(B) > 1.0)
-                ? max(A, B)
-                : A + B - A * B;
-        }
-
-        // Alpha is (or should be) in [0,1].
-        // out_alpha = (B_alpha < 0.5)
-        //    ? A_alpha * B_alpha
-        //    : A_alpha + B_alpha - A_alpha * B_alpha;
+        
+        out_alpha = (B_alpha < 0.5)
+            ? A_alpha * B_alpha
+            : A_alpha + B_alpha - A_alpha * B_alpha;
     }
     else if (mode == 25)
     {
-        // Plus
+        // Plus.
         out_rgb = A + B;
+        out_alpha = A_alpha + B_alpha;
     }
     else if (mode == 26)
     {
-        // Screen
-        out_rgb = (min(A) < 0.0 && min(B) < 0.0 &&
-                   max(A) > 1.0 && max(B) > 1.0)
-            ? max(A, B)
-            : A + B - A * B;
+        // Screen.
+        for (int i = 0; i < NCOMPS; ++i)
+        {
+            out_rgb[i] = blend_mode_screen(A[i], B[i]);
+        }
 
-        //out_alpha = A_alpha + B_alpha - A_alpha * B_alpha;
+        out_alpha = A_alpha + B_alpha - A_alpha * B_alpha;
     }
     else if (mode == 27)
     {
-        // Soft light ????
-        ;
+        // Soft light: https://en.wikipedia.org/wiki/Blend_modes#Soft_Light
+        out_rgb = (1.0 - 2.0 * B) * A * A + 2.0 * B * A;
+
+        out_alpha = (1.0 - 2.0 * B_alpha) *
+            A_alpha * A_alpha + 2.0 * B_alpha * A_alpha;
     }
     else if (mode == 28)
     {
-        // Stencil
+        // Stencil.
         out_rgb = B * (1.0 - A_alpha);
+        // alpha of stencil is what, Ba*(1-Aa)? Or just Aa?
     }
     else if (mode == 29)
     {
-        // Under
+        // Under.
         out_rgb = A * (1.0 - B_alpha) + B;
+        // alpha? Aa(1-Ba)?
     }
     else if (mode == 30)
     {
-        // Xor
+        // Xor.
         out_rgb = A * (1.0 - B_alpha) + B * (1.0 - A_alpha);
+        // alpha? (1-Ba)+(1-Aa)?
     }
 
-    out_alpha = clamp(B_alpha, 0.0, 1.0);
+    out_alpha = clamp(out_alpha, 0.0, 1.0);
 
     return (clamp_output) ? clamp(out_rgb, color(0), color(1)) : out_rgb;
 }

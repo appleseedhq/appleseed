@@ -432,6 +432,7 @@ set (src_appleseed_sources
      src/appleseed/as_globals.osl
      src/appleseed/as_id_manifold.osl
      src/appleseed/as_layer_shader.osl
+     src/appleseed/as_layer_texture.osl
      src/appleseed/as_luminance.osl
      src/appleseed/as_metal.osl
      src/appleseed/as_noise2d.osl
@@ -441,12 +442,12 @@ set (src_appleseed_sources
      src/appleseed/as_space_transform.osl
      src/appleseed/as_standard_surface.osl
      src/appleseed/as_subsurface.osl
+     src/appleseed/as_switch_texture.osl
      src/appleseed/as_swizzle.osl
      src/appleseed/as_texture.osl
      src/appleseed/as_texture_info.osl
      src/appleseed/as_triplanar.osl
      src/appleseed/as_vary_color.osl
-     src/appleseed/as_vary_texture.osl
      src/appleseed/as_voronoi2d.osl
      src/appleseed/as_voronoi3d.osl
 )

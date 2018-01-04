@@ -28,12 +28,12 @@
 
 #include "appleseed/transform/as_transform_helpers.h"
 
-shader as_varyTexture
+shader as_SwitchTexture
 [[
-    string as_maya_node_name = "asVaryTexture",
+    string as_maya_node_name = "asSwitchTexture",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string help = "Texture variation utility shader",
-    string icon = "asVaryTexture.png",
+    string icon = "asSwitchTexture.png",
     int as_maya_type_id = 0x001279da
 ]]
 (
