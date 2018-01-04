@@ -307,6 +307,31 @@ bool RendererServices::get_inverse_matrix(
     return OSL::RendererServices::get_inverse_matrix(sg, result, to);
 }
 
+namespace
+{
+
+bool can_transform(const OSL::TypeDesc::VECSEMANTICS vectype)
+{
+    // We only transform points and vectors for now.
+    return
+        vectype == OSL::TypeDesc::POINT ||
+        vectype == OSL::TypeDesc::VECTOR;
+}
+
+void transform(
+    const OSL::Vec3&                  Pin,
+    const OSL::Matrix44&              m,
+    const OSL::TypeDesc::VECSEMANTICS vectype,
+    OSL::Vec3&                        Pout)
+{
+    if (vectype == OSL::TypeDesc::POINT)
+        Pout = Pin * m;
+    else if (vectype == OSL::TypeDesc::VECTOR)
+        m.multDirMatrix(Pin, Pout);
+}
+
+}
+
 bool RendererServices::transform_points(
     OSL::ShaderGlobals*         sg,
     OSL::ustring                from,
@@ -317,8 +342,7 @@ bool RendererServices::transform_points(
     int                         npoints,
     OSL::TypeDesc::VECSEMANTICS vectype)
 {
-    // We only transform points for now.
-    if (vectype != OSL::TypeDesc::POINT)
+    if (!can_transform(vectype))
         return false;
 
     if (to == g_NDC_ustr || to == g_raster_ustr)
@@ -327,14 +351,12 @@ bool RendererServices::transform_points(
             memcpy(Pout, Pin, npoints * sizeof(OSL::Vec3));
         else if (from == g_object_ustr)
         {
+            // Convert from object to world.
             OSL::Matrix44 m;
             get_matrix(sg, m, sg->object2common, time);
 
-            // Convert from object to world.
             for (int i = 0; i < npoints; ++i)
-                Pout[i] = Pin[i] * m;
-
-            from = g_world_ustr;
+                transform(Pin[i], m, vectype, Pout[i]);
         }
         else if (from == g_camera_ustr)
         {
@@ -343,25 +365,48 @@ bool RendererServices::transform_points(
 
             // Convert from camera to world.
             for (int i = 0; i < npoints; ++i)
-                Pout[i] = Pin[i] * m;
-
-            from = g_world_ustr;
+                transform(Pin[i], m, vectype, Pout[i]);
         }
         else return false;
 
         // Transform to NDC.
-        for (size_t i = 0; i < npoints; ++i)
+        if (vectype == OSL::TypeDesc::VECTOR)
         {
-            Vector2d ndc;
-            if (m_camera->project_point(time, Vector3d(Pout[0].x, Pout[0].y, Pout[0].z), ndc))
+            Vector2d ndc_p(-1.0, -1.0);
+
+            if (sg)
             {
+                m_camera->project_point(
+                    time,
+                    Vector3d(sg->P.x, sg->P.y, sg->P.z),
+                    ndc_p);
+            }
+
+            for (int i = 0; i < npoints; ++i)
+            {
+                const OSL::Vec3 Q = sg->P + Pout[i];
+
+                Vector2d ndc_q(-1.0, -1.0);
+                m_camera->project_point(time, Vector3d(Q.x, Q.y, Q.z), ndc_q);
+                Pout[i] = OSL::Vec3(
+                    static_cast<float>(ndc_q[0] - ndc_p[0]),
+                    static_cast<float>(ndc_q[1] - ndc_p[1]),
+                    0.0f);
+            }
+        }
+        else
+        {
+            assert(vectype == OSL::TypeDesc::POINT);
+
+            for (int i = 0; i < npoints; ++i)
+            {
+                Vector2d ndc(-1.0, -1.0);
+                m_camera->project_point(time, Vector3d(Pout[i].x, Pout[i].y, Pout[i].z), ndc);
                 Pout[i] = OSL::Vec3(
                     static_cast<float>(ndc[0]),
                     static_cast<float>(ndc[1]),
                     0.0f);
             }
-            else
-                Pout[i] = OSL::Vec3(-1.0f, -1.0f, 0.0f);
         }
 
         if (to == g_raster_ustr)
@@ -369,10 +414,8 @@ bool RendererServices::transform_points(
             // Transform from NDC to raster.
             for (int i = 0; i < npoints; ++i)
             {
-                Pout[i] = OSL::Vec3(
-                    Pout[i].x * m_resolution[0],
-                    Pout[i].y * m_resolution[1],
-                    Pout[i].z);
+                Pout[i].x *= m_resolution[0];
+                Pout[i].y *= m_resolution[1];
             }
         }
 

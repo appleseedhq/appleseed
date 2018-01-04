@@ -1,0 +1,8 @@
+
+surface ndc_tex(string filename = "")
+{
+    point PNDC = transform("common", "NDC", P);
+    float s = PNDC[0];
+    float t = 1.0 - PNDC[1]; // <- Flip because NDC is v down.
+    Ci = texture(filename, s, t) * diffuse(N);
+}
