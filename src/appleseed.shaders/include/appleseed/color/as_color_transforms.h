@@ -536,7 +536,7 @@ matrix create_RGB_to_XYZ_matrix(
     vector G_CIEXYZ = transform_CIExy_to_CIEXYZ(G_CIExy);
     vector B_CIEXYZ = transform_CIExy_to_CIEXYZ(B_CIExy);
 
-    // iFf source, target white differ, prepare for chromatic adaptation.
+    // if source, target white differ, prepare for chromatic adaptation.
     
     vector source_W_CIEXYZ = transform_CIExy_to_CIEXYZ(W_CIExy);
     vector target_W_CIEXYZ = transform_CIExy_to_CIEXYZ(target_W_CIExy);

@@ -67,6 +67,7 @@ source_group ("include\\appleseed\\gaffer" FILES
 
 set (include_appleseed_color_sources
     include/appleseed/color/as_chromatic_adaptation.h
+    include/appleseed/color/as_color_blend_modes.h
     include/appleseed/color/as_color_helpers.h
     include/appleseed/color/as_color_transforms.h
     include/appleseed/color/as_colorimetry.h

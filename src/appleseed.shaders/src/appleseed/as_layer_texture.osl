@@ -26,7 +26,7 @@
 // THE SOFTWARE.
 //
 
-#include "appleseed/color/as_color_helpers.h"
+#include "appleseed/color/as_color_blend_modes.h"
 
 shader as_layer_texture
 [[
@@ -83,12 +83,12 @@ shader as_layer_texture
         string label = "Layer 1 Alpha",
         string page = "Layer 1"
     ]],
-    int in_blend_mode1 = 23
+    int in_blend_mode1 = 22
     [[
         string as_maya_attribute_name = "blendMode1",
         string as_maya_attribute_short_name = "bm1",
         string widget = "mapper",
-        string options = "A Passthrough:0|B Passthrough:1|Atop:2|Average:3|Color Burn:4|Color Dodge:5|Conjoint Over:6|Difference:7|Disjoint Over:8|Divide:9|Exclusion:10|From:11|Geometric:12|Hard Light:13|Hypot:14|In:15|Mask:16|Matte:17|Max:18|Min:19|Minus:20|Multiply:21|Out:22|Over:23|Overlay:24|Plus:25|Screen:26|Soft Light:27|Stencil:28|Under:29|Xor:30",
+        string options = "Atop:0|Average:1|Color Burn:2|Color Dodge:3|Conjoint Over:4|Difference:5|Disjoint Over:6|Divide:7|Exclusion:8|From:9|Geometric:10|Hard Light:11|Hypot:12|In:13|Linear Light:14|Mask:15|Matte:16|Max:17|Min:18|Minus:19|Multiply:20|Out:21|Over:22|Overlay:23|Pin Light:24|Plus:25|Reflect:26|Screen:27|Soft Light:28|Stencil:29|Under:30|Vivid Light:31|Xor:32",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -125,12 +125,12 @@ shader as_layer_texture
         string label = "Layer 2 Alpha",
         string page = "Layer 2"
     ]],
-    int in_blend_mode2 = 23
+    int in_blend_mode2 = 22
     [[
         string as_maya_attribute_name = "blendMode2",
         string as_maya_attribute_short_name = "bm2",
         string widget = "mapper",
-        string options = "A Passthrough:0|B Passthrough:1|Atop:2|Average:3|Color Burn:4|Color Dodge:5|Conjoint Over:6|Difference:7|Disjoint Over:8|Divide:9|Exclusion:10|From:11|Geometric:12|Hard Light:13|Hypot:14|In:15|Mask:16|Matte:17|Max:18|Min:19|Minus:20|Multiply:21|Out:22|Over:23|Overlay:24|Plus:25|Screen:26|Soft Light:27|Stencil:28|Under:29|Xor:30",
+        string options = "Atop:0|Average:1|Color Burn:2|Color Dodge:3|Conjoint Over:4|Difference:5|Disjoint Over:6|Divide:7|Exclusion:8|From:9|Geometric:10|Hard Light:11|Hypot:12|In:13|Linear Light:14|Mask:15|Matte:16|Max:17|Min:18|Minus:19|Multiply:20|Out:21|Over:22|Overlay:23|Pin Light:24|Plus:25|Reflect:26|Screen:27|Soft Light:28|Stencil:29|Under:30|Vivid Light:31|Xor:32",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -167,12 +167,12 @@ shader as_layer_texture
         string label = "Layer 3 Alpha",
         string page = "Layer 3"
     ]],
-    int in_blend_mode3 = 23
+    int in_blend_mode3 = 22
     [[
         string as_maya_attribute_name = "blendMode3",
         string as_maya_attribute_short_name = "bm3",
         string widget = "mapper",
-        string options = "A Passthrough:0|B Passthrough:1|Atop:2|Average:3|Color Burn:4|Color Dodge:5|Conjoint Over:6|Difference:7|Disjoint Over:8|Divide:9|Exclusion:10|From:11|Geometric:12|Hard Light:13|Hypot:14|In:15|Mask:16|Matte:17|Max:18|Min:19|Minus:20|Multiply:21|Out:22|Over:23|Overlay:24|Plus:25|Screen:26|Soft Light:27|Stencil:28|Under:29|Xor:30",
+        string options = "Atop:0|Average:1|Color Burn:2|Color Dodge:3|Conjoint Over:4|Difference:5|Disjoint Over:6|Divide:7|Exclusion:8|From:9|Geometric:10|Hard Light:11|Hypot:12|In:13|Linear Light:14|Mask:15|Matte:16|Max:17|Min:18|Minus:19|Multiply:20|Out:21|Over:22|Overlay:23|Pin Light:24|Plus:25|Reflect:26|Screen:27|Soft Light:28|Stencil:29|Under:30|Vivid Light:31|Xor:32",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -209,12 +209,12 @@ shader as_layer_texture
         string label = "Layer 4 Alpha",
         string page = "Layer 4"
     ]],
-    int in_blend_mode4 = 23
+    int in_blend_mode4 = 22
     [[
         string as_maya_attribute_name = "blendMode4",
         string as_maya_attribute_short_name = "bm4",
         string widget = "mapper",
-        string options = "A Passthrough:0|B Passthrough:1|Atop:2|Average:3|Color Burn:4|Color Dodge:5|Conjoint Over:6|Difference:7|Disjoint Over:8|Divide:9|Exclusion:10|From:11|Geometric:12|Hard Light:13|Hypot:14|In:15|Mask:16|Matte:17|Max:18|Min:19|Minus:20|Multiply:21|Out:22|Over:23|Overlay:24|Plus:25|Screen:26|Soft Light:27|Stencil:28|Under:29|Xor:30",
+        string options = "Atop:0|Average:1|Color Burn:2|Color Dodge:3|Conjoint Over:4|Difference:5|Disjoint Over:6|Divide:7|Exclusion:8|From:9|Geometric:10|Hard Light:11|Hypot:12|In:13|Linear Light:14|Mask:15|Matte:16|Max:17|Min:18|Minus:19|Multiply:20|Out:21|Over:22|Overlay:23|Pin Light:24|Plus:25|Reflect:26|Screen:27|Soft Light:28|Stencil:29|Under:30|Vivid Light:31|Xor:32",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -251,12 +251,12 @@ shader as_layer_texture
         string label = "Layer 5 Alpha",
         string page = "Layer 5"
     ]],
-    int in_blend_mode5 = 23
+    int in_blend_mode5 = 22
     [[
         string as_maya_attribute_name = "blendMode5",
         string as_maya_attribute_short_name = "bm5",
         string widget = "mapper",
-        string options = "A Passthrough:0|B Passthrough:1|Atop:2|Average:3|Color Burn:4|Color Dodge:5|Conjoint Over:6|Difference:7|Disjoint Over:8|Divide:9|Exclusion:10|From:11|Geometric:12|Hard Light:13|Hypot:14|In:15|Mask:16|Matte:17|Max:18|Min:19|Minus:20|Multiply:21|Out:22|Over:23|Overlay:24|Plus:25|Screen:26|Soft Light:27|Stencil:28|Under:29|Xor:30",
+        string options = "Atop:0|Average:1|Color Burn:2|Color Dodge:3|Conjoint Over:4|Difference:5|Disjoint Over:6|Divide:7|Exclusion:8|From:9|Geometric:10|Hard Light:11|Hypot:12|In:13|Linear Light:14|Mask:15|Matte:16|Max:17|Min:18|Minus:19|Multiply:20|Out:21|Over:22|Overlay:23|Pin Light:24|Plus:25|Reflect:26|Screen:27|Soft Light:28|Stencil:29|Under:30|Vivid Light:31|Xor:32",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -293,12 +293,12 @@ shader as_layer_texture
         string label = "Layer 6 Alpha",
         string page = "Layer 6"
     ]],
-    int in_blend_mode6 = 23
+    int in_blend_mode6 = 22
     [[
         string as_maya_attribute_name = "blendMode6",
         string as_maya_attribute_short_name = "bm6",
         string widget = "mapper",
-        string options = "A Passthrough:0|B Passthrough:1|Atop:2|Average:3|Color Burn:4|Color Dodge:5|Conjoint Over:6|Difference:7|Disjoint Over:8|Divide:9|Exclusion:10|From:11|Geometric:12|Hard Light:13|Hypot:14|In:15|Mask:16|Matte:17|Max:18|Min:19|Minus:20|Multiply:21|Out:22|Over:23|Overlay:24|Plus:25|Screen:26|Soft Light:27|Stencil:28|Under:29|Xor:30",
+        string options = "Atop:0|Average:1|Color Burn:2|Color Dodge:3|Conjoint Over:4|Difference:5|Disjoint Over:6|Divide:7|Exclusion:8|From:9|Geometric:10|Hard Light:11|Hypot:12|In:13|Linear Light:14|Mask:15|Matte:16|Max:17|Min:18|Minus:19|Multiply:20|Out:21|Over:22|Overlay:23|Pin Light:24|Plus:25|Reflect:26|Screen:27|Soft Light:28|Stencil:29|Under:30|Vivid Light:31|Xor:32",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -335,12 +335,12 @@ shader as_layer_texture
         string label = "Layer 7 Alpha",
         string page = "Layer 7"
     ]],
-    int in_blend_mode7 = 23
+    int in_blend_mode7 = 22
     [[
         string as_maya_attribute_name = "blendMode7",
         string as_maya_attribute_short_name = "bm7",
         string widget = "mapper",
-        string options = "A Passthrough:0|B Passthrough:1|Atop:2|Average:3|Color Burn:4|Color Dodge:5|Conjoint Over:6|Difference:7|Disjoint Over:8|Divide:9|Exclusion:10|From:11|Geometric:12|Hard Light:13|Hypot:14|In:15|Mask:16|Matte:17|Max:18|Min:19|Minus:20|Multiply:21|Out:22|Over:23|Overlay:24|Plus:25|Screen:26|Soft Light:27|Stencil:28|Under:29|Xor:30",
+        string options = "Atop:0|Average:1|Color Burn:2|Color Dodge:3|Conjoint Over:4|Difference:5|Disjoint Over:6|Divide:7|Exclusion:8|From:9|Geometric:10|Hard Light:11|Hypot:12|In:13|Linear Light:14|Mask:15|Matte:16|Max:17|Min:18|Minus:19|Multiply:20|Out:21|Over:22|Overlay:23|Pin Light:24|Plus:25|Reflect:26|Screen:27|Soft Light:28|Stencil:29|Under:30|Vivid Light:31|Xor:32",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -381,7 +381,14 @@ shader as_layer_texture
         string as_maya_attribute_short_name = "oc",
         string widget = "null",
         string label = "Output Color"
-    ]]      
+    ]],
+    output float out_alpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
+        string widget = "null",
+        string label = "Output Alpha"
+    ]],
 )
 {
     color tex0 = in_visibility * in_color;
@@ -390,7 +397,7 @@ shader as_layer_texture
 
     if (in_visibility1)
     {
-        tex0 = texture_blend(
+        tex0 = blend_color(
             tex0,
             alpha,
             in_color1,
@@ -401,7 +408,7 @@ shader as_layer_texture
     }
     if (in_visibility2)
     {
-        tex0 = texture_blend(
+        tex0 = blend_color(
             tex0,
             layer_alpha,
             in_color2,
@@ -412,7 +419,7 @@ shader as_layer_texture
     }
     if (in_visibility3)
     {
-        tex0 = texture_blend(
+        tex0 = blend_color(
             tex0,
             layer_alpha,
             in_color3,
@@ -423,7 +430,7 @@ shader as_layer_texture
     }
     if (in_visibility4)
     {
-        tex0 = texture_blend(
+        tex0 = blend_color(
             tex0,
             layer_alpha,
             in_color4,
@@ -434,7 +441,7 @@ shader as_layer_texture
     }
     if (in_visibility5)
     {
-        tex0 = texture_blend(
+        tex0 = blend_color(
             tex0,
             layer_alpha,
             in_color5,
@@ -445,7 +452,7 @@ shader as_layer_texture
     }
     if (in_visibility6)
     {
-        tex0 = texture_blend(
+        tex0 = blend_color(
             tex0,
             layer_alpha,
             in_color6,
@@ -456,7 +463,7 @@ shader as_layer_texture
     }
     if (in_visibility7)
     {
-        tex0 = texture_blend(
+        tex0 = blend_color(
             tex0,
             layer_alpha,
             in_color7,
@@ -467,4 +474,5 @@ shader as_layer_texture
     }
 
     out_color = tex0;
+    out_alpha = layer_alpha;
 }
