@@ -28,13 +28,13 @@
 
 #include "appleseed/color/as_color_blend_modes.h"
 
-shader as_blend_color
+shader as_composite_color
 [[
-    string as_maya_node_name = "asBlendColor",
+    string as_maya_node_name = "asCompositeColor",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string help = "Color blend utility node.",
-    string icon = "asBlendColor.png",
-    int as_maya_type_id = 0x001279d1
+    string help = "Porter-Duff Compositing operators node.",
+    string icon = "asCompositeColor.png",
+    int as_maya_type_id = 0x001279fd
 ]]
 (
     color in_color = color(0)
@@ -42,16 +42,15 @@ shader as_blend_color
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Source Color",
-        string page = "Color",
-        string help = "Layer 0 color, or base layer color."
+        string page = "Color"
     ]],
-    float in_weight = 1.0
+    float in_alpha = 1.0
     [[
-        string as_maya_attribute_name = "weight",
-        string as_maya_attribute_short_name = "w1",
+        string as_maya_attribute_name = "alpha",
+        string as_maya_attribute_short_name = "a",
         float min = 0.0,
         float max = 1.0,
-        string label = "Source Weight",
+        string label = "Source Alpha",
         string page = "Color",
         int divider = 1
     ]],
@@ -59,38 +58,39 @@ shader as_blend_color
     [[
         string as_maya_attribute_name = "color2",
         string as_maya_attribute_short_name = "c2",
-        string label = "Blend Color",
+        string label = "Destination Color",
         string page = "Color"
     ]],
-    float in_weight2 = 1.0
+    float in_alpha2 = 1.0
     [[
-        string as_maya_attribute_name = "weight2",
-        string as_maya_attribute_short_name = "w2",
+        string as_maya_attribute_name = "alpha2",
+        string as_maya_attribute_short_name = "a2",
         float min = 0.0,
         float max = 1.0,
-        string label = "Blend Weight",
+        string label = "Destination Alpha",
         string page = "Color",
         int divider = 1
     ]],
-    string in_blend_mode = "Overlay"
+    string in_composite_mode = "Matte"
     [[
-        string as_maya_attribute_name = "blendMode",
-        string as_maya_attribute_short_name = "bm",
+        string as_maya_attribute_name = "compositeMode",
+        string as_maya_attribute_short_name = "com",
         string widget = "popup",
-        string options = "Darken|Multiply|Color Burn|Linear Burn|Lighten|Screen|Color Dodge|Linear Dodge|Overlay|Soft Light|Hard Light|Vivid Light|Linear Light|Pin Light|Difference|Exclusion|Subtract|Divide|Hue|Saturation|Color|Luminosity",
+        string options =
+        "Copy|Over|Under|In|Mask|Out|Stencil|Atop|Xor|Conjoint Over|Disjoint Over|Matte",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
-        string label = "Blending Mode",
+        string label = "Composite Mode",
         string page = "Color",
-        string help = "Common image blending modes. For Porter-Duff compositing, use the Composite node.",
+        string help = "Compositing modes.",
         int divider = 1
     ]],
     int in_clamp_output = 0
     [[
         string as_maya_attribute_name = "clampOutput",
-        string as_maya_attribute_short_name = "clo",
+        string as_maya_attribute_short_name = "cot",
         string widget = "checkBox",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
@@ -109,12 +109,14 @@ shader as_blend_color
     ]]
 )
 {
-    if (in_weight * in_color != 0 && in_weight * in_color2 != 0)
+    if (in_color != 0 && in_color2 != 0)
     {
-        out_color = mix(
-            in_weight * in_color,
-            blend_color(in_blend_mode, in_color, in_color2),
-            in_weight2);
+        out_color = composite_color(
+            in_composite_mode,
+            in_color,
+            in_alpha,
+            in_color2,
+            in_alpha2);
 
         if (in_clamp_output)
         {

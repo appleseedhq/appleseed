@@ -183,13 +183,36 @@ color blendmode_linear_light(color A, color B)
     return rgb;
 }
 
+color blendmode_hue(color A, color B)
+{
+    color A_HSV = transform_RGB_to_HSV(A);
+    color B_HSV = transform_RGB_to_HSV(B);
+    return transform_HSV_to_RGB(color(A_HSV[0], B_HSV[1], B_HSV[2]));
+}
+
+color blendmode_saturation(color A, color B)
+{
+    color A_HSV = transform_RGB_to_HSV(A);
+    color B_HSV = transform_RGB_to_HSV(B);
+    return transform_HSV_to_RGB(color(B_HSV[0], A_HSV[1], B_HSV[2]));
+}
+
+color blendmode_color(color A, color B)
+{
+    color A_HSL = transform_RGB_to_HSL(A);
+    color B_HSL = transform_RGB_to_HSL(B);
+    return transform_HSL_to_RGB(color(A_HSL[0], A_HSL[1], B_HSL[2]));
+}
+
+color blendmode_luminosity(color A, color B)
+{
+    color A_HSL = transform_RGB_to_HSL(A);
+    color B_HSL = transform_RGB_to_HSL(B);
+    return transform_HSL_to_RGB(color(B_HSL[0], B_HSL[1], A_HSL[2]));
+}
+
 //
 // References:
-//
-//      "Compositing Digital Images", by T.Porter and T.Duff
-//      Computer Graphics Volume 18, Number 3, July 1984, pp 253-259
-//
-//      https://keithp.com/~keithp/porterduff/
 //
 //      Natrox Merge Plugin modes:
 //      http://natron.readthedocs.io/en/master/plugins/net.sf.openfx.MergePlugin.html
@@ -254,115 +277,117 @@ color blendmode_disjoint_over(
     }
 }
 
+color blendmode_freeze(color A, color B)
+{
+    color rgb;
+
+    for (int i = 0; i < NCOMPS; ++i)
+    {
+        rgb[i] = (B[i] > 0.0) ? 1.0 - sqrt(1.0 - A[i]) : 0.0;
+    }
+    return rgb;
+}
+
 //
 // Reference:
 //
 //      https://en.wikipedia.org/wiki/Blend_modes
-//      http://natron.readthedocs.io/en/master/plugins/net.sf.openfx.MergePlugin.html
 //
 
-color color_blend_modes(int mode, color A, color B)
+color blend_color(string mode, color A, color B)
 {
     color rgb;
 
-    if (mode == 0)
+    if (mode == "Darken")
     {
         rgb = min(A, B);
     }
-    if (mode == 1)
+    if (mode == "Multiply")
     {
         rgb = A * B;
     }
-    else if (mode == 2)
+    else if (mode == "Color Burn")
     {
         rgb = blendmode_color_burn(A, B);
     }
-    else if (mode == 3)
+    else if (mode == "Linear Burn")
     {
         rgb = A + B - color(1);
     }
-    else if (mode == 4)
+    else if (mode == "Lighten")
     {
         rgb = max(A, B);
     }
-    else if (mode == 5)
+    else if (mode == "Screen")
     {
         rgb = blendmode_screen(A, B);
     }
-    else if (mode == 6)
+    else if (mode == "Color Dodge")
     {
         rgb = blendmode_color_dodge(A, B);
     }
-    else if (mode == 7)
+    else if (mode == "Linear Dodge")
     {
         rgb = A + B;
     }
-    else if (mode == 8)
+    else if (mode == "Overlay")
     {
         rgb = blendmode_overlay(A, B);
     }
-    else if (mode == 9)
+    else if (mode == "Soft Light")
     {
         rgb = blendmode_soft_light(A, B);
     }
-    else if (mode == 10)
+    else if (mode == "Hard Light")
     {
         rgb = blendmode_hard_light(A, B);
     }
-    else if (mode == 11)
+    else if (mode == "Vivid Light")
     {
         rgb = blendmode_vivid_light(A, B);
     }
-    else if (mode == 12)
+    else if (mode == "Linear Light")
     {
         rgb = blendmode_linear_light(A, B);
     }
-    else if (mode == 13)
+    else if (mode == "Pin Light")
     {
         rgb = blendmode_pin_light(A, B);
     }
-    else if (mode == 14)
+    else if (mode == "Difference")
     {
         rgb = abs(A - B);
     }
-    else if (mode == 15)
+    else if (mode == "Exclusion")
     {
         rgb = blendmode_exclusion(A, B);
     }
-    else if (mode == 16)
+    else if (mode == "Subtract")
     {
         rgb = A - B;
     }
-    else if (mode == 17)
+    else if (mode == "Divide")
     {
         for (int i = 0; i < NCOMPS; ++i)
         {
             rgb[i] = (B[i] != 0.0) ? A[i] / B[i] : 0.0;
         }
     }
-    else if (mode == 18)
+    else if (mode == "Hue")
     {
-        color A_HSV = transform_RGB_to_HSV(A);
-        color B_HSV = transform_RGB_to_HSV(B);
-        rgb = transform_HSV_to_RGB(A_HSV[0], B_HSV[1], B_HSV[2]);
+        rgb = blendmode_hue(A, B);
     }
-    else if (mode == 19)
+    else if (mode == "Saturation")
     {
-        color A_HSV = transform_RGB_to_HSV(A);
-        color B_HSV = transform_RGB_to_HSV(B);
-        rgb = transform_HSV_to_RGB(B[0], A[1], B[2]);
+        rgb = blendmode_saturation(A, B);
     }
-    else if (mode == 20)
+    else if (mode == "Color")
     {
-        color A_HSL = transform_RGB_to_HSL(A);
-        color B_HSL = transform_RGB_to_HSL(B);
-        rgb = transform_HSL_to_RGB(A[0], A[1], B[2]);
+        rgb = blendmode_color(A, B);
     }
-    else if (mode == 21)
+    else if (mode == "Luminosity")
     {
-        color A_HSL = transform_RGB_to_HSL(A);
-        color B_HSL = transform_RGB_to_HSL(B);
-        rgb = transform_HSL_to_RGB(B[0], B[1], A[2]);
+        rgb = blendmode_luminosity(A, B);
     }
     else
     {
@@ -377,227 +402,464 @@ color color_blend_modes(int mode, color A, color B)
     return rgb;
 }
 
-
-
 //
-// Main blend function blend modes:
+// References:
 //
-//      0   Atop
-//      1   Average
-//      2   Color Burn
-//      3   Color Dodge
-//      4   Conjoint Over
-//      5   Difference
-//      6   Disjoin Over
-//      7   Divide
-//      8   Exclusion
-//      9   From
-//      10  Geometric
-//      11  Hard Light
-//      12  Hypot
-//      13  In
-//      14  Linear Light
-//      15  Mask
-//      16  Matte
-//      17  Max
-//      18  Min
-//      19  Minus
-//      20  Multiply
-//      21  Out
-//      22  Over
-//      23  Overlay
-//      24  Pin Light
-//      25  Plus
-//      26  Reflect
-//      27  Screen
-//      28  Soft Light
-//      29  Stencil
-//      30  Under
-//      31  Vivid Light
-//      32  Xor
+//      "Compositing Digital Images", by T.Porter and T.Duff
+//      Computer Graphics Volume 18, Number 3, July 1984, pp 253-259
+//
+//      https://keithp.com/~keithp/porterduff/
 //
 
-color blend_color(
+color composite_color(
+    string mode,
+    color A,
+    float A_alpha,
+    color B,
+    float B_alpha)
+{
+    color out_rgb;
+    
+    if (mode == "Copy")
+    {
+        out_rgb = A;
+    }
+    else if (mode == "Over")
+    {
+        out_rgb = A + B * (1.0 - A_alpha);
+    }
+    else if (mode == "Under")
+    {
+        out_rgb = A * (1.0 - B) + B;
+    }
+    else if (mode == "In")
+    {
+        out_rgb = A * B_alpha;
+    }
+    else if (mode == "Mask")
+    {
+        out_rgb = B * A_alpha;
+    }
+    else if (mode == "Out")
+    {
+        out_rgb = A * (1.0 - B_alpha);
+    }
+    else if (mode == "Stencil")
+    {
+        out_rgb = B * (1.0 - A_alpha);
+    }
+    else if (mode == "Atop")
+    {
+        out_rgb = A * B_alpha + B * (1.0 - A_alpha);
+    }
+    else if (mode == "Xor")
+    {
+        out_rgb = A * (1.0 - B_alpha) + B * (1.0 - A_alpha);
+    }
+    else if (mode == "Conjoint Over")
+    {
+        out_rgb = blendmode_conjoint_over(A, A_alpha, B, B_alpha);
+    }
+    else if (mode == "Disjoint Over")
+    {
+        out_rgb = blendmode_disjoint_over(A, A_alpha, B, B_alpha);
+    }
+    else if (mode == "Matte")
+    {
+        out_rgb = mix(A, B, A_alpha);
+    }
+    else
+    {
+#ifdef DEBUG
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+        warning("[DEBUG]: Unknown blend mode %d in %s, %s:%d\n",
+                shadername, mode, __FILE__, __LINE__);
+#endif
+        out_rgb = color(0);
+    }
+    return out_rgb;
+}
+
+//
+// Reference:
+//
+//      http://natron.readthedocs.io/en/master/plugins/net.sf.openfx.MergePlugin.html
+//      Some operations can be applied to alpha, others default to "alpha
+//      masking" mode, A.a + B.a - A.a * B.a.
+//
+
+color layer_color(
+    string mode,
     color A,
     float A_alpha,
     color B,
     float B_alpha,
-    int mode,
-    int clamp_output,
+    int alpha_masking,
     output float out_alpha)
 {
     color out_rgb = color(0);
-    out_alpha = B_alpha;
+    out_alpha = A_alpha + B_alpha - A_alpha * B_alpha;
 
-    if (mode == 0)
+    if (mode == "Atop")
     {
         out_rgb = A * B_alpha + B * (1.0 - A_alpha);
-        out_alpha = A_alpha + B_alpha;
+        out_alpha = A_alpha;
     }
-    else if (mode == 1)
+    else if (mode == "Average")
     {
         out_rgb = (A + B) / 2.0;
-        out_alpha = (A_alpha + B_alpha) / 2.0;
+
+        out_alpha = (alpha_masking)
+            ? A_alpha + B_alpha - A_alpha * B_alpha
+            : (A_alpha + B_alpha) / 2.0;
     }
-    else if (mode == 2)
+    else if (mode == "Color")
+    {
+        out_rgb = blendmode_color(A, B);
+        out_alpha = A_alpha + B_alpha - A_alpha * B_alpha;
+    }
+    else if (mode == "Color Burn")
     {
         out_rgb = blendmode_color_burn(A, B);
-        out_alpha = (A_alpha > 0.0) ? 1.0 - (1.0 - B_alpha) / A_alpha : 0.0;
+
+        if (alpha_masking)
+        {
+            out_alpha = A_alpha + B_alpha - A_alpha * B_alpha;
+        }
+        else
+        {
+            out_alpha = (A_alpha > 0.0)
+                ? 1.0 - (1.0 - B_alpha) / A_alpha
+                : 0.0;
+        }
     }
-    else if (mode == 3)
+    else if (mode == "Color Dodge")
     {
         out_rgb = blendmode_color_dodge(A, B);
-        out_alpha = (A_alpha != 1.0) ? B_alpha / (1.0 - A_alpha) : 0.0;
+
+        if (alpha_masking)
+        {
+            out_alpha = A_alpha + B_alpha - A_alpha * B_alpha;
+        }
+        else
+        {
+            out_alpha = (A_alpha != 1.0)
+                ? B_alpha / (1.0 - A_alpha)
+                : 0.0;
+        }
     }
-    else if (mode == 4)
+    else if (mode == "Conjoint Over")
     {
         out_rgb = blendmode_conjoint_over(A, A_alpha, B, B_alpha);
+        out_alpha = A_alpha + B_alpha - A_alpha * B_alpha;
     }
-    else if (mode == 5)
+    else if (mode == "Copy")
+    {
+        out_rgb = A;
+        out_alpha = B_alpha;
+    }
+    else if (mode == "Difference")
     {
         out_rgb = abs(A - B);
-        out_alpha = abs(A_alpha - B_alpha);
+        
+        out_alpha = (alpha_masking)
+            ? A_alpha + B_alpha - A_alpha * B_alpha
+            : abs(A_alpha - B_alpha);
     }
-    else if (mode == 6)
+    else if (mode == "Disjoint Over")
     {
         out_rgb = blendmode_disjoint_over(A, A_alpha, B, B_alpha);
+        out_alpha = A_alpha + B_alpha - A_alpha * B_alpha;
     }
-    else if (mode == 7)
+    else if (mode == "Divide")
     {
         out_rgb = (B != 0) ? A / B : color(0);
-        out_alpha = (B_alpha != 0) ? A_alpha / B_alpha : 0.0;
+        
+        if (alpha_masking)
+        {
+            out_alpha = A_alpha + B_alpha - A_alpha * B_alpha;
+        }
+        else
+        {
+            out_alpha = (B_alpha != 0) ? A_alpha / B_alpha : 0.0;
+        }
     }
-    else if (mode == 8)
+    else if (mode == "Exclusion")
     {
         out_rgb = blendmode_exclusion(A, B);
-        out_alpha = A_alpha + B_alpha - 2.0 * A_alpha * B_alpha;
+
+        out_alpha = (alpha_masking)
+            ? A_alpha + B_alpha - A_alpha * B_alpha
+            : A_alpha + B_alpha - 2.0 * A_alpha * B_alpha;
     }
-    else if (mode == 9)
+    else if (mode == "Freeze")
+    {
+        out_rgb = blendmode_freeze(A, B);
+
+        if (alpha_masking)
+        {
+            out_alpha = A_alpha + B_alpha - A_alpha * B_alpha;
+        }
+        else
+        {
+            out_alpha = (B_alpha > 0.0)
+                ? 1.0 - sqrt(1.0 - A_alpha) / B_alpha
+                : 0.0;
+        }
+    }
+    else if (mode == "From")
     {
         out_rgb = B - A;
-        out_alpha = B_alpha - A_alpha;
+
+        out_alpha = (alpha_masking)
+            ? A_alpha + B_alpha - A_alpha * B_alpha
+            : B_alpha - A_alpha;
     }
-    else if (mode == 10)
+    else if (mode == "Geometric")
     {
         out_rgb = (A * B != 0) ? 2.0 * A * B / (A + B) : color(0);
-        out_alpha = (A_alpha * B_alpha != 0)
-            ? 2.0 * A_alpha * B_alpha / (A_alpha + B_alpha)
-            : 0.0;
+
+        if (alpha_masking)
+        {
+            out_alpha = A_alpha + B_alpha - A_alpha * B_alpha;
+        }
+        else
+        {
+            out_alpha = (A_alpha * B_alpha != 0)
+                ? 2.0 * A_alpha * B_alpha / (A_alpha + B_alpha)
+                : 0.0;
+        }
     }
-    else if (mode == 11)
+    else if (mode == "Grain Extract")
+    {
+        out_rgb = B - A + 0.5;
+
+        out_alpha = (alpha_masking)
+            ? A_alpha + B_alpha - A_alpha * B_alpha
+            : B_alpha - A_alpha + 0.5;
+    }
+    else if (mode == "Grain Merge")
+    {
+        out_rgb = B + A - 0.5;
+
+        out_alpha = (alpha_masking)
+            ? A_alpha + B_alpha - A_alpha * B_alpha
+            : B_alpha + A_alpha - 0.5;
+    }
+    else if (mode == "Hard Light")
     {
         out_rgb = blendmode_hard_light(A, B);
-        out_alpha = (A_alpha < 0.5)
-            ? A_alpha * B_alpha
-            : blend_screen(A_alpha, B_alpha);
+
+        if (alpha_masking)
+        {
+            out_alpha = A_alpha + B_alpha - A_alpha * B_alpha;
+        }
+        else
+        {
+            out_alpha = (A_alpha < 0.5)
+                ? A_alpha * B_alpha
+                : blend_screen(A_alpha, B_alpha);
+        }
     }
-    else if (mode == 12)
+    else if (mode == "Hue")
+    {
+        out_rgb = blendmode_hue(A, B);
+        out_alpha = A_alpha + B_alpha - A_alpha * B_alpha;
+    }
+    else if (mode == "Hypot")
     {
         out_rgb = blendmode_hypot(A, B);
-        out_alpha = hypot(A_alpha, B_alpha);
+
+        out_alpha = (alpha_masking)
+            ? A_alpha + B_alpha - A_alpha * B_alpha
+            : hypot(A_alpha, B_alpha);
     }
-    else if (mode == 13)
+    else if (mode == "In")
     {
         out_rgb = A * B_alpha;
-        out_alpha = B_alpha; // or A_alpha * B_alpha?
-    }
-    else if (mode == 14)
-    {
-        out_rgb = blendmode_linear_light(A, B);
-        // alpha is what?
-    }
-    else if (mode == 15)
-    {
-        out_rgb = B * A_alpha;
-        out_alpha = A_alpha; // or A_alpha * B_alpha*
-    }
-    else if (mode == 16)
-    {
-        out_rgb = mix(B, A, A_alpha);
-        // alpha is what?
-    }
-    else if (mode == 17)
-    {
-        out_rgb = max(A, B);
-        out_alpha = max(A_alpha, B_alpha);
-    }
-    else if (mode == 18)
-    {
-        out_rgb = min(A, B);
-        out_alpha = min(A_alpha, B_alpha);
-    }
-    else if (mode == 19)
-    {
-        out_rgb = A - B;
-        out_alpha = A_alpha - B_alpha;
-    }
-    else if (mode == 20)
-    {
-        out_rgb = (min(A) < 0.0 && min(B) < 0.0) ? A : A * B;
         out_alpha = A_alpha * B_alpha;
     }
-    else if (mode == 21)
+    else if (mode == "Linear Light")
+    {
+        out_rgb = blendmode_linear_light(A, B);
+
+        out_alpha = (B_alpha > 0.5)
+            ? max(0.0, A_alpha + (2.0 * B_alpha - 0.5))
+            : A_alpha + 2.0 * B_alpha - 1.0;
+    }
+    else if (mode == "Luminosity")
+    {
+        out_rgb = blendmode_luminosity(A, B);
+        out_alpha = A_alpha + B_alpha - A_alpha * B_alpha;
+    }
+    else if (mode == "Mask")
+    {
+        out_rgb = B * A_alpha;
+        out_alpha = A_alpha * B_alpha;
+    }
+    else if (mode == "Matte")
+    {
+        out_rgb = mix(B, A, A_alpha);
+        out_alpha = A_alpha + B_alpha - A_alpha * B_alpha;
+    }
+    else if (mode == "Max")
+    {
+        out_rgb = max(A, B);
+
+        out_alpha = (alpha_masking)
+            ? A_alpha + B_alpha - A_alpha * B_alpha
+            : max(A_alpha, B_alpha);
+    }
+    else if (mode == "Min")
+    {
+        out_rgb = min(A, B);
+
+        out_alpha = (alpha_masking)
+            ? A_alpha + B_alpha - A_alpha * B_alpha
+            : min(A_alpha, B_alpha);
+    }
+    else if (mode == "Minus")
+    {
+        out_rgb = A - B;
+
+        out_alpha = (alpha_masking)
+            ? A_alpha + B_alpha - A_alpha * B_alpha
+            : A_alpha - B_alpha;
+    }
+    else if (mode == "Multiply")
+    {
+        out_rgb = (min(A) < 0.0 && min(B) < 0.0) ? A : A * B;
+
+        out_alpha = (alpha_masking)
+            ? A_alpha + B_alpha - A_alpha * B_alpha
+            : A_alpha * B_alpha;
+    }
+    else if (mode == "Out")
     {
         out_rgb = A * (1.0 - B_alpha);
-        // alpha is what? A.a * (1-B.a)? Or just B.a?
+        out_alpha = A_alpha * (1.0 - B_alpha); // reversed?
     }
-    else if (mode == 22)
+    else if (mode == "Over")
     {
         out_rgb = A + B * (1.0 - A_alpha);
-        // alpha is what? A.a + B.a(1 - B.a) ?
+        out_alpha = A_alpha + B_alpha - A_alpha * B_alpha;
     }
-    else if (mode == 23)
+    else if (mode == "Overlay")
     {
         out_rgb = blendmode_overlay(A, B);
-        out_alpha = (B_alpha < 0.5)
-            ? A_alpha * B_alpha
-            : A_alpha + B_alpha - A_alpha * B_alpha;
+
+        if (alpha_masking)
+        {
+            out_alpha = A_alpha + B_alpha - A_alpha * A_alpha;
+        }
+        else
+        {
+            out_alpha = (B_alpha < 0.5)
+                ? A_alpha * B_alpha
+                : A_alpha + B_alpha - A_alpha * B_alpha;
+        }
     }
-    else if (mode == 24)
+    else if (mode == "Pin Light")
     {
         out_rgb = blendmode_pin_light(A, B);
-        // alpha is what?
+
+        if (alpha_masking)
+        {
+            out_alpha = A_alpha + B_alpha - A_alpha * B_alpha;
+        }
+        else
+        {
+            out_alpha = (B_alpha > 0.5)
+                ? max(A_alpha, 2.0 * (B_alpha - 0.5))
+                : min(A_alpha, 2.0 * B_alpha);
+        }
     }
-    else if (mode == 25)
+    else if (mode == "Plus")
     {
         out_rgb = A + B;
-        out_alpha = A_alpha + B_alpha;
+
+        out_alpha = (alpha_masking)
+            ? A_alpha + B_alpha - A_alpha * B_alpha
+            : A_alpha + B_alpha;
     }
-    else if (mode == 26)
+    else if (mode == "Reflect")
     {
         out_rgb = blendmode_reflect(A, B);
-        // alpha is what?
+
+        if (alpha_masking)
+        {
+            out_alpha = A_alpha + B_alpha - A_alpha * B_alpha;
+        }
+        else
+        {
+            out_alpha = (B_alpha != 1.0)
+                ? min(1.0, sqr(A_alpha) / (1.0 - B_alpha))
+                : 1.0;
+        }       
     }
-    else if (mode == 27)
+    else if (mode == "Saturation")
+    {
+        out_rgb = blendmode_saturation(A, B);
+        out_alpha = A_alpha + B_alpha - A_alpha * B_alpha;
+    }
+    else if (mode == "Screen")
     {
         out_rgb = blendmode_screen(A, B);
         out_alpha = A_alpha + B_alpha - A_alpha * B_alpha;
     }
-    else if (mode == 28)
+    else if (mode == "Soft Light")
     {
         out_rgb = blendmode_soft_light(A, B);
-        out_alpha = (1.0 - 2.0 * B_alpha) *
-            sqr(A_alpha) + 2.0 * B_alpha + A_alpha;
+
+        if (alpha_masking)
+        {
+            out_alpha = A_alpha + B_alpha - A_alpha * B_alpha;
+        }
+        else
+        {
+            out_alpha = (B_alpha < 0.5)
+                ? (1.0 - 2.0 * B_alpha) * sqr(A_alpha) +
+                         2.0 * A_alpha * B_alpha
+                : (2.0 * B_alpha - 1.0) * sqrt(A_alpha) +
+                         2.0 * A_alpha * (1.0 - B_alpha);
+        }
     }
-    else if (mode == 29)
+    else if (mode == "Stencil")
     {
         out_rgb = B * (1.0 - A_alpha);
-        // alpha is what? B.a(1 - A.a) ? Or just A.a?
+        out_alpha = B_alpha * (1.0 - A_alpha); // reversed?
     }
-    else if (mode == 30)
+    else if (mode == "Under")
     {
         out_rgb = A * (1.0 - B_alpha) + B;
-        // alpha is what? A.a(1 - B.a)?
+        out_alpha = A_alpha * (1.0 - B_alpha) + B_alpha;
     }
-    else if (mode == 31)
+    else if (mode == "Vivid Light")
     {
         out_rgb = blendmode_vivid_light(A, B);
-        // alpha is what?
+
+        if (alpha_masking)
+        {
+            out_alpha = A_alpha + B_alpha - A_alpha * B_alpha;
+        }
+        else if (B_alpha > 0.5)
+        {
+            out_alpha = 1.0 - (1.0 - A_alpha) / (2.0 * (B_alpha - 0.5));
+        }
+        else if (B_alpha < 0.5)
+        {
+            out_alpha = A_alpha / (1.0 - 2.0 * B_alpha);
+        }
+        else
+        {
+            out_alpha = 0.0;
+        }
     }
-    else if (mode == 32)
+    else if (mode == "Xor")
     {
         out_rgb = A * (1.0 - B_alpha) + B * (1.0 - A_alpha);
-        // alpha is what? (1-B.a) + (1-A.a) ?
+        out_alpha = (1.0 - B_alpha) + (1.0 - A_alpha);   
     }
     else
     {
@@ -610,10 +872,7 @@ color blend_color(
         out_rgb = color(0);
         out_alpha = 0.0;
     }
-
-    out_alpha = clamp(out_alpha, 0.0, 1.0);
-
-    return (clamp_output) ? clamp(out_rgb, color(0), color(1)) : out_rgb;
+    return out_rgb;
 }
 
 #endif // !AS_COLOR_BLEND_MODES_H
