@@ -153,9 +153,8 @@ namespace
                 precomputed.m_scattering[i] = albedo * extinction;
 
                 // Compute diffusion length, required by Dwivedi sampling.
-                const float kappa = compute_rcp_diffusion_length(albedo);
+                const float kappa = min(compute_rcp_diffusion_length(albedo), 0.99f);
                 precomputed.m_rcp_diffusion_length[i] = kappa;
-                assert(abs(atanhf(kappa) * albedo - kappa) < 0.01f);
             }
         }
 
@@ -183,8 +182,7 @@ namespace
                 -0.4000000000f,
                 -0.0685714286f,
                 -0.0160000000f,
-                -0.0024638218f
-            };
+                -0.0024638218f };
 
             return b * (x[0] + a * (x[1] + a * (x[2] + a * (x[3] + a * x[4]))));
         }
@@ -249,7 +247,7 @@ namespace
 
             // Compute the probability of classical sampling.
             // The probability of classical sampling is high if phase function is anisotropic.
-            const float classical_sampling_prob = 1.0f; // compute_classical_sampling_probability(0.0f);
+            const float classical_sampling_prob = 0.1f;
 
             // Initialize BSSRDF value.
             bssrdf_sample.m_value.set(1.0f);
@@ -261,7 +259,7 @@ namespace
             initial_dir.y = -initial_dir.y;
             initial_dir = outgoing_point.get_shading_basis().transform_to_parent(initial_dir);
             ShadingRay ray = ShadingRay(
-                outgoing_point.get_biased_point(initial_dir),
+                outgoing_point.get_point(),
                 initial_dir,
                 outgoing_point.get_time(),
                 VisibilityFlags::ShadowRay,
@@ -305,15 +303,12 @@ namespace
             const int MinRRIteration = 8;
 
             // Determine the closest surface point and corresponding slab normal.
-            const bool outgoing_point_is_closer = 2.0f * distance < ray_length;
-            const Vector3f closest_surface_point = Vector3f(
-                outgoing_point_is_closer ?
-                outgoing_point.get_point() :
-                bssrdf_sample.m_incoming_point.get_point());
-            const Vector3f slab_normal = Vector3f(
-                outgoing_point_is_closer ?
-                outgoing_point.get_geometric_normal() :
-                bssrdf_sample.m_incoming_point.get_geometric_normal());
+            const float bias_strategy_prob =
+                std::exp(-extinction[channel] * ray_length * 0.5f);
+            const bool outgoing_point_is_closer = distance < 0.5f * ray_length;
+            const Vector3f near_slab_normal = Vector3f(outgoing_point.get_geometric_normal());
+            const Vector3f far_slab_normal = Vector3f(-bssrdf_sample.m_incoming_point.get_geometric_normal());
+            const Vector3f& slab_normal = outgoing_point_is_closer ? far_slab_normal : near_slab_normal;
             Vector3d current_point = ray.point_at(distance);
 
             while (!transmitted)
@@ -367,7 +362,7 @@ namespace
 
                 // Sample distance, assuming that the ray is infinite.
                 sampling_context.split_in_place(1, 1);
-                const float cosine = dot(incoming, slab_normal);
+                float cosine = dot(incoming, slab_normal);
                 const float s_distance = sampling_context.next2<float>();
                 const float effective_extinction = is_biased ?
                     extinction[channel] * (1.0f - cosine * rcp_diffusion_length[channel]) :
@@ -397,15 +392,28 @@ namespace
                     channel_pdf,
                     transmitted,
                     transmission);
-                const float mis_dwivedi = compute_mis_dwivedi_sampling(
+                const float mis_dwivedi_near = compute_mis_dwivedi_sampling(
                     distance,
                     extinction,
                     rcp_diffusion_length,
                     cosine,
                     channel_pdf,
                     transmitted,
-                    slab_normal,
+                    near_slab_normal,
                     incoming);
+                const float mis_dwivedi_far = compute_mis_dwivedi_sampling(
+                    distance,
+                    extinction,
+                    rcp_diffusion_length,
+                    cosine,
+                    channel_pdf,
+                    transmitted,
+                    far_slab_normal,
+                    incoming);
+                const float mis_dwivedi = mix(
+                    mis_dwivedi_far,
+                    mis_dwivedi_near,
+                    bias_strategy_prob);
                 transmission *= rcp(mix(
                     mis_dwivedi,
                     mis_classical,
@@ -413,9 +421,11 @@ namespace
                 bssrdf_sample.m_value *= transmission;
             }
 
+            clamp_in_place(bssrdf_sample.m_value, 0.0f, 2.0f);
+
             if (n_iteration == 1)
                 bssrdf_sample.m_value *= values->m_zero_scattering_weight;
-            else if (n_iteration == 2)
+            if (n_iteration == 2)
                 bssrdf_sample.m_value *= values->m_single_scattering_weight;
             else
                 bssrdf_sample.m_value *= values->m_multiple_scattering_weight;
@@ -428,7 +438,7 @@ namespace
             bsdf_sample.m_shading_point = &bssrdf_sample.m_incoming_point;
             bsdf_sample.m_geometric_normal = Vector3f(bssrdf_sample.m_incoming_point.get_geometric_normal());
             bsdf_sample.m_shading_basis = Basis3f(bssrdf_sample.m_incoming_point.get_shading_basis());
-            bsdf_sample.m_outgoing = Dual3f(outgoing_dir);      // chosen arbitrarily (no outgoing direction at the incoming point)
+            bsdf_sample.m_outgoing = Dual3f(bsdf_sample.m_geometric_normal);      // chosen arbitrarily (no outgoing direction at the incoming point)
             bssrdf_sample.m_brdf->sample(
                 sampling_context,
                 bssrdf_sample.m_brdf_data,
@@ -467,7 +477,7 @@ namespace
             const float         cosine,
             const Spectrum&     channel_pdf,
             const bool          transmitted,
-            const Vector3f&     outgoing,
+            const Vector3f&     slab_normal,
             const Vector3f&     incoming)
         {
             float mis_base = 0.0f;
@@ -479,7 +489,7 @@ namespace
                 const float distance_prob = (transmitted ? 1.0f : effective_extinction) * std::exp(x);
 
                 DwivediPhaseFunction phase_function(rcp(rcp_diffusion_length[i]));
-                const float direction_prob = phase_function.evaluate(outgoing, incoming);
+                const float direction_prob = phase_function.evaluate(slab_normal, incoming);
 
                 mis_base +=
                     distance_prob *

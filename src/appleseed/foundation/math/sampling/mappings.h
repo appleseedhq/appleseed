@@ -621,7 +621,7 @@ T rcp_distribution_pdf(
     const T r)
 {
     assert(x < r);
-    // assert(x >= l);
+    assert(x >= l);
     assert(l > 0.0f);
 
     return rcp(x * std::log(r / l));

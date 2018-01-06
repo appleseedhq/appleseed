@@ -521,7 +521,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         }
 
         // Build the medium list of the ray.
-        if (vertex.m_shading_point->hit_surface())
+        if (vertex.m_shading_point->hit_surface() && vertex.m_bssrdf == nullptr)
         {
             const foundation::Vector3d& geometric_normal = vertex.get_geometric_normal();
             const bool crossing_interface =
