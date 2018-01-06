@@ -1,0 +1,83 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2018 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/color/as_color_blend_modes.h"
+
+shader as_blend_color
+[[
+    string as_maya_node_name = "asBlendColor",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string help = "Color blend utility node.",
+    string icon = "asBlendColor.png",
+    int as_maya_type_id = 0x001279d1
+]]
+(
+    color in_color = color(0)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Source Color",
+        string page = "Color",
+        string help = "Layer 0 color, or base layer color."
+    ]],
+    color in_color2 = color(1)
+    [[
+        string as_maya_attribute_name = "color2",
+        string as_maya_attribute_short_name = "c2",
+        string label = "Blend Color",
+        string page = "Color"
+    ]],
+    int in_blend_mode = 22
+    [[
+        string as_maya_attribute_name = "blendMode",
+        string as_maya_attribute_short_name = "bm",
+        string widget = "mapper",
+        string options = "Darken:0|Multiply:1|Color Burn:2|Linear Burn:3|Lighten:4|Screen:5|Color Dodge:6|Linear Dodge:7|Overlay:8|Soft Light:9|Hard Light:10|Vivid Light:11|Linear Light:12|Pin Light:13|Difference:14|Exclusion:15|Subtract:16|Divide:17|Hue:18|Saturation:19|Color:20|Luminosity:21",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Blending Mode",
+        string page = "Color",
+        string help = "Common image blending modes. For Porter-Duff compositing, use the Composite node."
+    ]],
+
+    output color out_color = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string widget = "null",
+        string label = "Output Color"
+    ]]
+)
+{
+    if (in_color != 0 && in_color2 != 0)
+    {
+        out_color = color_blend_modes(in_blend_mode, in_color, in_color2);
+    }
+}

@@ -31,6 +31,7 @@
 
 #define NCOMPS  3
 
+#include "appleseed/color/as_color_transforms.h"
 #include "appleseed/math/as_math_helpers.h"
 
 //
@@ -252,6 +253,131 @@ color blendmode_disjoint_over(
         return (A_alpha < 1.0) ? A + B : color(0);
     }
 }
+
+//
+// Reference:
+//
+//      https://en.wikipedia.org/wiki/Blend_modes
+//      http://natron.readthedocs.io/en/master/plugins/net.sf.openfx.MergePlugin.html
+//
+
+color color_blend_modes(int mode, color A, color B)
+{
+    color rgb;
+
+    if (mode == 0)
+    {
+        rgb = min(A, B);
+    }
+    if (mode == 1)
+    {
+        rgb = A * B;
+    }
+    else if (mode == 2)
+    {
+        rgb = blendmode_color_burn(A, B);
+    }
+    else if (mode == 3)
+    {
+        rgb = A + B - color(1);
+    }
+    else if (mode == 4)
+    {
+        rgb = max(A, B);
+    }
+    else if (mode == 5)
+    {
+        rgb = blendmode_screen(A, B);
+    }
+    else if (mode == 6)
+    {
+        rgb = blendmode_color_dodge(A, B);
+    }
+    else if (mode == 7)
+    {
+        rgb = A + B;
+    }
+    else if (mode == 8)
+    {
+        rgb = blendmode_overlay(A, B);
+    }
+    else if (mode == 9)
+    {
+        rgb = blendmode_soft_light(A, B);
+    }
+    else if (mode == 10)
+    {
+        rgb = blendmode_hard_light(A, B);
+    }
+    else if (mode == 11)
+    {
+        rgb = blendmode_vivid_light(A, B);
+    }
+    else if (mode == 12)
+    {
+        rgb = blendmode_linear_light(A, B);
+    }
+    else if (mode == 13)
+    {
+        rgb = blendmode_pin_light(A, B);
+    }
+    else if (mode == 14)
+    {
+        rgb = abs(A - B);
+    }
+    else if (mode == 15)
+    {
+        rgb = blendmode_exclusion(A, B);
+    }
+    else if (mode == 16)
+    {
+        rgb = A - B;
+    }
+    else if (mode == 17)
+    {
+        for (int i = 0; i < NCOMPS; ++i)
+        {
+            rgb[i] = (B[i] != 0.0) ? A[i] / B[i] : 0.0;
+        }
+    }
+    else if (mode == 18)
+    {
+        color A_HSV = transform_RGB_to_HSV(A);
+        color B_HSV = transform_RGB_to_HSV(B);
+        rgb = transform_HSV_to_RGB(A_HSV[0], B_HSV[1], B_HSV[2]);
+    }
+    else if (mode == 19)
+    {
+        color A_HSV = transform_RGB_to_HSV(A);
+        color B_HSV = transform_RGB_to_HSV(B);
+        rgb = transform_HSV_to_RGB(B[0], A[1], B[2]);
+    }
+    else if (mode == 20)
+    {
+        color A_HSL = transform_RGB_to_HSL(A);
+        color B_HSL = transform_RGB_to_HSL(B);
+        rgb = transform_HSL_to_RGB(A[0], A[1], B[2]);
+    }
+    else if (mode == 21)
+    {
+        color A_HSL = transform_RGB_to_HSL(A);
+        color B_HSL = transform_RGB_to_HSL(B);
+        rgb = transform_HSL_to_RGB(B[0], B[1], A[2]);
+    }
+    else
+    {
+#ifdef DEBUG
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+        warning("[DEBUG]: Invalid blend mode %d in %s, %s:%d\n",
+                mode, shadername, __FILE__, __LINE__);
+#endif
+        rgb = color(0);
+    }
+    return rgb;
+}
+
+
 
 //
 // Main blend function blend modes:
