@@ -76,8 +76,7 @@ shader as_composite_color
         string as_maya_attribute_name = "compositeMode",
         string as_maya_attribute_short_name = "com",
         string widget = "popup",
-        string options =
-        "Copy|Over|Under|In|Mask|Out|Stencil|Atop|Xor|Conjoint Over|Disjoint Over|Matte",
+        string options = "A|B|Over|Under|In|Mask|Out|Stencil|Atop|Dst-Atop|Xor|Matte",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -106,21 +105,28 @@ shader as_composite_color
         string as_maya_attribute_short_name = "oc",
         string widget = "null",
         string label = "Output Color"
+    ]],
+    output float out_alpha = 0.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
+        string widget = "null",
+        string label = "Output Alpha"
     ]]
 )
 {
-    if (in_color != 0 && in_color2 != 0)
-    {
-        out_color = composite_color(
-            in_composite_mode,
-            in_color,
-            in_alpha,
-            in_color2,
-            in_alpha2);
+    out_color = composite_color_rgb(
+        in_composite_mode,
+        in_color,
+        in_alpha,
+        in_color2,
+        in_alpha2,
+        out_alpha);
 
-        if (in_clamp_output)
-        {
-            out_color = clamp(out_color, color(0), color(1));
-        }
+    out_alpha = clamp(out_alpha, 0.0, 1.0);
+
+    if (in_clamp_output)
+    {
+        out_color = clamp(out_color, color(0), color(1));
     }
 }

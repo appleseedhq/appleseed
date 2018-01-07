@@ -1294,7 +1294,6 @@ color transform_HSL_to_RGB(color HSL)
     return color(r, g, b);
 }
 
-
 //
 // Reference:
 //

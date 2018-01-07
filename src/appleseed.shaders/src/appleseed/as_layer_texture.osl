@@ -66,6 +66,19 @@ shader as_layer_texture
         string label = "Layer 8 Blend Mode",
         string page = "Layer 8"
     ]],
+    int in_alpha_masking8 = 0
+    [[
+        string as_maya_attribute_name = "alphaMasking8",
+        string as_maya_attribute_short_name = "am8",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Layer 8 Alpha Masking",
+        string page = "Layer 8",
+        string help = "Use blend mode on A channel if possible, or masking with expression A+B-AB."
+    ]],
     int in_visibility8 = 1
     [[
         string as_maya_attribute_name = "visibility8",
@@ -107,6 +120,19 @@ shader as_layer_texture
         int gafferNoduleLayoutVisible = 0,
         string label = "Layer 7 Blend Mode",
         string page = "Layer 7"
+    ]],
+    int in_alpha_masking7 = 0
+    [[
+        string as_maya_attribute_name = "alphaMasking7",
+        string as_maya_attribute_short_name = "am7",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Layer 7 Alpha Masking",
+        string page = "Layer 7",
+        string help = "Use blend mode on A channel if possible, or masking with expression A+B-AB."
     ]],
     int in_visibility7 = 0
     [[
@@ -150,6 +176,19 @@ shader as_layer_texture
         string label = "Layer 6 Blend Mode",
         string page = "Layer 6"
     ]],
+    int in_alpha_masking6 = 0
+    [[
+        string as_maya_attribute_name = "alphaMasking6",
+        string as_maya_attribute_short_name = "am6",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Layer 6 Alpha Masking",
+        string page = "Layer 6",
+        string help = "Use blend mode on A channel if possible, or masking with expression A+B-AB."
+    ]],
     int in_visibility6 = 0
     [[
         string as_maya_attribute_name = "visibility6",
@@ -191,6 +230,19 @@ shader as_layer_texture
         int gafferNoduleLayoutVisible = 0,
         string label = "Layer 5 Blend Mode",
         string page = "Layer 5"
+    ]],
+    int in_alpha_masking5 = 0
+    [[
+        string as_maya_attribute_name = "alphaMasking5",
+        string as_maya_attribute_short_name = "am5",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Layer 5 Alpha Masking",
+        string page = "Layer 5",
+        string help = "Use blend mode on A channel if possible, or masking with expression A+B-AB."
     ]],
     int in_visibility5 = 0
     [[
@@ -234,6 +286,19 @@ shader as_layer_texture
         string label = "Layer 4 Blend Mode",
         string page = "Layer 4"
     ]],
+    int in_alpha_masking4 = 0
+    [[
+        string as_maya_attribute_name = "alphaMasking4",
+        string as_maya_attribute_short_name = "am4",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Layer 4 Alpha Masking",
+        string page = "Layer 4",
+        string help = "Use blend mode on A channel if possible, or masking with expression A+B-AB."
+    ]],
     int in_visibility4 = 0
     [[
         string as_maya_attribute_name = "visibility4",
@@ -275,6 +340,19 @@ shader as_layer_texture
         int gafferNoduleLayoutVisible = 0,
         string label = "Layer 3 Blend Mode",
         string page = "Layer 3"
+    ]],
+    int in_alpha_masking3 = 0
+    [[
+        string as_maya_attribute_name = "alphaMasking3",
+        string as_maya_attribute_short_name = "am3",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Layer 3 Alpha Masking",
+        string page = "Layer 3",
+        string help = "Use blend mode on A channel if possible, or masking with expression A+B-AB."
     ]],
     int in_visibility3 = 0
     [[
@@ -318,6 +396,19 @@ shader as_layer_texture
         string label = "Layer 2 Blend Mode",
         string page = "Layer 2"
     ]],
+    int in_alpha_masking2 = 0
+    [[
+        string as_maya_attribute_name = "alphaMasking2",
+        string as_maya_attribute_short_name = "am2",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Layer 2 Alpha Masking",
+        string page = "Layer 2",
+        string help = "Use blend mode on A channel if possible, or masking with expression A+B-AB."
+    ]],
     int in_visibility2 = 0
     [[
         string as_maya_attribute_name = "visibility2",
@@ -359,6 +450,19 @@ shader as_layer_texture
         int gafferNoduleLayoutVisible = 0,
         string label = "Layer 1 Blend Mode",
         string page = "Layer 1"
+    ]],
+    int in_alpha_masking1 = 0
+    [[
+        string as_maya_attribute_name = "alphaMasking1",
+        string as_maya_attribute_short_name = "am1",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Layer 1 Alpha Masking",
+        string page = "Layer 1",
+        string help = "Use blend mode on A channel if possible, or masking with expression A+B-AB."
     ]],
     int in_visibility1 = 0
     [[
@@ -415,6 +519,7 @@ shader as_layer_texture
             alpha,
             in_color1,
             in_alpha1,
+            in_alpha_masking1,
             layer_alpha);
     }
     if (in_visibility2)
@@ -425,6 +530,7 @@ shader as_layer_texture
             alpha,
             in_color2,
             in_alpha2,
+            in_alpha_masking2,
             layer_alpha);
     }
     if (in_visibility3)
@@ -435,6 +541,7 @@ shader as_layer_texture
             layer_alpha,
             in_color3,
             in_alpha3,
+            in_alpha_masking3,
             layer_alpha);
     }
     if (in_visibility4)
@@ -445,6 +552,7 @@ shader as_layer_texture
             layer_alpha,
             in_color4,
             in_alpha4,
+            in_alpha_masking4,
             layer_alpha);
     }
     if (in_visibility5)
@@ -455,6 +563,7 @@ shader as_layer_texture
             layer_alpha,
             in_color5,
             in_alpha5,
+            in_alpha_masking5,
             layer_alpha);
     }
     if (in_visibility6)
@@ -465,6 +574,7 @@ shader as_layer_texture
             layer_alpha,
             in_color6,
             in_alpha6,
+            in_alpha_masking6,
             layer_alpha);
     }
     if (in_visibility7)
@@ -475,6 +585,7 @@ shader as_layer_texture
             layer_alpha,
             in_color7,
             in_alpha7,
+            in_alpha_masking7,
             layer_alpha);
     }
     if (in_visibility8)
@@ -485,12 +596,10 @@ shader as_layer_texture
             layer_alpha,
             in_color8,
             in_alpha8,
+            in_alpha_masking8,
             layer_alpha);
     }
     layer_alpha = clamp(layer_alpha, 0.0, 1.0);
 
-    if (in_clamp_output)
-    {
-        out_color = clamp(tex0, color(0), color(1));
-    }
+    out_color = (in_clamp_output) ? clamp(tex0, color(0), color(1)) : tex0;
 }

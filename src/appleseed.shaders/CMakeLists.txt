@@ -341,45 +341,45 @@ set (src_maya_sources
      src/maya/as_maya_areaLight.osl
      src/maya/as_maya_blendColors.osl
      src/maya/as_maya_blinn.osl
-     src/maya/as_maya_brownian.osl
-     src/maya/as_maya_bulge.osl
+#     src/maya/as_maya_brownian.osl
+#     src/maya/as_maya_bulge.osl
      src/maya/as_maya_bump2d.osl
      src/maya/as_maya_bump3d.osl
      src/maya/as_maya_checker.osl
      src/maya/as_maya_clamp.osl
      src/maya/as_maya_clearCoat.osl
      src/maya/as_maya_closure2Surface.osl
-     src/maya/as_maya_cloth.osl
-     src/maya/as_maya_cloud.osl
+#     src/maya/as_maya_cloth.osl
+#     src/maya/as_maya_cloud.osl
      src/maya/as_maya_color2Components.osl
      src/maya/as_maya_components2Color.osl
      src/maya/as_maya_components2UV.osl
      src/maya/as_maya_components2Vector.osl
      src/maya/as_maya_condition.osl
      src/maya/as_maya_contrast.osl
-     src/maya/as_maya_crater.osl
+#     src/maya/as_maya_crater.osl
      src/maya/as_maya_distanceBetween.osl
      src/maya/as_maya_doubleShadingSwitch.osl
      src/maya/as_maya_envChrome.osl
      src/maya/as_maya_file.osl
      src/maya/as_maya_fourByFourMatrix.osl
-     src/maya/as_maya_fractal.osl
+#     src/maya/as_maya_fractal.osl
      src/maya/as_maya_gammaCorrect.osl
-     src/maya/as_maya_granite.osl
+#     src/maya/as_maya_granite.osl
      src/maya/as_maya_grid.osl
      src/maya/as_maya_hsvToRgb.osl
      src/maya/as_maya_lambert.osl
      src/maya/as_maya_layeredTexture.osl
      src/maya/as_maya_luminance.osl
-     src/maya/as_maya_mandelbrot.osl
-     src/maya/as_maya_marble.osl
+#     src/maya/as_maya_mandelbrot.osl
+#     src/maya/as_maya_marble.osl
      src/maya/as_maya_matrixInverse.osl
-     src/maya/as_maya_mountain.osl
+#     src/maya/as_maya_mountain.osl
      src/maya/as_maya_movie.osl
      src/maya/as_maya_multDoubleLinear.osl
      src/maya/as_maya_multiplyDivide.osl
      src/maya/as_maya_multMatrix.osl
-     src/maya/as_maya_noise.osl
+#     src/maya/as_maya_noise.osl
      src/maya/as_maya_phong.osl
      src/maya/as_maya_phongE.osl
      src/maya/as_maya_place2dTexture.osl
@@ -393,24 +393,24 @@ set (src_maya_sources
      src/maya/as_maya_remapValue.osl
      src/maya/as_maya_reverse.osl
      src/maya/as_maya_rgbToHsv.osl
-     src/maya/as_maya_rock.osl
+#     src/maya/as_maya_rock.osl
      src/maya/as_maya_samplerInfo.osl
      src/maya/as_maya_setRange.osl
-     src/maya/as_maya_simplexNoise.osl
+#     src/maya/as_maya_simplexNoise.osl
      src/maya/as_maya_singleShadingSwitch.osl
-     src/maya/as_maya_snow.osl
-     src/maya/as_maya_solidFractal.osl
+#     src/maya/as_maya_snow.osl
+#     src/maya/as_maya_solidFractal.osl
      src/maya/as_maya_stencil.osl
-     src/maya/as_maya_stucco.osl
+#     src/maya/as_maya_stucco.osl
      src/maya/as_maya_texture2Surface.osl
      src/maya/as_maya_transposeMatrix.osl
      src/maya/as_maya_tripleShadingSwitch.osl
      src/maya/as_maya_uv2Components.osl
      src/maya/as_maya_vector2Components.osl
      src/maya/as_maya_vectorProduct.osl
-     src/maya/as_maya_volumeNoise.osl
-     src/maya/as_maya_water.osl
-     src/maya/as_maya_wood.osl
+#     src/maya/as_maya_volumeNoise.osl
+#     src/maya/as_maya_water.osl
+#     src/maya/as_maya_wood.osl
      src/maya/as_maya_wtAddMatrix.osl
 )
 list (APPEND osl_sources
@@ -438,8 +438,8 @@ set (src_appleseed_sources
      src/appleseed/as_layer_texture.osl
      src/appleseed/as_luminance.osl
      src/appleseed/as_metal.osl
-     src/appleseed/as_noise2d.osl
-     src/appleseed/as_noise3d.osl
+#     src/appleseed/as_noise2d.osl
+#     src/appleseed/as_noise3d.osl
      src/appleseed/as_plastic.osl
      src/appleseed/as_ray_switch.osl
      src/appleseed/as_space_transform.osl
@@ -451,8 +451,8 @@ set (src_appleseed_sources
      src/appleseed/as_texture_info.osl
      src/appleseed/as_triplanar.osl
      src/appleseed/as_vary_color.osl
-     src/appleseed/as_voronoi2d.osl
-     src/appleseed/as_voronoi3d.osl
+#     src/appleseed/as_voronoi2d.osl
+#     src/appleseed/as_voronoi3d.osl
 )
 list (APPEND osl_sources
     ${src_appleseed_sources}

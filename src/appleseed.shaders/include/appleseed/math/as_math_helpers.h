@@ -4,7 +4,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2016-2017 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2016-2018 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -121,6 +121,11 @@ float random(float x, float s, float t)
 float random(float x)
 {
     return random(x, u, v);
+}
+
+float fract(float x)
+{
+    return x - floor(x);
 }
 
 #endif // !AS_MATH_HELPERS_H

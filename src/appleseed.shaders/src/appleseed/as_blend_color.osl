@@ -77,7 +77,7 @@ shader as_blend_color
         string as_maya_attribute_name = "blendMode",
         string as_maya_attribute_short_name = "bm",
         string widget = "popup",
-        string options = "Darken|Multiply|Color Burn|Linear Burn|Lighten|Screen|Color Dodge|Linear Dodge|Overlay|Soft Light|Hard Light|Vivid Light|Linear Light|Pin Light|Difference|Exclusion|Subtract|Divide|Hue|Saturation|Color|Luminosity",
+        string options = "Darken|Multiply|Color Burn|Linear Burn|Lighten|Screen|Color Dodge|Linear Dodge|Overlay|Soft Light|Hard Light|Vivid Light|Linear Light|Pin Light|Difference|Exclusion|Subtract|Divide|Hue|Saturation|Lightness",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -109,16 +109,13 @@ shader as_blend_color
     ]]
 )
 {
-    if (in_weight * in_color != 0 && in_weight * in_color2 != 0)
-    {
-        out_color = mix(
-            in_weight * in_color,
-            blend_color(in_blend_mode, in_color, in_color2),
-            in_weight2);
+    out_color = mix(
+        in_weight * in_color,
+        blend_color(in_blend_mode, in_color, in_color2),
+        in_weight2);
 
-        if (in_clamp_output)
-        {
-            out_color = clamp(out_color, color(0), color(1));
-        }
+    if (in_clamp_output)
+    {
+        out_color = clamp(out_color, color(0), color(1));
     }
 }
