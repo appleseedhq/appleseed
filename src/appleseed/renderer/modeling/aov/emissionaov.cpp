@@ -108,10 +108,10 @@ namespace
             return Model;
         }
 
-        auto_release_ptr<AOVAccumulator> create_accumulator(
-            const size_t index) const override
+        auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
-            return auto_release_ptr<AOVAccumulator>(new EmissionAOVAccumulator(index));
+            return auto_release_ptr<AOVAccumulator>(
+                new EmissionAOVAccumulator(m_image_index));
         }
     };
 }

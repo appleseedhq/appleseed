@@ -264,6 +264,25 @@ if (WITH_DISNEY_MATERIAL)
     endif ()
 endif ()
 
+# OpenMP
+find_package (OpenMP REQUIRED)
+
+set (c_compiler_flags_common
+    ${c_compiler_flags_common}
+    "${OpenMP_C_FLAGS}"
+)
+set (cxx_compiler_flags_common
+    ${cxx_compiler_flags_common}
+    "${OpenMP_CXX_FLAGS}"
+)
+set (exe_linker_flags_common
+    ${exe_linker_flags_common}
+    ${OpenMP_EXE_LINKER_FLAGS}
+)
+set (shared_lib_linker_flags_common
+    ${shared_lib_linker_flags_common}
+    ${OpenMP_SHARED_LINKER_FLAGS}
+)
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.
@@ -272,6 +291,7 @@ endif ()
 # Common include paths.
 include_directories (
     src/appleseed
+    src/bcd
     src/lz4
 )
 
@@ -560,6 +580,7 @@ endmacro ()
 #--------------------------------------------------------------------------------------------------
 
 add_subdirectory (src/appleseed)
+add_subdirectory (src/bcd)
 add_subdirectory (src/lz4)
 add_subdirectory (src/appleseed.shaders)
 
@@ -601,6 +622,7 @@ endif ()
 
 if (WITH_TOOLS)
     add_subdirectory (src/tools/animatecamera)
+    add_subdirectory (src/tools/bcd_cli)
     add_subdirectory (src/tools/convertmeshfile)
     add_subdirectory (src/tools/dumpmetadata)
     add_subdirectory (src/tools/makefluffy)

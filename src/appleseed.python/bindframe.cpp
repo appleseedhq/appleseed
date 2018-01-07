@@ -144,7 +144,6 @@ void bind_frame()
 
         .def("write_main_image", &Frame::write_main_image)
         .def("write_aov_images", &Frame::write_aov_images)
-        .def("write_aov_image", &Frame::write_aov_image)
         .def("write_main_and_aov_images_to_multipart_exr", &Frame::write_main_and_aov_images_to_multipart_exr)
         .def("archive", archive_frame)
 

@@ -58,7 +58,9 @@ namespace foundation    { class Image; }
 namespace foundation    { class ImageAttributes; }
 namespace foundation    { class Tile; }
 namespace renderer      { class AOV; }
+namespace renderer      { class DenoiserAOV; }
 namespace renderer      { class ImageStack; }
+namespace renderer      { class ITileCallback; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer
@@ -134,7 +136,6 @@ class APPLESEED_DLLSYMBOL Frame
     // Return true if successful, false otherwise.
     bool write_main_image(const char* file_path) const;
     bool write_aov_images(const char* file_path) const;
-    bool write_aov_image(const char* file_path, const size_t aov_index) const;
 
     // Write the main image and the AOV images to disk.
     // The images file paths are taken from the frame and AOV "output_filename" parameters.
@@ -152,7 +153,11 @@ class APPLESEED_DLLSYMBOL Frame
         const char*     directory,
         char**          output_path = nullptr) const;
 
+    // Denoiser.
+    void denoise(ITileCallback* tile_callback) const;
+
   private:
+    friend class AOVAccumulatorContainer;
     friend class FrameFactory;
 
     struct Impl;
@@ -170,6 +175,9 @@ class APPLESEED_DLLSYMBOL Frame
     ~Frame() override;
 
     void extract_parameters();
+
+    // Access the internal AOVs.
+    const AOVContainer& internal_aovs() const;
 };
 
 

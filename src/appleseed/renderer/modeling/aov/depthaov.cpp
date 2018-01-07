@@ -49,6 +49,7 @@
 // Standard headers.
 #include <cstddef>
 #include <limits>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -69,16 +70,6 @@ namespace
         explicit DepthAOVAccumulator(Image& image)
           : UnfilteredAOVAccumulator(image)
         {
-        }
-
-        void on_tile_begin(
-            const Frame&                frame,
-            const size_t                tile_x,
-            const size_t                tile_y,
-            const size_t                max_spp) override
-        {
-            UnfilteredAOVAccumulator::on_tile_begin(frame, tile_x, tile_y, max_spp);
-            get_tile().clear(Vector2f(numeric_limits<float>::max()));
         }
 
         void write(
@@ -154,8 +145,12 @@ namespace
             return false;
         }
 
-        auto_release_ptr<AOVAccumulator> create_accumulator(
-            const size_t index) const override
+        void clear_image() override
+        {
+            m_image->clear(Vector2f(numeric_limits<float>::max()));
+        }
+
+        auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(new DepthAOVAccumulator(get_image()));
         }
