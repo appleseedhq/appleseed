@@ -10,26 +10,24 @@
 // All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE.txt file.
 
+// BCD headers.
 #include "Denoiser.h"
-
 #include "DenoisingUnit.h"
 
-#include <algorithm>
-#include <iostream>
-#include <random>
-
-#include <chrono>
-
-#include <cassert>
-
+// appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
-#define USE_ATOMIC
-#ifndef USE_ATOMIC
-#define USE_CRITICAL
-#endif
+// Boost headers.
+#include "boost/atomic/atomic.hpp"
+
+// Standard headers.
+#include <algorithm>
+#include <cassert>
+#include <chrono>
+#include <random>
 
 using namespace std;
+using namespace boost;
 
 namespace bcd
 {
@@ -45,6 +43,9 @@ bool Denoiser::denoise()
     int widthWithoutBorder = m_width - 2 * m_parameters.m_patchRadius;
     int heightWithoutBorder = m_height - 2 * m_parameters.m_patchRadius;
     int nbOfPixelsWithoutBorder = widthWithoutBorder * heightWithoutBorder;
+
+    if (m_progressReporter && m_progressReporter->isAborted())
+        return false;
 
     computeNbOfSamplesSqrt();
     computePixelCovFromSampleCov();
@@ -63,15 +64,23 @@ bool Denoiser::denoise()
     vector<PixelPosition> pixelSet(nbOfPixelsWithoutBorder);
     {
         int k = 0;
-        int lMin = m_parameters.m_patchRadius;
-        int lMax = m_height - m_parameters.m_patchRadius - 1;
-        int cMin = m_parameters.m_patchRadius;
-        int cMax = m_width - m_parameters.m_patchRadius - 1;
-        for (int l = lMin; l <= lMax; l++)
-            for (int c = cMin; c <= cMax; c++)
-                pixelSet[k++] = PixelPosition(l, c);
+        int yMin = m_parameters.m_patchRadius;
+        int yMax = m_height - m_parameters.m_patchRadius - 1;
+        int xMin = m_parameters.m_patchRadius;
+        int xMax = m_width - m_parameters.m_patchRadius - 1;
+
+        for (int y = yMin; y <= yMax; y++)
+        {
+            for (int x = xMin; x <= xMax; x++)
+            {
+                pixelSet[k++] = PixelPosition(y, x);
+            }
+        }
     }
     reorderPixelSet(pixelSet);
+
+    if (m_progressReporter && m_progressReporter->isAborted())
+        return false;
 
     m_outputSummedColorImages.resize(m_parameters.m_nbOfCores);
     m_outputSummedColorImages[0].resize(m_width, m_height, m_inputs.m_pColors->getDepth());
@@ -90,28 +99,42 @@ bool Denoiser::denoise()
     m_isCenterOfAlreadyDenoisedPatchImage.resize(m_width, m_height, 1);
     m_isCenterOfAlreadyDenoisedPatchImage.fill(false);
 
-    int chunkSize; // nb of pixels a thread has to treat before dynamically asking for more work
-    chunkSize = widthWithoutBorder * (2 * m_parameters.m_searchWindowRadius);
+    // Number of pixels a thread has to treat before dynamically asking for more work.
+    int chunkSize = widthWithoutBorder * (2 * m_parameters.m_searchWindowRadius);
 
-    int nbOfPixelsComputed = 0;
+    atomic<int> nbOfPixelsComputed(0);
     int currentPercentage = 0, newPercentage = 0;
+
 #pragma omp parallel
     {
         DenoisingUnit denoisingUnit(*this);
+        bool abortRequested = false;
+
 #pragma omp for ordered schedule(dynamic, chunkSize)
-        for (int pixelIndex = 0; pixelIndex < nbOfPixelsWithoutBorder; pixelIndex++)
+        for (int pixelIndex = 0; pixelIndex < nbOfPixelsWithoutBorder; ++pixelIndex)
         {
-            PixelPosition mainPatchCenter = pixelSet[pixelIndex];
-            denoisingUnit.denoisePatchAndSimilarPatches(mainPatchCenter);
-#pragma omp atomic
-            ++nbOfPixelsComputed;
-            if (omp_get_thread_num() == 0)
+            // We can't break from omp parallel for loops.
+            // Instead, we don't do anything if abort was requested.
+            if (!abortRequested)
             {
-                newPercentage = (nbOfPixelsComputed * 100) / nbOfPixelsWithoutBorder;
-                if (newPercentage != currentPercentage)
+                PixelPosition mainPatchCenter = pixelSet[pixelIndex];
+                denoisingUnit.denoisePatchAndSimilarPatches(mainPatchCenter);
+
+                ++nbOfPixelsComputed;
+
+                if (omp_get_thread_num() == 0)
                 {
-                    currentPercentage = newPercentage;
-                    m_progressCallback(float(currentPercentage) * 0.01f);
+                    newPercentage = (nbOfPixelsComputed * 100) / nbOfPixelsWithoutBorder;
+                    if (newPercentage != currentPercentage)
+                    {
+                        if (m_progressReporter)
+                        {
+                            abortRequested = m_progressReporter->isAborted();
+                            m_progressReporter->progress(float(currentPercentage) * 0.01f);
+                        }
+
+                        currentPercentage = newPercentage;
+                    }
                 }
             }
         }
@@ -119,7 +142,16 @@ bool Denoiser::denoise()
 
     m_outputs.m_pDenoisedColors->resize(m_width, m_height, 3);
     m_outputs.m_pDenoisedColors->fill(0.f);
+
+    if (m_progressReporter && m_progressReporter->isAborted())
+        return false;
+
     finalAggregation();
+
+    fixNegativeInfNaNValues();
+
+    if (m_progressReporter)
+        m_progressReporter->progress(1.0f);
 
     return true;
 }

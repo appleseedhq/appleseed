@@ -29,6 +29,62 @@ using namespace std;
 
 namespace bcd
 {
+namespace
+{
+
+class MultiScaleProgressReporter
+  : public IProgressReporter
+{
+  public:
+    MultiScaleProgressReporter(
+        int                 i_scale,
+        int                 i_nbOfScales,
+        IProgressReporter*  i_progress_reporter)
+      : m_scale(i_scale)
+      , m_nbOfScales(i_nbOfScales)
+      , m_progress_reporter(i_progress_reporter)
+    {
+    }
+
+    void progress(const float i_progress) const override
+    {
+        if (m_progress_reporter)
+        {
+            if (m_scale == m_nbOfScales - 1)
+            {
+                m_progress_reporter->progress(
+                    i_progress / float(((1 << (2 * m_nbOfScales)) - 1) / 3));
+            }
+            else
+            {
+                int s = m_nbOfScales - 1 - m_scale;
+                // next higher definition scale is 4 times slower
+                // 1 + 4 + 4^2 + ... 4^s = (4^(s+1) - 1) / (4 - 1) = (2^(2*(s+1)) - 1) / 3
+                // = ((1 << (2*(s+1))) - 1) / 3
+                float factor = 1.f / float(((1 << (2 * m_nbOfScales)) - 1) / 3);
+                float minValue = factor * float(((1 << (2 * s)) - 1) / 3);
+                float maxValue = factor * float(((1 << (2 * (s + 1))) - 1) / 3);
+                m_progress_reporter->progress(minValue + i_progress * (maxValue - minValue));
+            }
+        }
+    }
+
+    bool isAborted() const override
+    {
+        if (m_progress_reporter)
+            return m_progress_reporter->isAborted();
+
+        return false;
+    }
+
+  private:
+    int                 m_scale;
+    int                 m_nbOfScales;
+    IProgressReporter*  m_progress_reporter;
+};
+
+}
+
 
 bool MultiscaleDenoiser::denoise()
 {
@@ -95,12 +151,16 @@ bool MultiscaleDenoiser::denoise()
         denoiser.setOutputs(outputsArray[m_nbOfScales - 1]);
         denoiser.setParameters(m_parameters);
 
-        denoiser.setProgressCallback([this](float i_progress)
-        {
-            m_progressCallback(i_progress / float(((1 << (2 * m_nbOfScales)) - 1) / 3));
-        });
+        MultiScaleProgressReporter progressReporter(
+            m_nbOfScales - 1,
+            m_nbOfScales,
+            m_progressReporter);
+        denoiser.setProgressReporter(&progressReporter);
 
-        denoiser.denoise();
+        const bool success = denoiser.denoise();
+
+        if (success == false)
+            return false;
     }
 
     for (int scale = m_nbOfScales - 2; scale >= 0; --scale)
@@ -109,19 +169,20 @@ bool MultiscaleDenoiser::denoise()
         denoiser.setInputs(inputsArray[scale]);
         denoiser.setOutputs(outputsArray[scale]);
         denoiser.setParameters(m_parameters);
-        denoiser.setProgressCallback([this, scale](float i_progress)
-        {
-            int s = m_nbOfScales - 1 - scale;
-            // next higher definition scale is 4 times slower
-            // 1 + 4 + 4^2 + ... 4^s = (4^(s+1) - 1) / (4 - 1) = (2^(2*(s+1)) - 1) / 3
-            // = ((1 << (2*(s+1))) - 1) / 3
-            float factor = 1.f / float(((1 << (2 * m_nbOfScales)) - 1) / 3);
-            float minValue = factor * float(((1 << (2 * s)) - 1) / 3);
-            float maxValue = factor * float(((1 << (2 * (s + 1))) - 1) / 3);
-            m_progressCallback(minValue + i_progress * (maxValue - minValue));
-        });
 
-        denoiser.denoise();
+        MultiScaleProgressReporter progressReporter(
+            scale,
+            m_nbOfScales,
+            m_progressReporter);
+        denoiser.setProgressReporter(&progressReporter);
+
+        const bool success = denoiser.denoise();
+
+        if (success == false)
+            return false;
+
+        if (m_progressReporter && m_progressReporter->isAborted())
+            return false;
 
         mergeOutputs(
             *outputsArray[scale].m_pDenoisedColors,
@@ -130,6 +191,7 @@ bool MultiscaleDenoiser::denoise()
             *outputsArray[scale + 1].m_pDenoisedColors,
             *outputsArray[scale].m_pDenoisedColors);
     }
+
     return true;
 }
 

@@ -19,8 +19,16 @@ using namespace std;
 namespace bcd
 {
 
+IProgressReporter::IProgressReporter()
+{
+}
+
+IProgressReporter::~IProgressReporter()
+{
+}
+
 IDenoiser::IDenoiser()
-  : m_progressCallback([](float) {})
+  : m_progressReporter(nullptr)
 {
 }
 

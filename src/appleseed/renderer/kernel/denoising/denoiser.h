@@ -34,6 +34,7 @@
 
 // Forward declarations.
 namespace foundation    { class Image; }
+namespace foundation    { class IAbortSwitch; }
 
 namespace renderer
 {
@@ -67,12 +68,13 @@ class DenoiserOptions
     }
 };
 
-void denoise_image(
-    foundation::Image&      img,
-    const bcd::Deepimf&     num_samples,
-    const bcd::Deepimf&     histograms,
-    const bcd::Deepimf&     covariances,
-    const DenoiserOptions&  options);
+bool denoise_image(
+    foundation::Image&          img,
+    const bcd::Deepimf&         num_samples,
+    const bcd::Deepimf&         histograms,
+    const bcd::Deepimf&         covariances,
+    const DenoiserOptions&      options,
+    foundation::IAbortSwitch*   abort_switch);
 
 }       // namespace renderer
 

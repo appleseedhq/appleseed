@@ -13,14 +13,28 @@
 #ifndef I_DENOISER_H
 #define I_DENOISER_H
 
-#include <functional>
-#include <memory>
 
 namespace bcd
 {
 
 template<class T>
 class DeepImage;
+
+class IProgressReporter
+{
+  public:
+    IProgressReporter();
+    virtual ~IProgressReporter();
+
+    virtual void progress(const float i_progress) const = 0;
+
+    virtual bool isAborted() const = 0;
+
+  private:
+    // Non-copyable.
+    IProgressReporter(const IProgressReporter&);
+    IProgressReporter& operator=(const IProgressReporter&);
+};
 
 struct DenoiserParameters
 {
@@ -115,16 +129,16 @@ class IDenoiser
         m_parameters = i_rParameters;
     }
 
-    void setProgressCallback(std::function<void(float)> i_progressCallback)
+    void setProgressReporter(IProgressReporter* i_progressReporter)
     {
-        m_progressCallback = i_progressCallback;
+        m_progressReporter = i_progressReporter;
     }
 
   protected:
     DenoiserParameters          m_parameters;
     DenoiserInputs              m_inputs;
     DenoiserOutputs             m_outputs;
-    std::function<void(float)>  m_progressCallback;
+    IProgressReporter*          m_progressReporter;
 };
 
 } // namespace bcd
