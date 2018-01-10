@@ -33,8 +33,8 @@
 #include "bcd/DeepImage.h"
 
 // Forward declarations.
-namespace foundation    { class Image; }
 namespace foundation    { class IAbortSwitch; }
+namespace foundation    { class Image; }
 
 namespace renderer
 {

@@ -13,6 +13,7 @@
 #ifndef COVARIANCE_MATRIX_H
 #define COVARIANCE_MATRIX_H
 
+// Standard headers.
 #include <array>
 #include <vector>
 
@@ -39,6 +40,7 @@ struct SymmetricMatrix3x3
 
     SymmetricMatrix3x3& operator+=(const SymmetricMatrix3x3& i_rSymMat);
     SymmetricMatrix3x3& operator*=(float i_factor);
+
     void copyFrom(const float* i_pData);
 
     typedef std::array<float, static_cast<std::size_t>(ESymMatData::e_nb)>::const_iterator const_iterator;

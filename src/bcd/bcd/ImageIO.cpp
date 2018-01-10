@@ -10,23 +10,33 @@
 // All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE.txt file.
 
+// BCD headers.
+#include "DeepImage.h"
 #include "ImageIO.h"
 
-#include "DeepImage.h"
+// OpenEXR headers.
+#if defined _MSC_VER
+    #pragma warning (push)
+    #pragma warning (disable: 4244)     // conversion from 'std::streamsize' to 'int', possible loss of data
+    #pragma warning (disable: 4800)     // 'int': forcing value to bool 'true' or 'false' (performance warning)
+#endif
 
-#include "foundation/platform/_beginexrheaders.h"
-#include <ImfChannelList.h>
-#include <ImfFrameBuffer.h>
-#include <ImfInputFile.h>
-#include <ImfOutputFile.h>
-#include "foundation/platform/_endexrheaders.h"
+    #include <ImfChannelList.h>
+    #include <ImfFrameBuffer.h>
+    #include <ImfInputFile.h>
+    #include <ImfOutputFile.h>
 
+#if defined _MSC_VER
+    #pragma warning (pop)
+#endif
+
+// Standard headers.
 #include <stdio.h>
 #include <stdlib.h>
 
-using namespace std;
-using namespace Imf;
 using namespace Imath;
+using namespace Imf;
+using namespace std;
 
 namespace bcd
 {

@@ -13,8 +13,10 @@
 #ifndef MULTISCALE_DENOISER_H
 #define MULTISCALE_DENOISER_H
 
+// BCD headers.
 #include "IDenoiser.h"
 
+// Standard headers.
 #include <memory>
 #include <vector>
 
@@ -73,13 +75,6 @@ class MultiscaleDenoiser : public IDenoiser
 
     // Merges two buffers of two successive scales
     // o_rMergedImage and i_rHighFrequencyImage can point to the same buffer
-    static void mergeOutputsNoInterpolation(
-        DeepImage<float>&       o_rMergedImage,
-        const DeepImage<float>& i_rLowFrequencyImage,
-        const DeepImage<float>& i_rHighFrequencyImage);
-
-    // Merges two buffers of two successive scales
-    // o_rMergedImage and i_rHighFrequencyImage can point to the same buffer
     static void mergeOutputs(
         DeepImage<float>&       o_rMergedHighResImage,
         DeepImage<float>&       o_rTmpHighResImage,
@@ -99,11 +94,6 @@ class MultiscaleDenoiser : public IDenoiser
     static void lowPass(
         DeepImage<float>&       o_rFilteredImage,
         DeepImage<float>&       o_rTmpLowResImage,
-        const DeepImage<float>& i_rImage);
-
-    //  equivalent to interpolate followed by downscale
-    static void interpolateThenDownscale(
-        DeepImage<float>&       o_rFilteredImage,
         const DeepImage<float>& i_rImage);
 
   private:

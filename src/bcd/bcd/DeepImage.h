@@ -13,8 +13,8 @@
 #ifndef DEEP_IMAGE_H
 #define DEEP_IMAGE_H
 
+// Standard headers.
 #include <algorithm>
-#include <iostream>
 #include <vector>
 
 namespace bcd

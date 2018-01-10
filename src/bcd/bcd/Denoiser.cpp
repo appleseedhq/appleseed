@@ -13,9 +13,7 @@
 // BCD headers.
 #include "Denoiser.h"
 #include "DenoisingUnit.h"
-
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+#include "Utils.h"
 
 // Boost headers.
 #include "boost/atomic/atomic.hpp"
@@ -25,6 +23,7 @@
 #include <cassert>
 #include <chrono>
 #include <random>
+#include <thread>
 
 using namespace std;
 using namespace boost;
@@ -50,16 +49,8 @@ bool Denoiser::denoise()
     computeNbOfSamplesSqrt();
     computePixelCovFromSampleCov();
 
-    if (m_parameters.m_nbOfCores > 0)
-        omp_set_num_threads(m_parameters.m_nbOfCores);
-
-#pragma omp parallel
-#pragma omp master
-    {
-        m_parameters.m_nbOfCores = omp_get_num_threads();
-        // now m_parameters.m_nbOfCores is set to the actual number of threads
-        // even if it was set to the default value 0
-    }
+    if (m_parameters.m_nbOfCores == 0)
+        m_parameters.m_nbOfCores = thread::hardware_concurrency();
 
     vector<PixelPosition> pixelSet(nbOfPixelsWithoutBorder);
     {
@@ -99,45 +90,48 @@ bool Denoiser::denoise()
     m_isCenterOfAlreadyDenoisedPatchImage.resize(m_width, m_height, 1);
     m_isCenterOfAlreadyDenoisedPatchImage.fill(false);
 
-    // Number of pixels a thread has to treat before dynamically asking for more work.
-    int chunkSize = widthWithoutBorder * (2 * m_parameters.m_searchWindowRadius);
+    // Newer versions of gcc need the boost qualifier.
+    boost::atomic<int> nbOfPixelsComputed(0);
 
-    atomic<int> nbOfPixelsComputed(0);
-    int currentPercentage = 0, newPercentage = 0;
+    bool abortRequested = false;
 
-#pragma omp parallel
+    // Number of pixels a thread has to treat.
+    size_t chunkSize = nbOfPixelsWithoutBorder / m_parameters.m_nbOfCores;
+
+    vector<thread> denoiseThreads;
+    denoiseThreads.reserve(m_parameters.m_nbOfCores);
+
+    vector<PixelPosition>::const_iterator startPixelIndexIt = pixelSet.begin();
+    vector<PixelPosition>::const_iterator endPixelIndexIt;
+
+    // Launch denoising threads.
+    for (size_t i = 0, e = m_parameters.m_nbOfCores; i < e; ++i)
     {
-        DenoisingUnit denoisingUnit(*this);
-        bool abortRequested = false;
+        if (i == m_parameters.m_nbOfCores)
+            endPixelIndexIt = pixelSet.end();
+        else
+            endPixelIndexIt = startPixelIndexIt + chunkSize;
 
-#pragma omp for ordered schedule(dynamic, chunkSize)
-        for (int pixelIndex = 0; pixelIndex < nbOfPixelsWithoutBorder; ++pixelIndex)
-        {
-            // We can't break from omp parallel for loops.
-            // Instead, we don't do anything if abort was requested.
-            if (!abortRequested)
-            {
-                PixelPosition mainPatchCenter = pixelSet[pixelIndex];
-                denoisingUnit.denoisePatchAndSimilarPatches(mainPatchCenter);
+        thread t(
+            &Denoiser::doDenoise,
+            this,
+            startPixelIndexIt,
+            endPixelIndexIt,
+            pixelSet.size(),
+            ref(nbOfPixelsComputed),
+            i,
+            ref(abortRequested));
 
-                ++nbOfPixelsComputed;
+        denoiseThreads.push_back(move(t));
 
-                if (omp_get_thread_num() == 0)
-                {
-                    newPercentage = (nbOfPixelsComputed * 100) / nbOfPixelsWithoutBorder;
-                    if (newPercentage != currentPercentage)
-                    {
-                        if (m_progressReporter)
-                        {
-                            abortRequested = m_progressReporter->isAborted();
-                            m_progressReporter->progress(float(currentPercentage) * 0.01f);
-                        }
+        startPixelIndexIt = endPixelIndexIt;
+    }
 
-                        currentPercentage = newPercentage;
-                    }
-                }
-            }
-        }
+    // Wait for the threads to complete.
+    for (auto& t : denoiseThreads)
+    {
+         if (t.joinable())
+            t.join();
     }
 
     m_outputs.m_pDenoisedColors->resize(m_width, m_height, 3);
@@ -156,9 +150,49 @@ bool Denoiser::denoise()
     return true;
 }
 
+void Denoiser::doDenoise(
+    vector<PixelPosition>::const_iterator  i_pixelBegin,
+    vector<PixelPosition>::const_iterator  i_pixelEnd,
+    const size_t                           i_totalNbOfPixels,
+    boost::atomic<int>&                    i_nbOfPixelsComputed,
+    const size_t                           i_threadIndex,
+    bool&                                  i_abortRequested)
+{
+    DenoisingUnit denoisingUnit(*this, i_threadIndex);
+
+    int currentPercentage = 0, newPercentage = 0;
+
+    for (auto it = i_pixelBegin; it != i_pixelEnd; ++it)
+    {
+        if (i_abortRequested)
+            break;
+
+        PixelPosition mainPatchCenter = *it;
+        denoisingUnit.denoisePatchAndSimilarPatches(mainPatchCenter);
+
+        ++i_nbOfPixelsComputed;
+
+        if (i_threadIndex == 0)
+        {
+            newPercentage = (i_nbOfPixelsComputed * 100) / i_totalNbOfPixels;
+            if (newPercentage != currentPercentage)
+            {
+                if (m_progressReporter)
+                {
+                    i_abortRequested = m_progressReporter->isAborted();
+                    m_progressReporter->progress(float(currentPercentage) * 0.01f);
+                }
+
+                currentPercentage = newPercentage;
+            }
+        }
+    }
+}
+
 void Denoiser::computeNbOfSamplesSqrt()
 {
     m_nbOfSamplesSqrtImage = *(m_inputs.m_pNbOfSamples);
+
     for (float* pPixelValues : m_nbOfSamplesSqrtImage)
         pPixelValues[0] = sqrt(pPixelValues[0]);
 }
@@ -168,9 +202,10 @@ void Denoiser::computePixelCovFromSampleCov()
     m_pixelCovarianceImage = *(m_inputs.m_pSampleCovariances);
     ImfIt covIt = m_pixelCovarianceImage.begin();
     float nbOfSamplesInv;
+
     for (const float* pPixelNbOfSamples : *(m_inputs.m_pNbOfSamples))
     {
-        nbOfSamplesInv = 1.f / *pPixelNbOfSamples;
+        nbOfSamplesInv = 1.0f / *pPixelNbOfSamples;
         covIt[0] *= nbOfSamplesInv;
         covIt[1] *= nbOfSamplesInv;
         covIt[2] *= nbOfSamplesInv;
@@ -194,8 +229,8 @@ void Denoiser::reorderPixelSetJumpNextStrip(
 {
     int widthWithoutBorder = m_width - 2 * m_parameters.m_patchRadius;
 
-    APPLESEED_UNUSED int heightWithoutBorder = m_height - 2 * m_parameters.m_patchRadius;
-    APPLESEED_UNUSED int nbOfPixelsWithoutBorder = widthWithoutBorder * heightWithoutBorder;
+    BCD_UNUSED int heightWithoutBorder = m_height - 2 * m_parameters.m_patchRadius;
+    BCD_UNUSED int nbOfPixelsWithoutBorder = widthWithoutBorder * heightWithoutBorder;
 
     assert(nbOfPixelsWithoutBorder == io_rPixelSet.size());
 
@@ -247,6 +282,7 @@ void Denoiser::finalAggregation()
     for (int bufferIndex = 1; bufferIndex < nbOfImages; ++bufferIndex)
     {
         ImfIt it = m_outputSummedColorImages[bufferIndex].begin();
+
         for (float* pSum : m_outputSummedColorImages[0])
         {
             pSum[0] += it[0];
@@ -259,6 +295,7 @@ void Denoiser::finalAggregation()
     for (int bufferIndex = 1; bufferIndex < nbOfImages; ++bufferIndex)
     {
         DeepImage<int>::iterator it = m_estimatesCountImages[bufferIndex].begin();
+
         for (int* pSum : m_estimatesCountImages[0])
         {
             pSum[0] += it[0];
@@ -272,7 +309,7 @@ void Denoiser::finalAggregation()
 
     for (float* pFinalColor : *(m_outputs.m_pDenoisedColors))
     {
-        countInv = 1.f / countIt[0];
+        countInv = 1.0f / countIt[0];
         pFinalColor[0] = countInv * sumIt[0];
         pFinalColor[1] = countInv * sumIt[1];
         pFinalColor[2] = countInv * sumIt[2];
@@ -291,8 +328,6 @@ void Denoiser::fixNegativeInfNaNValues()
     int width = dst.getWidth();
     int height = dst.getHeight();
     int depth = dst.getDepth();
-    vector<float> values(depth);
-    float val = 0.f;
 
     for (int line = 0; line < height; ++line)
     {
@@ -300,9 +335,9 @@ void Denoiser::fixNegativeInfNaNValues()
         {
             for (int z = 0; z < depth; ++z)
             {
-                val = values[z] = dst.get(line, col, z);
+                const float val = dst.get(line, col, z);
 
-                if(val < 0 || isnan(val) || isinf(val))
+                if(val < 0.0f || isnan(val) || isinf(val))
                 {
                     // Recover the original, not denoised value.
                     dst.set(line, col, z, src.get(line, col, z));

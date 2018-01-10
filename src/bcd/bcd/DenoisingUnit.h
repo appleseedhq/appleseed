@@ -32,7 +32,7 @@ class Denoiser;
 class DenoisingUnit
 {
   public:
-    DenoisingUnit(Denoiser& i_rDenoiser);
+    DenoisingUnit(Denoiser& i_rDenoiser, const size_t i_threadIndex);
 
     ~DenoisingUnit();
 

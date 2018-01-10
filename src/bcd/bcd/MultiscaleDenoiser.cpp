@@ -10,20 +10,20 @@
 // All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE.txt file.
 
-#include "MultiscaleDenoiser.h"
 
+// BCD headers.
 #include "Denoiser.h"
-
 #include "DeepImage.h"
+#include "ImageIO.h"
+#include "MultiscaleDenoiser.h"
+#include "Utils.h"
 
-#include "ImageIO.h" // temporary
-#include <sstream>
+// Boost headers.
+#include "boost/atomic/atomic.hpp"
 
-#include <iostream>
-
+// Standard headers.
 #include <cassert>
-
-#include "foundation/platform/compiler.h"
+#include <sstream>
 
 using namespace std;
 
@@ -32,56 +32,64 @@ namespace bcd
 namespace
 {
 
-class MultiScaleProgressReporter
-  : public IProgressReporter
-{
-  public:
-    MultiScaleProgressReporter(
-        int                 i_scale,
-        int                 i_nbOfScales,
-        IProgressReporter*  i_progress_reporter)
-      : m_scale(i_scale)
-      , m_nbOfScales(i_nbOfScales)
-      , m_progress_reporter(i_progress_reporter)
+    class MultiScaleProgressReporter
+    : public IProgressReporter
     {
-    }
-
-    void progress(const float i_progress) const override
-    {
-        if (m_progress_reporter)
+      public:
+        MultiScaleProgressReporter(
+            const int           i_scale,
+            const int           i_nbOfScales,
+            IProgressReporter*  i_progress_reporter)
+        : m_scale(i_scale)
+        , m_nbOfScales(i_nbOfScales)
+        , m_progress_reporter(i_progress_reporter)
         {
-            if (m_scale == m_nbOfScales - 1)
+        }
+
+        void progress(const float i_progress) const override
+        {
+            if (m_progress_reporter)
             {
-                m_progress_reporter->progress(
-                    i_progress / float(((1 << (2 * m_nbOfScales)) - 1) / 3));
-            }
-            else
-            {
-                int s = m_nbOfScales - 1 - m_scale;
-                // next higher definition scale is 4 times slower
-                // 1 + 4 + 4^2 + ... 4^s = (4^(s+1) - 1) / (4 - 1) = (2^(2*(s+1)) - 1) / 3
-                // = ((1 << (2*(s+1))) - 1) / 3
-                float factor = 1.f / float(((1 << (2 * m_nbOfScales)) - 1) / 3);
-                float minValue = factor * float(((1 << (2 * s)) - 1) / 3);
-                float maxValue = factor * float(((1 << (2 * (s + 1))) - 1) / 3);
-                m_progress_reporter->progress(minValue + i_progress * (maxValue - minValue));
+                if (m_scale == m_nbOfScales - 1)
+                {
+                    m_progress_reporter->progress(
+                        i_progress / float(((1 << (2 * m_nbOfScales)) - 1) / 3));
+                }
+                else
+                {
+                    int s = m_nbOfScales - 1 - m_scale;
+
+                    // next higher definition scale is 4 times slower
+                    // 1 + 4 + 4^2 + ... 4^s = (4^(s+1) - 1) / (4 - 1) = (2^(2*(s+1)) - 1) / 3
+                    // = ((1 << (2*(s+1))) - 1) / 3
+
+                    const float factor = 1.f / calc_factor(m_nbOfScales);
+                    const float minValue = factor * calc_factor(s);
+                    const float maxValue = factor * calc_factor(s + 1);
+
+                    m_progress_reporter->progress(minValue + i_progress * (maxValue - minValue));
+                }
             }
         }
-    }
 
-    bool isAborted() const override
-    {
-        if (m_progress_reporter)
-            return m_progress_reporter->isAborted();
+        bool isAborted() const override
+        {
+            if (m_progress_reporter)
+                return m_progress_reporter->isAborted();
 
-        return false;
-    }
+            return false;
+        }
 
-  private:
-    int                 m_scale;
-    int                 m_nbOfScales;
-    IProgressReporter*  m_progress_reporter;
-};
+    private:
+        const int           m_scale;
+        const int           m_nbOfScales;
+        IProgressReporter*  m_progress_reporter;
+
+        static float calc_factor(const int s)
+        {
+            return ((1 << (2 * s)) - 1) / 3.0f;
+        }
+    };
 
 }
 
@@ -159,7 +167,7 @@ bool MultiscaleDenoiser::denoise()
 
         const bool success = denoiser.denoise();
 
-        if (success == false)
+        if (!success)
             return false;
     }
 
@@ -390,52 +398,6 @@ unique_ptr<Deepimf> MultiscaleDenoiser::downscaleSampleCovarianceSum(
     return uImage;
 }
 
-void MultiscaleDenoiser::mergeOutputsNoInterpolation(
-    Deepimf&            o_rMergedImage,
-    const Deepimf&      i_rLowFrequencyImage,
-    const Deepimf&      i_rHighFrequencyImage)
-{
-    const int width = o_rMergedImage.getWidth();
-    const int height = o_rMergedImage.getHeight();
-    const int depth = o_rMergedImage.getDepth();
-    const int downscaledWidth = width / 2;
-    const int downscaledHeight = height / 2;
-
-    assert(width == i_rHighFrequencyImage.getWidth());
-    assert(height == i_rHighFrequencyImage.getHeight());
-    assert(downscaledWidth == i_rLowFrequencyImage.getWidth());
-    assert(downscaledHeight == i_rLowFrequencyImage.getHeight());
-
-    int line, col, z;
-    PixelPosition p1, p2, p3, p4;
-    float v, v1, v2, v3, v4, dv;
-
-    for (line = 0; line < downscaledHeight; ++line)
-    {
-        for (col = 0; col < downscaledWidth; ++col)
-        {
-            p1 = PixelPosition(2 * line, 2 * col);
-            p2 = p1 + PixelVector(1, 0);
-            p3 = p1 + PixelVector(0, 1);
-            p4 = p1 + PixelVector(1, 1);
-
-            for (z = 0; z < depth; ++z)
-            {
-                v = i_rLowFrequencyImage.get(line, col, z);
-                v1 = i_rHighFrequencyImage.get(p1, z);
-                v2 = i_rHighFrequencyImage.get(p2, z);
-                v3 = i_rHighFrequencyImage.get(p3, z);
-                v4 = i_rHighFrequencyImage.get(p4, z);
-                dv = v - 0.25f * (v1 + v2 + v3 + v4);
-                o_rMergedImage.set(p1, z, v1 + dv);
-                o_rMergedImage.set(p2, z, v2 + dv);
-                o_rMergedImage.set(p3, z, v3 + dv);
-                o_rMergedImage.set(p4, z, v4 + dv);
-            }
-        }
-    }
-}
-
 void MultiscaleDenoiser::mergeOutputs(
     Deepimf&            o_rMergedHighResImage,
     Deepimf&            o_rTmpHighResImage,
@@ -512,8 +474,8 @@ void MultiscaleDenoiser::downscale(
     const int downscaledWidth = o_rDownscaledImage.getWidth();
     const int downscaledHeight = o_rDownscaledImage.getHeight();
 
-    APPLESEED_UNUSED const int width = i_rImage.getWidth();
-    APPLESEED_UNUSED const int height = i_rImage.getHeight();
+    BCD_UNUSED const int width = i_rImage.getWidth();
+    BCD_UNUSED const int height = i_rImage.getHeight();
     assert(downscaledWidth == width / 2);
     assert(downscaledHeight == height / 2);
 
@@ -548,53 +510,6 @@ void MultiscaleDenoiser::lowPass(
 {
     downscale(o_rTmpLowResImage, i_rImage);
     interpolate(o_rFilteredImage, o_rTmpLowResImage);
-}
-
-void MultiscaleDenoiser::interpolateThenDownscale(
-    Deepimf&            o_rFilteredImage,
-    const Deepimf&      i_rImage)
-{
-    const int width = i_rImage.getWidth();
-    const int height = i_rImage.getHeight();
-    const int depth = i_rImage.getDepth();
-
-    assert(width == o_rFilteredImage.getWidth());
-    assert(height == o_rFilteredImage.getHeight());
-    assert(depth == o_rFilteredImage.getDepth());
-
-    const float mainPixelWeight = 36.f / 64.f;
-    const float adjacentPixelWeight = 6.f / 64.f;
-    const float diagonalPixelWeight = 1.f / 64.f;
-
-    int line, col, z, previousLine, previousCol, nextLine, nextCol;
-
-    for (line = 0; line < height; ++line)
-    {
-        for (col = 0; col < width; ++col)
-        {
-            previousLine = clampPositiveInteger(line - 1, height);
-            nextLine = clampPositiveInteger(line + 1, height);
-            previousCol = clampPositiveInteger(col - 1, width);
-            nextCol = clampPositiveInteger(col + 1, width);
-
-            for (z = 0; z < depth; ++z)
-            {
-                o_rFilteredImage.set(
-                            line,
-                            col,
-                            z,
-                            mainPixelWeight * i_rImage.get(line, col, z) +
-                            adjacentPixelWeight * (i_rImage.get(line, previousCol, z) +
-                                                   i_rImage.get(line, nextCol, z) +
-                                                   i_rImage.get(previousLine, col, z) +
-                                                   i_rImage.get(nextLine, col, z)) +
-                            diagonalPixelWeight * (i_rImage.get(previousLine, previousCol, z) +
-                                                   i_rImage.get(previousLine, nextCol, z) +
-                                                   i_rImage.get(nextLine, previousCol, z) +
-                                                   i_rImage.get(nextLine, nextCol, z)));
-            }
-        }
-    }
 }
 
 } // namespace bcd

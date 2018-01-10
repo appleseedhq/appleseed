@@ -13,7 +13,6 @@
 #ifndef I_DENOISER_H
 #define I_DENOISER_H
 
-
 namespace bcd
 {
 

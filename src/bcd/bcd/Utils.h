@@ -13,7 +13,15 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <string>
+//  A macro to mark a variable as unused.
+
+#if defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 6)))
+    #define BCD_UNUSED   __attribute__((unused))
+#elif defined(__clang__)
+    #define BCD_UNUSED   __attribute__((unused))
+#else
+    #define BCD_UNUSED
+#endif
 
 namespace bcd
 {
@@ -36,12 +44,6 @@ class Utils
     static DeepImage<float> mergeHistogramAndNbOfSamples(
       const DeepImage<float>& i_rHistoImage,
       const DeepImage<float>& i_rNbOfSamplesImage);
-
-    static std::string extractFolderPath(const std::string& i_rFilePath);
-
-    static std::string getRelativePathFromFolder(
-      const std::string&      i_rFileAbsolutePath,
-      const std::string&      i_rFolderAbsolutePath);
 };
 
 }

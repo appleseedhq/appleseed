@@ -264,26 +264,6 @@ if (WITH_DISNEY_MATERIAL)
     endif ()
 endif ()
 
-# OpenMP
-find_package (OpenMP REQUIRED)
-
-set (c_compiler_flags_common
-    ${c_compiler_flags_common}
-    "${OpenMP_C_FLAGS}"
-)
-set (cxx_compiler_flags_common
-    ${cxx_compiler_flags_common}
-    "${OpenMP_CXX_FLAGS}"
-)
-set (exe_linker_flags_common
-    ${exe_linker_flags_common}
-    ${OpenMP_EXE_LINKER_FLAGS}
-)
-set (shared_lib_linker_flags_common
-    ${shared_lib_linker_flags_common}
-    ${OpenMP_SHARED_LINKER_FLAGS}
-)
-
 #--------------------------------------------------------------------------------------------------
 # Include paths.
 #--------------------------------------------------------------------------------------------------
