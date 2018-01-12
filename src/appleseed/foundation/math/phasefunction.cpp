@@ -128,38 +128,4 @@ float IsotropicPhaseFunction::sample(const Vector3f& outgoing, const Vector2f& s
     return RcpFourPi<float>();
 }
 
-
-//
-// DwivediPhaseFunction class implementation.
-//
-
-DwivediPhaseFunction::DwivediPhaseFunction(const float v)
-    : m_v(v)
-{
-}
-
-float DwivediPhaseFunction::sample(const Vector3f& outgoing, const Vector2f& s, Vector3f& incoming) const
-{
-    const float cosine = m_v - sample_rcp_distribution(s[0], m_v - 1.0f, m_v + 1.0f);
-    const float sine = std::sqrt(saturate(1.0f - cosine * cosine));
-    const Vector2f tangent = sample_circle_uniform(s[1]);
-    const Basis3f basis(outgoing);
-
-    incoming =
-        basis.get_tangent_u() * tangent.x * sine +
-        basis.get_tangent_v() * tangent.y * sine +
-        basis.get_normal()    * cosine;
-
-    assert(feq(norm(incoming), 1.0f));
-
-    // Evaluate PDF.
-    return RcpTwoPi<float>() * rcp_distribution_pdf(m_v - cosine, m_v - 1.0f, m_v + 1.0f);
-}
-
-float DwivediPhaseFunction::evaluate(const Vector3f& outgoing, const Vector3f& incoming) const
-{
-    const float cosine = dot(incoming, outgoing);
-    return RcpTwoPi<float>() * rcp_distribution_pdf(m_v - cosine, m_v - 1.0f, m_v + 1.0f);
-}
-
 }   // namespace foundation

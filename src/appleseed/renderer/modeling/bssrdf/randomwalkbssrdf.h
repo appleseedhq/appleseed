@@ -31,13 +31,11 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/bsdf/diffusebtdf.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/ibssrdffactory.h"
 #include "renderer/modeling/bssrdf/separablebssrdf.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/volume/genericvolume.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -55,7 +53,7 @@ namespace renderer
 {
 
 //
-// Normalized diffusion BSSRDF input values.
+// Random-Walk BSSRDF input values.
 //
 
 APPLESEED_DECLARE_INPUT_VALUES(RandomWalkBSSRDFInputValues)
@@ -73,10 +71,7 @@ APPLESEED_DECLARE_INPUT_VALUES(RandomWalkBSSRDFInputValues)
     {
         Spectrum        m_albedo;
         Spectrum        m_extinction;
-        Spectrum        m_scattering;
-
         Spectrum        m_rcp_diffusion_length;
-
         float           m_eta;
     };
 

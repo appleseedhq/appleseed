@@ -130,12 +130,6 @@ class GenericVolume
         return sizeof(InputValues);
     }
 
-    static void channel_mis(Spectrum& values)
-    {
-        const float avg_value = average_value(values);
-        if (avg_value > 0.0f) values /= avg_value;
-    }
-
     void prepare_inputs(
         Arena&              arena,
         const ShadingRay&   volume_ray,

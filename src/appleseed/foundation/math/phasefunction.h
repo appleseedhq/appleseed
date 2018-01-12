@@ -77,23 +77,6 @@ class IsotropicPhaseFunction final
     float sample(const Vector3f& outgoing, const Vector2f& s, Vector3f& incoming) const override;
 };
 
-//
-// Dwivedi phase function.
-//
-
-class DwivediPhaseFunction final
-    : public PhaseFunction
-{
-  public:
-    explicit DwivediPhaseFunction(const float v);
-    float evaluate(const Vector3f& outgoing, const Vector3f& incoming) const override;
-    float sample(const Vector3f& outgoing, const Vector2f& s, Vector3f& incoming) const override;
-
-  private:
-    const float m_v;
-};
-
-
 }       // namespace foundation
 
 #endif  // !APPLESEED_FOUNDATION_MATH_PHASEFUNCTION_H
