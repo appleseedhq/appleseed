@@ -547,7 +547,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
         // Compute absorption for the segment inside the medium.
         const ShadingRay::Medium* prev_medium = ray.get_current_medium();
-        if (prev_medium != nullptr)
+        if (prev_medium != nullptr && prev_medium->m_material != nullptr)
         {
             const Material::RenderData& render_data = prev_medium->m_material->get_render_data();
 

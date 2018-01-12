@@ -39,9 +39,9 @@
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/phasefunction.h"
-#include "foundation/math/sampling/mappings.h"
+#include "foundation/math/fresnel.h"
 #include "foundation/math/rr.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
@@ -51,6 +51,8 @@
 // Standard headers.
 #include <algorithm>
 #include <cstddef>
+
+#define USE_DWIVEDI_SAMPLING
 
 // Forward declarations.
 namespace foundation    { class Arena; }
@@ -69,11 +71,17 @@ namespace
     //
     // Random-walk BSSRDF.
     //
-    // Reference:
+    // References:
     //
     //   Path Traced Subsurface Scattering using Anisotropic Phase Functions
     //   and Non-Exponential Free Flights, Pixar Technical Memo 17-07
-    //   https://graphics.pixar.com/library/PathTracedSubsurface/paper.pdf
+    //   https://graphics.pixar.com/library/PathTracedSubsurface/paper.pdf [1]
+    //
+    //   Johannes Meng, Johannes Hanika, Carsten Dachsbacher
+    //   Improving the Dwivedi Sampling Scheme,
+    //   Journal Computer Graphics Forum Vol. 35 Issue 4, pp. 37-44, July 2016.
+    //   https://jo.dreggn.org/home/2016_dwivedi.pdf [2]
+    //   https://jo.dreggn.org/home/2016_dwivedi_additional.pdf (supplement material) [3]
     //
 
     const char* Model = "randomwalk_bssrdf";
@@ -95,8 +103,6 @@ namespace
             m_inputs.declare("ior", InputFormatFloat);
             m_inputs.declare("fresnel_weight", InputFormatFloat, "1.0");
             m_inputs.declare("zero_scattering_weight", InputFormatFloat, "1.0");
-            m_inputs.declare("single_scattering_weight", InputFormatFloat, "1.0");
-            m_inputs.declare("multiple_scattering_weight", InputFormatFloat, "1.0");
 
             const string volume_name = string(name) + "_volume";
 
@@ -146,7 +152,7 @@ namespace
 
                 // Compute extinction coefficient.
                 const float s = normalized_diffusion_s_mfp(values->m_reflectance[i]);
-                const float extinction = rcp(values->m_mfp[i] * s);
+                const float extinction = s / values->m_mfp[i];
 
                 precomputed.m_albedo[i] = albedo;
                 precomputed.m_extinction[i] = extinction;
@@ -156,8 +162,11 @@ namespace
                 const float kappa = min(compute_rcp_diffusion_length(albedo), 0.99f);
                 precomputed.m_rcp_diffusion_length[i] = kappa;
             }
+
+            values->m_precomputed.m_eta = compute_eta(shading_point, values->m_ior);
         }
 
+        // Compute reciprocal of diffusion length for low albedo, [3] Eqn. 10
         static float compute_rcp_diffusion_length_low_albedo(const float albedo)
         {
             const float a = rcp(albedo);
@@ -172,6 +181,7 @@ namespace
             return 1.0f - 2.0f * b * (x[0] + b * (x[1] + b * (x[2] + b * x[3])));
         }
 
+        // Compute reciprocal of diffusion length for high albedo, [3] Eqn. 11
         static float compute_rcp_diffusion_length_high_albedo(const float albedo)
         {
             const float a = 1.0f - albedo;
@@ -187,6 +197,9 @@ namespace
             return b * (x[0] + a * (x[1] + a * (x[2] + a * (x[3] + a * x[4]))));
         }
 
+        // Compute the positive root of the equation 1 - A * x * arctanh(1/x) = 0,
+        // where A is the single-scattering albedo.
+        // To do this, numerical approximations from [3] are used.
         static float compute_rcp_diffusion_length(const float albedo)
         {
             const float a = clamp(albedo, 0.0f, 0.999f);
@@ -198,6 +211,32 @@ namespace
         static float albedo_from_reflectance(const float r)
         {
             return 1.0f - exp(r * (-5.09406f + r * (2.61188f - 4.31805f * r)));
+        }
+
+        // Sample the cosine of incoming direction using Dwivedi sampling. [2] Eqn. 7, 10.
+        static float sample_cosine_dwivedi(const float mu, const float s)
+        {
+            return mu - sample_rcp_distribution(s, mu - 1.0f, mu + 1.0f);
+        }
+
+        // Evaluate PDF of the cosine of incoming direction. [2] Eqn. 7, 9.
+        static float evaluate_cosine_dwivedi(const float mu, const float cosine)
+        {
+            return rcp_distribution_pdf(mu - cosine, mu - 1.0f, mu + 1.0f);
+        }
+
+        static Vector3f sample_direction_given_cosine(
+            const Vector3f& normal,
+            const float cosine,
+            const float s)
+        {
+            const float sine = std::sqrt(saturate(1.0f - cosine * cosine));
+            const Vector2f tangent = sample_circle_uniform(s);
+            Basis3f basis(normal);
+            return
+                basis.get_tangent_u() * tangent.x * sine +
+                basis.get_tangent_v() * tangent.y * sine +
+                basis.get_normal()    * cosine;
         }
 
         static bool test_rr(
@@ -223,6 +262,7 @@ namespace
             return true;
         }
 
+        // Compute the probability to pick classical sampling instead of biased (Dwivedi) sampling.
         static float compute_classical_sampling_probability(const float anisotropy)
         {
             return max(0.1f, pow(abs(anisotropy), 3.0f));
@@ -244,18 +284,20 @@ namespace
             const Spectrum& albedo = values->m_precomputed.m_albedo;
             const Spectrum& scattering = values->m_precomputed.m_scattering;
             const Spectrum& rcp_diffusion_length = values->m_precomputed.m_rcp_diffusion_length;
+            // const float rcp_diffusion_length = values->m_precomputed.m_min_rcp_diffusion_length;
 
             // Compute the probability of classical sampling.
             // The probability of classical sampling is high if phase function is anisotropic.
-            const float classical_sampling_prob = 0.1f;
+            const float classical_sampling_prob =
+                UseDwivediSampling ? compute_classical_sampling_probability(0.0f) : 1.0f;
 
             // Initialize BSSRDF value.
-            bssrdf_sample.m_value.set(1.0f);
+            bssrdf_sample.m_value.set(values->m_weight);
             bssrdf_sample.m_probability = 1.0f;
 
             // Pick initial random-walk direction uniformly.
             sampling_context.split_in_place(2, 1);
-            Vector3d initial_dir = sample_hemisphere_cosine(sampling_context.next2<Vector2d>());
+            Vector3d initial_dir = sample_hemisphere_uniform(sampling_context.next2<Vector2d>());
             initial_dir.y = -initial_dir.y;
             initial_dir = outgoing_point.get_shading_basis().transform_to_parent(initial_dir);
             ShadingRay ray = ShadingRay(
@@ -267,19 +309,16 @@ namespace
 
             // Choose color channel used for distance sampling.
             sampling_context.split_in_place(1, 1);
-            Spectrum channel_cdf, channel_pdf;
-            build_cdf_and_pdf(bssrdf_sample.m_value, channel_cdf, channel_pdf);
-            const size_t channel = sample_cdf(
-                &channel_cdf[0],
-                &channel_cdf[0] + channel_cdf.size(),
-                sampling_context.next2<float>());
+            const float s = sampling_context.next2<float>();
+            const size_t channel = truncate<size_t>(s * Spectrum::size());
+            Spectrum channel_pdf(1.0f / Spectrum::size());
 
             // Sample distance (we always use classical sampling here).
             sampling_context.split_in_place(1, 1);
             const float distance = sample_exponential_distribution(
                 sampling_context.next2<float>(), extinction[channel]);
 
-            // Trace the initial ray till we reach the surface from inside.
+            // Trace the initial ray through the object completely.
             bssrdf_sample.m_incoming_point.clear();
             shading_context.get_intersector().trace(
                 ray,
@@ -289,28 +328,27 @@ namespace
                 return false;
             const float ray_length = static_cast<float>(bssrdf_sample.m_incoming_point.get_distance());
             bool transmitted = ray_length <= distance;
-            const float mis_weight = compute_transmission_classical_sampling(
+            const float weight = compute_transmission_classical_sampling(
                 transmitted ? ray_length : distance,
                 extinction,
                 channel_pdf,
                 transmitted,
                 bssrdf_sample.m_value);
-            bssrdf_sample.m_value *= rcp(mis_weight);
+            bssrdf_sample.m_value *= rcp(weight);
 
             // Do random walk until we reach the surface from inside.
             int n_iteration = 0;
-            const int MaxIterationsCount = 64;
+            const int MaxIterationsCount = 128;
             const int MinRRIteration = 8;
 
             // Determine the closest surface point and corresponding slab normal.
-            const float bias_strategy_prob =
-                std::exp(-extinction[channel] * ray_length * 0.5f);
             const bool outgoing_point_is_closer = distance < 0.5f * ray_length;
             const Vector3f near_slab_normal = Vector3f(outgoing_point.get_geometric_normal());
             const Vector3f far_slab_normal = Vector3f(-bssrdf_sample.m_incoming_point.get_geometric_normal());
             const Vector3f& slab_normal = outgoing_point_is_closer ? far_slab_normal : near_slab_normal;
             Vector3d current_point = ray.point_at(distance);
 
+            // Trace the path until it reaches the surface from inside.
             while (!transmitted)
             {
                 if (++n_iteration > MaxIterationsCount)
@@ -322,7 +360,7 @@ namespace
                 sampling_context.split_in_place(1, 2);
 
                 // Choose color channel used for distance sampling.
-                Spectrum channel_cdf, channel_pdf;
+                Spectrum channel_cdf;
                 build_cdf_and_pdf(bssrdf_sample.m_value, channel_cdf, channel_pdf);
                 const size_t channel = sample_cdf(
                     &channel_cdf[0],
@@ -331,21 +369,22 @@ namespace
                 if (scattering[channel] == 0.0f || bssrdf_sample.m_value[channel] == 0.0f)
                     return false; // path got lost inside the object
 
-                // Determine if we do Dwivedi (biased) sampling or classical sampling.
+                // Determine if we do biased (Dwivedi) sampling or classical sampling.
                 bool is_biased = classical_sampling_prob < sampling_context.next2<float>();
 
                 // Find next random-walk direction.
                 sampling_context.split_in_place(2, 1);
                 const Vector2f s_direction = sampling_context.next2<Vector2f>();
-                Vector3f incoming;
+                Vector3f incoming; float cosine;
                 if (is_biased)
                 {
-                    DwivediPhaseFunction phase_function(rcp(rcp_diffusion_length[channel]));
-                    phase_function.sample(slab_normal, s_direction, incoming);
+                    cosine = sample_cosine_dwivedi(rcp(rcp_diffusion_length[channel]), s_direction[0]);
+                    incoming = sample_direction_given_cosine(slab_normal, cosine, s_direction[1]);
                 }
                 else
                 {
                     incoming = sample_sphere_uniform(s_direction);
+                    cosine = dot(incoming, slab_normal);
                 }
 
                 // Update transmission by albedo.
@@ -362,7 +401,6 @@ namespace
 
                 // Sample distance, assuming that the ray is infinite.
                 sampling_context.split_in_place(1, 1);
-                float cosine = dot(incoming, slab_normal);
                 const float s_distance = sampling_context.next2<float>();
                 const float effective_extinction = is_biased ?
                     extinction[channel] * (1.0f - cosine * rcp_diffusion_length[channel]) :
@@ -384,51 +422,41 @@ namespace
                         bssrdf_sample.m_incoming_point.get_distance());
                 }
 
-                // Compute transmission for the distance sample.
+                // Compute transmission for the distance sample and apply MIS.
                 Spectrum transmission;
-                const float mis_classical = compute_transmission_classical_sampling(
+                const float weight_classical = compute_transmission_classical_sampling(
                     distance,
                     extinction,
                     channel_pdf,
                     transmitted,
                     transmission);
-                const float mis_dwivedi_near = compute_mis_dwivedi_sampling(
+                const float weight_dwivedi = compute_mis_dwivedi_sampling(
                     distance,
                     extinction,
                     rcp_diffusion_length,
                     cosine,
                     channel_pdf,
-                    transmitted,
-                    near_slab_normal,
-                    incoming);
-                const float mis_dwivedi_far = compute_mis_dwivedi_sampling(
-                    distance,
-                    extinction,
-                    rcp_diffusion_length,
-                    cosine,
-                    channel_pdf,
-                    transmitted,
-                    far_slab_normal,
-                    incoming);
-                const float mis_dwivedi = mix(
-                    mis_dwivedi_far,
-                    mis_dwivedi_near,
-                    bias_strategy_prob);
+                    transmitted);
                 transmission *= rcp(mix(
-                    mis_dwivedi,
-                    mis_classical,
+                    weight_dwivedi,
+                    weight_classical,
                     classical_sampling_prob));
                 bssrdf_sample.m_value *= transmission;
+
+                for (size_t i = 0; i < 3; ++i)
+                    assert(!isnan(bssrdf_sample.m_value[i]) && !isinf(bssrdf_sample.m_value[i]));
             }
 
-            clamp_in_place(bssrdf_sample.m_value, 0.0f, 2.0f);
+            if (UseDwivediSampling)
+            {
+                // This is an ugly way to get rid of fireflies
+                // that happen on some long paths when biased sampling is on.
+                clamp_in_place(bssrdf_sample.m_value, 0.0f, 3.0f);
+                // TODO: Find the actual reason of the fireflies.
+            }
 
             if (n_iteration == 1)
                 bssrdf_sample.m_value *= values->m_zero_scattering_weight;
-            if (n_iteration == 2)
-                bssrdf_sample.m_value *= values->m_single_scattering_weight;
-            else
-                bssrdf_sample.m_value *= values->m_multiple_scattering_weight;
 
             bssrdf_sample.m_brdf = m_brdf;
             bssrdf_sample.m_brdf_data = &m_brdf_data;
@@ -447,8 +475,25 @@ namespace
                 ScatteringMode::All,
                 bsdf_sample);
 
+            // Take Frensel term into account.
+            const float cos_on = min(abs(dot(near_slab_normal, outgoing_dir)), 1.0f);
+            const float cos_in = min(abs(dot(bsdf_sample.m_geometric_normal, bsdf_sample.m_incoming.get_value())), 1.0f);
+            bssrdf_sample.m_value *= compute_total_refraction_intensity(data, cos_on, cos_in);
+
             return true;
         }
+
+        //
+        // The functions below use one-sample estimator to implement robust spectral MIS (Veach: 9.2.4 eq. 9.15).
+        // They return a weight of the form
+        //    W = c1 * p1 + c2 * p2 + ... + cN * pN
+        // where:
+        //    N is the number of channels,
+        //    ci is the probability to pick i-th estimator from the set of N given estimators,
+        //    pi is PDF of the given sample if i-th estimator is picked.
+        // Note that different weights W can be mixed for different sets of estimators,
+        // and f(X) / W is the MIS estimator for the function f(X) being integrated.
+        //
 
         static float compute_transmission_classical_sampling(
             const float         distance,
@@ -470,15 +515,14 @@ namespace
             return mis_base;
         }
 
+        // Compute transmission according to the Beer-Lambert law.
         static float compute_mis_dwivedi_sampling(
             const float         distance,
             const Spectrum&     extinction,
             const Spectrum&     rcp_diffusion_length,
             const float         cosine,
             const Spectrum&     channel_pdf,
-            const bool          transmitted,
-            const Vector3f&     slab_normal,
-            const Vector3f&     incoming)
+            const bool          transmitted)
         {
             float mis_base = 0.0f;
             for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
@@ -487,16 +531,40 @@ namespace
                 const float x = -distance * effective_extinction;
                 assert(FP<float>::is_finite(x));
                 const float distance_prob = (transmitted ? 1.0f : effective_extinction) * std::exp(x);
+                const float direction_prob = evaluate_cosine_dwivedi(rcp(rcp_diffusion_length[i]), cosine);
 
-                DwivediPhaseFunction phase_function(rcp(rcp_diffusion_length[i]));
-                const float direction_prob = phase_function.evaluate(slab_normal, incoming);
-
-                mis_base +=
-                    distance_prob *
-                    channel_pdf[i] *
-                    direction_prob;
+                mis_base += distance_prob * channel_pdf[i] * direction_prob;
             }
-            return mis_base * FourPi<float>();
+            return 2.0f * mis_base; // 2 = 4pi / 2pi
+        }
+
+        float compute_total_refraction_intensity(
+            const void* data,
+            const float cos_on,
+            const float cos_in) const
+        {
+            const RandomWalkBSSRDFInputValues* values =
+                static_cast<const RandomWalkBSSRDFInputValues*>(data);
+
+            float fo, fi;
+
+            if (values->m_fresnel_weight == 0.0f)
+                fo = fi = 1.0f;
+            else
+            {
+                // Fresnel factor at outgoing direction.
+                fresnel_transmittance_dielectric(fo, values->m_precomputed.m_eta, cos_on);
+                fo = lerp(1.0f, fo, values->m_fresnel_weight);
+
+                // Fresnel factor at incoming direction.
+                fresnel_transmittance_dielectric(fi, values->m_precomputed.m_eta, cos_in);
+                fi = lerp(1.0f, fi, values->m_fresnel_weight);
+            }
+
+            // Normalization constant.
+            const float c = 1.0f - fresnel_first_moment_x2(values->m_precomputed.m_eta);
+
+            return fo * fi / c;
         }
 
         void evaluate(
@@ -515,6 +583,8 @@ namespace
 
         const BSDF*                     m_brdf;
         LambertianBRDFInputValues       m_brdf_data;
+
+        const bool                      UseDwivediSampling = false;
     };
 }
 
@@ -635,38 +705,6 @@ DictionaryArray RandomWalkBSSRDFFactory::get_input_metadata() const
         Dictionary()
         .insert("name", "zero_scattering_weight")
         .insert("label", "Zero Scattering Weight")
-        .insert("type", "numeric")
-        .insert("min",
-            Dictionary()
-            .insert("value", "0.0")
-            .insert("type", "hard"))
-        .insert("max",
-            Dictionary()
-            .insert("value", "1.0")
-            .insert("type", "hard"))
-        .insert("use", "optional")
-        .insert("default", "1.0"));
-
-    metadata.push_back(
-        Dictionary()
-        .insert("name", "single_scattering_weight")
-        .insert("label", "Single Scattering Weight")
-        .insert("type", "numeric")
-        .insert("min",
-            Dictionary()
-            .insert("value", "0.0")
-            .insert("type", "hard"))
-        .insert("max",
-            Dictionary()
-            .insert("value", "1.0")
-            .insert("type", "hard"))
-        .insert("use", "optional")
-        .insert("default", "1.0"));
-
-    metadata.push_back(
-        Dictionary()
-        .insert("name", "multiple_scattering_weight")
-        .insert("label", "Multiple Scattering Weight")
         .insert("type", "numeric")
         .insert("min",
             Dictionary()
