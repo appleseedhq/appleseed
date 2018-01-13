@@ -278,7 +278,6 @@ namespace
             const Spectrum& extinction = values->m_precomputed.m_extinction;
             const Spectrum& albedo = values->m_precomputed.m_albedo;
             const Spectrum& rcp_diffusion_length = values->m_precomputed.m_rcp_diffusion_length;
-            // const float rcp_diffusion_length = values->m_precomputed.m_min_rcp_diffusion_length;
 
             // Compute the probability of classical sampling.
             // The probability of classical sampling is high if phase function is anisotropic.
@@ -301,14 +300,14 @@ namespace
                 VisibilityFlags::ShadowRay,
                 outgoing_point.get_ray().m_depth + 1);
 
+            sampling_context.split_in_place(1, 2);
+
             // Choose color channel used for distance sampling.
-            sampling_context.split_in_place(1, 1);
             const float s = sampling_context.next2<float>();
             const size_t channel = truncate<size_t>(s * Spectrum::size());
             Spectrum channel_pdf(1.0f / Spectrum::size());
 
             // Sample distance (we always use classical sampling here).
-            sampling_context.split_in_place(1, 1);
             const float distance = sample_exponential_distribution(
                 sampling_context.next2<float>(), extinction[channel]);
 
@@ -339,8 +338,8 @@ namespace
 
             // Continue random walk until we reach the surface from inside.
             int n_iteration = 0;
-            const int MaxIterationsCount = 128;
-            const int MinRRIteration = 8;
+            const int MaxIterationsCount = 64;
+            const int MinRRIteration = 4;
             while (!transmitted)
             {
                 if (++n_iteration > MaxIterationsCount)
@@ -365,18 +364,18 @@ namespace
                 bool is_biased = classical_sampling_prob < sampling_context.next2<float>();
 
                 // Find next random-walk direction.
-                sampling_context.split_in_place(2, 1);
-                const Vector2f s_direction = sampling_context.next2<Vector2f>();
+                sampling_context.split_in_place(3, 1);
+                const Vector3f s = sampling_context.next2<Vector3f>();
                 Vector3f incoming;
                 float cosine;
                 if (is_biased)
                 {
-                    cosine = sample_cosine_dwivedi(rcp(rcp_diffusion_length[channel]), s_direction[0]);
-                    incoming = sample_direction_given_cosine(slab_normal, cosine, s_direction[1]);
+                    cosine = sample_cosine_dwivedi(rcp(rcp_diffusion_length[channel]), s[0]);
+                    incoming = sample_direction_given_cosine(slab_normal, cosine, s[1]);
                 }
                 else
                 {
-                    incoming = sample_sphere_uniform(s_direction);
+                    incoming = sample_sphere_uniform(Vector2f(s[0], s[1]));
                     cosine = dot(incoming, slab_normal);
                 }
 
@@ -393,12 +392,10 @@ namespace
                 );
 
                 // Sample distance assuming that the ray is infinite.
-                sampling_context.split_in_place(1, 1);
-                const float s_distance = sampling_context.next2<float>();
                 const float effective_extinction = is_biased ?
                     extinction[channel] * (1.0f - cosine * rcp_diffusion_length[channel]) :
                     extinction[channel];
-                float distance = sample_exponential_distribution(s_distance, effective_extinction);
+                float distance = sample_exponential_distribution(s[2], effective_extinction);
 
                 // Trace the ray up to the sampled distance.
                 ray.m_tmax = distance;
@@ -422,17 +419,22 @@ namespace
                     channel_pdf,
                     transmitted,
                     transmission);
-                const float weight_dwivedi = compute_mis_dwivedi_sampling(
-                    distance,
-                    extinction,
-                    rcp_diffusion_length,
-                    cosine,
-                    channel_pdf,
-                    transmitted);
-                transmission *= rcp(mix(
-                    weight_dwivedi,
-                    weight_classical,
-                    classical_sampling_prob));
+                if (UseDwivediSampling)
+                {
+                    const float weight_dwivedi = compute_mis_dwivedi_sampling(
+                        distance,
+                        extinction,
+                        rcp_diffusion_length,
+                        cosine,
+                        channel_pdf,
+                        transmitted);
+                    transmission *= rcp(mix(
+                        weight_dwivedi,
+                        weight_classical,
+                        classical_sampling_prob));
+                }
+                else
+                    transmission *= rcp(weight_classical);
                 bssrdf_sample.m_value *= transmission;
             }
 
