@@ -32,6 +32,10 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 
+// appleseed.foundation headers.
+#include "foundation/math/sampling/mappings.h"
+#include "foundation/math/scalar.h"
+
 // Standard headers.
 #include <cassert>
 #include <cstddef>
@@ -286,6 +290,73 @@ void compute_absorption_and_scattering_mfp(
         // Compute absorption coefficient.
         sigma_a[i] = sigma_t - sigma_s[i];
     }
+}
+
+//
+// Functions related to Dwivedi sampling.
+//
+// Reference:
+//
+//   Johannes Meng, Johannes Hanika, Carsten Dachsbacher
+//   Improving the Dwivedi Sampling Scheme,
+//   Journal Computer Graphics Forum Vol. 35 Issue 4, pp. 37-44, July 2016.
+//   https://jo.dreggn.org/home/2016_dwivedi.pdf [1]
+//   https://jo.dreggn.org/home/2016_dwivedi_additional.pdf (supplement material) [2]
+//
+
+// Compute reciprocal of diffusion length for low albedo, [3] Eqn. 10
+static float compute_rcp_diffusion_length_low_albedo(const float albedo)
+{
+    const float a = foundation::rcp(albedo);
+    const float b = exp(-2.0f * a);
+
+    const float x[4] = {
+        1.0f,
+        a * 4.0f - 1.0f,
+        a * (a * 24.0f - 12.0f) + 1.0f,
+        a * (a * (a * 512.0f - 384.0f) + 72.0f) - 3.0f };
+
+    return 1.0f - 2.0f * b * (x[0] + b * (x[1] + b * (x[2] + b * x[3])));
+}
+
+// Compute reciprocal of diffusion length for high albedo, [3] Eqn. 11
+inline float compute_rcp_diffusion_length_high_albedo(const float albedo)
+{
+    const float a = 1.0f - albedo;
+    const float b = sqrt(3.0f * a);
+
+    const float x[5] = {
+        +1.0000000000f,
+        -0.4000000000f,
+        -0.0685714286f,
+        -0.0160000000f,
+        -0.0024638218f };
+
+    return b * (x[0] + a * (x[1] + a * (x[2] + a * (x[3] + a * x[4]))));
+}
+
+// Compute reciprocal of diffusion length.
+// To do this, numerical approximations from [3] are used.
+inline float compute_rcp_diffusion_length(const float albedo)
+{
+    const float a = foundation::clamp(albedo, 0.01f, 0.99f);
+    return a < 0.56f ?
+        compute_rcp_diffusion_length_low_albedo(a) :
+        compute_rcp_diffusion_length_high_albedo(a);
+}
+
+// Sample the cosine of incoming direction using Dwivedi sampling. [2] Eqn. 7, 10.
+inline float sample_cosine_dwivedi(const float mu, const float s)
+{
+    assert(mu > 1.0f);
+    return mu - foundation::sample_rcp_distribution(s, mu - 1.0f, mu + 1.0f);
+}
+
+// Evaluate PDF of the cosine of incoming direction. [2] Eqn. 7, 9.
+inline float evaluate_cosine_dwivedi(const float mu, const float cosine)
+{
+    assert(mu > 1.0f);
+    return foundation::rcp_distribution_pdf(mu - cosine, mu - 1.0f, mu + 1.0f);
 }
 
 }       // namespace renderer

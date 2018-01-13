@@ -608,9 +608,10 @@ T sample_rcp_distribution(
     const T l,
     const T r)
 {
-    assert(l > 0.0f);
+    assert(l > T(0.0));
     assert(r > l);
 
+    if (r / l < T(1.01)) return l + s * (r - l);
     return clamp(l * std::pow(r / l, s), l, r);
 }
 
@@ -622,9 +623,10 @@ T rcp_distribution_pdf(
 {
     assert(x < r);
     assert(x >= l);
-    assert(l > 0.0f);
+    assert(l > T(0.0));
 
-    return rcp(x * std::log(r / l));
+    if (r / l < T(1.01)) return rcp(r - l);
+    return rcp(x * (std::log(r / l)));
 }
 
 }       // namespace foundation

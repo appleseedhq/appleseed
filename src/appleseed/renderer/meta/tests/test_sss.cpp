@@ -510,6 +510,60 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     }
 
     //
+    // Dwivedi sampling.
+    //
+    // Reference:
+    //
+    //   Johannes Meng, Johannes Hanika, Carsten Dachsbacher
+    //   Improving the Dwivedi Sampling Scheme,
+    //   Journal Computer Graphics Forum Vol. 35 Issue 4, pp. 37-44, July 2016.
+    //   https://jo.dreggn.org/home/2016_dwivedi.pdf [1]
+    //   https://jo.dreggn.org/home/2016_dwivedi_additional.pdf (supplement material) [2]
+    //
+
+    // Check that diffusion length fulfills [2] Eqn. 8.
+    TEST_CASE(DwivediSampling_ComputeRcpDiffusionLength_SatisfiesEigenvalueEquation)
+    {
+        const size_t ValueCount = 32;
+        for (size_t i = 0; i < ValueCount; ++i)
+        {
+            const float albedo = 1.0f * i / (ValueCount - 1);
+            const float estimated_value = compute_rcp_diffusion_length(albedo);
+            const float x = tanh(estimated_value / max(albedo, 0.01f));
+            EXPECT_FEQ_EPS(estimated_value, x, 1.0e-2f);
+        }
+    }
+
+    float integrate_cosine_dwivedi(const float mu, const size_t sample_count)
+    {
+        MersenneTwister rng;
+
+        float integral = 0.0f;
+
+        for (size_t i = 0; i < sample_count; ++i)
+        {
+            const float s = rand_float2(rng);
+            const float cosine = sample_cosine_dwivedi(mu, s);
+            const float pdf = evaluate_cosine_dwivedi(mu, cosine);
+            integral += 0.5f * (cosine + 1.0f) / pdf;
+        }
+
+        return integral / sample_count;
+    }
+
+    // Check that Dwivedi direction sampling integrates to one.
+    TEST_CASE(DwivediSampling_SampleCosineDwivedi)
+    {
+        for (int i = 0; i <= 10; ++i)
+        {
+            const float mu = max(rcp(compute_rcp_diffusion_length(0.1f * i)), 1.001f);
+            const float integral = integrate_cosine_dwivedi(mu, 10000);
+
+            EXPECT_FEQ_EPS(1.0f, integral, 1.0e-2f);
+        }
+    }
+
+    //
     // Gaussian BSSRDF.
     //
 
