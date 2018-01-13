@@ -32,7 +32,7 @@ const size_t g_yz = static_cast<size_t>(ESymmetricMatrix3x3Data::e_yz);
 const size_t g_xz = static_cast<size_t>(ESymmetricMatrix3x3Data::e_xz);
 const size_t g_xy = static_cast<size_t>(ESymmetricMatrix3x3Data::e_xy);
 
-DenoisingUnit::DenoisingUnit(Denoiser& i_rDenoiser, const size_t i_threadIndex)
+DenoisingUnit::DenoisingUnit(Denoiser& i_rDenoiser, const int i_threadIndex)
   : m_rDenoiser(i_rDenoiser)
   , m_width(i_rDenoiser.getImagesWidth())
   , m_height(i_rDenoiser.getImagesHeight())
@@ -102,6 +102,7 @@ void DenoisingUnit::denoisePatchAndSimilarPatches(
     }
 
     selectSimilarPatches();
+
     if (m_nbOfSimilarPatches < m_colorPatchDimension + 1)
     {
         // Cannot inverse covariance matrix: fallback
@@ -117,9 +118,16 @@ void DenoisingUnit::denoisePatchAndSimilarPatches(
 void DenoisingUnit::selectSimilarPatches()
 {
     m_nbOfSimilarPatches = 0;
-    PixelWindow searchWindow(m_width, m_height, m_mainPatchCenter, m_searchWindowRadius, m_patchRadius);
+
+    PixelWindow searchWindow(
+        m_width,
+        m_height,
+        m_mainPatchCenter,
+        m_searchWindowRadius,
+        m_patchRadius);
 
     m_similarPatchesCenters.resize(m_maxNbOfSimilarPatches);
+
     for (PixelPosition neighborPixel : searchWindow)
     {
         if (histogramPatchDistance(m_mainPatchCenter, neighborPixel) <= m_histogramDistanceThreshold)
@@ -128,7 +136,7 @@ void DenoisingUnit::selectSimilarPatches()
 
     assert(m_nbOfSimilarPatches > 0);
 
-    m_nbOfSimilarPatchesInv = 1.f / m_nbOfSimilarPatches;
+    m_nbOfSimilarPatchesInv = 1.0f / m_nbOfSimilarPatches;
     m_similarPatchesCenters.resize(m_nbOfSimilarPatches);
 }
 
@@ -281,6 +289,7 @@ void DenoisingUnit::denoiseOnlyMainPatch()
 {
     m_colorPatchesMean.fill(0.f);
     int patchDataIndex = 0;
+
     for (const PixelPosition& rSimilarPatchCenter : m_similarPatchesCenters)
     {
         patchDataIndex = 0;

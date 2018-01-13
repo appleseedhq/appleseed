@@ -130,7 +130,11 @@ namespace
 {
     void bin_channel_name(char* channel_name, const size_t n, const int i)
     {
+#ifdef _WIN32
+        _snprintf(channel_name, n, "Bin_%04d", i);
+#else
         snprintf(channel_name, n, "Bin_%04d", i);
+#endif
     }
 }
 

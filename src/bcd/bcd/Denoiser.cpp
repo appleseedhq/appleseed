@@ -17,11 +17,15 @@
 
 // Boost headers.
 #include "boost/atomic/atomic.hpp"
+#include "boost/bind.hpp"
 
 // Standard headers.
 #include <algorithm>
 #include <cassert>
+#include <cfloat>
 #include <chrono>
+#include <cmath>
+#include <functional>
 #include <random>
 #include <thread>
 
@@ -112,15 +116,18 @@ bool Denoiser::denoise()
         else
             endPixelIndexIt = startPixelIndexIt + chunkSize;
 
+        // Visual Studio 2012 does not support argument forwarding in thread's constructor.
+        // In VS2012 std::bind is also limited to 5 arguments.
         thread t(
-            &Denoiser::doDenoise,
-            this,
-            startPixelIndexIt,
-            endPixelIndexIt,
-            pixelSet.size(),
-            ref(nbOfPixelsComputed),
-            i,
-            ref(abortRequested));
+            boost::bind(
+                &Denoiser::doDenoise,
+                this,
+                startPixelIndexIt,
+                endPixelIndexIt,
+                pixelSet.size(),
+                boost::ref(nbOfPixelsComputed),
+                i,
+                boost::ref(abortRequested)));
 
         denoiseThreads.push_back(move(t));
 
@@ -158,7 +165,7 @@ void Denoiser::doDenoise(
     const size_t                           i_threadIndex,
     bool&                                  i_abortRequested)
 {
-    DenoisingUnit denoisingUnit(*this, i_threadIndex);
+    DenoisingUnit denoisingUnit(*this, static_cast<int>(i_threadIndex));
 
     int currentPercentage = 0, newPercentage = 0;
 
@@ -174,7 +181,7 @@ void Denoiser::doDenoise(
 
         if (i_threadIndex == 0)
         {
-            newPercentage = (i_nbOfPixelsComputed * 100) / i_totalNbOfPixels;
+            newPercentage = (i_nbOfPixelsComputed * 100) / static_cast<int>(i_totalNbOfPixels);
             if (newPercentage != currentPercentage)
             {
                 if (m_progressReporter)
@@ -318,13 +325,24 @@ void Denoiser::finalAggregation()
     }
 }
 
+namespace
+{
+
+    bool is_finite(const float x)
+    {
+#ifdef _WIN32
+        return _finite(x) != 0;
+#else
+        return !(isnan(x) || isinf(x));
+#endif
+    }
+}
+
 void Denoiser::fixNegativeInfNaNValues()
 {
     const Deepimf& src = *m_inputs.m_pColors;
     Deepimf& dst = *m_outputs.m_pDenoisedColors;
 
-    using std::isnan;
-    using std::isinf;
     int width = dst.getWidth();
     int height = dst.getHeight();
     int depth = dst.getDepth();
@@ -337,7 +355,7 @@ void Denoiser::fixNegativeInfNaNValues()
             {
                 const float val = dst.get(line, col, z);
 
-                if(val < 0.0f || isnan(val) || isinf(val))
+                if (val < 0.0f || !is_finite(val))
                 {
                     // Recover the original, not denoised value.
                     dst.set(line, col, z, src.get(line, col, z));
