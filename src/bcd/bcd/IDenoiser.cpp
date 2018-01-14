@@ -10,17 +10,24 @@
 // All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE.txt file.
 
+// BCD headers.
 #include "Denoiser.h"
-
-#include <iostream>
 
 using namespace std;
 
 namespace bcd
 {
 
+IProgressReporter::IProgressReporter()
+{
+}
+
+IProgressReporter::~IProgressReporter()
+{
+}
+
 IDenoiser::IDenoiser()
-  : m_progressCallback([](float) {})
+  : m_progressReporter(nullptr)
 {
 }
 
@@ -35,23 +42,22 @@ bool IDenoiser::inputsOutputsAreOk() const
         if (!m_inputs.m_pColors)
         {
             imageNullptr = true;
-            cerr << "Aborting denoising: nullptr for input color image" << endl;
+            //cerr << "Aborting denoising: nullptr for input color image" << endl;
         }
         if (!m_inputs.m_pNbOfSamples)
         {
             imageNullptr = true;
-            cerr << "Aborting denoising: nullptr for input number of samples image"
-                 << endl;
+            //cerr << "Aborting denoising: nullptr for input number of samples image" << endl;
         }
         if (!m_inputs.m_pHistograms)
         {
             imageNullptr = true;
-            cerr << "Aborting denoising: nullptr for input histogram image" << endl;
+            //cerr << "Aborting denoising: nullptr for input histogram image" << endl;
         }
         if (!m_inputs.m_pSampleCovariances)
         {
             imageNullptr = true;
-            cerr << "Aborting denoising: nullptr for input covariance image" << endl;
+            //cerr << "Aborting denoising: nullptr for input covariance image" << endl;
         }
         if (imageNullptr)
             return false;
@@ -61,23 +67,22 @@ bool IDenoiser::inputsOutputsAreOk() const
         if (m_inputs.m_pColors->isEmpty())
         {
             emptyInput = true;
-            cerr << "Aborting denoising: input color image is empty" << endl;
+            // cerr << "Aborting denoising: input color image is empty" << endl;
         }
         if (m_inputs.m_pNbOfSamples->isEmpty())
         {
             emptyInput = true;
-            cerr << "Aborting denoising: input number of samples image is empty"
-                 << endl;
+            // cerr << "Aborting denoising: input number of samples image is empty" << endl;
         }
         if (m_inputs.m_pHistograms->isEmpty())
         {
             emptyInput = true;
-            cerr << "Aborting denoising: input histogram image is empty" << endl;
+            // cerr << "Aborting denoising: input histogram image is empty" << endl;
         }
         if (m_inputs.m_pSampleCovariances->isEmpty())
         {
             emptyInput = true;
-            cerr << "Aborting denoising: input covariance image is empty" << endl;
+            // cerr << "Aborting denoising: input covariance image is empty" << endl;
         }
         if (emptyInput)
             return false;
@@ -90,28 +95,34 @@ bool IDenoiser::inputsOutputsAreOk() const
         if (m_inputs.m_pNbOfSamples->getWidth() != w || m_inputs.m_pNbOfSamples->getHeight() != h)
         {
             badImageSize = true;
+            /*
             cerr << "Aborting denoising: input number of samples image is "
                  << m_inputs.m_pNbOfSamples->getWidth() << "x"
                  << m_inputs.m_pNbOfSamples->getHeight()
                  << "but input color image is " << w << "x" << h << endl;
+            */
         }
 
         if (m_inputs.m_pHistograms->getWidth() != w || m_inputs.m_pHistograms->getHeight() != h)
         {
             badImageSize = true;
+            /*
             cerr << "Aborting denoising: input histogram image is "
                  << m_inputs.m_pHistograms->getWidth() << "x"
                  << m_inputs.m_pHistograms->getHeight() << "but input color image is "
                  << w << "x" << h << endl;
+            */
         }
 
         if (m_inputs.m_pSampleCovariances->getWidth() != w || m_inputs.m_pSampleCovariances->getHeight() != h)
         {
             badImageSize = true;
+            /*
             cerr << "Aborting denoising: input covariance image is "
                  << m_inputs.m_pSampleCovariances->getWidth() << "x"
                  << m_inputs.m_pSampleCovariances->getHeight()
                  << "but input color image is " << w << "x" << h << endl;
+            */
         }
 
         if (badImageSize)

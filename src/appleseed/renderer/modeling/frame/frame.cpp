@@ -742,7 +742,9 @@ void Frame::extract_parameters()
     }
 }
 
-void Frame::denoise(ITileCallback* tile_callback) const
+void Frame::denoise(
+    ITileCallback* tile_callback,
+    IAbortSwitch*  abort_switch) const
 {
     if (impl->m_denoise_mode != DenoiseMode::Denoise)
         return;
@@ -788,7 +790,8 @@ void Frame::denoise(ITileCallback* tile_callback) const
         num_samples,
         impl->m_denoiser_aov->histograms_image(),
         covariances,
-        options);
+        options,
+        abort_switch);
 
     for (size_t i = 0, e = aovs().size(); i < e; ++i)
     {
@@ -802,7 +805,8 @@ void Frame::denoise(ITileCallback* tile_callback) const
                 num_samples,
                 impl->m_denoiser_aov->histograms_image(),
                 covariances,
-                options);
+                options,
+                abort_switch);
         }
     }
 

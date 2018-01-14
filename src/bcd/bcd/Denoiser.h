@@ -13,10 +13,14 @@
 #ifndef DENOISER_H
 #define DENOISER_H
 
+// BCD headers.
+#include "DeepImage.h"
 #include "IDenoiser.h"
 
-#include "DeepImage.h"
+// Boost headers.
+#include "boost/atomic/atomic.hpp"
 
+// Standard headers.
 #include <memory>
 #include <vector>
 
@@ -83,6 +87,14 @@ class Denoiser
     std::vector<Deepimf>        m_outputSummedColorImages;
     std::vector<DeepImage<int>> m_estimatesCountImages;
     DeepImage<bool>             m_isCenterOfAlreadyDenoisedPatchImage; // For the "marking strategy"
+
+    void doDenoise(
+        std::vector<PixelPosition>::const_iterator  i_pixelBegin,
+        std::vector<PixelPosition>::const_iterator  i_pixelEnd,
+        const std::size_t                           i_totalNbOfPixels,
+        boost::atomic<int>&                         i_nbOfPixelsComputed,
+        const std::size_t                           i_threadIndex,
+        bool&                                       i_abortRequested);
 
     void computeNbOfSamplesSqrt();
     void computePixelCovFromSampleCov();

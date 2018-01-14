@@ -54,6 +54,7 @@
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
+namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class Image; }
 namespace foundation    { class ImageAttributes; }
 namespace foundation    { class Tile; }
@@ -154,7 +155,9 @@ class APPLESEED_DLLSYMBOL Frame
         char**          output_path = nullptr) const;
 
     // Denoiser.
-    void denoise(ITileCallback* tile_callback) const;
+    void denoise(
+        ITileCallback*              tile_callback,
+        foundation::IAbortSwitch*   abort_switch) const;
 
   private:
     friend class AOVAccumulatorContainer;

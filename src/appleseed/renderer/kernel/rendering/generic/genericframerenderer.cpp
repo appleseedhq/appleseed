@@ -348,7 +348,11 @@ namespace
 
                 // Run the denoiser if needed.
                 if (!m_abort_switch.is_aborted())
-                    m_frame.denoise(m_tile_callbacks.empty() ? nullptr : m_tile_callbacks[0]);
+                {
+                    m_frame.denoise(
+                        m_tile_callbacks.empty() ? nullptr : m_tile_callbacks[0],
+                        &m_abort_switch);
+                }
 
                 m_is_rendering = false;
             }

@@ -35,6 +35,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
+#include "foundation/utility/job/iabortswitch.h"
 
 // BCD headers.
 #include "bcd/DeepImage.h"
@@ -109,14 +110,39 @@ namespace
         }
     }
 
+    class DenoiserProgressReporter
+      : public IProgressReporter
+    {
+      public:
+        explicit DenoiserProgressReporter(IAbortSwitch* abort_switch)
+          : m_abort_switch(abort_switch)
+        {
+        }
+
+        void progress(const float p) const override
+        {
+        }
+
+        bool isAborted() const override
+        {
+            if (m_abort_switch)
+                return m_abort_switch->is_aborted();
+
+            return false;
+        }
+
+      private:
+        IAbortSwitch* m_abort_switch;
+    };
 }
 
-void denoise_image(
+bool denoise_image(
     Image&                  img,
     const Deepimf&          num_samples,
     const Deepimf&          histograms,
     const Deepimf&          covariances,
-    const DenoiserOptions&  options)
+    const DenoiserOptions&  options,
+    IAbortSwitch*           abort_switch)
 {
     Deepimf src;
     image_to_deepimage(img, src);
@@ -152,9 +178,15 @@ void denoise_image(
     denoiser->setOutputs(outputs);
     denoiser->setParameters(parameters);
 
-    denoiser->denoise();
+    DenoiserProgressReporter progress_reporter(abort_switch);
+    denoiser->setProgressReporter(&progress_reporter);
 
-    deepimage_to_image(*outputs.m_pDenoisedColors, img);
+    const bool success = denoiser->denoise();
+
+    if (success)
+        deepimage_to_image(*outputs.m_pDenoisedColors, img);
+
+    return success;
 }
 
 }   // namespace renderer

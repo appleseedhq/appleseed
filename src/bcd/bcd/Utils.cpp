@@ -10,10 +10,11 @@
 // All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE.txt file.
 
+// BCD headers.
+#include "DeepImage.h"
 #include "Utils.h"
 
-#include "DeepImage.h"
-
+// Standard headers.
 #include <cassert>
 #include <cstring>
 
@@ -78,48 +79,6 @@ Deepimf Utils::mergeHistogramAndNbOfSamples(
     }
 
     return histoAndNbOfSamplesImage;
-}
-
-string Utils::extractFolderPath(const string& i_rFilePath)
-{
-    const char sep = '/';
-    size_t pos = i_rFilePath.rfind(sep);
-
-    if (pos == string::npos)
-        return "";
-
-    return i_rFilePath.substr(0, pos + 1);
-}
-
-string Utils::getRelativePathFromFolder(
-    const string& i_rFileAbsolutePath,
-    const string& i_rFolderAbsolutePath)
-{
-    const char sep = '/';
-    size_t l1 = i_rFileAbsolutePath.length();
-    size_t l2 = i_rFolderAbsolutePath.length();
-    size_t l = (l1 > l2 ? l2 : l1);
-
-    size_t posAfterLastCommonSep = 0;
-    for (size_t i = 0; i < l; ++i)
-    {
-        char c = i_rFileAbsolutePath[i];
-        if (c != i_rFolderAbsolutePath[i])
-            break;
-        if (c == sep)
-            posAfterLastCommonSep = i + 1;
-    }
-
-    string relativePath = "";
-    for (size_t i = posAfterLastCommonSep; i < l2; ++i)
-    {
-        if (i_rFolderAbsolutePath[i] == sep)
-            relativePath += "../";
-    }
-
-    relativePath += i_rFileAbsolutePath.substr(posAfterLastCommonSep);
-
-    return relativePath;
 }
 
 }

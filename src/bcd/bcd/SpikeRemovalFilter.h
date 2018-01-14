@@ -13,6 +13,7 @@
 #ifndef SPIKE_REMOVAL_FILTER_H
 #define SPIKE_REMOVAL_FILTER_H
 
+// Standard headers.
 #include <vector>
 
 namespace bcd

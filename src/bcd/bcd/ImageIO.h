@@ -13,6 +13,7 @@
 #ifndef IMAGE_IO_H
 #define IMAGE_IO_H
 
+// Standard headers.
 #include <vector>
 
 namespace bcd
