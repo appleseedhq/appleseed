@@ -521,7 +521,6 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     //   https://jo.dreggn.org/home/2016_dwivedi_additional.pdf (supplement material) [2]
     //
 
-    // Check that diffusion length fulfills [2] Eqn. 8.
     TEST_CASE(DwivediSampling_ComputeRcpDiffusionLength_SatisfiesEigenvalueEquation)
     {
         const size_t ValueCount = 32;
@@ -551,16 +550,182 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         return integral / sample_count;
     }
 
-    // Check that Dwivedi direction sampling integrates to one.
     TEST_CASE(DwivediSampling_SampleCosineDwivedi)
     {
-        for (int i = 0; i <= 10; ++i)
+        for (size_t i = 0; i <= 10; ++i)
         {
             const float mu = max(rcp(compute_rcp_diffusion_length(0.1f * i)), 1.001f);
             const float integral = integrate_cosine_dwivedi(mu, 10000);
 
             EXPECT_FEQ_EPS(1.0f, integral, 1.0e-2f);
         }
+    }
+
+    bool do_randomwalk_classical(
+        MersenneTwister&    rng,
+        const size_t        max_iterations,
+        size_t&             iterations_count)
+    {
+        const float Extinction = 1.0f;
+
+        Vector3f current_direction = sample_hemisphere_uniform(rand_vector2<Vector2f>(rng));
+        Vector3f current_point = Vector3f(0.0f);
+        iterations_count = 0;
+
+        while (true)
+        {
+            iterations_count++;
+            if (iterations_count > max_iterations) return false;
+            const float distance = sample_exponential_distribution(rand_float2(rng), Extinction);
+            current_point += current_direction * distance;
+            if (current_point.y <= 0.0f)
+                return true;
+            else
+            {
+                current_direction = sample_sphere_uniform(rand_vector2<Vector2f>(rng));
+            }
+        }
+    }
+
+    bool do_randomwalk_dwivedi(
+        MersenneTwister&    rng,
+        const size_t        max_iterations,
+        const float         mu,
+        size_t&             iterations_count)
+    {
+        const float Extinction = 1.0f;
+
+        Vector3f current_direction = sample_hemisphere_uniform(rand_vector2<Vector2f>(rng));
+        float current_cosine = 0.0f;
+        Vector3f current_point = Vector3f(0.0f);
+        iterations_count = 0;
+
+        while (true)
+        {
+            if (iterations_count++ > max_iterations) return false;
+
+            float extinction = Extinction;
+            extinction *= 1.0f - current_cosine * mu;
+            const float distance = sample_exponential_distribution(rand_float2(rng), extinction);
+            current_point += current_direction * distance;
+            if (current_point.y <= 0.0f)
+                return true;
+            else
+            {
+                current_cosine = sample_cosine_dwivedi(rcp(mu), rand_float2(rng));
+                const float sine = sqrt(1.0f - square(current_cosine));
+                Vector2f xz = sine * sample_circle_uniform(rand_float2(rng));
+                current_direction.x = xz[0];
+                current_direction.y = -current_cosine;
+                current_direction.z = xz[1];
+            }
+        }
+    }
+
+    TEST_CASE(Plot_Randomwalk_DiffusionLengthApproximations)
+    {
+        //
+        // Plot of approximation formulas for diffusion length. Compare with [2] Figure 1.
+        //
+
+        const size_t SampleCount = 1000;
+        vector<Vector2d> points_low_albedo;
+        vector<Vector2d> points_high_albedo;
+
+        GnuplotFile plotfile;
+        plotfile.set_title("Approximations for diffusion length");
+        plotfile.set_xlabel("diffusion length");
+        plotfile.set_ylabel("albedo");
+        plotfile.set_xrange(0.0, 1.1);
+        plotfile.set_yrange(0.1, 100.0);
+        plotfile.set_logscale_y();
+
+        for (size_t i = 0; i < SampleCount; ++i)
+        {
+            const float albedo = fit<size_t, float>(i, 0, SampleCount - 1, 0.0f, 1.0f);
+            if (albedo < 0.9f)
+            {
+                const float kappa_low = compute_rcp_diffusion_length_low_albedo(albedo);
+                points_low_albedo.emplace_back(albedo, rcp(kappa_low));
+            }
+            if (albedo > 0.1f)
+            {
+                const float kappa_high = compute_rcp_diffusion_length_high_albedo(albedo);
+                points_high_albedo.emplace_back(albedo, rcp(kappa_high));
+            }
+        }
+        plotfile.new_plot().set_points(points_low_albedo).set_title("Low").set_color("red");
+        plotfile.new_plot().set_points(points_high_albedo).set_title("High").set_color("blue");
+        plotfile.write("unit tests/outputs/test_sss_randomwalk_diffusion_length_approximations.gnuplot");
+    }
+
+    TEST_CASE(Plot_Randomwalk_MethodsComparison)
+    {
+        MersenneTwister rng;
+        const size_t SamplesCount = 8000;
+        const size_t MaxIterations = 50;
+        size_t transmitted_count_classical = 0;
+        size_t transmitted_count_dwivedi = 0;
+        vector<size_t> iterations_hist_classical(MaxIterations, 0);
+        vector<size_t> iterations_hist_dwivedi(MaxIterations, 0);
+        vector<Vector2d> points;
+
+        GnuplotFile plotfile;
+        plotfile.set_title("Histogram of randomwalk iterations");
+        plotfile.set_xlabel("number of iterations");
+        plotfile.set_ylabel("number of paths");
+        plotfile.set_xrange(2.0, 1.0 * MaxIterations);
+        plotfile.set_yrange(1.0, 1.0 * SamplesCount);
+        plotfile.set_logscale_y();
+
+        // Classical.
+        for (size_t i = 0; i < SamplesCount; ++i)
+        {
+            size_t iterations_count;
+            const bool transmitted = do_randomwalk_classical(
+                rng,
+                MaxIterations,
+                iterations_count);
+
+            if (transmitted)
+            {
+                iterations_hist_classical[iterations_count - 1]++;
+                transmitted_count_classical++;
+            }
+        }
+        for (size_t i = 1; i < MaxIterations; ++i)
+        {
+            const double x = 1.0 * (i + 1);
+            const double y = 1.0 * iterations_hist_classical[i];
+            points.emplace_back(x, y);
+        }
+        plotfile.new_plot().set_points(points).set_title("Classical");
+        points.clear();
+
+        // Dwivedi.
+        for (size_t i = 0; i < SamplesCount; ++i)
+        {
+            size_t iterations_count;
+            const bool transmitted = do_randomwalk_dwivedi(
+                rng,
+                MaxIterations,
+                0.5f,
+                iterations_count);
+
+            if (transmitted)
+            {
+                iterations_hist_dwivedi[iterations_count - 1]++;
+                transmitted_count_dwivedi++;
+            }
+        }
+        for (size_t i = 1; i < MaxIterations; ++i)
+        {
+            const double x = 1.0 * (i + 1);
+            const double y = 1.0 * iterations_hist_dwivedi[i];
+            points.emplace_back(x, y);
+        }
+        plotfile.new_plot().set_points(points).set_title("Dwivedi (mu=0.5)");
+        plotfile.write("unit tests/outputs/test_sss_randomwalk_methods_comparison.gnuplot");
     }
 
     //
