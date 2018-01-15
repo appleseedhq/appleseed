@@ -71,7 +71,7 @@ APPLESEED_DECLARE_INPUT_VALUES(RandomWalkBSSRDFInputValues)
     {
         Spectrum        m_albedo;
         Spectrum        m_extinction;
-        Spectrum        m_rcp_diffusion_length;
+        float           m_rcp_diffusion_length;
         float           m_eta;
     };
 
