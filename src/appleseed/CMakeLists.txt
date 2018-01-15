@@ -2012,22 +2012,6 @@ endforeach ()
 # Installation.
 #--------------------------------------------------------------------------------------------------
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    install (TARGETS appleseed
-        RUNTIME
-        DESTINATION bin
-    )
-
-    install (TARGETS appleseed
-        ARCHIVE
-        DESTINATION lib
-    )
-
-    install (TARGETS appleseed
-        DESTINATION extras/devkit/lib
-    )
-else ()
-    install (TARGETS appleseed
-        DESTINATION lib
-    )
-endif ()
+install (TARGETS appleseed
+    DESTINATION lib
+)
