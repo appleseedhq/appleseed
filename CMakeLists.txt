@@ -697,38 +697,38 @@ install (
 )
 
 if (WITH_SAMPLES)
-install (
-    DIRECTORY
-        sandbox/samples
-    DESTINATION .
-)
+    install (
+        DIRECTORY
+            sandbox/samples
+        DESTINATION .
+    )
 endif ()
 
 if (WITH_TESTS)
-install (
-    DIRECTORY
-        "sandbox/tests/unit benchmarks"
-        "sandbox/tests/unit tests"
-    DESTINATION tests
-)
+    install (
+        DIRECTORY
+            "sandbox/tests/unit benchmarks"
+            "sandbox/tests/unit tests"
+        DESTINATION tests
+    )
 endif ()
 
 if (WITH_HEADERS)
-install (
-    DIRECTORY src/appleseed/foundation
-    DESTINATION include
-    FILES_MATCHING PATTERN "*.h"
-)
+    install (
+        DIRECTORY src/appleseed/foundation
+        DESTINATION include
+        FILES_MATCHING PATTERN "*.h"
+    )
 
-install (
-    DIRECTORY src/appleseed/main
-    DESTINATION include
-    FILES_MATCHING PATTERN "*.h"
-)
+    install (
+        DIRECTORY src/appleseed/main
+        DESTINATION include
+        FILES_MATCHING PATTERN "*.h"
+    )
 
-install (
-    DIRECTORY src/appleseed/renderer
-    DESTINATION include
-    FILES_MATCHING PATTERN "*.h"
-)
+    install (
+        DIRECTORY src/appleseed/renderer
+        DESTINATION include
+        FILES_MATCHING PATTERN "*.h"
+    )
 endif ()
