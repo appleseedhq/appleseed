@@ -35,6 +35,8 @@ def load_plugins(bundled_plugins_path):
     if os.path.isdir(bundled_plugins_path):
         print("Loading Python plugins from {0}...".format(bundled_plugins_path))
         load_plugins_from_dir(bundled_plugins_path)
+    else:
+        print("Skipping loading Python plugins from {0} since that directory does not exist.".format(bundled_plugins_path))
 
     user_plugins_path = os.environ.get('APPLESEED_STUDIO_PLUGIN_PATH')
     if user_plugins_path is not None:
