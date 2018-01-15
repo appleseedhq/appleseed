@@ -641,10 +641,14 @@ install (FILES ../../sandbox/settings/appleseed.studio.xml
     DESTINATION settings
 )
 
+install (DIRECTORY ../../sandbox/ocio
+    DESTINATION .
+)
+
 install (DIRECTORY ../../sandbox/seexpr
     DESTINATION .
 )
 
-install (DIRECTORY ../../sandbox/ocio
+install (DIRECTORY ../../sandbox/studio
     DESTINATION .
 )

@@ -2022,10 +2022,6 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
         ARCHIVE
         DESTINATION lib
     )
-
-    install (TARGETS appleseed
-        DESTINATION extras/devkit/lib
-    )
 else ()
     install (TARGETS appleseed
         DESTINATION lib
