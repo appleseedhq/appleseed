@@ -217,7 +217,6 @@ namespace
                 static_cast<const RandomWalkBSSRDFInputValues*>(data);
             const Spectrum& extinction = values->m_precomputed.m_extinction;
             const Spectrum& albedo = values->m_precomputed.m_albedo;
-
             const float rcp_diffusion_length = values->m_precomputed.m_rcp_diffusion_length;
             const float diffusion_length = rcp(rcp_diffusion_length);
 
@@ -371,7 +370,7 @@ namespace
                 bssrdf_sample.m_value *= mis_weight * (is_biased ? q : 1.0f);
             }
 
-            if (n_iteration == 1)
+            if (n_iteration == 0)
                 bssrdf_sample.m_value *= values->m_zero_scattering_weight;
 
             bssrdf_sample.m_brdf = m_brdf;
