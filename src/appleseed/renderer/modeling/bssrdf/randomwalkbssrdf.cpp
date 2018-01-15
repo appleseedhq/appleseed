@@ -228,7 +228,7 @@ namespace
             bssrdf_sample.m_value.set(values->m_weight);
             bssrdf_sample.m_probability = 1.0f;
 
-            // Pick initial random-walk direction uniformly.
+            // Pick initial random-walk direction uniformly at random.
             sampling_context.split_in_place(2, 1);
             Vector3d initial_dir = sample_hemisphere_uniform(sampling_context.next2<Vector2d>());
             initial_dir.y = -initial_dir.y;
@@ -282,10 +282,10 @@ namespace
             while (!transmitted)
             {
                 if (++n_iteration > MaxIterationsCount)
-                    return false;   // path got lost inside the object
+                    return false;  // path got lost inside the object
 
                 if (n_iteration > MinRRIteration && !test_rr(sampling_context, bssrdf_sample))
-                    return false;   // sample has not passed Rusian Roulette test
+                    return false;  // sample has not passed Rusian Roulette test
 
                 sampling_context.split_in_place(1, 2);
 
@@ -297,10 +297,10 @@ namespace
                     &channel_cdf[0] + channel_cdf.size(),
                     sampling_context.next2<float>());
                 if (albedo[channel] == 0.0f || bssrdf_sample.m_value[channel] == 0.0f)
-                    return false; // path got lost inside the object
+                    return false;  // path got lost inside the object
 
                 // Determine if we do biased (Dwivedi) sampling or classical sampling.
-                bool is_biased = classical_sampling_prob < sampling_context.next2<float>();
+                const bool is_biased = classical_sampling_prob < sampling_context.next2<float>();
 
                 // Find next random-walk direction.
                 sampling_context.split_in_place(3, 1);
@@ -327,8 +327,7 @@ namespace
                     Vector3d(direction),
                     outgoing_point.get_time(),
                     VisibilityFlags::ShadowRay,
-                    ray.m_depth + 1
-                );
+                    ray.m_depth + 1);
 
                 // Sample distance assuming that the ray is infinite.
                 const float extinction_bias = 1.0f - cosine * rcp_diffusion_length;
@@ -361,7 +360,7 @@ namespace
                 const float q_direction = 0.5f / evaluate_cosine_dwivedi(diffusion_length, cosine);
                 float q_distance = std::exp(-distance * extinction[channel] * cosine * rcp_diffusion_length);
                 if (!transmitted) q_distance /= extinction_bias;
-                const float q = q_direction * q_distance;  // PDF of classical divided by PDF of biased
+                const float q = q_direction * q_distance;  // PDF of classical sampling divided by PDF of biased samling
 
                 // MIS between classical and biased sampling.
                 const float mis_weight = rcp(mix(q, 1.0f, classical_sampling_prob));
@@ -416,6 +415,7 @@ namespace
                 assert(FP<float>::is_finite(x));
                 transmission[i] = std::exp(x);
                 if (!transmitted) transmission[i] *= extinction[i];
+
                 // One-sample estimator (Veach: 9.2.4 eq. 9.15).
                 mis_base += transmission[i] * channel_pdf[i];
             }
