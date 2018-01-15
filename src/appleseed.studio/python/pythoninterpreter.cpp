@@ -128,9 +128,11 @@ namespace
         base_path = base_path.parent_path();
 
         // Compute full path.
-        const bf::path plugins_path = base_path / "studio" / "plugins";
+        bf::path plugins_path = base_path / "studio" / "plugins";
+        plugins_path.make_preferred();
 
-        return canonical(plugins_path).make_preferred().string();
+        // Do not use bf::canonical() here as this function requires that the folder exists.
+        return plugins_path.string();
     }
 }
 
