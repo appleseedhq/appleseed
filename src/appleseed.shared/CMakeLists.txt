@@ -114,10 +114,6 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
         ARCHIVE
         DESTINATION lib
     )
-
-    install (TARGETS appleseed.shared
-        DESTINATION extras/devkit/lib
-    )
 else ()
     install (TARGETS appleseed.shared
         DESTINATION lib
