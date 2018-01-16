@@ -233,7 +233,7 @@ namespace
             Vector3d initial_dir = sample_hemisphere_uniform(sampling_context.next2<Vector2d>());
             initial_dir.y = -initial_dir.y;
             initial_dir = outgoing_point.get_shading_basis().transform_to_parent(initial_dir);
-            ShadingRay ray = ShadingRay(
+            ShadingRay ray(
                 outgoing_point.get_point(),
                 initial_dir,
                 outgoing_point.get_time(),
@@ -276,16 +276,13 @@ namespace
             Vector3d current_point = ray.point_at(distance);
 
             // Continue random walk until we reach the surface from inside.
-            int n_iteration = 0;
-            const int MaxIterationsCount = 64;
-            const int MinRRIteration = 4;
-            while (!transmitted)
+            size_t n_iteration = 0;
+            const size_t MaxIterationsCount = 64;
+            const size_t MinRRIteration = 4;
+            while (!transmitted && ++n_iteration < MaxIterationsCount)
             {
-                if (++n_iteration > MaxIterationsCount)
-                    return false;  // path got lost inside the object
-
-                if (n_iteration > MinRRIteration && !test_rr(sampling_context, bssrdf_sample))
-                    return false;  // sample has not passed Rusian Roulette test
+                if (n_iteration >= MinRRIteration && !test_rr(sampling_context, bssrdf_sample))
+                    break;  // sample has not passed Rusian Roulette test
 
                 sampling_context.split_in_place(1, 2);
 
@@ -296,8 +293,7 @@ namespace
                     &channel_cdf[0],
                     &channel_cdf[0] + channel_cdf.size(),
                     sampling_context.next2<float>());
-                if (albedo[channel] == 0.0f || bssrdf_sample.m_value[channel] == 0.0f)
-                    return false;  // path got lost inside the object
+                if (albedo[channel] == 0.0f || bssrdf_sample.m_value[channel] == 0.0f) break;
 
                 // Determine if we do biased (Dwivedi) sampling or classical sampling.
                 const bool is_biased = classical_sampling_prob < sampling_context.next2<float>();
@@ -322,7 +318,7 @@ namespace
                 bssrdf_sample.m_value *= albedo;
 
                 // Construct a new ray in the sampled direction.
-                ray = ShadingRay(
+                ShadingRay ray(
                     current_point,
                     Vector3d(direction),
                     outgoing_point.get_time(),
@@ -368,6 +364,8 @@ namespace
                 bssrdf_sample.m_value *= transmission;
                 bssrdf_sample.m_value *= mis_weight * (is_biased ? q : 1.0f);
             }
+
+            if (!transmitted) return false;  // sample was lost inside the object
 
             if (n_iteration == 0)
                 bssrdf_sample.m_value *= values->m_zero_scattering_weight;
@@ -459,10 +457,8 @@ namespace
             const Vector3f&         incoming_dir,
             Spectrum&               value) const override
         {
-            const RandomWalkBSSRDFInputValues* values =
-                static_cast<const RandomWalkBSSRDFInputValues*>(data);
-
-            throw ExceptionNotImplemented();  // deterministic approach is not possible here
+            // Deterministic approach is not possible here.
+            value.set(0.0f);
         }
 
         const BSDF*                     m_brdf;
