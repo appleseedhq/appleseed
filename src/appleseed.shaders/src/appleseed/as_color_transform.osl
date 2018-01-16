@@ -229,22 +229,5 @@ shader as_color_transform
         out_outColor = in_color;
     }
 
-    float R[2] = {0.640, 0.330};
-    float G[2] = {0.300, 0.600};
-    float B[2] = {0.150, 0.060};
-    float W[2] = {0.3127, 0.3290};
-
-    float WPT[2] = {0.34567, 0.35850};
-
-    matrix RGB2XYZ = create_RGB_to_XYZ_matrix(
-        R, G, B, W, WPT, "Bradford");
-
-    color linear_XYZ = color(
-        dot(in_color, vector(RGB2XYZ[0][0], RGB2XYZ[0][1], RGB2XYZ[0][2])),
-        dot(in_color, vector(RGB2XYZ[1][0], RGB2XYZ[1][1], RGB2XYZ[1][2])),
-        dot(in_color, vector(RGB2XYZ[2][0], RGB2XYZ[2][1], RGB2XYZ[2][2])));
-
-    out_outColor = max(0, linear_XYZ);
-
     out_outColor = max(0.0, out_outColor);
 }

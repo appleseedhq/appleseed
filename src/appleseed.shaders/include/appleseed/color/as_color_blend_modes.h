@@ -74,7 +74,7 @@ float blend_color_dodge(float A, float B)
     return (B < 1.0) ? min(1.0, A / (1.0 - B)) : 1.0;
 }
 
-// There is a real zoo of "soft light" equations. Use Natron/Nuke's.
+// There is a real zoo of "soft light" equations out there. Use Natron/Nuke's.
 
 float blend_soft_light(float A, float B)
 {
@@ -219,25 +219,122 @@ color blendmode_linear_light(color A, color B)
     return rgb;
 }
 
+//
+// Note:
+//
+//      The "hue", "saturation", "color", "luminosity" blend modes in PS
+//      require the LCH color space, but that is LCH_ab (from L*a*b*, not
+//      L*u*v*). CIELAB requires CIEXYZ as a connection space, so we
+//      should use the working/rendering space RGB primaries and whitepoint,
+//      default to ITU-R BT.709/Rec.709 and D65.
+//
+
+color blendmode_hue(
+    color A,
+    color B,
+    string colorspace,
+    string illuminant)
+{
+    color A_LCh_ab = transform_linear_RGB_to_CIELCh_ab(
+        A,
+        colorspace,
+        illuminant);
+
+    color B_LCh_ab = transform_linear_RGB_to_CIELCh_ab(
+        B,
+        colorspace,
+        illuminant);
+
+    return transform_CIELCh_ab_to_linear_RGB(
+        color(A_LCh_ab[0], B_LCh_ab[1], B_LCh_ab[2]),
+        colorspace,
+        illuminant);
+}
+
+color blendmode_saturation(
+    color A,
+    color B,
+    string colorspace,
+    string illuminant)
+{
+    color A_LCh_ab = transform_linear_RGB_to_CIELCh_ab(
+        A,
+        colorspace,
+        illuminant);
+
+    color B_LCh_ab = transform_linear_RGB_to_CIELCh_ab(
+        B,
+        colorspace,
+        illuminant);
+
+    return transform_CIELCh_ab_to_linear_RGB(
+        color(A_LCh_ab[0], B_LCh_ab[1], A_LCh_ab[2]),
+        colorspace,
+        illuminant);
+}
+
+color blendmode_color(
+    color A,
+    color B,
+    string colorspace,
+    string illuminant)
+{
+    color A_LCh_ab = transform_linear_RGB_to_CIELCh_ab(
+        A,
+        colorspace,
+        illuminant);
+
+    color B_LCh_ab = transform_linear_RGB_to_CIELCh_ab(
+        B,
+        colorspace,
+        illuminant);
+
+    return transform_CIELCh_ab_to_linear_RGB(
+        color(A_LCh_ab[0], A_LCh_ab[1], B_LCh_ab[2]),
+        colorspace,
+        illuminant);
+}
+
+color blendmode_luminosity(
+    color A,
+    color B,
+    string colorspace,
+    string illuminant)
+{
+    color A_LCh_ab = transform_linear_RGB_to_CIELCh_ab(
+        A,
+        colorspace,
+        illuminant);
+
+    color B_LCh_ab = transform_linear_RGB_to_CIELCh_ab(
+        B,
+        colorspace,
+        illuminant);
+
+    return transform_CIELCh_ab_to_linear_RGB(
+        color(B_LCh_ab[0], A_LCh_ab[1], A_LCh_ab[2]),
+        colorspace,
+        illuminant);
+}
+
 color blendmode_hue(color A, color B)
 {
-    color A_HSL = transform_RGB_to_HSL(A);
-    color B_HSL = transform_RGB_to_HSL(B);
-    return transform_HSL_to_RGB(color(B_HSL[0], B_HSL[1], A_HSL[2]));
+    return blendmode_hue(A, B, "Rec.709", "D65");
 }
 
 color blendmode_saturation(color A, color B)
 {
-    color A_HSL = transform_RGB_to_HSL(A);
-    color B_HSL = transform_RGB_to_HSL(B);
-    return transform_HSL_to_RGB(color(A_HSL[0], B_HSL[1], A_HSL[2]));
+    return blendmode_saturation(A, B, "Rec.709", "D65");
 }
 
-color blendmode_lightness(color A, color B)
+color blendmode_color(color A, color B)
 {
-    color A_HSL = transform_RGB_to_HSL(A);
-    float B_lum = as_luminance_D65(B, "Rec.601");
-    return transform_HSL_to_RGB(color(A_HSL[0], A_HSL[1], B_lum)); // luminosity
+    return blendmode_color(A, B, "Rec.709", "D65");
+}
+
+color blendmode_luminosity(color A, color B)
+{
+    return blendmode_luminosity(A, B, "Rec.709", "D65");
 }
 
 color blendmode_divide(color A, color B)
@@ -257,9 +354,9 @@ color blend_color(string mode, color A, color B)
 
     if (mode == "Darken")
     {
-        rgb = min(A, B);
+        rgb = blendmode_darken(A, B);
     }
-    if (mode == "Multiply")
+    else if (mode == "Multiply")
     {
         rgb = A * B;
     }
@@ -273,7 +370,7 @@ color blend_color(string mode, color A, color B)
     }
     else if (mode == "Lighten")
     {
-        rgb = max(A, B);
+        rgb = blendmode_lighten(A, B);
     }
     else if (mode == "Screen")
     {
@@ -335,9 +432,13 @@ color blend_color(string mode, color A, color B)
     {
         rgb = blendmode_saturation(A, B);
     }
-    else if (mode == "Lightness")
+    else if (mode == "Color")
     {
-        rgb = blendmode_lightness(A, B);
+        rgb = blendmode_color(A, B);
+    }
+    else if (mode == "Luminosity")
+    {
+        rgb = blendmode_luminosity(A, B);
     }
     else
     {
@@ -362,7 +463,7 @@ color blend_color(string mode, color A, color B)
 //      https://www.svgopen.org/2005/papers/abstractsvgopen/
 //
 
-color composite_color_rgb(
+color composite_color_rgba(
     string mode,
     color A,
     float A_alpha,
@@ -430,6 +531,7 @@ color composite_color_rgb(
     else if (mode == "Matte")
     {
         rgb = mix(A, B, A_alpha);
+        alpha = mix(A_alpha, B_alpha, A_alpha);
     }
     else
     {
@@ -438,673 +540,6 @@ color composite_color_rgb(
         getattribute("shader:shadername", shadername);
         warning("[DEBUG]: Unknown blend mode %s in %s, %s:%d\n",
                 shadername, mode, __FILE__, __LINE__);
-#endif
-        rgb = color(0);
-        alpha = 0.0;
-    }
-    return rgb;
-}
-
-//
-// Reference:
-//
-//      http://natron.readthedocs.io/en/master/plugins/net.sf.openfx.MergePlugin.html
-//      Some operations can be applied to alpha, others default to "alpha
-//      masking" mode, A.a + B.a - A.a * B.a.
-//
-
-color rgba_atop(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = A_alpha;
-    return A * B_alpha + B * (1.0 - A_alpha);
-}
-
-color rgba_average(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = (masking)
-        ? A_alpha + B_alpha - A_alpha * B_alpha
-        : (A_alpha + B_alpha) / 2.0;
-
-    return (A + B) / 2.0;
-}
-
-color rgba_color_burn(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    if (masking)
-    {
-        alpha = A_alpha + B_alpha - A_alpha * B_alpha;
-    }
-    else
-    {
-        alpha = (A_alpha > 0.0) ? 1.0 - (1.0 - B_alpha) / A_alpha : 0.0;
-    }
-    return blendmode_color_burn(A, B);
-}
-
-color rgba_color_dodge(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    if (masking)
-    {
-        alpha = A_alpha + B_alpha - A_alpha * B_alpha;
-    }
-    else
-    {
-        alpha = (A_alpha != 1.0) ? B_alpha / (1.0 - A_alpha) : 0.0;
-    }
-    return blendmode_color_dodge(A, B);
-}
-
-color rgba_copy(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = B_alpha;
-    return A;
-}
-
-color rgba_difference(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = (masking)
-        ? A_alpha + B_alpha - A_alpha * B_alpha
-        : abs(A_alpha - B_alpha);
-
-    return abs(A - B);
-}
-
-color rgba_divide(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    if (masking)
-    {
-        alpha = A_alpha + B_alpha - A_alpha * B_alpha;
-    }
-    else
-    {
-        alpha = (B_alpha != 0.0) ? A_alpha / B_alpha : 0.0;
-    }
-    return blendmode_divide(A, B);
-}
-
-color rgba_exclusion(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = (masking)
-        ? A_alpha + B_alpha - A_alpha * B_alpha
-        : A_alpha + B_alpha - 2.0 * A_alpha * B_alpha;
-
-    return blendmode_exclusion(A, B);
-}
-
-color rgba_from(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = (masking)
-        ? A_alpha + B_alpha - A_alpha * B_alpha
-        : B_alpha - A_alpha;
-
-    return B - A;
-}
-
-color rgba_grain_extract(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = (masking)
-        ? A_alpha + B_alpha - A_alpha * B_alpha
-        : B_alpha - A_alpha + 0.5;
-
-    return B - A + 0.5;
-}
-
-color rgba_grain_merge(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = (masking)
-        ? A_alpha + B_alpha - A_alpha * B_alpha
-        : B_alpha + A_alpha - 0.5;
-
-    return B + A - 0.5;
-}
-
-color rgba_hard_light(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    if (masking)
-    {
-        alpha = A_alpha + B_alpha - A_alpha * B_alpha;
-    }
-    else
-    {
-        alpha = (A_alpha < 0.5)
-            ? A_alpha * B_alpha
-            : blend_screen(A_alpha, B_alpha);
-    }
-    return blendmode_hard_light(A, B);
-}
-
-color rgba_hue(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = A_alpha + B_alpha - A_alpha * B_alpha;
-    return blendmode_hue(A, B);
-}
-
-color rgba_in(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = A_alpha * B_alpha;
-    return A * B_alpha;
-}
-
-color rgba_linear_light(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = (B_alpha > 0.5)
-        ? max(0.0, A_alpha + (2.0 * B_alpha - 0.5))
-        : A_alpha + 2.0 * B_alpha - 1.0;
-
-    return blendmode_linear_light(A, B);
-}
-
-color rgba_mask(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = A_alpha * B_alpha;
-    return B * A_alpha;
-}
-
-color rgba_matte(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = A_alpha + B_alpha - A_alpha * B_alpha;
-    return mix(B, A, A_alpha);
-}
-
-color rgba_max(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = (masking)
-        ? A_alpha + B_alpha - A_alpha * B_alpha
-        : max(A_alpha, B_alpha);
-
-    return max(A, B);
-}
-
-color rgba_min(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = (masking)
-        ? A_alpha + B_alpha - A_alpha * B_alpha
-        : min(A_alpha, B_alpha);
-
-    return min(A, B);
-}
-
-color rgba_minus(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = (masking)
-        ? A_alpha + B_alpha - A_alpha * B_alpha
-        : A_alpha - B_alpha;
-
-    return A - B;
-}
-
-color rgba_multiply(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = (masking)
-        ? A_alpha + B_alpha - A_alpha * B_alpha
-        : A_alpha * B_alpha;
-
-    return (min(A) < 0.0 && min(B) < 0.0) ? A : A * B;
-}
-
-color rgba_out(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = A_alpha * (1.0 - B_alpha);
-    return A * (1.0 - B_alpha);
-}
-
-color rgba_over(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = A_alpha + B_alpha - A_alpha * B_alpha;
-    return A + B * (1.0 - A_alpha);
-}
-
-color rgba_overlay(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = (masking || B_alpha > 0.5)
-        ? A_alpha + B_alpha - A_alpha * B_alpha
-        : A_alpha * B_alpha;
-
-    return blendmode_overlay(A, B);
-}
-
-color rgba_pin_light(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    if (masking)
-    {
-        alpha = A_alpha + B_alpha - A_alpha * B_alpha;
-    }
-    else
-    {
-        alpha = (B_alpha > 0.5)
-            ? max(A_alpha, 2.0 * (B_alpha - 0.5))
-            : min(A_alpha, 2.0 * B_alpha);
-    }
-
-    return blendmode_pin_light(A, B);
-}
-
-color rgba_plus(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = (masking)
-        ? A_alpha + B_alpha - A_alpha * B_alpha
-        : A_alpha + B_alpha;
-
-    return A + B;
-}
-
-color rgba_saturation(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = A_alpha + B_alpha - A_alpha * B_alpha;
-    return blendmode_saturation(A, B);
-}
-
-color rgba_screen(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = A_alpha + B_alpha - A_alpha * B_alpha;
-    return blendmode_screen(A, B);
-}
-
-color rgba_soft_light(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    if (masking)
-    {
-        alpha = A_alpha + B_alpha - A_alpha * B_alpha;
-    }
-    else
-    {
-        alpha = (B_alpha < 0.5)
-            ? (1.0 - 2.0 * B_alpha) * sqr(A_alpha) +
-                     2.0 * A_alpha * B_alpha
-            : (2.0 * B_alpha - 1.0) * sqrt(A_alpha) +
-                     2.0 * A_alpha * (1.0 - B_alpha);
-    }
-    return blendmode_soft_light(A, B);
-}
-
-color rgba_stencil(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = B_alpha * (1.0 - A_alpha);
-    return B * (1.0 - A_alpha);
-}
-
-color rgba_under(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = A_alpha * (1.0 - B_alpha) + B_alpha;
-    return A * (1.0 - B_alpha) + B;
-}
-
-color rgba_vivid_light(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    if (masking)
-    {
-        alpha = A_alpha + B_alpha - A_alpha * B_alpha;
-    }
-    else if (B_alpha > 0.5)
-    {
-        alpha = 1.0 - (1.0 - A_alpha) / (2.0 * (B_alpha - 0.5));
-    }
-    else if (B_alpha < 0.5)
-    {
-        alpha = A_alpha / (1.0 - 2.0 * B_alpha);
-    }
-    else
-    {
-        alpha = 0.0;
-    }
-    return blendmode_vivid_light(A, B);
-}
-
-color rgba_xor(
-    color A,
-    color B,
-    float A_alpha,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    alpha = (1.0 - B_alpha) + (1.0 - A_alpha);
-    return A * (1.0 - B_alpha) + B * (1.0 - A_alpha);
-}
-
-
-color layer_color(
-    string mode,
-    color A,
-    float A_alpha,
-    color B,
-    float B_alpha,
-    int masking,
-    output float alpha)
-{
-    color rgb = color(0);
-
-    if (mode == "Atop")
-    {
-        rgb = rgba_atop(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Average")
-    {
-        rgb = rgba_average(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Color Burn")
-    {
-        rgb = rgba_color_burn(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Color Dodge")
-    {
-        rgb = rgba_color_dodge(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Copy")
-    {
-        rgb = rgba_copy(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Difference")
-    {
-        rgb = rgba_difference(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Divide")
-    {
-        rgb = rgba_divide(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Exclusion")
-    {
-        rgb = rgba_exclusion(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "From")
-    {
-        rgb = rgba_from(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Grain Extract")
-    {
-        rgb = rgba_grain_extract(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Grain Merge")
-    {
-        rgb = rgba_grain_merge(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Hard Light")
-    {
-        rgb = rgba_hard_light(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Hue")
-    {
-        rgb = rgba_hue(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "In")
-    {
-        rgb = rgba_in(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Linear Light")
-    {
-        rgb = rgba_linear_light(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Mask")
-    {
-        rgb = rgba_mask(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Matte")
-    {
-        rgb = rgba_matte(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Max")
-    {
-        rgb = rgba_max(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Min")
-    {
-        rgb = rgba_min(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Minus")
-    {
-        rgb = rgba_minus(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Multiply")
-    {
-        rgb = rgba_multiply(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Out")
-    {
-        rgb = rgba_out(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Over")
-    {
-        rgb = rgba_over(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Overlay")
-    {
-        rgb = rgba_overlay(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Pin Light")
-    {
-        rgb = rgba_pin_light(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Plus")
-    {
-        rgb = rgba_plus(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Saturation")
-    {
-        rgb = rgba_saturation(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Screen")
-    {
-        rgb = rgba_screen(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Soft Light")
-    {
-        rgb = rgba_soft_light(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Stencil")
-    {
-        rgb = rgba_stencil(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Under")
-    {
-        rgb = rgba_under(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Vivid Light")
-    {
-        rgb = rgba_vivid_light(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else if (mode == "Xor")
-    {
-        rgb = rgba_xor(A, B, A_alpha, B_alpha, masking, alpha);
-    }
-    else
-    {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-        warning("[DEBUG]: Invalid blend mode %s in %s, %s:%d\n",
-                mode, shadername, __FILE__, __LINE__);
 #endif
         rgb = color(0);
         alpha = 0.0;

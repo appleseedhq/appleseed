@@ -202,6 +202,7 @@ color get_illuminant_CIEXYZ(string illuminant)
 //
 //  Reference:
 //
+//      http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
 //      http://colour-science.org/
 //
 
@@ -270,6 +271,7 @@ void get_RGB_to_XYZ_matrix(
 //
 //  Reference:
 //
+//      http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
 //      http://colour-science.org/
 //
 
@@ -363,8 +365,6 @@ color transform_linear_RGB_to_CIEXYZ(
 
     if (source_illuminant != "" && source_illuminant != target_illuminant)
     {
-        // White points differ, chromatic adaptation is required.
-
         color source_white_XYZ = get_illuminant_CIEXYZ(source_illuminant);
         color target_white_XYZ = get_illuminant_CIEXYZ(target_illuminant);
 
@@ -536,7 +536,7 @@ matrix create_RGB_to_XYZ_matrix(
     vector G_CIEXYZ = transform_CIExy_to_CIEXYZ(G_CIExy);
     vector B_CIEXYZ = transform_CIExy_to_CIEXYZ(B_CIExy);
 
-    // if source, target white differ, prepare for chromatic adaptation.
+    // If the source & target wp differ, prepare for chromatic adaptation.
     
     vector source_W_CIEXYZ = transform_CIExy_to_CIEXYZ(W_CIExy);
     vector target_W_CIEXYZ = transform_CIExy_to_CIEXYZ(target_W_CIExy);
@@ -564,26 +564,19 @@ matrix create_RGB_to_XYZ_matrix(
         dot(YrYgYb, source_W_CIEXYZ),
         dot(ZrZgZb, source_W_CIEXYZ));
 
-    // non chromatically adapted RGB->XYZ matrix is M
+    // Non chromatically adapted RGB->XYZ matrix is M.
     matrix M = matrix(
         S[0] * R_CIEXYZ[0], S[1] * G_CIEXYZ[0], S[2] * B_CIEXYZ[0], 0.0,
         S[0] * R_CIEXYZ[1], S[1] * G_CIEXYZ[1], S[2] * B_CIEXYZ[1], 0.0,
         S[0] * R_CIEXYZ[2], S[1] * G_CIEXYZ[2], S[2] * B_CIEXYZ[2], 0.0,
         0.0, 0.0, 0.0, 1.0);
 
-    matrix RGB2XYZ = M;
-    matrix XYZ2RGB = inverse(M);
-
-    matrix adaptedM = CAT_matrix * M;
-    matrix invAdapM = inverse(adaptedM);
-
-    warning("[WARNING]:\n\tRGB2XYZ=%.5f\n\tXYZ2RGB=%.5f\n\t",
-            RGB2XYZ, XYZ2RGB);
-
-    warning("[WARNING]:\n\tAdaptedM=%.7f\n\tinverse=%.7f\n",
-            adaptedM, invAdapM);
-
-    return RGB2XYZ;
+#ifdef DEBUG
+    warning("[DEBUG]:\nRGB2XYZ = %.5f\n\tAdapted RGB2XYZ = %.5f\n",
+            M, CAT_matrix * M);
+#endif
+    
+    return CAT_matrix * M;
 }    
 
 //

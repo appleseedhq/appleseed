@@ -76,7 +76,7 @@ shader as_composite_color
         string as_maya_attribute_name = "compositeMode",
         string as_maya_attribute_short_name = "com",
         string widget = "popup",
-        string options = "A|B|Over|Under|In|Mask|Out|Stencil|Atop|Dst-Atop|Xor|Matte",
+        string options = "Source|Destination|Over|Under|In|Mask|Out|Stencil|Atop|Dst-Atop|Xor|Matte",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -115,7 +115,7 @@ shader as_composite_color
     ]]
 )
 {
-    out_color = composite_color_rgb(
+    out_color = composite_color_rgba(
         in_composite_mode,
         in_color,
         in_alpha,

@@ -278,7 +278,7 @@ shader as_luminance
                     RGBW[0][0], RGBW[1][0], RGBW[2][0], 0.0,
                     RGBW[0][1], RGBW[1][1], RGBW[2][1], 0.0,
                     RGBW[0][2], RGBW[1][2], RGBW[2][2], 0.0,
-                    0, 0, 0, 1));
+                    0.0, 0.0, 0.0, 1.0));
 
                 float Sr = M[0][0] * RGBW[3][0] +
                            M[0][1] * RGBW[3][1] +
