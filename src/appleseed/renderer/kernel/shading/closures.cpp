@@ -46,6 +46,7 @@
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #include "renderer/modeling/bssrdf/gaussianbssrdf.h"
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
+#include "renderer/modeling/bssrdf/randomwalkbssrdf.h"
 #include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/edf/diffuseedf.h"
 
@@ -91,6 +92,7 @@ namespace
     const OIIO::ustring g_directional_dipole_profile_str("directional_dipole");
     const OIIO::ustring g_normalized_diffusion_profile_str("normalized_diffusion");
     const OIIO::ustring g_gaussian_profile_str("gaussian");
+    const OIIO::ustring g_randomwalk_profile_str("randomwalk");
 
     //
     // Closure functions.
@@ -1309,6 +1311,19 @@ namespace
                         arena);
 
                 copy_parameters(p, values);
+            }
+            else if (p->profile == g_randomwalk_profile_str)
+            {
+                RandomWalkBSSRDFInputValues* values =
+                    composite_closure.add_closure<RandomWalkBSSRDFInputValues>(
+                        SubsurfaceRandomWalkID,
+                        shading_basis,
+                        weight,
+                        p->N,
+                        arena);
+
+                copy_parameters(p, values);
+                values->m_zero_scattering_weight = 1.0f;
             }
             else
             {

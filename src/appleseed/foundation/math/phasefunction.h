@@ -51,7 +51,7 @@ class PhaseFunction
 // https://www.astro.umd.edu/~jph/HG_note.pdf
 //
 
-class HenyeyPhaseFunction
+class HenyeyPhaseFunction final
   : public PhaseFunction
 {
   public:
@@ -69,7 +69,7 @@ class HenyeyPhaseFunction
 // Isotropic phase function.
 //
 
-class IsotropicPhaseFunction
+class IsotropicPhaseFunction final
   : public PhaseFunction
 {
   public:

@@ -224,6 +224,21 @@ T equiangular_distribution_pdf(
     const T theta_b,                // end angle
     const T distance);              // distance from point to the ray
 
+//
+// Reciprocal distribution.
+// p(X) ~ 1 / X, where X belongs to [l,r).
+//
+
+template <typename T>
+T sample_rcp_distribution(
+    const T s,
+    const T l,
+    const T r);
+template <typename T>
+T rcp_distribution_pdf(
+    const T x,
+    const T l,
+    const T r);
 
 //
 // Implementation.
@@ -585,6 +600,35 @@ inline T equiangular_distribution_pdf(
     const T distance)
 {
     return distance / ((theta_b - theta_a) * (square(distance) + square(t)));
+}
+
+template <typename T>
+T sample_rcp_distribution(
+    const T s,
+    const T l,
+    const T r)
+{
+    assert(l > T(0.0));
+    assert(r > l);
+
+    const float d = r / l;
+    if (d < T(1.01)) return l + s * (r - l);
+    return clamp(l * std::pow(d, s), l, r);
+}
+
+template <typename T>
+T rcp_distribution_pdf(
+    const T x,
+    const T l,
+    const T r)
+{
+    assert(x < r);
+    assert(x >= l);
+    assert(l > T(0.0));
+
+    const float d = r / l;
+    if (d < T(1.01)) return rcp(r - l);
+    return rcp(x * (std::log(d)));
 }
 
 }       // namespace foundation

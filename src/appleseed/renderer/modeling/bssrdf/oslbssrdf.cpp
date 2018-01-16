@@ -39,6 +39,7 @@
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #include "renderer/modeling/bssrdf/gaussianbssrdf.h"
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
+#include "renderer/modeling/bssrdf/randomwalkbssrdf.h"
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
 
 // appleseed.foundation headers.
@@ -91,6 +92,11 @@ namespace
                 create_and_register_bssrdf<NormalizedDiffusionBSSRDFFactory>(
                     SubsurfaceNormalizedDiffusionID,
                     "normalized_diffusion");
+
+            m_randomwalk =
+                create_and_register_bssrdf<RandomWalkBSSRDFFactory>(
+                    SubsurfaceRandomWalkID,
+                    "randomwalk");
 
             m_std_dipole =
                 create_and_register_bssrdf<StandardDipoleBSSRDFFactory>(
@@ -250,6 +256,7 @@ namespace
         auto_release_ptr<BSSRDF>    m_gaussian;
         auto_release_ptr<BSSRDF>    m_normalized;
         auto_release_ptr<BSSRDF>    m_std_dipole;
+        auto_release_ptr<BSSRDF>    m_randomwalk;
 
         BSSRDF*                     m_all_bssrdfs[NumClosuresIDs];
     };
