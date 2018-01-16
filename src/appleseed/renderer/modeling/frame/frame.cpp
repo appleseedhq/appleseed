@@ -743,28 +743,34 @@ void Frame::extract_parameters()
 }
 
 void Frame::denoise(
+    const size_t   thread_count,
     ITileCallback* tile_callback,
     IAbortSwitch*  abort_switch) const
 {
     if (impl->m_denoise_mode != DenoiseMode::Denoise)
         return;
 
-    if (has_crop_window())
-    {
-        RENDERER_LOG_WARNING("denoising does not work with crop windows.");
-        return;
-    }
-
     // Fill denoiser options.
     DenoiserOptions options;
+
+    options.m_prefilter_spikes = m_params.get_optional<bool>("prefilter_spikes", false);
+
+    options.m_prefilter_threshold_stdev_factor =
+        m_params.get_optional<float>(
+            "spike_threshold",
+            options.m_prefilter_threshold_stdev_factor);
+
     options.m_histogram_patch_distance_threshold =
-        get_parameters().get_optional<float>("patch_distance_threshold", 1.0f);
+        m_params.get_optional<float>(
+            "patch_distance_threshold",
+            options.m_histogram_patch_distance_threshold);
 
     options.m_num_scales =
-        get_parameters().get_optional<int>("denoise_scales", 3);
+        m_params.get_optional<size_t>(
+            "denoise_scales",
+            options.m_num_scales);
 
-    if (options.m_histogram_patch_distance_threshold < 0.05f)
-        return;
+    options.m_num_cores = thread_count;
 
     RENDERER_LOG_INFO("--- beginning denoising pass ---");
 
@@ -777,15 +783,18 @@ void Frame::denoise(
                 tile_callback->on_tile_begin(this, tx, ty);
     }
 
-    Deepimf num_samples;
-    Deepimf covariances;
-
     assert(impl->m_denoiser_aov);
+
+    impl->m_denoiser_aov->fill_empty_samples();
+
+    Deepimf num_samples;
     impl->m_denoiser_aov->extract_num_samples_image(num_samples);
+
+    Deepimf covariances;
     impl->m_denoiser_aov->compute_covariances_image(covariances);
 
     RENDERER_LOG_INFO("denoising beauty image...");
-    denoise_image(
+    denoise_beauty_image(
         image(),
         num_samples,
         impl->m_denoiser_aov->histograms_image(),
@@ -800,7 +809,7 @@ void Frame::denoise(
         if (aov->has_color_data())
         {
             RENDERER_LOG_INFO("denoising %s aov...", aov->get_name());
-            denoise_image(
+            denoise_aov_image(
                 aov->get_image(),
                 num_samples,
                 impl->m_denoiser_aov->histograms_image(),
@@ -901,13 +910,43 @@ DictionaryArray FrameFactory::get_input_metadata()
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "patch_distance_threshold")
-            .insert("label", "Denoise Amount")
+            .insert("name", "prefilter_spikes")
+            .insert("label", "Prefilter Spikes")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "false")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("denoiser", "on")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "spike_threshold")
+            .insert("label", "Spike Thereshold")
             .insert("type", "text")
             .insert("use", "optional")
             .insert("min",
                 Dictionary()
-                    .insert("value", "0.0")
+                    .insert("value", "0.1")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "4.0")
+                    .insert("type", "hard"))
+            .insert("default", "2.0")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("denoiser", "on")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "patch_distance_threshold")
+            .insert("label", "Patch Distance")
+            .insert("type", "text")
+            .insert("use", "optional")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.5")
                     .insert("type", "hard"))
             .insert("max",
                 Dictionary()

@@ -67,9 +67,14 @@ namespace
     }
 }
 
+bool ShadingResult::is_main_valid() const
+{
+    return is_valid_color(m_main);
+}
+
 bool ShadingResult::is_valid() const
 {
-    if (!is_valid_color(m_main))
+    if (!is_main_valid())
         return false;
 
     for (size_t i = 0, e = m_aov_count; i < e; ++i)

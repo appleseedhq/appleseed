@@ -63,7 +63,7 @@ namespace
                     // 1 + 4 + 4^2 + ... 4^s = (4^(s+1) - 1) / (4 - 1) = (2^(2*(s+1)) - 1) / 3
                     // = ((1 << (2*(s+1))) - 1) / 3
 
-                    const float factor = 1.f / calc_factor(m_nbOfScales);
+                    const float factor = 1.0f / calc_factor(m_nbOfScales);
                     const float minValue = factor * calc_factor(s);
                     const float maxValue = factor * calc_factor(s + 1);
 
@@ -365,7 +365,7 @@ unique_ptr<Deepimf> MultiscaleDenoiser::downscaleSampleCovarianceSum(
     unique_ptr<Deepimf> uImage(
                 new Deepimf(downscaledWidth, downscaledHeight, depth));
 
-    const float squaredWeight = (1.f / 4.f) * (1.f / 4.f);
+    const float squaredWeight = (1.0f / 4.0f) * (1.0f / 4.0f);
 
     for (line = 0; line < downscaledHeight; ++line)
     {
@@ -436,9 +436,9 @@ void MultiscaleDenoiser::interpolate(
     assert(height == upscaledHeight / 2);
     assert(depth == o_rInterpolatedImage.getDepth());
 
-    const float mainPixelWeight = 9.f / 16.f;
-    const float adjacentPixelWeight = 3.f / 16.f;
-    const float diagonalPixelWeight = 1.f / 16.f;
+    const float mainPixelWeight = 9.0f / 16.0f;
+    const float adjacentPixelWeight = 3.0f / 16.0f;
+    const float diagonalPixelWeight = 1.0f / 16.0f;
 
     int upscaledLine, upscaledCol, z, line, col, adjacentLine, adjacentCol;
 

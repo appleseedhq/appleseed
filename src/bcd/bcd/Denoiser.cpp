@@ -79,17 +79,17 @@ bool Denoiser::denoise()
 
     m_outputSummedColorImages.resize(m_parameters.m_nbOfCores);
     m_outputSummedColorImages[0].resize(m_width, m_height, m_inputs.m_pColors->getDepth());
-    m_outputSummedColorImages[0].fill(0.f);
-
-    for (int i = 1; i < m_parameters.m_nbOfCores; ++i)
-        m_outputSummedColorImages[i] = m_outputSummedColorImages[0];
+    m_outputSummedColorImages[0].fill(0.0f);
 
     m_estimatesCountImages.resize(m_parameters.m_nbOfCores);
     m_estimatesCountImages[0].resize(m_width, m_height, 1);
     m_estimatesCountImages[0].fill(0);
 
     for (int i = 1; i < m_parameters.m_nbOfCores; ++i)
+    {
+        m_outputSummedColorImages[i] = m_outputSummedColorImages[0];
         m_estimatesCountImages[i] = m_estimatesCountImages[0];
+    }
 
     m_isCenterOfAlreadyDenoisedPatchImage.resize(m_width, m_height, 1);
     m_isCenterOfAlreadyDenoisedPatchImage.fill(false);
@@ -142,7 +142,7 @@ bool Denoiser::denoise()
     }
 
     m_outputs.m_pDenoisedColors->resize(m_width, m_height, 3);
-    m_outputs.m_pDenoisedColors->fill(0.f);
+    m_outputs.m_pDenoisedColors->fill(0.0f);
 
     if (m_progressReporter && m_progressReporter->isAborted())
         return false;
@@ -271,15 +271,12 @@ void Denoiser::reorderPixelSetJumpNextChunk(
     }
 }
 
-void reorderPixelSetShuffleCPP11(vector<PixelPosition>& io_rPixelSet)
-{
-    unsigned seed = static_cast<unsigned>(std::chrono::system_clock::now().time_since_epoch().count());
-    shuffle(io_rPixelSet.begin(), io_rPixelSet.end(), std::default_random_engine(seed));
-}
-
 void Denoiser::reorderPixelSetShuffle(vector<PixelPosition>& io_rPixelSet)
 {
-    reorderPixelSetShuffleCPP11(io_rPixelSet);
+    unsigned seed =
+        static_cast<unsigned>(std::chrono::system_clock::now().time_since_epoch().count());
+
+    shuffle(io_rPixelSet.begin(), io_rPixelSet.end(), std::default_random_engine(seed));
 }
 
 void Denoiser::finalAggregation()

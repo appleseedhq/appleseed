@@ -156,6 +156,7 @@ class APPLESEED_DLLSYMBOL Frame
 
     // Denoiser.
     void denoise(
+        const size_t                thread_count,
         ITileCallback*              tile_callback,
         foundation::IAbortSwitch*   abort_switch) const;
 
