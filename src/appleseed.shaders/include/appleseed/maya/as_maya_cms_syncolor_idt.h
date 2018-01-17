@@ -171,7 +171,7 @@ color transform_color_space_to_Rec2020(
     else if (color_space == "gamma 2.2 Rec 709")
     {
         v_color = (vector) gamma_CCTF(input_color, 2.2);
-                             
+
         transformed_color = color(
             dot(vector(REC709_TO_REC2020_X), v_color),
             dot(vector(REC709_TO_REC2020_Y), v_color),
