@@ -84,6 +84,16 @@ shader as_subsurface
         string label = "MFP Scale",
         string page = "Subsurface"
     ]],
+    float in_zero_scattering_weight = 0.5
+    [[
+        string as_maya_attribute_name = "zeroScatteringWeight",
+        string as_maya_attribute_short_name = "zsw",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Zero Scattering Weight",
+        string page = "Subsurface",
+        string help = "Weight of contribution when the ray has no scattering events."
+    ]],
     int in_sss_maximum_ray_depth = 2
     [[
         string as_maya_attribute_name = "sssMaximumRayDepth",
@@ -309,7 +319,8 @@ shader as_subsurface
             albedo,
             in_sss_mfp_scale * in_sss_mfp,
             in_ior,
-            "fresnel_weight", in_fresnel_weight);
+            "fresnel_weight", in_fresnel_weight,
+            "zero_scattering_weight", in_zero_scattering_weight);
     }
 
     if (in_specular_weight > 0.0)
