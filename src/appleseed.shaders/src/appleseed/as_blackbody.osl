@@ -232,6 +232,11 @@ shader as_blackbody
         return;
     }
 
+    if (in_incandescence_amount == 0.0)
+    {
+        return;
+    }
+
     int ray_depth = 0;
     int status = getattribute("path:ray_depth", ray_depth);
 
@@ -286,16 +291,16 @@ shader as_blackbody
 
         if (in_incandescence_type == 0)
         {
-            edf_color = in_incandescence_amount * in_color;
+            edf_color = in_color;
         }
-        else if (in_incandescence_amount * (float) in_temperature > 798)
+        else if (in_temperature_scale * in_temperature > 798)
         {
             // TODO: Integrating Planck's equation to SPD using specified
             // CMF (ie, 1931, 2012 CMF), then converting from SPD->CIEXYZ to
             // RGB using the working space RGBW primaries.
 
-            edf_color = in_incandescence_amount *
-                blackbody(in_temperature_scale * (float) in_temperature);
+            edf_color = blackbody(in_temperature_scale *
+                (float) in_temperature);
         }
 
         if (in_area_normalize_edf)
@@ -307,7 +312,7 @@ shader as_blackbody
             edf_color /= luminance(edf_color) + 1.0; // Rec.709 Y
         }
 
-        out_blackbody_color = edf_color;
+        out_blackbody_color = in_incandescence_amount * edf_color;
         out_color += transmittance * out_blackbody_color * emission();
     }
 }
