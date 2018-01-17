@@ -250,9 +250,9 @@ void initialize_RGBW_primaries(
     }
     else if (RGB_primaries == "custom")
     {
-        RGBW_CIExyz[0] = transform_CIExy_to_CIEXYZ(R_CIExy);
-        RGBW_CIExyz[1] = transform_CIExy_to_CIEXYZ(G_CIExy);
-        RGBW_CIExyz[2] = transform_CIExy_to_CIEXYZ(B_CIExy);
+        RGBW_CIExyz[0] = transform_CIExy_to_CIExyz(R_CIExy);
+        RGBW_CIExyz[1] = transform_CIExy_to_CIExyz(G_CIExy);
+        RGBW_CIExyz[2] = transform_CIExy_to_CIExyz(B_CIExy);
     }
     else
     {
