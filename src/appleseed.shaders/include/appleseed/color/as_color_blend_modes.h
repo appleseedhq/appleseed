@@ -44,11 +44,6 @@
 //      https://en.wikipedia.org/wiki/Blend_modes
 //      https://www.adobe.com/content/dam/Adobe/en/devnet/pdf/pdfs/pdf_reference_archives/blend_modes.pdf
 //
-//      Notice that the photoshop layer order (or Natron, Nuke) is swapped.
-//      A layer A input to Natron, Nuke Merge node A, and layer B to input B,
-//      with merge mode set to "hard light", will produce the equivalent in
-//      Photoshop of layer B at the base, and layer A on top.
-//
 
 float blend_screen(float A, float B)
 {

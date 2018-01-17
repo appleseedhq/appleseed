@@ -30,20 +30,6 @@
 
 #include "appleseed/math/as_math_helpers.h"
 
-#define NUM_UDIM_NAMES  10
-#define NUM_UDIM_ROWS   10
-#define UDIM_SIZE       100
-
-#define DEBUG_CONSTANT_FOLDING(NAMES,J,K)                           \
-    string shadername = "";                                         \
-    getattribute("shader:shadername", shadername);                  \
-                                                                    \
-    if (!isconstant(NAMES[10 * J + K]))                             \
-    {                                                               \
-        warning("[WARNING] Constant NOT folded in %s, %s:%i\n",     \
-                shadername, __FILE__, __LINE__);                    \
-    }
-
 string set_wrap_mode(int wrap_mode)
 {   
     if (wrap_mode == 0)
