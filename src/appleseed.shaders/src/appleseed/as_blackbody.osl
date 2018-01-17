@@ -70,6 +70,16 @@ shader as_blackbody
         string label = "Incandescence Amount",
         string page = "Incandescence"
     ]],
+    float in_temperature_scale = 1.0
+    [[
+        string as_maya_attribute_name = "temperatureScale",
+        string as_maya_attribute_short_name = "tsc",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Temperature Scale",
+        string page = "Incandescence",
+        string help = "Temperature scaling factor"
+    ]],
     int in_temperature = 4300
     [[
         string as_maya_attribute_name = "temperature",
@@ -284,8 +294,8 @@ shader as_blackbody
             // CMF (ie, 1931, 2012 CMF), then converting from SPD->CIEXYZ to
             // RGB using the working space RGBW primaries.
 
-            edf_color = blackbody(
-                in_incandescence_amount * (float) in_temperature);
+            edf_color = in_incandescence_amount *
+                blackbody(in_temperature_scale * (float) in_temperature);
         }
 
         if (in_area_normalize_edf)
