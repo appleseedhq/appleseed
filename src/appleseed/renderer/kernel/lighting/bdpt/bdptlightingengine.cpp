@@ -36,6 +36,9 @@
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
+#include "renderer/kernel/shading/shadingcontext.h"
+#include "renderer/kernel/lighting/tracer.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/statistics.h"
@@ -51,10 +54,31 @@ namespace
     // Bidirectional Path Tracing lighting engine.
     //
 
+	enum class BDPTVertexType
+	{
+		Camera, Light, Surface, Medium
+	};
+
+	struct BDPTVertex
+	{
+		foundation::Vector3d	m_position;
+		foundation::Vector3d	m_incoming;
+		foundation::Vector3d	m_geometric_normal;
+		Spectrum				m_beta;
+		const BSDF				*m_bsdf;
+		const void				*m_bsdf_data;
+		Basis3f					m_shading_basis;
+		double					m_pdf;
+		//ShadingPoint			m_shading_point;
+
+		///TODO:: create a proper constructor
+	};
+
     class BDPTLightingEngine
       : public ILightingEngine
     {
       public:
+	    const unsigned int maxbounces = 8;
         struct Parameters
         {
             explicit Parameters(const ParamArray& params)
@@ -87,6 +111,124 @@ namespace
             delete this;
         }
 
+		Spectrum ComputeGeometryTerm(
+			const ShadingContext&	shading_context,
+			const ShadingPoint&		shading_point,
+			const BDPTVertex&		a,
+			const BDPTVertex&		b)
+		{
+			double g = 1.0;
+
+			const Vector3d v = b.m_position - a.m_position;
+
+			/// TODO:: the special care have to be taken for these dot products when it comes to volume
+			// compute unnormalied dot products
+			g *= std::max(-foundation::dot(v, b.m_geometric_normal), 0.0);
+			g *= std::max(foundation::dot(v, a.m_geometric_normal), 0.0);
+			
+			Spectrum result(0.0);
+
+			// do the visibility test
+			if (g > 0.0)
+			{
+				// compute inverse dist2 and normalize 2 dot products
+				const double dist2 = foundation::square_norm(v);
+				g /= (dist2 * dist2);
+				shading_context.get_tracer().trace_between_simple(
+					shading_context,
+					a.m_position + (v * 1.0e-6),
+					b.m_position,
+					shading_point.get_ray().m_time,
+					VisibilityFlags::ShadowRay,
+					shading_point.get_ray().m_depth,
+					result);
+			}
+
+			return result * (float)g;
+		}
+
+		void Connect(
+            const ShadingContext&   shading_context,
+            const ShadingPoint&     shading_point,
+			const BDPTVertex&		camera_vertex,
+			unsigned int			camera_bounce,
+			const BDPTVertex&		light_vertex,
+			unsigned int			light_bounce,
+			ShadingComponents&		radiance)
+		{
+			if (camera_bounce == 0)			// splat the light beta on camera
+			{
+				/// TODO:: implement
+			}
+			else if (light_bounce == 0)		// camera subpath is a complete path
+			{
+				/// TODO:: implement
+			}
+			else if (light_bounce == 1)		// light doesn't contain bsdf need to a special care here
+			{
+				if (camera_vertex.m_bsdf_data)
+				{
+					Spectrum geometry = ComputeGeometryTerm(shading_context, shading_point, camera_vertex, light_vertex);
+
+					/// CONFUSE:: for some reason m_bsdf_data stored inside camera_vertex doesn't work at all.
+					const BSDF * debug_bsdf = shading_point.get_material()->get_render_data().m_bsdf;
+					const void * debug_bsdf_data = debug_bsdf->evaluate_inputs(shading_context, shading_point);
+
+					DirectShadingComponents camera_eval_bsdf;
+					const float camera_eval_bsdf_prob = debug_bsdf->evaluate(
+						debug_bsdf_data,
+						false,
+						false,
+						static_cast<Vector3f>(camera_vertex.m_geometric_normal),
+						camera_vertex.m_shading_basis,
+						static_cast<Vector3f>(camera_vertex.m_incoming),
+						static_cast<Vector3f>(foundation::normalize(light_vertex.m_position - camera_vertex.m_position)),
+						ScatteringMode::All,
+						camera_eval_bsdf);
+
+					/// CONFUSE:: couldn't find why inverse pi is missing here.
+					radiance.m_beauty += geometry * camera_eval_bsdf.m_beauty * camera_vertex.m_beta * light_vertex.m_beta * RcpPi<float>();
+				}
+			}
+			else
+			{
+				if (camera_vertex.m_bsdf_data && light_vertex.m_bsdf_data)
+				{
+					/// CONFUSE:: for some reason stored m_bsdf_data inside camera_vertex doesn't work at all.
+					const BSDF * debug_bsdf = shading_point.get_material()->get_render_data().m_bsdf;
+					const void * debug_bsdf_data = debug_bsdf->evaluate_inputs(shading_context, shading_point);
+
+					DirectShadingComponents camera_eval_bsdf;
+					const float camera_eval_bsdf_prob = camera_vertex.m_bsdf->evaluate(
+						debug_bsdf_data,
+						false,
+						false,
+						static_cast<Vector3f>(camera_vertex.m_geometric_normal),
+						camera_vertex.m_shading_basis,
+						static_cast<Vector3f>(camera_vertex.m_incoming),
+						static_cast<Vector3f>(foundation::normalize(light_vertex.m_position - camera_vertex.m_position)),
+						ScatteringMode::All,
+						camera_eval_bsdf);
+
+					/// CONFUSE:: but stored m_bsdf_data in light_vertex works fine
+					DirectShadingComponents light_eval_bsdf;
+					const float light_eval_bsdf_prob = light_vertex.m_bsdf->evaluate(
+						light_vertex.m_bsdf_data,
+						false,
+						false,
+						static_cast<Vector3f>(light_vertex.m_geometric_normal),
+						light_vertex.m_shading_basis,
+						static_cast<Vector3f>(light_vertex.m_incoming),
+						static_cast<Vector3f>(foundation::normalize(light_vertex.m_position - light_vertex.m_position)),
+						ScatteringMode::All,
+						light_eval_bsdf);
+
+					Spectrum geometry = ComputeGeometryTerm(shading_context, shading_point, camera_vertex, light_vertex);
+					radiance.m_beauty += geometry * camera_eval_bsdf.m_beauty * light_eval_bsdf.m_beauty * camera_vertex.m_beta * light_vertex.m_beta;
+				}
+			}
+		}
+
         void compute_lighting(
             SamplingContext&        sampling_context,
             const PixelContext&     pixel_context,
@@ -94,24 +236,28 @@ namespace
             const ShadingPoint&     shading_point,
             ShadingComponents&      radiance) override      // output radiance, in W.sr^-1.m^-2
         {
-            PathVisitor light_path_visitor;
-            VolumeVisitor volume_visitor;
+			std::vector<BDPTVertex> camera_vertices;
+			std::vector<BDPTVertex> light_vertices;
 
-            PathTracer<PathVisitor, VolumeVisitor, true> light_path_tracer(     // true = adjoint
-                light_path_visitor,
-                volume_visitor,
-                ~0,
-                1,
-                ~0,
-                ~0,
-                ~0,
-                ~0,
-                shading_context.get_max_iterations());
+			camera_vertices.reserve(maxbounces);
+			light_vertices.reserve(maxbounces);
+
+			trace_camera(sampling_context, shading_context, shading_point, &camera_vertices);
+			trace_light(sampling_context, shading_context, &light_vertices);
+
+			for (int i = 0; i < light_vertices.size(); i++)
+			{
+				const BDPTVertex & cvertex = camera_vertices[0];
+				const BDPTVertex & lvertex = light_vertices[i];
+
+				Connect(shading_context, shading_point, cvertex, 1, lvertex, i + 1, radiance);
+			}
         }
 
         void trace_light(
             SamplingContext&        sampling_context,
-            const ShadingContext&   shading_context)
+            const ShadingContext&   shading_context,
+			std::vector<BDPTVertex> *vertices)
         {
             // Sample the light sources.
             sampling_context.split_in_place(4, 1);
@@ -129,7 +275,8 @@ namespace
                 ? trace_emitting_triangle(
                     sampling_context, 
                     shading_context, 
-                    light_sample)
+                    light_sample,
+					vertices)
                 : trace_non_physical_light(
                     sampling_context, 
                     shading_context, 
@@ -139,7 +286,8 @@ namespace
         void trace_emitting_triangle(
             SamplingContext&        sampling_context,
             const ShadingContext&   shading_context,
-            LightSample&            light_sample)
+            LightSample&            light_sample,
+			std::vector<BDPTVertex> *vertices)
         {
             // Make sure the geometric normal of the light sample is in the same hemisphere as the shading normal.
             light_sample.m_geometric_normal =
@@ -206,14 +354,24 @@ namespace
                 VisibilityFlags::LightRay,
                 0);
 
+			/// TODO:: replace this with direct light sampler
+			BDPTVertex bdpt_vertex;
+			bdpt_vertex.m_position = light_shading_point.get_point();
+			/// CONFUSE:: why geometric normal is flipped?
+			bdpt_vertex.m_geometric_normal = -light_shading_point.get_geometric_normal();
+			bdpt_vertex.m_beta = initial_flux;
+			vertices->push_back(bdpt_vertex);
+
             // Build the path tracer.
-            PathVisitor path_visitor;
+            PathVisitor path_visitor(initial_flux, shading_context, vertices);
             VolumeVisitor volume_visitor;
+
+			/// CONFUSE:: even though I set pathtracer to maxbounces (= 8), the rendered result only appears be generated by maxbounces = 1 (only one bounce indirect light)
             PathTracer<PathVisitor, VolumeVisitor, true> path_tracer(
                 path_visitor,
                 volume_visitor,
                 ~0,
-                1,
+                maxbounces,
                 ~0,
                 ~0,
                 ~0,
@@ -237,6 +395,33 @@ namespace
         {
         }
 
+		void trace_camera(
+			SamplingContext&		sampling_context,
+			const ShadingContext&	shading_context,
+			const ShadingPoint&		shading_point,
+			std::vector<BDPTVertex> *vertices)
+		{
+			PathVisitor path_visitor(Spectrum(1.0), shading_context, vertices);
+			VolumeVisitor volume_visitor;
+
+			PathTracer<PathVisitor, VolumeVisitor, false> path_tracer(
+				path_visitor,
+				volume_visitor,
+				~0,
+				0,
+				~0,
+				~0,
+				~0,
+				~0,
+				shading_context.get_max_iterations());
+
+			const size_t camera_path_length =
+				path_tracer.trace(
+					sampling_context,
+					shading_context,
+					shading_point);
+		}
+
         StatisticsVector get_statistics() const override
         {
             Statistics stats;
@@ -257,7 +442,10 @@ namespace
 
         struct PathVisitor
         {
-            PathVisitor()
+			PathVisitor(const Spectrum & initial_beta, const ShadingContext &shading_context, std::vector<BDPTVertex> * vertices)
+			  : m_initial_beta(initial_beta),
+				m_shading_context(shading_context),
+				m_vertices(vertices)
             {
             }
 
@@ -270,16 +458,36 @@ namespace
 
             void on_miss(const PathVertex& vertex)
             {
-
             }
 
             void on_hit(const PathVertex& vertex)
             {
+				// create BDPT Vertex
+				if (vertex.m_bsdf == nullptr)
+					return;
+
+				if (vertex.m_bsdf->is_purely_specular())
+					return;
+
+				BDPTVertex bdpt_vertex;
+				bdpt_vertex.m_position = vertex.get_point();
+				bdpt_vertex.m_incoming = normalize(vertex.m_outgoing.get_value());
+				bdpt_vertex.m_geometric_normal = vertex.get_geometric_normal();
+				bdpt_vertex.m_shading_basis = Basis3f(vertex.get_shading_basis());
+				bdpt_vertex.m_beta = vertex.m_throughput * m_initial_beta;
+				bdpt_vertex.m_bsdf = vertex.m_bsdf;
+				bdpt_vertex.m_bsdf_data = vertex.m_bsdf_data;
+
+				m_vertices->push_back(bdpt_vertex);
             }
 
             void on_scatter(const PathVertex& vertex)
             {
             }
+
+			const ShadingContext&		m_shading_context;
+			Spectrum					m_initial_beta;
+			std::vector<BDPTVertex>		*m_vertices;
         };
 
         struct VolumeVisitor
