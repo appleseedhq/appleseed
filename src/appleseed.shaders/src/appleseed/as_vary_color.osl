@@ -274,14 +274,14 @@ shader as_varyColor
         // We have to get the working space RGBW primaries. For now, set
         // RGB primaries to sRGB|Rec.709, white point to D65.
         //
-        color CIELAB = transform_linear_RGB_to_Lab(
+        color CIELAB = transform_linear_RGB_to_CIELAB(
             in_color,
             "Rec.709",
             "D65");
 
         CIELAB *= color(in_vary_lstar, in_vary_astar, in_vary_bstar);
 
-        offset_color *= transform_Lab_to_linear_RGB(
+        offset_color *= transform_CIELAB_to_linear_RGB(
             CIELAB,
             "Rec.709",
             "D65");

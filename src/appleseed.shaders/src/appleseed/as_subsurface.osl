@@ -28,63 +28,122 @@
 
 #include "appleseed/math/as_math_helpers.h"
 
-shader as_metal
+shader as_subsurface
 [[
-    string as_maya_node_name = "asMetal",
+    string as_maya_node_name = "asSubsurface",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
-    string help = "Metal material",
-    string icon = "asMetal.png",
-    int as_maya_type_id = 0x001279f9
+    string help = "SubSurface Scattering material",
+    string icon = "asSubsurface.png",
+    int as_maya_type_id = 0x001279e4
 ]]
 (
-    color in_face_reflectance = color(0.96, 0.8, 0.05)
+    int in_sss_profile = 0
     [[
-        string as_maya_attribute_name = "faceReflectance",
-        string as_maya_attribute_short_name = "f0",
-        string label = "Face Reflectance",
-        string page = "Fresnel",
-        string help = "Reflectance at normal incidence."
-    ]],
-    color in_edge_reflectance = color(1)
-    [[
-        string as_maya_attribute_name = "edgeReflectance",
-        string as_maya_attribute_short_name = "f90",
-        string label = "Edge Reflectance",
-        string page = "Fresnel",
-        string help = "Reflectance at grazing incidence."
-    ]],
-    int in_distribution = 0
-    [[
-        string as_maya_attribute_name = "distribution",
-        string as_maya_attribute_short_name = "mdf",
+        string as_maya_attribute_name = "sssProfile",
+        string as_maya_attribute_short_name = "ssp",
         string widget = "mapper",
-        string options = "Beckmann:0|GGX:1",
-        string label = "Distribution",
-        string page = "Specular",
+        string options = "Better Dipole:0|Directional Dipole:1|Gaussian:2|Normalized Diffusion:3|Standard Dipole:4|Random Walk:5",
+        string label = "Subsurface Profile",
+        string page = "Subsurface",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
         int divider = 1
     ]],
-    float in_roughness = 0.25
+    color in_color = color(0.87, 0.31, 0.12)
     [[
-        string as_maya_attribute_name = "roughness",
-        string as_maya_attribute_short_name = "ro",
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Reflectance",
+        string page = "Subsurface"
+    ]],
+    float in_sss_amount = 1.0
+    [[
+        string as_maya_attribute_name = "sssAmount",
+        string as_maya_attribute_short_name = "ssa",
         float min = 0.0,
         float max = 1.0,
-        string label = "Roughness",
+        string label = "SSS Amount",
+        string page = "Subsurface",
+        int divider = 1
+    ]],
+    color in_sss_mfp = color(0.13, 0.69, 0.88)
+    [[
+        string as_maya_attribute_name = "meanFreePath",
+        string as_maya_attribute_short_name = "mfp",
+        string label = "Mean Free Path",
+        string page = "Subsurface"
+    ]],
+    float in_sss_mfp_scale = 1.0
+    [[
+        string as_maya_attribute_name = "mfpScale",
+        string as_maya_attribute_short_name = "msc",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "MFP Scale",
+        string page = "Subsurface"
+    ]],
+    float in_zero_scattering_weight = 0.5
+    [[
+        string as_maya_attribute_name = "zeroScatteringWeight",
+        string as_maya_attribute_short_name = "zsw",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Zero Scattering Weight",
+        string page = "Subsurface",
+        string help = "Weight of contribution when the ray has no scattering events."
+    ]],
+    int in_sss_maximum_ray_depth = 2
+    [[
+        string as_maya_attribute_name = "sssMaximumRayDepth",
+        string as_maya_attribute_short_name = "ssd",
+        int min = 1,
+        int max = 16,
+        int softmax = 8,
+        string label = "SSS Ray Depth",
+        string page = "Subsurface.Advanced",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    float in_ior = 1.41
+    [[
+        string as_maya_attribute_name = "ior",
+        string as_maya_attribute_short_name = "io",
+        float min = 1.0,
+        float softmax = 3.0,
+        string label = "Index of Refraction",
+        string page = "Fresnel"
+    ]],
+    float in_fresnel_weight = 1.0
+    [[
+        string as_maya_attribute_name = "fresnelWeight",
+        string as_maya_attribute_short_name = "fwe",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Fresnel Weight",
+        string page = "Fresnel.Advanced",
+        string help = "A value of 0.0 disables scaling the SSS term by the Fresnel. It should match the specular weight ideally."
+    ]],
+    float in_specular_weight = 1.0
+    [[
+        string as_maya_attribute_name = "specularWeight",
+        string as_maya_attribute_short_name = "swe",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Specular Weight",
         string page = "Specular"
     ]],
-    float in_energy_compensation = 1.0
+    float in_specular_roughness = 0.3
     [[
-        string as_maya_attribute_name = "energyCompensation",
-        string as_maya_attribute_short_name = "ec",
+        string as_maya_attribute_name = "specularRoughness",
+        string as_maya_attribute_short_name = "sro",
         float min = 0.0,
         float max = 1.0,
-        string label = "Energy Compensation",
-        string page = "Specular",
-        string help = "Energy compensation, to account for energy loss with high roughness. Valid for Beckmann and GGX MDF only."
+        string label = "Specular Roughness",
+        string page = "Specular"
     ]],
     float in_anisotropy_amount = 0.0
     [[
@@ -138,60 +197,6 @@ shader as_metal
         string page = "Specular.Anisotropy",
         string help = "Explicit anisotropy vector, such as the vector output by a tangent field node."
     ]],
-#if 0
-    float in_thinfilm_thickness = 0.0
-    [[
-        string as_maya_attribute_name = "thinFilmThickness",
-        string as_maya_attribute_short_name = "tft",
-        float min = 0.0,
-        float max = 1.0,
-        string label = "Thinfilm Thickness",
-        string page = "Oxidation",
-        int divider = 1
-    ]],
-    float in_thinfilm_ior = 1.41534
-    [[
-        string as_maya_attribute_name = "thinFilmIor",
-        string as_maya_attribute_short_name = "tet",
-        float min = 1.0,
-        float softmax = 2.0,
-        float max = 3.0,
-        string label = "Thinfilm IOR",
-        string page = "Oxidation",
-        int as_maya_attribute_connectable = 0,
-        int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1,
-        int gafferNoduleLayoutVisible = 0
-    ]],       
-    int in_thinfilm_min = 380
-    [[
-        string as_maya_attribute_name = "thinFilmMin",
-        string as_maya_attribute_short_name = "tmi",
-        int min = 380,
-        int max = 780,
-        string label = "Thinfilm Lower Bound",
-        string page = "Oxidation",
-        int as_maya_attribute_connectable = 0,
-        int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1,
-        int gafferNoduleLayoutVisible = 0,
-        string help = "Thin film thickness lower bound, in nanometers."
-    ]],
-    int in_thinfilm_max = 780
-    [[
-        string as_maya_attribute_name = "thinFilmMax",
-        string as_maya_attribute_short_name = "tma",
-        int min = 380,
-        int max = 780,
-        string label = "Thinfilm Upper Bound",
-        string page = "Oxidation",
-        int as_maya_attribute_connectable = 0,
-        int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1,
-        int gafferNoduleLayoutVisible = 0,
-        string help = "Thin film thickness upper bound, in nanometers."
-    ]],
-#endif
     normal in_bump_normal = N
     [[
         string as_maya_attribute_name = "normalCamera",
@@ -231,20 +236,6 @@ shader as_metal
         string page = "Matte Opacity",
         int gafferNoduleLayoutVisible = 0
     ]],
-    int in_maximum_ray_depth = 8
-    [[
-        string as_maya_attribute_name = "maximumRayDepth",
-        string as_maya_attribute_short_name = "mrd",
-        int min = 0,
-        int max = 32,
-        int softmax = 8,
-        string label = "Ray Depth",
-        string page = "Advanced",
-        int as_maya_attribute_connectable = 0,
-        int as_maya_attribute_keyable = 0,
-        int as_maya_attribute_hidden = 1,
-        int gafferNoduleLayoutVisible = 0
-    ]],
     vector Tn = vector(0)
     [[
         int lockgeom = 0,
@@ -266,12 +257,6 @@ shader as_metal
         string as_maya_attribute_short_name = "oc",
         string widget = "null"
     ]],
-    output closure color out_outTransparency = 0
-    [[
-        string as_maya_attribute_name = "outTransparency",
-        string as_maya_attribute_short_name = "ot",
-        string widget = "null"
-    ]],
     output closure color out_outMatteOpacity = 0
     [[
         string as_maya_attribute_name = "outMatteOpacity",
@@ -287,14 +272,6 @@ shader as_metal
         return;
     }
 
-    int ray_depth = 0;
-    int status = getattribute("path:ray_depth", ray_depth);
-
-    if (!status || ray_depth > in_maximum_ray_depth)
-    {
-        return;
-    }
-
     if (in_enable_matte)
     {
         out_outMatteOpacity = in_matte_opacity *
@@ -303,69 +280,91 @@ shader as_metal
         out_outColor += out_outMatteOpacity;
     }
 
-    string distribution;
+    string sss_profile;
 
-    if (in_distribution == 0)
+    if (in_sss_profile == 0)
     {
-        distribution = "beckmann";
+        sss_profile = "better_dipole";
     }
-    else if (in_distribution == 1)
+    else if (in_sss_profile == 1)
     {
-        distribution = "ggx";
+        sss_profile = "directional_dipole";
+    }
+    else if (in_sss_profile == 2)
+    {
+        sss_profile = "gaussian";
+    }
+    else if (in_sss_profile == 3)
+    {
+        sss_profile = "normalized_diffusion";
+    }
+    else if (in_sss_profile == 4)
+    {
+        sss_profile = "standard_dipole";
     }
     else
     {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-        warning("[WARNING]: Invalid MDF in %s,\t%s:%d\n",
-                shadername, __FILE__, __LINE__);
-#endif
+        sss_profile = "randomwalk";
     }
 
-    // Layer EDF later, but eta+k must change with temperature.
-
-    vector tangent = Tn;
     normal Nn = normalize(in_bump_normal);
 
-    if (in_anisotropy_amount > 0.0)
+    if (in_sss_amount * max(in_color) > 0.0)
     {
-        if (in_anisotropy_mode == 0)
-        {
-            if (isconnected(in_anisotropy_map))
-            {
-                vector vector_map = normalize(
-                    (vector) in_anisotropy_map * 2.0 - 1.0);
+        color albedo = clamp(in_sss_amount * in_color, 0.01, 0.99);
 
-                tangent = normalize(
-                    vector_map[0] * Tn +
-                    vector_map[1] * Bn +
-                    vector_map[2] * Nn);
-            }
-        }
-        else
-        {
-            tangent = in_anisotropy_direction;
-        }
-
-        if (in_anisotropy_angle > 0.0)
-        {
-            tangent = rotate(
-                tangent,
-                in_anisotropy_angle * M_2PI,
-                point(0),
-                point(Nn));
-        }
+        out_outColor += as_subsurface(
+            sss_profile,
+            Nn,
+            albedo,
+            in_sss_mfp_scale * in_sss_mfp,
+            in_ior,
+            "fresnel_weight", in_fresnel_weight,
+            "zero_scattering_weight", in_zero_scattering_weight);
     }
 
-    out_outColor += as_metal(
-        distribution,
-        Nn,
-        tangent,
-        in_face_reflectance,
-        in_edge_reflectance,
-        in_roughness,
-        0.0, // specular spread, used in Student's t-MDF only (unused)
-        in_anisotropy_amount,
-        "energy_compensation", in_energy_compensation);
+    if (in_specular_weight > 0.0)
+    {
+        vector tangent = Tn;
+
+        if (in_anisotropy_amount > 0.0)
+        {
+            if (in_anisotropy_mode == 0)
+            {
+                if (isconnected(in_anisotropy_map))
+                {
+                    vector vector_map = normalize(
+                        (vector) in_anisotropy_map * 2.0 - 1.0);
+
+                    tangent = normalize(
+                        vector_map[0] * Tn +
+                        vector_map[1] * Bn + 
+                        vector_map[2] * Nn);
+                }
+            }
+            else
+            {
+                tangent = in_anisotropy_direction;
+            }
+
+            if (in_anisotropy_angle > 0.0)
+            {
+                tangent = rotate(
+                    tangent,
+                    in_anisotropy_angle * M_2PI,
+                    point(0),
+                    point(Nn));
+            }
+        }
+
+        out_outColor += in_specular_weight * as_glossy(
+            "ggx",
+            Nn,
+            vector(0),  // tangent
+            in_specular_roughness,
+            0.0,        // specular spread for Student's t-MDF
+            0.0,        // anisotropy amount
+            in_ior,
+            "energy_conservation", 1.0);
+    }
 }

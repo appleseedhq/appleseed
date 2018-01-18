@@ -797,22 +797,21 @@ shader as_standard_surface
 
             edf_color =
                 in_incandescence_amount * blackbody((float) in_temperature);
-
-            if (in_tonemap_edf)
-            {
-                edf_color /= luminance(edf_color) + 1.0;
-            }
         }
 
-        edf_color *= transmittance;
-
+        if (in_area_normalize_edf)
+        {
+            edf_color /= surfacearea();
+        }
+        if (in_tonemap_edf)
+        {
+            edf_color /= luminance(edf_color) + 1.0;
+        }
+        
         if (max(edf_color) > 0.0)
         {
-            float normalization = in_area_normalize_edf
-                ? 1.0 / surfacearea()
-                : 1.0;
-
-            out_outColor += emission() * normalization * opacity * edf_color;
+            out_outColor += transmittance * opacity *
+                edf_color * emission();
         }
     }
 

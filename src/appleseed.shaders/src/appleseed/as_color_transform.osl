@@ -113,17 +113,17 @@ shader as_color_transform
 
         if (in_inputSpace == 0)
         {
-            XYZ = transform_linear_RGB_to_XYZ(in_color, space, illuminant);
+            XYZ = transform_linear_RGB_to_CIEXYZ(in_color, space, illuminant);
         }
         else if (in_inputSpace == 1)
         {
             color RGB = transform_HSV_to_RGB(in_color);
-            XYZ = transform_linear_RGB_to_XYZ(RGB, space, illuminant);
+            XYZ = transform_linear_RGB_to_CIEXYZ(RGB, space, illuminant);
         }
         else if (in_inputSpace == 2)
         {
             color RGB = transform_HSL_to_RGB(in_color);
-            XYZ = transform_linear_RGB_to_XYZ(RGB, space, illuminant);
+            XYZ = transform_linear_RGB_to_CIEXYZ(RGB, space, illuminant);
         }
         else if (in_inputSpace == 3)
         {
@@ -131,36 +131,35 @@ shader as_color_transform
         }
         else if (in_inputSpace == 4)
         {
-            XYZ = transform_xyY_to_XYZ(in_color);
+            XYZ = transform_CIExyY_to_CIEXYZ(in_color);
         }
         else if (in_inputSpace == 5)
         {
-            color Lab = inverse_remap_CIELab(in_color);
-            XYZ = transform_Lab_to_XYZ(Lab, illuminant);
+            color CIELAB = inverse_remap_CIELAB(in_color);
+            XYZ = transform_CIELAB_to_CIEXYZ(CIELAB, illuminant);
         }
         else if (in_inputSpace == 6)
         {
-            color Luv = inverse_remap_CIELuv(in_color);
-            XYZ = transform_Luv_to_XYZ(Luv, illuminant);
+            color CIELUV = inverse_remap_CIELUV(in_color);
+            XYZ = transform_CIELUV_to_CIEXYZ(CIELUV, illuminant);
         }
         else if (in_inputSpace == 7)
         {
-            color LCh_ab = inverse_remap_CIELCh(in_color);
-            color Lab = transform_LCh_ab_to_Lab(LCh_ab);
-            XYZ = transform_Lab_to_XYZ(Lab, illuminant);
+            color CIELCh_ab = inverse_remap_CIELCh(in_color);
+            color CIELAB = transform_CIELCh_ab_to_CIELAB(CIELCh_ab);
+            XYZ = transform_CIELAB_to_CIEXYZ(CIELAB, illuminant);
         }
         else if (in_inputSpace == 8)
         {
-            color LCh_uv = inverse_remap_CIELCh(in_color);
-            color Luv = transform_LCh_uv_to_Luv(LCh_uv);
-            XYZ = transform_Luv_to_XYZ(Luv, illuminant);
+            color CIELCh_uv = inverse_remap_CIELCh(in_color);
+            color CIELUV = transform_CIELCh_uv_to_CIELUV(CIELCh_uv);
+            XYZ = transform_CIELUV_to_CIEXYZ(CIELUV, illuminant);
         }
         else
         {
 #ifdef DEBUG
             string shadername = "";
             getattribute("shader:shadername", shadername);
-
             warning("Unsupported input color model value %i in %s, %s:%i\n",
                     in_inputSpace, shadername, __FILE__, __LINE__);
 #endif
@@ -172,16 +171,16 @@ shader as_color_transform
 
         if (in_outputSpace == 0)
         {
-            out = transform_XYZ_to_linear_RGB(XYZ, space, illuminant);
+            out = transform_CIEXYZ_to_linear_RGB(XYZ, space, illuminant);
         }
         else if (in_outputSpace == 1)
         {
-            color RGB = transform_XYZ_to_linear_RGB(XYZ, space, illuminant);
+            color RGB = transform_CIEXYZ_to_linear_RGB(XYZ, space, illuminant);
             out = transform_RGB_to_HSV(RGB);
         }
         else if (in_outputSpace == 2)
         {
-            color RGB = transform_XYZ_to_linear_RGB(XYZ, space, illuminant);
+            color RGB = transform_CIEXYZ_to_linear_RGB(XYZ, space, illuminant);
             out = transform_RGB_to_HSL(RGB);
         }
         else if (in_outputSpace == 3)
@@ -190,28 +189,28 @@ shader as_color_transform
         }
         else if (in_outputSpace == 4)
         {
-            out = transform_XYZ_to_xyY(XYZ, illuminant);
+            out = transform_CIEXYZ_to_CIExyY(XYZ, illuminant);
         }
         else if (in_outputSpace == 5)
         {
-            out = transform_XYZ_to_Lab(XYZ, illuminant);
-            out = remap_CIELab(out);
+            out = transform_CIEXYZ_to_CIELAB(XYZ, illuminant);
+            out = remap_CIELAB(out);
         }
         else if (in_outputSpace == 6)
         {
-            out = transform_XYZ_to_Luv(XYZ, illuminant);
-            out = remap_CIELuv(out);
+            out = transform_CIEXYZ_to_CIELUV(XYZ, illuminant);
+            out = remap_CIELUV(out);
         }
         else if (in_outputSpace == 7)
         {
-            color Lab = transform_XYZ_to_Lab(XYZ, illuminant);
-            out = transform_Lab_to_LCh_ab(Lab);
+            color CIELAB = transform_CIEXYZ_to_CIELAB(XYZ, illuminant);
+            out = transform_CIELAB_to_CIELCh_ab(CIELAB);
             out = remap_CIELCh(out);
         }
         else if (in_outputSpace == 8)
         {
-            color Luv = transform_XYZ_to_Luv(XYZ, illuminant);
-            out = transform_Luv_to_LCh_uv(Luv);
+            color CIELUV = transform_CIEXYZ_to_CIELUV(XYZ, illuminant);
+            out = transform_CIELUV_to_CIELCh_uv(CIELUV);
             out = remap_CIELCh(out);
         }
         else
@@ -219,7 +218,6 @@ shader as_color_transform
 #ifdef DEBUG
             string shadername = "";
             getattribute("shader:shadername", shadername);
-
             warning("Unsupported output color model value %i in %s, %s:%i\n",
                     in_outputSpace, shadername, __FILE__, __LINE__);
 #endif

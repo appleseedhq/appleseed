@@ -67,6 +67,7 @@ source_group ("include\\appleseed\\gaffer" FILES
 
 set (include_appleseed_color_sources
     include/appleseed/color/as_chromatic_adaptation.h
+    include/appleseed/color/as_color_blend_modes.h
     include/appleseed/color/as_color_helpers.h
     include/appleseed/color/as_color_transforms.h
     include/appleseed/color/as_colorimetry.h
@@ -422,7 +423,10 @@ source_group ("src\\maya" FILES
 set (src_appleseed_sources
      src/appleseed/as_anisotropy_vector_field.osl
      src/appleseed/as_attributes.osl
+     src/appleseed/as_blackbody.osl
+     src/appleseed/as_blend_color.osl
      src/appleseed/as_color_transform.osl
+     src/appleseed/as_composite_color.osl
      src/appleseed/as_create_mask.osl
      src/appleseed/as_disney_material.osl
      src/appleseed/as_double_shade.osl
@@ -439,7 +443,11 @@ set (src_appleseed_sources
      src/appleseed/as_ray_switch.osl
      src/appleseed/as_space_transform.osl
      src/appleseed/as_standard_surface.osl
+     src/appleseed/as_subsurface.osl
+     src/appleseed/as_switch_texture.osl
      src/appleseed/as_swizzle.osl
+     src/appleseed/as_texture.osl
+     src/appleseed/as_texture_info.osl
      src/appleseed/as_vary_color.osl
      src/appleseed/as_voronoi2d.osl
      src/appleseed/as_voronoi3d.osl

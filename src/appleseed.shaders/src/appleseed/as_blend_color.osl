@@ -1,0 +1,121 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2018 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/color/as_color_blend_modes.h"
+
+shader as_blend_color
+[[
+    string as_maya_node_name = "asBlendColor",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string help = "Color blend utility node.",
+    string icon = "asBlendColor.png",
+    int as_maya_type_id = 0x001279d1
+]]
+(
+    color in_color = color(0)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Source Color",
+        string page = "Color",
+        string help = "Layer 0 color, or base layer color."
+    ]],
+    float in_weight = 1.0
+    [[
+        string as_maya_attribute_name = "weight",
+        string as_maya_attribute_short_name = "w1",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Source Weight",
+        string page = "Color",
+        int divider = 1
+    ]],
+    color in_color2 = color(1)
+    [[
+        string as_maya_attribute_name = "color2",
+        string as_maya_attribute_short_name = "c2",
+        string label = "Blend Color",
+        string page = "Color"
+    ]],
+    float in_weight2 = 1.0
+    [[
+        string as_maya_attribute_name = "weight2",
+        string as_maya_attribute_short_name = "w2",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Blend Weight",
+        string page = "Color",
+        int divider = 1
+    ]],
+    string in_blend_mode = "Overlay"
+    [[
+        string as_maya_attribute_name = "blendMode",
+        string as_maya_attribute_short_name = "bm",
+        string widget = "popup",
+        string options = "Darken|Multiply|Color Burn|Linear Burn|Lighten|Screen|Color Dodge|Linear Dodge|Overlay|Soft Light|Hard Light|Vivid Light|Linear Light|Pin Light|Difference|Exclusion|Subtract|Divide|Hue|Saturation|Color|Luminosity",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Blending Mode",
+        string page = "Color",
+        string help = "Common image blending modes. For Porter-Duff compositing, use the Composite node.",
+        int divider = 1
+    ]],
+    int in_clamp_output = 0
+    [[
+        string as_maya_attribute_name = "clampOutput",
+        string as_maya_attribute_short_name = "clo",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Clamp Output",
+        string page = "Color"
+    ]],
+
+    output color out_color = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string widget = "null",
+        string label = "Output Color"
+    ]]
+)
+{
+    out_color = mix(
+        in_weight * in_color,
+        blend_color(in_blend_mode, in_color, in_color2),
+        in_weight2);
+
+    if (in_clamp_output)
+    {
+        out_color = clamp(out_color, color(0), color(1));
+    }
+}
