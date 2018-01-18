@@ -266,6 +266,18 @@ shader as_swizzle
             RGBA[in_blue_channel]);
 
         out_alpha = RGBA[in_alpha_channel];
+
+        if (in_invert_red)
+            out_color[0] = 1.0 - out_color[0];
+
+        if (in_invert_green)
+            out_color[1] = 1.0 - out_color[1];
+
+        if (in_invert_blue)
+            out_color[2] = 1.0 - out_color[2];
+
+        if (in_invert_alpha)
+            out_color[3] = 1.0 - out_color[3];
     }
 
     if (isconnected(in_vector))
@@ -274,5 +286,14 @@ shader as_swizzle
             in_vector[in_x_channel],
             in_vector[in_y_channel],
             in_vector[in_z_channel]);
+
+        if (in_invert_x)
+            out_vector[0] *= -1.0;
+
+        if (in_invert_y)
+            out_vector[1] *= -1.0;
+
+        if (in_invert_z)
+            out_vector[2] *= -1.0;
     }
 }
