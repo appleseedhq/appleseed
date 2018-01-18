@@ -84,8 +84,8 @@ shader as_blackbody
     [[
         string as_maya_attribute_name = "temperature",
         string as_maya_attribute_short_name = "tem",
-        int min = 1000,
-        int max = 11000,
+        int min = 798,
+        int max = 25000,
         int softmin = 3400,
         int softmax = 9300,
         string label = "Temperature",
@@ -259,7 +259,7 @@ shader as_blackbody
     {
         // Dielectric coating, so the Schlick approximation suffices.
         vector In = normalize(I);
-        normal Nn = normalize(N);
+        normal Nn = normalize(in_bump_normal);
 
         float costheta_o = dot(-In, Nn);
 
