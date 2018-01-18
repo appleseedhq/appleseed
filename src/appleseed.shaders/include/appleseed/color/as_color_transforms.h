@@ -211,7 +211,7 @@ void get_RGB_to_XYZ_matrix(
     output vector RGB_to_XYZ[3],
     output string source_illuminant)
 {
-    if (color_space == "ACES")
+    if (color_space == "ACES" || color_space == "ACES2065-1")
     {
         source_illuminant = "D60";
 
@@ -243,7 +243,8 @@ void get_RGB_to_XYZ_matrix(
         RGB_to_XYZ[1] = vector(RGB_TO_XYZ_DCIP3_R1);
         RGB_to_XYZ[2] = vector(RGB_TO_XYZ_DCIP3_R2);
     }
-    else if (color_space == "Rec.2020")
+    else if (color_space == "Rec.2020" ||
+             color_space == "scene-linear Rec 2020")
     {
         source_illuminant = "D65";
 
@@ -251,7 +252,8 @@ void get_RGB_to_XYZ_matrix(
         RGB_to_XYZ[1] = vector(RGB_TO_XYZ_REC2020_R1);
         RGB_to_XYZ[2] = vector(RGB_TO_XYZ_REC2020_R2);
     }
-    else if (color_space == "Rec.709")
+    else if (color_space == "Rec.709" ||
+             color_space == "scene-linear Rec 709/sRGB")
     {
         source_illuminant = "D65";
 
@@ -280,7 +282,7 @@ void get_XYZ_to_RGB_matrix(
     output vector XYZ_to_RGB[3],
     output string source_illuminant)
 {
-    if (color_space == "ACES")
+    if (color_space == "ACES" || color_space == "ACES2065-1")
     {
         source_illuminant = "D60";
 
@@ -312,7 +314,8 @@ void get_XYZ_to_RGB_matrix(
         XYZ_to_RGB[1] = vector(XYZ_TO_RGB_DCIP3_R1);
         XYZ_to_RGB[2] = vector(XYZ_TO_RGB_DCIP3_R2);
     }
-    else if (color_space == "Rec.2020")
+    else if (color_space == "Rec.2020" ||
+             color_space == "scene-linear Rec 2020")
     {
         source_illuminant = "D65";
 
@@ -320,7 +323,8 @@ void get_XYZ_to_RGB_matrix(
         XYZ_to_RGB[1] = vector(XYZ_TO_RGB_REC2020_R1);
         XYZ_to_RGB[2] = vector(XYZ_TO_RGB_REC2020_R2);
     }
-    else if (color_space == "Rec.709")
+    else if (color_space == "Rec.709" ||
+             color_space == "scene-linear Rec 709/sRGB")
     {
         source_illuminant = "D65";
 

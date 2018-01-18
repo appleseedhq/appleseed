@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017-2018 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 
 #include "appleseed/transform/as_transform_helpers.h"
 
-shader as_SwitchTexture
+shader asSwitchTexture
 [[
     string as_maya_node_name = "asSwitchTexture",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",

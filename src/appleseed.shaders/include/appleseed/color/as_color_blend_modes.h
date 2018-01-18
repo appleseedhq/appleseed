@@ -533,7 +533,7 @@ color composite_color_rgba(
 #ifdef DEBUG
         string shadername = "";
         getattribute("shader:shadername", shadername);
-        warning("[DEBUG]: Unknown blend mode %s in %s, %s:%d\n",
+        warning("[DEBUG]: Unknown composite mode %s in %s, %s:%d\n",
                 shadername, mode, __FILE__, __LINE__);
 #endif
         rgb = color(0);

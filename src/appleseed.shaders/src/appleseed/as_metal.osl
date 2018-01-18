@@ -365,7 +365,7 @@ shader as_metal
         in_face_reflectance,
         in_edge_reflectance,
         in_roughness,
-        0.0, // specular spread, used in Student's t MDF only (unused)
+        0.0, // specular spread, used in Student's t-MDF only (unused)
         in_anisotropy_amount,
         "energy_compensation", in_energy_compensation);
 }
