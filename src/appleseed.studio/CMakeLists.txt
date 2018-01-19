@@ -340,6 +340,9 @@ set (mainwindow_sources
     mainwindow/renderingsettingswindow.cpp
     mainwindow/renderingsettingswindow.h
     mainwindow/renderingsettingswindow.ui
+    mainwindow/settingswindow.cpp
+    mainwindow/settingswindow.h
+    mainwindow/settingswindow.ui
     mainwindow/statusbar.cpp
     mainwindow/statusbar.h
 )
