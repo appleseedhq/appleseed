@@ -38,6 +38,7 @@
 #include "mainwindow/rendering/renderingmanager.h"
 #include "mainwindow/rendering/rendertab.h"
 #include "mainwindow/renderingsettingswindow.h"
+#include "mainwindow/settingswindow.h"
 #include "mainwindow/statusbar.h"
 
 // appleseed.renderer headers.
@@ -135,6 +136,7 @@ class MainWindow
 
     renderer::ParamArray                      m_settings;
 
+    std::unique_ptr<SettingsWindow>           m_settings_window;
     std::unique_ptr<RenderingSettingsWindow>  m_rendering_settings_window;
     std::unique_ptr<TestWindow>               m_test_window;
     std::unique_ptr<BenchmarkWindow>          m_benchmark_window;
@@ -256,6 +258,7 @@ class MainWindow
     // Settings I/O.
     void slot_load_settings();
     void slot_save_settings();
+    void slot_apply_settings();
 
     // Rendering.
     void slot_start_interactive_rendering();
@@ -292,6 +295,7 @@ class MainWindow
     void slot_fullscreen();
 
     // Child windows.
+    void slot_show_settings_window();
     void slot_show_rendering_settings_window();
     void slot_show_test_window();
     void slot_show_benchmark_window();

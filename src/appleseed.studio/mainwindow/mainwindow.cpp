@@ -419,6 +419,7 @@ void MainWindow::build_menus()
     // Tools menu.
     //
 
+    connect(m_ui->action_tools_settings, SIGNAL(triggered()), SLOT(slot_show_settings_window()));
     connect(m_ui->action_tools_save_settings, SIGNAL(triggered()), SLOT(slot_save_settings()));
     connect(m_ui->action_tools_reload_settings, SIGNAL(triggered()), SLOT(slot_load_settings()));
 
@@ -1511,26 +1512,7 @@ void MainWindow::slot_load_settings()
 
     m_settings = settings;
 
-    if (m_settings.strings().exist("message_verbosity"))
-    {
-        const char* level_name = m_settings.get("message_verbosity");
-        const LogMessage::Category level = LogMessage::get_category_value(level_name);
-
-        if (level < LogMessage::NumMessageCategories)
-            global_logger().set_verbosity_level(level);
-        else RENDERER_LOG_ERROR("invalid message verbosity level \"%s\".", level_name);
-    }
-
-    if (m_settings.get_optional<bool>(SETTINGS_WATCH_FILE_CHANGES))
-    {
-        m_action_monitor_project_file->setChecked(true);
-        enable_project_file_monitoring();
-    }
-    else
-    {
-        m_action_monitor_project_file->setChecked(false);
-        disable_project_file_monitoring();
-    }
+    slot_apply_settings();
 }
 
 void MainWindow::slot_save_settings()
@@ -1568,6 +1550,30 @@ void MainWindow::slot_save_settings()
     }
 
     RENDERER_LOG_ERROR("failed to save settings to %s.", settings_file_path.c_str());
+}
+
+void MainWindow::slot_apply_settings()
+{
+    if (m_settings.strings().exist(SETTINGS_MESSAGE_VERBOSITY))
+    {
+        const char* level_name = m_settings.get(SETTINGS_MESSAGE_VERBOSITY);
+        const LogMessage::Category level = LogMessage::get_category_value(level_name);
+
+        if (level < LogMessage::NumMessageCategories)
+            global_logger().set_verbosity_level(level);
+        else RENDERER_LOG_ERROR("invalid message verbosity level \"%s\".", level_name);
+    }
+
+    if (m_settings.get_optional<bool>(SETTINGS_WATCH_FILE_CHANGES))
+    {
+        m_action_monitor_project_file->setChecked(true);
+        enable_project_file_monitoring();
+    }
+    else
+    {
+        m_action_monitor_project_file->setChecked(false);
+        disable_project_file_monitoring();
+    }
 }
 
 void MainWindow::slot_start_interactive_rendering()
@@ -1936,13 +1942,33 @@ void MainWindow::slot_fullscreen()
         (*button)->set_fullscreen(m_fullscreen);
 }
 
+void MainWindow::slot_show_settings_window()
+{
+    if (m_settings_window.get() == nullptr)
+    {
+        m_settings_window.reset(new SettingsWindow(m_settings, this));
+
+        connect(
+            m_settings_window.get(), SIGNAL(signal_settings_modified()),
+            SLOT(slot_save_settings()));
+
+        connect(
+            m_settings_window.get(), SIGNAL(signal_settings_modified()),
+            SLOT(slot_apply_settings()));
+    }
+
+    m_settings_window->showNormal();
+    m_settings_window->activateWindow();
+}
+
 void MainWindow::slot_show_rendering_settings_window()
 {
     assert(m_project_manager.is_project_open());
 
     if (m_rendering_settings_window.get() == nullptr)
     {
-        m_rendering_settings_window.reset(new RenderingSettingsWindow(m_project_manager, this));
+        m_rendering_settings_window.reset(
+            new RenderingSettingsWindow(m_project_manager, this));
 
         connect(
             m_rendering_settings_window.get(), SIGNAL(signal_settings_modified()),
