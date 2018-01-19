@@ -44,16 +44,8 @@
 
 namespace bpy = boost::python;
 using namespace appleseed::studio;
-using namespace renderer;
 using namespace foundation;
-
-// Work around a regression in Visual Studio 2015 Update 3.
-#if defined(_MSC_VER) && _MSC_VER == 1900
-namespace boost
-{
-    template <> Project const volatile* get_pointer<Project const volatile>(Project const volatile* p) { return p; }
-}
-#endif
+using namespace renderer;
 
 MainWindow* main_window()
 {

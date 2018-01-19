@@ -52,7 +52,7 @@ include (cmake/utilities.txt)
 
 
 #--------------------------------------------------------------------------------------------------
-# Build configurations.
+# Project configuration.
 #--------------------------------------------------------------------------------------------------
 
 # Prevent in-source builds.
@@ -60,7 +60,7 @@ if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message (FATAL_ERROR "In-source builds are not permitted; run CMake inside an empty build directory.")
 endif ()
 
-# Create the build configurations. Must come before project ().
+# Create build configurations. Must come before project ().
 set (CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile;Ship" CACHE STRING "" FORCE)
 
 # Select a build configuration if none is selected yet.
@@ -72,8 +72,11 @@ endif ()
 
 project (appleseed)
 
-# Setup the path for our FindPackage modules.
-set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/modules)
+# Must come after project ().
+set (CMAKE_MODULE_PATH
+    ${CMAKE_MODULE_PATH}
+    ${PROJECT_SOURCE_DIR}/cmake/modules
+)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -107,6 +110,10 @@ option (USE_EXTERNAL_ZLIB                   "Use external zlib library"         
 option (WITH_CLI                            "Build appleseed.cli"                                   ON)
 option (WITH_STUDIO                         "Build appleseed.studio"                                ON)
 option (WITH_TOOLS                          "Build appleseed tools"                                 ON)
+option (WITH_DOXYGEN                        "Generate API Reference with Doxygen"                   ON)
+option (WITH_HEADERS                        "Install header files (to build samples)"               ON)
+option (WITH_SAMPLES                        "Install sample files (requires headers)"               ON)
+option (WITH_TESTS                          "Install unit tests and benchmarks"                     ON)
 option (WITH_PYTHON                         "Build Python bindings"                                 ON)
 option (WITH_DISNEY_MATERIAL                "Build Disney material"                                 OFF)
 
@@ -168,7 +175,7 @@ endif ()
 #--------------------------------------------------------------------------------------------------
 
 set (appleseed_version_major    1)
-set (appleseed_version_minor    8)
+set (appleseed_version_minor    9)
 set (appleseed_version_patch    0)
 set (appleseed_version_maturity beta)
 
@@ -257,7 +264,6 @@ if (WITH_DISNEY_MATERIAL)
     endif ()
 endif ()
 
-
 #--------------------------------------------------------------------------------------------------
 # Include paths.
 #--------------------------------------------------------------------------------------------------
@@ -265,6 +271,7 @@ endif ()
 # Common include paths.
 include_directories (
     src/appleseed
+    src/bcd
     src/lz4
 )
 
@@ -553,6 +560,7 @@ endmacro ()
 #--------------------------------------------------------------------------------------------------
 
 add_subdirectory (src/appleseed)
+add_subdirectory (src/bcd)
 add_subdirectory (src/lz4)
 add_subdirectory (src/appleseed.shaders)
 
@@ -594,6 +602,7 @@ endif ()
 
 if (WITH_TOOLS)
     add_subdirectory (src/tools/animatecamera)
+    add_subdirectory (src/tools/bcd_cli)
     add_subdirectory (src/tools/convertmeshfile)
     add_subdirectory (src/tools/dumpmetadata)
     add_subdirectory (src/tools/makefluffy)
@@ -607,7 +616,7 @@ endif ()
 
 find_package (Doxygen)
 
-if (DOXYGEN_FOUND)
+if (DOXYGEN_FOUND AND WITH_DOXYGEN)
     configure_file (${PROJECT_SOURCE_DIR}/scripts/appleseed.doxyfile.in ${PROJECT_BINARY_DIR}/appleseed.doxyfile @ONLY)
     add_custom_target (
         doc ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/appleseed.doxyfile
@@ -643,6 +652,7 @@ install (
         ${OSL_COMPILER}
         ${OSL_QUERY_INFO}
         ${OSL_MAKETX}
+        ${OPENIMAGEIO_OIIOTOOL}
     DESTINATION bin
 )
 
@@ -655,7 +665,6 @@ install (
     DIRECTORY
         sandbox/docs
         sandbox/icons
-        sandbox/samples
         sandbox/settings
         sandbox/share
         sandbox/stylesheets
@@ -667,27 +676,39 @@ install (
     CODE "FILE (MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/images/autosave)"
 )
 
-install (
-    DIRECTORY
-        "sandbox/tests/unit benchmarks"
-        "sandbox/tests/unit tests"
-    DESTINATION tests
-)
+if (WITH_SAMPLES)
+    install (
+        DIRECTORY
+            sandbox/samples
+        DESTINATION .
+    )
+endif ()
 
-install (
-    DIRECTORY src/appleseed/foundation
-    DESTINATION include
-    FILES_MATCHING PATTERN "*.h"
-)
+if (WITH_TESTS)
+    install (
+        DIRECTORY
+            "sandbox/tests/unit benchmarks"
+            "sandbox/tests/unit tests"
+        DESTINATION tests
+    )
+endif ()
 
-install (
-    DIRECTORY src/appleseed/main
-    DESTINATION include
-    FILES_MATCHING PATTERN "*.h"
-)
+if (WITH_HEADERS)
+    install (
+        DIRECTORY src/appleseed/foundation
+        DESTINATION include
+        FILES_MATCHING PATTERN "*.h"
+    )
 
-install (
-    DIRECTORY src/appleseed/renderer
-    DESTINATION include
-    FILES_MATCHING PATTERN "*.h"
-)
+    install (
+        DIRECTORY src/appleseed/main
+        DESTINATION include
+        FILES_MATCHING PATTERN "*.h"
+    )
+
+    install (
+        DIRECTORY src/appleseed/renderer
+        DESTINATION include
+        FILES_MATCHING PATTERN "*.h"
+    )
+endif ()

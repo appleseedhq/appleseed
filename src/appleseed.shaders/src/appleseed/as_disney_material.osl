@@ -33,7 +33,8 @@ shader as_disney_material
     string as_maya_node_name = "asDisneyMaterial",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
     string help = "Disney material",
-    int as_maya_type_id = 1210819
+    string icon = "asDisneyMaterial.png",
+    int as_maya_type_id = 0x001279c3
 ]]
 (
     color in_color = color(0.5)
@@ -41,7 +42,7 @@ shader as_disney_material
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Surface Color",
-        string page = "Common Material Parameters"
+        string page = "Common"
     ]],
     float in_subsurface_amount = 0.0
     [[
@@ -50,7 +51,7 @@ shader as_disney_material
         float min = 0.0,
         float max = 1.0,
         string label = "Subsurface",
-        string page = "Common Material Parameters"
+        string page = "Common"
     ]],
     float in_specular_amount = 0.5
     [[
@@ -59,7 +60,7 @@ shader as_disney_material
         float min = 0.0,
         float max = 1.0,
         string label = "Specular Amount",
-        string page = "Specular Parameters"
+        string page = "Specular"
     ]],
     float in_roughness = 0.5
     [[
@@ -68,7 +69,7 @@ shader as_disney_material
         float min = 0.0,
         float max = 1.0,
         string label = "Surface Roughness",
-        string page = "Specular Parameters"
+        string page = "Specular"
     ]],
     float in_specular_tint = 0.0
     [[
@@ -77,7 +78,7 @@ shader as_disney_material
         float min = 0.0,
         float max = 1.0,
         string label = "Specular Tinting",
-        string page = "Specular Parameters"
+        string page = "Specular"
     ]],
     float in_metallic_amount = 0.0
     [[
@@ -86,7 +87,7 @@ shader as_disney_material
         float min = 0.0,
         float max = 1.0,
         string label = "Metallicness",
-        string page = "Specular Parameters",
+        string page = "Specular",
         int divider = 1
     ]],
     float in_anisotropy_amount = 0.0
@@ -96,7 +97,7 @@ shader as_disney_material
         float min = 0.0,
         float max = 1.0,
         string label = "Anisotropy Amount",
-        string page = "Specular Parameters",
+        string page = "Specular",
     ]],
     float in_anisotropy_angle = 0.0
     [[
@@ -105,7 +106,7 @@ shader as_disney_material
         float min = 0.0,
         float max = 1.0,
         string label = "Anisotropy Angle",
-        string page = "Specular Parameters",
+        string page = "Specular",
         string help = "The [0,1] range maps to [0,360] degrees range"
     ]],
     color in_anisotropy_vector_map= color(0)
@@ -113,7 +114,7 @@ shader as_disney_material
         string as_maya_attribute_name = "anisotropyVectorMap",
         string as_maya_attribute_short_name = "vm",
         string label = "Anisotropy Vector Map",
-        string page = "Specular Parameters",
+        string page = "Specular",
         string help = "Vector tangent field map, with XY in R,G channels"
     ]],
     float in_sheen_amount = 0.0
@@ -124,7 +125,7 @@ shader as_disney_material
         float max = 10.0,
         float softmax = 1.0,
         string label = "Sheen Amount",
-        string page = "Sheen Parameters"
+        string page = "Sheen"
     ]],
     float in_sheen_tint = 0.5
     [[
@@ -133,7 +134,7 @@ shader as_disney_material
         float min = 0.0,
         float max = 1.0,
         string label = "Sheen Tint",
-        string page = "Sheen Parameters"
+        string page = "Sheen"
     ]],
     float in_clear_coat = 0.0
     [[
@@ -143,7 +144,7 @@ shader as_disney_material
         float max = 100.0,
         float softmax = 1.0,
         string label = "Coating Amount",
-        string page = "Clear Coat Parameters"
+        string page = "Clear Coat"
     ]],
     float in_clear_coat_glossyness = 1.0
     [[
@@ -152,14 +153,14 @@ shader as_disney_material
         float min = 0.0,
         float max = 1.0,
         string label = "Coating Glossyness",
-        string page = "Clear Coat Parameters"
+        string page = "Clear Coat"
     ]],
     normal in_bump_normal = N
     [[
         string as_maya_attribute_name = "normalCamera",
         string as_maya_attribute_short_name = "n",
         string label = "Bump Normal",
-        string page = "Bump Parameters"
+        string page = "Bump"
     ]],
     int in_enable_matte = 0
     [[
@@ -167,7 +168,7 @@ shader as_disney_material
         string as_maya_attribute_short_name = "ema",
         string widget = "checkBox",
         string label = "Enable Matte Opacity",
-        string page = "Matte Opacity Parameters",
+        string page = "Matte Opacity",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -181,7 +182,7 @@ shader as_disney_material
         float min = 0.0,
         float max = 1.0,
         string label = "Matte Opacity",
-        string page = "Matte Opacity Parameters",
+        string page = "Matte Opacity",
         int gafferNoduleLayoutVisible = 0
     ]],
     color in_matte_opacity_color = color(1, 0.5, 0)
@@ -189,7 +190,7 @@ shader as_disney_material
         string as_maya_attribute_name = "matteOpacityColor",
         string as_maya_attribute_short_name = "mac",
         string label = "Matte Opacity Color",
-        string page = "Matte Opacity Parameters",
+        string page = "Matte Opacity",
         int gafferNoduleLayoutVisible = 0
     ]], 
     int in_maximum_ray_depth = 4
@@ -200,7 +201,7 @@ shader as_disney_material
         int max = 32,
         int softmax = 8,
         string label = "Ray Depth",
-        string page = "Advanced Parameters",
+        string page = "Advanced",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,

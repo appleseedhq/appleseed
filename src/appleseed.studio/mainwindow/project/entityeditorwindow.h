@@ -45,6 +45,7 @@
 #include <string>
 
 // Forward declarations.
+namespace renderer  { class ParamArray; }
 namespace renderer  { class Project; }
 namespace Ui        { class EntityEditorWindow; }
 
@@ -61,6 +62,7 @@ class EntityEditorWindow
         QWidget*                                        parent,
         const std::string&                              window_title,
         const renderer::Project&                        project,
+        renderer::ParamArray&                           settings,
         std::unique_ptr<EntityEditor::IFormFactory>     form_factory,
         std::unique_ptr<EntityEditor::IEntityBrowser>   entity_browser,
         std::unique_ptr<CustomEntityUI>                 custom_entity_ui,

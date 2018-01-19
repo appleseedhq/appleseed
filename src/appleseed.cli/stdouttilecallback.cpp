@@ -73,6 +73,47 @@ namespace
             // Prevent this instance from being destroyed by doing nothing here.
         }
 
+        void on_tile_begin(
+            const Frame*    frame,
+            const size_t    tile_x,
+            const size_t    tile_y) override
+        {
+            boost::mutex::scoped_lock lock(m_mutex);
+
+#ifdef _WIN32
+            const int old_stdout_mode = _setmode(_fileno(stdout), _O_BINARY);
+#endif
+
+            // Compute the coordinates in the image of the top-left corner of the tile.
+            const CanvasProperties& frame_props = frame->image().properties();
+            const size_t x = tile_x * frame_props.m_tile_width;
+            const size_t y = tile_y * frame_props.m_tile_height;
+
+            // Retrieve the source tile and its dimensions.
+            const Tile& tile = frame->image().tile(tile_x, tile_y);
+            const size_t w = tile.get_width();
+            const size_t h = tile.get_height();
+
+            // Build and write tile header.
+            const size_t chunk_size = 4 * sizeof(uint32);
+            const uint32 header[] =
+            {
+                static_cast<uint32>(ChunkTypeTileHighlight),
+                static_cast<uint32>(chunk_size),
+                static_cast<uint32>(x),
+                static_cast<uint32>(y),
+                static_cast<uint32>(w),
+                static_cast<uint32>(h)
+            };
+            fwrite(header, sizeof(header), 1, stdout);
+
+            fflush(stdout);
+
+#ifdef _WIN32
+            _setmode(_fileno(stdout), old_stdout_mode);
+#endif
+        }
+
         void on_tile_end(
             const Frame*    frame,
             const size_t    tile_x,
@@ -96,11 +137,10 @@ namespace
             const size_t c = tile.get_channel_count();
 
             // Build and write tile header.
-            const uint32 ChunkType = 1;
-            const size_t chunk_size = 5 * 4 + sizeof(float) * w * h * c;
-            const uint32 header[7] =
+            const size_t chunk_size = 5 * sizeof(uint32) + w * h * c * sizeof(float);
+            const uint32 header[] =
             {
-                static_cast<uint32>(ChunkType),
+                static_cast<uint32>(ChunkTypeTileData),
                 static_cast<uint32>(chunk_size),
                 static_cast<uint32>(x),
                 static_cast<uint32>(y),
@@ -129,6 +169,13 @@ namespace
         }
 
       private:
+        // Do not change the values of the enumerators as this WILL break client compabitility.
+        enum ChunkType
+        {
+            ChunkTypeTileData       = 1,
+            ChunkTypeTileHighlight  = 2
+        };
+
         boost::mutex m_mutex;
     };
 }

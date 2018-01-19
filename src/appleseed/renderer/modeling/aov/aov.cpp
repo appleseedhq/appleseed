@@ -33,6 +33,7 @@
 #include "renderer/kernel/aov/imagestack.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
 #include "foundation/image/image.h"
 
 using namespace foundation;
@@ -59,6 +60,7 @@ AOV::AOV(
     const ParamArray&   params)
   : Entity(g_class_uid, params)
   , m_image(nullptr)
+  , m_image_index(~0)
 {
     set_name(name);
 }
@@ -75,16 +77,21 @@ void AOV::create_image(
     const size_t    tile_height,
     ImageStack&     aov_images)
 {
-    const size_t index = aov_images.append(
+    m_image_index = aov_images.append(
         get_name(),
         4, // TODO: check if we can pass aov->get_channel_count() here.
         PixelFormatFloat);
-    m_image = &aov_images.get_image(index);
+    m_image = &aov_images.get_image(m_image_index);
 }
 
 Image& AOV::get_image() const
 {
     return *m_image;
+}
+
+void AOV::clear_image()
+{
+    m_image->clear(Color4f(0.0f));
 }
 
 

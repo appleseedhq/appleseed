@@ -40,11 +40,10 @@
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/frame/frame.h"
-#include "renderer/modeling/input/texturesource.h"
+#include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/sourceinputs.h"
 #include "renderer/modeling/project/project.h"
-#include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/scene/visibilityflags.h"
-#include "renderer/modeling/texture/texture.h"
 #include "renderer/utility/paramarray.h"
 #include "renderer/utility/transformsequence.h"
 
@@ -129,13 +128,13 @@ namespace
     class ImageSampler
     {
       public:
-        explicit ImageSampler(
-            TextureCache&           texture_cache,
-            const TextureSource*    texture_source,
-            const size_t            width,
-            const size_t            height)
+        ImageSampler(
+            TextureCache&   texture_cache,
+            const Source*   source,
+            const size_t    width,
+            const size_t    height)
           : m_texture_cache(texture_cache)
-          , m_texture_source(texture_source)
+          , m_source(source)
           , m_width(width)
           , m_height(height)
           , m_range(sqrt(1.0 + static_cast<double>(m_height * m_height) / (m_width * m_width)))
@@ -158,17 +157,17 @@ namespace
                 y / (m_height - 1.0f));
 
             Color3f color;
-            m_texture_source->evaluate(m_texture_cache, uv, color);
+            m_source->evaluate(m_texture_cache, SourceInputs(uv), color);
 
             importance = luminance(color);
         }
 
       private:
-        TextureCache&               m_texture_cache;
-        const TextureSource*        m_texture_source;
-        const size_t                m_width;
-        const size_t                m_height;
-        const double                m_range;
+        TextureCache&       m_texture_cache;
+        const Source*       m_source;
+        const size_t        m_width;
+        const size_t        m_height;
+        const double        m_range;
     };
 
     const char* Model = "thinlens_camera";
@@ -439,7 +438,6 @@ namespace
         // Importance sampler to sample the diaphragm map.
         unique_ptr<ImageImportanceSamplerType>
                             m_importance_sampler;
-        string              m_diaphragm_map_name;
 
         void extract_diaphragm_blade_count()
         {
@@ -468,28 +466,24 @@ namespace
 
         bool build_diaphragm_importance_sampler(const Scene& scene)
         {
-            const TextureSource* diaphragm_map_source =
-                dynamic_cast<const TextureSource*>(m_inputs.source("diaphragm_map"));
-
+            const Source* diaphragm_map_source = m_inputs.source("diaphragm_map");
             if (diaphragm_map_source == nullptr)
                 return false;
 
-            const TextureInstance& texture_instance = diaphragm_map_source->get_texture_instance();
-            m_diaphragm_map_name = texture_instance.get_name();
-
-            const CanvasProperties& texture_props = texture_instance.get_texture().properties();
-            const size_t width = texture_props.m_canvas_width;
-            const size_t height = texture_props.m_canvas_height;
+            const Source::Hints diaphragm_map_hints = diaphragm_map_source->get_hints();
 
             TextureStore texture_store(scene);
             TextureCache texture_cache(texture_store);
             ImageSampler sampler(
                 texture_cache,
                 diaphragm_map_source,
-                width,
-                height);
+                diaphragm_map_hints.m_width,
+                diaphragm_map_hints.m_height);
 
-            m_importance_sampler.reset(new ImageImportanceSamplerType(width, height));
+            m_importance_sampler.reset(
+                new ImageImportanceSamplerType(
+                    diaphragm_map_hints.m_width,
+                    diaphragm_map_hints.m_height));
             m_importance_sampler->rebuild(sampler);
 
             return true;
@@ -569,7 +563,7 @@ namespace
                 m_autofocus_enabled ? "on" : "off",
                 m_autofocus_target[0],
                 m_autofocus_target[1],
-                m_diaphragm_map_bound ? m_diaphragm_map_name.c_str() : "none",
+                m_diaphragm_map_bound ? "on" : "off",
                 pretty_uint(m_diaphragm_blade_count).c_str(),
                 m_diaphragm_tilt_angle,
                 m_near_z,

@@ -303,6 +303,8 @@ class RendererServices
     DECLARE_ATTR_GETTER(object_instance_id);
     DECLARE_ATTR_GETTER(object_instance_index);
     DECLARE_ATTR_GETTER(assembly_instance_id);
+    DECLARE_ATTR_GETTER(assembly_instance_name);    
+    DECLARE_ATTR_GETTER(assembly_name);
     DECLARE_ATTR_GETTER(object_instance_name);
     DECLARE_ATTR_GETTER(object_name);
 

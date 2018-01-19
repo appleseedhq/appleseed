@@ -34,6 +34,7 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/sourceinputs.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -79,7 +80,7 @@ void* BSSRDF::evaluate_inputs(
 
     get_inputs().evaluate(
         shading_context.get_texture_cache(),
-        shading_point.get_uv(0),
+        SourceInputs(shading_point.get_uv(0)),
         data);
 
     prepare_inputs(

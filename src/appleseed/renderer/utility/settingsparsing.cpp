@@ -77,7 +77,7 @@ SamplingContext::Mode get_sampling_context_mode(const ParamArray& params)
     const string sampling_mode =
         params.get_required<string>(
             "sampling_mode",
-            "rng",
+            "qmc",
             make_vector("rng", "qmc"));
 
     return

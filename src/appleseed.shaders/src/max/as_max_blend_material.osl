@@ -1,0 +1,90 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Sergo Pogosyan, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "as_osl_extensions.h"
+
+surface as_max_blend_material
+(
+    closure color BaseMtl = 0,
+    
+    closure color LayerMtl_1 = 0,
+    closure color LayerMtl_2 = 0,
+    closure color LayerMtl_3 = 0,
+    closure color LayerMtl_4 = 0,
+    closure color LayerMtl_5 = 0,
+    closure color LayerMtl_6 = 0,
+    closure color LayerMtl_7 = 0,
+    closure color LayerMtl_8 = 0,
+    closure color LayerMtl_9 = 0,
+
+    float	MixAmount_1 = 0,
+    float	MixAmount_2 = 0,
+    float	MixAmount_3 = 0,
+    float	MixAmount_4 = 0,
+    float	MixAmount_5 = 0,
+    float	MixAmount_6 = 0,
+    float	MixAmount_7 = 0,
+    float	MixAmount_8 = 0,
+    float	MixAmount_9 = 0,
+    
+    float	MaskColor_1 = 1,    // Mask texture. Set to 1 to not zero out a layer in case when no texture is connected
+    float	MaskColor_2 = 1,
+    float	MaskColor_3 = 1,
+    float	MaskColor_4 = 1,
+    float	MaskColor_5 = 1,
+    float	MaskColor_6 = 1,
+    float	MaskColor_7 = 1,
+    float	MaskColor_8 = 1,
+    float	MaskColor_9 = 1,
+
+    output	closure color ClosureOut = 0
+)
+{
+    ClosureOut = BaseMtl;
+    
+    if (LayerMtl_1)
+        ClosureOut = mix(ClosureOut, LayerMtl_1, (MixAmount_1 * MaskColor_1));
+    if (LayerMtl_2)
+        ClosureOut = mix(ClosureOut, LayerMtl_2, (MixAmount_2 * MaskColor_2));
+    if (LayerMtl_3)
+        ClosureOut = mix(ClosureOut, LayerMtl_3, (MixAmount_3 * MaskColor_3));
+    if (LayerMtl_4)
+        ClosureOut = mix(ClosureOut, LayerMtl_4, (MixAmount_4 * MaskColor_4));
+    if (LayerMtl_5)
+        ClosureOut = mix(ClosureOut, LayerMtl_5, (MixAmount_5 * MaskColor_5));
+    if (LayerMtl_6)
+        ClosureOut = mix(ClosureOut, LayerMtl_6, (MixAmount_6 * MaskColor_6));
+    if (LayerMtl_7)
+        ClosureOut = mix(ClosureOut, LayerMtl_7, (MixAmount_7 * MaskColor_7));
+    if (LayerMtl_8)
+        ClosureOut = mix(ClosureOut, LayerMtl_8, (MixAmount_8 * MaskColor_8));
+    if (LayerMtl_9)
+        ClosureOut = mix(ClosureOut, LayerMtl_9, (MixAmount_9 * MaskColor_9));
+
+    Ci = ClosureOut;
+}

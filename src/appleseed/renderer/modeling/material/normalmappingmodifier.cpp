@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/input/sourceinputs.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -61,7 +62,7 @@ Basis3d NormalMappingModifier::modify(
 
     // Lookup the normal map.
     Color3f normal_rgb;
-    m_map->evaluate(texture_cache, uv, normal_rgb);
+    m_map->evaluate(texture_cache, SourceInputs(uv), normal_rgb);
 
     // Reconstruct the normal from the texel value.
     const double x = static_cast<double>(normal_rgb[0]);

@@ -31,17 +31,13 @@
 #define APPLESEED_FOUNDATION_IMAGE_PIXEL_H
 
 // appleseed.foundation headers.
+#include "foundation/math/half.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/otherwise.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
-
-// OpenEXR headers.
-#include "foundation/platform/_beginexrheaders.h"
-#include "OpenEXR/half.h"
-#include "foundation/platform/_endexrheaders.h"
 
 // Standard headers.
 #include <cassert>
@@ -240,10 +236,10 @@ inline void Pixel::convert_to_format<uint8>(
 
       case PixelFormatHalf:                 // lossless uint8 -> half
         {
-            half* typed_dest = reinterpret_cast<half*>(dest);
+            Half* typed_dest = reinterpret_cast<Half*>(dest);
             for (const uint8* it = src_begin; it < src_end; it += src_stride)
             {
-                *typed_dest = static_cast<half>(static_cast<float>(*it) * (1.0f / 255));
+                *typed_dest = static_cast<Half>(static_cast<float>(*it) * (1.0f / 255));
                 typed_dest += dest_stride;
             }
         }
@@ -325,10 +321,10 @@ inline void Pixel::convert_to_format<uint16>(
 
       case PixelFormatHalf:                 // lossy uint16 -> half
         {
-            half* typed_dest = reinterpret_cast<half*>(dest);
+            Half* typed_dest = reinterpret_cast<Half*>(dest);
             for (const uint16* it = src_begin; it < src_end; it += src_stride)
             {
-                *typed_dest = static_cast<half>(static_cast<float>(*it) * (1.0f / 65535));
+                *typed_dest = static_cast<Half>(static_cast<float>(*it) * (1.0f / 65535));
                 typed_dest += dest_stride;
             }
         }
@@ -410,10 +406,10 @@ inline void Pixel::convert_to_format<uint32>(
 
       case PixelFormatHalf:                 // lossy uint32 -> half
         {
-            half* typed_dest = reinterpret_cast<half*>(dest);
+            Half* typed_dest = reinterpret_cast<Half*>(dest);
             for (const uint32* it = src_begin; it < src_end; it += src_stride)
             {
-                *typed_dest = static_cast<half>(static_cast<float>(*it) * (1.0f / 4294967295UL));
+                *typed_dest = static_cast<Half>(static_cast<float>(*it) * (1.0f / 4294967295UL));
                 typed_dest += dest_stride;
             }
         }
@@ -446,9 +442,9 @@ inline void Pixel::convert_to_format<uint32>(
 }
 
 template <>
-inline void Pixel::convert_to_format<half>(
-    const half*             src_begin,
-    const half*             src_end,
+inline void Pixel::convert_to_format<Half>(
+    const Half*             src_begin,
+    const Half*             src_end,
     const size_t            src_stride,
     const PixelFormat       dest_format,
     void*                   dest,
@@ -463,7 +459,7 @@ inline void Pixel::convert_to_format<half>(
       case PixelFormatUInt8:                // lossy half -> uint8
         {
             uint8* typed_dest = reinterpret_cast<uint8*>(dest);
-            for (const half* it = src_begin; it < src_end; it += src_stride)
+            for (const Half* it = src_begin; it < src_end; it += src_stride)
             {
                 const float val = clamp(*it * 256.0f, 0.0f, 255.0f);
                 *typed_dest = truncate<uint8>(val);
@@ -475,7 +471,7 @@ inline void Pixel::convert_to_format<half>(
       case PixelFormatUInt16:               // lossy half -> uint16
         {
             uint16* typed_dest = reinterpret_cast<uint16*>(dest);
-            for (const half* it = src_begin; it < src_end; it += src_stride)
+            for (const Half* it = src_begin; it < src_end; it += src_stride)
             {
                 const float val = clamp(*it * 65536.0f, 0.0f, 65535.0f);
                 *typed_dest = truncate<uint16>(val);
@@ -487,7 +483,7 @@ inline void Pixel::convert_to_format<half>(
       case PixelFormatUInt32:               // lossy half -> uint32
         {
             uint32* typed_dest = reinterpret_cast<uint32*>(dest);
-            for (const half* it = src_begin; it < src_end; it += src_stride)
+            for (const Half* it = src_begin; it < src_end; it += src_stride)
             {
                 const double val = clamp(static_cast<double>(*it) * 4294967296.0, 0.0, 4294967295.0);
                 *typed_dest = truncate<uint32>(val);
@@ -498,8 +494,8 @@ inline void Pixel::convert_to_format<half>(
 
       case PixelFormatHalf:                 // lossless half -> half
         {
-            half* typed_dest = reinterpret_cast<half*>(dest);
-            for (const half* it = src_begin; it < src_end; it += src_stride)
+            Half* typed_dest = reinterpret_cast<Half*>(dest);
+            for (const Half* it = src_begin; it < src_end; it += src_stride)
             {
                 *typed_dest = *it;
                 typed_dest += dest_stride;
@@ -510,7 +506,7 @@ inline void Pixel::convert_to_format<half>(
       case PixelFormatFloat:                // lossless half -> float
         {
             float* typed_dest = reinterpret_cast<float*>(dest);
-            for (const half* it = src_begin; it < src_end; it += src_stride)
+            for (const Half* it = src_begin; it < src_end; it += src_stride)
             {
                 *typed_dest = static_cast<float>(*it);
                 typed_dest += dest_stride;
@@ -521,7 +517,7 @@ inline void Pixel::convert_to_format<half>(
       case PixelFormatDouble:               // lossless half -> double
         {
             double* typed_dest = reinterpret_cast<double*>(dest);
-            for (const half* it = src_begin; it < src_end; it += src_stride)
+            for (const Half* it = src_begin; it < src_end; it += src_stride)
             {
                 *typed_dest = static_cast<double>(*it);
                 typed_dest += dest_stride;
@@ -587,10 +583,10 @@ inline void Pixel::convert_to_format<float>(
 
       case PixelFormatHalf:                 // lossy float -> half
         {
-            half* typed_dest = reinterpret_cast<half*>(dest);
+            Half* typed_dest = reinterpret_cast<Half*>(dest);
             for (const float* it = src_begin; it < src_end; it += src_stride)
             {
-                *typed_dest = static_cast<half>(*it);
+                *typed_dest = static_cast<Half>(*it);
                 typed_dest += dest_stride;
             }
         }
@@ -675,10 +671,10 @@ inline void Pixel::convert_to_format<double>(
 
       case PixelFormatHalf:                 // lossy double -> half
         {
-            half* typed_dest = reinterpret_cast<half*>(dest);
+            Half* typed_dest = reinterpret_cast<Half*>(dest);
             for (const double* it = src_begin; it < src_end; it += src_stride)
             {
-                *typed_dest = static_cast<half>(static_cast<float>(*it));
+                *typed_dest = static_cast<Half>(static_cast<float>(*it));
                 typed_dest += dest_stride;
             }
         }
@@ -760,10 +756,10 @@ inline void Pixel::convert_from_format<uint8>(
 
       case PixelFormatHalf:                 // lossy half -> uint8
         {
-            const half* it = reinterpret_cast<const half*>(src_begin);
-            for (; it < reinterpret_cast<const half*>(src_end); it += src_stride)
+            const Half* it = reinterpret_cast<const Half*>(src_begin);
+            for (; it < reinterpret_cast<const Half*>(src_end); it += src_stride)
             {
-                const half val = static_cast<half>(clamp(*it * 256.0f, 0.0f, 255.0f));
+                const Half val = static_cast<Half>(clamp(*it * 256.0f, 0.0f, 255.0f));
                 *dest = truncate<uint8>(val);
                 dest += dest_stride;
             }
@@ -848,10 +844,10 @@ inline void Pixel::convert_from_format<uint16>(
 
       case PixelFormatHalf:                 // lossy half -> uint16
         {
-            const half* it = reinterpret_cast<const half*>(src_begin);
-            for (; it < reinterpret_cast<const half*>(src_end); it += src_stride)
+            const Half* it = reinterpret_cast<const Half*>(src_begin);
+            for (; it < reinterpret_cast<const Half*>(src_end); it += src_stride)
             {
-                const half val = static_cast<half>(clamp(*it * 65536.0f, 0.0f, 65535.0f));
+                const Half val = static_cast<Half>(clamp(*it * 65536.0f, 0.0f, 65535.0f));
                 *dest = truncate<uint16>(val);
                 dest += dest_stride;
             }
@@ -936,8 +932,8 @@ inline void Pixel::convert_from_format<uint32>(
 
       case PixelFormatHalf:                 // lossy half -> uint32
         {
-            const half* it = reinterpret_cast<const half*>(src_begin);
-            for (; it < reinterpret_cast<const half*>(src_end); it += src_stride)
+            const Half* it = reinterpret_cast<const Half*>(src_begin);
+            for (; it < reinterpret_cast<const Half*>(src_end); it += src_stride)
             {
                 const double val = clamp(static_cast<double>(*it) * 4294967296.0, 0.0, 4294967295.0);
                 *dest = truncate<uint32>(val);
@@ -1024,8 +1020,8 @@ inline void Pixel::convert_from_format<float>(
 
       case PixelFormatHalf:                 // lossless half -> float
         {
-            const half* it = reinterpret_cast<const half*>(src_begin);
-            for (; it < reinterpret_cast<const half*>(src_end); it += src_stride)
+            const Half* it = reinterpret_cast<const Half*>(src_begin);
+            for (; it < reinterpret_cast<const Half*>(src_end); it += src_stride)
             {
                 *dest = static_cast<float>(*it);
                 dest += dest_stride;
@@ -1109,8 +1105,8 @@ inline void Pixel::convert_from_format<double>(
 
       case PixelFormatHalf:                 // lossless half -> double
         {
-            const half* it = reinterpret_cast<const half*>(src_begin);
-            for (; it < reinterpret_cast<const half*>(src_end); it += src_stride)
+            const Half* it = reinterpret_cast<const Half*>(src_begin);
+            for (; it < reinterpret_cast<const Half*>(src_end); it += src_stride)
             {
                 *dest = static_cast<double>(*it);
                 dest += dest_stride;
@@ -1190,9 +1186,9 @@ inline void Pixel::convert(
         break;
 
       case PixelFormatHalf:                 // half -> destination format
-        convert_to_format<half>(
-            reinterpret_cast<const half*>(src_begin),
-            reinterpret_cast<const half*>(src_end),
+        convert_to_format<Half>(
+            reinterpret_cast<const Half*>(src_begin),
+            reinterpret_cast<const Half*>(src_end),
             src_stride,
             dest_format,
             dest,

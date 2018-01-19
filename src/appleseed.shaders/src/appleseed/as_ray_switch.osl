@@ -1,0 +1,155 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+shader as_ray_switch
+[[
+    string as_maya_node_name = "asRaySwitch",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string help = "Ray switch utility node.",
+    string icon = "asRaySwitch.png",
+    int as_maya_type_id = 0x001279dc
+]]
+(
+    color in_color = color(1)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Camera Ray Color",
+        string page = "Color"
+    ]],
+    color in_color_light = color(0)
+    [[
+        string as_maya_attribute_name = "colorLight",
+        string as_maya_attribute_short_name = "cli",
+        string label = "Light Ray Color",
+        string page = "Color"
+    ]],
+    color in_color_shadow = color(0)
+    [[
+        string as_maya_attribute_name = "colorShadow",
+        string as_maya_attribute_short_name = "csh",
+        string label = "Shadow Ray Color",
+        string page = "Color"
+    ]],
+    color in_color_transparency = color(0)
+    [[
+        string as_maya_attribute_name = "colorTransparency",
+        string as_maya_attribute_short_name = "ctr",
+        string label = "Transparency Ray Color",
+        string page = "Color"
+    ]],
+    color in_color_probe = color(0)
+    [[
+        string as_maya_attribute_name = "colorProbe",
+        string as_maya_attribute_short_name = "cpr",
+        string label = "Probe Ray Color",
+        string page = "Color"
+    ]],
+    color in_color_diffuse = color(0)
+    [[
+        string as_maya_attribute_name = "colorDiffuse",
+        string as_maya_attribute_short_name = "cde",
+        string label = "Diffuse Ray Color",
+        string page = "Color"
+    ]],
+    color in_color_glossy = color(0)
+    [[
+        string as_maya_attribute_name = "colorGlossy",
+        string as_maya_attribute_short_name = "cgl",
+        string label = "Glossy Ray Color",
+        string page = "Color"
+    ]],
+    color in_color_specular = color(0)
+    [[
+        string as_maya_attribute_name = "colorSpecular",
+        string as_maya_attribute_short_name = "csp",
+        string label = "Specular Ray Color",
+        string page = "Color"
+    ]],
+    color in_color_subsurface = color(0)
+    [[
+        string as_maya_attribute_name = "colorSubsurface",
+        string as_maya_attribute_short_name = "csu",
+        string label = "Subsurface Ray Color",
+        string page = "Color"
+    ]],
+
+    output color out_color = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string label = "Output Color"
+    ]]
+)
+{
+    if (raytype("camera"))
+    {
+        out_color = in_color;
+    }
+    else if (raytype("light"))
+    {
+        out_color = in_color_light;
+    }
+    else if (raytype("shadow"))
+    {
+        out_color = in_color_shadow;
+    }
+    else if (raytype("transparency"))
+    {
+        out_color = in_color_transparency;
+    }
+    else if (raytype("probe"))
+    {
+        out_color = in_color_probe;
+    }
+    else if (raytype("diffuse"))
+    {
+        out_color = in_color_diffuse;
+    }
+    else if (raytype("glossy"))
+    {
+        out_color = in_color_glossy;
+    }
+    else if (raytype("specular"))
+    {
+        out_color = in_color_specular;
+    }
+    else if (raytype("subsurface"))
+    {
+        out_color = in_color_subsurface;
+    }
+    else
+    {
+#ifdef DEBUG
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+        warning("[WARNING]: Unknown Ray Type in %s, %s:%d\n",
+                shadername, __FILE__, __LINE__);
+#endif
+    }
+}

@@ -30,6 +30,7 @@
 #include "volumefactoryregistrar.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/entity/registerentityfactories.h"
 #include "renderer/modeling/volume/genericvolume.h"
 #include "renderer/modeling/volume/volumetraits.h"
 

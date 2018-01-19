@@ -1,0 +1,132 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/transform/as_transform_helpers.h"
+
+shader as_id_manifold
+[[
+    string as_maya_node_name = "asIdManifold",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string help = "ID manifold utility shader",
+    string icon = "asIdManifold",
+    int as_maya_type_id = 0x001279d9
+]]
+(
+    int in_manifold_type = 0
+    [[
+        string as_maya_attribute_name = "manifoldType",
+        string as_maya_attribute_short_name = "mty",
+        string widget = "mapper",
+        string options = "Object Name:0|Object Instance Name:1|Assembly Name:2|Assembly Instance Name:3|Face ID:4|String Prefix:5|String Suffix:6|Find String:7",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Type",
+        string page = "Manifold",
+        int divider = 1
+    ]],
+    string in_expression = ""
+    [[
+        string as_maya_attribute_name = "expression",
+        string as_maya_attribute_short_name = "xpr",
+        string widget = "string",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Expression",
+        string page = "Manifold.String",
+        string help = "String expression to search in the object or object instance name"
+    ]],
+    int in_domain = 0
+    [[
+        string as_maya_attribute_name = "domain",
+        string as_maya_attribute_short_name = "dmn",
+        string widget = "mapper",
+        string options = "Object Name:0|Object Instance Name:1|Assembly Name:2|Assembly Instance Name:3",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Domain",
+        string page = "Manifold.String",
+        int divider = 1
+    ]],
+    int in_seed = 0xcafe
+    [[
+        string as_maya_attribute_name = "seed",
+        string as_maya_attribute_short_name = "see",
+        string widget = "number",
+        int min = 0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 0,
+        int gafferNoduleLayoutVisible = 1,
+        string label = "Seed",
+        string page = "Manifold.String"
+    ]],
+    int in_output_mode = 1
+    [[
+        string as_maya_attribute_name = "outputMode",
+        string as_maya_attribute_short_name = "grs",
+        string widget = "mapper",
+        string options = "Hash Only:0|Hash & Greyscale Value:1|Hash, Greyscale & Color ID:2",
+        string label = "Output Mode",
+        string page = "Manifold.Output"
+    ]],
+
+    output int out_outHash = 0
+    [[
+        string as_maya_attribute_name = "outHash",
+        string as_maya_attribute_short_name = "osh",
+        string label = "Output Hash"
+    ]],
+    output color out_outID = color(0)
+    [[
+        string as_maya_attribute_name = "outID",
+        string as_maya_attribute_short_name = "oid",
+        string label = "Output ID"
+    ]],
+    output float out_outGreyscale = 0.0
+    [[
+        string as_maya_attribute_name = "outGreyscale",
+        string as_maya_attribute_short_name = "ogr",
+        string label = "Output Greyscale"
+    ]]
+)
+{
+    compute_id_manifold(
+        in_manifold_type,
+        in_domain,
+        in_seed,
+        in_expression,
+        out_outHash,
+        out_outID,
+        out_outGreyscale);
+}

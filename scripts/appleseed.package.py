@@ -30,8 +30,6 @@
 
 from __future__ import print_function
 from distutils import archive_util, dir_util
-from stat import *
-from subprocess import *
 from xml.etree.ElementTree import ElementTree
 import glob
 import os
@@ -50,7 +48,7 @@ import zipfile
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.4.7"
+VERSION = "2.4.10"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 
 
@@ -129,7 +127,7 @@ def copy_glob(input_pattern, output_path):
 
 
 def make_writable(filepath):
-    os.chmod(filepath, S_IRUSR | S_IWUSR)
+    os.chmod(filepath, stat.S_IRUSR | stat.S_IWUSR)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -145,10 +143,10 @@ class Settings:
             tree.parse(SETTINGS_FILENAME)
         except IOError:
             fatal("Failed to load configuration file '" + SETTINGS_FILENAME + "'")
-        self.load_values(tree)
-        self.print_summary()
+        self.__load_values(tree)
+        self.__print_summary()
 
-    def load_values(self, tree):
+    def __load_values(self, tree):
         self.platform = self.__get_required(tree, "platform")
         self.configuration = self.__get_required(tree, "configuration")
         self.appleseed_path = self.__get_required(tree, "appleseed_path")
@@ -157,7 +155,13 @@ class Settings:
         self.platform_runtime_path = self.__get_required(tree, "platform_runtime_path")
         self.package_output_path = self.__get_required(tree, "package_output_path")
 
-    def print_summary(self):
+    def __get_required(self, tree, key):
+        value = tree.findtext(key)
+        if value is None:
+            fatal("Missing value \"{0}\" in configuration file".format(key))
+        return value
+
+    def __print_summary(self):
         print("")
         print("  Platform:                  " + self.platform)
         print("  Configuration:             " + self.configuration)
@@ -168,12 +172,6 @@ class Settings:
             print("  Path to platform runtime:  " + self.platform_runtime_path)
         print("  Output directory:          " + self.package_output_path)
         print("")
-
-    def __get_required(self, tree, key):
-        value = tree.findtext(key)
-        if value is None:
-            fatal("Missing value \"{0}\" in configuration file".format(key))
-        return value
 
 
 #--------------------------------------------------------------------------------------------------
@@ -193,7 +191,7 @@ class PackageInfo:
 
     def retrieve_git_tag(self):
         old_path = pushd(self.settings.appleseed_path)
-        self.version = Popen("git describe --long", stdout=PIPE, shell=True).stdout.read().strip()
+        self.version = subprocess.Popen("git describe --long", stdout=subprocess.PIPE, shell=True).stdout.read().strip()
         os.chdir(old_path)
 
     def build_package_path(self):
@@ -272,14 +270,12 @@ class PackageBuilder:
         safe_delete_file("appleseed/tests/unit benchmarks/inputs/test_knn_particles.bin")
         safe_delete_file("appleseed/tests/unit benchmarks/inputs/test_knn_photons.bin")
 
-        # Remove the devkit which we ship separately.
-        safe_delete_directory("appleseed/extras/devkit")
-
     def add_local_binaries_to_stage(self):
         progress("Adding local binaries to staging directory")
         safe_make_directory("appleseed/bin")
         dir_util.copy_tree(os.path.join(self.settings.appleseed_path, "sandbox/bin", self.settings.configuration), "appleseed/bin/")
         shutil.copy(os.path.join(self.settings.appleseed_path, "sandbox/bin", exe("maketx")), "appleseed/bin/")
+        shutil.copy(os.path.join(self.settings.appleseed_path, "sandbox/bin", exe("oiiotool")), "appleseed/bin/")
         shutil.copy(os.path.join(self.settings.appleseed_path, "sandbox/bin", exe("oslc")), "appleseed/bin/")
         shutil.copy(os.path.join(self.settings.appleseed_path, "sandbox/bin", exe("oslinfo")), "appleseed/bin/")
 
@@ -363,7 +359,6 @@ class PackageBuilder:
         shutil.copy("updatemany.py", "appleseed/bin/")
         shutil.copy("rendernode.py", "appleseed/bin/")
         shutil.copy("rendermanager.py", "appleseed/bin/")
-        shutil.copy("mitsuba2appleseed.py", "appleseed/bin/")
 
     def add_local_schema_files_to_stage(self):
         progress("Adding local schema files to staging directory")
@@ -642,6 +637,7 @@ class LinuxPackageBuilder(PackageBuilder):
 
     def alter_stage(self):
         self.make_executable(os.path.join("appleseed/bin", "maketx"))
+        self.make_executable(os.path.join("appleseed/bin", "oiiotool"))
         self.make_executable(os.path.join("appleseed/bin", "oslc"))
         self.make_executable(os.path.join("appleseed/bin", "oslinfo"))
         self.add_dependencies_to_stage()
@@ -649,8 +645,8 @@ class LinuxPackageBuilder(PackageBuilder):
         self.clear_runtime_paths_on_libraries()
 
     def make_executable(self, filepath):
-        mode = os.stat(filepath)[ST_MODE]
-        mode |= S_IXUSR | S_IXGRP | S_IXOTH
+        mode = os.stat(filepath)[stat.ST_MODE]
+        mode |= stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
         os.chmod(filepath, mode)
 
     def add_dependencies_to_stage(self):
@@ -732,5 +728,5 @@ def main():
 
     package_builder.build_package()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

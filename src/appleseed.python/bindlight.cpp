@@ -49,6 +49,8 @@ using namespace std;
 namespace boost
 {
     template <> Light const volatile* get_pointer<Light const volatile>(Light const volatile* p) { return p; }
+    template <> ILightFactory const volatile* get_pointer<ILightFactory const volatile>(ILightFactory const volatile* p) { return p; }
+    template <> LightFactoryRegistrar const volatile* get_pointer<LightFactoryRegistrar const volatile>(LightFactoryRegistrar const volatile* p) { return p; }
 }
 #endif
 
@@ -73,6 +75,14 @@ namespace
         return auto_release_ptr<Light>();
     }
 
+    auto_release_ptr<Light> factory_create_light(
+        const ILightFactory*    factory,
+        const char*             name,
+        const bpy::dict&        params)
+    {
+        return factory->create(name, bpy_dict_to_param_array(params));
+    }
+
     UnalignedTransformd light_get_transform(const Light* light)
     {
         return UnalignedTransformd(light->get_transform());
@@ -92,8 +102,13 @@ void bind_light()
         .def("__init__", bpy::make_constructor(create_light))
         .def("get_model", &Light::get_model)
         .def("set_transform", &light_set_transform)
-        .def("get_transform", &light_get_transform)
-        ;
+        .def("get_transform", &light_get_transform);
 
     bind_typed_entity_vector<Light>("LightContainer");
+
+    bpy::class_<ILightFactory, boost::noncopyable>("ILightFactory", bpy::no_init)
+        .def("create", &factory_create_light);
+
+    bpy::class_<LightFactoryRegistrar, boost::noncopyable>("LightFactoryRegistrar", bpy::no_init)
+        .def("lookup", &LightFactoryRegistrar::lookup, bpy::return_value_policy<bpy::reference_existing_object>());
 }

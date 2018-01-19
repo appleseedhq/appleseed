@@ -51,6 +51,7 @@
 #include "foundation/platform/compiler.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <string>
@@ -177,6 +178,10 @@ namespace
 
         // Sample a radius.
         const float disk_radius = bssrdf.sample_profile(bssrdf_data, channel, u[0]);
+
+        // Reject the limit case where there is no subsurface travel.
+        if (disk_radius == 0.0f)
+            return false;
 
         // Reject points outside the sampling disk.
         // This introduces negligible bias in comparison to the other approximations.
@@ -486,13 +491,13 @@ void SeparableBSSRDF::do_evaluate(
     {
         // Fresnel factor at outgoing direction.
         const Vector3f outgoing_normal(outgoing_point.get_shading_normal());
-        const float cos_on = abs(dot(outgoing_dir, outgoing_normal));
+        const float cos_on = min(abs(dot(outgoing_dir, outgoing_normal)), 1.0f);
         fresnel_transmittance_dielectric(fo, values.m_eta, cos_on);
         fo = lerp(1.0f, fo, values.m_fresnel_weight);
 
         // Fresnel factor at incoming direction.
         const Vector3f incoming_normal(incoming_point.get_shading_normal());
-        const float cos_in = abs(dot(incoming_dir, incoming_normal));
+        const float cos_in = min(abs(dot(incoming_dir, incoming_normal)), 1.0f);
         fresnel_transmittance_dielectric(fi, values.m_eta, cos_in);
         fi = lerp(1.0f, fi, values.m_fresnel_weight);
     }

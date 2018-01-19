@@ -1,0 +1,147 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/pattern/as_pattern_helpers.h"
+
+shader as_falloff_angle
+[[
+    string as_maya_node_name = "asFalloffAngle",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string help = "Double shading node.",
+    string icon = "asFalloffAngle",
+    int as_maya_type_id = 0x001279f7
+]]
+(
+    vector in_vector_1 = vector(0,1,0)
+    [[
+        string as_maya_attribute_name = "vector1",
+        string as_maya_attribute_short_name = "v1",
+        string label = "Vector 1",
+        string page = "Input"
+    ]],
+    int in_normalize_input_1 = 0
+    [[
+        string as_maya_attribute_name = "normalizeInput1",
+        string as_maya_attribute_short_name = "ni1",
+        string label = "Normalize Input 1",
+        string page = "Input",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    vector in_vector_2 = vector(N)
+    [[
+        string as_maya_attribute_name = "vector2",
+        string as_maya_attribute_short_name = "v2",
+        string label = "Vector 2",
+        string page = "Input"
+    ]],
+    int in_normalize_input_2 = 0
+    [[
+        string as_maya_attribute_name = "normalizeInput2",
+        string as_maya_attribute_short_name = "ni2",
+        string label = "Normalize Input 2",
+        string page = "Input",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 2,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 2,
+    ]],
+    float in_smooth_lower_bound = 0.25
+    [[
+        string as_maya_attribute_name = "smoothLowerBound",
+        string as_maya_attribute_short_name = "slb",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Smoothstep Lower Bound",
+        string page = "Interpolation"
+    ]],
+    float in_smooth_upper_bound = 0.75
+    [[
+        string as_maya_attribute_name = "smoothUpperBound",
+        string as_maya_attribute_short_name = "sub",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Smoothstep Upper Bound",
+        string page = "Interpolation",
+        int divider = 1
+    ]],
+    int in_smooth_function = 0
+    [[
+        string as_maya_attribute_name = "smoothFunction",
+        string as_maya_attribute_short_name = "smo",
+        string label = "Smoothstep Function",
+        string page = "Interpolation",
+        string widget = "mapper",
+        string options = "Smooth step:0|Smoother step:1|Smoothest Step:2",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+
+    output float out_result = 0.0
+    [[
+        string as_maya_attribute_name = "result",
+        string as_maya_attribute_short_name = "rel",
+        string label = "Result"
+    ]]
+)
+{
+    vector v1 = in_normalize_input_1
+        ? normalize(in_vector_1)
+        : in_vector_1;
+
+    vector v2 = in_normalize_input_2
+        ? normalize(in_vector_2)
+        : in_vector_2;
+
+    float angle = dot(v1, v2);
+
+    float x = max(0.0, angle);
+
+    if (in_smooth_function == 0)
+    {
+        x = smoothstep(in_smooth_lower_bound, in_smooth_upper_bound, x);
+    }
+    else if (in_smooth_function == 1)
+    {
+        x = smootherstep(in_smooth_lower_bound, in_smooth_upper_bound, x);
+    }
+    else
+    {
+        x = smootheststep(in_smooth_lower_bound, in_smooth_upper_bound, x);
+    }
+
+    out_result = x;
+}

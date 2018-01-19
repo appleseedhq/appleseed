@@ -51,12 +51,31 @@ using namespace std;
 namespace boost
 {
     template <> Texture const volatile* get_pointer<Texture const volatile>(Texture const volatile* p) { return p; }
+    template <> ITextureFactory const volatile* get_pointer<ITextureFactory const volatile>(ITextureFactory const volatile* p) { return p; }
+    template <> TextureFactoryRegistrar const volatile* get_pointer<TextureFactoryRegistrar const volatile>(TextureFactoryRegistrar const volatile* p) { return p; }
     template <> TextureInstance const volatile* get_pointer<TextureInstance const volatile>(TextureInstance const volatile* p) { return p; }
 }
 #endif
 
 namespace
 {
+    void string_list_to_search_paths(
+        const bpy::list&            search_paths,
+        SearchPaths&                paths)
+    {
+        for (bpy::ssize_t i = 0, e = bpy::len(search_paths); i < e; ++i)
+        {
+            bpy::extract<const char*> extractor(search_paths[i]);
+            if (extractor.check())
+                paths.push_back(extractor());
+            else
+            {
+                PyErr_SetString(PyExc_TypeError, "Incompatible type. Only strings accepted.");
+                bpy::throw_error_already_set();
+            }
+        }
+    }
+
     auto_release_ptr<Texture> create_texture(
         const string&              model,
         const string&              name,
@@ -69,18 +88,7 @@ namespace
         if (factory)
         {
             SearchPaths paths;
-
-            for (bpy::ssize_t i = 0, e = bpy::len(search_paths); i < e; ++i)
-            {
-                bpy::extract<const char*> extractor(search_paths[i]);
-                if (extractor.check())
-                    paths.push_back(extractor());
-                else
-                {
-                    PyErr_SetString(PyExc_TypeError, "Incompatible type. Only strings accepted.");
-                    bpy::throw_error_already_set();
-                }
-            }
+            string_list_to_search_paths(search_paths, paths);
 
             return factory->create(name.c_str(), bpy_dict_to_param_array(params), paths);
         }
@@ -91,6 +99,18 @@ namespace
         }
 
         return auto_release_ptr<Texture>();
+    }
+
+    auto_release_ptr<Texture> factory_create_texture(
+        const ITextureFactory*      factory,
+        const char*                 name,
+        const bpy::dict&            params,
+        const bpy::list&            search_paths)
+    {
+        SearchPaths paths;
+        string_list_to_search_paths(search_paths, paths);
+
+        return factory->create(name, bpy_dict_to_param_array(params), paths);
     }
 
     auto_release_ptr<TextureInstance> create_texture_instance(
@@ -122,30 +142,26 @@ void bind_texture()
 {
     bpy::enum_<TextureAddressingMode>("TextureAddressingMode")
         .value("Clamp", TextureAddressingClamp)
-        .value("Wrap", TextureAddressingWrap)
-        ;
+        .value("Wrap", TextureAddressingWrap);
 
     bpy::enum_<TextureFilteringMode>("TextureFilteringMode")
         .value("Nearest", TextureFilteringNearest)
         .value("Bilinear", TextureFilteringBilinear)
         .value("Bicubic", TextureFilteringBicubic)
         .value("Feline", TextureFilteringFeline)
-        .value("EWA", TextureFilteringEWA)
-        ;
+        .value("EWA", TextureFilteringEWA);
 
     bpy::enum_<TextureAlphaMode>("TextureAlphaMode")
         .value("AlphaChannel", TextureAlphaModeAlphaChannel)
         .value("Luminance", TextureAlphaModeLuminance)
-        .value("Detect", TextureAlphaModeDetect)
-        ;
+        .value("Detect", TextureAlphaModeDetect);
 
     bpy::class_<Texture, auto_release_ptr<Texture>, bpy::bases<Entity>, boost::noncopyable>("Texture", bpy::no_init)
         .def("get_model_metadata", &detail::get_entity_model_metadata<TextureFactoryRegistrar>).staticmethod("get_model_metadata")
         .def("get_input_metadata", &detail::get_entity_input_metadata<TextureFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_texture))
         .def("get_model", &Texture::get_model)
-        .def("get_color_space", &Texture::get_color_space)
-        ;
+        .def("get_color_space", &Texture::get_color_space);
 
     bind_typed_entity_vector<Texture>("TextureContainer");
 
@@ -156,8 +172,13 @@ void bind_texture()
         .def("get_filtering_mode", &TextureInstance::get_filtering_mode)
         .def("get_transform", &texture_inst_get_transform)
         .def("get_texture_name", &texture_inst_get_texture_name)
-        .def("find_texture", &TextureInstance::find_texture, bpy::return_value_policy<bpy::reference_existing_object>())
-        ;
+        .def("find_texture", &TextureInstance::find_texture, bpy::return_value_policy<bpy::reference_existing_object>());
 
     bind_typed_entity_vector<TextureInstance>("TextureInstanceContainer");
+
+    bpy::class_<ITextureFactory, boost::noncopyable>("ITextureFactory", bpy::no_init)
+        .def("create", &factory_create_texture);
+
+    bpy::class_<TextureFactoryRegistrar, boost::noncopyable>("TextureFactoryRegistrar", bpy::no_init)
+        .def("lookup", &TextureFactoryRegistrar::lookup, bpy::return_value_policy<bpy::reference_existing_object>());
 }

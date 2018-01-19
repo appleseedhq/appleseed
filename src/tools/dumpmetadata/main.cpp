@@ -34,7 +34,9 @@
 #include "application/superlogger.h"
 
 // appleseed.renderer headers.
+#include "renderer/api/aov.h"
 #include "renderer/api/bsdf.h"
+#include "renderer/api/bssrdf.h"
 #include "renderer/api/camera.h"
 #include "renderer/api/color.h"
 #include "renderer/api/edf.h"
@@ -42,12 +44,14 @@
 #include "renderer/api/environment.h"
 #include "renderer/api/environmentedf.h"
 #include "renderer/api/environmentshader.h"
+#include "renderer/api/frame.h"
 #include "renderer/api/light.h"
 #include "renderer/api/material.h"
 #include "renderer/api/object.h"
 #include "renderer/api/project.h"
 #include "renderer/api/surfaceshader.h"
 #include "renderer/api/texture.h"
+#include "renderer/api/volume.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
@@ -55,6 +59,7 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/indenter.h"
 #include "foundation/utility/log.h"
+#include "foundation/utility/string.h"
 #include "foundation/utility/xmlelement.h"
 
 // Standard headers.
@@ -137,15 +142,22 @@ namespace
         XMLElement metadata_element("metadata", file, indenter);
         metadata_element.write(XMLElement::HasChildElements);
 
+        dump_metadata_xml<AOV>(file, indenter);
         dump_metadata_xml<BSDF>(file, indenter);
+        dump_metadata_xml<BSSRDF>(file, indenter);
         dump_metadata_xml<Camera>(file, indenter);
         dump_metadata_xml("color", "color", ColorEntityFactory::get_input_metadata(), file, indenter);
         dump_metadata_xml<EDF>(file, indenter);
+        dump_metadata_xml("environment", "generic_environment", EnvironmentFactory::get_input_metadata(), file, indenter);
         dump_metadata_xml<EnvironmentEDF>(file, indenter);
         dump_metadata_xml<EnvironmentShader>(file, indenter);
+        dump_metadata_xml("frame", "frame", FrameFactory::get_input_metadata(), file, indenter);
         dump_metadata_xml<Light>(file, indenter);
+        dump_metadata_xml<Material>(file, indenter);
+        dump_metadata_xml<Object>(file, indenter);
         dump_metadata_xml<SurfaceShader>(file, indenter);
         dump_metadata_xml<Texture>(file, indenter);
+        dump_metadata_xml<Volume>(file, indenter);
     }
 
     //
@@ -166,42 +178,57 @@ namespace
         const DictionaryArray&  metadata_array,
         FILE*                   file)
     {
-        fprintf(file, "###### Parameters\n\n");
-
-        fprintf(file, "| Parameter               | Presence  | Description                                               |\n");
-        fprintf(file, "| :---------------------- | :-------- | :-------------------------------------------------------- |\n");
+        fprintf(file, "| Parameter | Label | Presence | Default | Description |\n");
+        fprintf(file, "| :-------- | :---- | :------- | :------ | :---------- |\n");
 
         for (size_t i = 0; i < metadata_array.size(); ++i)
         {
             Dictionary metadata = metadata_array[i];
 
-            const string name = metadata.get<string>("name");
-            const string use = metadata.get<string>("use");
-            string label = metadata.get<string>("label");
+            // Parameter, Label.
+            const string param_name = metadata.get<string>("name");
+            const string param_label = metadata.get<string>("label");
 
-            if (use == "optional" && metadata.strings().exist("default"))
+            // Presence.
+            string param_use = metadata.get<string>("use");
+            if (param_use == "required")
+                param_use = format("**{0}**", param_use);
+
+            // Default.
+            string param_default = metadata.strings().exist("default") ? metadata.get<string>("default") : "";
+            if (param_default.empty())
+                param_default = "_None_";
+            else if (!is_numeric_value(param_default))
+                param_default = format("`{0}`", param_default);
+
+            // Description.
+            string param_desc = metadata.strings().exist("help") ? metadata.get<string>("help") : "";
+            if (metadata.get<string>("type") == "enumeration")
             {
-                const string default_value = metadata.get<string>("default");
-                string default_desc;
+                if (!param_desc.empty() && !ends_with(param_desc, "."))
+                    param_desc += ".";
 
-                if (default_value.empty())
-                    default_desc = "None by default.";
-                else
+                param_desc += " Possible values are: ";
+
+                const StringDictionary& items = metadata.dictionary("items").strings();
+                for (auto x : items)
                 {
-                    default_desc = "The default value is ";
-                    default_desc += is_numeric_value(default_value) ? default_value : "`" + default_value + "`";
-                    default_desc += ".";
+                    if (x != items.begin())
+                        param_desc += ", ";
+                    param_desc += format("`{0}` ({1})", x.value(), x.key());
                 }
 
-                label += ". " + default_desc;
+                param_desc += ".";
             }
 
             fprintf(
                 file,
-                "| `%s` | %s | %s |\n",
-                pad_right(name, ' ', 21).c_str(),
-                pad_right(use, ' ', 9).c_str(),
-                pad_right(label, ' ', 57).c_str());
+                "| `%s` | %s | %s | %s | %s |\n",
+                param_name.c_str(),
+                param_label.c_str(),
+                param_use.c_str(),
+                param_default.c_str(),
+                param_desc.c_str());
         }
 
         fprintf(file, "\n");
@@ -259,14 +286,22 @@ namespace
         FILE* file = stdout;
         size_t section_number = 1;
 
+        dump_metadata_markdown<AOV>(section_number++, file);
         dump_metadata_markdown<BSDF>(section_number++, file);
+        dump_metadata_markdown<BSSRDF>(section_number++, file);
         dump_metadata_markdown<Camera>(section_number++, file);
+        dump_metadata_markdown(section_number++, 1, "color", ColorEntityFactory::get_input_metadata(), file);
         dump_metadata_markdown<EDF>(section_number++, file);
+        dump_metadata_markdown(section_number++, 1, "generic_environment", EnvironmentFactory::get_input_metadata(), file);
         dump_metadata_markdown<EnvironmentEDF>(section_number++, file);
         dump_metadata_markdown<EnvironmentShader>(section_number++, file);
+        dump_metadata_markdown(section_number++, 1, "frame", FrameFactory::get_input_metadata(), file);
         dump_metadata_markdown<Light>(section_number++, file);
+        dump_metadata_markdown<Material>(section_number++, file);
+        dump_metadata_markdown<Object>(section_number++, file);
         dump_metadata_markdown<SurfaceShader>(section_number++, file);
         dump_metadata_markdown<Texture>(section_number++, file);
+        dump_metadata_markdown<Volume>(section_number++, file);
     }
 
     void dump_metadata(const string& format, Logger& logger)

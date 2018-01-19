@@ -30,6 +30,7 @@
 #include "assemblyfactoryregistrar.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/entity/registerentityfactories.h"
 #include "renderer/modeling/scene/archiveassembly.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblytraits.h"

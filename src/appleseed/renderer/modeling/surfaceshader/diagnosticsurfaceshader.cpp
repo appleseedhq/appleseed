@@ -114,7 +114,7 @@ const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingMod
     { "geometric_normal",           "Geometric Normals" },
     { "shading_normal",             "Shading Normals" },
     { "original_shading_normal",    "Original Shading Normals" },
-    { "world_space_position",       "World Space Position" },
+    { "world_space_position",       "World-space Position" },
     { "sides",                      "Sides" },
     { "depth",                      "Depth" },
     { "screen_space_wireframe",     "Screen-space Wireframe" },

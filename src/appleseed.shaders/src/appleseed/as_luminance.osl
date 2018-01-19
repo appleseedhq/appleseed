@@ -33,9 +33,10 @@
 shader as_luminance
 [[
     string as_maya_node_name = "asLuminance",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility:swatch/AppleseedRenderSwatch",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string help = "Primaries and illuminants aware relative luminance node",
-    int as_maya_type_id = 1210829
+    string icon = "asLuminance.png",
+    int as_maya_type_id = 0x001279cd
 ]]
 (
     color in_color = color(0.5)
@@ -43,7 +44,7 @@ shader as_luminance
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Input Color",
-        string page = "Color Attributes"
+        string page = "Color"
     ]],
     int in_deriveFromMayaCMS = 1
     [[
@@ -61,13 +62,13 @@ shader as_luminance
         string as_maya_attribute_short_name = "is",
         int as_maya_attribute_keyable = 4,
         string widget = "mapper",
-        string options = "ACES 2065-1 AP0:0|ACEScg AP1:1|Rec.2020:2|DCI-P3:3|Rec.709/sRGB:4|Chromaticity Coordinates:5",
+        string options = "ACES 2065-1 AP0:0|ACEScg AP1:1|Rec.2020:2|DCI-P3:3|Rec.709 or sRGB:4|Chromaticity Coordinates:5",
         string label = "Input Color Space",
         string page = "Color Space",
         int divider = 1,
         int gafferNoduleLayoutVisible = 0
     ]],
-    float in_chromaticityCoordsR[2] = {0.317, 0.329}
+    float in_chromaticityCoordsR[2] = {0.640, 0.330}
     [[
         string as_maya_attribute_name = "chromaticityCoordsR",
         string as_maya_attribute_short_name = "pr",
@@ -75,9 +76,9 @@ shader as_luminance
         float min = 0.0,
         float max = 1.0,
         string label = "R xy Coordinates",
-        string page = "Color Space"
+        string page = "Color Space.RGB Primaries"
     ]],
-    float in_chromaticityCoordsG[2] = {0.317, 0.329}
+    float in_chromaticityCoordsG[2] = {0.300, 0.600}
     [[
         string as_maya_attribute_name = "chromaticityCoordsG",
         string as_maya_attribute_short_name = "pg",
@@ -85,9 +86,9 @@ shader as_luminance
         float min = 0.0,
         float max = 1.0,
         string label = "G xy Coordinates",
-        string page = "Color Space"
+        string page = "Color Space.RGB Primaries"
     ]],
-    float in_chromaticityCoordsB[2] = {0.317, 0.329}
+    float in_chromaticityCoordsB[2] = {0.150, 0.060}
     [[
         string as_maya_attribute_name = "chromaticityCoordsB",
         string as_maya_attribute_short_name = "pb",
@@ -95,7 +96,7 @@ shader as_luminance
         float min = 0.0,
         float max = 1.0,
         string label = "B xy Coordinates",
-        string page = "Color Space",
+        string page = "Color Space.RGB Primaries",
         int divider = 1
     ]],
     int in_inputIlluminants = 0
@@ -106,7 +107,7 @@ shader as_luminance
         string widget = "mapper",
         string options = "Standard Illuminant D50:0|Standard Illuminant D55:1|Standard Illuminant D60:2|Standard Illuminant D65:3|Standard Illuminant D75:4|DCI White Point:5|Equal Energy White Point E:6|Correlated Color Temperature:7|WP Chromaticity Coordinates:8",
         string label = "Illuminants",
-        string page = "Color Space",
+        string page = "Color Space.Illuminants",
         string help = "Preset illuminants, correlated color temperature or explicit white point xy chromaticity coordinates.",
         int divider = 1,
         int gafferNoduleLayoutVisible = 0
@@ -119,7 +120,7 @@ shader as_luminance
         int min = 1667,
         int max = 25000,
         string label = "Color Temperature",
-        string page = "Color Space"
+        string page = "Color Space.Illuminants"
     ]],
     float in_chromaticityCoordsW[2] = {0.3127, 0.329}
     [[
@@ -129,7 +130,7 @@ shader as_luminance
         float min = 0.0,
         float max = 1.0,
         string label = "W xy Coordinates",
-        string page = "Color Space"
+        string page = "Color Space.Illuminants"
     ]],
 
     MAYA_COLORMANAGEMENT_PARAMETERS,
@@ -181,7 +182,6 @@ shader as_luminance
 #ifdef DEBUG
                     string shadername = "";
                     getattribute("shader:shadername", shadername);
-
                     warning("[WARNING]:Invalid Maya renderspace in %s, %s:%i\n",
                             shadername, __FILE__, __LINE__);
 #endif
@@ -194,17 +194,17 @@ shader as_luminance
             {
                 color RGBW[4]; // explicit R,G,B,W chromaticity coordinates
 
-                RGBW[0] = transform_xyY_to_XYZ(
+                RGBW[0] = transform_CIExyY_to_CIEXYZ(
                     color(in_chromaticityCoordsR[0],
                           in_chromaticityCoordsR[1],
                           1.0));
 
-                RGBW[1] = transform_xyY_to_XYZ(
+                RGBW[1] = transform_CIExyY_to_CIEXYZ(
                     color(in_chromaticityCoordsG[0],
                           in_chromaticityCoordsG[1],
                           1.0));
 
-                RGBW[2] = transform_xyY_to_XYZ(
+                RGBW[2] = transform_CIExyY_to_CIEXYZ(
                     color(in_chromaticityCoordsB[0],
                           in_chromaticityCoordsB[1],
                           1.0));
@@ -238,37 +238,37 @@ shader as_luminance
                         illuminant = "DCI";
                     }
 
-                    RGBW[3] = get_illuminant_XYZ(illuminant);
+                    RGBW[3] = get_illuminant_CIEXYZ(illuminant);
                 }
                 else if (in_inputIlluminants == 6)
                 {
-                    RGBW[3] = transform_xyY_to_XYZ(
+                    RGBW[3] = transform_CIExyY_to_CIEXYZ(
                         color(ILLUMINANT_E_WHITEPOINT_xy, 1.0));
                 }
                 else if (in_inputIlluminants == 7)
                 {
-                    // Convert from CCT to xy chromaticity coordinates.
+                    // Convert from CCT to CIExy chromaticity coordinates.
 
-                    if (in_colorTemperature != 6504) // D65
+                    if (in_colorTemperature == 6504) // D65
                     {
-                        RGBW[3] = transform_xyY_to_XYZ(
+                        RGBW[3] = transform_CIExyY_to_CIEXYZ(
                             color(D65_WHITEPOINT_CIE1931_2DEG_xy, 1.0));
                     }
                     else
                     {
                         float Tc_xy[2];
 
-                        get_xy_from_CCT_Kang(in_colorTemperature, Tc_xy);
+                        get_CIExy_from_CCT_Kang(in_colorTemperature, Tc_xy);
 
-                        RGBW[3] = transform_xyY_to_XYZ(
+                        RGBW[3] = transform_CIExyY_to_CIEXYZ(
                             color(Tc_xy[0], Tc_xy[1], 1.0));
                     }
                 }
                 else
                 {
-                    // Explicit white point xy chromaticity coordinates.
+                    // Explicit white point CIExy chromaticity coordinates.
 
-                    RGBW[3] = transform_xyY_to_XYZ(
+                    RGBW[3] = transform_CIExyY_to_CIEXYZ(
                         color(in_chromaticityCoordsW[0],
                               in_chromaticityCoordsW[1],
                               1.0));
@@ -278,19 +278,19 @@ shader as_luminance
                     RGBW[0][0], RGBW[1][0], RGBW[2][0], 0.0,
                     RGBW[0][1], RGBW[1][1], RGBW[2][1], 0.0,
                     RGBW[0][2], RGBW[1][2], RGBW[2][2], 0.0,
-                    0, 0, 0, 1));
+                    0.0, 0.0, 0.0, 1.0));
 
-                float Sr = M[0][0] * RGBW[4][0] +
-                           M[0][1] * RGBW[4][1] +
-                           M[0][2] * RGBW[4][2];
+                float Sr = M[0][0] * RGBW[3][0] +
+                           M[0][1] * RGBW[3][1] +
+                           M[0][2] * RGBW[3][2];
 
-                float Sg = M[1][0] * RGBW[4][0] +
-                           M[1][1] * RGBW[4][1] +
-                           M[1][2] * RGBW[4][2];
+                float Sg = M[1][0] * RGBW[3][0] +
+                           M[1][1] * RGBW[3][1] +
+                           M[1][2] * RGBW[3][2];
 
-                float Sb = M[2][0] * RGBW[4][0] +
-                           M[2][1] * RGBW[4][1] +
-                           M[2][2] * RGBW[4][2];
+                float Sb = M[2][0] * RGBW[3][0] +
+                           M[2][1] * RGBW[3][1] +
+                           M[2][2] * RGBW[3][2];
 
                 // XYZ->RGB matrix would be
                 //

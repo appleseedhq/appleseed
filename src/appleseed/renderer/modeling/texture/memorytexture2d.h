@@ -76,6 +76,12 @@ class APPLESEED_DLLSYMBOL MemoryTexture2dFactory
         const char*                                     name,
         const ParamArray&                               params,
         const foundation::SearchPaths&                  search_paths) const override;
+
+    // Create a texture with texture data.
+    foundation::auto_release_ptr<Texture> create(
+        const char*                                     name,
+        const ParamArray&                               params,
+        foundation::auto_release_ptr<foundation::Image> image) const;
 };
 
 }       // namespace renderer

@@ -1121,7 +1121,7 @@ namespace
 
             m_entity =
                 create_entity<Entity>(
-                    m_context.get_project().get_factory_registrar<Entity>(),
+                    m_context.get_project().template get_factory_registrar<Entity>(),
                     m_entity_type,
                     m_model,
                     m_name,
@@ -1584,6 +1584,14 @@ namespace
                     "while defining object \"%s\": unknown entity \"%s\".",
                     m_name.c_str(),
                     e.string());
+                m_context.get_event_counters().signal_error();
+            }
+            catch (const Exception& e)
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining object \"%s\": %s",
+                    m_name.c_str(),
+                    e.what());
                 m_context.get_event_counters().signal_error();
             }
         }
@@ -2868,7 +2876,7 @@ namespace
             if (format_revision > ProjectFormatRevision)
             {
                 RENDERER_LOG_WARNING(
-                    "this project was created with a newer version of appleseed; it may fail to load with this version.");
+                    "this project was created with a newer version of appleseed; it may fail to load or render properly with this version.");
                 m_context.get_event_counters().signal_warning();
             }
 

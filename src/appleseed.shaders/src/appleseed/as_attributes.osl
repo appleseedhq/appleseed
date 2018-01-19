@@ -1,0 +1,246 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+shader as_attributes
+[[
+    string as_maya_node_name = "asAttributes",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string help = "OSL and appleseed attributes.",
+    string icon = "asAttributes.png",
+    int as_maya_type_id = 0x001279f8
+]]
+(
+    output int out_object_instance_id = 0
+    [[
+        string as_maya_attribute_name = "objectInstanceId",
+        string as_maya_attribute_short_name = "oid",
+        string label = "Object Instance ID"
+    ]],
+    output int out_object_instance_index = 0
+    [[
+        string as_maya_attribute_name = "objectInstanceIndex",
+        string as_maya_attribute_short_name = "odx",
+        string label = "Object Instance Index"
+    ]],
+    output string out_object_instance_name = ""
+    [[
+        string as_maya_attribute_name = "objectInstanceName",
+        string as_maya_attribute_short_name = "oin",
+        string label = "Object Instance Name"
+    ]],
+    output string out_object_name = ""
+    [[
+        string as_maya_attribute_name = "objectName",
+        string as_maya_attribute_short_name = "onn",
+        string label = "Object Name"
+    ]],
+    output int out_assembly_instance_id = 0
+    [[
+        string as_maya_attribute_name = "assemblyInstanceId",
+        string as_maya_attribute_short_name = "aid",
+        string label = "Assembly Instance ID"
+    ]],
+    output string out_assembly_name = ""
+    [[
+        string as_maya_attribute_name = "assemblyName",
+        string as_maya_attribute_short_name = "asn",
+        string label = "Assembly Name"
+    ]],
+    output string out_assembly_instance_name = ""
+    [[
+        string as_maya_attribute_name = "assemblyInstanceName",
+        string as_maya_attribute_short_name = "ain",
+        string label = "Assembly Instance Name"
+    ]],
+    // A float[2], but we can't connect array elements yet.
+    output int out_camera_resolution[2] = {0, 0}
+    [[
+        string as_maya_attribute_name = "cameraResolution",
+        string as_maya_attribute_short_name = "crs",
+        string label = "Camera Resolution"
+    ]],
+    output int out_camera_resolution_x = 0
+    [[
+        string as_maya_attribute_name = "cameraResolutionX",
+        string as_maya_attribute_short_name = "crx",
+        string label = "Camera Resolution X"
+    ]],
+    output int out_camera_resolution_y = 0
+    [[
+        string as_maya_attribute_name = "cameraResolutionY",
+        string as_maya_attribute_short_name = "cry",
+        string label = "Camera Resolution Y"
+    ]],
+    output string out_camera_projection = ""
+    [[
+        string as_maya_attribute_name = "cameraProjection",
+        string as_maya_attribute_short_name = "cpr",
+        string label = "Camera Projection"
+    ]],
+    output float out_camera_pixel_aspect = 1.0
+    [[
+        string as_maya_attribute_name = "cameraPixelAspect",
+        string as_maya_attribute_short_name = "cpa",
+        string label = "Camera Pixel Aspect"
+    ]],
+    // This should be a float[4], but we can't connect array elements yet.
+    output int out_camera_screen_window[4] = {0, 0, 0, 0}
+    [[
+        string as_maya_attribute_name = "cameraScreenWindow",
+        string as_maya_attribute_short_name = "csw",
+        string label = "Camera Screen Window"
+    ]],
+    output float out_camera_screen_window_xmin = 0.0
+    [[
+        string as_maya_attribute_name = "cameraScreenWindowXMin",
+        string as_maya_attribute_short_name = "xmi",
+        string label = "Screen Window X Min"
+    ]],
+    output float out_camera_screen_window_ymin = 0.0
+    [[
+        string as_maya_attribute_name = "cameraScreenWindowYMin",
+        string as_maya_attribute_short_name = "ymi",
+        string label = "Screen Window Y Min"
+    ]],
+    output float out_camera_screen_window_xmax = 0.0
+    [[
+        string as_maya_attribute_name = "cameraScreenWindowXMax",
+        string as_maya_attribute_short_name = "xma",
+        string label = "Screen Window X Max"
+    ]],
+    output float out_camera_screen_window_ymax = 0.0
+    [[
+        string as_maya_attribute_name = "cameraScreenWindowYMax",
+        string as_maya_attribute_short_name = "yma",
+        string label = "Screen Window Y Max"
+    ]],
+    output float out_camera_fov = 0.0
+    [[
+        string as_maya_attribute_name = "cameraFOV",
+        string as_maya_attribute_short_name = "cfo",
+        string label = "Camera FOV"
+    ]],
+    // No array elements connections yet, but this is near and far elements.
+    output float out_camera_clip[2] = {0.0, 0.0}
+    [[
+        string as_maya_attribute_name = "cameraClip",
+        string as_maya_attribute_short_name = "cli",
+        string label = "Camera Clip Range"
+    ]],
+    output float out_camera_clip_near = 0.0
+    [[
+        string as_maya_attribute_name = "cameraClipNear",
+        string as_maya_attribute_short_name = "cne",
+        string label = "Camera Clip Near"
+    ]],
+    output float out_camera_clip_far = 0.0
+    [[
+        string as_maya_attribute_name = "cameraClipFar",
+        string as_maya_attribute_short_name = "cnf",
+        string label = "Camera Clip Far"
+    ]],
+    // No array elements connections yet, but open/close times are below.
+    output float out_camera_shutter[2] = {0.0, 0.0}
+    [[
+        string as_maya_attribute_name = "cameraShutter",
+        string as_maya_attribute_short_name = "csu",
+        string label = "Camera Shutter"
+    ]],
+    output float out_camera_shutter_open = 0.0
+    [[
+        string as_maya_attribute_name = "cameraShutterOpen",
+        string as_maya_attribute_short_name = "sop",
+        string label = "Shutter Open Time"
+    ]],
+    output float out_camera_shutter_close = 0.0
+    [[
+        string as_maya_attribute_name = "cameraShutterClose",
+        string as_maya_attribute_short_name = "scl",
+        string label = "Shutter Close Time"
+    ]],
+    output int out_path_ray_depth = 0
+    [[
+        string as_maya_attribute_name = "pathRayDepth",
+        string as_maya_attribute_short_name = "prd",
+        string label = "Ray Depth"
+    ]],
+    output int out_path_has_ray_differentials = 0
+    [[
+        string as_maya_attribute_name = "pathHasRayDifferentials",
+        string as_maya_attribute_short_name = "phd",
+        string label = "Ray Differentials"
+    ]],
+    output float out_path_ray_length = 0.0
+    [[
+        string as_maya_attribute_name = "pathRayLength",
+        string as_maya_attribute_short_name = "prl",
+        string label = "Ray Length"
+    ]],
+    output float out_path_ray_ior = 0.0
+    [[
+        string as_maya_attribute_name = "pathRayIOR",
+        string as_maya_attribute_short_name = "pri",
+        string label = "Ray IOR"
+    ]]
+)
+{
+    getattribute("object:object_instance_id", out_object_instance_id);
+    getattribute("object:object_instance_index", out_object_instance_index);
+    getattribute("object:object_instance_name", out_object_instance_name);
+    getattribute("object:object_name", out_object_name);
+
+    getattribute("object:assembly_instance_id", out_assembly_instance_id);
+    getattribute("object:assembly_name", out_assembly_name);
+    getattribute("object:assembly_instance_name", out_assembly_instance_name);
+
+    getattribute("camera:resolution", out_camera_resolution);
+    out_camera_resolution_x = out_camera_resolution[0];
+    out_camera_resolution_y = out_camera_resolution[1];
+
+    getattribute("camera:projection", out_camera_projection);
+    getattribute("camera:pixelaspect", out_camera_pixel_aspect);
+
+    getattribute("camera:screen_window", out_camera_screen_window);
+    out_camera_screen_window_xmin = out_camera_screen_window[0];
+    out_camera_screen_window_ymin = out_camera_screen_window[1];
+    out_camera_screen_window_xmax = out_camera_screen_window[2];
+    out_camera_screen_window_ymax = out_camera_screen_window[3];
+
+    getattribute("camera:fov", out_camera_fov);
+    getattribute("camera:clip", out_camera_clip);
+    getattribute("camera:clip_near", out_camera_clip_near);
+    getattribute("camera:clip_far", out_camera_clip_far);
+    getattribute("camera:shutter", out_camera_shutter);
+    getattribute("camera:shutter_open", out_camera_shutter_open);
+    getattribute("camera:shutter_close", out_camera_shutter_close);
+
+    getattribute("path:ray_depth", out_path_ray_depth);
+    getattribute("path:ray_has_differentials", out_path_has_ray_differentials);
+    getattribute("path:ray_length", out_path_ray_length);
+    getattribute("path:ray_ior", out_path_ray_ior);
+}

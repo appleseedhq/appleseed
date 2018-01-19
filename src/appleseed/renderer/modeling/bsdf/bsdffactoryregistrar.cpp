@@ -48,6 +48,7 @@
 #include "renderer/modeling/bsdf/sheenbrdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
+#include "renderer/modeling/entity/registerentityfactories.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"

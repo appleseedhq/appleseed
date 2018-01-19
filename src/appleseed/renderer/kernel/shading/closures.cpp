@@ -40,11 +40,13 @@
 #include "renderer/modeling/bsdf/glossybrdf.h"
 #include "renderer/modeling/bsdf/metalbrdf.h"
 #include "renderer/modeling/bsdf/orennayarbrdf.h"
+#include "renderer/modeling/bsdf/plasticbrdf.h"
 #include "renderer/modeling/bsdf/sheenbrdf.h"
 #include "renderer/modeling/bssrdf/dipolebssrdf.h"
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #include "renderer/modeling/bssrdf/gaussianbssrdf.h"
 #include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
+#include "renderer/modeling/bssrdf/randomwalkbssrdf.h"
 #include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/edf/diffuseedf.h"
 
@@ -82,6 +84,7 @@ namespace
 
     const OIIO::ustring g_beckmann_str("beckmann");
     const OIIO::ustring g_ggx_str("ggx");
+    const OIIO::ustring g_gtr1_str("gtr1");
     const OIIO::ustring g_std_str("std");
 
     const OIIO::ustring g_standard_dipole_profile_str("standard_dipole");
@@ -89,6 +92,7 @@ namespace
     const OIIO::ustring g_directional_dipole_profile_str("directional_dipole");
     const OIIO::ustring g_normalized_diffusion_profile_str("normalized_diffusion");
     const OIIO::ustring g_gaussian_profile_str("gaussian");
+    const OIIO::ustring g_randomwalk_profile_str("randomwalk");
 
     //
     // Closure functions.
@@ -637,6 +641,7 @@ namespace
             float           highlight_falloff;
             float           anisotropy;
             float           ior;
+            float           energy_compensation;
         };
 
         static const char* name()
@@ -654,6 +659,16 @@ namespace
             return ScatteringMode::Glossy | ScatteringMode::Specular;
         }
 
+        static void prepare_closure(
+            OSL::RendererServices*      render_services,
+            int                         id,
+            void*                       data)
+        {
+            // Initialize keyword parameter defaults.
+            Params* params = new (data) Params();
+            params->energy_compensation = 0.0f;
+        }
+
         static void register_closure(OSLShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
@@ -665,10 +680,11 @@ namespace
                 CLOSURE_FLOAT_PARAM(Params, highlight_falloff),
                 CLOSURE_FLOAT_PARAM(Params, anisotropy),
                 CLOSURE_FLOAT_PARAM(Params, ior),
+                CLOSURE_FLOAT_KEYPARAM(Params, energy_compensation, "energy_compensation"),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
+            shading_system.register_closure(name(), id(), params, &prepare_closure, nullptr);
 
             g_closure_convert_funs[id()] = &convert_closure;
 
@@ -718,6 +734,8 @@ namespace
             values->m_highlight_falloff = saturate(p->highlight_falloff);
             values->m_anisotropy = clamp(p->anisotropy, -1.0f, 1.0f);
             values->m_ior = max(p->ior, 0.001f);
+            values->m_fresnel_weight = 1.0f;
+            values->m_energy_compensation = saturate(p->energy_compensation);
         }
     };
 
@@ -760,6 +778,7 @@ namespace
             float           roughness;
             float           highlight_falloff;
             float           anisotropy;
+            float           energy_compensation;
         };
 
         static const char* name()
@@ -777,6 +796,16 @@ namespace
             return ScatteringMode::Glossy | ScatteringMode::Specular;
         }
 
+        static void prepare_closure(
+            OSL::RendererServices*      render_services,
+            int                         id,
+            void*                       data)
+        {
+            // Initialize keyword parameter defaults.
+            Params* params = new (data) Params();
+            params->energy_compensation = 0.0f;
+        }
+
         static void register_closure(OSLShadingSystem& shading_system)
         {
             const OSL::ClosureParam params[] =
@@ -789,10 +818,11 @@ namespace
                 CLOSURE_FLOAT_PARAM(Params, roughness),
                 CLOSURE_FLOAT_PARAM(Params, highlight_falloff),
                 CLOSURE_FLOAT_PARAM(Params, anisotropy),
+                CLOSURE_FLOAT_KEYPARAM(Params, energy_compensation, "energy_compensation"),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
+            shading_system.register_closure(name(), id(), params, &prepare_closure, nullptr);
 
             g_closure_convert_funs[id()] = &convert_closure;
 
@@ -842,6 +872,7 @@ namespace
             values->m_roughness = max(p->roughness, 0.0f);
             values->m_highlight_falloff = saturate(p->highlight_falloff);
             values->m_anisotropy = clamp(p->anisotropy, -1.0f, 1.0f);
+            values->m_energy_compensation = saturate(p->energy_compensation);
         }
     };
 
@@ -971,6 +1002,113 @@ namespace
         }
     };
 
+    struct PlasticClosure
+    {
+        struct Params
+        {
+            OSL::ustring    dist;
+            OSL::Vec3       N;
+            OSL::Color3     specular_reflectance;
+            float           specular_reflectance_multiplier;
+            float           roughness;
+            float           highlight_falloff;
+            float           ior;
+            OSL::Color3     diffuse_reflectance;
+            float           diffuse_reflectance_multiplier;
+            float           internal_scattering;
+        };
+
+        static const char* name()
+        {
+            return "as_plastic";
+        }
+
+        static ClosureID id()
+        {
+            return PlasticID;
+        }
+
+        static int modes()
+        {
+            return ScatteringMode::Diffuse | ScatteringMode::Glossy | ScatteringMode::Specular;
+        }
+
+        static void register_closure(OSLShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_STRING_PARAM(Params, dist),
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_COLOR_PARAM(Params, specular_reflectance),
+                CLOSURE_FLOAT_PARAM(Params, specular_reflectance_multiplier),
+                CLOSURE_FLOAT_PARAM(Params, roughness),
+                CLOSURE_FLOAT_PARAM(Params, highlight_falloff),
+                CLOSURE_FLOAT_PARAM(Params, ior),
+                CLOSURE_COLOR_PARAM(Params, diffuse_reflectance),
+                CLOSURE_FLOAT_PARAM(Params, diffuse_reflectance_multiplier),
+                CLOSURE_FLOAT_PARAM(Params, internal_scattering),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
+
+            g_closure_convert_funs[id()] = &convert_closure;
+
+            g_closure_get_modes_funs[id()] = &modes;
+            g_closure_get_modes_funs[PlasticBeckmannID] = &modes;
+            g_closure_get_modes_funs[PlasticGGXID] = &modes;
+            g_closure_get_modes_funs[PlasticGTR1ID] = &modes;
+            g_closure_get_modes_funs[PlasticSTDID] = &modes;
+        }
+
+        static void convert_closure(
+            CompositeSurfaceClosure&    composite_closure,
+            const Basis3f&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight,
+            Arena&                      arena)
+        {
+            const Params* p = static_cast<const Params*>(osl_params);
+
+            PlasticBRDFInputValues* values;
+            ClosureID cid;
+
+            if (p->dist == g_beckmann_str)
+                cid = PlasticBeckmannID;
+            else if (p->dist == g_ggx_str)
+                cid = PlasticGGXID;
+            else if (p->dist == g_gtr1_str)
+                cid = PlasticGTR1ID;
+            else if (p->dist == g_std_str)
+                cid = PlasticSTDID;
+            else
+            {
+                string msg("invalid microfacet distribution function: ");
+                msg += p->dist.c_str();
+                throw ExceptionOSLRuntimeError(msg.c_str());
+            }
+
+            values =
+                composite_closure.add_closure<PlasticBRDFInputValues>(
+                    cid,
+                    shading_basis,
+                    weight,
+                    p->N,
+                    arena);
+
+            values->m_specular_reflectance.set(Color3f(p->specular_reflectance), g_std_lighting_conditions,
+            Spectrum::Reflectance);
+            values->m_specular_reflectance_multiplier = max(p->specular_reflectance_multiplier, 0.0f);
+            values->m_roughness = clamp(p->roughness, 0.0001f, 1.0f);
+            values->m_highlight_falloff = saturate(p->highlight_falloff);
+            values->m_ior = max(p->ior, 0.001f);
+            values->m_diffuse_reflectance.set(Color3f(p->diffuse_reflectance), g_std_lighting_conditions,
+            Spectrum::Reflectance);
+            values->m_diffuse_reflectance_multiplier = max(p->diffuse_reflectance_multiplier, 0.0f);
+            values->m_internal_scattering = max(p->internal_scattering, 0.0f);
+        }
+    };
+
     struct ReflectionClosure
     {
         struct Params
@@ -1031,6 +1169,7 @@ namespace
             values->m_roughness = 0.0f;
             values->m_anisotropy = 0.0f;
             values->m_ior = max(p->ior, 0.001f);
+            values->m_energy_compensation = 0.0f;
         }
     };
 
@@ -1172,6 +1311,19 @@ namespace
                         arena);
 
                 copy_parameters(p, values);
+            }
+            else if (p->profile == g_randomwalk_profile_str)
+            {
+                RandomWalkBSSRDFInputValues* values =
+                    composite_closure.add_closure<RandomWalkBSSRDFInputValues>(
+                        SubsurfaceRandomWalkID,
+                        shading_basis,
+                        weight,
+                        p->N,
+                        arena);
+
+                copy_parameters(p, values);
+                values->m_zero_scattering_weight = 1.0f;
             }
             else
             {
@@ -1879,6 +2031,7 @@ void register_closures(OSLShadingSystem& shading_system)
     register_closure<MetalClosure>(shading_system);
     register_closure<OrenNayarClosure>(shading_system);
     register_closure<PhongClosure>(shading_system);
+    register_closure<PlasticClosure>(shading_system);
     register_closure<ReflectionClosure>(shading_system);
     register_closure<SheenClosure>(shading_system);
     register_closure<SubsurfaceClosure>(shading_system);

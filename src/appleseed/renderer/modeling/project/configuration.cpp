@@ -135,7 +135,7 @@ Dictionary Configuration::get_metadata()
         Dictionary()
             .insert("type", "enum")
             .insert("values", "rng|qmc")
-            .insert("default", "rng")
+            .insert("default", "qmc")
             .insert("label", "Sampler")
             .insert("help", "Sampling algorithm used in Monte Carlo integration")
             .insert(
@@ -159,7 +159,7 @@ Dictionary Configuration::get_metadata()
             .insert("values", "pt|sppm")
             .insert("default", "pt")
             .insert("label", "Lighting Engine")
-            .insert("help", "Lighting engine used when rendering")
+            .insert("help", "Light transport engine")
             .insert(
                 "options",
                 Dictionary()
@@ -171,8 +171,8 @@ Dictionary Configuration::get_metadata()
                     .insert(
                         "sppm",
                         Dictionary()
-                            .insert("label", "Progressive Photon Mapping")
-                            .insert("help", "Stochastic progressive photon mapping"))));
+                            .insert("label", "Stochastic Progressive Photon Mapping")
+                            .insert("help", "Stochastic Progressive Photon Mapping"))));
 
     metadata.insert(
         "rendering_threads",
@@ -248,7 +248,7 @@ auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_final()
     ParamArray& parameters = configuration->get_parameters();
 
     parameters.insert("spectrum_mode", "rgb");
-    parameters.insert("sampling_mode", "rng");
+    parameters.insert("sampling_mode", "qmc");
 
     parameters.insert("frame_renderer", "generic");
     parameters.insert("tile_renderer", "generic");
@@ -272,7 +272,7 @@ auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_interactiv
     ParamArray& parameters = configuration->get_parameters();
 
     parameters.insert("spectrum_mode", "rgb");
-    parameters.insert("sampling_mode", "rng");
+    parameters.insert("sampling_mode", "qmc");
 
     parameters.insert("frame_renderer", "progressive");
     parameters.insert("sample_generator", "generic");

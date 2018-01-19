@@ -75,6 +75,48 @@ float filtered_snoise(
         noise("perlin", surface_point, current_time);
 }
 
+float filtered_noise(
+    point surface_point,
+    float current_time,
+    float filter_width,
+    string type)
+{
+    return (1.0 - smoothstep(0.2, 0.75, filter_width)) *
+        noise(type, surface_point, current_time);
+} 
+
+float filtered_noise(
+    float x,
+    float y,
+    float current_time,
+    float filter_width,
+    string type)
+{
+    return (1.0 - smoothstep(0.2, 0.75, filter_width)) *
+        noise(type, point(x, y, current_time));
+}  
+
+color filtered_noise(
+    point surface_point,
+    float current_time,
+    float filter_width,
+    string type)
+{
+    return (1.0 - smoothstep(0.2, 0.75, filter_width)) *
+        (color) noise(type, surface_point, current_time);
+} 
+
+color filtered_noise(
+    float x,
+    float y,
+    float current_time,
+    float filter_width,
+    string type)
+{
+    return (1.0 - smoothstep(0.2, 0.75, filter_width)) *
+        (color) noise(type, point(x, y, current_time));
+} 
+
 float noise_quadratic(vector control_point, float x)
 {
     float tmp = control_point[0] - control_point[1];
@@ -193,6 +235,43 @@ float random_noise(int index)
         ndx = ndx % NOISE_TABLE_SIZE;
     }
     return rng_table(ndx);
+}
+
+string get_noise_type(int type)
+{
+    string noise_type = "";
+
+    if (type == 0)
+    {
+        noise_type = "uperlin";
+    }
+    else if (type == 1)
+    {
+        noise_type = "usimplex";
+    }
+    else if (type == 2)
+    {
+        noise_type = "value";
+    }
+    else if (type == 3)
+    {
+        noise_type = "voronoise";
+    }
+    else if (type == 4)
+    {
+        noise_type = "gabor";
+    }
+    else
+    {
+#ifdef DEBUG
+        string shader_name = "";
+        int status = getattribute("shader:shadername", shader_name);
+
+        warning("[DEBUG]: Unknown noise mode %i in %s, %s:%i\n",
+                type, shader_name, __FILE__, __LINE__);
+#endif
+    }
+    return noise_type;
 }
 
 #endif // !AS_NOISE_HELPERS_H

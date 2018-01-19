@@ -48,6 +48,8 @@ using namespace std;
 namespace boost
 {
     template <> Camera const volatile* get_pointer<Camera const volatile>(Camera const volatile* p) { return p; }
+    template <> ICameraFactory const volatile* get_pointer<ICameraFactory const volatile>(ICameraFactory const volatile* p) { return p; }
+    template <> CameraFactoryRegistrar const volatile* get_pointer<CameraFactoryRegistrar const volatile>(CameraFactoryRegistrar const volatile* p) { return p; }
 }
 #endif
 
@@ -72,6 +74,14 @@ namespace
         return auto_release_ptr<Camera>();
     }
 
+    auto_release_ptr<Camera> factory_create_camera(
+        const ICameraFactory*   factory,
+        const char*             name,
+        const bpy::dict&        params)
+    {
+        return factory->create(name, bpy_dict_to_param_array(params));
+    }
+
     TransformSequence* camera_get_transform_sequence(Camera* camera)
     {
         return &(camera->transform_sequence());
@@ -88,8 +98,13 @@ void bind_camera()
         .def("transform_sequence", camera_get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("get_shutter_open_time", &Camera::get_shutter_open_time)
         .def("get_shutter_close_time", &Camera::get_shutter_close_time)
-        .def("get_shutter_middle_time", &Camera::get_shutter_middle_time)
-        ;
+        .def("get_shutter_middle_time", &Camera::get_shutter_middle_time);
 
     bind_typed_entity_vector<Camera>("CameraContainer");
+
+    bpy::class_<ICameraFactory, boost::noncopyable>("ICameraFactory", bpy::no_init)
+        .def("create", &factory_create_camera);
+
+    bpy::class_<CameraFactoryRegistrar, boost::noncopyable>("CameraFactoryRegistrar", bpy::no_init)
+        .def("lookup", &CameraFactoryRegistrar::lookup, bpy::return_value_policy<bpy::reference_existing_object>());
 }

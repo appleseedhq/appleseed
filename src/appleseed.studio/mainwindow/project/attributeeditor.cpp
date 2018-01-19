@@ -34,6 +34,9 @@
 #include "mainwindow/project/ientityvalueprovider.h"
 #include "utility/miscellaneous.h"
 
+// appleseed.renderer headers.
+#include "renderer/utility/paramarray.h"
+
 // Qt headers.
 #include <QLayout>
 
@@ -49,9 +52,11 @@ namespace studio {
 
 AttributeEditor::AttributeEditor(
     QWidget*    parent,
-    Project&    project)
+    Project&    project,
+    ParamArray& settings)
   : m_parent(parent)
   , m_project(project)
+  , m_settings(settings)
 {
 }
 
@@ -82,6 +87,7 @@ void AttributeEditor::edit(
         new EntityEditor(
             m_parent,
             m_project,
+            m_settings,
             move(form_factory),
             move(entity_browser),
             move(custom_ui),

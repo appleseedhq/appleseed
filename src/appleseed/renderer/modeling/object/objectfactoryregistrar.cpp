@@ -30,6 +30,7 @@
 #include "objectfactoryregistrar.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/entity/registerentityfactories.h"
 #include "renderer/modeling/object/curveobject.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/objecttraits.h"

@@ -1,0 +1,182 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+shader as_anisotropy_vector_field
+[[
+    string as_maya_node_name = "asAnisotropyVectorField",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string help = "Anisotropy vector field node.",
+    string icon = "asAnisotropyVectorField.png",
+    int as_maya_type_id = 0x001278e0
+]]
+(
+    float in_rotation_angle = 0.0
+    [[
+        string as_maya_attribute_name = "rotationAngle",
+        string as_maya_attribute_short_name = "rta",
+        float min = -360.0,
+        float max = 360.0,
+        string widget = "angle",
+        string label = "Rotation Angle",
+        string page = "Field",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 0,
+        int gafferNoduleLayoutVisible = 1
+    ]],
+    color in_color = color(1)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Front Color",
+        string page = "Field"
+    ]],
+    int in_field_mode = 0
+    [[
+        string as_maya_attribute_name = "fieldMode",
+        string as_maya_attribute_short_name = "fm",
+        string widget = "mapper",
+        string options = "Red/Green as XY:0|Red/Blue as XY:1",
+        string label = "Field Mode",
+        string page = "Field",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    float in_rotation_value = 0.0
+    [[
+        string as_maya_attribute_name = "rotationValue",
+        string as_maya_attribute_short_name = "rtv",
+        float min = 0.0,
+        float max = 1.0,
+        string help = "Rotation value, mapping [0,1] to [0,360] degrees",
+        string label = "Rotation Value",
+        string page = "Rotation"
+    ]],
+    int in_rotation_mode = 0
+    [[
+        string as_maya_attribute_name = "rotationMode",
+        string as_maya_attribute_short_name = "rtm",
+        string widget = "mapper",
+        string options = "Centered:0|Absolute:1",
+        string help = "Scale the rotation value to [-1,1] and apply rotation to both directions around the main anisotropy vector,\n or leave it at [0,1] range, and add it.",
+        string label = "Rotation Mode",
+        string page = "Rotation",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_normalize_output = 1
+    [[
+        string as_maya_attribute_name = "normalizeOutput",
+        string as_maya_attribute_short_name = "no",
+        string widget = "checkBox",
+        string label = "Normalize Output",
+        string page = "Output",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    normal in_surface_normal = N
+    [[
+        string as_maya_attribute_name = "normalCamera",
+        string as_maya_attribute_short_name = "n",
+        string label = "Surface Normal",
+        string page = "Normal"
+    ]],
+    vector Tn = vector(0)
+    [[
+        int lockgeom = 0,
+        string widget = "null",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    vector Bn = vector(0)
+    [[
+        int lockgeom = 0,
+        string widget = "null",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+
+    output vector out_anisotropy_vector = vector(0)
+    [[
+        string as_maya_attribute_name = "anisotropyVector",
+        string as_maya_attribute_short_name = "av",
+        string label = "Anisotropy Vector"
+    ]]
+)
+{
+    normal Nn = normalize(in_surface_normal);
+    vector tangent = Tn;
+
+    if (in_rotation_angle != 0.0)
+    {
+        tangent = rotate(
+            tangent,
+            radians(in_rotation_angle),
+            point(0),
+            point(Nn));
+    }
+
+    if (isconnected(in_color))
+    {
+        vector vector_map = normalize((vector) in_color * 2.0 - 1.0);
+
+        tangent = normalize(
+            vector_map[0] * Tn +
+            vector_map[1] * Bn +
+            vector_map[2] * Nn);
+    }
+
+    if (in_rotation_value > 0.0 || isconnected(in_rotation_value))
+    {
+        float offset = (in_rotation_mode == 0)
+            ? (in_rotation_value * 2.0 - 1.0) * M_2PI
+            : in_rotation_value * M_2PI;
+
+        if (offset != 0)
+        {
+            tangent = rotate(tangent, offset, point(0), point(Nn));
+        }
+    }
+
+    if (in_normalize_output)
+    {
+        tangent = normalize(tangent);
+    }
+
+    out_anisotropy_vector = tangent;
+}

@@ -82,12 +82,17 @@ namespace
     class MasterRendererThread
       : public QThread
     {
+        Q_OBJECT
+
       public:
         // Constructor.
         explicit MasterRendererThread(MasterRenderer* master_renderer)
           : m_master_renderer(master_renderer)
         {
         }
+
+      signals:
+        void signal_rendering_failed();
 
       private:
         MasterRenderer* m_master_renderer;
@@ -97,7 +102,10 @@ namespace
         {
             set_current_thread_name("master_renderer");
 
-            m_master_renderer->render();
+            const auto result = m_master_renderer->render();
+
+            if (result == MasterRenderer::RenderingFailed)
+                emit signal_rendering_failed();
         }
     };
 }
@@ -122,36 +130,36 @@ RenderingManager::RenderingManager(StatusBar& status_bar)
 
     connect(
         &m_renderer_controller, SIGNAL(signal_frame_begin()),
-        this, SLOT(slot_frame_begin()),
+        SLOT(slot_frame_begin()),
         Qt::BlockingQueuedConnection);
 
     connect(
         &m_renderer_controller, SIGNAL(signal_frame_end()),
-        this, SLOT(slot_frame_end()),
+        SLOT(slot_frame_end()),
         Qt::BlockingQueuedConnection);
 
     connect(
         &m_renderer_controller, SIGNAL(signal_rendering_begin()),
-        this, SLOT(slot_rendering_begin()),
+        SLOT(slot_rendering_begin()),
         Qt::BlockingQueuedConnection);
 
     connect(
         &m_renderer_controller, SIGNAL(signal_rendering_success()),
-        this, SLOT(slot_rendering_end()),
+        SLOT(slot_rendering_end()),
         Qt::BlockingQueuedConnection);
 
     connect(
         &m_renderer_controller, SIGNAL(signal_rendering_abort()),
-        this, SLOT(slot_rendering_end()),
+        SLOT(slot_rendering_end()),
         Qt::BlockingQueuedConnection);
 
     connect(
         &m_renderer_controller, SIGNAL(signal_rendering_success()),
-        this, SIGNAL(signal_rendering_end()));
+        SIGNAL(signal_rendering_end()));
 
     connect(
         &m_renderer_controller, SIGNAL(signal_rendering_abort()),
-        this, SIGNAL(signal_rendering_end()));
+        SIGNAL(signal_rendering_end()));
 }
 
 RenderingManager::~RenderingManager()
@@ -186,6 +194,18 @@ void RenderingManager::start_rendering(
 
     m_master_renderer_thread.reset(
         new MasterRendererThread(m_master_renderer.get()));
+
+    connect(
+        m_master_renderer_thread.get(), SIGNAL(signal_rendering_failed()),
+        SLOT(slot_frame_end()));
+
+    connect(
+        m_master_renderer_thread.get(), SIGNAL(signal_rendering_failed()),
+        SLOT(slot_rendering_failed()));
+
+    connect(
+        m_master_renderer_thread.get(), SIGNAL(signal_rendering_failed()),
+        SIGNAL(signal_rendering_end()));
 
     connect(
         m_master_renderer_thread.get(), SIGNAL(finished()),
@@ -383,6 +403,15 @@ void RenderingManager::slot_rendering_end()
         archive_frame_to_disk();
 }
 
+void RenderingManager::slot_rendering_failed()
+{
+    if (m_rendering_mode == InteractiveRendering)
+        m_render_tab->get_camera_controller()->set_enabled(false);
+
+    // Save the controller target point into the camera when rendering ends.
+    m_render_tab->get_camera_controller()->save_camera_target();
+}
+
 void RenderingManager::slot_frame_begin()
 {
     // Update the scene's camera before rendering the frame.
@@ -428,3 +457,5 @@ void RenderingManager::slot_master_renderer_thread_finished()
 
 }   // namespace studio
 }   // namespace appleseed
+
+#include "mainwindow/rendering/moc_cpp_renderingmanager.cxx"

@@ -1,0 +1,175 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+shader as_globals
+[[
+    string as_maya_node_name = "asGlobals",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string help = "OSL global variables.",
+    string icon = "asGlobals.png",
+    int as_maya_type_id = 0x001279ef
+]]
+(
+    output point out_world_P = P
+    [[
+        string as_maya_attribute_name = "worldP",
+        string as_maya_attribute_short_name = "wp",
+        string label = "Surface Position"
+    ]],
+    output point out_world_Ps = Ps
+    [[
+        string as_maya_attribute_name = "worldPs",
+        string as_maya_attribute_short_name = "wps",
+        string label = "Light Point Position",
+        int divider = 1
+    ]],
+    output normal out_world_N = N
+    [[
+        string as_maya_attribute_name = "worldN",
+        string as_maya_attribute_short_name = "n",
+        string label = "Shading Normal"
+    ]],
+    output normal out_world_Ng = Ng
+    [[
+        string as_maya_attribute_name = "worldNg",
+        string as_maya_attribute_short_name = "ng",
+        string label = "Geometric Normal",
+        int divider = 1
+    ]],
+    output vector out_world_I = I
+    [[
+        string as_maya_attribute_name = "worldI",
+        string as_maya_attribute_short_name = "wri",
+        string label = "Viewer Vector",
+        int divider = 1
+    ]],
+    output vector out_world_dPdu = dPdu
+    [[
+        string as_maya_attribute_name = "worldDPdu",
+        string as_maya_attribute_short_name = "dpu",
+        string label = "dP/du",
+        string help = "Partial derivative of P along the U direction."
+    ]],
+    output vector out_world_dPdv = dPdv
+    [[
+        string as_maya_attribute_name = "worldDPdv",
+        string as_maya_attribute_short_name = "dpv",
+        string label = "dP/dv",
+        string help = "Partial derivative of P along the V direction.",
+        int divider = 1
+    ]],
+    output vector out_world_dPdx = Dx(P)
+    [[
+        string as_maya_attribute_name = "worldDPdx",
+        string as_maya_attribute_short_name = "dpx",
+        string label = "dP/dx",
+        string help = "Partial derivative of P along the X direction."
+    ]],
+    output vector out_world_dPdy = Dy(P)
+    [[
+        string as_maya_attribute_name = "worldDPdy",
+        string as_maya_attribute_short_name = "dpy",
+        string label = "dP/dy",
+        string help = "Partial derivative of P along the Y direction."
+    ]],
+    output vector out_world_dPdz = Dz(P)
+    [[
+        string as_maya_attribute_name = "worldDPdz",
+        string as_maya_attribute_short_name = "dpz",
+        string label = "dP/dz",
+        string help = "Partial derivative of P along the Z direction.",
+        int divider = 1
+    ]],
+    output normal out_world_dNdu = 0
+    [[
+        int lockgeom = 0,
+        string as_maya_attribute_name = "worldDNdu",
+        string as_maya_attribute_short_name = "dnu",
+        string label = "dN/du",
+        string help = "Partial derivative of N along the V direction."
+    ]],
+    output normal out_world_dNdv = 0
+    [[
+        int lockgeom = 0,
+        string as_maya_attribute_name = "worldDNdv",
+        string as_maya_attribute_short_name = "dnv",
+        string label = "dN/dv",
+        string help = "Partial derivative of N along the U direction.",
+        int divider = 1
+    ]],
+    output vector out_world_Tn = 0
+    [[
+        int lockgeom = 0,
+        string as_maya_attribute_name = "worldTn",
+        string as_maya_attribute_short_name = "tn",
+        string label = "Tangent Vector"
+    ]],
+    output vector out_world_Bn = 0
+    [[
+        int lockgeom = 0,
+        string as_maya_attribute_name = "worldBn",
+        string as_maya_attribute_short_name = "bn",
+        string label = "Bitangent Vector",
+        int divider = 1
+    ]],
+    output float out_u_coord = u
+    [[
+        string as_maya_attribute_name = "uCoord",
+        string as_maya_attribute_short_name = "uu",
+        string label = "U Coordinate"
+    ]],
+    output float out_v_coord = v
+    [[
+        string as_maya_attribute_name = "vCoord",
+        string as_maya_attribute_short_name = "vv",
+        string label = "V Coordinate",
+        int divider = 1
+    ]],
+    output float out_time = time
+    [[
+        string as_maya_attribute_name = "time",
+        string as_maya_attribute_short_name = "tim",
+        string label = "Shutter Time"
+    ]],
+    output float out_dtime = dtime
+    [[
+        string as_maya_attribute_name = "dtime",
+        string as_maya_attribute_short_name = "dti",
+        string label = "Time Amount",
+        string help = "The amount of time covered by this shading sample."
+    ]],
+    output vector out_world_dPdtime = dPdtime
+    [[
+        string as_maya_attribute_name = "worldDPdtime",
+        string as_maya_attribute_short_name = "dpt",
+        string label = "dP/dtime",
+        string help = "Derivative of P along time, or how P changes per unit time."
+    ]]
+)
+{
+}

@@ -33,8 +33,13 @@
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/utility/paramarray.h"
 
+// appleseed.foundation headers.
+#include "foundation/math/population.h"
+
 // Forward declarations.
-namespace foundation { class Dictionary; }
+namespace foundation    { class Dictionary; }
+namespace renderer      { class ForwardLightSampler; }
+namespace renderer      { class Project; }
 
 namespace renderer
 {
@@ -48,7 +53,10 @@ class BDPTLightingEngineFactory
 {
   public:
     // Constructor.
-    explicit BDPTLightingEngineFactory(const ParamArray& params);
+    BDPTLightingEngineFactory(
+        const Project&              project,
+        const ForwardLightSampler&  light_sampler,
+        const ParamArray&           params);
 
     // Delete this instance.
     void release() override;
@@ -60,7 +68,9 @@ class BDPTLightingEngineFactory
     static foundation::Dictionary get_params_metadata();
 
   private:
-    ParamArray  m_params;
+    const Project&              m_project;
+    const ForwardLightSampler&  m_light_sampler;
+    ParamArray                  m_params;
 };
 
 }       // namespace renderer

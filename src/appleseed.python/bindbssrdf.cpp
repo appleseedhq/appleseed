@@ -50,6 +50,8 @@ using namespace std;
 namespace boost
 {
     template <> BSSRDF const volatile* get_pointer<BSSRDF const volatile>(BSSRDF const volatile* p) { return p; }
+    template <> IBSSRDFFactory const volatile* get_pointer<IBSSRDFFactory const volatile>(IBSSRDFFactory const volatile* p) { return p; }
+    template <> BSSRDFFactoryRegistrar const volatile* get_pointer<BSSRDFFactoryRegistrar const volatile>(BSSRDFFactoryRegistrar const volatile* p) { return p; }
 }
 #endif
 
@@ -73,6 +75,14 @@ namespace
 
         return auto_release_ptr<BSSRDF>();
     }
+
+    auto_release_ptr<BSSRDF> factory_create_bssrdf(
+        const IBSSRDFFactory*   factory,
+        const char*             name,
+        const bpy::dict&        params)
+    {
+        return factory->create(name, bpy_dict_to_param_array(params));
+    }
 }
 
 void bind_bssrdf()
@@ -81,8 +91,13 @@ void bind_bssrdf()
         .def("get_model_metadata", &detail::get_entity_model_metadata<BSSRDFFactoryRegistrar>).staticmethod("get_model_metadata")
         .def("get_input_metadata", &detail::get_entity_input_metadata<BSSRDFFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_bssrdf))
-        .def("get_model", &BSSRDF::get_model)
-        ;
+        .def("get_model", &BSSRDF::get_model);
 
     bind_typed_entity_vector<BSSRDF>("BSSRDFContainer");
+
+    bpy::class_<IBSSRDFFactory, boost::noncopyable>("IBSSRDFFactory", bpy::no_init)
+        .def("create", &factory_create_bssrdf);
+
+    bpy::class_<BSSRDFFactoryRegistrar, boost::noncopyable>("BSSRDFFactoryRegistrar", bpy::no_init)
+        .def("lookup", &BSSRDFFactoryRegistrar::lookup, bpy::return_value_policy<bpy::reference_existing_object>());
 }

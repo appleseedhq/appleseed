@@ -267,8 +267,9 @@ template <typename T, size_t N> renderer::DynamicSpectrum<T, N> exp(const render
 namespace renderer
 {
 
+// Full specialization is required in the value for Apple LLVM version 7.0.0 (clang-700.1.76).
 template <typename T, size_t N>
-APPLESEED_TLS typename DynamicSpectrum<T, N>::Mode DynamicSpectrum<T, N>::s_mode = DynamicSpectrum<T, N>::RGB;
+APPLESEED_TLS typename DynamicSpectrum<T, N>::Mode DynamicSpectrum<T, N>::s_mode = DynamicSpectrum<float, 31>::RGB;
 
 template <typename T, size_t N>
 APPLESEED_TLS size_t DynamicSpectrum<T, N>::s_size = 3;

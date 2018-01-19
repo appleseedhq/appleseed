@@ -83,10 +83,12 @@ class AOVAccumulator
         const size_t                tile_y);
 
     // This method is called before a sample gets rendered.
-    virtual void on_sample_begin();
+    virtual void on_sample_begin(
+        const PixelContext&         pixel_context);
 
     // This method is called after a sample gets rendered.
-    virtual void on_sample_end();
+    virtual void on_sample_end(
+        const PixelContext&         pixel_context);
 
     // Write a value to the accumulator.
     virtual void write(
@@ -141,7 +143,7 @@ class AOVAccumulatorContainer
     AOVAccumulatorContainer();
 
     // Constructor.
-    explicit AOVAccumulatorContainer(const AOVContainer& aovs);
+    explicit AOVAccumulatorContainer(const Frame& frame);
 
     // Destructor.
     ~AOVAccumulatorContainer();
@@ -160,10 +162,12 @@ class AOVAccumulatorContainer
         const size_t                tile_y);
 
     // This method is called before a sample gets rendered.
-    void on_sample_begin();
+    void on_sample_begin(
+        const PixelContext&         pixel_context);
 
     // This method is called after a sample gets rendered.
-    void on_sample_end();
+    void on_sample_end(
+        const PixelContext&         pixel_context);
 
     // Write a sample to all accumulators.
     void write(

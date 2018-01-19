@@ -31,7 +31,8 @@ shader as_glass
     string as_maya_node_name = "asGlass",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
     string help = "Glass material",
-    int as_maya_type_id = 1210820
+    string icon = "asGlass",
+    int as_maya_type_id = 0x001279c4
 ]]
 (
     color in_surface_transmittance = color(1.0)
@@ -39,7 +40,7 @@ shader as_glass
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Transmittance Color",
-        string page = "Surface Transmittance Parameters"
+        string page = "Transmittance"
     ]],
     float in_transmittance_amount = 0.8
     [[
@@ -48,21 +49,21 @@ shader as_glass
         float min = 0.0,
         float max = 1.0,
         string label = "Transmittance Amount",
-        string page = "Surface Transmittance Parameters"
+        string page = "Transmittance"
     ]],
     color in_reflection_tint = color(1)
     [[
         string as_maya_attribute_name = "reflectionTint",
         string as_maya_attribute_short_name = "rt",
         string label = "Reflection Tint",
-        string page = "Specular Parameters"
+        string page = "Specular"
     ]],
     color in_refraction_tint = color(1)
     [[
         string as_maya_attribute_name = "refractionTint",
         string as_maya_attribute_short_name = "tt",
         string label = "Refraction Tint",
-        string page = "Specular Parameters"
+        string page = "Specular"
     ]],
     float in_ior = 1.5
     [[
@@ -72,7 +73,7 @@ shader as_glass
         float max = 10.0,
         float softmax = 2.0,
         string label = "Index Of Refraction",
-        string page = "Specular Parameters",
+        string page = "Specular",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_hidden = 1,
         int divider = 1,
@@ -85,7 +86,7 @@ shader as_glass
         string label = "Distribution",
         string widget = "popup",
         string options = "beckmann|ggx|std",
-        string page = "Specular Parameters",
+        string page = "Specular",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -98,7 +99,7 @@ shader as_glass
         float min = 0.001,
         float max = 1.0,
         string label = "Roughness",
-        string page = "Specular Parameters"
+        string page = "Specular"
     ]],
     float in_specular_spread = 0.5
     [[
@@ -107,7 +108,7 @@ shader as_glass
         float min = 0.0,
         float max = 1.0,
         string label = "Specular Spread",
-        string page = "Specular Parameters",
+        string page = "Specular",
         int divider = 1
     ]],
     float in_anisotropy_amount = 0.0
@@ -117,7 +118,7 @@ shader as_glass
         float min = 0.0,
         float max = 1.0,
         string label = "Anisotropy Amount",
-        string page = "Specular Parameters"
+        string page = "Specular.Anisotropy"
     ]],
     float in_anisotropy_angle = 0.0
     [[
@@ -126,23 +127,48 @@ shader as_glass
         float min = 0.0,
         float max = 1.0,
         string label = "Anisotropy Rotation",
-        string page = "Specular Parameters",
-        string help = "The [0,1] range maps to [0,360] degrees range"
+        string page = "Specular.Anisotropy",
+        string help = "The [0,1] range maps to [0,360] degrees range",
+        int divider = 1
     ]],
-    color in_anisotropy_vector_map = color(0)
+    int in_anisotropy_mode = 0
+    [[
+        string as_maya_attribute_name = "anisotropyMode",
+        string as_maya_attribute_short_name = "anm",
+        string widget = "mapper",
+        string options = "Anisotropy Map:0|Explicit Vector:1",
+        string label = "Anisotropy Mode",
+        string page = "Specular.Anisotropy",
+        string help = "Use tangent vector field map, or explicit vector.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    color in_anisotropy_map = color(0)
     [[
         string as_maya_attribute_name = "anisotropyVectorMap",
         string as_maya_attribute_short_name = "av",
         string label = "Anisotropy Vector Map",
-        string page = "Specular Parameters",
-        string help = "Vector tangent field map, with XY in R,G channels"
+        string page = "Specular.Anisotropy",
+        string help = "Vector tangent field map, with XY in R,G channels",
+        int divider = 1
+    ]],
+    vector in_anisotropy_direction = vector(0)
+    [[
+        string as_maya_attribute_name = "anisotropyDirection",
+        string as_maya_attribute_short_name = "and",
+        string label = "Anisotropy Vector",
+        string page = "Specular.Anisotropy",
+        string help = "Explicit anisotropy vector, such as the vector output by a tangent field node."
     ]],
     color in_volume_transmittance = 1.0
     [[
         string as_maya_attribute_name = "volumeTransmittance",
         string as_maya_attribute_short_name = "vt",
         string label = "Volume Transmittance",
-        string page = "Volume Material Parameters"
+        string page = "Volume"
     ]],
     float in_volume_transmittance_distance = 0.0
     [[
@@ -151,7 +177,7 @@ shader as_glass
         float min = 0.0,
         float max = 1e+9,
         string label = "Transmittance Distance",
-        string page = "Volume Material Parameters",
+        string page = "Volume",
         int gafferNoduleLayoutVisible = 0
     ]],
     normal in_bump_normal = N
@@ -159,7 +185,7 @@ shader as_glass
         string as_maya_attribute_name = "normalCamera",
         string as_maya_attribute_short_name = "n",
         string label = "Bump Normal",
-        string page = "Bump Parameters"
+        string page = "Bump"
     ]],
     int in_enable_matte = 0
     [[
@@ -167,7 +193,7 @@ shader as_glass
         string as_maya_attribute_short_name = "ema",
         string widget = "checkBox",
         string label = "Enable Matte Opacity",
-        string page = "Matte Opacity Parameters",
+        string page = "Matte Opacity",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -181,7 +207,7 @@ shader as_glass
         float min = 0.0,
         float max = 1.0,
         string label = "Matte Opacity",
-        string page = "Matte Opacity Parameters",
+        string page = "Matte Opacity",
         int gafferNoduleLayoutVisible = 0
     ]],
     color in_matte_opacity_color = color(1,0.5,0)
@@ -189,7 +215,7 @@ shader as_glass
         string as_maya_attribute_name = "matteOpacityColor",
         string as_maya_attribute_short_name = "mac",
         string label = "Matte Opacity Color",
-        string page = "Matte Opacity Parameters",
+        string page = "Matte Opacity",
         int gafferNoduleLayoutVisible = 0
     ]],
     int in_maximum_ray_depth= 4
@@ -200,7 +226,7 @@ shader as_glass
         int max = 32,
         int softmax = 8,
         string label = "Ray Depth",
-        string page = "Advanced Parameters",
+        string page = "Advanced",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
@@ -272,16 +298,24 @@ shader as_glass
     normal Nn = normalize(in_bump_normal);
     vector tangent = Tn;
 
-    if (max(in_reflection_tint) > 0.0 && in_anisotropy_amount > 0.0)
+    if (in_anisotropy_amount > 0.0)
     {
-        if (isconnected(in_anisotropy_vector_map))
+        if (in_anisotropy_mode == 0)
         {
-            vector vector_map = normalize(
-                (vector) in_anisotropy_vector_map * 2.0 - 1.0);
+            if (isconnected(in_anisotropy_map))
+            {
+                vector vector_map = normalize(
+                    (vector) in_anisotropy_map * 2.0 - 1.0);
 
-            tangent = normalize(vector_map[0] * Tn +
-                                vector_map[1] * Bn +
-                                vector_map[2] * Nn);
+                tangent = normalize(
+                    vector_map[0] * Tn +
+                    vector_map[1] * Bn +
+                    vector_map[2] * Nn);
+            }
+        }
+        else
+        {
+            tangent = in_anisotropy_direction;
         }
 
         if (in_anisotropy_angle > 0.0)
@@ -290,7 +324,7 @@ shader as_glass
                 tangent,
                 in_anisotropy_angle * M_2PI,
                 point(0),
-                point(in_bump_normal));
+                point(Nn));
         }
     }
 

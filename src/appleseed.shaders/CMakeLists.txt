@@ -67,6 +67,7 @@ source_group ("include\\appleseed\\gaffer" FILES
 
 set (include_appleseed_color_sources
     include/appleseed/color/as_chromatic_adaptation.h
+    include/appleseed/color/as_color_blend_modes.h
     include/appleseed/color/as_color_helpers.h
     include/appleseed/color/as_color_transforms.h
     include/appleseed/color/as_colorimetry.h
@@ -136,6 +137,16 @@ list (APPEND osl_headers
 )
 source_group ("include\\appleseed\\pattern" FILES
     ${include_appleseed_pattern_sources}
+)
+
+set (include_appleseed_transform_sources
+    include/appleseed/transform/as_transform_helpers.h
+)
+list (APPEND osl_headers
+    ${include_appleseed_transform_sources}
+)
+source_group ("include\\appleseed\\transform" FILES
+    ${include_appleseed_transform_sources}
 )
 
 
@@ -217,6 +228,7 @@ set (src_gaffer_surface_sources
      src/gaffer/surface/as_glass_surface.osl
      src/gaffer/surface/as_glossy_surface.osl
      src/gaffer/surface/as_metal_surface.osl
+     src/gaffer/surface/as_plastic_surface.osl
      src/gaffer/surface/as_sheen_surface.osl
      src/gaffer/surface/as_subsurface_surface.osl
      src/gaffer/surface/as_surface_add.osl
@@ -300,11 +312,20 @@ source_group ("src\\gaffer\\vector" FILES
 )
 
 set (src_max_sources
+     src/max/as_max_blend_material.osl
      src/max/as_max_bump_map.osl
      src/max/as_max_color_texture.osl
      src/max/as_max_disney_material.osl
      src/max/as_max_float_texture.osl
+     src/max/as_max_glass_material.osl
+     src/max/as_max_light_material.osl
+     src/max/as_max_metal_material.osl
      src/max/as_max_normal_map.osl
+     src/max/as_max_plastic_material.osl
+     src/max/as_max_srgb_to_linear_rgb.osl
+     src/max/as_max_sss_material.osl
+     src/max/as_max_standard_material.osl
+     src/max/as_max_uv_transform.osl
 )
 list (APPEND osl_sources
     ${src_max_sources}
@@ -375,6 +396,7 @@ set (src_maya_sources
      src/maya/as_maya_rock.osl
      src/maya/as_maya_samplerInfo.osl
      src/maya/as_maya_setRange.osl
+     src/maya/as_maya_simplexNoise.osl
      src/maya/as_maya_singleShadingSwitch.osl
      src/maya/as_maya_snow.osl
      src/maya/as_maya_solidFractal.osl
@@ -399,11 +421,34 @@ source_group ("src\\maya" FILES
 )
 
 set (src_appleseed_sources
+     src/appleseed/as_anisotropy_vector_field.osl
+     src/appleseed/as_attributes.osl
+     src/appleseed/as_blackbody.osl
+     src/appleseed/as_blend_color.osl
      src/appleseed/as_color_transform.osl
+     src/appleseed/as_composite_color.osl
+     src/appleseed/as_create_mask.osl
      src/appleseed/as_disney_material.osl
+     src/appleseed/as_double_shade.osl
+     src/appleseed/as_falloff_angle.osl
      src/appleseed/as_glass.osl
+     src/appleseed/as_globals.osl
+     src/appleseed/as_id_manifold.osl
+     src/appleseed/as_layer_shader.osl
      src/appleseed/as_luminance.osl
+     src/appleseed/as_metal.osl
+     src/appleseed/as_noise2d.osl
+     src/appleseed/as_noise3d.osl
+     src/appleseed/as_plastic.osl
+     src/appleseed/as_ray_switch.osl
+     src/appleseed/as_space_transform.osl
      src/appleseed/as_standard_surface.osl
+     src/appleseed/as_subsurface.osl
+     src/appleseed/as_switch_texture.osl
+     src/appleseed/as_swizzle.osl
+     src/appleseed/as_texture.osl
+     src/appleseed/as_texture_info.osl
+     src/appleseed/as_vary_color.osl
      src/appleseed/as_voronoi2d.osl
      src/appleseed/as_voronoi3d.osl
 )

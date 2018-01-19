@@ -29,13 +29,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/pixel.h"
+#include "foundation/math/half.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/test.h"
-
-// OpenEXR headers.
-#include "foundation/platform/_beginexrheaders.h"
-#include "OpenEXR/half.h"
-#include "foundation/platform/_endexrheaders.h"
 
 using namespace foundation;
 
@@ -43,7 +39,7 @@ TEST_SUITE(Foundation_Image_Pixel)
 {
     TEST_CASE(ConvertToFormat_HalfToUInt32)
     {
-        const half input = 1.0f;
+        const Half input = 1.0f;
 
         uint32 output;
         Pixel::convert_to_format(
@@ -73,7 +69,7 @@ TEST_SUITE(Foundation_Image_Pixel)
 
     TEST_CASE(ConvertFromFormat_HalfToUInt32)
     {
-        const half input = 1.0f;
+        const Half input = 1.0f;
 
         uint32 output;
         Pixel::convert_from_format(

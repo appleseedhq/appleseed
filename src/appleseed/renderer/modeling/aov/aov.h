@@ -86,11 +86,15 @@ class APPLESEED_DLLSYMBOL AOV
     // Return a reference to the AOV image.
     foundation::Image& get_image() const;
 
+    // Clear the AOV image to default values.
+    virtual void clear_image();
+
   protected:
     friend class AOVAccumulatorContainer;
     friend class Frame;
 
     foundation::Image*  m_image;
+    size_t              m_image_index;
 
     // Create an image to store the AOV result.
     virtual void create_image(
@@ -101,8 +105,7 @@ class APPLESEED_DLLSYMBOL AOV
         ImageStack&     aov_images);
 
     // Create an accumulator for this AOV.
-    virtual foundation::auto_release_ptr<AOVAccumulator> create_accumulator(
-        const size_t    index) const = 0;
+    virtual foundation::auto_release_ptr<AOVAccumulator> create_accumulator() const = 0;
 };
 
 

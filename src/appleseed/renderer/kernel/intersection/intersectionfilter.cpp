@@ -34,17 +34,14 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/input/source.h"
-#include "renderer/modeling/input/texturesource.h"
+#include "renderer/modeling/input/sourceinputs.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/scene/objectinstance.h"
-#include "renderer/modeling/scene/textureinstance.h"
-#include "renderer/modeling/texture/texture.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/canvasproperties.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/lazy.h"
 
@@ -265,39 +262,25 @@ IntersectionFilter::AlphaMask* IntersectionFilter::create_alpha_mask(
 {
     assert(alpha_map);
 
-    // Compute the dimensions of the alpha mask.
-    size_t width, height;
-    if (dynamic_cast<const TextureSource*>(alpha_map))
-    {
-        const CanvasProperties& texture_props =
-            static_cast<const TextureSource*>(alpha_map)->get_texture_instance().get_texture().properties();
-        width = texture_props.m_canvas_width;
-        height = texture_props.m_canvas_height;
-    }
-    else
-    {
-        width = 1;
-        height = 1;
-    }
-
     // Create and initialize the alpha mask.
-    AlphaMask* alpha_mask = new AlphaMask(width, height);
+    const Source::Hints hints = alpha_map->get_hints();
+    AlphaMask* alpha_mask = new AlphaMask(hints.m_width, hints.m_height);
 
-    const float rcp_width = 1.0f / width;
-    const float rcp_height = 1.0f / height;
+    const float rcp_width = 1.0f / hints.m_width;
+    const float rcp_height = 1.0f / hints.m_height;
     size_t transparent_texel_count = 0;
 
     // Compute the alpha mask.
-    for (size_t y = 0; y < height; ++y)
+    for (size_t y = 0; y < hints.m_height; ++y)
     {
-        for (size_t x = 0; x < width; ++x)
+        for (size_t x = 0; x < hints.m_width; ++x)
         {
             // Evaluate the alpha map at the center of the texel.
             const Vector2f uv(
                 (x + 0.5f) * rcp_width,
                 1.0f - (y + 0.5f) * rcp_height);
             Alpha alpha;
-            alpha_map->evaluate(texture_cache, uv, alpha);
+            alpha_map->evaluate(texture_cache, SourceInputs(uv), alpha);
 
             // Mark this texel as opaque or transparent in the alpha mask.
             const bool opaque = alpha[0] > 0.0f;
@@ -309,7 +292,7 @@ IntersectionFilter::AlphaMask* IntersectionFilter::create_alpha_mask(
     }
 
     // Compute the ratio of transparent texels to the total number of texels.
-    transparency = static_cast<double>(transparent_texel_count) / (width * height);
+    transparency = static_cast<double>(transparent_texel_count) / (hints.m_width * hints.m_height);
 
     return alpha_mask;
 }

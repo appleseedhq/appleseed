@@ -31,6 +31,7 @@
 #include "surfaceshaderfactoryregistrar.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/entity/registerentityfactories.h"
 #include "renderer/modeling/surfaceshader/aosurfaceshader.h"
 #include "renderer/modeling/surfaceshader/constantsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/diagnosticsurfaceshader.h"

@@ -68,16 +68,6 @@ namespace
         {
         }
 
-        void on_tile_begin(
-            const Frame&                frame,
-            const size_t                tile_x,
-            const size_t                tile_y,
-            const size_t                max_spp) override
-        {
-            UnfilteredAOVAccumulator::on_tile_begin(frame, tile_x, tile_y, max_spp);
-            get_tile().clear(Color4f(0.5f, 0.5f, 0.5f, numeric_limits<float>::max()));
-        }
-
         void write(
             const PixelContext&         pixel_context,
             const ShadingPoint&         shading_point,
@@ -160,8 +150,12 @@ namespace
             return false;
         }
 
-        auto_release_ptr<AOVAccumulator> create_accumulator(
-            const size_t index) const override
+        void clear_image() override
+        {
+            m_image->clear(Color4f(0.5f, 0.5f, 0.5f, numeric_limits<float>::max()));
+        }
+
+        auto_release_ptr<AOVAccumulator> create_accumulator() const override
         {
             return auto_release_ptr<AOVAccumulator>(new NormalAOVAccumulator(get_image()));
         }

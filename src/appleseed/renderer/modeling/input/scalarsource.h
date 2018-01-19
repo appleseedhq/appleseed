@@ -57,6 +57,9 @@ class ScalarSource
     // Compute a signature unique to this source.
     foundation::uint64 compute_signature() const override;
 
+    // Return hints allowing to treat this source as one of another type.
+    Hints get_hints() const override;
+
     // Evaluate the source.
     void evaluate_uniform(
         float&                      scalar) const override;
@@ -91,6 +94,14 @@ inline ScalarSource::ScalarSource(const float scalar)
 inline foundation::uint64 ScalarSource::compute_signature() const
 {
     return foundation::siphash24(m_scalar);
+}
+
+inline ScalarSource::Hints ScalarSource::get_hints() const
+{
+    Hints hints;
+    hints.m_width = 1;
+    hints.m_height = 1;
+    return hints;
 }
 
 inline void ScalarSource::evaluate_uniform(

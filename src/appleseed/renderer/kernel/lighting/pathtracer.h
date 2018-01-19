@@ -100,6 +100,8 @@ class PathTracer
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point);
 
+    const ShadingPoint& get_path_vertex(const size_t i) const;
+
   private:
     PathVisitor&                m_path_visitor;
     VolumeVisitor&              m_volume_visitor;
@@ -436,10 +438,10 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
             foundation::Dual3f(vertex.m_outgoing));
 
         // Subsurface scattering.
+        BSSRDFSample bssrdf_sample;
         if (vertex.m_bssrdf)
         {
             // Sample the BSSRDF and terminate the path if no incoming point is found.
-            BSSRDFSample bssrdf_sample;
             if (!vertex.m_bssrdf->sample(
                     shading_context,
                     sampling_context,
@@ -545,7 +547,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
         // Compute absorption for the segment inside the medium.
         const ShadingRay::Medium* prev_medium = ray.get_current_medium();
-        if (prev_medium != nullptr)
+        if (prev_medium != nullptr && prev_medium->m_material != nullptr)
         {
             const Material::RenderData& render_data = prev_medium->m_material->get_render_data();
 
@@ -930,6 +932,12 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
     }
 
     return true;
+}
+
+template<typename PathVisitor, typename VolumeVisitor, bool Adjoint>
+inline const ShadingPoint& PathTracer<PathVisitor, VolumeVisitor, Adjoint>::get_path_vertex(const size_t i) const
+{
+    return reinterpret_cast<const ShadingPoint*>(m_shading_point_arena.get_storage())[i];
 }
 
 }       // namespace renderer

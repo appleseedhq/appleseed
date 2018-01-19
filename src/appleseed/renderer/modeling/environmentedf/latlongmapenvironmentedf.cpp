@@ -41,16 +41,13 @@
 #include "renderer/modeling/environmentedf/sphericalcoordinates.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
-#include "renderer/modeling/input/texturesource.h"
+#include "renderer/modeling/input/sourceinputs.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
-#include "renderer/modeling/scene/textureinstance.h"
-#include "renderer/modeling/texture/texture.h"
 #include "renderer/utility/paramarray.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/math/fp.h"
@@ -127,15 +124,15 @@ namespace
                 (x + 0.5f) * m_rcp_width,
                 1.0f - (y + 0.5f) * m_rcp_height);
 
-            m_radiance_source->evaluate(m_texture_cache, uv, payload);
+            m_radiance_source->evaluate(m_texture_cache, SourceInputs(uv), payload);
 
             if (is_finite(payload))
             {
                 float multiplier;
-                m_multiplier_source->evaluate(m_texture_cache, uv, multiplier);
+                m_multiplier_source->evaluate(m_texture_cache, SourceInputs(uv), multiplier);
 
                 float exposure;
-                m_exposure_source->evaluate(m_texture_cache, uv, exposure);
+                m_exposure_source->evaluate(m_texture_cache, SourceInputs(uv), exposure);
 
                 payload *= multiplier * pow(2.0f, exposure);
                 importance = luminance(payload);
@@ -380,25 +377,9 @@ namespace
             const Source* radiance_source = m_inputs.source("radiance");
             assert(radiance_source);
 
-            if (dynamic_cast<const TextureSource*>(radiance_source))
-            {
-                const TextureSource* texture_source = static_cast<const TextureSource*>(radiance_source);
-                const TextureInstance& texture_instance = texture_source->get_texture_instance();
-                const CanvasProperties& texture_props = texture_instance.get_texture().properties();
-
-                m_importance_map_width = texture_props.m_canvas_width;
-                m_importance_map_height = texture_props.m_canvas_height;
-            }
-            else
-            {
-                RENDERER_LOG_ERROR(
-                    "while building importance map for environment edf \"%s\": a texture instance "
-                    "must be bound to the \"radiance\" input.",
-                    get_path().c_str());
-
-                m_importance_map_width = 1;
-                m_importance_map_height = 1;
-            }
+            const Source::Hints radiance_source_hints = radiance_source->get_hints();
+            m_importance_map_width = radiance_source_hints.m_width;
+            m_importance_map_height = radiance_source_hints.m_height;
 
             m_rcp_importance_map_width = 1.0f / m_importance_map_width;
             m_rcp_importance_map_height = 1.0f / m_importance_map_height;
@@ -450,7 +431,7 @@ namespace
             assert(v >= 0.0f && v < 1.0f);
 
             InputValues values;
-            m_inputs.evaluate(shading_context.get_texture_cache(), Vector2f(u, 1.0f - v), &values);
+            m_inputs.evaluate(shading_context.get_texture_cache(), SourceInputs(Vector2f(u, 1.0f - v)), &values);
 
             if (is_finite(values.m_radiance))
             {

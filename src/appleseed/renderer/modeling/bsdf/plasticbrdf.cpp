@@ -32,7 +32,9 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/fresnel.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
@@ -92,7 +94,7 @@ namespace
         PlasticBRDFImpl(
             const char*                 name,
             const ParamArray&           params)
-          : BSDF(name, Reflective, ScatteringMode::All, params)
+          : BSDF(name, Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy | ScatteringMode::Specular, params)
         {
             m_inputs.declare("specular_reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("specular_reflectance_multiplier", InputFormatFloat, "1.0");
@@ -390,7 +392,7 @@ namespace
             fresnel_reflectance_dielectric(
                 F,
                 eta,
-                min(dot(w, m), 1.0f));
+                min(cos_wm, 1.0f));
 
             return F;
         }

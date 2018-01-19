@@ -31,6 +31,7 @@
 #include "environmentedffactoryregistrar.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/entity/registerentityfactories.h"
 #include "renderer/modeling/environmentedf/constantenvironmentedf.h"
 #include "renderer/modeling/environmentedf/constanthemisphereenvironmentedf.h"
 #include "renderer/modeling/environmentedf/environmentedftraits.h"

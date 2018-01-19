@@ -654,7 +654,6 @@ namespace
             QComboBox* combobox = create_combobox("engine");
             combobox->setToolTip(m_params_metadata.get_path("lighting_engine.help"));
             combobox->addItem("Unidirectional Path Tracer", "pt");
-            combobox->addItem("Bidirectional Path Tracer", "bdpt");
             combobox->addItem("Stochastic Progressive Photon Mapping", "sppm");
             construct(config, combobox);
         }
@@ -670,7 +669,6 @@ namespace
             QComboBox* combobox = create_combobox("engine");
             combobox->setToolTip(m_params_metadata.get_path("lighting_engine.help"));
             combobox->addItem("Unidirectional Path Tracer", "pt");
-            combobox->addItem("Bidirectional Path Tracer", "bdpt");
             construct(config, combobox);
         }
     };

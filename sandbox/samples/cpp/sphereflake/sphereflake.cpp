@@ -85,8 +85,9 @@ namespace
             return Model;
         }
 
+      private:
         // Expand the contents of the assembly.
-        bool expand_contents(
+        bool do_expand_contents(
             const asr::Project&     project,
             const asr::Assembly*    parent,
             asf::IAbortSwitch*      abort_switch = 0) override
@@ -105,7 +106,6 @@ namespace
             return true;
         }
 
-      private:
         void build_sphere_master_object()
         {
             auto sphere_assembly =

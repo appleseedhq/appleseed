@@ -35,6 +35,7 @@
 #include "renderer/kernel/lighting/scatteringmode.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
@@ -124,6 +125,7 @@ namespace
     //
     // Reference:
     //
+    //   A Microfacet Based Coupled Specular-Matte BRDF Model with Importance Sampling
     //   http://sirkan.iit.bme.hu/~szirmay/scook.pdf
     //
 

@@ -1,0 +1,597 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/color/as_color_helpers.h"
+#include "appleseed/fractal/as_fractal_helpers.h"
+#include "appleseed/math/as_math_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/maya/as_maya_transform_helpers.h"
+
+shader as_noise2d
+[[
+    string as_maya_node_name = "asNoise2D",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/2d:swatch/AppleseedRenderSwatch:texture",
+    int as_maya_type_id = 0x001279cb,
+    string icon = "asNoise2d.png",
+    string URL = "http://appleseedhq.net/"
+]]
+(
+    color in_color1 = color(0)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Color 1",
+        string page = "Color"
+    ]],
+    color in_color2 = color(1)
+    [[
+        string as_maya_attribute_name = "color2",
+        string as_maya_attribute_short_name = "c2",
+        string label = "Color 2",
+        string page = "Color"
+    ]],
+    float in_contrast = 1.0
+    [[
+        string as_maya_attribute_name = "contrast",
+        string as_maya_attribute_short_name = "con",
+        string widget = "slider",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Contrast",
+        string page = "Color"
+    ]],
+    int in_type = 0
+    [[
+        string as_maya_attribute_name = "type",
+        string as_maya_attribute_short_name = "typ",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        string widget = "mapper",
+        string options = "Perlin:0|Simplex:1|Value:2|Voronoise:3|Gabor:4",
+        string label = "Type",
+        string page = "Noise",
+        string help = "Noise type used.",
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    float in_intensity = 1.0
+    [[
+        string as_maya_attribute_name = "intensity",
+        string as_maya_attribute_short_name = "nte",
+        string widget = "slider",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Intensity",
+        string help = "Global noise intensity.",
+        string page = "Noise"
+    ]],
+    float in_frequency_x = 1.0
+    [[
+        string as_maya_attribute_name = "frequencyX",
+        string as_maya_attribute_short_name = "frx",
+        float min = 0.0,
+        float softmax = 8.0,
+        string label = "X Frequency",
+        string help = "Higher values increase the noise density",
+        string page = "Noise"
+    ]],
+    float in_frequency_y = 1.0
+    [[
+        string as_maya_attribute_name = "frequencyY",
+        string as_maya_attribute_short_name = "fry",
+        float min = 0.0,
+        float softmax = 8.0,
+        string label = "Y Frequency",
+        string help = "Higher values increase the noise density",
+        string page = "Noise",
+        int divider = 1
+    ]],
+    int in_ridges = 0
+    [[
+        string as_maya_attribute_name = "ridges",
+        string as_maya_attribute_short_name = "rid",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        string widget = "checkBox",
+        string label = "Ridges",
+        string page = "Noise",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_inflection = 0
+    [[
+        string as_maya_attribute_name = "inflection",
+        string as_maya_attribute_short_name = "ifl",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        string widget = "checkBox",
+        string label = "Inflection",
+        string page = "Noise",
+        string help = "Uses the absolute value of the noise",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_signed_noise = 0
+    [[
+        string as_maya_attribute_name = "signedNoise",
+        string as_maya_attribute_short_name = "sgn",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        string widget = "checkBox",
+        string label = "Signed Noise",
+        string page = "Noise",
+        string help = "Noise range in [0,1] or [-1,1]",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_animated_noise = 0
+    [[
+        string as_maya_attribute_name = "animatedNoise",
+        string as_maya_attribute_short_name = "ano",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        string widget = "checkBox",
+        string label = "Animate",
+        string page = "Noise.Motion",
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    float in_frame_time = 0.0
+    [[
+        string as_maya_attribute_name = "frameTime",
+        string as_maya_attribute_short_name = "ftt",
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Frame Time",
+        string page = "Noise.Motion",
+        string help = "Frame time, typically frame number."
+    ]],
+    float in_time_scale = 1.0
+    [[
+        string as_maya_attribute_name = "timeScale",
+        string as_maya_attribute_short_name = "fqt",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Time Scale",
+        string page = "Noise.Motion",
+        string help = "Global time scale, affects frame time."
+    ]],
+    int in_periodic = 0
+    [[
+        string as_maya_attribute_name = "periodic",
+        string as_maya_attribute_short_name = "per",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        string widget = "checkBox",
+        string label = "Periodic",
+        string page = "Noise.Periodic",
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    float in_period_x = 4.0
+    [[
+        string as_maya_attribute_name = "periodX",
+        string as_maya_attribute_short_name = "prx",
+        float min = 0.0,
+        float softmax = 16.0,
+        string label = "X Period",
+        string page = "Noise.Periodic"
+    ]],
+    float in_period_y = 4.0
+    [[
+        string as_maya_attribute_name = "periodY",
+        string as_maya_attribute_short_name = "pry",
+        float min = 0.0,
+        float softmax = 16.0,
+        string label = "Y Period",
+        string page = "Noise.Periodic"
+    ]],
+    float in_period_time = 4.0
+    [[
+        string as_maya_attribute_name = "periodTime",
+        string as_maya_attribute_short_name = "prt",
+        float min = 0.0,
+        float softmax = 16.0,
+        string label = "Time Period",
+        string page = "Noise.Periodic"
+    ]],
+    float in_smoothness = 0.0
+    [[
+        string as_maya_attribute_name = "smoothness",
+        string as_maya_attribute_short_name = "smt",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Smoothness",
+        string page = "Noise.Voronoise"
+    ]],
+    float in_jittering = 0.0
+    [[
+        string as_maya_attribute_name = "jittering",
+        string as_maya_attribute_short_name = "jtr",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Jittering",
+        string page = "Noise.Voronoise"
+    ]],
+    int in_anisotropy = 0
+    [[
+        string as_maya_attribute_name = "anisotropy",
+        string as_maya_attribute_short_name = "any",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        string widget = "mapper",
+        string options = "Isotropic:0|Anisotropic:1|Hybrid:2",
+        string label = "Mode",
+        string page = "Noise.Gabor",
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    vector in_direction = vector(1,0,0)
+    [[
+        string as_maya_attribute_name = "direction",
+        string as_maya_attribute_short_name = "dir",
+        string label = "Anisotropy Vector",
+        string page = "Noise.Gabor"
+    ]],
+    float in_bandwidth = 1.0
+    [[
+        string as_maya_attribute_name = "bandwidth",
+        string as_maya_attribute_short_name = "bnd",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Bandwidth",
+        string page = "Noise.Gabor"
+    ]],
+    int in_impulses = 16
+    [[
+        string as_maya_attribute_name = "impulses",
+        string as_maya_attribute_short_name = "imp",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int min = 0,
+        int softmax = 64,
+        string label = "Impulses",
+        string page = "Noise.Gabor",
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    int in_filter_noise = 1
+    [[
+        string as_maya_attribute_name = "filterNoise",
+        string as_maya_attribute_short_name = "fil",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        string widget = "checkBox",
+        string label = "Filter",
+        string page = "Noise.Gabor",
+        int gafferNoduleLayoutVisible = 0
+    ]],  
+    float in_amplitude = 1.0
+    [[
+        string as_maya_attribute_name = "amplitude",
+        string as_maya_attribute_short_name = "amp",
+        float min = -10.0,
+        float max = 10.0,
+        float softmin = 0.0,
+        float softmax = 1.0,
+        int slider = 0,
+        string label = "Amplitude",
+        string page = "Recursion",
+        string help = "Initial amplitude before recursion"
+    ]],
+    int in_octaves = 1
+    [[
+        string as_maya_attribute_name = "octaves",
+        string as_maya_attribute_short_name = "oct",
+        int as_maya_attribute_connectable = 0,
+        string widget = "slider",
+        int slider = 1,
+        int min = 1,
+        int max = 16,
+        int softmax = 8,
+        string label = "Octaves",
+        string page = "Recursion",
+        string help = "Maximum number of iterations",
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    int in_cascade_mode = 0
+    [[
+        string as_maya_attribute_name = "cascadeMode",
+        string as_maya_attribute_short_name = "ccm",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        string widget = "mapper",
+        string options = "Additive:0|Multiplicative:1",
+        string label = "Cascade",
+        string page = "Recursion",
+        string help = "Add sucessive frequencies, or multiply them.",
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    float in_lacunarity = 2.17
+    [[
+        string as_maya_attribute_name = "lacunarity",
+        string as_maya_attribute_short_name = "lac",
+        float min = 0.01,
+        float max = 100.0,
+        float softmin = 0.1,
+        float softmax = 10.0,
+        string label = "Lacunarity",
+        string page = "Recursion",
+        string help = "Gap between successive frequencies"
+    ]],
+    float in_offset = 0.0
+    [[
+        string as_maya_attribute_name = "offset",
+        string as_maya_attribute_short_name = "oft",
+        float min = -1.0,
+        float softmax = 1.0,
+        string label = "Offset",
+        string page = "Recursion",
+        string help = "Controls the multifractality"
+    ]],
+    float in_noise_gain = 1.0
+    [[
+        string as_maya_attribute_name = "noiseGain",
+        string as_maya_attribute_short_name = "gin",
+        float min = 0.0,
+        float max = 5.0,
+        float softmin = 1.0,
+        float softmax = 3.0,
+        string label = "Gain",
+        string page = "Recursion",
+        string help = "Controls the contrast of the fractal"
+    ]],
+    float in_distortion = 0.0
+    [[
+        string as_maya_attribute_name = "distortion",
+        string as_maya_attribute_short_name = "dis",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Distortion",
+        string page = "Recursion",
+        string help = "Distors the domain of the coordinates for each frequency."
+    ]],
+
+    MAYA_UV_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string label = "Color"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
+        string label = "Alpha"
+    ]]
+)
+{
+    if (in_uvCoord[0] == OUTSIDE_UVFRAME || in_uvCoord[1] == OUTSIDE_UVFRAME)
+    {
+        out_outColor = color(0);
+        out_outAlpha = 0.0;
+        return;
+    }
+
+    if (in_amplitude < EPS)
+    {
+        out_outColor = color(0);
+        out_outAlpha = 0.0;
+        return;
+    }
+
+    vector new_st = vector(
+        mod(in_uvCoord[0], UVWRAP),
+        mod(in_uvCoord[1], UVWRAP),
+        in_frame_time) *
+        vector(in_frequency_x, in_frequency_y, in_time_scale);
+
+    float lacunarity = in_lacunarity, amplitude = in_amplitude;
+    float weight = 1.0, norm = 0.0, result = (in_cascade_mode) ? 1.0 : 0.0;
+
+    string noisetype = get_noise_type(in_type);
+
+    if (in_animated_noise)
+    {
+        for (int i = 0; i < in_octaves; ++i)
+        {
+            if (amplitude == 0.0)
+            {
+                break;
+            }
+
+            point coords = (point) new_st;
+
+            if (in_distortion > 0.0)
+            {
+                vector distortion = in_distortion * (vector)
+                    noise("perlin", new_st);
+
+                coords += distortion;
+            }
+
+            float signal = 0.0;
+
+            if (noisetype == "gabor")
+            {
+                signal = (float) noise(
+                    "gabor",
+                    coords,
+                    "anisotropic", in_anisotropy,
+                    "direction", in_direction,
+                    "bandwidth", in_bandwidth,
+                    "impulses", in_impulses,
+                    "do_filter", in_filter_noise) * 0.5 + 0.5;
+            }
+            else if (noisetype == "voronoise")
+            {
+                signal = voronoise3d(
+                    coords,
+                    in_jittering,
+                    in_smoothness);
+            }
+            else if (noisetype == "value")
+            {
+                signal = value_noise3d(coords);
+            }
+            else if (in_periodic)
+            {
+                signal = (float) pnoise(
+                    noisetype,
+                    coords,
+                    point(in_period_x, in_period_y, in_period_time)) ;
+            }
+            else
+            {
+                signal = (float) noise(noisetype, coords);
+            }
+
+            if (in_signed_noise)
+            {
+                signal = signal * 2.0 - 1.0;
+            }
+
+            if (in_inflection)
+            {
+                signal = abs(signal);
+            }
+
+            if (in_ridges)
+            {
+                signal = in_offset - signal;
+                signal *= signal;
+                signal *= weight;
+                weight = clamp(signal * 2.0, 0.0, 1.0);
+            }
+
+            result = (in_cascade_mode)
+                ? result * amplitude * signal
+                : result + amplitude * signal;
+
+            new_st *= lacunarity;
+            amplitude *= in_noise_gain;
+            norm += amplitude;
+        }
+    }
+    else
+    {
+        for (int i = 0; i < in_octaves; ++i)
+        {
+            if (amplitude == 0.0)
+            {
+                break;
+            }
+
+            point coords = (point) new_st;
+
+            if (in_distortion > 0.0)
+            {
+                vector distortion = in_distortion * (vector)
+                    noise("perlin", new_st);
+
+                coords += distortion;
+            }
+
+            float signal = 0.0;
+
+            if (noisetype == "gabor")
+            {
+                signal = (float) noise(
+                    "gabor",
+                    coords[0],
+                    coords[1],
+                    "anisotropic", in_anisotropy,
+                    "direction", in_direction,
+                    "bandwidth", in_bandwidth,
+                    "impulses", in_impulses,
+                    "do_filter", in_filter_noise) * 0.5 + 0.5;
+            }
+            else if (noisetype == "voronoise")
+            {
+                signal = voronoise2d(
+                    coords[0],
+                    coords[1],
+                    in_jittering,
+                    in_smoothness);
+            }
+            else if (noisetype == "value")
+            {
+                signal = value_noise2d(coords[0], coords[1]);
+            }
+            else if (in_periodic)
+            {
+                signal = (float) pnoise(
+                    noisetype,
+                    coords[0],
+                    coords[1],
+                    in_period_x,
+                    in_period_y);
+            }
+            else
+            {
+                signal = (float) noise(
+                    noisetype, coords[0], coords[1]);
+            }
+
+            if (in_signed_noise)
+            {
+                signal = signal * 2.0 - 1.0;
+            }
+
+            if (in_inflection)
+            {
+                signal = abs(signal);
+            }
+
+            if (in_ridges)
+            {
+                signal = in_offset - signal;
+                signal *= signal;
+                signal *= weight;
+                weight = min(1.0, signal * 2.0);
+            }
+
+            result = (in_cascade_mode)
+                ? result * amplitude * signal
+                : result + amplitude * signal;
+
+            new_st *= lacunarity;
+            amplitude *= in_noise_gain;
+            norm += amplitude;
+        }
+    }
+    result /= norm;
+    result *= in_intensity;
+
+    // TODO: get the working/rendering space via getattribute()
+    out_outAlpha = as_luminance(result, "Rec.709", "D65");
+
+    color blendc = mix(in_color2, in_color1, in_contrast);
+    out_outColor = mix(in_color2, blendc, 1.0 - result);
+}

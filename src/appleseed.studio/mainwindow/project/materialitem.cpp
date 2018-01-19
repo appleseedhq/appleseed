@@ -138,6 +138,7 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
             QTreeWidgetItem::treeWidget(),
             window_title,
             m_editor_context.m_project,
+            m_editor_context.m_settings,
             move(form_factory),
             move(entity_browser),
             move(custom_entity_ui),

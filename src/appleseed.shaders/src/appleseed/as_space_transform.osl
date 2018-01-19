@@ -1,0 +1,136 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+shader as_space_transform
+[[
+    string as_maya_node_name = "asSpaceTransform",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string help = "Coordinate system transform node.",
+    string icon = "asSpaceTransform.png",
+    int as_maya_type_id = 0x001279f0
+]]
+(
+    point in_point = point(0)
+    [[
+        string as_maya_attribute_name = "point",
+        string as_maya_attribute_short_name = "p",
+        string label = "Point to Transform",
+        string page = "Input"
+    ]],
+    normal in_normal = normal(0)
+    [[
+        string as_maya_attribute_name = "normal",
+        string as_maya_attribute_short_name = "n",
+        string label = "Normal to Transform",
+        string page = "Input"
+    ]],
+    vector in_vector = vector(0)
+    [[
+        string as_maya_attribute_name = "vector",
+        string as_maya_attribute_short_name = "ive",
+        string label = "Vector to Transform",
+        string page = "Input",
+        int divider = 1
+    ]],
+    string in_from_space = "common"
+    [[
+        string as_maya_attribute_name = "fromSpace",
+        string as_maya_attribute_short_name = "fsp",
+        string widget = "popup",
+        string options = "common|object|shader|world|camera|screen|raster|NDC",
+        string label = "From Space",
+        string page = "Space",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    string in_to_space = "common"
+    [[
+        string as_maya_attribute_name = "toSpace",
+        string as_maya_attribute_short_name = "tsp",
+        string widget = "popup",
+        string options = "common|object|shader|world|camera|screen|raster|NDC",
+        string label = "To Space",
+        string page = "Space",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    int in_normalize_vectors = 0
+    [[
+        string as_maya_attribute_name = "normalizeVectors",
+        string as_maya_attribute_sort_name = "nve",
+        string widget = "checkBox",
+        string label = "Normalize Output Vectors",
+        string page = "Space",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+
+    output point out_transformed_point = point(0)
+    [[
+        string as_maya_attribute_name = "outTransformedPoint",
+        string as_maya_attribute_short_name = "tpo",
+        string label = "Transformed Point"
+    ]],
+    output normal out_transformed_normal = normal(0)
+    [[
+        string as_maya_attribute_name = "outTransformedNormal",
+        string as_maya_attribute_short_name = "tno",
+        string label = "Transformed Normal"
+    ]],
+    output vector out_transformed_vector = vector(0)
+    [[
+        string as_maya_attribute_name = "outTransformedVector",
+        string as_maya_attribute_short_name = "tve",
+        string label = "Transformed Vector"
+    ]],
+    output matrix out_transform_matrix = matrix(1)
+    [[
+        string as_maya_attribute_name = "outTransformMatrix",
+        string as_maya_attribute_short_name = "oma",
+        string label = "Transform Matrix"
+    ]]
+)
+{
+    out_transformed_point = transform(in_from_space, in_to_space, in_point);
+    out_transformed_normal = transform(in_from_space, in_to_space, in_normal);
+    out_transformed_vector = transform(in_from_space, in_to_space, in_vector);
+
+    if (in_normalize_vectors)
+    {
+        out_transformed_normal = normalize(out_transformed_normal);
+        out_transformed_vector = normalize(out_transformed_vector);
+    }
+}

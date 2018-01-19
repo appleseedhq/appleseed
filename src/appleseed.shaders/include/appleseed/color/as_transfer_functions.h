@@ -35,6 +35,7 @@
 
 #define ADOBE_RGB_1998_GAMMA    2.19921875
 #define REC709_GAMMA            2.4
+#define REC1886_GAMMA           2.4
 #define DCIP3_GAMMA             2.6
 
 //
@@ -167,7 +168,7 @@ color Rec709_OETF(color value)
 // Reference:
 //
 //      BT.2020: Parameter Values for Ultra High Definition Television
-//      Systems For Production And International Programma Exchange
+//      Systems For Production And International Programme Exchange
 //
 //      https://www.itu.int/rec/R-REC-BT.2020/en
 //
@@ -258,6 +259,16 @@ color Rec2020_OETF(color value, int bitdepth)
         Rec2020_OETF(value[2], bitdepth));
 }
 
+color Rec2020_EOTF(color value)
+{
+    return Rec2020_EOTF(value, 12);
+}
+
+color Rec2020_OETF(color value)
+{
+    return Rec2020_OETF(value, 12);
+}
+
 //
 // Reference:
 //
@@ -268,10 +279,10 @@ color Rec2020_OETF(color value, int bitdepth)
 //
 // Note:
 //
-//      The black and white luminance levels described in the reference are
-//      10bit values 64 and 940 respectively, but they should be the luminance
-//      in candelas per square meter for absolute luminance, or 0 and 1 for
-//      normalized values.
+//      The standard specifies black and white luminance levels for the code
+//      values 64, 940 (in a 10bit system), but they can be the luminance values
+//      in nits (cd/m^2), or 0.0 and 1.0 for a normalized system. For our use,
+//      we expect the luminance domain to be [0,1].
 //
 // See also:
 //
@@ -281,96 +292,30 @@ color Rec2020_OETF(color value, int bitdepth)
 //      https://tech.ebu.ch/docs/tech/tech3320.pdf
 //
 
-float Rec1886_EOTF(float value, float black_luminance, float white_luminance)
-{
-    float linear_out;
-
-    if (value > 0)
-    {
-        float gamma = REC709_GAMMA;
-        float gamma_denom = 1 / gamma;
-
-        float tmp = pow(white_luminance, gamma_denom) -
-                    pow(black_luminance, gamma_denom);
-
-        float gain = pow(tmp, gamma);
-        float lift = pow(black_luminance, gamma_denom) / tmp;
-
-        linear_out = gain * pow(max(0, value + lift), gamma);
-    }
-    else
-    {
-        linear_out = 0;
-    }
-    return linear_out;
-}
-
-float Rec1886_OETF(float value, float black_luminance, float white_luminance)
-{
-    float prime_out;
-
-    if (value > 0)
-    {
-        float gamma = 2.4;
-        float gamma_denom = 1 / gamma;
-
-        float tmp = pow(white_luminance, gamma_denom) -
-                    pow(black_luminance, gamma_denom);
-
-        float gain = pow(tmp, gamma);
-        float lift = pow(black_luminance, gamma_denom) / tmp;
-
-        prime_out  = pow(value / gain, gamma_denom - lift);
-    }
-    else
-    {
-        prime_out = 0;
-    }
-    return prime_out;
-}
-
-color Rec1886_EOTF(color value, float black_luminance, float white_luminance)
-{
-    return color(
-        Rec1886_EOTF(value[0], black_luminance, white_luminance),
-        Rec1886_EOTF(value[1], black_luminance, white_luminance),
-        Rec1886_EOTF(value[2], black_luminance, white_luminance));
-}
-
-color Rec1886_OETF(color value, float black_luminance, float white_luminance)
-{
-    return color(
-        Rec1886_OETF(value[0], black_luminance, white_luminance),
-        Rec1886_OETF(value[1], black_luminance, white_luminance),
-        Rec1886_OETF(value[2], black_luminance, white_luminance));
-}
-
-// Normalized Rec.1886 CCTFs.
-
 float Rec1886_EOTF(float value)
 {
-    return Rec1886_EOTF(value, 0.0, 1.0);
+    return (value > 0.0) ? pow(value, REC1886_GAMMA) : 0.0;
 }
 
 float Rec1886_OETF(float value)
 {
-    return Rec1886_OETF(value, 0.0, 1.0);
+    return (value > 0.0) ? pow(value, 1.0 / REC1886_GAMMA) : 0.0;
 }
 
 color Rec1886_EOTF(color value)
 {
     return color(
-        Rec1886_EOTF(value[0], 0.0, 1.0),
-        Rec1886_EOTF(value[1], 0.0, 1.0),
-        Rec1886_EOTF(value[2], 0.0, 1.0));
+        Rec1886_EOTF(value[0]),
+        Rec1886_EOTF(value[1]),
+        Rec1886_EOTF(value[2]));
 }
 
 color Rec1886_OETF(color value)
 {
     return color(
-        Rec1886_OETF(value[0], 0.0, 1.0),
-        Rec1886_OETF(value[1], 0.0, 1.0),
-        Rec1886_OETF(value[2], 0.0, 1.0));
+        Rec1886_OETF(value[0]),
+        Rec1886_OETF(value[1]),
+        Rec1886_OETF(value[2]));
 }
 
 //
@@ -444,12 +389,12 @@ color AdobeRGB_OETF(color value)
 
 color DCIP3_EOTF(color XYZ)
 {
-    return 4096 * gamma_CCTF(XYZ / 52.37, 1.0 / DCIP3_GAMMA);
+    return gamma_CCTF(XYZ, 1.0 / DCIP3_GAMMA);
 }
 
 color DCIP3_OETF(color XYZ)
 {
-    return 52.37 * gamma_CCTF(XYZ / 4095, DCIP3_GAMMA);
+    return gamma_CCTF(XYZ, DCIP3_GAMMA);
 }
 
 #endif // !AS_TRANSFER_FUNCTIONS_H

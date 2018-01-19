@@ -258,6 +258,9 @@ set (foundation_math_sources
     foundation/math/fp.h
     foundation/math/fresnel.h
     foundation/math/frustum.h
+    foundation/math/half.cpp
+    foundation/math/half.h
+    foundation/math/halftables.h
     foundation/math/hash.h
     foundation/math/knn.h
     foundation/math/matrix.h
@@ -401,6 +404,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_fp.cpp
     foundation/meta/tests/test_fresnel.cpp
     foundation/meta/tests/test_genericprogressiveimagefilereader.cpp
+    foundation/meta/tests/test_half.cpp
     foundation/meta/tests/test_hash.cpp
     foundation/meta/tests/test_iesparser.cpp
     foundation/meta/tests/test_image.cpp
@@ -896,6 +900,17 @@ source_group ("renderer\\kernel\\aov" FILES
     ${renderer_kernel_aov_sources}
 )
 
+set (renderer_kernel_denoising_sources
+    renderer/kernel/denoising/denoiser.cpp
+    renderer/kernel/denoising/denoiser.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_denoising_sources}
+)
+source_group ("renderer\\kernel\\denoising" FILES
+    ${renderer_kernel_denoising_sources}
+)
+
 set (renderer_kernel_intersection_sources
     renderer/kernel/intersection/assemblytree.cpp
     renderer/kernel/intersection/assemblytree.h
@@ -1249,6 +1264,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_backwardlightsampler.cpp
     renderer/meta/tests/test_containers.cpp
     renderer/meta/tests/test_dynamicspectrum.cpp
+    renderer/meta/tests/test_energycompensation.cpp
     renderer/meta/tests/test_entitymap.cpp
     renderer/meta/tests/test_entityvector.cpp
     renderer/meta/tests/test_environmentedf.cpp
@@ -1290,6 +1306,8 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/aovfactoryregistrar.cpp
     renderer/modeling/aov/aovfactoryregistrar.h
     renderer/modeling/aov/aovtraits.h
+    renderer/modeling/aov/denoiseraov.cpp
+    renderer/modeling/aov/denoiseraov.h
     renderer/modeling/aov/depthaov.cpp
     renderer/modeling/aov/depthaov.h
     renderer/modeling/aov/diffuseaov.cpp
@@ -1344,6 +1362,7 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/lambertianbrdf.h
     renderer/modeling/bsdf/metalbrdf.cpp
     renderer/modeling/bsdf/metalbrdf.h
+    renderer/modeling/bsdf/microfacethelper.cpp
     renderer/modeling/bsdf/microfacethelper.h
     renderer/modeling/bsdf/nullbsdf.h
     renderer/modeling/bsdf/orennayarbrdf.cpp
@@ -1394,6 +1413,8 @@ set (renderer_modeling_bssrdf_sources
     renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h
     renderer/modeling/bssrdf/oslbssrdf.cpp
     renderer/modeling/bssrdf/oslbssrdf.h
+    renderer/modeling/bssrdf/randomwalkbssrdf.cpp
+    renderer/modeling/bssrdf/randomwalkbssrdf.h
     renderer/modeling/bssrdf/separablebssrdf.cpp
     renderer/modeling/bssrdf/separablebssrdf.h
     renderer/modeling/bssrdf/sss.cpp
@@ -1494,6 +1515,7 @@ set (renderer_modeling_entity_sources
     renderer/modeling/entity/entityvector.h
     renderer/modeling/entity/onframebeginrecorder.cpp
     renderer/modeling/entity/onframebeginrecorder.h
+    renderer/modeling/entity/registerentityfactories.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_entity_sources}
@@ -1586,6 +1608,8 @@ set (renderer_modeling_input_sources
     renderer/modeling/input/inputbinder.cpp
     renderer/modeling/input/inputbinder.h
     renderer/modeling/input/scalarsource.h
+    renderer/modeling/input/sourceinputs.h
+    renderer/modeling/input/sourceinputs.cpp
     renderer/modeling/input/source.h
     renderer/modeling/input/symbol.h
     renderer/modeling/input/texturesource.cpp
@@ -1937,6 +1961,7 @@ if (WITH_DISNEY_MATERIAL)
 endif ()
 
 target_link_libraries (appleseed
+    bcd
     ${Boost_LIBRARIES}
     lz4
     ${CMAKE_DL_LIBS}
@@ -1955,12 +1980,18 @@ if (USE_EXTERNAL_OSL)
     add_custom_command (TARGET appleseed PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${OSL_MAKETX} ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
+    add_custom_command (TARGET appleseed PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${OPENIMAGEIO_OIIOTOOL} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+    )
 else ()
     add_custom_command (TARGET appleseed PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/osl-release/bin/oslinfo${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
     add_custom_command (TARGET appleseed PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/bin/maketx${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+    )
+    add_custom_command (TARGET appleseed PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/bin/oiiotool${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
     )
 endif ()
 
@@ -1992,10 +2023,6 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     install (TARGETS appleseed
         ARCHIVE
         DESTINATION lib
-    )
-
-    install (TARGETS appleseed
-        DESTINATION extras/devkit/lib
     )
 else ()
     install (TARGETS appleseed

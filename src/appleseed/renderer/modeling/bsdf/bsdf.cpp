@@ -34,6 +34,7 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/sourceinputs.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/arena.h"
@@ -84,7 +85,7 @@ void* BSDF::evaluate_inputs(
 
     get_inputs().evaluate(
         shading_context.get_texture_cache(),
-        shading_point.get_uv(0),
+        SourceInputs(shading_point.get_uv(0)),
         data);
 
     prepare_inputs(

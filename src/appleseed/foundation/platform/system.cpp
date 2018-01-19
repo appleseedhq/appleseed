@@ -64,6 +64,7 @@
     #include <sys/param.h>
     #include <sys/sysctl.h>
     #include <sys/types.h>
+    #include <cpuid.h>
 
 // Linux.
 #elif defined __linux__
@@ -239,6 +240,24 @@ uint64 System::get_process_virtual_memory_size()
 
 namespace
 {
+    void cpuid(int32 cpuinfo[4], const int32 index)
+    {
+        __cpuid_count(
+            index,
+            0,
+            cpuinfo[0],
+            cpuinfo[1],
+            cpuinfo[2],
+            cpuinfo[3]);
+    }
+
+    uint64 xgetbv(const int32 index)
+    {
+        uint32 eax, edx;
+        __asm__ __volatile__("xgetbv" : "=a"(eax), "=d"(edx) : "c"(index));
+        return (static_cast<uint64>(edx) << 32) | eax;
+    }
+
     size_t get_system_value(const char* name)
     {
         size_t value = 0;

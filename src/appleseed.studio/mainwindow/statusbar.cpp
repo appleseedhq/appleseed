@@ -56,7 +56,7 @@ void StatusBar::set_text(const string& text)
 
 void StatusBar::start_rendering_time_display(RenderingTimer* rendering_timer)
 {
-    assert(m_rendering_timer == 0);
+    assert(m_rendering_timer == nullptr);
     assert(m_timer_id == -1);
 
     assert(rendering_timer);
@@ -67,13 +67,15 @@ void StatusBar::start_rendering_time_display(RenderingTimer* rendering_timer)
 
 void StatusBar::stop_rendering_time_display()
 {
-    assert(m_rendering_timer != 0);
-    assert(m_timer_id != -1);
+    if (m_rendering_timer != nullptr)
+    {
+        assert(m_timer_id != -1);
 
-    killTimer(m_timer_id);
+        killTimer(m_timer_id);
 
-    m_rendering_timer = nullptr;
-    m_timer_id = -1;
+        m_rendering_timer = nullptr;
+        m_timer_id = -1;
+    }
 }
 
 void StatusBar::timerEvent(QTimerEvent* event)
