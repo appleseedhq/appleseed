@@ -92,7 +92,7 @@ shader as_plastic
         string as_maya_attribute_name = "distribution",
         string as_maya_attribute_short_name = "dst",
         string widget = "mapper",
-        string options = "Beckmann:0|GGX:1|GTR:2|Student's t MDF:3",
+        string options = "Beckmann:0|GGX:1|GTR:2|Student's t-MDF:3",
         string label = "Distribution",
         string page = "Specular",
         int as_maya_attribute_connectable = 0,
@@ -118,7 +118,7 @@ shader as_plastic
         float max = 1.0,
         string label = "Specular Spread",
         string page = "Specular",
-        string help = "Specular highlights spread, only valid for GTR, Student's t MDF."
+        string help = "Specular highlights spread, only valid for GTR, Student's t-MDF."
     ]],
     normal in_bump_normal = N
     [[

@@ -1,0 +1,212 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2018 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+shader as_texture_info
+[[
+    string as_maya_node_name = "asTextureInfo",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string help = "Texture Information node",
+    string icon = "asTextureInfo.png",
+    int as_maya_type_id = 0x001279fc
+]]
+(
+    string in_texture_file = ""
+    [[
+        string as_maya_attribute_name = "textureFile",
+        string as_maya_attribute_short_name = "tex",
+        string widget = "filename",
+        string label = "Texture File",
+        string page = "Texture",
+        string help = "Texture file to query information from."
+    ]],
+    
+    output color out_average_color = color(0)
+    [[
+        string as_maya_attribute_name = "averageColor",
+        string as_maya_attribute_short_name = "avc",
+        string label = "Average Color",
+        string help = "Returns the average color of the first 3 channels of the texture file."
+    ]],
+    output float out_average_alpha = 1.0
+    [[
+        string as_maya_attribute_name = "averageAlpha",
+        string as_maya_attribute_short_name = "ava",
+        string label = "Average Alpha",
+        string help = "Returns the average alpha of the channel with the 'A' name in the texture file, if it exists."
+    ]],
+    output vector out_resolution = vector(0)
+    [[
+        string as_maya_attribute_name = "resolution",
+        string as_maya_attribute_short_name = "res",
+        string label = "Resolution",
+        string help = "XY resolution, XYZ resolution for 3D textures."
+    ]],
+    output int out_num_channels = 0
+    [[
+        string as_maya_attribute_name = "numChannels",
+        string as_maya_attribute_short_name = "cha",
+        string label = "Channels",
+        string help = "Number of channels in the texture."
+    ]],
+    output int out_num_subimages = 0
+    [[
+        string as_maya_attribute_name = "numSubImages",
+        string as_maya_attribute_short_name = "sub",
+        string label = "Subimages",
+        string help = "Number of sub-images in the texture file."
+    ]],
+    output string out_texture_type = ""
+    [[
+        string as_maya_attribute_name = "textureType",
+        string as_maya_attribute_short_name = "ttt",
+        string label = "Texture Type",
+        string help = "Semantic type of texture, plain texture, shadow, environmnet or volume texture."
+    ]],
+    output string out_texture_format = ""
+    [[
+        string as_maya_attribute_name = "textureFormat",
+        string as_maya_attribute_short_name = "tfo",
+        string label = "Texture Format",
+        string help = "Returns the texture format, plain, shadow, cubeface, volume, cubeface or latlong environment, volume texture."
+    ]],
+    output vector out_data_window_min = vector(0)
+    [[
+        string as_maya_attribute_name = "dataWindowMinimum",
+        string as_maya_attribute_short_name = "dmi",
+        string label = "Data Window Minimum",
+        string help = "Pixel data window of the 2D/3D texture, XY(Z) minimum."
+    ]],
+    output vector out_data_window_max = vector(0)
+    [[
+        string as_maya_attribute_name = "dataWindowMaximum",
+        string as_maya_attribute_short_name = "dma",
+        string label = "Data Window Maximum",
+        string help = "Pixel data window of the 2D/3D texture, XY(Z) maximum."
+    ]],
+    output vector out_display_window_min = vector(0)
+    [[
+        string as_maya_attribute_name = "displayWindowMinimum",
+        string as_maya_attribute_short_name = "wmi",
+        string label = "Display Window Minimum",
+        string help = "Display (full) window of the 2D/3D texture, XY(Z) minimum."
+    ]],
+    output vector out_display_window_max = vector(0)
+    [[
+        string as_maya_attribute_name = "displayWindowMaximum",
+        string as_maya_attribute_short_name = "wma",
+        string label = "Display Window Maximum",
+        string help = "Display (full) window of the 2D/3D texture, XY(Z) maximum."
+    ]],
+    output matrix out_world_to_camera = matrix(1)
+    [[
+        string as_maya_attribute_name = "worldToCameraMatrix",
+        string as_maya_attribute_short_name = "wtc",
+        string label = "World To Camera Matrix"
+    ]],
+    output matrix out_world_to_screen = matrix(1)
+    [[
+        string as_maya_attribute_name = "worldToScreenMatrix",
+        string as_maya_attribute_short_name = "wts",
+        string label = "World To Screen Matrix"
+    ]]
+)
+{
+    if (in_texture_file == "")
+    {
+        return;
+    }
+    else
+    {
+        int valid_file = 0;
+        gettextureinfo(in_texture_file, "exists", valid_file);
+
+        if (!valid_file)
+        {
+            return;
+        }
+    }
+    
+    gettextureinfo(in_texture_file, "type", out_texture_type);
+
+    if (out_texture_type == "Volume Texture")
+    {
+        int res[3], data_window[6], display_window[6];
+
+        gettextureinfo(in_texture_file, "resolution", res);
+        gettextureinfo(in_texture_file, "datawindow", data_window);
+        gettextureinfo(in_texture_file, "displaywindow", display_window);
+
+        out_resolution = vector(res[0], res[1], res[2]);
+
+        out_data_window_min = vector(
+            data_window[0], data_window[1], data_window[2]);
+
+        out_data_window_max = vector(
+            data_window[3], data_window[4], data_window[5]);
+
+        out_display_window_min = vector(
+            display_window[0], display_window[1], display_window[2]);
+
+        out_display_window_max = vector(
+            display_window[3], display_window[4], display_window[5]);
+    }
+    else
+    {
+        int res[2], data_window[4], display_window[4];
+
+        gettextureinfo(in_texture_file, "resolution", res);
+        gettextureinfo(in_texture_file, "datawindow", data_window);
+        gettextureinfo(in_texture_file, "displaywindow", display_window);
+
+        out_resolution = vector(res[0], res[1], 1.0);
+
+        out_data_window_min = vector(
+            data_window[0], data_window[1], 0.0);
+
+        out_data_window_max = vector(
+            data_window[2], data_window[3], 0.0);
+
+        out_display_window_min = vector(
+            display_window[0], display_window[1], 0.0);
+
+        out_display_window_max = vector(
+            display_window[2], display_window[3], 0.0);
+
+        gettextureinfo(in_texture_file, "worldtocamera", out_world_to_camera);
+        gettextureinfo(in_texture_file, "worldtoscreen", out_world_to_screen); 
+    }
+
+    gettextureinfo(in_texture_file, "channels", out_num_channels);
+    gettextureinfo(in_texture_file, "subimages", out_num_subimages);
+    gettextureinfo(in_texture_file, "textureformat", out_texture_format);
+
+    // One can bake any meaningful quantities in a texture processor tool,
+    // for instance, one that uses PyOpenImageIO to do some meaningful op,
+    // and using maketx to bake this into custom attributes/metadata on the
+    // processed .tx file. This would then be queried via gettextureinfo().
+}

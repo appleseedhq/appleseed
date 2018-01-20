@@ -33,53 +33,106 @@
 #include "appleseed/color/as_colorimetry.h"
 #include "appleseed/math/as_math_helpers.h"
 
-color get_illuminant_xyY(string illuminant)
+vector transform_CIExy_to_CIExyz(float CIEx, float CIEy)
 {
-    color white_xyY;
+    return vector(CIEx, CIEy, 1.0 - CIEx - CIEy);
+}
+
+vector transform_CIExy_to_CIExyz(float CIExy[2])
+{
+    return transform_CIExy_to_CIExyz(CIExy[0], CIExy[1]);
+}
+
+void transform_CIExy_to_CIExyz(float CIExy[2], output float CIExyz[3])
+{
+    CIExyz[0] = CIExy[0];
+    CIExyz[1] = CIExy[1];
+    CIExyz[2] = 1.0 - CIExy[0] - CIExy[1];
+}
+
+vector transform_CIExy_to_CIEXYZ(float CIEx, float CIEy)
+{
+    return (CIEy == 0.0)
+        ? vector(0)
+        : vector(CIEx / CIEy,
+                 1.0,
+                 (1.0 - CIEx - CIEy) / CIEy); // z / y
+}
+
+vector transform_CIExy_to_CIEXYZ(float CIExy[2])
+{
+    return transform_CIExy_to_CIEXYZ(CIExy[0], CIExy[1]);
+}
+
+vector transform_CIExyz_to_CIEXYZ(vector CIExyz)
+{
+    return (CIExyz[1] == 0.0)
+        ? vector(0)
+        : CIExyz / CIExyz[1];
+}
+
+vector transform_CIExyY_to_CIEXYZ(vector CIExyY)
+{
+    return (CIExyY[1] == 0.0)
+        ? vector(0)
+        : vector(CIExyY[2] * CIExyY[0] / CIExyY[1],
+                 CIExyY[2],
+                 CIExyY[2] * (1.0 - CIExyY[0] - CIExyY[1]) / CIExyY[1]);
+}
+
+vector get_illuminant_CIExyY(string illuminant)
+{
+    vector white_CIExyY;
 
     if (illuminant == "D50")
     {
-        white_xyY = color(D50_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
+        white_CIExyY = vector(D50_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
     }
     else if (illuminant == "D55")
     {
-        white_xyY = color(D55_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
+        white_CIExyY = vector(D55_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
     }
     else if (illuminant == "D60")
     {
-        white_xyY = color(D60_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
+        white_CIExyY = vector(D60_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
     }
     else if (illuminant == "D65")
     {
-        white_xyY = color(D65_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
+        white_CIExyY = vector(D65_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
     }
     else if (illuminant == "D75")
     {
-        white_xyY = color(D65_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
+        white_CIExyY = vector(D75_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
     }
     else if (illuminant == "DCIP3")
     {
-        white_xyY = color(DCIP3_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
+        white_CIExyY = vector(DCIP3_WHITEPOINT_CIE1931_2DEG_xy, 1.0);
     }
     else
     {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]: Unsupported illuminant %s in %s, %s:%i\n",
-                illuminant, shadername, __FILE__, __LINE__);
-#endif
-        return color(0);
+        white_CIExyY = vector(0);
     }
-    return white_xyY;
+    return white_CIExyY;
 }
 
-void get_illuminant_xyY(string illuminant, output float white_xy[2])
+void get_illuminant_CIExy(string illuminant, output float CIExy[2])
 {
-    color white_xyY = get_illuminant_xyY(illuminant);
-    white_xy[0] = white_xyY[0];
-    white_xy[1] = white_xyY[1];
+    vector white_CIExyY = get_illuminant_CIExyY(illuminant);
+    CIExy[0] = white_CIExyY[0];
+    CIExy[1] = white_CIExyY[1];
+}
+
+vector get_illuminant_CIExyz(string illuminant)
+{
+    vector white_CIExyY = get_illuminant_CIExyY(illuminant);
+    return transform_CIExy_to_CIExyz(white_CIExyY[0], white_CIExyY[1]);
+}
+
+vector get_illuminant_CIExyz(string illuminant, float white_CIExy[2])
+{
+    return (illuminant != "custom")
+        ? get_illuminant_CIExyz(illuminant)
+        : transform_CIExy_to_CIExyz(white_CIExy);
 }
 
 //
@@ -91,30 +144,29 @@ void get_illuminant_xyY(string illuminant, output float white_xy[2])
 //      http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_xyY.html
 //
 
-color transform_XYZ_to_xyY(color XYZ, float white_xy[2])
+vector transform_CIEXYZ_to_CIExyY(color XYZ, float white_CIExy[2])
 {
-    color xyY;
+    vector CIExyY;
 
     if (XYZ != 0)
     {
         float XYZ_sum = XYZ[0] + XYZ[1] + XYZ[2];
-
-        xyY = color(XYZ[0] / XYZ_sum, XYZ[1] / XYZ_sum, XYZ[1]);
+        CIExyY = vector(XYZ[0] / XYZ_sum, XYZ[1] / XYZ_sum, XYZ[1]);
     }
     else
     {
-        xyY = color(white_xy[0], white_xy[1], XYZ[1]);
+        CIExyY = vector(white_CIExy[0], white_CIExy[1], XYZ[1]);
     }
-    return xyY;
+    return CIExyY;
 }
 
-color transform_XYZ_to_xyY(color XYZ, string illuminant)
+vector transform_CIEXYZ_to_CIExyY(color XYZ, string illuminant)
 {
-    float white_xy[2];
+    float white_CIExy[2];
 
-    get_illuminant_xyY(illuminant, white_xy);
+    get_illuminant_CIExy(illuminant, white_CIExy);
 
-    return transform_XYZ_to_xyY(XYZ, white_xy);
+    return transform_CIEXYZ_to_CIExyY(XYZ, white_CIExy);
 }
 
 //
@@ -125,36 +177,41 @@ color transform_XYZ_to_xyY(color XYZ, string illuminant)
 //      http://www.brucelindbloom.com/index.html?Eqn_xyY_to_XYZ.html
 //
 
-color transform_xyY_to_XYZ(color xyY)
+color transform_CIExyY_to_CIEXYZ(vector CIExyY)
 {
-    color XYZ;
-
-    if (xyY[1] != 0)
-    {
-        XYZ[0] = xyY[0] * xyY[2] / xyY[1];
-        XYZ[1] = xyY[2];
-        XYZ[2] = (1.0 - xyY[0] - xyY[1]) * xyY[2] / xyY[1]; // z = 1-x-y
-    }
-    else
-    {
-        XYZ = color(0);
-    }
-    return XYZ;
+    return (CIExyY[1] == 0.0)
+        ? color(0)
+        : color(CIExyY[0] * CIExyY[2] / CIExyY[1],
+                CIExyY[2],
+                (1.0 - CIExyY[0] - CIExyY[1]) * CIExyY[2] / CIExyY[1]);
 }
 
-color get_illuminant_XYZ(string illuminant)
+color transform_CIExy_to_CIEXYZ(float CIExy[2])
 {
-    color white_xyY = get_illuminant_xyY(illuminant);
-
-    return transform_xyY_to_XYZ(white_xyY);
+    return transform_CIExyY_to_CIEXYZ(vector(CIExy[0], CIExy[1], 1.0));
 }
+
+color get_illuminant_CIEXYZ(string illuminant)
+{
+    return transform_CIExyY_to_CIEXYZ(get_illuminant_CIExyY(illuminant));
+}
+
+//
+// Pre-computed RGB->XYZ matrices, chromatically adapted where appropriate
+// with the Bradford CAT.
+//
+//  Reference:
+//
+//      http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
+//      http://colour-science.org/
+//
 
 void get_RGB_to_XYZ_matrix(
     string color_space,
     output vector RGB_to_XYZ[3],
     output string source_illuminant)
 {
-    if (color_space == "ACES")
+    if (color_space == "ACES" || color_space == "ACES2065-1")
     {
         source_illuminant = "D60";
 
@@ -186,7 +243,8 @@ void get_RGB_to_XYZ_matrix(
         RGB_to_XYZ[1] = vector(RGB_TO_XYZ_DCIP3_R1);
         RGB_to_XYZ[2] = vector(RGB_TO_XYZ_DCIP3_R2);
     }
-    else if (color_space == "Rec.2020")
+    else if (color_space == "Rec.2020" ||
+             color_space == "scene-linear Rec 2020")
     {
         source_illuminant = "D65";
 
@@ -194,7 +252,8 @@ void get_RGB_to_XYZ_matrix(
         RGB_to_XYZ[1] = vector(RGB_TO_XYZ_REC2020_R1);
         RGB_to_XYZ[2] = vector(RGB_TO_XYZ_REC2020_R2);
     }
-    else if (color_space == "Rec.709")
+    else if (color_space == "Rec.709" ||
+             color_space == "scene-linear Rec 709/sRGB")
     {
         source_illuminant = "D65";
 
@@ -204,23 +263,26 @@ void get_RGB_to_XYZ_matrix(
     }
     else
     {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]:Unsupported/unknown color space %s in %s, %s:%i\n",
-                color_space, shadername, __FILE__, __LINE__);
-#endif
-        exit(); // no color space nor illuminant, no point in continuing
+        return; // invalid color space, this will fail
     }
-}
+}    
+
+//
+// Pre-computed XYZ->RGB matrices, chromatically adapted where appropriate
+// with the Bradford CAT.
+//
+//  Reference:
+//
+//      http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
+//      http://colour-science.org/
+//
 
 void get_XYZ_to_RGB_matrix(
     string color_space,
     output vector XYZ_to_RGB[3],
     output string source_illuminant)
 {
-    if (color_space == "ACES")
+    if (color_space == "ACES" || color_space == "ACES2065-1")
     {
         source_illuminant = "D60";
 
@@ -252,7 +314,8 @@ void get_XYZ_to_RGB_matrix(
         XYZ_to_RGB[1] = vector(XYZ_TO_RGB_DCIP3_R1);
         XYZ_to_RGB[2] = vector(XYZ_TO_RGB_DCIP3_R2);
     }
-    else if (color_space == "Rec.2020")
+    else if (color_space == "Rec.2020" ||
+             color_space == "scene-linear Rec 2020")
     {
         source_illuminant = "D65";
 
@@ -260,7 +323,8 @@ void get_XYZ_to_RGB_matrix(
         XYZ_to_RGB[1] = vector(XYZ_TO_RGB_REC2020_R1);
         XYZ_to_RGB[2] = vector(XYZ_TO_RGB_REC2020_R2);
     }
-    else if (color_space == "Rec.709")
+    else if (color_space == "Rec.709" ||
+             color_space == "scene-linear Rec 709/sRGB")
     {
         source_illuminant = "D65";
 
@@ -270,19 +334,7 @@ void get_XYZ_to_RGB_matrix(
     }
     else
     {
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]:Unsupported/unknown color space %s in %s, %s:%i\n",
-                color_space, shadername, __FILE__, __LINE__);
-
-        // We can exit the execution completely, or try to handle it a bit
-        // more nicely. Set the matrix as identity and enabling the warnings
-        // might be better.
-
-        XYZ_to_RGB[0] = vector(1, 0, 0);
-        XYZ_to_RGB[1] = vector(0, 1, 0);
-        XYZ_to_RGB[2] = vector(0, 0, 1);
+        return; // invalid color space, this will fail
     }
 }
 
@@ -293,44 +345,66 @@ void get_XYZ_to_RGB_matrix(
 //
 //      http://www.brucelindbloom.com/index.html?Eqn_RGB_to_XYZ.html
 //      http://www.brucelindbloom.com/index.html?Eqn_ChromAdapt.html
+//      http://colour-science.org/
 //
 
-color transform_linear_RGB_to_XYZ(
+color transform_linear_RGB_to_CIEXYZ(
     color linear_RGB_color,
     string color_space,
-    string target_illuminant)
+    string target_illuminant,
+    string CAT)
 {
     string source_illuminant = "";
-    vector source_RGB_to_XYZ[3];
+    vector source_RGB_to_CIEXYZ[3];
 
-    get_RGB_to_XYZ_matrix(color_space, source_RGB_to_XYZ, source_illuminant);
+    get_RGB_to_XYZ_matrix(
+        color_space,
+        source_RGB_to_CIEXYZ,
+        source_illuminant);
 
-    vector XYZ = vector(
-        dot(source_RGB_to_XYZ[0], (vector) linear_RGB_color),
-        dot(source_RGB_to_XYZ[1], (vector) linear_RGB_color),
-        dot(source_RGB_to_XYZ[2], (vector) linear_RGB_color));
+    color CIEXYZ = color(
+        dot(source_RGB_to_CIEXYZ[0], (vector) linear_RGB_color),
+        dot(source_RGB_to_CIEXYZ[1], (vector) linear_RGB_color),
+        dot(source_RGB_to_CIEXYZ[2], (vector) linear_RGB_color));
 
     if (source_illuminant != "" && source_illuminant != target_illuminant)
     {
-        color source_white_XYZ = get_illuminant_XYZ(source_illuminant);
-        color target_white_XYZ = get_illuminant_XYZ(target_illuminant);
+        color source_white_XYZ = get_illuminant_CIEXYZ(source_illuminant);
+        color target_white_XYZ = get_illuminant_CIEXYZ(target_illuminant);
 
-        vector CAT[3];
+        vector CAT_matrix[3];
 
         chromatic_adaptation_vonKries(
             source_white_XYZ,
             target_white_XYZ,
-            "Bradford",
-            CAT);
+            CAT,
+            CAT_matrix);
 
-        vector adapted_XYZ = vector(
-            dot(CAT[0], XYZ),
-            dot(CAT[1], XYZ),
-            dot(CAT[2], XYZ));
+        color adapted_CIEXYZ = color(
+            dot(CAT_matrix[0], (vector) CIEXYZ),
+            dot(CAT_matrix[1], (vector) CIEXYZ),
+            dot(CAT_matrix[2], (vector) CIEXYZ));
 
-        XYZ = adapted_XYZ;
+        CIEXYZ = adapted_CIEXYZ;
     }
-    return (color) max(0.0, XYZ);
+    return max(0.0, CIEXYZ);
+}
+
+//
+// Precomputed RGB to XYZ matrix, chromatically adapt with default "Bradford"
+// chromatic adaptation transform.
+//
+
+color transform_linear_RGB_to_CIEXYZ(
+    color linear_RGB_color,
+    string color_space,
+    string target_illuminant)
+{
+    return transform_linear_RGB_to_CIEXYZ(
+        linear_RGB_color,
+        color_space,
+        target_illuminant,
+        "Bradford");
 }
 
 //
@@ -340,88 +414,174 @@ color transform_linear_RGB_to_XYZ(
 //
 //      http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_RGB.html
 //      http://www.brucelindbloom.com/Eqn_ChromAdapt.html
+//      http://colour-science.org/
 //
 
-color transform_XYZ_to_linear_RGB(
-    color XYZ_color,
+color transform_CIEXYZ_to_linear_RGB(
+    color linear_XYZ_color,
     string color_space,
-    string target_illuminant)
+    string target_illuminant,
+    string CAT)
 {
     string source_illuminant = "";
-    vector source_XYZ_to_RGB[3], XYZ;
+    vector source_XYZ_to_RGB[3];
 
-    get_XYZ_to_RGB_matrix(color_space, source_XYZ_to_RGB, source_illuminant);
+    get_XYZ_to_RGB_matrix(
+        color_space,
+        source_XYZ_to_RGB,
+        source_illuminant);
+
+    color CIEXYZ = linear_XYZ_color;
 
     if (source_illuminant != "" && source_illuminant != target_illuminant)
     {
-        color source_white_XYZ = get_illuminant_XYZ(source_illuminant);
-        color target_white_XYZ = get_illuminant_XYZ(target_illuminant);
+        color source_white_XYZ = get_illuminant_CIEXYZ(source_illuminant);
+        color target_white_XYZ = get_illuminant_CIEXYZ(target_illuminant);
 
-        vector CAT[3];
+        vector CAT_matrix[3];
 
         chromatic_adaptation_vonKries(
             source_white_XYZ,
             target_white_XYZ,
-            "Bradford",
-            CAT);
+            CAT,
+            CAT_matrix);
 
-        XYZ = vector(
-            dot(CAT[0], (vector) XYZ_color),
-            dot(CAT[1], (vector) XYZ_color),
-            dot(CAT[2], (vector) XYZ_color));
-    }
-    else
-    {
-        XYZ = (vector) XYZ_color;
+        color adapted_CIEXYZ = color(
+            dot(CAT_matrix[0], (vector) CIEXYZ),
+            dot(CAT_matrix[1], (vector) CIEXYZ),
+            dot(CAT_matrix[2], (vector) CIEXYZ));
+
+        CIEXYZ = adapted_CIEXYZ;
     }
 
-    vector linear_RGB = vector(
-        dot(source_XYZ_to_RGB[0], XYZ),
-        dot(source_XYZ_to_RGB[1], XYZ),
-        dot(source_XYZ_to_RGB[2], XYZ));
+    color linear_RGB = color(
+        dot(source_XYZ_to_RGB[0], CIEXYZ),
+        dot(source_XYZ_to_RGB[1], CIEXYZ),
+        dot(source_XYZ_to_RGB[2], CIEXYZ));
 
-    return (color) max(0.0, linear_RGB); // negative values = imaginary colors
+    return max(0.0, linear_RGB);
 }
 
 //
-// Overloaded RGB<>XYZ transformation function, assuming the target white
-// point is the same as the system white point, whatever that might be.
+// Precomputed XYZ to RGB matrix, chromatically adapt with default "Bradford"
+// chromatic adaptation transform.
 //
 
-color transform_linear_RGB_to_XYZ(
+color transform_CIEXYZ_to_linear_RGB(
+    color linear_XYZ_color,
+    string color_space,
+    string target_illuminant)
+{
+    return transform_CIEXYZ_to_linear_RGB(
+        linear_XYZ_color,
+        color_space,
+        target_illuminant,
+        "Bradford");
+}
+
+//
+// Overloaded RGB<>XYZ transformations, assuming identical white points.
+//
+
+color transform_linear_RGB_to_CIEXYZ(
     color linear_RGB_color,
     string color_space)
 {
     string source_illuminant = "";
     vector source_RGB_to_XYZ[3];
 
-    get_RGB_to_XYZ_matrix(color_space, source_RGB_to_XYZ, source_illuminant);
+    get_RGB_to_XYZ_matrix(
+        color_space,
+        source_RGB_to_XYZ,
+        source_illuminant);
 
-    vector XYZ = vector(
+    color CIEXYZ = color(
         dot(source_RGB_to_XYZ[0], (vector) linear_RGB_color),
         dot(source_RGB_to_XYZ[1], (vector) linear_RGB_color),
         dot(source_RGB_to_XYZ[2], (vector) linear_RGB_color));
 
-    return (color) max(0.0, XYZ);
+    return max(0.0, CIEXYZ);
 }
 
-color transform_XYZ_to_linear_RGB(
-    color XYZ,
-    string color_space,
-    string target_illuminant)
+color transform_CIEXYZ_to_linear_RGB(
+    color linear_XYZ_color,
+    string color_space)
 {
     string source_illuminant = "";
     vector source_XYZ_to_RGB[3];
 
-    get_XYZ_to_RGB_matrix(color_space, source_XYZ_to_RGB, source_illuminant);
+    get_XYZ_to_RGB_matrix(
+        color_space,
+        source_XYZ_to_RGB,
+        source_illuminant);
 
-    vector linear_RGB = vector(
-        dot(source_XYZ_to_RGB[0], XYZ),
-        dot(source_XYZ_to_RGB[1], XYZ),
-        dot(source_XYZ_to_RGB[2], XYZ));
+    color linear_RGB = color(
+        dot(source_XYZ_to_RGB[0], (vector) linear_XYZ_color),
+        dot(source_XYZ_to_RGB[1], (vector) linear_XYZ_color),
+        dot(source_XYZ_to_RGB[2], (vector) linear_XYZ_color));
 
-    return (color) max(0.0, linear_RGB); // negative values = imaginary colors
+    return max(0.0, linear_RGB);
 }
+
+//
+// Create a RGB->XYZ transformation matrix, given the set of RGB primaries
+// and white point CIE xy chromaticity coordinates.
+//
+
+matrix create_RGB_to_XYZ_matrix(
+    float R_CIExy[2],
+    float G_CIExy[2],
+    float B_CIExy[2],
+    float W_CIExy[2],
+    float target_W_CIExy[2],
+    string CAT)
+{
+    vector R_CIEXYZ = transform_CIExy_to_CIEXYZ(R_CIExy);
+    vector G_CIEXYZ = transform_CIExy_to_CIEXYZ(G_CIExy);
+    vector B_CIEXYZ = transform_CIExy_to_CIEXYZ(B_CIExy);
+
+    // If the source & target wp differ, prepare for chromatic adaptation.
+    
+    vector source_W_CIEXYZ = transform_CIExy_to_CIEXYZ(W_CIExy);
+    vector target_W_CIEXYZ = transform_CIExy_to_CIEXYZ(target_W_CIExy);
+    
+    matrix CAT_matrix = 
+        chromatic_adaptation_vonKries(
+            source_W_CIEXYZ,
+            target_W_CIEXYZ,
+            CAT);
+
+    vector W_CIEXYZ = source_W_CIEXYZ;
+
+    matrix invXYZ = inverse(matrix(
+        R_CIEXYZ[0], G_CIEXYZ[0], B_CIEXYZ[0], 0.0,
+        R_CIEXYZ[1], G_CIEXYZ[1], B_CIEXYZ[1], 0.0,
+        R_CIEXYZ[2], G_CIEXYZ[2], B_CIEXYZ[2], 0.0,
+        0.0, 0.0, 0.0, 1.0));
+    
+    vector XrXgXb = vector(invXYZ[0][0], invXYZ[0][1], invXYZ[0][2]);
+    vector YrYgYb = vector(invXYZ[1][0], invXYZ[1][1], invXYZ[1][2]);
+    vector ZrZgZb = vector(invXYZ[2][0], invXYZ[2][1], invXYZ[2][2]);
+
+    vector S = vector(
+        dot(XrXgXb, source_W_CIEXYZ),
+        dot(YrYgYb, source_W_CIEXYZ),
+        dot(ZrZgZb, source_W_CIEXYZ));
+
+    // Non chromatically adapted RGB->XYZ matrix is M.
+    matrix M = matrix(
+        S[0] * R_CIEXYZ[0], S[1] * G_CIEXYZ[0], S[2] * B_CIEXYZ[0], 0.0,
+        S[0] * R_CIEXYZ[1], S[1] * G_CIEXYZ[1], S[2] * B_CIEXYZ[1], 0.0,
+        S[0] * R_CIEXYZ[2], S[1] * G_CIEXYZ[2], S[2] * B_CIEXYZ[2], 0.0,
+        0.0, 0.0, 0.0, 1.0);
+
+#ifdef DEBUG
+    warning("[DEBUG]:\nRGB2XYZ = %.5f\n\tAdapted RGB2XYZ = %.5f\n",
+            M, CAT_matrix * M);
+#endif
+    
+    return CAT_matrix * M;
+}    
 
 //
 // Reference:
@@ -434,7 +594,7 @@ color transform_XYZ_to_linear_RGB(
 //      http://www.jkps.or.kr/journal/download_pdf.php?spage=865&volume=41&number=6
 //
 
-void get_xy_from_CCT_Kang(int CCT, output float xy[2])
+void get_CIExy_from_CCT_Kang(int CCT, output float CIExy[2])
 {
     float x, y;
 
@@ -476,17 +636,10 @@ void get_xy_from_CCT_Kang(int CCT, output float xy[2])
     }
     else
     {
-        x = y = 0.0;
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]: CCT out of range in %s, %s:%i\n",
-                shadername, __FILE__, __LINE__);
-#endif
+        x = y = 0.0; // CCT out of range
     }
-    xy[0] = x;
-    xy[1] = y;
+    CIExy[0] = x;
+    CIExy[1] = y;
 }
 
 //
@@ -502,35 +655,43 @@ void get_xy_from_CCT_Kang(int CCT, output float xy[2])
 //      Lightness in [0,100], a*,b* in [-100,100] ranges
 //
 
-color transform_XYZ_to_Lab(color XYZ_color, color reference_white_xyY)
+color transform_CIEXYZ_to_CIELAB(
+    color linear_XYZ_color,
+    vector reference_white_CIExyY)
 {
-    color XYZ_white = transform_xyY_to_XYZ(reference_white_xyY);
-    color XYZ_f = XYZ_color / XYZ_white, XYZ;
+    color white_XYZ = transform_CIExyY_to_CIEXYZ(reference_white_CIExyY);
+    color XYZ_f = linear_XYZ_color / white_XYZ, CIEXYZ;
 
     for (int i = 0; i < 3; ++i)
     {
-        XYZ[i] = (XYZ_f[i] > CIE_E)
+        CIEXYZ[i] = (XYZ_f[i] > CIE_E)
             ? pow(XYZ_f[i], 1.0 / 3.0)
             : (CIE_K * XYZ_f[i] + 16.0) / 116.0;
     }
 
-    float L = 116.0 * XYZ[1] - 16.0;
-    float a = 500.0 * (XYZ[0] - XYZ[1]);
-    float b = 200.0 * (XYZ[1] - XYZ[2]);
+    float L = 116.0 * CIEXYZ[1] - 16.0;
+    float a = 500.0 * (CIEXYZ[0] - CIEXYZ[1]);
+    float b = 200.0 * (CIEXYZ[1] - CIEXYZ[2]);
 
     return color(L, a, b);
 }
 
-color transform_XYZ_to_Lab(color XYZ_color, float reference_white_xy[2])
+color transform_CIEXYZ_to_CIELAB(
+    color linear_XYZ_color,
+    float reference_white_CIExy[2])
 {
-    return transform_XYZ_to_Lab(
-        XYZ_color,
-        color(reference_white_xy[0], reference_white_xy[1], 1.0));
+    return transform_CIEXYZ_to_CIELAB(
+        linear_XYZ_color,
+        vector(reference_white_CIExy[0], reference_white_CIExy[1], 1.0));
 }
 
-color transform_XYZ_to_Lab(color XYZ_color, string illuminant)
+color transform_CIEXYZ_to_CIELAB(
+    color linear_XYZ_color,
+    string illuminant)
 {
-    return transform_XYZ_to_Lab(XYZ_color, get_illuminant_xyY(illuminant));
+    return transform_CIEXYZ_to_CIELAB(
+        linear_XYZ_color,
+        get_illuminant_CIExyY(illuminant));
 }
 
 //
@@ -545,40 +706,49 @@ color transform_XYZ_to_Lab(color XYZ_color, string illuminant)
 //      Lightness in [0,100], a,b in [-100,100] domains
 //
 
-color transform_Lab_to_XYZ(color Lab, color reference_white_xyY)
+color transform_CIELAB_to_CIEXYZ(
+    color CIELAB,
+    color reference_white_CIExyY)
 {
-    color XYZ_white = transform_xyY_to_XYZ(reference_white_xyY);
+    color white_CIEXYZ = transform_CIExyY_to_CIEXYZ(reference_white_CIExyY);
 
-    float f_Y = (Lab[0] + 16.0) / 116.0;
-    float f_X = Lab[1] / 500.0 + f_Y;
-    float f_Z = f_Y - Lab[2] / 200.0;
+    float f_Y = (CIELAB[0] + 16.0) / 116.0;
+    float f_X = CIELAB[1] / 500.0 + f_Y;
+    float f_Z = f_Y - CIELAB[2] / 200.0;
 
     float X_r = (pow(f_X, 3.0) > CIE_E)
         ? pow(f_X, 3.0)
         : (116.0 * f_X - 16.0) / CIE_K;
 
-    float Y_r = (Lab[0] > CIE_K * CIE_E)
-        ? pow((Lab[0] + 16.0) / 116.0, 3.0)
-        : Lab[0] / CIE_K;
+    float Y_r = (CIELAB[0] > CIE_K * CIE_E)
+        ? pow((CIELAB[0] + 16.0) / 116.0, 3.0)
+        : CIELAB[0] / CIE_K;
 
     float Z_r = (pow(f_Z, 3.0) > CIE_E)
         ? pow(f_Z, 3.0)
         : (116.0 * f_Z - 16.0) / CIE_K;
 
-    return color(X_r, Y_r, Z_r) * XYZ_white;
+    return color(X_r, Y_r, Z_r) * white_CIEXYZ;
 }
 
-color transform_Lab_to_XYZ(color Lab, float reference_white_xy[2])
+color transform_CIELAB_to_CIEXYZ(
+    color CIELAB,
+    float reference_white_CIExy[2])
 {
-    return transform_Lab_to_XYZ(
-        Lab,
-        color(reference_white_xy[0], reference_white_xy[1], 1.0));
+    return transform_CIELAB_to_CIEXYZ(
+        CIELAB,
+        vector(reference_white_CIExy[0], reference_white_CIExy[1], 1.0));
 }
 
-color transform_Lab_to_XYZ(color Lab_color, string illuminant)
+color transform_CIELAB_to_CIEXYZ(
+    color CIELAB,
+    string illuminant)
 {
-    return transform_Lab_to_XYZ(Lab_color, get_illuminant_xyY(illuminant));
+    return transform_CIELAB_to_CIEXYZ(
+        CIELAB,
+        get_illuminant_CIExyY(illuminant));
 }
+
 
 //
 // Reference:
@@ -594,20 +764,26 @@ color transform_Lab_to_XYZ(color Lab_color, string illuminant)
 //      Lightness in [0,100], u,v in [-100,100] ranges
 //
 
-color transform_XYZ_to_Luv(color XYZ_color, color reference_white_xyY)
+color transform_CIEXYZ_to_CIELUV(
+    color linear_XYZ_color,
+    vector reference_white_CIExyY)
 {
-    color XYZ_white = transform_xyY_to_XYZ(reference_white_xyY);
+    color white_CIEXYZ = transform_CIExyY_to_CIEXYZ(reference_white_CIExyY);
 
-    float y_r = XYZ_color[1] / XYZ_white[1];
+    float y_r = linear_XYZ_color[1] / white_CIEXYZ[1];
 
-    float denom = XYZ_color[0] + 15 * XYZ_color[1] + 3 * XYZ_color[2];
-    float denom_r = XYZ_white[0] + 15 * XYZ_white[1] + 3 * XYZ_white[2];
+    float denom = linear_XYZ_color[0] + 15 *
+                  linear_XYZ_color[1] + 3 *
+                  linear_XYZ_color[2];
 
-    float u_prime = 4 * XYZ_color[0] / denom;
-    float v_prime = 9 * XYZ_color[1] / denom;
+    float denom_r = white_CIEXYZ[0] + 15 *
+                    white_CIEXYZ[1] + 3 * white_CIEXYZ[2];
 
-    float u_prime_r = 4 * XYZ_white[0] / denom_r;
-    float v_prime_r = 9 * XYZ_white[1] / denom_r;
+    float u_prime = 4 * linear_XYZ_color[0] / denom;
+    float v_prime = 9 * linear_XYZ_color[1] / denom;
+
+    float u_prime_r = 4 * white_CIEXYZ[0] / denom_r;
+    float v_prime_r = 9 * white_CIEXYZ[1] / denom_r;
 
     float L = (y_r > CIE_E)
         ? 116 * pow(y_r, 1.0 / 3.0) - 16
@@ -619,18 +795,23 @@ color transform_XYZ_to_Luv(color XYZ_color, color reference_white_xyY)
     return color(L, Luv_u, Luv_v);
 }
 
-color transform_XYZ_to_Luv(color XYZ_color, float reference_white_xy[2])
+color transform_CIEXYZ_to_CIELUV(
+    color linear_XYZ_color,
+    float reference_white_CIExy[2])
 {
-    return transform_XYZ_to_Luv(
-        XYZ_color,
-        color( reference_white_xy[0], reference_white_xy[1], 1.0));
+    return transform_CIEXYZ_to_CIELUV(
+        linear_XYZ_color,
+        vector(reference_white_CIExy[0], reference_white_CIExy[1], 1.0));
 }
 
-color transform_XYZ_to_Luv(color XYZ_color, string illuminant)
+color transform_CIEXYZ_to_CIELUV(
+    color linear_XYZ_color,
+    string illuminant)
 {
-    return transform_XYZ_to_Luv(XYZ_color, get_illuminant_xyY(illuminant));
+    return transform_CIEXYZ_to_CIELUV(
+        linear_XYZ_color,
+        get_illuminant_CIExyY(illuminant));
 }
-
 //
 // Reference:
 //
@@ -645,23 +826,27 @@ color transform_XYZ_to_Luv(color XYZ_color, string illuminant)
 //      Lightness in [0,100], u,v in [-100,100] domains
 //
 
-color transform_Luv_to_XYZ(color Luv, color reference_white_xyY)
+color transform_CIELUV_to_CIEXYZ(
+    color CIELUV,
+    vector reference_white_CIExyY)
 {
-    color white_XYZ = transform_xyY_to_XYZ(reference_white_xyY);
+    color white_CIEXYZ = transform_CIExyY_to_CIEXYZ(reference_white_CIExyY);
 
-    float denom_r = white_XYZ[0] + 15 * white_XYZ[1] + 3 * white_XYZ[2];
+    float denom_r = white_CIEXYZ[0] + 15 *
+                    white_CIEXYZ[1] + 3 *
+                    white_CIEXYZ[2];
 
-    float u0 = 4 * white_XYZ[0] / denom_r;
-    float v0 = 9 * white_XYZ[1] / denom_r;
+    float u0 = 4 * white_CIEXYZ[0] / denom_r;
+    float v0 = 9 * white_CIEXYZ[1] / denom_r;
 
-    float Y = (Luv[0] > CIE_K * CIE_E)
-        ? pow((Luv[0] + 16) / 116, 3.0)
-        : Luv[0] / CIE_K;
+    float Y = (CIELUV[0] > CIE_K * CIE_E)
+        ? pow((CIELUV[0] + 16) / 116, 3.0)
+        : CIELUV[0] / CIE_K;
 
-    float a = (52 * Luv[0] / (Luv[1] + 13 * Luv[0] * u0) - 1) / 3.0;
+    float a = (52 * CIELUV[0] / (CIELUV[1] + 13 * CIELUV[0] * u0) - 1) / 3.0;
     float b = -5 * Y;
     float c = -1.0 / 3.0;
-    float d = Y * (39 * Luv[0] / (Luv[2] + 13 * Luv[0] * v0) - 5);
+    float d = Y * (39 * CIELUV[0] / (CIELUV[2] + 13 * CIELUV[0] * v0) - 5);
 
     float X = (d - b) / (a - c);
     float Z = X * a + b;
@@ -669,16 +854,22 @@ color transform_Luv_to_XYZ(color Luv, color reference_white_xyY)
     return color(X, Y, Z);
 }
 
-color transform_Luv_to_XYZ(color Luv, float reference_white_xy[2])
+color transform_CIELUV_to_CIEXYZ(
+    color CIELUV,
+    float reference_white_CIExy[2])
 {
-    return transform_Luv_to_XYZ(
-        Luv,
-        color(reference_white_xy[0], reference_white_xy[1], 1.0));
+    return transform_CIELUV_to_CIEXYZ(
+        CIELUV,
+        vector(reference_white_CIExy[0], reference_white_CIExy[1], 1.0));
 }
 
-color transform_Luv_to_XYZ(color Luv, string illuminant)
+color transform_CIELUV_to_CIEXYZ(
+    color CIELUV,
+    string illuminant)
 {
-    return transform_Luv_to_XYZ(Luv, get_illuminant_xyY(illuminant));
+    return transform_CIELUV_to_CIEXYZ(
+        CIELUV,
+        get_illuminant_CIExyY(illuminant));
 }
 
 //
@@ -695,72 +886,74 @@ color transform_Luv_to_XYZ(color Luv, string illuminant)
 //      ranges.
 //
 
-color transform_Lab_to_LCh_ab(color Lab)
+color transform_CIELAB_to_CIELCh_ab(color CIELAB)
 {
-    float L = Lab[0];
-    float C = hypot(Lab[1], Lab[2]);
-    float h = mod(degrees(atan2(Lab[2], Lab[1])), 360);
+    float L = CIELAB[0];
+    float C = hypot(CIELAB[1], CIELAB[2]);
+    float h = mod(degrees(atan2(CIELAB[2], CIELAB[1])), 360);
 
     return color(L, C, h);
 }
 
-color transform_LCh_ab_to_Lab(color LCh_ab)
+color transform_CIELCh_ab_to_CIELAB(color CIELCh_ab)
 {
-    float L = LCh_ab[0], a, b;
+    float L = CIELCh_ab[0], a, b;
 
-    sincos(radians(LCh_ab[2]), b, a);
+    sincos(radians(CIELCh_ab[2]), b, a);
 
-    return color(L, LCh_ab[1] * a, LCh_ab[1] * b);
+    return color(L, CIELCh_ab[1] * a, CIELCh_ab[1] * b);
 }
 
-color transform_linear_RGB_to_Lab(
+color transform_linear_RGB_to_CIELAB(
     color linear_RGB,
     string color_space,
     string target_illuminant)
 {
-    color XYZ = transform_linear_RGB_to_XYZ(
+    color CIEXYZ = transform_linear_RGB_to_CIEXYZ(
         linear_RGB,
         color_space,
         target_illuminant);
 
-    return transform_XYZ_to_Lab(XYZ, target_illuminant);
+    return transform_CIEXYZ_to_CIELAB(CIEXYZ, target_illuminant);
 }
 
-color transform_Lab_to_linear_RGB(
-    color Lab,
+color transform_CIELAB_to_linear_RGB(
+    color CIELAB,
     string color_space,
     string target_illuminant)
 {
-    color XYZ = transform_Lab_to_XYZ(Lab, target_illuminant);
+    color CIEXYZ = transform_CIELAB_to_CIEXYZ(
+        CIELAB,
+        target_illuminant);
 
-    return transform_XYZ_to_linear_RGB(
-        XYZ,
+    return transform_CIEXYZ_to_linear_RGB(
+        CIEXYZ,
         color_space,
         target_illuminant);
 }
 
-color transform_linear_RGB_to_LCh_ab(
+color transform_linear_RGB_to_CIELCh_ab(
     color linear_RGB,
     string color_space,
     string target_illuminant)
 {
-    color Lab = transform_linear_RGB_to_Lab(
+    color CIELAB = transform_linear_RGB_to_CIELAB(
         linear_RGB,
         color_space,
         target_illuminant);
 
-    return transform_Lab_to_LCh_ab(Lab);
+    return transform_CIELAB_to_CIELCh_ab(CIELAB);
 }
 
-color transform_LCh_ab_to_linear_RGB(
-    color LCh_ab,
+color transform_CIELCh_ab_to_linear_RGB(
+    color CIELCh_ab,
     string color_space,
     string target_illuminant)
 {
-    color Lab = transform_LCh_ab_to_Lab(LCh_ab);
+    color CIELAB = transform_CIELCh_ab_to_CIELAB(CIELCh_ab);
 
-    return transform_Lab_to_linear_RGB(
-        Lab,
+    return transform_CIELAB_to_linear_RGB(
+        CIELAB,
         color_space,
         target_illuminant);
 }
@@ -777,74 +970,76 @@ color transform_LCh_ab_to_linear_RGB(
 //
 //      Lightness in [0,100], Chroma in [0,100], hue angle in [0,360] degrees
 //      ranges
-//
+// 
 
-color transform_Luv_to_LCh_uv(color Luv)
+color transform_CIELUV_to_CIELCh_uv(color CIELUV)
 {
-    float L = Luv[0];
-    float C = hypot(Luv[1], Luv[2]);
-    float h = mod(degrees(atan2(Luv[2], Luv[1])), 360);
+    float L = CIELUV[0];
+    float C = hypot(CIELUV[1], CIELUV[2]);
+    float h = mod(degrees(atan2(CIELUV[2], CIELUV[1])), 360);
 
     return color(L, C, h);
 }
 
-color transform_LCh_uv_to_Luv(color LCh_uv)
+color transform_CIELCh_uv_to_CIELUV(color CIELCh_uv)
 {
-    float L = LCh_uv[0], uu, vv;
+    float L = CIELCh_uv[0], uu, vv;
 
-    sincos(radians(LCh_uv[2]), vv, uu);
+    sincos(radians(CIELCh_uv[2]), vv, uu);
 
-    return color(LCh_uv[0], LCh_uv[1] * uu, LCh_uv[1] * vv);
+    return color(CIELCh_uv[0], CIELCh_uv[1] * uu, CIELCh_uv[1] * vv);
 }
 
-color transform_linear_RGB_to_Luv(
+color transform_linear_RGB_to_CIELUV(
     color linear_RGB,
     string color_space,
     string target_illuminant)
 {
-    color XYZ = transform_linear_RGB_to_XYZ(
+    color CIEXYZ = transform_linear_RGB_to_CIEXYZ(
         linear_RGB,
         color_space,
         target_illuminant);
 
-    return transform_XYZ_to_Luv(XYZ, target_illuminant);
+    return transform_CIEXYZ_to_CIELUV(
+        CIEXYZ,
+        target_illuminant);
 }
 
-color transform_Luv_to_linear_RGB(
-    color Luv,
+color transform_CIELUV_to_linear_RGB(
+    color CIELUV,
     string color_space,
     string target_illuminant)
 {
-    color XYZ = transform_Luv_to_XYZ(Luv, target_illuminant);
+    color CIEXYZ = transform_CIELUV_to_CIEXYZ(CIELUV, target_illuminant);
 
-    return transform_XYZ_to_linear_RGB(
-        XYZ,
+    return transform_CIEXYZ_to_linear_RGB(
+        CIEXYZ,
         color_space,
         target_illuminant);
 }
 
-color transform_linear_RGB_to_LCh_uv(
+color transform_linear_RGB_to_CIELCh_uv(
     color linear_RGB,
     string color_space,
     string target_illuminant)
 {
-    color Luv = transform_linear_RGB_to_Luv(
+    color CIELUV = transform_linear_RGB_to_CIELUV(
         linear_RGB,
         color_space,
         target_illuminant);
 
-    return transform_Luv_to_LCh_uv(Luv);
+    return transform_CIELUV_to_CIELCh_uv(CIELUV);
 }
 
-color transform_LCh_uv_to_linear_RGB(
-    color LCh_uv,
+color transform_CIELCh_uv_to_linear_RGB(
+    color CIELCh_uv,
     string color_space,
     string target_illuminant)
 {
-    color Luv = transform_LCh_uv_to_Luv(LCh_uv);
+    color CIELUV = transform_CIELCh_uv_to_CIELUV(CIELCh_uv);
 
-    return transform_Luv_to_linear_RGB(
-        Luv,
+    return transform_CIELUV_to_linear_RGB(
+        CIELUV,
         color_space,
         target_illuminant);
 }
@@ -854,32 +1049,32 @@ color transform_LCh_uv_to_linear_RGB(
 // and u,v [-100,100].
 //
 
-color remap_CIELab(color Lab)
+color remap_CIELAB(color CIELAB)
 {
-    float L = Lab[0] * 0.01;
-    float a = (Lab[1] + 100.0) * 0.005;
-    float b = (Lab[2] + 100.0) * 0.005;
+    float L = CIELAB[0] * 0.01;
+    float a = (CIELAB[1] + 100.0) * 0.005;
+    float b = (CIELAB[2] + 100.0) * 0.005;
 
     return color(L, a, b);
 }
 
-color remap_CIELuv(color Luv)
+color remap_CIELUV(color CIELUV)
 {
-    return remap_CIELab(Luv);
+    return remap_CIELAB(CIELUV);
 }
 
-color inverse_remap_CIELab(color C)
+color inverse_remap_CIELAB(color CIELAB)
 {
-    float L = C[0] * 100.0;
-    float a = C[1] * 200.0 - 100.0;
-    float b = C[2] * 200.0 - 100.0;
+    float L = CIELAB[0] * 100.0;
+    float a = CIELAB[1] * 200.0 - 100.0;
+    float b = CIELAB[2] * 200.0 - 100.0;
 
     return color(L, a, b);
 }
 
-color inverse_remap_CIELuv(color C)
+color inverse_remap_CIELUV(color CIELUV)
 {
-    return inverse_remap_CIELab(C);
+    return inverse_remap_CIELAB(CIELUV);
 }
 
 //
@@ -887,23 +1082,24 @@ color inverse_remap_CIELuv(color C)
 // and hue in [0,360] degrees range.
 //
 
-color remap_CIELCh(color LCh)
+color remap_CIELCh(color CIELCh)
 {
-    float L = LCh[0] * 0.01;
-    float C = LCh[1] * 0.01;
-    float h = LCh[2] / 360;
+    float L = CIELCh[0] * 0.01;
+    float C = CIELCh[1] * 0.01;
+    float h = CIELCh[2] / 360;
 
     return color(L, C, h);
 }
 
-color inverse_remap_CIELCh(color in)
+color inverse_remap_CIELCh(color CIELCh)
 {
-    float L = in[0] * 100.0;
-    float C = in[1] * 100.0;
-    float h = in[2] * 360;
+    float L = CIELCh[0] * 100.0;
+    float C = CIELCh[1] * 100.0;
+    float h = CIELCh[2] * 360;
 
     return color(L, C, h);
 }
+
 
 //
 // Reference:
@@ -914,6 +1110,7 @@ color inverse_remap_CIELCh(color in)
 //
 // Note: hue values are in [0,1], instead of [0,360] degrees
 //
+
 
 float get_hue_angle(color C, float value, float rgbmin, float chroma)
 {
@@ -1112,16 +1309,16 @@ color transform_HSL_to_RGB(color HSL)
 //
 
 float deltaE_CIEDE2000(
-    color   reference_Lab,
-    color   sampleval_Lab)
+    color   reference_CIELAB,
+    color   sampleval_CIELAB)
 {
-    float reference_L = reference_Lab[0];
-    float reference_a = reference_Lab[1];
-    float reference_b = reference_Lab[2];
+    float reference_L = reference_CIELAB[0];
+    float reference_a = reference_CIELAB[1];
+    float reference_b = reference_CIELAB[2];
 
-    float sampleval_L = sampleval_Lab[0];
-    float sampleval_a = sampleval_Lab[1];
-    float sampleval_b = sampleval_Lab[2];
+    float sampleval_L = sampleval_CIELAB[0];
+    float sampleval_a = sampleval_CIELAB[1];
+    float sampleval_b = sampleval_CIELAB[2];
 
 
     float reference_C = hypot(reference_a, reference_b);
@@ -1236,30 +1433,44 @@ float deltaE_CIEDE2000(
 }
 
 //
-// Overloaded deltaE_CIEDE2000, taking as reference and samples
-// (scene-linear) RGB colors instead of Lab colors.
+// Overloaded deltaE CIEDE2000, taking as reference and samples,
+// (scene-linear) RGB values.
 //
 
 float deltaE_CIEDE2000(
-    color   reference_linear_RGB,
-    string  reference_color_space,
-    color   sample_linear_RGB,
-    string  sample_color_space)
+    color reference_linear_RGB,
+    string reference_color_space,
+    string reference_illuminant,
+    color sampleval_linear_RGB,
+    string sampleval_color_space,
+    string sampleval_illuminant)
 {
-    // If the colors are in a color space with a different white point,
-    // then adapt them to D65.
-
-    color reference_Lab = transform_linear_RGB_to_Lab(
+    color reference_CIELAB = transform_linear_RGB_to_CIELAB(
         reference_linear_RGB,
         reference_color_space,
-        "D65");
+        reference_illuminant);
 
-    color sampleval_Lab = transform_linear_RGB_to_Lab(
-        sample_linear_RGB,
-        sample_color_space,
-        "D65");
+    color sampleval_CIELAB = transform_linear_RGB_to_CIELAB(
+        sampleval_linear_RGB,
+        sampleval_color_space,
+        sampleval_illuminant);
 
-    return deltaE_CIEDE2000(reference_Lab, sampleval_Lab);
+    return deltaE_CIEDE2000(reference_CIELAB, sampleval_CIELAB);
+}
+
+float deltaE_CIEDE2000(
+    color reference_linear_RGB,
+    string reference_color_space,
+    color sampleval_linear_RGB,
+    string sampleval_color_space)
+{
+    return deltaE_CIEDE2000(
+        reference_linear_RGB,
+        reference_color_space,
+        "D65",
+        sampleval_linear_RGB,
+        sampleval_color_space,
+        "D65");
 }
 
 #endif // !AS_COLOR_TRANSFORMS_H

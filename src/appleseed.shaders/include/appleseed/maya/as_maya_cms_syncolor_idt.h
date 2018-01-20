@@ -40,15 +40,6 @@
 //      $MAYA_LOCATION/docs/files/GUID-BB4F38CF-6AA8-4D35-96DD-7F75D62FD3A7.htm
 //
 
-// Different working spaces might have different illuminants, and require a
-// chromatic adaptation transform. Though we can use
-// chromatic_adaptation_vonKries() in the respective header, that is costly
-// and envolves the use of CIE XYZ as an intermediary space.
-// With that in mind, some RGB<>RGB matrices were precomputed, and these
-// already take into account the potential chromatic adaptation.
-// They are limited to D60, D65, DCIP3 illuminants, and Rec.709, Rec.2020,
-// AdobeRGB, ACES 2065-1 AP0, ACEScg AP1, DCI-P3 color spaces.
-
 color transform_color_space_to_Rec709(
     color input_color,
     string color_space)
@@ -60,18 +51,21 @@ color transform_color_space_to_Rec709(
     {
         transformed_color = sRGB_EOTF(input_color);
     }
-    else if (color_space == "scene-linear Rec 709/sRGB")
+    else if (color_space == "scene-linear Rec 709/sRGB" ||
+             color_space == "sRGB/Rec.709")
     {
         transformed_color = input_color;
     }
-    else if (color_space == "scene-linear Rec 2020")
+    else if (color_space == "scene-linear Rec 2020" ||
+             color_space == "Rec.2020")
     {
         transformed_color = color(
             dot(vector(REC2020_TO_REC709_X), v_color),
             dot(vector(REC2020_TO_REC709_Y), v_color),
             dot(vector(REC2020_TO_REC709_Z), v_color));
     }
-    else if (color_space == "scene-linear DCI-P3")
+    else if (color_space == "scene-linear DCI-P3" ||
+             color_space == "DCI-P3")
     {
         transformed_color = color(
             dot(vector(DCIP3_TO_REC709_X), v_color),
@@ -94,7 +88,7 @@ color transform_color_space_to_Rec709(
     {
         transformed_color = gamma_CCTF(input_color, REC709_GAMMA);
     }
-    else if (color_space == "ACES2065-1")
+    else if (color_space == "ACES2065-1" || color_space == "ACES")
     {
         transformed_color = color(
             dot(vector(ACES_TO_REC709_X), v_color),
@@ -110,13 +104,6 @@ color transform_color_space_to_Rec709(
     }
     else
     {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]:Unsupported color space %s selected in %s, %s:%i\n",
-                color_space, shadername, __FILE__, __LINE__);
-#endif
         transformed_color = color(0);
     }
     return transformed_color;
@@ -142,18 +129,21 @@ color transform_color_space_to_Rec2020(
             dot(vector(REC709_TO_REC2020_Y), v_color),
             dot(vector(REC709_TO_REC2020_Z), v_color));
     }
-    else if (color_space == "scene-linear Rec 709/sRGB")
+    else if (color_space == "scene-linear Rec 709/sRGB" ||
+             color_space == "sRGB/Rec.709")
     {
         transformed_color = color(
             dot(vector(REC709_TO_REC2020_X), v_color),
             dot(vector(REC709_TO_REC2020_Y), v_color),
             dot(vector(REC709_TO_REC2020_Z), v_color));
     }
-    else if (color_space == "scene-linear Rec 2020")
+    else if (color_space == "scene-linear Rec 2020" ||
+             color_space == "Rec.2020")
     {
         transformed_color = input_color;
     }
-    else if (color_space == "scene-linear DCI-P3")
+    else if (color_space == "scene-linear DCI-P3" ||
+             color_space == "DCI-P3")
     {
         transformed_color = color(
             dot(vector(DCIP3_TO_REC2020_X), v_color),
@@ -196,7 +186,7 @@ color transform_color_space_to_Rec2020(
             dot(vector(REC709_TO_REC2020_Y), v_color),
             dot(vector(REC709_TO_REC2020_Z), v_color));
     }
-    else if (color_space == "ACES2065-1")
+    else if (color_space == "ACES2065-1" || color_space == "ACES")
     {
         transformed_color = color(
             dot(vector(ACES_TO_REC2020_X), v_color),
@@ -212,13 +202,6 @@ color transform_color_space_to_Rec2020(
     }
     else
     {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]:Invalid color space %s selected in %s, %s:%i\n",
-                color_space, shadername, __FILE__, __LINE__);
-#endif
         transformed_color = color(0);
     }
     return transformed_color;
@@ -244,21 +227,24 @@ color transform_color_space_to_DCIP3(
             dot(vector(REC709_TO_DCIP3_Y), v_color),
             dot(vector(REC709_TO_DCIP3_Z), v_color));
     }
-    else if (color_space == "scene-linear Rec 709/sRGB")
+    else if (color_space == "scene-linear Rec 709/sRGB" ||
+             color_space == "sRGB/Rec.709")
     {
         transformed_color = color(
             dot(vector(REC709_TO_DCIP3_X), v_color),
             dot(vector(REC709_TO_DCIP3_Y), v_color),
             dot(vector(REC709_TO_DCIP3_Z), v_color));
     }
-    else if (color_space == "scene-linear Rec 2020")
+    else if (color_space == "scene-linear Rec 2020" ||
+             color_space == "Rec.2020")
     {
         transformed_color = color(
             dot(vector(REC2020_TO_DCIP3_X), v_color),
             dot(vector(REC2020_TO_DCIP3_Y), v_color),
             dot(vector(REC2020_TO_DCIP3_Z), v_color));
     }
-    else if (color_space == "scene-linear DCI-P3")
+    else if (color_space == "scene-linear DCI-P3" ||
+             color_space == "DCI-P3")
     {
         transformed_color = input_color;
     }
@@ -298,7 +284,7 @@ color transform_color_space_to_DCIP3(
             dot(vector(REC709_TO_DCIP3_Y), v_color),
             dot(vector(REC709_TO_DCIP3_Z), v_color));
     }
-    else if (color_space == "ACES2065-1")
+    else if (color_space == "ACES2065-1" || color_space == "ACES")
     {
         transformed_color = color(
             dot(vector(ACES_TO_DCIP3_X), v_color),
@@ -314,13 +300,6 @@ color transform_color_space_to_DCIP3(
     }
     else
     {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]:Invalid color space %s selected in %s, %s:%i\n",
-                color_space, shadername, __FILE__, __LINE__);
-#endif
         transformed_color = color(0);
     }
     return transformed_color;
@@ -346,21 +325,24 @@ color transform_color_space_to_ACES(
             dot(vector(REC709_TO_ACES_Y), v_color),
             dot(vector(REC709_TO_ACES_Z), v_color));
     }
-    else if (color_space == "scene-linear Rec 709/sRGB")
+    else if (color_space == "scene-linear Rec 709/sRGB" ||
+             color_space == "sRGB/Rec.709")
     {
         transformed_color = color(
             dot(vector(REC709_TO_ACES_X), v_color),
             dot(vector(REC709_TO_ACES_Y), v_color),
             dot(vector(REC709_TO_ACES_Z), v_color));
     }
-    else if (color_space == "scene-linear Rec 2020")
+    else if (color_space == "scene-linear Rec 2020" ||
+             color_space == "Rec.2020")
     {
         transformed_color = color(
             dot(vector(REC2020_TO_ACES_X), v_color),
             dot(vector(REC2020_TO_ACES_Y), v_color),
             dot(vector(REC2020_TO_ACES_Z), v_color));
     }
-    else if (color_space == "scene-linear DCI-P3")
+    else if (color_space == "scene-linear DCI-P3" ||
+             color_space == "DCI-P3")
     {
         transformed_color = color(
             dot(vector(DCIP3_TO_ACES_X), v_color),
@@ -403,7 +385,7 @@ color transform_color_space_to_ACES(
             dot(vector(REC709_TO_ACES_Y), v_color),
             dot(vector(REC709_TO_ACES_Z), v_color));
     }
-    else if (color_space == "ACES2065-1")
+    else if (color_space == "ACES2065-1" || color_space == "ACES")
     {
         transformed_color = input_color;
     }
@@ -416,13 +398,6 @@ color transform_color_space_to_ACES(
     }
     else
     {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]:Invalid color space %s selected in %s, %s:%i\n",
-                color_space, shadername, __FILE__, __LINE__);
-#endif
         transformed_color = color(0);
     }
     return transformed_color;
@@ -448,21 +423,24 @@ color transform_color_space_to_ACEScg(
             dot(vector(REC709_TO_ACESCG_Y), v_color),
             dot(vector(REC709_TO_ACESCG_Z), v_color));
     }
-    else if (color_space == "scene-linear Rec 709/sRGB")
+    else if (color_space == "scene-linear Rec 709/sRGB" ||
+             color_space == "sRGB/Rec.709")
     {
         transformed_color = color(
             dot(vector(REC709_TO_ACESCG_X), v_color),
             dot(vector(REC709_TO_ACESCG_Y), v_color),
             dot(vector(REC709_TO_ACESCG_Z), v_color));
     }
-    else if (color_space == "scene-linear Rec 2020")
+    else if (color_space == "scene-linear Rec 2020" ||
+             color_space == "Rec.2020")
     {
         transformed_color = color(
             dot(vector(REC2020_TO_ACESCG_X), v_color),
             dot(vector(REC2020_TO_ACESCG_Y), v_color),
             dot(vector(REC2020_TO_ACESCG_Z), v_color));
     }
-    else if (color_space == "scene-linear DCI-P3")
+    else if (color_space == "scene-linear DCI-P3" ||
+             color_space == "DCI-P3")
     {
         transformed_color = color(
             dot(vector(DCIP3_TO_ACESCG_X), v_color),
@@ -505,7 +483,7 @@ color transform_color_space_to_ACEScg(
             dot(vector(REC709_TO_ACESCG_Y), v_color),
             dot(vector(REC709_TO_ACESCG_Z), v_color));
     }
-    else if (color_space == "ACES2065-1")
+    else if (color_space == "ACES2065-1" || color_space == "ACES")
     {
         transformed_color = color(
             dot(vector(ACES_TO_ACESCG_X), v_color),
@@ -518,13 +496,6 @@ color transform_color_space_to_ACEScg(
     }
     else
     {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]:Invalid color space %s selected in %s, %s:%i\n",
-                color_space, shadername, __FILE__, __LINE__);
-#endif
         transformed_color = color(0);
     }
     return transformed_color;
@@ -537,19 +508,22 @@ color transform_colorspace_to_workingspace(
 {
     color C;
 
-    if (working_space == "scene-linear Rec 709/sRGB")
+    if (working_space == "scene-linear Rec 709/sRGB" ||
+        working_space == "sRGB/Rec.709")
     {
         C = transform_color_space_to_Rec709(input_color, color_space);
     }
-    else if (working_space == "scene-linear Rec 2020")
+    else if (working_space == "scene-linear Rec 2020" ||
+             working_space == "Rec.2020")
     {
         C = transform_color_space_to_Rec2020(input_color, color_space);
     }
-    else if (working_space == "scene-linear DCI-P3")
+    else if (working_space == "scene-linear DCI-P3" ||
+             working_space == "DCI-P3")
     {
         C = transform_color_space_to_DCIP3(input_color, color_space);
     }
-    else if (working_space == "ACES2065-1")
+    else if (working_space == "ACES2065-1" || working_space == "ACES")
     {
         C = transform_color_space_to_ACES(input_color, color_space);
     }
@@ -559,13 +533,6 @@ color transform_colorspace_to_workingspace(
     }
     else
     {
-#ifdef DEBUG
-        string shadername = "";
-        getattribute("shader:shadername", shadername);
-
-        warning("[WARNING]:Unsupported working space %s in %s, %s:%i\n",
-                working_space, shadername, __FILE__, __LINE__);
-#endif
         C = color(0);
     }
     return C;
