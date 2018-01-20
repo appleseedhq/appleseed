@@ -46,12 +46,12 @@ source_group ("" FILES
 # Target.
 #--------------------------------------------------------------------------------------------------
 
-add_executable (bcd_cli
+add_executable (bcd.cli
     ${bcd_cli_sources}
 )
 
 if (USE_RPATH_ORIGIN)
-    set_target_properties (bcd_cli PROPERTIES
+    set_target_properties (bcd.cli PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"
     )
 endif ()
@@ -72,17 +72,17 @@ include_directories (
 # Preprocessor definitions.
 #--------------------------------------------------------------------------------------------------
 
-apply_preprocessor_definitions (bcd_cli)
+apply_preprocessor_definitions (bcd.cli)
 
 
 #--------------------------------------------------------------------------------------------------
 # Static libraries.
 #--------------------------------------------------------------------------------------------------
 
-link_against_openexr (bcd_cli)
-link_against_zlib (bcd_cli)
+link_against_openexr (bcd.cli)
+link_against_zlib (bcd.cli)
 
-target_link_libraries (bcd_cli
+target_link_libraries (bcd.cli
     bcd
 )
 
@@ -91,13 +91,13 @@ target_link_libraries (bcd_cli
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
 
-add_copy_target_exe_to_sandbox_command (bcd_cli)
+add_copy_target_exe_to_sandbox_command (bcd.cli)
 
 
 #--------------------------------------------------------------------------------------------------
 # Installation.
 #--------------------------------------------------------------------------------------------------
 
-install (TARGETS bcd_cli
+install (TARGETS bcd.cli
     DESTINATION bin
 )

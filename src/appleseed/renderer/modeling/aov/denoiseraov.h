@@ -77,7 +77,10 @@ class DenoiserAOV
 
     foundation::auto_release_ptr<AOVAccumulator> create_accumulator() const override;
 
+    void fill_empty_samples() const;
+
     const bcd::Deepimf& histograms_image() const;
+    bcd::Deepimf& histograms_image();
 
     void extract_num_samples_image(bcd::Deepimf& num_samples) const;
     void compute_covariances_image(bcd::Deepimf& covariances) const;

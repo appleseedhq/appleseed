@@ -61,7 +61,7 @@ DenoisingUnit::DenoisingUnit(Denoiser& i_rDenoiser, const int i_threadIndex)
   , m_mainPatchCenter()
   , m_similarPatchesCenters(m_maxNbOfSimilarPatches)
   , m_nbOfSimilarPatches(0)
-  , m_nbOfSimilarPatchesInv(0.f)
+  , m_nbOfSimilarPatchesInv(0.0f)
   , m_noiseCovPatchesMean(static_cast<size_t>(m_nbOfPixelsInPatch))
   , m_colorPatches(m_maxNbOfSimilarPatches, VectorXf(m_colorPatchDimension))
   , m_colorPatchesMean(m_colorPatchDimension)
@@ -78,10 +78,6 @@ DenoisingUnit::DenoisingUnit(Denoiser& i_rDenoiser, const int i_threadIndex)
   , m_tmpNoiseCovPatch(static_cast<size_t>(m_nbOfPixelsInPatch))
   , m_tmpVec(m_colorPatchDimension)
   , m_tmpMatrix(m_colorPatchDimension, m_colorPatchDimension)
-{
-}
-
-DenoisingUnit::~DenoisingUnit()
 {
 }
 
@@ -109,10 +105,8 @@ void DenoisingUnit::denoisePatchAndSimilarPatches(
         // to simple average ; + 1 for safety
 
         denoiseOnlyMainPatch();
-        return;
     }
-
-    denoiseSelectedPatches();
+    else denoiseSelectedPatches();
 }
 
 void DenoisingUnit::selectSimilarPatches()
@@ -126,18 +120,19 @@ void DenoisingUnit::selectSimilarPatches()
         m_searchWindowRadius,
         m_patchRadius);
 
-    m_similarPatchesCenters.resize(m_maxNbOfSimilarPatches);
+    m_similarPatchesCenters.clear();
+    m_similarPatchesCenters.reserve(m_maxNbOfSimilarPatches);
 
     for (PixelPosition neighborPixel : searchWindow)
     {
         if (histogramPatchDistance(m_mainPatchCenter, neighborPixel) <= m_histogramDistanceThreshold)
-            m_similarPatchesCenters[m_nbOfSimilarPatches++] = neighborPixel;
+            m_similarPatchesCenters.push_back(neighborPixel);
     }
 
+    m_nbOfSimilarPatches = m_similarPatchesCenters.size();
     assert(m_nbOfSimilarPatches > 0);
 
     m_nbOfSimilarPatchesInv = 1.0f / m_nbOfSimilarPatches;
-    m_similarPatchesCenters.resize(m_nbOfSimilarPatches);
 }
 
 inline float DenoisingUnit::histogramPatchDistance(
@@ -177,20 +172,21 @@ inline float DenoisingUnit::pixelSummedHistogramDistance(
     float nbOfSamples1 = m_pNbOfSamplesImage->get(i_rPixel1, 0);
     float nbOfSamples2 = m_pNbOfSamplesImage->get(i_rPixel2, 0);
 
-    float diff;
-    float sum = 0.f;
+    float sum = 0.0f;
+
     for (int binIndex = 0; binIndex < m_nbOfBins; ++binIndex)
     {
         binValue1 = *pHistogram1Val++;
         binValue2 = *pHistogram2Val++;
 
-        if (binValue1 + binValue2 <= 1.f) // TEMPORARY
+        if (binValue1 + binValue2 <= 1.0f) // TEMPORARY
             continue;
 
         ++i_rNbOfNonBoth0Bins;
-        diff = nbOfSamples2 * binValue1 - nbOfSamples1 * binValue2;
+        const float diff = nbOfSamples2 * binValue1 - nbOfSamples1 * binValue2;
         sum += diff * diff / (nbOfSamples1 * nbOfSamples2 * (binValue1 + binValue2));
     }
+
     return sum;
 }
 
@@ -205,7 +201,7 @@ void DenoisingUnit::denoiseSelectedPatches()
 void DenoisingUnit::computeNoiseCovPatchesMean()
 {
     CovMat3x3 zero3x3;
-    zero3x3.m_data.fill(0.f);
+    zero3x3.m_data.fill(0.0f);
     fill(
         m_noiseCovPatchesMean.m_blocks.begin(),
         m_noiseCovPatchesMean.m_blocks.end(),
@@ -287,7 +283,7 @@ void DenoisingUnit::denoiseSelectedPatchesStep2()
 
 void DenoisingUnit::denoiseOnlyMainPatch()
 {
-    m_colorPatchesMean.fill(0.f);
+    m_colorPatchesMean.fill(0.0f);
     int patchDataIndex = 0;
 
     for (const PixelPosition& rSimilarPatchCenter : m_similarPatchesCenters)
@@ -324,6 +320,7 @@ void DenoisingUnit::pickColorPatchesFromColorImage(
         vector<VectorXf>&               o_rColorPatches) const
 {
     int patchIndex = 0;
+
     for (const PixelPosition& rSimilarPatchCenter : m_similarPatchesCenters)
     {
         VectorXf& rColorPatch = o_rColorPatches[patchIndex++];
@@ -344,12 +341,12 @@ void DenoisingUnit::empiricalMean(
     const vector<VectorXf>&             i_rPointCloud,
     int                                 i_nbOfPoints) const
 {
-    o_rMean.fill(0.f);
+    o_rMean.fill(0.0f);
 
     for (int i = 0; i < i_nbOfPoints; ++i)
         o_rMean += i_rPointCloud[i];
 
-    o_rMean *= (1.f / i_nbOfPoints);
+    o_rMean *= 1.0f / i_nbOfPoints;
 }
 
 void DenoisingUnit::centerPointCloud(
@@ -359,6 +356,7 @@ void DenoisingUnit::centerPointCloud(
     int                                 i_nbOfPoints) const
 {
     vector<VectorXf>::iterator it = o_rCenteredPointCloud.begin();
+
     for (int i = 0; i < i_nbOfPoints; ++i)
         *it++ = i_rPointCloud[i] - o_rMean;
 }
@@ -371,7 +369,7 @@ void DenoisingUnit::empiricalCovarianceMatrix(
     int d = static_cast<int>(o_rCovMat.rows());
     assert(d == o_rCovMat.cols());
     assert(d == i_rCenteredPointCloud[0].rows());
-    o_rCovMat.fill(0.f);
+    o_rCovMat.fill(0.0f);
 
     for (int i = 0; i < i_nbOfPoints; ++i)
     {
@@ -382,7 +380,7 @@ void DenoisingUnit::empiricalCovarianceMatrix(
         }
     }
 
-    o_rCovMat *= (1.f / (i_nbOfPoints - 1));
+    o_rCovMat *= 1.0f / (i_nbOfPoints - 1);
 }
 
 void DenoisingUnit::addCovMatPatchToMatrix(
@@ -449,7 +447,7 @@ void DenoisingUnit::inverseSymmetricMatrix(
     float diagValue;
     for (int r = 0; r < d; ++r)
     {
-        diagValue = 1.f / max(minEigenVal, rEigenValues(r));
+        diagValue = 1.0f / max(minEigenVal, rEigenValues(r));
 
         for (int c = 0; c < d; ++c)
             m_tmpMatrix(r, c) = diagValue * rEigenVectors(c, r);
@@ -527,7 +525,7 @@ void DenoisingUnit::finalDenoisingMatrixMultiplication(
     for (int i = 0; i < m_nbOfSimilarPatches; ++i)
     {
         m_tmpVec = i_rInversedCovMat * i_rCenteredNoisyColorPatches[i];
-        m_tmpVec *= -1.f;
+        m_tmpVec *= -1.0f;
 
         multiplyCovMatPatchByVector(o_rDenoisedColorPatches[i], i_rNoiseCovMatPatch, m_tmpVec);
         o_rDenoisedColorPatches[i] += i_rNoisyColorPatches[i];
@@ -537,6 +535,7 @@ void DenoisingUnit::finalDenoisingMatrixMultiplication(
 void DenoisingUnit::aggregateOutputPatches()
 {
     int patchIndex = 0;
+
     for (const PixelPosition& rSimilarPatchCenter : m_similarPatchesCenters)
     {
         VectorXf& rColorPatch = m_denoisedColorPatches[patchIndex++];

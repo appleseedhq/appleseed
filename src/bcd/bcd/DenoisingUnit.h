@@ -34,8 +34,6 @@ class DenoisingUnit
   public:
     DenoisingUnit(Denoiser& i_rDenoiser, const int i_threadIndex);
 
-    ~DenoisingUnit();
-
     void denoisePatchAndSimilarPatches(
         const PixelPosition&                i_rMainPatchCenter);
 

@@ -95,12 +95,75 @@ void SpikeRemovalFilter::filter(
     }
 }
 
+void SpikeRemovalFilter::filter(
+    DeepImage<float>&       io_rInputColorImage,
+    float                   i_thresholdStDevFactor)
+{
+    const int patchRadius = 1;
+    const int patchWidth = 2 * patchRadius + 1;
+    const int nbOfNeighbors =  patchWidth * patchWidth;
+
+    DeepImage<float> inputColorImage(io_rInputColorImage);
+
+    int width = io_rInputColorImage.getWidth();
+    int height = io_rInputColorImage.getHeight();
+
+    vector<float> neighborValuesR(nbOfNeighbors);
+    vector<float> neighborValuesG(nbOfNeighbors);
+    vector<float> neighborValuesB(nbOfNeighbors);
+    float average[3];
+    float standardDeviation[3];
+
+    for(int line = 0; line < height; ++line)
+    {
+        for(int column = 0; column < width; ++column)
+        {
+            int patchCenterLine = line < patchRadius
+                ? patchRadius
+                : (line > height - 1 - patchRadius ? height - 1 - patchRadius : line);
+
+            int patchCenterColumn = column < patchRadius
+                ? patchRadius
+                : (column > width - 1 - patchRadius ? width - 1 - patchRadius : column);
+
+            int neighborIndex = 0;
+
+            for(int neighborLine = patchCenterLine - patchRadius; neighborLine <= patchCenterLine + patchRadius; ++neighborLine)
+            {
+                for(int neighborColumn = patchCenterColumn - patchRadius; neighborColumn <= patchCenterColumn + patchRadius; ++neighborColumn)
+                {
+                    neighborValuesR[neighborIndex] = inputColorImage.get(neighborLine, neighborColumn, 0);
+                    neighborValuesG[neighborIndex] = inputColorImage.get(neighborLine, neighborColumn, 1);
+                    neighborValuesB[neighborIndex] = inputColorImage.get(neighborLine, neighborColumn, 2);
+                    ++neighborIndex;
+                }
+            }
+
+            computeAverageAndStandardDeviation(average[0], standardDeviation[0], neighborValuesR);
+            computeAverageAndStandardDeviation(average[1], standardDeviation[1], neighborValuesG);
+            computeAverageAndStandardDeviation(average[2], standardDeviation[2], neighborValuesB);
+
+            if(
+               abs(inputColorImage.get(line, column, 0) - average[0]) > i_thresholdStDevFactor * standardDeviation[0] ||
+               abs(inputColorImage.get(line, column, 1) - average[1]) > i_thresholdStDevFactor * standardDeviation[1] ||
+               abs(inputColorImage.get(line, column, 2) - average[2]) > i_thresholdStDevFactor * standardDeviation[2])
+            { // then it is an outlier (spike) so we copy the neighbor pixel with median color value
+                int medianIndex = compute3DMedianIndex(neighborValuesR, neighborValuesG, neighborValuesB);
+                int medianLine = patchCenterLine - patchRadius + (medianIndex / patchWidth);
+                int medianColumn = patchCenterColumn - patchRadius + (medianIndex % patchWidth);
+
+                io_rInputColorImage.set(line, column, &(inputColorImage.get(medianLine, medianColumn, 0)));
+            }
+        }
+    }
+}
+
 void SpikeRemovalFilter::computeAverageAndStandardDeviation(
     float&                  o_rAverage,
     float&                  o_rStandardDeviation,
     const vector<float>&    i_rData)
 {
-    float total = 0.f;
+    float total = 0.0f;
     int nbOfElements = static_cast<int>(i_rData.size());
 
     for (float value : i_rData)
@@ -122,11 +185,11 @@ int SpikeRemovalFilter::compute3DMedianIndex(
 {
     int nbOfElements = static_cast<int>(i_rDataR.size());
     int medianIndex = 0;
-    float bestTotalL1Distance = -1.f;
+    float bestTotalL1Distance = -1.0f;
 
     for(int medianCandidateIndex = 0; medianCandidateIndex < nbOfElements; ++medianCandidateIndex)
     {
-        float totalL1distance = 0.f;
+        float totalL1distance = 0.0f;
 
         for(int currentIndex = 0; currentIndex < nbOfElements; ++currentIndex)
         {

@@ -42,6 +42,7 @@
 #include "bcd/Denoiser.h"
 #include "bcd/IDenoiser.h"
 #include "bcd/MultiscaleDenoiser.h"
+#include "bcd/SpikeRemovalFilter.h"
 #include "bcd/Utils.h"
 
 // Standard headers.
@@ -134,9 +135,94 @@ namespace
       private:
         IAbortSwitch* m_abort_switch;
     };
+
+    bool do_denoise_image(
+        Deepimf&                src,
+        const Deepimf&          num_samples,
+        const Deepimf&          histograms,
+        const Deepimf&          covariances,
+        const DenoiserOptions&  options,
+        IAbortSwitch*           abort_switch,
+        Deepimf&                dst)
+    {
+        DenoiserInputs inputs;
+        inputs.m_pColors = &src;
+        inputs.m_pNbOfSamples = &num_samples;
+        inputs.m_pHistograms = &histograms;
+        inputs.m_pSampleCovariances = &covariances;
+
+        DenoiserParameters parameters;
+        parameters.m_histogramDistanceThreshold = options.m_histogram_patch_distance_threshold;
+        parameters.m_patchRadius = static_cast<int>(options.m_patch_radius);
+        parameters.m_searchWindowRadius = static_cast<int>(options.m_search_window_radius);
+        parameters.m_minEigenValue = options.m_min_eigenvalue;
+        parameters.m_useRandomPixelOrder = options.m_use_random_pixel_order;
+        parameters.m_markedPixelsSkippingProbability = options.m_marked_pixels_skipping_probability;
+        parameters.m_nbOfCores = static_cast<int>(options.m_num_cores);
+        parameters.m_useCuda = false;
+
+        DenoiserOutputs outputs;
+        outputs.m_pDenoisedColors = &dst;
+
+        unique_ptr<IDenoiser> denoiser;
+
+        if (options.m_num_scales > 1)
+            denoiser.reset(new MultiscaleDenoiser(static_cast<int>(options.m_num_scales)));
+        else
+            denoiser.reset(new Denoiser());
+
+        denoiser->setInputs(inputs);
+        denoiser->setOutputs(outputs);
+        denoiser->setParameters(parameters);
+
+        DenoiserProgressReporter progress_reporter(abort_switch);
+        denoiser->setProgressReporter(&progress_reporter);
+
+        return denoiser->denoise();
+    }
+
 }
 
-bool denoise_image(
+bool denoise_beauty_image(
+    Image&                  img,
+    Deepimf&                num_samples,
+    Deepimf&                histograms,
+    Deepimf&                covariances,
+    const DenoiserOptions&  options,
+    IAbortSwitch*           abort_switch)
+{
+    Deepimf src;
+    image_to_deepimage(img, src);
+
+    if (options.m_prefilter_spikes)
+    {
+        SpikeRemovalFilter::filter(
+            src,
+            num_samples,
+            histograms,
+            covariances,
+            options.m_prefilter_threshold_stdev_factor);
+    }
+
+    Deepimf dst(src);
+
+    const bool success =
+        do_denoise_image(
+            src,
+            num_samples,
+            histograms,
+            covariances,
+            options,
+            abort_switch,
+            dst);
+
+    if (success)
+        deepimage_to_image(dst, img);
+
+    return success;
+}
+
+bool denoise_aov_image(
     Image&                  img,
     const Deepimf&          num_samples,
     const Deepimf&          histograms,
@@ -147,44 +233,27 @@ bool denoise_image(
     Deepimf src;
     image_to_deepimage(img, src);
 
-    DenoiserInputs inputs;
-    inputs.m_pColors = &src;
-    inputs.m_pNbOfSamples = &num_samples;
-    inputs.m_pHistograms = &histograms;
-    inputs.m_pSampleCovariances = &covariances;
+    if (options.m_prefilter_spikes)
+    {
+        SpikeRemovalFilter::filter(
+            src,
+            options.m_prefilter_threshold_stdev_factor);
+    }
 
-    DenoiserParameters parameters;
-    parameters.m_histogramDistanceThreshold = options.m_histogram_patch_distance_threshold;
-    parameters.m_patchRadius = options.m_patch_radius;
-    parameters.m_searchWindowRadius = options.m_search_window_radius;
-    parameters.m_minEigenValue = options.m_min_eigenvalue;
-    parameters.m_useRandomPixelOrder = options.m_use_random_pixel_order;
-    parameters.m_markedPixelsSkippingProbability = options.m_marked_pixels_skipping_probability;
-    parameters.m_nbOfCores = options.m_num_cores;
-    parameters.m_useCuda = false;
+    Deepimf dst(src);
 
-    DenoiserOutputs outputs;
-    Deepimf output_denoised_color_image(src);
-    outputs.m_pDenoisedColors = &output_denoised_color_image;
-
-    unique_ptr<IDenoiser> denoiser;
-
-    if (options.m_num_scales > 1)
-        denoiser.reset(new MultiscaleDenoiser(options.m_num_scales));
-    else
-        denoiser.reset(new Denoiser());
-
-    denoiser->setInputs(inputs);
-    denoiser->setOutputs(outputs);
-    denoiser->setParameters(parameters);
-
-    DenoiserProgressReporter progress_reporter(abort_switch);
-    denoiser->setProgressReporter(&progress_reporter);
-
-    const bool success = denoiser->denoise();
+    const bool success =
+        do_denoise_image(
+            src,
+            num_samples,
+            histograms,
+            covariances,
+            options,
+            abort_switch,
+            dst);
 
     if (success)
-        deepimage_to_image(*outputs.m_pDenoisedColors, img);
+        deepimage_to_image(dst, img);
 
     return success;
 }

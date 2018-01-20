@@ -178,6 +178,7 @@ namespace
                     m_tile_callbacks,
                     m_pass_callback,
                     m_job_queue,
+                    m_params.m_thread_count,
                     m_abort_switch,
                     m_is_rendering));
             ThreadFunctionWrapper<PassManagerFunc> wrapper(m_pass_manager_func.get());
@@ -279,6 +280,7 @@ namespace
                 vector<ITileCallback*>&             tile_callbacks,
                 IPassCallback*                      pass_callback,
                 JobQueue&                           job_queue,
+                const size_t                        thread_count,
                 IAbortSwitch&                       abort_switch,
                 bool&                               is_rendering)
               : m_frame(frame)
@@ -289,6 +291,7 @@ namespace
               , m_pass_count(pass_count)
               , m_spectrum_mode(spectrum_mode)
               , m_job_queue(job_queue)
+              , m_thread_count(thread_count)
               , m_abort_switch(abort_switch)
               , m_is_rendering(is_rendering)
             {
@@ -350,6 +353,7 @@ namespace
                 if (!m_abort_switch.is_aborted())
                 {
                     m_frame.denoise(
+                        m_thread_count,
                         m_tile_callbacks.empty() ? nullptr : m_tile_callbacks[0],
                         &m_abort_switch);
                 }
@@ -366,6 +370,7 @@ namespace
             const size_t                            m_pass_count;
             const Spectrum::Mode                    m_spectrum_mode;
             JobQueue&                               m_job_queue;
+            const size_t                            m_thread_count;
             IAbortSwitch&                           m_abort_switch;
             bool&                                   m_is_rendering;
             TileJobFactory                          m_tile_job_factory;

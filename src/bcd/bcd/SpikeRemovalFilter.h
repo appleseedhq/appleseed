@@ -32,6 +32,10 @@ class SpikeRemovalFilter
         DeepImage<float>&           io_rInputCovImage,
         float                       i_thresholdStDevFactor = 2.f);
 
+    static void filter(
+        DeepImage<float>&           io_rInputColorImage,
+        float                       i_thresholdStDevFactor = 2.f);
+
   private:
     static void computeAverageAndStandardDeviation(
         float&                      o_rAverage,

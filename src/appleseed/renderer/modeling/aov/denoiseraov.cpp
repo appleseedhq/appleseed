@@ -114,11 +114,16 @@ namespace
             const PixelContext&         pixel_context) override
         {
             m_accum.set(0.0f);
+            m_sample_count = 0;
         }
 
         void on_sample_end(
             const PixelContext&         pixel_context) override
         {
+            // Ignore invalid samples.
+            if (m_sample_count == 0)
+                return;
+
             const Vector2i& pi = pixel_context.get_pixel_coords();
 
             // Ignore samples outside the tile.
@@ -213,14 +218,19 @@ namespace
             const ShadingComponents&    shading_components,
             ShadingResult&              shading_result) override
         {
-            // Composite over the previous sample.
-            Color4f main = shading_result.m_main;
-            main.premultiply();
-            m_accum += (1.0f - m_accum.a) * shading_result.m_main;
+            if (shading_result.is_main_valid())
+            {
+                // Composite over the previous sample.
+                Color4f main = shading_result.m_main;
+                main.premultiply();
+                m_accum += (1.0f - m_accum.a) * shading_result.m_main;
+                ++m_sample_count;
+            }
         }
 
       private:
         Color4f         m_accum;
+        size_t          m_sample_count;
 
         const size_t    m_num_bins;
         const float     m_gamma;
@@ -341,7 +351,37 @@ auto_release_ptr<AOVAccumulator> DenoiserAOV::create_accumulator() const
             impl->m_histograms));
 }
 
+void DenoiserAOV::fill_empty_samples() const
+{
+    const int w = impl->m_histograms.getWidth();
+    const int h = impl->m_histograms.getHeight();
+    const int samples_channel_index = static_cast<int>(impl->m_num_bins * 3);
+
+    for (int j = 0; j < h; ++j)
+    {
+        for (int i = 0; i < w; ++i)
+        {
+            const int num_samples =
+                impl->m_histograms.get(j, i, samples_channel_index);
+
+            if (num_samples == 0)
+            {
+                impl->m_histograms.get(j, i, 0) = 1.0f;
+                impl->m_histograms.get(j, i, impl->m_num_bins) = 1.0f;
+                impl->m_histograms.get(j, i, impl->m_num_bins * 2) = 1.0f;
+
+                impl->m_histograms.get(j, i, samples_channel_index) = 1;
+            }
+        }
+    }
+}
+
 const Deepimf& DenoiserAOV::histograms_image() const
+{
+    return impl->m_histograms;
+}
+
+Deepimf& DenoiserAOV::histograms_image()
 {
     return impl->m_histograms;
 }
@@ -413,6 +453,8 @@ void DenoiserAOV::compute_covariances_image(Deepimf& covariances) const
 
 bool DenoiserAOV::write_images(const char* file_path) const
 {
+    fill_empty_samples();
+
     const bf::path boost_file_path(file_path);
     const bf::path directory = boost_file_path.parent_path();
     const string base_file_name = boost_file_path.stem().string();
