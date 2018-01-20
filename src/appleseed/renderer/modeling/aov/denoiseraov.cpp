@@ -362,13 +362,13 @@ void DenoiserAOV::fill_empty_samples() const
         for (int i = 0; i < w; ++i)
         {
             const int num_samples =
-                impl->m_histograms.get(j, i, samples_channel_index);
+                static_cast<const int>(impl->m_histograms.get(j, i, samples_channel_index));
 
             if (num_samples == 0)
             {
                 impl->m_histograms.get(j, i, 0) = 1.0f;
-                impl->m_histograms.get(j, i, impl->m_num_bins) = 1.0f;
-                impl->m_histograms.get(j, i, impl->m_num_bins * 2) = 1.0f;
+                impl->m_histograms.get(j, i, static_cast<int>(impl->m_num_bins)) = 1.0f;
+                impl->m_histograms.get(j, i, static_cast<int>(impl->m_num_bins * 2)) = 1.0f;
 
                 impl->m_histograms.get(j, i, samples_channel_index) = 1;
             }
