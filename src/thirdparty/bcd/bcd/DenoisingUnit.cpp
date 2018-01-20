@@ -129,7 +129,7 @@ void DenoisingUnit::selectSimilarPatches()
             m_similarPatchesCenters.push_back(neighborPixel);
     }
 
-    m_nbOfSimilarPatches = m_similarPatchesCenters.size();
+    m_nbOfSimilarPatches = static_cast<int>(m_similarPatchesCenters.size());
     assert(m_nbOfSimilarPatches > 0);
 
     m_nbOfSimilarPatchesInv = 1.0f / m_nbOfSimilarPatches;
