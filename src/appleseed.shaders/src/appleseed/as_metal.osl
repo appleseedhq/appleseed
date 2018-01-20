@@ -266,12 +266,6 @@ shader as_metal
         string as_maya_attribute_short_name = "oc",
         string widget = "null"
     ]],
-    output closure color out_outTransparency = 0
-    [[
-        string as_maya_attribute_name = "outTransparency",
-        string as_maya_attribute_short_name = "ot",
-        string widget = "null"
-    ]],
     output closure color out_outMatteOpacity = 0
     [[
         string as_maya_attribute_name = "outMatteOpacity",
