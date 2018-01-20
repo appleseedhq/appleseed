@@ -38,48 +38,25 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Forward declarations.
 namespace foundation    { class ICanvas; }
 
 namespace foundation
 {
 
-//
-// PNG image file writer.
-//
-// The following image attributes are recognized by the PNG format:
-//
-//   title              string      short (one line) title or caption for the image
-//   author             string      name of the author of the image
-//   description        string      description of the image (possibly long)
-//   copyright          string      copyright notice
-//   creation_time      string      time of original image creation
-//   software           string      software used to create the image
-//   disclaimer         string      legal disclaimer
-//   warning            string      warning of nature of content
-//   source             string      device used to create the image
-//   comment            string      miscellaneous comment
-//   dpi                integer     physical image resolution, in dots per inch
-//
-// Other image attributes will be stored as generic text chunks.
-//
-// Reference: http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html
-//
-
 class APPLESEED_DLLSYMBOL PNGImageFileWriter
-  : public IImageFileWriter
+    : public IImageFileWriter
 {
   public:
+    
     // Memory allocation error.
     struct ExceptionMemoryError : public Exception {};
 
-    // Write a PNG image file.
+    // Write a whatever image file.
     void write(
         const char*             filename,
         const ICanvas&          image,
-        const ImageAttributes&  image_attributes = ImageAttributes()) override;
+        const ImageAttributes&  image_attributes = ImageAttributes()) final;
 };
 
-}       // namespace foundation
-
+}   // namespace foundation
 #endif  // !APPLESEED_FOUNDATION_IMAGE_PNGIMAGEFILEWRITER_H
