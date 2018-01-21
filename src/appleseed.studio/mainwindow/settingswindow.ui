@@ -93,9 +93,6 @@
            </widget>
           </item>
          </layout>
-         <zorder>gridLayoutWidget</zorder>
-         <zorder>gridLayoutWidget</zorder>
-         <zorder>checkbox_render_region_triggers_rendering</zorder>
         </widget>
        </item>
        <item>

@@ -34,7 +34,7 @@
 set (sources
     main.cpp
 )
-list (APPEND bcd_cli_sources
+list (APPEND denoiser_sources
     ${sources}
 )
 source_group ("" FILES
@@ -46,12 +46,12 @@ source_group ("" FILES
 # Target.
 #--------------------------------------------------------------------------------------------------
 
-add_executable (bcd.cli
-    ${bcd_cli_sources}
+add_executable (denoiser
+    ${denoiser_sources}
 )
 
 if (USE_RPATH_ORIGIN)
-    set_target_properties (bcd.cli PROPERTIES
+    set_target_properties (denoiser PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"
     )
 endif ()
@@ -63,8 +63,8 @@ endif ()
 
 include_directories (
     .
-    ../../bcd
-    ../../bcd/ext/eigen
+    ../../thirdparty/bcd
+    ../../thirdparty/bcd/ext/eigen
 )
 
 
@@ -72,17 +72,17 @@ include_directories (
 # Preprocessor definitions.
 #--------------------------------------------------------------------------------------------------
 
-apply_preprocessor_definitions (bcd.cli)
+apply_preprocessor_definitions (denoiser)
 
 
 #--------------------------------------------------------------------------------------------------
 # Static libraries.
 #--------------------------------------------------------------------------------------------------
 
-link_against_openexr (bcd.cli)
-link_against_zlib (bcd.cli)
+link_against_openexr (denoiser)
+link_against_zlib (denoiser)
 
-target_link_libraries (bcd.cli
+target_link_libraries (denoiser
     bcd
 )
 
@@ -91,13 +91,13 @@ target_link_libraries (bcd.cli
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
 
-add_copy_target_exe_to_sandbox_command (bcd.cli)
+add_copy_target_exe_to_sandbox_command (denoiser)
 
 
 #--------------------------------------------------------------------------------------------------
 # Installation.
 #--------------------------------------------------------------------------------------------------
 
-install (TARGETS bcd.cli
+install (TARGETS denoiser
     DESTINATION bin
 )
