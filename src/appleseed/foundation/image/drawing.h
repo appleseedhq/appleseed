@@ -58,6 +58,13 @@ namespace foundation
 class Drawing
 {
   public:
+    // Draw a filled rectangle without anti-aliasing.
+    static void draw_filled_rect(
+        Image&              image,
+        const Vector2i&     from,       // inclusive
+        const Vector2i&     to,         // inclusive
+        const Color4f&      color);
+
     // Draw an antialiased 4x4 pixel dot.
     static void draw_dot(
         Image&              image,

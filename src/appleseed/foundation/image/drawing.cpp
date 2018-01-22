@@ -34,6 +34,7 @@
 #include "foundation/image/image.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cstddef>
 
 using namespace std;
@@ -44,6 +45,36 @@ namespace foundation
 //
 // Drawing class implementation.
 //
+
+void Drawing::draw_filled_rect(
+    Image&                  image,
+    const Vector2i&         from,
+    const Vector2i&         to,
+    const Color4f&          color)
+{
+    const CanvasProperties& props = image.properties();
+
+    const int w = static_cast<int>(props.m_canvas_width);
+    const int h = static_cast<int>(props.m_canvas_height);
+
+    const size_t x0 = static_cast<size_t>(max(from.x, 0));
+    const size_t y0 = static_cast<size_t>(max(from.y, 0));
+    const size_t x1 = static_cast<size_t>(min(to.x, w - 1));
+    const size_t y1 = static_cast<size_t>(min(to.y, h - 1));
+
+    for (size_t y = y0; y <= y1; ++y)
+    {
+        for (size_t x = x0; x <= x1; ++x)
+        {
+            Color4f background;
+            image.get_pixel(x, y, background);
+
+            image.set_pixel(
+                x, y,
+                color * color.a + background * (1.0f - color.a));
+        }
+    }
+}
 
 void Drawing::draw_dot(
     Image&                  image,

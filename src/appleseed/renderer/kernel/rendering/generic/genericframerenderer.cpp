@@ -303,7 +303,10 @@ namespace
             {
                 set_current_thread_name("pass_manager");
 
+                //
                 // Rendering passes.
+                //
+
                 for (size_t pass = 0; pass < m_pass_count; ++pass)
                 {
                     // Check abort flag.
@@ -360,7 +363,10 @@ namespace
                     return;
                 }
 
+                //
                 // Denoising pass.
+                //
+
                 if (m_frame.get_denoising_mode() == Frame::DenoisingMode::Denoise)
                 {
                     if (m_pass_count > 1)
@@ -371,6 +377,28 @@ namespace
 
                     // Denoise the frame.
                     m_frame.denoise(m_thread_count, &m_abort_switch);
+
+                    // Call on_tile_end() on all tiles of the frame.
+                    on_tile_end_whole_frame();
+                }
+
+                // Check abort flag.
+                if (m_abort_switch.is_aborted())
+                {
+                    m_is_rendering = false;
+                    return;
+                }
+
+                //
+                // Render stamp.
+                //
+
+                if (m_frame.is_render_stamp_enabled())
+                {
+                    // No need to call on_tile_begin() here, adding the stamp is instantaneous.
+
+                    // Add the render stamp to the frame.
+                    m_frame.add_render_stamp();
 
                     // Call on_tile_end() on all tiles of the frame.
                     on_tile_end_whole_frame();

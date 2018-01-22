@@ -41,16 +41,19 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/appleseed.h"
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
 #include "foundation/image/color.h"
+#include "foundation/image/drawing.h"
 #include "foundation/image/exceptionunsupportedimageformat.h"
 #include "foundation/image/exrimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/image/imageattributes.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/pngimagefilewriter.h"
+#include "foundation/image/text/textrenderer.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/timers.h"
@@ -86,6 +89,8 @@ namespace renderer
 namespace
 {
     const UniqueID g_class_uid = new_guid();
+
+    const string DefaultRenderStampFormat = "{version}";
 }
 
 UniqueID Frame::get_class_uid()
@@ -104,6 +109,8 @@ struct Frame::Impl
     float                   m_filter_radius;
     unique_ptr<Filter2f>    m_filter;
     AABB2u                  m_crop_window;
+    bool                    m_render_stamp_enabled;
+    string                  m_render_stamp_format;
     DenoisingMode           m_denoising_mode;
 
     // Images.
@@ -212,7 +219,8 @@ void Frame::print_settings()
         "  filter                        %s\n"
         "  filter size                   %f\n"
         "  crop window                   (%s, %s)-(%s, %s)\n"
-        "  denoising mode                %s",
+        "  denoising mode                %s\n"
+        "  render stamp                  %s",
         camera_name ? camera_name : "none",
         pretty_uint(impl->m_frame_width).c_str(),
         pretty_uint(impl->m_frame_height).c_str(),
@@ -225,7 +233,8 @@ void Frame::print_settings()
         pretty_uint(impl->m_crop_window.max[0]).c_str(),
         pretty_uint(impl->m_crop_window.max[1]).c_str(),
         impl->m_denoising_mode == DenoisingMode::Off ? "off" :
-        impl->m_denoising_mode == DenoisingMode::WriteOutputs ? "write outputs" : "denoise");
+        impl->m_denoising_mode == DenoisingMode::WriteOutputs ? "write outputs" : "denoise",
+        impl->m_render_stamp_enabled ? "enabled" : "disabled");
 }
 
 const char* Frame::get_active_camera_name() const
@@ -312,6 +321,55 @@ const AABB2u& Frame::get_crop_window() const
 size_t Frame::get_pixel_count() const
 {
     return impl->m_crop_window.volume();
+}
+
+bool Frame::is_render_stamp_enabled() const
+{
+    return impl->m_render_stamp_enabled;
+}
+
+void Frame::add_render_stamp() const
+{
+    RENDERER_LOG_INFO("adding render stamp...");
+
+    // Render stamp settings.
+    const float FontSize = 14.0f;
+    const Color4f FontColor(0.9f, 0.9f, 0.9f, 1.0f);
+    const Color4f BackgroundColor(0.0f, 0.0f, 0.0f, 0.8f);
+    const float MarginH = 6.0f;
+    const float MarginV = 4.0f;
+
+    // Compute the final string.
+    string text = impl->m_render_stamp_format;
+    text = replace(text, "{version}", Appleseed::get_synthetic_version_string());
+
+    // Compute the height in pixels of the string.
+    const CanvasProperties& props = impl->m_image->properties();
+    const float image_height = static_cast<float>(props.m_canvas_height);
+    const float text_height = TextRenderer::compute_string_height(FontSize, text.c_str());
+    const float origin_y = image_height - text_height - MarginV;
+
+    // Draw the background rectangle.
+    Drawing::draw_filled_rect(
+        *impl->m_image,
+        Vector2i(
+            0,
+            truncate<int>(origin_y - MarginV)),
+        Vector2i(
+            static_cast<int>(props.m_canvas_width - 1),
+            static_cast<int>(props.m_canvas_height - 1)),
+        BackgroundColor);
+
+    // Draw the string into the image.
+    TextRenderer::draw_string(
+        *impl->m_image,
+        ColorSpaceLinearRGB,
+        TextRenderer::Font::UbuntuL,
+        FontSize,
+        FontColor,
+        MarginH,
+        origin_y,
+        text.c_str());
 }
 
 Frame::DenoisingMode Frame::get_denoising_mode() const
@@ -787,7 +845,7 @@ void Frame::extract_parameters()
         impl->m_tile_height = static_cast<size_t>(tile_size[1]);
     }
 
-    // Retrieve reconstruction filter parameter.
+    // Retrieve reconstruction filter parameters.
     {
         const char* DefaultFilterName = "blackman-harris";
 
@@ -827,6 +885,10 @@ void Frame::extract_parameters()
         Vector2u(0, 0),
         Vector2u(impl->m_frame_width - 1, impl->m_frame_height - 1));
     impl->m_crop_window = m_params.get_optional<AABB2u>("crop_window", default_crop_window);
+
+    // Retrieve render stamp parameters.
+    impl->m_render_stamp_enabled = m_params.get_optional<bool>("enable_render_stamp", false);
+    impl->m_render_stamp_format = m_params.get_optional<string>("render_stamp_format", DefaultRenderStampFormat);
 
     // Retrieve denoiser parameters.
     {
@@ -1004,6 +1066,26 @@ DictionaryArray FrameFactory::get_input_metadata()
             .insert("visible_if",
                 Dictionary()
                     .insert("denoiser", "on")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "enable_render_stamp")
+            .insert("label", "Enable Render Stamp")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "false")
+            .insert("on_change", "rebuild_form"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "render_stamp_format")
+            .insert("label", "Render Stamp Format")
+            .insert("type", "text")
+            .insert("use", "optional")
+            .insert("default", DefaultRenderStampFormat)
+            .insert("visible_if",
+                Dictionary()
+                    .insert("enable_render_stamp", "true")));
 
     return metadata;
 }
