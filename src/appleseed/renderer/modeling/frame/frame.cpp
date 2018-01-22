@@ -35,7 +35,6 @@
 #include "renderer/kernel/aov/aovsettings.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/denoising/denoiser.h"
-#include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/modeling/aov/aovfactoryregistrar.h"
 #include "renderer/modeling/aov/denoiseraov.h"
 #include "renderer/modeling/aov/iaovfactory.h"
@@ -87,13 +86,6 @@ namespace renderer
 namespace
 {
     const UniqueID g_class_uid = new_guid();
-
-    enum class DenoiseMode
-    {
-        Off,
-        WriteOutputs,
-        Denoise
-    };
 }
 
 UniqueID Frame::get_class_uid()
@@ -103,6 +95,7 @@ UniqueID Frame::get_class_uid()
 
 struct Frame::Impl
 {
+    // Parameters.
     size_t                  m_frame_width;
     size_t                  m_frame_height;
     size_t                  m_tile_width;
@@ -111,13 +104,13 @@ struct Frame::Impl
     float                   m_filter_radius;
     unique_ptr<Filter2f>    m_filter;
     AABB2u                  m_crop_window;
+    DenoisingMode           m_denoising_mode;
+
+    // Images.
     unique_ptr<Image>       m_image;
     unique_ptr<ImageStack>  m_aov_images;
     AOVContainer            m_aovs;
     AOVContainer            m_internal_aovs;
-
-    // Denoiser.
-    DenoiseMode             m_denoise_mode;
     DenoiserAOV*            m_denoiser_aov;
 };
 
@@ -179,7 +172,7 @@ Frame::Frame(
     }
 
     // Create internal AOVs.
-    if (impl->m_denoise_mode != DenoiseMode::Off)
+    if (impl->m_denoising_mode != DenoisingMode::Off)
     {
         auto_release_ptr<DenoiserAOV> aov = DenoiserAOVFactory::create();
         impl->m_denoiser_aov = aov.get();
@@ -316,6 +309,73 @@ const AABB2u& Frame::get_crop_window() const
 size_t Frame::get_pixel_count() const
 {
     return impl->m_crop_window.volume();
+}
+
+Frame::DenoisingMode Frame::get_denoising_mode() const
+{
+    return impl->m_denoising_mode;
+}
+
+void Frame::denoise(
+    const size_t        thread_count,
+    IAbortSwitch*       abort_switch) const
+{
+    DenoiserOptions options;
+
+    options.m_prefilter_spikes = m_params.get_optional<bool>("prefilter_spikes", false);
+
+    options.m_prefilter_threshold_stdev_factor =
+        m_params.get_optional<float>(
+            "spike_threshold",
+            options.m_prefilter_threshold_stdev_factor);
+
+    options.m_histogram_patch_distance_threshold =
+        m_params.get_optional<float>(
+            "patch_distance_threshold",
+            options.m_histogram_patch_distance_threshold);
+
+    options.m_num_scales =
+        m_params.get_optional<size_t>(
+            "denoise_scales",
+            options.m_num_scales);
+
+    options.m_num_cores = thread_count;
+
+    assert(impl->m_denoiser_aov);
+
+    impl->m_denoiser_aov->fill_empty_samples();
+
+    Deepimf num_samples;
+    impl->m_denoiser_aov->extract_num_samples_image(num_samples);
+
+    Deepimf covariances;
+    impl->m_denoiser_aov->compute_covariances_image(covariances);
+
+    RENDERER_LOG_INFO("denoising beauty image...");
+    denoise_beauty_image(
+        image(),
+        num_samples,
+        impl->m_denoiser_aov->histograms_image(),
+        covariances,
+        options,
+        abort_switch);
+
+    for (size_t i = 0, e = aovs().size(); i < e; ++i)
+    {
+        const AOV* aov = aovs().get_by_index(i);
+
+        if (aov->has_color_data())
+        {
+            RENDERER_LOG_INFO("denoising %s aov...", aov->get_name());
+            denoise_aov_image(
+                aov->get_image(),
+                num_samples,
+                impl->m_denoiser_aov->histograms_image(),
+                covariances,
+                options,
+                abort_switch);
+        }
+    }
 }
 
 namespace
@@ -500,12 +560,12 @@ bool Frame::write_main_image(const char* file_path) const
     bool result = write_image(file_path, half_image, nullptr);
 
     // Write BCD histograms and covariances if enabled.
-    if (result && impl->m_denoise_mode == DenoiseMode::WriteOutputs)
+    if (result && impl->m_denoising_mode == DenoisingMode::WriteOutputs)
     {
         if (ends_with(file_path, ".exr"))
             impl->m_denoiser_aov->write_images(file_path);
         else
-            RENDERER_LOG_WARNING("denoiser outputs can only be saved to EXR images.");
+            RENDERER_LOG_ERROR("denoiser outputs can only be saved to exr images.");
     }
 
     return result;
@@ -720,16 +780,16 @@ void Frame::extract_parameters()
         Vector2u(impl->m_frame_width - 1, impl->m_frame_height - 1));
     impl->m_crop_window = m_params.get_optional<AABB2u>("crop_window", default_crop_window);
 
-    // Retrieve the denoiser parameters.
+    // Retrieve denoiser parameters.
     {
-        string denoise_mode = m_params.get_optional<string>("denoiser", "off");
+        const string denoise_mode = m_params.get_optional<string>("denoiser", "off");
 
         if (denoise_mode == "off")
-            impl->m_denoise_mode = DenoiseMode::Off;
+            impl->m_denoising_mode = DenoisingMode::Off;
         else if (denoise_mode == "on")
-            impl->m_denoise_mode = DenoiseMode::Denoise;
+            impl->m_denoising_mode = DenoisingMode::Denoise;
         else if (denoise_mode == "write_outputs")
-            impl->m_denoise_mode = DenoiseMode::WriteOutputs;
+            impl->m_denoising_mode = DenoisingMode::WriteOutputs;
         else
         {
             RENDERER_LOG_ERROR(
@@ -737,95 +797,8 @@ void Frame::extract_parameters()
                 denoise_mode.c_str(),
                 "denoiser",
                 "off");
-            impl->m_denoise_mode = DenoiseMode::Off;
+            impl->m_denoising_mode = DenoisingMode::Off;
         }
-    }
-}
-
-void Frame::denoise(
-    const size_t   thread_count,
-    ITileCallback* tile_callback,
-    IAbortSwitch*  abort_switch) const
-{
-    if (impl->m_denoise_mode != DenoiseMode::Denoise)
-        return;
-
-    // Fill denoiser options.
-    DenoiserOptions options;
-
-    options.m_prefilter_spikes = m_params.get_optional<bool>("prefilter_spikes", false);
-
-    options.m_prefilter_threshold_stdev_factor =
-        m_params.get_optional<float>(
-            "spike_threshold",
-            options.m_prefilter_threshold_stdev_factor);
-
-    options.m_histogram_patch_distance_threshold =
-        m_params.get_optional<float>(
-            "patch_distance_threshold",
-            options.m_histogram_patch_distance_threshold);
-
-    options.m_num_scales =
-        m_params.get_optional<size_t>(
-            "denoise_scales",
-            options.m_num_scales);
-
-    options.m_num_cores = thread_count;
-
-    RENDERER_LOG_INFO("--- beginning denoising pass ---");
-
-    if (tile_callback)
-    {
-        const CanvasProperties& frame_props = image().properties();
-
-        for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
-            for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
-                tile_callback->on_tile_begin(this, tx, ty);
-    }
-
-    assert(impl->m_denoiser_aov);
-
-    impl->m_denoiser_aov->fill_empty_samples();
-
-    Deepimf num_samples;
-    impl->m_denoiser_aov->extract_num_samples_image(num_samples);
-
-    Deepimf covariances;
-    impl->m_denoiser_aov->compute_covariances_image(covariances);
-
-    RENDERER_LOG_INFO("denoising beauty image...");
-    denoise_beauty_image(
-        image(),
-        num_samples,
-        impl->m_denoiser_aov->histograms_image(),
-        covariances,
-        options,
-        abort_switch);
-
-    for (size_t i = 0, e = aovs().size(); i < e; ++i)
-    {
-        const AOV* aov = aovs().get_by_index(i);
-
-        if (aov->has_color_data())
-        {
-            RENDERER_LOG_INFO("denoising %s aov...", aov->get_name());
-            denoise_aov_image(
-                aov->get_image(),
-                num_samples,
-                impl->m_denoiser_aov->histograms_image(),
-                covariances,
-                options,
-                abort_switch);
-        }
-    }
-
-    if (tile_callback)
-    {
-        const CanvasProperties& frame_props = image().properties();
-
-        for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
-            for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
-                tile_callback->on_tile_end(this, tx, ty);
     }
 }
 
@@ -923,8 +896,7 @@ DictionaryArray FrameFactory::get_input_metadata()
         Dictionary()
             .insert("name", "spike_threshold")
             .insert("label", "Spike Thereshold")
-            .insert("type", "text")
-            .insert("use", "optional")
+            .insert("type", "numeric")
             .insert("min",
                 Dictionary()
                     .insert("value", "0.1")
@@ -933,6 +905,7 @@ DictionaryArray FrameFactory::get_input_metadata()
                 Dictionary()
                     .insert("value", "4.0")
                     .insert("type", "hard"))
+            .insert("use", "optional")
             .insert("default", "2.0")
             .insert("visible_if",
                 Dictionary()
@@ -942,8 +915,7 @@ DictionaryArray FrameFactory::get_input_metadata()
         Dictionary()
             .insert("name", "patch_distance_threshold")
             .insert("label", "Patch Distance")
-            .insert("type", "text")
-            .insert("use", "optional")
+            .insert("type", "numeric")
             .insert("min",
                 Dictionary()
                     .insert("value", "0.5")
@@ -952,6 +924,7 @@ DictionaryArray FrameFactory::get_input_metadata()
                 Dictionary()
                     .insert("value", "3.0")
                     .insert("type", "hard"))
+            .insert("use", "optional")
             .insert("default", "1.0")
             .insert("visible_if",
                 Dictionary()
@@ -961,8 +934,7 @@ DictionaryArray FrameFactory::get_input_metadata()
         Dictionary()
             .insert("name", "denoise_scales")
             .insert("label", "Denoise Scales")
-            .insert("type", "text")
-            .insert("use", "optional")
+            .insert("type", "integer")
             .insert("min",
                 Dictionary()
                     .insert("value", "1")
@@ -971,6 +943,7 @@ DictionaryArray FrameFactory::get_input_metadata()
                 Dictionary()
                     .insert("value", "10")
                     .insert("type", "hard"))
+            .insert("use", "optional")
             .insert("default", "3")
             .insert("visible_if",
                 Dictionary()

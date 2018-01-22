@@ -61,7 +61,6 @@ namespace foundation    { class Tile; }
 namespace renderer      { class AOV; }
 namespace renderer      { class DenoiserAOV; }
 namespace renderer      { class ImageStack; }
-namespace renderer      { class ITileCallback; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer
@@ -133,6 +132,21 @@ class APPLESEED_DLLSYMBOL Frame
         const double    sample_x,               // x coordinate of the sample in the pixel, in [0,1)
         const double    sample_y) const;        // y coordinate of the sample in the pixel, in [0,1)
 
+    enum class DenoisingMode
+    {
+        Off,
+        WriteOutputs,
+        Denoise
+    };
+
+    // Retrieve the selected denoising mode.
+    DenoisingMode get_denoising_mode() const;
+
+    // Run the denoiser on the frame.
+    void denoise(
+        const size_t                thread_count,
+        foundation::IAbortSwitch*   abort_switch) const;
+
     // Write the main image / the AOV images to disk.
     // Return true if successful, false otherwise.
     bool write_main_image(const char* file_path) const;
@@ -153,12 +167,6 @@ class APPLESEED_DLLSYMBOL Frame
     bool archive(
         const char*     directory,
         char**          output_path = nullptr) const;
-
-    // Denoiser.
-    void denoise(
-        const size_t                thread_count,
-        ITileCallback*              tile_callback,
-        foundation::IAbortSwitch*   abort_switch) const;
 
   private:
     friend class AOVAccumulatorContainer;

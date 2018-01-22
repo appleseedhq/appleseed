@@ -45,6 +45,8 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/hash.h"
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -301,8 +303,10 @@ namespace
             {
                 set_current_thread_name("pass_manager");
 
+                // Rendering passes.
                 for (size_t pass = 0; pass < m_pass_count; ++pass)
                 {
+                    // Check abort flag.
                     if (m_abort_switch.is_aborted())
                     {
                         m_is_rendering = false;
@@ -310,7 +314,7 @@ namespace
                     }
 
                     if (m_pass_count > 1)
-                        RENDERER_LOG_INFO("--- beginning pass %s ---", pretty_uint(pass + 1).c_str());
+                        RENDERER_LOG_INFO("--- beginning rendering pass %s ---", pretty_uint(pass + 1).c_str());
 
                     // Invoke the pre-pass callback if there is one.
                     if (m_pass_callback)
@@ -349,13 +353,27 @@ namespace
                     }
                 }
 
-                // Run the denoiser if needed.
-                if (!m_abort_switch.is_aborted())
+                // Check abort flag.
+                if (m_abort_switch.is_aborted())
                 {
-                    m_frame.denoise(
-                        m_thread_count,
-                        m_tile_callbacks.empty() ? nullptr : m_tile_callbacks[0],
-                        &m_abort_switch);
+                    m_is_rendering = false;
+                    return;
+                }
+
+                // Denoising pass.
+                if (m_frame.get_denoising_mode() == Frame::DenoisingMode::Denoise)
+                {
+                    if (m_pass_count > 1)
+                        RENDERER_LOG_INFO("--- beginning denoising pass ---");
+
+                    // Call on_tile_begin() on all tiles of the frame.
+                    on_tile_begin_whole_frame();
+
+                    // Denoise the frame.
+                    m_frame.denoise(m_thread_count, &m_abort_switch);
+
+                    // Call on_tile_end() on all tiles of the frame.
+                    on_tile_end_whole_frame();
                 }
 
                 m_is_rendering = false;
@@ -374,6 +392,36 @@ namespace
             IAbortSwitch&                           m_abort_switch;
             bool&                                   m_is_rendering;
             TileJobFactory                          m_tile_job_factory;
+
+            void on_tile_begin_whole_frame()
+            {
+                if (!m_tile_callbacks.empty())
+                {
+                    ITileCallback* tile_callback = m_tile_callbacks.front();
+                    const CanvasProperties& frame_props = m_frame.image().properties();
+
+                    for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
+                    {
+                        for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
+                            tile_callback->on_tile_begin(&m_frame, tx, ty);
+                    }
+                }
+            }
+
+            void on_tile_end_whole_frame()
+            {
+                if (!m_tile_callbacks.empty())
+                {
+                    ITileCallback* tile_callback = m_tile_callbacks.front();
+                    const CanvasProperties& frame_props = m_frame.image().properties();
+
+                    for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
+                    {
+                        for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
+                            tile_callback->on_tile_end(&m_frame, tx, ty);
+                    }
+                }
+            }
         };
 
         const Frame&                m_frame;            // target framebuffer
