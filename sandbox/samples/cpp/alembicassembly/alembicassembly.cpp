@@ -238,7 +238,7 @@ namespace
             archive.getName().c_str(),
             archive.getNumTimeSamplings(),
             archive.getArchiveVersion());
-        switch(core_type)
+        switch (core_type)
         {
             case AbcCoreFac::IFactory::kHDF5:
                 RENDERER_LOG_INFO("        core type: HDF5");
@@ -284,7 +284,7 @@ namespace
 
     void log_data_type(const Abc::DataType& data_type)
     {
-        switch(data_type.getPod())
+        switch (data_type.getPod())
         {
             case AbcUtil::kBooleanPOD:
                 RENDERER_LOG_INFO("                     data type POD type: boolean");
@@ -340,7 +340,7 @@ namespace
         RENDERER_LOG_INFO("  schema sample count: " FMT_SIZE_T, schema.getNumSamples());
         RENDERER_LOG_INFO("         property count: " FMT_SIZE_T, schema.getNumProperties());
 
-        switch(schema.getTopologyVariance())
+        switch (schema.getTopologyVariance())
         {
             case AbcGeom::kConstantTopology:
                 RENDERER_LOG_INFO("         topology variance: constant (non deformed)");
@@ -363,7 +363,7 @@ namespace
             RENDERER_LOG_INFO("         property name: %s", prop_header.getName().c_str());
             //RENDERER_LOG_INFO("                  num samples: %zd", prop_header.getNumSamples());
 
-            switch(prop_header.getPropertyType())
+            switch (prop_header.getPropertyType())
             {
                 case Abc::kCompoundProperty:
                     RENDERER_LOG_INFO("                  type: compound");
@@ -661,7 +661,7 @@ namespace
 
                 if (n_param.valid())
                 {
-                    switch(n_param.getScope())
+                    switch (n_param.getScope())
                     {
                         case AbcGeom::kConstantScope:
                             std::cout << "normal kConstantScope" << std::endl;
