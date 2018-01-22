@@ -211,7 +211,8 @@ void Frame::print_settings()
         "  tile size                     %s x %s\n"
         "  filter                        %s\n"
         "  filter size                   %f\n"
-        "  crop window                   (%s, %s)-(%s, %s)",
+        "  crop window                   (%s, %s)-(%s, %s)\n"
+        "  denoising mode                %s",
         camera_name ? camera_name : "none",
         pretty_uint(impl->m_frame_width).c_str(),
         pretty_uint(impl->m_frame_height).c_str(),
@@ -222,7 +223,9 @@ void Frame::print_settings()
         pretty_uint(impl->m_crop_window.min[0]).c_str(),
         pretty_uint(impl->m_crop_window.min[1]).c_str(),
         pretty_uint(impl->m_crop_window.max[0]).c_str(),
-        pretty_uint(impl->m_crop_window.max[1]).c_str());
+        pretty_uint(impl->m_crop_window.max[1]).c_str(),
+        impl->m_denoising_mode == DenoisingMode::Off ? "off" :
+        impl->m_denoising_mode == DenoisingMode::WriteOutputs ? "write outputs" : "denoise");
 }
 
 const char* Frame::get_active_camera_name() const
