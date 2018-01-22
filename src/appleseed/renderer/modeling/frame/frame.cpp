@@ -866,7 +866,15 @@ DictionaryArray FrameFactory::get_input_metadata()
         Dictionary()
             .insert("name", "filter_size")
             .insert("label", "Filter Size")
-            .insert("type", "text")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.5")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "4.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.5"));
 
