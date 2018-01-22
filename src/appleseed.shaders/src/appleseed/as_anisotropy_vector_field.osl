@@ -53,7 +53,7 @@ shader as_anisotropy_vector_field
     [[
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
-        string label = "Front Color",
+        string label = "Field Color",
         string page = "Field"
     ]],
     int in_field_mode = 0

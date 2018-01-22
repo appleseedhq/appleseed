@@ -660,7 +660,7 @@ color transform_CIEXYZ_to_CIELAB(
     vector reference_white_CIExyY)
 {
     color white_XYZ = transform_CIExyY_to_CIEXYZ(reference_white_CIExyY);
-    color XYZ_f = linear_XYZ_color / white_XYZ, CIEXYZ;
+    color XYZ_f = linear_XYZ_color / white_XYZ, CIEXYZ = 0;
 
     for (int i = 0; i < 3; ++i)
     {
@@ -1045,36 +1045,44 @@ color transform_CIELCh_uv_to_linear_RGB(
 }
 
 //
-// CIELAB, CIELUV, have values in range L [0,100], a,b [-100,100]
-// and u,v [-100,100].
+// CIELAB, CIELUV, have values in range L [0,100], a,b [-128,128]
+// and u,v ([-134,220],[-140,122])
 //
 
 color remap_CIELAB(color CIELAB)
 {
-    float L = CIELAB[0] * 0.01;
-    float a = (CIELAB[1] + 100.0) * 0.005;
-    float b = (CIELAB[2] + 100.0) * 0.005;
+    float L = CIELAB[0] / 100.0;
+    float a = (CIELAB[1] + 128.0) / 256.0;
+    float b = (CIELAB[2] + 128.0) / 256.0;
 
     return color(L, a, b);
 }
 
 color remap_CIELUV(color CIELUV)
 {
-    return remap_CIELAB(CIELUV);
+    float L = CIELAB[0] / 100.0;
+    float u = (CIELUV[1] + 134.0) / 352.0;
+    float v = (CIELUV[2] + 140.0) / 262.0;
+
+    return color(L, u, v);
 }
 
 color inverse_remap_CIELAB(color CIELAB)
 {
     float L = CIELAB[0] * 100.0;
-    float a = CIELAB[1] * 200.0 - 100.0;
-    float b = CIELAB[2] * 200.0 - 100.0;
+    float a = CIELAB[1] * 256.0 - 128.0;
+    float b = CIELAB[2] * 256.0 - 128.0;
 
     return color(L, a, b);
 }
 
 color inverse_remap_CIELUV(color CIELUV)
 {
-    return inverse_remap_CIELAB(CIELUV);
+    float L = CIELUV[0] * 100.0;
+    float u = CIELUV[1] * 352.0 - 134.0;
+    float v = CIELUV[2] * 262.0 + 140.0;
+
+    return color(L, u, v);
 }
 
 //
