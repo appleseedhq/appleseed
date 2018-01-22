@@ -70,6 +70,23 @@ source_group ("foundation\\core" FILES
     ${foundation_core_sources}
 )
 
+set (foundation_image_text_sources
+    foundation/image/text/stb_truetype.cpp
+    foundation/image/text/stb_truetype.h
+    foundation/image/text/textrenderer.cpp
+    foundation/image/text/textrenderer.h
+    foundation/image/text/ubuntu_l_ttf.cpp
+    foundation/image/text/ubuntu_l_ttf.h
+    foundation/image/text/ubuntu_m_ttf.cpp
+    foundation/image/text/ubuntu_m_ttf.h
+)
+list (APPEND appleseed_sources
+    ${foundation_image_text_sources}
+)
+source_group ("foundation\\image\\text" FILES
+    ${foundation_image_text_sources}
+)
+
 set (foundation_image_sources
     foundation/image/analysis.cpp
     foundation/image/analysis.h
