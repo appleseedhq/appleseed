@@ -1080,7 +1080,7 @@ color inverse_remap_CIELUV(color CIELUV)
 {
     float L = CIELUV[0] * 100.0;
     float u = CIELUV[1] * 352.0 - 134.0;
-    float v = CIELUV[2] * 262.0 + 140.0;
+    float v = CIELUV[2] * 262.0 - 140.0;
 
     return color(L, u, v);
 }
