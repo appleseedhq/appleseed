@@ -91,7 +91,7 @@ namespace
     // Roll into given xform sequence stack and return the flatten one.
     asr::TransformSequence flatten_xform_seq(const std::vector<asr::TransformSequence>& xform_seq_stack)
     {
-        assert(xform_seq_stack.size() > 0);
+        assert(!xform_seq_stack.empty());
 
         if (xform_seq_stack.size() == 1)
         {
