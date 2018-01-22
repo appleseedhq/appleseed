@@ -269,8 +269,7 @@ shader as_disney_material
     normal Nn = normalize(in_bump_normal);
     vector tangent = Tn;
 
-    if (max(in_specular_amount * in_specular_tint) > 0.0 &&
-        in_anisotropy_amount > 0.0)
+    if (max(in_specular_amount) > 0.0 && in_anisotropy_amount > 0.0)
     {
         if (isconnected(in_anisotropy_vector_map))
         {
