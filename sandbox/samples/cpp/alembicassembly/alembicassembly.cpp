@@ -134,7 +134,7 @@ namespace
         // Get each sample time and compare with a linearly sampled time.
         for (const AbcChrono_t t : samples)
         {
-            if (asf::feq(t, t_accum))
+            if (!asf::feq(t, t_accum))
             {
                 return false;
             }
