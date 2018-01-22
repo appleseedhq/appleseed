@@ -169,14 +169,14 @@ namespace
         }
         else  // More than 1 sample.
         {
-            // Get floor and ceil sample indices to don't miss any.
+            // Get floor and ceil sample indices to not miss any.
             const std::pair<AbcIndex_t, AbcChrono_t>& open_pair =
                 time_sampling->getFloorIndex(shutter_open, num_samples);
 
             const std::pair<AbcIndex_t, AbcChrono_t>& close_pair =
                 time_sampling->getCeilIndex(shutter_close, num_samples);
 
-            sample_indices.reserve(close_pair.first-open_pair.first+1);
+            sample_indices.reserve(close_pair.first-open_pair.first + 1);
 
             // Get _every_ sample indices between open and close.
             for (AbcIndex_t i = open_pair.first; i <= close_pair.first; i++)
@@ -220,7 +220,7 @@ namespace
             const auto mtx = asf::Matrix4d(abc_mtx);
             const auto xform = asf::Transformd::from_local_to_parent(mtx);
 
-            // As all samples are time offsetted, we offset them back.
+            // As all samples are time offset, we offset them back.
             xform_seq.set_transform(t-time_offset, xform);
         }
 
@@ -270,7 +270,7 @@ namespace
 
         if (metadata.size())
         {
-            for (const std::pair<std::string, std::string>& it : metadata)
+            for (const auto& it : metadata)
             {
                 const std::string& key   = it.first;
                 const std::string& value = it.second;
@@ -484,7 +484,7 @@ namespace
 
             if (children_count)
             {
-                for (size_t i = 0; i < root.getNumChildren(); i++)
+                for (size_t i = 0, e = root.getNumChildren(); i < e; i++)
                 {
                     const Abc::IObject& child = root.getChild(i);
                     walk(child);
@@ -1173,7 +1173,6 @@ namespace
         }
 
       private:
-
         const char* Model = "alembic_assembly";
 
     };
@@ -1368,9 +1367,7 @@ namespace
 
             if (xform_seq_stack.size())
             {
-                const asr::TransformSequence xform_seq = flatten_xform_seq(xform_seq_stack);
-
-                m_camera->transform_sequence() = xform_seq;
+                m_camera->transform_sequence() = flatten_xform_seq(xform_seq_stack);
             }
 
             // Of course, we don't forget to call the camera method.
@@ -1451,8 +1448,7 @@ namespace
             return
                 asf::Dictionary()
                     .insert("name", Model)
-                    .insert("label", "Alembic Camera")
-                    .insert("default_model", "true");
+                    .insert("label", "Alembic Camera");
         }
 
         // Return metadata for the inputs of this camera model.
@@ -1503,7 +1499,6 @@ namespace
         }
 
       private:
-
         const char* Model = "alembic_camera";
     };
 
