@@ -31,84 +31,39 @@
 #define APPLESEED_FOUNDATION_IMAGE_DRAWING_H
 
 // appleseed.foundation headers.
-#include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
-#include "foundation/image/image.h"
 #include "foundation/math/vector.h"
 
-// Standard headers.
-#include <cstddef>
+// Forward declarations.
+namespace foundation { class Image; }
 
 namespace foundation
 {
 
 //
-// A collection of drawing functions.
+// A collection of simple, unoptimized drawing routines.
+//
+// Supported:
+//   - RGBA images
+//   - Any pixel format
+//   - Pixel format conversions
+//   - Any number of channels
+//   - Clipping
+//
+// Not supported:
+//   - Non-RGBA images
+//   - Color space conversions (image and pixel color spaces must match)
 //
 
 class Drawing
 {
   public:
     // Draw an antialiased 4x4 pixel dot.
-    template <typename T, size_t N>
     static void draw_dot(
         Image&              image,
         const Vector2d&     position,
-        const Color<T, N>&  color);
+        const Color4f&      color);
 };
-
-
-//
-// Drawing class implementation.
-//
-
-template <typename T, size_t N>
-void Drawing::draw_dot(
-    Image&                  image,
-    const Vector2d&         position,
-    const Color<T, N>&      color)
-{
-    static size_t DotIntensity[16] =
-    {
-         24, 171, 178,  48,
-        159, 255, 255, 207,
-        183, 255, 255, 231,
-         64, 227, 241, 112
-    };
-
-    const CanvasProperties& props = image.properties();
-
-    const int w = static_cast<int>(props.m_canvas_width);
-    const int h = static_cast<int>(props.m_canvas_height);
-
-    const int cx = static_cast<int>(position.x * props.m_canvas_width);
-    const int cy = static_cast<int>(position.y * props.m_canvas_height);
-
-    for (int y = 0; y < 4; ++y)
-    {
-        for (int x = 0; x < 4; ++x)
-        {
-            const int ix = cx + x - 2;
-            const int iy = cy + y - 2;
-
-            if (ix >= 0 && iy >= 0 && ix < w && iy < h)
-            {
-                const T intensity = DotIntensity[y * 4 + x] * T(1.0 / 255.0);
-
-                Color<T, N> background;
-                image.get_pixel(
-                    static_cast<size_t>(ix),
-                    static_cast<size_t>(iy),
-                    background);
-
-                image.set_pixel(
-                    static_cast<size_t>(ix),
-                    static_cast<size_t>(iy),
-                    background * (T(1.0) - intensity) + color * intensity);
-            }
-        }
-    }
-}
 
 }       // namespace foundation
 
