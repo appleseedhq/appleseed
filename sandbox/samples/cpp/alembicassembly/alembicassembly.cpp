@@ -260,13 +260,13 @@ namespace
     void log_obj(const Abc::IObject& obj)
     {
         RENDERER_LOG_INFO("%s\n"
-                          "  children count: %zd",
+                          "  children count: " FMT_SIZE_T,
             obj.getFullName().c_str(),
             obj.getNumChildren());
 
         const Abc::MetaData& metadata = obj.getMetaData();
 
-        RENDERER_LOG_INFO("  metadata size: %zd", metadata.size());
+        RENDERER_LOG_INFO("  metadata size: " FMT_SIZE_T, metadata.size());
 
         if (metadata.size())
         {
@@ -337,8 +337,8 @@ namespace
 
     void log_polymesh_schema(const AbcGeom::IPolyMeshSchema& schema)
     {
-        RENDERER_LOG_INFO("  schema sample count: %zd", schema.getNumSamples());
-        RENDERER_LOG_INFO("         property count: %zd", schema.getNumProperties());
+        RENDERER_LOG_INFO("  schema sample count: " FMT_SIZE_T, schema.getNumSamples());
+        RENDERER_LOG_INFO("         property count: " FMT_SIZE_T, schema.getNumProperties());
 
         switch(schema.getTopologyVariance())
         {
