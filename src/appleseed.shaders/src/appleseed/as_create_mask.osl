@@ -175,7 +175,7 @@ shader as_create_mask
         // Once the working/rendering space information is added, we update
         // the RGB primaries and whitepoint. Use defaults for now.
 
-        color cielab = cie_remap(transform_linear_RGB_to_CIELAB(
+        color cielab = remap_CIELAB(transform_linear_RGB_to_CIELAB(
             in_color,
             "Rec.709",
             "D65"));
