@@ -61,7 +61,7 @@
 
 namespace
 {
-    // shortcuts to save space
+    // Shortcuts to save space.
     namespace asf = foundation;
     namespace asr = renderer;
 
@@ -73,13 +73,13 @@ namespace
     typedef Alembic::Abc::index_t  AbcIndex_t;
     typedef Alembic::Abc::chrono_t AbcChrono_t;
 
-    // roll into given matrix stack and return the flatten one
+    // Roll into given matrix stack and return the flatten one.
     asf::Matrix4d flatten_xform(const std::vector<asf::Matrix4d>& mtx_stack)
     {
-        // the matrix we will return
+        // The matrix we will return.
         asf::Matrix4d out_mtx = asf::Matrix4d::identity();
 
-        // multiply the each matrix of the stack from bottom to top
+        // Multiply the each matrix of the stack from bottom to top.
         for (const asf::Matrix4d& mtx : mtx_stack)
         {
             out_mtx = mtx * out_mtx;
@@ -88,7 +88,7 @@ namespace
         return out_mtx;
     }
 
-    // roll into given xform sequence stack and return the flatten one
+    // Roll into given xform sequence stack and return the flatten one.
     asr::TransformSequence flatten_xform_seq(const std::vector<asr::TransformSequence>& xform_seq_stack)
     {
         assert(xform_seq_stack.size() > 0);
@@ -115,7 +115,7 @@ namespace
         }
     }
 
-    // return if given time samples are linearly time spaced between start_time
+    // Return if given time samples are linearly time spaced between start_time
     // and end_time.
     const bool are_linearly_sampled(const AbcChrono_t start_time,
                                     const AbcChrono_t end_time,
@@ -123,14 +123,14 @@ namespace
     {
         assert(samples.size() > 1);
 
-        // compute time supposed to be between each samples if samples are
+        // Compute time supposed to be between each samples if samples are
         // linearly sampled.
         const AbcChrono_t increm = (end_time - start_time) / (samples.size()-1);
 
-        // start sample
+        // Start sample.
         AbcChrono_t t_accum = samples[0];
 
-        // get each sample time and compare with a linearly sampled time
+        // Get each sample time and compare with a linearly sampled time.
         for (const AbcChrono_t t : samples)
         {
             if (asf::feq(t, t_accum))
@@ -144,7 +144,7 @@ namespace
     }
 
 
-    // return sample indices (with border samples) in given shutter
+    // Return sample indices (with border samples) in given shutter.
     //                           open          close
     // shutter times       ---------|--------------|------------->
     //                  (floor)  ,<-'              '-->,  (ceil)
@@ -157,17 +157,17 @@ namespace
     {
         assert(shutter_open <= shutter_close);
 
-        // the index array we will return
+        // The index array we will return.
         std::vector<AbcIndex_t> sample_indices;
 
         if (num_samples < 2)
         {
-            // no sample, put the main sample (sample 0)
+            // No sample, put the main sample (sample 0).
             sample_indices.push_back(0);
         }
-        else  // more than 1 sample
+        else  // More than 1 sample.
         {
-            // get floor and ceil sample indices to don't miss any
+            // Get floor and ceil sample indices to don't miss any.
             const std::pair<AbcIndex_t, AbcChrono_t>& open_pair =
                 time_sampling->getFloorIndex(shutter_open, num_samples);
 
@@ -176,7 +176,7 @@ namespace
 
             sample_indices.reserve(close_pair.first-open_pair.first+1);
 
-            // get _every_ sample indices between open and close
+            // Get _every_ sample indices between open and close.
             for (AbcIndex_t i = open_pair.first; i <= close_pair.first; i++)
             {
                 sample_indices.push_back(i);
@@ -185,7 +185,7 @@ namespace
         return sample_indices;
     }
 
-    // extract an appleseed xform sequence from given alembic xform schema
+    // Extract an appleseed xform sequence from given alembic xform schema.
     asr::TransformSequence extract_xform_seq(
             const AbcGeom::IXformSchema& schema,
             const AbcChrono_t shutter_open,
@@ -197,35 +197,35 @@ namespace
 
         const Abc::TimeSamplingPtr time_sampling = schema.getTimeSampling();
 
-        // find samples in shutter
+        // Find samples in shutter.
         const auto sample_indices = schema_to_sample_times(
             shutter_open  + time_offset,
             shutter_close + time_offset,
             schema.getNumSamples(),
             time_sampling);
 
-        // create and return the xform sequence from sample founds.
+        // Create and return the xform sequence from sample founds.
         asr::TransformSequence xform_seq;
 
         for (const AbcIndex_t i : sample_indices)
         {
-            // time
+            // Time.
             const AbcChrono_t t = time_sampling->getSampleTime(i);
 
-            // alembic xform -> appleseed xform
+            // Convert alembic xform to appleseed xform.
             const auto sample = schema.getValue(i);
             const auto abc_mtx = sample.getMatrix();
             const auto mtx = asf::Matrix4d(abc_mtx);
             const auto xform = asf::Transformd::from_local_to_parent(mtx);
 
-            // as all samples are time offsetted, we offset them back
+            // As all samples are time offsetted, we offset them back.
             xform_seq.set_transform(t-time_offset, xform);
         }
 
         return xform_seq;
     }
 
-    // log information for given alembic archive
+    // Log information for given alembic archive.
     void log_archive(Abc::IArchive& archive,
                      AbcCoreFac::IFactory::CoreType core_type)
     {
@@ -250,11 +250,11 @@ namespace
                 RENDERER_LOG_WARNING("        core type: Unknown");
                 break;
             default:
-                break;  // this should never happen (tm)
+                break;  // This should never happen (tm).
         }
     }
 
-    // log information for given alembic object
+    // Log information for given alembic object.
     void log_obj(const Abc::IObject& obj)
     {
         RENDERER_LOG_INFO("%s\n"
@@ -413,11 +413,11 @@ namespace
             asf::IAbortSwitch*      abort_switch = 0) override
         {
             ///////////////////////////////////////////////////////////////////
-            // retrieve assembly parameters
+            // Retrieve assembly parameters.
             ///////////////////////////////////////////////////////////////////
             const auto params = get_parameters();
 
-            // file path
+            // File path.
             m_file_path = params.get<std::string>("file_path");
 
             if (m_file_path.empty())
@@ -426,14 +426,14 @@ namespace
                 return false;
             }
 
-            // shutters
+            // Shutters.
             m_shutter_open = params.get_optional<float>("shutter_open_time", 0.0f);
             m_shutter_close = params.get_optional<float>("shutter_close_time", 0.0f);
 
-            // time offset
+            // Time offset.
             m_time_offset = params.get_optional<float>("time_offset", 0.0f);
 
-            // verbose mode
+            // Verbose mode.
             m_verbose = params.get_optional<bool>("verbose", false);
 
             if (m_verbose)
@@ -466,7 +466,7 @@ namespace
 
             m_xform_seq_stack.push_back(asr::TransformSequence());
 
-            // retrieve archive root object
+            // Retrieve archive root object.
             const Abc::IObject& root = archive.getTop();
 
             if (!root.valid())
@@ -478,7 +478,7 @@ namespace
             if (m_verbose)
                 log_obj(root);
 
-            // root children
+            // Root children.
             const size_t children_count = root.getNumChildren();
 
             if (children_count)
@@ -500,14 +500,14 @@ namespace
 
       private:
 
-        // the recursive method entering every children of the tree and keep a
+        // The recursive method entering every children of the tree and keep a
         // xform stack.
         void walk(const Abc::IObject& obj)
         {
             if (!obj.valid())
             {
                 RENDERER_LOG_WARNING("invalid object detected!");
-                return;  // stop here
+                return;  // Stop here.
             }
 
             if (m_verbose)
@@ -517,7 +517,7 @@ namespace
 
             const Abc::ObjectHeader& h = obj.getHeader();
 
-            // we track if a xform sequence has been generated or not to remove
+            // We track if a xform sequence has been generated or not to remove
             // it after we reached every children.
             bool gen_xform = false;
 
@@ -562,7 +562,7 @@ namespace
                                                                  schema.getNumSamples(),
                                                                  schema.getTimeSampling());
 
-                // compute appleseed number of motion segment
+                // Compute appleseed number of motion segment
                 const auto motion_segment_count = sample_times.size() - 1;
 
                 /*if (motion_segment_count &&
@@ -583,7 +583,7 @@ namespace
                 as_obj->set_motion_segment_count(motion_segment_count);
 
                 ///////////////////////////////////////////////////////////////
-                // vertex positions
+                // Vertex positions.
                 ///////////////////////////////////////////////////////////////
                 size_t mb_segment_id = 0;
 
@@ -594,18 +594,18 @@ namespace
                     const auto pos = sample.getPositions()->get();
                     const auto pos_count = sample.getPositions()->size();
 
-                    // reserve space to optimize allocation
+                    // Reserve space to optimize allocation.
                     as_obj->reserve_vertices(pos_count);
 
                     for (auto i = 0; i < pos_count; i++)
                     {
                         const asr::GVector3 v(pos[i][0], pos[i][1], pos[i][2]);
 
-                        if (mb_segment_id == 0)  // first sample
+                        if (mb_segment_id == 0)  // First sample.
                         {
                             as_obj->push_vertex(v);
                         }
-                        else  // all other samples
+                        else  // All other samples.
                         {
                             as_obj->set_vertex_pose(i, mb_segment_id-1, v);
                         }
@@ -615,9 +615,9 @@ namespace
                 }
 
                 ///////////////////////////////////////////////////////////////
-                // uvs
+                // UVs.
                 ///////////////////////////////////////////////////////////////
-                std::vector<size_t> uv_idxs;  // uv indices
+                std::vector<size_t> uv_idxs;  // UV indices.
 
                 const auto uv_param = schema.getUVsParam();
                 if (uv_param.valid())
@@ -625,7 +625,7 @@ namespace
                     auto uv_sample = uv_param.getIndexedValue();
                     if (uv_sample.valid())
                     {
-                        // retrieve uv indices
+                        // Retrieve UV indices.
                         const auto abc_uv_idxs = uv_sample.getIndices()->get();
                         const auto uv_idxs_count = uv_sample.getIndices()->size();
 
@@ -636,11 +636,11 @@ namespace
                             uv_idxs.push_back(abc_uv_idxs[i]);
                         }
 
-                        // uv vectors
+                        // UV vectors.
                         const auto uvs = uv_sample.getVals()->get();
                         const auto uv_count = uv_sample.getVals()->size();
 
-                        // and reserve for optimization purpose
+                        // Reserve for optimization purpose.
                         as_obj->reserve_tex_coords(uv_count);
 
                         for (auto i = 0; i < uv_count; ++i)
@@ -652,9 +652,9 @@ namespace
                 }
 
                 ///////////////////////////////////////////////////////////////
-                // normals
+                // Normals.
                 ///////////////////////////////////////////////////////////////
-                std::vector<size_t> n_idxs;  // normal indices
+                std::vector<size_t> n_idxs;  // Normal indices.
 
                 const auto n_param = schema.getNormalsParam();
 
@@ -672,11 +672,11 @@ namespace
                             std::cout << "normal kVaryingScope" << std::endl;
                             break;
                         case AbcGeom::kVertexScope:
-                            // normal indices match vertex one
+                            // Normal indices match vertex one.
                             std::cout << "normal kVertexScope" << std::endl;
                             break;
                         case AbcGeom::kFacevaryingScope:
-                            // normals have their own indices
+                            // Normals have their own indices.
                             std::cout << "normal kFacevaryingScope" << std::endl;
                             break;
                         case AbcGeom::kUnknownScope:
@@ -691,14 +691,14 @@ namespace
                     for (const AbcIndex_t i : sample_times)
                     {
                         auto n_sample = n_param.getIndexedValue();
-                        //auto sample = n_param.getExpandedValue();  // todo use this depending on the scope
+                        //auto sample = n_param.getExpandedValue();  // TODO use this depending on the scope.
                         if (n_sample.valid())
                         {
-                            // retrieve normal indices
+                            // Retrieve normal indices.
                             const auto abc_n_idxs = n_sample.getIndices()->get();
                             const auto n_idxs_count = n_sample.getIndices()->size();
 
-                            // should be same size as vertices
+                            // Should be same size as vertices.
                             n_idxs.reserve(n_idxs_count);
 
                             for (auto i = 0; i < n_idxs_count; i++)
@@ -706,21 +706,21 @@ namespace
                                 n_idxs.push_back(abc_n_idxs[i]);
                             }
 
-                            // normal vectors
+                            // Normal vectors.
                             const auto normals = n_sample.getVals()->get();
                             const auto n_count = n_sample.getVals()->size();
 
-                            // reserve space to optimize allocation
+                            // Reserve space to optimize allocation.
                             as_obj->reserve_vertex_normals(n_count);
 
-                            if (mb_segment_id == 0)  // first sample
+                            if (mb_segment_id == 0)  // First sample.
                             {
                                 for (auto i = 0; i < n_count; ++i)
                                 {
                                     as_obj->push_vertex_normal(normals[i]);
                                 }
                             }
-                            else  // other samples are put in motion poses
+                            else  // Other samples are put in motion poses.
                             {
                                 for (auto i = 0; i < n_count; ++i)
                                 {
@@ -733,35 +733,35 @@ namespace
                 }
 
                 ///////////////////////////////////////////////////////////////
-                // triangles
+                // Triangles.
                 ///////////////////////////////////////////////////////////////
                 const AbcGeom::IPolyMeshSchema::Sample& sample = schema.getValue(0);
 
                 const Abc::Int32ArraySamplePtr face_count_ptr = sample.getFaceCounts();  // [3,4,4,3,...]
-                const int32_t*                 face_sizes = face_count_ptr->get();  // access raw pointer
+                const int32_t*                 face_sizes = face_count_ptr->get();  // Access raw pointer.
                 const size_t                   face_count = face_count_ptr->size();
 
                 const auto face_indices = sample.getFaceIndices()->get();
                 //const size_t                     face_indices_count = face_indices.size();
 
-                // compute the number of triangles to reserve proper space
+                // Compute the number of triangles to reserve proper space.
                 size_t tri_count = 0;
                 for (size_t i = 0; i < face_count; i++)
                 {
                     tri_count += face_sizes[i] - 2;
                 }
 
-                // and reserve for optimization purpose
+                // Reserve for optimization purpose.
                 as_obj->reserve_triangles(tri_count);
 
-                // iterators
-                size_t f_i = 0;  // face indices
-                size_t n_i = 0;  // normal indices
-                size_t uv_i = 0;  // uv indices
+                // Iterators.
+                size_t f_i = 0;  // Face indices.
+                size_t n_i = 0;  // Normal indices.
+                size_t uv_i = 0;  // UV indices.
 
                 for (auto i = 0; i < face_count; i++)
                 {
-                    // 3 or 4, maybe more
+                    // 3 or 4, maybe more.
                     const auto face_size = face_sizes[i];
 
                     if (face_size < 3)
@@ -849,18 +849,18 @@ namespace
                         as_obj->push_triangle(tri0);
                         as_obj->push_triangle(tri1);
                     }
-                    else  // arbitrary sized polygon
+                    else  // Arbitrary sized polygon.
                     {
-                        // we create a polygon and will store it's various
+                        // We create a polygon and will store it's various
                         // positions.
                         asf::Triangulator<float>::Polygon3 polygon;
 
                         for (auto j = 0; j < face_size; j++)
                         {
-                            // get vertex id
+                            // Get vertex id.
                             const auto id = face_indices[f_i++];
 
-                            // put the vertex position to the polygon
+                            // Put the vertex position to the polygon.
                             polygon.emplace_back(as_obj->get_vertex(id));
                         }
 
@@ -903,11 +903,11 @@ namespace
                                     tri.m_a2 = uv1;
                                 }
 
-                                // and finally push the triangle
+                                // And finally push the triangle.
                                 as_obj->push_triangle(tri);
                             }
 
-                            // important step, increment iterators
+                            // Important step, increment iterators.
                             if (!n_idxs.empty())
                                 n_i += face_size;
 
@@ -929,7 +929,7 @@ namespace
                 // Create an instance of the assembly.
                 asf::auto_release_ptr<asr::Assembly> xform_assembly(
                     asr::AssemblyFactory().create(  // TODO: Do I really have to instanciate AssemblyFactory?
-                        (obj_name+"_assembly").c_str(),  // assembly instance
+                        (obj_name+"_assembly").c_str(),  // Assembly instance.
                         asr::ParamArray()));
 
                 // Insert the object into the assembly.
@@ -939,16 +939,16 @@ namespace
                 // Create an instance of this object and insert it into the assembly.
                 xform_assembly->object_instances().insert(
                     asr::ObjectInstanceFactory::create(
-                        (obj_name+"_inst").c_str(), // instance name
+                        (obj_name+"_inst").c_str(), // Instance name.
                         asr::ParamArray(),
-                        obj_name.c_str(), // object name
+                        obj_name.c_str(), // Object name.
                         asf::Transformd::identity(),
                         front_material_mappings));
 
                 // Create an instance of the assembly.
                 asf::auto_release_ptr<asr::AssemblyInstance> xform_assembly_inst(
                     asr::AssemblyInstanceFactory::create(
-                        (obj_name+"_assembly_inst").c_str(),  // assembly instance
+                        (obj_name+"_assembly_inst").c_str(),  // Assembly instance.
                         asr::ParamArray(),
                         (obj_name+"_assembly").c_str()));
 
@@ -962,9 +962,9 @@ namespace
                 this->assemblies().insert(xform_assembly);
                 this->assembly_instances().insert(xform_assembly_inst);
 
-            }  // IPolyMesh
+            }  // IPolyMesh.
 
-            // iterate over children
+            // Iterate over children.
             for (size_t i = 0; i < obj.getNumChildren(); i++)
             {
                 const Abc::IObject& child = obj.getChild(i);
@@ -973,7 +973,7 @@ namespace
 
             if (gen_xform)
             {
-                // remove the bottom transform as we move up
+                // Remove the bottom transform as we move up.
                 m_xform_seq_stack.pop_back();
             }
         }
@@ -989,7 +989,7 @@ namespace
     };
 
 
-    // returned alpha is a factor between floor and ceil index (0.0 is floor,
+    // Returned alpha is a factor between floor and ceil index (0.0 is floor,
     // 1.0 if ceil).
     float get_weight_and_index(
         const float time,
@@ -1001,7 +1001,7 @@ namespace
         if (num_samples == 0)
             num_samples = 1;
 
-        // find floor sample index
+        // Find floor sample index.
         std::pair<AbcIndex_t,
                   AbcChrono_t> floor_pair =
             time_sample->getFloorIndex(time, num_samples);
@@ -1014,7 +1014,7 @@ namespace
         if (asf::feq(time, floor_time))
             return 0.0f;
 
-        // find ceil sample index
+        // Find ceil sample index.
         std::pair<AbcIndex_t,
                   AbcChrono_t> ceil_pair =
             time_sample->getCeilIndex(time, num_samples);
@@ -1028,7 +1028,7 @@ namespace
 
         float alpha = (time - floor_time) / (ceil_time - floor_time);
 
-        // we so closely match the ceiling so we'll just use it
+        // We so closely match the ceiling so we'll just use it.
         if (asf::feq(alpha, 1.0f))
         {
             floor_index = ceil_index;
@@ -1039,7 +1039,7 @@ namespace
     }
 
 
-    // move from given obj to the root storing every xform then return them as
+    // Move from given obj to the root storing every xform then return them as
     // a sequence array (returned array can be empty).
     std::vector<asr::TransformSequence> xform_seq_for_obj(
         const AbcGeom::IObject& obj,
@@ -1047,10 +1047,10 @@ namespace
         const AbcChrono_t shutter_close,
         const AbcChrono_t time_offset = 0.0f)
     {
-        // xform sequence stack we will return
+        // Xform sequence stack we will return.
         std::vector<asr::TransformSequence> xform_seq_stack;
 
-        // start of the reverse recursion
+        // Start of the reverse recursion.
         AbcGeom::IObject cur_obj = obj;
 
         while (cur_obj.valid())
@@ -1076,13 +1076,13 @@ namespace
                 }
             }
 
-            // move to parent
+            // Move to parent.
             cur_obj = cur_obj.getParent();
         }
 
         if (xform_seq_stack.size())
         {
-            // as we moved from bottom (object) to top (root), we have to
+            // As we moved from bottom (object) to top (root), we have to
             // revert the xform stack before return it.
             std::reverse(std::begin(xform_seq_stack), std::end(xform_seq_stack));
         }
@@ -1090,12 +1090,12 @@ namespace
         return xform_seq_stack;
     }
 
-    // return object in given archive from given path
+    // Return object in given archive from given path.
     const bool path_to_obj(const Abc::IArchive& archive,
                            const std::string& path,
                            Abc::IObject& obj)
     {
-        // retrieve root of the hierarchy
+        // Retrieve root of the hierarchy.
         Abc::IObject cur_obj = archive.getTop();
 
         std::vector<std::string> obj_names;
@@ -1121,7 +1121,7 @@ namespace
 
                 if (child.getName() == obj_name)
                 {
-                    // we have a winner!
+                    // We have a winner!
                     cur_obj = child;
                     found = true;
                     break;
@@ -1228,10 +1228,10 @@ namespace
                 return false;
             }
 
-            // retrieve alembic camera parameters
+            // Retrieve alembic camera parameters.
             const asr::ParamArray& params = get_parameters();
 
-            // shutters
+            // Shutters.
             float shutter_open = params.get_optional<float>("shutter_open_time", 0.0f);
             float shutter_close = params.get_optional<float>("shutter_close_time", 1.0f);
 
@@ -1245,10 +1245,10 @@ namespace
                         shutter_close, shutter_open, get_path().c_str());
             }
 
-            // time offset
+            // Time offset.
             const float time_offset = params.get_optional<float>("time_offset", 0.0f);
 
-            // alembic archive
+            // Alembic archive.
             AbcCoreFac::IFactory factory;
             AbcCoreFac::IFactory::CoreType core_type;
 
@@ -1262,13 +1262,13 @@ namespace
 
             Abc::IObject cam_obj;
 
-            // find alembic object at given path
+            // Find alembic object at given path.
             if (!path_to_obj(archive, m_obj_path, cam_obj))
             {
                 return false;
             }
 
-            // we have our object, check its a camera
+            // We have our object, check its a camera.
             if (!AbcGeom::ICamera::matches(cam_obj.getHeader()))
             {
                 RENDERER_LOG_ERROR("not a camera; '%s'", cam_obj.getFullName().c_str());
@@ -1276,17 +1276,17 @@ namespace
             }
 
             ///////////////////////////////////////////////////////////////////
-            // Static values
+            // Static values.
             ///////////////////////////////////////////////////////////////////
             const auto abc_cam = AbcGeom::ICamera(cam_obj);
 
             const AbcGeom::ICameraSchema& cam_schema = abc_cam.getSchema();
 
-            // we need middle shutter to find the best value for non-motion
+            // We need middle shutter to find the best value for non-motion
             // blurred variables.
             const float mid_shutter_time = (0.5f * (shutter_open+shutter_close))+time_offset;
 
-            // get floor and ceil sample indices from mid shutter
+            // Get floor and ceil sample indices from mid shutter.
             AbcIndex_t floor_index;
             AbcIndex_t ceil_index;
 
@@ -1297,14 +1297,14 @@ namespace
                 floor_index,
                 ceil_index);
 
-            // now get floor and ceil samples
+            // Now get floor and ceil samples.
             AbcGeom::CameraSample floor_sample;
             AbcGeom::CameraSample ceil_sample;
 
             cam_schema.get(floor_sample, floor_index);
             cam_schema.get(ceil_sample, ceil_index);
 
-            // and interpolate sample camera values
+            // And interpolate sample camera values.
             const float mid_focal_length = asf::lerp<float>(
                 floor_sample.getFocalLength(),
                 ceil_sample.getFocalLength(),
@@ -1330,7 +1330,8 @@ namespace
                 ceil_sample.getVerticalAperture(),
                 alpha);
 
-            // maya related
+            // Maya related. TODO: This has a purpose, we have to find which
+            // one.
             /*const float mid_aspect_ratio = asf::lerp<float>(
                 floor_sample.getLensSqueezeRatio(),
                 ceil_sample.getLensSqueezeRatio(),
@@ -1354,9 +1355,9 @@ namespace
             cam_params.insert("shutter_close_time", shutter_close);
 
             ///////////////////////////////////////////////////////////////////
-            // xform
+            // Xform.
             ///////////////////////////////////////////////////////////////////
-            // generate xform sequence stack from our camera
+            // Generate xform sequence stack from our camera.
             const std::vector<asr::TransformSequence> xform_seq_stack = xform_seq_for_obj(
                 cam_obj,
                 shutter_open,
@@ -1370,7 +1371,7 @@ namespace
                 m_camera->transform_sequence() = xform_seq;
             }
 
-            // of course, we don't forget to call the camera method
+            // Of course, we don't forget to call the camera method.
             return m_camera->on_render_begin(project, abort_switch);
         }
 
