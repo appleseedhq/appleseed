@@ -65,17 +65,28 @@ namespace {
         const BSDF*             m_bsdf;
         const void*             m_bsdf_data;
         Basis3f                 m_shading_basis;
-        double                  m_pdf;
-        //ShadingPoint			m_shading_point;
+        double                  m_fwd_pdf;
+        double                  m_rev_pdf;
+        Spectrum                m_Le = Spectrum(0.0);
 
         ///TODO:: create a proper constructor
+
+        double convertDensity(double pdf, const BDPTVertex& vertex)
+        {
+            Vector3d w = vertex.m_position - m_position;
+            double dist2 = foundation::square_norm(w);
+            if (dist2 == 0) return 0.0;
+            double invDist2 = 1 / dist2;
+            pdf *= std::max(foundation::dot(vertex.m_geometric_normal, w * std::sqrt(invDist2)), 0.0);
+            return pdf * invDist2;
+        }
     };
 
     class BDPTLightingEngine
       : public ILightingEngine
     {
       public:
-        const unsigned int maxbounces = 8;
+        const unsigned int num_max_vertices = 5;
         struct Parameters
         {
             explicit Parameters(const ParamArray& params)
@@ -145,84 +156,71 @@ namespace {
         }
 
         void Connect(
-            const ShadingContext&   shading_context,
-            const ShadingPoint&     shading_point,
-            const BDPTVertex&       camera_vertex,
-            unsigned int            camera_bounce,
-            const BDPTVertex&       light_vertex,
-            unsigned int            light_bounce,
-            ShadingComponents&      radiance)
+            const ShadingContext&               shading_context,
+            const ShadingPoint&                 shading_point,
+            const std::vector<BDPTVertex>       &light_vertices,
+            const std::vector<BDPTVertex>       &camera_vertices,
+            unsigned int                        s,
+            unsigned int                        t,
+            ShadingComponents&                  radiance)
         {
-            if (camera_bounce == 0)         // splat the light beta on camera
+            // camera subpath is a complete path
+            if (s == 0)
             {
-                /// TODO:: implement
+                const BDPTVertex& camera_vertex = camera_vertices[t - 2];
+                radiance.m_beauty += camera_vertex.m_beta * camera_vertex.m_Le;
             }
-            else if (light_bounce == 0)     // camera subpath is a complete path
+            else if (s == 1)
             {
-                /// TODO:: implement
-            }
-            else if (light_bounce == 1)     // light doesn't contain bsdf need to a special care here
-            {
-                if (camera_vertex.m_bsdf_data)
-                {
-                    Spectrum geometry = ComputeGeometryTerm(shading_context, shading_point, camera_vertex, light_vertex);
+                const BDPTVertex& light_vertex = light_vertices[s - 1];
+                const BDPTVertex& camera_vertex = camera_vertices[t - 2];
+                Spectrum geometry = ComputeGeometryTerm(shading_context, shading_point, camera_vertex, light_vertex);
 
-                    /// CONFUSE:: for some reason m_bsdf_data stored inside camera_vertex doesn't work at all.
-                    const BSDF * debug_bsdf = shading_point.get_material()->get_render_data().m_bsdf;
-                    const void * debug_bsdf_data = debug_bsdf->evaluate_inputs(shading_context, shading_point);
+                DirectShadingComponents camera_eval_bsdf;
+                const float camera_eval_bsdf_prob = camera_vertex.m_bsdf->evaluate(
+                    camera_vertex.m_bsdf_data,
+                    false,
+                    false,
+                    static_cast<Vector3f>(camera_vertex.m_geometric_normal),
+                    camera_vertex.m_shading_basis,
+                    static_cast<Vector3f>(camera_vertex.m_incoming),
+                    static_cast<Vector3f>(foundation::normalize(light_vertex.m_position - camera_vertex.m_position)),
+                    ScatteringMode::All,
+                    camera_eval_bsdf);
 
-                    DirectShadingComponents camera_eval_bsdf;
-                    const float camera_eval_bsdf_prob = debug_bsdf->evaluate(
-                        debug_bsdf_data,
-                        false,
-                        false,
-                        static_cast<Vector3f>(camera_vertex.m_geometric_normal),
-                        camera_vertex.m_shading_basis,
-                        static_cast<Vector3f>(camera_vertex.m_incoming),
-                        static_cast<Vector3f>(foundation::normalize(light_vertex.m_position - camera_vertex.m_position)),
-                        ScatteringMode::All,
-                        camera_eval_bsdf);
-
-                    /// CONFUSE:: couldn't find why inverse pi is missing here.
-                    radiance.m_beauty += geometry * camera_eval_bsdf.m_beauty * camera_vertex.m_beta * light_vertex.m_beta * RcpPi<float>();
-                }
+                /// TODO:: check why inv pi is missing here
+                radiance.m_beauty += geometry * camera_eval_bsdf.m_beauty * camera_vertex.m_beta * light_vertex.m_beta * RcpPi<float>();
             }
             else
             {
-                if (camera_vertex.m_bsdf_data && light_vertex.m_bsdf_data)
-                {
-                    /// CONFUSE:: for some reason stored m_bsdf_data inside camera_vertex doesn't work at all.
-                    const BSDF * debug_bsdf = shading_point.get_material()->get_render_data().m_bsdf;
-                    const void * debug_bsdf_data = debug_bsdf->evaluate_inputs(shading_context, shading_point);
+                const BDPTVertex& light_vertex = light_vertices[s - 1];
+                const BDPTVertex& camera_vertex = camera_vertices[t - 2];
+                DirectShadingComponents camera_eval_bsdf;
+                const float camera_eval_bsdf_prob = camera_vertex.m_bsdf->evaluate(
+                    camera_vertex.m_bsdf_data,
+                    false,
+                    false,
+                    static_cast<Vector3f>(camera_vertex.m_geometric_normal),
+                    camera_vertex.m_shading_basis,
+                    static_cast<Vector3f>(camera_vertex.m_incoming),
+                    static_cast<Vector3f>(foundation::normalize(light_vertex.m_position - camera_vertex.m_position)),
+                    ScatteringMode::All,
+                    camera_eval_bsdf);
 
-                    DirectShadingComponents camera_eval_bsdf;
-                    const float camera_eval_bsdf_prob = camera_vertex.m_bsdf->evaluate(
-                        debug_bsdf_data,
-                        false,
-                        false,
-                        static_cast<Vector3f>(camera_vertex.m_geometric_normal),
-                        camera_vertex.m_shading_basis,
-                        static_cast<Vector3f>(camera_vertex.m_incoming),
-                        static_cast<Vector3f>(foundation::normalize(light_vertex.m_position - camera_vertex.m_position)),
-                        ScatteringMode::All,
-                        camera_eval_bsdf);
+                DirectShadingComponents light_eval_bsdf;
+                const float light_eval_bsdf_prob = light_vertex.m_bsdf->evaluate(
+                    light_vertex.m_bsdf_data,
+                    false,
+                    false,
+                    static_cast<Vector3f>(light_vertex.m_geometric_normal),
+                    light_vertex.m_shading_basis,
+                    static_cast<Vector3f>(light_vertex.m_incoming),
+                    static_cast<Vector3f>(foundation::normalize(camera_vertex.m_position - light_vertex.m_position)),
+                    ScatteringMode::All,
+                    light_eval_bsdf);
 
-                    /// CONFUSE:: but stored m_bsdf_data in light_vertex works fine
-                    DirectShadingComponents light_eval_bsdf;
-                    const float light_eval_bsdf_prob = light_vertex.m_bsdf->evaluate(
-                        light_vertex.m_bsdf_data,
-                        false,
-                        false,
-                        static_cast<Vector3f>(light_vertex.m_geometric_normal),
-                        light_vertex.m_shading_basis,
-                        static_cast<Vector3f>(light_vertex.m_incoming),
-                        static_cast<Vector3f>(foundation::normalize(light_vertex.m_position - light_vertex.m_position)),
-                        ScatteringMode::All,
-                        light_eval_bsdf);
-
-                    Spectrum geometry = ComputeGeometryTerm(shading_context, shading_point, camera_vertex, light_vertex);
-                    radiance.m_beauty += geometry * camera_eval_bsdf.m_beauty * light_eval_bsdf.m_beauty * camera_vertex.m_beta * light_vertex.m_beta;
-                }
+                Spectrum geometry = ComputeGeometryTerm(shading_context, shading_point, camera_vertex, light_vertex);
+                radiance.m_beauty += geometry * camera_eval_bsdf.m_beauty * light_eval_bsdf.m_beauty * camera_vertex.m_beta * light_vertex.m_beta;
             }
         }
 
@@ -236,19 +234,27 @@ namespace {
             std::vector<BDPTVertex> camera_vertices;
             std::vector<BDPTVertex> light_vertices;
 
-            camera_vertices.reserve(maxbounces);
-            light_vertices.reserve(maxbounces);
+            // camera_vertices[0] is on shading_point
+            camera_vertices.reserve(num_max_vertices - 1); 
 
-            trace_camera(sampling_context, shading_context, shading_point, &camera_vertices);
+            // light_vertices[0] is on light source
+            light_vertices.reserve(num_max_vertices);
+
             trace_light(sampling_context, shading_context, &light_vertices);
+            trace_camera(sampling_context, shading_context, shading_point, &camera_vertices);
 
-            for (int i = 0; i < light_vertices.size(); i++)
+            /*for (int s = 0;s < light_vertices.size() + 1;s++)
             {
-                const BDPTVertex & cvertex = camera_vertices[0];
-                const BDPTVertex & lvertex = light_vertices[i];
+                for (unsigned int t = 2;t < camera_vertices.size() + 2;t++)
+                {
+                    if (s + t <= num_max_vertices)
+                    {
+                        Connect(shading_context, shading_point, light_vertices, camera_vertices, s, t, radiance);
+                    }
+                }
+            }*/
 
-                Connect(shading_context, shading_point, cvertex, 1, lvertex, i + 1, radiance);
-            }
+            shading_context.get_arena().clear();
         }
 
         void trace_light(
@@ -281,10 +287,10 @@ namespace {
         }
 
         void trace_emitting_triangle(
-            SamplingContext&        sampling_context,
-            const ShadingContext&   shading_context,
-            LightSample&            light_sample,
-            std::vector<BDPTVertex> *vertices)
+            SamplingContext&            sampling_context,
+            const ShadingContext&       shading_context,
+            LightSample&                light_sample,
+            std::vector<BDPTVertex>*    vertices)
         {
             // Make sure the geometric normal of the light sample is in the same hemisphere as the shading normal.
             light_sample.m_geometric_normal =
@@ -351,24 +357,25 @@ namespace {
                 VisibilityFlags::LightRay,
                 0);
 
-            /// TODO:: replace this with direct light sampler
             BDPTVertex bdpt_vertex;
             bdpt_vertex.m_position = light_shading_point.get_point();
             /// CONFUSE:: why geometric normal is flipped?
             bdpt_vertex.m_geometric_normal = -light_shading_point.get_geometric_normal();
             bdpt_vertex.m_beta = initial_flux;
+            bdpt_vertex.m_fwd_pdf = light_sample.m_probability * edf_prob;
+            bdpt_vertex.m_rev_pdf = 1.0;
+
             vertices->push_back(bdpt_vertex);
 
             // Build the path tracer.
             PathVisitor path_visitor(initial_flux, shading_context, vertices);
             VolumeVisitor volume_visitor;
 
-            /// CONFUSE:: even though I set pathtracer to maxbounces (= 8), the rendered result only appears be generated by maxbounces = 1 (only one bounce indirect light)
             PathTracer<PathVisitor, VolumeVisitor, true> path_tracer(
                 path_visitor,
                 volume_visitor,
                 ~0,
-                maxbounces,
+                num_max_vertices,
                 ~0,
                 ~0,
                 ~0,
@@ -380,7 +387,8 @@ namespace {
                     sampling_context,
                     shading_context,
                     light_ray,
-                    &parent_shading_point);
+                    &parent_shading_point,
+                    false);
 
             m_light_path_length.insert(light_path_length);
         }
@@ -405,7 +413,7 @@ namespace {
                 path_visitor,
                 volume_visitor,
                 ~0,
-                0,
+                num_max_vertices,
                 ~0,
                 ~0,
                 ~0,
@@ -416,7 +424,8 @@ namespace {
                 path_tracer.trace(
                     sampling_context,
                     shading_context,
-                    shading_point);
+                    shading_point,
+                    false);
         }
 
         StatisticsVector get_statistics() const override
@@ -450,7 +459,7 @@ namespace {
                 const ScatteringMode::Mode  prev_mode,
                 const ScatteringMode::Mode  next_mode) const
             {
-                return false;
+                return true;
             }
 
             void on_miss(const PathVertex& vertex)
@@ -460,7 +469,7 @@ namespace {
             void on_hit(const PathVertex& vertex)
             {
                 // create BDPT Vertex
-                if (vertex.m_bsdf == nullptr)
+                if (vertex.m_bsdf == nullptr || vertex.m_bsdf_data == nullptr)
                     return;
 
                 if (vertex.m_bsdf->is_purely_specular())
@@ -474,6 +483,31 @@ namespace {
                 bdpt_vertex.m_beta = vertex.m_throughput * m_initial_beta;
                 bdpt_vertex.m_bsdf = vertex.m_bsdf;
                 bdpt_vertex.m_bsdf_data = vertex.m_bsdf_data;
+                bdpt_vertex.m_rev_pdf = 1.0;
+                bdpt_vertex.m_fwd_pdf = 1.0;
+
+                if (!m_vertices->empty())
+                {
+                    // compute fwd and rev pdf
+                    BDPTVertex & prev_bdpt_vertex = m_vertices->back();
+                    bdpt_vertex.m_fwd_pdf = prev_bdpt_vertex.convertDensity(vertex.m_prev_prob, bdpt_vertex);
+
+                    double rev_pdf = vertex.m_bsdf->evaluate_pdf(
+                        prev_bdpt_vertex.m_bsdf_data,
+                        false,
+                        static_cast<Vector3f>(bdpt_vertex.m_geometric_normal),
+                        bdpt_vertex.m_shading_basis,
+                        static_cast<Vector3f>(foundation::normalize(prev_bdpt_vertex.m_position - bdpt_vertex.m_position)),
+                        static_cast<Vector3f>(foundation::normalize(vertex.get_ray().m_dir)),
+                        ScatteringMode::All);
+
+                    prev_bdpt_vertex.m_rev_pdf = bdpt_vertex.convertDensity(rev_pdf, bdpt_vertex);
+                }
+
+                if (vertex.m_edf)
+                {
+                    vertex.compute_emitted_radiance(m_shading_context, bdpt_vertex.m_Le);
+                }
 
                 m_vertices->push_back(bdpt_vertex);
             }
