@@ -46,9 +46,16 @@ namespace foundation
 {
 
 //
-// A collection of functions to perform low-level image drawing.
+// A collection of optimized low-level drawing routines.
 //
-// Warning: none of those methods handle pixel format conversion or clipping.
+// Supported:
+//   - Any pixel format
+//   - Any number of channels
+//
+// Not supported:
+//   - Clipping
+//   - Pixel format conversions (image and pixel formats must match)
+//   - Color space conversions (image and pixel color spaces must match)
 //
 
 class APPLESEED_DLLSYMBOL NativeDrawing
