@@ -660,7 +660,7 @@ color transform_CIEXYZ_to_CIELAB(
     vector reference_white_CIExyY)
 {
     color white_XYZ = transform_CIExyY_to_CIEXYZ(reference_white_CIExyY);
-    color XYZ_f = linear_XYZ_color / white_XYZ, CIEXYZ = 0;
+    color XYZ_f = linear_XYZ_color / white_XYZ, CIEXYZ;
 
     for (int i = 0; i < 3; ++i)
     {
