@@ -103,7 +103,7 @@ namespace
             // xform sequence we will return
             asr::TransformSequence out_xform_seq;
 
-            for (const asr::TransformSequence& xform_seq : xform_seq_stack)
+            for (const auto& xform_seq : xform_seq_stack)
             {
                 out_xform_seq = xform_seq * out_xform_seq;
             }
