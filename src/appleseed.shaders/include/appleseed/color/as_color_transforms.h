@@ -1060,7 +1060,7 @@ color remap_CIELAB(color CIELAB)
 
 color remap_CIELUV(color CIELUV)
 {
-    float L = CIELAB[0] / 100.0;
+    float L = CIELUV[0] / 100.0;
     float u = (CIELUV[1] + 134.0) / 352.0;
     float v = (CIELUV[2] + 140.0) / 262.0;
 
