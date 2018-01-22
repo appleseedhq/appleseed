@@ -383,9 +383,18 @@ void Frame::denoise(
 
 namespace
 {
-    void create_parent_directories(const string& filepath)
+    void add_chromaticities(ImageAttributes& image_attributes)
     {
-        const bf::path parent_path = bf::path(filepath).parent_path();
+        // Scene-linear sRGB / Rec. 709 chromaticities.
+        image_attributes.insert("white_xy_chromaticity", Vector2f(0.3127f, 0.3290f));
+        image_attributes.insert("red_xy_chromaticity", Vector2f(0.64f, 0.33f));
+        image_attributes.insert("green_xy_chromaticity", Vector2f(0.30f, 0.60f));
+        image_attributes.insert("blue_xy_chromaticity",  Vector2f(0.15f, 0.06f));
+    }
+
+    void create_parent_directories(const bf::path& file_path)
+    {
+        const bf::path parent_path = file_path.parent_path();
 
         if (!parent_path.empty() && !bf::exists(parent_path))
         {
@@ -400,17 +409,13 @@ namespace
         }
     }
 
-    void add_chromaticities(ImageAttributes& image_attributes)
+    void create_parent_directories(const char* file_path)
     {
-        // Scene-linear sRGB / Rec. 709 chromaticities.
-        image_attributes.insert("white_xy_chromaticity", Vector2f(0.3127f, 0.3290f));
-        image_attributes.insert("red_xy_chromaticity", Vector2f(0.64f, 0.33f));
-        image_attributes.insert("green_xy_chromaticity", Vector2f(0.30f, 0.60f));
-        image_attributes.insert("blue_xy_chromaticity",  Vector2f(0.15f, 0.06f));
+        create_parent_directories(bf::path(file_path));
     }
 
     void write_exr_image(
-        const char*             file_path,
+        const bf::path&         file_path,
         const Image&            image,
         const ImageAttributes&  image_attributes,
         const AOV*              aov)
@@ -426,13 +431,31 @@ namespace
                 // If the AOV has color data, assume we can save it as half floats.
                 const CanvasProperties& props = image.properties();
                 const Image half_image(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
-                writer.write(file_path, half_image, image_attributes, aov->get_channel_count(), aov->get_channel_names());
+
+                writer.write(
+                    file_path.string().c_str(),
+                    half_image,
+                    image_attributes,
+                    aov->get_channel_count(),
+                    aov->get_channel_names());
             }
             else
-                writer.write(file_path, image, image_attributes, aov->get_channel_count(), aov->get_channel_names());
+            {
+                writer.write(
+                    file_path.string().c_str(),
+                    image,
+                    image_attributes,
+                    aov->get_channel_count(),
+                    aov->get_channel_names());
+            }
         }
         else
-            writer.write(file_path, image, image_attributes);
+        {
+            writer.write(
+                file_path.string().c_str(),
+                image,
+                image_attributes);
+        }
     }
 
     void transform_to_srgb(Tile& tile)
@@ -473,7 +496,7 @@ namespace
     }
 
     void write_png_image(
-        const char*             file_path,
+        const bf::path&         file_path,
         const Image&            image,
         const ImageAttributes&  image_attributes)
     {
@@ -483,21 +506,27 @@ namespace
         create_parent_directories(file_path);
 
         PNGImageFileWriter writer;
-        writer.write(file_path, transformed_image, image_attributes);
+        writer.write(file_path.string().c_str(), transformed_image, image_attributes);
     }
 
     bool write_image(
         const char*             file_path,
         const Image&            image,
-        const AOV*              aov)
+        const AOV*              aov = nullptr)
     {
         assert(file_path);
 
         Stopwatch<DefaultWallclockTimer> stopwatch;
         stopwatch.start();
 
-        const bf::path filepath(file_path);
-        const string extension = lower_case(filepath.extension().string());
+        bf::path bf_file_path(file_path);
+        string extension = lower_case(bf_file_path.extension().string());
+
+        if (extension.empty())
+        {
+            extension = ".exr";
+            bf_file_path += extension;
+        }
 
         ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
         add_chromaticities(image_attributes);
@@ -505,14 +534,19 @@ namespace
         try
         {
             if (extension == ".exr")
-                write_exr_image(file_path, image, image_attributes, aov);
-            else if (extension == ".png")
-                write_png_image(file_path, image, image_attributes);
-            else if (extension.empty())
             {
-                string file_path_with_ext(file_path);
-                file_path_with_ext += ".exr";
-                write_exr_image(file_path_with_ext.c_str(), image, image_attributes, aov);
+                write_exr_image(
+                    bf_file_path,
+                    image,
+                    image_attributes,
+                    aov);
+            }
+            else if (extension == ".png")
+            {
+                write_png_image(
+                    bf_file_path,
+                    image,
+                    image_attributes);
             }
             else
             {
@@ -556,14 +590,17 @@ bool Frame::write_main_image(const char* file_path) const
 {
     assert(file_path);
 
-    // Always save the main image as half floats.
+    // Convert main image to half floats.
     const Image& image = *impl->m_image;
     const CanvasProperties& props = image.properties();
     const Image half_image(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
-    bool result = write_image(file_path, half_image, nullptr);
+
+    // Write main image.
+    if (!write_image(file_path, half_image))
+        return false;
 
     // Write BCD histograms and covariances if enabled.
-    if (result && impl->m_denoising_mode == DenoisingMode::WriteOutputs)
+    if (impl->m_denoising_mode == DenoisingMode::WriteOutputs)
     {
         if (ends_with(file_path, ".exr"))
             impl->m_denoiser_aov->write_images(file_path);
@@ -571,14 +608,14 @@ bool Frame::write_main_image(const char* file_path) const
             RENDERER_LOG_ERROR("denoiser outputs can only be saved to exr images.");
     }
 
-    return result;
+    return true;
 }
 
 bool Frame::write_aov_images(const char* file_path) const
 {
     assert(file_path);
 
-    bool result = true;
+    bool success = true;
 
     if (!aovs().empty())
     {
@@ -590,41 +627,53 @@ bool Frame::write_aov_images(const char* file_path) const
         for (size_t i = 0, e = aovs().size(); i < e; ++i)
         {
             const AOV* aov = aovs().get_by_index(i);
+
+            // Compute AOV image file path.
             const string aov_name = aov->get_name();
             const string safe_aov_name = make_safe_filename(aov_name);
             const string aov_file_name = base_file_name + "." + safe_aov_name + extension;
             const string aov_file_path = (directory / aov_file_name).string();
 
+            // Write AOV image.
             if (!write_image(aov_file_path.c_str(), aov->get_image(), aov))
-                result = false;
+                success = false;
         }
     }
 
-    return result;
+    return success;
 }
 
 bool Frame::write_main_and_aov_images() const
 {
-    bool result = true;
+    bool success = true;
 
-    // Get the output filename.
+    // Get output filename.
     const string filepath = get_parameters().get_optional<string>("output_filename");
 
+    // Write main image.
     if (!filepath.empty())
-        result = result && write_main_image(filepath.c_str());
+    {
+        if (!write_main_image(filepath.c_str()))
+            success = false;
+    }
 
     // Write AOVs.
     for (size_t i = 0, e = aovs().size(); i < e; ++i)
     {
-        // Get the output filename.
         const AOV* aov = aovs().get_by_index(i);
+
+        // Get output filename.
         const string filepath = aov->get_parameters().get_optional<string>("output_filename");
 
+        // Write AOV image.
         if (!filepath.empty())
-            result = result && write_image(filepath.c_str(), aov->get_image(), aov);
+        {
+            if (!write_image(filepath.c_str(), aov->get_image(), aov))
+                success = false;
+        }
     }
 
-    return result;
+    return success;
 }
 
 void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) const
@@ -648,7 +697,7 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
         const Image& image = *impl->m_image;
         const CanvasProperties& props = image.properties();
         images.emplace_back(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
-        static const char* ChannelNames[] = {"R", "G", "B", "A"};
+        static const char* ChannelNames[] = { "R", "G", "B", "A" };
         writer.append_part("beauty", images.back(), image_attributes, 4, ChannelNames);
     }
 
@@ -695,11 +744,7 @@ bool Frame::archive(
     if (output_path)
         *output_path = duplicate_string(file_path.c_str());
 
-    return
-        write_image(
-            file_path.c_str(),
-            *impl->m_image,
-            nullptr);
+    return write_image(file_path.c_str(), *impl->m_image);
 }
 
 void Frame::extract_parameters()
