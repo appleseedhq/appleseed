@@ -117,9 +117,10 @@ namespace
 
     // Return if given time samples are linearly time spaced between start_time
     // and end_time.
-    const bool are_linearly_sampled(const AbcChrono_t start_time,
-                                    const AbcChrono_t end_time,
-                                    const std::vector<AbcChrono_t>& samples)
+    const bool are_linearly_sampled(
+        const AbcChrono_t start_time,
+        const AbcChrono_t end_time,
+        const std::vector<AbcChrono_t>& samples)
     {
         assert(samples.size() > 1);
 
@@ -187,10 +188,10 @@ namespace
 
     // Extract an appleseed xform sequence from given alembic xform schema.
     asr::TransformSequence extract_xform_seq(
-            const AbcGeom::IXformSchema& schema,
-            const AbcChrono_t shutter_open,
-            const AbcChrono_t shutter_close,
-            const AbcChrono_t time_offset)
+        const AbcGeom::IXformSchema& schema,
+        const AbcChrono_t shutter_open,
+        const AbcChrono_t shutter_close,
+        const AbcChrono_t time_offset)
     {
         assert(schema.getNumOps() > 0);
         assert(shutter_open <= shutter_close);
@@ -226,8 +227,9 @@ namespace
     }
 
     // Log information for given alembic archive.
-    void log_archive(Abc::IArchive& archive,
-                     AbcCoreFac::IFactory::CoreType core_type)
+    void log_archive(
+        Abc::IArchive& archive,
+        AbcCoreFac::IFactory::CoreType core_type)
     {
         RENDERER_LOG_INFO("archive name: %s\n"
                           "        time sampling count: %d\n"
@@ -1091,9 +1093,10 @@ namespace
     }
 
     // Return object in given archive from given path.
-    const bool path_to_obj(const Abc::IArchive& archive,
-                           const std::string& path,
-                           Abc::IObject& obj)
+    const bool path_to_obj(
+        const Abc::IArchive& archive,
+        const std::string& path,
+        Abc::IObject& obj)
     {
         // Retrieve root of the hierarchy.
         Abc::IObject cur_obj = archive.getTop();
