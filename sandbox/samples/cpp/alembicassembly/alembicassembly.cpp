@@ -44,6 +44,7 @@
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/job/iabortswitch.h"
+#include "foundation/utility/otherwise.h"
 #include "foundation/utility/string.h"
 
 // appleseed.main headers.
@@ -251,8 +252,7 @@ namespace
             case AbcCoreFac::IFactory::kUnknown:
                 RENDERER_LOG_WARNING("        core type: Unknown");
                 break;
-            default:
-                break;  // This should never happen (tm).
+            assert_otherwise;
         }
     }
 
@@ -328,8 +328,7 @@ namespace
             case AbcUtil::kUnknownPOD:
                 RENDERER_LOG_WARNING("                  data type POD type: unknown");
                 break;
-            default:
-                break;  // should never happen
+            assert_otherwise;
         }
 
         RENDERER_LOG_INFO("                            extent: %d", data_type.getExtent());
