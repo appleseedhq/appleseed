@@ -77,12 +77,12 @@ namespace
     asf::Matrix4d flatten_xform(const std::vector<asf::Matrix4d>& mtx_stack)
     {
         // The matrix we will return.
-        asf::Matrix4d out_mtx = asf::Matrix4d::identity();
+        asf::Matrix4d out_mtx = mtx_stack.front();
 
         // Multiply the each matrix of the stack from bottom to top.
-        for (const asf::Matrix4d& mtx : mtx_stack)
+        for (size_t i = 1; i < mtx_stack.size(); i++)
         {
-            out_mtx = mtx * out_mtx;
+            out_mtx = mtx_stack[i] * out_mtx;
         }
 
         return out_mtx;
