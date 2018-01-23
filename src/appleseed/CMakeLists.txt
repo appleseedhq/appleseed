@@ -567,6 +567,21 @@ source_group ("foundation\\resources\\fonts" FILES
     ${foundation_resources_fonts_sources}
 )
 
+set (foundation_resources_logo_sources
+    foundation/resources/logo/appleseed-seeds-16.cpp
+    foundation/resources/logo/appleseed-seeds-16.h
+    foundation/resources/logo/appleseed-seeds-32.cpp
+    foundation/resources/logo/appleseed-seeds-32.h
+    foundation/resources/logo/appleseed-seeds-64.cpp
+    foundation/resources/logo/appleseed-seeds-64.h
+)
+list (APPEND appleseed_sources
+    ${foundation_resources_logo_sources}
+)
+source_group ("foundation\\resources\\logo" FILES
+    ${foundation_resources_logo_sources}
+)
+
 set (foundation_utility_api_sources
     foundation/utility/api/apiarray.h
     foundation/utility/api/apistring.cpp
