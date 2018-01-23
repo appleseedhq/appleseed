@@ -382,28 +382,6 @@ namespace
                     on_tile_end_whole_frame();
                 }
 
-                // Check abort flag.
-                if (m_abort_switch.is_aborted())
-                {
-                    m_is_rendering = false;
-                    return;
-                }
-
-                //
-                // Render stamp.
-                //
-
-                if (m_frame.is_render_stamp_enabled())
-                {
-                    // No need to call on_tile_begin() here, adding the stamp is instantaneous.
-
-                    // Add the render stamp to the frame.
-                    m_frame.add_render_stamp();
-
-                    // Call on_tile_end() on all tiles of the frame.
-                    on_tile_end_whole_frame();
-                }
-
                 m_is_rendering = false;
             }
 

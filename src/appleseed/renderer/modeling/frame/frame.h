@@ -132,11 +132,16 @@ class APPLESEED_DLLSYMBOL Frame
         const double    sample_x,               // x coordinate of the sample in the pixel, in [0,1)
         const double    sample_y) const;        // y coordinate of the sample in the pixel, in [0,1)
 
+    struct RenderStampInfo
+    {
+        double m_render_time;   // in seconds
+    };
+
     // Return whether the render stamp should be added to the frame.
     bool is_render_stamp_enabled() const;
 
     // Add the render stamp to the frame.
-    void add_render_stamp() const;
+    void add_render_stamp(const RenderStampInfo& info) const;
 
     enum class DenoisingMode
     {

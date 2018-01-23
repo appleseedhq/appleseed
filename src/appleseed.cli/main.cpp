@@ -53,12 +53,10 @@
 #include "foundation/platform/console.h"
 #include "foundation/platform/debugger.h"
 #include "foundation/platform/thread.h"
-#include "foundation/platform/timers.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/filter.h"
 #include "foundation/utility/log.h"
-#include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
@@ -567,29 +565,24 @@ namespace
 
         // Render the frame.
         LOG_INFO(g_logger, "rendering frame...");
-        Stopwatch<DefaultWallclockTimer> stopwatch;
+        MasterRenderer::RenderingResult result;
         if (params.get_optional<bool>("background_mode", true))
         {
             ProcessPriorityContext background_context(ProcessPriorityLow, &g_logger);
-            stopwatch.start();
-            if (renderer.render() != MasterRenderer::RenderingSucceeded)
-                return false;
-            stopwatch.measure();
+            result = renderer.render();
         }
         else
         {
-            stopwatch.start();
-            if (renderer.render() != MasterRenderer::RenderingSucceeded)
-                return false;
-            stopwatch.measure();
+            result = renderer.render();
         }
+        if (result.m_status != MasterRenderer::RenderingResult::Succeeded)
+            return false;
 
         // Print rendering time.
-        const double seconds = stopwatch.get_seconds();
         LOG_INFO(
             g_logger,
             "rendering finished in %s.",
-            pretty_time(seconds, 3).c_str());
+            pretty_time(result.m_render_time, 3).c_str());
 
         // Archive the frame to disk.
         char* archive_path = nullptr;
@@ -675,20 +668,18 @@ namespace
         {
             // Raise the process priority to reduce interruptions.
             ProcessPriorityContext benchmark_context(ProcessPriorityHigh, &g_logger);
-            Stopwatch<DefaultWallclockTimer> stopwatch;
 
             // Render a first time.
-            stopwatch.start();
-            if (renderer.render() != MasterRenderer::RenderingSucceeded)
+            auto result = renderer.render();
+            if (result.m_status != MasterRenderer::RenderingResult::Succeeded)
                 return false;
-            stopwatch.measure();
-            total_time_seconds = stopwatch.get_seconds();
+            total_time_seconds = result.m_render_time;
 
             // Render a second time.
-            if (renderer.render() != MasterRenderer::RenderingSucceeded)
+            result = renderer.render();
+            if (result.m_status != MasterRenderer::RenderingResult::Succeeded)
                 return false;
-            stopwatch.measure();
-            render_time_seconds = stopwatch.get_seconds() - total_time_seconds;
+            render_time_seconds = result.m_render_time;
         }
 
         // Write the frame to disk.

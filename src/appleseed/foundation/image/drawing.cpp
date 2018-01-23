@@ -35,7 +35,6 @@
 
 // Standard headers.
 #include <algorithm>
-#include <cstddef>
 
 using namespace std;
 
@@ -47,13 +46,12 @@ namespace foundation
 //
 
 void Drawing::draw_filled_rect(
-    Image&                  image,
-    const Vector2i&         from,
-    const Vector2i&         to,
-    const Color4f&          color)
+    Image&              image,
+    const Vector2i&     from,
+    const Vector2i&     to,
+    const Color4f&      color)
 {
     const CanvasProperties& props = image.properties();
-
     const int w = static_cast<int>(props.m_canvas_width);
     const int h = static_cast<int>(props.m_canvas_height);
 
@@ -77,9 +75,9 @@ void Drawing::draw_filled_rect(
 }
 
 void Drawing::draw_dot(
-    Image&                  image,
-    const Vector2d&         position,
-    const Color4f&          color)
+    Image&              image,
+    const Vector2d&     position,
+    const Color4f&      color)
 {
     static size_t DotIntensity[16] =
     {
@@ -90,7 +88,6 @@ void Drawing::draw_dot(
     };
 
     const CanvasProperties& props = image.properties();
-
     const int w = static_cast<int>(props.m_canvas_width);
     const int h = static_cast<int>(props.m_canvas_height);
 
@@ -118,6 +115,56 @@ void Drawing::draw_dot(
                     static_cast<size_t>(ix),
                     static_cast<size_t>(iy),
                     color * alpha + background * (1.0f - alpha));
+            }
+        }
+    }
+}
+
+void Drawing::blit_bitmap(
+    Image&              image,
+    const Vector2i&     position,
+    const uint8*        bitmap,
+    const size_t        bitmap_width,
+    const size_t        bitmap_height,
+    const PixelFormat   bitmap_pixel_format,
+    const Color4f&      multiplier)
+{
+    const CanvasProperties& props = image.properties();
+    const int image_width = static_cast<int>(props.m_canvas_width);
+    const int image_height = static_cast<int>(props.m_canvas_height);
+
+    for (size_t y = 0; y < bitmap_height; ++y)
+    {
+        for (size_t x = 0; x < bitmap_width; ++x)
+        {
+            const int ix = position.x + static_cast<int>(x);
+            const int iy = position.y + static_cast<int>(y);
+
+            if (ix >= 0 && iy >= 0 && ix < image_width && iy < image_height)
+            {
+                const uint8* pixel = bitmap + (y * bitmap_width + x) * 4;
+
+                Color4f color;
+                Pixel::convert_from_format<float>(
+                    bitmap_pixel_format,
+                    pixel,
+                    pixel + 4,
+                    1,
+                    &color[0],
+                    1);
+
+                color *= multiplier;
+
+                Color4f background;
+                image.get_pixel(
+                    static_cast<size_t>(ix),
+                    static_cast<size_t>(iy),
+                    background);
+
+                image.set_pixel(
+                    static_cast<size_t>(ix),
+                    static_cast<size_t>(iy),
+                    color * color.a + background * (1.0f - color.a));
             }
         }
     }

@@ -135,7 +135,9 @@ namespace
         // The GIL is locked again when unlock goes out of scope.
         ScopedGILUnlock unlock;
 
-        return m->m_renderer->render() == MasterRenderer::RenderingSucceeded;
+        const auto result = m->m_renderer->render();
+
+        return result.m_status == MasterRenderer::RenderingResult::Succeeded;
     }
 }
 

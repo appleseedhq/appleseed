@@ -57,6 +57,7 @@
 #include "foundation/image/tile.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/timers.h"
+#include "foundation/resources/logo/appleseed-seeds-16.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/iostreamop.h"
@@ -90,7 +91,7 @@ namespace
 {
     const UniqueID g_class_uid = new_guid();
 
-    const string DefaultRenderStampFormat = "{version}";
+    const string DefaultRenderStampFormat = "appleseed {lib-version} | Time: {render-time}";
 }
 
 UniqueID Frame::get_class_uid()
@@ -328,20 +329,26 @@ bool Frame::is_render_stamp_enabled() const
     return impl->m_render_stamp_enabled;
 }
 
-void Frame::add_render_stamp() const
+void Frame::add_render_stamp(const RenderStampInfo& info) const
 {
     RENDERER_LOG_INFO("adding render stamp...");
 
     // Render stamp settings.
     const float FontSize = 14.0f;
-    const Color4f FontColor(0.9f, 0.9f, 0.9f, 1.0f);
+    const Color4f FontColor(0.8f, 0.8f, 0.8f, 1.0f);
     const Color4f BackgroundColor(0.0f, 0.0f, 0.0f, 0.8f);
     const float MarginH = 6.0f;
     const float MarginV = 4.0f;
 
     // Compute the final string.
     string text = impl->m_render_stamp_format;
-    text = replace(text, "{version}", Appleseed::get_synthetic_version_string());
+    text = replace(text, "{lib-name}", Appleseed::get_lib_name());
+    text = replace(text, "{lib-version}", Appleseed::get_lib_version());
+    text = replace(text, "{lib-variant}", Appleseed::get_lib_variant());
+    text = replace(text, "{lib-config}", Appleseed::get_lib_configuration());
+    text = replace(text, "{lib-build-date}", Appleseed::get_lib_compilation_date());
+    text = replace(text, "{lib-build-time}", Appleseed::get_lib_compilation_time());
+    text = replace(text, "{render-time}", pretty_time(info.m_render_time, 1).c_str());
 
     // Compute the height in pixels of the string.
     const CanvasProperties& props = impl->m_image->properties();
@@ -367,9 +374,21 @@ void Frame::add_render_stamp() const
         TextRenderer::Font::UbuntuL,
         FontSize,
         FontColor,
-        MarginH,
+        MarginH + appleseed_seeds_16_width + MarginH,
         origin_y,
         text.c_str());
+
+    // Blit the appleseed logo.
+    Drawing::blit_bitmap(
+        *impl->m_image,
+        Vector2i(
+            static_cast<int>(MarginH),
+            static_cast<int>(props.m_canvas_height - appleseed_seeds_16_height - MarginV)),
+        appleseed_seeds_16,
+        appleseed_seeds_16_width,
+        appleseed_seeds_16_height,
+        PixelFormatUInt8,
+        Color4f(1.0f, 1.0f, 1.0f, 0.8f));
 }
 
 Frame::DenoisingMode Frame::get_denoising_mode() const

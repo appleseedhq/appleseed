@@ -32,7 +32,12 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
+#include "foundation/image/pixel.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/types.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace foundation { class Image; }
@@ -70,6 +75,16 @@ class Drawing
         Image&              image,
         const Vector2d&     position,
         const Color4f&      color);
+
+    // Blit an RGBA bitmap with any pixel format.
+    static void blit_bitmap(
+        Image&              image,
+        const Vector2i&     position,   // position of the top-left corner
+        const uint8*        bitmap,
+        const size_t        bitmap_width,
+        const size_t        bitmap_height,
+        const PixelFormat   bitmap_pixel_format,
+        const Color4f&      multiplier);
 };
 
 }       // namespace foundation
