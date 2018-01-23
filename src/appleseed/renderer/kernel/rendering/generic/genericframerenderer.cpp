@@ -303,7 +303,10 @@ namespace
             {
                 set_current_thread_name("pass_manager");
 
+                //
                 // Rendering passes.
+                //
+
                 for (size_t pass = 0; pass < m_pass_count; ++pass)
                 {
                     // Check abort flag.
@@ -360,7 +363,10 @@ namespace
                     return;
                 }
 
+                //
                 // Denoising pass.
+                //
+
                 if (m_frame.get_denoising_mode() == Frame::DenoisingMode::Denoise)
                 {
                     if (m_pass_count > 1)

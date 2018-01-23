@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,34 +26,7 @@
 // THE SOFTWARE.
 //
 
-// appleseed.foundation headers.
-#include "foundation/math/matrix.h"
-#include "foundation/math/vector.h"
-#include "foundation/utility/test.h"
-#include "foundation/utility/ui/cameracontroller.h"
+// Expands out the actual implementation into this file.
+#define STB_TRUETYPE_IMPLEMENTATION
 
-using namespace foundation;
-
-TEST_SUITE(Foundation_Utility_UI_CameraController)
-{
-    typedef CameraController<double> CameraControllerd;
-
-    TEST_CASE(Tumble_GivenCameraAndTargetAtSamePosition_DoesNotChangeCameraPosition)
-    {
-        // Create a camera controller and configure it such that the camera
-        // and the target share the same position (the origin).
-        CameraControllerd controller;
-        controller.set_target(Vector3d(0.0));
-
-        // Try to tumble the camera.
-        controller.begin_drag(CameraControllerd::Tumble, Vector2d(0.0));
-        controller.update_drag(Vector2d(1.0, 0.0));
-        controller.end_drag();
-
-        // The position of the camera shouldn't have changed.
-        const CameraControllerd::MatrixType m = controller.get_transform();
-        EXPECT_EQ(0.0, m[3]);
-        EXPECT_EQ(0.0, m[7]);
-        EXPECT_EQ(0.0, m[11]);
-    }
-}
+#include "stb_truetype.h"

@@ -104,7 +104,7 @@ namespace
 
             const auto result = m_master_renderer->render();
 
-            if (result == MasterRenderer::RenderingFailed)
+            if (result.m_status == MasterRenderer::RenderingResult::Failed)
                 emit signal_rendering_failed();
         }
     };
