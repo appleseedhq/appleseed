@@ -75,10 +75,6 @@ set (foundation_image_text_sources
     foundation/image/text/stb_truetype.h
     foundation/image/text/textrenderer.cpp
     foundation/image/text/textrenderer.h
-    foundation/image/text/ubuntu_l_ttf.cpp
-    foundation/image/text/ubuntu_l_ttf.h
-    foundation/image/text/ubuntu_m_ttf.cpp
-    foundation/image/text/ubuntu_m_ttf.h
 )
 list (APPEND appleseed_sources
     ${foundation_image_text_sources}
@@ -556,6 +552,19 @@ list (APPEND appleseed_sources
 )
 source_group ("foundation\\platform" FILES
     ${foundation_platform_sources}
+)
+
+set (foundation_resources_fonts_sources
+    foundation/resources/fonts/Ubuntu-L.ttf.cpp
+    foundation/resources/fonts/Ubuntu-L.ttf.h
+    foundation/resources/fonts/Ubuntu-M.ttf.cpp
+    foundation/resources/fonts/Ubuntu-M.ttf.h
+)
+list (APPEND appleseed_sources
+    ${foundation_resources_fonts_sources}
+)
+source_group ("foundation\\resources\\fonts" FILES
+    ${foundation_resources_fonts_sources}
 )
 
 set (foundation_utility_api_sources

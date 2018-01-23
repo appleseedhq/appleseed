@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "ubuntu_m_ttf.h"
+#include "Ubuntu-M.ttf.h"
 
 namespace foundation
 {

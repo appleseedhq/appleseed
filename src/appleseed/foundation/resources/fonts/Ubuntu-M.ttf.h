@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_TEXT_UBUNTU_L_TTF_H
-#define APPLESEED_FOUNDATION_IMAGE_TEXT_UBUNTU_L_TTF_H
+#ifndef APPLESEED_FOUNDATION_RESOURCES_FONTS_UBUNTU_M_TTF_H
+#define APPLESEED_FOUNDATION_RESOURCES_FONTS_UBUNTU_M_TTF_H
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -42,13 +42,13 @@ namespace foundation
 {
 
 //
-// Ubuntu-L.ttf font.
+// Ubuntu-M.ttf font.
 //
 
-const size_t Ubuntu_L_ttf_length = 415552;
+const size_t Ubuntu_M_ttf_length = 341324;
 
-APPLESEED_DLLSYMBOL extern const uint8 Ubuntu_L_ttf[];
+APPLESEED_DLLSYMBOL extern const uint8 Ubuntu_M_ttf[];
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_IMAGE_TEXT_UBUNTU_L_TTF_H
+#endif  // !APPLESEED_FOUNDATION_RESOURCES_FONTS_UBUNTU_M_TTF_H

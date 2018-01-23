@@ -33,10 +33,10 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/image/text/stb_truetype.h"
-#include "foundation/image/text/ubuntu_l_ttf.h"
-#include "foundation/image/text/ubuntu_m_ttf.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/types.h"
+#include "foundation/resources/fonts/Ubuntu-L.ttf.h"
+#include "foundation/resources/fonts/Ubuntu-M.ttf.h"
 
 // Standard headers.
 #include <cstddef>
