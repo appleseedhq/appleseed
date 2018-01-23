@@ -689,6 +689,22 @@ source_group ("foundation\\utility\\log" FILES
     ${foundation_utility_log_sources}
 )
 
+set (foundation_utility_minizip_sources
+    foundation/utility/minizip/crypt.h
+    foundation/utility/minizip/ioapi.c
+    foundation/utility/minizip/ioapi.h
+    foundation/utility/minizip/unzip.c
+    foundation/utility/minizip/unzip.h
+    foundation/utility/minizip/zip.c
+    foundation/utility/minizip/zip.h
+)
+list (APPEND appleseed_sources
+    ${foundation_utility_minizip_sources}
+)
+source_group ("foundation\\utility\\minizip" FILES
+    ${foundation_utility_minizip_sources}
+)
+
 set (foundation_utility_settings_sources
     foundation/utility/settings/settings.xsd
     foundation/utility/settings/settingsfilereader.cpp
@@ -741,22 +757,6 @@ list (APPEND appleseed_sources
 )
 source_group ("foundation\\utility\\ui" FILES
     ${foundation_utility_ui_sources}
-)
-
-set (foundation_utility_minizip_sources
-    foundation/utility/minizip/crypt.h
-    foundation/utility/minizip/ioapi.c
-    foundation/utility/minizip/ioapi.h
-    foundation/utility/minizip/unzip.c
-    foundation/utility/minizip/unzip.h
-    foundation/utility/minizip/zip.c
-    foundation/utility/minizip/zip.h
-)
-list (APPEND appleseed_sources
-    ${foundation_utility_minizip_sources}
-)
-source_group ("foundation\\utility\\minizip" FILES
-    ${foundation_utility_minizip_sources}
 )
 
 set (foundation_utility_sources
