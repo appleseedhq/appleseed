@@ -27,8 +27,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_UI_CAMERACONTROLLER_H
-#define APPLESEED_FOUNDATION_UI_CAMERACONTROLLER_H
+#ifndef APPLESEED_FOUNDATION_UTILITY_UI_CAMERACONTROLLER_H
+#define APPLESEED_FOUNDATION_UTILITY_UI_CAMERACONTROLLER_H
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -397,4 +397,4 @@ void CameraController<T>::dolly(const Vector<T, 2>& delta)
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_UI_CAMERACONTROLLER_H
+#endif  // !APPLESEED_FOUNDATION_UTILITY_UI_CAMERACONTROLLER_H

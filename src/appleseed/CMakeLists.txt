@@ -733,6 +733,16 @@ source_group ("foundation\\utility\\test" FILES
     ${foundation_utility_test_sources}
 )
 
+set (foundation_utility_ui_sources
+    foundation/utility/ui/cameracontroller.h
+)
+list (APPEND appleseed_sources
+    ${foundation_utility_ui_sources}
+)
+source_group ("foundation\\utility\\ui" FILES
+    ${foundation_utility_ui_sources}
+)
+
 set (foundation_utility_minizip_sources
     foundation/utility/minizip/crypt.h
     foundation/utility/minizip/ioapi.c
@@ -828,16 +838,6 @@ list (APPEND appleseed_sources
 )
 source_group ("foundation\\utility" FILES
     ${foundation_utility_sources}
-)
-
-set (foundation_ui_sources
-    foundation/ui/cameracontroller.h
-)
-list (APPEND appleseed_sources
-    ${foundation_ui_sources}
-)
-source_group ("foundation\\ui" FILES
-    ${foundation_ui_sources}
 )
 
 set (main_sources
