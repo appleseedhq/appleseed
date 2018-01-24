@@ -227,20 +227,14 @@ shader as_maya_place2dTexture
             st[0] += 0.5;
         }
 
-        if (in_mirrorU)
+        if (in_mirrorU && mod(st[0], 2) >= 1.0)
         {
-            if (mod(st[0], 2) >= 1.0)
-            {
-                st[0] += 0.5;
-            }
+            st[0] = 2.0 * floor(st[0]) - st[0] + 1.0;
         }
 
-        if (in_mirrorV)
+        if (in_mirrorV && mod(st[1], 2) >= 1.0)
         {
-            if (mod(st[1], 2) >= 1.0)
-            {
-                st[1] += 0.5;
-            }
+            st[1] = 2.0 * floor(st[1]) - st[1] + 1.0;
         }
 
         if (in_rotateUV != 0)

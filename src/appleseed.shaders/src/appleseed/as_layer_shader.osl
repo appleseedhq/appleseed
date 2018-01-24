@@ -51,13 +51,6 @@ shader as_layer_shader
         string label = "Layer 0 Weight",
         string page = "Layers"
     ]],
-    normal in_surface_normal = N
-    [[
-        string as_maya_attribute_name = "normalCamera",
-        string as_maya_attribute_short_name = "n",
-        string label = "Layer 0 Normal",
-        string page = "Layers"
-    ]],
     int in_layer_visibility = 1
     [[
         string as_maya_attribute_name = "layerVisibility",
@@ -85,13 +78,6 @@ shader as_layer_shader
         float min = 0.0,
         float max = 1.0,
         string label = "Layer 1 Weight",
-        string page = "Layers"
-    ]],
-    normal in_surface_normal1 = N
-    [[
-        string as_maya_attribute_name = "normalCamera1",
-        string as_maya_attribute_short_name = "n1",
-        string label = "Layer 1 Normal",
         string page = "Layers"
     ]],
     int in_layer_visibility1 = 0
@@ -123,13 +109,6 @@ shader as_layer_shader
         string label = "Layer 2 Weight",
         string page = "Layers"
     ]],
-    normal in_surface_normal2 = N
-    [[
-        string as_maya_attribute_name = "normalCamera2",
-        string as_maya_attribute_short_name = "n2",
-        string label = "Layer 2 Normal",
-        string page = "Layers"
-    ]],
     int in_layer_visibility2 = 0
     [[
         string as_maya_attribute_name = "layerVisibility2",
@@ -157,13 +136,6 @@ shader as_layer_shader
         float min = 0.0,
         float max = 1.0,
         string label = "Layer 3 Weight",
-        string page = "Layers"
-    ]],
-    normal in_surface_normal3 = N
-    [[
-        string as_maya_attribute_name = "normalCamera3",
-        string as_maya_attribute_short_name = "n3",
-        string label = "Layer 3 Normal",
         string page = "Layers"
     ]],
     int in_layer_visibility3 = 0
@@ -194,14 +166,7 @@ shader as_layer_shader
         float max = 1.0,
         string label = "Layer 4 Weight",
         string page = "Layers"
-    ]],
-    normal in_surface_normal4 = N
-    [[
-        string as_maya_attribute_name = "normalCamera4",
-        string as_maya_attribute_short_name = "n4",
-        string label = "Layer 4 Normal",
-        string page = "Layers"
-    ]],  
+    ]], 
     int in_layer_visibility4 = 0
     [[
         string as_maya_attribute_name = "layerVisibility4",
@@ -229,13 +194,6 @@ shader as_layer_shader
         float min = 0.0,
         float max = 1.0,
         string label = "Layer 5 Weight",
-        string page = "Layers"
-    ]],
-    normal in_surface_normal5 = N
-    [[
-        string as_maya_attribute_name = "normalCamera5",
-        string as_maya_attribute_short_name = "n5",
-        string label = "Layer 5 Normal",
         string page = "Layers"
     ]],
     int in_layer_visibility5 = 0
@@ -267,13 +225,6 @@ shader as_layer_shader
         string label = "Layer 6 Weight",
         string page = "Layers"
     ]],
-    normal in_surface_normal6 = N
-    [[
-        string as_maya_attribute_name = "normalCamera6",
-        string as_maya_attribute_short_name = "n6",
-        string label = "Layer 6 Normal",
-        string page = "Layers"
-    ]], 
     int in_layer_visibility6 = 0
     [[
         string as_maya_attribute_name = "layerVisibility6",
@@ -303,13 +254,6 @@ shader as_layer_shader
         string label = "Layer 7 Weight",
         string page = "Layers"
     ]],
-    normal in_surface_normal7 = N
-    [[
-        string as_maya_attribute_name = "normalCamera7",
-        string as_maya_attribute_short_name = "n7",
-        string label = "Layer 7 Normal",
-        string page = "Layers"
-    ]],
     int in_layer_visibility7 = 0
     [[
         string as_maya_attribute_name = "layerVisibility7",
@@ -330,113 +274,42 @@ shader as_layer_shader
         string as_maya_attribute_short_name = "oc",
         string widget = "null",
         string label = "Layered Output"
-    ]],
-    output normal out_layered_normal = N
-    [[
-        string as_maya_attribute_name = "layeredNormal",
-        string as_maya_attribute_short_name = "lno",
-        string widget = "null",
-        string label = "Layered Normal"
     ]]
 )
 {
     closure color result = 0;
 
-    if (in_layer_visibility)
+    if (in_layer_visibility && isconnected(in_color))
     {
         result += in_weight * in_color;
-
-        if (isconnected(in_surface_normal))
-        {
-            out_layered_normal = mix(
-                out_layered_normal,
-                in_surface_normal,
-                in_weight);
-        }
     }
-    if (in_layer_visibility1)
+    if (in_layer_visibility1 && isconnected(in_color1))
     {
         result = mix(result, in_color1, in_weight1);
-
-        if (isconnected(in_surface_normal1))
-        {
-            out_layered_normal = mix(
-                out_layered_normal,
-                in_surface_normal1,
-                in_weight);
-        }
     }
-    if (in_layer_visibility2)
+    if (in_layer_visibility2 && isconnected(in_color2))
     {
         result = mix(result, in_color2, in_weight2);
-
-        if (isconnected(in_surface_normal2))
-        {
-            out_layered_normal = mix(
-                out_layered_normal,
-                in_surface_normal2,
-                in_weight);
-        }
     }
-    if (in_layer_visibility3)
+    if (in_layer_visibility3 && isconnected(in_color3))
     {
         result = mix(result, in_color3, in_weight3);
-
-        if (isconnected(in_surface_normal3))
-        {
-            out_layered_normal = mix(
-                out_layered_normal,
-                in_surface_normal3,
-                in_weight);
-        }
     }
-    if (in_layer_visibility4)
+    if (in_layer_visibility4 && isconnected(in_color4))
     {
         result = mix(result, in_color4, in_weight4);
-
-        if (isconnected(in_surface_normal4))
-        {
-            out_layered_normal = mix(
-                out_layered_normal,
-                in_surface_normal4,
-                in_weight);
-        }
     }
-    if (in_layer_visibility5)
+    if (in_layer_visibility5 && isconnected(in_color5))
     {
         result = mix(result, in_color5, in_weight5);
-
-        if (isconnected(in_surface_normal5))
-        {
-            out_layered_normal = mix(
-                out_layered_normal,
-                in_surface_normal5,
-                in_weight);
-        }
     }
-    if (in_layer_visibility6)
+    if (in_layer_visibility6 && isconnected(in_color6))
     {
         result = mix(result, in_color6, in_weight6);
-
-        if (isconnected(in_surface_normal6))
-        {
-            out_layered_normal = mix(
-                out_layered_normal,
-                in_surface_normal6,
-                in_weight);
-        }
     }
-    if (in_layer_visibility7)
+    if (in_layer_visibility7 && isconnected(in_color7))
     {
         result = mix(result, in_color7, in_weight7);
-
-        if (isconnected(in_surface_normal7))
-        {
-            out_layered_normal = mix(
-                out_layered_normal,
-                in_surface_normal7,
-                in_weight);
-        }
     }
 
     out_color = result;
