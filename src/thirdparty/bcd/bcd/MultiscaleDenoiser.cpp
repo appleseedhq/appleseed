@@ -32,27 +32,27 @@ namespace bcd
 namespace
 {
 
-    class MultiScaleProgressReporter
-    : public IProgressReporter
+    class MultiScaleCallbacks
+      : public ICallbacks
     {
       public:
-        MultiScaleProgressReporter(
-            const int           i_scale,
-            const int           i_nbOfScales,
-            IProgressReporter*  i_progress_reporter)
+        MultiScaleCallbacks(
+            const int    i_scale,
+            const int    i_nbOfScales,
+            ICallbacks*  i_callbacks)
         : m_scale(i_scale)
         , m_nbOfScales(i_nbOfScales)
-        , m_progress_reporter(i_progress_reporter)
+        , m_callbacks(i_callbacks)
         {
         }
 
         void progress(const float i_progress) const override
         {
-            if (m_progress_reporter)
+            if (m_callbacks)
             {
                 if (m_scale == m_nbOfScales - 1)
                 {
-                    m_progress_reporter->progress(
+                    m_callbacks->progress(
                         i_progress / float(((1 << (2 * m_nbOfScales)) - 1) / 3));
                 }
                 else
@@ -63,29 +63,54 @@ namespace
                     // 1 + 4 + 4^2 + ... 4^s = (4^(s+1) - 1) / (4 - 1) = (2^(2*(s+1)) - 1) / 3
                     // = ((1 << (2*(s+1))) - 1) / 3
 
-                    const float factor = 1.0f / calc_factor(m_nbOfScales);
-                    const float minValue = factor * calc_factor(s);
-                    const float maxValue = factor * calc_factor(s + 1);
+                    const float factor = 1.0f / calcFactor(m_nbOfScales);
+                    const float minValue = factor * calcFactor(s);
+                    const float maxValue = factor * calcFactor(s + 1);
 
-                    m_progress_reporter->progress(minValue + i_progress * (maxValue - minValue));
+                    m_callbacks->progress(minValue + i_progress * (maxValue - minValue));
                 }
             }
         }
 
         bool isAborted() const override
         {
-            if (m_progress_reporter)
-                return m_progress_reporter->isAborted();
+            if (m_callbacks)
+                return m_callbacks->isAborted();
 
             return false;
         }
 
-    private:
-        const int           m_scale;
-        const int           m_nbOfScales;
-        IProgressReporter*  m_progress_reporter;
+      private:
+        void logInfo(const char* i_msg) const override
+        {
+            if (m_callbacks)
+                m_callbacks->info() << "[Scale " << m_scale << "] " << i_msg;
+        }
 
-        static float calc_factor(const int s)
+        void logWarning(const char* i_msg) const override
+        {
+            if (m_callbacks)
+                m_callbacks->warning() << "[Scale " << m_scale << "] " << i_msg;
+        }
+
+        void logError(const char* i_msg) const override
+        {
+            if (m_callbacks)
+                m_callbacks->error() << "[Scale " << m_scale << "] " << i_msg;
+        }
+
+        void logDebug(const char* i_msg) const override
+        {
+            if (m_callbacks)
+                m_callbacks->debug() << "[Scale " << m_scale << "] " << i_msg;
+        }
+
+    private:
+        const int    m_scale;
+        const int    m_nbOfScales;
+        ICallbacks*  m_callbacks;
+
+        static float calcFactor(const int s)
         {
             return ((1 << (2 * s)) - 1) / 3.0f;
         }
@@ -93,12 +118,34 @@ namespace
 
 }
 
+MultiscaleDenoiser::MultiscaleDenoiser(int i_nbOfScales)
+  : IDenoiser()
+  , m_nbOfScales(i_nbOfScales)
+{
+}
+
+void MultiscaleDenoiser::setInputs(const DenoiserInputs& i_rInputs)
+{
+    IDenoiser::setInputs(i_rInputs);
+
+    // Adjust the number of scales depending on the image size.
+    const size_t w = i_rInputs.m_pColors->getWidth();
+    const size_t h = i_rInputs.m_pColors->getHeight();
+
+    size_t s = min(w, h);
+    int maxScales = 1;
+
+    while (s > 64)
+    {
+        ++maxScales;
+        s /= 2;
+    }
+
+    m_nbOfScales = min(m_nbOfScales, maxScales);
+}
 
 bool MultiscaleDenoiser::denoise()
 {
-    if (!inputsOutputsAreOk())
-        return false;
-
     DeepImageVec additionalColorImages =
         generateDownscaledAverageImages(*m_inputs.m_pColors, m_nbOfScales - 1);
 
@@ -159,11 +206,11 @@ bool MultiscaleDenoiser::denoise()
         denoiser.setOutputs(outputsArray[m_nbOfScales - 1]);
         denoiser.setParameters(m_parameters);
 
-        MultiScaleProgressReporter progressReporter(
+        MultiScaleCallbacks callbacks(
             m_nbOfScales - 1,
             m_nbOfScales,
-            m_progressReporter);
-        denoiser.setProgressReporter(&progressReporter);
+            m_callbacks);
+        denoiser.setCallbacks(&callbacks);
 
         const bool success = denoiser.denoise();
 
@@ -178,18 +225,18 @@ bool MultiscaleDenoiser::denoise()
         denoiser.setOutputs(outputsArray[scale]);
         denoiser.setParameters(m_parameters);
 
-        MultiScaleProgressReporter progressReporter(
+        MultiScaleCallbacks callbacks(
             scale,
             m_nbOfScales,
-            m_progressReporter);
-        denoiser.setProgressReporter(&progressReporter);
+            m_callbacks);
+        denoiser.setCallbacks(&callbacks);
 
         const bool success = denoiser.denoise();
 
         if (success == false)
             return false;
 
-        if (m_progressReporter && m_progressReporter->isAborted())
+        if (m_callbacks && m_callbacks->isAborted())
             return false;
 
         mergeOutputs(

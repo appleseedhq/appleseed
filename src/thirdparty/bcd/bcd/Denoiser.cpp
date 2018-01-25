@@ -22,7 +22,6 @@
 // Standard headers.
 #include <algorithm>
 #include <cassert>
-#include <cfloat>
 #include <chrono>
 #include <cmath>
 #include <functional>
@@ -37,9 +36,6 @@ namespace bcd
 
 bool Denoiser::denoise()
 {
-    if (!inputsOutputsAreOk())
-        return false;
-
     m_width = m_inputs.m_pColors->getWidth();
     m_height = m_inputs.m_pColors->getHeight();
     m_nbOfPixels = m_width * m_height;
@@ -47,7 +43,7 @@ bool Denoiser::denoise()
     int heightWithoutBorder = m_height - 2 * m_parameters.m_patchRadius;
     int nbOfPixelsWithoutBorder = widthWithoutBorder * heightWithoutBorder;
 
-    if (m_progressReporter && m_progressReporter->isAborted())
+    if (m_callbacks && m_callbacks->isAborted())
         return false;
 
     computeNbOfSamplesSqrt();
@@ -74,7 +70,7 @@ bool Denoiser::denoise()
     }
     reorderPixelSet(pixelSet);
 
-    if (m_progressReporter && m_progressReporter->isAborted())
+    if (m_callbacks && m_callbacks->isAborted())
         return false;
 
     m_outputSummedColorImages.resize(m_parameters.m_nbOfCores);
@@ -144,15 +140,18 @@ bool Denoiser::denoise()
     m_outputs.m_pDenoisedColors->resize(m_width, m_height, 3);
     m_outputs.m_pDenoisedColors->fill(0.0f);
 
-    if (m_progressReporter && m_progressReporter->isAborted())
+    if (m_callbacks && m_callbacks->isAborted())
         return false;
 
     finalAggregation();
 
-    fixNegativeInfNaNValues();
+    if (m_parameters.m_markInvalidPixels)
+        markNegativeInfNaNValues();
+    else
+        fixNegativeInfNaNValues();
 
-    if (m_progressReporter)
-        m_progressReporter->progress(1.0f);
+    if (m_callbacks)
+        m_callbacks->progress(1.0f);
 
     return true;
 }
@@ -184,10 +183,10 @@ void Denoiser::doDenoise(
             newPercentage = (i_nbOfPixelsComputed * 100) / static_cast<int>(i_totalNbOfPixels);
             if (newPercentage != currentPercentage)
             {
-                if (m_progressReporter)
+                if (m_callbacks)
                 {
-                    i_abortRequested = m_progressReporter->isAborted();
-                    m_progressReporter->progress(float(currentPercentage) * 0.01f);
+                    i_abortRequested = m_callbacks->isAborted();
+                    m_callbacks->progress(float(currentPercentage) * 0.01f);
                 }
 
                 currentPercentage = newPercentage;
@@ -324,14 +323,16 @@ void Denoiser::finalAggregation()
 
 namespace
 {
-
-    bool is_finite(const float x)
+    void reportInvalidPixels(
+        ICallbacks*     i_callbacks,
+        const size_t    i_nbInvalidPixels)
     {
-#ifdef _WIN32
-        return _finite(x) != 0;
-#else
-        return !(isnan(x) || isinf(x));
-#endif
+        if (i_nbInvalidPixels != 0 && i_callbacks)
+        {
+            i_callbacks->debug()
+                << i_nbInvalidPixels
+                << " invalid pixels found after denoising.\n";
+        }
     }
 }
 
@@ -344,22 +345,72 @@ void Denoiser::fixNegativeInfNaNValues()
     int height = dst.getHeight();
     int depth = dst.getDepth();
 
+    size_t nbInvalidPixels = 0;
+
     for (int line = 0; line < height; ++line)
     {
         for (int col = 0; col < width; ++col)
         {
+            bool anyInvalidChannel = false;
+
             for (int z = 0; z < depth; ++z)
             {
                 const float val = dst.get(line, col, z);
 
-                if (val < 0.0f || !is_finite(val))
+                if (val < 0.0f || !isFinite(val))
                 {
                     // Recover the original, not denoised value.
                     dst.set(line, col, z, src.get(line, col, z));
+                    anyInvalidChannel = true;
                 }
             }
+
+            if (anyInvalidChannel)
+                ++nbInvalidPixels;
         }
     }
+
+#ifndef NDEBUG
+    reportInvalidPixels(m_callbacks, nbInvalidPixels);
+#endif
+}
+
+void Denoiser::markNegativeInfNaNValues()
+{
+    Deepimf& dst = *m_outputs.m_pDenoisedColors;
+
+    int width = dst.getWidth();
+    int height = dst.getHeight();
+    int depth = dst.getDepth();
+
+    size_t nbInvalidPixels = 0;
+
+    for (int line = 0; line < height; ++line)
+    {
+        for (int col = 0; col < width; ++col)
+        {
+            bool anyInvalidChannel = false;
+
+            for (int z = 0; z < depth; ++z)
+            {
+                const float val = dst.get(line, col, z);
+
+                if (val < 0.0f || !isFinite(val))
+                {
+                    // Set invalid pixel pink.
+                    dst.set(line, col, z, z == 1 ? 0.0f : 1.0f);
+                    anyInvalidChannel = true;
+                }
+            }
+
+            if (anyInvalidChannel)
+                ++nbInvalidPixels;
+        }
+    }
+
+#ifndef NDEBUG
+    reportInvalidPixels(m_callbacks, nbInvalidPixels);
+#endif
 }
 
 } // namespace bcd

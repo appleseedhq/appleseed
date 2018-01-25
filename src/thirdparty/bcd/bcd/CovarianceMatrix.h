@@ -53,8 +53,11 @@ typedef SymmetricMatrix3x3 CovMat3x3;
 //  Class to represent a symmetric block-diagonal matrix, with blocks of size 3x3
 struct Block3x3DiagonalSymmetricMatrix
 {
-    Block3x3DiagonalSymmetricMatrix() {}
-    Block3x3DiagonalSymmetricMatrix(std::size_t i_size)
+    Block3x3DiagonalSymmetricMatrix()
+    {
+    }
+
+    explicit Block3x3DiagonalSymmetricMatrix(std::size_t i_size)
       : m_blocks(i_size)
     {
     }

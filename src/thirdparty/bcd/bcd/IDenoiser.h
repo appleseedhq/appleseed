@@ -13,26 +13,67 @@
 #ifndef I_DENOISER_H
 #define I_DENOISER_H
 
+// Standard headers.
+#include <cstddef>
+#include <functional>
+#include <sstream>
+
 namespace bcd
 {
 
 template<class T>
 class DeepImage;
 
-class IProgressReporter
+class ICallbacks
 {
   public:
-    IProgressReporter();
-    virtual ~IProgressReporter();
+    ICallbacks();
+
+    virtual ~ICallbacks();
 
     virtual void progress(const float i_progress) const = 0;
 
     virtual bool isAborted() const = 0;
 
+    // Logging.
+
+    class LogHelper
+    {
+      public:
+        LogHelper(
+            std::stringstream&                      ss,
+            const std::function<void(const char*)>& log_fn);
+
+        ~LogHelper();
+
+        template <typename T>
+        LogHelper& operator<<(const T& x)
+        {
+            m_ss << x;
+            return *this;
+        }
+
+      private:
+        std::stringstream&               m_ss;
+        std::function<void(const char*)> m_logFn;
+    };
+
+    LogHelper info();
+    LogHelper warning();
+    LogHelper error();
+    LogHelper debug();
+
   private:
     // Non-copyable.
-    IProgressReporter(const IProgressReporter&);
-    IProgressReporter& operator=(const IProgressReporter&);
+    ICallbacks(const ICallbacks&);
+    ICallbacks& operator=(const ICallbacks&);
+
+    virtual void logInfo(const char* i_msg) const = 0;
+    virtual void logWarning(const char* i_msg) const = 0;
+    virtual void logError(const char* i_msg) const = 0;
+    virtual void logDebug(const char* i_msg) const = 0;
+
+    std::stringstream m_ss;
 };
 
 struct DenoiserParameters
@@ -45,7 +86,7 @@ struct DenoiserParameters
           m_useRandomPixelOrder(false)
         , m_markedPixelsSkippingProbability(1.0f)
         , m_nbOfCores(0)
-        , m_useCuda(true)
+        , m_markInvalidPixels(false)
     {
     }
 
@@ -55,8 +96,8 @@ struct DenoiserParameters
     float m_minEigenValue;                   // Small positive value which serves as a minimum for eigen value clamping and matrix inversing
     bool  m_useRandomPixelOrder;
     float m_markedPixelsSkippingProbability;
-    int   m_nbOfCores;                       // Number of cores used by OpenMP; 0 means using the default value, defined in environment variable OMP_NUM_THREADS
-    bool  m_useCuda;
+    int   m_nbOfCores;                       // Number of cores to use; 0 means using all the cores
+    bool  m_markInvalidPixels;
 };
 
 struct DenoiserInputs
@@ -68,6 +109,12 @@ struct DenoiserInputs
       , m_pSampleCovariances(nullptr)
     {
     }
+
+    void checkImages(
+        size_t& o_nbInvalidColors,
+        size_t& o_nbInvalidNbSamplesCout,
+        size_t& o_nbInvalidHistograms,
+        size_t& o_nbInvalidCovariances) const;
 
     const DeepImage<float>* m_pColors;            // Pixel color values
     const DeepImage<float>* m_pNbOfSamples;       // Pixel number of samples
@@ -94,7 +141,7 @@ class IDenoiser
 
     virtual ~IDenoiser();
 
-    virtual bool inputsOutputsAreOk() const;
+    bool inputsOutputsAreOk() const;
 
     virtual bool denoise() = 0;
 
@@ -103,7 +150,7 @@ class IDenoiser
         return m_inputs;
     }
 
-    void setInputs(const DenoiserInputs& i_rInputs)
+    virtual void setInputs(const DenoiserInputs& i_rInputs)
     {
         m_inputs = i_rInputs;
     }
@@ -128,16 +175,21 @@ class IDenoiser
         m_parameters = i_rParameters;
     }
 
-    void setProgressReporter(IProgressReporter* i_progressReporter)
+    ICallbacks* getCallbacks() const
     {
-        m_progressReporter = i_progressReporter;
+        return m_callbacks;
+    }
+
+    void setCallbacks(ICallbacks* i_callbacks)
+    {
+        m_callbacks = i_callbacks;
     }
 
   protected:
-    DenoiserParameters          m_parameters;
-    DenoiserInputs              m_inputs;
-    DenoiserOutputs             m_outputs;
-    IProgressReporter*          m_progressReporter;
+    DenoiserParameters   m_parameters;
+    DenoiserInputs       m_inputs;
+    DenoiserOutputs      m_outputs;
+    ICallbacks*          m_callbacks;
 };
 
 } // namespace bcd

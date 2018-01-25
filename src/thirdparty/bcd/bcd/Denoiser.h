@@ -34,11 +34,6 @@ class Denoiser
   : public IDenoiser
 {
   public:
-    Denoiser()
-      : IDenoiser()
-    {
-    }
-
     virtual ~Denoiser() {}
 
     virtual bool denoise();
@@ -117,6 +112,7 @@ class Denoiser
     void finalAggregation();
 
     void fixNegativeInfNaNValues();
+    void markNegativeInfNaNValues();
 };
 
 } // namespace bcd

@@ -6,26 +6,25 @@
 // All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE.txt file.
 
-#include "bcd/Denoiser.h"
-#include "bcd/MultiscaleDenoiser.h"
-#include "bcd/IDenoiser.h"
-
-#include "bcd/SpikeRemovalFilter.h"
-
-#include "bcd/ImageIO.h"
+// BCD headers.
 #include "bcd/DeepImage.h"
-
+#include "bcd/Denoiser.h"
+#include "bcd/IDenoiser.h"
+#include "bcd/ImageIO.h"
+#include "bcd/MultiscaleDenoiser.h"
+#include "bcd/SpikeRemovalFilter.h"
 #include "bcd/Utils.h"
 
+// Eigen headers.
 #include <Eigen/Dense>
 
-#include <iostream>
+// Standard headers.
+#include <cstdlib>
 #include <ctime>
 #include <fstream>
-#include <sstream>
-#include <string>
-#include <cstdlib>
+#include <iostream>
 #include <memory>
+#include <string>
 
 using namespace std;
 using namespace bcd;
@@ -46,8 +45,7 @@ class ProgramArguments
         m_prefilterThresholdStDevFactor(2.f),
         m_markedPixelsSkippingProbability(1.f),
         m_nbOfScales(3),
-        m_nbOfCores(0),
-        m_useCuda(true)
+        m_nbOfCores(0)
     {
     }
 
@@ -66,8 +64,48 @@ class ProgramArguments
     float m_markedPixelsSkippingProbability; // 1 means the marked centers of the denoised patches will be skipped to accelerate a lot the computations
     int m_nbOfScales;
     int m_nbOfCores; // Number of cores used by OpenMP. O means using the value defined in environment variable OMP_NUM_THREADS
-    bool m_useCuda; // True means that the program will use Cuda (if available) to parallelize computations
 };
+
+class Callbacks
+  : public ICallbacks
+{
+  public:
+    Callbacks()
+    {
+    }
+
+    void progress(const float i_progress) const override
+    {
+    }
+
+    bool isAborted() const override
+    {
+        return false;
+    }
+
+  private:
+    void logInfo(const char* msg) const override
+    {
+        cout << "Info: " << msg << std::endl;
+    }
+
+    void logWarning(const char* msg) const override
+    {
+        cout << "Warning: " << msg << std::endl;
+    }
+
+    void logError(const char* msg) const override
+    {
+        cout << "Error: " << msg << std::endl;
+    }
+
+    void logDebug(const char* msg) const override
+    {
+        cout << "Debug: " << msg << std::endl;
+    }
+};
+
+Callbacks g_callbacks;
 
 void initializeRandomSeed()
 {
@@ -95,7 +133,6 @@ static void printUsage()
     cout << "    -m <float in [0,1]>  Probability of skipping marked centers of denoised patches. 1 accelerates a lot the computations. 0 helps removing potential grid artifacts (default: " << defaultProgramArgs.m_markedPixelsSkippingProbability << ")" << endl;
     cout << "    -s <int>             Number of Scales for Multi-Scaling (default: " << defaultProgramArgs.m_nbOfScales << ")" << endl;
     cout << "    --ncores <nbOfCores> Number of cores used by OpenMP (default: environment variable OMP_NUM_THREADS)" << endl;
-    cout << "    --use-cuda <0/1>     1 to use cuda, 0 not to use it (default: " << (defaultProgramArgs.m_useCuda ? 1 : 0) << ")" << endl;
     cout << "    -e <float>           Minimum eigen value for matrix inversion (default: " << defaultProgramArgs.m_minEigenValue << ")" << endl;
 }
 
@@ -111,14 +148,14 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                cout << "ERROR in program arguments: expecting file path to the output image after '-o'" << endl;
+                cout << "Error in program arguments: expecting file path to the output image after '-o'" << endl;
                 return false;
             }
             o_rProgramArguments.m_denoisedOutputFilePath = string(argv[argIndex]);
             ofstream outputFile(o_rProgramArguments.m_denoisedOutputFilePath, ofstream::out | ofstream::app);
             if(!outputFile)
             {
-                cout << "ERROR in program arguments: cannot write output file '" << o_rProgramArguments.m_denoisedOutputFilePath << "'" << endl;
+                cout << "Error in program arguments: cannot write output file '" << o_rProgramArguments.m_denoisedOutputFilePath << "'" << endl;
                 return false;
             }
             missingOutput = false;
@@ -128,13 +165,13 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                cout << "ERROR in program arguments: expecting file path to the input color image after '-i'" << endl;
+                cout << "Error in program arguments: expecting file path to the input color image after '-i'" << endl;
                 return false;
             }
             inputColorFilePath = argv[argIndex];
             if (!ImageIO::loadEXR(o_rProgramArguments.m_colorImage, argv[argIndex]))
             {
-                cout << "ERROR in program arguments: couldn't load input color image file '" << argv[argIndex] << "'" << endl;
+                cout << "Error in program arguments: couldn't load input color image file '" << argv[argIndex] << "'" << endl;
                 return false;
             }
             missingColor = false;
@@ -144,13 +181,13 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                cout << "ERROR in program arguments: expecting file path to the input histogram image after '-h'" << endl;
+                cout << "Error in program arguments: expecting file path to the input histogram image after '-h'" << endl;
                 return false;
             }
             Deepimf histAndNbOfSamplesImage;
             if (!ImageIO::loadMultiChannelsEXR(histAndNbOfSamplesImage, argv[argIndex]))
             {
-                cout << "ERROR in program arguments: couldn't load input histogram image file '" << argv[argIndex] << "'" << endl;
+                cout << "Error in program arguments: couldn't load input histogram image file '" << argv[argIndex] << "'" << endl;
                 return false;
             }
             Utils::separateNbOfSamplesFromHistogram(o_rProgramArguments.m_histogramImage, o_rProgramArguments.m_nbOfSamplesImage, histAndNbOfSamplesImage);
@@ -161,12 +198,12 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                cout << "ERROR in program arguments: expecting file path to the input covariance matrix image after '-c'" << endl;
+                cout << "Error in program arguments: expecting file path to the input covariance matrix image after '-c'" << endl;
                 return false;
             }
             if (!ImageIO::loadMultiChannelsEXR(o_rProgramArguments.m_covarianceImage, argv[argIndex]))
             {
-                cout << "ERROR in program arguments: couldn't load input covariance matrix image file '" << argv[argIndex] << "'" << endl;
+                cout << "Error in program arguments: couldn't load input covariance matrix image file '" << argv[argIndex] << "'" << endl;
                 return false;
             }
             missingCov = false;
@@ -176,7 +213,7 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                cout << "ERROR in program arguments: expecting histogram patch distance threshold after '-d'" << endl;
+                cout << "Error in program arguments: expecting histogram patch distance threshold after '-d'" << endl;
                 return false;
             }
             istringstream iss(argv[argIndex]);
@@ -187,7 +224,7 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                cout << "ERROR in program arguments: expecting radius of search window after '-b'" << endl;
+                cout << "Error in program arguments: expecting radius of search window after '-b'" << endl;
                 return false;
             }
             istringstream iss(argv[argIndex]);
@@ -198,7 +235,7 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                cout << "ERROR in program arguments: expecting radius of patch after '-w'" << endl;
+                cout << "Error in program arguments: expecting radius of patch after '-w'" << endl;
                 return false;
             }
             istringstream iss(argv[argIndex]);
@@ -209,7 +246,7 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                cout << "ERROR in program arguments: expecting minimum eigen value after '-e'" << endl;
+                cout << "Error in program arguments: expecting minimum eigen value after '-e'" << endl;
                 return false;
             }
             istringstream iss(argv[argIndex]);
@@ -220,7 +257,7 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                cout << "ERROR in program arguments: expecting 0 or 1 after '-r'" << endl;
+                cout << "Error in program arguments: expecting 0 or 1 after '-r'" << endl;
                 return false;
             }
             istringstream iss(argv[argIndex]);
@@ -228,7 +265,7 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             iss >> useRandomPixelOrder;
             if(useRandomPixelOrder != 0 && useRandomPixelOrder != 1)
             {
-                cout << "ERROR in program arguments: expecting 0 or 1 after '-r'" << endl;
+                cout << "Error in program arguments: expecting 0 or 1 after '-r'" << endl;
                 return false;
             }
             o_rProgramArguments.m_useRandomPixelOrder = (useRandomPixelOrder==1);
@@ -238,7 +275,7 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                cout << "ERROR in program arguments: expecting 0 or 1 after '-p'" << endl;
+                cout << "Error in program arguments: expecting 0 or 1 after '-p'" << endl;
                 return false;
             }
             istringstream iss(argv[argIndex]);
@@ -246,7 +283,7 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             iss >> prefilterSpikes;
             if(prefilterSpikes != 0 && prefilterSpikes != 1)
             {
-                cout << "ERROR in program arguments: expecting 0 or 1 after '-p'" << endl;
+                cout << "Error in program arguments: expecting 0 or 1 after '-p'" << endl;
                 return false;
             }
             o_rProgramArguments.m_prefilterSpikes = (prefilterSpikes==1);
@@ -256,7 +293,7 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                cout << "ERROR in program arguments: expecting standard deviation factor for spike prefiltering threshold after '--p-factor'" << endl;
+                cout << "Error in program arguments: expecting standard deviation factor for spike prefiltering threshold after '--p-factor'" << endl;
                 return false;
             }
             istringstream iss(argv[argIndex]);
@@ -267,7 +304,7 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if(argIndex == argc)
             {
-                cout << "ERROR in program arguments: expecting float in [0,1] after '-m'" << endl;
+                cout << "Error in program arguments: expecting float in [0,1] after '-m'" << endl;
                 return false;
             }
             istringstream iss(argv[argIndex]);
@@ -275,7 +312,7 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             iss >> markedPixelsSkippingProbability;
             if(markedPixelsSkippingProbability < 0 || markedPixelsSkippingProbability > 1)
             {
-                cout << "ERROR in program arguments: expecting float in [0,1] after '-m'" << endl;
+                cout << "Error in program arguments: expecting float in [0,1] after '-m'" << endl;
                 return false;
             }
             o_rProgramArguments.m_markedPixelsSkippingProbability = markedPixelsSkippingProbability;
@@ -285,7 +322,7 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                cout << "ERROR in program arguments: expecting number of scales after '-s'" << endl;
+                cout << "Error in program arguments: expecting number of scales after '-s'" << endl;
                 return false;
             }
             istringstream iss(argv[argIndex]);
@@ -296,29 +333,11 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             argIndex++;
             if (argIndex == argc)
             {
-                cout << "ERROR in program arguments: expecting number of cores for OpenMP after '--ncores'" << endl;
+                cout << "Error in program arguments: expecting number of cores for OpenMP after '--ncores'" << endl;
                 return false;
             }
             istringstream iss(argv[argIndex]);
             iss >> o_rProgramArguments.m_nbOfCores;
-        }
-        else if (strcmp(argv[argIndex], "--use-cuda") == 0)
-        {
-            argIndex++;
-            if (argIndex == argc)
-            {
-                cout << "ERROR in program arguments: expecting 0 or 1 after '--use-cuda'" << endl;
-                return false;
-            }
-            istringstream iss(argv[argIndex]);
-            int useCudaCode;
-            iss >> useCudaCode;
-            if(useCudaCode != 0 && useCudaCode != 1)
-            {
-                cout << "ERROR in program arguments: expecting 0 or 1 after '--use-cuda'" << endl;
-                return false;
-            }
-            o_rProgramArguments.m_useCuda = (useCudaCode == 1);
         }
     }
     if(!missingColor)
@@ -330,7 +349,7 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             Deepimf histAndNbOfSamplesImage;
             if (!ImageIO::loadMultiChannelsEXR(histAndNbOfSamplesImage, inputHistFilePath.c_str()))
             {
-                cout << "ERROR in program arguments: couldn't load input histogram image file '" << inputHistFilePath << "'" << endl;
+                cout << "Error in program arguments: couldn't load input histogram image file '" << inputHistFilePath << "'" << endl;
                 return false;
             }
             Utils::separateNbOfSamplesFromHistogram(o_rProgramArguments.m_histogramImage, o_rProgramArguments.m_nbOfSamplesImage, histAndNbOfSamplesImage);
@@ -342,7 +361,7 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
             cout << "Warning: input covariance file not provided by -c argument: assuming '" + inputCovFilePath + "'" << endl;
             if (!ImageIO::loadMultiChannelsEXR(o_rProgramArguments.m_covarianceImage, inputCovFilePath.c_str()))
             {
-                cout << "ERROR in program arguments: couldn't load input covariance matrix image file '" << inputCovFilePath << "'" << endl;
+                cout << "Error in program arguments: couldn't load input covariance matrix image file '" << inputCovFilePath << "'" << endl;
                 return false;
             }
             missingCov = false;
@@ -350,7 +369,7 @@ bool parseProgramArguments(int argc, const char** argv, ProgramArguments& o_rPro
     }
     if (missingColor || missingHist || missingCov || missingOutput)
     {
-        cout << "ERROR: Missing required program argument(s):";
+        cout << "Error: Missing required program argument(s):";
         if (missingColor)
             cout << " -i";
         if (missingHist)
@@ -399,7 +418,6 @@ int launchBayesianCollaborativeDenoising(int argc, const char** argv)
     parameters.m_useRandomPixelOrder = programArgs.m_useRandomPixelOrder;
     parameters.m_markedPixelsSkippingProbability = programArgs.m_markedPixelsSkippingProbability;
     parameters.m_nbOfCores = programArgs.m_nbOfCores;
-    parameters.m_useCuda = programArgs.m_useCuda;
 
     unique_ptr<IDenoiser> uDenoiser = nullptr;
 
@@ -408,14 +426,20 @@ int launchBayesianCollaborativeDenoising(int argc, const char** argv)
     else
         uDenoiser.reset(new Denoiser());
 
+    uDenoiser->setCallbacks(&g_callbacks);
+
     uDenoiser->setInputs(inputs);
     uDenoiser->setOutputs(outputs);
     uDenoiser->setParameters(parameters);
 
+    if (!uDenoiser->inputsOutputsAreOk())
+        return 1;
+
     uDenoiser->denoise();
 
     ImageIO::writeEXR(outputDenoisedColorImage, programArgs.m_denoisedOutputFilePath.c_str());
-    cout << "Written denoised output in file " << programArgs.m_denoisedOutputFilePath.c_str() << endl;
+
+    cout << "Written denoised output in file " << programArgs.m_denoisedOutputFilePath.c_str() << std::endl;
 
     return 0;
 }

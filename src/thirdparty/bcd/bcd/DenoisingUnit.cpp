@@ -16,7 +16,6 @@
 
 // Standard headers.
 #include <cassert>
-#include <chrono>
 
 using namespace std;
 using namespace Eigen;
@@ -24,7 +23,7 @@ using namespace Eigen;
 namespace bcd
 {
 
-// To shorten notations
+// To shorten notations.
 const size_t g_xx = static_cast<size_t>(ESymmetricMatrix3x3Data::e_xx);
 const size_t g_yy = static_cast<size_t>(ESymmetricMatrix3x3Data::e_yy);
 const size_t g_zz = static_cast<size_t>(ESymmetricMatrix3x3Data::e_zz);
@@ -79,6 +78,13 @@ DenoisingUnit::DenoisingUnit(Denoiser& i_rDenoiser, const int i_threadIndex)
   , m_tmpVec(m_colorPatchDimension)
   , m_tmpMatrix(m_colorPatchDimension, m_colorPatchDimension)
 {
+    // Check if we passed the sample count as a channel of the
+    // histograms image. If so, do not count it.
+    if (m_nbOfBins % 3 != 0)
+    {
+        --m_nbOfBins;
+        assert(m_nbOfBins % 3 == 0);
+    }
 }
 
 void DenoisingUnit::denoisePatchAndSimilarPatches(
@@ -120,22 +126,25 @@ void DenoisingUnit::selectSimilarPatches()
         m_searchWindowRadius,
         m_patchRadius);
 
-    m_similarPatchesCenters.clear();
-    m_similarPatchesCenters.reserve(m_maxNbOfSimilarPatches);
+    m_nbOfSimilarPatches = 0;
+
+    m_similarPatchesCenters.resize(m_maxNbOfSimilarPatches);
 
     for (PixelPosition neighborPixel : searchWindow)
     {
-        if (histogramPatchDistance(m_mainPatchCenter, neighborPixel) <= m_histogramDistanceThreshold)
-            m_similarPatchesCenters.push_back(neighborPixel);
+        const float patchDist = histogramPatchDistance(m_mainPatchCenter, neighborPixel);
+
+        if (patchDist <= m_histogramDistanceThreshold)
+            m_similarPatchesCenters[m_nbOfSimilarPatches++] = neighborPixel;
     }
 
-    m_nbOfSimilarPatches = static_cast<int>(m_similarPatchesCenters.size());
     assert(m_nbOfSimilarPatches > 0);
 
+    m_similarPatchesCenters.resize(m_nbOfSimilarPatches);
     m_nbOfSimilarPatchesInv = 1.0f / m_nbOfSimilarPatches;
 }
 
-inline float DenoisingUnit::histogramPatchDistance(
+float DenoisingUnit::histogramPatchDistance(
     const PixelPosition&                i_rPatchCenter1,
     const PixelPosition&                i_rPatchCenter2)
 {
@@ -157,10 +166,14 @@ inline float DenoisingUnit::histogramPatchDistance(
         totalNbOfNonBoth0Bins += nbOfNonBoth0Bins;
     }
 
+    // If the histograms have no bins in common, don't consider them close.
+    if (totalNbOfNonBoth0Bins == 0)
+        return numeric_limits<float>::max();
+
     return summedDistance / totalNbOfNonBoth0Bins;
 }
 
-inline float DenoisingUnit::pixelSummedHistogramDistance(
+float DenoisingUnit::pixelSummedHistogramDistance(
     int&                                i_rNbOfNonBoth0Bins,
     const PixelPosition&                i_rPixel1,
     const PixelPosition&                i_rPixel2)
@@ -168,7 +181,7 @@ inline float DenoisingUnit::pixelSummedHistogramDistance(
     i_rNbOfNonBoth0Bins = 0;
     const float* pHistogram1Val = &(m_pHistogramImage->get(i_rPixel1, 0));
     const float* pHistogram2Val = &(m_pHistogramImage->get(i_rPixel2, 0));
-    float binValue1, binValue2;
+
     float nbOfSamples1 = m_pNbOfSamplesImage->get(i_rPixel1, 0);
     float nbOfSamples2 = m_pNbOfSamplesImage->get(i_rPixel2, 0);
 
@@ -176,10 +189,10 @@ inline float DenoisingUnit::pixelSummedHistogramDistance(
 
     for (int binIndex = 0; binIndex < m_nbOfBins; ++binIndex)
     {
-        binValue1 = *pHistogram1Val++;
-        binValue2 = *pHistogram2Val++;
+        const float binValue1 = *pHistogram1Val++;
+        const float binValue2 = *pHistogram2Val++;
 
-        if (binValue1 + binValue2 <= 1.0f) // TEMPORARY
+        if (binValue1 + binValue2 <= 1.0f) // To avoid problems due to small values.
             continue;
 
         ++i_rNbOfNonBoth0Bins;
@@ -339,11 +352,11 @@ void DenoisingUnit::pickColorPatchesFromColorImage(
 void DenoisingUnit::empiricalMean(
     VectorXf&                           o_rMean,
     const vector<VectorXf>&             i_rPointCloud,
-    int                                 i_nbOfPoints) const
+    size_t                              i_nbOfPoints) const
 {
     o_rMean.fill(0.0f);
 
-    for (int i = 0; i < i_nbOfPoints; ++i)
+    for (size_t i = 0; i < i_nbOfPoints; ++i)
         o_rMean += i_rPointCloud[i];
 
     o_rMean *= 1.0f / i_nbOfPoints;
@@ -353,25 +366,25 @@ void DenoisingUnit::centerPointCloud(
     vector<VectorXf>&                   o_rCenteredPointCloud,
     VectorXf&                           o_rMean,
     const vector<VectorXf>&             i_rPointCloud,
-    int                                 i_nbOfPoints) const
+    size_t                              i_nbOfPoints) const
 {
     vector<VectorXf>::iterator it = o_rCenteredPointCloud.begin();
 
-    for (int i = 0; i < i_nbOfPoints; ++i)
+    for (size_t i = 0; i < i_nbOfPoints; ++i)
         *it++ = i_rPointCloud[i] - o_rMean;
 }
 
 void DenoisingUnit::empiricalCovarianceMatrix(
     MatrixXf&                           o_rCovMat,
     const vector<VectorXf>&             i_rCenteredPointCloud,
-    int                                 i_nbOfPoints) const
+    size_t                              i_nbOfPoints) const
 {
     int d = static_cast<int>(o_rCovMat.rows());
     assert(d == o_rCovMat.cols());
     assert(d == i_rCenteredPointCloud[0].rows());
     o_rCovMat.fill(0.0f);
 
-    for (int i = 0; i < i_nbOfPoints; ++i)
+    for (size_t i = 0; i < i_nbOfPoints; ++i)
     {
         for (int c = 0; c < d; ++c)
         {
@@ -522,7 +535,7 @@ void DenoisingUnit::finalDenoisingMatrixMultiplication(
     const Eigen::MatrixXf&              i_rInversedCovMat,
     const std::vector<Eigen::VectorXf>& i_rCenteredNoisyColorPatches)
 {
-    for (int i = 0; i < m_nbOfSimilarPatches; ++i)
+    for (size_t i = 0; i < m_nbOfSimilarPatches; ++i)
     {
         m_tmpVec = i_rInversedCovMat * i_rCenteredNoisyColorPatches[i];
         m_tmpVec *= -1.0f;
@@ -534,7 +547,7 @@ void DenoisingUnit::finalDenoisingMatrixMultiplication(
 
 void DenoisingUnit::aggregateOutputPatches()
 {
-    int patchIndex = 0;
+    size_t patchIndex = 0;
 
     for (const PixelPosition& rSimilarPatchCenter : m_similarPatchesCenters)
     {

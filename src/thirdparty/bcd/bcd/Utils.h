@@ -13,6 +13,10 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+// Standard headers.
+#include <cfloat>
+#include <cmath>
+
 //  A macro to mark a variable as unused.
 
 #if defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 6)))
@@ -25,6 +29,15 @@
 
 namespace bcd
 {
+
+inline bool isFinite(const float x)
+{
+#ifdef _WIN32
+    return _finite(x) != 0;
+#else
+    return !(std::isnan(x) || std::isinf(x));
+#endif
+}
 
 template<typename T>
 class DeepImage;

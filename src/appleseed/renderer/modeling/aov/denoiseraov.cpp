@@ -426,7 +426,11 @@ void DenoiserAOV::compute_covariances_image(Deepimf& covariances) const
             if (sample_count != 0.0f)
             {
                 const float rcp_sample_count = 1.0f / sample_count;
-                const float bias_correction_factor = 1.0f / (1.0f - rcp_sample_count);
+
+                const float bias_correction_factor =
+                    sample_count == 1.0f
+                        ? 1.0f
+                        : 1.0f / (1.0f - rcp_sample_count);
 
                 // Compute the mean.
                 float mean[3];
