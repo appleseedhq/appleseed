@@ -170,8 +170,9 @@ html_theme_options = {
     'navbar_links': [
         ("Features", "features/features"),
         ("Installation", "installation/installation"),
-        ("Reference", "shaders/shaders"),
-        ("Tutorials", "tutorials/tutorials"),
+        ("Usage", "usage/usage"),
+        ("Reference", "reference/reference"),
+        ("Contributing", "contributing/contributing"),
         ("appleseedhq", "http://appleseedhq.net", True),
         ("vimeo", "https://vimeo.com/appleseedhq", True)
     ],
