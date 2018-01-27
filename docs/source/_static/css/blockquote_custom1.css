@@ -7,3 +7,30 @@ blockquote {
     border-left: 0px solid #dddddd;
 }
 
+
+/* Override citation removing the left column for the BibTeX references*/
+table.citation {
+    margin-left: 1px;
+    border-left: solid 1px white;
+    border-collapse: separate;
+}
+
+/* Fix BibTeX alignment */
+
+.label {
+    display: block !important; /* fix citation misaligned */
+}
+
+/* Remove the colon from the copyright text in the footer */
+
+.footer>.container>p:last-child {
+    visibility: hidden;
+    position: absolute;
+    margin-top: -20px;
+}
+
+.footer>.container>p:last-child:after {
+    content: ' © Copyright 2017-2018 The appleseedhq Organization';
+    visibility: visible;
+}
+
