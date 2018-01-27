@@ -1,0 +1,15 @@
+# Sphinx-bootstrap-theme
+sphinx-bootstrap-theme
+
+# bibliography related package
+sphinxcontrib-bibtex
+
+# extra image options
+sphinxcontrib-images
+
+# extra CSS3 image options
+sphinxcontrib-css3image
+
+# run console, python code
+sphinx-autorun
+
