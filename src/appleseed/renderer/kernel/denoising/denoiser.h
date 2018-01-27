@@ -48,10 +48,11 @@ class DenoiserOptions
     float   m_min_eigenvalue;                     //  minimum eigen value for matrix inversion
     bool    m_use_random_pixel_order;             //  true means the pixel will be processed in a random order ; could be useful to remove some "grid" artifacts
     bool    m_prefilter_spikes;                   //  true means a spike removal prefiltering will be applied
-    float   m_prefilter_threshold_stdev_factor;   //  see SpikeRemovalFilter::filter argument
+    float   m_prefilter_threshold_stddev_factor;  //  see SpikeRemovalFilter::filter argument
     float   m_marked_pixels_skipping_probability; //  1 means the marked centers of the denoised patches will be skipped to accelerate a lot the computations
     size_t  m_num_scales;                         //  number of pyramid levels to use.
     size_t  m_num_cores;                          //  number of cores used to denoise. O means using all the cores available.
+    bool    m_mark_invalid_pixels;
 
     DenoiserOptions()
       : m_histogram_patch_distance_threshold(1.f)
@@ -60,10 +61,11 @@ class DenoiserOptions
       , m_min_eigenvalue(1.e-8f)
       , m_use_random_pixel_order(false)
       , m_prefilter_spikes(false)
-      , m_prefilter_threshold_stdev_factor(2.f)
+      , m_prefilter_threshold_stddev_factor(2.f)
       , m_marked_pixels_skipping_probability(1.f)
       , m_num_scales(3)
       , m_num_cores(0)
+      , m_mark_invalid_pixels(false)
     {
     }
 };

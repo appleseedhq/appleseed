@@ -402,12 +402,17 @@ void Frame::denoise(
 {
     DenoiserOptions options;
 
-    options.m_prefilter_spikes = m_params.get_optional<bool>("prefilter_spikes", false);
+    options.m_prefilter_spikes = m_params.get_optional<bool>("prefilter_spikes", true);
 
-    options.m_prefilter_threshold_stdev_factor =
+    options.m_prefilter_threshold_stddev_factor =
         m_params.get_optional<float>(
             "spike_threshold",
-            options.m_prefilter_threshold_stdev_factor);
+            options.m_prefilter_threshold_stddev_factor);
+
+    options.m_prefilter_threshold_stddev_factor =
+        m_params.get_optional<float>(
+            "spike_threshold",
+            options.m_prefilter_threshold_stddev_factor);
 
     options.m_histogram_patch_distance_threshold =
         m_params.get_optional<float>(
@@ -420,6 +425,9 @@ void Frame::denoise(
             options.m_num_scales);
 
     options.m_num_cores = thread_count;
+
+    options.m_mark_invalid_pixels =
+        m_params.get_optional<bool>("mark_invalid_pixels", false);
 
     assert(impl->m_denoiser_aov);
 
@@ -1024,7 +1032,7 @@ DictionaryArray FrameFactory::get_input_metadata()
             .insert("label", "Prefilter Spikes")
             .insert("type", "boolean")
             .insert("use", "optional")
-            .insert("default", "false")
+            .insert("default", "true")
             .insert("visible_if",
                 Dictionary()
                     .insert("denoiser", "on")));
@@ -1082,6 +1090,17 @@ DictionaryArray FrameFactory::get_input_metadata()
                     .insert("type", "hard"))
             .insert("use", "optional")
             .insert("default", "3")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("denoiser", "on")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "mark_invalid_pixels")
+            .insert("label", "Mark Invalid pixels")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "false")
             .insert("visible_if",
                 Dictionary()
                     .insert("denoiser", "on")));

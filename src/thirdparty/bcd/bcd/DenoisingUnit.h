@@ -62,18 +62,18 @@ class DenoisingUnit
     void empiricalMean(
         Eigen::VectorXf&                    o_rMean,
         const std::vector<Eigen::VectorXf>& i_rPointCloud,
-        int i_nbOfPoints) const;
+        size_t                              i_nbOfPoints) const;
 
     void centerPointCloud(
-        std::vector<Eigen::VectorXf>& o_rCenteredPointCloud,
-        Eigen::VectorXf& o_rMean,
+        std::vector<Eigen::VectorXf>&       o_rCenteredPointCloud,
+        Eigen::VectorXf&                    o_rMean,
         const std::vector<Eigen::VectorXf>& i_rPointCloud,
-        int                                 i_nbOfPoints) const;
+        size_t                              i_nbOfPoints) const;
 
     void empiricalCovarianceMatrix(
         Eigen::MatrixXf&                    o_rCovMat,
         const std::vector<Eigen::VectorXf>& i_rCenteredPointCloud,
-        int                                 i_nbOfPoints) const;
+        size_t                              i_nbOfPoints) const;
 
     void addCovMatPatchToMatrix(
         Eigen::MatrixXf&                    io_rMatrix,
@@ -107,55 +107,57 @@ class DenoisingUnit
     void aggregateOutputPatches();
 
   private:
-    Denoiser& m_rDenoiser;
-    int m_width;
-    int m_height;
+    typedef Eigen::SelfAdjointEigenSolver<Eigen::MatrixXf> EigenSolver;
 
-    float m_histogramDistanceThreshold; // Threshold to determine neighbor
-                                        // patches of similar natures
-    int m_patchRadius;                  // Patch has (1 + 2 x m_patchRadius)^2 pixels
-    int m_searchWindowRadius;           // Search windows (for neighbors) spreads across
-                                        // (1 + 2 x m_patchRadius)^2 pixels
+    Denoiser&                       m_rDenoiser;
+    int                             m_width;
+    int                             m_height;
 
-    int m_nbOfPixelsInPatch;
-    int m_maxNbOfSimilarPatches;
-    int m_colorPatchDimension;
+    float                           m_histogramDistanceThreshold;   // Threshold to determine neighbor
+                                                                    // patches of similar natures
+    int                             m_patchRadius;                  // Patch has (1 + 2 x m_patchRadius)^2 pixels
+    int                             m_searchWindowRadius;           // Search windows (for neighbors) spreads across
+                                                                    // (1 + 2 x m_patchRadius)^2 pixels
 
-    const Deepimf* m_pColorImage;
-    const Deepimf* m_pNbOfSamplesImage;
-    const Deepimf* m_pHistogramImage;
-    const Deepimf* m_pCovarianceImage;
+    size_t                          m_nbOfPixelsInPatch;
+    size_t                          m_maxNbOfSimilarPatches;
+    size_t                          m_colorPatchDimension;
 
-    const Deepimf* m_pNbOfSamplesSqrtImage;
+    const Deepimf*                  m_pColorImage;
+    const Deepimf*                  m_pNbOfSamplesImage;
+    const Deepimf*                  m_pHistogramImage;
+    const Deepimf*                  m_pCovarianceImage;
 
-    Deepimf* m_pOutputSummedColorImage;
-    DeepImage<int>* m_pEstimatesCountImage;
-    DeepImage<bool>* m_pIsCenterOfAlreadyDenoisedPatchImage; // For the "marking strategy"
+    const Deepimf*                  m_pNbOfSamplesSqrtImage;
 
-    int m_nbOfBins; // Number of bins in histograms
+    Deepimf*                        m_pOutputSummedColorImage;
+    DeepImage<int>*                 m_pEstimatesCountImage;
+    DeepImage<bool>*                m_pIsCenterOfAlreadyDenoisedPatchImage; // For the "marking strategy"
 
-    PixelPosition m_mainPatchCenter;
-    std::vector<PixelPosition> m_similarPatchesCenters;
+    size_t                          m_nbOfBins;
 
-    int m_nbOfSimilarPatches;
-    float m_nbOfSimilarPatchesInv;
+    PixelPosition                   m_mainPatchCenter;
+    std::vector<PixelPosition>      m_similarPatchesCenters;
 
-    CovMatPatch m_noiseCovPatchesMean;
+    size_t                          m_nbOfSimilarPatches;
+    float                           m_nbOfSimilarPatchesInv;
 
-    std::vector<Eigen::VectorXf> m_colorPatches;
-    Eigen::VectorXf m_colorPatchesMean;
-    std::vector<Eigen::VectorXf> m_centeredColorPatches;
-    Eigen::MatrixXf m_colorPatchesCovMat;
-    Eigen::MatrixXf m_clampedCovMat;
-    Eigen::MatrixXf m_inversedCovMat;
-    std::vector<Eigen::VectorXf> m_denoisedColorPatches;
+    CovMatPatch                     m_noiseCovPatchesMean;
 
-    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXf> m_eigenSolver;
+    std::vector<Eigen::VectorXf>    m_colorPatches;
+    Eigen::VectorXf                 m_colorPatchesMean;
+    std::vector<Eigen::VectorXf>    m_centeredColorPatches;
+    Eigen::MatrixXf                 m_colorPatchesCovMat;
+    Eigen::MatrixXf                 m_clampedCovMat;
+    Eigen::MatrixXf                 m_inversedCovMat;
+    std::vector<Eigen::VectorXf>    m_denoisedColorPatches;
+
+    EigenSolver                     m_eigenSolver;
 
     // Temporary auxiliary data
-    CovMatPatch m_tmpNoiseCovPatch; // Used during computeNoiseCovPatchesMean
-    Eigen::VectorXf m_tmpVec;       // Used during finalDenoisingMatrixMultiplication
-    Eigen::MatrixXf m_tmpMatrix;    // Used for inverse and eigen values clamping
+    CovMatPatch                     m_tmpNoiseCovPatch; // Used during computeNoiseCovPatchesMean
+    Eigen::VectorXf                 m_tmpVec;           // Used during finalDenoisingMatrixMultiplication
+    Eigen::MatrixXf                 m_tmpMatrix;        // Used for inverse and eigen values clamping
 };
 
 } // namespace bcd
