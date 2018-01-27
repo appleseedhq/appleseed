@@ -69,7 +69,7 @@ Reflection Models
 Subsurface Scattering
 ---------------------
 
-Appleseed provides state of the art raytraced, animation-friendly subsurface scattering, fully exposed to OSL.
+appleseed provides state-of-the art raytraced, animation-friendly subsurface scattering, fully exposed to OSL.
 There is no precomputation and it's available in interactive rendering. 
 SSS sets are also supported.
 
