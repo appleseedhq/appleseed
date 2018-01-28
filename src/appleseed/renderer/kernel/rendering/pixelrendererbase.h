@@ -42,6 +42,7 @@
 
 // Forward declarations.
 namespace foundation    { class Tile; }
+namespace renderer      { class AOVAccumulatorContainer; }
 namespace renderer      { class Frame; }
 namespace renderer      { class TileStack; }
 
@@ -72,8 +73,13 @@ class PixelRendererBase
         TileStack&                  aov_tiles) override;
 
   protected:
-    void on_pixel_begin();
-    void on_pixel_end(const foundation::Vector2i& pi);
+    void on_pixel_begin(
+        const foundation::Vector2i& pi,
+        AOVAccumulatorContainer&    aov_accumulators);
+
+    void on_pixel_end(
+        const foundation::Vector2i& pi,
+        AOVAccumulatorContainer&    aov_accumulators);
 
     void signal_invalid_sample();
 

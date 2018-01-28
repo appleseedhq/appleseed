@@ -123,7 +123,7 @@ namespace
         {
             const size_t aov_count = frame.aov_images().size();
 
-            on_pixel_begin();
+            on_pixel_begin(pi, aov_accumulators);
 
             if (m_params.m_decorrelate)
             {
@@ -237,7 +237,7 @@ namespace
                 }
             }
 
-            on_pixel_end(pi);
+            on_pixel_end(pi, aov_accumulators);
         }
 
         StatisticsVector get_statistics() const override
