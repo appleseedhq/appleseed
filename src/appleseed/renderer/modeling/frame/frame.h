@@ -132,6 +132,9 @@ class APPLESEED_DLLSYMBOL Frame
         const double    sample_x,               // x coordinate of the sample in the pixel, in [0,1)
         const double    sample_y) const;        // y coordinate of the sample in the pixel, in [0,1)
 
+    // Do any post-process needed by AOV images.
+    void post_process_aov_images() const;
+
     struct RenderStampInfo
     {
         double m_render_time;   // in seconds

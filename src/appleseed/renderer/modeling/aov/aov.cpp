@@ -94,6 +94,9 @@ void AOV::clear_image()
     m_image->clear(Color4f(0.0f));
 }
 
+void AOV::post_process_image()
+{
+}
 
 //
 // ColorAOV class implementation.
@@ -133,6 +136,11 @@ UnfilteredAOV::UnfilteredAOV(const char* name, const ParamArray& params)
 UnfilteredAOV::~UnfilteredAOV()
 {
     delete m_image;
+}
+
+bool UnfilteredAOV::has_color_data() const
+{
+    return false;
 }
 
 void UnfilteredAOV::create_image(

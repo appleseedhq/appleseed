@@ -371,6 +371,9 @@ namespace
                     return;
                 }
 
+                // Post-process AOVs.
+                m_frame.post_process_aov_images();
+
                 //
                 // Denoising pass.
                 //
