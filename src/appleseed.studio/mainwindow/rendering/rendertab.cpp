@@ -425,7 +425,6 @@ void RenderTab::recreate_handlers()
         new PixelInspectorHandler(
             m_render_widget,
             *m_mouse_tracker.get(),
-            m_project_explorer,
             m_project));
 
     // Camera handler.
