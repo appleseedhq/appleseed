@@ -89,6 +89,9 @@ class APPLESEED_DLLSYMBOL AOV
     // Clear the AOV image to default values.
     virtual void clear_image();
 
+    // Apply any post processing needed to the AOV image.
+    virtual void post_process_image();
+
   protected:
     friend class AOVAccumulatorContainer;
     friend class Frame;
@@ -144,6 +147,9 @@ class UnfilteredAOV
 
     // Destructor.
     ~UnfilteredAOV() override;
+
+    // Return true if this AOV contains color data.
+    bool has_color_data() const override;
 
   protected:
     void create_image(

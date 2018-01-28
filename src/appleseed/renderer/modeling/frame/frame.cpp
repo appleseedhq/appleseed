@@ -258,6 +258,9 @@ void Frame::clear_main_and_aov_images()
 
     for (size_t i = 0, e = aovs().size(); i < e; ++i)
         aovs().get_by_index(i)->clear_image();
+
+    for (size_t i = 0, e = internal_aovs().size(); i < e; ++i)
+        internal_aovs().get_by_index(i)->clear_image();
 }
 
 ImageStack& Frame::aov_images() const
@@ -323,6 +326,15 @@ const AABB2u& Frame::get_crop_window() const
 size_t Frame::get_pixel_count() const
 {
     return impl->m_crop_window.volume();
+}
+
+void Frame::post_process_aov_images() const
+{
+    for (size_t i = 0, e = aovs().size(); i < e; ++i)
+        aovs().get_by_index(i)->post_process_image();
+
+    for (size_t i = 0, e = internal_aovs().size(); i < e; ++i)
+        internal_aovs().get_by_index(i)->post_process_image();
 }
 
 bool Frame::is_render_stamp_enabled() const
@@ -587,8 +599,12 @@ namespace
         const Image&            image,
         const ImageAttributes&  image_attributes)
     {
+        const CanvasProperties& props = image.properties();
+
         Image transformed_image(image);
-        transform_to_srgb(transformed_image);
+
+        if (props.m_channel_count == 4)
+            transform_to_srgb(transformed_image);
 
         create_parent_directories(file_path);
 
