@@ -113,7 +113,11 @@ void PixelInspectorHandler::show_tooltip()
         pix.y < 0 ||
         pix.x >= static_cast<int>(props.m_canvas_width) ||
         pix.y >= static_cast<int>(props.m_canvas_height))
+    {
+        QToolTip::hideText();
+
         return;
+    }
 
     Color4f linear_rgba;
     image.get_pixel(
