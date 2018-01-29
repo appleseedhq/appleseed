@@ -119,12 +119,12 @@ struct ShaderQuery::Impl
         if (param.isstruct)
             dictionary.insert("structname", param.structname);
 
-        const bool is_array = (param.type.arraylen != 0);
+        const bool is_array = param.type.arraylen != 0;
         dictionary.insert("isarray", is_array);
         if (is_array)
             dictionary.insert("arraylen", param.type.arraylen);
 
-        if (param.validdefault && is_array == false)
+        if (param.validdefault && !is_array)
             copy_value_to_dict(param, "default", dictionary);
 
         if (!param.metadata.empty())

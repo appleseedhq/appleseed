@@ -233,7 +233,7 @@ bool MultiscaleDenoiser::denoise()
 
         const bool success = denoiser.denoise();
 
-        if (success == false)
+        if (!success)
             return false;
 
         if (m_callbacks && m_callbacks->isAborted())
