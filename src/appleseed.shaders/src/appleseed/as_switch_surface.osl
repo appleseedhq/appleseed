@@ -28,70 +28,70 @@
 
 #include "appleseed/transform/as_transform_helpers.h"
 
-shader asSwitchTexture
+shader asSwitchSurface
 [[
-    string as_maya_node_name = "asSwitchTexture",
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
-    string help = "Texture variation utility shader",
-    string icon = "asSwitchTexture.png",
-    int as_maya_type_id = 0x001279da
+    string as_maya_node_name = "asSwitchSurface",
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
+    string help = "Material variation utility shader",
+    string icon = "asSwitchSurface.png",
+    int as_maya_type_id = 0x001279fe
 ]]
 (
-    color in_color = color(0.9, 0.2, 0.1)
+    closure color in_color = 0
     [[
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
-        string label = "Input Color 0",
-        string page = "Color"
+        string label = "Input Surface 0",
+        string page = "Surface"
     ]],
-    color in_color1 = color(0)
+    closure color in_color1 = 0
     [[
         string as_maya_attribute_name = "color1",
         string as_maya_attribute_short_name = "c1",
-        string label = "Input Color 1",
-        string page = "Color"
+        string label = "Input Surface 1",
+        string page = "Surface"
     ]],
-    color in_color2 = color(0)
+    closure color in_color2 = 0
     [[
         string as_maya_attribute_name = "color2",
         string as_maya_attribute_short_name = "c2",
-        string label = "Input Color 2",
-        string page = "Color"
+        string label = "Input Surface 2",
+        string page = "Surface"
     ]],
-    color in_color3 = color(0)
+    closure color in_color3 = 0
     [[
         string as_maya_attribute_name = "color3",
         string as_maya_attribute_short_name = "c3",
-        string label = "Input Color 3",
-        string page = "Color"
+        string label = "Input Surface 3",
+        string page = "Surface"
     ]],
-    color in_color4 = color(0)
+    closure color in_color4 = 0
     [[
         string as_maya_attribute_name = "color4",
         string as_maya_attribute_short_name = "c4",
-        string label = "Input Color 4",
-        string page = "Color"
+        string label = "Input Surface 4",
+        string page = "Surface"
     ]],
-    color in_color5 = color(0)
+    closure color in_color5 = 0
     [[
         string as_maya_attribute_name = "color5",
         string as_maya_attribute_short_name = "c5",
-        string label = "Input Color 5",
-        string page = "Color"
+        string label = "Input Surface 5",
+        string page = "Surface"
     ]],
-    color in_color6 = color(0)
+    closure color in_color6 = 0
     [[
         string as_maya_attribute_name = "color6",
         string as_maya_attribute_short_name = "c6",
-        string label = "Input Color 6",
-        string page = "Color"
+        string label = "Input Surface 6",
+        string page = "Surface"
     ]],
-    color in_color7 = color(0)
+    closure color in_color7 = 0
     [[
         string as_maya_attribute_name = "color7",
         string as_maya_attribute_short_name = "c7",
-        string label = "Input Color 7",
-        string page = "Color",
+        string label = "Input Surface 7",
+        string page = "Surface",
         int divider = 1
     ]],
     int in_cycle_mode = 0
@@ -101,11 +101,25 @@ shader asSwitchTexture
         string widget = "mapper",
         string options = "Cycle:0|Clamp:1",
         string label = "Cycle Mode",
-        string page = "Color",
+        string page = "Surface",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    int in_connected_slots_only = 1
+    [[
+        string as_maya_attribute_name = "connectedSlotsOnly",
+        string as_maya_attribute_short_name = "cso",
+        string widget = "checkBox",
+        string label = "Connected Slots Only",
+        string page = "Surface",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "If on (default), restricts the variation to inputs which have upstream connections only. If off uses all inputs, even if they contain nothing."
     ]],
     int in_manifold_type = 0
     [[
@@ -162,7 +176,7 @@ shader asSwitchTexture
         string page = "Manifold.String"
     ]],
 
-    output color out_outColor = color(0)
+    output closure color out_outColor = 0
     [[
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
@@ -171,27 +185,99 @@ shader asSwitchTexture
     ]]
 )
 {
-    color textures[8] = {
+    if (in_connected_slots_only)
+    {
+        closure color surfaces[8];
+        int ndx = 0;
+
+        if (isconnected(in_color))
+        {
+            surfaces[ndx++] = in_color;
+        }
+        if (isconnected(in_color1))
+        {
+            surfaces[ndx++] = in_color1;
+        }
+        if (isconnected(in_color2))
+        {
+            surfaces[ndx++] = in_color2;
+        }
+        if (isconnected(in_color3))
+        {
+            surfaces[ndx++] = in_color3;
+        }
+        if (isconnected(in_color4))
+        {
+            surfaces[ndx++] = in_color4;
+        }
+        if (isconnected(in_color5))
+        {
+            surfaces[ndx++] = in_color5;
+        }
+        if (isconnected(in_color6))
+        {
+            surfaces[ndx++] = in_color6;
+        }
+        if (isconnected(in_color7))
+        {
+            surfaces[ndx++] = in_color7;
+        }
+
+        if (ndx == 0)
+        {
+            return;
+        }
+        else if (ndx == 1)
+        {
+            out_outColor = surfaces[0];
+        }
+        else
+        {
+            float grey_id = 0.0;
+            color cell_id = color(0);
+            int hash_id = 0, len = ndx - 1;
+
+            compute_id_manifold(
+                in_manifold_type,
+                in_domain,
+                in_seed,
+                in_expression,
+                hash_id,
+                cell_id,
+                grey_id);
+
+            int index = (in_cycle_mode == 0)
+                ? (int) mod(hash_id, len)
+                : (int) clamp(grey_id * len, 0, len);
+
+            out_outColor = surfaces[index];
+        }
+    }
+    else
+    {
+        float grey_id = 0.0;
+        color cell_id = color(0);
+        int hash_id = 0;
+
+        closure color surfaces[8] = {
             in_color, in_color1, in_color2, in_color3,
             in_color4, in_color5, in_color6, in_color7};
-                    
-    int len = arraylength(textures) - 1, hash_id = 0;
 
-    float grey_id = 0.0;
-    color cell_id = color(0);
+        int len = arraylength(surfaces) - 1;
 
-    compute_id_manifold(
-        in_manifold_type,
-        in_domain,
-        in_seed,
-        in_expression,
-        hash_id,
-        cell_id,
-        grey_id);
+        compute_id_manifold(
+            in_manifold_type,
+            in_domain,
+            in_seed,
+            in_expression,
+            hash_id,
+            cell_id,
+            grey_id);
 
-    int index = (in_cycle_mode == 0)
-        ? (int) mod(hash_id, len)
-        : (int) clamp(grey_id * len, 0, len);
+        int index = (in_cycle_mode == 0)
+            ? (int) mod(hash_id, len)
+            : (int) clamp(grey_id * len, 0, len);
 
-    out_outColor = textures[index];
+        out_outColor = surfaces[index];
+    }
 }
