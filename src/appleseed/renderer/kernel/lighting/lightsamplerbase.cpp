@@ -189,8 +189,8 @@ void LightSamplerBase::collect_emitting_triangles(
                     pa_index < back_materials.size() ? back_materials[pa_index] : nullptr;
 
                 // Skip triangles that don't emit light.
-                if ((front_material == nullptr || front_material->has_emission() == false) &&
-                    (back_material == nullptr || back_material->has_emission() == false))
+                if ((front_material == nullptr || !front_material->has_emission()) &&
+                    (back_material == nullptr || !back_material->has_emission()))
                     continue;
 
                 // Retrieve object instance space vertices of the triangle.
@@ -257,7 +257,7 @@ void LightSamplerBase::collect_emitting_triangles(
                 {
                     // Retrieve the material; skip sides without a material or without emission.
                     const Material* material = side == 0 ? front_material : back_material;
-                    if (material == nullptr || material->has_emission() == false)
+                    if (material == nullptr || !material->has_emission())
                         continue;
 
                     // Accumulate the object area for OSL shaders.

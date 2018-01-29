@@ -954,7 +954,7 @@ bool ProjectFileWriter::write_plain_project_file(
 
             for (const auto& line : lines)
             {
-                if (line.empty() == false)
+                if (!line.empty())
                     fprintf(file, "<!-- %s -->\n", line.c_str());
             }
         }

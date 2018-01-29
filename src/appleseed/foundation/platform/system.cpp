@@ -32,6 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/arch.h"
+#include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/thread.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/string.h"
@@ -874,7 +875,9 @@ void System::print_information(Logger& logger)
         "  instruction sets              %s\n"
 #endif
         "  physical memory               size %s\n"
-        "  virtual memory                size %s",
+        "  virtual memory                size %s\n"
+        "  default wallclock timer       %s hz\n"
+        "  default processor timer       %s hz",
         get_cpu_architecture(),
         pretty_uint(get_logical_cpu_core_count()).c_str(),
         pretty_size(get_l1_data_cache_size()).c_str(),
@@ -887,7 +890,9 @@ void System::print_information(Logger& logger)
         isa.c_str(),
 #endif
         pretty_size(get_total_physical_memory_size()).c_str(),
-        pretty_size(get_total_virtual_memory_size()).c_str());
+        pretty_size(get_total_virtual_memory_size()).c_str(),
+        pretty_uint(DefaultWallclockTimer().frequency()).c_str(),
+        pretty_uint(DefaultProcessorTimer().frequency()).c_str());
 }
 
 const char* System::get_cpu_architecture()
