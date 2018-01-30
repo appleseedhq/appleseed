@@ -46,6 +46,9 @@ namespace renderer
 class BSSRDFSample
 {
   public:
+    // Inputs.
+    int             m_modes;
+
     // Outputs.
     ShadingPoint    m_incoming_point;   // sampled incoming point
     float           m_probability;      // PDF value

@@ -35,6 +35,8 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
+#include "renderer/modeling/bsdf/lambertianbrdf.h"
+#include "renderer/modeling/bsdf/glassbsdf.h"
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/bssrdf/sss.h"
 
@@ -46,6 +48,7 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
+#include "foundation/utility/arena.h"
 #include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
@@ -53,7 +56,6 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace foundation    { class Arena; }
 namespace renderer      { class BSDFSample; }
 namespace renderer      { class BSSRDFSample; }
 namespace renderer      { class ShadingContext; }
@@ -100,12 +102,16 @@ namespace
             m_inputs.declare("mfp_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("ior", InputFormatFloat);
             m_inputs.declare("fresnel_weight", InputFormatFloat, "1.0");
-            m_inputs.declare("zero_scattering_weight", InputFormatFloat, "1.0");
+            m_inputs.declare("surface_roughness", InputFormatFloat, "0.01");
+            m_inputs.declare("highlight_falloff", InputFormatFloat, "0.4");
 
-            const string brdf_name = string(name) + "_brdf";
-            m_brdf = LambertianBRDFFactory().create(brdf_name.c_str(), ParamArray()).release();
-            m_brdf_data.m_reflectance.set(1.0f);
-            m_brdf_data.m_reflectance_multiplier = 1.0f;
+            const string lambertian_brdf_name = string(name) + "_lambertian_brdf";
+            m_lambertian_brdf = LambertianBRDFFactory().create(lambertian_brdf_name.c_str(), ParamArray()).release();
+            m_lambertian_brdf_data.m_reflectance.set(1.0f);
+            m_lambertian_brdf_data.m_reflectance_multiplier = 1.0f;
+
+            const string glass_bsdf_name = string(name) + "_glass_bsdf";
+            m_glass_bsdf = GlassBSDFFactory().create(glass_bsdf_name.c_str(), ParamArray()).release();
         }
 
         void release() override
@@ -116,6 +122,34 @@ namespace
         const char* get_model() const override
         {
             return Model;
+        }
+
+        bool on_frame_begin(
+            const Project&              project,
+            const BaseGroup*            parent,
+            OnFrameBeginRecorder&       recorder,
+            IAbortSwitch*               abort_switch) override
+        {
+            if (!BSSRDF::on_frame_begin(project, parent, recorder, abort_switch))
+                return false;
+
+            const EntityDefMessageContext context("bssrdf", this);
+
+            const string surface_bsdf =
+                m_params.get_required<string>(
+                    "surface_bsdf_model",
+                    "lambertian",
+                    { "lambertian", "glass" },
+                    context);
+
+            m_use_glass_bsdf = surface_bsdf == "glass";
+            if (surface_bsdf == "lambertian")
+                m_use_glass_bsdf = false;
+            else if (surface_bsdf == "glass")
+                m_use_glass_bsdf = true;
+            else return false;
+
+            return true;
         }
 
         size_t compute_input_data_size() const override
@@ -152,7 +186,38 @@ namespace
                     precomputed.m_rcp_diffusion_length = kappa;
             }
 
-            values->m_precomputed.m_eta = compute_eta(shading_point, values->m_ior);
+            precomputed.m_eta = compute_eta(shading_point, values->m_ior);
+        }
+
+        static GlassBSDFInputValues* create_glass_inputs(
+            Arena&                              arena,
+            const RandomWalkBSSRDFInputValues*  bssrdf_values)
+        {
+            auto glass_values = arena.allocate_noinit<GlassBSDFInputValues>();
+
+            glass_values->m_refraction_tint.set(1.0f);
+            glass_values->m_anisotropy = 0.0f;
+            glass_values->m_highlight_falloff = bssrdf_values->m_highlight_falloff;
+            glass_values->m_surface_transmittance.set(1.0f);
+            glass_values->m_surface_transmittance_multiplier = 1.0f;
+            glass_values->m_ior = bssrdf_values->m_ior;
+            glass_values->m_roughness = bssrdf_values->m_surface_roughness;
+
+            return glass_values;
+        }
+
+        static bool check_glass_inputs(
+            const GlassBSDFInputValues*         glass_values,
+            const RandomWalkBSSRDFInputValues*  bssrdf_values)
+        {
+            return 
+                feq(glass_values->m_refraction_tint, Spectrum(1.0f), 1.0e-6f) &&
+                glass_values->m_anisotropy == 0.0f &&
+                glass_values->m_highlight_falloff == bssrdf_values->m_highlight_falloff &&
+                feq(glass_values->m_surface_transmittance, Spectrum(1.0f), 1.0e-6f) &&
+                glass_values->m_surface_transmittance_multiplier == 1.0f &&
+                glass_values->m_ior == bssrdf_values->m_ior &&
+                glass_values->m_roughness == bssrdf_values->m_surface_roughness;
         }
 
         static float albedo_from_reflectance(const float r)
@@ -225,59 +290,56 @@ namespace
             const float classical_sampling_prob = compute_classical_sampling_probability(0.0f);
 
             // Initialize BSSRDF value.
-            bssrdf_sample.m_value.set(values->m_weight);
+            bssrdf_sample.m_value.set(1.0f);
             bssrdf_sample.m_probability = 1.0f;
 
-            // Pick initial random-walk direction uniformly at random.
-            sampling_context.split_in_place(2, 1);
-            Vector3d initial_dir = sample_hemisphere_uniform(sampling_context.next2<Vector2d>());
-            initial_dir.y = -initial_dir.y;
-            initial_dir = outgoing_point.get_shading_basis().transform_to_parent(initial_dir);
-            ShadingRay ray(
-                outgoing_point.get_point(),
-                initial_dir,
-                outgoing_point.get_time(),
-                VisibilityFlags::ShadowRay,
-                outgoing_point.get_ray().m_depth + 1);
+            Vector3d scattering_point;
+            Vector3f slab_normal;
+            if (m_use_glass_bsdf)
+            {
+                bool volume_scattering_occured;
+                if (!trace_zero_scattering_path_glass(
+                    shading_context,
+                    sampling_context,
+                    extinction,
+                    create_glass_inputs(shading_context.get_arena(), values),
+                    outgoing_point,
+                    outgoing_dir,
+                    bssrdf_sample,
+                    bsdf_sample,
+                    volume_scattering_occured,
+                    scattering_point,
+                    slab_normal))
+                {
+                    return false;
+                }
 
-            // Choose color channel used for distance sampling.
-            sampling_context.split_in_place(1, 2);
-            const float s = sampling_context.next2<float>();
-            const size_t channel = truncate<size_t>(s * Spectrum::size());
-            Spectrum channel_pdf(1.0f / Spectrum::size());
+                if (!volume_scattering_occured) return true;
+            }
+            else
+            {
+                if (!trace_zero_scattering_path_lambertian(
+                    shading_context,
+                    sampling_context,
+                    extinction,
+                    outgoing_point,
+                    outgoing_dir,
+                    bssrdf_sample,
+                    bsdf_sample,
+                    scattering_point,
+                    slab_normal))
+                {
+                    return false;
+                }
+            }
 
-            // Sample distance (we always use classical sampling here).
-            const float distance = sample_exponential_distribution(
-                sampling_context.next2<float>(), extinction[channel]);
-
-            // Trace the initial ray through the object completely.
-            bssrdf_sample.m_incoming_point.clear();
-            shading_context.get_intersector().trace(
-                ray,
-                bssrdf_sample.m_incoming_point,
-                &outgoing_point);
-            if (!bssrdf_sample.m_incoming_point.is_valid())
-                return false;
-            const float ray_length = static_cast<float>(bssrdf_sample.m_incoming_point.get_distance());
-            bool transmitted = ray_length <= distance;
-            compute_transmission(
-                transmitted ? ray_length : distance,
-                extinction,
-                channel_pdf,
-                transmitted,
-                bssrdf_sample.m_value);
-
-            // Determine the closest surface point and corresponding slab normal.
-            const bool outgoing_point_is_closer = distance < 0.5f * ray_length;
-            const Vector3f near_slab_normal(outgoing_point.get_geometric_normal());
-            const Vector3f far_slab_normal(-bssrdf_sample.m_incoming_point.get_geometric_normal());
-            const Vector3f& slab_normal = outgoing_point_is_closer ? near_slab_normal : far_slab_normal;
-            Vector3d current_point = ray.point_at(distance);
-
-            // Continue random walk until we reach the surface from inside.
+            // Initialize the number of iterations.
             size_t n_iteration = 0;
             const size_t MaxIterationsCount = 64;
             const size_t MinRRIteration = 4;
+
+            // Continue random walk until we reach the surface from inside.
+            bool transmitted = false;
             while (!transmitted && ++n_iteration < MaxIterationsCount)
             {
                 if (n_iteration >= MinRRIteration && !test_rr(sampling_context, bssrdf_sample))
@@ -286,7 +348,7 @@ namespace
                 sampling_context.split_in_place(1, 2);
 
                 // Choose color channel used for distance sampling.
-                Spectrum channel_cdf;
+                Spectrum channel_cdf, channel_pdf;
                 build_cdf_and_pdf(bssrdf_sample.m_value, channel_cdf, channel_pdf);
                 const size_t channel =
                     sample_cdf(
@@ -320,11 +382,11 @@ namespace
 
                 // Construct a new ray in the sampled direction.
                 ShadingRay new_ray(
-                    current_point,
+                    scattering_point,
                     Vector3d(direction),
                     outgoing_point.get_time(),
                     VisibilityFlags::ShadowRay,
-                    ray.m_depth + 1);
+                    outgoing_point.get_ray().m_depth + 1);
 
                 // Sample distance assuming that the ray is infinite.
                 const float extinction_bias = 1.0f - cosine * rcp_diffusion_length;
@@ -338,7 +400,7 @@ namespace
                     new_ray,
                     bssrdf_sample.m_incoming_point);
                 transmitted = bssrdf_sample.m_incoming_point.hit_surface();
-                current_point = new_ray.point_at(distance);
+                scattering_point = new_ray.point_at(distance);
                 if (transmitted)
                 {
                     distance = static_cast<float>(
@@ -370,11 +432,8 @@ namespace
             if (!transmitted)
                 return false;  // sample was lost inside the object
 
-            if (n_iteration == 0)
-                bssrdf_sample.m_value *= values->m_zero_scattering_weight;
-
-            bssrdf_sample.m_brdf = m_brdf;
-            bssrdf_sample.m_brdf_data = &m_brdf_data;
+            bssrdf_sample.m_brdf = m_lambertian_brdf;
+            bssrdf_sample.m_brdf_data = &m_lambertian_brdf_data;
             bssrdf_sample.m_incoming_point.flip_side();
 
             // Sample the BSDF at the incoming point.
@@ -387,17 +446,189 @@ namespace
                 bssrdf_sample.m_brdf_data,
                 false,
                 true,
-                ScatteringMode::All,
+                bssrdf_sample.m_modes,
                 bsdf_sample);
 
             // Take Fresnel term into account.
-            const float cos_on = min(abs(dot(
-                near_slab_normal,
-                outgoing_dir)), 1.0f);
             const float cos_in = min(abs(dot(
                 bsdf_sample.m_geometric_normal,
                 bsdf_sample.m_incoming.get_value())), 1.0f);
-            bssrdf_sample.m_value *= compute_total_refraction_intensity(data, cos_on, cos_in);
+            bssrdf_sample.m_value *= compute_total_refraction_intensity(data, cos_in);
+
+            return true;
+        }
+
+        bool trace_zero_scattering_path_glass(
+            const ShadingContext&   shading_context,
+            SamplingContext&        sampling_context,
+            const Spectrum&         extinction,
+            GlassBSDFInputValues*   glass_inputs,
+            const ShadingPoint&     outgoing_point,
+            const Vector3f&         outgoing_dir,
+            BSSRDFSample&           bssrdf_sample,
+            BSDFSample&             bsdf_sample,
+            bool&                   volume_scattering_occured,
+            Vector3d&               scattering_point,
+            Vector3f&               slab_normal) const
+        {
+            // Initialize the number of iterations.
+            size_t n_iteration = 0;
+
+            const ShadingPoint* shading_point_ptr = &outgoing_point;
+            size_t next_point_idx = 0;
+            ShadingPoint shading_points[2];
+
+            // Choose color channel used for distance sampling.
+            sampling_context.split_in_place(1, 1);
+            const float s = sampling_context.next2<float>();
+            const size_t channel = truncate<size_t>(s * Spectrum::size());
+
+            // Trace path until the first volume scattering event occurs or until the ray is refracted.
+            volume_scattering_occured = false;
+            glass_inputs->m_reflection_tint.set(0.0f);
+            Vector3f current_outgoing_dir = outgoing_dir;
+            while (!volume_scattering_occured)
+            {
+                ++n_iteration;
+
+                // Sample glass BSDF.
+                m_glass_bsdf->prepare_inputs(shading_context.get_arena(), *shading_point_ptr, glass_inputs);
+                bsdf_sample = BSDFSample(shading_point_ptr, Dual3f(current_outgoing_dir));
+                m_glass_bsdf->sample(sampling_context, glass_inputs, false, true, ScatteringMode::All, bsdf_sample);
+                const bool crossing_interface =
+                    dot(bsdf_sample.m_outgoing.get_value(), bsdf_sample.m_geometric_normal) *
+                    dot(bsdf_sample.m_incoming.get_value(), bsdf_sample.m_geometric_normal) < 0.0;
+                if (bsdf_sample.m_mode == ScatteringMode::None)
+                    return false;
+
+                assert(n_iteration != 1 || crossing_interface);  // no reflection should happen at the enter point.
+                if (n_iteration != 1 && crossing_interface)
+                {
+                    if (!ScatteringMode::has_glossy(bssrdf_sample.m_modes))
+                        return false;
+                    // The ray was refracted with zero scattering.
+                    glass_inputs->m_reflection_tint.set(0.0f);
+                    m_glass_bsdf->prepare_inputs(shading_context.get_arena(), *shading_point_ptr, glass_inputs);
+                    bssrdf_sample.m_brdf = m_glass_bsdf;
+                    bssrdf_sample.m_brdf_data = glass_inputs;
+                    bssrdf_sample.m_incoming_point = *shading_point_ptr;
+                    return true;
+                }
+                bssrdf_sample.m_value *= bsdf_sample.m_value.m_glossy;
+                bssrdf_sample.m_value /= bsdf_sample.m_probability;
+                glass_inputs->m_reflection_tint.set(1.0f);
+
+                // Sample distance (we always use classical sampling here).
+                sampling_context.split_in_place(1, 1);
+                const double distance = sample_exponential_distribution(
+                    sampling_context.next2<double>(), static_cast<double>(extinction[channel]));
+
+                // Trace the initial ray through the object completely.
+                shading_points[next_point_idx].clear();
+                const Vector3d direction(bsdf_sample.m_incoming.get_value());
+                current_outgoing_dir = Vector3f(-direction);
+                ShadingRay ray(
+                    shading_point_ptr->get_biased_point(direction),
+                    direction,
+                    outgoing_point.get_time(),
+                    VisibilityFlags::SubsurfaceRay,
+                    outgoing_point.get_ray().m_depth + 1);
+                shading_context.get_intersector().trace(
+                    ray,
+                    shading_points[next_point_idx],
+                    shading_point_ptr);
+                if (!shading_points[next_point_idx].is_valid())
+                    return false;
+                const double ray_length = shading_points[next_point_idx].get_distance();
+
+                // Check if volume scattering event occured and compute transmission.
+                volume_scattering_occured = ray_length > distance;
+                if (volume_scattering_occured)
+                {
+                    scattering_point = ray.point_at(distance);
+
+                    // Determine slab normal of the closest surface point.
+                    const bool outgoing_point_is_closer = distance < 0.5f * ray_length;
+                    slab_normal = outgoing_point_is_closer
+                        ? Vector3f(shading_point_ptr->get_geometric_normal())
+                        : Vector3f(-shading_points[next_point_idx].get_geometric_normal());
+                }
+                Spectrum transmission;
+                compute_transmission(
+                    static_cast<float>(volume_scattering_occured ? distance : ray_length),
+                    extinction,
+                    !volume_scattering_occured,
+                    transmission);
+                bssrdf_sample.m_value *= transmission;
+
+                // Swap shading points.
+                shading_point_ptr = &shading_points[next_point_idx];
+                next_point_idx = 1 - next_point_idx;
+            }
+
+            return true;
+        }
+
+        bool trace_zero_scattering_path_lambertian(
+            const ShadingContext&   shading_context,
+            SamplingContext&        sampling_context,
+            const Spectrum&         extinction,
+            const ShadingPoint&     outgoing_point,
+            const Vector3f&         outgoing_dir,
+            BSSRDFSample&           bssrdf_sample,
+            BSDFSample&             bsdf_sample,
+            Vector3d&               scattering_point,
+            Vector3f&               slab_normal) const
+        {
+            // Pick initial random-walk direction uniformly at random.
+            sampling_context.split_in_place(2, 1);
+            Vector3d initial_dir = sample_hemisphere_cosine(sampling_context.next2<Vector2d>());
+            initial_dir.y = -initial_dir.y;
+            initial_dir = outgoing_point.get_shading_basis().transform_to_parent(initial_dir);
+
+            sampling_context.split_in_place(1, 2);
+
+            // Choose color channel used for distance sampling.
+            const float s = sampling_context.next2<float>();
+            const size_t channel = truncate<size_t>(s * Spectrum::size());
+
+            // Determine the thichness of slab by tracing the first ray.
+            ShadingRay ray(
+                outgoing_point.get_point(),
+                initial_dir,
+                outgoing_point.get_time(),
+                VisibilityFlags::SubsurfaceRay,
+                outgoing_point.get_ray().m_depth + 1);
+            bssrdf_sample.m_incoming_point.clear();
+            shading_context.get_intersector().trace(
+                ray,
+                bssrdf_sample.m_incoming_point,
+                &outgoing_point);
+            if (!bssrdf_sample.m_incoming_point.is_valid())
+                return false;
+
+            // Sample distance (we always use classical sampling here).
+            const double ray_length = bssrdf_sample.m_incoming_point.get_distance();
+            const double distance = sample_exponential_distribution_on_segment(
+                sampling_context.next2<double>(), static_cast<double>(extinction[channel]), 0.0, ray_length);
+            float mis_base = 0.0f;
+            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+            {
+                const double x = -distance * extinction[i];
+                bssrdf_sample.m_value[i] = static_cast<float>(exponential_distribution_on_segment_pdf(
+                    distance, static_cast<double>(extinction[channel]), 0.0, ray_length));
+
+                // One-sample estimator (Veach: 9.2.4 eq. 9.15).
+                mis_base += bssrdf_sample.m_value[i];
+            }
+            bssrdf_sample.m_value *= Spectrum::size() / mis_base;
+            scattering_point = ray.point_at(distance);
+
+            // Determine slab normal of the closest surface point.
+            const bool outgoing_point_is_closer = distance < 0.5f * ray_length;
+            slab_normal = outgoing_point_is_closer
+                ? Vector3f(outgoing_point.get_geometric_normal())
+                : Vector3f(-bssrdf_sample.m_incoming_point.get_geometric_normal());
 
             return true;
         }
@@ -426,24 +657,39 @@ namespace
             transmission *= rcp(mis_base);
         }
 
+        static void compute_transmission(
+            const float         distance,
+            const Spectrum&     extinction,
+            const bool          transmitted,
+            Spectrum&           transmission)
+        {
+            float mis_base = 0.0f;
+            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+            {
+                const float x = -distance * extinction[i];
+                assert(FP<float>::is_finite(x));
+                transmission[i] = std::exp(x);
+                if (!transmitted) transmission[i] *= extinction[i];
+
+                // One-sample estimator (Veach: 9.2.4 eq. 9.15).
+                mis_base += transmission[i] / Spectrum::size();
+            }
+            transmission *= rcp(mis_base);
+        }
+
         float compute_total_refraction_intensity(
             const void* data,
-            const float cos_on,
             const float cos_in) const
         {
             const RandomWalkBSSRDFInputValues* values =
                 static_cast<const RandomWalkBSSRDFInputValues*>(data);
 
-            float fo, fi;
+            float fi;
 
             if (values->m_fresnel_weight == 0.0f)
-                fo = fi = 1.0f;
+                fi = 1.0f;
             else
             {
-                // Fresnel factor at outgoing direction.
-                fresnel_transmittance_dielectric(fo, values->m_precomputed.m_eta, cos_on);
-                fo = lerp(1.0f, fo, values->m_fresnel_weight);
-
                 // Fresnel factor at incoming direction.
                 fresnel_transmittance_dielectric(fi, values->m_precomputed.m_eta, cos_in);
                 fi = lerp(1.0f, fi, values->m_fresnel_weight);
@@ -452,7 +698,7 @@ namespace
             // Normalization constant.
             const float c = 1.0f - fresnel_first_moment_x2(values->m_precomputed.m_eta);
 
-            return fo * fi / c;
+            return fi / c;
         }
 
         void evaluate(
@@ -467,8 +713,10 @@ namespace
             value.set(0.0f);
         }
 
-        const BSDF*                     m_brdf;
-        LambertianBRDFInputValues       m_brdf_data;
+        const BSDF*                     m_lambertian_brdf;
+        LambertianBRDFInputValues       m_lambertian_brdf_data;
+        bool                            m_use_glass_bsdf;
+        const BSDF*                     m_glass_bsdf;
     };
 }
 
@@ -587,8 +835,21 @@ DictionaryArray RandomWalkBSSRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-        .insert("name", "zero_scattering_weight")
-        .insert("label", "Zero Scattering Weight")
+        .insert("name", "surface_bsdf_model")
+        .insert("label", "Surface BSDF Model")
+        .insert("type", "enumeration")
+        .insert("items",
+            Dictionary()
+            .insert("Glass BSDF", "glass")
+            .insert("Lambertian BTDF", "lambertian"))
+        .insert("use", "required")
+        .insert("default", "lambertian")
+        .insert("on_change", "rebuild_form"));
+
+    metadata.push_back(
+        Dictionary()
+        .insert("name", "surface_roughness")
+        .insert("label", "Surface Roughness")
         .insert("type", "numeric")
         .insert("min",
             Dictionary()
@@ -599,7 +860,30 @@ DictionaryArray RandomWalkBSSRDFFactory::get_input_metadata() const
             .insert("value", "1.0")
             .insert("type", "hard"))
         .insert("use", "optional")
-        .insert("default", "1.0"));
+        .insert("default", "1.0")
+        .insert("visible_if",
+            Dictionary()
+            .insert("surface_bsdf_model", "glass")));
+
+    metadata.push_back(
+        Dictionary()
+        .insert("name", "highlight_falloff")
+        .insert("label", "Highlight Falloff")
+        .insert("type", "numeric")
+        .insert("min",
+            Dictionary()
+            .insert("value", "0.0")
+            .insert("type", "hard"))
+        .insert("max",
+            Dictionary()
+            .insert("value", "1.0")
+            .insert("type", "hard"))
+        .insert("bounds", "hard")
+        .insert("use", "optional")
+        .insert("default", "0.4")
+        .insert("visible_if",
+            Dictionary()
+            .insert("surface_bsdf_model", "glass")));
 
     return metadata;
 }

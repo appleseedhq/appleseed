@@ -1373,7 +1373,7 @@ namespace
                         arena);
 
                 copy_parameters(p, values);
-                values->m_zero_scattering_weight = 1.0f;
+                values->m_surface_roughness = 0.01f;
             }
             else
             {
