@@ -452,6 +452,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
         // Subsurface scattering.
         BSSRDFSample bssrdf_sample;
+        bssrdf_sample.m_modes = vertex.m_scattering_modes;
         if (vertex.m_bssrdf)
         {
             // Sample the BSSRDF and terminate the path if no incoming point is found.
