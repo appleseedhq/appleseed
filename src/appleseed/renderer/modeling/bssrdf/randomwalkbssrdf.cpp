@@ -318,6 +318,16 @@ namespace
             }
             else
             {
+				const Vector3f outgoing_normal(outgoing_point.get_shading_normal());
+				const float cos_on = min(abs(dot(outgoing_dir, outgoing_normal)), 1.0f);
+				float fo = 1.0f;
+				if (values->m_fresnel_weight != 0.0f)
+				{
+					// Fresnel factor at incoming direction.
+					fresnel_transmittance_dielectric(fo, values->m_precomputed.m_eta, cos_on);
+					fo = lerp(1.0f, fo, values->m_fresnel_weight);
+				}
+
                 if (!trace_zero_scattering_path_lambertian(
                     shading_context,
                     sampling_context,
@@ -331,6 +341,8 @@ namespace
                 {
                     return false;
                 }
+
+				bssrdf_sample.m_value *= fo;
             }
 
             // Initialize the number of iterations.
@@ -449,11 +461,23 @@ namespace
                 bssrdf_sample.m_modes,
                 bsdf_sample);
 
-            // Take Fresnel term into account.
             const float cos_in = min(abs(dot(
                 bsdf_sample.m_geometric_normal,
                 bsdf_sample.m_incoming.get_value())), 1.0f);
-            bssrdf_sample.m_value *= compute_total_refraction_intensity(data, cos_in);
+			float fi;
+			if (values->m_fresnel_weight == 0.0f)
+				fi = 1.0f;
+			else
+			{
+				// Fresnel factor at incoming direction.
+				fresnel_transmittance_dielectric(fi, values->m_precomputed.m_eta, cos_in);
+				fi = lerp(1.0f, fi, values->m_fresnel_weight);
+			}
+
+			// Normalization constant.
+			const float c = 1.0f - fresnel_first_moment_x2(values->m_precomputed.m_eta);
+
+            bssrdf_sample.m_value *= fi / c;
 
             return true;
         }
