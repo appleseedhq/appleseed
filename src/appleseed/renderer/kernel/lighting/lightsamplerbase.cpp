@@ -96,7 +96,7 @@ void LightSamplerBase::build_emitting_triangle_hash_table()
 void LightSamplerBase::collect_emitting_triangles(
     const AssemblyInstanceContainer&    assembly_instances,
     const TransformSequence&            parent_transform_seq,
-    const TriangleHandlingLambda&       triangle_handling)
+    const TriangleHandlingFunction&     triangle_handling)
 {
     for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
     {
@@ -130,7 +130,7 @@ void LightSamplerBase::collect_emitting_triangles(
     const Assembly&                     assembly,
     const AssemblyInstance&             assembly_instance,
     const TransformSequence&            transform_sequence,
-    const TriangleHandlingLambda&       triangle_handling)
+    const TriangleHandlingFunction&     triangle_handling)
 {
     // Loop over the object instances of the assembly.
     const size_t object_instance_count = assembly.object_instances().size();
@@ -160,6 +160,7 @@ void LightSamplerBase::collect_emitting_triangles(
         Access<RegionKit> region_kit(&object.get_region_kit());
 
         double object_area = 0.0;
+
         // Loop over the regions of the object.
         const size_t region_count = region_kit->size();
         for (size_t region_index = 0; region_index < region_count; ++region_index)
@@ -251,7 +252,9 @@ void LightSamplerBase::collect_emitting_triangles(
                     }
                 }
                 else
+                {
                     n0 = n1 = n2 = geometric_normal;
+                }
 
                 for (size_t side = 0; side < 2; ++side)
                 {
@@ -282,9 +285,8 @@ void LightSamplerBase::collect_emitting_triangles(
                     emitting_triangle.m_triangle_prob = 0.0f;   // will be initialized once the emitting triangle CDF is built
                     emitting_triangle.m_material = material;
 
-                    const size_t emitting_triangle_index = m_emitting_triangles.size();
-
                     // Store the light-emitting triangle.
+                    const size_t emitting_triangle_index = m_emitting_triangles.size();
                     m_emitting_triangles.push_back(emitting_triangle);
 
                     triangle_handling(
@@ -312,7 +314,7 @@ void LightSamplerBase::collect_emitting_triangles(
 void LightSamplerBase::collect_non_physical_lights(
     const AssemblyInstanceContainer&    assembly_instances,
     const TransformSequence&            parent_transform_seq,
-    const LightHandlingLambda&          light_handling)
+    const LightHandlingFunction&        light_handling)
 {
     for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
     {
@@ -344,7 +346,7 @@ void LightSamplerBase::collect_non_physical_lights(
 void LightSamplerBase::collect_non_physical_lights(
     const Assembly&                     assembly,
     const TransformSequence&            transform_sequence,
-    const LightHandlingLambda&          light_handling)
+    const LightHandlingFunction&        light_handling)
 {
     for (const_each<LightContainer> i = assembly.lights(); i; ++i)
     {

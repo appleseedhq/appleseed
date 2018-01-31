@@ -110,7 +110,6 @@ vector<size_t> LightTree::build()
         bbox.insert(triangle.m_v2);
 
         light_bboxes.push_back(bbox);
-
         m_items.emplace_back(bbox, i, EmittingTriangleType);
     }
 
@@ -157,7 +156,7 @@ vector<size_t> LightTree::build()
         return tri_index_to_node_index;
     }
 
-    RENDERER_LOG_INFO("light tree not built - no light tree compatible lights in the scene.");
+    RENDERER_LOG_INFO("no light tree compatible lights in the scene; light tree not built.");
     return IndexLUT();
 }
 
@@ -194,7 +193,7 @@ float LightTree::recursive_node_update(
         {
             const Light* light = m_non_physical_lights[light_index].m_light;
             
-            // Retrieve the non physical light importance.
+            // Retrieve the non-physical light importance.
             Spectrum spectrum;
             light->get_inputs().find("intensity").source()->evaluate_uniform(spectrum);
             importance = average_value(spectrum);
