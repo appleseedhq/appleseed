@@ -345,7 +345,7 @@ uint64 System::get_process_virtual_memory_size()
         return 0;
 #endif
 
-    return info.resident_size;
+    return info.virtual_size;
 }
 
 // ------------------------------------------------------------------------------------------------
