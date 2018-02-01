@@ -341,6 +341,30 @@ const char* AssemblyFactory::get_model() const
     return Model;
 }
 
+Dictionary AssemblyFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Generic Assembly");
+}
+
+DictionaryArray AssemblyFactory::get_input_metadata() const
+{
+    DictionaryArray metadata;
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "flushable")
+            .insert("label", "Flushable")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "false")
+            .insert("help", "Allow unloading this assembly from memory"));
+
+    return metadata;
+}
+
 auto_release_ptr<Assembly> AssemblyFactory::create(
     const char*         name,
     const ParamArray&   params) const

@@ -139,6 +139,30 @@ const char* ArchiveAssemblyFactory::get_model() const
     return Model;
 }
 
+Dictionary ArchiveAssemblyFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Archive Assembly");
+}
+
+DictionaryArray ArchiveAssemblyFactory::get_input_metadata() const
+{
+    DictionaryArray metadata;
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "filename")
+            .insert("label", "File Path")
+            .insert("type", "file")
+            .insert("file_picker_mode", "open")
+            .insert("file_picker_type", "project")
+            .insert("use", "required"));
+
+    return metadata;
+}
+
 auto_release_ptr<Assembly> ArchiveAssemblyFactory::create(
     const char*         name,
     const ParamArray&   params) const
