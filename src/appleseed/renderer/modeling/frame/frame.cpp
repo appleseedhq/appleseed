@@ -57,6 +57,7 @@
 #include "foundation/image/tile.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/defaulttimers.h"
+#include "foundation/platform/system.h"
 #include "foundation/resources/logo/appleseed-seeds-16.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/api/specializedapiarrays.h"
@@ -349,6 +350,7 @@ void Frame::add_render_stamp(const RenderStampInfo& info) const
     text = replace(text, "{lib-build-date}", Appleseed::get_lib_compilation_date());
     text = replace(text, "{lib-build-time}", Appleseed::get_lib_compilation_time());
     text = replace(text, "{render-time}", pretty_time(info.m_render_time, 1).c_str());
+    text = replace(text, "{peak-memory}", pretty_size(System::get_peak_process_virtual_memory_size()).c_str());
 
     // Compute the height in pixels of the string.
     const CanvasProperties& props = impl->m_image->properties();
