@@ -207,6 +207,7 @@ float LightTree::recursive_node_update(
 
             // Retrieve the emitting triangle importance.
             const EDF* edf = triangle.m_material->get_uncached_edf();
+            assert(edf != nullptr);
             importance = edf->get_uncached_max_contribution() * edf->get_uncached_importance_multiplier();
     
             // Save the index of the light tree node containing the EMT in the look up table.

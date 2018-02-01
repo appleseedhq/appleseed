@@ -96,6 +96,9 @@ ForwardLightSampler::ForwardLightSampler(const Scene& scene, const ParamArray& p
 
             // Insert the light-emitting triangle into the CDF.
             m_emitting_triangles_cdf.insert(emitting_triangle_index, triangle_prob);
+
+            // Accept this triangle.
+            return true;
         });
 
     // Build the hash table of emitting triangles.

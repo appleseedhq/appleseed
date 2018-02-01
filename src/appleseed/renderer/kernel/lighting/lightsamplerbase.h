@@ -88,7 +88,7 @@ class LightSamplerBase
     typedef foundation::CDF<size_t, float> EmitterCDF;
 
     typedef std::function<void (const NonPhysicalLightInfo&)> LightHandlingFunction;
-    typedef std::function<void (const Material*, const float, const size_t)> TriangleHandlingFunction;
+    typedef std::function<bool (const Material*, const float, const size_t)> TriangleHandlingFunction;
 
     const Parameters                        m_params;
 

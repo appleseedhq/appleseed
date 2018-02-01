@@ -100,7 +100,14 @@ BackwardLightSampler::BackwardLightSampler(
             const float     area,
             const size_t    emitting_triangle_index)
         {
-            if (!m_use_light_tree)
+            if (m_use_light_tree)
+            {
+                // Only accept this triangle if its material has an EDF.
+                // This excludes triangles with light-emitting OSL materials
+                // since these are not handled by the light tree yet.
+                return material->get_uncached_edf() != nullptr;
+            }
+            else
             {
                 // Retrieve the EDF and get the importance multiplier.
                 float importance_multiplier = 1.0f;
@@ -113,6 +120,9 @@ BackwardLightSampler::BackwardLightSampler(
 
                 // Insert the light-emitting triangle into the CDF.
                 m_emitting_triangles_cdf.insert(emitting_triangle_index, triangle_prob);
+
+                // Accept this triangle.
+                return true;
             }
         });
 
@@ -194,7 +204,12 @@ float BackwardLightSampler::evaluate_pdf(
         light_shading_point.get_region_index(),
         light_shading_point.get_primitive_index());
 
-    const EmittingTriangle* triangle = m_emitting_triangle_hash_table.get(triangle_key);
+    const auto* triangle_ptr = m_emitting_triangle_hash_table.get(triangle_key);
+
+    if (triangle_ptr == nullptr)
+        return 0.0f;
+
+    const EmittingTriangle* triangle = *triangle_ptr;
 
     const float triangle_probability =
         m_use_light_tree
