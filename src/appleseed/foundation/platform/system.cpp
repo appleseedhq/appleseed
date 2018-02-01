@@ -233,6 +233,17 @@ uint64 System::get_process_virtual_memory_size()
     return pmc.PrivateUsage;
 }
 
+uint64 System::get_peak_process_virtual_memory_size()
+{
+    PROCESS_MEMORY_COUNTERS_EX pmc;
+    GetProcessMemoryInfo(
+        GetCurrentProcess(),
+        reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc),
+        sizeof(pmc));
+
+    return pmc.PeakPagefileUsage;
+}
+
 // ------------------------------------------------------------------------------------------------
 // macOS.
 // ------------------------------------------------------------------------------------------------
@@ -348,6 +359,12 @@ uint64 System::get_process_virtual_memory_size()
     return info.virtual_size;
 }
 
+uint64 System::get_peak_process_virtual_memory_size()
+{
+    // todo: implement.
+    return 0;
+}
+
 // ------------------------------------------------------------------------------------------------
 // Linux.
 // ------------------------------------------------------------------------------------------------
@@ -449,6 +466,12 @@ uint64 System::get_process_virtual_memory_size()
     fclose(fp);
 
     return static_cast<uint64>(rss) * sysconf(_SC_PAGESIZE);
+}
+
+uint64 System::get_peak_process_virtual_memory_size()
+{
+    // todo: implement.
+    return 0;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -836,6 +859,12 @@ uint64 System::get_process_virtual_memory_size()
     assert(result == 0);
 
     return static_cast<uint64>(ru.ru_maxrss) * 1024;
+}
+
+uint64 System::get_peak_process_virtual_memory_size()
+{
+    // todo: implement.
+    return 0;
 }
 
 #endif
