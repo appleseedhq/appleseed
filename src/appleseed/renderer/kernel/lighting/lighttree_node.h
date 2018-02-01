@@ -80,19 +80,19 @@ class LightTreeNode
         m_importance = importance;
     }
 
-    // TODO: set this during the construction
+    // todo: set this during the construction
     void set_level(const size_t node_level)
     {
         m_tree_level = node_level;
     }
 
-    // TODO: set this during the construction
+    // todo: set this during the construction
     void set_parent(const size_t node_parent)
     {
         m_parent = node_parent;
     }
 
-    // TODO: set this during the construction
+    // todo: set this during the construction
     void set_root()
     {
         m_root = true;

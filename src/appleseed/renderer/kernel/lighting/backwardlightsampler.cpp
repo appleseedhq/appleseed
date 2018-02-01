@@ -58,70 +58,78 @@ BackwardLightSampler::BackwardLightSampler(
     const ParamArray&                   params)
   : LightSamplerBase(params)
 {
-    // Read which sampling algorithm should the sampler use.
+    // Read which sampling algorithm should be used.
     m_use_light_tree = params.get_optional<string>("algorithm", "cdf") == "lighttree";
 
     RENDERER_LOG_INFO("collecting light emitters...");
 
-    LightHandlingLambda light_handling = [&](const NonPhysicalLightInfo& light_info)
-    {
-        if (m_use_light_tree
-            && ((light_info.m_light->get_flags() & Light::LightTreeCompatible) != 0))
-        {
-            // Insert into light tree compatible lights.
-            m_light_tree_lights.push_back(light_info);
-        }
-        else
-        {
-            // Insert into non physical lights to be evaluated using CDF.
-            const size_t light_index = m_non_physical_lights.size();
-            m_non_physical_lights.push_back(light_info);
-
-            // Insert the light into the CDF.
-            // todo: compute importance.
-            float importance = 1.0f;
-            importance *= light_info.m_light->get_uncached_importance_multiplier();
-            m_non_physical_lights_cdf.insert(light_index, importance);
-        }
-    };
-
     // Collect all non-physical lights and separate them according to their
     // compatibility with the LightTree.
-    collect_non_physical_lights(scene.assembly_instances(), TransformSequence(), light_handling);
-    m_non_physical_light_count = m_non_physical_lights.size();
-
-    TriangleHandlingLambda triangle_handling = [&](
-        const Material* material,
-        const float     area,
-        const size_t    emitting_triangle_index)
-    {
-        if (!m_use_light_tree)
+    collect_non_physical_lights(
+        scene.assembly_instances(),
+        TransformSequence(),
+        [&](const NonPhysicalLightInfo& light_info)
         {
-            // Prepare emitting triangles for CDF sampling.
-            // Retrieve the EDF and get the importance multiplier.
-            float importance_multiplier = 1.0f;
-            if (const EDF* edf = material->get_uncached_edf())
-                importance_multiplier = edf->get_uncached_importance_multiplier();
+            if (m_use_light_tree
+                && ((light_info.m_light->get_flags() & Light::LightTreeCompatible) != 0))
+            {
+                // Insert into light tree compatible lights.
+                m_light_tree_lights.push_back(light_info);
+            }
+            else
+            {
+                // Insert into non-physical lights to be evaluated using a CDF.
+                const size_t light_index = m_non_physical_lights.size();
+                m_non_physical_lights.push_back(light_info);
 
-            // Compute the probability density of this triangle.
-            const float triangle_importance = m_params.m_importance_sampling ? static_cast<float>(area) : 1.0f;
-            const float triangle_prob = triangle_importance * importance_multiplier;
-
-            // Insert the light-emitting triangle into the CDF.
-            m_emitting_triangles_cdf.insert(emitting_triangle_index, triangle_prob);
-        }
-    };
+                // Insert the light into the CDF.
+                // todo: compute importance.
+                float importance = 1.0f;
+                importance *= light_info.m_light->get_uncached_importance_multiplier();
+                m_non_physical_lights_cdf.insert(light_index, importance);
+            }
+        });
+    m_non_physical_light_count = m_non_physical_lights.size();
     
     // Collect all light-emitting triangles.
     collect_emitting_triangles(
         scene.assembly_instances(),
         TransformSequence(),
-        triangle_handling);
+        [&](
+            const Material* material,
+            const float     area,
+            const size_t    emitting_triangle_index)
+        {
+            if (m_use_light_tree)
+            {
+                // Only accept this triangle if its material has an EDF.
+                // This excludes triangles with light-emitting OSL materials
+                // since these are not handled by the light tree yet.
+                return material->get_uncached_edf() != nullptr;
+            }
+            else
+            {
+                // Retrieve the EDF and get the importance multiplier.
+                float importance_multiplier = 1.0f;
+                if (const EDF* edf = material->get_uncached_edf())
+                    importance_multiplier = edf->get_uncached_importance_multiplier();
+
+                // Compute the probability density of this triangle.
+                const float triangle_importance = m_params.m_importance_sampling ? static_cast<float>(area) : 1.0f;
+                const float triangle_prob = triangle_importance * importance_multiplier;
+
+                // Insert the light-emitting triangle into the CDF.
+                m_emitting_triangles_cdf.insert(emitting_triangle_index, triangle_prob);
+
+                // Accept this triangle.
+                return true;
+            }
+        });
 
     // Build the hash table of emitting triangles.
     build_emitting_triangle_hash_table();
 
-    // Prepare the CDFs for sampling.
+    // Prepare the non-physical lights CDF for sampling.
     if (m_non_physical_lights_cdf.valid())
         m_non_physical_lights_cdf.prepare();
 
@@ -129,23 +137,23 @@ BackwardLightSampler::BackwardLightSampler(
     {
         // Initialize the LightTree only after the lights are collected.
         m_light_tree.reset(new LightTree(m_light_tree_lights, m_emitting_triangles));
-        
+
+        // Build the light tree.
         const vector<size_t> tri_index_to_node_index = m_light_tree->build();
-        if (has_hittable_lights())
-        {
-            // Update information about emitting triangle position within the light tree.
-            for (size_t i = 0, e = tri_index_to_node_index.size(); i < e; ++i)
-                m_emitting_triangles[i].m_light_tree_node_index = tri_index_to_node_index[i];
-        }
+        assert(tri_index_to_node_index.size() == m_emitting_triangles.size());
+
+        // Associate light tree nodes to emitting triangles.
+        for (size_t i = 0, e = m_emitting_triangles.size(); i < e; ++i)
+            m_emitting_triangles[i].m_light_tree_node_index = tri_index_to_node_index[i];
     }
     else
     {
+        // Prepare the light-emitting triangles CDF for smapling.
         if (m_emitting_triangles_cdf.valid())
             m_emitting_triangles_cdf.prepare();
 
         // Store the triangle probability densities into the emitting triangles.
-        const size_t emitting_triangle_count = m_emitting_triangles.size();
-        for (size_t i = 0; i < emitting_triangle_count; ++i)
+        for (size_t i = 0, e = m_emitting_triangles.size(); i < e; ++i)
             m_emitting_triangles[i].m_triangle_prob = m_emitting_triangles_cdf[i].second;
     }
 
@@ -196,19 +204,21 @@ float BackwardLightSampler::evaluate_pdf(
         light_shading_point.get_region_index(),
         light_shading_point.get_primitive_index());
 
-    const EmittingTriangle* triangle = m_emitting_triangle_hash_table.get(triangle_key);
+    const auto* triangle_ptr = m_emitting_triangle_hash_table.get(triangle_key);
 
-    if (m_use_light_tree)
-    {
-        const float triangle_probability =
-            m_light_tree->evaluate_node_pdf(
+    if (triangle_ptr == nullptr)
+        return 0.0f;
+
+    const EmittingTriangle* triangle = *triangle_ptr;
+
+    const float triangle_probability =
+        m_use_light_tree
+            ? m_light_tree->evaluate_node_pdf(
                 surface_shading_point,
-                triangle->m_light_tree_node_index);
+                triangle->m_light_tree_node_index)
+            : triangle->m_triangle_prob;
 
-        return triangle_probability * triangle->m_rcp_area;
-    }
-    else
-        return triangle->m_triangle_prob * triangle->m_rcp_area;
+    return triangle_probability * triangle->m_rcp_area;
 }
 
 Dictionary BackwardLightSampler::get_params_metadata()

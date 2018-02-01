@@ -31,6 +31,7 @@
 #include "scene.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
@@ -322,22 +323,30 @@ bool Scene::on_render_begin(
     const Project&          project,
     IAbortSwitch*           abort_switch)
 {
-    bool success = true;
-
-    create_render_data();
-
     for (each<CameraContainer> i = cameras(); i; ++i)
-        success = success && i->on_render_begin(project, abort_switch);
+    {
+        if (!i->on_render_begin(project, abort_switch))
+            return false;
+    }
 
-    return success;
+    assert(!m_has_render_data);
+    m_render_data.m_bbox = compute_bbox();
+    m_render_data.m_center = m_render_data.m_bbox.center();
+    m_render_data.m_radius = m_render_data.m_bbox.radius();
+    m_render_data.m_diameter = m_render_data.m_bbox.diameter();
+    m_render_data.m_safe_diameter = m_render_data.m_diameter * GScalar(1.01);
+    m_has_render_data = true;
+
+    return true;
 }
 
 void Scene::on_render_end(const Project& project)
 {
+    assert(m_has_render_data);
+    m_has_render_data = false;
+
     for (each<CameraContainer> i = cameras(); i; ++i)
         i->on_render_end(project);
-
-    m_has_render_data = false;
 }
 
 namespace
@@ -446,19 +455,6 @@ void Scene::on_frame_end(
     m_camera = nullptr;
 
     Entity::on_frame_end(project, parent);
-}
-
-void Scene::create_render_data()
-{
-    assert(!m_has_render_data);
-
-    m_render_data.m_bbox = compute_bbox();
-    m_render_data.m_center = m_render_data.m_bbox.center();
-    m_render_data.m_radius = m_render_data.m_bbox.radius();
-    m_render_data.m_diameter = m_render_data.m_bbox.diameter();
-    m_render_data.m_safe_diameter = m_render_data.m_diameter * GScalar(1.01);
-
-    m_has_render_data = true;
 }
 
 

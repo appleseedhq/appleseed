@@ -533,25 +533,21 @@ void* operator new[](size_t size, const nothrow_t&)
 }
 
 void operator delete(void* ptr)
-  throw()
 {
     delete_impl(ptr);
 }
 
 void operator delete[](void* ptr)
-  throw()
 {
     delete_impl(ptr);
 }
 
 void operator delete(void* ptr, const nothrow_t&)
-  throw()
 {
     delete_impl(ptr);
 }
 
 void operator delete[](void* ptr, const nothrow_t&)
-  throw()
 {
     delete_impl(ptr);
 }

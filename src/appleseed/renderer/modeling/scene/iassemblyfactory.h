@@ -37,8 +37,10 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
-namespace renderer  { class ParamArray; }
+namespace foundation    { class Dictionary; }
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class Assembly; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -53,6 +55,12 @@ class APPLESEED_DLLSYMBOL IAssemblyFactory
   public:
     // Return a string identifying this assembly model.
     virtual const char* get_model() const = 0;
+
+    // Return metadata for this assembly model.
+    virtual foundation::Dictionary get_model_metadata() const = 0;
+
+    // Return metadata for the inputs of this assembly model.
+    virtual foundation::DictionaryArray get_input_metadata() const = 0;
 
     // Create a new assembly.
     virtual foundation::auto_release_ptr<Assembly> create(

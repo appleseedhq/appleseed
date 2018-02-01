@@ -93,7 +93,7 @@ namespace
             emit signal_update();
         }
 
-        void on_progressive_frame_end(
+        void on_progressive_frame_update(
             const Frame*    frame) override
         {
             assert(m_render_widget);

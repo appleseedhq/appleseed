@@ -50,6 +50,8 @@
 #include <cassert>
 
 // Forward declarations.
+namespace foundation    { class Dictionary; }
+namespace foundation    { class DictionaryArray; }
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
@@ -147,6 +149,9 @@ class APPLESEED_DLLSYMBOL Assembly
         ObjectInstanceArray         m_procedural_objects;
     };
 
+    // Return whether render-time data are available for this entity.
+    bool has_render_data() const;
+
     // Return render-time data of this entity.
     // Render-time data are available between on_frame_begin() and on_frame_end() calls.
     const RenderData& get_render_data() const;
@@ -189,6 +194,12 @@ class APPLESEED_DLLSYMBOL AssemblyFactory
     // Return a string identifying this assembly model.
     const char* get_model() const override;
 
+    // Return metadata for this assembly model.
+    foundation::Dictionary get_model_metadata() const override;
+
+    // Return metadata for the inputs of this assembly model.
+    foundation::DictionaryArray get_input_metadata() const override;
+
     // Create a new assembly.
     foundation::auto_release_ptr<Assembly> create(
         const char*         name,
@@ -203,6 +214,11 @@ class APPLESEED_DLLSYMBOL AssemblyFactory
 inline bool Assembly::is_flushable() const
 {
     return m_flushable;
+}
+
+inline bool Assembly::has_render_data() const
+{
+    return m_has_render_data;
 }
 
 inline const Assembly::RenderData& Assembly::get_render_data() const

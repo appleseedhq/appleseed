@@ -121,14 +121,6 @@ class MainWindow
         FinalRendering
     };
 
-    enum ProjectDialogFilter
-    {
-        ProjectDialogFilterAllProjects      = 1 << 0,  // all appleseed extensions
-        ProjectDialogFilterPlainProjects    = 1 << 1,  // .appleseed extension
-        ProjectDialogFilterPackedProjects   = 1 << 2,  // .appleseedz extension
-        ProjectDialogFilterAllFiles         = 1 << 3   // all extensions
-    };
-
     // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
     Ui::MainWindow*                           m_ui;
 
@@ -231,7 +223,6 @@ class MainWindow
     void print_startup_information();
     void initialize_ocio();
     void closeEvent(QCloseEvent* event) override;
-    static QString get_filter_string(const int filter);
 
   private slots:
     // Project I/O.

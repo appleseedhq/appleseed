@@ -83,11 +83,8 @@ class APPLESEED_DLLSYMBOL ITileCallback
     // Methods called by progressive (whole-frame) renderers.
     //
 
-    // This method is called before a frame is rendered.
-    virtual void on_progressive_frame_begin(const Frame* frame) = 0;
-
-    // This method is called after a frame is rendered.
-    virtual void on_progressive_frame_end(const Frame* frame) = 0;
+    // This method is called after the frame has been updated.
+    virtual void on_progressive_frame_update(const Frame* frame) = 0;
 };
 
 

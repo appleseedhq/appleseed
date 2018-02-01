@@ -32,14 +32,12 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/scene/basegroup.h"
 #include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
@@ -53,6 +51,7 @@
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
+namespace renderer      { class Camera; }
 namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class Project; }
 namespace renderer      { class SurfaceShader; }
@@ -148,7 +147,7 @@ class APPLESEED_DLLSYMBOL Scene
     };
 
     // Return render-time data of this entity.
-    // Render-time data are available between on_frame_begin() and on_frame_end() calls.
+    // Render-time data are available between on_render_begin() and on_render_end() calls.
     const RenderData& get_render_data() const;
 
   private:
@@ -166,9 +165,6 @@ class APPLESEED_DLLSYMBOL Scene
 
     // Destructor.
     ~Scene() override;
-
-    // Create render data, which are then available through get_render_data().
-    void create_render_data();
 };
 
 

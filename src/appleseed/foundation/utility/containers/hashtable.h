@@ -49,7 +49,6 @@ namespace foundation
 //   * Table size must be a power of two
 //   * No deletion of elements
 //   * No control over memory allocation
-//   * get() expects the element to be present in the hash table
 //
 
 template <typename KeyType, typename KeyHasherType, typename ValueType>
@@ -69,8 +68,8 @@ class HashTable
     // Insert an element into the hash table. The key must be unique.
     void insert(const KeyType& key, const ValueType& value);
 
-    // Retrieve an existing element from the hash table.
-    const ValueType& get(const KeyType& key) const;
+    // Retrieve an element from the hash table. Returns nullptr if the element cannot be found.
+    const ValueType* get(const KeyType& key) const;
 
   private:
     typedef std::pair<KeyType, ValueType> Entry;
@@ -90,7 +89,7 @@ template <typename KeyType, typename KeyHasherType, typename ValueType>
 HashTable<KeyType, KeyHasherType, ValueType>::HashTable(const KeyHasherType& key_hasher)
   : m_key_hasher(key_hasher)
   , m_mask(0)
-  , m_vectors(nullptr)
+  , m_vectors(new EntryVector[1])
 {
 }
 
@@ -108,11 +107,11 @@ void HashTable<KeyType, KeyHasherType, ValueType>::resize(const size_t size)
     delete [] m_vectors;
 
     m_mask = size > 0 ? size - 1 : 0;
-    m_vectors = size > 0 ? new EntryVector[size] : nullptr;
+    m_vectors = size > 0 ? new EntryVector[size] : new EntryVector[1];
 }
 
 template <typename KeyType, typename KeyHasherType, typename ValueType>
-void HashTable<KeyType, KeyHasherType, ValueType>::insert(const KeyType& key, const ValueType& value)
+inline void HashTable<KeyType, KeyHasherType, ValueType>::insert(const KeyType& key, const ValueType& value)
 {
     assert(m_vectors);
 
@@ -123,24 +122,20 @@ void HashTable<KeyType, KeyHasherType, ValueType>::insert(const KeyType& key, co
 }
 
 template <typename KeyType, typename KeyHasherType, typename ValueType>
-const ValueType& HashTable<KeyType, KeyHasherType, ValueType>::get(const KeyType& key) const
+inline const ValueType* HashTable<KeyType, KeyHasherType, ValueType>::get(const KeyType& key) const
 {
     assert(m_vectors);
 
     const size_t index = m_key_hasher(key) & m_mask;
     const EntryVector& vec = m_vectors[index];
 
-    const size_t size = vec.size();
-    assert(size > 0);
-
-    for (size_t i = 0; i < size - 1; ++i)
+    for (size_t i = 0, e = vec.size(); i < e; ++i)
     {
         if (vec[i].first == key)
-            return vec[i].second;
+            return &vec[i].second;
     }
 
-    assert(vec.back().first == key);
-    return vec.back().second;
+    return nullptr;
 }
 
 }       // namespace foundation

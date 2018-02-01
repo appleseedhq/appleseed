@@ -149,22 +149,10 @@ void SerialRendererController::add_on_tile_end_callback(
     m_pending_callbacks.push_back(callback);
 }
 
-void SerialRendererController::add_on_progressive_frame_begin_callback(const Frame* frame)
+void SerialRendererController::add_on_progressive_frame_update_callback(const Frame* frame)
 {
     PendingTileCallback callback;
-    callback.m_type = PendingTileCallback::OnProgressiveFrameBegin;
-    callback.m_frame = frame;
-    callback.m_tile_x = 0;
-    callback.m_tile_y = 0;
-
-    boost::mutex::scoped_lock lock(m_mutex);
-    m_pending_callbacks.push_back(callback);
-}
-
-void SerialRendererController::add_on_progressive_frame_end_callback(const Frame* frame)
-{
-    PendingTileCallback callback;
-    callback.m_type = PendingTileCallback::OnProgressiveFrameEnd;
+    callback.m_type = PendingTileCallback::OnProgressiveFrameUpdate;
     callback.m_frame = frame;
     callback.m_tile_x = 0;
     callback.m_tile_y = 0;
@@ -193,12 +181,8 @@ void SerialRendererController::exec_callback(const PendingTileCallback& cb)
         m_tile_callback->on_tile_end(cb.m_frame, cb.m_tile_x, cb.m_tile_y);
         break;
 
-      case PendingTileCallback::OnProgressiveFrameBegin:
-        m_tile_callback->on_progressive_frame_begin(cb.m_frame);
-        break;
-
-      case PendingTileCallback::OnProgressiveFrameEnd:
-        m_tile_callback->on_progressive_frame_end(cb.m_frame);
+      case PendingTileCallback::OnProgressiveFrameUpdate:
+        m_tile_callback->on_progressive_frame_update(cb.m_frame);
         break;
 
       assert_otherwise;
