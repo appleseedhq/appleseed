@@ -106,21 +106,14 @@ class InputBinder
         const Scene&                    scene,
         const SymbolTable&              scene_symbols);
 
-    // Bind all inputs of a given entity of a given scene.
-    void bind_scene_entity_inputs(
-        const Scene&                    scene,
-        const SymbolTable&              scene_symbols,
-        const char*                     entity_type,
-        ConnectableEntity&              entity);
-
     // Bind all inputs of all entities of a given assembly.
     void bind_assembly_entities_inputs(
         const Scene&                    scene,
         const SymbolTable&              scene_symbols,
         const Assembly&                 assembly);
 
-    // Bind all inputs of a given entity of a given assembly.
-    void bind_assembly_entity_inputs(
+    // Bind all inputs of a given entity.
+    void bind_entity_inputs(
         const Scene&                    scene,
         const SymbolTable&              scene_symbols,
         const char*                     entity_type,
@@ -137,8 +130,6 @@ class InputBinder
 
     // Try to bind an entity from any parent assembly to a given input.
     bool try_bind_assembly_entity_to_input(
-        const Scene&                    scene,
-        const SymbolTable&              scene_symbols,
         const char*                     entity_type,
         const char*                     entity_name,
         const char*                     param_value,
@@ -146,8 +137,6 @@ class InputBinder
 
     // Try to bind an entity from a given assembly to a given input.
     bool try_bind_assembly_entity_to_input(
-        const Scene&                    scene,
-        const SymbolTable&              scene_symbols,
         const Assembly&                 assembly,
         const SymbolTable&              assembly_symbols,
         const char*                     entity_type,
