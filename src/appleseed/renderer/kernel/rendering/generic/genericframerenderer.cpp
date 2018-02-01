@@ -327,6 +327,10 @@ namespace
                         assert(!m_job_queue.has_scheduled_or_running_jobs());
                     }
 
+                    // Invoke on_tiled_frame_begin() on tile callbacks.
+                    for (auto tile_callback : m_tile_callbacks)
+                        tile_callback->on_tiled_frame_begin(&m_frame);
+
                     // Create tile jobs.
                     const uint32 pass_hash = hash_uint32(static_cast<uint32>(pass));
                     TileJobFactory::TileJobVector tile_jobs;
@@ -346,6 +350,10 @@ namespace
 
                     // Wait until tile jobs have effectively stopped.
                     m_job_queue.wait_until_completion();
+
+                    // Invoke on_tiled_frame_end() on tile callbacks.
+                    for (auto tile_callback : m_tile_callbacks)
+                        tile_callback->on_tiled_frame_end(&m_frame);
 
                     // Invoke the post-pass callback if there is one.
                     if (m_pass_callback)
