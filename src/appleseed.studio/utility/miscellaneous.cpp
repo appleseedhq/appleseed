@@ -129,6 +129,24 @@ QString get_oiio_image_files_filter()
     return filter;
 }
 
+QString get_project_files_filter(const int filters)
+{
+    QStringList filter_list;
+
+    if (filters & ProjectFilesFilterAllProjects)
+        filter_list << "Project Files (*.appleseed *.appleseedz)";
+
+    if (filters & ProjectFilesFilterPlainProjects)
+        filter_list << "Plain Project Files (*.appleseed)";
+
+    if (filters & ProjectFilesFilterPackedProjects)
+        filter_list << "Packed Project Files (*.appleseedz)";
+
+    filter_list << "All Files (*.*)";
+
+    return filter_list.join(";;");
+}
+
 QString combine_paths(const QString& lhs, const QString& rhs)
 {
     QString result(lhs);

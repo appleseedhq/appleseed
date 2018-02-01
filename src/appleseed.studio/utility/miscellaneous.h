@@ -53,6 +53,21 @@ extern const QString g_appleseed_image_files_filter;
 // Return the file dialog filter string for image file formats supported by OpenImageIO.
 QString get_oiio_image_files_filter();
 
+enum ProjectFilesFilter
+{
+    ProjectFilesFilterAllProjects       = 1 << 0,   // all project files extensions
+    ProjectFilesFilterPlainProjects     = 1 << 1,   // .appleseed extension
+    ProjectFilesFilterPackedProjects    = 1 << 2,   // .appleseedz extension
+    ProjectFilesFilterDefault           =
+        ProjectFilesFilterAllProjects |
+        ProjectFilesFilterPlainProjects |
+        ProjectFilesFilterPackedProjects
+};
+
+// Return a file dialog filter string for appleseed projects.
+// `filters` is a combination of ProjectFilesFilter values.
+QString get_project_files_filter(const int filters = ProjectFilesFilterDefault);
+
 // Combine two filesystem paths and convert the result to native separators.
 QString combine_paths(const QString& lhs, const QString& rhs);
 
@@ -67,8 +82,6 @@ bool file_exists(const QString& path);
 
 // Load an icon and its variants (hover, disabled...) from the application's icons directory.
 QIcon load_icons(const QString& base_name);
-
-QString get_extension(renderer::ParamArray& settings, const QString& target_dialog);
 
 QString get_open_filename(
     QWidget*                parent,
