@@ -431,6 +431,8 @@ uint64 System::get_total_virtual_memory_size()
 
 uint64 System::get_process_virtual_memory_size()
 {
+    // todo: this is wrong, it returns RSS instead of virtual memory.
+
     // Reference: http://nadeausoftware.com/articles/2012/07/c_c_tip_how_get_process_resident_set_size_physical_memory_use
 
     FILE* fp = fopen("/proc/self/statm", "r");
@@ -820,11 +822,14 @@ uint64 System::get_total_virtual_memory_size()
     return get_total_physical_memory_size() + swap;
 }
 
-// curproc->p_stats->p_ru is updated on statclock tick and may be not very
-// granular (if called early in program's life, it can even yield zeros).
-// Reference: https://lists.freebsd.org/pipermail/freebsd-stable/2006-March/023262.html
 uint64 System::get_process_virtual_memory_size()
 {
+    // todo: this is wrong, it returns peak RSS instead of virtual memory.
+
+    // curproc->p_stats->p_ru is updated on statclock tick and may be not very
+    // granular (if called early in program's life, it can even yield zeros).
+    // Reference: https://lists.freebsd.org/pipermail/freebsd-stable/2006-March/023262.html
+
     struct rusage ru;
 
     const int result = getrusage(RUSAGE_SELF, &ru);
