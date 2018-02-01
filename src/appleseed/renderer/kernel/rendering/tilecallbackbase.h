@@ -75,11 +75,7 @@ class TileCallbackBase
     {
     }
 
-    void on_progressive_frame_begin(const Frame* frame) override
-    {
-    }
-
-    void on_progressive_frame_end(const Frame* frame) override
+    void on_progressive_frame_update(const Frame* frame) override
     {
     }
 };

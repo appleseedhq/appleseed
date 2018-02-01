@@ -134,7 +134,7 @@ namespace
             send_tile(*frame, tile_x, tile_y);
         }
 
-        void on_progressive_frame_end(const Frame* frame) override
+        void on_progressive_frame_update(const Frame* frame) override
         {
             boost::mutex::scoped_lock lock(m_mutex);
 

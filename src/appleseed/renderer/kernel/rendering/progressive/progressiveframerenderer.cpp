@@ -482,7 +482,7 @@ namespace
                     return;
 
                 // Present the frame.
-                m_tile_callback->on_progressive_frame_end(&m_frame);
+                m_tile_callback->on_progressive_frame_update(&m_frame);
 
 #ifdef PRINT_DISPLAY_THREAD_PERFS
                 m_stopwatch.measure();
