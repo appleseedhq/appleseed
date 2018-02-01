@@ -90,7 +90,8 @@ void ArchiveAssembly::collect_asset_paths(StringArray& paths) const
 
 void ArchiveAssembly::update_asset_paths(const StringDictionary& mappings)
 {
-    m_params.set("filename", mappings.get(m_params.get("filename")));
+    if (m_params.strings().exist("filename"))
+        m_params.set("filename", mappings.get(m_params.get("filename")));
 }
 
 bool ArchiveAssembly::do_expand_contents(
