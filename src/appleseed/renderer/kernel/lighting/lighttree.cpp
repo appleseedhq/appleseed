@@ -103,6 +103,7 @@ vector<size_t> LightTree::build()
     for (size_t i = 0, e = m_emitting_triangles.size(); i < e; ++i)
     {
         const EmittingTriangle& triangle = m_emitting_triangles[i];
+
         AABB3d bbox;
         bbox.invalidate();
         bbox.insert(triangle.m_v0);
@@ -413,7 +414,7 @@ void LightTree::child_node_probabilites(
 
     // Node has currently no info about its own bbox characteristics.
     // Hence we have to extract it before from its parent.
-    // TODO: make LightTreeNode aware of its bbox!
+    // todo: make LightTreeNode aware of its bbox!
     const auto& bbox_left = node.get_left_bbox();
     const auto& bbox_right = node.get_right_bbox();
 
@@ -441,7 +442,7 @@ void LightTree::draw_tree_structure(
     const AABB3d&       root_bbox,
     const bool          separate_by_levels) const
 {
-    // TODO: Add a possibility to shift each level of bboxes along the z-axis.
+    // todo: add a possibility to shift each level of bboxes along the z-axis.
 
     const double Width = 0.1;
 

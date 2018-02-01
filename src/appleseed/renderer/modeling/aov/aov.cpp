@@ -79,7 +79,7 @@ void AOV::create_image(
 {
     m_image_index = aov_images.append(
         get_name(),
-        4, // TODO: check if we can pass aov->get_channel_count() here.
+        4, // todo: check if we can pass aov->get_channel_count() here
         PixelFormatFloat);
     m_image = &aov_images.get_image(m_image_index);
 }
