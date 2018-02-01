@@ -56,7 +56,7 @@
 #include "foundation/image/text/textrenderer.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/scalar.h"
-#include "foundation/platform/timers.h"
+#include "foundation/platform/defaulttimers.h"
 #include "foundation/resources/logo/appleseed-seeds-16.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/api/specializedapiarrays.h"
@@ -336,7 +336,7 @@ void Frame::add_render_stamp(const RenderStampInfo& info) const
     // Render stamp settings.
     const float FontSize = 14.0f;
     const Color4f FontColor(0.8f, 0.8f, 0.8f, 1.0f);
-    const Color4f BackgroundColor(0.0f, 0.0f, 0.0f, 0.8f);
+    const Color4f BackgroundColor(0.0f, 0.0f, 0.0f, 0.9f);
     const float MarginH = 6.0f;
     const float MarginV = 4.0f;
 
