@@ -147,7 +147,7 @@ class APPLESEED_DLLSYMBOL Scene
     };
 
     // Return render-time data of this entity.
-    // Render-time data are available between on_frame_begin() and on_frame_end() calls.
+    // Render-time data are available between on_render_begin() and on_render_end() calls.
     const RenderData& get_render_data() const;
 
   private:
@@ -165,9 +165,6 @@ class APPLESEED_DLLSYMBOL Scene
 
     // Destructor.
     ~Scene() override;
-
-    // Create render data, which are then available through get_render_data().
-    void create_render_data();
 };
 
 
