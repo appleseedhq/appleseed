@@ -31,6 +31,7 @@
 #include "scene.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"

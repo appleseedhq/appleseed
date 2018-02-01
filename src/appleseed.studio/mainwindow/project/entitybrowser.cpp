@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
 #include "renderer/api/bssrdf.h"
+#include "renderer/api/camera.h"
 #include "renderer/api/color.h"
 #include "renderer/api/edf.h"
 #include "renderer/api/environmentedf.h"

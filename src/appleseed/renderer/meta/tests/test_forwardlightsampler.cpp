@@ -29,6 +29,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/forwardlightsampler.h"
+#include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/camera/pinholecamera.h"
 #include "renderer/modeling/scene/scene.h"
 

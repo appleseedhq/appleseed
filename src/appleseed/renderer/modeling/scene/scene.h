@@ -32,14 +32,12 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/scene/basegroup.h"
 #include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
@@ -53,6 +51,7 @@
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
+namespace renderer      { class Camera; }
 namespace renderer      { class OnFrameBeginRecorder; }
 namespace renderer      { class Project; }
 namespace renderer      { class SurfaceShader; }
