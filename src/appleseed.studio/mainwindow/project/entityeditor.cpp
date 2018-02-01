@@ -729,6 +729,7 @@ void EntityEditor::slot_open_file_picker(const QString& widget_name)
         const QString file_picker_type = metadata.get<QString>("file_picker_type");
         const QString filter =
             file_picker_type == "image" ? get_oiio_image_files_filter() :
+            file_picker_type == "project" ? "Project Files (*.appleseed *.appleseedz);;Plain Project Files (*.appleseed);;Packed Project Files (*.appleseedz);;All Files (*.*)" :
             QString();
 
         const QString settings_key =
