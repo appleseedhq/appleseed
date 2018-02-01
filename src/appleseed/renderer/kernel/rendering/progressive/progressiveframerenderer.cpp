@@ -204,12 +204,12 @@ namespace
             m_tile_callback.reset();
 
             // Delete rendering jobs.
-            for (const_each<SampleGeneratorJobVector> i = m_sample_generator_jobs; i; ++i)
-                delete *i;
+            for (auto sample_generator_job : m_sample_generator_jobs)
+                delete sample_generator_job;
 
             // Delete sample generators.
-            for (const_each<SampleGeneratorVector> i = m_sample_generators; i; ++i)
-                (*i)->release();
+            for (auto sample_generator : m_sample_generators)
+                sample_generator->release();
         }
 
         void release() override
@@ -239,14 +239,14 @@ namespace
             m_sample_counter.clear();
 
             // Reset sample generators.
-            for (size_t i = 0, e = m_sample_generators.size(); i < e; ++i)
-                m_sample_generators[i]->reset();
+            for (auto sample_generator : m_sample_generators)
+                sample_generator->reset();
 
             // Schedule rendering jobs.
-            for (size_t i = 0, e = m_sample_generator_jobs.size(); i < e; ++i)
+            for (auto sample_generator_job : m_sample_generator_jobs)
             {
                 m_job_queue.schedule(
-                    m_sample_generator_jobs[i],
+                    sample_generator_job,
                     false);     // don't transfer ownership of the job to the queue
             }
 
@@ -716,8 +716,8 @@ namespace
 
             StatisticsVector stats;
 
-            for (size_t i = 0; i < m_sample_generators.size(); ++i)
-                stats.merge(m_sample_generators[i]->get_statistics());
+            for (auto sample_generator : m_sample_generators)
+                stats.merge(sample_generator->get_statistics());
 
             RENDERER_LOG_DEBUG("%s", stats.to_string().c_str());
         }

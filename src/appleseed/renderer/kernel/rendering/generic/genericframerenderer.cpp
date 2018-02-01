@@ -134,12 +134,12 @@ namespace
                 m_pass_manager_thread->join();
 
             // Delete tile callbacks.
-            for (size_t i = 0; i < m_tile_callbacks.size(); ++i)
-                m_tile_callbacks[i]->release();
+            for (auto tile_callback : m_tile_callbacks)
+                tile_callback->release();
 
             // Delete tile renderers.
-            for (size_t i = 0; i < m_tile_renderers.size(); ++i)
-                m_tile_renderers[i]->release();
+            for (auto tile_renderer : m_tile_renderers)
+                tile_renderer->release();
         }
 
         void release() override
@@ -461,8 +461,8 @@ namespace
 
             StatisticsVector stats;
 
-            for (size_t i = 0; i < m_tile_renderers.size(); ++i)
-                stats.merge(m_tile_renderers[i]->get_statistics());
+            for (auto tile_renderer : m_tile_renderers)
+                stats.merge(tile_renderer->get_statistics());
 
             RENDERER_LOG_DEBUG("%s", stats.to_string().c_str());
         }
