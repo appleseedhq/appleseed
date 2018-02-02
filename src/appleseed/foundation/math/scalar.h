@@ -224,10 +224,10 @@ T mix(const T a, const T b, const U x);
 template <typename T, typename U>
 T lerp(const T a, const T b, const U x);
 
-// lerp2() returns the relative position of c between a and b. 
+// inverse_lerp() returns the relative position of c between a and b. 
 // it is transformation of lerp(). i.e (c - a) / (b - a)
 template <typename T, typename U>
-T lerp2(const T a, const T b, const U c);
+T inverse_lerp(const T a, const T b, const U c);
 
 // fit() remaps a variable x from the range [min_x, max_x] to the
 // range [min_y, max_y]. When x is outside the [min_x, max_x] range,
@@ -825,11 +825,11 @@ inline T lerp(const T a, const T b, const U x)
 }
 
 template <typename T, typename U>
-inline T lerp2(const T a, const T b, const U c)
+inline T inverse_lerp(const T a, const T b, const U x)
 {
     assert(b != a);
     
-    return (c - a) / (b - a);
+    return (x - a) / (b - a);
 }
 
 template <typename T>

@@ -167,9 +167,9 @@ class APPLESEED_DLLSYMBOL Camera
     float               m_normalized_close_start_time;
     float               m_open_linear_curve_slope;
     float               m_close_linear_curve_slope;
-    float               m_height; // Height of camera shutter graph. 
-    float               m_inverse_CDF_open_point; 
-    float               m_inverse_CDF_close_point;
+    float               m_shutter_pdf_max_height;
+    float               m_inverse_cdf_open_point; 
+    float               m_inverse_cdf_close_point;
 
     // Utility function to retrieve the film dimensions (in meters) from the camera parameters.
     foundation::Vector2d extract_film_dimensions() const;
@@ -194,7 +194,7 @@ class APPLESEED_DLLSYMBOL Camera
         SamplingContext&                sampling_context,
         ShadingRay&                     ray) const;
 
-    // Map a sample using inverse of CDF calculated from camera shutter graph. Works in initialize_ray().
+    // Map a sample using inverse of CDF calculated from camera shutter graph. Used in initialize_ray().
     float map_to_shutter_curve(const float sample) const;
 
   private:
@@ -206,16 +206,6 @@ class APPLESEED_DLLSYMBOL Camera
         const double                    default_value) const;
 };
 
-
-//
-// Shutter curves. Works in Camera::map_to_shutter_curve().
-//
-
-// Integrate and inverse opening/closing curve y = a * x + b to transform samples.
-namespace
-{
-    float map_sample_to_linear_curve(const float a, const float b, const float x);
-}
 //
 // An incomplete factory class whose main purpose is to factorize the code
 // common to all camera models.

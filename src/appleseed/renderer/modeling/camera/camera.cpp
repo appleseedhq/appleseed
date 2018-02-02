@@ -84,14 +84,14 @@ bool Camera::on_render_begin(
     m_shutter_close_start_time = m_params.get_optional<float>("shutter_close_start_time", 1.0f);
     m_shutter_close_time = m_params.get_optional<float>("shutter_close_time", 1.0f);
     m_shutter_open_time_interval = m_shutter_close_time - m_shutter_open_time;
-    m_normalized_open_end_time = lerp2(m_shutter_open_time, m_shutter_close_time, m_shutter_open_end_time);
+    m_normalized_open_end_time = inverse_lerp(m_shutter_open_time, m_shutter_close_time, m_shutter_open_end_time);
     m_normalized_open_end_time_half = m_normalized_open_end_time / 2;
-    m_normalized_close_start_time = lerp2(m_shutter_open_time, m_shutter_close_time, m_shutter_close_start_time);
-    m_height = 2 / (1 + m_normalized_close_start_time - m_normalized_open_end_time);
-    m_open_linear_curve_slope = m_height / m_normalized_open_end_time;
-    m_close_linear_curve_slope = -m_height / (1 - m_normalized_close_start_time);
-    m_inverse_CDF_open_point = m_height * m_normalized_open_end_time_half;
-    m_inverse_CDF_close_point = m_height * (m_normalized_close_start_time - m_normalized_open_end_time_half);
+    m_normalized_close_start_time = inverse_lerp(m_shutter_open_time, m_shutter_close_time, m_shutter_close_start_time);
+    m_shutter_pdf_max_height = 2 / (1 + m_normalized_close_start_time - m_normalized_open_end_time);
+    m_open_linear_curve_slope = m_shutter_pdf_max_height / m_normalized_open_end_time;
+    m_close_linear_curve_slope = -m_shutter_pdf_max_height / (1 - m_normalized_close_start_time);
+    m_inverse_cdf_open_point = m_shutter_pdf_max_height * m_normalized_open_end_time_half;
+    m_inverse_cdf_close_point = m_shutter_pdf_max_height * (m_normalized_close_start_time - m_normalized_open_end_time_half);
 
     return true;
 }
@@ -305,41 +305,46 @@ double Camera::extract_near_z() const
     return near_z;
 }
 
+//
+// Shutter curves. Used in Camera::map_to_shutter_curve().
+//
+
 namespace
 {   
+    // Integrate and inverse opening/closing curve y = a * x + b to transform samples.
     float map_sample_to_linear_curve(const float a, const float b, const float x)
     {
         float constant;
-        // opening
-        if (a > 0)
+        // Shutter is opening.
+        if (a > 0.0f)
         {
-            constant = 0;
+            constant = 0.0f;
         }
-        // closing
+        // Shutter is closing.
         else
         {
-            constant = 1 - (a / 2) - b;
+            constant = 1.0f - (a / 2.0f) - b;
         }
-        return (sqrt(2 * a * (x - constant) + b * b) - b) / a;
+        return (sqrt(2.0f * a * (x - constant) + b * b) - b) / a;
     }
 }
 
 float Camera::map_to_shutter_curve(const float sample) const
 {
-    // shutter is opening
-    if (0 <= sample && sample < m_inverse_CDF_open_point)
+    // Shutter is opening.
+    if (0.0f <= sample && sample < m_inverse_cdf_open_point)
     {
-        return map_sample_to_linear_curve(m_open_linear_curve_slope, 0, sample);
+        return map_sample_to_linear_curve(m_open_linear_curve_slope, 0.0f, sample);
     }
-    // shutter is closing
-    else if (1 >= sample && sample > m_inverse_CDF_close_point)
+    // Shutter is closing.
+    else if (1.0f >= sample && sample > m_inverse_cdf_close_point)
     {
         return map_sample_to_linear_curve(m_close_linear_curve_slope, -m_close_linear_curve_slope, sample);
     }
-    // shutter is fully opened
+    // Shutter is fully opened.
     else
     {
-        return sample / m_height + m_normalized_open_end_time_half;
+        return sample / m_shutter_pdf_max_height + m_normalized_open_end_time_half;
     }
 }
 
