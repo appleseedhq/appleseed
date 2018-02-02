@@ -79,6 +79,7 @@ SceneItem::SceneItem(
     setFont(0, font);
 
     int child_index = 0;
+
     insertChild(
         child_index++,
         m_camera_collection_item =

@@ -305,24 +305,24 @@ double Camera::extract_near_z() const
     return near_z;
 }
 
-//
-// Shutter curves. Used in Camera::map_to_shutter_curve().
-//
-
 namespace
 {   
+    //
+    // Shutter curves. Used in Camera::map_to_shutter_curve().
+    //
+
     // Integrate and inverse opening/closing curve y = a * x + b to transform samples.
     float map_sample_to_linear_curve(const float a, const float b, const float x)
     {
         float constant;
-        // Shutter is opening.
         if (a > 0.0f)
         {
+            // Shutter is opening.
             constant = 0.0f;
         }
-        // Shutter is closing.
         else
         {
+            // Shutter is closing.
             constant = 1.0f - (a / 2.0f) - b;
         }
         return (sqrt(2.0f * a * (x - constant) + b * b) - b) / a;
@@ -331,19 +331,19 @@ namespace
 
 float Camera::map_to_shutter_curve(const float sample) const
 {
-    // Shutter is opening.
     if (0.0f <= sample && sample < m_inverse_cdf_open_point)
     {
+        // Shutter is opening.
         return map_sample_to_linear_curve(m_open_linear_curve_slope, 0.0f, sample);
     }
-    // Shutter is closing.
     else if (1.0f >= sample && sample > m_inverse_cdf_close_point)
     {
+        // Shutter is closing.
         return map_sample_to_linear_curve(m_close_linear_curve_slope, -m_close_linear_curve_slope, sample);
     }
-    // Shutter is fully opened.
     else
     {
+        // Shutter is fully opened.
         return sample / m_shutter_pdf_max_height + m_normalized_open_end_time_half;
     }
 }
