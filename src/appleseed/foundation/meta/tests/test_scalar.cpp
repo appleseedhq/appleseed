@@ -493,7 +493,8 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_FEQ(0.5, result);
     }
 
-    TEST_CASE(InverseLerp_GivenBlendParameterOfDifferentTypeBetweenFirstValueAndSecondValue_ReturnsCorrectlyBlendedValue){
+    TEST_CASE(InverseLerp_GivenBlendParameterOfDifferentTypeBetweenFirstValueAndSecondValue_ReturnsCorrectlyBlendedValue)
+    {
         const double result = inverse_lerp(1.0, 5.0, 3.0f);
         EXPECT_FEQ(0.5, result);
     }
