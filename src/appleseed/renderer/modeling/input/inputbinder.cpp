@@ -447,7 +447,7 @@ void InputBinder::bind_entity_inputs(
         {
             // This input is required but has no value, this is an error.
             RENDERER_LOG_ERROR(
-                "while defining %s \"%s\": required parameter \"%s\" missing.",
+                "while binding inputs of %s \"%s\": required parameter \"%s\" missing.",
                 entity_type,
                 entity_path.c_str(),
                 input.name());
@@ -475,7 +475,7 @@ void InputBinder::bind_entity_inputs(
             continue;
 
         RENDERER_LOG_ERROR(
-            "while defining %s \"%s\": cannot bind \"%s\" to parameter \"%s\".",
+            "while binding inputs of %s \"%s\": cannot bind \"%s\" to parameter \"%s\".",
             entity_type,
             entity_path.c_str(),
             param_value.c_str(),
@@ -667,7 +667,7 @@ void InputBinder::bind_texture_instance_to_input(
     catch (const exception& e)
     {
         RENDERER_LOG_ERROR(
-            "while defining %s \"%s\", failed to bind \"%s\" to input \"%s\" (%s).",
+            "while binding inputs of %s \"%s\", failed to bind \"%s\" to input \"%s\" (%s).",
             entity_type,
             entity_name,
             param_value,
