@@ -80,8 +80,18 @@ bool Camera::on_render_begin(
     IAbortSwitch*           abort_switch)
 {
     m_shutter_open_time = m_params.get_optional<float>("shutter_open_time", 0.0f);
+    m_shutter_open_end_time = m_params.get_optional<float>("shutter_open_end_time", 0.0f);
+    m_shutter_close_start_time = m_params.get_optional<float>("shutter_close_start_time", 1.0f);
     m_shutter_close_time = m_params.get_optional<float>("shutter_close_time", 1.0f);
     m_shutter_open_time_interval = m_shutter_close_time - m_shutter_open_time;
+    m_normalized_open_end_time = inverse_lerp(m_shutter_open_time, m_shutter_close_time, m_shutter_open_end_time);
+    m_normalized_open_end_time_half = m_normalized_open_end_time / 2;
+    m_normalized_close_start_time = inverse_lerp(m_shutter_open_time, m_shutter_close_time, m_shutter_close_start_time);
+    m_shutter_pdf_max_height = 2 / (1 + m_normalized_close_start_time - m_normalized_open_end_time);
+    m_open_linear_curve_slope = m_shutter_pdf_max_height / m_normalized_open_end_time;
+    m_close_linear_curve_slope = -m_shutter_pdf_max_height / (1 - m_normalized_close_start_time);
+    m_inverse_cdf_open_point = m_shutter_pdf_max_height * m_normalized_open_end_time_half;
+    m_inverse_cdf_close_point = m_shutter_pdf_max_height * (m_normalized_close_start_time - m_normalized_open_end_time_half);
 
     return true;
 }
@@ -295,6 +305,49 @@ double Camera::extract_near_z() const
     return near_z;
 }
 
+//
+// Shutter curves. Used in Camera::map_to_shutter_curve().
+//
+
+namespace
+{   
+    // Integrate and inverse opening/closing curve y = a * x + b to transform samples.
+    float map_sample_to_linear_curve(const float a, const float b, const float x)
+    {
+        float constant;
+        // Shutter is opening.
+        if (a > 0.0f)
+        {
+            constant = 0.0f;
+        }
+        // Shutter is closing.
+        else
+        {
+            constant = 1.0f - (a / 2.0f) - b;
+        }
+        return (sqrt(2.0f * a * (x - constant) + b * b) - b) / a;
+    }
+}
+
+float Camera::map_to_shutter_curve(const float sample) const
+{
+    // Shutter is opening.
+    if (0.0f <= sample && sample < m_inverse_cdf_open_point)
+    {
+        return map_sample_to_linear_curve(m_open_linear_curve_slope, 0.0f, sample);
+    }
+    // Shutter is closing.
+    else if (1.0f >= sample && sample > m_inverse_cdf_close_point)
+    {
+        return map_sample_to_linear_curve(m_close_linear_curve_slope, -m_close_linear_curve_slope, sample);
+    }
+    // Shutter is fully opened.
+    else
+    {
+        return sample / m_shutter_pdf_max_height + m_normalized_open_end_time_half;
+    }
+}
+
 void Camera::initialize_ray(
     SamplingContext&        sampling_context,
     ShadingRay&             ray) const
@@ -317,7 +370,7 @@ void Camera::initialize_ray(
         sampling_context.split_in_place(1, 1);
         ray.m_time =
             ShadingRay::Time::create_with_normalized_time(
-                sampling_context.next2<float>(),
+                map_to_shutter_curve(sampling_context.next2<float>()),
                 m_shutter_open_time,
                 m_shutter_close_time);
     }
@@ -379,6 +432,38 @@ DictionaryArray CameraFactory::get_input_metadata()
                     .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "0.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "shutter_open_end_time")
+            .insert("label", "Shutter Open End Time")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", "0.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "shutter_close_start_time")
+            .insert("label", "Shutter Close Start Time")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()

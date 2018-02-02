@@ -463,6 +463,41 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_FEQ(3.0, result);
     }
 
+    TEST_CASE(InverseLerp_GivenBlendParameterLessThanFirstValue_ReturnsCorrectlyExtrapoledValue)
+    {
+        const double result = inverse_lerp(1.0, 5.0, 0.0);
+        EXPECT_FEQ(-0.25, result);
+    }
+
+    TEST_CASE(InverseLerp_GivenBlendParameterEqualToFirstValue_Returns0)
+    {
+        const double result = inverse_lerp(1.0, 5.0, 1.0);
+        EXPECT_FEQ(0.0, result);
+    }
+
+    TEST_CASE(InverseLerp_GivenBlendParameterEqualToSecondValue_Returns1)
+    {
+        const double result = inverse_lerp(1.0, 5.0, 5.0);
+        EXPECT_FEQ(1.0, result);
+    }
+
+    TEST_CASE(InverseLerp_GivenBlendParameterGreaterThanSecondValue_ReturnsCorrectlyExtrapoledValue)
+    {
+        const double result = inverse_lerp(1.0, 5.0, 6.0);
+        EXPECT_FEQ(1.25, result);
+    }
+
+    TEST_CASE(InverseLerp_GivenBlendParameterBetweenFirstValueAndSecondValue_ReturnsCorrectlyBlendedValue)
+    {
+        const double result = inverse_lerp(1.0, 5.0, 3.0);
+        EXPECT_FEQ(0.5, result);
+    }
+
+    TEST_CASE(InverseLerp_GivenBlendParameterOfDifferentTypeBetweenFirstValueAndSecondValue_ReturnsCorrectlyBlendedValue){
+        const double result = inverse_lerp(1.0, 5.0, 3.0f);
+        EXPECT_FEQ(0.5, result);
+    }
+
     TEST_CASE(Fit_GivenIntegerInputRangeAndFloatingPointOutputRange)
     {
         const double result = fit<size_t, double>(4, 0, 19, 0.0, 1.0);
