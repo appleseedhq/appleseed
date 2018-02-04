@@ -41,6 +41,7 @@
 #include "renderer/api/light.h"
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
+#include "renderer/api/shadergroup.h"
 #include "renderer/api/texture.h"
 
 // appleseed.foundation headers.
@@ -337,6 +338,18 @@ inline foundation::auto_release_ptr<renderer::Environment> ProjectBuilder::creat
     clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
 
     return renderer::EnvironmentFactory::create(name.c_str(), clean_values);
+}
+
+template <>
+inline foundation::auto_release_ptr<renderer::ShaderGroup> ProjectBuilder::create_entity(
+    const foundation::Dictionary&       values) const
+{
+    const std::string name = get_entity_name(values);
+
+    foundation::Dictionary clean_values(values);
+    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
+
+    return renderer::ShaderGroupFactory::create(name.c_str(), clean_values);
 }
 
 }       // namespace studio

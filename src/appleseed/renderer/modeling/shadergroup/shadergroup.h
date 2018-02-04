@@ -36,6 +36,7 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
@@ -43,6 +44,7 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
+namespace foundation    { class DictionaryArray; }
 namespace renderer      { class AssemblyInstance; }
 namespace renderer      { class OSLShadingSystem; }
 namespace renderer      { class ParamArray; }
@@ -188,8 +190,16 @@ class APPLESEED_DLLSYMBOL ShaderGroupFactory
     // Return a string identifying this shader group model.
     static const char* get_model();
 
+    // Return a set of input metadata for this shader group model.
+    static foundation::DictionaryArray get_input_metadata();
+
     // Create a new shader group.
     static foundation::auto_release_ptr<ShaderGroup> create(const char* name);
+
+    // Create a new shader group.
+    static foundation::auto_release_ptr<ShaderGroup> create(
+        const char*         name,
+        const ParamArray&   params);
 };
 
 
