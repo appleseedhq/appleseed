@@ -42,6 +42,7 @@
 #include "renderer/api/color.h"
 #include "renderer/api/entity.h"
 #include "renderer/api/scene.h"
+#include "renderer/api/shadergroup.h"
 
 // Qt headers.
 #include <QMenu>
@@ -96,6 +97,11 @@ ItemBase* BaseGroupItem::add_item(renderer::AssemblyInstance* assembly_instance)
     return m_assembly_instance_collection_item->add_item(assembly_instance);
 }
 
+ItemBase* BaseGroupItem::add_item(renderer::ShaderGroup* shader_group)
+{
+    return m_shader_group_collection_item->add_item(shader_group);
+}
+
 BaseGroupItem::ColorCollectionItem& BaseGroupItem::get_color_collection_item() const
 {
     return *m_color_collection_item;
@@ -119,6 +125,11 @@ AssemblyCollectionItem& BaseGroupItem::get_assembly_collection_item() const
 BaseGroupItem::AssemblyInstanceCollectionItem& BaseGroupItem::get_assembly_instance_collection_item() const
 {
     return *m_assembly_instance_collection_item;
+}
+
+BaseGroupItem::ShaderGroupCollectionItem& BaseGroupItem::get_shader_group_collection_item() const
+{
+    return *m_shader_group_collection_item;
 }
 
 void BaseGroupItem::add_items(BaseGroup& base_group)
@@ -149,6 +160,16 @@ void BaseGroupItem::add_items(BaseGroup& base_group)
                 EntityTraits<TextureInstance>::get_human_readable_collection_type_name(),
                 base_group));
     m_texture_instance_collection_item->add_items(base_group.texture_instances());
+
+    addChild(
+        m_shader_group_collection_item =
+            new ShaderGroupCollectionItem(
+                m_editor_context,
+                new_guid(),
+                EntityTraits<ShaderGroup>::get_human_readable_collection_type_name(),
+                base_group,
+                this));
+    m_shader_group_collection_item->add_items(base_group.shader_groups());
 
     addChild(
         m_assembly_collection_item =
