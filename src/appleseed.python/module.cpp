@@ -47,6 +47,7 @@ void bind_edf();
 void bind_entity();
 void bind_environment();
 void bind_frame();
+void bind_fresnel();
 void bind_image();
 void bind_light();
 void bind_logger();
@@ -109,6 +110,7 @@ extern "C" void bind_appleseed_python_classes()
     bind_image();
     bind_aov();
     bind_frame();
+    bind_fresnel();
     bind_display();
     bind_project();
 

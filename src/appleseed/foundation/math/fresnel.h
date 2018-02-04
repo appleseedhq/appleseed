@@ -30,6 +30,9 @@
 #ifndef APPLESEED_FOUNDATION_MATH_FRESNEL_H
 #define APPLESEED_FOUNDATION_MATH_FRESNEL_H
 
+// Foundation headers.
+#include "foundation/math/scalar.h"
+
 // Standard headers.
 #include <cassert>
 #include <cmath>
