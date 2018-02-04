@@ -233,6 +233,7 @@ set (appleseedpython_sources
     ../appleseed.python/bindentitycontainers.h
     ../appleseed.python/bindenvironment.cpp
     ../appleseed.python/bindframe.cpp
+    ../appleseed.python/bindfresnel.cpp
     ../appleseed.python/bindimage.cpp
     ../appleseed.python/bindlight.cpp
     ../appleseed.python/bindlogger.cpp
