@@ -323,12 +323,6 @@ bool Scene::on_render_begin(
     const Project&          project,
     IAbortSwitch*           abort_switch)
 {
-    for (each<CameraContainer> i = cameras(); i; ++i)
-    {
-        if (!i->on_render_begin(project, abort_switch))
-            return false;
-    }
-
     assert(!m_has_render_data);
     m_render_data.m_bbox = compute_bbox();
     m_render_data.m_center = m_render_data.m_bbox.center();
@@ -336,6 +330,12 @@ bool Scene::on_render_begin(
     m_render_data.m_diameter = m_render_data.m_bbox.diameter();
     m_render_data.m_safe_diameter = m_render_data.m_diameter * GScalar(1.01);
     m_has_render_data = true;
+
+    for (each<CameraContainer> i = cameras(); i; ++i)
+    {
+        if (!i->on_render_begin(project, abort_switch))
+            return false;
+    }
 
     return true;
 }
