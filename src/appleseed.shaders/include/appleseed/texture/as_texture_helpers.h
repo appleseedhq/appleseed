@@ -30,7 +30,7 @@
 
 #include "appleseed/math/as_math_helpers.h"
 
-string set_wrap_mode(int wrap_mode)
+string get_wrap_mode(int wrap_mode)
 {   
     if (wrap_mode == 0)
     {
@@ -58,8 +58,8 @@ void set_wrap_mode(
     int wrap_mode[2],
     output string mode[2])
 {
-    mode[0] = set_wrap_mode(wrap_mode[0]);
-    mode[1] = set_wrap_mode(wrap_mode[1]);
+    mode[0] = get_wrap_mode(wrap_mode[0]);
+    mode[1] = get_wrap_mode(wrap_mode[1]);
 }
 
 void set_wrap_mode(
@@ -67,17 +67,17 @@ void set_wrap_mode(
     int wrap_tmode,
     output string mode[2])
 {
-    mode[0] = set_wrap_mode(wrap_smode);
-    mode[1] = set_wrap_mode(wrap_tmode);
+    mode[0] = get_wrap_mode(wrap_smode);
+    mode[1] = get_wrap_mode(wrap_tmode);
 }
 
 void set_wrap_mode(
     int wrap_mode[3],
     output string mode[3])
 {
-    mode[0] = set_wrap_mode(wrap_mode[0]);
-    mode[1] = set_wrap_mode(wrap_mode[1]);
-    mode[2] = set_wrap_mode(wrap_mode[2]);
+    mode[0] = get_wrap_mode(wrap_mode[0]);
+    mode[1] = get_wrap_mode(wrap_mode[1]);
+    mode[2] = get_wrap_mode(wrap_mode[2]);
 }
 
 void set_wrap_mode(
@@ -86,9 +86,9 @@ void set_wrap_mode(
     int wrap_rmode,
     output string mode[3])
 {
-    mode[0] = set_wrap_mode(wrap_smode);
-    mode[1] = set_wrap_mode(wrap_tmode);
-    mode[2] = set_wrap_mode(wrap_rmode);
+    mode[0] = get_wrap_mode(wrap_smode);
+    mode[1] = get_wrap_mode(wrap_tmode);
+    mode[2] = get_wrap_mode(wrap_rmode);
 }
 
 string get_interpolation_method(int method)
