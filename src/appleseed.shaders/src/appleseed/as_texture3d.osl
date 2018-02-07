@@ -280,7 +280,7 @@ shader as_texture3d
             getattribute("shader:shadername", shadername);
             
             warning("[DEBUG]: Invalid texture type %s in %s, %s:%d\n",
-                    texture_type, shadername, __FILE__, __LINE__);
+                    texture_format, shadername, __FILE__, __LINE__);
 #endif
             return;
         }
