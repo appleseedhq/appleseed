@@ -144,7 +144,7 @@ void Drawing::blit_bitmap(
             {
                 const uint8* pixel = bitmap + (y * bitmap_width + x) * 4;
 
-                Color4f color;
+                Color4f color(0.0f);
                 Pixel::convert_from_format<float>(
                     bitmap_pixel_format,
                     pixel,
