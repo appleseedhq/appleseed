@@ -37,7 +37,7 @@ shader as_noise2d
     string as_maya_node_name = "asNoise2D",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/2d:swatch/AppleseedRenderSwatch:texture",
     int as_maya_type_id = 0x001279cb,
-    string icon = "asNoise2d.png",
+    string icon = "asNoise2D.png",
     string URL = "http://appleseedhq.net/"
 ]]
 (
