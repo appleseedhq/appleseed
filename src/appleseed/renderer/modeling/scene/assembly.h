@@ -110,11 +110,11 @@ class APPLESEED_DLLSYMBOL Assembly
     // Access the objects.
     ObjectContainer& objects() const;
 
-    // Access the volumes.
-    VolumeContainer& volumes() const;
-
     // Access the object instances.
     ObjectInstanceContainer& object_instances() const;
+
+    // Access the volumes.
+    VolumeContainer& volumes() const;
 
     // Return true if this assembly is tagged as flushable.
     bool is_flushable() const;

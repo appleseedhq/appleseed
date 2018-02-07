@@ -375,7 +375,7 @@ void InputBinder::bind_assembly_entities_inputs(
             *i);
     }
 
-    // Bind phase punctions inputs.
+    // Bind volumes inputs.
     for (each<VolumeContainer> i = assembly.volumes(); i; ++i)
     {
         bind_assembly_entity_inputs(
