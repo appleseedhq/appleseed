@@ -117,7 +117,7 @@ TEST_SUITE(Foundation_Utility_String)
 
 #if defined APPLESEED_ARCH32
     #define ZERO_PTR            0x00000000
-    #define ZERO_PTR_STR        "0x00000000"
+    #define ZERO_PTR_STR        "<null>"
     #define DEADBEEF_PTR        0xDEADBEEF
     #define DEADBEEF_PTR_STR    "0xDEADBEEF"
 #elif defined APPLESEED_ARCH64
