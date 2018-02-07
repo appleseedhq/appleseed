@@ -1782,6 +1782,8 @@ set (renderer_modeling_project_sources
     renderer/modeling/project/projectfilewriter.cpp
     renderer/modeling/project/projectfilewriter.h
     renderer/modeling/project/projectformatrevision.h
+    renderer/modeling/project/projecttracker.cpp
+    renderer/modeling/project/projecttracker.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_project_sources}
