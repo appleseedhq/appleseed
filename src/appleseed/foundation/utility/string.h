@@ -76,11 +76,8 @@ extern APPLESEED_DLLSYMBOL const char* Blanks;
 class ExceptionStringConversionError : public Exception {};
 
 // Convert a value to a string.
-template <typename T, typename std::enable_if_t<!IsPointer<T>::R>*>
+template <typename T>
 std::string to_string(const T& value);
-
-template <typename T, typename std::enable_if_t<IsPointer<T>::R>*>
-std::string to_string(const T value);
 
 // Convert an array of values to a string.
 template <typename T>
@@ -369,56 +366,53 @@ namespace impl
     {
         static std::string to_string(const T& value)
         {
-            std::stringstream sstr;
-            sstr << "0x"
-                 << std::hex
-                 << std::uppercase
-                 << std::setw(2 * sizeof(void*))
-                 << std::setfill('0')
-                 << reinterpret_cast<uintptr_t>(value);
-            return sstr.str();
+            const uintptr_t ptr = reinterpret_cast<uintptr_t>(value);
+            if (((void*)ptr) == nullptr)
+                return std::string("<null>");
+            else
+            {
+                std::stringstream sstr;
+                sstr << "0x"
+                     << std::hex
+                     << std::uppercase
+                     << std::setw(2 * sizeof(void*))
+                     << std::setfill('0')
+                     << ptr;
+                return sstr.str();
+            }
         }
     };
 }
 
 // General entry-point.
-template <typename T, typename std::enable_if_t<!IsPointer<T>::R>* = 0>
+template <typename T>
 std::string to_string(const T& value)
 {
     return impl::ToString<T, IsPointer<T>::R>::to_string(value);
 }
 
-template <typename T, typename std::enable_if_t<IsPointer<T>::R>* = 0>
-std::string to_string(const T value)
-{
-    if (value == nullptr)
-        return std::string("<null>");
-    else
-        return impl::ToString<T, IsPointer<T>::R>::to_string(value);
-}
-
 // Handle booleans separately.
 template <>
-inline std::string to_string(const bool& value)
+inline std::string to_string<bool>(const bool& value)
 {
     return value ? "true" : "false";
 }
 
 // Handle 8-bit integers as integers, not as characters.
 template <>
-inline std::string to_string(const int8& value)
+inline std::string to_string<int8>(const int8& value)
 {
     return to_string(static_cast<int>(value));
 }
 template <>
-inline std::string to_string(const uint8& value)
+inline std::string to_string<uint8>(const uint8& value)
 {
     return to_string(static_cast<unsigned int>(value));
 }
 
 // Handle nullptr object
 template <>
-inline std::string to_string(const std::nullptr_t& value)
+inline std::string to_string<std::nullptr_t>(const std::nullptr_t& value)
 {
     return std::string("<null>");
 }
