@@ -241,7 +241,7 @@ namespace
 
             switch (m_mdf_type)
             {
-                case GGX:
+              case GGX:
                 {
                     const GGXMDF mdf;
                     is_refraction = do_sample(
@@ -264,7 +264,7 @@ namespace
                 }
                 break;
 
-                case Beckmann:
+              case Beckmann:
                 {
                     const BeckmannMDF mdf;
                     is_refraction = do_sample(
@@ -287,7 +287,7 @@ namespace
                 }
                 break;
 
-                case Std:
+              case Std:
                 {
                     const StdMDF mdf;
                     is_refraction = do_sample(
@@ -310,7 +310,7 @@ namespace
                 }
                 break;
 
-                assert_otherwise;
+              assert_otherwise;
             }
 
             if (sample.m_probability < 1.0e-9f)
@@ -443,7 +443,7 @@ namespace
 
             switch (m_mdf_type)
             {
-                case GGX:
+              case GGX:
                 {
                     const GGXMDF mdf;
                     return do_evaluate(
@@ -457,7 +457,7 @@ namespace
                 }
                 break;
 
-                case Beckmann:
+              case Beckmann:
                 {
                     const BeckmannMDF mdf;
                     return do_evaluate(
@@ -471,7 +471,7 @@ namespace
                 }
                 break;
 
-                case Std:
+              case Std:
                 {
                     const StdMDF mdf;
                     return do_evaluate(
@@ -485,7 +485,9 @@ namespace
                 }
                 break;
 
-                assert_otherwise;
+              default:
+                assert(!"Unexpected MDF type.");
+                return 0.0f;
             }
         }
 
@@ -592,7 +594,7 @@ namespace
 
             switch (m_mdf_type)
             {
-                case GGX:
+              case GGX:
                 {
                     const GGXMDF mdf;
                     return do_evaluate_pdf(
@@ -604,7 +606,7 @@ namespace
                 }
                 break;
 
-                case Beckmann:
+              case Beckmann:
                 {
                     const BeckmannMDF mdf;
                     return do_evaluate_pdf(
@@ -616,7 +618,7 @@ namespace
                 }
                 break;
 
-                case Std:
+              case Std:
                 {
                     const StdMDF mdf;
                     return do_evaluate_pdf(
@@ -628,7 +630,9 @@ namespace
                 }
                 break;
 
-                assert_otherwise;
+              default:
+                assert(!"Unexpected MDF type.");
+                return 0.0f;
             }
         }
 
