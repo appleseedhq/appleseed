@@ -102,7 +102,6 @@ bool Material::has_uniform_alpha_map_value_of_one() const
         return false;
 
     float alpha;
-
     source->evaluate_uniform(alpha);
 
     return alpha == 1.0f;

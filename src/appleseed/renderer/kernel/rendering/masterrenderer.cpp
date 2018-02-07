@@ -325,8 +325,8 @@ bool MasterRenderer::check_scene() const
 
 bool MasterRenderer::bind_scene_entities_inputs() const
 {
-    InputBinder input_binder;
-    input_binder.bind(*m_project.get_scene());
+    InputBinder input_binder(*m_project.get_scene());
+    input_binder.bind();
     return input_binder.get_error_count() == 0;
 }
 

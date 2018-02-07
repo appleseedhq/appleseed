@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2017 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,18 +26,47 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_PROJECT_H
-#define APPLESEED_RENDERER_API_PROJECT_H
+#ifndef APPLESEED_RENDERER_MODELING_PROJECT_PROJECTTRACKER_H
+#define APPLESEED_RENDERER_MODELING_PROJECT_PROJECTTRACKER_H
 
-// API headers.
-#include "renderer/modeling/project-builtin/cornellboxproject.h"
-#include "renderer/modeling/project-builtin/defaultproject.h"
-#include "renderer/modeling/project/configuration.h"
-#include "renderer/modeling/project/configurationcontainer.h"
-#include "renderer/modeling/project/project.h"
-#include "renderer/modeling/project/projectfilereader.h"
-#include "renderer/modeling/project/projectfileupdater.h"
-#include "renderer/modeling/project/projectfilewriter.h"
-#include "renderer/modeling/project/projecttracker.h"
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
-#endif  // !APPLESEED_RENDERER_API_PROJECT_H
+// Forward declarations.
+namespace foundation    { class Logger; }
+namespace renderer      { class Entity; }
+namespace renderer      { class Project; }
+
+namespace renderer
+{
+
+//
+// Track relations between entities of a project and enable cross-entity
+// operations such as entity renaming.
+//
+
+class APPLESEED_DLLSYMBOL ProjectTracker
+{
+  public:
+    // Constructor.
+    explicit ProjectTracker(Project& project);
+
+    // Destructor.
+    ~ProjectTracker();
+
+    void print_dependencies(foundation::Logger& logger) const;
+
+    // Rename an entity and update all references to that entity.
+    void rename(Entity& entity, const char* new_name);
+
+    // Remove all unused entities from the project.
+    void remove_unused_entities();
+
+  private:
+    struct Impl;
+    Impl* impl;
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_PROJECTTRACKER_H
