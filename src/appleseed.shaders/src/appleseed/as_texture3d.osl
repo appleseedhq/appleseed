@@ -51,7 +51,7 @@ shader as_texture3d
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int gafferNoduleLayoutVisible = 0,
-        string help = "The 3d texture file (field3d, f3d, etc)",
+        string help = "The 3D texture file (field3d, f3d, etc)",
         int divider = 1
     ]],
     int in_starting_channel = 0
@@ -75,7 +75,7 @@ shader as_texture3d
         string as_maya_attribute_short_name = "c",
         string label = "Default Color",
         string page = "3D Texture",
-        string help = "Default Fill color to use if the texture lookup fails."
+        string help = "Default fill color to use if the texture lookup fails."
     ]],
     float in_channel_fill = 0.0
     [[
@@ -85,7 +85,7 @@ shader as_texture3d
         float softmax = 1.0,
         string label = "Default Channel Fill",
         string page = "3D Texture",
-        string help = "Default Fill value for any channels requested but not present",
+        string help = "Default fill value for any channels requested but not present",
         int divider = 1
     ]],
     float in_time = 0.0
