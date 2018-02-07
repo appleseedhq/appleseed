@@ -71,6 +71,26 @@ void set_wrap_mode(
     mode[1] = set_wrap_mode(wrap_tmode);
 }
 
+void set_wrap_mode(
+    int wrap_mode[3],
+    output string mode[3])
+{
+    mode[0] = set_wrap_mode(wrap_mode[0]);
+    mode[1] = set_wrap_mode(wrap_mode[1]);
+    mode[2] = set_wrap_mode(wrap_mode[2]);
+}
+
+void set_wrap_mode(
+    int wrap_smode,
+    int wrap_tmode,
+    int wrap_rmode,
+    output string mode[3])
+{
+    mode[0] = set_wrap_mode(wrap_smode);
+    mode[1] = set_wrap_mode(wrap_tmode);
+    mode[2] = set_wrap_mode(wrap_rmode);
+}
+
 string get_interpolation_method(int method)
 {
     if (method == 0)

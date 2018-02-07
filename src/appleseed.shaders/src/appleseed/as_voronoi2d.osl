@@ -35,7 +35,7 @@ shader as_voronoi2d
 [[
     string as_maya_node_name = "asVoronoi2D",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/2d:swatch/AppleseedRenderSwatch:texture",
-    string icon = "asVoronoi2d",
+    string icon = "asVoronoi2D.png",
     int as_maya_type_id = 0x001279c7
 ]]
 (

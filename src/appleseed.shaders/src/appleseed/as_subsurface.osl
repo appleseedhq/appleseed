@@ -313,14 +313,27 @@ shader as_subsurface
     {
         color albedo = clamp(in_sss_amount * in_color, 0.01, 0.99);
 
-        out_outColor += as_subsurface(
-            sss_profile,
-            Nn,
-            albedo,
-            in_sss_mfp_scale * in_sss_mfp,
-            in_ior,
-            "fresnel_weight", in_fresnel_weight,
-            "zero_scattering_weight", in_zero_scattering_weight);
+        if (sss_profile == "randomwalk")
+        {
+            out_outColor += as_subsurface(
+                sss_profile,
+                Nn,
+                albedo,
+                in_sss_mfp_scale * in_sss_mfp,
+                in_ior,
+                "fresnel_weight", in_fresnel_weight,
+                "zero_scattering_weight", in_zero_scattering_weight);
+        }
+        else
+        {
+            out_outColor += as_subsurface(
+                sss_profile,
+                Nn,
+                albedo,
+                in_sss_mfp_scale * in_sss_mfp,
+                in_ior,
+                "fresnel_weight", in_fresnel_weight);
+        }
     }
 
     if (in_specular_weight > 0.0)
@@ -365,6 +378,6 @@ shader as_subsurface
             0.0,        // specular spread for Student's t-MDF
             0.0,        // anisotropy amount
             in_ior,
-            "energy_conservation", 1.0);
+            "energy_compensation", 1.0);
     }
 }
