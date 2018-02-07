@@ -76,8 +76,11 @@ extern APPLESEED_DLLSYMBOL const char* Blanks;
 class ExceptionStringConversionError : public Exception {};
 
 // Convert a value to a string.
-template <typename T>
+template <typename T, typename std::enable_if_t<!IsPointer<T>::R>*>
 std::string to_string(const T& value);
+
+template <typename T, typename std::enable_if_t<IsPointer<T>::R>*>
+std::string to_string(const T value);
 
 // Convert an array of values to a string.
 template <typename T>
@@ -379,10 +382,19 @@ namespace impl
 }
 
 // General entry-point.
-template <typename T>
+template <typename T, typename std::enable_if_t<!IsPointer<T>::R>* = 0>
 std::string to_string(const T& value)
 {
     return impl::ToString<T, IsPointer<T>::R>::to_string(value);
+}
+
+template <typename T, typename std::enable_if_t<IsPointer<T>::R>* = 0>
+std::string to_string(const T value)
+{
+    if (value == nullptr)
+        return std::string("<null>");
+    else
+        return impl::ToString<T, IsPointer<T>::R>::to_string(value);
 }
 
 // Handle booleans separately.
@@ -402,6 +414,13 @@ template <>
 inline std::string to_string(const uint8& value)
 {
     return to_string(static_cast<unsigned int>(value));
+}
+
+// Handle nullptr object
+template <>
+inline std::string to_string(const std::nullptr_t& value)
+{
+    return std::string("<null>");
 }
 
 // Handle C strings separately.
