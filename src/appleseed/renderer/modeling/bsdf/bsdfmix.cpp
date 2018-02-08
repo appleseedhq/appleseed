@@ -37,7 +37,7 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
-#include "renderer/modeling/scene/assembly.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -55,7 +55,9 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
+namespace renderer      { class BaseGroup; }
 namespace renderer      { class BSDFSample; }
+namespace renderer      { class Project; }
 namespace renderer      { class ShadingPoint; }
 
 using namespace foundation;
@@ -106,8 +108,9 @@ namespace
             if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            m_bsdf[0] = static_cast<const BSDF*>(m_inputs.get_entity("bsdf0"));
-            m_bsdf[1] = static_cast<const BSDF*>(m_inputs.get_entity("bsdf1"));
+            // Cache bound BSDFs.
+            m_bsdf[0] = dynamic_cast<const BSDF*>(m_inputs.get_entity("bsdf0"));
+            m_bsdf[1] = dynamic_cast<const BSDF*>(m_inputs.get_entity("bsdf1"));
 
             if (m_bsdf[0] == nullptr)
             {
