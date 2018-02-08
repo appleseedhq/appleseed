@@ -366,14 +366,20 @@ namespace impl
     {
         static std::string to_string(const T& value)
         {
-            std::stringstream sstr;
-            sstr << "0x"
-                 << std::hex
-                 << std::uppercase
-                 << std::setw(2 * sizeof(void*))
-                 << std::setfill('0')
-                 << reinterpret_cast<uintptr_t>(value);
-            return sstr.str();
+            const uintptr_t ptr = reinterpret_cast<uintptr_t>(value);
+            if (ptr == 0)
+                return "<null>";
+            else
+            {
+                std::stringstream sstr;
+                sstr << "0x"
+                     << std::hex
+                     << std::uppercase
+                     << std::setw(2 * sizeof(void*))
+                     << std::setfill('0')
+                     << ptr;
+                return sstr.str();
+            }
         }
     };
 }
@@ -387,21 +393,28 @@ std::string to_string(const T& value)
 
 // Handle booleans separately.
 template <>
-inline std::string to_string(const bool& value)
+inline std::string to_string<bool>(const bool& value)
 {
     return value ? "true" : "false";
 }
 
 // Handle 8-bit integers as integers, not as characters.
 template <>
-inline std::string to_string(const int8& value)
+inline std::string to_string<int8>(const int8& value)
 {
     return to_string(static_cast<int>(value));
 }
 template <>
-inline std::string to_string(const uint8& value)
+inline std::string to_string<uint8>(const uint8& value)
 {
     return to_string(static_cast<unsigned int>(value));
+}
+
+// Handle nullptr object
+template <>
+inline std::string to_string<std::nullptr_t>(const std::nullptr_t& value)
+{
+    return std::string("<null>");
 }
 
 // Handle C strings separately.
