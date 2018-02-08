@@ -367,8 +367,8 @@ namespace impl
         static std::string to_string(const T& value)
         {
             const uintptr_t ptr = reinterpret_cast<uintptr_t>(value);
-            if (((void*)ptr) == nullptr)
-                return std::string("<null>");
+            if (ptr == 0)
+                return "<null>";
             else
             {
                 std::stringstream sstr;
