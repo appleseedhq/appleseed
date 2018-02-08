@@ -178,7 +178,7 @@ class APPLESEED_DLLSYMBOL EntityVector
     size_t get_index(const char* name) const;
 
     // Return a given entity.
-    // Return 0 if the requested entity does not exist.
+    // Return nullptr if the requested entity does not exist.
     Entity* get_by_index(const size_t index) const;
     Entity* get_by_uid(const foundation::UniqueID id) const;
     Entity* get_by_name(const char* name) const;
@@ -259,7 +259,7 @@ class TypedEntityVector
     foundation::auto_release_ptr<T> remove(T* entity);
 
     // Return a given entity.
-    // Return 0 if the requested entity does not exist.
+    // Return nullptr if the requested entity does not exist.
     T* get_by_index(const size_t index) const;
     T* get_by_uid(const foundation::UniqueID id) const;
     T* get_by_name(const char* name) const;

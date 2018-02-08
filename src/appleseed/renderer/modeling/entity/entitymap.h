@@ -174,7 +174,7 @@ class APPLESEED_DLLSYMBOL EntityMap
     foundation::auto_release_ptr<Entity> remove(Entity* entity);
 
     // Return a given entity.
-    // Return 0 if the requested entity does not exist.
+    // Return nullptr if the requested entity does not exist.
     Entity* get_by_uid(const foundation::UniqueID id) const;
     Entity* get_by_name(const char* name) const;
 
@@ -260,7 +260,7 @@ class TypedEntityMap
     foundation::auto_release_ptr<T> remove(T* entity);
 
     // Return a given entity.
-    // Return 0 if the requested entity does not exist.
+    // Return nullptr if the requested entity does not exist.
     T* get_by_uid(const foundation::UniqueID id) const;
     T* get_by_name(const char* name) const;
 
