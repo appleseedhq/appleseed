@@ -303,6 +303,11 @@ shader as_blackbody
                 (float) in_temperature);
         }
 
+        if (max(edf_color) < EPS)
+        {
+            return;
+        }
+
         if (in_area_normalize_edf)
         {
             edf_color /= surfacearea();

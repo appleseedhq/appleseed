@@ -103,6 +103,7 @@ vector<size_t> LightTree::build()
     for (size_t i = 0, e = m_emitting_triangles.size(); i < e; ++i)
     {
         const EmittingTriangle& triangle = m_emitting_triangles[i];
+
         AABB3d bbox;
         bbox.invalidate();
         bbox.insert(triangle.m_v0);
@@ -110,7 +111,6 @@ vector<size_t> LightTree::build()
         bbox.insert(triangle.m_v2);
 
         light_bboxes.push_back(bbox);
-
         m_items.emplace_back(bbox, i, EmittingTriangleType);
     }
 
@@ -157,7 +157,7 @@ vector<size_t> LightTree::build()
         return tri_index_to_node_index;
     }
 
-    RENDERER_LOG_INFO("light tree not built - no light tree compatible lights in the scene.");
+    RENDERER_LOG_INFO("no light tree compatible lights in the scene; light tree not built.");
     return IndexLUT();
 }
 
@@ -194,7 +194,7 @@ float LightTree::recursive_node_update(
         {
             const Light* light = m_non_physical_lights[light_index].m_light;
             
-            // Retrieve the non physical light importance.
+            // Retrieve the non-physical light importance.
             Spectrum spectrum;
             light->get_inputs().find("intensity").source()->evaluate_uniform(spectrum);
             importance = average_value(spectrum);
@@ -207,6 +207,7 @@ float LightTree::recursive_node_update(
 
             // Retrieve the emitting triangle importance.
             const EDF* edf = triangle.m_material->get_uncached_edf();
+            assert(edf != nullptr);
             importance = edf->get_uncached_max_contribution() * edf->get_uncached_importance_multiplier();
     
             // Save the index of the light tree node containing the EMT in the look up table.
@@ -414,7 +415,7 @@ void LightTree::child_node_probabilites(
 
     // Node has currently no info about its own bbox characteristics.
     // Hence we have to extract it before from its parent.
-    // TODO: make LightTreeNode aware of its bbox!
+    // todo: make LightTreeNode aware of its bbox!
     const auto& bbox_left = node.get_left_bbox();
     const auto& bbox_right = node.get_right_bbox();
 
@@ -442,7 +443,7 @@ void LightTree::draw_tree_structure(
     const AABB3d&       root_bbox,
     const bool          separate_by_levels) const
 {
-    // TODO: Add a possibility to shift each level of bboxes along the z-axis.
+    // todo: add a possibility to shift each level of bboxes along the z-axis.
 
     const double Width = 0.1;
 

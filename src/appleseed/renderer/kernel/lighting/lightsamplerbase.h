@@ -83,16 +83,12 @@ class LightSamplerBase
         explicit Parameters(const ParamArray& params);
     };
 
-    typedef std::vector<NonPhysicalLightInfo>   NonPhysicalLightVector;
-    typedef std::vector<EmittingTriangle>       EmittingTriangleVector;
-    typedef foundation::CDF<size_t, float>      EmitterCDF;
+    typedef std::vector<NonPhysicalLightInfo> NonPhysicalLightVector;
+    typedef std::vector<EmittingTriangle> EmittingTriangleVector;
+    typedef foundation::CDF<size_t, float> EmitterCDF;
 
-    typedef std::function<void (const NonPhysicalLightInfo&)>
-                                                LightHandlingLambda;
-    typedef std::function<void (
-        const Material*,
-        const float,
-        const size_t)>                          TriangleHandlingLambda;
+    typedef std::function<void (const NonPhysicalLightInfo&)> LightHandlingFunction;
+    typedef std::function<bool (const Material*, const float, const size_t)> TriangleHandlingFunction;
 
     const Parameters                        m_params;
 
@@ -114,26 +110,26 @@ class LightSamplerBase
     void collect_emitting_triangles(
         const AssemblyInstanceContainer&    assembly_instances,
         const TransformSequence&            parent_transform_seq,
-        const TriangleHandlingLambda&       triangle_handling);
+        const TriangleHandlingFunction&     triangle_handling);
 
     // Collect emitting triangles from a given assembly.
     void collect_emitting_triangles(
         const Assembly&                     assembly,
         const AssemblyInstance&             assembly_instance,
         const TransformSequence&            transform_sequence,
-        const TriangleHandlingLambda&       triangle_handling);
+        const TriangleHandlingFunction&     triangle_handling);
 
     // Recursively collect non-physical lights from a given set of assembly instances.
     void collect_non_physical_lights(
         const AssemblyInstanceContainer&    assembly_instances,
         const TransformSequence&            parent_transform_seq,
-        const LightHandlingLambda&          light_handling);
+        const LightHandlingFunction&        light_handling);
 
     // Collect non-physical lights from a given assembly.
     void collect_non_physical_lights(
         const Assembly&                     assembly,
         const TransformSequence&            transform_sequence,
-        const LightHandlingLambda&          light_handling);
+        const LightHandlingFunction&        light_handling);
 
     void store_object_area_in_shadergroups(
         const AssemblyInstance*             assembly_instance,

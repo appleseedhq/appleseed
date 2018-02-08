@@ -174,11 +174,10 @@ bool Material::on_frame_begin(
     OnFrameBeginRecorder&   recorder,
     IAbortSwitch*           abort_switch)
 {
-    assert(!m_has_render_data);
-
     if (!ConnectableEntity::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
+    assert(!m_has_render_data);
     m_render_data.m_surface_shader = get_uncached_surface_shader();
     if (m_render_data.m_surface_shader == nullptr)
         m_render_data.m_surface_shader = project.get_scene()->get_default_surface_shader();
@@ -198,11 +197,9 @@ void Material::on_frame_end(
     const Project&          project,
     const BaseGroup*        parent)
 {
-    if (m_has_render_data)
-    {
-        delete m_render_data.m_basis_modifier;
-        m_has_render_data = false;
-    }
+    assert(m_has_render_data);
+    delete m_render_data.m_basis_modifier;
+    m_has_render_data = false;
 
     ConnectableEntity::on_frame_end(project, parent);
 }

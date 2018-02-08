@@ -96,7 +96,7 @@ void LightSamplerBase::build_emitting_triangle_hash_table()
 void LightSamplerBase::collect_emitting_triangles(
     const AssemblyInstanceContainer&    assembly_instances,
     const TransformSequence&            parent_transform_seq,
-    const TriangleHandlingLambda&       triangle_handling)
+    const TriangleHandlingFunction&     triangle_handling)
 {
     for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
     {
@@ -130,7 +130,7 @@ void LightSamplerBase::collect_emitting_triangles(
     const Assembly&                     assembly,
     const AssemblyInstance&             assembly_instance,
     const TransformSequence&            transform_sequence,
-    const TriangleHandlingLambda&       triangle_handling)
+    const TriangleHandlingFunction&     triangle_handling)
 {
     // Loop over the object instances of the assembly.
     const size_t object_instance_count = assembly.object_instances().size();
@@ -160,6 +160,7 @@ void LightSamplerBase::collect_emitting_triangles(
         Access<RegionKit> region_kit(&object.get_region_kit());
 
         double object_area = 0.0;
+
         // Loop over the regions of the object.
         const size_t region_count = region_kit->size();
         for (size_t region_index = 0; region_index < region_count; ++region_index)
@@ -189,8 +190,8 @@ void LightSamplerBase::collect_emitting_triangles(
                     pa_index < back_materials.size() ? back_materials[pa_index] : nullptr;
 
                 // Skip triangles that don't emit light.
-                if ((front_material == nullptr || front_material->has_emission() == false) &&
-                    (back_material == nullptr || back_material->has_emission() == false))
+                if ((front_material == nullptr || !front_material->has_emission()) &&
+                    (back_material == nullptr || !back_material->has_emission()))
                     continue;
 
                 // Retrieve object instance space vertices of the triangle.
@@ -251,46 +252,51 @@ void LightSamplerBase::collect_emitting_triangles(
                     }
                 }
                 else
+                {
                     n0 = n1 = n2 = geometric_normal;
+                }
 
                 for (size_t side = 0; side < 2; ++side)
                 {
                     // Retrieve the material; skip sides without a material or without emission.
                     const Material* material = side == 0 ? front_material : back_material;
-                    if (material == nullptr || material->has_emission() == false)
+                    if (material == nullptr || !material->has_emission())
                         continue;
 
-                    // Accumulate the object area for OSL shaders.
-                    object_area += area;
+                    // Invoke the triangle handling function.
+                    const bool accept_triangle =
+                        triangle_handling(
+                            material,
+                            static_cast<float>(area),
+                            m_emitting_triangles.size());
 
-                    // Create a light-emitting triangle.
-                    EmittingTriangle emitting_triangle;
-                    emitting_triangle.m_assembly_instance = &assembly_instance;
-                    emitting_triangle.m_object_instance_index = object_instance_index;
-                    emitting_triangle.m_region_index = region_index;
-                    emitting_triangle.m_triangle_index = triangle_index;
-                    emitting_triangle.m_v0 = v0;
-                    emitting_triangle.m_v1 = v1;
-                    emitting_triangle.m_v2 = v2;
-                    emitting_triangle.m_n0 = side == 0 ? n0 : -n0;
-                    emitting_triangle.m_n1 = side == 0 ? n1 : -n1;
-                    emitting_triangle.m_n2 = side == 0 ? n2 : -n2;
-                    emitting_triangle.m_geometric_normal = side == 0 ? geometric_normal : -geometric_normal;
-                    emitting_triangle.m_triangle_support_plane = triangle_support_plane;
-                    emitting_triangle.m_area = static_cast<float>(area);
-                    emitting_triangle.m_rcp_area = static_cast<float>(rcp_area);
-                    emitting_triangle.m_triangle_prob = 0.0f;   // will be initialized once the emitting triangle CDF is built
-                    emitting_triangle.m_material = material;
+                    if (accept_triangle)
+                    {
+                        // Create a light-emitting triangle.
+                        EmittingTriangle emitting_triangle;
+                        emitting_triangle.m_assembly_instance = &assembly_instance;
+                        emitting_triangle.m_object_instance_index = object_instance_index;
+                        emitting_triangle.m_region_index = region_index;
+                        emitting_triangle.m_triangle_index = triangle_index;
+                        emitting_triangle.m_v0 = v0;
+                        emitting_triangle.m_v1 = v1;
+                        emitting_triangle.m_v2 = v2;
+                        emitting_triangle.m_n0 = side == 0 ? n0 : -n0;
+                        emitting_triangle.m_n1 = side == 0 ? n1 : -n1;
+                        emitting_triangle.m_n2 = side == 0 ? n2 : -n2;
+                        emitting_triangle.m_geometric_normal = side == 0 ? geometric_normal : -geometric_normal;
+                        emitting_triangle.m_triangle_support_plane = triangle_support_plane;
+                        emitting_triangle.m_area = static_cast<float>(area);
+                        emitting_triangle.m_rcp_area = static_cast<float>(rcp_area);
+                        emitting_triangle.m_triangle_prob = 0.0f;   // will be initialized once the emitting triangle CDF is built
+                        emitting_triangle.m_material = material;
 
-                    const size_t emitting_triangle_index = m_emitting_triangles.size();
+                        // Store the light-emitting triangle.
+                        m_emitting_triangles.push_back(emitting_triangle);
 
-                    // Store the light-emitting triangle.
-                    m_emitting_triangles.push_back(emitting_triangle);
-
-                    triangle_handling(
-                        material,
-                        static_cast<float>(area),
-                        emitting_triangle_index);
+                        // Accumulate the object area for OSL shaders.
+                        object_area += area;
+                    }
                 }
             }
         }
@@ -312,7 +318,7 @@ void LightSamplerBase::collect_emitting_triangles(
 void LightSamplerBase::collect_non_physical_lights(
     const AssemblyInstanceContainer&    assembly_instances,
     const TransformSequence&            parent_transform_seq,
-    const LightHandlingLambda&          light_handling)
+    const LightHandlingFunction&        light_handling)
 {
     for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
     {
@@ -344,7 +350,7 @@ void LightSamplerBase::collect_non_physical_lights(
 void LightSamplerBase::collect_non_physical_lights(
     const Assembly&                     assembly,
     const TransformSequence&            transform_sequence,
-    const LightHandlingLambda&          light_handling)
+    const LightHandlingFunction&        light_handling)
 {
     for (const_each<LightContainer> i = assembly.lights(); i; ++i)
     {

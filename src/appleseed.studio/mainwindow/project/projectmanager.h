@@ -48,7 +48,7 @@ namespace appleseed {
 namespace studio {
 
 //
-// Manages rendering projects within the UI.
+// High-level project management and I/O.
 //
 
 class ProjectManager

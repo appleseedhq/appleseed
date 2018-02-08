@@ -116,8 +116,8 @@ inline bool BackwardLightSampler::has_lights() const
 {
     return
         m_non_physical_lights_cdf.valid() ||
-        m_emitting_triangles.size() > 0 ||
-        m_light_tree_lights.size() > 0;
+        !m_emitting_triangles.empty() ||
+        !m_light_tree_lights.empty();
 }
 
 inline bool BackwardLightSampler::has_hittable_lights() const
@@ -127,7 +127,7 @@ inline bool BackwardLightSampler::has_hittable_lights() const
 
 inline bool BackwardLightSampler::has_lightset() const
 {
-    return m_light_tree_lights.size() > 0 || m_emitting_triangles.size() > 0;
+    return !m_emitting_triangles.empty() || !m_light_tree_lights.empty();
 }
 
 }       // namespace renderer

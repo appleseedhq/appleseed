@@ -53,6 +53,9 @@ class APPLESEED_DLLSYMBOL Appleseed
     // Return the version string of the library.
     static const char* get_lib_version();
 
+    // Return the variant of the library: "SSE2", "SSE4.2", "AVX", etc.
+    static const char* get_lib_variant();
+
     // Return the configuration of the library: "Debug", "Release", etc.
     static const char* get_lib_configuration();
 

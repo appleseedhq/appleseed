@@ -30,22 +30,20 @@
 #include "pixelinspectorhandler.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/projectexplorer.h"
-#include "mainwindow/rendering/renderwidget.h"
 #include "utility/mousecoordinatestracker.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
 #include "renderer/api/project.h"
-#include "renderer/api/scene.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
-#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
 // Qt headers.
+#include <QCursor>
 #include <QEvent>
 #include <QPoint>
 #include <QString>
@@ -54,7 +52,6 @@
 
 // Standard headers.
 #include <cstddef>
-#include <sstream>
 
 using namespace foundation;
 using namespace renderer;
@@ -66,11 +63,9 @@ namespace studio {
 PixelInspectorHandler::PixelInspectorHandler(
     QWidget*                        widget,
     const MouseCoordinatesTracker&  mouse_tracker,
-    const ProjectExplorer&          project_explorer,
     const Project&                  project)
   : m_widget(widget)
   , m_mouse_tracker(mouse_tracker)
-  , m_project_explorer(project_explorer)
   , m_project(project)
   , m_enabled(true)
 {
@@ -105,44 +100,54 @@ bool PixelInspectorHandler::eventFilter(QObject* object, QEvent* event)
 
 void PixelInspectorHandler::show_tooltip()
 {
-    if (m_widget->underMouse())
+    const QPoint global_point = QCursor::pos();
+    const QPoint local_point = m_widget->mapFromGlobal(global_point);
+
+    const Vector2i pix(m_mouse_tracker.widget_to_pixel(local_point));
+    const Vector2d ndc(m_mouse_tracker.widget_to_ndc(local_point));
+
+    const Image& image = m_project.get_frame()->image();
+    const CanvasProperties& props = image.properties();
+
+    if (pix.x < 0 ||
+        pix.y < 0 ||
+        pix.x >= static_cast<int>(props.m_canvas_width) ||
+        pix.y >= static_cast<int>(props.m_canvas_height))
     {
-        const QPoint global_point = QCursor::pos();
-        const QPoint local_point = m_widget->mapFromGlobal(global_point);
+        QToolTip::hideText();
 
-        const Vector2d pix(m_mouse_tracker.widget_to_pixel(local_point));
-        const Vector2d ndc(m_mouse_tracker.widget_to_ndc(local_point));
-
-        Color4f linear_rgba;
-        m_project.get_frame()->image().get_pixel(
-            truncate<size_t>(pix.x),
-            truncate<size_t>(pix.y),
-            linear_rgba);
-
-        QToolTip::showText(
-            global_point,
-            QString(
-                "Pixel:\n"
-                "  X: %1\n"
-                "  Y: %2\n\n"
-                "NDC:\n"
-                "  X: %3\n"
-                "  Y: %4\n\n"
-                "Color:\n"
-                "  R: %5\n"
-                "  G: %6\n"
-                "  B: %7\n"
-                "  A: %8")
-            .arg(
-                QString::number(pix.x),
-                QString::number(pix.y),
-                QString::number(ndc.x, 'f', 5),
-                QString::number(ndc.y, 'f', 5),
-                QString::number(linear_rgba.r, 'f', 3),
-                QString::number(linear_rgba.g, 'f', 3),
-                QString::number(linear_rgba.b, 'f', 3),
-                QString::number(linear_rgba.a, 'f', 3)));
+        return;
     }
+
+    Color4f linear_rgba;
+    image.get_pixel(
+        static_cast<size_t>(pix.x),
+        static_cast<size_t>(pix.y),
+        linear_rgba);
+
+    QToolTip::showText(
+        global_point,
+        QString(
+            "Pixel:\n"
+            "  X: %1\n"
+            "  Y: %2\n\n"
+            "NDC:\n"
+            "  X: %3\n"
+            "  Y: %4\n\n"
+            "Color:\n"
+            "  R: %5\n"
+            "  G: %6\n"
+            "  B: %7\n"
+            "  A: %8")
+        .arg(
+            QString::number(pix.x),
+            QString::number(pix.y),
+            QString::number(ndc.x, 'f', 5),
+            QString::number(ndc.y, 'f', 5),
+            QString::number(linear_rgba.r, 'f', 3),
+            QString::number(linear_rgba.g, 'f', 3),
+            QString::number(linear_rgba.b, 'f', 3),
+            QString::number(linear_rgba.a, 'f', 3)));
 }
 
 }   // namespace studio

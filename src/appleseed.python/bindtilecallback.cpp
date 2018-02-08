@@ -118,29 +118,16 @@ namespace
         {
         }
 
-        void on_progressive_frame_begin(const Frame* frame) override
+        void on_progressive_frame_update(const Frame* frame) override
         {
             // Lock Python's global interpreter lock (it was released in MasterRenderer.render).
             ScopedGILLock lock;
 
-            if (bpy::override f = this->get_override("on_progressive_frame_begin"))
+            if (bpy::override f = this->get_override("on_progressive_frame_update"))
                 f(bpy::ptr(frame));
         }
 
-        void default_on_progressive_frame_begin(const Frame* frame)
-        {
-        }
-
-        void on_progressive_frame_end(const Frame* frame) override
-        {
-            // Lock Python's global interpreter lock (it was released in MasterRenderer.render).
-            ScopedGILLock lock;
-
-            if (bpy::override f = this->get_override("on_progressive_frame_end"))
-                f(bpy::ptr(frame));
-        }
-
-        void default_on_progressive_frame_end(const Frame* frame)
+        void default_on_progressive_frame_update(const Frame* frame)
         {
         }
     };
@@ -153,7 +140,5 @@ void bind_tile_callback()
         .def("on_tiled_frame_end", &ITileCallback::on_tiled_frame_end, &ITileCallbackWrapper::default_on_tiled_frame_end)
         .def("on_tile_begin", &ITileCallback::on_tile_begin, &ITileCallbackWrapper::default_on_tile_begin)
         .def("on_tile_end", &ITileCallback::on_tile_end, &ITileCallbackWrapper::default_on_tile_end)
-        .def("on_progressive_frame_begin", &ITileCallback::on_progressive_frame_begin, &ITileCallbackWrapper::default_on_progressive_frame_begin)
-        .def("on_progressive_frame_end", &ITileCallback::on_progressive_frame_end, &ITileCallbackWrapper::default_on_progressive_frame_end)
-        ;
+        .def("on_progressive_frame_update", &ITileCallback::on_progressive_frame_update, &ITileCallbackWrapper::default_on_progressive_frame_update);
 }

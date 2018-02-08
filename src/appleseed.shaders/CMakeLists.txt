@@ -431,6 +431,7 @@ set (src_appleseed_sources
      src/appleseed/as_disney_material.osl
      src/appleseed/as_double_shade.osl
      src/appleseed/as_falloff_angle.osl
+     src/appleseed/as_fresnel.osl
      src/appleseed/as_glass.osl
      src/appleseed/as_globals.osl
      src/appleseed/as_id_manifold.osl
@@ -444,9 +445,11 @@ set (src_appleseed_sources
      src/appleseed/as_space_transform.osl
      src/appleseed/as_standard_surface.osl
      src/appleseed/as_subsurface.osl
+     src/appleseed/as_switch_surface.osl
      src/appleseed/as_switch_texture.osl
      src/appleseed/as_swizzle.osl
      src/appleseed/as_texture.osl
+     src/appleseed/as_texture3d.osl
      src/appleseed/as_texture_info.osl
      src/appleseed/as_vary_color.osl
      src/appleseed/as_voronoi2d.osl

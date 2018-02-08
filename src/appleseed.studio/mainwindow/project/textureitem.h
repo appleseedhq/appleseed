@@ -41,7 +41,6 @@
 #include <QList>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class BaseGroupItem; } }
 namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class TextureCollectionItem; } }
@@ -59,15 +58,12 @@ class TextureItem
         EntityEditorContext&    editor_context,
         renderer::Texture*      texture,
         renderer::BaseGroup&    parent,
-        TextureCollectionItem*  parent_item,
-        BaseGroupItem*          base_group_item);
+        TextureCollectionItem*  collection_item);
 
   private:
     friend class EntityDeletionAction<TextureItem>;
 
     typedef MultiModelEntityItem<renderer::Texture, renderer::BaseGroup, TextureCollectionItem> Base;
-
-    BaseGroupItem* m_base_group_item;
 
     void delete_multiple(const QList<ItemBase*>& items) override;
     void do_delete();

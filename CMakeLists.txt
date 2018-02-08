@@ -264,15 +264,16 @@ if (WITH_DISNEY_MATERIAL)
     endif ()
 endif ()
 
+
 #--------------------------------------------------------------------------------------------------
 # Include paths.
 #--------------------------------------------------------------------------------------------------
 
 # Common include paths.
 include_directories (
+    src/thirdparty/bcd
+    src/thirdparty/lz4
     src/appleseed
-    src/bcd
-    src/lz4
 )
 
 if (USE_EXTERNAL_ZLIB)
@@ -559,9 +560,10 @@ endmacro ()
 # Products.
 #--------------------------------------------------------------------------------------------------
 
+add_subdirectory (src/thirdparty/bcd)
+add_subdirectory (src/thirdparty/lz4)
+
 add_subdirectory (src/appleseed)
-add_subdirectory (src/bcd)
-add_subdirectory (src/lz4)
 add_subdirectory (src/appleseed.shaders)
 
 if (WITH_CLI OR WITH_STUDIO OR WITH_TOOLS)
@@ -602,8 +604,8 @@ endif ()
 
 if (WITH_TOOLS)
     add_subdirectory (src/tools/animatecamera)
-    add_subdirectory (src/tools/bcd.cli)
     add_subdirectory (src/tools/convertmeshfile)
+    add_subdirectory (src/tools/denoiser)
     add_subdirectory (src/tools/dumpmetadata)
     add_subdirectory (src/tools/makefluffy)
     add_subdirectory (src/tools/projecttool)

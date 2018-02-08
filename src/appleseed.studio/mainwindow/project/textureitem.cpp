@@ -67,10 +67,8 @@ TextureItem::TextureItem(
     EntityEditorContext&    editor_context,
     Texture*                texture,
     BaseGroup&              parent,
-    TextureCollectionItem*  collection_item,
-    BaseGroupItem*          base_group_item)
+    TextureCollectionItem*  collection_item)
   : Base(editor_context, texture, parent, collection_item)
-  , m_base_group_item(base_group_item)
 {
 }
 

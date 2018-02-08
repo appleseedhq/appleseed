@@ -40,7 +40,10 @@
 #if defined _WIN32
 #include <sys/timeb.h>
 #include <sys/types.h>
-#elif defined __GNUC__
+#elif defined __linux__ || defined __FreeBSD__
+#include <time.h>
+#include <sys/time.h>
+#else
 #include <sys/time.h>
 #endif
 
@@ -81,6 +84,12 @@ uint64 DefaultProcessorTimer::frequency()
         return static_cast<uint64>(CLOCKS_PER_SEC);
     }
 
+// Linux and FreeBSD.
+#elif defined __linux__ || defined __FreeBSD__
+
+    const uint64 NsPerSecond = 1000000000;
+    return NsPerSecond;
+
 // Other platforms.
 #else
 
@@ -105,15 +114,17 @@ uint64 DefaultProcessorTimer::read()
         return static_cast<uint64>(clock());
     }
 
+// Linux and FreeBSD.
+#elif defined __linux__ || defined __FreeBSD__
+
+    struct timespec ts;
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) == 0)
+        return static_cast<uint64>(ts.tv_sec) * frequency() + static_cast<uint64>(ts.tv_nsec);
+
+    return 0;
+
 // Other platforms.
 #else
-
-    //
-    // On Linux, we might want to use clock_gettime(CLOCK_REALTIME).
-    //
-    //   Andrei Alexandrescu, Writing Fast Code
-    //   https://youtu.be/vrfYLlR8X8k?t=1973
-    //
 
     return static_cast<uint64>(clock());
 

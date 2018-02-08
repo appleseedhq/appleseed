@@ -34,7 +34,8 @@
 #include "foundation/core/version.h"
 
 // Standard headers.
-#include <cstdio>
+#include <sstream>
+#include <string>
 
 using namespace std;
 
@@ -67,14 +68,19 @@ const char* Appleseed::get_lib_name()
 
 const char* Appleseed::get_lib_version()
 {
-#if defined APPLESEED_USE_AVX
-    return APPLESEED_VERSION_STRING " (AVX)";
-#elif defined APPLESEED_USE_SSE42
-    return APPLESEED_VERSION_STRING " (SSE 4.2)";
-#elif defined APPLESEED_USE_SSE
-    return APPLESEED_VERSION_STRING " (SSE 2)";
-#else
     return APPLESEED_VERSION_STRING;
+}
+
+const char* Appleseed::get_lib_variant()
+{
+#if defined APPLESEED_USE_AVX
+    return "AVX";
+#elif defined APPLESEED_USE_SSE42
+    return "SSE4.2";
+#elif defined APPLESEED_USE_SSE
+    return "SSE2";
+#else
+    return "";
 #endif
 }
 
@@ -101,15 +107,24 @@ namespace
 {
     struct SyntheticVersionString
     {
-        char m_value[1024];
+        string m_value;
 
         SyntheticVersionString()
         {
-            sprintf(
-                m_value,
-                "%s version %s",
-                Appleseed::get_lib_name(),
-                Appleseed::get_lib_version());
+            stringstream sstr;
+
+            sstr << Appleseed::get_lib_name();
+            sstr << " version ";
+            sstr << Appleseed::get_lib_version();
+
+            if (Appleseed::get_lib_variant()[0] != '\0')
+            {
+                sstr << " (";
+                sstr << Appleseed::get_lib_variant();
+                sstr << ")";
+            }
+
+            m_value = sstr.str();
         }
     };
 
@@ -118,7 +133,7 @@ namespace
 
 const char* Appleseed::get_synthetic_version_string()
 {
-    return s_synthetic_version_string.m_value;
+    return s_synthetic_version_string.m_value.c_str();
 }
 
 }   // namespace foundation

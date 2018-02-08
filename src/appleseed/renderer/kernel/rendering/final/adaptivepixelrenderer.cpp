@@ -167,7 +167,7 @@ namespace
         {
             const size_t aov_count = frame.aov_images().size();
 
-            on_pixel_begin();
+            on_pixel_begin(pi, aov_accumulators);
 
             m_scratch_fb->clear();
 
@@ -293,7 +293,7 @@ namespace
                 m_diagnostics->set_pixel(pt.x, pt.y, values);
             }
 
-            on_pixel_end(pi);
+            on_pixel_end(pi, aov_accumulators);
         }
 
         StatisticsVector get_statistics() const override

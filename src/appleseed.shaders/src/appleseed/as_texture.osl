@@ -332,7 +332,7 @@ shader as_texture
             {
                 texname = concat(
                     substr(in_filename, 0, match[0]),
-                    "_<U>_<V>",
+                    "_<u>_<v>",
                     substr(in_filename, match[1]));
             }
         }
@@ -340,7 +340,7 @@ shader as_texture
         {
             int match[2];
 
-            if (regex_search(in_filename, match, "_u[1-9]{1}_v[1-9]{1}"))
+            if (regex_search(in_filename, match, "_u[0-9]{1}_v[0-9]{1}"))
             {
                 texname = concat(
                     substr(in_filename, 0, match[0]),

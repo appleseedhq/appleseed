@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/aov/aovaccumulator.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
@@ -64,13 +65,20 @@ void PixelRendererBase::on_tile_end(
 {
 }
 
-void PixelRendererBase::on_pixel_begin()
+void PixelRendererBase::on_pixel_begin(
+    const Vector2i&             pi,
+    AOVAccumulatorContainer&    aov_accumulators)
 {
     m_invalid_sample_count = 0;
+    aov_accumulators.on_pixel_begin(pi);
 }
 
-void PixelRendererBase::on_pixel_end(const Vector2i& pi)
+void PixelRendererBase::on_pixel_end(
+    const Vector2i&             pi,
+    AOVAccumulatorContainer&    aov_accumulators)
 {
+    aov_accumulators.on_pixel_end(pi);
+
     // todo: mark pixel as faulty in the diagnostic map.
 
     if (m_invalid_sample_count > 0)

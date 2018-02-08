@@ -70,6 +70,19 @@ source_group ("foundation\\core" FILES
     ${foundation_core_sources}
 )
 
+set (foundation_image_text_sources
+    foundation/image/text/stb_truetype.cpp
+    foundation/image/text/stb_truetype.h
+    foundation/image/text/textrenderer.cpp
+    foundation/image/text/textrenderer.h
+)
+list (APPEND appleseed_sources
+    ${foundation_image_text_sources}
+)
+source_group ("foundation\\image\\text" FILES
+    ${foundation_image_text_sources}
+)
+
 set (foundation_image_sources
     foundation/image/analysis.cpp
     foundation/image/analysis.h
@@ -77,6 +90,7 @@ set (foundation_image_sources
     foundation/image/color.h
     foundation/image/colorspace.cpp
     foundation/image/colorspace.h
+    foundation/image/drawing.cpp
     foundation/image/drawing.h
     foundation/image/exceptionunsupportedimageformat.h
     foundation/image/exrimagefilewriter.cpp
@@ -406,6 +420,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_genericprogressiveimagefilereader.cpp
     foundation/meta/tests/test_half.cpp
     foundation/meta/tests/test_hash.cpp
+    foundation/meta/tests/test_hashtable.cpp
     foundation/meta/tests/test_iesparser.cpp
     foundation/meta/tests/test_image.cpp
     foundation/meta/tests/test_imageimportancesampler.cpp
@@ -540,6 +555,34 @@ source_group ("foundation\\platform" FILES
     ${foundation_platform_sources}
 )
 
+set (foundation_resources_fonts_sources
+    foundation/resources/fonts/Ubuntu-L.ttf.cpp
+    foundation/resources/fonts/Ubuntu-L.ttf.h
+    foundation/resources/fonts/Ubuntu-M.ttf.cpp
+    foundation/resources/fonts/Ubuntu-M.ttf.h
+)
+list (APPEND appleseed_sources
+    ${foundation_resources_fonts_sources}
+)
+source_group ("foundation\\resources\\fonts" FILES
+    ${foundation_resources_fonts_sources}
+)
+
+set (foundation_resources_logo_sources
+    foundation/resources/logo/appleseed-seeds-16.cpp
+    foundation/resources/logo/appleseed-seeds-16.h
+    foundation/resources/logo/appleseed-seeds-32.cpp
+    foundation/resources/logo/appleseed-seeds-32.h
+    foundation/resources/logo/appleseed-seeds-64.cpp
+    foundation/resources/logo/appleseed-seeds-64.h
+)
+list (APPEND appleseed_sources
+    ${foundation_resources_logo_sources}
+)
+source_group ("foundation\\resources\\logo" FILES
+    ${foundation_resources_logo_sources}
+)
+
 set (foundation_utility_api_sources
     foundation/utility/api/apiarray.h
     foundation/utility/api/apistring.cpp
@@ -671,6 +714,22 @@ source_group ("foundation\\utility\\log" FILES
     ${foundation_utility_log_sources}
 )
 
+set (foundation_utility_minizip_sources
+    foundation/utility/minizip/crypt.h
+    foundation/utility/minizip/ioapi.c
+    foundation/utility/minizip/ioapi.h
+    foundation/utility/minizip/unzip.c
+    foundation/utility/minizip/unzip.h
+    foundation/utility/minizip/zip.c
+    foundation/utility/minizip/zip.h
+)
+list (APPEND appleseed_sources
+    ${foundation_utility_minizip_sources}
+)
+source_group ("foundation\\utility\\minizip" FILES
+    ${foundation_utility_minizip_sources}
+)
+
 set (foundation_utility_settings_sources
     foundation/utility/settings/settings.xsd
     foundation/utility/settings/settingsfilereader.cpp
@@ -715,20 +774,14 @@ source_group ("foundation\\utility\\test" FILES
     ${foundation_utility_test_sources}
 )
 
-set (foundation_utility_minizip_sources
-    foundation/utility/minizip/crypt.h
-    foundation/utility/minizip/ioapi.c
-    foundation/utility/minizip/ioapi.h
-    foundation/utility/minizip/unzip.c
-    foundation/utility/minizip/unzip.h
-    foundation/utility/minizip/zip.c
-    foundation/utility/minizip/zip.h
+set (foundation_utility_ui_sources
+    foundation/utility/ui/cameracontroller.h
 )
 list (APPEND appleseed_sources
-    ${foundation_utility_minizip_sources}
+    ${foundation_utility_ui_sources}
 )
-source_group ("foundation\\utility\\minizip" FILES
-    ${foundation_utility_minizip_sources}
+source_group ("foundation\\utility\\ui" FILES
+    ${foundation_utility_ui_sources}
 )
 
 set (foundation_utility_sources
@@ -810,16 +863,6 @@ list (APPEND appleseed_sources
 )
 source_group ("foundation\\utility" FILES
     ${foundation_utility_sources}
-)
-
-set (foundation_ui_sources
-    foundation/ui/cameracontroller.h
-)
-list (APPEND appleseed_sources
-    ${foundation_ui_sources}
-)
-source_group ("foundation\\ui" FILES
-    ${foundation_ui_sources}
 )
 
 set (main_sources
@@ -1319,6 +1362,8 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/iaovfactory.h
     renderer/modeling/aov/normalaov.cpp
     renderer/modeling/aov/normalaov.h
+    renderer/modeling/aov/pixeltimeaov.cpp
+    renderer/modeling/aov/pixeltimeaov.h
     renderer/modeling/aov/uvaov.cpp
     renderer/modeling/aov/uvaov.h
 )

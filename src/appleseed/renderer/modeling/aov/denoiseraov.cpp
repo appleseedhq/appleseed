@@ -355,22 +355,23 @@ void DenoiserAOV::fill_empty_samples() const
 {
     const int w = impl->m_histograms.getWidth();
     const int h = impl->m_histograms.getHeight();
-    const int samples_channel_index = static_cast<int>(impl->m_num_bins * 3);
+
+    const int num_bins = static_cast<int>(impl->m_num_bins);
+    const int samples_channel_index = num_bins * 3;
 
     for (int j = 0; j < h; ++j)
     {
         for (int i = 0; i < w; ++i)
         {
-            const int num_samples =
+            const float num_samples =
                 impl->m_histograms.get(j, i, samples_channel_index);
 
-            if (num_samples == 0)
+            if (num_samples == 0.0f)
             {
                 impl->m_histograms.get(j, i, 0) = 1.0f;
-                impl->m_histograms.get(j, i, impl->m_num_bins) = 1.0f;
-                impl->m_histograms.get(j, i, impl->m_num_bins * 2) = 1.0f;
-
-                impl->m_histograms.get(j, i, samples_channel_index) = 1;
+                impl->m_histograms.get(j, i, num_bins) = 1.0f;
+                impl->m_histograms.get(j, i, num_bins * 2) = 1.0f;
+                impl->m_histograms.get(j, i, samples_channel_index) = 1.0f;
             }
         }
     }
@@ -425,7 +426,11 @@ void DenoiserAOV::compute_covariances_image(Deepimf& covariances) const
             if (sample_count != 0.0f)
             {
                 const float rcp_sample_count = 1.0f / sample_count;
-                const float bias_correction_factor = 1.0f / (1.0f - rcp_sample_count);
+
+                const float bias_correction_factor =
+                    sample_count == 1.0f
+                        ? 1.0f
+                        : 1.0f / (1.0f - rcp_sample_count);
 
                 // Compute the mean.
                 float mean[3];

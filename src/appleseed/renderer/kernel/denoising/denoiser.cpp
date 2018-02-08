@@ -111,11 +111,11 @@ namespace
         }
     }
 
-    class DenoiserProgressReporter
-      : public IProgressReporter
+    class DenoiserCallbacks
+      : public ICallbacks
     {
       public:
-        explicit DenoiserProgressReporter(IAbortSwitch* abort_switch)
+        explicit DenoiserCallbacks(IAbortSwitch* abort_switch)
           : m_abort_switch(abort_switch)
         {
         }
@@ -133,6 +133,26 @@ namespace
         }
 
       private:
+        void logInfo(const char* msg) const override
+        {
+            RENDERER_LOG_INFO("%s", msg);
+        }
+
+        void logWarning(const char* msg) const override
+        {
+            RENDERER_LOG_WARNING("%s", msg);
+        }
+
+        void logError(const char* msg) const override
+        {
+            RENDERER_LOG_ERROR("%s", msg);
+        }
+
+        void logDebug(const char* msg) const override
+        {
+            RENDERER_LOG_DEBUG("%s", msg);
+        }
+
         IAbortSwitch* m_abort_switch;
     };
 
@@ -159,7 +179,7 @@ namespace
         parameters.m_useRandomPixelOrder = options.m_use_random_pixel_order;
         parameters.m_markedPixelsSkippingProbability = options.m_marked_pixels_skipping_probability;
         parameters.m_nbOfCores = static_cast<int>(options.m_num_cores);
-        parameters.m_useCuda = false;
+        parameters.m_markInvalidPixels = options.m_mark_invalid_pixels;
 
         DenoiserOutputs outputs;
         outputs.m_pDenoisedColors = &dst;
@@ -171,12 +191,15 @@ namespace
         else
             denoiser.reset(new Denoiser());
 
+        DenoiserCallbacks callbacks(abort_switch);
+        denoiser->setCallbacks(&callbacks);
+
         denoiser->setInputs(inputs);
         denoiser->setOutputs(outputs);
         denoiser->setParameters(parameters);
 
-        DenoiserProgressReporter progress_reporter(abort_switch);
-        denoiser->setProgressReporter(&progress_reporter);
+        if (!denoiser->inputsOutputsAreOk())
+            return false;
 
         return denoiser->denoise();
     }
@@ -201,7 +224,7 @@ bool denoise_beauty_image(
             num_samples,
             histograms,
             covariances,
-            options.m_prefilter_threshold_stdev_factor);
+            options.m_prefilter_threshold_stddev_factor);
     }
 
     Deepimf dst(src);
@@ -237,7 +260,7 @@ bool denoise_aov_image(
     {
         SpikeRemovalFilter::filter(
             src,
-            options.m_prefilter_threshold_stdev_factor);
+            options.m_prefilter_threshold_stddev_factor);
     }
 
     Deepimf dst(src);

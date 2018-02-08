@@ -81,14 +81,9 @@ namespace
             m_controller->add_on_tile_end_callback(frame, tile_x, tile_y);
         }
 
-        void on_progressive_frame_begin(const Frame* frame) override
+        void on_progressive_frame_update(const Frame* frame) override
         {
-            m_controller->add_on_progressive_frame_begin_callback(frame);
-        }
-
-        void on_progressive_frame_end(const Frame* frame) override
-        {
-            m_controller->add_on_progressive_frame_end_callback(frame);
+            m_controller->add_on_progressive_frame_update_callback(frame);
         }
 
       private:

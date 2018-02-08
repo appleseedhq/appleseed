@@ -74,7 +74,7 @@ class IESParser
       public:
         Exception(const char* message, const int line);
 
-        virtual int line() const throw ()
+        virtual int line() const
         {
             return m_line_number;
         }

@@ -171,10 +171,11 @@ shader asSwitchTexture
     ]]
 )
 {
-    color tex[8] = {in_color, in_color1, in_color2, in_color3,
-                    in_color4, in_color5, in_color6, in_color7};
+    color textures[8] = {
+            in_color, in_color1, in_color2, in_color3,
+            in_color4, in_color5, in_color6, in_color7};
                     
-    int len = arraylength(tex) - 1, index, hash_id = 0;
+    int len = arraylength(textures) - 1, hash_id = 0;
 
     float grey_id = 0.0;
     color cell_id = color(0);
@@ -187,15 +188,10 @@ shader asSwitchTexture
         hash_id,
         cell_id,
         grey_id);
-    
-    if (in_cycle_mode == 0)
-    {
-        index = (int) mod(grey_id * len, len);
-    }
-    else
-    {
-        index = (int) clamp(grey_id * len, 0, len);
-    }
 
-    out_outColor = tex[index];
+    int index = (in_cycle_mode == 0)
+        ? (int) mod(hash_id, len)
+        : (int) clamp(grey_id * len, 0, len);
+
+    out_outColor = textures[index];
 }

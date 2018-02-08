@@ -199,7 +199,7 @@ void InputBinder::bind_scene_entities_inputs(
     }
 
     // Bind the inputs of the default surface shader.
-    bind_scene_entity_inputs(
+    bind_entity_inputs(
         scene,
         scene_symbols,
         SymbolTable::symbol_name(SymbolTable::SymbolSurfaceShader),
@@ -208,7 +208,7 @@ void InputBinder::bind_scene_entities_inputs(
     // Bind camera inputs.
     for (each<CameraContainer> i = scene.cameras(); i; ++i)
     {
-        bind_scene_entity_inputs(
+        bind_entity_inputs(
             scene,
             scene_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolCamera),
@@ -218,7 +218,7 @@ void InputBinder::bind_scene_entities_inputs(
     // Bind environment EDFs inputs.
     for (each<EnvironmentEDFContainer> i = scene.environment_edfs(); i; ++i)
     {
-        bind_scene_entity_inputs(
+        bind_entity_inputs(
             scene,
             scene_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolEnvironmentEDF),
@@ -228,7 +228,7 @@ void InputBinder::bind_scene_entities_inputs(
     // Bind environment shaders inputs.
     for (each<EnvironmentShaderContainer> i = scene.environment_shaders(); i; ++i)
     {
-        bind_scene_entity_inputs(
+        bind_entity_inputs(
             scene,
             scene_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolEnvironmentShader),
@@ -238,7 +238,7 @@ void InputBinder::bind_scene_entities_inputs(
     // Bind environment inputs.
     if (scene.get_environment())
     {
-        bind_scene_entity_inputs(
+        bind_entity_inputs(
             scene,
             scene_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolEnvironment),
@@ -251,67 +251,6 @@ void InputBinder::bind_scene_entities_inputs(
         i->unbind_assembly();
         i->bind_assembly(scene.assemblies());
         i->check_assembly();
-    }
-}
-
-void InputBinder::bind_scene_entity_inputs(
-    const Scene&                    scene,
-    const SymbolTable&              scene_symbols,
-    const char*                     entity_type,
-    ConnectableEntity&              entity)
-{
-    const string entity_path(entity.get_path().c_str());
-    const ParamArray& entity_params = entity.get_parameters();
-
-    for (each<InputArray> i = entity.get_inputs(); i; ++i)
-    {
-        InputArray::iterator& input = *i;
-        string param_value;
-
-        if (entity_params.strings().exist(input.name()))
-        {
-            // A value is assigned to this input, retrieve it.
-            param_value = entity_params.get<string>(input.name());
-        }
-        else if (input.type() == InputTypeOptional)
-        {
-            // This input is optional, use its default value.
-            param_value = input.default_value();
-            if (param_value.empty())
-                continue;
-        }
-        else
-        {
-            // This input is required but has no value, this is an error.
-            RENDERER_LOG_ERROR(
-                "while defining %s \"%s\": required parameter \"%s\" missing.",
-                entity_type,
-                entity_path.c_str(),
-                input.name());
-            ++m_error_count;
-            continue;
-        }
-
-        if (try_bind_scene_entity_to_input(
-                scene,
-                scene_symbols,
-                entity_type,
-                entity_path.c_str(),
-                param_value.c_str(),
-                input))
-            continue;
-
-        if (try_bind_scalar_to_input(param_value, input))
-            continue;
-
-        RENDERER_LOG_ERROR(
-            "while defining %s \"%s\": cannot bind \"%s\" to parameter \"%s\".",
-            entity_type,
-            entity_path.c_str(),
-            param_value.c_str(),
-            input.name());
-
-        ++m_error_count;
     }
 }
 
@@ -348,7 +287,7 @@ void InputBinder::bind_assembly_entities_inputs(
     // Bind BSDFs inputs.
     for (each<BSDFContainer> i = assembly.bsdfs(); i; ++i)
     {
-        bind_assembly_entity_inputs(
+        bind_entity_inputs(
             scene,
             scene_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolBSDF),
@@ -358,7 +297,7 @@ void InputBinder::bind_assembly_entities_inputs(
     // Bind BSSRDFs inputs.
     for (each<BSSRDFContainer> i = assembly.bssrdfs(); i; ++i)
     {
-        bind_assembly_entity_inputs(
+        bind_entity_inputs(
             scene,
             scene_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolBSSRDF),
@@ -368,17 +307,17 @@ void InputBinder::bind_assembly_entities_inputs(
     // Bind EDFs inputs.
     for (each<EDFContainer> i = assembly.edfs(); i; ++i)
     {
-        bind_assembly_entity_inputs(
+        bind_entity_inputs(
             scene,
             scene_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolEDF),
             *i);
     }
 
-    // Bind phase punctions inputs.
+    // Bind volumes inputs.
     for (each<VolumeContainer> i = assembly.volumes(); i; ++i)
     {
-        bind_assembly_entity_inputs(
+        bind_entity_inputs(
             scene,
             scene_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolVolume),
@@ -388,7 +327,7 @@ void InputBinder::bind_assembly_entities_inputs(
     // Bind ShaderGroups inputs.
     for (each<ShaderGroupContainer> i = assembly.shader_groups(); i; ++i)
     {
-        bind_assembly_entity_inputs(
+        bind_entity_inputs(
             scene,
             scene_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolShaderGroup),
@@ -398,7 +337,7 @@ void InputBinder::bind_assembly_entities_inputs(
     // Bind surface shaders inputs.
     for (each<SurfaceShaderContainer> i = assembly.surface_shaders(); i; ++i)
     {
-        bind_assembly_entity_inputs(
+        bind_entity_inputs(
             scene,
             scene_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolSurfaceShader),
@@ -408,7 +347,7 @@ void InputBinder::bind_assembly_entities_inputs(
     // Bind materials inputs.
     for (each<MaterialContainer> i = assembly.materials(); i; ++i)
     {
-        bind_assembly_entity_inputs(
+        bind_entity_inputs(
             scene,
             scene_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolMaterial),
@@ -418,7 +357,7 @@ void InputBinder::bind_assembly_entities_inputs(
     // Bind lights inputs.
     for (each<LightContainer> i = assembly.lights(); i; ++i)
     {
-        bind_assembly_entity_inputs(
+        bind_entity_inputs(
             scene,
             scene_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolLight),
@@ -428,7 +367,7 @@ void InputBinder::bind_assembly_entities_inputs(
     // Bind objects inputs.
     for (each<ObjectContainer> i = assembly.objects(); i; ++i)
     {
-        bind_assembly_entity_inputs(
+        bind_entity_inputs(
             scene,
             scene_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolObject),
@@ -478,7 +417,7 @@ void InputBinder::bind_assembly_entities_inputs(
     m_assembly_info.pop_back();
 }
 
-void InputBinder::bind_assembly_entity_inputs(
+void InputBinder::bind_entity_inputs(
     const Scene&                    scene,
     const SymbolTable&              scene_symbols,
     const char*                     entity_type,
@@ -508,7 +447,7 @@ void InputBinder::bind_assembly_entity_inputs(
         {
             // This input is required but has no value, this is an error.
             RENDERER_LOG_ERROR(
-                "while defining %s \"%s\": required parameter \"%s\" missing.",
+                "while binding inputs of %s \"%s\": required parameter \"%s\" missing.",
                 entity_type,
                 entity_path.c_str(),
                 input.name());
@@ -517,8 +456,6 @@ void InputBinder::bind_assembly_entity_inputs(
         }
 
         if (try_bind_assembly_entity_to_input(
-                scene,
-                scene_symbols,
                 entity_type,
                 entity_path.c_str(),
                 param_value.c_str(),
@@ -538,7 +475,7 @@ void InputBinder::bind_assembly_entity_inputs(
             continue;
 
         RENDERER_LOG_ERROR(
-            "while defining %s \"%s\": cannot bind \"%s\" to parameter \"%s\".",
+            "while binding inputs of %s \"%s\": cannot bind \"%s\" to parameter \"%s\".",
             entity_type,
             entity_path.c_str(),
             param_value.c_str(),
@@ -602,8 +539,6 @@ bool InputBinder::try_bind_scene_entity_to_input(
 }
 
 bool InputBinder::try_bind_assembly_entity_to_input(
-    const Scene&                    scene,
-    const SymbolTable&              scene_symbols,
     const char*                     entity_type,
     const char*                     entity_name,
     const char*                     param_value,
@@ -612,8 +547,6 @@ bool InputBinder::try_bind_assembly_entity_to_input(
     for (AssemblyInfoIt i = m_assembly_info.rbegin(); i != m_assembly_info.rend(); ++i)
     {
         if (try_bind_assembly_entity_to_input(
-                scene,
-                scene_symbols,
                 *i->m_assembly,
                 *i->m_assembly_symbols,
                 entity_type,
@@ -627,8 +560,6 @@ bool InputBinder::try_bind_assembly_entity_to_input(
 }
 
 bool InputBinder::try_bind_assembly_entity_to_input(
-    const Scene&                    scene,
-    const SymbolTable&              scene_symbols,
     const Assembly&                 assembly,
     const SymbolTable&              assembly_symbols,
     const char*                     entity_type,
@@ -736,7 +667,7 @@ void InputBinder::bind_texture_instance_to_input(
     catch (const exception& e)
     {
         RENDERER_LOG_ERROR(
-            "while defining %s \"%s\", failed to bind \"%s\" to input \"%s\" (%s).",
+            "while binding inputs of %s \"%s\", failed to bind \"%s\" to input \"%s\" (%s).",
             entity_type,
             entity_name,
             param_value,
