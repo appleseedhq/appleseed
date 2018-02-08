@@ -14,8 +14,8 @@
             <parameter name="controller_target" value="0.0201061 0.491754 0.637688" />
             <parameter name="film_dimensions" value="0.00640 0.00480" />
             <parameter name="focal_length" value="0.035" />
-            <parameter name="shutter_close_time" value="0.0" />
-            <parameter name="shutter_open_time" value="1.0" />
+            <parameter name="shutter_close_time" value="1.0" />
+            <parameter name="shutter_open_time" value="0.0" />
             <transform time="0">
                 <matrix>
                     0.988547255255330 -0.052698577240946 -0.141411400120124 -4.155831373525750
