@@ -32,7 +32,9 @@ shader as_globals
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string help = "OSL global variables.",
     string icon = "asGlobals.png",
-    int as_maya_type_id = 0x001279ef
+    int as_maya_type_id = 0x001279ef,
+    string as_max_class_id = "2058487770 898187197",
+    string as_max_plugin_type = "texture"
 ]]
 (
     output point out_world_P = P

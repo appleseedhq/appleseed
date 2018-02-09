@@ -36,7 +36,9 @@ shader as_texture3d
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/3d:swatch/AppleseedRenderSwatch:texture",
     string help = "A field3d format 3D texture lookup node",
     string icon = "asTexture3D.png",
-    int as_maya_type_id = 0x001279ff
+    int as_maya_type_id = 0x001279ff,
+    string as_max_class_id = "2105412220 306260647",
+    string as_max_plugin_type = "texture"
 ]]
 (
 

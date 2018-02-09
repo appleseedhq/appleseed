@@ -32,7 +32,9 @@ shader as_anisotropy_vector_field
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string help = "Anisotropy vector field node.",
     string icon = "asAnisotropyVectorField.png",
-    int as_maya_type_id = 0x001278e0
+    int as_maya_type_id = 0x001278e0,
+    string as_max_class_id = "755844571 356534419",
+    string as_max_plugin_type = "texture"
 ]]
 (
     float in_rotation_angle = 0.0

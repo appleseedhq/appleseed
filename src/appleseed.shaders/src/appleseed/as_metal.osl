@@ -34,7 +34,9 @@ shader as_metal
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
     string help = "Metal material",
     string icon = "asMetal.png",
-    int as_maya_type_id = 0x001279f9
+    int as_maya_type_id = 0x001279f9,
+    string as_max_class_id = "121203873 1478432054",
+    string as_max_plugin_type = "material"
 ]]
 (
     color in_face_reflectance = color(0.96, 0.8, 0.05)

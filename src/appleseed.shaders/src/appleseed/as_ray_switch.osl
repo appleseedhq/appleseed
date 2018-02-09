@@ -32,7 +32,9 @@ shader as_ray_switch
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string help = "Ray switch utility node.",
     string icon = "asRaySwitch.png",
-    int as_maya_type_id = 0x001279dc
+    int as_maya_type_id = 0x001279dc,
+    string as_max_class_id = "553479896 1617499966",
+    string as_max_plugin_type = "texture"
 ]]
 (
     color in_color = color(1)

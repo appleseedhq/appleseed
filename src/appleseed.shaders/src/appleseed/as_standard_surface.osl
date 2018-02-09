@@ -35,7 +35,9 @@ shader as_standard_surface
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
     string help = "Standard Surface Shader",
     string icon = "asStandardSurface",
-    int as_maya_type_id = 0x001279d4
+    int as_maya_type_id = 0x001279d4,
+    string as_max_class_id = "651059681 943276521",
+    string as_max_plugin_type = "material"
 ]]
 (
     float in_diffuse_weight = 1.0
