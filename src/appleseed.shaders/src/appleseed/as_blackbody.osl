@@ -35,7 +35,9 @@ shader as_blackbody
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
     string help = "Blackbody Shader",
     string icon = "asBlackbody",
-    int as_maya_type_id = 0x001279d0
+    int as_maya_type_id = 0x001279d0,
+    string as_max_class_id = "1182349026 1064055537",
+    string as_max_plugin_type = "texture"
 ]]
 (
     int in_incandescence_type = 0

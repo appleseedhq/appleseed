@@ -36,7 +36,9 @@ shader as_fresnel
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string help = "A viewer Fresnel term node",
     string icon = "asFresnel.png",
-    int as_maya_type_id = 0x001279f1
+    int as_maya_type_id = 0x001279f1,
+    string as_max_class_id = "1608738100 1656300655", 
+    string as_max_plugin_type = "texture"
 ]]
 (
     string in_fresnel_type = "Simple Dielectric"
