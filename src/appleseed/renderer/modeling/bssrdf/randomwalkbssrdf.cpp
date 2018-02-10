@@ -110,8 +110,7 @@ namespace
             m_lambertian_brdf_data.m_reflectance.set(1.0f);
             m_lambertian_brdf_data.m_reflectance_multiplier = 1.0f;
 
-            const string glass_bsdf_name = string(name) + "_glass_bsdf";
-            m_glass_bsdf = GlassBSDFFactory().create(glass_bsdf_name.c_str(), ParamArray()).release();
+            m_glass_bsdf = create_glass_bsdf(name, "ggx");
         }
 
         void release() override
@@ -145,11 +144,20 @@ namespace
             m_use_glass_bsdf = surface_bsdf == "glass";
             if (surface_bsdf == "lambertian")
                 m_use_glass_bsdf = false;
-            else if (surface_bsdf == "glass")
+            else if (surface_bsdf == "glass" && m_glass_bsdf->on_frame_begin(project, parent, recorder, abort_switch))
                 m_use_glass_bsdf = true;
             else return false;
 
             return true;
+        }
+
+        void on_frame_end(
+            const Project&              project,
+            const BaseGroup*            parent) override
+        {
+            BSSRDF::on_frame_end(project, parent);
+
+            if (m_use_glass_bsdf) m_glass_bsdf->on_frame_end(project, parent);
         }
 
         size_t compute_input_data_size() const override
@@ -318,15 +326,15 @@ namespace
             }
             else
             {
-				const Vector3f outgoing_normal(outgoing_point.get_shading_normal());
-				const float cos_on = min(abs(dot(outgoing_dir, outgoing_normal)), 1.0f);
-				float fo = 1.0f;
-				if (values->m_fresnel_weight != 0.0f)
-				{
-					// Fresnel factor at incoming direction.
-					fresnel_transmittance_dielectric(fo, values->m_precomputed.m_eta, cos_on);
-					fo = lerp(1.0f, fo, values->m_fresnel_weight);
-				}
+                const Vector3f outgoing_normal(outgoing_point.get_shading_normal());
+                const float cos_on = min(abs(dot(outgoing_dir, outgoing_normal)), 1.0f);
+                float fo = 1.0f;
+                if (values->m_fresnel_weight != 0.0f)
+                {
+                    // Fresnel factor at incoming direction.
+                    fresnel_transmittance_dielectric(fo, values->m_precomputed.m_eta, cos_on);
+                    fo = lerp(1.0f, fo, values->m_fresnel_weight);
+                }
 
                 if (!trace_zero_scattering_path_lambertian(
                     shading_context,
@@ -342,7 +350,7 @@ namespace
                     return false;
                 }
 
-				bssrdf_sample.m_value *= fo;
+                bssrdf_sample.m_value *= fo;
             }
 
             // Initialize the number of iterations.
@@ -464,18 +472,18 @@ namespace
             const float cos_in = min(abs(dot(
                 bsdf_sample.m_geometric_normal,
                 bsdf_sample.m_incoming.get_value())), 1.0f);
-			float fi;
-			if (values->m_fresnel_weight == 0.0f)
-				fi = 1.0f;
-			else
-			{
-				// Fresnel factor at incoming direction.
-				fresnel_transmittance_dielectric(fi, values->m_precomputed.m_eta, cos_in);
-				fi = lerp(1.0f, fi, values->m_fresnel_weight);
-			}
+            float fi;
+            if (values->m_fresnel_weight == 0.0f)
+                fi = 1.0f;
+            else
+            {
+                // Fresnel factor at incoming direction.
+                fresnel_transmittance_dielectric(fi, values->m_precomputed.m_eta, cos_in);
+                fi = lerp(1.0f, fi, values->m_fresnel_weight);
+            }
 
-			// Normalization constant.
-			const float c = 1.0f - fresnel_first_moment_x2(values->m_precomputed.m_eta);
+            // Normalization constant.
+            const float c = 1.0f - fresnel_first_moment_x2(values->m_precomputed.m_eta);
 
             bssrdf_sample.m_value *= fi / c;
 
@@ -533,7 +541,7 @@ namespace
                     // The ray was refracted with zero scattering.
                     glass_inputs->m_reflection_tint.set(0.0f);
                     m_glass_bsdf->prepare_inputs(shading_context.get_arena(), *shading_point_ptr, glass_inputs);
-                    bssrdf_sample.m_brdf = m_glass_bsdf;
+                    bssrdf_sample.m_brdf = m_glass_bsdf.get();
                     bssrdf_sample.m_brdf_data = glass_inputs;
                     bssrdf_sample.m_incoming_point = *shading_point_ptr;
                     return true;
@@ -737,10 +745,27 @@ namespace
             value.set(0.0f);
         }
 
+        static auto_release_ptr<BSDF> create_glass_bsdf(
+            const char*             bssrdf_name,
+            const char*             mdf_name)
+        {
+            const string glass_bsdf_name = string(bssrdf_name) + "_glass_bsdf_" + mdf_name;
+
+            auto_release_ptr<BSDF> bsdf =
+                GlassBSDFFactory().create(
+                    glass_bsdf_name.c_str(),
+                    ParamArray()
+                    .insert("mdf", mdf_name)
+                    .insert("volume_parameterization", "transmittance"));
+
+            return bsdf;
+        }
+
         const BSDF*                     m_lambertian_brdf;
         LambertianBRDFInputValues       m_lambertian_brdf_data;
         bool                            m_use_glass_bsdf;
-        const BSDF*                     m_glass_bsdf;
+
+        auto_release_ptr<BSDF>          m_glass_bsdf;
     };
 }
 
