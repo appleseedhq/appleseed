@@ -532,7 +532,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
         // Build the medium list of the scattered ray.
         const foundation::Vector3d& geometric_normal = vertex.get_geometric_normal();
-        const bool crossing_interface =
+        const bool crossing_interface = vertex.m_bssrdf == nullptr &&
             foundation::dot(vertex.m_outgoing.get_value(), geometric_normal) *
             foundation::dot(next_ray.m_dir, geometric_normal) < 0.0;
         if (crossing_interface)
