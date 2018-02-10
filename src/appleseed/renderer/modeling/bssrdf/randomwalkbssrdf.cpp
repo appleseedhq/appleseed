@@ -113,6 +113,11 @@ namespace
             m_glass_bsdf = create_glass_bsdf(name, "ggx");
         }
 
+        ~RandomWalkBSSRDF()
+        {
+            delete m_lambertian_brdf;
+        }
+
         void release() override
         {
             delete this;
@@ -303,6 +308,7 @@ namespace
 
             Vector3d scattering_point;
             Vector3f slab_normal;
+            bool transmitted = false;
             if (m_use_glass_bsdf)
             {
                 bool volume_scattering_occured;
@@ -336,6 +342,7 @@ namespace
                     fo = lerp(1.0f, fo, values->m_fresnel_weight);
                 }
 
+                bool volume_scattering_occured;
                 if (!trace_zero_scattering_path_lambertian(
                     shading_context,
                     sampling_context,
@@ -344,6 +351,7 @@ namespace
                     outgoing_dir,
                     bssrdf_sample,
                     bsdf_sample,
+                    volume_scattering_occured,
                     scattering_point,
                     slab_normal))
                 {
@@ -351,6 +359,8 @@ namespace
                 }
 
                 bssrdf_sample.m_value *= fo;
+
+                if (!volume_scattering_occured) transmitted = true;
             }
 
             // Initialize the number of iterations.
@@ -359,7 +369,6 @@ namespace
             const size_t MinRRIteration = 4;
 
             // Continue random walk until we reach the surface from inside.
-            bool transmitted = false;
             while (!transmitted && ++n_iteration < MaxIterationsCount)
             {
                 if (n_iteration >= MinRRIteration && !test_rr(sampling_context, bssrdf_sample))
@@ -609,9 +618,12 @@ namespace
             const Vector3f&         outgoing_dir,
             BSSRDFSample&           bssrdf_sample,
             BSDFSample&             bsdf_sample,
+            bool&                   volume_scattering_occured,
             Vector3d&               scattering_point,
             Vector3f&               slab_normal) const
         {
+            volume_scattering_occured = false;
+
             // Pick initial random-walk direction uniformly at random.
             sampling_context.split_in_place(2, 1);
             Vector3d initial_dir = sample_hemisphere_cosine(sampling_context.next2<Vector2d>());
@@ -641,26 +653,22 @@ namespace
 
             // Sample distance (we always use classical sampling here).
             const double ray_length = bssrdf_sample.m_incoming_point.get_distance();
-            const double distance = sample_exponential_distribution_on_segment(
-                sampling_context.next2<double>(), static_cast<double>(extinction[channel]), 0.0, ray_length);
+            const double distance = sample_exponential_distribution(
+                sampling_context.next2<double>(), static_cast<double>(extinction[channel]));
+            volume_scattering_occured = distance < ray_length;
             float mis_base = 0.0f;
-            for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
+            compute_transmission(static_cast<float>(distance), extinction, !volume_scattering_occured, bssrdf_sample.m_value);
+
+            if (volume_scattering_occured)
             {
-                const double x = -distance * extinction[i];
-                bssrdf_sample.m_value[i] = static_cast<float>(exponential_distribution_on_segment_pdf(
-                    distance, static_cast<double>(extinction[channel]), 0.0, ray_length));
+                scattering_point = ray.point_at(distance);
 
-                // One-sample estimator (Veach: 9.2.4 eq. 9.15).
-                mis_base += bssrdf_sample.m_value[i];
+                // Determine slab normal of the closest surface point.
+                const bool outgoing_point_is_closer = distance < 0.5f * ray_length;
+                slab_normal = outgoing_point_is_closer
+                    ? Vector3f(outgoing_point.get_geometric_normal())
+                    : Vector3f(-bssrdf_sample.m_incoming_point.get_geometric_normal());
             }
-            bssrdf_sample.m_value *= Spectrum::size() / mis_base;
-            scattering_point = ray.point_at(distance);
-
-            // Determine slab normal of the closest surface point.
-            const bool outgoing_point_is_closer = distance < 0.5f * ray_length;
-            slab_normal = outgoing_point_is_closer
-                ? Vector3f(outgoing_point.get_geometric_normal())
-                : Vector3f(-bssrdf_sample.m_incoming_point.get_geometric_normal());
 
             return true;
         }
