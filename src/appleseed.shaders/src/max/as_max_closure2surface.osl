@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017 Sergo Pogosyan, The appleseedhq Organization
+// Copyright (c) 2016 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,19 +26,10 @@
 // THE SOFTWARE.
 //
 
-shader as_max_light_material
+surface as_max_closure2surface
 (
-    closure color        BSDF = 0,
-    float                Emission = 1.0,
-    color                Color = 1.0,
-    output closure color ClosureOut = 0
+    closure color in_input = 0
 )
 {
-    if (raytype("light"))
-    {
-        color E = Emission * Color;
-        ClosureOut = E * emission();
-    }
-    else
-        ClosureOut = BSDF;
+    Ci = in_input;
 }
