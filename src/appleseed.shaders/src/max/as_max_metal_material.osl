@@ -84,5 +84,4 @@ shader as_max_metal_material
         microfacet_roughness(Roughness, RoughnessDepthScale),
         0.5,    // Highlight falloff.
         Anisotropic);
-    Ci = ClosureOut;
 }

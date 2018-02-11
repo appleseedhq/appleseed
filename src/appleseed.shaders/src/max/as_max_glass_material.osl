@@ -55,5 +55,4 @@ shader as_max_glass_material
         Ior,
         VolumeTransmittance,
         VolumeTransmittanceDistance);
-    Ci = ClosureOut;
 }

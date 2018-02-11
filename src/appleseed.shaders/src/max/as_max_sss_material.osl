@@ -80,5 +80,4 @@ shader as_max_sss_material
         Ior);
 
     ClosureOut = BSSRDF + BRDF;
-    Ci = ClosureOut;
 }
