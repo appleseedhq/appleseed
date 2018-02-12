@@ -133,13 +133,13 @@ void write_point_cloud_image(
         image_height,
         32,
         32,
-        3,
+        4,
         PixelFormatFloat);
 
-    image.clear(Color3f(0.0f));
+    image.clear(Color4f(0.0f, 0.0f, 0.0f, 1.0f));
 
     for (size_t i = 0; i < points.size(); ++i)
-        Drawing::draw_dot(image, points[i], Color3f(1.0f));
+        Drawing::draw_dot(image, points[i], Color4f(1.0f));
 
     GenericImageFileWriter().write(image_path.c_str(), image);
 }

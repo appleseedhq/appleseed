@@ -85,10 +85,7 @@ class SerialRendererController
         const size_t            tile_x,
         const size_t            tile_y);
 
-    void add_on_progressive_frame_begin_callback(
-        const Frame*            frame);
-
-    void add_on_progressive_frame_end_callback(
+    void add_on_progressive_frame_update_callback(
         const Frame*            frame);
 
   private:
@@ -100,8 +97,7 @@ class SerialRendererController
             OnTiledFrameEnd,
             OnTileBegin,
             OnTileEnd,
-            OnProgressiveFrameBegin,
-            OnProgressiveFrameEnd
+            OnProgressiveFrameUpdate
         };
 
         CallbackType    m_type;

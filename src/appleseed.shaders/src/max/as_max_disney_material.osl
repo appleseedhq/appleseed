@@ -61,5 +61,4 @@ surface as_max_disney_material
         SheenTint,
         Clearcoat,
         ClearcoatGloss);
-    Ci = ClosureOut;
 }

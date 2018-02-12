@@ -176,8 +176,8 @@ void PNGImageFileWriter::write(
     // Retrieve canvas properties.
     const CanvasProperties& props = image.properties();
 
-    // todo: lift these limitations.
-    assert(props.m_channel_count == 3 || props.m_channel_count == 4);
+    if (props.m_channel_count > 4)
+        throw ExceptionIOError();
 
     // Open the file in write mode.
     FILE* fp = fopen(filename, "wb");
@@ -209,6 +209,20 @@ void PNGImageFileWriter::write(
     // Set up the output control.
     png_init_io(png_ptr, fp);
 
+    int color_type;
+
+    if (props.m_channel_count == 4)
+        color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+    else if (props.m_channel_count == 3)
+        color_type = PNG_COLOR_TYPE_RGB;
+    else if (props.m_channel_count == 2)
+        color_type = PNG_COLOR_TYPE_GRAY_ALPHA;
+    else
+    {
+        assert(props.m_channel_count == 1);
+        color_type = PNG_COLOR_TYPE_GRAY;
+    }
+
     // Set image information.
     png_set_IHDR(
         png_ptr,
@@ -216,9 +230,7 @@ void PNGImageFileWriter::write(
         static_cast<png_uint_32>(props.m_canvas_width),
         static_cast<png_uint_32>(props.m_canvas_height),
         8,                                  // bit depth -- todo: allow higher bit depths
-        props.m_channel_count == 4
-            ? PNG_COLOR_TYPE_RGB_ALPHA
-            : PNG_COLOR_TYPE_RGB,
+        color_type,
         PNG_INTERLACE_NONE,
         PNG_COMPRESSION_TYPE_DEFAULT,
         PNG_FILTER_TYPE_DEFAULT);
@@ -237,7 +249,7 @@ void PNGImageFileWriter::write(
     sig_bit.green = 8;
     sig_bit.blue = 8;
     sig_bit.alpha = 8;
-    sig_bit.gray = 8;                       // for completeness
+    sig_bit.gray = 8;
     png_set_sBIT(png_ptr, info_ptr, &sig_bit);
 
     // Add image attributes.
@@ -292,7 +304,16 @@ void PNGImageFileWriter::write(
                     // Fetch the pixel at coordinates (x, y) in the tile,
                     // perform format conversion if necessary, and store
                     // the converted pixel into the temporary buffer.
-                    if (tile.get_channel_count() == 3)
+                    if (tile.get_channel_count() == 4)
+                    {
+                        Color4b pixel;
+                        tile.get_pixel(x, y, pixel);
+                        buffer[buffer_index + 0] = pixel[0];
+                        buffer[buffer_index + 1] = pixel[1];
+                        buffer[buffer_index + 2] = pixel[2];
+                        buffer[buffer_index + 3] = pixel[3];
+                    }
+                    else if (tile.get_channel_count() == 3)
                     {
                         Color3b pixel;
                         tile.get_pixel(x, y, pixel);
@@ -300,15 +321,19 @@ void PNGImageFileWriter::write(
                         buffer[buffer_index + 1] = pixel[1];
                         buffer[buffer_index + 2] = pixel[2];
                     }
-                    else
+                    else if (tile.get_channel_count() == 2)
                     {
-                        assert(tile.get_channel_count() == 4);
-                        Color4b pixel;
+                        Color<uint8, 2> pixel;
                         tile.get_pixel(x, y, pixel);
                         buffer[buffer_index + 0] = pixel[0];
                         buffer[buffer_index + 1] = pixel[1];
-                        buffer[buffer_index + 2] = pixel[2];
-                        buffer[buffer_index + 3] = pixel[3];
+                    }
+                    else
+                    {
+                        assert(tile.get_channel_count() == 1);
+                        Color<uint8, 1> pixel;
+                        tile.get_pixel(x, y, pixel);
+                        buffer[buffer_index + 0] = pixel[0];
                     }
                 }
             }

@@ -96,13 +96,13 @@ namespace
             const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy | ScatteringMode::Specular, params)
         {
+            m_inputs.declare("diffuse_reflectance", InputFormatSpectralReflectance);
+            m_inputs.declare("diffuse_reflectance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("specular_reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("specular_reflectance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("roughness", InputFormatFloat, "0.15");
             m_inputs.declare("highlight_falloff", InputFormatFloat, "0.4");
             m_inputs.declare("ior", InputFormatFloat, "1.5");
-            m_inputs.declare("diffuse_reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("diffuse_reflectance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("internal_scattering", InputFormatFloat, "1.0");
         }
 
@@ -509,6 +509,28 @@ DictionaryArray PlasticBRDFFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
+            .insert("name", "diffuse_reflectance")
+            .insert("label", "Diffuse Reflectance")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "required")
+            .insert("default", "0.5"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "diffuse_reflectance_multiplier")
+            .insert("label", "Diffuse Reflectance Multiplier")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
             .insert("name", "specular_reflectance")
             .insert("label", "Specular Reflectance")
             .insert("type", "colormap")
@@ -580,28 +602,6 @@ DictionaryArray PlasticBRDFFactory::get_input_metadata() const
                     .insert("type", "hard"))
             .insert("use", "required")
             .insert("default", "1.5"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "diffuse_reflectance")
-            .insert("label", "Diffuse Reflectance")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary()
-                    .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
-            .insert("use", "required")
-            .insert("default", "0.5"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "diffuse_reflectance_multiplier")
-            .insert("label", "Diffuse Reflectance Multiplier")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
-            .insert("use", "optional")
-            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()

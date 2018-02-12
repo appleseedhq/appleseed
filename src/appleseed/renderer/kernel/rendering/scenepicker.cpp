@@ -183,7 +183,7 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
         if (material_name)
         {
             result.m_material =
-                InputBinder::find_entity<Material>(
+                InputBinder::static_find_entity<Material>(
                     material_name,
                     result.m_object_instance->get_parent());
         }
@@ -194,16 +194,16 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
         const Entity* parent = result.m_material->get_parent();
 
         const char* ss_name = result.m_material->get_surface_shader_name();
-        result.m_surface_shader = ss_name ? InputBinder::find_entity<SurfaceShader>(ss_name, parent) : nullptr;
+        result.m_surface_shader = ss_name ? InputBinder::static_find_entity<SurfaceShader>(ss_name, parent) : nullptr;
 
         const char* bsdf_name = result.m_material->get_bsdf_name();
-        result.m_bsdf = bsdf_name ? InputBinder::find_entity<BSDF>(bsdf_name, parent) : nullptr;
+        result.m_bsdf = bsdf_name ? InputBinder::static_find_entity<BSDF>(bsdf_name, parent) : nullptr;
 
         const char* bssrdf_name = result.m_material->get_bssrdf_name();
-        result.m_bssrdf = bssrdf_name ? InputBinder::find_entity<BSSRDF>(bssrdf_name, parent) : nullptr;
+        result.m_bssrdf = bssrdf_name ? InputBinder::static_find_entity<BSSRDF>(bssrdf_name, parent) : nullptr;
 
         const char* edf = result.m_material->get_edf_name();
-        result.m_edf = edf ? InputBinder::find_entity<EDF>(edf, parent) : nullptr;
+        result.m_edf = edf ? InputBinder::static_find_entity<EDF>(edf, parent) : nullptr;
     }
 
     return result;

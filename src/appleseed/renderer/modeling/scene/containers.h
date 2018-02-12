@@ -110,8 +110,6 @@ class ExceptionUnknownEntity
         const char*         entity_name,
         const Entity*       context = nullptr);
 
-    ~ExceptionUnknownEntity() throw() override {}
-
     const std::string& get_context_path() const;
 
   private:

@@ -81,6 +81,7 @@ set (sources
     bindentitycontainers.h
     bindenvironment.cpp
     bindframe.cpp
+    bindfresnel.cpp
     bindimage.cpp
     bindlight.cpp
     bindlogger.cpp

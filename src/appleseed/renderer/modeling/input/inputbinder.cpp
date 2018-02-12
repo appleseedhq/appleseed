@@ -45,7 +45,6 @@
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/input/colorsource.h"
 #include "renderer/modeling/input/scalarsource.h"
-#include "renderer/modeling/input/symbol.h"
 #include "renderer/modeling/input/texturesource.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
@@ -64,10 +63,12 @@
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/otherwise.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
 #include <exception>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -76,30 +77,73 @@ namespace renderer
 {
 
 //
-// InputBinder class implementation.
+// InputBinder::ReferencedEntity class implementation.
 //
 
-InputBinder::InputBinder()
-  : m_error_count(0)
+InputBinder::ReferencedEntity::ReferencedEntity()
+  : m_entity(nullptr)
+  , m_vector(nullptr)
+  , m_map(nullptr)
 {
 }
 
-void InputBinder::bind(const Scene& scene)
+InputBinder::ReferencedEntity::ReferencedEntity(EntityVector& vector, Entity* entity)
+  : m_entity(entity)
+  , m_vector(&vector)
+  , m_map(nullptr)
+{
+}
+
+InputBinder::ReferencedEntity::ReferencedEntity(EntityMap& map, Entity* entity)
+  : m_entity(entity)
+  , m_vector(nullptr)
+  , m_map(&map)
+{
+}
+
+InputBinder::ReferencedEntity::ReferencedEntity(EntityVector& vector, const char* name)
+  : m_entity(vector.get_by_name(name))
+  , m_vector(&vector)
+  , m_map(nullptr)
+{
+}
+
+InputBinder::ReferencedEntity::ReferencedEntity(EntityMap& map, const char* name)
+  : m_entity(map.get_by_name(name))
+  , m_vector(nullptr)
+  , m_map(&map)
+{
+}
+
+
+//
+// InputBinder class implementation.
+//
+
+InputBinder::InputBinder(const Scene& scene)
+  : m_scene(scene)
+  , m_error_count(0)
+{
+    // Build the symbol table of the scene.
+    build_scene_symbol_table();
+
+    // Collect symbol tables for all assemblies.
+    for (const auto& assembly : m_scene.assemblies())
+        collect_assembly_symbols(assembly);
+}
+
+void InputBinder::bind()
 {
     try
     {
-        // Build the symbol table of the scene.
-        SymbolTable scene_symbols;
-        build_scene_symbol_table(scene, scene_symbols);
-
         // Bind all inputs of all entities in the scene.
-        bind_scene_entities_inputs(scene, scene_symbols);
+        bind_scene_entities_inputs();
 
         // Bind all inputs of all entities in all assemblies.
-        for (const_each<AssemblyContainer> i = scene.assemblies(); i; ++i)
+        for (const auto& assembly : m_scene.assemblies())
         {
             assert(m_assembly_info.empty());
-            bind_assembly_entities_inputs(scene, scene_symbols, *i);
+            bind_assembly_entities_inputs(assembly);
         }
     }
     catch (const ExceptionUnknownEntity& e)
@@ -117,6 +161,56 @@ size_t InputBinder::get_error_count() const
     return m_error_count;
 }
 
+InputBinder::ReferencedEntity InputBinder::find_entity(
+    const char*                     name,
+    const Entity*                   parent) const
+{
+    assert(name);
+    assert(parent);
+
+    while (parent)
+    {
+        const Assembly* assembly = dynamic_cast<const Assembly*>(parent);
+
+        if (assembly == nullptr)
+            break;
+
+        const auto referenced_entity = find_entity_in_assembly(*assembly, name);
+
+        if (referenced_entity.m_entity != nullptr)
+            return referenced_entity;
+
+        parent = parent->get_parent();
+    }
+
+    return find_entity_in_scene(name);
+}
+
+InputBinder::ReferencedEntity InputBinder::find_referenced_entity(
+    const ConnectableEntity&        entity,
+    const InputArray::iterator&     input) const
+{
+    const ParamArray& entity_params = entity.get_parameters();
+
+    string param_value;
+
+    if (entity_params.strings().exist(input.name()))
+    {
+        // A value is assigned to this input, retrieve it.
+        param_value = entity_params.get<string>(input.name());
+    }
+    else if (input.type() == InputTypeOptional)
+    {
+        // This input is optional, use its default value.
+        param_value = input.default_value();
+    }
+
+    if (param_value.empty())
+        return ReferencedEntity();
+
+    return find_entity(param_value.c_str(), entity.get_parent());
+}
+
 namespace
 {
     template <typename EntityContainer>
@@ -125,30 +219,28 @@ namespace
         const EntityContainer&      entities,
         const SymbolTable::SymbolID symbol_id)
     {
-        for (const_each<EntityContainer> i = entities; i; ++i)
-            symbols.insert(i->get_name(), symbol_id);
+        for (const auto& entity : entities)
+            symbols.insert(entity.get_name(), symbol_id);
     }
 }
 
-void InputBinder::build_scene_symbol_table(
-    const Scene&                    scene,
-    SymbolTable&                    symbols)
+void InputBinder::build_scene_symbol_table()
 {
     try
     {
-        insert_entities(symbols, scene.cameras(), SymbolTable::SymbolCamera);
-        insert_entities(symbols, scene.colors(), SymbolTable::SymbolColor);
-        insert_entities(symbols, scene.textures(), SymbolTable::SymbolTexture);
-        insert_entities(symbols, scene.texture_instances(), SymbolTable::SymbolTextureInstance);
-        insert_entities(symbols, scene.environment_edfs(), SymbolTable::SymbolEnvironmentEDF);
-        insert_entities(symbols, scene.environment_shaders(), SymbolTable::SymbolEnvironmentShader);
-        insert_entities(symbols, scene.shader_groups(), SymbolTable::SymbolShaderGroup);
+        insert_entities(m_scene_symbols, m_scene.cameras(), SymbolTable::SymbolCamera);
+        insert_entities(m_scene_symbols, m_scene.colors(), SymbolTable::SymbolColor);
+        insert_entities(m_scene_symbols, m_scene.textures(), SymbolTable::SymbolTexture);
+        insert_entities(m_scene_symbols, m_scene.texture_instances(), SymbolTable::SymbolTextureInstance);
+        insert_entities(m_scene_symbols, m_scene.environment_edfs(), SymbolTable::SymbolEnvironmentEDF);
+        insert_entities(m_scene_symbols, m_scene.environment_shaders(), SymbolTable::SymbolEnvironmentShader);
+        insert_entities(m_scene_symbols, m_scene.shader_groups(), SymbolTable::SymbolShaderGroup);
 
-        if (scene.get_environment())
-            symbols.insert(scene.get_environment()->get_name(), SymbolTable::SymbolEnvironment);
+        if (m_scene.get_environment())
+            m_scene_symbols.insert(m_scene.get_environment()->get_name(), SymbolTable::SymbolEnvironment);
 
-        insert_entities(symbols, scene.assemblies(), SymbolTable::SymbolAssembly);
-        insert_entities(symbols, scene.assembly_instances(), SymbolTable::SymbolAssemblyInstance);
+        insert_entities(m_scene_symbols, m_scene.assemblies(), SymbolTable::SymbolAssembly);
+        insert_entities(m_scene_symbols, m_scene.assembly_instances(), SymbolTable::SymbolAssemblyInstance);
     }
     catch (const SymbolTable::ExceptionDuplicateSymbol& e)
     {
@@ -184,312 +276,227 @@ void InputBinder::build_assembly_symbol_table(
     }
 }
 
-void InputBinder::bind_scene_entities_inputs(
-    const Scene&                    scene,
-    const SymbolTable&              scene_symbols)
+void InputBinder::collect_assembly_symbols(
+    const Assembly&                 assembly)
+{
+    // Build the symbol table of the assembly.
+    SymbolTable symbols;
+    build_assembly_symbol_table(assembly, symbols);
+
+    // Store the symbol table of the assembly.
+    m_assembly_symbols.insert(make_pair(&assembly, symbols));
+
+    // Recurse into child assemblies.
+    for (const auto& child_assembly : assembly.assemblies())
+        collect_assembly_symbols(child_assembly);
+}
+
+void InputBinder::bind_scene_entities_inputs()
 {
     // Bind textures to texture instances.
     // Other entities might need to access the textures bound to texture instances,
     // so binding of textures to texture instances must come first.
-    for (each<TextureInstanceContainer> i = scene.texture_instances(); i; ++i)
+    for (auto& texture_instance : m_scene.texture_instances())
     {
-        i->unbind_texture();
-        i->bind_texture(scene.textures());
-        i->check_texture();
+        texture_instance.unbind_texture();
+        texture_instance.bind_texture(m_scene.textures());
+        texture_instance.check_texture();
     }
 
     // Bind the inputs of the default surface shader.
-    bind_scene_entity_inputs(
-        scene,
-        scene_symbols,
+    bind_entity_inputs(
         SymbolTable::symbol_name(SymbolTable::SymbolSurfaceShader),
-        *scene.get_default_surface_shader());
+        *m_scene.get_default_surface_shader());
 
     // Bind camera inputs.
-    for (each<CameraContainer> i = scene.cameras(); i; ++i)
+    for (auto& camera : m_scene.cameras())
     {
-        bind_scene_entity_inputs(
-            scene,
-            scene_symbols,
+        bind_entity_inputs(
             SymbolTable::symbol_name(SymbolTable::SymbolCamera),
-            *i);
+            camera);
     }
 
     // Bind environment EDFs inputs.
-    for (each<EnvironmentEDFContainer> i = scene.environment_edfs(); i; ++i)
+    for (auto& environment_edf : m_scene.environment_edfs())
     {
-        bind_scene_entity_inputs(
-            scene,
-            scene_symbols,
+        bind_entity_inputs(
             SymbolTable::symbol_name(SymbolTable::SymbolEnvironmentEDF),
-            *i);
+            environment_edf);
     }
 
     // Bind environment shaders inputs.
-    for (each<EnvironmentShaderContainer> i = scene.environment_shaders(); i; ++i)
+    for (auto& environment_shader : m_scene.environment_shaders())
     {
-        bind_scene_entity_inputs(
-            scene,
-            scene_symbols,
+        bind_entity_inputs(
             SymbolTable::symbol_name(SymbolTable::SymbolEnvironmentShader),
-            *i);
+            environment_shader);
     }
 
     // Bind environment inputs.
-    if (scene.get_environment())
+    if (m_scene.get_environment())
     {
-        bind_scene_entity_inputs(
-            scene,
-            scene_symbols,
+        bind_entity_inputs(
             SymbolTable::symbol_name(SymbolTable::SymbolEnvironment),
-            *scene.get_environment());
+            *m_scene.get_environment());
     }
 
     // Bind assemblies to assembly instances.
-    for (each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
+    for (auto& assembly_instance : m_scene.assembly_instances())
     {
-        i->unbind_assembly();
-        i->bind_assembly(scene.assemblies());
-        i->check_assembly();
-    }
-}
-
-void InputBinder::bind_scene_entity_inputs(
-    const Scene&                    scene,
-    const SymbolTable&              scene_symbols,
-    const char*                     entity_type,
-    ConnectableEntity&              entity)
-{
-    const string entity_path(entity.get_path().c_str());
-    const ParamArray& entity_params = entity.get_parameters();
-
-    for (each<InputArray> i = entity.get_inputs(); i; ++i)
-    {
-        InputArray::iterator& input = *i;
-        string param_value;
-
-        if (entity_params.strings().exist(input.name()))
-        {
-            // A value is assigned to this input, retrieve it.
-            param_value = entity_params.get<string>(input.name());
-        }
-        else if (input.type() == InputTypeOptional)
-        {
-            // This input is optional, use its default value.
-            param_value = input.default_value();
-            if (param_value.empty())
-                continue;
-        }
-        else
-        {
-            // This input is required but has no value, this is an error.
-            RENDERER_LOG_ERROR(
-                "while defining %s \"%s\": required parameter \"%s\" missing.",
-                entity_type,
-                entity_path.c_str(),
-                input.name());
-            ++m_error_count;
-            continue;
-        }
-
-        if (try_bind_scene_entity_to_input(
-                scene,
-                scene_symbols,
-                entity_type,
-                entity_path.c_str(),
-                param_value.c_str(),
-                input))
-            continue;
-
-        if (try_bind_scalar_to_input(param_value, input))
-            continue;
-
-        RENDERER_LOG_ERROR(
-            "while defining %s \"%s\": cannot bind \"%s\" to parameter \"%s\".",
-            entity_type,
-            entity_path.c_str(),
-            param_value.c_str(),
-            input.name());
-
-        ++m_error_count;
+        assembly_instance.unbind_assembly();
+        assembly_instance.bind_assembly(m_scene.assemblies());
+        assembly_instance.check_assembly();
     }
 }
 
 void InputBinder::bind_assembly_entities_inputs(
-    const Scene&                    scene,
-    const SymbolTable&              scene_symbols,
     const Assembly&                 assembly)
 {
-    // Build the symbol table of the assembly.
-    SymbolTable assembly_symbols;
-    build_assembly_symbol_table(assembly, assembly_symbols);
-
     // Push the assembly and its symbol table to the stack.
     AssemblyInfo info;
     info.m_assembly = &assembly;
-    info.m_assembly_symbols = &assembly_symbols;
+    info.m_assembly_symbols = &m_assembly_symbols.find(&assembly)->second;
     m_assembly_info.push_back(info);
 
     // Bind textures to texture instances.
     // Other entities might need to access the textures bound to texture instances,
     // so binding of textures to texture instances must come first.
-    for (each<TextureInstanceContainer> i = assembly.texture_instances(); i; ++i)
+    for (auto& texture_instance : assembly.texture_instances())
     {
-        i->unbind_texture();
+        texture_instance.unbind_texture();
 
-        for (AssemblyInfoIt j = m_assembly_info.rbegin(); j != m_assembly_info.rend(); ++j)
-            i->bind_texture(j->m_assembly->textures());
+        for (auto j = m_assembly_info.rbegin(); j != m_assembly_info.rend(); ++j)
+            texture_instance.bind_texture(j->m_assembly->textures());
 
-        i->bind_texture(scene.textures());
+        texture_instance.bind_texture(m_scene.textures());
 
-        i->check_texture();
+        texture_instance.check_texture();
     }
 
     // Bind BSDFs inputs.
-    for (each<BSDFContainer> i = assembly.bsdfs(); i; ++i)
+    for (auto& bsdf : assembly.bsdfs())
     {
-        bind_assembly_entity_inputs(
-            scene,
-            scene_symbols,
+        bind_entity_inputs(
             SymbolTable::symbol_name(SymbolTable::SymbolBSDF),
-            *i);
+            bsdf);
     }
 
     // Bind BSSRDFs inputs.
-    for (each<BSSRDFContainer> i = assembly.bssrdfs(); i; ++i)
+    for (auto& bssrdf : assembly.bssrdfs())
     {
-        bind_assembly_entity_inputs(
-            scene,
-            scene_symbols,
+        bind_entity_inputs(
             SymbolTable::symbol_name(SymbolTable::SymbolBSSRDF),
-            *i);
+            bssrdf);
     }
 
     // Bind EDFs inputs.
-    for (each<EDFContainer> i = assembly.edfs(); i; ++i)
+    for (auto& edf : assembly.edfs())
     {
-        bind_assembly_entity_inputs(
-            scene,
-            scene_symbols,
+        bind_entity_inputs(
             SymbolTable::symbol_name(SymbolTable::SymbolEDF),
-            *i);
+            edf);
     }
 
-    // Bind phase punctions inputs.
-    for (each<VolumeContainer> i = assembly.volumes(); i; ++i)
+    // Bind volumes inputs.
+    for (auto& volume : assembly.volumes())
     {
-        bind_assembly_entity_inputs(
-            scene,
-            scene_symbols,
+        bind_entity_inputs(
             SymbolTable::symbol_name(SymbolTable::SymbolVolume),
-            *i);
+            volume);
     }
 
     // Bind ShaderGroups inputs.
-    for (each<ShaderGroupContainer> i = assembly.shader_groups(); i; ++i)
+    for (auto& shader_group : assembly.shader_groups())
     {
-        bind_assembly_entity_inputs(
-            scene,
-            scene_symbols,
+        bind_entity_inputs(
             SymbolTable::symbol_name(SymbolTable::SymbolShaderGroup),
-            *i);
+            shader_group);
     }
 
     // Bind surface shaders inputs.
-    for (each<SurfaceShaderContainer> i = assembly.surface_shaders(); i; ++i)
+    for (auto& surface_shader : assembly.surface_shaders())
     {
-        bind_assembly_entity_inputs(
-            scene,
-            scene_symbols,
+        bind_entity_inputs(
             SymbolTable::symbol_name(SymbolTable::SymbolSurfaceShader),
-            *i);
+            surface_shader);
     }
 
     // Bind materials inputs.
-    for (each<MaterialContainer> i = assembly.materials(); i; ++i)
+    for (auto& material : assembly.materials())
     {
-        bind_assembly_entity_inputs(
-            scene,
-            scene_symbols,
+        bind_entity_inputs(
             SymbolTable::symbol_name(SymbolTable::SymbolMaterial),
-            *i);
+            material);
     }
 
     // Bind lights inputs.
-    for (each<LightContainer> i = assembly.lights(); i; ++i)
+    for (auto& light : assembly.lights())
     {
-        bind_assembly_entity_inputs(
-            scene,
-            scene_symbols,
+        bind_entity_inputs(
             SymbolTable::symbol_name(SymbolTable::SymbolLight),
-            *i);
+            light);
     }
 
     // Bind objects inputs.
-    for (each<ObjectContainer> i = assembly.objects(); i; ++i)
+    for (auto& object : assembly.objects())
     {
-        bind_assembly_entity_inputs(
-            scene,
-            scene_symbols,
+        bind_entity_inputs(
             SymbolTable::symbol_name(SymbolTable::SymbolObject),
-            *i);
+            object);
     }
 
     // Bind objects to object instances. This must be done before binding materials.
-    for (each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
+    for (auto& object_instance : assembly.object_instances())
     {
-        i->unbind_object();
+        object_instance.unbind_object();
 
-        for (AssemblyInfoIt j = m_assembly_info.rbegin(); j != m_assembly_info.rend(); ++j)
-            i->bind_object(j->m_assembly->objects());
+        for (auto j = m_assembly_info.rbegin(); j != m_assembly_info.rend(); ++j)
+            object_instance.bind_object(j->m_assembly->objects());
 
-        i->check_object();
+        object_instance.check_object();
     }
 
     // Bind materials to object instances.
-    for (each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
+    for (auto& object_instance : assembly.object_instances())
     {
-        i->unbind_materials();
+        object_instance.unbind_materials();
 
-        for (AssemblyInfoIt j = m_assembly_info.rbegin(); j != m_assembly_info.rend(); ++j)
-            i->bind_materials(j->m_assembly->materials());
+        for (auto j = m_assembly_info.rbegin(); j != m_assembly_info.rend(); ++j)
+            object_instance.bind_materials(j->m_assembly->materials());
 
-        i->check_materials();
+        object_instance.check_materials();
     }
 
     // Bind assemblies to assembly instances.
-    for (each<AssemblyInstanceContainer> i = assembly.assembly_instances(); i; ++i)
+    for (auto& assembly_instance : assembly.assembly_instances())
     {
-        i->unbind_assembly();
+        assembly_instance.unbind_assembly();
 
-        for (AssemblyInfoIt j = m_assembly_info.rbegin(); j != m_assembly_info.rend(); ++j)
-            i->bind_assembly(j->m_assembly->assemblies());
+        for (auto j = m_assembly_info.rbegin(); j != m_assembly_info.rend(); ++j)
+            assembly_instance.bind_assembly(j->m_assembly->assemblies());
 
-        i->bind_assembly(scene.assemblies());
+        assembly_instance.bind_assembly(m_scene.assemblies());
 
-        i->check_assembly();
+        assembly_instance.check_assembly();
     }
 
     // Recurse into child assemblies.
-    for (const_each<AssemblyContainer> i = assembly.assemblies(); i; ++i)
-        bind_assembly_entities_inputs(scene, scene_symbols, *i);
+    for (const auto& child_assembly : assembly.assemblies())
+        bind_assembly_entities_inputs(child_assembly);
 
     // Pop the information about this assembly from the stack.
     m_assembly_info.pop_back();
 }
 
-void InputBinder::bind_assembly_entity_inputs(
-    const Scene&                    scene,
-    const SymbolTable&              scene_symbols,
+void InputBinder::bind_entity_inputs(
     const char*                     entity_type,
     ConnectableEntity&              entity)
 {
     const string entity_path(entity.get_path().c_str());
     const ParamArray& entity_params = entity.get_parameters();
 
-    for (each<InputArray> i = entity.get_inputs(); i; ++i)
+    for (auto& input : entity.get_inputs())
     {
-        InputArray::iterator& input = *i;
         string param_value;
 
         if (entity_params.strings().exist(input.name()))
@@ -508,7 +515,7 @@ void InputBinder::bind_assembly_entity_inputs(
         {
             // This input is required but has no value, this is an error.
             RENDERER_LOG_ERROR(
-                "while defining %s \"%s\": required parameter \"%s\" missing.",
+                "while binding inputs of %s \"%s\": required parameter \"%s\" missing.",
                 entity_type,
                 entity_path.c_str(),
                 input.name());
@@ -517,8 +524,6 @@ void InputBinder::bind_assembly_entity_inputs(
         }
 
         if (try_bind_assembly_entity_to_input(
-                scene,
-                scene_symbols,
                 entity_type,
                 entity_path.c_str(),
                 param_value.c_str(),
@@ -526,8 +531,6 @@ void InputBinder::bind_assembly_entity_inputs(
             continue;
 
         if (try_bind_scene_entity_to_input(
-                scene,
-                scene_symbols,
                 entity_type,
                 entity_path.c_str(),
                 param_value.c_str(),
@@ -538,7 +541,7 @@ void InputBinder::bind_assembly_entity_inputs(
             continue;
 
         RENDERER_LOG_ERROR(
-            "while defining %s \"%s\": cannot bind \"%s\" to parameter \"%s\".",
+            "while binding inputs of %s \"%s\": cannot bind \"%s\" to parameter \"%s\".",
             entity_type,
             entity_path.c_str(),
             param_value.c_str(),
@@ -549,8 +552,6 @@ void InputBinder::bind_assembly_entity_inputs(
 }
 
 bool InputBinder::try_bind_scene_entity_to_input(
-    const Scene&                    scene,
-    const SymbolTable&              scene_symbols,
     const char*                     entity_type,
     const char*                     entity_name,
     const char*                     param_value,
@@ -563,38 +564,41 @@ bool InputBinder::try_bind_scene_entity_to_input(
               input.bind(collection.get_by_name(param_value));  \
               return true
 
-        switch (scene_symbols.lookup(param_value))
+        switch (m_scene_symbols.lookup(param_value))
         {
-          BIND(SymbolTable::SymbolColor, scene.colors());
-          BIND(SymbolTable::SymbolTexture, scene.textures());
-          BIND(SymbolTable::SymbolTextureInstance, scene.texture_instances());
-          BIND(SymbolTable::SymbolShaderGroup, scene.shader_groups());
-          BIND(SymbolTable::SymbolEnvironmentEDF, scene.environment_edfs());
-          BIND(SymbolTable::SymbolEnvironmentShader, scene.environment_shaders());
+          BIND(SymbolTable::SymbolColor, m_scene.colors());
+          BIND(SymbolTable::SymbolTexture, m_scene.textures());
+          BIND(SymbolTable::SymbolTextureInstance, m_scene.texture_instances());
+          BIND(SymbolTable::SymbolShaderGroup, m_scene.shader_groups());
+          BIND(SymbolTable::SymbolEnvironmentEDF, m_scene.environment_edfs());
+          BIND(SymbolTable::SymbolEnvironmentShader, m_scene.environment_shaders());
+          assert_otherwise;
         }
 
         #undef BIND
     }
     else
     {
-        switch (scene_symbols.lookup(param_value))
+        switch (m_scene_symbols.lookup(param_value))
         {
           case SymbolTable::SymbolColor:
             bind_color_to_input(
-                scene.colors(),
+                m_scene.colors(),
                 param_value,
                 input);
             return true;
 
           case SymbolTable::SymbolTextureInstance:
             bind_texture_instance_to_input(
-                scene.texture_instances(),
+                m_scene.texture_instances(),
                 ~0,                 // the parent is the scene, not an assembly
                 entity_type,
                 entity_name,
                 param_value,
                 input);
             return true;
+
+          default: break;           // might be a scalar
         }
     }
 
@@ -602,18 +606,14 @@ bool InputBinder::try_bind_scene_entity_to_input(
 }
 
 bool InputBinder::try_bind_assembly_entity_to_input(
-    const Scene&                    scene,
-    const SymbolTable&              scene_symbols,
     const char*                     entity_type,
     const char*                     entity_name,
     const char*                     param_value,
     InputArray::iterator&           input)
 {
-    for (AssemblyInfoIt i = m_assembly_info.rbegin(); i != m_assembly_info.rend(); ++i)
+    for (auto i = m_assembly_info.rbegin(); i != m_assembly_info.rend(); ++i)
     {
         if (try_bind_assembly_entity_to_input(
-                scene,
-                scene_symbols,
                 *i->m_assembly,
                 *i->m_assembly_symbols,
                 entity_type,
@@ -627,8 +627,6 @@ bool InputBinder::try_bind_assembly_entity_to_input(
 }
 
 bool InputBinder::try_bind_assembly_entity_to_input(
-    const Scene&                    scene,
-    const SymbolTable&              scene_symbols,
     const Assembly&                 assembly,
     const SymbolTable&              assembly_symbols,
     const char*                     entity_type,
@@ -648,16 +646,17 @@ bool InputBinder::try_bind_assembly_entity_to_input(
           BIND(SymbolTable::SymbolColor, assembly.colors());
           BIND(SymbolTable::SymbolTexture, assembly.textures());
           BIND(SymbolTable::SymbolTextureInstance, assembly.texture_instances());
+          BIND(SymbolTable::SymbolShaderGroup, assembly.shader_groups());
           BIND(SymbolTable::SymbolBSDF, assembly.bsdfs());
           BIND(SymbolTable::SymbolBSSRDF, assembly.bssrdfs());
           BIND(SymbolTable::SymbolEDF, assembly.edfs());
-          BIND(SymbolTable::SymbolShaderGroup, assembly.shader_groups());
           BIND(SymbolTable::SymbolSurfaceShader, assembly.surface_shaders());
           BIND(SymbolTable::SymbolMaterial, assembly.materials());
           BIND(SymbolTable::SymbolLight, assembly.lights());
           BIND(SymbolTable::SymbolObject, assembly.objects());
           BIND(SymbolTable::SymbolObjectInstance, assembly.object_instances());
           BIND(SymbolTable::SymbolVolume, assembly.volumes());
+          default: break;           // might be a scene entity (e.g. an environment EDF)
         }
 
         #undef BIND
@@ -682,6 +681,8 @@ bool InputBinder::try_bind_assembly_entity_to_input(
                 param_value,
                 input);
             return true;
+
+          default: break;           // might be a scalar
         }
     }
 
@@ -736,7 +737,7 @@ void InputBinder::bind_texture_instance_to_input(
     catch (const exception& e)
     {
         RENDERER_LOG_ERROR(
-            "while defining %s \"%s\", failed to bind \"%s\" to input \"%s\" (%s).",
+            "while binding inputs of %s \"%s\", failed to bind \"%s\" to input \"%s\" (%s).",
             entity_type,
             entity_name,
             param_value,
@@ -745,6 +746,50 @@ void InputBinder::bind_texture_instance_to_input(
 
         ++m_error_count;
     }
+}
+
+InputBinder::ReferencedEntity InputBinder::find_entity_in_assembly(
+    const Assembly&                 assembly,
+    const char*                     name) const
+{
+    const SymbolTable& assembly_symbols = m_assembly_symbols.find(&assembly)->second;
+
+    switch (assembly_symbols.lookup(name))
+    {
+      case SymbolTable::SymbolColor: return ReferencedEntity(assembly.colors(), name);
+      case SymbolTable::SymbolTexture: return ReferencedEntity(assembly.textures(), name);
+      case SymbolTable::SymbolTextureInstance: return ReferencedEntity(assembly.texture_instances(), name);
+      case SymbolTable::SymbolShaderGroup: return ReferencedEntity(assembly.shader_groups(), name);
+      case SymbolTable::SymbolBSDF: return ReferencedEntity(assembly.bsdfs(), name);
+      case SymbolTable::SymbolBSSRDF: return ReferencedEntity(assembly.bssrdfs(), name);
+      case SymbolTable::SymbolEDF: return ReferencedEntity(assembly.edfs(), name);
+      case SymbolTable::SymbolSurfaceShader: return ReferencedEntity(assembly.surface_shaders(), name);
+      case SymbolTable::SymbolMaterial: return ReferencedEntity(assembly.materials(), name);
+      case SymbolTable::SymbolLight: return ReferencedEntity(assembly.lights(), name);
+      case SymbolTable::SymbolObject: return ReferencedEntity(assembly.objects(), name);
+      case SymbolTable::SymbolObjectInstance: return ReferencedEntity(assembly.object_instances(), name);
+      case SymbolTable::SymbolVolume: return ReferencedEntity(assembly.volumes(), name);
+      default: break;               // might be a scalar
+    }
+
+    return ReferencedEntity();
+}
+
+InputBinder::ReferencedEntity InputBinder::find_entity_in_scene(
+    const char*                     name) const
+{
+    switch (m_scene_symbols.lookup(name))
+    {
+      case SymbolTable::SymbolColor: return ReferencedEntity(m_scene.colors(), name);
+      case SymbolTable::SymbolTexture: return ReferencedEntity(m_scene.textures(), name);
+      case SymbolTable::SymbolTextureInstance: return ReferencedEntity(m_scene.texture_instances(), name);
+      case SymbolTable::SymbolShaderGroup: return ReferencedEntity(m_scene.shader_groups(), name);
+      case SymbolTable::SymbolEnvironmentEDF: return ReferencedEntity(m_scene.environment_edfs(), name);
+      case SymbolTable::SymbolEnvironmentShader: return ReferencedEntity(m_scene.environment_shaders(), name);
+      default: break;               // might be a scalar
+    }
+
+    return ReferencedEntity();
 }
 
 }   // namespace renderer

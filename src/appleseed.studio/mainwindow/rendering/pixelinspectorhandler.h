@@ -34,7 +34,6 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class MouseCoordinatesTracker; } }
-namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace renderer  { class Project; }
 class QEvent;
 class QWidget;
@@ -51,7 +50,6 @@ class PixelInspectorHandler
     PixelInspectorHandler(
         QWidget*                            widget,
         const MouseCoordinatesTracker&      mouse_tracker,
-        const ProjectExplorer&              project_explorer,
         const renderer::Project&            project);
 
     ~PixelInspectorHandler() override;
@@ -63,7 +61,6 @@ class PixelInspectorHandler
   private:
     QWidget*                                m_widget;
     const MouseCoordinatesTracker&          m_mouse_tracker;
-    const ProjectExplorer&                  m_project_explorer;
     const renderer::Project&                m_project;
     bool                                    m_enabled;
 

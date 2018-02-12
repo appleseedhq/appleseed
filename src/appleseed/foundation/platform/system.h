@@ -169,6 +169,9 @@ class APPLESEED_DLLSYMBOL System
 
     // Return the amount in bytes of virtual memory used by the current process.
     static uint64 get_process_virtual_memory_size();
+
+    // Return the peak amount in bytes of virtual memory used by the current process.
+    static uint64 get_peak_process_virtual_memory_size();
 };
 
 }       // namespace foundation

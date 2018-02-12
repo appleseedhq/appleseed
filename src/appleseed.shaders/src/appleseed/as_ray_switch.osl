@@ -32,7 +32,9 @@ shader as_ray_switch
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string help = "Ray switch utility node.",
     string icon = "asRaySwitch.png",
-    int as_maya_type_id = 0x001279dc
+    int as_maya_type_id = 0x001279dc,
+    string as_max_class_id = "553479896 1617499966",
+    string as_max_plugin_type = "texture"
 ]]
 (
     color in_color = color(1)
@@ -61,13 +63,6 @@ shader as_ray_switch
         string as_maya_attribute_name = "colorTransparency",
         string as_maya_attribute_short_name = "ctr",
         string label = "Transparency Ray Color",
-        string page = "Color"
-    ]],
-    color in_color_probe = color(0)
-    [[
-        string as_maya_attribute_name = "colorProbe",
-        string as_maya_attribute_short_name = "cpr",
-        string label = "Probe Ray Color",
         string page = "Color"
     ]],
     color in_color_diffuse = color(0)
@@ -122,10 +117,6 @@ shader as_ray_switch
     else if (raytype("transparency"))
     {
         out_color = in_color_transparency;
-    }
-    else if (raytype("probe"))
-    {
-        out_color = in_color_probe;
     }
     else if (raytype("diffuse"))
     {

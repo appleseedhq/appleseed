@@ -34,6 +34,7 @@
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/entity/entitytraits.h"
 #include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/symbol.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
 
@@ -44,13 +45,13 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <map>
 #include <string>
 #include <vector>
 
 // Forward declarations.
 namespace renderer  { class ConnectableEntity; }
 namespace renderer  { class Scene; }
-namespace renderer  { class SymbolTable; }
 
 namespace renderer
 {
@@ -64,19 +65,40 @@ class InputBinder
 {
   public:
     // Constructor.
-    InputBinder();
+    explicit InputBinder(const Scene& scene);
 
     // Bind all inputs of all entities in a scene.
-    void bind(const Scene& scene);
+    void bind();
 
     // Return the number of reported binding errors.
     size_t get_error_count() const;
 
+    struct ReferencedEntity
+    {
+        Entity*         m_entity;
+        EntityVector*   m_vector;       // either this is nullptr
+        EntityMap*      m_map;          // or this is, but never both
+
+        ReferencedEntity();
+        ReferencedEntity(EntityVector& vector, Entity* entity);
+        ReferencedEntity(EntityMap& map, Entity* entity);
+        ReferencedEntity(EntityVector& vector, const char* name);
+        ReferencedEntity(EntityMap& map, const char* name);
+    };
+
     // Find an entity with a given name using the input binding logic.
     template <typename EntityType>
-    static EntityType* find_entity(
+    static EntityType* static_find_entity(
         const char*                     name,
         const Entity*                   parent);
+    ReferencedEntity find_entity(
+        const char*                     name,
+        const Entity*                   parent) const;
+
+    // Find the entity referenced by another entity's input.
+    ReferencedEntity find_referenced_entity(
+        const ConnectableEntity&        entity,
+        const InputArray::iterator&     input) const;
 
   private:
     struct AssemblyInfo
@@ -88,48 +110,37 @@ class InputBinder
     typedef std::vector<AssemblyInfo> AssemblyInfoVector;
     typedef AssemblyInfoVector::const_reverse_iterator AssemblyInfoIt;
 
+    const Scene&            m_scene;
     size_t                  m_error_count;
+    SymbolTable             m_scene_symbols;
+    std::map<const Assembly*, SymbolTable> m_assembly_symbols;
     AssemblyInfoVector      m_assembly_info;
 
     // Build the symbol table for a given scene.
-    void build_scene_symbol_table(
-        const Scene&                    scene,
-        SymbolTable&                    symbols);
+    void build_scene_symbol_table();
 
     // Build the symbol table for a given assembly.
     void build_assembly_symbol_table(
         const Assembly&                 assembly,
         SymbolTable&                    symbols);
 
-    // Bind all inputs of all entities of a given scene.
-    void bind_scene_entities_inputs(
-        const Scene&                    scene,
-        const SymbolTable&              scene_symbols);
+    void collect_assembly_symbols(
+        const Assembly&                 assembly);
 
-    // Bind all inputs of a given entity of a given scene.
-    void bind_scene_entity_inputs(
-        const Scene&                    scene,
-        const SymbolTable&              scene_symbols,
-        const char*                     entity_type,
-        ConnectableEntity&              entity);
+    // Bind all inputs of all entities of a given scene.
+    void bind_scene_entities_inputs();
 
     // Bind all inputs of all entities of a given assembly.
     void bind_assembly_entities_inputs(
-        const Scene&                    scene,
-        const SymbolTable&              scene_symbols,
         const Assembly&                 assembly);
 
-    // Bind all inputs of a given entity of a given assembly.
-    void bind_assembly_entity_inputs(
-        const Scene&                    scene,
-        const SymbolTable&              scene_symbols,
+    // Bind all inputs of a given entity.
+    void bind_entity_inputs(
         const char*                     entity_type,
         ConnectableEntity&              entity);
 
     // Try to bind a scene entity to a given input.
     bool try_bind_scene_entity_to_input(
-        const Scene&                    scene,
-        const SymbolTable&              scene_symbols,
         const char*                     entity_type,
         const char*                     entity_name,
         const char*                     param_value,
@@ -137,8 +148,6 @@ class InputBinder
 
     // Try to bind an entity from any parent assembly to a given input.
     bool try_bind_assembly_entity_to_input(
-        const Scene&                    scene,
-        const SymbolTable&              scene_symbols,
         const char*                     entity_type,
         const char*                     entity_name,
         const char*                     param_value,
@@ -146,8 +155,6 @@ class InputBinder
 
     // Try to bind an entity from a given assembly to a given input.
     bool try_bind_assembly_entity_to_input(
-        const Scene&                    scene,
-        const SymbolTable&              scene_symbols,
         const Assembly&                 assembly,
         const SymbolTable&              assembly_symbols,
         const char*                     entity_type,
@@ -174,6 +181,13 @@ class InputBinder
         const char*                     entity_name,
         const char*                     param_value,
         InputArray::iterator&           input);
+
+    ReferencedEntity find_entity_in_assembly(
+        const Assembly&                 assembly,
+        const char*                     name) const;
+
+    ReferencedEntity find_entity_in_scene(
+        const char*                     name) const;
 };
 
 
@@ -182,7 +196,7 @@ class InputBinder
 //
 
 template <typename EntityType>
-EntityType* InputBinder::find_entity(
+EntityType* InputBinder::static_find_entity(
     const char*                         name,
     const Entity*                       parent)
 {
@@ -195,14 +209,16 @@ EntityType* InputBinder::find_entity(
         if (assembly == nullptr)
             break;
 
-        EntityType* entity =
-            EntityTraits<EntityType>::get_entity_container(*assembly).get_by_name(name);
+        auto& container = EntityTraits<EntityType>::get_entity_container(*assembly);
+        EntityType* entity = container.get_by_name(name);
 
         if (entity)
             return entity;
 
         parent = parent->get_parent();
     }
+
+    // todo: bug, we should also look in the scene.
 
     return nullptr;
 }

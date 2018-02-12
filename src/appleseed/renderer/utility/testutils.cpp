@@ -121,8 +121,8 @@ void TestSceneBase::create_texture_instance(const char* name, const char* textur
 TestSceneContext::TestSceneContext(TestSceneBase& base)
   : m_base(base)
 {
-    InputBinder input_binder;
-    input_binder.bind(m_base.m_scene);
+    InputBinder input_binder(m_base.m_scene);
+    input_binder.bind();
     assert(input_binder.get_error_count() == 0);
 
 #ifndef NDEBUG

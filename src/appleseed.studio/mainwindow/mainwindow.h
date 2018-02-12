@@ -38,6 +38,7 @@
 #include "mainwindow/rendering/renderingmanager.h"
 #include "mainwindow/rendering/rendertab.h"
 #include "mainwindow/renderingsettingswindow.h"
+#include "mainwindow/settingswindow.h"
 #include "mainwindow/statusbar.h"
 
 // appleseed.renderer headers.
@@ -113,6 +114,13 @@ class MainWindow
     void signal_refresh_attribute_editor(const foundation::Dictionary& values) const;
 
   private:
+    enum RenderingMode
+    {
+        NotRendering,
+        InteractiveRendering,
+        FinalRendering
+    };
+
     // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
     Ui::MainWindow*                           m_ui;
 
@@ -135,6 +143,7 @@ class MainWindow
 
     renderer::ParamArray                      m_settings;
 
+    std::unique_ptr<SettingsWindow>           m_settings_window;
     std::unique_ptr<RenderingSettingsWindow>  m_rendering_settings_window;
     std::unique_ptr<TestWindow>               m_test_window;
     std::unique_ptr<BenchmarkWindow>          m_benchmark_window;
@@ -178,13 +187,6 @@ class MainWindow
     void build_minimize_buttons();
     void build_connections();
 
-    enum RenderingMode
-    {
-        NotRendering,
-        InteractiveRendering,
-        FinalRendering
-    };
-
     // UI state management.
     void update_workspace();
     void update_project_explorer();
@@ -219,20 +221,8 @@ class MainWindow
 
     // Miscellaneous.
     void print_startup_information();
-    void closeEvent(QCloseEvent* event) override;
-    static QString get_filter_string(const int filter);
-
-    // Enum of filters for save project dialog.
-    enum ProjectDialogFilter
-    {
-        ProjectDialogFilterAllProjects    = 1 << 0,  // all appleseed extensions
-        ProjectDialogFilterPlainProjects  = 1 << 1,  // .appleseed extension
-        ProjectDialogFilterPackedProjects = 1 << 2,  // .appleseedz extension
-        ProjectDialogFilterAllFiles       = 1 << 3   // all extensions
-    };
-
-    // OpenColorIO
     void initialize_ocio();
+    void closeEvent(QCloseEvent* event) override;
 
   private slots:
     // Project I/O.
@@ -256,6 +246,7 @@ class MainWindow
     // Settings I/O.
     void slot_load_settings();
     void slot_save_settings();
+    void slot_apply_settings();
 
     // Rendering.
     void slot_start_interactive_rendering();
@@ -292,6 +283,7 @@ class MainWindow
     void slot_fullscreen();
 
     // Child windows.
+    void slot_show_settings_window();
     void slot_show_rendering_settings_window();
     void slot_show_test_window();
     void slot_show_benchmark_window();

@@ -123,7 +123,7 @@ TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
             Drawing::draw_dot(
                 *image.get(),
                 point,
-                Color3f(1.0f, 0.0f, 1.0f));
+                Color4f(1.0f, 0.0f, 1.0f, 1.0f));
         }
 
         GenericImageFileWriter writer;

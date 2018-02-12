@@ -35,7 +35,9 @@ shader as_color_transform
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string help = "Transforms a color to another color model. Input color MUST be linearized.",
     string icon = "asColorTransform.png",
-    int as_maya_type_id = 0x001279c8
+    int as_maya_type_id = 0x001279c8,
+    string as_max_class_id = "1025180725 1433928109",
+    string as_max_plugin_type = "texture"
 ]]
 (
     color in_color = color(0.5)

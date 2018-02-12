@@ -35,7 +35,9 @@ shader as_standard_surface
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
     string help = "Standard Surface Shader",
     string icon = "asStandardSurface",
-    int as_maya_type_id = 0x001279d4
+    int as_maya_type_id = 0x001279d4,
+    string as_max_class_id = "651059681 943276521",
+    string as_max_plugin_type = "material"
 ]]
 (
     float in_diffuse_weight = 1.0
@@ -615,21 +617,14 @@ shader as_standard_surface
     }
 
     int compute_translucency =
-        (in_translucency_weight > 0.0 && max(in_translucency_color) > 0.0)
-        ? 1 : 0;
+        (in_translucency_weight * max(in_translucency_color) > 0.0) ? 1 : 0;
 
     int compute_transmission =
-        (in_refraction_amount > 0.0 && max(in_refraction_tint) > 0.0)
-        ? 1 : 0;
+        (in_refraction_amount * max(in_refraction_tint) > 0.0) ? 1 : 0;
 
-    int compute_specular =
-        (compute_transmission || max(in_specular_color) > 0.0) &&
-        (in_ior > 1.0 || max(in_face_tint) > 0.0 && max(in_edge_tint) > 0.0)
-        ? 1 : 0;
+    int compute_specular = max(in_specular_color) > 0.0 ? 1 : 0;
 
-    int compute_diffuse =
-        (in_diffuse_weight > 0.0 && max(in_color) > 0.0)
-        ? 1 : 0;
+    int compute_diffuse = (in_diffuse_weight * max(in_color) > 0.0) ? 1 : 0;
 
     int compute_bssrdf = (
         ray_depth > in_sss_maximum_ray_depth ||
@@ -638,15 +633,14 @@ shader as_standard_surface
         ? 0 : 1;
 
     int compute_edf =
-        (in_temperature > 798 || max(in_incandescence_color) > 0.0)
-        ? 1 : 0;
+        (in_incandescence_amount * max(in_incandescence_color) > 0.0) ? 1 : 0;
 
     // Specular first, to get the transmittance amount and bailout earlier.
 
     color substrate_transmittance = color(1);
     normal Nn = normalize(in_bump_normal_substrate);
 
-    if (compute_specular)
+    if (compute_specular || compute_transmission)
     {
         vector tangent = Tn;
 
@@ -677,33 +671,15 @@ shader as_standard_surface
 
         if (in_fresnel_type == 0)
         {
-            color refraction_color = in_refraction_amount * in_refraction_tint;
-
-#ifdef DEBUG
-            if (compute_coating || in_coating_depth > 0.0)
-            {
-                warning("[WARNING]: Coated glass BSDF is unsupported!!\n");
-            }
-#endif
-
-#ifdef DEBUG
-            if (max(refraction_color) > 0.0)
-#else
-            if (!compute_coating && in_coating_depth == 0.0 &&
-                max(refraction_color) > 0.0)
-#endif
+            if (!compute_coating && compute_transmission)
             {
                 out_outColor += opacity * as_glass(
                     "std",
                     Nn,
                     tangent,
-#ifdef DEBUG
-                    color(1),
-#else
-                    coating_transmittance,
-#endif
+                    color(1), // coating_transmittance unsupported
                     in_specular_color,
-                    refraction_color,
+                    in_refraction_amount * in_refraction_tint,
                     in_specular_roughness,
                     1.0 - in_specular_spread,
                     in_anisotropy_amount,
@@ -782,33 +758,21 @@ shader as_standard_surface
         return;
     }
 
-    if (raytype("light") && compute_edf)
+    if (raytype("light"))
     {
-        color edf_color;
+        color edf_color = (in_incandescence_type == 0)
+            ? in_incandescence_amount * in_incandescence_color
+            : in_incandescence_amount * blackbody(in_temperature);
 
-        if (in_incandescence_type == 0)
-        {
-            edf_color = in_incandescence_amount * in_incandescence_color;
-        }
-        else
-        {
-            // Blackbody depends on RGBW primaries (SPD->XYZ->RGB), and 
-            // luminance requires Y (as_luminance, pass working space params).
-
-            edf_color =
-                in_incandescence_amount * blackbody((float) in_temperature);
-        }
-
-        if (in_area_normalize_edf)
+        if (compute_edf && in_area_normalize_edf)
         {
             edf_color /= surfacearea();
         }
-        if (in_tonemap_edf)
+        if (compute_edf && in_tonemap_edf)
         {
             edf_color /= luminance(edf_color) + 1.0;
-        }
-        
-        if (max(edf_color) > 0.0)
+        }        
+        if (compute_edf && max(edf_color) > 0.0)
         {
             out_outColor += transmittance * opacity *
                 edf_color * emission();

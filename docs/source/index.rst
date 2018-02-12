@@ -1,22 +1,28 @@
 .. appleseed documentation master file, created by
-   sphinx-quickstart on Tue Jan 26 12:07:42 2016.
+   sphinx-quickstart on Thu Jan 25 12:44:26 2018.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to appleseed's documentation!
-=====================================
+.. _label_index:
 
-Contents:
+.. |date| date::
+
+.. |time| date:: %H:%M
+
+#####################################
+Welcome to appleseed's documentation!
+#####################################
+
+Documentation generated on |date| at |time|
+
+********
+Contents
+********
 
 .. toctree::
+   :name: mastertoc
+   :glob:
    :maxdepth: 2
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   source/*
 

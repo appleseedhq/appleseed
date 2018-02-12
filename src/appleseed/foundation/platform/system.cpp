@@ -32,6 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/arch.h"
+#include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/thread.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/string.h"
@@ -232,6 +233,17 @@ uint64 System::get_process_virtual_memory_size()
     return pmc.PrivateUsage;
 }
 
+uint64 System::get_peak_process_virtual_memory_size()
+{
+    PROCESS_MEMORY_COUNTERS_EX pmc;
+    GetProcessMemoryInfo(
+        GetCurrentProcess(),
+        reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc),
+        sizeof(pmc));
+
+    return pmc.PeakPagefileUsage;
+}
+
 // ------------------------------------------------------------------------------------------------
 // macOS.
 // ------------------------------------------------------------------------------------------------
@@ -344,7 +356,13 @@ uint64 System::get_process_virtual_memory_size()
         return 0;
 #endif
 
-    return info.resident_size;
+    return info.virtual_size;
+}
+
+uint64 System::get_peak_process_virtual_memory_size()
+{
+    // todo: implement.
+    return 0;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -430,6 +448,8 @@ uint64 System::get_total_virtual_memory_size()
 
 uint64 System::get_process_virtual_memory_size()
 {
+    // todo: this is wrong, it returns RSS instead of virtual memory.
+
     // Reference: http://nadeausoftware.com/articles/2012/07/c_c_tip_how_get_process_resident_set_size_physical_memory_use
 
     FILE* fp = fopen("/proc/self/statm", "r");
@@ -446,6 +466,12 @@ uint64 System::get_process_virtual_memory_size()
     fclose(fp);
 
     return static_cast<uint64>(rss) * sysconf(_SC_PAGESIZE);
+}
+
+uint64 System::get_peak_process_virtual_memory_size()
+{
+    // todo: implement.
+    return 0;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -819,17 +845,26 @@ uint64 System::get_total_virtual_memory_size()
     return get_total_physical_memory_size() + swap;
 }
 
-// curproc->p_stats->p_ru is updated on statclock tick and may be not very
-// granular (if called early in program's life, it can even yield zeros).
-// Reference: https://lists.freebsd.org/pipermail/freebsd-stable/2006-March/023262.html
 uint64 System::get_process_virtual_memory_size()
 {
+    // todo: this is wrong, it returns peak RSS instead of virtual memory.
+
+    // curproc->p_stats->p_ru is updated on statclock tick and may be not very
+    // granular (if called early in program's life, it can even yield zeros).
+    // Reference: https://lists.freebsd.org/pipermail/freebsd-stable/2006-March/023262.html
+
     struct rusage ru;
 
     const int result = getrusage(RUSAGE_SELF, &ru);
     assert(result == 0);
 
     return static_cast<uint64>(ru.ru_maxrss) * 1024;
+}
+
+uint64 System::get_peak_process_virtual_memory_size()
+{
+    // todo: implement.
+    return 0;
 }
 
 #endif
@@ -874,7 +909,9 @@ void System::print_information(Logger& logger)
         "  instruction sets              %s\n"
 #endif
         "  physical memory               size %s\n"
-        "  virtual memory                size %s",
+        "  virtual memory                size %s\n"
+        "  default wallclock timer       %s hz\n"
+        "  default processor timer       %s hz",
         get_cpu_architecture(),
         pretty_uint(get_logical_cpu_core_count()).c_str(),
         pretty_size(get_l1_data_cache_size()).c_str(),
@@ -887,7 +924,9 @@ void System::print_information(Logger& logger)
         isa.c_str(),
 #endif
         pretty_size(get_total_physical_memory_size()).c_str(),
-        pretty_size(get_total_virtual_memory_size()).c_str());
+        pretty_size(get_total_virtual_memory_size()).c_str(),
+        pretty_uint(DefaultWallclockTimer().frequency()).c_str(),
+        pretty_uint(DefaultProcessorTimer().frequency()).c_str());
 }
 
 const char* System::get_cpu_architecture()

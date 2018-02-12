@@ -64,6 +64,9 @@ class ShadingResult
     // AOVs are cleared to transparent black but the main output is left uninitialized.
     explicit ShadingResult(const size_t aov_count = 0);
 
+    // Return false if the main output contains NaN, negative or infinite values.
+    bool is_main_valid() const;
+
     // Return false if the main output of any of the AOV contains NaN, negative or infinite values.
     bool is_valid() const;
 

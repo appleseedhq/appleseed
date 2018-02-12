@@ -45,6 +45,8 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/hash.h"
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -132,12 +134,12 @@ namespace
                 m_pass_manager_thread->join();
 
             // Delete tile callbacks.
-            for (size_t i = 0; i < m_tile_callbacks.size(); ++i)
-                m_tile_callbacks[i]->release();
+            for (auto tile_callback : m_tile_callbacks)
+                tile_callback->release();
 
             // Delete tile renderers.
-            for (size_t i = 0; i < m_tile_renderers.size(); ++i)
-                m_tile_renderers[i]->release();
+            for (auto tile_renderer : m_tile_renderers)
+                tile_renderer->release();
         }
 
         void release() override
@@ -178,6 +180,7 @@ namespace
                     m_tile_callbacks,
                     m_pass_callback,
                     m_job_queue,
+                    m_params.m_thread_count,
                     m_abort_switch,
                     m_is_rendering));
             ThreadFunctionWrapper<PassManagerFunc> wrapper(m_pass_manager_func.get());
@@ -279,6 +282,7 @@ namespace
                 vector<ITileCallback*>&             tile_callbacks,
                 IPassCallback*                      pass_callback,
                 JobQueue&                           job_queue,
+                const size_t                        thread_count,
                 IAbortSwitch&                       abort_switch,
                 bool&                               is_rendering)
               : m_frame(frame)
@@ -289,6 +293,7 @@ namespace
               , m_pass_count(pass_count)
               , m_spectrum_mode(spectrum_mode)
               , m_job_queue(job_queue)
+              , m_thread_count(thread_count)
               , m_abort_switch(abort_switch)
               , m_is_rendering(is_rendering)
             {
@@ -298,8 +303,13 @@ namespace
             {
                 set_current_thread_name("pass_manager");
 
+                //
+                // Rendering passes.
+                //
+
                 for (size_t pass = 0; pass < m_pass_count; ++pass)
                 {
+                    // Check abort flag.
                     if (m_abort_switch.is_aborted())
                     {
                         m_is_rendering = false;
@@ -307,7 +317,7 @@ namespace
                     }
 
                     if (m_pass_count > 1)
-                        RENDERER_LOG_INFO("--- beginning pass %s ---", pretty_uint(pass + 1).c_str());
+                        RENDERER_LOG_INFO("--- beginning rendering pass %s ---", pretty_uint(pass + 1).c_str());
 
                     // Invoke the pre-pass callback if there is one.
                     if (m_pass_callback)
@@ -316,6 +326,10 @@ namespace
                         m_pass_callback->on_pass_begin(m_frame, m_job_queue, m_abort_switch);
                         assert(!m_job_queue.has_scheduled_or_running_jobs());
                     }
+
+                    // Invoke on_tiled_frame_begin() on tile callbacks.
+                    for (auto tile_callback : m_tile_callbacks)
+                        tile_callback->on_tiled_frame_begin(&m_frame);
 
                     // Create tile jobs.
                     const uint32 pass_hash = hash_uint32(static_cast<uint32>(pass));
@@ -337,6 +351,10 @@ namespace
                     // Wait until tile jobs have effectively stopped.
                     m_job_queue.wait_until_completion();
 
+                    // Invoke on_tiled_frame_end() on tile callbacks.
+                    for (auto tile_callback : m_tile_callbacks)
+                        tile_callback->on_tiled_frame_end(&m_frame);
+
                     // Invoke the post-pass callback if there is one.
                     if (m_pass_callback)
                     {
@@ -346,12 +364,33 @@ namespace
                     }
                 }
 
-                // Run the denoiser if needed.
-                if (!m_abort_switch.is_aborted())
+                // Check abort flag.
+                if (m_abort_switch.is_aborted())
                 {
-                    m_frame.denoise(
-                        m_tile_callbacks.empty() ? nullptr : m_tile_callbacks[0],
-                        &m_abort_switch);
+                    m_is_rendering = false;
+                    return;
+                }
+
+                // Post-process AOVs.
+                m_frame.post_process_aov_images();
+
+                //
+                // Denoising pass.
+                //
+
+                if (m_frame.get_denoising_mode() == Frame::DenoisingMode::Denoise)
+                {
+                    if (m_pass_count > 1)
+                        RENDERER_LOG_INFO("--- beginning denoising pass ---");
+
+                    // Call on_tile_begin() on all tiles of the frame.
+                    on_tile_begin_whole_frame();
+
+                    // Denoise the frame.
+                    m_frame.denoise(m_thread_count, &m_abort_switch);
+
+                    // Call on_tile_end() on all tiles of the frame.
+                    on_tile_end_whole_frame();
                 }
 
                 m_is_rendering = false;
@@ -366,9 +405,40 @@ namespace
             const size_t                            m_pass_count;
             const Spectrum::Mode                    m_spectrum_mode;
             JobQueue&                               m_job_queue;
+            const size_t                            m_thread_count;
             IAbortSwitch&                           m_abort_switch;
             bool&                                   m_is_rendering;
             TileJobFactory                          m_tile_job_factory;
+
+            void on_tile_begin_whole_frame()
+            {
+                if (!m_tile_callbacks.empty())
+                {
+                    ITileCallback* tile_callback = m_tile_callbacks.front();
+                    const CanvasProperties& frame_props = m_frame.image().properties();
+
+                    for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
+                    {
+                        for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
+                            tile_callback->on_tile_begin(&m_frame, tx, ty);
+                    }
+                }
+            }
+
+            void on_tile_end_whole_frame()
+            {
+                if (!m_tile_callbacks.empty())
+                {
+                    ITileCallback* tile_callback = m_tile_callbacks.front();
+                    const CanvasProperties& frame_props = m_frame.image().properties();
+
+                    for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
+                    {
+                        for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
+                            tile_callback->on_tile_end(&m_frame, tx, ty);
+                    }
+                }
+            }
         };
 
         const Frame&                m_frame;            // target framebuffer
@@ -394,8 +464,8 @@ namespace
 
             StatisticsVector stats;
 
-            for (size_t i = 0; i < m_tile_renderers.size(); ++i)
-                stats.merge(m_tile_renderers[i]->get_statistics());
+            for (auto tile_renderer : m_tile_renderers)
+                stats.merge(tile_renderer->get_statistics());
 
             RENDERER_LOG_DEBUG("%s", stats.to_string().c_str());
         }

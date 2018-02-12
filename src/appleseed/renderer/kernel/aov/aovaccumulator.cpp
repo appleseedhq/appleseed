@@ -67,17 +67,27 @@ void AOVAccumulator::release()
 }
 
 void AOVAccumulator::on_tile_begin(
-    const Frame& frame,
-    const size_t tile_x,
-    const size_t tile_y,
-    const size_t max_spp)
+    const Frame&                frame,
+    const size_t                tile_x,
+    const size_t                tile_y,
+    const size_t                max_spp)
 {
 }
 
 void AOVAccumulator::on_tile_end(
-    const Frame& frame,
-    const size_t tile_x,
-    const size_t tile_y)
+    const Frame&                frame,
+    const size_t                tile_x,
+    const size_t                tile_y)
+{
+}
+
+void AOVAccumulator::on_pixel_begin(
+    const Vector2i&             pi)
+{
+}
+
+void AOVAccumulator::on_pixel_end(
+    const Vector2i&             pi)
 {
 }
 
@@ -209,6 +219,20 @@ void AOVAccumulatorContainer::on_tile_end(
 {
     for (size_t i = 0, e = m_size; i < e; ++i)
         m_accumulators[i]->on_tile_end(frame, tile_x, tile_y);
+}
+
+void AOVAccumulatorContainer::on_pixel_begin(
+    const Vector2i&             pi)
+{
+    for (size_t i = 0, e = m_size; i < e; ++i)
+        m_accumulators[i]->on_pixel_begin(pi);
+}
+
+void AOVAccumulatorContainer::on_pixel_end(
+    const Vector2i&             pi)
+{
+    for (size_t i = 0, e = m_size; i < e; ++i)
+        m_accumulators[i]->on_pixel_end(pi);
 }
 
 void AOVAccumulatorContainer::on_sample_begin(

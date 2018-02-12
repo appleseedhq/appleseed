@@ -37,7 +37,7 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
-#include "renderer/modeling/scene/assembly.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -55,7 +55,9 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
+namespace renderer      { class BaseGroup; }
 namespace renderer      { class BSDFSample; }
+namespace renderer      { class Project; }
 namespace renderer      { class ShadingPoint; }
 
 using namespace foundation;
@@ -81,6 +83,8 @@ namespace
             const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::All, params)
         {
+            m_inputs.declare("bsdf0", InputFormatEntity);
+            m_inputs.declare("bsdf1", InputFormatEntity);
             m_inputs.declare("weight", InputFormatFloat);
         }
 
@@ -103,10 +107,21 @@ namespace
             if (!BSDF::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            const Assembly* assembly = static_cast<const Assembly*>(parent);
+            // Cache bound BSDFs.
+            m_bsdf[0] = dynamic_cast<const BSDF*>(m_inputs.get_entity("bsdf0"));
+            m_bsdf[1] = dynamic_cast<const BSDF*>(m_inputs.get_entity("bsdf1"));
 
-            m_bsdf[0] = retrieve_bsdf(*assembly, "bsdf0");
-            m_bsdf[1] = retrieve_bsdf(*assembly, "bsdf1");
+            if (m_bsdf[0] == nullptr)
+            {
+                RENDERER_LOG_ERROR("while preparing bsdf \"%s\": cannot find bsdf \"%s\".",
+                    get_path().c_str(), m_params.get_optional<string>("bsdf0", "").c_str());
+            }
+
+            if (m_bsdf[1] == nullptr)
+            {
+                RENDERER_LOG_ERROR("while preparing bsdf \"%s\": cannot find bsdf \"%s\".",
+                    get_path().c_str(), m_params.get_optional<string>("bsdf1", "").c_str());
+            }
 
             if (m_bsdf[0] == nullptr || m_bsdf[1] == nullptr)
                 return false;
@@ -278,22 +293,6 @@ namespace
         };
 
         const BSDF* m_bsdf[2];
-
-        const BSDF* retrieve_bsdf(const Assembly& assembly, const char* param_name) const
-        {
-            const string bsdf_name = m_params.get_required<string>(param_name, "");
-            if (bsdf_name.empty())
-            {
-                RENDERER_LOG_ERROR("while preparing bsdf \"%s\": no bsdf bound to \"%s\".", get_path().c_str(), param_name);
-                return nullptr;
-            }
-
-            const BSDF* bsdf = assembly.bsdfs().get_by_name(bsdf_name.c_str());
-            if (bsdf == nullptr)
-                RENDERER_LOG_ERROR("while preparing bsdf \"%s\": cannot find bsdf \"%s\".", get_path().c_str(), bsdf_name.c_str());
-
-            return bsdf;
-        }
     };
 
     typedef BSDFWrapper<BSDFBlendImpl, false> BSDFBlend;

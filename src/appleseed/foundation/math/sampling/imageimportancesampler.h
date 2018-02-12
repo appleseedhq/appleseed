@@ -32,6 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/image.h"
@@ -41,6 +42,7 @@
 #include "foundation/utility/job/iabortswitch.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 #include <utility>
 
@@ -118,7 +120,7 @@ class ImageImportanceSampler
 
 
 //
-// A foundation::Image sampler.
+// A simple foundation::Image sampler designed for RGB and RGBA images.
 //
 
 class ImageSampler
@@ -297,13 +299,16 @@ inline Importance ImageImportanceSampler<Payload, Importance>::get_pdf(
 inline ImageSampler::ImageSampler(const Image& image)
   : m_image(image)
 {
+    assert(
+        m_image.properties().m_channel_count == 3 ||
+        m_image.properties().m_channel_count == 4);
 }
 
 inline void ImageSampler::sample(const size_t x, const size_t y, Payload& payload, float& importance) const
 {
-    Color3f color;
+    float color[4];
     m_image.get_pixel(x, y, color);
-    importance = luminance(color);
+    importance = luminance(Color3f::from_array(color));
 }
 
 }       // namespace foundation

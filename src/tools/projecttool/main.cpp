@@ -114,6 +114,39 @@ bool update_project()
 
 
 //
+// Update a project to the latest revision and remove unused entities.
+//
+
+bool remove_unused_entities()
+{
+    // Retrieve the input project path.
+    const string& input_filepath = g_cl.m_positional_args.values()[1];
+
+    // Read the input project from disk.
+    auto_release_ptr<Project> project(load_project(input_filepath));
+    if (project.get() == nullptr)
+        return false;
+
+    // Update the project file to the latest revision.
+    ProjectFileUpdater updater;
+    const bool success = updater.update(project.ref());
+    if (!success)
+        return false;
+
+    // Remove unused entities.
+    ProjectTracker tracker(project.ref());
+    tracker.remove_unused_entities();
+
+    // Write the project back to disk.
+    return
+        ProjectFileWriter::write(
+            project.ref(),
+            input_filepath.c_str(),
+            ProjectFileWriter::OmitWritingGeometryFiles | ProjectFileWriter::OmitHandlingAssetFiles);
+}
+
+
+//
 // Pack a project to an *.appleseedz file.
 //
 
@@ -169,6 +202,28 @@ bool unpack_project()
 
 
 //
+// Print dependencies between entities.
+//
+
+bool print_entity_dependencies(SuperLogger& logger)
+{
+    // Retrieve the input project path.
+    const string& input_filepath = g_cl.m_positional_args.values()[1];
+
+    // Read the input project from disk.
+    auto_release_ptr<Project> project(load_project(input_filepath));
+    if (project.get() == nullptr)
+        return false;
+
+    // Print dependencies between entities.
+    ProjectTracker tracker(project.ref());
+    tracker.print_dependencies(logger);
+
+    return true;
+}
+
+
+//
 // Entry point of projecttool.
 //
 
@@ -207,10 +262,14 @@ int main(int argc, const char* argv[])
     bool success = false;
     if (command == "update")
         success = update_project();
+    else if (command == "clean")
+        success = remove_unused_entities();
     else if (command == "pack")
         success = pack_project();
     else if (command == "unpack")
         success = unpack_project();
+    else if (command == "deps")
+        success = print_entity_dependencies(logger);
     else LOG_ERROR(logger, "unknown command: %s", command.c_str());
 
     return success ? 0 : 1;

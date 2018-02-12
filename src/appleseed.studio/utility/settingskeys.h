@@ -35,14 +35,19 @@
 #define SETTINGS_ORGANIZATION                       "appleseedhq"
 #define SETTINGS_APPLICATION                        "appleseed.studio"
 
-#define SETTINGS_LAST_DIRECTORY                     ".last_directory"
-#define SETTINGS_SELECTED_FILTER                    ".selected_filter"
+#define SETTINGS_MESSAGE_VERBOSITY                  "message_verbosity"
+#define SETTINGS_SAMPLING_MODE                      "sampling_mode"
+#define SETTINGS_AUTOSAVE                           "autosave"
+#define SETTINGS_PRINT_FINAL_AVERAGE_LUMINANCE      "print_final_average_luminance"
 
 #define SETTINGS_FILE_DIALOG_FRAMES                 "ui.file_dialog.frames"
 #define SETTINGS_FILE_DIALOG_PROJECTS               "ui.file_dialog.projects"
 #define SETTINGS_FILE_DIALOG_OIIO_TEXTURES          "ui.file_dialog.oiio_textures"
 #define SETTINGS_FILE_DIALOG_PYTHON_SCRIPTS         "ui.file_dialog.python_editor"
 #define SETTINGS_FILE_DIALOG_ENTITIES               "ui.file_dialog.entities"
+
+#define SETTINGS_LAST_DIRECTORY                     ".last_directory"
+#define SETTINGS_SELECTED_FILTER                    ".selected_filter"
 
 #define SETTINGS_RENDER_REGION_TRIGGERS_RENDERING   "ui.render_region.triggers_rendering"
 #define SETTINGS_WATCH_FILE_CHANGES                 "ui.watch_file_changes"

@@ -261,12 +261,21 @@ shader as_texture
     [[
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
+        string label = "Output Color",
         string widget = "null"
     ]],
     output float out_alpha = 1.0
     [[
         string as_maya_attribute_name = "outAlpha",
         string as_maya_attribute_short_name = "oa",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]],
+    output float out_channel = 0.0
+    [[
+        string as_maya_attribute_name = "outChannel",
+        string as_maya_attribute_short_name = "och",
+        string label = "Output Single Channel",
         string widget = "null"
     ]]
 )
@@ -332,7 +341,7 @@ shader as_texture
             {
                 texname = concat(
                     substr(in_filename, 0, match[0]),
-                    "_<U>_<V>",
+                    "_<u>_<v>",
                     substr(in_filename, match[1]));
             }
         }
@@ -340,7 +349,7 @@ shader as_texture
         {
             int match[2];
 
-            if (regex_search(in_filename, match, "_u[1-9]{1}_v[1-9]{1}"))
+            if (regex_search(in_filename, match, "_u[0-9]{1}_v[0-9]{1}"))
             {
                 texname = concat(
                     substr(in_filename, 0, match[0]),
@@ -378,21 +387,41 @@ shader as_texture
 #endif
         }
     }
-    
-    out_color = texture(
-        texname,
-        uv_coords[0],
-        uv_coords[1],
-        "sblur", in_s_blur_amount,
-        "tblur", in_t_blur_amount,
-        "swidth", in_s_filter_width,
-        "twidth", in_t_filter_width,
-        "swrap", wrap_mode[0],
-        "twrap", wrap_mode[1],
-        "missingcolor", in_color,
-        "missingalpha", in_alpha,
-        "alpha", out_alpha,
-        "interp", get_interpolation_method(in_interpolation_method));
+       
+    int numchannels;
+    gettextureinfo(in_filename, "channels", numchannels);
+
+    if (numchannels == 1)
+    {
+        out_channel = (float) texture(
+            texname,
+            uv_coords[0],
+            uv_coords[1],
+            "sblur", in_s_blur_amount,
+            "tblur", in_t_blur_amount,
+            "swidth", in_s_filter_width,
+            "twidth", in_t_filter_width,
+            "swrap", wrap_mode[0],
+            "twrap", wrap_mode[1],
+            "interp", get_interpolation_method(in_interpolation_method));     
+    }
+    else
+    {
+        out_color = (color) texture(
+            texname,
+            uv_coords[0],
+            uv_coords[1],
+            "sblur", in_s_blur_amount,
+            "tblur", in_t_blur_amount,
+            "swidth", in_s_filter_width,
+            "twidth", in_t_filter_width,
+            "swrap", wrap_mode[0],
+            "twrap", wrap_mode[1],
+            "missingcolor", in_color,
+            "missingalpha", in_alpha,
+            "alpha", out_alpha,
+            "interp", get_interpolation_method(in_interpolation_method));
+    }
     
     if (in_enable_cms && max(out_color) > 0.0)
     {

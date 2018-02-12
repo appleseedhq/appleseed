@@ -42,16 +42,17 @@ namespace renderer
 class DenoiserOptions
 {
   public:
-    float   m_histogram_patch_distance_threshold; //  Histogram patch distance threshold
-    int     m_patch_radius;                       //  Patch has (1 + 2 x m_patchRadius)^2 pixels
-    int     m_search_window_radius;               //  Search windows (for neighbors) spreads across (1 + 2 x m_patchRadius)^2 pixels
-    float   m_min_eigenvalue;                     //  Minimum eigen value for matrix inversion
-    bool    m_use_random_pixel_order;             //  True means the pixel will be processed in a random order ; could be useful to remove some "grid" artifacts
-    bool    m_prefilter_spikes;                   //  True means a spike removal prefiltering will be applied
-    float   m_prefilter_threshold_stdev_factor;   //  See SpikeRemovalFilter::filter argument
+    float   m_histogram_patch_distance_threshold; //  histogram patch distance threshold
+    size_t  m_patch_radius;                       //  patch has (1 + 2 x m_patchRadius)^2 pixels
+    size_t  m_search_window_radius;               //  search windows (for neighbors) spreads across (1 + 2 x m_patchRadius)^2 pixels
+    float   m_min_eigenvalue;                     //  minimum eigen value for matrix inversion
+    bool    m_use_random_pixel_order;             //  true means the pixel will be processed in a random order ; could be useful to remove some "grid" artifacts
+    bool    m_prefilter_spikes;                   //  true means a spike removal prefiltering will be applied
+    float   m_prefilter_threshold_stddev_factor;  //  see SpikeRemovalFilter::filter argument
     float   m_marked_pixels_skipping_probability; //  1 means the marked centers of the denoised patches will be skipped to accelerate a lot the computations
-    int     m_num_scales;
-    int     m_num_cores;                          //  Number of cores used by OpenMP. O means using the value defined in environment variable OMP_NUM_THREADS
+    size_t  m_num_scales;                         //  number of pyramid levels to use.
+    size_t  m_num_cores;                          //  number of cores used to denoise. O means using all the cores available.
+    bool    m_mark_invalid_pixels;
 
     DenoiserOptions()
       : m_histogram_patch_distance_threshold(1.f)
@@ -60,15 +61,24 @@ class DenoiserOptions
       , m_min_eigenvalue(1.e-8f)
       , m_use_random_pixel_order(false)
       , m_prefilter_spikes(false)
-      , m_prefilter_threshold_stdev_factor(2.f)
+      , m_prefilter_threshold_stddev_factor(2.f)
       , m_marked_pixels_skipping_probability(1.f)
       , m_num_scales(3)
       , m_num_cores(0)
+      , m_mark_invalid_pixels(false)
     {
     }
 };
 
-bool denoise_image(
+bool denoise_beauty_image(
+    foundation::Image&          img,
+    bcd::Deepimf&               num_samples,
+    bcd::Deepimf&               histograms,
+    bcd::Deepimf&               covariances,
+    const DenoiserOptions&      options,
+    foundation::IAbortSwitch*   abort_switch);
+
+bool denoise_aov_image(
     foundation::Image&          img,
     const bcd::Deepimf&         num_samples,
     const bcd::Deepimf&         histograms,

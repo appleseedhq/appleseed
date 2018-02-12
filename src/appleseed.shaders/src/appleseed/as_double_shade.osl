@@ -32,7 +32,9 @@ shader as_double_shade
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string help = "Double shading node.",
     string icon = "asDoubleShade.png",
-    int as_maya_type_id = 0x001279db
+    int as_maya_type_id = 0x001279db,
+    string as_max_class_id = "2002473132 6900182",
+    string as_max_plugin_type = "texture"
 ]]
 (
     color in_color = color(1)

@@ -34,13 +34,9 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
-#include "renderer/modeling/project/project.h"
-#include "renderer/modeling/scene/containers.h"
-#include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/colorspace.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
@@ -52,6 +48,7 @@
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class PixelContext; }
+namespace renderer      { class Project; }
 
 using namespace foundation;
 using namespace std;
@@ -77,6 +74,7 @@ namespace
           : EnvironmentShader(name, params)
           , m_env_edf(nullptr)
         {
+            m_inputs.declare("environment_edf", InputFormatEntity);
             m_inputs.declare("alpha_value", InputFormatFloat, "1.0");
         }
 
@@ -99,17 +97,17 @@ namespace
             if (!EnvironmentShader::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            // Bind the environment EDF to this environment shader.
-            const string name = m_params.get_required<string>("environment_edf", "");
-            m_env_edf = project.get_scene()->environment_edfs().get_by_name(name.c_str());
+            // Cache the bound environment EDF.
+            m_env_edf = dynamic_cast<const EnvironmentEDF*>(m_inputs.get_entity("environment_edf"));
 
+            // Abort if no environment EDF was found.
             if (m_env_edf == nullptr)
             {
                 RENDERER_LOG_ERROR(
                     "while preparing environment shader \"%s\": "
                     "cannot find environment edf \"%s\".",
                     get_path().c_str(),
-                    name.c_str());
+                    m_params.get_required<string>("environment_edf", "").c_str());
                 return false;
             }
 
@@ -139,8 +137,8 @@ namespace
             float m_alpha_value;
         };
 
-        EnvironmentEDF*     m_env_edf;
-        float               m_alpha_value;
+        const EnvironmentEDF*       m_env_edf;
+        float                       m_alpha_value;
     };
 }
 

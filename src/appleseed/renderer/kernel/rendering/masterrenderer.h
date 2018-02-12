@@ -40,13 +40,11 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class Display; }
 namespace renderer      { class IFrameRenderer; }
 namespace renderer      { class ITileCallback; }
 namespace renderer      { class ITileCallbackFactory; }
 namespace renderer      { class Project; }
 namespace renderer      { class RendererComponents; }
-namespace renderer      { class SerialRendererController; }
 
 namespace renderer
 {
@@ -76,28 +74,23 @@ class APPLESEED_DLLSYMBOL MasterRenderer
     // Destructor.
     ~MasterRenderer();
 
-    enum RenderingResult
+    struct RenderingResult
     {
-        RenderingSucceeded,
-        RenderingAborted,
-        RenderingFailed
+        enum Status { Succeeded, Aborted, Failed };
+
+        Status  m_status;
+        double  m_render_time;
     };
 
-    // Render the project. Return true on success, false otherwise.
+    // Render the project.
     RenderingResult render();
 
   private:
-    IRendererController*            m_renderer_controller;
-    ITileCallbackFactory*           m_tile_callback_factory;
-
-    // Storage for serial tile callbacks.
-    SerialRendererController*       m_serial_renderer_controller;
-    ITileCallbackFactory*           m_serial_tile_callback_factory;
-
-    Display*                        m_display;
+    struct Impl;
+    Impl* impl;
 
     // Render frame sequences, each time reinitializing the rendering components.
-    RenderingResult do_render();
+    RenderingResult::Status do_render();
 
     // Initialize the rendering components and render a frame sequence.
     IRendererController::Status initialize_and_render_frame_sequence();
@@ -105,16 +98,19 @@ class APPLESEED_DLLSYMBOL MasterRenderer
     // Return true if the scene passes basic integrity checks.
     bool check_scene() const;
 
+    // Bind all scene entities inputs. Return true on success, false otherwise.
+    bool bind_scene_entities_inputs() const;
+
     // Render a frame sequence until the sequence is completed or rendering is aborted.
     IRendererController::Status render_frame_sequence(
         RendererComponents&         components,
         foundation::IAbortSwitch&   abort_switch);
 
     // Wait until the the frame is completed or rendering is aborted.
-    IRendererController::Status wait_for_event(IFrameRenderer& frame_renderer) const;
+    IRendererController::Status wait_for_event(
+        IFrameRenderer&             frame_renderer) const;
 
-    // Bind all scene entities inputs. Return true on success, false otherwise.
-    bool bind_scene_entities_inputs() const;
+    void add_render_stamp(const double render_time);
 };
 
 }       // namespace renderer

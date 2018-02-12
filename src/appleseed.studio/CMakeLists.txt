@@ -233,6 +233,7 @@ set (appleseedpython_sources
     ../appleseed.python/bindentitycontainers.h
     ../appleseed.python/bindenvironment.cpp
     ../appleseed.python/bindframe.cpp
+    ../appleseed.python/bindfresnel.cpp
     ../appleseed.python/bindimage.cpp
     ../appleseed.python/bindlight.cpp
     ../appleseed.python/bindlogger.cpp
@@ -340,6 +341,9 @@ set (mainwindow_sources
     mainwindow/renderingsettingswindow.cpp
     mainwindow/renderingsettingswindow.h
     mainwindow/renderingsettingswindow.ui
+    mainwindow/settingswindow.cpp
+    mainwindow/settingswindow.h
+    mainwindow/settingswindow.ui
     mainwindow/statusbar.cpp
     mainwindow/statusbar.h
 )

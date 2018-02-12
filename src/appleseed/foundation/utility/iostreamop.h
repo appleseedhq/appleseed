@@ -39,6 +39,7 @@
 #include "foundation/math/ray.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/string.h"
 
@@ -74,6 +75,9 @@ std::ostream& operator<<(std::ostream& s, const std::vector<const char*, Allocat
 
 namespace foundation
 {
+
+// foundation::APIString.
+std::ostream& operator<<(std::ostream& s, const APIString& string);
 
 // foundation::Array.
 std::ostream& operator<<(std::ostream& s, const FloatArray& array);
@@ -207,6 +211,11 @@ std::ostream& operator<<(std::ostream& s, const std::vector<const char*, Allocat
 }   // namespace std
 
 namespace foundation {
+
+inline std::ostream& operator<<(std::ostream& s, const APIString& string)
+{
+    return s << string.c_str();
+}
 
 namespace impl
 {

@@ -954,7 +954,7 @@ bool ProjectFileWriter::write_plain_project_file(
 
             for (const auto& line : lines)
             {
-                if (line.empty() == false)
+                if (!line.empty())
                     fprintf(file, "<!-- %s -->\n", line.c_str());
             }
         }
@@ -1008,7 +1008,7 @@ bool ProjectFileWriter::write_packed_project_file(
         {
             RENDERER_LOG_INFO("packing project to %s...", filepath);
             zip(filepath, temp_directory.string());
-            RENDERER_LOG_INFO("packed project to %s...", filepath);
+            RENDERER_LOG_INFO("packed project to %s.", filepath);
         }
     }
     catch (const std::exception&)

@@ -90,7 +90,8 @@ void ArchiveAssembly::collect_asset_paths(StringArray& paths) const
 
 void ArchiveAssembly::update_asset_paths(const StringDictionary& mappings)
 {
-    m_params.set("filename", mappings.get(m_params.get("filename")));
+    if (m_params.strings().exist("filename"))
+        m_params.set("filename", mappings.get(m_params.get("filename")));
 }
 
 bool ArchiveAssembly::do_expand_contents(
@@ -136,6 +137,30 @@ void ArchiveAssemblyFactory::release()
 const char* ArchiveAssemblyFactory::get_model() const
 {
     return Model;
+}
+
+Dictionary ArchiveAssemblyFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Archive Assembly");
+}
+
+DictionaryArray ArchiveAssemblyFactory::get_input_metadata() const
+{
+    DictionaryArray metadata;
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "filename")
+            .insert("label", "File Path")
+            .insert("type", "file")
+            .insert("file_picker_mode", "open")
+            .insert("file_picker_type", "project")
+            .insert("use", "required"));
+
+    return metadata;
 }
 
 auto_release_ptr<Assembly> ArchiveAssemblyFactory::create(

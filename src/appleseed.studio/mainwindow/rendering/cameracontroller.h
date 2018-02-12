@@ -37,7 +37,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/ui/cameracontroller.h"
+#include "foundation/utility/ui/cameracontroller.h"
 
 // Qt headers.
 #include <QObject>

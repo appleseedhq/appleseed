@@ -42,6 +42,8 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace foundation    { class Dictionary; }
+namespace foundation    { class DictionaryArray; }
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class StringArray; }
 namespace foundation    { class StringDictionary; }
@@ -101,6 +103,12 @@ class APPLESEED_DLLSYMBOL ArchiveAssemblyFactory
 
     // Return a string identifying this assembly model.
     const char* get_model() const override;
+
+    // Return metadata for this assembly model.
+    foundation::Dictionary get_model_metadata() const override;
+
+    // Return metadata for the inputs of this assembly model.
+    foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new assembly.
     foundation::auto_release_ptr<Assembly> create(

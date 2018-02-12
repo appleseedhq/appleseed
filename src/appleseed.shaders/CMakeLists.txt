@@ -314,6 +314,7 @@ source_group ("src\\gaffer\\vector" FILES
 set (src_max_sources
      src/max/as_max_blend_material.osl
      src/max/as_max_bump_map.osl
+     src/max/as_max_closure2surface.osl
      src/max/as_max_color_texture.osl
      src/max/as_max_disney_material.osl
      src/max/as_max_float_texture.osl
@@ -324,7 +325,6 @@ set (src_max_sources
      src/max/as_max_plastic_material.osl
      src/max/as_max_srgb_to_linear_rgb.osl
      src/max/as_max_sss_material.osl
-     src/max/as_max_standard_material.osl
      src/max/as_max_uv_transform.osl
 )
 list (APPEND osl_sources
@@ -431,6 +431,7 @@ set (src_appleseed_sources
      src/appleseed/as_disney_material.osl
      src/appleseed/as_double_shade.osl
      src/appleseed/as_falloff_angle.osl
+     src/appleseed/as_fresnel.osl
      src/appleseed/as_glass.osl
      src/appleseed/as_globals.osl
      src/appleseed/as_id_manifold.osl
@@ -444,9 +445,11 @@ set (src_appleseed_sources
      src/appleseed/as_space_transform.osl
      src/appleseed/as_standard_surface.osl
      src/appleseed/as_subsurface.osl
+     src/appleseed/as_switch_surface.osl
      src/appleseed/as_switch_texture.osl
      src/appleseed/as_swizzle.osl
      src/appleseed/as_texture.osl
+     src/appleseed/as_texture3d.osl
      src/appleseed/as_texture_info.osl
      src/appleseed/as_vary_color.osl
      src/appleseed/as_voronoi2d.osl

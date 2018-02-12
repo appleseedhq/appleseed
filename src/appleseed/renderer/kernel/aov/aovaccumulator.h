@@ -82,6 +82,14 @@ class AOVAccumulator
         const size_t                tile_x,
         const size_t                tile_y);
 
+    // This method is called before a pixel gets rendered.
+    virtual void on_pixel_begin(
+        const foundation::Vector2i& pi);
+
+    // This method is called after a pixel gets rendered.
+    virtual void on_pixel_end(
+        const foundation::Vector2i& pi);
+
     // This method is called before a sample gets rendered.
     virtual void on_sample_begin(
         const PixelContext&         pixel_context);
@@ -160,6 +168,14 @@ class AOVAccumulatorContainer
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y);
+
+    // This method is called before a pixel gets rendered.
+    void on_pixel_begin(
+        const foundation::Vector2i& pi);
+
+    // This method is called after a pixel gets rendered.
+    void on_pixel_end(
+        const foundation::Vector2i& pi);
 
     // This method is called before a sample gets rendered.
     void on_sample_begin(

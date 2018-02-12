@@ -172,8 +172,7 @@ ItemBase* TextureCollectionItem::create_item(Texture* texture)
             m_editor_context,
             texture,
             m_parent,
-            this,
-            m_parent_item);
+            this);
 
     m_editor_context.m_item_registry.insert(*texture, item);
 

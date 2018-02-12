@@ -42,6 +42,7 @@
 #include "renderer/modeling/aov/glossyaov.h"
 #include "renderer/modeling/aov/iaovfactory.h"
 #include "renderer/modeling/aov/normalaov.h"
+#include "renderer/modeling/aov/pixeltimeaov.h"
 #include "renderer/modeling/aov/uvaov.h"
 
 #endif  // !APPLESEED_RENDERER_API_AOV_H

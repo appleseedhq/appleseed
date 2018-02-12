@@ -280,8 +280,6 @@ bool Assembly::on_frame_begin(
     OnFrameBeginRecorder&   recorder,
     IAbortSwitch*           abort_switch)
 {
-    assert(!m_has_render_data);
-
     if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
@@ -304,14 +302,13 @@ bool Assembly::on_frame_begin(
     if (!success)
         return false;
 
-    // Collect instances of procedural objects.
-    for (size_t i = 0, e = object_instances().size(); i < e; ++i)
+    // Collect procedural object instances.
+    assert(!m_has_render_data);
+    for (const ObjectInstance& object_instance : object_instances())
     {
-        const ObjectInstance* object_instance = object_instances().get_by_index(i);
-        const Object& object = object_instance->get_object();
-        const ProceduralObject* proc_object = dynamic_cast<const ProceduralObject*>(&object);
-        if (proc_object != nullptr)
-            m_render_data.m_procedural_objects.push_back(object_instance);
+        const Object& object = object_instance.get_object();
+        if (dynamic_cast<const ProceduralObject*>(&object) != nullptr)
+            m_render_data.m_procedural_objects.push_back(&object_instance);
     }
     m_has_render_data = true;
 
@@ -322,8 +319,11 @@ void Assembly::on_frame_end(
     const Project&          project,
     const BaseGroup*        parent)
 {
+    assert(m_has_render_data);
     m_render_data.m_procedural_objects.clear();
     m_has_render_data = false;
+
+    Entity::on_frame_end(project, parent);
 }
 
 
@@ -339,6 +339,30 @@ void AssemblyFactory::release()
 const char* AssemblyFactory::get_model() const
 {
     return Model;
+}
+
+Dictionary AssemblyFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Generic Assembly");
+}
+
+DictionaryArray AssemblyFactory::get_input_metadata() const
+{
+    DictionaryArray metadata;
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "flushable")
+            .insert("label", "Flushable")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "false")
+            .insert("help", "Allow unloading this assembly from memory"));
+
+    return metadata;
 }
 
 auto_release_ptr<Assembly> AssemblyFactory::create(

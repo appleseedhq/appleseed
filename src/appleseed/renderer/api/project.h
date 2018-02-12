@@ -39,5 +39,6 @@
 #include "renderer/modeling/project/projectfilereader.h"
 #include "renderer/modeling/project/projectfileupdater.h"
 #include "renderer/modeling/project/projectfilewriter.h"
+#include "renderer/modeling/project/projecttracker.h"
 
 #endif  // !APPLESEED_RENDERER_API_PROJECT_H

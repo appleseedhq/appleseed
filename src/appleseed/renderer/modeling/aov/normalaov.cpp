@@ -145,11 +145,6 @@ namespace
             return ChannelNames;
         }
 
-        bool has_color_data() const override
-        {
-            return false;
-        }
-
         void clear_image() override
         {
             m_image->clear(Color4f(0.5f, 0.5f, 0.5f, numeric_limits<float>::max()));

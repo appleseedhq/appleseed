@@ -35,26 +35,30 @@
 #include "renderer/kernel/aov/aovsettings.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/denoising/denoiser.h"
-#include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/modeling/aov/aovfactoryregistrar.h"
 #include "renderer/modeling/aov/denoiseraov.h"
 #include "renderer/modeling/aov/iaovfactory.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/appleseed.h"
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
 #include "foundation/image/color.h"
+#include "foundation/image/drawing.h"
 #include "foundation/image/exceptionunsupportedimageformat.h"
 #include "foundation/image/exrimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/image/imageattributes.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/pngimagefilewriter.h"
+#include "foundation/image/text/textrenderer.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/scalar.h"
-#include "foundation/platform/timers.h"
+#include "foundation/platform/defaulttimers.h"
+#include "foundation/platform/system.h"
+#include "foundation/resources/logo/appleseed-seeds-16.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/iostreamop.h"
@@ -88,12 +92,7 @@ namespace
 {
     const UniqueID g_class_uid = new_guid();
 
-    enum class DenoiseMode
-    {
-        Off,
-        WriteOutputs,
-        Denoise
-    };
+    const string DefaultRenderStampFormat = "appleseed {lib-version} | Time: {render-time}";
 }
 
 UniqueID Frame::get_class_uid()
@@ -103,6 +102,7 @@ UniqueID Frame::get_class_uid()
 
 struct Frame::Impl
 {
+    // Parameters.
     size_t                  m_frame_width;
     size_t                  m_frame_height;
     size_t                  m_tile_width;
@@ -111,13 +111,15 @@ struct Frame::Impl
     float                   m_filter_radius;
     unique_ptr<Filter2f>    m_filter;
     AABB2u                  m_crop_window;
+    bool                    m_render_stamp_enabled;
+    string                  m_render_stamp_format;
+    DenoisingMode           m_denoising_mode;
+
+    // Images.
     unique_ptr<Image>       m_image;
     unique_ptr<ImageStack>  m_aov_images;
     AOVContainer            m_aovs;
     AOVContainer            m_internal_aovs;
-
-    // Denoiser.
-    DenoiseMode             m_denoise_mode;
     DenoiserAOV*            m_denoiser_aov;
 };
 
@@ -179,7 +181,7 @@ Frame::Frame(
     }
 
     // Create internal AOVs.
-    if (impl->m_denoise_mode != DenoiseMode::Off)
+    if (impl->m_denoising_mode != DenoisingMode::Off)
     {
         auto_release_ptr<DenoiserAOV> aov = DenoiserAOVFactory::create();
         impl->m_denoiser_aov = aov.get();
@@ -218,7 +220,9 @@ void Frame::print_settings()
         "  tile size                     %s x %s\n"
         "  filter                        %s\n"
         "  filter size                   %f\n"
-        "  crop window                   (%s, %s)-(%s, %s)",
+        "  crop window                   (%s, %s)-(%s, %s)\n"
+        "  denoising mode                %s\n"
+        "  render stamp                  %s",
         camera_name ? camera_name : "none",
         pretty_uint(impl->m_frame_width).c_str(),
         pretty_uint(impl->m_frame_height).c_str(),
@@ -229,7 +233,10 @@ void Frame::print_settings()
         pretty_uint(impl->m_crop_window.min[0]).c_str(),
         pretty_uint(impl->m_crop_window.min[1]).c_str(),
         pretty_uint(impl->m_crop_window.max[0]).c_str(),
-        pretty_uint(impl->m_crop_window.max[1]).c_str());
+        pretty_uint(impl->m_crop_window.max[1]).c_str(),
+        impl->m_denoising_mode == DenoisingMode::Off ? "off" :
+        impl->m_denoising_mode == DenoisingMode::WriteOutputs ? "write outputs" : "denoise",
+        impl->m_render_stamp_enabled ? "enabled" : "disabled");
 }
 
 const char* Frame::get_active_camera_name() const
@@ -251,6 +258,9 @@ void Frame::clear_main_and_aov_images()
 
     for (size_t i = 0, e = aovs().size(); i < e; ++i)
         aovs().get_by_index(i)->clear_image();
+
+    for (size_t i = 0, e = internal_aovs().size(); i < e; ++i)
+        internal_aovs().get_by_index(i)->clear_image();
 }
 
 ImageStack& Frame::aov_images() const
@@ -318,11 +328,172 @@ size_t Frame::get_pixel_count() const
     return impl->m_crop_window.volume();
 }
 
+void Frame::post_process_aov_images() const
+{
+    for (size_t i = 0, e = aovs().size(); i < e; ++i)
+        aovs().get_by_index(i)->post_process_image();
+
+    for (size_t i = 0, e = internal_aovs().size(); i < e; ++i)
+        internal_aovs().get_by_index(i)->post_process_image();
+}
+
+bool Frame::is_render_stamp_enabled() const
+{
+    return impl->m_render_stamp_enabled;
+}
+
+void Frame::add_render_stamp(const RenderStampInfo& info) const
+{
+    RENDERER_LOG_INFO("adding render stamp...");
+
+    // Render stamp settings.
+    const float FontSize = 14.0f;
+    const Color4f FontColor(0.8f, 0.8f, 0.8f, 1.0f);
+    const Color4f BackgroundColor(0.0f, 0.0f, 0.0f, 0.9f);
+    const float MarginH = 6.0f;
+    const float MarginV = 4.0f;
+
+    // Compute the final string.
+    string text = impl->m_render_stamp_format;
+    text = replace(text, "{lib-name}", Appleseed::get_lib_name());
+    text = replace(text, "{lib-version}", Appleseed::get_lib_version());
+    text = replace(text, "{lib-variant}", Appleseed::get_lib_variant());
+    text = replace(text, "{lib-config}", Appleseed::get_lib_configuration());
+    text = replace(text, "{lib-build-date}", Appleseed::get_lib_compilation_date());
+    text = replace(text, "{lib-build-time}", Appleseed::get_lib_compilation_time());
+    text = replace(text, "{render-time}", pretty_time(info.m_render_time, 1).c_str());
+    text = replace(text, "{peak-memory}", pretty_size(System::get_peak_process_virtual_memory_size()).c_str());
+
+    // Compute the height in pixels of the string.
+    const CanvasProperties& props = impl->m_image->properties();
+    const float image_height = static_cast<float>(props.m_canvas_height);
+    const float text_height = TextRenderer::compute_string_height(FontSize, text.c_str());
+    const float origin_y = image_height - text_height - MarginV;
+
+    // Draw the background rectangle.
+    Drawing::draw_filled_rect(
+        *impl->m_image,
+        Vector2i(
+            0,
+            truncate<int>(origin_y - MarginV)),
+        Vector2i(
+            static_cast<int>(props.m_canvas_width - 1),
+            static_cast<int>(props.m_canvas_height - 1)),
+        BackgroundColor);
+
+    // Draw the string into the image.
+    TextRenderer::draw_string(
+        *impl->m_image,
+        ColorSpaceLinearRGB,
+        TextRenderer::Font::UbuntuL,
+        FontSize,
+        FontColor,
+        MarginH + appleseed_seeds_16_width + MarginH,
+        origin_y,
+        text.c_str());
+
+    // Blit the appleseed logo.
+    Drawing::blit_bitmap(
+        *impl->m_image,
+        Vector2i(
+            static_cast<int>(MarginH),
+            static_cast<int>(props.m_canvas_height - appleseed_seeds_16_height - MarginV)),
+        appleseed_seeds_16,
+        appleseed_seeds_16_width,
+        appleseed_seeds_16_height,
+        PixelFormatUInt8,
+        Color4f(1.0f, 1.0f, 1.0f, 0.8f));
+}
+
+Frame::DenoisingMode Frame::get_denoising_mode() const
+{
+    return impl->m_denoising_mode;
+}
+
+void Frame::denoise(
+    const size_t        thread_count,
+    IAbortSwitch*       abort_switch) const
+{
+    DenoiserOptions options;
+
+    options.m_prefilter_spikes = m_params.get_optional<bool>("prefilter_spikes", true);
+
+    options.m_prefilter_threshold_stddev_factor =
+        m_params.get_optional<float>(
+            "spike_threshold",
+            options.m_prefilter_threshold_stddev_factor);
+
+    options.m_prefilter_threshold_stddev_factor =
+        m_params.get_optional<float>(
+            "spike_threshold",
+            options.m_prefilter_threshold_stddev_factor);
+
+    options.m_histogram_patch_distance_threshold =
+        m_params.get_optional<float>(
+            "patch_distance_threshold",
+            options.m_histogram_patch_distance_threshold);
+
+    options.m_num_scales =
+        m_params.get_optional<size_t>(
+            "denoise_scales",
+            options.m_num_scales);
+
+    options.m_num_cores = thread_count;
+
+    options.m_mark_invalid_pixels =
+        m_params.get_optional<bool>("mark_invalid_pixels", false);
+
+    assert(impl->m_denoiser_aov);
+
+    impl->m_denoiser_aov->fill_empty_samples();
+
+    Deepimf num_samples;
+    impl->m_denoiser_aov->extract_num_samples_image(num_samples);
+
+    Deepimf covariances;
+    impl->m_denoiser_aov->compute_covariances_image(covariances);
+
+    RENDERER_LOG_INFO("denoising beauty image...");
+    denoise_beauty_image(
+        image(),
+        num_samples,
+        impl->m_denoiser_aov->histograms_image(),
+        covariances,
+        options,
+        abort_switch);
+
+    for (size_t i = 0, e = aovs().size(); i < e; ++i)
+    {
+        const AOV* aov = aovs().get_by_index(i);
+
+        if (aov->has_color_data())
+        {
+            RENDERER_LOG_INFO("denoising %s aov...", aov->get_name());
+            denoise_aov_image(
+                aov->get_image(),
+                num_samples,
+                impl->m_denoiser_aov->histograms_image(),
+                covariances,
+                options,
+                abort_switch);
+        }
+    }
+}
+
 namespace
 {
-    void create_parent_directories(const string& filepath)
+    void add_chromaticities(ImageAttributes& image_attributes)
     {
-        const bf::path parent_path = bf::path(filepath).parent_path();
+        // Scene-linear sRGB / Rec. 709 chromaticities.
+        image_attributes.insert("white_xy_chromaticity", Vector2f(0.3127f, 0.3290f));
+        image_attributes.insert("red_xy_chromaticity", Vector2f(0.64f, 0.33f));
+        image_attributes.insert("green_xy_chromaticity", Vector2f(0.30f, 0.60f));
+        image_attributes.insert("blue_xy_chromaticity",  Vector2f(0.15f, 0.06f));
+    }
+
+    void create_parent_directories(const bf::path& file_path)
+    {
+        const bf::path parent_path = file_path.parent_path();
 
         if (!parent_path.empty() && !bf::exists(parent_path))
         {
@@ -337,17 +508,13 @@ namespace
         }
     }
 
-    void add_chromaticities(ImageAttributes& image_attributes)
+    void create_parent_directories(const char* file_path)
     {
-        // Scene-linear sRGB / Rec. 709 chromaticities.
-        image_attributes.insert("white_xy_chromaticity", Vector2f(0.3127f, 0.3290f));
-        image_attributes.insert("red_xy_chromaticity", Vector2f(0.64f, 0.33f));
-        image_attributes.insert("green_xy_chromaticity", Vector2f(0.30f, 0.60f));
-        image_attributes.insert("blue_xy_chromaticity",  Vector2f(0.15f, 0.06f));
+        create_parent_directories(bf::path(file_path));
     }
 
     void write_exr_image(
-        const char*             file_path,
+        const bf::path&         file_path,
         const Image&            image,
         const ImageAttributes&  image_attributes,
         const AOV*              aov)
@@ -363,13 +530,31 @@ namespace
                 // If the AOV has color data, assume we can save it as half floats.
                 const CanvasProperties& props = image.properties();
                 const Image half_image(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
-                writer.write(file_path, half_image, image_attributes, aov->get_channel_count(), aov->get_channel_names());
+
+                writer.write(
+                    file_path.string().c_str(),
+                    half_image,
+                    image_attributes,
+                    aov->get_channel_count(),
+                    aov->get_channel_names());
             }
             else
-                writer.write(file_path, image, image_attributes, aov->get_channel_count(), aov->get_channel_names());
+            {
+                writer.write(
+                    file_path.string().c_str(),
+                    image,
+                    image_attributes,
+                    aov->get_channel_count(),
+                    aov->get_channel_names());
+            }
         }
         else
-            writer.write(file_path, image, image_attributes);
+        {
+            writer.write(
+                file_path.string().c_str(),
+                image,
+                image_attributes);
+        }
     }
 
     void transform_to_srgb(Tile& tile)
@@ -410,31 +595,41 @@ namespace
     }
 
     void write_png_image(
-        const char*             file_path,
+        const bf::path&         file_path,
         const Image&            image,
         const ImageAttributes&  image_attributes)
     {
+        const CanvasProperties& props = image.properties();
+
         Image transformed_image(image);
-        transform_to_srgb(transformed_image);
+
+        if (props.m_channel_count == 4)
+            transform_to_srgb(transformed_image);
 
         create_parent_directories(file_path);
 
         PNGImageFileWriter writer;
-        writer.write(file_path, transformed_image, image_attributes);
+        writer.write(file_path.string().c_str(), transformed_image, image_attributes);
     }
 
     bool write_image(
         const char*             file_path,
         const Image&            image,
-        const AOV*              aov)
+        const AOV*              aov = nullptr)
     {
         assert(file_path);
 
         Stopwatch<DefaultWallclockTimer> stopwatch;
         stopwatch.start();
 
-        const bf::path filepath(file_path);
-        const string extension = lower_case(filepath.extension().string());
+        bf::path bf_file_path(file_path);
+        string extension = lower_case(bf_file_path.extension().string());
+
+        if (extension.empty())
+        {
+            extension = ".exr";
+            bf_file_path += extension;
+        }
 
         ImageAttributes image_attributes = ImageAttributes::create_default_attributes();
         add_chromaticities(image_attributes);
@@ -442,14 +637,19 @@ namespace
         try
         {
             if (extension == ".exr")
-                write_exr_image(file_path, image, image_attributes, aov);
-            else if (extension == ".png")
-                write_png_image(file_path, image, image_attributes);
-            else if (extension.empty())
             {
-                string file_path_with_ext(file_path);
-                file_path_with_ext += ".exr";
-                write_exr_image(file_path_with_ext.c_str(), image, image_attributes, aov);
+                write_exr_image(
+                    bf_file_path,
+                    image,
+                    image_attributes,
+                    aov);
+            }
+            else if (extension == ".png")
+            {
+                write_png_image(
+                    bf_file_path,
+                    image,
+                    image_attributes);
             }
             else
             {
@@ -493,29 +693,32 @@ bool Frame::write_main_image(const char* file_path) const
 {
     assert(file_path);
 
-    // Always save the main image as half floats.
+    // Convert main image to half floats.
     const Image& image = *impl->m_image;
     const CanvasProperties& props = image.properties();
     const Image half_image(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
-    bool result = write_image(file_path, half_image, nullptr);
+
+    // Write main image.
+    if (!write_image(file_path, half_image))
+        return false;
 
     // Write BCD histograms and covariances if enabled.
-    if (result && impl->m_denoise_mode == DenoiseMode::WriteOutputs)
+    if (impl->m_denoising_mode == DenoisingMode::WriteOutputs)
     {
         if (ends_with(file_path, ".exr"))
             impl->m_denoiser_aov->write_images(file_path);
         else
-            RENDERER_LOG_WARNING("denoiser outputs can only be saved to EXR images.");
+            RENDERER_LOG_ERROR("denoiser outputs can only be saved to exr images.");
     }
 
-    return result;
+    return true;
 }
 
 bool Frame::write_aov_images(const char* file_path) const
 {
     assert(file_path);
 
-    bool result = true;
+    bool success = true;
 
     if (!aovs().empty())
     {
@@ -527,41 +730,53 @@ bool Frame::write_aov_images(const char* file_path) const
         for (size_t i = 0, e = aovs().size(); i < e; ++i)
         {
             const AOV* aov = aovs().get_by_index(i);
+
+            // Compute AOV image file path.
             const string aov_name = aov->get_name();
             const string safe_aov_name = make_safe_filename(aov_name);
             const string aov_file_name = base_file_name + "." + safe_aov_name + extension;
             const string aov_file_path = (directory / aov_file_name).string();
 
+            // Write AOV image.
             if (!write_image(aov_file_path.c_str(), aov->get_image(), aov))
-                result = false;
+                success = false;
         }
     }
 
-    return result;
+    return success;
 }
 
 bool Frame::write_main_and_aov_images() const
 {
-    bool result = true;
+    bool success = true;
 
-    // Get the output filename.
+    // Get output filename.
     const string filepath = get_parameters().get_optional<string>("output_filename");
 
+    // Write main image.
     if (!filepath.empty())
-        result = result && write_main_image(filepath.c_str());
+    {
+        if (!write_main_image(filepath.c_str()))
+            success = false;
+    }
 
     // Write AOVs.
     for (size_t i = 0, e = aovs().size(); i < e; ++i)
     {
-        // Get the output filename.
         const AOV* aov = aovs().get_by_index(i);
+
+        // Get output filename.
         const string filepath = aov->get_parameters().get_optional<string>("output_filename");
 
+        // Write AOV image.
         if (!filepath.empty())
-            result = result && write_image(filepath.c_str(), aov->get_image(), aov);
+        {
+            if (!write_image(filepath.c_str(), aov->get_image(), aov))
+                success = false;
+        }
     }
 
-    return result;
+    return success;
 }
 
 void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) const
@@ -585,7 +800,7 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
         const Image& image = *impl->m_image;
         const CanvasProperties& props = image.properties();
         images.emplace_back(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
-        static const char* ChannelNames[] = {"R", "G", "B", "A"};
+        static const char* ChannelNames[] = { "R", "G", "B", "A" };
         writer.append_part("beauty", images.back(), image_attributes, 4, ChannelNames);
     }
 
@@ -632,11 +847,7 @@ bool Frame::archive(
     if (output_path)
         *output_path = duplicate_string(file_path.c_str());
 
-    return
-        write_image(
-            file_path.c_str(),
-            *impl->m_image,
-            nullptr);
+    return write_image(file_path.c_str(), *impl->m_image);
 }
 
 void Frame::extract_parameters()
@@ -679,7 +890,7 @@ void Frame::extract_parameters()
         impl->m_tile_height = static_cast<size_t>(tile_size[1]);
     }
 
-    // Retrieve reconstruction filter parameter.
+    // Retrieve reconstruction filter parameters.
     {
         const char* DefaultFilterName = "blackman-harris";
 
@@ -720,16 +931,20 @@ void Frame::extract_parameters()
         Vector2u(impl->m_frame_width - 1, impl->m_frame_height - 1));
     impl->m_crop_window = m_params.get_optional<AABB2u>("crop_window", default_crop_window);
 
-    // Retrieve the denoiser parameters.
+    // Retrieve render stamp parameters.
+    impl->m_render_stamp_enabled = m_params.get_optional<bool>("enable_render_stamp", false);
+    impl->m_render_stamp_format = m_params.get_optional<string>("render_stamp_format", DefaultRenderStampFormat);
+
+    // Retrieve denoiser parameters.
     {
-        string denoise_mode = m_params.get_optional<string>("denoiser", "off");
+        const string denoise_mode = m_params.get_optional<string>("denoiser", "off");
 
         if (denoise_mode == "off")
-            impl->m_denoise_mode = DenoiseMode::Off;
+            impl->m_denoising_mode = DenoisingMode::Off;
         else if (denoise_mode == "on")
-            impl->m_denoise_mode = DenoiseMode::Denoise;
+            impl->m_denoising_mode = DenoisingMode::Denoise;
         else if (denoise_mode == "write_outputs")
-            impl->m_denoise_mode = DenoiseMode::WriteOutputs;
+            impl->m_denoising_mode = DenoisingMode::WriteOutputs;
         else
         {
             RENDERER_LOG_ERROR(
@@ -737,86 +952,8 @@ void Frame::extract_parameters()
                 denoise_mode.c_str(),
                 "denoiser",
                 "off");
-            impl->m_denoise_mode = DenoiseMode::Off;
+            impl->m_denoising_mode = DenoisingMode::Off;
         }
-    }
-}
-
-void Frame::denoise(
-    ITileCallback* tile_callback,
-    IAbortSwitch*  abort_switch) const
-{
-    if (impl->m_denoise_mode != DenoiseMode::Denoise)
-        return;
-
-    if (has_crop_window())
-    {
-        RENDERER_LOG_WARNING("denoising does not work with crop windows.");
-        return;
-    }
-
-    // Fill denoiser options.
-    DenoiserOptions options;
-    options.m_histogram_patch_distance_threshold =
-        get_parameters().get_optional<float>("patch_distance_threshold", 1.0f);
-
-    options.m_num_scales =
-        get_parameters().get_optional<int>("denoise_scales", 3);
-
-    if (options.m_histogram_patch_distance_threshold < 0.05f)
-        return;
-
-    RENDERER_LOG_INFO("--- beginning denoising pass ---");
-
-    if (tile_callback)
-    {
-        const CanvasProperties& frame_props = image().properties();
-
-        for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
-            for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
-                tile_callback->on_tile_begin(this, tx, ty);
-    }
-
-    Deepimf num_samples;
-    Deepimf covariances;
-
-    assert(impl->m_denoiser_aov);
-    impl->m_denoiser_aov->extract_num_samples_image(num_samples);
-    impl->m_denoiser_aov->compute_covariances_image(covariances);
-
-    RENDERER_LOG_INFO("denoising beauty image...");
-    denoise_image(
-        image(),
-        num_samples,
-        impl->m_denoiser_aov->histograms_image(),
-        covariances,
-        options,
-        abort_switch);
-
-    for (size_t i = 0, e = aovs().size(); i < e; ++i)
-    {
-        const AOV* aov = aovs().get_by_index(i);
-
-        if (aov->has_color_data())
-        {
-            RENDERER_LOG_INFO("denoising %s aov...", aov->get_name());
-            denoise_image(
-                aov->get_image(),
-                num_samples,
-                impl->m_denoiser_aov->histograms_image(),
-                covariances,
-                options,
-                abort_switch);
-        }
-    }
-
-    if (tile_callback)
-    {
-        const CanvasProperties& frame_props = image().properties();
-
-        for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
-            for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
-                tile_callback->on_tile_end(this, tx, ty);
     }
 }
 
@@ -881,7 +1018,15 @@ DictionaryArray FrameFactory::get_input_metadata()
         Dictionary()
             .insert("name", "filter_size")
             .insert("label", "Filter Size")
-            .insert("type", "text")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.5")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "4.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.5"));
 
@@ -901,18 +1046,48 @@ DictionaryArray FrameFactory::get_input_metadata()
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "patch_distance_threshold")
-            .insert("label", "Denoise Amount")
-            .insert("type", "text")
+            .insert("name", "prefilter_spikes")
+            .insert("label", "Prefilter Spikes")
+            .insert("type", "boolean")
             .insert("use", "optional")
+            .insert("default", "true")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("denoiser", "on")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "spike_threshold")
+            .insert("label", "Spike Thereshold")
+            .insert("type", "numeric")
             .insert("min",
                 Dictionary()
-                    .insert("value", "0.0")
+                    .insert("value", "0.1")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "4.0")
+                    .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "2.0")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("denoiser", "on")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "patch_distance_threshold")
+            .insert("label", "Patch Distance")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.5")
                     .insert("type", "hard"))
             .insert("max",
                 Dictionary()
                     .insert("value", "3.0")
                     .insert("type", "hard"))
+            .insert("use", "optional")
             .insert("default", "1.0")
             .insert("visible_if",
                 Dictionary()
@@ -922,8 +1097,7 @@ DictionaryArray FrameFactory::get_input_metadata()
         Dictionary()
             .insert("name", "denoise_scales")
             .insert("label", "Denoise Scales")
-            .insert("type", "text")
-            .insert("use", "optional")
+            .insert("type", "integer")
             .insert("min",
                 Dictionary()
                     .insert("value", "1")
@@ -932,10 +1106,42 @@ DictionaryArray FrameFactory::get_input_metadata()
                 Dictionary()
                     .insert("value", "10")
                     .insert("type", "hard"))
+            .insert("use", "optional")
             .insert("default", "3")
             .insert("visible_if",
                 Dictionary()
                     .insert("denoiser", "on")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "mark_invalid_pixels")
+            .insert("label", "Mark Invalid pixels")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "false")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("denoiser", "on")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "enable_render_stamp")
+            .insert("label", "Enable Render Stamp")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "false")
+            .insert("on_change", "rebuild_form"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "render_stamp_format")
+            .insert("label", "Render Stamp Format")
+            .insert("type", "text")
+            .insert("use", "optional")
+            .insert("default", DefaultRenderStampFormat)
+            .insert("visible_if",
+                Dictionary()
+                    .insert("enable_render_stamp", "true")));
 
     return metadata;
 }

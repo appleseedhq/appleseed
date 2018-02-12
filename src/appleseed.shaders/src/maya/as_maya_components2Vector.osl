@@ -31,7 +31,7 @@ shader as_maya_components2Vector
     float compX = 0.0,
     float compY = 0.0,
     float compZ = 0.0,
-    output vector comp = color(compX, compY, compZ)
+    output vector comp = vector(compX, compY, compZ)
 )
 {
     comp = vector(compX, compY, compZ);
