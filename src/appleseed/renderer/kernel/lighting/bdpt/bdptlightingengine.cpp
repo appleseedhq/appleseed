@@ -60,6 +60,7 @@ namespace {
     {
         foundation::Vector3d    m_position;
         foundation::Vector3d    m_incoming;
+		foundation::Vector3d    m_outgoing;
         foundation::Vector3d    m_geometric_normal;
         Spectrum                m_beta;
         const BSDF*             m_bsdf;
@@ -68,12 +69,13 @@ namespace {
         double                  m_fwd_pdf;
         double                  m_rev_pdf;
         Spectrum                m_Le = Spectrum(0.0);
+		bool                    m_isLightVertex = false;
 
         ///TODO:: create a proper constructor
 
-        double convertDensity(double pdf, const BDPTVertex& vertex)
+        double convertDensity(double pdf, const BDPTVertex& vertex) const
         {
-            Vector3d w = vertex.m_position - m_position;
+            Vector3d w = m_position - vertex.m_position;
             double dist2 = foundation::square_norm(w);
             if (dist2 == 0) return 0.0;
             double invDist2 = 1 / dist2;
@@ -86,7 +88,7 @@ namespace {
       : public ILightingEngine
     {
       public:
-        const unsigned int num_max_vertices = 5;
+        const unsigned int num_max_vertices = 3;
         struct Parameters
         {
             explicit Parameters(const ParamArray& params)
@@ -160,18 +162,23 @@ namespace {
             const ShadingPoint&                 shading_point,
             const std::vector<BDPTVertex>       &light_vertices,
             const std::vector<BDPTVertex>       &camera_vertices,
-            unsigned int                        s,
-            unsigned int                        t,
+            int                        s,
+            int                        t,
             ShadingComponents&                  radiance)
         {
-            // camera subpath is a complete path
             if (s == 0)
             {
+				// camera subpath is a complete path
                 const BDPTVertex& camera_vertex = camera_vertices[t - 2];
+				if (!camera_vertex.m_isLightVertex)
+				{
+					return;
+				}
                 radiance.m_beauty += camera_vertex.m_beta * camera_vertex.m_Le;
             }
             else if (s == 1)
             {
+				// only one light vertex
                 const BDPTVertex& light_vertex = light_vertices[s - 1];
                 const BDPTVertex& camera_vertex = camera_vertices[t - 2];
                 Spectrum geometry = ComputeGeometryTerm(shading_context, shading_point, camera_vertex, light_vertex);
@@ -188,8 +195,8 @@ namespace {
                     ScatteringMode::All,
                     camera_eval_bsdf);
 
-                /// TODO:: check why inv pi is missing here
-                radiance.m_beauty += geometry * camera_eval_bsdf.m_beauty * camera_vertex.m_beta * light_vertex.m_beta * RcpPi<float>();
+				/// TODO:: need to take care of light material as well
+				radiance.m_beauty += geometry * camera_eval_bsdf.m_beauty * camera_vertex.m_beta * light_vertex.m_beta;
             }
             else
             {
@@ -222,6 +229,103 @@ namespace {
                 Spectrum geometry = ComputeGeometryTerm(shading_context, shading_point, camera_vertex, light_vertex);
                 radiance.m_beauty += geometry * camera_eval_bsdf.m_beauty * light_eval_bsdf.m_beauty * camera_vertex.m_beta * light_vertex.m_beta;
             }
+
+			// Compute MIS weight
+			float numerator = 1.0f;
+
+			// compute numerator = pdf of current technique
+			{
+				for (int i = 0;i < s;i++) // 1 to s vertex
+				{
+					numerator *= static_cast<float>(light_vertices[i].m_fwd_pdf);
+				}
+				for (int j = 0;j < t - 1;j++)
+				{
+					numerator *= static_cast<float>(camera_vertices[j].m_fwd_pdf);
+				}
+			}
+
+			// compute denominator = sum of pdf from all techniques
+			float denominator = 0.0f;
+			float debug = 0.0f;
+			{
+				// n = s + t vertices, m = s + t - 1 techniques, p = #vertices of light subpath, q = #vertices of eye subpath
+				// technique 0:      p = 0,       q = n
+				// technique 1:      p = 1,       q = n + 1
+				// .
+				// .
+				// .
+				// technique m:      p = n - 2,   q = 2
+
+				// pdf sampling end of light subpath to camera subpath
+				float pdfLightToEye = 1.0f;
+				float pdfEyeToLight = 1.0f;
+
+				if (s >= 1)
+				{
+					const BDPTVertex & light_end = light_vertices[s - 1];
+					const BDPTVertex & camera_end = camera_vertices[t - 2];
+					float ple = 1.0;
+					
+
+					if (s == 1)
+					{
+						ple = static_cast<float>(foundation::dot(light_end.m_geometric_normal, foundation::normalize(camera_end.m_position - light_end.m_position))) * RcpPi<float>();
+						pdfLightToEye = static_cast<float>(light_end.convertDensity(ple, camera_end));
+					}
+					else
+					{ 
+						ple = light_end.m_bsdf->evaluate_pdf(
+							light_end.m_bsdf_data,
+							false,
+							static_cast<Vector3f>(light_end.m_geometric_normal),
+							light_end.m_shading_basis,
+							static_cast<Vector3f>(light_end.m_incoming),
+							static_cast<Vector3f>(foundation::normalize(camera_end.m_position - light_end.m_position)),
+							ScatteringMode::All);
+
+						pdfLightToEye = static_cast<float>(light_end.convertDensity(ple, camera_end));
+					}
+
+					const char * modelName = camera_end.m_bsdf->get_model();
+					float pel = camera_end.m_bsdf->evaluate_pdf(
+						camera_end.m_bsdf_data,
+						false,
+						static_cast<Vector3f>(camera_end.m_geometric_normal),
+						camera_end.m_shading_basis,
+						static_cast<Vector3f>(camera_end.m_incoming),
+						static_cast<Vector3f>(foundation::normalize(light_end.m_position - camera_end.m_position)),
+						ScatteringMode::All);
+
+					pdfEyeToLight = static_cast<float>(camera_end.convertDensity(pel, light_end));
+				}
+
+				for (int technique_i = 0;technique_i < s + t - 1;technique_i++)
+				{				
+					// density for technique i
+					float density = 1.0f;
+					for (int x = 0;x < s + t - 2;x++)
+					{
+						if (x <= technique_i - 1)
+						{
+							if (x < s) density *= static_cast<float>(light_vertices[x].m_fwd_pdf);
+							if (x == s) density *= pdfLightToEye;
+							if (x > s) density *= static_cast<float>(camera_vertices[(s + t - 2) - x].m_rev_pdf);
+						}
+						else if (x > technique_i - 1)
+						{
+							if (x > s - 1) density *= static_cast<float>(camera_vertices[x - (s - 1)].m_fwd_pdf);
+							if (x == s - 1) density *= pdfEyeToLight;
+							if (x < s - 1) density *= static_cast<float>(light_vertices[x].m_rev_pdf);
+						}
+					}
+					denominator += density;
+				}
+			}
+
+			//float miWeight = numerator / static_cast<float>(camera_vertices[1].m_fwd_pdf + light_vertices[0].m_fwd_pdf);
+			float miWeight = numerator / denominator;
+			radiance.m_beauty *= miWeight;
         }
 
         void compute_lighting(
@@ -243,16 +347,15 @@ namespace {
             trace_light(sampling_context, shading_context, &light_vertices);
             trace_camera(sampling_context, shading_context, shading_point, &camera_vertices);
 
-            /*for (int s = 0;s < light_vertices.size() + 1;s++)
+            for (int s = 0;s < light_vertices.size() + 1;s++)
             {
                 for (unsigned int t = 2;t < camera_vertices.size() + 2;t++)
                 {
-                    if (s + t <= num_max_vertices)
-                    {
+                    //if (s + t <= num_max_vertices)
+					if (s == 0 && t == 3)
                         Connect(shading_context, shading_point, light_vertices, camera_vertices, s, t, radiance);
-                    }
                 }
-            }*/
+            }
 
             shading_context.get_arena().clear();
         }
@@ -332,9 +435,7 @@ namespace {
 
             // Compute the initial particle weight.
             Spectrum initial_flux = edf_value;
-            initial_flux *=
-                dot(emission_direction, Vector3f(light_sample.m_shading_normal)) /
-                (light_sample.m_probability * edf_prob);
+			initial_flux /= light_sample.m_probability;
 
             // Make a shading point that will be used to avoid self-intersections with the light sample.
             ShadingPoint parent_shading_point;
@@ -368,7 +469,7 @@ namespace {
             vertices->push_back(bdpt_vertex);
 
             // Build the path tracer.
-            PathVisitor path_visitor(initial_flux, shading_context, vertices);
+            PathVisitor path_visitor(initial_flux / edf_prob, shading_context, vertices);
             VolumeVisitor volume_visitor;
 
             PathTracer<PathVisitor, VolumeVisitor, true> path_tracer(
@@ -477,7 +578,7 @@ namespace {
 
                 BDPTVertex bdpt_vertex;
                 bdpt_vertex.m_position = vertex.get_point();
-                bdpt_vertex.m_incoming = normalize(vertex.m_outgoing.get_value());
+				bdpt_vertex.m_incoming = foundation::normalize(vertex.m_outgoing.get_value());
                 bdpt_vertex.m_geometric_normal = vertex.get_geometric_normal();
                 bdpt_vertex.m_shading_basis = Basis3f(vertex.get_shading_basis());
                 bdpt_vertex.m_beta = vertex.m_throughput * m_initial_beta;
@@ -491,14 +592,15 @@ namespace {
                     // compute fwd and rev pdf
                     BDPTVertex & prev_bdpt_vertex = m_vertices->back();
                     bdpt_vertex.m_fwd_pdf = prev_bdpt_vertex.convertDensity(vertex.m_prev_prob, bdpt_vertex);
+					bdpt_vertex.m_outgoing = foundation::normalize(prev_bdpt_vertex.m_position - bdpt_vertex.m_position);
 
                     double rev_pdf = vertex.m_bsdf->evaluate_pdf(
-                        prev_bdpt_vertex.m_bsdf_data,
+                        vertex.m_bsdf_data,
                         false,
                         static_cast<Vector3f>(bdpt_vertex.m_geometric_normal),
                         bdpt_vertex.m_shading_basis,
-                        static_cast<Vector3f>(foundation::normalize(prev_bdpt_vertex.m_position - bdpt_vertex.m_position)),
-                        static_cast<Vector3f>(foundation::normalize(vertex.get_ray().m_dir)),
+                        static_cast<Vector3f>(bdpt_vertex.m_outgoing),
+                        static_cast<Vector3f>(bdpt_vertex.m_incoming),
                         ScatteringMode::All);
 
                     prev_bdpt_vertex.m_rev_pdf = bdpt_vertex.convertDensity(rev_pdf, bdpt_vertex);
@@ -507,6 +609,7 @@ namespace {
                 if (vertex.m_edf)
                 {
                     vertex.compute_emitted_radiance(m_shading_context, bdpt_vertex.m_Le);
+					bdpt_vertex.m_isLightVertex = true;
                 }
 
                 m_vertices->push_back(bdpt_vertex);
