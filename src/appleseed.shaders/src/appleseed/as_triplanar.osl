@@ -1,0 +1,874 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2018 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/color/as_color_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/texture/as_texture_helpers.h"
+
+shader as_triplanar
+[[
+    string as_maya_node_name = "asTriPlanar",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string help = "Tri-planar projection node.",
+    string icon = "asTriPlanar.png",
+    int as_maya_type_id = 0x001279e5,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_triplanar.html#label-as-triplanar"      
+]]
+(
+    float in_blend_softness = 0.1
+    [[
+        string as_maya_attribute_name = "blendSoftness",
+        string as_maya_attribute_short_name = "bam",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Blend Softness",
+        string page = "Projection",
+        int divider = 1
+    ]],
+    point in_surface_point = P
+    [[
+        string as_maya_attribute_name = "surfacePoint",
+        string as_maya_attribute_short_name = "p",
+        string label = "Surface Point",
+        string page = "Projection",
+        int divider = 1
+    ]],
+    string in_space = "World"
+    [[
+        string as_maya_attribute_name = "space",
+        string as_maya_attribute_short_name = "spa",
+        string widget = "popup",
+        string options = "Object Space|World Space",
+        string label = "Coordinate Space",
+        string page = "Projection",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    normal in_normal = N
+    [[
+        string as_maya_attribute_name = "normalCamera",
+        string as_maya_attribute_short_name = "n",
+        string label = "Surface Normal",
+        string page = "Bump"
+    ]],
+    matrix in_placement_matrix = matrix(1)
+    [[
+        string as_maya_attribute_name = "placementMatrix",
+        string as_maya_attribute_short_name = "pm",
+        int gafferNoduleLayoutVisible = 0,
+        string widget = "null",
+        string label = "Placement Matrix"
+    ]],
+    int in_enable_cms = 1
+    [[
+        string as_maya_attribute_name = "enableCms",
+        string as_maya_attribute_short_name = "sms",
+        string label = "Enable CMS",
+        string page = "Color Management",
+        string widget = "checkBox",
+        string help = "Enable color management. Ideally you use *.tx textures already converted instead, hence this is disabled by default.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    string in_workingspace_rgb_primaries = "sRGB/Rec.709"
+    [[
+        string as_maya_attribute_name = "workingSpaceRGBPrimaries",
+        string as_maya_attribute_short_name = "swp",
+        string label = "Rendering RGB Primaries",
+        string page = "Color Management",
+        string widget = "popup",
+        string options = "sRGB/Rec.709|Rec.2020|DCI-P3|ACES|ACEScg",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Working or rendering space RGB primaries. Note that Rec.709 and sRGB share the same CIE xy chromaticity coordinates."
+    ]],
+    color in_x_axis_color = color(1,0,0)
+    [[
+        string as_maya_attribute_name = "xAxisColor",
+        string as_maya_attribute_short_name = "xac",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Solid Color",
+        string page = "Projection.X Axis",
+        int divider = 1
+    ]],
+    string in_x_axis_filename = ""
+    [[
+        string as_maya_attribute_name = "xAxisFilename",
+        string as_maya_attribute_short_name = "xaf",
+        string widget = "filename",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Texture Filename",
+        string page = "Projection.X Axis",
+        int divider = 1
+    ]],
+    float in_x_axis_width = 1.0
+    [[
+        string as_maya_attribute_name = "xAxisWidth",
+        string as_maya_attribute_short_name = "xaw",
+        float min = 0.0,
+        float softmax = 1.0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Horizontal Frequency",
+        string page = "Projection.X Axis"
+    ]],
+    float in_x_axis_height = 1.0
+    [[
+        string as_maya_attribute_name = "xAxisHeight",
+        string as_maya_attribute_short_name = "xah",
+        float min = 0.0,
+        float softmax = 1.0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Vertical Frequency",
+        string page = "Projection.X Axis",
+        int divider = 1
+    ]],
+    float in_x_axis_horizontal_offset = 0.0
+    [[
+        string as_maya_attribute_name = "xAxisHorizontalOffset",
+        string as_maya_attribute_short_name = "xho",
+        float min = 0.0,
+        float softmax = 1.0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Horizontal Offset",
+        string page = "Projection.X Axis"
+    ]], 
+    float in_x_axis_vertical_offset = 0.0
+    [[
+        string as_maya_attribute_name = "xAxisVerticalOffset",
+        string as_maya_attribute_short_name = "xvo",
+        float min = 0.0,
+        float softmax = 1.0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Vertical Offset",
+        string page = "Projection.X Axis",
+        int divider = 1
+    ]],  
+    float in_x_axis_rotation_angle = 0.0
+    [[
+        string as_maya_attribute_name = "xAxisRotationAngle",
+        string as_maya_attribute_short_name = "xra",
+        float min = -360.0,
+        float softmax = 360.0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Rotation",
+        string page = "Projection.X Axis",
+        string help = "Rotation angle in degrees",
+        int divider = 1
+    ]],
+    int in_x_axis_swrap = 0
+    [[
+        string as_maya_attribute_name = "xAxisSWrap",
+        string as_maya_attribute_short_name = "xsw",
+        string widget = "mapper",
+        string options = "Default:0|Black:1|Periodic:2|Clamp:3|Mirror:4",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "S Wrap Mode",
+        string page = "Projection.X Axis"
+    ]],       
+    int in_x_axis_twrap = 0
+    [[
+        string as_maya_attribute_name = "xAxisTWrap",
+        string as_maya_attribute_short_name = "xtw",
+        string widget = "mapper",
+        string options = "Default:0|Black:1|Periodic:2|Clamp:3|Mirror:4",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "T Wrap Mode",
+        string page = "Projection.X Axis",
+        int divider = 1
+    ]],
+    int in_x_axis_sflip = 0
+    [[
+        string as_maya_attribute_name = "xAxisSFlip",
+        string as_maya_attribute_short_name = "xsf",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "S Flip",
+        string page = "Projection.X Axis"
+    ]],
+    int in_x_axis_tflip = 0
+    [[
+        string as_maya_attribute_name = "xAxisTFlip",
+        string as_maya_attribute_short_name = "xtf",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "T Flip",
+        string page = "Projection.X Axis"
+    ]],
+    string in_x_tex_eotf = "sRGB"
+    [[
+        string as_maya_attribute_name = "xTextureEOTF",
+        string as_maya_attribute_short_name = "xeo",
+        string label = "Input Transfer Function",
+        string page = "Projection.X Axis.Color Management",
+        string widget = "mapper",
+        string options = "None/Raw|sRGB|Rec.709|Gamma 2.2|Gamma 2.4|Gamma 2.6 (DCI)|Rec.1886|Rec.2020",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Transfer function of the ingested material, refers to the Opto-Electronic Transfer Function required to transform the input into scene-linear values."
+    ]],
+    string in_x_tex_rgb_primaries = "sRGB/Rec.709"
+    [[
+        string as_maya_attribute_name = "xTextureRGBPrimaries",
+        string as_maya_attribute_short_name = "xpr",
+        string label = "RGB Primaries",
+        string page = "Projection.X Axis.Color Management",
+        string widget = "popup",
+        string options = "Raw|sRGB/Rec.709|AdobeRGB|Rec.2020|DCI-P3|ACES|ACEScg",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Texture RGB primaries, note that Rec.709 and sRGB share the same CIE xy chromaticity coordinates."
+    ]],
+    color in_y_axis_color = color(0,1,0)
+    [[
+        string as_maya_attribute_name = "yAxisColor",
+        string as_maya_attribute_short_name = "yac",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Solid Color",
+        string page = "Projection.Y Axis",
+        int divider = 1
+    ]],
+    string in_y_axis_filename = ""
+    [[
+        string as_maya_attribute_name = "yAxisFilename",
+        string as_maya_attribute_short_name = "yaf",
+        string widget = "filename",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Texture Filename",
+        string page = "Projection.Y Axis",
+        int divider = 1
+    ]],
+    float in_y_axis_width = 1.0
+    [[
+        string as_maya_attribute_name = "yAxisWidth",
+        string as_maya_attribute_short_name = "yaw",
+        float min = 0.0,
+        float softmax = 1.0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Horizontal Frequency",
+        string page = "Projection.Y Axis"
+    ]],
+    float in_y_axis_height = 1.0
+    [[
+        string as_maya_attribute_name = "yAxisHeight",
+        string as_maya_attribute_short_name = "yah",
+        float min = 0.0,
+        float softmax = 1.0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Vertical Frequency",
+        string page = "Projection.Y Axis",
+        int divider = 1
+    ]],
+    float in_y_axis_horizontal_offset = 0.0
+    [[
+        string as_maya_attribute_name = "yAxisHorizontalOffset",
+        string as_maya_attribute_short_name = "yho",
+        float min = 0.0,
+        float softmax = 1.0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Horizontal Offset",
+        string page = "Projection.Y Axis"
+    ]], 
+    float in_y_axis_vertical_offset = 0.0
+    [[
+        string as_maya_attribute_name = "yAxisVerticalOffset",
+        string as_maya_attribute_short_name = "yvo",
+        float min = 0.0,
+        float softmax = 1.0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Vertical Offset",
+        string page = "Projection.Y Axis",
+        int divider = 1
+    ]],  
+    float in_y_axis_rotation_angle = 0.0
+    [[
+        string as_maya_attribute_name = "yAxisRotationAngle",
+        string as_maya_attribute_short_name = "yra",
+        float min = -360.0,
+        float softmax = 360.0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Rotation",
+        string page = "Projection.Y Axis",
+        string help = "Rotation angle in degrees",
+        int divider = 1
+    ]],
+    int in_y_axis_swrap = 0
+    [[
+        string as_maya_attribute_name = "yAxisSWrap",
+        string as_maya_attribute_short_name = "ysw",
+        string widget = "mapper",
+        string options = "Default:0|Black:1|Periodic:2|Clamp:3|Mirror:4",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "S Wrap Mode",
+        string page = "Projection.Y Axis"
+    ]],       
+    int in_y_axis_twrap = 0
+    [[
+        string as_maya_attribute_name = "yAxisTWrap",
+        string as_maya_attribute_short_name = "ytw",
+        string widget = "mapper",
+        string options = "Default:0|Black:1|Periodic:2|Clamp:3|Mirror:4",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "T Wrap Mode",
+        string page = "Projection.Y Axis",
+        int divider = 1
+    ]],
+    int in_y_axis_sflip = 0
+    [[
+        string as_maya_attribute_name = "yAxisSFlip",
+        string as_maya_attribute_short_name = "ysf",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "S Flip",
+        string page = "Projection.Y Axis"
+    ]],
+    int in_y_axis_tflip = 0
+    [[
+        string as_maya_attribute_name = "yAxisTFlip",
+        string as_maya_attribute_short_name = "ytf",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "T Flip",
+        string page = "Projection.Y Axis"
+    ]],
+    string in_y_tex_eotf = "sRGB"
+    [[
+        string as_maya_attribute_name = "yTextureEOTF",
+        string as_maya_attribute_short_name = "yeo",
+        string label = "Input Transfer Function",
+        string page = "Projection.Y Axis.Color Management",
+        string widget = "mapper",
+        string options = "None/Raw:0|sRGB:1|Rec.709:2|Gamma 2.2:3|Gamma 2.4:4|Gamma 2.6 (DCI):5|Rec.1886:6|Rec.2020:7",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Transfer function of the ingested material, refers to the Opto-Electronic Transfer Function required to transform the input into scene-linear values."
+    ]],
+    string in_y_tex_rgb_primaries = "sRGB/Rec.709"
+    [[
+        string as_maya_attribute_name = "yTextureRGBPrimaries",
+        string as_maya_attribute_short_name = "ypr",
+        string label = "RGB Primaries",
+        string page = "Projection.Y Axis.Color Management",
+        string widget = "popup",
+        string options = "Raw|sRGB/Rec.709|AdobeRGB|Rec.2020|DCI-P3|ACES|ACEScg",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Texture RGB primaries, note that Rec.709 and sRGB share the same CIE xy chromaticity coordinates."
+    ]],
+    color in_z_axis_color = color(0,0,1)
+    [[
+        string as_maya_attribute_name = "zAxisColor",
+        string as_maya_attribute_short_name = "zac",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Solid Color",
+        string page = "Projection.Z Axis",
+        int divider = 1
+    ]],
+    string in_z_axis_filename = ""
+    [[
+        string as_maya_attribute_name = "zAxisFilename",
+        string as_maya_attribute_short_name = "zaf",
+        string widget = "filename",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Texture Filename",
+        string page = "Projection.Z Axis",
+        int divider = 1
+    ]],  
+    float in_z_axis_width = 1.0
+    [[
+        string as_maya_attribute_name = "zAxisWidth",
+        string as_maya_attribute_short_name = "zaw",
+        float min = 0.0,
+        float softmax = 1.0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Horizontal Frequency",
+        string page = "Projection.Z Axis"
+    ]],
+    float in_z_axis_height = 1.0
+    [[
+        string as_maya_attribute_name = "zAxisHeight",
+        string as_maya_attribute_short_name = "zah",
+        float min = 0.0,
+        float softmax = 1.0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Vertical Frequency",
+        string page = "Projection.Z Axis",
+        int divider = 1
+    ]],
+    float in_z_axis_horizontal_offset = 0.0
+    [[
+        string as_maya_attribute_name = "zAxisHorizontalOffset",
+        string as_maya_attribute_short_name = "zho",
+        float min = 0.0,
+        float softmax = 1.0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Horizontal Offset",
+        string page = "Projection.Z Axis"
+    ]], 
+    float in_z_axis_vertical_offset = 0.0
+    [[
+        string as_maya_attribute_name = "zAxisVerticalOffset",
+        string as_maya_attribute_short_name = "zvo",
+        float min = 0.0,
+        float softmax = 1.0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Vertical Offset",
+        string page = "Projection.Z Axis",
+        int divider = 1
+    ]],  
+    float in_z_axis_rotation_angle = 0.0
+    [[
+        string as_maya_attribute_name = "zAxisRotationAngle",
+        string as_maya_attribute_short_name = "zra",
+        float min = -360.0,
+        float softmax = 360.0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Rotation",
+        string page = "Projection.Z Axis",
+        string help = "Rotation angle in degrees",
+        int divider = 1
+    ]],
+    int in_z_axis_swrap = 0
+    [[
+        string as_maya_attribute_name = "zAxisSWrap",
+        string as_maya_attribute_short_name = "zsw",
+        string widget = "mapper",
+        string options = "Default:0|Black:1|Periodic:2|Clamp:3|Mirror:4",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "S Wrap Mode",
+        string page = "Projection.Z Axis"
+    ]],       
+    int in_z_axis_twrap = 0
+    [[
+        string as_maya_attribute_name = "zAxisTWrap",
+        string as_maya_attribute_short_name = "ztw",
+        string widget = "mapper",
+        string options = "Default:0|Black:1|Periodic:2|Clamp:3|Mirror:4",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "T Wrap Mode",
+        string page = "Projection.Z Axis",
+        int divider = 1
+    ]],
+    int in_z_axis_sflip = 0
+    [[
+        string as_maya_attribute_name = "zAxisSFlip",
+        string as_maya_attribute_short_name = "zsf",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "S Flip",
+        string page = "Projection.Z Axis"
+    ]],
+    int in_z_axis_tflip = 0
+    [[
+        string as_maya_attribute_name = "zAxisTFlip",
+        string as_maya_attribute_short_name = "ztf",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "T Flip",
+        string page = "Projection.Z Axis"
+    ]],
+    string in_z_tex_eotf = "sRGB"
+    [[
+        string as_maya_attribute_name = "zTextureEOTF",
+        string as_maya_attribute_short_name = "zeo",
+        string label = "Input Transfer Function",
+        string page = "Projection.Z Axis.Color Management",
+        string widget = "mapper",
+        string options = "None/Raw|sRGB|Rec.709|Gamma 2.2|Gamma 2.4|Gamma 2.6 (DCI)|Rec.1886|Rec.2020",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Transfer function of the ingested material, refers to the Opto-Electronic Transfer Function required to transform the input into scene-linear values."
+    ]],
+    string in_z_tex_rgb_primaries = "sRGB/Rec.709"
+    [[
+        string as_maya_attribute_name = "zTextureRGBPrimaries",
+        string as_maya_attribute_short_name = "zpr",
+        string label = "RGB Primaries",
+        string page = "Projection.Z Axis.Color Management",
+        string widget = "popup",
+        string options = "Raw|sRGB/Rec.709|AdobeRGB|Rec.2020|DCI-P3|ACES|ACEScg",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Texture RGB primaries, note that Rec.709 and sRGB share the same CIE xy chromaticity coordinates."
+    ]],
+    float in_randomization = 0.0
+    [[
+        string as_maya_attribute_name = "randomization",
+        string as_maya_attribute_short_name = "ran",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Randomization",
+        string page = "Projection.Randomization"
+    ]],
+    int in_manifold = 0
+    [[
+        string as_maya_attribute_name = "manifold",
+        string as_maya_attribute_short_name = "man",
+        string label = "Manifold",
+        string page = "Projection.Randomization",
+        string help = "Connects to an idManifold integer hash output, or lacking one, builds an hash based on the assembly instance name."
+    ]],
+    
+    output color out_color = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_alpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]]
+)
+{
+    normal Nn = normalize(in_normal);
+    point Pp = in_surface_point;
+
+    if (in_space == "Object Space")
+    {
+        if (in_placement_matrix != matrix(1))
+        {
+            matrix xform = matrix("common", "object") *
+                inverse(in_placement_matrix);
+            Nn = transform(xform, Nn);
+            Pp = transform(xform, Pp);
+        }
+        else
+        {
+            Nn = transform("common", "object", Nn);
+            Pp = transform("common", "object", Pp);
+        }
+    }
+    else if (in_placement_matrix != matrix(1))
+    {
+        Nn = transform(inverse(in_placement_matrix), Nn);
+        Pp = transform(inverse(in_placement_matrix), Pp);
+    }
+
+    if (in_randomization > 0.0)
+    {
+        vector variation;
+
+        if (isconnected(in_manifold))
+        {
+            variation = (vector) cellnoise(in_manifold);
+        }
+        else
+        {
+            string manifold = "";
+            getattribute("object:assembly_instance_name", manifold);
+
+            variation = (vector) cellnoise((vector) hash(manifold));
+        }
+        variation = variation * 2.0 - 1.0;
+        variation *= 360.0;
+
+        vector angle = vector(
+            in_randomization * radians(variation[0]),
+            in_randomization * radians(variation[1]),
+            in_randomization * radians(variation[2]));
+
+        vector O = vector("object", 0.0, 0.0, 0.0);
+        vector X = vector("object", 1.0, 0.0, 0.0);
+        vector Y = vector("object", 0.0, 1.0, 0.0);
+        vector Z = vector("object", 0.0, 0.0, 1.0);
+
+        Pp = rotate(Pp, angle[0], O, X);
+        Pp = rotate(Pp, angle[1], O, Y);
+        Pp = rotate(Pp, angle[2], O, Z);
+
+        Nn = rotate(Nn, angle[0], O, X);
+        Nn = rotate(Nn, angle[1], O, Y);
+        Nn = rotate(Nn, angle[2], O, Z);
+        Nn = normalize(Nn);
+    }
+    
+    vector blending = pow(abs(Nn), (1.0 - in_blend_softness) * 16);
+    blending = blending / (blending[0] + blending[1] + blending[2]);
+    
+    float x_alpha, y_alpha, z_alpha;
+    int exists = 0, numchannels = 0;
+    string wrap_mode[2];
+
+    if (gettextureinfo(in_x_axis_filename, "exists", exists) && exists)
+    {
+        gettextureinfo(in_x_axis_filename, "channels", numchannels);
+
+        if (blending[0] > 0.0 &&
+           (numchannels > 3 || max(in_x_axis_color) > 0.0))
+        {
+            set_wrap_mode(in_x_axis_swrap, in_x_axis_twrap, wrap_mode);
+
+            color x_axis = get_projection_color(
+                in_x_axis_filename,
+                Pp[2],
+                Pp[1],
+                in_x_axis_width,
+                in_x_axis_height,
+                in_x_axis_horizontal_offset,
+                in_x_axis_vertical_offset,
+                in_x_axis_rotation_angle,
+                wrap_mode[0],
+                wrap_mode[1],
+                in_x_axis_sflip,
+                in_x_axis_tflip,
+                x_alpha);
+
+            if (in_enable_cms && max(in_x_axis_color) > 0.0 &&
+                max(x_axis) > 0.0)
+            {
+                x_axis = apply_color_management(
+                    x_axis,
+                    in_x_tex_eotf,
+                    in_x_tex_rgb_primaries,
+                    in_workingspace_rgb_primaries);  
+            }
+
+            out_color += blending[0] * in_x_axis_color * x_axis;
+            out_alpha += blending[0] * x_alpha;
+        }
+    }
+    else
+    {
+        out_color += blending[0] * in_x_axis_color;
+        out_alpha += blending[0];
+    }
+
+    exists = numchannels = 0;
+
+    if (gettextureinfo(in_y_axis_filename, "exists", exists) && exists)
+    {
+        gettextureinfo(in_y_axis_filename, "channels", numchannels);
+
+        if (blending[1] > 0.0 &&
+           (numchannels > 3 || max(in_y_axis_color) > 0.0))
+        {
+            set_wrap_mode(in_y_axis_swrap, in_y_axis_twrap, wrap_mode);
+
+            color y_axis = get_projection_color(
+                in_y_axis_filename,
+                Pp[0],
+                Pp[2],
+                in_y_axis_width,
+                in_y_axis_height,
+                in_y_axis_horizontal_offset,
+                in_y_axis_vertical_offset,
+                in_y_axis_rotation_angle,
+                wrap_mode[0],
+                wrap_mode[1],
+                in_y_axis_sflip,
+                in_y_axis_tflip,
+                y_alpha);
+            
+            if (in_enable_cms && max(in_y_axis_color) > 0.0 &&
+                max(y_axis) > 0.0)
+            {
+                y_axis = apply_color_management(
+                    y_axis,
+                    in_y_tex_eotf,
+                    in_y_tex_rgb_primaries,
+                    in_workingspace_rgb_primaries); 
+            }
+            
+            out_color += blending[1] * in_y_axis_color * y_axis;
+            out_alpha += blending[1] * y_alpha;
+        }
+    }
+    else
+    {
+        out_color += blending[1] * in_y_axis_color;
+        out_alpha += blending[1];
+    }
+
+    exists = numchannels = 0;
+
+    if (gettextureinfo(in_z_axis_filename, "exists", exists) && exists)
+    {
+        gettextureinfo(in_z_axis_filename, "channels", numchannels);
+
+        if (blending[2] > 0.0 &&
+           (numchannels > 3 || max(in_z_axis_color) > 0.0))
+        {
+            set_wrap_mode(in_z_axis_swrap, in_z_axis_twrap, wrap_mode);
+
+            color z_axis = get_projection_color(
+                in_z_axis_filename,
+                Pp[0],
+                Pp[1],
+                in_z_axis_width,
+                in_z_axis_height,
+                in_z_axis_horizontal_offset,
+                in_z_axis_vertical_offset,
+                in_z_axis_rotation_angle,
+                wrap_mode[0],
+                wrap_mode[1],
+                in_z_axis_sflip,
+                in_z_axis_tflip,
+                z_alpha);
+
+            if (in_enable_cms && max(in_z_axis_color) > 0.0 &&
+                max(z_axis) > 0.0)
+            {
+                z_axis = apply_color_management(
+                    z_axis,
+                    in_z_tex_eotf,
+                    in_z_tex_rgb_primaries,
+                    in_workingspace_rgb_primaries);
+            }
+            
+            out_color += blending[2] * in_z_axis_color * z_axis;
+            out_alpha += blending[2] * z_alpha;
+        }
+    }
+    else
+    {
+        out_color += blending[2] * in_z_axis_color;
+        out_alpha += blending[2];
+    }
+}
