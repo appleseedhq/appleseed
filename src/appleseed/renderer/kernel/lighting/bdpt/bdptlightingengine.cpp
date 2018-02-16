@@ -68,6 +68,7 @@ namespace {
         double                  m_fwd_pdf;
         double                  m_rev_pdf;
         Spectrum                m_Le = Spectrum(0.0);
+        ShadingPoint            m_shading_point;
         bool                    m_isLightVertex = false;
 
         ///TODO:: create a proper constructor
@@ -87,7 +88,7 @@ namespace {
       : public ILightingEngine
     {
       public:
-        const unsigned int num_max_vertices = 4;
+        const unsigned int num_max_vertices = 9;
         struct Parameters
         {
             explicit Parameters(const ParamArray& params)
@@ -104,10 +105,12 @@ namespace {
 
         BDPTLightingEngine(
             const Project&              project,
-            const ForwardLightSampler&  light_sampler,
+            const ForwardLightSampler&  forward_light_sampler,
+            const BackwardLightSampler& backward_light_sampler,
             const ParamArray&           params)
-          : m_light_sampler(light_sampler)
-          ,  m_params(params)
+          : m_forward_light_sampler(forward_light_sampler)
+          , m_backward_light_sampler(backward_light_sampler)
+          , m_params(params)
         {
             const Camera* camera = project.get_uncached_active_camera();
 
@@ -202,8 +205,16 @@ namespace {
                 if (i == 1) // on light source
                 {
                     const BDPTVertex & vertex = GetVertexStartFromLight(i);
-                    // have to compute the probability of sampling this point on emitter
-                    result *= (float)20; // inverse size of lightsource in cornell box scene.
+                    const BDPTVertex & next_vertex = GetVertexStartFromLight(i + 1);
+                    if (!vertex.m_isLightVertex)
+                    {
+                        result *= 0.0f;
+                    }
+                    else
+                    {
+                        result *= m_backward_light_sampler.evaluate_pdf(
+                            vertex.m_shading_point, next_vertex.m_shading_point);
+                    }
                 }
                 else if (i == 2) // after light source
                 {
@@ -279,9 +290,9 @@ namespace {
             int                        t,
             ShadingComponents&                  radiance)
         {
+            assert(t >= 2);
             Spectrum result(0);
 
-        #if 1
             if (s == 0)
             {
                 // camera subpath is a complete path
@@ -359,9 +370,7 @@ namespace {
             }
 
             if (nearBlack) { return; }
-        #endif
 
-        #if 1
             float numerator = ComputePathDensity(light_vertices, camera_vertices, s, t, s, t);
             float denominator = 0.0;
 
@@ -372,38 +381,8 @@ namespace {
             }
 
             float miWeight = numerator / denominator;
-        #else
-            // direct light testing
-            float numerator = 0.0;
-            float denominator = 0.0;
 
-            float pdf1;
-            float pdf2;
-
-            if (s == 0) // complete path
-            {
-                float dot1 = float(foundation::dot(foundation::normalize(camera_vertices[1].m_position - camera_vertices[0].m_position), camera_vertices[0].m_geometric_normal));
-                float dot2 = float(foundation::dot(foundation::normalize(camera_vertices[0].m_position - camera_vertices[1].m_position), camera_vertices[1].m_geometric_normal));
-                float dist2 = float(foundation::square_norm(camera_vertices[0].m_position - camera_vertices[1].m_position));
-                pdf1 = dot1 * dot2 / dist2;
-                pdf2 = 10.0;
-                numerator = (camera_vertices[1].m_isLightVertex) ? pdf1 : 0;
-                denominator = pdf1 + pdf2;
-            }
-            else // light sampling
-            {
-                float dot1 = std::max(float(foundation::dot(foundation::normalize(light_vertices[0].m_position - camera_vertices[0].m_position), camera_vertices[0].m_geometric_normal)), 0.0f);
-                float dot2 = std::max(float(foundation::dot(foundation::normalize(camera_vertices[0].m_position - light_vertices[0].m_position), light_vertices[0].m_geometric_normal)), 0.0f);
-                float dist2 = float(foundation::square_norm(camera_vertices[0].m_position - light_vertices[0].m_position));
-                pdf1 = dot1 * dot2 / dist2;
-                pdf2 = 10.0;
-                numerator = pdf2;
-                denominator = pdf1 + pdf2;
-            }
-            float miWeight = numerator / denominator;
-        #endif
-
-            //radiance.m_beauty += Spectrum(miWeight);
+            //radiance.m_beauty += Spectrum(miWeight); // this line is left on purpose.
             radiance.m_beauty += miWeight * result;
         }
 
@@ -430,7 +409,9 @@ namespace {
             {
                 for (unsigned int t = 2;t < camera_vertices.size() + 2;t++)
                 {
-                    if (s + t <= 3)
+                    //if (s + t == 4)
+                    //if (s + t == 4)
+                    if (s + t <= num_max_vertices)
                         Connect(shading_context, shading_point, light_vertices, camera_vertices, s, t, radiance);
                 }
             }
@@ -447,7 +428,7 @@ namespace {
             sampling_context.split_in_place(4, 1);
             const Vector4f s = sampling_context.next2<Vector4f>();
             LightSample light_sample;
-            m_light_sampler.sample(
+            m_forward_light_sampler.sample(
                 ShadingRay::Time::create_with_normalized_time(
                     s[0],
                     m_shutter_open_time,
@@ -541,14 +522,16 @@ namespace {
             /// CONFUSE:: why geometric normal is flipped?
             bdpt_vertex.m_geometric_normal = -light_shading_point.get_geometric_normal();
             bdpt_vertex.m_beta = initial_flux;
-            bdpt_vertex.m_fwd_pdf = light_sample.m_probability * edf_prob;
+            bdpt_vertex.m_fwd_pdf = light_sample.m_probability;
             bdpt_vertex.m_rev_pdf = 1.0;
+            bdpt_vertex.m_isLightVertex = true;
+            bdpt_vertex.m_shading_point = light_shading_point;
             //bdpt_vertex.m_outgoing = -static_cast<Vector3d>(foundation::normalize(emission_direction));
 
             vertices->push_back(bdpt_vertex);
 
             // Build the path tracer.
-            PathVisitor path_visitor(initial_flux / edf_prob, shading_context, vertices, true);
+            PathVisitor path_visitor(initial_flux * dot(emission_direction, Vector3f(light_sample.m_shading_normal)) / edf_prob, shading_context, vertices);
             VolumeVisitor volume_visitor;
 
             PathTracer<PathVisitor, VolumeVisitor, true> path_tracer(
@@ -586,7 +569,7 @@ namespace {
             const ShadingPoint&     shading_point,
             std::vector<BDPTVertex> *vertices)
         {
-            PathVisitor path_visitor(Spectrum(1.0), shading_context, vertices, false);
+            PathVisitor path_visitor(Spectrum(1.0), shading_context, vertices);
             VolumeVisitor volume_visitor;
 
             PathTracer<PathVisitor, VolumeVisitor, false> path_tracer(
@@ -618,7 +601,8 @@ namespace {
     private:
         const Parameters            m_params;
 
-        const ForwardLightSampler&  m_light_sampler;
+        const ForwardLightSampler&  m_forward_light_sampler;
+        const BackwardLightSampler& m_backward_light_sampler;
         //Intersector                 m_intersector;
 
         float                       m_shutter_open_time;
@@ -629,11 +613,12 @@ namespace {
 
         struct PathVisitor
         {
-            PathVisitor(const Spectrum & initial_beta, const ShadingContext &shading_context, std::vector<BDPTVertex> * vertices, bool is_light_subpath)
-              : m_initial_beta(initial_beta),
-                m_shading_context(shading_context),
-                m_vertices(vertices),
-                m_is_light_subpath(is_light_subpath)
+            PathVisitor(const Spectrum& initial_beta,
+                        const ShadingContext& shading_context,
+                        std::vector<BDPTVertex> * vertices)
+              : m_initial_beta(initial_beta)
+              , m_shading_context(shading_context)
+              , m_vertices(vertices)
             {
             }
 
@@ -665,6 +650,7 @@ namespace {
                 bdpt_vertex.m_bsdf = vertex.m_bsdf;
                 bdpt_vertex.m_bsdf_data = vertex.m_bsdf_data;
                 bdpt_vertex.m_dir_to_prev_vertex = foundation::normalize(vertex.m_outgoing.get_value());
+                bdpt_vertex.m_shading_point = *vertex.m_shading_point;
 
                 if (vertex.m_edf)
                 {
@@ -681,10 +667,6 @@ namespace {
             {
             }
 
-            bool                        m_is_light_subpath;
-            // this is needed only for computing fwd_pdf on the first vertex of light subpath
-            // false = is camera subpath
-            // true  = is light subpath
             const ShadingContext&       m_shading_context;
             Spectrum                    m_initial_beta;
             std::vector<BDPTVertex>*    m_vertices;
@@ -711,10 +693,12 @@ namespace {
 
 BDPTLightingEngineFactory::BDPTLightingEngineFactory(
     const Project&              project,
-    const ForwardLightSampler&  light_sampler,
+    const ForwardLightSampler&  forward_light_sampler,
+    const BackwardLightSampler& backward_light_sampler,
     const ParamArray&           params)
     : m_project(project)
-    , m_light_sampler(light_sampler)
+    , m_forward_light_sampler(forward_light_sampler)
+    , m_backward_light_sampler(backward_light_sampler)
     , m_params(params)
 {
     BDPTLightingEngine::Parameters(params).print();
@@ -729,7 +713,8 @@ ILightingEngine* BDPTLightingEngineFactory::create()
 {
     return new BDPTLightingEngine(
         m_project,
-        m_light_sampler,
+        m_forward_light_sampler,
+        m_backward_light_sampler,
         m_params);
 }
 
@@ -737,7 +722,6 @@ Dictionary BDPTLightingEngineFactory::get_params_metadata()
 {
     Dictionary metadata;
     add_common_params_metadata(metadata, true);
-
     return metadata;
 }
 

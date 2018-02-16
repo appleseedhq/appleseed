@@ -40,6 +40,7 @@
 namespace foundation    { class Dictionary; }
 namespace renderer      { class ForwardLightSampler; }
 namespace renderer      { class Project; }
+namespace renderer      { class BackwardLightSampler; }
 
 namespace renderer
 {
@@ -56,6 +57,7 @@ class BDPTLightingEngineFactory
     BDPTLightingEngineFactory(
         const Project&              project,
         const ForwardLightSampler&  light_sampler,
+        const BackwardLightSampler& backward_light_sampler,
         const ParamArray&           params);
 
     // Delete this instance.
@@ -69,7 +71,8 @@ class BDPTLightingEngineFactory
 
   private:
     const Project&              m_project;
-    const ForwardLightSampler&  m_light_sampler;
+    const ForwardLightSampler&  m_forward_light_sampler;
+    const BackwardLightSampler& m_backward_light_sampler;
     ParamArray                  m_params;
 };
 
