@@ -69,7 +69,7 @@ namespace {
         double                  m_rev_pdf;
         Spectrum                m_Le = Spectrum(0.0);
         ShadingPoint            m_shading_point;
-        bool                    m_isLightVertex = false;
+        bool                    m_is_light_vertex = false;
 
         ///TODO:: create a proper constructor
 
@@ -205,16 +205,7 @@ namespace {
                 if (i == 1) // on light source
                 {
                     const BDPTVertex & vertex = GetVertexStartFromLight(i);
-                    const BDPTVertex & next_vertex = GetVertexStartFromLight(i + 1);
-                    if (!vertex.m_isLightVertex)
-                    {
-                        result *= 0.0f;
-                    }
-                    else
-                    {
-                        result *= m_backward_light_sampler.evaluate_pdf(
-                            vertex.m_shading_point, next_vertex.m_shading_point);
-                    }
+                    result *= vertex.m_is_light_vertex ? m_forward_light_sampler.evaluate_pdf(vertex.m_shading_point) : 0.0f;
                 }
                 else if (i == 2) // after light source
                 {
@@ -297,7 +288,7 @@ namespace {
             {
                 // camera subpath is a complete path
                 const BDPTVertex& camera_vertex = camera_vertices[t - 2];
-                if (!camera_vertex.m_isLightVertex)
+                if (!camera_vertex.m_is_light_vertex)
                 {
                     return;
                 }
@@ -524,7 +515,7 @@ namespace {
             bdpt_vertex.m_beta = initial_flux;
             bdpt_vertex.m_fwd_pdf = light_sample.m_probability;
             bdpt_vertex.m_rev_pdf = 1.0;
-            bdpt_vertex.m_isLightVertex = true;
+            bdpt_vertex.m_is_light_vertex = true;
             bdpt_vertex.m_shading_point = light_shading_point;
             //bdpt_vertex.m_outgoing = -static_cast<Vector3d>(foundation::normalize(emission_direction));
 
@@ -655,7 +646,7 @@ namespace {
                 if (vertex.m_edf)
                 {
                     vertex.compute_emitted_radiance(m_shading_context, bdpt_vertex.m_Le);
-                    bdpt_vertex.m_isLightVertex = true;
+                    bdpt_vertex.m_is_light_vertex = true;
                 }
 
                 /// TODO:: compute fwd pdf and rev pdf
