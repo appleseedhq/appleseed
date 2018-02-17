@@ -300,11 +300,11 @@ namespace {
                 const BDPTVertex& light_vertex = light_vertices[s - 1];
                 const BDPTVertex& camera_vertex = camera_vertices[t - 2];
 
-				if (light_vertex.m_bsdf == nullptr || camera_vertex.m_bsdf == nullptr ||
-					light_vertex.m_bsdf_data == nullptr || camera_vertex.m_bsdf_data == nullptr)
-				{
-					return;
-				}
+                if (light_vertex.m_bsdf == nullptr || camera_vertex.m_bsdf == nullptr ||
+                    light_vertex.m_bsdf_data == nullptr || camera_vertex.m_bsdf_data == nullptr)
+                {
+                    return;
+                }
 
                 Spectrum geometry = ComputeGeometryTerm(shading_context, shading_point, camera_vertex, light_vertex);
 
@@ -328,11 +328,11 @@ namespace {
                 const BDPTVertex& light_vertex = light_vertices[s - 1];
                 const BDPTVertex& camera_vertex = camera_vertices[t - 2];
 
-				if (light_vertex.m_bsdf == nullptr || camera_vertex.m_bsdf == nullptr ||
-					light_vertex.m_bsdf_data == nullptr || camera_vertex.m_bsdf == nullptr)
-				{
-					return;
-				}
+                if (light_vertex.m_bsdf == nullptr || camera_vertex.m_bsdf == nullptr ||
+                    light_vertex.m_bsdf_data == nullptr || camera_vertex.m_bsdf == nullptr)
+                {
+                    return;
+                }
 
                 DirectShadingComponents camera_eval_bsdf;
                 const float camera_eval_bsdf_prob = camera_vertex.m_bsdf->evaluate(
@@ -638,8 +638,8 @@ namespace {
             void on_hit(const PathVertex& vertex)
             {
                 if (vertex.m_bsdf != nullptr && vertex.m_bsdf_data != nullptr)
-					if (vertex.m_bsdf->is_purely_specular())
-						return;
+                    if (vertex.m_bsdf->is_purely_specular())
+                        return;
 
                 // create BDPT Vertex
                 BDPTVertex bdpt_vertex;
