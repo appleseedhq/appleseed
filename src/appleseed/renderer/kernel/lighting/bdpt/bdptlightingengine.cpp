@@ -247,7 +247,7 @@ namespace {
                         false,
                         static_cast<Vector3f>(prev_vertex.m_geometric_normal),
                         prev_vertex.m_shading_basis,
-                        static_cast<Vector3f>(vertex.m_dir_to_prev_vertex),
+                        static_cast<Vector3f>(prev_vertex.m_dir_to_prev_vertex),
                         static_cast<Vector3f>(foundation::normalize(vertex.m_position - prev_vertex.m_position)),
                         ScatteringMode::All);
                     result *= static_cast<float>(prev_vertex.convertDensity(pdf, vertex));
@@ -299,6 +299,13 @@ namespace {
                 // only one light vertex
                 const BDPTVertex& light_vertex = light_vertices[s - 1];
                 const BDPTVertex& camera_vertex = camera_vertices[t - 2];
+
+				if (light_vertex.m_bsdf == nullptr || camera_vertex.m_bsdf == nullptr ||
+					light_vertex.m_bsdf_data == nullptr || camera_vertex.m_bsdf_data == nullptr)
+				{
+					return;
+				}
+
                 Spectrum geometry = ComputeGeometryTerm(shading_context, shading_point, camera_vertex, light_vertex);
 
                 DirectShadingComponents camera_eval_bsdf;
@@ -320,6 +327,13 @@ namespace {
             {
                 const BDPTVertex& light_vertex = light_vertices[s - 1];
                 const BDPTVertex& camera_vertex = camera_vertices[t - 2];
+
+				if (light_vertex.m_bsdf == nullptr || camera_vertex.m_bsdf == nullptr ||
+					light_vertex.m_bsdf_data == nullptr || camera_vertex.m_bsdf == nullptr)
+				{
+					return;
+				}
+
                 DirectShadingComponents camera_eval_bsdf;
                 const float camera_eval_bsdf_prob = camera_vertex.m_bsdf->evaluate(
                     camera_vertex.m_bsdf_data,
@@ -400,8 +414,6 @@ namespace {
             {
                 for (unsigned int t = 2;t < camera_vertices.size() + 2;t++)
                 {
-                    //if (s + t == 4)
-                    //if (s + t == 4)
                     if (s + t <= num_max_vertices)
                         Connect(shading_context, shading_point, light_vertices, camera_vertices, s, t, radiance);
                 }
@@ -484,8 +496,7 @@ namespace {
                 edf_prob);
 
             // Compute the initial particle weight.
-            Spectrum initial_flux = edf_value;
-            initial_flux /= light_sample.m_probability;
+            Spectrum initial_flux = edf_value / light_sample.m_probability;
 
             // Make a shading point that will be used to avoid self-intersections with the light sample.
             ShadingPoint parent_shading_point;
@@ -626,22 +637,20 @@ namespace {
 
             void on_hit(const PathVertex& vertex)
             {
+                if (vertex.m_bsdf != nullptr && vertex.m_bsdf_data != nullptr)
+					if (vertex.m_bsdf->is_purely_specular())
+						return;
+
                 // create BDPT Vertex
-                if (vertex.m_bsdf == nullptr || vertex.m_bsdf_data == nullptr)
-                    return;
-
-                if (vertex.m_bsdf->is_purely_specular())
-                    return;
-
                 BDPTVertex bdpt_vertex;
                 bdpt_vertex.m_position = vertex.get_point();
                 bdpt_vertex.m_geometric_normal = vertex.get_geometric_normal();
                 bdpt_vertex.m_shading_basis = Basis3f(vertex.get_shading_basis());
                 bdpt_vertex.m_beta = vertex.m_throughput * m_initial_beta;
-                bdpt_vertex.m_bsdf = vertex.m_bsdf;
-                bdpt_vertex.m_bsdf_data = vertex.m_bsdf_data;
                 bdpt_vertex.m_dir_to_prev_vertex = foundation::normalize(vertex.m_outgoing.get_value());
                 bdpt_vertex.m_shading_point = *vertex.m_shading_point;
+                bdpt_vertex.m_bsdf = vertex.m_bsdf;
+                bdpt_vertex.m_bsdf_data = vertex.m_bsdf_data;
 
                 if (vertex.m_edf)
                 {
