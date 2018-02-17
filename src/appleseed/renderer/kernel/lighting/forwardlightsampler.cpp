@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/lighting/lightsample.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
@@ -153,6 +154,24 @@ void ForwardLightSampler::sample(
         else sample_non_physical_lights(time, s, light_sample);
     }
     else sample_emitting_triangles(time, s, light_sample);
+}
+
+float ForwardLightSampler::evaluate_pdf(const ShadingPoint & light_shading_point) const
+{
+    assert(light_shading_point.is_triangle_primitive());
+    const EmittingTriangleKey triangle_key(
+        light_shading_point.get_assembly_instance().get_uid(),
+        light_shading_point.get_object_instance_index(),
+        light_shading_point.get_region_index(),
+        light_shading_point.get_primitive_index());
+
+    const auto* triangle_ptr = m_emitting_triangle_hash_table.get(triangle_key);
+
+    if (triangle_ptr == nullptr)
+        return 0.0f;
+
+    const EmittingTriangle* triangle = *triangle_ptr;
+    return triangle->m_triangle_prob * triangle->m_rcp_area;
 }
 
 void ForwardLightSampler::sample_non_physical_lights(
