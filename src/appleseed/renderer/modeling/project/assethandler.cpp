@@ -101,7 +101,7 @@ namespace
             copy_file(source_path, dest_path, copy_option::overwrite_if_exists);
             return true;
         }
-        catch (const std::exception& e)     // needs namespace qualification
+        catch (const std::exception& e)     // namespace qualification required
         {
             RENDERER_LOG_ERROR(
                 "failed to copy %s to %s: %s.",

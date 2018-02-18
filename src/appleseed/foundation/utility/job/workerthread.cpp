@@ -40,6 +40,7 @@
 
 // Standard headers.
 #include <exception>
+#include <new>
 
 using namespace boost;
 using namespace std;
@@ -196,7 +197,7 @@ bool WorkerThread::execute_job(IJob& job)
         return false;
     }
 #ifdef NDEBUG
-    catch (const std::exception& e)
+    catch (const std::exception& e)     // namespace qualification required
     {
         LOG_ERROR(
             m_logger,
