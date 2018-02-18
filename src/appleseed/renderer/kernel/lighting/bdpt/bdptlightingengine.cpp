@@ -59,13 +59,14 @@ namespace {
     struct BDPTVertex
     {
         foundation::Vector3d    m_position;
+        const BDPTVertex*       m_prev_vertex = nullptr;
         foundation::Vector3d    m_dir_to_prev_vertex;
         foundation::Vector3d    m_geometric_normal;
         Spectrum                m_beta;
         const BSDF*             m_bsdf;
         const void*             m_bsdf_data;
         Basis3f                 m_shading_basis;
-        double                  m_fwd_pdf;
+        double                  m_fwd_pdf = 0.0;
         double                  m_rev_pdf;
         Spectrum                m_Le = Spectrum(0.0);
         ShadingPoint            m_shading_point;
@@ -159,7 +160,7 @@ namespace {
             return result * (float)g;
         }
 
-        /// TODO:: precompute this thing
+        /// TODO:: precompute path density using fwd_pdf and rev_pdf.
         float ComputePathDensity(
             const std::vector<BDPTVertex>       &light_vertices,
             const std::vector<BDPTVertex>       &camera_vertices,
@@ -224,8 +225,8 @@ namespace {
                         false,
                         static_cast<Vector3f>(prev_vertex.m_geometric_normal),
                         prev_vertex.m_shading_basis,
-                        static_cast<Vector3f>(foundation::normalize(prev2_vertex.m_position - prev_vertex.m_position)),
                         static_cast<Vector3f>(foundation::normalize(vertex.m_position - prev_vertex.m_position)),
+                        static_cast<Vector3f>(foundation::normalize(prev2_vertex.m_position - prev_vertex.m_position)),
                         ScatteringMode::All);
                     result *= static_cast<float>(prev_vertex.convertDensity(pdf, vertex));
                 }
@@ -247,8 +248,8 @@ namespace {
                         false,
                         static_cast<Vector3f>(prev_vertex.m_geometric_normal),
                         prev_vertex.m_shading_basis,
-                        static_cast<Vector3f>(prev_vertex.m_dir_to_prev_vertex),
                         static_cast<Vector3f>(foundation::normalize(vertex.m_position - prev_vertex.m_position)),
+                        static_cast<Vector3f>(prev_vertex.m_dir_to_prev_vertex),
                         ScatteringMode::All);
                     result *= static_cast<float>(prev_vertex.convertDensity(pdf, vertex));
                 }
@@ -262,8 +263,8 @@ namespace {
                         false,
                         static_cast<Vector3f>(prev_vertex.m_geometric_normal),
                         prev_vertex.m_shading_basis,
-                        static_cast<Vector3f>(foundation::normalize(prev2_vertex.m_position - prev_vertex.m_position)),
                         static_cast<Vector3f>(foundation::normalize(vertex.m_position - prev_vertex.m_position)),
+                        static_cast<Vector3f>(foundation::normalize(prev2_vertex.m_position - prev_vertex.m_position)),
                         ScatteringMode::All);
                     result *= static_cast<float>(prev_vertex.convertDensity(pdf, vertex));
                 }
@@ -315,8 +316,8 @@ namespace {
                     false,
                     static_cast<Vector3f>(camera_vertex.m_geometric_normal),
                     camera_vertex.m_shading_basis,
-                    static_cast<Vector3f>(camera_vertex.m_dir_to_prev_vertex),
                     static_cast<Vector3f>(foundation::normalize(light_vertex.m_position - camera_vertex.m_position)),
+                    static_cast<Vector3f>(camera_vertex.m_dir_to_prev_vertex),
                     ScatteringMode::All,
                     camera_eval_bsdf);
 
@@ -341,8 +342,8 @@ namespace {
                     false,
                     static_cast<Vector3f>(camera_vertex.m_geometric_normal),
                     camera_vertex.m_shading_basis,
-                    static_cast<Vector3f>(camera_vertex.m_dir_to_prev_vertex),
                     static_cast<Vector3f>(foundation::normalize(light_vertex.m_position - camera_vertex.m_position)),
+                    static_cast<Vector3f>(camera_vertex.m_dir_to_prev_vertex),
                     ScatteringMode::All,
                     camera_eval_bsdf);
 
@@ -353,8 +354,8 @@ namespace {
                     false,
                     static_cast<Vector3f>(light_vertex.m_geometric_normal),
                     light_vertex.m_shading_basis,
-                    static_cast<Vector3f>(light_vertex.m_dir_to_prev_vertex),
                     static_cast<Vector3f>(foundation::normalize(camera_vertex.m_position - light_vertex.m_position)),
+                    static_cast<Vector3f>(light_vertex.m_dir_to_prev_vertex),
                     ScatteringMode::All,
                     light_eval_bsdf);
 
@@ -387,7 +388,7 @@ namespace {
 
             float miWeight = numerator / denominator;
 
-            //radiance.m_beauty += Spectrum(miWeight); // this line is left on purpose.
+            assert(miWeight <= 1.0f);
             radiance.m_beauty += miWeight * result;
         }
 
@@ -637,10 +638,6 @@ namespace {
 
             void on_hit(const PathVertex& vertex)
             {
-                if (vertex.m_bsdf != nullptr && vertex.m_bsdf_data != nullptr)
-                    if (vertex.m_bsdf->is_purely_specular())
-                        return;
-
                 // create BDPT Vertex
                 BDPTVertex bdpt_vertex;
                 bdpt_vertex.m_position = vertex.get_point();
@@ -651,6 +648,7 @@ namespace {
                 bdpt_vertex.m_shading_point = *vertex.m_shading_point;
                 bdpt_vertex.m_bsdf = vertex.m_bsdf;
                 bdpt_vertex.m_bsdf_data = vertex.m_bsdf_data;
+                bdpt_vertex.m_fwd_pdf = vertex.m_prev_prob;
 
                 if (vertex.m_edf)
                 {
@@ -658,8 +656,7 @@ namespace {
                     bdpt_vertex.m_is_light_vertex = true;
                 }
 
-                /// TODO:: compute fwd pdf and rev pdf
-
+                bdpt_vertex.m_prev_vertex = (m_vertices->size() == 0) ? nullptr : &m_vertices->at(m_vertices->size() - 1);
                 m_vertices->push_back(bdpt_vertex);
             }
 
