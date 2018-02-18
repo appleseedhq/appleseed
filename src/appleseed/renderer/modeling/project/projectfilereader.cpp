@@ -3099,13 +3099,15 @@ namespace
         return false;
     }
 
-    // returns filename of .appleseed file inside archive
-    // returns "" in case there are more than 1 .appleseed files
-    // "" means it's not a valid packed project
+    // Return the name of the single .appleseed file inside a given archive file.
+    // If there are zero or more than one .appleseed file inside the archive, an
+    // empty string is returned (i.e. the archive is not a valid packed project).
     string get_project_filename_from_archive(const char* project_filepath)
     {
-        const vector<string> appleseed_files = get_filenames_with_extension_from_zip(project_filepath, ".appleseed");
-        return appleseed_files.size() == 1 ? appleseed_files[0] : "";
+        const vector<string> files =
+            get_filenames_with_extension_from_zip(project_filepath, ".appleseed");
+
+        return files.size() == 1 ? files[0] : string();
     }
 
     string unpack_project(
@@ -3139,7 +3141,7 @@ auto_release_ptr<Project> ProjectFileReader::read(
     if (is_zip_file(project_filepath))
     {
         const string project_filename = get_project_filename_from_archive(project_filepath);
-        if (project_filename == "")
+        if (project_filename.empty())
         {
             RENDERER_LOG_ERROR(
                 "%s looks like a packed project file, but it should contain a single *.appleseed file in order to be valid.",
@@ -3155,10 +3157,11 @@ auto_release_ptr<Project> ProjectFileReader::read(
             project_filepath,
             unpacked_project_directory.c_str());
 
-        actual_project_filepath = unpack_project(
-            project_filepath,
-            project_filename,
-            unpacked_project_directory);
+        actual_project_filepath =
+            unpack_project(
+                project_filepath,
+                project_filename,
+                unpacked_project_directory);
 
         project_filepath = actual_project_filepath.data();
     }
@@ -3211,8 +3214,8 @@ auto_release_ptr<Assembly> ProjectFileReader::read_archive(
     string actual_archive_filepath;
     if (is_zip_file(archive_filepath))
     {
-        string archive_name = get_project_filename_from_archive(archive_filepath);
-        if (archive_name == "")
+        const string archive_name = get_project_filename_from_archive(archive_filepath);
+        if (archive_name.empty())
         {
             RENDERER_LOG_ERROR(
                 "%s looks like a packed archive file, but it should contain a single *.appleseed file in order to be valid.",
@@ -3223,10 +3226,11 @@ auto_release_ptr<Assembly> ProjectFileReader::read_archive(
         const string unpacked_archive_directory =
             bf::path(archive_filepath).replace_extension(".unpacked").string();
 
-        actual_archive_filepath = unpack_project(
-            archive_filepath,
-            archive_name,
-            unpacked_archive_directory);
+        actual_archive_filepath =
+            unpack_project(
+                archive_filepath,
+                archive_name,
+                unpacked_archive_directory);
 
         archive_filepath = actual_archive_filepath.data();
     }
