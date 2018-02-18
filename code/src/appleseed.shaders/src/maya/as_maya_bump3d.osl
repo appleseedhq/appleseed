@@ -1,0 +1,100 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/bump3d.html
+
+#include "appleseed/maya/as_maya_helpers.h"
+
+shader as_maya_bump3d
+[[
+    string as_maya_node_name = "bump3d"
+]]
+(
+    float in_bumpValue = 0.0
+    [[
+        string as_maya_attribute_name = "bumpValue",
+        string label = "Bump Value",
+        string page = "3D Bump Attributes"
+    ]],
+    float in_bumpDepth = 1.0
+    [[
+        string as_maya_attribute_name = "bumpDepth",
+        string label = "Bump Depth",
+        string page = "3D Bump Attributes"
+    ]],
+    float in_bumpFilter = 1.0
+    [[
+        string as_maya_attribute_name = "bumpFilter",
+        string label = "Bump Filter",
+        string page = "Effects"
+    ]],
+    float in_bumpFilterOffset = 0.0
+    [[
+        string as_maya_attribute_name = "bumpFilterOffset",
+        string label = "Bump Filter Offset",
+        string page = "Effects"
+    ]],
+    point in_pointCamera = P
+    [[
+        string as_maya_attribute_name = "pointCamera",
+        string label = "Surface Point"
+    ]],
+    normal in_normalCamera = N
+    [[
+        string as_maya_attribute_name = "normalCamera",
+        string label = "Surface Normal"
+    ]],
+
+    MAYA_UV_PARAMETERS,
+
+    output normal out_outNormal = normal(0.0, 0.0, 1.0)
+    [[
+        string as_maya_attribute_name = "outNormal",
+        string label = "Output Normal",
+        string widget = "null"
+    ]]
+)
+{
+    if (in_bumpValue * in_bumpDepth == 0.0)
+    {
+        out_outNormal = normalize(in_normalCamera);
+    }
+    else
+    {
+        float bump_depth = abs(in_bumpDepth);
+
+        // Halve the bump value to avoid excess clamp.
+        float bump_offset = clamp(
+            in_bumpValue * 0.5 * in_bumpDepth, -bump_depth, bump_depth);
+
+        normal surface_normal = normalize(in_normalCamera);
+
+        out_outNormal = normalize(calculatenormal(
+            in_pointCamera + (vector) surface_normal * bump_offset));
+    }
+}

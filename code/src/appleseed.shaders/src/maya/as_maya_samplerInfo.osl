@@ -1,0 +1,165 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/samplerInfo.html
+
+shader as_maya_samplerInfo
+[[
+    string as_maya_node_name = "samplerInfo"
+]]
+(
+    vector Tn = vector(0)
+    [[
+        string label = "Tangent",
+        string widget = "null",
+        int lockgeom = 0
+    ]],
+    vector Bn = vector(0)
+    [[
+        string label = "Bitangent",
+        string widget = "null",
+        int lockgeom = 0
+    ]],
+
+    output point out_pointCamera = P
+    [[
+        string as_maya_attribute_name = "pointCamera",
+        string label = "P In Camera Space",
+        string widget = "null",
+        string help = "Surface point P in camera space"
+    ]],
+    output point out_pointObj = P
+    [[
+        string as_maya_attribute_name = "pointObj",
+        string label = "P In Object Space",
+        string widget = "null",
+        string help = "Surface point P in object space"
+    ]],
+    output point out_pointWorld = P
+    [[
+        string as_maya_attribute_name = "pointWorld",
+        string label = "P In World Space",
+        string widget = "null",
+        string help = "Surface point P in world space"
+    ]],
+    output normal out_normalCamera = N
+    [[
+        string as_maya_attribute_name = "normalCamera",
+        string label = "N In Camera Space",
+        string widget = "null",
+        string help = "Surface normal N in camera space"
+    ]],
+    output float out_uvCoord[2] = {u, v}
+    [[
+        string as_maya_attribute_name = "uvCoord",
+        string label = "UV Coordinates",
+        string widget = "null",
+        string help = "UV coordinates"
+    ]],
+    output vector out_rayDirection = -I
+    [[
+        string as_maya_attribute_name = "rayDirection",
+        string label = "I In Camera Space",
+        string widget = "null",
+        string help = "Viewer vector in camera space, pointing towards camera"
+    ]],
+    output vector out_tangentUCamera = dPdu
+    [[
+        string as_maya_attribute_name = "tangentUCamera",
+        string label = "TangentU In Camera Space",
+        string widget = "null",
+        string help = "Surface tangent along U direction, in camera space"
+    ]],
+    output vector out_tangentVCamera = dPdv
+    [[
+        string as_maya_attribute_name = "tangentVCamera",
+        string label = "TangentV In Camera Space",
+        string widget = "null",
+        string help = "Surface tangent along V direction, in camera space"
+    ]],
+    output matrix out_matrixEyeToWorld = 1
+    [[
+        string as_maya_attribute_name = "matrixEyeToWorld",
+        string label = "Eye To World Matrix",
+        string widget = "null",
+        string help = "Matrix that transforms from eye to camera space"
+    ]],
+    output float out_pixelCenter[2] = {0.0, 0.0}
+    [[
+        string as_maya_attribute_name = "pixelCenter",
+        string label = "Pixel Center",
+        string widget = "null",
+        string help = "Location of pixel corresponding to point being sampled"
+    ]],
+    output int out_flippedNormal = 0
+    [[
+        string as_maya_attribute_name = "flippedNormal",
+        string label = "Flipped Normal",
+        string widget = "null",
+        string help = "Tells is front or back face is being shaded"
+    ]],
+    output float out_facingRatio = 0.0
+    [[
+        string as_maya_attribute_name = "facingRatio",
+        string label = "Facing Ratio",
+        string widget = "null",
+        string help = "Facing ratio of object in relation to the camera"
+    ]]
+)
+{
+    out_pointCamera = transform("common", "camera", P);
+    out_pointObj = transform("common", "object", P);
+    out_pointWorld = P;
+
+    out_normalCamera = normalize(transform("common", "camera", N));
+
+    out_uvCoord[0] = u;
+    out_uvCoord[1] = 1.0 - v;
+
+    out_rayDirection = normalize(transform("common", "camera", -I));
+    out_tangentUCamera = transform("common", "camera", Tn);
+    out_tangentVCamera = transform("common", "camera", Bn);
+
+    out_matrixEyeToWorld = matrix("camera", "world");
+
+    // Maya expects (0,0) to be lower-left corner, and (xres,yres) upper right
+    // while raster is (0,0) at upper left, and (xres,yres) at lower right.
+
+    int resolution[2] = {0, 0};
+
+    getattribute("camera:resolution", resolution);
+
+    point rasterP = transform("common", "raster", P);
+
+    out_pixelCenter[0] = rasterP[0];
+    out_pixelCenter[1] = resolution[1] - rasterP[1];
+
+    out_flippedNormal = backfacing();
+
+    out_facingRatio = max(0, dot(normalize(-I), normalize(N)));
+}

@@ -1,0 +1,335 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/ramp.html
+
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/maya/as_maya_ramp_helpers.h"
+
+shader as_maya_ramp
+[[
+    string as_maya_node_name = "ramp"
+]]
+(
+    int in_type = 0
+    [[
+        string as_maya_attribute_name = "type",
+        string label = "Type",
+        string widget = "mapper",
+        string options = "U Ramp:0|V Ramp:1|Diagonal Ramp:2|Radial Ramp:3|Circular Ramp:4|Box Ramp:5|UV Ramp:6|Four Corner Ramp:7|Tartan Ramp:8",
+        string page = "Ramp Attributes"
+    ]],
+    int in_interpolation = 1
+    [[
+        string as_maya_attribute_name = "interpolation",
+        string label = "Interpolation",
+        string widget = "mapper",
+        string options = "None:0|Linear:1|Exponential Up:2|Exponential Down:3|Smooth:4|Bump:5|Spike:6",
+        string page = "Ramp Attributes"
+    ]],
+    float in_position[] = {0}
+    [[
+        string as_maya_attribute_name = "colorEntryList",
+        string label = "Position",
+        string page = "Ramp Attributes"
+    ]],
+    color in_color[] = {0}
+    [[
+        string as_maya_attribute_name = "colorEntryList",
+        string label = "Color",
+        string page = "Ramp Attributes"
+    ]],
+    float in_uWave = 0.0
+    [[
+        string as_maya_attribute_name = "uWave",
+        string label = "U Wave",
+        string page = "Ramp Attributes"
+    ]],
+    float in_vWave = 0.0
+    [[
+        string as_maya_attribute_name = "vWave",
+        string label = "V Wave",
+        string page = "Ramp Attributes"
+    ]],
+    float in_noise = 0.0
+    [[
+        string as_maya_attribute_name = "noise",
+        string label = "Noise",
+        string page = "Ramp Attributes"
+    ]],
+    float in_noiseFreq = 0.5
+    [[
+        string as_maya_attribute_name = "noiseFreq",
+        string label = "Noise Frequency",
+        string page = "Ramp Attributes"
+    ]],
+    float in_hueNoise = 0.0
+    [[
+        string as_maya_attribute_name = "hueNoise",
+        string label = "Hue Noise",
+        string page = "HSV Color Noise"
+    ]],
+    float in_satNoise = 0.0
+    [[
+        string as_maya_attribute_name = "satNoise",
+        string label = "Saturation Noise",
+        string page = "HSV Color Noise"
+    ]],
+    float in_valNoise = 0.0
+    [[
+        string as_maya_attribute_name = "valNoise",
+        string label = "Value Noise",
+        string page = "HSV Color Noise"
+    ]],
+    float in_hueNoiseFreq = 0.5
+    [[
+        string as_maya_attribute_name = "hueNoiseFreq",
+        string label = "Hue Noise Frequency",
+        string page = "HSV Color Noise"
+    ]],
+    float in_satNoiseFreq = 0.5
+    [[
+        string as_maya_attribute_name = "satNoiseFreq",
+        string label = "Saturation Noise Frequency",
+        string page = "HSV Color Noise"
+    ]],
+    float in_valNoiseFreq = 0.5
+    [[
+        string as_maya_attribute_name = "valNoiseFreq",
+        string label = "Value Noise Frequency",
+        string page = "HSV Color Noise"
+    ]],
+
+    MAYA_COLORBALANCE_PARAMETERS,
+    MAYA_EFFECTS_PARAMETERS,
+    MAYA_UV_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]]
+)
+{
+    if (in_uvCoord[0] == OUTSIDE_UVFRAME || in_uvCoord[1] == OUTSIDE_UVFRAME)
+    {
+        out_outColor = in_defaultColor;
+        out_outAlpha = maya_luminance(in_defaultColor);
+    }
+    else
+    {
+        float st[2] = {in_uvCoord[0], in_uvCoord[1]}, noise_val = 0;
+
+        if (in_noise > 0.0)
+        {
+            noise_val = in_noise * noise(
+                "perlin",
+                in_noiseFreq * st[0] * 15,
+                in_noiseFreq * st[1] * 15);
+        }
+
+        st[0] = mod(st[0] + noise_val, 1);
+        st[1] = mod(st[1] + noise_val, 1);
+
+        if (in_uWave > 0.0 || in_vWave > 0.0)
+        {
+            float tmp_st[2] = {st[0], st[1]};
+
+            if (in_uWave > 0.0)
+            {
+                st[0] -= in_uWave * sin(tmp_st[1] * M_2PI);
+            }
+            if (in_vWave > 0.0)
+            {
+                st[1] += in_vWave * sin(tmp_st[0] * M_2PI);
+            }
+            st[0] = mod(st[0], 1);
+            st[1] = mod(st[1], 1);
+        }
+
+        if (in_type == 0)
+        {
+            out_outColor = color_ramp(
+                in_color,
+                in_position,
+                in_interpolation,
+                st[1]);
+        }
+        else if (in_type == 1)
+        {
+            out_outColor = color_ramp(
+                in_color,
+                in_position,
+                in_interpolation,
+                st[0]);
+        }
+        else if (in_type == 2)
+        {
+            out_outColor = color_ramp(
+                in_color,
+                in_position,
+                in_interpolation,
+                0.5 * (st[0] + st[1]));
+        }
+        else if (in_type == 3)
+        {
+            out_outColor = color_ramp(
+                in_color,
+                in_position,
+                in_interpolation,
+                atan2(st[0] - 0.5, st[1] - 0.5) / M_2PI + 0.5);
+        }
+        else if (in_type == 4)
+        {
+            float value = hypot(
+                M_SQRT2 * (st[0] - 0.5),
+                M_SQRT2 * (st[1] - 0.5));
+
+            out_outColor = color_ramp(
+                in_color,
+                in_position,
+                in_interpolation,
+                value);
+        }
+        else if (in_type == 5)
+        {
+            float abs_st[2] = {abs(st[0] - 0.5), abs(st[1] - 0.5)};
+
+            float value = (abs_st[0] > abs_st[1])
+                ? 2 * abs_st[0]
+                : 2 * abs_st[1];
+
+            out_outColor = color_ramp(
+                in_color,
+                in_position,
+                in_interpolation,
+                value);
+        }
+        else if (in_type == 6)
+        {
+            out_outColor = color_ramp(
+                in_color,
+                in_position,
+                in_interpolation,
+                2 * abs(st[0] - 0.5));
+
+            out_outColor *= color_ramp(
+                in_color,
+                in_position,
+                in_interpolation,
+                2 * abs(st[1] - 0.5));
+        }
+        else if (in_type == 7)
+        {
+            out_outColor = in_color[0] * (1 - st[0]) * (1 - st[1]);
+
+            int len = arraylength(in_position);
+
+            if (len > 1)
+            {
+                out_outColor += in_color[1] * st[0] * (1 - st[1]);
+            }
+            if (len > 2)
+            {
+                out_outColor += in_color[2] * (1 - st[0]) * st[1];
+            }
+            if (len > 3)
+            {
+                out_outColor += in_color[3] * st[0] * st[1];
+            }
+        }
+        else if (in_type == 8)
+        {
+            out_outColor = color_ramp(
+                in_color,
+                in_position,
+                in_interpolation,
+                2 * abs(st[1] - 0.5));
+
+            out_outColor += color_ramp(
+                in_color,
+                in_position,
+                in_interpolation,
+                2 * abs(st[0] - 0.5));
+
+            out_outColor *= 0.5;
+        }
+
+        if (in_hueNoise > 0.0 || in_satNoise > 0.0 || in_valNoise > 0.0)
+        {
+            color C_hsv = transformc("rgb", "hsv", out_outColor);
+
+            if (in_hueNoise > 0.0)
+            {
+                C_hsv[0] += in_hueNoise * noise(
+                    "perlin",
+                    in_hueNoiseFreq * st[0] * 15,
+                    in_hueNoiseFreq * st[1] * 15);
+
+                C_hsv[0] = clamp(C_hsv[0], 0, 1);
+            }
+            if (in_satNoise > 0.0)
+            {
+                C_hsv[1] += in_satNoise * noise(
+                    "perlin",
+                    in_satNoiseFreq * st[0] * 15,
+                    in_hueNoiseFreq * st[1] * 15);
+
+                C_hsv[1] = clamp(C_hsv[1], 0, 1);
+            }
+            if (in_valNoise > 0.0)
+            {
+                C_hsv[2] += in_valNoise * noise(
+                    "perlin",
+                    in_valNoiseFreq * st[0] * 15,
+                    in_valNoiseFreq * st[1] * 15);
+
+                C_hsv[2] = clamp(C_hsv[2], 0, 1);
+            }
+            out_outColor = transformc("hsv", "rgb", C_hsv);
+        }
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            1, // this node sets alpha to color relative luminance
+            out_outColor,
+            out_outAlpha);
+    }
+}

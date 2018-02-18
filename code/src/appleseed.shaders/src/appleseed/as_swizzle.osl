@@ -1,0 +1,301 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+shader as_swizzle
+[[
+    string as_maya_node_name = "asSwizzle",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string help = "RGBA or vector swizzle node.",
+    string icon = "asSwizzle.png",
+    int as_maya_type_id = 0x001279f2,
+    string as_max_class_id = "373182418 1670521488",
+    string as_max_plugin_type = "texture"
+]]
+(
+    color in_color = color(1)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Color",
+        string page = "Color"
+    ]],
+    float in_alpha = 1.0
+    [[
+        string as_maya_attribute_name = "alpha",
+        string as_maya_attribute_short_name = "a",
+        string label = "Alpha Channel",
+        string page = "Color",
+        int divider = 1
+    ]],
+    int in_red_channel = 0
+    [[
+        string as_maya_attribute_name = "redChannel",
+        string as_maya_attribute_short_name = "rch",
+        string widget = "mapper",
+        string options = "Red:0|Green:1|Blue:2|Alpha:3",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Red Channel",
+        string page = "Color"
+    ]],
+    int in_green_channel = 1
+    [[
+        string as_maya_attribute_name = "greenChannel",
+        string as_maya_attribute_short_name = "gch",
+        string widget = "mapper",
+        string options = "Red:0|Green:1|Blue:2|Alpha:3",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Green Channel",
+        string page = "Color"
+    ]],
+    int in_blue_channel = 2
+    [[
+        string as_maya_attribute_name = "blueChannel",
+        string as_maya_attribute_short_name = "bch",
+        string widget = "mapper",
+        string options = "Red:0|Green:1|Blue:2|Alpha:3",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Blue Channel",
+        string page = "Color"
+    ]],
+    int in_alpha_channel = 3
+    [[
+        string as_maya_attribute_name = "alphaChannel",
+        string as_maya_attribute_short_name = "ach",
+        string widget = "mapper",
+        string options = "Red:0|Green:1|Blue:2|Alpha:3",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Alpha Channel",
+        string page = "Color",
+        int divider = 1
+    ]],
+    int in_invert_red = 0
+    [[
+        string as_maya_attribute_name = "invertRed",
+        string as_maya_attribute_short_name = "inr",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Invert Red",
+        string page = "Color"
+    ]],
+    int in_invert_green = 0
+    [[
+        string as_maya_attribute_name = "invertgreen",
+        string as_maya_attribute_short_name = "ing",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Invert Green",
+        string page = "Color"
+    ]],
+    int in_invert_blue = 0
+    [[
+        string as_maya_attribute_name = "invertBlue",
+        string as_maya_attribute_short_name = "inb",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Invert Blue",
+        string page = "Color"
+    ]],
+    int in_invert_alpha = 0
+    [[
+        string as_maya_attribute_name = "invertAlpha",
+        string as_maya_attribute_short_name = "ina",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Invert Alpha",
+        string page = "Color"
+    ]],
+    vector in_vector = vector(0)
+    [[
+        string as_maya_attribute_name = "vector",
+        string as_maya_attribute_short_name = "vec",
+        string label = "Vector Type",
+        string page = "Vector",
+        int divider = 1
+    ]],
+    int in_x_channel = 0
+    [[
+        string as_maya_attribute_name = "xChannel",
+        string as_maya_attribute_short_name = "xch",
+        string widget = "mapper",
+        string options = "X:0|Y:1|Z:2",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "X Component",
+        string page = "Vector"
+    ]],
+    int in_y_channel = 1
+    [[
+        string as_maya_attribute_name = "yChannel",
+        string as_maya_attribute_short_name = "ych",
+        string widget = "mapper",
+        string options = "X:0|Y:1|Z:2",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Y Component",
+        string page = "Vector"
+    ]],
+    int in_z_channel = 2
+    [[
+        string as_maya_attribute_name = "zChannel",
+        string as_maya_attribute_short_name = "zch",
+        string widget = "mapper",
+        string options = "X:0|Y:1|Z:2",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Z Component",
+        string page = "Vector",
+        int divider = 1
+    ]],
+    int in_invert_x = 0
+    [[
+        string as_maya_attribute_name = "invertX",
+        string as_maya_attribute_short_name = "inx",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Invert X",
+        string page = "Vector"
+    ]],
+    int in_invert_y = 0
+    [[
+        string as_maya_attribute_name = "invertY",
+        string as_maya_attribute_short_name = "iny",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Invert Y",
+        string page = "Vector"
+    ]],
+    int in_invert_z = 0
+    [[
+        string as_maya_attribute_name = "invertZ",
+        string as_maya_attribute_short_name = "inz",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Invert Z",
+        string page = "Vector"
+    ]],
+
+    output color out_color = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string label = "Output Color"
+    ]],
+    output float out_alpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
+        string label = "Output Alpha"
+    ]],
+    output vector out_vector = vector(0)
+    [[
+        string as_maya_attribute_name = "outVector",
+        string as_maya_attribute_short_name = "ov",
+        string label = "Output Vector"
+    ]]
+)
+{
+    if (isconnected(in_color) || isconnected(in_alpha))
+    {
+        float RGBA[4] = {in_color[0], in_color[1], in_color[2], in_alpha};
+
+        out_color = color(
+            RGBA[in_red_channel],
+            RGBA[in_green_channel],
+            RGBA[in_blue_channel]);
+
+        out_alpha = RGBA[in_alpha_channel];
+
+        if (in_invert_red)
+            out_color[0] = 1.0 - out_color[0];
+
+        if (in_invert_green)
+            out_color[1] = 1.0 - out_color[1];
+
+        if (in_invert_blue)
+            out_color[2] = 1.0 - out_color[2];
+
+        if (in_invert_alpha)
+            out_color[3] = 1.0 - out_color[3];
+    }
+
+    if (isconnected(in_vector))
+    {
+        out_vector = vector(
+            in_vector[in_x_channel],
+            in_vector[in_y_channel],
+            in_vector[in_z_channel]);
+
+        if (in_invert_x)
+            out_vector[0] *= -1.0;
+
+        if (in_invert_y)
+            out_vector[1] *= -1.0;
+
+        if (in_invert_z)
+            out_vector[2] *= -1.0;
+    }
+}

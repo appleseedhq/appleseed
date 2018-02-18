@@ -1,0 +1,100 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/bulge.html
+
+#include "appleseed/maya/as_maya_helpers.h"
+
+shader as_maya_bulge
+[[
+    string as_maya_node_name = "bulge"
+]]
+(
+    float in_uWidth = 0.0
+    [[
+        string as_maya_attribute_name = "uWidth",
+        string label = "U Width",
+        string page = "Bulge Attributes"
+    ]],
+    float in_vWidth = 0.0
+    [[
+        string as_maya_attribute_name = "vWidth",
+        string label = "V Width",
+        string page = "Bulge Attributes"
+    ]],
+
+    MAYA_COLORBALANCE_PARAMETERS,
+    MAYA_EFFECTS_PARAMETERS,
+    MAYA_UV_PARAMETERS,
+
+    output color out_outColor = color(0.0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]]
+)
+{
+    if (in_uvCoord[0] == OUTSIDE_UVFRAME || in_uvCoord[1] == OUTSIDE_UVFRAME)
+    {
+        out_outColor = in_defaultColor;
+        out_outAlpha = maya_luminance(out_outColor);
+    }
+    else
+    {
+        float st[2] = {
+            mod(in_uvCoord[0], UVWRAP),
+            mod(in_uvCoord[1], UVWRAP)};
+
+        float a = smoothstep(in_uWidth / 2, 0.5, st[0]) *
+            ( 1 - smoothstep(0.5, 1 - (in_uWidth / 2), st[0]));
+
+        float b = smoothstep(in_vWidth / 2, 0.5, st[1]) *
+            ( 1 - smoothstep(0.5, 1 - (in_vWidth / 2), st[1]));
+
+        out_outAlpha = sqrt(fabs(a * b));
+        out_outColor = (color) out_outAlpha;
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha);
+    }
+}

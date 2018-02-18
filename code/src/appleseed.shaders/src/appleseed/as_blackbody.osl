@@ -1,0 +1,325 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/material/as_material_helpers.h"
+#include "appleseed/math/as_math_helpers.h"
+
+shader as_blackbody
+[[
+    string as_maya_node_name = "asBlackbody",
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
+    string help = "Blackbody Shader",
+    string icon = "asBlackbody",
+    int as_maya_type_id = 0x001279d0,
+    string as_max_class_id = "1182349026 1064055537",
+    string as_max_plugin_type = "texture"
+]]
+(
+    int in_incandescence_type = 0
+    [[
+        string as_maya_attribute_name = "incandescenceType",
+        string as_maya_attribute_short_name = "int",
+        string widget = "mapper",
+        string options = "Constant:0|Physically Based:1",
+        string label = "Incandescence Type",
+        string page = "Incandescence",
+        string help = "Constant based, or blackbody radiator based EDF",
+        int divider = 1,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    color in_color = color(0)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "inc",
+        string label = "Color",
+        string page = "Incandescence",
+        string help = "Incandescence color, only valid in constant mode."
+    ]],
+    float in_incandescence_amount = 0.0
+    [[
+        string as_maya_attribute_name = "incandescenceAmount",
+        string as_maya_attribute_short_name = "inw",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Incandescence Amount",
+        string page = "Incandescence"
+    ]],
+    float in_temperature_scale = 1.0
+    [[
+        string as_maya_attribute_name = "temperatureScale",
+        string as_maya_attribute_short_name = "tsc",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Temperature Scale",
+        string page = "Incandescence",
+        string help = "Temperature scaling factor"
+    ]],
+    int in_temperature = 4300
+    [[
+        string as_maya_attribute_name = "temperature",
+        string as_maya_attribute_short_name = "tem",
+        int min = 798,
+        int max = 25000,
+        int softmin = 3400,
+        int softmax = 9300,
+        string label = "Temperature",
+        string page = "Incandescence",
+        string help = "Temperature in Kelvin degrees, only valid in physically based mode",
+        int divider = 1,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_area_normalize_edf = 0
+    [[
+        string as_maya_attribute_name = "normalizeAreaEDF",
+        string as_maya_attribute_short_name = "nae",
+        string widget = "checkBox",
+        string label = "Normalize Area",
+        string page = "Incandescence",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_tonemap_edf = 1
+    [[
+        string as_maya_attribute_name = "toneMapEDF",
+        string as_maya_attribute_short_name = "tme",
+        string widget = "checkBox",
+        string label = "Tonemap Color",
+        string page = "Incandescence",
+        string help = "Tonemap incandescence, only valid for physically based mode",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    float in_specular_amount = 0.0
+    [[
+        string as_maya_attribute_name = "specularAmount",
+        string as_maya_attribute_short_name = "sam",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Specular Amount",
+        string page = "Specular"
+    ]],
+    float in_specular_roughness = 0.1
+    [[
+        string as_maya_attribute_name = "specularRoughness",
+        string as_maya_attribute_short_name = "sro",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Specular Roughness",
+        string page = "Specular"
+    ]],
+    float in_ior = 1.37
+    [[
+        string as_maya_attribute_name = "ior",
+        string as_maya_attribute_short_name = "sio",
+        float min = 1.0,
+        float max = 10.0,
+        float softmax = 2.0,
+        string label = "Index Of Refraction",
+        string page = "Specular",
+        string help = "IOR, only active if Fresnel is set to dielectric.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    normal in_bump_normal = N
+    [[
+        string as_maya_attribute_name = "normalCamera",
+        string as_maya_attribute_short_name = "n",
+        string label = "Surface Normal",
+        string page = "Bump"
+    ]],
+    int in_enable_matte = 0
+    [[
+        string as_maya_attribute_name = "enableMatte",
+        string as_maya_attribute_short_name = "ema",
+        string widget = "checkBox",
+        string label = "Enable Matte Opacity",
+        string page = "Matte Opacity",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int divider = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    float in_matte_opacity = 0.0
+    [[
+        string as_maya_attribute_name = "matteOpacity",
+        string as_maya_attribute_short_name = "mao",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Matte Opacity",
+        string page = "Matte Opacity",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    color in_matte_opacity_color = color(1,0.5,0)
+    [[
+        string as_maya_attribute_name = "matteOpacityColor",
+        string as_maya_attribute_short_name = "mac",
+        string label = "Matte Opacity Color",
+        string page = "Matte Opacity",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_maximum_ray_depth = 8
+    [[
+        string as_maya_attribute_name = "maximumRayDepth",
+        string as_maya_attribute_short_name = "mrd",
+        int min = 0,
+        int max = 32,
+        int softmax = 8,
+        string label = "Ray Depth",
+        string page = "Advanced",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    output closure color out_color = 0
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string widget = "null"
+    ]],
+    output closure color out_matte_opacity = 0
+    [[
+        string as_maya_attribute_name = "outMatteOpacity",
+        string as_maya_attribute_short_name = "om",
+        string widget = "null"
+    ]],
+    output color out_blackbody_color = color(0)
+    [[
+        string as_maya_attribute_name = "outBlackbodyColor",
+        string as_maya_attribute_short_name = "bbc",
+        string widget = "null"
+    ]]
+)
+{
+    if (raytype("shadow") || raytype("transparency"))
+    {
+        return;
+    }
+
+    if (in_incandescence_amount == 0.0)
+    {
+        return;
+    }
+
+    int ray_depth = 0;
+    int status = getattribute("path:ray_depth", ray_depth);
+
+    if (!status || ray_depth > in_maximum_ray_depth)
+    {
+        return;
+    }
+
+    if (in_enable_matte)
+    {
+        out_matte_opacity = in_matte_opacity *
+            in_matte_opacity_color * holdout();
+
+        out_color += out_matte_opacity;
+    }
+
+    float transmittance = 1.0;
+
+    if (in_specular_amount > 0.0 && in_ior > 1.0)
+    {
+        // Dielectric coating, so the Schlick approximation suffices.
+        vector In = normalize(I);
+        normal Nn = normalize(in_bump_normal);
+
+        float costheta_o = dot(-In, Nn);
+
+        float R0 = sqr((in_ior - 1.0) / (in_ior + 1.0));
+        float Kr = R0 + (1.0 - R0) * pow(1.0 - costheta_o, 5.0);
+
+        transmittance = 1.0 - clamp(Kr, 0.0, 1.0);
+
+        out_color += in_specular_amount *
+            as_glossy(
+                "ggx",
+                Nn,
+                vector(0), // tangent vector
+                in_specular_roughness,
+                0.0, // specular spread
+                0.0, // anisotropy amount
+                in_ior,
+                "energy_compensation", 1.0);
+    }
+
+    if (transmittance <= EPS)
+    {
+        return;
+    }
+
+    if (raytype("light"))
+    {
+        color edf_color = color(0);
+
+        if (in_incandescence_type == 0)
+        {
+            edf_color = in_color;
+        }
+        else if (in_temperature_scale * in_temperature > 798)
+        {
+            // TODO: Integrating Planck's equation to SPD using specified
+            // CMF (ie, 1931, 2012 CMF), then converting from SPD->CIEXYZ to
+            // RGB using the working space RGBW primaries.
+
+            edf_color = blackbody(in_temperature_scale *
+                (float) in_temperature);
+        }
+
+        if (max(edf_color) < EPS)
+        {
+            return;
+        }
+
+        if (in_area_normalize_edf)
+        {
+            edf_color /= surfacearea();
+        }
+        if (in_tonemap_edf)
+        {
+            edf_color /= luminance(edf_color) + 1.0; // Rec.709 Y
+        }
+
+        out_blackbody_color = in_incandescence_amount * edf_color;
+        out_color += transmittance * out_blackbody_color * emission();
+    }
+}

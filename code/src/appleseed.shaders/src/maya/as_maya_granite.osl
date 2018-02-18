@@ -1,0 +1,322 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/granite.html
+
+#include "appleseed/fractal/as_fractal_helpers.h"
+#include "appleseed/math/as_math_helpers.h"
+#include "appleseed/maya/as_maya_fractal_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/maya/as_maya_transform_helpers.h"
+
+shader as_maya_granite
+[[
+    string as_maya_node_name = "granite",
+]]
+(
+    color in_color1 = color(0)
+    [[
+        string as_maya_attribute_name = "color1",
+        string as_maya_attribute_name_short = "c1",
+        string label = "Color 1",
+        string page = "Granite Attributes"
+    ]],
+    color in_color2 = color(0.549, 0.784, 0.392)
+    [[
+        string as_maya_attribute_name = "color2",
+        string as_maya_attribute_name_short = "c2",
+        string label = "Color 2",
+        string page = "Granite Attributes"
+    ]],
+    color in_color3 = color(0.627, 0.824, 0.823)
+    [[
+        string as_maya_attribute_name = "color3",
+        string as_maya_attribute_name_short = "c3",
+        string label = "Color 3",
+        string page = "Granite Attributes"
+    ]],
+    color in_fillerColor = color(0.588, 0.294, 0.196)
+    [[
+        string as_maya_attribute_name = "fillerColor",
+        string as_maya_attribute_name_short = "fc",
+        string label = "Filler Color",
+        string page = "Granite Attributes"
+    ]],
+    float in_cellSize = 0.15
+    [[
+        string as_maya_attribute_name = "cellSize",
+        string as_maya_attribute_name_short = "cs",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Cell Size",
+        string page = "Granite Attributes"
+    ]],
+    float in_density = 1.0
+    [[
+        string as_maya_attribute_name = "density",
+        string as_maya_attribute_name_short = "dy",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Density",
+        string page = "Granite Attributes"
+    ]],
+    float in_mixRatio = 0.5
+    [[
+        string as_maya_attribute_name = "mixRatio",
+        string as_maya_attribute_name_short = "mr",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Mixing Ratio",
+        string page = "Granite Attributes"
+    ]],
+    float in_randomness = 1.0
+    [[
+        string as_maya_attribute_name = "randomness",
+        string as_maya_attribute_name_short = "ra",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Randomness",
+        string page = "Granite Attributes"
+    ]],
+    float in_spottyness = 0.3
+    [[
+        string as_maya_attribute_name = "spottyness",
+        string as_maya_attribute_name_short = "s",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Spottiness",
+        string page = "Granite Attributes"
+    ]],
+    float in_threshold = 0.5
+    [[
+        string as_maya_attribute_name = "threshold",
+        string as_maya_attribute_name_short = "th",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Threshold",
+        string page = "Granite Attributes"
+    ]],
+    int in_creases = 1
+    [[
+        string as_maya_attribute_name = "creases",
+        string as_maya_attribute_name_short = "c",
+        string label = "Creases",
+        string page = "Granite Attributes",
+        string widget = "checkBox"
+    ]],
+    point in_refPointCamera = P
+    [[
+        string as_maya_attribute_name = "refPointCamera",
+        string as_maya_attribute_name_short = "rpc",
+        string label = "Surface Point",
+        string widget = "null"
+    ]],
+    matrix in_placementMatrix = matrix(1)
+    [[
+        string as_maya_attribute_name = "placementMatrix",
+        string label = "Placement Matrix",
+        string widget = "null"
+    ]],
+
+    MAYA_COLORBALANCE_PARAMETERS,
+    MAYA_EFFECTS_PARAMETERS,
+    MAYA_EFFECTS_3DTEX_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_name_short = "oc",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_name_short = "oa",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]]
+)
+{
+    matrix placement = (in_local)
+        ? matrix("common", "object") * in_placementMatrix
+        : in_placementMatrix;
+
+    point Pp = transform(placement, in_refPointCamera);
+
+    float box_blending = 0.0;
+
+    int outside_box = outside_place3d_volume(
+        Pp,
+        in_wrap,
+        in_blend,
+        box_blending);
+
+    if (outside_box)
+    {
+        out_outColor = in_defaultColor;
+        out_outAlpha = maya_luminance(out_outColor);
+    }
+    else
+    {
+        // This is a Worley noise with 3 color cell mapping and a background
+        // color filler, with "creases" as the difference of the first two
+        // features.
+
+        Pp = 5.0 * Pp / in_cellSize;
+        point this_cell = floor(Pp) + 0.5, test_cell, test_position;
+
+        float radius = sqrt(0.5 * in_density);
+
+        float cell_mix1 = 1.0 - in_mixRatio;
+        float cell_mix2 = 1.0 - 2.0 * abs(in_mixRatio - 0.5);
+        float rangenorm = cell_mix1 + cell_mix2 + in_mixRatio;
+
+        cell_mix1 /= rangenorm;
+        cell_mix2 /= rangenorm;
+
+        float f1 = 1000, f2 = 1000;
+
+        color out = in_fillerColor;
+
+        for (int i = -1; i <= 1; ++i)
+        {
+            for (int j = -1; j <= 1; ++j)
+            {
+                for (int k = -1; k <= 1; ++k)
+                {
+                    test_cell = this_cell + vector(i, j, k);
+                    test_position = test_cell;
+
+                    if (in_randomness > 0.0)
+                    {
+                        test_position += in_randomness *
+                            (cellnoise(test_cell) - 0.5);
+                    }
+
+                    float cell_distance = distance(test_position, Pp);
+
+                    if (in_creases)
+                    {
+                        if (cell_distance < f1)
+                        {
+                            f2 = f1;
+                            f1 = cell_distance;
+                        }
+                        else if (cell_distance < f2)
+                        {
+                            f2 = cell_distance;
+                        }
+                    }
+
+                    if (cell_distance < radius)
+                    {
+                        float cell_mapper = (float) cellnoise(test_cell);
+                        color cell_color;
+
+                        if (cell_mapper < cell_mix1 + 0.1)
+                        {
+                            cell_color = in_color1;
+                        }
+                        else if (cell_mapper < cell_mix1 + cell_mix2)
+                        {
+                            cell_color = in_color2;
+                        }
+                        else
+                        {
+                            cell_color = in_color3;
+                        }
+
+                        if (in_threshold < 1.0)
+                        {
+                            float threshold_distance = cell_distance / radius;
+                            float attenuation = 1.0;
+
+                            float threshold = sqr(sqr(in_threshold));
+
+                            float A = smoothstep(0.0,
+                                                 threshold,
+                                                 threshold_distance);
+
+                            float B = smoothstep(threshold,
+                                                 1.0,
+                                                 threshold_distance);
+
+                            A = clamp(A, 0.0, 1.0);
+                            B = clamp(B, 0.0, 1.0);
+
+                            attenuation = 1.0 - A * B;
+
+                            if (in_spottyness > 0.0)
+                            {
+                                test_cell += vector(23, 42, 7);
+                                float spots = cellnoise(test_cell);
+
+                                attenuation *= 1.0 - in_spottyness * sqr(spots);
+                            }
+
+                            out = mix(out, cell_color, attenuation);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (in_creases)
+        {
+            float creases = clamp(f2 - f1, 0.0, 1.0);
+            creases = sqr(1.0 - creases);
+
+            out_outColor = mix(out, in_fillerColor, creases);
+        }
+        else
+        {
+            out_outColor = out;
+        }
+
+        out_outAlpha = maya_luminance(out_outColor);
+
+        if (!in_wrap && in_blend)
+        {
+            out_outColor = mix(in_defaultColor, out_outColor, box_blending);
+            out_outAlpha *= box_blending;
+        }
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha
+            );
+    }
+}

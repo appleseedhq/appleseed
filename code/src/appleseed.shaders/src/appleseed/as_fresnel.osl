@@ -1,0 +1,213 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2018 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/color/as_color_helpers.h"
+#include "appleseed/material/as_material_helpers.h"
+#include "appleseed/math/as_math_helpers.h"
+
+shader as_fresnel
+[[
+    string as_maya_node_name = "asFresnel",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string help = "A viewer Fresnel term node",
+    string icon = "asFresnel.png",
+    int as_maya_type_id = 0x001279f1,
+    string as_max_class_id = "1608738100 1656300655", 
+    string as_max_plugin_type = "texture"
+]]
+(
+    string in_fresnel_type = "Simple Dielectric"
+    [[
+        string as_maya_attribute_name = "fresnelType",
+        string as_maya_attribute_short_name = "fty",
+        string widget = "popup",
+        string options = "Simple Dielectric|Artist Friendly|Physically Based",
+        string label = "Fresnel Type",
+        string page = "Fresnel",
+        string help = "Simple dielectric allows a monochromatic dielectric IOR,  while artist friendly fresnel allows setting reflectance at normal and grazing incidences, and physically based mode, the explicit polychromatic eta+k complex ior.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    float in_ior = 1.37
+    [[
+        string as_maya_attribute_name = "ior",
+        string as_maya_attribute_short_name = "sio",
+        float min = 1.0,
+        float max = 10.0,
+        float softmax = 2.0,
+        string label = "Index Of Refraction",
+        string page = "Fresnel",
+        string help = "Dielectric monochromatic index of refraction",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int separator = 1
+    ]],
+    color in_face_tint = color(0.85, 0.21, 0.05)
+    [[
+        string as_maya_attribute_name = "faceTint",
+        string as_maya_attribute_short_name = "f0",
+        string label = "Facing Tint",
+        string page = "Fresnel",
+        string help = "Reflectance at facing angle, for conductor Fresnel.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    color in_edge_tint = color(1)
+    [[
+        string as_maya_attribute_name = "edgeTint",
+        string as_maya_attribute_short_name = "f90",
+        string label = "Edge Tint",
+        string page = "Fresnel",
+        string help = "Reflectance at grazing angle, conductor Fresnel only.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int divider = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    vector in_complex_eta = vector(0.21544, 1.0066, 1.2402)
+    [[
+        string as_maya_attribute_name = "complexEta",
+        string as_maya_attribute_short_name = "cet",
+        string label = "Complex IOR",
+        string page = "Fresnel",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0        
+    ]],
+    vector in_complex_kappa = vector(3.95560, 2.5823, 2.3929)
+    [[
+        string as_maya_attribute_name = "complexKappa",
+        string as_maya_attribute_short_name = "cka",
+        string label = "Extinction Coefficient",
+        string page = "Fresnel",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    normal in_surface_normal = N
+    [[
+        string as_maya_attribute_name = "normalCamera",
+        string as_maya_attribute_short_name = "n",
+        string label = "Surface Normal",
+        string page = "Globals",
+        string help = "The unit length world space shading normal, it can be a bumped normal"
+    ]],
+    vector in_viewer_vector = I
+    [[
+        string as_maya_attribute_name = "viewerVector",
+        string as_maya_attribute_short_name = "i",
+        string label = "Viewer Vector",
+        string page = "Globals",
+        string help = "The unit length world space vector pointing from the viewer position to the point being shaded."
+    ]],
+
+    output color out_color = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_alpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]]
+)
+{
+    float exterior_medium_ior = 1.0;
+    getattribute("path:ray_ior", exterior_medium_ior);
+
+    if (in_fresnel_type == "Simple Dielectric")
+    {
+        float Kr;
+
+        if (exterior_medium_ior != 1.0)
+        {
+            float costheta = dot(normalize(N), -normalize(I));
+
+            Kr = dielectricDielectricFresnel(
+                    exterior_medium_ior,
+                    in_ior,
+                    costheta);
+        }
+        else
+        {
+            float Kt;
+
+            fresnel(
+                normalize(I),
+                normalize(N),
+                backfacing() ? in_ior : 1.0 / in_ior,
+                Kr,
+                Kt);                
+        }       
+        out_alpha = clamp(Kr, 0.0, 1.0);
+        out_color = color(out_alpha);
+    }
+    else
+    {
+        color n, k, Kr;
+
+        if (in_fresnel_type == "Artist Friendly")
+        {
+            n = get_eta(in_face_tint, in_edge_tint);
+            k = get_kappa(in_face_tint, n);
+        }
+        else
+        {
+            n = color(in_complex_eta);
+            k = color(in_complex_kappa);
+        }
+        
+        float costheta = dot(normalize(N), -normalize(I));
+
+        for (int i = 0; i < 3; ++i)
+        {
+            Kr[i] = dielectricConductorFresnel(
+                exterior_medium_ior,
+                n[i],
+                k[i],
+                costheta);
+        }
+        out_color = clamp(Kr, color(0), color(1));
+        out_alpha = as_luminance(out_color, "Rec.709"); // ws=Rec.709 for now
+    }
+}

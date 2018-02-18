@@ -1,0 +1,57 @@
+2008-01-20  Holger Weiss <holger@jhweiss.de>
+
+	* configure.ac, snprintf.c: Release 1.1.
+
+2008-01-20  Holger Weiss <holger@jhweiss.de>
+
+	* snprintf.c: Fix typo (INTMAX_MAX vs. UINTMAX_MAX).
+
+2008-01-19  Holger Weiss <holger@jhweiss.de>
+
+	* snprintf.c: If lc->thousands_sep is a NULL pointer, use ",".
+
+2008-01-19  Holger Weiss <holger@jhweiss.de>
+
+	* snprintf.c: Make sure the value returned by getexponent() will be
+	in the range of -99 to 99 under all circumstances and omit the now
+	completely redundant checks for overflow of the econvert buffer
+	(which holds the exponent).
+
+2008-01-19  Holger Weiss <holger@jhweiss.de>
+
+	* snprintf.c: In printsep(), make sure that lc->thousands_sep is
+	not a NULL pointer before using it.  Also, if it points to a
+	multi-character separator, simply call OUTCHAR() for each
+	character; using fmtstr() in this case (as we did before) doesn't
+	gain anything.
+
+2008-01-16  Holger Weiss <holger@jhweiss.de>
+
+	* snprintf.c: Fix the infinity detection on IRIX (and possibly
+	other systems).
+
+2008-01-12  Holger Weiss <holger@jhweiss.de>
+
+	* snprintf.c: Minor comment fixes.
+
+2008-01-12  Holger Weiss <holger@jhweiss.de>
+
+	* snprintf.c: Setting *overflow to 1 in cast() was redundant as
+	returning INTMAX_MAX signals overflow already (a regular conversion
+	to INTMAX_MAX is not supported).
+
+2008-01-11  Holger Weiss <holger@jhweiss.de>
+
+	* test.sh: Don't force strict C89, as we want to test "long long"
+	support, for example.
+
+2008-01-06  Holger Weiss <holger@jhweiss.de>
+
+	* ChangeLog: Release 1.0.
+
+2008-01-06  Holger Weiss <holger@jhweiss.de>
+
+	* AUTHORS, COPYING, ChangeLog, INSTALL, Makefile.am, NEWS, README,
+	autogen.sh, configure.ac, example.c, snprintf.c, system.h, test.sh,
+	m4/snprintf.m4: Initial revision
+

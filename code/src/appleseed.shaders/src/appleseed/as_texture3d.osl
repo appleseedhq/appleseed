@@ -1,0 +1,329 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2018 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/texture/as_texture_helpers.h"
+#include "appleseed/maya/as_maya_transform_helpers.h"
+
+shader as_texture3d
+[[
+    string as_maya_node_name = "asTexture3D",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/3d:swatch/AppleseedRenderSwatch:texture",
+    string help = "A field3d format 3D texture lookup node",
+    string icon = "asTexture3D.png",
+    int as_maya_type_id = 0x001279ff,
+    string as_max_class_id = "2105412220 306260647",
+    string as_max_plugin_type = "texture"
+]]
+(
+
+    string in_filename = ""
+    [[
+        string as_maya_attribute_name = "filename",
+        string as_maya_attribute_short_name = "fil",
+        string label = "Filename",
+        string page = "3D Texture",
+        string widget = "filename",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "The 3D texture file (field3d, f3d, etc)",
+        int divider = 1
+    ]],
+    int in_starting_channel = 0
+    [[
+        string as_maya_attribute_name = "startingChannel",
+        string as_maya_attribute_short_name = "sch",
+        string label = "Starting Channel",
+        string page = "3D Texture",
+        int min = 0,
+        int softmax = 4,
+        string help = "Starting channel for the texture lookup, usually 0 for an ordinary RGB texture.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    color in_color = color(0)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Default Color",
+        string page = "3D Texture",
+        string help = "Default fill color to use if the texture lookup fails."
+    ]],
+    float in_channel_fill = 0.0
+    [[
+        string as_maya_attribute_name = "channelFill",
+        string as_maya_attribute_short_name = "chf",
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Default Channel Fill",
+        string page = "3D Texture",
+        string help = "Default fill value for any channels requested but not present",
+        int divider = 1
+    ]],
+    float in_time = 0.0
+    [[
+        string as_maya_attribute_name = "time",
+        string as_maya_attribute_short_name = "tim",
+        float softmin = 0.0,
+        string label = "Time",
+        string page = "3D Texture",
+        string help = "Time value to use if the texture specifies a time varying local transformation"
+    ]],
+    int in_s_wrap = 0
+    [[
+        string as_maya_attribute_name = "sWrap",
+        string as_maya_attribute_short_name = "swa",
+        string label = "S Wrapping",
+        string page = "3D Texture.Wrap",
+        string widget = "mapper",
+        string options = "Default:0|Black:1|Periodic:2|Clamp:3|Mirror:4",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Use the wrapping mode set on the texture, or override it"
+    ]], 
+    int in_t_wrap = 0
+    [[
+        string as_maya_attribute_name = "tWrap",
+        string as_maya_attribute_short_name = "twa",
+        string label = "T Wrapping",
+        string page = "3D Texture.Wrap",
+        string widget = "mapper",
+        string options = "Default:0|Black:1|Periodic:2|Clamp:3|Mirror:4",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Use the wrapping mode set on the texture, or override it"
+    ]],
+    int in_r_wrap = 0
+    [[
+        string as_maya_attribute_name = "rWrap",
+        string as_maya_attribute_short_name = "rwa",
+        string label = "R Wrapping",
+        string page = "3D Texture.Wrap",
+        string widget = "mapper",
+        string options = "Default:0|Black:1|Periodic:2|Clamp:3|Mirror:4",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Use the wrapping mode set on the texture, or override it"
+    ]],
+    float in_s_blur = 0.0
+    [[
+        string as_maya_attribute_name = "sBlur",
+        string as_maya_attribute_short_name = "sbl",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Blur Width",
+        string page = "3D Texture.Blur",
+        string help = "Blur along the s direction, or width."
+    ]],
+    float in_t_blur = 0.0
+    [[
+        string as_maya_attribute_name = "tBlur",
+        string as_maya_attribute_short_name = "tbl",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Blur Height",
+        string page = "3D Texture.Blur",
+        string help = "Blur along the t direction, or height."
+    ]],
+    float in_r_blur = 0.0
+    [[
+        string as_maya_attribute_name = "rBlur",
+        string as_maya_attribute_short_name = "rbl",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Blur Depth",
+        string page = "3D Texture.Blur",
+        string help = "Blur along the r direction, or depth.",
+        int divider = 1
+    ]],
+    float in_s_width = 1.0
+    [[
+        string as_maya_attribute_name = "sWidth",
+        string as_maya_attribute_short_name = "swi",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Width Filter",
+        string page = "3D Texture.Filter",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,        
+        string help = "Scale the size of the filter defined by the partial derivatives along s or implicitly from P, with 0 disabling filtering altogether."
+    ]],
+    float in_t_width = 1.0
+    [[
+        string as_maya_attribute_name = "tWidth",
+        string as_maya_attribute_short_name = "twi",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Height Filter",
+        string page = "3D Texture.Filter",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Scale the size of the filter defined by the partial derivatives along t or implicitly from P, with 0 disabling filtering altogether."
+    ]],
+    float in_r_width = 1.0
+    [[
+        string as_maya_attribute_name = "rWidth",
+        string as_maya_attribute_short_name = "rwi",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Depth Filter",
+        string page = "3D Texture.Filter",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Scale the size of the filter defined by the partial derivatives along r or implicitly from P, with 0 disabling filtering altogether."
+    ]],
+    point in_surface_point = P
+    [[
+        string as_maya_attribute_name = "surfacePoint",
+        string as_maya_attribute_short_name = "sp",
+        string label = "Surface Point",
+        string page = "Coordinates",
+        int divider = 1
+    ]],
+    int in_coordsys = 1
+    [[
+        string as_maya_attribute_name = "local",
+        string as_maya_attribute_short_name = "loc",
+        string label = "Coordinate System",
+        string widget = "mapper",
+        string options = "Object Space:0|World Space:1|Camera Space:2",
+        string page = "Coordinates",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    matrix in_placement_matrix = matrix(1)
+    [[
+        string as_maya_attribute_name = "placementMatrix",
+        string as_maya_attribute_short_name = "pm",
+        string label = "Placement Matrix",
+        string page = "Coordinates",
+        string widget = "null",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    output color out_color = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string widget = "null"
+    ]],
+    output float out_channel = 1.0
+    [[
+        string as_maya_attribute_name = "outChannel",
+        string as_maya_attribute_short_name = "och",
+        string widget = "null"
+    ]]
+)
+{
+    if (in_filename == "")
+    {
+        return;
+    }
+    else
+    {
+        int valid_file = 0;
+        gettextureinfo(in_filename, "exists", valid_file);
+
+        if (!valid_file)
+        {
+            return;
+        }
+
+        string texture_format = "";
+        gettextureinfo(in_filename, "textureformat", texture_format);
+
+        if (texture_format != "Volume Texture")
+        {
+#ifdef DEBUG
+            string shadername = "";
+            getattribute("shader:shadername", shadername);
+            
+            warning("[DEBUG]: Invalid texture type %s in %s, %s:%d\n",
+                    texture_format, shadername, __FILE__, __LINE__);
+#endif
+            return;
+        }
+    }
+    
+    string wrap_mode[3];
+    set_wrap_mode(in_s_wrap, in_t_wrap, in_r_wrap, wrap_mode);
+
+    matrix xform;
+    
+    if (in_coordsys == 0)
+    {
+        xform = matrix("common", "object") * in_placement_matrix;
+    }
+    else if (in_coordsys == 1)
+    {
+        xform = matrix("common", "world") * in_placement_matrix;
+    }
+    else
+    {
+        xform = matrix("common", "camera") * in_placement_matrix;
+    }
+
+    point Pp = (xform != matrix(1))
+        ? transform(xform, in_surface_point)
+        : in_surface_point;
+
+    out_color = (color) texture3d(
+        in_filename,
+        Pp,
+        "sblur", in_s_blur,
+        "tblur", in_t_blur,
+        "rblur", in_r_blur,
+        "swidth", in_s_width,
+        "twidth", in_t_width,
+        "rwidth", in_r_width,
+        "swrap", wrap_mode[0],
+        "twrap", wrap_mode[1],
+        "rwrap", wrap_mode[2],
+        "firstchannel", in_starting_channel,
+        "fill", in_channel_fill,
+        "missingcolor", in_color,
+        "time", in_time);
+}

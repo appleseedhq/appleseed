@@ -1,0 +1,174 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/brownian.html
+
+#include "appleseed/fractal/as_fractal_helpers.h"
+#include "appleseed/math/as_math_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/maya/as_maya_transform_helpers.h"
+
+shader as_maya_brownian
+[[
+    string as_maya_node_name = "brownian"
+]]
+(
+    float in_lacunarity = 4.0
+    [[
+        string as_maya_attribute_name = "lacunarity",
+        float softmin = 0.0,
+        float softmax = 5.0,
+        string label = "Lacunarity",
+        string page = "Brownian Attributes"
+    ]],
+    float in_increment = 0.1
+    [[
+        string as_maya_attribute_name = "increment",
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Increment",
+        string page = "Brownian Attributes"
+    ]],
+    float in_octaves = 3.0
+    [[
+        string as_maya_attribute_name = "octaves",
+        float min = 0.0,
+        float softmax = 5.0,
+        string label = "Octaves",
+        string page = "Brownian Attributes"
+    ]],
+    vector in_weight3d = vector(1)
+    [[
+        string as_maya_attribute_name = "weight3d",
+        string label = "Weight 3D",
+        string page = "Brownian Attributes"
+    ]],
+    matrix in_placementMatrix = matrix(1)
+    [[
+        string as_maya_attribute_name = "placementMatrix",
+        string label = "Placement Matrix",
+        string widget = "null"
+    ]],
+    point in_refPointCamera = P
+    [[
+        string as_maya_attribute_name = "refPointCamera",
+        string label = "Surface Point",
+        string widget = "null"
+    ]],
+
+    MAYA_COLORBALANCE_PARAMETERS,
+    MAYA_EFFECTS_PARAMETERS,
+    MAYA_EFFECTS_3DTEX_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]]
+)
+{
+    matrix placement = (in_local)
+        ? matrix("common", "object") * in_placementMatrix
+        : in_placementMatrix;
+
+    point Pp = transform(placement, in_refPointCamera);
+
+    float box_blending = 0.0;
+
+    int outside_box = outside_place3d_volume(
+        Pp,
+        in_wrap,
+        in_blend,
+        box_blending);
+
+    if (outside_box)
+    {
+        out_outColor = in_defaultColor;
+        out_outAlpha = maya_luminance(in_defaultColor);
+        return;
+    }
+    else
+    {
+        float filter_width = 0.0;
+
+        if (in_filter > 0.0)
+        {
+            filter_width = in_filter * max(EPS, sqrt(area(Pp)));
+            filter_width += in_filterOffset;
+        }
+
+        Pp *= in_weight3d;
+
+        float frequency = 1.0, factor = 1.0, out = 0.0;
+        float iterate = -log2(filter_width);
+        iterate = (iterate < in_octaves) ? iterate : in_octaves; // lowpass
+
+        for (int i = 0; i < iterate + 1; ++i)
+        {
+            if (i == iterate)
+            {
+                factor = iterate - floor(iterate);
+            }
+
+            out += factor * filtered_snoise(Pp, 0, filter_width) *
+                pow(frequency, -in_increment);
+
+            frequency *= in_lacunarity;
+            Pp *= in_lacunarity;
+        }
+
+        out_outAlpha = out;
+        out_outColor = out * 0.5 + 0.5;
+
+        if (!in_wrap && in_blend)
+        {
+            out_outColor = mix(in_defaultColor, out_outColor, box_blending);
+            out_outAlpha *= box_blending;
+        }
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha);
+    }
+}

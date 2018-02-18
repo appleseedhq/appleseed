@@ -1,0 +1,366 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/wood.html
+
+//#include "appleseed/fractal/as_noise_helpers.h"
+#include "appleseed/maya/as_maya_fractal_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/maya/as_maya_transform_helpers.h"
+
+#define NUMRAD      10000
+#define NUMTX       256
+#define NUMTXM      512
+
+shader as_maya_wood
+[[
+    string as_maya_node_name = "wood"
+]]
+(
+    color in_fillerColor = color(0.824, 0.627, 0.471)
+    [[
+        string as_maya_attribute_name = "fillerColor",
+        string as_maya_attribute_short_name = "fc",
+        string label = "Filler Color",
+        string page = "Wood Attributes"
+    ]],
+    color in_veinColor = color(0.157, 0.078, 0.039)
+    [[
+        string as_maya_attribute_name = "veinColor",
+        string as_maya_attribute_short_name = "vc",
+        string label = "Vein Color",
+        string page = "Wood Attributes"
+    ]],
+    float in_veinSpread = 0.25
+    [[
+        string as_maya_attribute_name = "veinSpread",
+        string as_maya_attribute_short_name = "v",
+        float min = 0.0,
+        float softmax = 3.0,
+        string label = "Vein Spread",
+        string page = "Wood Attributes"
+    ]],
+    float in_layerSize = 0.05
+    [[
+        string as_maya_attribute_name = "layerSize",
+        string as_maya_attribute_short_name = "ls",
+        float min = 0.005,
+        float softmax = 0.5,
+        string label = "Layer Size",
+        string page = "Wood Attributes"
+    ]],
+    float in_randomness = 0.5
+    [[
+        string as_maya_attribute_name = "randomness",
+        string as_maya_attribute_short_name = "rd",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Randomness",
+        string page = "Wood Attributes"
+    ]],
+    float in_age = 20.0
+    [[
+        string as_maya_attribute_name = "age",
+        string as_maya_attribute_short_name = "a",
+        float min = 0.0,
+        float softmax = 100.0,
+        string label = "Age",
+        string page = "Wood Attributes"
+    ]],
+    color in_grainColor = color(0.118, 0.039, 0.0)
+    [[
+        string as_maya_attribute_name = "grainColor",
+        string as_maya_attribute_short_name = "gc",
+        string label = "Grain Color",
+        string page = "Wood Attributes"
+    ]],
+    float in_grainContrast = 0.5
+    [[
+        string as_maya_attribute_name = "grainContrast",
+        string as_maya_attribute_short_name = "gx",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Grain Contrast",
+        string page = "Wood Attributes"
+    ]],
+    float in_grainSpacing = 0.01
+    [[
+        string as_maya_attribute_name = "grainSpacing",
+        string as_maya_attribute_short_name = "gs",
+        float min = 0.0,
+        float softmin = 0.01,
+        float softmax = 0.1,
+        string label = "Grain Spacing",
+        string page = "Wood Attributes"
+    ]],
+    float in_center[2] = {0.5, -0.5}
+    [[
+        string as_maya_attribute_name = "center",
+        string as_maya_attribute_short_name = "c",
+        float softmin = -1.0,
+        float softmax = 1.0,
+        string label = "Center",
+        string page = "Wood Attributes"
+    ]],
+    float in_amplitudeX = 0.0
+    [[
+        string as_maya_attribute_name = "amplitudeX",
+        string as_maya_attribute_short_name = "ax",
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Amplitude X",
+        string page = "Noise Attributes"
+    ]],
+    float in_amplitudeY = 0.0
+    [[
+        string as_maya_attribute_name = "amplitudeY",
+        string as_maya_attribute_short_name = "ay",
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Amplitude Y",
+        string page = "Noise Attributes"
+    ]],
+    float in_ratio = 0.35
+    [[
+        string as_maya_attribute_name = "ratio",
+        string as_maya_attribute_short_name = "ra",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Ratio",
+        string page = "Noise Attributes"
+    ]],
+    vector in_ripples = vector(1)
+    [[
+        string as_maya_attribute_name = "ripples",
+        string as_maya_attribute_short_name = "r",
+        string label = "Ripples",
+        string page = "Noise Attributes"
+    ]],
+    float in_ripplesX = 1.0
+    [[
+        string as_maya_attribute_name = "ripplesX",
+        string as_maya_attribute_short_name = "rx",
+        string widget = "null"
+    ]],
+    float in_ripplesY = 1.0
+    [[
+        string as_maya_attribute_name = "ripplesY",
+        string as_maya_attribute_short_name = "ry",
+        string widget = "null"
+    ]],
+    float in_ripplesZ = 1.0
+    [[
+        string as_maya_attribute_name = "ripplesZ",
+        string as_maya_attribute_short_name = "rz",
+        string widget = "null"
+    ]],
+    float in_depth[2] = {0.0, 8.0}
+    [[
+        string as_maya_attribute_name = "depth",
+        string as_maya_attribute_short_name = "d",
+        float min = 0.0,
+        float softmax = 8.0,
+        string label = "Depth",
+        string page = "Noise Attributes"
+    ]],
+    point in_refPointCamera = P
+    [[
+        string as_maya_attribute_name = "refPointCamera",
+        string as_maya_attribute_short_name = "rpc",
+        string label = "Surface Point",
+        string widget = "null"
+    ]],
+    matrix in_placementMatrix = matrix(1)
+    [[
+        string as_maya_attribute_name = "placementMatrix",
+        string label = "Placement Matrix",
+        string widget = "null"
+    ]],
+
+    MAYA_COLORBALANCE_PARAMETERS,
+    MAYA_EFFECTS_PARAMETERS,
+    MAYA_EFFECTS_3DTEX_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]]
+)
+{
+    matrix placement = (in_local)
+        ? matrix("common", "object") * in_placementMatrix
+        : in_placementMatrix;
+
+    point Pp = transform(placement, in_refPointCamera);
+
+    float box_blending = 0.0;
+
+    int outside_box = outside_place3d_volume(
+        Pp,
+        in_wrap,
+        in_blend,
+        box_blending);
+
+    if (outside_box)
+    {
+        out_outColor = in_defaultColor;
+        out_outAlpha = maya_luminance(out_outColor);
+
+        return;
+    }
+    else
+    {
+        float filter_width = 0.0;
+
+        if (in_filter > 0.0)
+        {
+            filter_width = in_filter * max(EPS, sqrt(area(Pp)));
+            filter_width += in_filterOffset;
+        }
+
+        float displace_u, displace_v;
+
+        if (in_amplitudeX > 0.0 || in_amplitudeY > 0.0)
+        {
+            vector ripples = isconnected(in_ripples)
+                ? in_ripples
+                : vector(in_ripplesX, in_ripplesY, in_ripplesZ);
+
+            filter_width *= max(ripples);
+
+            float iterate = -log2(filter_width);
+            iterate = clamp(iterate, in_depth[0], in_depth[1]);
+
+            int max_iteration = (int) floor(iterate);
+
+            vector frequency = ripples * 0.5; // better match
+            float amplitude = 1.0, noise_x = 0.0, noise_y = 0.0;
+
+            for (int i = 0; i < max_iteration + 1; ++i)
+            {
+                if (i == max_iteration)
+                {
+                    amplitude *= iterate - max_iteration;
+                }
+                if (amplitude == 0.0)
+                {
+                    break;
+                }
+
+                noise_x += amplitude *
+                    filtered_snoise(Pp * frequency, 0, filter_width);
+
+                noise_y += amplitude *
+                    filtered_snoise(Pp * frequency, 0, filter_width);
+
+                frequency *= 2.0;
+                amplitude *= in_ratio;
+            }
+
+            float factor = 1.0 - sqr(in_ratio);
+
+            displace_u = in_amplitudeX * noise_x * factor + Pp[0];
+            displace_v = in_amplitudeY * noise_y * factor + Pp[1];
+        }
+        else
+        {
+            displace_u = Pp[0];
+            displace_v = Pp[1];
+        }
+
+        float aging = (2.0 * sqrt(max(0.005, in_layerSize))) /
+                      (0.5 * max(EPS, in_age) + 7.5);
+
+        float width = filter_width / aging;
+        float decay = smoothstep(0.25, 0.75, width), weight = 0.0;
+
+        if (decay < 1.0)
+        {
+            displace_u -= floor(displace_u) - in_center[0];
+            displace_v -= floor(displace_v) - in_center[1];
+
+            float radius = hypot(displace_u, displace_v);
+
+            weight = sqrt(radius);
+            weight = weight + noise(weight * 3.0) * in_randomness * 0.25;
+
+            weight = mod(weight / aging, 1.0);
+            weight = smoothstep(0.0, in_veinSpread * 2.5, weight);
+            weight = sqrt(weight);
+        }
+        out_outColor = mix(in_veinColor, in_fillerColor, weight);
+
+        if (in_grainContrast > 0.0)
+        {
+            float grain_spacing = max(0.000175, in_grainSpacing);
+            float inv_frequency = 1.0 / grain_spacing;
+
+            float grain = sqr(noise(Pp * inv_frequency));
+
+            grain *= max(0.025, in_grainContrast);
+            grain *= smoothstep(0.75, 1.5, sqrt(filter_width) * inv_frequency);
+
+            grain_spacing = pow(grain_spacing, 1.0 / 5.0);
+
+            grain = smoothstep(0.5 * grain_spacing + 0.03,
+                               1.5 * grain_spacing + 0.03,
+                               grain);
+
+            out_outColor = mix(out_outColor, in_grainColor, sqrt(grain));
+        }
+        out_outAlpha = maya_luminance(out_outColor);
+
+        if (!in_wrap && in_blend)
+        {
+            out_outColor = mix(in_defaultColor, out_outColor, box_blending);
+            out_outAlpha *= box_blending;
+        }
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha
+            );
+    }
+}

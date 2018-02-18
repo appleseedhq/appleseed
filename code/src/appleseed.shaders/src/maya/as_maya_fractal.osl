@@ -1,0 +1,282 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/fractal.html
+
+#include "appleseed/fractal/as_fractal_helpers.h"
+#include "appleseed/math/as_math_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
+
+shader as_maya_fractal
+[[
+    string as_maya_node_name = "fractal"
+]]
+(
+    float in_amplitude = 1.0
+    [[
+        string as_maya_attribute_name = "amplitude",
+        string label = "Amplitude",
+        string page = "Fractal Attributes"
+    ]],
+    float in_ratio = 0.707
+    [[
+        string as_maya_attribute_name = "ratio",
+        string label = "Ratio",
+        string page = "Fractal Attributes"
+    ]],
+    float in_threshold = 0.0
+    [[
+        string as_maya_attribute_name = "threshold",
+        string label = "Threshold",
+        string page = "Fractal Attributes"
+    ]],
+    float in_levelMin = 0.0
+    [[
+        string as_maya_attribute_name = "levelMin",
+        float slidermin = 0.0,
+        float slidermax = 25.0,
+        string label = "Level Minimum",
+        string page = "Fractal Attributes"
+    ]],
+    float in_levelMax = 9.0
+    [[
+        string as_maya_attribute_name = "levelMax",
+        float slidermin = 0.0,
+        float slidermax = 25.0,
+        string label = "Level Maximum",
+        string page = "Fractal Attributes"
+    ]],
+    float in_frequencyRatio = 2.0
+    [[
+        string as_maya_attribute_name = "frequencyRatio",
+        float slidermin = 1.0,
+        float slidermax = 10.0,
+        string label = "Frequency Ratio",
+        string page = "Fractal Attributes"
+    ]],
+    float in_bias = 0.0
+    [[
+        string as_maya_attribute_name = "bias",
+        float slidermin = -1.0,
+        float slidermax = 1.0,
+        string label = "Bias",
+        string page = "Fractal Attributes"
+    ]],
+    int in_inflection = 0
+    [[
+        string as_maya_attribute_name = "inflection",
+        string label = "Inflection",
+        string widget = "checkBox",
+        string page = "Fractal Attributes"
+    ]],
+    int in_animated = 0
+    [[
+        string as_maya_attribute_name = "animated",
+        string label = "Animated",
+        string widget = "checkBox",
+        string page = "Fractal Attributes"
+    ]],
+    float in_timeRatio = 2.0
+    [[
+        string as_maya_attribute_name = "timeRatio",
+        float slidermin = 1.0,
+        float slidermax = 10.0,
+        string label = "Time Ratio",
+        string page = "Fractal Attributes"
+    ]],
+    float in_time = 0.0
+    [[
+        string as_maya_attribute_name = "time",
+        float slidermin = 0.0,
+        float slidermax = 100.0,
+        string label = "Time",
+        string page = "Fractal Attributes"
+    ]],
+
+    MAYA_COLORBALANCE_PARAMETERS,
+    MAYA_EFFECTS_PARAMETERS,
+    MAYA_UV_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]]
+)
+{
+    if (in_uvCoord[0] == OUTSIDE_UVFRAME || in_uvCoord[1] == OUTSIDE_UVFRAME)
+    {
+        out_outColor = in_defaultColor;
+        out_outAlpha = maya_luminance(in_defaultColor);
+    }
+    else
+    {
+        float st[2] = {in_uvCoord[0], in_uvCoord[1]};
+
+        float dsdt[2] = {
+            in_filter *
+                (in_uvFilterSize[0] == UNDEFINED_UVFILTER
+                    ? filterwidth(st[0])
+                    : in_uvFilterSize[0]),
+            in_filter *
+                (in_uvFilterSize[1] == UNDEFINED_UVFILTER
+                    ? filterwidth(st[1])
+                    : in_uvFilterSize[1])};
+
+        // The filter size factors seem to match Maya's result better.
+
+        dsdt[0] += 2 * in_filterOffset;
+        dsdt[1] += 2 * in_filterOffset;
+
+#ifndef MAYA_FRACTAL_FREQ
+#define MAYA_FRACTAL_FREQ   14
+#endif
+
+        st[0] *= MAYA_FRACTAL_FREQ;
+        st[1] *= MAYA_FRACTAL_FREQ;
+
+        float filter_size = abs(max(dsdt[0], dsdt[1]));
+
+        filter_size = clamp(
+            MAYA_FRACTAL_FREQ * filter_size,
+            MAYA_FRACTAL_FREQ * 1.0e-8,
+            0.5);
+
+        float bias_plus1, bias_minus1, bias_sqrplus1;
+
+        if (in_bias > 0.0)
+        {
+            bias_plus1 = in_bias + 1;
+            bias_minus1 = in_bias - 1;
+            bias_sqrplus1 = sqr(bias_plus1);
+        }
+
+        float denom = (in_frequencyRatio == 2)
+            ? M_LN2
+            : log(max(1.01, in_frequencyRatio));
+
+        float iterate = clamp(
+            -log(filter_size) / denom, in_levelMin, in_levelMax);
+
+        int recursion_level = (int) floor(iterate);
+
+        float time_value = in_time, amplitude = in_amplitude, c = 0.0, val;
+
+        for (int i = 0; i <= recursion_level; ++i)
+        {
+            if (i == recursion_level)
+            {
+                amplitude *= (iterate - (float) recursion_level);
+            }
+
+            if (amplitude == 0.0)
+            {
+                break;
+            }
+
+            val = (in_animated)
+                ? noise("perlin", point(st[0], st[1], time_value))
+                : noise("perlin", st[0], st[1]);
+
+            if (in_bias > 0.0)
+            {
+                int bias_sign = 1;
+
+                if (val < 0)
+                {
+                    bias_sign = -1;
+                    val = -val;
+                }
+
+                if (in_bias == -1)
+                {
+                    val = 0.0;
+                }
+                else if (in_bias == 1)
+                {
+                    val = bias_sign;
+                }
+                else
+                {
+                    float S = bias_plus1 /
+                        (1 - 2 * in_bias * val / bias_minus1);
+
+                    val = bias_sign * (bias_sqrplus1 - sqr(S)) /
+                        (4 * in_bias);
+                }
+            }
+
+            if (in_inflection)
+            {
+                val = (val > 0) ? val * 2 - 1 : -val * 2 - 1;
+            }
+
+            c += amplitude * val;
+
+            float tmp = st[0];
+
+            st[0] = st[1] * in_frequencyRatio - 0.1;
+            st[1] = tmp * in_frequencyRatio + 0.043;
+
+            if (i == 2)
+            {
+                st[1] = 1 - st[1];
+            }
+            else if (i == 4)
+            {
+                st[0] = 1 - st[0];
+            }
+
+            time_value *= in_timeRatio;
+            amplitude *= in_ratio;
+        }
+
+        out_outAlpha = min(1.0, 0.5 * (1 + c) + in_threshold);
+        out_outColor = color(out_outAlpha);
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha);
+    }
+}

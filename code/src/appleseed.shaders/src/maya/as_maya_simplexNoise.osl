@@ -1,0 +1,367 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/math/as_math_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
+
+shader as_maya_simplexNoise
+[[
+    string as_maya_node_name = "simplexNoise",
+]]
+(
+    float in_scale = 1.0
+    [[
+        string as_maya_attribute_name = "scale",
+        float min = 0.0,
+        float softmax = 10.0,
+        string label = "Scale",
+        string page = "Noise"
+    ]],
+    float in_amplitude = 1.0
+    [[
+        string as_maya_attribute_name = "amplitude",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Amplitude",
+        string page = "Noise"
+    ]],
+    float in_threshold = 0.0
+    [[
+        string as_maya_attribute_name = "threshold",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Amplitude",
+        string page = "Noise"
+    ]],
+    float in_ratio = 0.707
+    [[
+        string as_maya_attribute_name = "ratio",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Ratio",
+        string page = "Noise"
+    ]],
+    int in_octaves = 3
+    [[
+        string as_maya_attribute_name = "octaves",
+        int min = 1,
+        int softmax = 10,
+        string label = "Octaves",
+        string page = "Noise",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    float in_frequency = 8.0
+    [[
+        string as_maya_attribute_name = "frequency",
+        float min = 0.0,
+        float softmax = 10.0,
+        string label = "Frequency",
+        string page = "Noise"
+    ]],
+    float in_frequencyRatio = 2.0
+    [[
+        string as_maya_attribute_name = "frequencyRatio",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Frequency Ratio",
+        string page = "Noise"
+    ]],
+    float in_distortionU = 0.0
+    [[
+        string as_maya_attribute_name = "distortionU",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Distortion U",
+        string page = "Noise"
+    ]],
+    float in_distortionV = 0.0
+    [[
+        string as_maya_attribute_name = "distortionV",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Distortion V",
+        string page = "Noise"
+    ]],
+    float in_distortionRatio = 0.0
+    [[
+        string as_maya_attribute_name = "distortionRatio",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "distortionRatio",
+        string page = "Noise"
+    ]],
+    float in_gamma = 1.0
+    [[
+        string as_maya_attribute_name = "gamma",
+        float min = 0.0,
+        float softmax = 5.0,
+        string label = "Gamma",
+        string page = "Noise"
+    ]],
+    int in_noiseType = 0
+    [[
+        string as_maya_attribute_name = "noiseType",
+        string label = "Noise Type",
+        string widget = "mapper",
+        string options = "Fractal:0|Cellular:1|Ridged:2",
+        string page = "Noise"
+    ]],
+
+    MAYA_UV_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string label = "Output Color",
+        string widget = "null"
+    ]]
+)
+{
+    float simplexFractalNoise(
+        float st[2],
+        float amplitude,
+        float ratio,
+        int octaves,
+        float frequency,
+        float frequency_ratio,
+        float distortion_u,
+        float distortion_v,
+        float distortion_ratio)
+    {
+        float new_st[2] = {st[0], st[1]};
+
+        float distortion[2] = {
+            distortion_u * distortion_ratio,
+            distortion_v * distortion_ratio};
+
+        float new_frequency = frequency, new_amplitude = amplitude, out = 0.0;
+
+        for (int i = 0; i < octaves + 1; i++)
+        {
+            float power = pow(new_frequency, -new_amplitude * i);
+
+            if (power > 0.0)
+            {
+                out += new_amplitude * noise(
+                    "simplex",
+                    new_st[0] + distortion[0],
+                    new_st[1] + distortion[1]);
+            }
+            float tmp = new_st[0];
+            new_st[0] = new_st[1] * new_frequency - 0.02;
+            new_st[1] = tmp * new_frequency + 0.3;
+
+            new_amplitude *= ratio;
+            new_frequency *= frequency_ratio;
+            distortion[0] *= distortion_ratio;
+            distortion[1] *= distortion_ratio;
+        }
+        return out * 0.5 + 0.5;
+    }
+
+    float simplexRidgedNoise(
+        float st[2],
+        float amplitude,
+        float ratio,
+        int octaves,
+        float frequency,
+        float frequency_ratio,
+        float distortion_u,
+        float distortion_v,
+        float distortion_ratio)
+    {
+        float new_st[2] = {st[0], st[1]}, new_frequency = frequency;
+        float signal = sqr(1.0 - abs(noise("simplex", new_st[0], new_st[1])));
+        float out = signal;
+
+        float weight = 1.0;
+
+        float distortion[2] = {
+            distortion_u * distortion_ratio,
+            distortion_v * distortion_ratio};
+
+        for (int i = 1; i < octaves; ++i)
+        {
+            new_st[0] *= new_frequency;
+            new_st[1] *= new_frequency;
+
+            weight = clamp(signal * frequency_ratio, 0.0, 1.0);
+
+            if (weight > 0.0)
+            {
+                float value = noise(
+                    "simplex",
+                    new_st[0] + distortion[0],
+                    new_st[1] + distortion[1]);
+
+                signal = 1.0 - abs(value);
+                signal *= signal * weight;
+
+                out += signal * pow(new_frequency, -ratio) * amplitude;
+            }
+            new_frequency *= frequency_ratio;
+            distortion[0] *= distortion_ratio;
+            distortion[1] *= distortion_ratio;
+        }
+        return out * 0.5 + 0.5;
+    }
+
+    float simplexCellnoise(
+        float st[2],
+        float amplitude,
+        float frequency)
+    {
+        float new_st[2] = {st[0] * frequency, st[1] * frequency};
+
+        float test_cell[2], test_position[2];
+        float this_cell[2] = {floor(new_st[0]) + 0.5, floor(new_st[1]) + 0.5};
+
+        float f1 = 1000.0;
+
+        for (int i = -1; i <= 1; ++i)
+        {
+            for (int j = -1; j <= 1; ++j)
+            {
+                test_cell[0] = this_cell[0] + i;
+                test_cell[1] = this_cell[1] + j;
+
+                test_position[0] = test_cell[0] + 0.75 *
+                    (cellnoise(test_cell[0], test_cell[1]) - 0.5);
+
+                test_position[1] = test_cell[1] + 0.75 *
+                    (cellnoise(test_cell[0] + 42, test_cell[1] + 23) - 0.5);
+
+                float delta[2] = {
+                    test_position[0] - new_st[0],
+                    test_position[1] - new_st[1]};
+
+                f1 = min(f1, sqr(delta[0]) + sqr(delta[1]));
+            }
+        }
+        return amplitude * f1;
+    }
+        
+    if (in_uvCoord[0] == OUTSIDE_UVFRAME || in_uvCoord[1] == OUTSIDE_UVFRAME)
+    {
+        out_outColor = color(0);
+        return;
+    }
+
+    if (in_noiseType == 0 && in_amplitude == 0.0)
+    {
+        out_outColor = color(0.5);
+        return;
+    }
+
+    if (in_noiseType == 1 && in_amplitude == 0.0)
+    {
+        out_outColor = color(0);
+        return;
+    }
+
+    float st[2] = {in_uvCoord[0], in_uvCoord[1]};
+
+    float dsdt[2] = {
+        in_uvFilterSize[0] == UNDEFINED_UVFILTER
+            ? filterwidth(st[0])
+            : in_uvFilterSize[0],
+        in_uvFilterSize[1] == UNDEFINED_UVFILTER
+            ? filterwidth(st[1])
+            : in_uvFilterSize[1]};
+
+    float filter_size = clamp(abs(max(dsdt[0], dsdt[1])), EPS, 0.5);
+
+    float out = 0.0;
+
+    if (in_scale > EPS)
+    {
+        st[0] *= in_scale;
+        st[1] *= in_scale;
+    }
+
+    if (in_noiseType == 0)
+    {
+        st[0] *= 0.5; // matches Maya's result better
+        st[1] *= 0.5;
+
+        st[0] += in_distortionRatio * in_distortionU;
+        st[1] += in_distortionRatio * in_distortionV;
+
+        out = simplexFractalNoise(
+            st,
+            in_amplitude,
+            in_ratio,
+            in_octaves,
+            in_frequency,
+            in_frequencyRatio,
+            in_distortionU,
+            in_distortionV,
+            in_distortionRatio);
+    }
+    else if (in_noiseType == 1)
+    {
+        if (in_distortionRatio > EPS)
+        {
+            st[0] += in_distortionRatio * in_distortionU;
+            st[1] += in_distortionRatio * (in_distortionV + 0.2);
+        }
+        
+        out = simplexCellnoise(st, in_amplitude, in_frequency);
+    }
+    else
+    {
+        st[0] *= 0.65; // better match
+        st[1] *= 0.65;
+
+        st[0] += in_distortionRatio * in_distortionU;
+        st[1] += in_distortionRatio * in_distortionV;
+
+        // Ridged octaves are ignored in the Maya SW renderer, but accepted
+        // in the HW vp2.0, so match vp2.0 for now.
+
+        out = simplexRidgedNoise(
+            st,
+            in_amplitude,
+            in_ratio,
+            in_octaves,
+            in_frequency,
+            in_frequencyRatio,
+            in_distortionU,
+            in_distortionV,
+            in_distortionRatio);
+    }
+
+    out += in_threshold;
+
+    if (in_gamma != 1.0)
+    {
+        out = pow(out, 1.0 / in_gamma);
+    }
+
+    out_outColor = max(0.0, out);
+}
