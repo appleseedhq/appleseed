@@ -1,0 +1,623 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/mandelbrot.html
+
+#include "appleseed/fractal/as_fractal_helpers.h"
+#include "appleseed/math/as_math_complex.h"
+#include "appleseed/math/as_math_helpers.h"
+#include "appleseed/maya/as_maya_fractal_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/maya/as_maya_ramp_helpers.h"
+
+shader as_maya_mandelbrot
+[[
+    string as_maya_node_name = "mandelbrot"
+]]
+(
+    int in_mandelbrotType = 1
+    [[
+        string as_maya_attribute_name = "mandelbrotType",
+        string widget = "mapper",
+        string options = "Julia Set:0|Mandelbrot Set:1|Mandelbox:2|Box With Julia Set:3|Box With Mandelbrot Set:4",
+        string label = "Mandelbrot Type",
+        string page = "Mandelbrot Attributes"
+    ]],
+    int in_mandelbrotShadeMethod = 1
+    [[
+        string as_maya_attribute_name = "mandelbrotShadeMethod",
+        string widget = "mapper",
+        string options = "Classic:0|Smooth:1|Minimum Radius:2|Escape Radius:3|Lines Only:4",
+        string label = "Coloring Function",
+        string page = "Mandelbrot Attributes"
+    ]],
+    int in_mandelbrotInsideMethod = 2
+    [[
+        string as_maya_attribute_name = "mandelbrotInsideMethod",
+        string widget = "mapper",
+        string options = "Zero:0|Max Iteration:1|Shaded Inside:2|Shaded Without Lines:3|Lines:4|Inner Lines Only:5",
+        string label = "Inside Shade Method",
+        string page = "Mandelbrot Attributes",
+        int divider = 1
+    ]],
+    float in_zoomFactor = 1.0
+    [[
+        string as_maya_attribute_name = "zoomFactor",
+        string widget = "slider",
+        float softmin = 0.0,
+        float softmax = 10.0,
+        string label = "Zoom Factor",
+        string page = "Mandelbrot Attributes"
+    ]],
+    float in_centerU = 0.0
+    [[
+        string as_maya_attribute_name = "centerU",
+        string widget = "slider",
+        float softmin = -100.0,
+        float softmax = 100.0,
+        string label = "Center U",
+        string page = "Mandelbrot Attributes"
+    ]],
+    float in_centerV = 0.0
+    [[
+        string as_maya_attribute_name = "centerV",
+        string widget = "slider",
+        float softmin = -100.0,
+        float softmax = 100.0,
+        string label = "Center V",
+        string page = "Mandelbrot Attributes"
+    ]],
+    float in_fineOffsetU = 0.0
+    [[
+        string as_maya_attribute_name = "fineOffsetU",
+        string widget = "slider",
+        float softmin = -100.0,
+        float softmax = 100.0,
+        string label = "Fine Offset U",
+        string page = "Mandelbrot Attributes"
+    ]],
+    float in_fineOffsetV = 0.0
+    [[
+        string as_maya_attribute_name = "fineOffsetV",
+        string widget = "slider",
+        float softmin = -100.0,
+        float softmax = 100.0,
+        string label = "Fine Offset V",
+        string page = "Mandelbrot Attributes"
+    ]],
+    int in_depth = 20
+    [[
+        string as_maya_attribute_name = "depth",
+        string widget = "slider",
+        int min = 1,
+        int max = 500,
+        string label = "Depth",
+        string page = "Mandelbrot Attributes"
+    ]],
+    float in_lobes = 1.0
+    [[
+        string as_maya_attribute_name = "lobes",
+        string widget = "slider",
+        float softmin = 0.0,
+        float softmax = 10.0,
+        string label = "Number Of Lobes",
+        string page = "Mandelbrot Attributes"
+    ]],
+    float in_escapeRadius = 2.0
+    [[
+        string as_maya_attribute_name = "escapeRadius",
+        string widget = "slider",
+        float softmin = 0.0,
+        float softmax = 2.0,
+        string label = "Escape Radius",
+        string page = "Mandelbrot Attributes"
+    ]],
+    float in_leafEffect = 0.0
+    [[
+        string as_maya_attribute_name = "leafEffect",
+        string widget = "slider",
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Leaf Effect",
+        string page = "Mandelbrot Attributes"
+    ]],
+    float in_checker = 1.0
+    [[
+        string as_maya_attribute_name = "checker",
+        string widget = "slider",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Checker",
+        string page = "Mandelbrot Attributes",
+        int divider = 1
+    ]],
+    float in_points = 0.0
+    [[
+        string as_maya_attribute_name = "points",
+        string widget = "slider",
+        float min = 0.0,
+        float max = 10.0,
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Points",
+        string page = "Mandelbrot Attributes"
+    ]],
+    float in_circles = 0.0
+    [[
+        string as_maya_attribute_name = "circles",
+        string widget = "slider",
+        float min = 0.0,
+        float max = 1000,
+        float softmin = 0.0,
+        float softmax = 10.0,
+        string label = "Circles",
+        string page = "Mandelbrot Attributes"
+    ]],
+    float in_circleRadius = 0.5
+    [[
+        string as_maya_attribute_name = "circleRadius",
+        string widget = "slider",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Circle Radius",
+        string page = "Mandelbrot Attributes"
+    ]],
+    float in_circleSizeRatio = 1.0
+    [[
+        string as_maya_attribute_name = "circleSizeRatio",
+        string widget = "slider",
+        float min = 0.0,
+        float max = 10.0,
+        float softmin = 0.0,
+        float softmax = 2.0,
+        string label = "Circle Size Ratio",
+        string page = "Mandelbrot Attributes"
+    ]],
+    float in_stalksU = 0.0
+    [[
+        string as_maya_attribute_name = "stalksU",
+        string widget = "slider",
+        float min = 0.0,
+        float max = 1000.0,
+        float softmin = 0.0,
+        float softmax = 10.0,
+        string label = "Stalks U",
+        string page = "Mandelbrot Attributes"
+    ]],
+    float in_stalksV = 0.0
+    [[
+        string as_maya_attribute_name = "stalksV",
+        string widget = "slider",
+        float min = 0.0,
+        float max = 1000.0,
+        float softmin = 0.0,
+        float softmax = 10.0,
+        string label = "Stalks V",
+        string page = "Mandelbrot Attributes"
+    ]],
+    float in_lineOffsetU = 0.0
+    [[
+        string as_maya_attribute_name = "lineOffsetU",
+        string widget = "slider",
+        float min = -10.0,
+        float max = 10.0,
+        float softmin = -1.0,
+        float softmax = 1.0,
+        string label = "Line Offset U",
+        string page = "Mandelbrot Attributes"
+    ]],
+    float in_lineOffsetV = 0.0
+    [[
+        string as_maya_attribute_name = "lineOffsetV",
+        string widget = "slider",
+        float min = -10.0,
+        float max = 10.0,
+        float softmin = -1.0,
+        float softmax = 1.0,
+        string label = "Line Offset V",
+        string page = "Mandelbrot Attributes"
+    ]],
+    float in_lineOffsetRatio = 1.0
+    [[
+        string as_maya_attribute_name = "lineOffsetRatio",
+        string widget = "slider",
+        float min = 0.0,
+        float max = 100.0,
+        float softmin = 0.0,
+        float softmax = 2.0,
+        string label = "Line Offset Ratio",
+        string page = "Mandelbrot Attributes"
+    ]],
+    float in_lineFocus = 0.5
+    [[
+        string as_maya_attribute_name = "lineFocus",
+        string widget = "slider",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Line Focus",
+        string page = "Mandelbrot Attributes"
+    ]],
+    int in_lineBlending = 0
+    [[
+        string as_maya_attribute_name = "lineBlending",
+        string widget = "checkBox",
+        string label = "Line Blending",
+        string page = "Mandelbrot Attributes",
+        int divider = 1
+    ]],
+    float in_juliaU = 0.0
+    [[
+        string as_maya_attribute_name = "juliaU",
+        string widget = "slider",
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Julia U",
+        string page = "Mandelbrot Attributes"
+    ]],
+    float in_juliaV = 0.0
+    [[
+        string as_maya_attribute_name = "juliaV",
+        string widget = "slider",
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Julia V",
+        string page = "Mandelbrot Attributes",
+        int divider = 1
+    ]],
+    float in_boxRadius = 1.0
+    [[
+        string as_maya_attribute_name = "boxRadius",
+        string widget = "slider",
+        float min = 0.0,
+        float max = 10.0,
+        float softmin = 0.0,
+        float softmax = 2.0,
+        string label = "Box Radius",
+        string page = "Mandelbrot Attributes"
+    ]],
+    float in_boxMinRadius = 0.5
+    [[
+        string as_maya_attribute_name = "boxMinRadius",
+        string widget = "slider",
+        float min = 0.0,
+        float max = 10.0,
+        float softmin = 0.0,
+        float softmax = 2.0,
+        string label = "Box Minimum Radius",
+        string page = "Mandelbrot Attributes"
+    ]],
+    float in_boxRatio = -3.0
+    [[
+        string as_maya_attribute_name = "boxRatio",
+        string widget = "slider",
+        float min = -4.0,
+        float max = -4.0,
+        string label = "Box Ratio",
+        string page = "Mandelbrot Attributes",
+        int divider = 1
+    ]],
+    float in_focus = 1.0
+    [[
+        string as_maya_attribute_name = "focus",
+        string widget = "slider",
+        float min = 0.0,
+        float max = 10.0,
+        string label = "Focus",
+        string page = "Mandelbrot Attributes"
+    ]],
+    float in_shift = 0.0
+    [[
+        string as_maya_attribute_name = "shift",
+        string widget = "slider",
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Shift",
+        string page = "Mandelbrot Attributes"
+    ]],
+    float in_amplitude = 1.0
+    [[
+        string as_maya_attribute_name = "amplitude",
+        string widget = "slider",
+        float min = 0.0,
+        float max = 10000.0,
+        float softmin = 0.0,
+        float softmax = 10.0,
+        string label = "Amplitude",
+        string page = "Mandelbrot Attributes"
+    ]],
+    int in_wrapAmplitude = 1
+    [[
+        string as_maya_attribute_name = "wrapAmplitude",
+        string widget = "checkBox",
+        string label = "Wrap Amplitude",
+        string page = "Mandelbrot Attributes",
+        int divider = 1
+    ]],
+    color in_color_Color[] = {0}
+    [[
+        string as_maya_attribute_name = "color",
+        string label = "Color",
+        string page = "Mandelbrot Attributes/Color"
+    ]],
+    float in_color_Position[] = {0}
+    [[
+        string as_maya_attribute_name = "color",
+        string label = "Position",
+        string page = "Mandelbrot Attributes/Color"
+    ]],
+    int in_color_Interp[] = {0}
+    [[
+        string as_maya_attribute_name = "color",
+        string widget = "mapper",
+        string options = "None:0|Linear:1|Smooth:2|Spline:3",
+        string label = "Interpolation Mode",
+        string page = "Mandelbrot Attributes/Color"
+    ]],
+    float in_value_Position[] = {0}
+    [[
+        string as_maya_attribute_name = "value",
+        string label = "Position",
+        string page = "Mandelbrot Attributes/Value"
+    ]],
+    float in_value_FloatValue[] = {0}
+    [[
+        string as_maya_attribute_name = "value",
+        string label = "Value",
+        string page = "Mandelbrot Attributes/Value"
+    ]],
+    int in_value_Interp[] = {0}
+    [[
+        string as_maya_attribute_name = "value",
+        string widget = "mapper",
+        string options = "None:0|Linear:1|Smooth:2|Spline:3",
+        string page = "Mandelbrot Attributes"
+    ]],
+    int in_orbitMapping = 0
+    [[
+        string as_maya_attribute_name = "orbitMapping",
+        string widget = "mapper",
+        string options = "Off:0|Front To Back:1|Back To Front:2",
+        string label = "Orbit Mapping",
+        string page = "Mandelbrot Attributes/Value"
+    ]],
+    int in_orbitMapColoring = 0
+    [[
+        string as_maya_attribute_name = "orbitMapColoring",
+        string widget = "mapper",
+        string options = "Off:0|Fog:1|Tint:2",
+        string label = "Orbit Map Coloring",
+        string page = "Mandelbrot Attributes/Value"
+    ]],
+    float in_orbitMap = 1.0
+    [[
+        string as_maya_attribute_name = "orbitMap",
+        string label = "Orbit Map",
+        string page = "Mandelbrot Attributes/Value",
+        int divider = 1
+    ]],
+    float in_implode = 0.0
+    [[
+        string as_maya_attribute_name = "implode",
+        string widget = "slider",
+        float slidermin = -1.0,
+        float slidermax = 1.0,
+        string label = "Implode",
+        string page = "Mandelbrot Attributes/Value"
+    ]],
+    float in_implodeCenter[2] = {0.5, 0.5}
+    [[
+        string as_maya_attribute_name = "implodeCenter",
+        string label = "Implode Center",
+        string page = "Mandelbrot Attributes/Value"
+    ]],
+
+    MAYA_COLORBALANCE_PARAMETERS,
+    MAYA_EFFECTS_PARAMETERS,
+    MAYA_UV_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]]
+)
+{
+    if (in_uvCoord[0] == OUTSIDE_UVFRAME || in_uvCoord[1] == OUTSIDE_UVFRAME)
+    {
+        out_outColor = in_defaultColor;
+        out_outAlpha = maya_luminance(in_defaultColor);
+    }
+    else
+    {
+        float mapping = 0;
+
+        if (in_amplitude > 0.0)
+        {
+            float st[2] = {
+                mod(in_uvCoord[0], UVWRAP),
+                mod(in_uvCoord[1], UVWRAP)};
+
+            if (in_implode)
+            {
+                implode_2d(in_implode, in_implodeCenter, st[0], st[1]);
+            }
+
+            Complex C_Z, Z, lobes = {in_lobes + 1, 0};
+
+            // The zooming rate does not match yet, suggestions welcome. For
+            // now this is the best i can come up with.
+
+            float zoom = pow(2, in_zoomFactor);
+
+            Z.real = (st[0] - 0.5) * 3 / zoom * (1 / in_zoomFactor * 2);
+            Z.imag = (st[1] - 0.5) * 3 / zoom * (1 / in_zoomFactor * 2);
+
+            Z.real += in_centerU * 0.01;
+            Z.imag += in_centerV * 0.01;
+
+            Z.real += in_fineOffsetU * 0.000001;
+            Z.imag += in_fineOffsetV * 0.000001;
+
+            // Initial conditions for Julia, Mandelbrot sets.
+
+            if (in_mandelbrotType == 0 || in_mandelbrotType == 3)
+            {
+                C_Z.real = in_juliaU;
+                C_Z.imag = in_juliaV;
+            }
+            else
+            {
+                C_Z = Z;
+                Z.real = 0;
+                Z.imag = 0;
+            }
+
+            int iteration = 0, decomposition_sign = 0;
+            float sqr_box_radius, sqr_box_min_radius;
+            float sqr_escape_radius = sqr(in_escapeRadius);
+            float sqr_distance = 0.0, leaf_value = 0.0;
+            float min_radius = 1.0e+19;
+
+            if (in_mandelbrotType < 2)
+            {
+                compute_mandelbrot(
+                    lobes,
+                    in_depth,
+                    in_leafEffect,
+                    sqr_escape_radius,
+                    C_Z,
+                    Z,
+                    iteration,
+                    decomposition_sign,
+                    sqr_distance,
+                    min_radius);
+            }
+            else if (in_mandelbrotType == 2)
+            {
+                sqr_box_radius = sqr(in_boxRadius);
+                sqr_box_min_radius = sqr(in_boxMinRadius);
+
+                compute_mandelbox(
+                    in_depth,
+                    in_boxRatio,
+                    in_leafEffect,
+                    sqr_box_radius,
+                    sqr_box_min_radius,
+                    sqr_escape_radius,
+                    C_Z,
+                    Z,
+                    iteration,
+                    decomposition_sign,
+                    sqr_distance,
+                    min_radius);
+            }
+            else
+            {
+                warning("[WARNING]:Unsupported Fractal Mode\n");
+                return;
+            }
+
+            // Maya's "checker" is in fact binary decomposition.
+
+            float binary_decomposition = (in_checker > 0)
+                ? mod(in_checker * max(0, decomposition_sign), 1)
+                : 0.0;
+
+            // Interior and exterior colouring functions, not 100% match yet.
+
+            if (iteration >= in_depth)
+            {
+                mapping = mandelbrot_interior_coloring(
+                    iteration,
+                    in_depth,
+                    in_mandelbrotInsideMethod,
+                    in_lobes,
+                    min_radius,
+                    in_escapeRadius,
+                    binary_decomposition);
+            }
+            else
+            {
+                mapping = mandelbrot_exterior_coloring(
+                    iteration,
+                    in_depth,
+                    in_mandelbrotShadeMethod,
+                    in_lobes,
+                    sqr_distance,
+                    min_radius,
+                    in_escapeRadius,
+                    binary_decomposition);
+            }
+
+            // Cycle output with amplitude, or clamp it.
+
+            if (in_wrapAmplitude)
+            {
+                mapping = mod(mapping * in_amplitude + in_shift, 1);
+            }
+            else
+            {
+                mapping = clamp(mapping * in_amplitude + in_shift, 0, 1);
+            }
+        }
+
+        out_outColor = color_ramp(
+            in_color_Color,
+            in_color_Position,
+            in_color_Interp,
+            mapping);
+
+        if (!in_alphaIsLuminance)
+        {
+            out_outAlpha = float_ramp(
+                in_value_FloatValue,
+                in_value_Position,
+                in_value_Interp,
+                mapping);
+        }
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha
+            );
+    }
+}

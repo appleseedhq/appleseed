@@ -1,0 +1,279 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/rock.html
+
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/maya/as_maya_transform_helpers.h"
+
+#define MAYA_ROCK_COEFF_A       2371.5
+#define MAYA_ROCK_COEFF_B       3482.2
+#define MAYA_ROCK_COEFF_C       2355.3
+
+#define ROCK_ARRAY                                                  \
+    0.251059, 0.208948, 0.940928, 0.422546, 0.395893,               \
+    0.382565, 0.231731, 0.535547, 0.533210, 0.862949,               \
+    0.962365, 0.315418, 0.735979, 0.654669, 0.050290,               \
+    0.453805, 0.806458, 0.655780, 0.811851, 0.829877,               \
+    0.079188, 0.204543, 0.680214, 0.651889, 0.976463,               \
+    0.085075, 0.203873, 0.231494, 0.014263, 0.156578,               \
+    0.014036, 0.703928, 0.089309, 0.571295, 0.957362,               \
+    0.286090, 0.143671, 0.825377, 0.857297, 0.350239,               \
+    0.253979, 0.286101, 0.827189, 0.551713, 0.957706,               \
+    0.015494, 0.849222, 0.993476, 0.167158, 0.587348,               \
+    0.545666, 0.337887, 0.368854, 0.610192, 0.997154,               \
+    0.426896, 0.326217, 0.027302, 0.853496, 0.276501,               \
+    0.139256, 0.185820, 0.286338, 0.841148, 0.036720,               \
+    0.635994, 0.952952, 0.160629, 0.532699, 0.639396,               \
+    0.683071, 0.008548, 0.747579, 0.198267, 0.125615,               \
+    0.950704, 0.527485, 0.849188, 0.861940, 0.427578,               \
+    0.079964, 0.540884, 0.222840, 0.621933, 0.837634,               \
+    0.201585, 0.156817, 0.125407, 0.155357, 0.425212,               \
+    0.359167, 0.832446, 0.807281, 0.412272, 0.560455,               \
+    0.762489, 0.473624, 0.501293, 0.417249, 0.228637
+
+#define ROCK_ARRAY_SIZE 100
+
+float cycloid(float x)
+{
+    float u1 = x - (int) x;
+    u1 += (u1 < 0.0) ? 0.5 : -0.5;
+
+    return sqr(u1) * -4 + 1;
+}
+
+float cheap_sin(float x)
+{
+    float out = (x < 0.0) ? 1.0 + x - (int) x : x - (int) x;
+
+    if (out < 0.5)
+    {
+        float tmp = (out < 0.25) ? 0.25 - out : out - 0.25;
+        out = 1.0 - sqr(tmp) * 16;
+    }
+    else
+    {
+        float tmp = (out < 0.75) ? 0.75 - out : out - 0.75;
+        out = -1 + sqr(tmp) * 16;
+    }
+    return out;
+}
+
+shader as_maya_rock
+[[
+    string as_maya_node_name = "rock"
+]]
+(
+    color in_color1 = color(0.235, 0.0, 0.0)
+    [[
+        string as_maya_attribute_name = "color1",
+        string as_maya_attribute_short_name = "c1",
+        string label = "Color 1",
+        string page = "Rock Attributes"
+    ]],
+    color in_color2 = color(1.0)
+    [[
+        string as_maya_attribute_name = "color2",
+        string as_maya_attribute_short_name = "c2",
+        string label = "Color 2",
+        string page = "Rock Attributes"
+    ]],
+    float in_grainSize = 0.01
+    [[
+        string as_maya_attribute_name = "grainSize",
+        string as_maya_attribute_short_name = "gs",
+        float min = 0.0,
+        float softmax = 0.1,
+        string label = "Grain Size",
+        string page = "Rock Attributes"
+    ]],
+    float in_diffusion = 1.0
+    [[
+        string as_maya_attribute_name = "diffusion",
+        string as_maya_attribute_short_name = "di",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Diffusion",
+        string page = "Rock Attributes"
+    ]],
+    float in_mixRatio = 0.5
+    [[
+        string as_maya_attribute_name = "mixRatio",
+        string as_maya_attribute_short_name = "mr",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Mix Ratio",
+        string page = "Rock Attributes"
+    ]],
+    point in_refPointCamera = P
+    [[
+        string as_maya_attribute_name = "refPointCamera",
+        string as_maya_attribute_short_name = "rpc",
+        string label = "Surface Point",
+        string widget = "null"
+    ]],
+    matrix in_placementMatrix = matrix(1)
+    [[
+        string as_maya_attribute_name = "placementMatrix",
+        string label = "Placement Matrix",
+        string widget = "null"
+    ]],
+
+    MAYA_COLORBALANCE_PARAMETERS,
+    MAYA_EFFECTS_PARAMETERS,
+    MAYA_EFFECTS_3DTEX_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string as_maya_attribute_short_name = "oa",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]]
+)
+{
+    matrix placement = (in_local)
+        ? matrix("common", "object") * in_placementMatrix
+        : in_placementMatrix;
+
+    point Pp = transform(placement, in_refPointCamera);
+
+    float box_blending = 0.0;
+
+    int outside_box = outside_place3d_volume(
+        Pp,
+        in_wrap,
+        in_blend,
+        box_blending);
+
+    if (outside_box)
+    {
+        out_outColor = in_defaultColor;
+        out_outAlpha = maya_luminance(out_outColor);
+
+        return;
+    }
+    else
+    {
+        float filter_width = 0.0;
+
+        if (in_filter > 0.0)
+        {
+            filter_width = in_filter * max(EPS, sqrt(area(Pp)));
+            filter_width += in_filterOffset;
+        }
+
+        filter_width = clamp(filter_width, 1.0e-8, 1.0);
+        filter_width = 0.5 * filter_width / max(EPS, in_grainSize);
+
+        point xyz = abs(Pp + 100) / max(EPS, in_grainSize);
+        point tx1 = trunc(xyz), tx2, inv;
+
+        xyz -= tx1;
+        tx1 *= in_grainSize;
+        tx2 = tx1 + in_grainSize;
+        inv = 1.0 - xyz;
+
+        float cosy1 = cheap_sin(0.25 + tx1[1] * MAYA_ROCK_COEFF_A);
+        float cosy2 = cheap_sin(0.25 + tx2[1] * MAYA_ROCK_COEFF_A);
+        float cosz1 = cheap_sin(0.80 + tx1[2] * MAYA_ROCK_COEFF_B);
+        float cosz2 = cheap_sin(0.80 + tx2[2] * MAYA_ROCK_COEFF_B);
+        float out = 0.0, sinv;
+
+        float rock_array[ROCK_ARRAY_SIZE] = { ROCK_ARRAY };
+
+        sinv = cycloid((tx1[0] + cosy1 + cosz1) * MAYA_ROCK_COEFF_C);
+        out += rock_array[(int) (sinv * ROCK_ARRAY_SIZE)] *
+            inv[0] * inv[1] * inv[2];
+
+        sinv = cycloid((tx1[0] + cosy1 + cosz2) * MAYA_ROCK_COEFF_C);
+        out += rock_array[(int) (sinv * ROCK_ARRAY_SIZE)] *
+            inv[0] * inv[1] * xyz[2];
+
+        sinv = cycloid((tx1[0] + cosy2 + cosz1) * MAYA_ROCK_COEFF_C);
+        out += rock_array[(int) (sinv * ROCK_ARRAY_SIZE)] *
+            inv[0] * xyz[1] * inv[2];
+
+        sinv = cycloid((tx1[0] + cosy2 + cosz2) * MAYA_ROCK_COEFF_C);
+        out += rock_array[(int) (sinv * ROCK_ARRAY_SIZE)] *
+            inv[0] * xyz[1] * xyz[2];
+
+        sinv = cycloid((tx2[0] + cosy1 + cosz1) * MAYA_ROCK_COEFF_C);
+        out += rock_array[(int) (sinv * ROCK_ARRAY_SIZE)] *
+            xyz[0] * inv[1] * inv[2];
+
+        sinv = cycloid((tx2[0] + cosy1 + cosz2) * MAYA_ROCK_COEFF_C);
+        out += rock_array[(int) (sinv * ROCK_ARRAY_SIZE)] *
+            xyz[0] * inv[1] * xyz[2];
+
+        sinv = cycloid((tx2[0] + cosy2 + cosz1) * MAYA_ROCK_COEFF_C);
+        out += rock_array[(int) (sinv * ROCK_ARRAY_SIZE)] *
+            xyz[0] * xyz[1] * inv[2];
+
+        sinv = cycloid((tx2[0] + cosy2 + cosz2) * MAYA_ROCK_COEFF_C);
+        out += rock_array[(int) (sinv * ROCK_ARRAY_SIZE)] *
+            xyz[0] * xyz[1] * xyz[2];
+
+        out = (out - in_mixRatio) / (in_diffusion + filter_width);
+        out = out / (1.0 - 2.0 * abs(in_mixRatio - 0.5));
+        out = clamp(out, -0.5, 0.5);
+
+        out = (0.5 + out - (1.0 - in_mixRatio)) *
+            max(0, 1.0 - 0.5 * filter_width) + (1.0 - in_mixRatio);
+
+        inv = 1.0 - out;
+
+        out_outColor = in_color1 * out + in_color2 * inv;
+        out_outAlpha = maya_luminance(out_outColor);
+
+        if (!in_wrap && in_blend)
+        {
+            out_outColor = mix(in_defaultColor, out_outColor, box_blending);
+            out_outAlpha *= box_blending;
+        }
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha
+            );
+    }
+}

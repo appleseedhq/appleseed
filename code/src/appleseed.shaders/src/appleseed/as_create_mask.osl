@@ -1,0 +1,286 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/color/as_color_helpers.h"
+#include "appleseed/color/as_color_transforms.h"
+#include "appleseed/pattern/as_pattern_helpers.h"
+
+shader as_create_mask
+[[
+    string as_maya_node_name = "asCreateMask",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string help = "Creates a greyscale mask from an input color or grey value.",
+    string icon = "asCreateMask",
+    int as_maya_type_id = 0x001279e1,
+    string as_max_class_id = "1539538401 1875248143",
+    string as_max_plugin_type = "texture"
+]]
+(
+    color in_color = color(1)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Color",
+        string page = "Color",
+        string help = "Color value to create mask from. It expects scene-linear values."
+    ]],
+    float in_alpha = 0.0
+    [[
+        string as_maya_attribute_name = "greyscale",
+        string as_maya_attribute_short_name = "a",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Alpha",
+        string page = "Color",
+        int divider = 1
+    ]],
+    int in_threshold_channel = 0
+    [[
+        string as_maya_attribute_name = "thresholdChannel",
+        string as_maya_attribute_short_name = "thr",
+        string widget = "mapper",
+        string options =
+        "Red:0|Green:1|Blue:2|Alpha:3|Hue:4|Saturation:5|Value:6|CIELAB L*:7|CIELAB a*:8|CIELAB b*:9|Average:10|Luminance:11",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Threshold Channel",
+        string page = "Color",
+        int divider = 1
+    ]],
+    float in_threshold_value = 0.5
+    [[
+        string as_maya_attribute_name = "thresholdValue",
+        string as_maya_attribute_short_name = "thv",
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Threshold Value",
+        string page = "Color"
+    ]],
+    int in_threshold_function = 0
+    [[
+        string as_maya_attribute_name = "thresholdFunction",
+        string as_maya_attribute_short_name = "thf",
+        string widget = "mapper",
+        string options = "None:0|Step:1|Linear Step:2|Smooth Step:3|Exponential:4|Double Circled Seat:5|Double Circled Sigmoid:6|Smoother Step:7|Smoothest Step:8",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Threshold Function",
+        string page = "Color"
+    ]],
+    float in_threshold_contrast = 0.25
+    [[
+        string as_maya_attribute_name = "thresholdContrast",
+        string as_maya_attribute_short_name = "tct",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Threshold Contrast",
+        string page = "Color"
+    ]],
+    float in_threshold_lower_bound = 0.15
+    [[
+        string as_maya_attribute_name = "thresholdLowerBound",
+        string as_maya_attribute_short_name = "tlb",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Smoothstep Lower Bound",
+        string page = "Color.Step Bounds"
+    ]],
+    float in_threshold_upper_bound = 0.85
+    [[
+        string as_maya_attribute_name = "thresholdUpperBound",
+        string as_maya_attribute_short_name = "tub",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Smoothstep Upper Bound",
+        string page = "Color.Step Bounds"
+    ]],
+
+    output float out_result = 0.0
+    [[
+        string as_maya_attribute_name = "result",
+        string as_maya_attribute_short_name = "res",
+        string label = "Output Value"
+    ]]
+)
+{
+    if (in_color == 0.0 && in_alpha == 0.0)
+    {
+        return;
+    }
+
+    float x;
+
+    if (in_threshold_channel == 0)
+    {
+        x = in_color[0];
+    }
+    else if (in_threshold_channel == 1)
+    {
+        x = in_color[1];
+    }
+    else if (in_threshold_channel == 2)
+    {
+        x = in_color[2];
+    }
+    else if (in_threshold_channel == 3)
+    {
+        x = in_alpha;
+    }
+    else if (in_threshold_channel >= 4 && in_threshold_channel <= 6)
+    {
+        color hsv = transformc("rgb", "hsv", in_color);
+
+        if (in_threshold_channel == 4)
+        {
+            x = hsv[0];
+        }
+        else if (in_threshold_channel == 5)
+        {
+            x = hsv[1];
+        }
+        else
+        {
+            x = hsv[2];
+        }
+    }
+    else if (in_threshold_channel >= 7 && in_threshold_channel <= 9)
+    {
+        // Once the working/rendering space information is added, we update
+        // the RGB primaries and whitepoint. Use defaults for now.
+
+        color cielab = remap_CIELAB(transform_linear_RGB_to_CIELAB(
+            in_color,
+            "Rec.709",
+            "D65"));
+
+        if (in_threshold_channel == 7)
+        {
+            x = cielab[0];
+        }
+        else if (in_threshold_channel == 8)
+        {
+            x = cielab[1];
+        }
+        else
+        {
+            x = cielab[2];
+        }
+    }
+    else if (in_threshold_channel == 10)
+    {
+        x = (in_color[0] + in_color[1] + in_color[2]) / 3;
+    }
+    else if (in_threshold_channel == 11)
+    {
+        // The same color space awareness as required by the CIELAB transform
+        // is required here. Use the defaults for now.
+
+        x = as_luminance(in_color, "Rec.709", "D65");
+    }
+    else
+    {
+        x = 0.0;
+    }
+
+    float mask_value;
+
+    if (in_threshold_function == 0)
+    {
+        mask_value = x;
+    }
+    else if (in_threshold_function == 1)
+    {
+        mask_value = aastep(in_threshold_value, x);
+    }
+    else if (in_threshold_function == 2)
+    {
+        mask_value = linearstep(
+            in_threshold_lower_bound,
+            in_threshold_upper_bound,
+            x);
+    }
+    else if (in_threshold_function == 3)
+    {
+        mask_value = smoothstep(
+            in_threshold_lower_bound,
+            in_threshold_upper_bound,
+            x);
+
+    }
+    else if (in_threshold_function == 4)
+    {
+        float exponent = clamp(in_threshold_contrast, 0.0001, 0.9999);
+
+        if (exponent < 0.5)
+        {
+            exponent *= 2.0;
+            mask_value = pow(x, exponent);
+        }
+        else
+        {
+            exponent = 2.0 * (exponent - 0.5);
+            mask_value = pow(x, 1.0 / (1.0 - exponent));
+        }
+    }
+    else if (in_threshold_function == 5)
+    {
+        float exponent = clamp(in_threshold_contrast, 0.0001, 0.9999);
+
+        mask_value = (x <= 0.5)
+            ? pow(2.0 * x, 1.0 - exponent) / 2.0
+            : 1.0 - pow(2.0 * (1.0 - x), 1.0 - exponent) / 2.0;
+    }
+    else if (in_threshold_function == 6)
+    {
+        float exponent = 1.0 - clamp(in_threshold_contrast, 0.0001, 0.9999);
+
+        mask_value = (x <= 0.5)
+            ? pow(2.0 * x, 1.0 / exponent) / 2.0
+            : 1.0 - pow(2.0 * (1.0 - x), 1.0 / exponent) / 2.0;
+    }
+    else if (in_threshold_function == 7)
+    {
+        mask_value = smootherstep(
+            in_threshold_lower_bound,
+            in_threshold_upper_bound,
+            x);
+    }
+    else
+    {
+        mask_value = smootheststep(
+            in_threshold_lower_bound,
+            in_threshold_upper_bound,
+            x);
+    }
+
+    out_result = mask_value;
+}

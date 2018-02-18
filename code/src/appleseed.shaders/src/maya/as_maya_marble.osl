@@ -1,0 +1,263 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/marble.html
+
+#include "appleseed/fractal/as_noise_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/maya/as_maya_transform_helpers.h"
+
+shader as_maya_marble
+[[
+    string as_maya_node_name = "marble"
+]]
+(
+    color in_fillerColor = color(1)
+    [[
+        string as_maya_attribute_name = "fillerColor",
+        string as_maya_attribute_short_name = "fc",
+        string label = "Filler Color",
+        string page = "Marble Attributes"
+    ]],
+    color in_veinColor = color(0.298, 0.0, 0.0)
+    [[
+        string as_maya_attribute_name = "veinColor",
+        string as_maya_attribute_short_name = "vc",
+        string label = "Vein Color",
+        string page = "Marble Attributes"
+    ]],
+    float in_veinWidth = 0.1
+    [[
+        string as_maya_attribute_name = "veinWidth",
+        string as_maya_attribute_short_name = "vw",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Vein Width",
+        string page = "Marble Attributes"
+    ]],
+    float in_diffusion = 0.5
+    [[
+        string as_maya_attribute_name = "diffusion",
+        string as_maya_attribute_short_name = "di",
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Diffusion",
+        string page = "Marble Attributes"
+    ]],
+    float in_contrast = 0.5
+    [[
+        string as_maya_attribute_name = "contrast",
+        string as_maya_attribute_short_name = "c",
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "Contrast",
+        string page = "Marble Attributes"
+    ]],
+    float in_amplitude = 1.5
+    [[
+        string as_maya_attribute_name = "amplitude",
+        string as_maya_attribute_short_name = "a",
+        float min = 0.0,
+        float softmax = 1.5,
+        string label = "Amplitude",
+        string page = "Noise Attributes"
+    ]],
+    float in_ratio = 0.707
+    [[
+        string as_maya_attribute_name = "ratio",
+        string as_maya_attribute_short_name = "ra",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Ratio",
+        string page = "Noise Attributes"
+    ]],
+    vector in_ripples = vector(1)
+    [[
+        string as_maya_attribute_name = "ripples",
+        string as_maya_attribute_short_name = "r",
+        string label = "Ripples",
+        string page = "Noise Attributes"
+    ]],
+    float in_ripplesX = 1.0
+    [[
+        string as_maya_attribute_name = "ripplesX",
+        string widget = "null"
+    ]],
+    float in_ripplesY = 1.0
+    [[
+        string as_maya_attribute_name = "ripplesY",
+        string widget = "null"
+    ]],
+    float in_ripplesZ = 1.0
+    [[
+        string as_maya_attribute_name = "ripplesZ",
+        string widget = "null"
+    ]],
+    float in_depth[2] = {0.0, 20.0}
+    [[
+        string as_maya_attribute_name = "depth",
+        string as_maya_attribute_short_name = "d",
+        string label = "Depth",
+        string page = "Noise Attributes"
+    ]],
+    point in_refPointCamera = P
+    [[
+        string as_maya_attribute_name = "refPointCamera",
+        string as_maya_attribute_short_name = "rpc",
+        string label = "Surface Point",
+        string widget = "null"
+    ]],
+    matrix in_placementMatrix = matrix(1)
+    [[
+        string as_maya_attribute_name = "placementMatrix",
+        string label = "Placement Matrix",
+        string widget = "null"
+    ]],
+
+    MAYA_COLORBALANCE_PARAMETERS,
+    MAYA_EFFECTS_PARAMETERS,
+    MAYA_EFFECTS_3DTEX_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]]
+)
+{
+    matrix placement = (in_local)
+        ? matrix("common", "object") * in_placementMatrix
+        : in_placementMatrix;
+
+    point Pp = transform(placement, in_refPointCamera);
+
+    float box_blending = 0.0;
+
+    int outside_box = outside_place3d_volume(
+        Pp,
+        in_wrap,
+        in_blend,
+        box_blending);
+
+    if (outside_box)
+    {
+        out_outColor = in_defaultColor;
+        out_outAlpha = maya_luminance(out_outColor);
+        return;
+    }
+    else
+    {
+        float filter_width = 0.0;
+
+        if (in_filter > 0.0)
+        {
+            filter_width = in_filter * max(EPS, sqrt(area(Pp)));
+            filter_width += in_filterOffset;
+        }
+
+        float iterate = clamp(-log2(filter_width), in_depth[0], in_depth[1]);
+        int octaves = (int) floor(iterate);
+
+        // Essentially a fBm with an extra iteration for fract(iterate).
+
+        vector ripples = isconnected(in_ripples)
+            ? in_ripples
+            : vector(in_ripplesX, in_ripplesY, in_ripplesZ);
+
+        vector xyz = ripples * 0.75; // better match
+        float amp = 1.0, sum = 0.0;
+
+        for (int i = 0; i < octaves + 1; ++i)
+        {
+            if (i == octaves)
+            {
+                amp *= iterate - octaves;
+            }
+            if (amp == 0.0)
+            {
+                break;
+            }
+
+            sum += amp * filtered_snoise(Pp * xyz + 0.5, 0, filter_width);
+            amp *= in_ratio;
+            xyz *= 2;
+        }
+
+        float vein = in_amplitude * sum * (1.0 - sqr(in_ratio)) + Pp[1];
+        vein -= floor(vein);
+
+        if (vein >= 0.5)
+        {
+            vein = 1.0 - vein;
+        }
+        vein *= 2.0;
+
+        if (vein < in_veinWidth)
+        {
+            out_outColor = in_veinColor;
+        }
+        else
+        {
+            float diffusion = max(0.01, in_diffusion);
+            vein = vein - in_veinWidth;
+            vein = (1.0 - in_contrast) * exp(-vein / diffusion);
+
+            color A = max(0, in_fillerColor * (1.0 - vein));
+            color B = max(0, in_veinColor * vein);
+
+            out_outColor = A + B;
+        }
+
+        out_outAlpha = maya_luminance(out_outColor);
+
+        if (!in_wrap && in_blend)
+        {
+            out_outColor = mix(in_defaultColor, out_outColor, box_blending);
+            out_outAlpha *= box_blending;
+        }
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha
+            );
+    }
+}

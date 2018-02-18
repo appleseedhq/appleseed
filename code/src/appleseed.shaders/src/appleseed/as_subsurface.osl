@@ -1,0 +1,374 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/math/as_math_helpers.h"
+
+shader as_subsurface
+[[
+    string as_maya_node_name = "asSubsurface",
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
+    string help = "SubSurface Scattering material",
+    string icon = "asSubsurface.png",
+    int as_maya_type_id = 0x001279e4,
+    string as_max_class_id = "492524175 1093340697",
+    string as_max_plugin_type = "material"
+]]
+(
+    int in_sss_profile = 0
+    [[
+        string as_maya_attribute_name = "sssProfile",
+        string as_maya_attribute_short_name = "ssp",
+        string widget = "mapper",
+        string options = "Better Dipole:0|Directional Dipole:1|Gaussian:2|Normalized Diffusion:3|Standard Dipole:4|Random Walk:5",
+        string label = "Subsurface Profile",
+        string page = "Subsurface",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    color in_color = color(0.87, 0.31, 0.12)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Reflectance",
+        string page = "Subsurface"
+    ]],
+    float in_sss_amount = 1.0
+    [[
+        string as_maya_attribute_name = "sssAmount",
+        string as_maya_attribute_short_name = "ssa",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "SSS Amount",
+        string page = "Subsurface",
+        int divider = 1
+    ]],
+    color in_sss_mfp = color(0.13, 0.69, 0.88)
+    [[
+        string as_maya_attribute_name = "meanFreePath",
+        string as_maya_attribute_short_name = "mfp",
+        string label = "Mean Free Path",
+        string page = "Subsurface"
+    ]],
+    float in_sss_mfp_scale = 1.0
+    [[
+        string as_maya_attribute_name = "mfpScale",
+        string as_maya_attribute_short_name = "msc",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "MFP Scale",
+        string page = "Subsurface"
+    ]],
+    int in_sss_maximum_ray_depth = 2
+    [[
+        string as_maya_attribute_name = "sssMaximumRayDepth",
+        string as_maya_attribute_short_name = "ssd",
+        int min = 1,
+        int max = 16,
+        int softmax = 8,
+        string label = "SSS Ray Depth",
+        string page = "Subsurface.Advanced",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    float in_ior = 1.41
+    [[
+        string as_maya_attribute_name = "ior",
+        string as_maya_attribute_short_name = "io",
+        float min = 1.0,
+        float softmax = 3.0,
+        string label = "Index of Refraction",
+        string page = "Fresnel"
+    ]],
+    float in_fresnel_weight = 1.0
+    [[
+        string as_maya_attribute_name = "fresnelWeight",
+        string as_maya_attribute_short_name = "fwe",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Fresnel Weight",
+        string page = "Fresnel.Advanced",
+        string help = "A value of 0.0 disables scaling the SSS term by the Fresnel. It should match the specular weight ideally."
+    ]],
+    float in_specular_weight = 1.0
+    [[
+        string as_maya_attribute_name = "specularWeight",
+        string as_maya_attribute_short_name = "swe",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Specular Weight",
+        string page = "Specular"
+    ]],
+    float in_specular_roughness = 0.3
+    [[
+        string as_maya_attribute_name = "specularRoughness",
+        string as_maya_attribute_short_name = "sro",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Specular Roughness",
+        string page = "Specular"
+    ]],
+    float in_anisotropy_amount = 0.0
+    [[
+        string as_maya_attribute_name = "anisotropyAmount",
+        string as_maya_attribute_short_name = "anw",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Anisotropy Amount",
+        string page = "Specular.Anisotropy"
+    ]],
+    float in_anisotropy_angle = 0.0
+    [[
+        string as_maya_attribute_name = "anisotropyAngle",
+        string as_maya_attribute_short_name = "ana",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Anisotropy Angle",
+        string page = "Specular.Anisotropy",
+        string help = "Anisotropy angle in [0,1], mapping to [0,360] degrees",
+        int divider = 1
+    ]],
+    int in_anisotropy_mode = 0
+    [[
+        string as_maya_attribute_name = "anisotropyMode",
+        string as_maya_attribute_short_name = "anm",
+        string widget = "mapper",
+        string options = "Anisotropy Map:0|Explicit Vector:1",
+        string label = "Anisotropy Mode",
+        string page = "Specular.Anisotropy",
+        string help = "Use tangent vector field map, or explicit vector.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    color in_anisotropy_map = color(0)
+    [[
+        string as_maya_attribute_name = "anisotropyMap",
+        string as_maya_attribute_short_name = "ama",
+        string label = "Anisotropy Vector Map",
+        string page = "Specular.Anisotropy",
+        string help = "Anisotropy vector map, with XY encoded in RG channels",
+        int divider = 1
+    ]],
+    vector in_anisotropy_direction = vector(0)
+    [[
+        string as_maya_attribute_name = "anisotropyDirection",
+        string as_maya_attribute_short_name = "and",
+        string label = "Anisotropy Vector",
+        string page = "Specular.Anisotropy",
+        string help = "Explicit anisotropy vector, such as the vector output by a tangent field node."
+    ]],
+    normal in_bump_normal = N
+    [[
+        string as_maya_attribute_name = "normalCamera",
+        string as_maya_attribute_short_name = "n",
+        string label = "Bump Normal",
+        string page = "Bump",
+        string help = "The default bump normal."
+    ]],
+    int in_enable_matte = 0
+    [[
+        string as_maya_attribute_name = "enableMatte",
+        string as_maya_attribute_short_name = "ema",
+        string widget = "checkBox",
+        string label = "Enable Matte Opacity",
+        string page = "Matte Opacity",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    float in_matte_opacity = 0.0
+    [[
+        string as_maya_attribute_name = "matteOpacity",
+        string as_maya_attribute_short_name = "mao",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Matte Opacity",
+        string page = "Matte Opacity",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    color in_matte_opacity_color = color(1,0.5,0)
+    [[
+        string as_maya_attribute_name = "matteOpacityColor",
+        string as_maya_attribute_short_name = "mac",
+        string label = "Matte Opacity Color",
+        string page = "Matte Opacity",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    vector Tn = vector(0)
+    [[
+        int lockgeom = 0,
+        int as_maya_attribute_hidden = 1,
+        string widget = "null",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    vector Bn = vector(0)
+    [[
+        int lockgeom = 0,
+        int as_maya_attribute_hidden = 1,
+        string widget = "null",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+
+    output closure color out_outColor = 0
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string widget = "null"
+    ]],
+    output closure color out_outMatteOpacity = 0
+    [[
+        string as_maya_attribute_name = "outMatteOpacity",
+        string as_maya_attribute_short_name = "om",
+        string widget = "null",
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]]
+)
+{
+    if (raytype("shadow") || raytype("transparency"))
+    {
+        return;
+    }
+
+    if (in_enable_matte)
+    {
+        out_outMatteOpacity = in_matte_opacity *
+            in_matte_opacity_color * holdout();
+
+        out_outColor += out_outMatteOpacity;
+    }
+
+    string sss_profile;
+
+    if (in_sss_profile == 0)
+    {
+        sss_profile = "better_dipole";
+    }
+    else if (in_sss_profile == 1)
+    {
+        sss_profile = "directional_dipole";
+    }
+    else if (in_sss_profile == 2)
+    {
+        sss_profile = "gaussian";
+    }
+    else if (in_sss_profile == 3)
+    {
+        sss_profile = "normalized_diffusion";
+    }
+    else if (in_sss_profile == 4)
+    {
+        sss_profile = "standard_dipole";
+    }
+    else
+    {
+        sss_profile = "randomwalk";
+    }
+
+    normal Nn = normalize(in_bump_normal);
+
+    if (in_sss_amount * max(in_color) > 0.0)
+    {
+        color albedo = clamp(in_sss_amount * in_color, 0.01, 0.99);
+
+        if (sss_profile == "randomwalk")
+        {
+            out_outColor += as_subsurface(
+                sss_profile,
+                Nn,
+                albedo,
+                in_sss_mfp_scale * in_sss_mfp,
+                in_ior,
+                "fresnel_weight", in_fresnel_weight);
+        }
+        else
+        {
+            out_outColor += as_subsurface(
+                sss_profile,
+                Nn,
+                albedo,
+                in_sss_mfp_scale * in_sss_mfp,
+                in_ior,
+                "fresnel_weight", in_fresnel_weight);
+        }
+    }
+
+    if (in_specular_weight > 0.0)
+    {
+        vector tangent = Tn;
+
+        if (in_anisotropy_amount > 0.0)
+        {
+            if (in_anisotropy_mode == 0)
+            {
+                if (isconnected(in_anisotropy_map))
+                {
+                    vector vector_map = normalize(
+                        (vector) in_anisotropy_map * 2.0 - 1.0);
+
+                    tangent = normalize(
+                        vector_map[0] * Tn +
+                        vector_map[1] * Bn + 
+                        vector_map[2] * Nn);
+                }
+            }
+            else
+            {
+                tangent = in_anisotropy_direction;
+            }
+
+            if (in_anisotropy_angle > 0.0)
+            {
+                tangent = rotate(
+                    tangent,
+                    in_anisotropy_angle * M_2PI,
+                    point(0),
+                    point(Nn));
+            }
+        }
+
+        out_outColor += in_specular_weight * as_glossy(
+            "ggx",
+            Nn,
+            vector(0),  // tangent
+            in_specular_roughness,
+            0.0,        // specular spread for Student's t-MDF
+            0.0,        // anisotropy amount
+            in_ior,
+            "energy_compensation", 1.0);
+    }
+}

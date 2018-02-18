@@ -1,0 +1,282 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+shader as_plastic
+[[
+    string as_maya_node_name = "asPlastic",
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
+    string help = "Plastic material",
+    string icon = "asPlastic.png",
+    int as_maya_type_id = 0x001279d7,
+    string as_max_class_id = "1525511449 941587614",
+    string as_max_plugin_type = "material"
+]]
+(
+    color in_color = color(0.5)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Diffuse Color",
+        string page = "Diffuse"
+    ]],
+    float in_diffuse_weight = 1.0
+    [[
+        string as_maya_attribute_name = "diffuseWeight",
+        string as_maya_attribute_short_name = "kd",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Diffuse Weight",
+        string page = "Diffuse"
+    ]],
+    float in_scattering = 0.0
+    [[
+        string as_maya_attribute_name = "scattering",
+        string as_maya_attribute_short_name = "sca",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Scattering",
+        string page = "Diffuse"
+    ]],
+    color in_specular_color = color(0.5)
+    [[
+        string as_maya_attribute_name = "specularColor",
+        string as_maya_attribute_short_name = "scc",
+        string label = "Specular Color",
+        string page = "Specular"
+    ]],
+    float in_specular_weight = 1.0
+    [[
+        string as_maya_attribute_name = "specularWeight",
+        string as_maya_attribute_short_name = "ksw",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Specular Weight",
+        string page = "Specular",
+        int divider = 1
+    ]],
+    float in_ior = 1.5
+    [[
+        string as_maya_attribute_name = "ior",
+        string as_maya_attribute_short_name = "io",
+        float min = 1.0,
+        float max = 2.5,
+        string label = "IOR",
+        string page = "Specular",
+        string help = "Index of refraction"
+    ]],
+    int in_distribution = 0
+    [[
+        string as_maya_attribute_name = "distribution",
+        string as_maya_attribute_short_name = "dst",
+        string widget = "mapper",
+        string options = "Beckmann:0|GGX:1|GTR:2|Student's t-MDF:3",
+        string label = "Distribution",
+        string page = "Specular",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    float in_specular_roughness = 0.2
+    [[
+        string as_maya_attribute_name = "specularRoughness",
+        string as_maya_attribute_short_name = "sro",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Specular Roughness",
+        string page = "Specular"
+    ]],
+    float in_specular_spread = 0.25
+    [[
+        string as_maya_attribute_name = "specularSpread",
+        string as_maya_attribute_short_name = "spr",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Specular Spread",
+        string page = "Specular",
+        string help = "Specular highlights spread, only valid for GTR, Student's t-MDF."
+    ]],
+    normal in_bump_normal = N
+    [[
+        string as_maya_attribute_name = "normalCamera",
+        string as_maya_attribute_short_name = "n",
+        string label = "Bump Normal",
+        string page = "Bump"
+    ]],
+    color in_transparency = color(0)
+    [[
+        string as_maya_attribute_name = "transparency",
+        string as_maya_attribute_short_name = "it",
+        string label = "Transparency Color",
+        string page = "Transparency"
+    ]],
+    int in_enable_matte = 0
+    [[
+        string as_maya_attribute_name = "enableMatte",
+        string as_maya_attribute_short_name = "ema",
+        string widget = "checkBox",
+        string label = "Enable Matte Opacity",
+        string page = "Matte Opacity",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    float in_matte_opacity = 0.0
+    [[
+        string as_maya_attribute_name = "matteOpacity",
+        string as_maya_attribute_short_name = "mao",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Matte Opacity",
+        string page = "Matte Opacity",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    color in_matte_opacity_color = color(1,0.5,0)
+    [[
+        string as_maya_attribute_name = "matteOpacityColor",
+        string as_maya_attribute_short_name = "mac",
+        string label = "Matte Opacity Color",
+        string page = "Matte Opacity",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_maximum_ray_depth= 4
+    [[
+        string as_maya_attribute_name = "maximumRayDepth",
+        string as_maya_attribute_short_name = "mr",
+        int min = 0,
+        int max = 32,
+        int softmax = 8,
+        string label = "Ray Depth",
+        string page = "Advanced",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+
+    output closure color out_outColor = 0
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string widget = "null"
+    ]],
+    output closure color out_outTransparency = 0
+    [[
+        string as_maya_attribute_name = "outTransparency",
+        string as_maya_attribute_short_name = "ot",
+        string widget = "null"
+    ]],
+    output closure color out_outMatteOpacity = 0
+    [[
+        string as_maya_attribute_name = "outMatteOpacity",
+        string as_maya_attribute_short_name = "om",
+        string widget = "null",
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]]
+)
+{
+    int compute_transparency = (max(in_transparency) > 0.0) ? 1 : 0;
+
+    if (compute_transparency)
+    {
+        out_outTransparency = in_transparency * transparent();
+        out_outColor += out_outTransparency;
+    }
+
+    if (raytype("shadow") || raytype("transparency"))
+    {
+        return;
+    }
+
+    int ray_depth = 0;
+    int status = getattribute("path:ray_depth", ray_depth);
+
+    if (!status || ray_depth > in_maximum_ray_depth)
+    {
+        return;
+    }
+
+    if (in_enable_matte)
+    {
+        out_outMatteOpacity = in_matte_opacity *
+            in_matte_opacity_color * holdout();
+
+        out_outColor += out_outMatteOpacity;
+    }
+
+    if (in_transparency == 1.0)
+    {
+        return;
+    }
+
+    string distribution;
+
+    if (in_distribution == 0)
+    {
+        distribution = "beckmann";
+    }
+    else if (in_distribution == 1)
+    {
+        distribution = "ggx";
+    }
+    else if (in_distribution == 2)
+    {
+        distribution = "gtr1";
+    }
+    else if (in_distribution == 3)
+    {
+        distribution = "std";
+    }
+    else
+    {
+#ifdef DEBUG
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+        warning("[WARNING]: Invalid MDF in %s,\t%s:%d\n",
+                shadername, __FILE__, __LINE__);
+#endif
+    }
+
+    color opacity = 1.0 - in_transparency;
+
+    out_outColor += opacity * as_plastic(
+        distribution,
+        in_bump_normal,
+        in_specular_color,
+        in_specular_weight,
+        in_specular_roughness,
+        1.0 - in_specular_spread, // it seems spread is reverted
+        in_ior,
+        in_color,
+        in_diffuse_weight,
+        in_scattering);
+}

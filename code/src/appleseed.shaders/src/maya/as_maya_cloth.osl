@@ -1,0 +1,270 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/cloth.html
+
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/pattern/as_pattern_helpers.h"
+
+shader as_maya_cloth
+[[
+    string as_maya_node_name = "cloth"
+]]
+(
+    color in_gapColor = color(0)
+    [[
+        string as_maya_attribute_name = "gapColor",
+        string label = "Gap Color",
+        string page = "Cloth Attributes"
+    ]],
+    color in_uColor = color(1)
+    [[
+        string as_maya_attribute_name = "uColor",
+        string label = "U Color",
+        string page = "Cloth Attributes"
+    ]],
+    color in_vColor = color(0.5)
+    [[
+        string as_maya_attribute_name = "vColor",
+        string label = "V Color"
+    ]],
+    float in_uWidth = 0.75
+    [[
+        string as_maya_attribute_name = "uWidth",
+        string label = "U Width",
+        string page = "Cloth Attributes"
+    ]],
+    float in_vWidth = 0.75
+    [[
+        string as_maya_attribute_name = "vWidth",
+        string label = "V Width",
+        string page = "Cloth Attributes"
+    ]],
+    float in_uWave = 0.0
+    [[
+        string as_maya_attribute_name = "uWave",
+        string label = "U Wave",
+        string page = "Cloth Attributes"
+    ]],
+    float in_vWave = 0.0
+    [[
+        string as_maya_attribute_name = "vWave",
+        string label = "V Wave",
+        string page = "Cloth Attributes"
+    ]],
+    float in_randomness = 0.0
+    [[
+        string as_maya_attribute_name = "randomness",
+        string label = "Randomness",
+        string page = "Cloth Attributes"
+    ]],
+    float in_widthSpread = 0.0
+    [[
+        string as_maya_attribute_name = "widthSpread",
+        string label = "Width Spread",
+        string page = "Cloth Attributes"
+    ]],
+    float in_brightSpread = 0.0
+    [[
+        string as_maya_attribute_name = "brightSpread",
+        string label = "Bright Spread",
+        string page = "Cloth Attributes"
+    ]],
+    int in_invert = 0
+    [[
+        string as_maya_attribute_name = "invert",
+        string label = "Invert",
+        string widget = "checkBox",
+        string page = "Effects",
+    ]],
+
+    MAYA_COLORBALANCE_PARAMETERS,
+    MAYA_UV_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]]
+)
+{
+    if (in_uvCoord[0] == OUTSIDE_UVFRAME || in_uvCoord[1] == OUTSIDE_UVFRAME)
+    {
+        out_outColor = in_defaultColor;
+        out_outAlpha = maya_luminance(in_defaultColor);
+    }
+    else
+    {
+        float st[2] = {in_uvCoord[0], in_uvCoord[1]};
+
+        if (in_randomness > 0.0)
+        {
+            vector vnoise = noise("perlin", point(st[0], st[1], 0));
+
+            st[1] += vnoise[1] * in_randomness;
+            st[0] += vnoise[0] * in_randomness;
+        }
+
+        if (in_vWave > 0.0)
+        {
+            st[1] += sin(st[0] * M_2PI) * in_vWave;
+        }
+        if (in_uWave > 0.0)
+        {
+            st[0] -= sin(st[1] * M_2PI) * in_uWave;
+        }
+
+        float u_width = in_uWidth;
+        float v_width = in_vWidth;
+
+        if (in_widthSpread > 0.0)
+        {
+            float spread = noise("perlin", point(st[0], st[1] / 4, 0));
+
+            u_width += (spread - 0.5) * in_widthSpread;
+
+            spread = noise("perlin", point(st[0] / 4, st[1], 1));
+
+            v_width += (spread - 0.5) * in_widthSpread;
+        }
+
+        float uu = mod(st[0], 1);
+        float vv = mod(st[1], 1);
+
+        int flipped, u_thread;
+
+        if ((vv < 0.5 && uu >= 0.5) || (vv >= 0.5 && uu <= 0.5))
+        {
+            float tmp = vv;
+            vv = uu;
+            uu = tmp;
+
+            tmp = u_width;
+            u_width = v_width;
+            v_width = tmp;
+
+            flipped = 1;
+        }
+        else
+        {
+            flipped = 0;
+        }
+
+        uu *= 2;
+        vv *= 2;
+        uu -= floor(uu);
+        vv -= floor(vv);
+
+        float value;
+
+        if (vv <= v_width)
+        {
+            float tmp = v_width * 0.5;
+
+            value = (vv - tmp) / tmp;
+            value *= value;
+
+            tmp = uu - u_width * 0.5;
+            value = (sqr(tmp) + value) * 0.75;
+
+            u_thread = flipped;
+        }
+        else if (uu <= u_width)
+        {
+            float tmp = u_width * 0.5;
+
+            value = (uu - tmp) / tmp;
+            value *= value;
+
+            tmp = (vv - 1.0 - v_width * 0.5);
+            value = (sqr(tmp) + value) * 0.75;
+
+            u_thread = !flipped;
+        }
+        else
+        {
+            value = 1.0;
+        }
+
+        if (value >= 1)
+        {
+            out_outColor = in_gapColor;
+        }
+        else
+        {
+            if (u_thread)
+            {
+                out_outColor = in_uColor;
+            }
+            else
+            {
+                out_outColor = in_vColor;
+            }
+
+            value = 1 - value;
+            float spread;
+
+            if (in_brightSpread > 0.0)
+            {
+                if (u_thread)
+                {
+                    spread = noise("uperlin", 0.5 * st[0]);
+                }
+                else
+                {
+                    spread = noise("uperlin", 0.5 * st[1]);
+                }
+                spread *= spread; // match Maya, roughly
+
+                spread *= in_brightSpread + (1 - in_brightSpread * 0.5);
+                value *= clamp(spread, 0, 1);
+            }
+            out_outColor = mix(in_gapColor, out_outColor, value);
+        }
+
+        out_outAlpha = maya_luminance(out_outColor);
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha);
+    }
+}

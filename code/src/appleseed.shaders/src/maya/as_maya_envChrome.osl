@@ -1,0 +1,273 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/envChrome.html
+
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/maya/as_maya_pattern_helpers.h"
+
+shader as_maya_envChrome
+[[
+    string as_maya_node_name = "envChrome"
+]]
+(
+    color in_skyColor = color(0.784, 0.784, 1.0)
+    [[
+        string as_maya_attribute_name = "skyColor",
+        string label = "Sky Color",
+        string page = "Sky Attributes"
+    ]],
+    color in_zenithColor = color(0.392, 0.392, 1.0)
+    [[
+        string as_maya_attribute_name = "zenithColor",
+        string label = "Zenith Color",
+        string page = "Sky Attributes"
+    ]],
+    color in_lightColor = color(0.784, 0.784, 1.0)
+    [[
+        string as_maya_attribute_name = "lightColor",
+        string label = "Light Color",
+        string page = "Sky Attributes"
+    ]],
+    float in_lightWidth = 0.5
+    [[
+        string as_maya_attribute_name = "lightWidth",
+        string label = "Light Width",
+        string page = "Environment Chrome Attributes"
+    ]],
+    float in_lightWidthGain = 1.0
+    [[
+        string as_maya_attribute_name = "lightWidthGain",
+        string label = "Light Width Gain",
+        string page = "Environment Chrome Attributes"
+    ]],
+    float in_lightWidthOffset = 0.0
+    [[
+        string as_maya_attribute_name = "lightWidthOffset",
+        string label = "Light Width Offset",
+        string page = "Environment Chrome Attributes"
+    ]],
+    float in_lightDepth = 0.1
+    [[
+        string as_maya_attribute_name = "lightDepth",
+        string label = "Light Depth",
+        string page = "Environment Chrome Attributes"
+    ]],
+    float in_lightDepthGain = 1.0
+    [[
+        string as_maya_attribute_name = "lightDepthGain",
+        string label = "Light Depth Gain",
+        string page = "Environment Chrome Attributes"
+    ]],
+    float in_lightDepthOffset = 0.0
+    [[
+        string as_maya_attribute_name = "lightDepthOffset",
+        string label = "Light Depth Offset",
+        string page = "Environment Chrome Attributes"
+    ]],
+    int in_realFloor = 0
+    [[
+        string as_maya_attribute_name = "realFloor",
+        string label = "Real Floor",
+        string widget = "checkBox",
+        string page = "Floor Attributes"
+    ]],
+    color in_floorColor = color(0.588, 0.588, 0.784)
+    [[
+        string as_maya_attribute_name = "floorColor",
+        string label = "Floor Color",
+        string page = "Floor Attributes"
+    ]],
+    float in_floorAltitude = -1.0
+    [[
+        string as_maya_attribute_name = "floorAltitude",
+        string label = "Floor Altitude",
+        string page = "Floor Attributes"
+    ]],
+    color in_horizonColor = color(0)
+    [[
+        string as_maya_attribute_name = "horizonColor",
+        string label = "Horizon Color",
+        string page = "Floor Attributes"
+    ]],
+    color in_gridColor = color(0)
+    [[
+        string as_maya_attribute_name = "gridColor",
+        string label = "Grid Color",
+        string page = "Grid Placement"
+    ]],
+    float in_gridWidth = 0.1
+    [[
+        string as_maya_attribute_name = "gridWidth",
+        string label = "Grid Width",
+        string page = "Grid Placement"
+    ]],
+    float in_gridWidthGain = 1.0
+    [[
+        string as_maya_attribute_name = "gridWidthGain",
+        string label = "Grid Width Gain",
+        string page = "Grid Placement"
+    ]],
+    float in_gridWidthOffset = 0.0
+    [[
+        string as_maya_attribute_name = "gridWidthOffset",
+        string label = "Grid Width Offset",
+        string page = "Grid Placement"
+    ]],
+    float in_gridDepth = 0.1
+    [[
+        string as_maya_attribute_name = "gridDepth",
+        string label = "Grid Depth",
+        string page = "Grid Placement"
+    ]],
+    float in_gridDepthGain = 1.0
+    [[
+        string as_maya_attribute_name = "gridDepthGain",
+        string label = "Grid Depth Gain",
+        string page = "Grid Placement"
+    ]],
+    float in_gridDepthOffset = 0.0
+    [[
+        string as_maya_attribute_name = "gridDepthOffset",
+        string label = "Grid Depth Offset",
+        string page = "Grid Placement"
+    ]],
+    matrix in_placementMatrix = matrix(1)
+    [[
+        string as_maya_attribute_name = "placementMatrix",
+        string label = "Placement Matrix"
+    ]],
+    point in_pointCamera = P
+    [[
+        string as_maya_attribute_name = "pointCamera",
+        string label = "Surface Point",
+        string widget = "null"
+    ]],
+    normal in_normalCamera = N
+    [[
+        string as_maya_attribute_name = "normalCamera",
+        string label = "Surface Normal",
+        string widget = "null"
+    ]],
+
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]]
+)
+{
+    point Pp = transform(in_placementMatrix, in_pointCamera);
+
+    if (Pp[1] < in_floorAltitude)
+    {
+        out_outColor = color(0);
+        out_outAlpha = 1.0;
+    }
+    else
+    {
+        vector R = reflect(I, normalize(in_normalCamera));
+        vector Rn = normalize(transform(in_placementMatrix, R));
+
+        // Sky hemisphere. Compute the pulse trains and color blending
+        // assuming Y is up, but the user can override this in Maya while we
+        // don't yet have a mechanism to query this attribute. TODO
+
+        if (Rn[1] >= 0)
+        {
+            Rn[0] /= Rn[1];
+            Rn[2] /= Rn[1];
+
+            color sky_hemisphere_color = mix(
+                in_skyColor,
+                in_zenithColor,
+                Rn[1]);
+
+            float quad_width =
+                compute_filtered_lines(
+                    Rn[0],
+                    in_lightWidth,
+                    in_lightWidthGain,
+                    in_lightWidthOffset);
+
+            float quad_depth =
+                compute_filtered_lines(
+                    Rn[2],
+                    in_lightDepth,
+                    in_lightDepthGain,
+                    in_lightDepthOffset);
+
+            out_outColor = mix(
+                sky_hemisphere_color,
+                in_lightColor,
+                quad_width * quad_depth);
+        }
+        else
+        {
+            color ground_hemisphere_color = mix(
+                in_horizonColor,
+                in_floorColor,
+               -Rn[1]);
+
+            // The grid frequency isn't matching but the issue seems to be
+            // the xform in the placementMatrix. Confirm in the exporter.TODO
+
+            float elevation_factor = 2.0 * in_floorAltitude / Rn[1];
+
+            Rn[0] *= elevation_factor;
+            Rn[2] *= elevation_factor;
+
+            color grid_width =
+                compute_filtered_lines(
+                    Rn[0],
+                    in_gridWidth,
+                    in_gridWidthGain,
+                    in_gridWidthOffset);
+
+            color grid_depth =
+                compute_filtered_lines(
+                    Rn[2],
+                    in_gridDepth,
+                    in_gridDepthGain,
+                    in_gridDepthOffset);
+
+            out_outColor = mix(
+                ground_hemisphere_color,
+                in_gridColor,
+                max(grid_width, grid_depth));
+        }
+        out_outAlpha = maya_luminance(out_outColor);
+    }
+}

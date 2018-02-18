@@ -1,0 +1,153 @@
+$Id: README,v 1.1.1.1 2008/01/06 03:24:00 holger Exp $
+
+README file for C99-snprintf
+============================
+
+
+OVERVIEW
+--------
+
+C99-snprintf provides a portable implementation of snprintf(3),
+vsnprintf(3), asprintf(3), and vasprintf(3).  It should be fully C99
+compliant, with the exceptions that it doesn't provide wide character
+support and that "%a" and "%A" conversions aren't supported.
+C99-snprintf should be buildable with any ANSI C compiler, it doesn't
+require libc functionality other than malloc(3) (for vasprintf(3)) and
+the stdarg(3) or varargs(3) macros, and it has no other prerequisites.
+
+The snprintf(3) and vsnprintf(3) functions are part of the C99 standard
+library.  However, snprintf(3) and vsnprintf(3) weren't included in the
+C89/C90 standards and some systems don't provide C99 compliant
+implementations of these functions.  For example, if the ouput buffer
+isn't big enough to hold the full conversion result, IRIX up to the
+current release 6.5.30 and glibc up to 2.0.x don't return the same value
+as with a sufficiently sized buffer (which makes it impossible to
+precompute the required buffer size), and some older systems (such as
+64-bit Solaris 7) ignore the specified buffer size and overrun the
+buffer if it's too small.  The asprintf(3) and vasprintf(3) functions
+aren't standardized at all.  They're included with recent releases of
+glibc and BSD's libc, but they aren't available on other systems, such
+as System V (e.g., Solaris).
+
+So, if any of these functions are used, portable software should include
+replacement code which is used in case the functions aren't available or
+don't work correctly on the target system.  C99-snprintf can be included
+with software packages in order to provide such replacement functions.
+
+
+USAGE
+-----
+
+1) Add snprintf.c to your project files.  If you're using GNU Automake,
+   you could use a line such as "foo_LDADD = $(LIBOBJS)" (where "foo" is
+   the name of your program) in your Makefile.am.
+
+2) Add snprintf.m4 to your m4 include directory or to your acinclude.m4
+   file.  If you're using neither, you can simply include the contents
+   of snprintf.m4 in your configure.ac file.
+
+3) For each replacement function which might be needed in your project,
+   call the according Autoconf macro in your configure.ac file.  That
+   is, in order to have all four replacement functions available if
+   needed:
+
+   	HW_FUNC_VSNPRINTF
+   	HW_FUNC_SNPRINTF
+   	HW_FUNC_VASPRINTF
+   	HW_FUNC_ASPRINTF
+
+4) The required replacement functions should be declared in some header
+   file included throughout your project files:
+
+   	#if HAVE_CONFIG_H
+   	#include <config.h>
+   	#endif
+   	#if HAVE_STDARG_H
+   	#include <stdarg.h>
+   	#if !HAVE_VSNPRINTF
+   	int rpl_vsnprintf(char *, size_t, const char *, va_list);
+   	#endif
+   	#if !HAVE_SNPRINTF
+   	int rpl_snprintf(char *, size_t, const char *, ...);
+   	#endif
+   	#if !HAVE_VASPRINTF
+   	int rpl_vasprintf(char **, const char *, va_list);
+   	#endif
+   	#if !HAVE_ASPRINTF
+   	int rpl_asprintf(char **, const char *, ...);
+   	#endif
+   	#endif	/* HAVE_STDARG_H */
+
+
+USAGE WITHOUT GNU AUTOCONF
+--------------------------
+
+If you're not using GNU Autoconf, omit the steps 2 and 3 from the above
+instructions.  Instead:
+
+1) The following preprocessor macros should be defined to 1 if the
+   feature or file in question is available on the target system (though
+   basic functionality should be available as long as HAVE_STDARG_H is
+   defined correctly):
+
+   	HAVE_VSNPRINTF
+   	HAVE_SNPRINTF
+   	HAVE_VASPRINTF
+   	HAVE_ASPRINTF
+   	HAVE_STDARG_H
+   	HAVE_STDDEF_H
+   	HAVE_STDINT_H
+   	HAVE_STDLIB_H
+   	HAVE_INTTYPES_H
+   	HAVE_LOCALE_H
+   	HAVE_LOCALECONV
+   	HAVE_LCONV_DECIMAL_POINT
+   	HAVE_LCONV_THOUSANDS_SEP
+   	HAVE_LONG_DOUBLE
+   	HAVE_LONG_LONG_INT
+   	HAVE_UNSIGNED_LONG_LONG_INT
+   	HAVE_INTMAX_T
+   	HAVE_UINTMAX_T
+   	HAVE_UINTPTR_T
+   	HAVE_PTRDIFF_T
+   	HAVE_VA_COPY
+   	HAVE___VA_COPY
+
+2) The calls to the functions which should be replaced must be redefined
+   throughout the project files:
+
+   	#define vsnprintf rpl_vsnprintf
+   	#define snprintf rpl_snprintf
+   	#define vasprintf rpl_vasprintf
+   	#define asprintf rpl_asprintf
+
+
+BUGS AND CAVEATS
+----------------
+
+Depending on the size of the largest integer type available on the
+target platform, floating point precisions larger than 9, 19, or 38 are
+not supported.  If a larger precision is specified, it will silently be
+reduced to the largest possible precision on the target system.
+
+If the integral part of a floating point value doesn't fit into the
+largest integer type available on the target platform, the conversion
+will fail.  In this case, C99-snprintf will return -1 and set the global
+variable errno to indicate the error.  The same is done if the specified
+field width or precision are (or if the return value would be) larger
+than INT_MAX.
+
+C99-snprintf makes a few assumptions regarding integer (and pointer
+value) conversions which aren't backed by the C standard, but which
+should be safe in practice.
+
+
+FEEDBACK
+--------
+
+Please let me know if you have any comments or bug reports regarding
+C99-snprintf:
+
+	Holger Weiss <holger@jhweiss.de>
+
+# vim: set joinspaces textwidth=72 filetype=none:

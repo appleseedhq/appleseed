@@ -1,0 +1,144 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/fourByFourMatrix.html
+
+shader as_maya_fourByFourMatrix
+[[
+    string as_maya_node_name = "fourByFourMatrix"
+]]
+(
+    float in_in00 = 1.0
+    [[
+        string as_maya_attribute_name = "in00",
+        string label = "Row 0, Column 0",
+        string help = "Input at row 0, column 0"
+    ]],
+    float in_in01 = 0.0
+    [[
+        string as_maya_attribute_name = "in01",
+        string label = "Row 0, Column 1",
+        string help = "Input at row 0, column 1"
+    ]],
+    float in_in02 = 0.0
+    [[
+        string as_maya_attribute_name = "in02",
+        string label = "Row 0, Column 2",
+        string help = "Input at row 0, column 2"
+    ]],
+    float in_in03 = 0.0
+    [[
+        string as_maya_attribute_name = "in03",
+        string label = "Row 0, Column 3",
+        string help = "Input at row 0, column 3"
+    ]],
+    float in_in10 = 0.0
+    [[
+        string as_maya_attribute_name = "in10",
+        string label = "Row 1, Column 0",
+        string help = "Input at row 1, column 0"
+    ]],
+    float in_in11 = 1.0
+    [[
+        string as_maya_attribute_name = "in11",
+        string label = "Row 1, Column 1",
+        string help = "Input at row 1, column 1"
+    ]],
+    float in_in12 = 0.0
+    [[
+        string as_maya_attribute_name = "in12",
+        string label = "Row 1, Column 2",
+        string help = "Input at row 1, column 2"
+    ]],
+    float in_in13 = 0.0
+    [[
+        string as_maya_attribute_name = "in13",
+        string label = "Row 1, Column 3",
+        string help = "Input at row 1, column 3"
+    ]],
+    float in_in20 = 0.0
+    [[
+        string as_maya_attribute_name = "in20",
+        string label = "Row 2, Column 0",
+        string help = "Input at row 2, column 0"
+    ]],
+    float in_in21 = 0.0
+    [[
+        string as_maya_attribute_name = "in21",
+        string label = "Row 2, Column 1",
+        string help = "Input at row 2, column 1"
+    ]],
+    float in_in22 = 1.0
+    [[
+        string as_maya_attribute_name = "in22",
+        string label = "Row 2, Column 2",
+        string help = "Input at row 2, column 2"
+    ]],
+    float in_in23 = 0.0
+    [[
+        string as_maya_attribute_name = "in23",
+        string label = "Row 2, Column 3",
+        string help = "Input at row 2, column 3"
+    ]],
+    float in_in30 = 0.0
+    [[
+        string as_maya_attribute_name = "in30",
+        string label = "Row 3, Column 0",
+        string help = "Input at row 3, column 0"
+    ]],
+    float in_in31 = 0.0
+    [[
+        string as_maya_attribute_name = "in31",
+        string label = "Row 3, Column 1",
+        string help = "Input at row 3, column 1"
+    ]],
+    float in_in32 = 0.0
+    [[
+        string as_maya_attribute_name = "in32",
+        string label = "Row 3, Column 2",
+        string help = "Input at row 3, column 2"
+    ]],
+    float in_in33 = 1.0
+    [[
+        string as_maya_attribute_name = "in33",
+        string label = "Row 3, Column 3",
+        string help = "Input at row 3, column 3"
+    ]],
+    output matrix out_output = 1
+    [[
+        string as_maya_attribute_name = "output",
+        string label = "Output 4x4 Matrix",
+        string widget = "null"
+    ]]
+)
+{
+    out_output = matrix( in_in00, in_in01, in_in02, in_in03,
+                         in_in10, in_in11, in_in12, in_in13,
+                         in_in20, in_in21, in_in22, in_in23,
+                         in_in30, in_in31, in_in32, in_in33 );
+}

@@ -1,0 +1,367 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/math/as_math_helpers.h"
+
+shader as_metal
+[[
+    string as_maya_node_name = "asMetal",
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
+    string help = "Metal material",
+    string icon = "asMetal.png",
+    int as_maya_type_id = 0x001279f9,
+    string as_max_class_id = "121203873 1478432054",
+    string as_max_plugin_type = "material"
+]]
+(
+    color in_face_reflectance = color(0.96, 0.8, 0.05)
+    [[
+        string as_maya_attribute_name = "faceReflectance",
+        string as_maya_attribute_short_name = "f0",
+        string label = "Face Reflectance",
+        string page = "Fresnel",
+        string help = "Reflectance at normal incidence."
+    ]],
+    color in_edge_reflectance = color(1)
+    [[
+        string as_maya_attribute_name = "edgeReflectance",
+        string as_maya_attribute_short_name = "f90",
+        string label = "Edge Reflectance",
+        string page = "Fresnel",
+        string help = "Reflectance at grazing incidence."
+    ]],
+    int in_distribution = 0
+    [[
+        string as_maya_attribute_name = "distribution",
+        string as_maya_attribute_short_name = "mdf",
+        string widget = "mapper",
+        string options = "Beckmann:0|GGX:1",
+        string label = "Distribution",
+        string page = "Specular",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    float in_roughness = 0.25
+    [[
+        string as_maya_attribute_name = "roughness",
+        string as_maya_attribute_short_name = "ro",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Roughness",
+        string page = "Specular"
+    ]],
+    float in_energy_compensation = 1.0
+    [[
+        string as_maya_attribute_name = "energyCompensation",
+        string as_maya_attribute_short_name = "ec",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Energy Compensation",
+        string page = "Specular",
+        string help = "Energy compensation, to account for energy loss with high roughness. Valid for Beckmann and GGX MDF only."
+    ]],
+    float in_anisotropy_amount = 0.0
+    [[
+        string as_maya_attribute_name = "anisotropyAmount",
+        string as_maya_attribute_short_name = "anw",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Anisotropy Amount",
+        string page = "Specular.Anisotropy"
+    ]],
+    float in_anisotropy_angle = 0.0
+    [[
+        string as_maya_attribute_name = "anisotropyAngle",
+        string as_maya_attribute_short_name = "ana",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Anisotropy Angle",
+        string page = "Specular.Anisotropy",
+        string help = "Anisotropy angle in [0,1], mapping to [0,360] degrees",
+        int divider = 1
+    ]],
+    int in_anisotropy_mode = 0
+    [[
+        string as_maya_attribute_name = "anisotropyMode",
+        string as_maya_attribute_short_name = "anm",
+        string widget = "mapper",
+        string options = "Anisotropy Map:0|Explicit Vector:1",
+        string label = "Anisotropy Mode",
+        string page = "Specular.Anisotropy",
+        string help = "Use tangent vector field map, or explicit vector.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    color in_anisotropy_map = color(0)
+    [[
+        string as_maya_attribute_name = "anisotropyMap",
+        string as_maya_attribute_short_name = "ama",
+        string label = "Anisotropy Vector Map",
+        string page = "Specular.Anisotropy",
+        string help = "Anisotropy vector map, with XY encoded in RG channels",
+        int divider = 1
+    ]],
+    vector in_anisotropy_direction = vector(0)
+    [[
+        string as_maya_attribute_name = "anisotropyDirection",
+        string as_maya_attribute_short_name = "and",
+        string label = "Anisotropy Vector",
+        string page = "Specular.Anisotropy",
+        string help = "Explicit anisotropy vector, such as the vector output by a tangent field node."
+    ]],
+#if 0
+    float in_thinfilm_thickness = 0.0
+    [[
+        string as_maya_attribute_name = "thinFilmThickness",
+        string as_maya_attribute_short_name = "tft",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Thinfilm Thickness",
+        string page = "Oxidation",
+        int divider = 1
+    ]],
+    float in_thinfilm_ior = 1.41534
+    [[
+        string as_maya_attribute_name = "thinFilmIor",
+        string as_maya_attribute_short_name = "tet",
+        float min = 1.0,
+        float softmax = 2.0,
+        float max = 3.0,
+        string label = "Thinfilm IOR",
+        string page = "Oxidation",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],       
+    int in_thinfilm_min = 380
+    [[
+        string as_maya_attribute_name = "thinFilmMin",
+        string as_maya_attribute_short_name = "tmi",
+        int min = 380,
+        int max = 780,
+        string label = "Thinfilm Lower Bound",
+        string page = "Oxidation",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Thin film thickness lower bound, in nanometers."
+    ]],
+    int in_thinfilm_max = 780
+    [[
+        string as_maya_attribute_name = "thinFilmMax",
+        string as_maya_attribute_short_name = "tma",
+        int min = 380,
+        int max = 780,
+        string label = "Thinfilm Upper Bound",
+        string page = "Oxidation",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Thin film thickness upper bound, in nanometers."
+    ]],
+#endif
+    normal in_bump_normal = N
+    [[
+        string as_maya_attribute_name = "normalCamera",
+        string as_maya_attribute_short_name = "n",
+        string label = "Bump Normal",
+        string page = "Bump",
+        string help = "The default bump normal."
+    ]],
+    int in_enable_matte = 0
+    [[
+        string as_maya_attribute_name = "enableMatte",
+        string as_maya_attribute_short_name = "ema",
+        string widget = "checkBox",
+        string label = "Enable Matte Opacity",
+        string page = "Matte Opacity",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    float in_matte_opacity = 0.0
+    [[
+        string as_maya_attribute_name = "matteOpacity",
+        string as_maya_attribute_short_name = "mao",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Matte Opacity",
+        string page = "Matte Opacity",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    color in_matte_opacity_color = color(1,0.5,0)
+    [[
+        string as_maya_attribute_name = "matteOpacityColor",
+        string as_maya_attribute_short_name = "mac",
+        string label = "Matte Opacity Color",
+        string page = "Matte Opacity",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_maximum_ray_depth = 8
+    [[
+        string as_maya_attribute_name = "maximumRayDepth",
+        string as_maya_attribute_short_name = "mrd",
+        int min = 0,
+        int max = 32,
+        int softmax = 8,
+        string label = "Ray Depth",
+        string page = "Advanced",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    vector Tn = vector(0)
+    [[
+        int lockgeom = 0,
+        int as_maya_attribute_hidden = 1,
+        string widget = "null",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    vector Bn = vector(0)
+    [[
+        int lockgeom = 0,
+        int as_maya_attribute_hidden = 1,
+        string widget = "null",
+        int gafferNoduleLayoutVisible = 0
+    ]],
+
+    output closure color out_outColor = 0
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string widget = "null"
+    ]],
+    output closure color out_outMatteOpacity = 0
+    [[
+        string as_maya_attribute_name = "outMatteOpacity",
+        string as_maya_attribute_short_name = "om",
+        string widget = "null",
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0
+    ]]
+)
+{
+    if (raytype("shadow") || raytype("transparency"))
+    {
+        return;
+    }
+
+    int ray_depth = 0;
+    int status = getattribute("path:ray_depth", ray_depth);
+
+    if (!status || ray_depth > in_maximum_ray_depth)
+    {
+        return;
+    }
+
+    if (in_enable_matte)
+    {
+        out_outMatteOpacity = in_matte_opacity *
+            in_matte_opacity_color * holdout();
+
+        out_outColor += out_outMatteOpacity;
+    }
+
+    string distribution;
+
+    if (in_distribution == 0)
+    {
+        distribution = "beckmann";
+    }
+    else if (in_distribution == 1)
+    {
+        distribution = "ggx";
+    }
+    else
+    {
+#ifdef DEBUG
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+        warning("[WARNING]: Invalid MDF in %s,\t%s:%d\n",
+                shadername, __FILE__, __LINE__);
+#endif
+    }
+
+    // Layer EDF later, but eta+k must change with temperature.
+
+    vector tangent = Tn;
+    normal Nn = normalize(in_bump_normal);
+
+    if (in_anisotropy_amount > 0.0)
+    {
+        if (in_anisotropy_mode == 0)
+        {
+            if (isconnected(in_anisotropy_map))
+            {
+                vector vector_map = normalize(
+                    (vector) in_anisotropy_map * 2.0 - 1.0);
+
+                tangent = normalize(
+                    vector_map[0] * Tn +
+                    vector_map[1] * Bn +
+                    vector_map[2] * Nn);
+            }
+        }
+        else
+        {
+            tangent = in_anisotropy_direction;
+        }
+
+        if (in_anisotropy_angle > 0.0)
+        {
+            tangent = rotate(
+                tangent,
+                in_anisotropy_angle * M_2PI,
+                point(0),
+                point(Nn));
+        }
+    }
+
+    out_outColor += as_metal(
+        distribution,
+        Nn,
+        tangent,
+        in_face_reflectance,
+        in_edge_reflectance,
+        in_roughness,
+        0.0, // specular spread, used in Student's t-MDF only (unused)
+        in_anisotropy_amount,
+        "energy_compensation", in_energy_compensation);
+}

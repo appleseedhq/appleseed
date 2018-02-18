@@ -1,0 +1,282 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/cloud.html
+
+#include "appleseed/fractal/as_fractal_helpers.h"
+#include "appleseed/math/as_math_helpers.h"
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/maya/as_maya_transform_helpers.h"
+
+shader as_maya_cloud
+[[
+    string as_maya_node_name = "cloud"
+]]
+(
+    color in_color1 = color(0)
+    [[
+        string as_maya_attribute_name = "color1",
+        string label = "Color 1",
+        string page = "Cloud Attributes"
+    ]],
+    color in_color2 = color(1)
+    [[
+        string as_maya_attribute_name = "color2",
+        string label = "Color 2",
+        string page = "Cloud Attributes"
+    ]],
+    float in_contrast = 0.5
+    [[
+        string as_maya_attribute_name = "contrast",
+        string label = "Contrast",
+        string page = "Cloud Attributes"
+    ]],
+    float in_amplitude = 1.0
+    [[
+        string as_maya_attribute_name = "amplitude",
+        string label = "Amplitude",
+        float min = 0.0,
+        float max = 5.0,
+        float slidermin = 0.0,
+        float slidermax = 5.0,
+        string page = "Cloud Attributes"
+    ]],
+    float in_depth[2] = {0.0, 0.8}
+    [[
+        string as_maya_attribute_name = "depth",
+        string label = "XY Recursion Depth",
+        string page = "Cloud Attributes"
+    ]],
+    vector in_ripples = vector(1)
+    [[
+        string as_maya_attribute_name = "ripples",
+        string label = "Ripples",
+        string page = "Cloud Attributes"
+    ]],
+    float in_ripplesX = 1.0
+    [[
+        string as_maya_attribute_name = "ripplesX",
+        string widget = "null"
+    ]],
+    float in_ripplesY = 1.0
+    [[
+        string as_maya_attribute_name = "ripplesY",
+        string widget = "null"
+    ]],
+    float in_ripplesZ = 1.0
+    [[
+        string as_maya_attribute_name = "ripplesZ",
+        string widget = "null"
+    ]],
+    int in_softEdges = 1
+    [[
+        string as_maya_attribute_name = "softEdges",
+        string label = "Soft Edges",
+        string widget = "checkBox",
+        string page = "Cloud Attributes"
+    ]],
+    float in_edgeThresh = 1.0
+    [[
+        string as_maya_attribute_name = "edgeThresh",
+        string label = "Edge Threshold",
+        string page = "Cloud Attributes"
+    ]],
+    float in_centerThresh = 0.0
+    [[
+        string as_maya_attribute_name = "centerThresh",
+        string label = "Center Threshold",
+        string page = "Cloud Attributes"
+    ]],
+    float in_transpRange = 0.5
+    [[
+        string as_maya_attribute_name = "transpRange",
+        string label = "Transparency Range",
+        string page = "Cloud Attributes"
+    ]],
+    float in_ratio = 0.707
+    [[
+        string as_maya_attribute_name = "ratio",
+        string label = "Ratio",
+        string page = "Cloud Attributes"
+    ]],
+    normal in_normalCamera = N
+    [[
+        string as_maya_attribute_name = "normalCamera",
+        string label = "Surface Normal",
+        string widget = "null"
+    ]],
+    point in_refPointCamera = P
+    [[
+        string as_maya_attribute_name = "refPointCamera",
+        string label = "Surface Point",
+        string widget = "null"
+    ]],
+    matrix in_placementMatrix = matrix(1)
+    [[
+        string as_maya_attribute_name = "placementMatrix",
+        string label = "Placement Matrix",
+        string widget = "null"
+    ]],
+
+    MAYA_COLORBALANCE_PARAMETERS,
+    MAYA_EFFECTS_PARAMETERS,
+    MAYA_EFFECTS_3DTEX_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]]
+)
+{
+    matrix placement = (in_local)
+        ? matrix("common", "object") * in_placementMatrix
+        : in_placementMatrix;
+
+    point Pp = transform(placement, in_refPointCamera);
+
+    float box_blending = 0.0;
+
+    int outside_box = outside_place3d_volume(
+        Pp,
+        in_wrap,
+        in_blend,
+        box_blending);
+
+    if (outside_box)
+    {
+        out_outColor = in_defaultColor;
+        out_outAlpha = maya_luminance(out_outColor);
+        return;
+    }
+    else if (in_amplitude > 0.0)
+    {
+        // The ripples parameter seems to use only the separate X,Y,Z
+        // fields, and the vector type only when a connection exists.
+
+        vector ripples = isconnected(in_ripples)
+            ? in_ripples
+            : vector(in_ripplesX, in_ripplesY, in_ripplesZ);
+
+        Pp *= ripples * 0.5; // frequency seems cut off by half roughly
+
+        float filter_width = 0.0;
+
+        if (in_filter > 0.0)
+        {
+            filter_width = in_filter * max(EPS, sqrt(area(Pp)));
+            filter_width += in_filterOffset;
+        }
+
+        float weight = fBm(
+            Pp,
+            0.0, // time
+            filter_width,
+            in_amplitude,
+            (int) max(in_depth[0], in_depth[1]),
+            2.17, // lacunarity default
+            in_ratio);
+
+        weight = weight * 0.5 + 0.5;
+        weight = clamp(weight, 0, 1);
+
+        color color_blend = mix(in_color2, in_color1, in_contrast);
+
+        out_outColor = mix(in_color2, color_blend, 1.0 - weight);
+        out_outAlpha = weight;
+
+        float cos_wo = dot(normalize(-I), normalize(in_normalCamera));
+
+        float facing_ratio = (cos_wo >= EPS)
+            ? sqrt(1.0 - max(EPS, sqr(cos_wo)))
+            : cos_wo;
+
+        float threshold = mix(in_centerThresh, in_edgeThresh, facing_ratio);
+
+        float transparency_range = max(EPS, in_transpRange);
+        float density = (threshold - out_outAlpha) / transparency_range;
+
+        if (density > 1.0)
+        {
+            out_outAlpha = 1.0;
+        }
+        else if (density < -10.0)
+        {
+            out_outAlpha = 0.0;
+        }
+        else
+        {
+            out_outAlpha = clamp(exp(density), 0.0, 1.0);
+        }
+
+        if (in_softEdges)
+        {
+            out_outColor *= 1.0 - out_outAlpha;
+        }
+
+        if (!in_wrap && in_blend)
+        {
+            out_outColor = mix(in_defaultColor, out_outColor, box_blending);
+            out_outAlpha *= box_blending;
+        }
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha);
+    }
+    else
+    {
+        out_outColor = mix(in_color2, in_color1, in_contrast);
+        out_outAlpha = 1.0 - 0.5 * in_contrast;
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha);
+    }
+}

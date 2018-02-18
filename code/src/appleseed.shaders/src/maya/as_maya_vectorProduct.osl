@@ -1,0 +1,108 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/vectorProduct.html
+
+shader as_maya_vectorProduct
+[[
+    string as_maya_node_name = "vectorProduct"
+]]
+(
+    // components = input1X|Y|Z
+    vector in_input1 = vector(0)
+    [[
+        string as_maya_attribute_name = "input1",
+        string label = "Input Vector 1",
+        string page = "Vector Product Attributes"
+    ]],
+    vector in_input2 = vector(0)
+    [[
+        string as_maya_attribute_name = "input2",
+        string label = "Input Vector 2",
+        string page = "Vector Product Attributes"
+    ]],
+    matrix in_matrix = matrix(1)
+    [[
+        string as_maya_attribute_name = "matrix",
+        string label = "Input Matrix",
+        string page = "Vector Product Attributes"
+    ]],
+    int in_normalizeOutput = 0
+    [[
+        string as_maya_attribute_name = "normalizeOutput",
+        string label = "Normalize Output",
+        string widget = "checkBox",
+        string page = "Vector Product Attributes"
+    ]],
+    int in_operation = 1
+    [[
+        string as_maya_attribute_name = "operation",
+        string label = "Operation",
+        string widget = "mapper",
+        string options = "None:0|Dot Product:1|Cross Product:2|Vector Matrix Product:3|Point Matrix Product:4",
+        string page = "Vector Product Attributes"
+    ]],
+
+    // Components = outputX|Y|Z
+    output vector out_output = vector(0)
+    [[
+        string as_maya_attribute_name = "output",
+        string label = "Output",
+        string widget = "null"
+    ]]
+)
+{
+    if (in_operation == 0)
+    {
+        out_output = in_input1;
+    }
+    else if (in_operation == 1)
+    {
+        out_output = (in_normalizeOutput)
+            ? dot(normalize(in_input1), normalize(in_input2))
+            : dot(in_input1, in_input2);
+    }
+    else if (in_operation == 2)
+    {
+        out_output = cross(in_input1, in_input2);
+    }
+    else if (in_operation == 3)
+    {
+        out_output = (vector) transform(in_matrix, in_input1);
+    }
+    else
+    {
+        point tmp = transform(in_matrix, (point) in_input1);
+        out_output = (vector) tmp;
+    }
+
+    if (in_normalizeOutput && in_operation != 1)
+    {
+        out_output = normalize(out_output);
+    }
+}

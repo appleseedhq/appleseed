@@ -1,0 +1,187 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2016 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+// Ref: $MAYA_LOCATION/docs/Nodes/stencil.html
+
+#include "appleseed/maya/as_maya_helpers.h"
+#include "appleseed/pattern/as_pattern_helpers.h"
+
+shader as_maya_stencil
+[[
+    string as_maya_node_name = "stencil"
+]]
+(
+    color in_image = color(0)
+    [[
+        string as_maya_attribute_name = "image",
+        string label = "Image Input",
+        string page = "Stencil Attributes"
+    ]],
+    float in_edgeBlend = 0.0
+    [[
+        string as_maya_attribute_name = "edgeBlend",
+        string label = "Edge Blend",
+        string page = "Stencil Attributes"
+    ]],
+    float in_mask = 0.0
+    [[
+        string as_maya_attribute_name = "mask",
+        string label = "Input Mask",
+        string page = "Stencil Attributes"
+    ]],
+    int in_keyMasking = 0
+    [[
+        string as_maya_attribute_name = "keyMasking",
+        string label = "Key Masking",
+        string widget = "checkBox",
+        string page = "HSV Color Key"
+    ]],
+    int in_positiveKey = 0
+    [[
+        string as_maya_attribute_name = "positiveKey",
+        string label = "Positive Key",
+        string widget = "checkBox",
+        string page = "HSV Color Key"
+    ]],
+    color in_colorKey = color(0)
+    [[
+        string as_maya_attribute_name = "colorKey",
+        string label = "Color Key",
+        string page = "HSV Color Key"
+    ]],
+    float in_hueRange = 0.5
+    [[
+        string as_maya_attribute_name = "hueRange",
+        string label = "Hue Range",
+        string page = "HSV Color Key"
+    ]],
+    float in_saturationRange = 0.5
+    [[
+        string as_maya_attribute_name = "saturationRange",
+        string label = "Saturation Range",
+        string page = "HSV Color Key"
+    ]],
+    float in_valueRange = 0.5
+    [[
+        string as_maya_attribute_name = "valueRange",
+        string label = "Value Range",
+        string page = "HSV Color Key"
+    ]],
+    float in_threshold = 0.5
+    [[
+        string as_maya_attribute_name = "threshold",
+        string label = "Threshold",
+        string page = "HSV Color Key"
+    ]],
+
+    MAYA_COLORBALANCE_PARAMETERS,
+    MAYA_EFFECTS_PARAMETERS,
+    MAYA_UV_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string label = "Output Color",
+        string widget = "null"
+    ]],
+    output float out_outAlpha = 1.0
+    [[
+        string as_maya_attribute_name = "outAlpha",
+        string label = "Output Alpha",
+        string widget = "null"
+    ]]
+)
+{
+    float filtered_stencil(
+        float edge0,
+        float edge1,
+        float edge2,
+        float edge3,
+        float x[2],
+        float dx[2])
+    {
+        return
+            filtered_smoothpulse(edge0, edge1, edge2, edge3, x[0], dx[0]) *
+            filtered_smoothpulse(edge0, edge1, edge2, edge3, x[1], dx[1]);
+    }
+
+    if (in_uvCoord[0] == OUTSIDE_UVFRAME || in_uvCoord[1] == OUTSIDE_UVFRAME)
+    {
+        out_outColor = in_defaultColor;
+        out_outAlpha = maya_luminance(out_outColor);
+    }
+    else
+    {
+        float stencil = in_mask;
+
+        if (in_edgeBlend > 0.0)
+        {
+            stencil += 1 - filtered_stencil(
+                0,
+                0.5 * in_edgeBlend,
+                1 - 0.5 * in_edgeBlend,
+                1,
+                in_uvCoord,
+                in_uvFilterSize);
+        }
+
+        out_outAlpha = clamp(stencil, 0, 1);
+        out_outColor = mix(in_image, in_defaultColor, out_outAlpha);
+
+        maya_colorBalance(
+            in_colorGain,
+            in_colorOffset,
+            in_defaultColor,
+            in_alphaGain,
+            in_alphaOffset,
+            in_invert,
+            in_alphaIsLuminance,
+            out_outColor,
+            out_outAlpha);
+
+        if (in_keyMasking)
+        {
+            color hsv_range = abs(
+                transformc("rgb", "hsv", in_image) -
+                transformc("rgb", "hsv", in_colorKey));
+
+            float key_mask = (
+                hsv_range[0] <= in_hueRange &&
+                hsv_range[1] <= in_saturationRange &&
+                hsv_range[2] <= in_valueRange)
+                    ? 1 - in_positiveKey
+                    : in_positiveKey;
+
+            if (key_mask > 0.0)
+            {
+                out_outColor = in_defaultColor;
+                out_outAlpha = 1;
+            }
+        }
+    }
+}

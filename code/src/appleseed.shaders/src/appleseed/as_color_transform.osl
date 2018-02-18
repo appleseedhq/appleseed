@@ -1,0 +1,235 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2017 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/color/as_color_transforms.h"
+#include "appleseed/maya/as_maya_helpers.h"
+
+shader as_color_transform
+[[
+    string as_maya_node_name = "asColorTransform",
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
+    string help = "Transforms a color to another color model. Input color MUST be linearized.",
+    string icon = "asColorTransform.png",
+    int as_maya_type_id = 0x001279c8,
+    string as_max_class_id = "1025180725 1433928109",
+    string as_max_plugin_type = "texture"
+]]
+(
+    color in_color = color(0.5)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Input Color",
+        string page = "Color",
+        int divider = 1
+    ]],
+    int in_inputSpace = 0
+    [[
+        string as_maya_attribute_name = "inputSpace",
+        string as_maya_attribute_short_name = "is",
+        int as_maya_attribute_keyable = 0,
+        string widget = "mapper",
+        string options = "RGB:0|HSV:1|HSL:2|XYZ:3|xyY:4|CIE 1976 L*a*b*:5|CIE 1976 L*u*v*:6|CIE 1976 LCh_ab:7|CIE 1976 LCh_uv:8",
+        string label = "Input Space",
+        string page = "Color"
+    ]],
+    int in_outputSpace = 0
+    [[
+        string as_maya_attribute_name = "outputSpace",
+        string as_maya_attribute_short_name = "os",
+        int as_maya_attribute_keyable = 0,
+        string widget = "mapper",
+        string options = "RGB:0|HSV:1|HSL:2|CIE XYZ:3|CIE xyY:4|CIE 1976 L*a*b*:5|CIE 1976 L*u*v*:6|CIE 1976 LCh_ab:7|CIE 1976 LCh_uv:8",
+        string label = "Output Space",
+        string page = "Color"
+    ]],
+
+    MAYA_COLORMANAGEMENT_PARAMETERS,
+
+    output color out_outColor = color(0)
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string widget = "null",
+        string label = "Output Color"
+    ]]
+)
+{
+    if (in_inputSpace != in_outputSpace)
+    {
+        string space = "", illuminant = "";
+        color XYZ = color(0);
+
+        // Some color models require knowledge of the primaries and white
+        // point xy chromaticity coordinates, as well as relative luminance.
+
+        if (in_colorManagementEnabled)
+        {
+            space = in_colorSpace;
+
+            if (space == "ACES" || space == "ACEScg")
+            {
+                illuminant = "D60";
+            }
+            else if (space == "DCIP3")
+            {
+                illuminant = "DCIP3";
+            }
+            else
+            {
+                illuminant = "D65";
+            }
+        }
+        else
+        {
+            space = "Rec.709";
+            illuminant = "D65";
+        }
+
+        // Transform first to an intermediary space XYZ.
+
+        if (in_inputSpace == 0)
+        {
+            XYZ = transform_linear_RGB_to_CIEXYZ(in_color, space, illuminant);
+        }
+        else if (in_inputSpace == 1)
+        {
+            color RGB = transform_HSV_to_RGB(in_color);
+            XYZ = transform_linear_RGB_to_CIEXYZ(RGB, space, illuminant);
+        }
+        else if (in_inputSpace == 2)
+        {
+            color RGB = transform_HSL_to_RGB(in_color);
+            XYZ = transform_linear_RGB_to_CIEXYZ(RGB, space, illuminant);
+        }
+        else if (in_inputSpace == 3)
+        {
+            XYZ = in_color;
+        }
+        else if (in_inputSpace == 4)
+        {
+            XYZ = transform_CIExyY_to_CIEXYZ(in_color);
+        }
+        else if (in_inputSpace == 5)
+        {
+            color CIELAB = inverse_remap_CIELAB(in_color);
+            XYZ = transform_CIELAB_to_CIEXYZ(CIELAB, illuminant);
+        }
+        else if (in_inputSpace == 6)
+        {
+            color CIELUV = inverse_remap_CIELUV(in_color);
+            XYZ = transform_CIELUV_to_CIEXYZ(CIELUV, illuminant);
+        }
+        else if (in_inputSpace == 7)
+        {
+            color CIELCh_ab = inverse_remap_CIELCh(in_color);
+            color CIELAB = transform_CIELCh_ab_to_CIELAB(CIELCh_ab);
+            XYZ = transform_CIELAB_to_CIEXYZ(CIELAB, illuminant);
+        }
+        else if (in_inputSpace == 8)
+        {
+            color CIELCh_uv = inverse_remap_CIELCh(in_color);
+            color CIELUV = transform_CIELCh_uv_to_CIELUV(CIELCh_uv);
+            XYZ = transform_CIELUV_to_CIEXYZ(CIELUV, illuminant);
+        }
+        else
+        {
+#ifdef DEBUG
+            string shadername = "";
+            getattribute("shader:shadername", shadername);
+            warning("Unsupported input color model value %i in %s, %s:%i\n",
+                    in_inputSpace, shadername, __FILE__, __LINE__);
+#endif
+        }
+
+        // Convert from intermediary (XYZ) space to output space
+
+        color out = color(0);
+
+        if (in_outputSpace == 0)
+        {
+            out = transform_CIEXYZ_to_linear_RGB(XYZ, space, illuminant);
+        }
+        else if (in_outputSpace == 1)
+        {
+            color RGB = transform_CIEXYZ_to_linear_RGB(XYZ, space, illuminant);
+            out = transform_RGB_to_HSV(RGB);
+        }
+        else if (in_outputSpace == 2)
+        {
+            color RGB = transform_CIEXYZ_to_linear_RGB(XYZ, space, illuminant);
+            out = transform_RGB_to_HSL(RGB);
+        }
+        else if (in_outputSpace == 3)
+        {
+            out = XYZ;
+        }
+        else if (in_outputSpace == 4)
+        {
+            out = transform_CIEXYZ_to_CIExyY(XYZ, illuminant);
+        }
+        else if (in_outputSpace == 5)
+        {
+            out = transform_CIEXYZ_to_CIELAB(XYZ, illuminant);
+            out = remap_CIELAB(out);
+        }
+        else if (in_outputSpace == 6)
+        {
+            out = transform_CIEXYZ_to_CIELUV(XYZ, illuminant);
+            out = remap_CIELUV(out);
+        }
+        else if (in_outputSpace == 7)
+        {
+            color CIELAB = transform_CIEXYZ_to_CIELAB(XYZ, illuminant);
+            out = transform_CIELAB_to_CIELCh_ab(CIELAB);
+            out = remap_CIELCh(out);
+        }
+        else if (in_outputSpace == 8)
+        {
+            color CIELUV = transform_CIEXYZ_to_CIELUV(XYZ, illuminant);
+            out = transform_CIELUV_to_CIELCh_uv(CIELUV);
+            out = remap_CIELCh(out);
+        }
+        else
+        {
+#ifdef DEBUG
+            string shadername = "";
+            getattribute("shader:shadername", shadername);
+            warning("Unsupported output color model value %i in %s, %s:%i\n",
+                    in_outputSpace, shadername, __FILE__, __LINE__);
+#endif
+        }
+        out_outColor = out;
+    }
+    else
+    {
+        out_outColor = in_color;
+    }
+
+    out_outColor = max(0.0, out_outColor);
+}
