@@ -165,7 +165,7 @@ target_link_libraries (appleseed.python
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
 
-add_custom_target(appleseed.python.copy_py_files ALL)
+add_custom_target (appleseed.python.copy_py_files ALL)
 
 add_copy_target_to_sandbox_py_module_command (appleseed.python appleseed)
 add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/__init__.py appleseed)
