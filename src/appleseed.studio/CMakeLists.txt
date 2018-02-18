@@ -638,7 +638,7 @@ endif ()
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
 
-add_custom_target(appleseed.studio.python.copy_py_files ALL)
+add_custom_target (appleseed.studio.python.copy_py_files ALL)
 
 add_copy_target_to_sandbox_py_module_command (appleseed.studio appleseed)
 add_copy_studio_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.studio/python/studio/__init__.py appleseed.studio)
