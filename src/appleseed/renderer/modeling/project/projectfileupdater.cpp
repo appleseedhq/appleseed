@@ -156,6 +156,16 @@ namespace
                 dest.strings().insert(dest_key, src.strings().get(src_key));
         }
 
+        // Copy a key from one dictionary to same dictionary.
+        static void copy_if_exist_no_overwrite(
+            Dictionary&         dict, 
+            const char*         dest_key, 
+            const char*         src_key)
+        {
+            if (!dict.strings().exist(dest_key))
+                copy_if_exist(dict, dest_key, dict, src_key);            
+        }
+
         // Move a key from one dictionary to another at a given path.
         static void move_if_exist(
             ParamArray&         dest,
@@ -1607,24 +1617,18 @@ namespace
                 {
                     Dictionary& camera_params = i->get_parameters();
 
-                    copy_in_same_path(
+                    copy_if_exist_no_overwrite(
                         camera_params,
                         "shutter_open_end_time",
                         "shutter_open_time");
 
-                    copy_in_same_path(
+                    copy_if_exist_no_overwrite(
                         camera_params,
                         "shutter_close_start_time",
                         "shutter_close_time");
                 }
             }
-        }
-
-      private:        
-        void copy_in_same_path(Dictionary& dict, const char* dest_key, const char* src_key){
-            if (!dict.strings().exist(dest_key))
-                copy_if_exist(dict, dest_key, dict, src_key);            
-        }
+        }  
     };
 }
 
