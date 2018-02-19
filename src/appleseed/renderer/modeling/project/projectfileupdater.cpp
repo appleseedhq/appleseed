@@ -1585,6 +1585,47 @@ namespace
             }
         }
     };
+
+    //
+    // Update from revision 21 to revision 22.
+    //
+    
+    class UpdateFromRevision_21
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_21(Project& project)
+          : Updater(project, 21)
+        {
+        }
+
+        void update() override
+        {
+            if (Scene* scene = m_project.get_scene())
+            {
+                for (each<CameraContainer> i = scene->cameras(); i; ++i)
+                {
+                    Dictionary& camera_params = i->get_parameters();
+
+                    copy_in_same_path(
+                        camera_params,
+                        "shutter_open_end_time",
+                        "shutter_open_time");
+
+                    copy_in_same_path(
+                        camera_params,
+                        "shutter_close_start_time",
+                        "shutter_close_time");
+                }
+            }
+        }
+
+      private:        
+        void copy_in_same_path(Dictionary& dict, const char* dest_key, const char* src_key){
+            if (!dict.strings().exist(dest_key))
+                copy_if_exist(dict, dest_key, dict, src_key);            
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(
@@ -1638,6 +1679,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(18);
       CASE_UPDATE_FROM_REVISION(19);
       CASE_UPDATE_FROM_REVISION(20);
+      CASE_UPDATE_FROM_REVISION(21);
 
       case ProjectFormatRevision:
         // Project is up-to-date.
