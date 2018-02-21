@@ -40,7 +40,14 @@
 // Imath headers.
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
 #include "foundation/platform/_beginexrheaders.h"
+#if __GNUC__ >= 7
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wdeprecated"
+#endif
 #include "OpenEXR/ImathColor.h"
+#if __GNUC__ >= 7
+    #pragma GCC diagnostic pop
+#endif
 #include "foundation/platform/_endexrheaders.h"
 #endif
 

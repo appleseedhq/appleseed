@@ -39,7 +39,14 @@
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
 #include "foundation/platform/_beginexrheaders.h"
 #include "OpenEXR/ImathQuat.h"
+#if __GNUC__ >= 7
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wdeprecated"	// dynamic exception specifications are deprecated in C++11
+#endif
 #include "OpenEXR/ImathVec.h"
+#if __GNUC__ >= 7
+    #pragma GCC diagnostic pop
+#endif
 #include "foundation/platform/_endexrheaders.h"
 #endif
 

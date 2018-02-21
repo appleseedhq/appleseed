@@ -41,6 +41,10 @@
 
 // OpenEXR headers.
 #include "foundation/platform/_beginexrheaders.h"
+#if __GNUC__ >= 7
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wdeprecated"	// dynamic exception specifications are deprecated in C++11
+#endif
 #include "OpenEXR/IexBaseExc.h"
 #include "OpenEXR/ImathBox.h"
 #include "OpenEXR/ImathVec.h"
@@ -53,6 +57,9 @@
 #include "OpenEXR/ImfTileDescription.h"
 #include "OpenEXR/ImfTiledOutputPart.h"
 #include "OpenEXR/ImfTiledOutputFile.h"
+#if __GNUC__ >= 7
+    #pragma GCC diagnostic pop
+#endif
 #include "foundation/platform/_endexrheaders.h"
 
 // Standard headers.
