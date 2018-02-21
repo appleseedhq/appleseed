@@ -21,10 +21,19 @@
     #pragma warning (disable: 4800)     // 'int': forcing value to bool 'true' or 'false' (performance warning)
 #endif
 
+#if __GNUC__ >= 7
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wdeprecated"
+#endif
+
     #include <ImfChannelList.h>
     #include <ImfFrameBuffer.h>
     #include <ImfInputFile.h>
     #include <ImfOutputFile.h>
+
+#if __GNUC__ >= 7
+    #pragma GCC diagnostic pop
+#endif
 
 #if defined _MSC_VER
     #pragma warning (pop)
