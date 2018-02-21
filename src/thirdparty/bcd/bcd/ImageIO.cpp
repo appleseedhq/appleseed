@@ -20,6 +20,10 @@
     #pragma warning (disable: 4244)     // conversion from 'std::streamsize' to 'int', possible loss of data
     #pragma warning (disable: 4800)     // 'int': forcing value to bool 'true' or 'false' (performance warning)
 #endif
+#if __GNUC__ >= 7
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wdeprecated"   // dynamic exception specifications are deprecated in C++11
+#endif
 
     #include <ImfChannelList.h>
     #include <ImfFrameBuffer.h>
@@ -28,6 +32,9 @@
 
 #if defined _MSC_VER
     #pragma warning (pop)
+#endif
+#if __GNUC__ >= 7
+    #pragma GCC diagnostic pop
 #endif
 
 // Standard headers.
