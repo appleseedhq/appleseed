@@ -38,17 +38,12 @@
 #include "foundation/image/tile.h"
 
 // OpenImageIO headers.
+#include "foundation/platform/_beginexrheaders.h"
 #include "foundation/platform/_beginoiioheaders.h"
-#if __GNUC__ >= 7
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wdeprecated"
-#endif
 #include "OpenImageIO/imageio.h"
 #include "OpenImageIO/typedesc.h"
-#if __GNUC__ >= 7
-    #pragma GCC diagnostic pop
-#endif
 #include "foundation/platform/_endoiioheaders.h"
+#include "foundation/platform/_endexrheaders.h"
 
 // Standard headers.
 #include <algorithm>

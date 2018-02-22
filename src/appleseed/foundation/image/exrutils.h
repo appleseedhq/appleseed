@@ -32,14 +32,7 @@
 
 // OpenEXR headers.
 #include "foundation/platform/_beginexrheaders.h"
-#if __GNUC__ >= 7
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wdeprecated"
-#endif
 #include "OpenEXR/ImfHeader.h"
-#if __GNUC__ >= 7
-    #pragma GCC diagnostic pop
-#endif
 #include "foundation/platform/_endexrheaders.h"
 
 // Forward declarations.

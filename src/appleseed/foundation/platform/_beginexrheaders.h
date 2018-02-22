@@ -33,3 +33,8 @@
     #pragma warning (disable: 4800)     // 'int': forcing value to bool 'true' or 'false' (performance warning)
 
 #endif
+
+#if __GNUC__ >= 7
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wdeprecated"
+#endif

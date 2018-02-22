@@ -26,6 +26,10 @@
 // THE SOFTWARE.
 //
 
+#if __GNUC__ >= 7
+    #pragma GCC diagnostic pop
+#endif
+
 #if defined _MSC_VER
 
     #pragma warning (pop)
