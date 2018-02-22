@@ -33,11 +33,9 @@
 #include "foundation/platform/compiler.h"
 
 // OpenImageIO headers.
-#include "foundation/platform/_beginexrheaders.h"
 #include "foundation/platform/_beginoiioheaders.h"
 #include "OpenImageIO/errorhandler.h"
 #include "foundation/platform/_endoiioheaders.h"
-#include "foundation/platform/_endexrheaders.h"
 
 // Standard headers.
 #include <string>
