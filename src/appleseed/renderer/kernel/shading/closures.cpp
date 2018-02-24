@@ -536,6 +536,7 @@ namespace
             float           ior;
             OSL::Color3     volume_transmittance;
             float           volume_transmittance_distance;
+            float           energy_compensation;
         };
 
         static const char* name()
@@ -551,6 +552,16 @@ namespace
         static int modes()
         {
             return ScatteringMode::Glossy | ScatteringMode::Specular;
+        }
+
+        static void prepare_closure(
+            OSL::RendererServices*      render_services,
+            int                         id,
+            void*                       data)
+        {
+            // Initialize keyword parameter defaults.
+            Params* params = new (data) Params();
+            params->energy_compensation = 0.0f;
         }
 
         static void register_closure(OSLShadingSystem& shading_system)
@@ -569,10 +580,11 @@ namespace
                 CLOSURE_FLOAT_PARAM(Params, ior),
                 CLOSURE_COLOR_PARAM(Params, volume_transmittance),
                 CLOSURE_FLOAT_PARAM(Params, volume_transmittance_distance),
+                CLOSURE_FLOAT_KEYPARAM(Params, energy_compensation, "energy_compensation"),
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
+            shading_system.register_closure(name(), id(), params, &prepare_closure, nullptr);
 
             g_closure_convert_funs[id()] = &convert_closure;
 
@@ -626,6 +638,7 @@ namespace
             values->m_ior = max(p->ior, 0.001f);
             values->m_volume_transmittance.set(Color3f(p->volume_transmittance), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_volume_transmittance_distance = p->volume_transmittance_distance;
+            values->m_energy_compensation = saturate(p->energy_compensation);
             composite_closure.add_ior(weight, values->m_ior);
         }
     };

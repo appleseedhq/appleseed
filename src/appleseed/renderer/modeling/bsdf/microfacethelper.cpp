@@ -29,11 +29,12 @@
 // Interface header.
 #include "microfacethelper.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/bsdf/energycompensation.h"
+#include "renderer/modeling/bsdf/energycompensationtables.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/image/exrimagefilewriter.h"
-#include "foundation/image/image.h"
-#include "foundation/image/tile.h"
 #include "foundation/math/microfacet.h"
 #include "foundation/math/qmc.h"
 #include "foundation/math/sampling/mappings.h"
@@ -66,105 +67,17 @@ namespace
     //       http://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_slides.pdf
     //
 
-    // Compute the albedo for a given outgoing direction.
-    // See Physically Based Rendering, first edition, pp. 689-690.
-    template <typename MDF>
-    float directional_albedo(
-        const float     cos_theta,
-        const float     alpha,
-        const size_t    sample_count)
-    {
-        // Special cases.
-        if (cos_theta == 0.0f)
-            return 1.0f;
-
-        if (alpha == 0.0f)
-            return 1.0f;
-
-        // Build the outgoing vector.
-        const float sin_theta = std::sqrt(1.0f - square(cos_theta));
-        const Vector3f wo(sin_theta, cos_theta, 0.0f);
-
-        float R = 0.0f;
-        const MDF mdf;
-
-        for (size_t i = 0; i < sample_count; ++i)
-        {
-            // Generate a uniform sample in [0,1)^2.
-            static const size_t Bases[] = { 2 };
-            const Vector2f s = hammersley_sequence<float, 2>(Bases, sample_count, i);
-
-            // Sample the MDF.
-            Vector3f h = mdf.sample(s, alpha);
-
-            if (h.y == 0.0f)
-                continue;
-
-            const float cos_oh = dot(wo, h);
-            if (cos_oh <= 0.0f)
-                continue;
-
-            const Vector3f wi = reflect(wo, h);
-
-            const float G = mdf.G(wi, wo, h, alpha, alpha, 1.0f);
-
-            // (D * G / (4.0f * cos_theta * cos_in)) * cos_in
-            // ----------------------------------------------
-            //       (D * cos_nh / (4.0f * cos_oh));
-            //
-            // Simplified:
-
-            R += G * cos_oh / (h.y * cos_theta);
-        }
-
-        return min(R / static_cast<float>(sample_count), 1.0f);
-    }
-
-    template <typename MDF>
-    void directional_albedo(
-        const float     roughness,
-        const size_t    table_size,
-        const size_t    sample_count,
-        float*          values)
-    {
-        const float alpha = square(roughness);
-
-        for (size_t i = 0; i < table_size; ++i)
-        {
-            const float cos_theta = static_cast<float>(i) / (table_size - 1);
-            values[i] = directional_albedo<MDF>(cos_theta, alpha, sample_count);
-        }
-    }
-
-    float average_albedo(
-        const size_t    table_size,
-        const float*    directional_albedo)
-    {
-        float avg = 0.0f;
-
-        for (size_t i = 0; i < table_size; ++i)
-        {
-            const float cos_theta = static_cast<float>(i) / (table_size - 1);
-            avg += directional_albedo[i] * cos_theta;
-        }
-
-        return (2.0f * avg) / table_size;
-    }
-
-    class AlbedoTable
-      : public NonCopyable
+    class MDFAlbedoTable
+      : public AlbedoTable2D
     {
       public:
         template <typename MDF>
-        explicit AlbedoTable(const MDF& mdf)
-          : TableSize(32)
-          , TableHeight(33)
-          , SampleCount(1024)
+        explicit MDFAlbedoTable(const MDF& mdf)
         {
-            m_albedo_table = new float[TableSize * TableHeight];
-            m_avg_table = m_albedo_table + TableSize * TableSize;
-
+            const size_t SampleCount = 512;
             float* p = m_albedo_table;
+
+            // Directional albedo.
             for (size_t i = 0; i < TableSize; ++i)
             {
                 const float roughness = static_cast<float>(i) / (TableSize - 1);
@@ -172,17 +85,8 @@ namespace
                 p += TableSize;
             }
 
-            compute_average_albedo_table();
-        }
-
-        ~AlbedoTable()
-        {
-            delete[] m_albedo_table;
-        }
-
-        void compute_average_albedo_table()
-        {
-            float* p = m_albedo_table;
+            // Average albedo.
+            p = m_albedo_table;
             for (size_t i = 0; i < TableSize; ++i)
             {
                 m_avg_table[i] = average_albedo(TableSize, p);
@@ -190,115 +94,98 @@ namespace
             }
         }
 
-        float get_directional_albedo(const float cos_theta, const float roughness) const
+        explicit MDFAlbedoTable(const float* table)
+          : AlbedoTable2D(table)
         {
-            // Compute the bilinear weights.
-            const float x = map_to_index(cos_theta);
-            const float y = map_to_index(roughness);
-
-            const size_t i = static_cast<size_t>(floor(x));
-            const size_t j = static_cast<size_t>(floor(y));
-
-            const float s = x - i;
-            const float t = y - j;
-
-            // Fetch the values.
-            const float a = lookup_table(i    , j   );
-            const float b = lookup_table(i + 1, j   );
-            const float c = lookup_table(i    , j + 1);
-            const float d = lookup_table(i + 1, j + 1);
-
-            // Bilinear interpolation.
-            return lerp(lerp(a, b, t), lerp(c, d, t), s);
         }
 
-        float get_average_albedo(const float roughness) const
+      private:
+        // Compute the albedo for a given outgoing direction.
+        // See Physically Based Rendering, first edition, pp. 689-690.
+        template <typename MDF>
+        static void directional_albedo(
+            const float     roughness,
+            const size_t    table_size,
+            const size_t    sample_count,
+            float*          values)
         {
-            // Compute the interpolation weight.
-            const float x = map_to_index(roughness);
+            const float alpha = square(roughness);
 
-            const size_t i = static_cast<size_t>(floor(x));
-            const size_t j = min(i + 1, TableSize - 1);
-
-            const float t = x - i;
-
-            // Fetch the values.
-            const float a = m_avg_table[i];
-            const float b = m_avg_table[j];
-
-            // Interpolate.
-            return lerp(a, b, t);
-        }
-
-        void write_table_to_image(const bfs::path& filename)
-        {
-            Image image(TableSize, TableHeight, TableSize, TableHeight, 3, PixelFormatFloat);
-
-            // Directional albedo.
-            const float* p = m_albedo_table;
-            for (size_t j = 0; j < TableSize; ++j)
+            for (size_t i = 0; i < table_size; ++i)
             {
-                for (size_t i = 0; i < TableSize; ++i)
-                {
-                    // Write 1 - E(u) to match the images in [2].
-                    image.set_pixel(i, j, Color3f(1.0f - p[i]));
-                }
+                const float cos_theta = static_cast<float>(i) / (table_size - 1);
+                values[i] = directional_albedo<MDF>(cos_theta, alpha, sample_count);
+            }
+        }
 
-                p += TableSize;
+        template <typename MDF>
+        static float directional_albedo(
+            const float     cos_theta,
+            const float     alpha,
+            const size_t    sample_count)
+        {
+            // Special cases.
+            if (cos_theta == 0.0f || alpha == 0.0f)
+                return 1.0f;
+
+            // Build the outgoing vector.
+            const float sin_theta = std::sqrt(1.0f - square(cos_theta));
+            const Vector3f wo(sin_theta, cos_theta, 0.0f);
+
+            float R = 0.0f;
+            const MDF mdf;
+
+            for (size_t i = 0; i < sample_count; ++i)
+            {
+                // Generate a uniform sample in [0,1)^3.
+                const size_t Bases[] = { 2, 3 };
+                const Vector3f s = hammersley_sequence<float, 3>(Bases, sample_count, i);
+
+                Vector3f wi;
+                float probability;
+                const float value = MicrofacetBRDFHelper::sample(mdf, s, alpha, wo, wi, probability);
+
+                // Skip samples with very low probability.
+                if (probability < 1e-6f)
+                    continue;
+
+                R += value * std::abs(wi.y) / probability;
             }
 
-            // Average albedo.
-            for (size_t i = 0; i < TableSize; ++i)
-                image.set_pixel(i, TableSize, Color3f(p[i]));
-
-            EXRImageFileWriter writer;
-            writer.write(filename.string().c_str(), image);
-        }
-
-    private:
-        const size_t    TableSize;
-        const size_t    TableHeight;
-        const size_t    SampleCount;
-
-        float*          m_albedo_table;
-        float*          m_avg_table;
-
-        float map_to_index(const float x) const
-        {
-            return saturate(x) * static_cast<float>(TableSize - 1);
-        }
-
-        float lookup_table(const size_t i , const size_t j) const
-        {
-            const size_t ii = min(i, TableSize - 1);
-            const size_t jj = min(j, TableSize - 1);
-            const float* p = m_albedo_table + (jj * TableSize) + ii;
-            return *p;
+            return min(R / static_cast<float>(sample_count), 1.0f);
         }
     };
 
     struct AlbedoTables
       : public NonCopyable
     {
-        AlbedoTable m_ggx;
-        AlbedoTable m_beckmann;
+        MDFAlbedoTable m_ggx;
+        MDFAlbedoTable m_beckmann;
 
+#ifdef COMPUTE_ALBEDO_TABLES
         AlbedoTables()
           : m_ggx(GGXMDF())
           , m_beckmann(BeckmannMDF())
         {
         }
+#else
+        AlbedoTables()
+          : m_ggx(g_glossy_ggx_albedo_table)
+          , m_beckmann(g_glossy_beckmann_albedo_table)
+        {
+        }
+#endif
     };
 
     AlbedoTables g_dir_albedo_tables;
 
     void compute_energy_compensation_term(
-        const AlbedoTable&  table,
-        const float         roughness,
-        const float         cos_in,
-        const float         cos_on,
-        float&              fms,
-        float&              eavg)
+        const MDFAlbedoTable&   table,
+        const float             roughness,
+        const float             cos_in,
+        const float             cos_on,
+        float&                  fms,
+        float&                  eavg)
     {
         if (cos_in == 0.0f || cos_on == 0.0f || roughness == 0.0f)
         {
@@ -318,7 +205,6 @@ namespace
         const float ei = table.get_directional_albedo(abs(cos_in), roughness);
         fms = ((1.0f - eo) * (1.0f - ei)) / (Pi<float>() * (1.0f - eavg));
     }
-
 }
 
 void microfacet_energy_compensation_term(
@@ -355,16 +241,24 @@ void microfacet_energy_compensation_term(
         eavg);
 }
 
-void write_microfacet_directional_albedo_tables_to_exr(
+void write_microfacet_directional_albedo_tables(
     const char*         directory)
 {
     const bfs::path dir(directory);
 
-    g_dir_albedo_tables.m_ggx.write_table_to_image(
-        dir / "ggx_dir_albedo_table.exr");
+    const GGXMDF ggx;
+    const MDFAlbedoTable ggx_table(ggx);
+    ggx_table.write_table_to_image(dir / "glossy_ggx_albedo_table.exr");
+    ggx_table.write_table_to_cpp_array(
+        dir / "glossy_ggx_albedo_table.cpp",
+        "g_glossy_ggx_albedo_table");
 
-    g_dir_albedo_tables.m_beckmann.write_table_to_image(
-        dir / "beckmann_dir_albedo_table.exr");
+    const BeckmannMDF beckmann;
+    const MDFAlbedoTable beckmann_table(beckmann);
+    beckmann_table.write_table_to_image(dir / "glossy_beckmann_albedo_table.exr");
+    beckmann_table.write_table_to_cpp_array(
+        dir / "glossy_beckmann_albedo_table.cpp",
+        "g_glossy_beckmann_albedo_table");
 }
 
 }   // namespace renderer
