@@ -61,6 +61,7 @@
 // Standard headers.
 #include <cassert>
 #include <exception>
+#include <new>
 #include <string>
 
 using namespace foundation;

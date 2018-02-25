@@ -417,7 +417,7 @@ inline void AABB<T, N>::robust_grow(const ValueType eps)
     for (size_t i = 0; i < N; ++i)
     {
         const ValueType dominant_factor =
-            foundation::max(    // needs full qualification
+            foundation::max(    // namespace qualification required
                 std::abs(c[i]),
                 e[i],
                 ValueType(1.0));

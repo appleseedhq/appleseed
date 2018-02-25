@@ -56,7 +56,7 @@ class PythonInterpreter
 
     void load_plugins();
 
-    boost::python::object execute(const std::string& command);
+    boost::python::object execute(const std::string& command, const bool notify = true);
 
   private:
     PythonInterpreter();
@@ -66,7 +66,6 @@ class PythonInterpreter
 
     MainWindow*             m_main_window;
     boost::python::object   m_main_namespace;
-    bool                    m_is_initialized;
 };
 
 }       // namespace studio

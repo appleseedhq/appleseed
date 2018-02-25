@@ -33,11 +33,22 @@
 // appleseed.shared headers.
 #include "application/application.h"
 
+// appleseed.renderer headers.
+#include "renderer/api/log.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
 // Qt headers.
 #include <QtConcurrentRun>
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"
+
+// Standard headers.
+#include <cassert>
+#include <exception>
+#include <new>
 
 using namespace appleseed::shared;
 using namespace foundation;
@@ -184,19 +195,39 @@ string ProjectManager::get_project_schema_filepath()
 
 bool ProjectManager::do_load_project(const string& filepath)
 {
-    const string schema_filepath = get_project_schema_filepath();
+    try
+    {
+        const string schema_filepath = get_project_schema_filepath();
 
-    ProjectFileReader reader;
-    auto_release_ptr<Project> loaded_project(
-        reader.read(filepath.c_str(), schema_filepath.c_str()));
+        ProjectFileReader reader;
+        auto_release_ptr<Project> loaded_project(
+            reader.read(filepath.c_str(), schema_filepath.c_str()));
 
-    if (loaded_project.get() == nullptr)
+        if (loaded_project.get() == nullptr)
+            return false;
+
+        m_project = loaded_project;
+        m_dirty_flag = false;
+
+        return true;
+    }
+    catch (const bad_alloc&)
+    {
+        RENDERER_LOG_ERROR("failed to load project file %s (ran out of memory).", filepath.c_str());
         return false;
-
-    m_project = loaded_project;
-    m_dirty_flag = false;
-
-    return true;
+    }
+#ifdef NDEBUG
+    catch (const exception& e)
+    {
+        RENDERER_LOG_ERROR("failed to load project file %s (%s).", filepath.c_str(), e.what());
+        return false;
+    }
+    catch (...)
+    {
+        RENDERER_LOG_ERROR("failed to load project file %s (unknown exception).", filepath.c_str());
+        return false;
+    }
+#endif
 }
 
 bool ProjectManager::do_save_project(

@@ -42,7 +42,7 @@
 
 // Standard headers.
 #include <cstddef>
-#include <exception>
+#include <new>
 #include <utility>
 
 using namespace foundation;

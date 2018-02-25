@@ -35,3 +35,5 @@
     #pragma warning (disable: 4800)     // 'int': forcing value to bool 'true' or 'false' (performance warning)
 
 #endif
+
+#include "foundation/platform/_beginexrheaders.h"
