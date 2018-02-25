@@ -1,0 +1,13 @@
+# Top level editorconfig file
+root = true
+
+# -----------------
+# Source code
+# -----------------
+# C++
+# Python
+
+[*.{cpp,h,py}]
+indent_style = space
+indent_size = 4
+
