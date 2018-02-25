@@ -62,6 +62,10 @@ namespace
       : public ISampleRenderer
     {
       public:
+        void print_settings() const override
+        {
+        }
+
         void release() override
         {
             delete this;
@@ -87,13 +91,6 @@ namespace
         StatisticsVector get_statistics() const override
         {
             return StatisticsVector();
-        }
-
-        void print_settings() const override
-        {
-            RENDERER_LOG_INFO(
-                        "debug sample renderer settings:\n"
-                        "  none");
         }
     };
 }

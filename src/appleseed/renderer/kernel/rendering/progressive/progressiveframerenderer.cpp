@@ -212,6 +212,26 @@ namespace
                 sample_generator->release();
         }
 
+        void print_settings() const override
+        {
+            RENDERER_LOG_INFO(
+                "generic renderer settings:\n"
+                "  spectrum mode                 %s\n"
+                "  thread count                  " FMT_SIZE_T "\n"
+                "  max samples                   " FMT_UINT64 "\n"
+                "  max fps                       %f\n"
+                "  collect performance stats     %s\n"
+                "  collect luminance stats       %s\n"
+                "  reference image path          %s",
+                m_params.m_spectrum_mode == Spectrum::Mode::RGB ? "rgb" : "spectral",
+                m_params.m_thread_count,
+                m_params.m_max_sample_count,
+                m_params.m_max_fps,
+                m_params.m_perf_stats ? "on" : "off",
+                m_params.m_luminance_stats ? "on" : "off",
+                m_params.m_ref_image_path.c_str());
+        }
+
         void release() override
         {
             delete this;
@@ -358,26 +378,6 @@ namespace
 
             // Merge and print sample generator statistics.
             print_sample_generators_stats();
-        }
-
-        void print_settings() const override
-        {
-            RENDERER_LOG_INFO(
-                        "generic renderer settings:\n"
-                        "  spectrum mode                 %s\n"
-                        "  thread count                  %zu\n"
-			            "  max samples                   " FMT_UINT64 "\n"
-			            "  max fps                       %f\n"
-			            "  collect performance stats     %s\n"
-			            "  collect luminance stats       %s\n"
-			            "  reference image path          %s",
-                        m_params.m_spectrum_mode == Spectrum::Mode::RGB ? "RGB" : "Spectral",
-                        m_params.m_thread_count,
-			            m_params.m_max_sample_count,
-			            m_params.m_max_fps,
-			            m_params.m_perf_stats ? "on" : "off",
-			            m_params.m_luminance_stats ? "on" : "off",
-			            m_params.m_ref_image_path.c_str());
         }
 
       private:

@@ -106,6 +106,10 @@ namespace
             compute_pixel_ordering(frame);
         }
 
+        void print_settings() const override
+        {
+        }
+
         void release() override
         {
             delete this;
@@ -224,13 +228,6 @@ namespace
         StatisticsVector get_statistics() const override
         {
             return m_pixel_renderer->get_statistics();
-        }
-
-        void print_settings() const override
-        {
-            RENDERER_LOG_INFO(
-                        "generic tile settings:\n"
-                        "  none");
         }
 
       protected:

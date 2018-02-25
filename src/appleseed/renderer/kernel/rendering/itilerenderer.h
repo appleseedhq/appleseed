@@ -52,6 +52,8 @@ class ITileRenderer
   : public foundation::IUnknown
 {
   public:
+    virtual void print_settings() const = 0;
+
     // Render a tile.
     virtual void render_tile(
         const Frame&                frame,
@@ -62,8 +64,6 @@ class ITileRenderer
 
     // Retrieve performance statistics.
     virtual foundation::StatisticsVector get_statistics() const = 0;
-
-    virtual void print_settings() const = 0;
 };
 
 

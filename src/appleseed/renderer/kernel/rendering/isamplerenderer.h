@@ -57,6 +57,8 @@ class ISampleRenderer
   : public foundation::IUnknown
 {
   public:
+    virtual void print_settings() const = 0;
+
     // Render a sample at a given point on the image plane expressed in
     // normalized device coordinates (https://github.com/appleseedhq/appleseed/wiki/Terminology).
     virtual void render_sample(
@@ -68,8 +70,6 @@ class ISampleRenderer
 
     // Retrieve performance statistics.
     virtual foundation::StatisticsVector get_statistics() const = 0;
-
-    virtual void print_settings() const = 0;
 };
 
 

@@ -62,6 +62,10 @@ namespace
       : public ITileRenderer
     {
       public:
+        void print_settings() const override
+        {
+        }
+
         void release() override
         {
             delete this;
@@ -88,13 +92,6 @@ namespace
         StatisticsVector get_statistics() const override
         {
             return StatisticsVector();
-        }
-
-        void print_settings() const override
-        {
-            RENDERER_LOG_INFO(
-                        "blank tile settings:\n"
-                        "  none");
         }
     };
 }

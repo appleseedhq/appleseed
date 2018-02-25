@@ -142,6 +142,22 @@ namespace
                 tile_renderer->release();
         }
 
+        void print_settings() const override
+        {
+            RENDERER_LOG_INFO(
+                "generic renderer settings:\n"
+                "  spectrum mode                 %s\n"
+                "  thread count                  " FMT_SIZE_T "\n"
+                "  tile ordering                 %s\n"
+                "  passes                        " FMT_SIZE_T,
+                m_params.m_spectrum_mode == Spectrum::Mode::RGB ? "rgb" : "spectral",
+                m_params.m_thread_count,
+                m_params.m_tile_ordering == TileJobFactory::TileOrdering::LinearOrdering ? "linear" :
+                m_params.m_tile_ordering == TileJobFactory::TileOrdering::SpiralOrdering ? "spiral" :
+                m_params.m_tile_ordering == TileJobFactory::TileOrdering::HilbertOrdering ? "hilbert" : "random",
+                m_params.m_pass_count);
+        }
+
         void release() override
         {
             delete this;
@@ -217,25 +233,6 @@ namespace
             stop_rendering();
 
             print_tile_renderers_stats();
-        }
-
-        void print_settings() const override
-        {
-            RENDERER_LOG_INFO(
-                        "generic renderer settings:\n"
-                        "  spectrum mode                 %s\n"
-                        "  thread count                  %zu\n"
-                        "  tile ordering                 %s\n"
-                        "  passes                        %zu",
-                        m_params.m_spectrum_mode == Spectrum::Mode::RGB ? "RGB" : "Spectral",
-                        m_params.m_thread_count,
-                        m_params.m_tile_ordering == TileJobFactory::TileOrdering::LinearOrdering ?
-                            "Linear" :
-                            m_params.m_tile_ordering == TileJobFactory::TileOrdering::SpiralOrdering ?
-                                "Spiral" :
-                                m_params.m_thread_count == TileJobFactory::TileOrdering::HilbertOrdering ?
-                                    "Hilbert" : "Random",
-                        m_params.m_pass_count);
         }
 
       private:
