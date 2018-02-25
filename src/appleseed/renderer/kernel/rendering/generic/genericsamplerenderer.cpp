@@ -144,6 +144,11 @@ namespace
             m_lighting_engine->release();
         }
 
+        void release() override
+        {
+            delete this;
+        }
+
         void print_settings() const override
         {
             RENDERER_LOG_INFO(
@@ -154,11 +159,6 @@ namespace
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations,
                 m_params.m_report_self_intersections ? "on" : "off");
-        }
-
-        void release() override
-        {
-            delete this;
         }
 
         void render_sample(

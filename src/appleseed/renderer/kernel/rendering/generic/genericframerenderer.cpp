@@ -142,6 +142,11 @@ namespace
                 tile_renderer->release();
         }
 
+        void release() override
+        {
+            delete this;
+        }
+
         void print_settings() const override
         {
             RENDERER_LOG_INFO(
@@ -156,11 +161,6 @@ namespace
                 m_params.m_tile_ordering == TileJobFactory::TileOrdering::SpiralOrdering ? "spiral" :
                 m_params.m_tile_ordering == TileJobFactory::TileOrdering::HilbertOrdering ? "hilbert" : "random",
                 m_params.m_pass_count);
-        }
-
-        void release() override
-        {
-            delete this;
         }
 
         void render() override
