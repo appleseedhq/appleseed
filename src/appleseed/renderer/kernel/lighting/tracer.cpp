@@ -129,12 +129,45 @@ const ShadingPoint& Tracer::do_trace(
             }
             break;
         }
-
+        
         // Retrieve the material at the shading point.
         const Material* material = shading_point_ptr->get_material();
         if (material == nullptr)
             break;
+            
+        // Retrieve the object instance at the shading point.
+        const ObjectInstance& object_instance = shading_point_ptr->get_object_instance();
+        
+        // Determine whether the ray is entering or leaving a medium.
+        const bool entering = shading_point_ptr->is_entering();
+        
+        // Handle false intersections.
+        if(medium && medium->m_object_instance->get_medium_priority() > object_instance.get_medium_priority())
+        {
+            // Continue the ray in the same direction.
+            ShadingRay next_ray(
+                point,
+                current_ray.m_dir,
+                current_ray.m_time,
+                current_ray.m_flags,
+                current_ray.m_depth + (volume == nullptr ? 0 : 1));
 
+            // Update the medium list.
+            if (entering)
+                next_ray.add_medium(current_ray, &object_instance, material, 1.0f);
+            else
+                next_ray.remove_medium(current_ray, &object_instance);
+
+            // Trace ray further.
+            m_shading_points[shading_point_index].clear();
+            m_intersector.trace(
+                next_ray,
+                m_shading_points[shading_point_index],
+                shading_point_ptr);		        
+            continue;              
+        }
+        
+        // Retrieve the material's render data.
         const Material::RenderData& render_data = material->get_render_data();
 
         // Compute transmission of participating media.
@@ -180,11 +213,7 @@ const ShadingPoint& Tracer::do_trace(
             current_ray.m_flags,
             current_ray.m_depth + (volume == nullptr ? 0 : 1));
 
-        // Determine whether the ray is entering or leaving a medium.
-        const bool entering = shading_point_ptr->is_entering();
-
         // Update the medium list.
-        const ObjectInstance& object_instance = shading_point_ptr->get_object_instance();
         if (entering)
             next_ray.add_medium(current_ray, &object_instance, material, 1.0f);
         else
@@ -242,9 +271,55 @@ const ShadingPoint& Tracer::do_trace_between(
         const ShadingRay::Medium* medium = current_ray.get_current_medium();
         const Volume* volume =
             (medium == nullptr) ? nullptr : medium->get_volume();
-        const ShadingRay& volume_ray = shading_point_ptr->get_ray();
+        
+        // Stop if the ray hit the target.
+        if (!shading_point_ptr->hit_surface())
+            break;
+        
+        // Retrieve the material at the shading point.
+        const Material* material = shading_point_ptr->get_material();
+        if (material == nullptr)
+            break;
+        
+        // Retrieve the object instance at the shading point.
+        const ObjectInstance& object_instance = shading_point_ptr->get_object_instance();
+        
+        // Determine whether the ray is entering or leaving a medium.
+        const bool entering = shading_point_ptr->is_entering();
+        
+        // Handle false intersections.
+        if(medium && medium->m_object_instance->get_medium_priority() > object_instance.get_medium_priority())
+        {
+            // Continue the ray in the same direction.
+            const Vector3d direction = target - point;
+            const double dist = norm(direction);
+
+            ShadingRay next_ray(
+                point,
+                direction / dist,
+                0.0,                    // ray tmin
+                dist * (1.0 - 1.0e-6),  // ray tmax
+                current_ray.m_time,
+                current_ray.m_flags,
+                current_ray.m_depth + (volume == nullptr ? 0 : 1));
+
+            // Update the medium list.
+            if (entering)
+                next_ray.add_medium(current_ray, &object_instance, material, 1.0f);
+            else
+                next_ray.remove_medium(current_ray, &object_instance);
+
+            // Trace ray further.
+            m_shading_points[shading_point_index].clear();
+            m_intersector.trace(
+                next_ray,
+                m_shading_points[shading_point_index],
+                shading_point_ptr);
+            continue;
+        }
 
         // Compute transmission of participating media.
+        const ShadingRay& volume_ray = shading_point_ptr->get_ray();
         if (volume != nullptr)
         {
             Spectrum volume_transmission;
@@ -253,16 +328,8 @@ const ShadingPoint& Tracer::do_trace_between(
             volume->evaluate_transmission(data, volume_ray, volume_transmission);
             transmission *= volume_transmission;
         }
-
-        // Stop if the ray hit the target.
-        if (!shading_point_ptr->hit_surface())
-            break;
-
-        // Retrieve the material at the shading point.
-        const Material* material = shading_point_ptr->get_material();
-        if (material == nullptr)
-            break;
-
+		
+        // Retrieve the material's render data.
         const Material::RenderData& render_data = material->get_render_data();
 
         // Compute alpha.
@@ -303,11 +370,7 @@ const ShadingPoint& Tracer::do_trace_between(
             current_ray.m_flags,
             current_ray.m_depth + (volume == nullptr ? 0 : 1));
 
-        // Determine whether the ray is entering or leaving a medium.
-        const bool entering = shading_point_ptr->is_entering();
-
         // Update the medium list.
-        const ObjectInstance& object_instance = shading_point_ptr->get_object_instance();
         if (entering)
             next_ray.add_medium(current_ray, &object_instance, material, 1.0f);
         else
