@@ -98,6 +98,7 @@ void AOV::post_process_image()
 {
 }
 
+
 //
 // ColorAOV class implementation.
 //
