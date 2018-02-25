@@ -68,6 +68,8 @@ class ISampleRenderer
 
     // Retrieve performance statistics.
     virtual foundation::StatisticsVector get_statistics() const = 0;
+
+    virtual void print_settings() const = 0;
 };
 
 

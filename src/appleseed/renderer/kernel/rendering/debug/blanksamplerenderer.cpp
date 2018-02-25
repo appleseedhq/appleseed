@@ -31,6 +31,7 @@
 #include "blanksamplerenderer.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingresult.h"
 
@@ -74,6 +75,13 @@ namespace
         StatisticsVector get_statistics() const override
         {
             return StatisticsVector();
+        }
+
+        void print_settings() const override
+        {
+            RENDERER_LOG_INFO(
+                        "blank sample renderer settings:\n"
+                        "  none");
         }
     };
 }

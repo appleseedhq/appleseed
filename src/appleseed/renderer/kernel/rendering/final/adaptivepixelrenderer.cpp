@@ -306,6 +306,23 @@ namespace
             return m_params.m_max_samples;
         }
 
+        void print_settings() const override
+        {
+            RENDERER_LOG_INFO(
+                        "adaptive pixel renderer settings:\n"
+                        "  sampling mode                 %s\n"
+                        "  min samples                   %zu\n"
+                        "  max samples                   %zu\n"
+                        "  max variation                 %f\n"
+                        "  diagnostics                   %s",
+                        m_params.m_sampling_mode == SamplingContext::Mode::QMCMode ?
+                            "QMC" : "RMG",
+                        m_params.m_min_samples,
+                        m_params.m_max_samples,
+                        m_params.m_max_variation,
+                        m_params.m_diagnostics ? "on" : "off");
+        }
+
       private:
         struct Parameters
         {

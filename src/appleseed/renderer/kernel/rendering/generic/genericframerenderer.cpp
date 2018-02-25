@@ -219,6 +219,25 @@ namespace
             print_tile_renderers_stats();
         }
 
+        void print_settings() const override
+        {
+            RENDERER_LOG_INFO(
+                        "generic renderer settings:\n"
+                        "  spectrum mode                 %s\n"
+                        "  thread count                  %zu\n"
+                        "  tile ordering                 %s\n"
+                        "  passes                        %zu",
+                        m_params.m_spectrum_mode == Spectrum::Mode::RGB ? "RGB" : "Spectral",
+                        m_params.m_thread_count,
+                        m_params.m_tile_ordering == TileJobFactory::TileOrdering::LinearOrdering ?
+                            "Linear" :
+                            m_params.m_tile_ordering == TileJobFactory::TileOrdering::SpiralOrdering ?
+                                "Spiral" :
+                                m_params.m_thread_count == TileJobFactory::TileOrdering::HilbertOrdering ?
+                                    "Hilbert" : "Random",
+                        m_params.m_pass_count);
+        }
+
       private:
         struct Parameters
         {

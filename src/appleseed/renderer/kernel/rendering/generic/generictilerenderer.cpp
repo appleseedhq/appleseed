@@ -226,6 +226,13 @@ namespace
             return m_pixel_renderer->get_statistics();
         }
 
+        void print_settings() const override
+        {
+            RENDERER_LOG_INFO(
+                        "generic tile settings:\n"
+                        "  none");
+        }
+
       protected:
         auto_release_ptr<IPixelRenderer>    m_pixel_renderer;
         AOVAccumulatorContainer             m_aov_accumulators;

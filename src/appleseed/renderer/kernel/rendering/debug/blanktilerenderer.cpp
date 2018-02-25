@@ -89,6 +89,13 @@ namespace
         {
             return StatisticsVector();
         }
+
+        void print_settings() const override
+        {
+            RENDERER_LOG_INFO(
+                        "blank tile settings:\n"
+                        "  none");
+        }
     };
 }
 

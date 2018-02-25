@@ -107,6 +107,13 @@ namespace
         {
             return StatisticsVector();
         }
+
+        void print_settings() const override
+        {
+            RENDERER_LOG_INFO(
+                        "debug tile settings:\n"
+                        "  none");
+        }
     };
 }
 
