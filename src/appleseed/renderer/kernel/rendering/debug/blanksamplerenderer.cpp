@@ -66,7 +66,6 @@ namespace
         {
         }
 
-
         void render_sample(
             SamplingContext&            sampling_context,
             const PixelContext&         pixel_context,
