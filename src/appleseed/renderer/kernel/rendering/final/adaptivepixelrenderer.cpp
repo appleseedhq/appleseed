@@ -103,6 +103,22 @@ namespace
             }
         }
 
+        void print_settings() const override
+        {
+            RENDERER_LOG_INFO(
+                "adaptive pixel renderer settings:\n"
+                "  sampling mode                 %s\n"
+                "  min samples                   " FMT_SIZE_T "\n"
+                "  max samples                   " FMT_SIZE_T "\n"
+                "  max variation                 %f\n"
+                "  diagnostics                   %s",
+                m_params.m_sampling_mode == SamplingContext::Mode::QMCMode ? "qmc" : "rng",
+                m_params.m_min_samples,
+                m_params.m_max_samples,
+                m_params.m_max_variation,
+                m_params.m_diagnostics ? "on" : "off");
+        }
+
         void release() override
         {
             delete this;

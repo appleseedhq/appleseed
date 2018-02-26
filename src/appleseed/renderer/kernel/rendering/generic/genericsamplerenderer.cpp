@@ -149,6 +149,18 @@ namespace
             delete this;
         }
 
+        void print_settings() const override
+        {
+            RENDERER_LOG_INFO(
+                "generic sample renderer settings:\n"
+                "  transparency threshold        %f\n"
+                "  max iterations                " FMT_SIZE_T "\n"
+                "  report self intersections     %s",
+                m_params.m_transparency_threshold,
+                m_params.m_max_iterations,
+                m_params.m_report_self_intersections ? "on" : "off");
+        }
+
         void render_sample(
             SamplingContext&            sampling_context,
             const PixelContext&         pixel_context,

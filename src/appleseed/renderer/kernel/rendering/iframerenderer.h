@@ -44,6 +44,8 @@ class IFrameRenderer
   : public foundation::IUnknown
 {
   public:
+    virtual void print_settings() const = 0;
+
     // Synchronous frame rendering.
     virtual void render() = 0;
 

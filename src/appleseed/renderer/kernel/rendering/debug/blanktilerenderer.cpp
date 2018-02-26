@@ -62,6 +62,10 @@ namespace
       : public ITileRenderer
     {
       public:
+        void print_settings() const override
+        {
+        }
+
         void release() override
         {
             delete this;
