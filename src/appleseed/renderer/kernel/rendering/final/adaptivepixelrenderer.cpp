@@ -119,7 +119,6 @@ namespace
                 m_params.m_diagnostics ? "on" : "off");
         }
 
-
         void release() override
         {
             delete this;
