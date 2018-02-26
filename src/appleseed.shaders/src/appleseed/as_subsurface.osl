@@ -36,7 +36,8 @@ shader as_subsurface
     string icon = "asSubsurface.png",
     int as_maya_type_id = 0x001279e4,
     string as_max_class_id = "492524175 1093340697",
-    string as_max_plugin_type = "material"
+    string as_max_plugin_type = "material",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_subsurface.html#label-as-subsurface"
 ]]
 (
     int in_sss_profile = 0

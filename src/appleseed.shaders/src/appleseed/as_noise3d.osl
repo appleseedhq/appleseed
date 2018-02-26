@@ -40,7 +40,7 @@ shader as_noise3d
     string icon = "asNoise3D.png",
     string as_max_class_id = "729771265 1595816139",
     string as_max_plugin_type = "texture",
-    string URL = "http://appleseedhq.net/"
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_noise3d.html#label-as-noise3d"
 ]]
 (
     color in_color1 = color(0)

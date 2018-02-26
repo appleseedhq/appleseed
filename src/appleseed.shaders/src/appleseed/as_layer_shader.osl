@@ -34,7 +34,8 @@ shader as_layer_shader
     string icon = "asLayerShader.png",
     int as_maya_type_id = 0x001279dd,
     string as_max_class_id = "966011775 1721377247", 
-    string as_max_plugin_type = "material"
+    string as_max_plugin_type = "material",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_layer_shader.html#label-as-layer-shader"
 ]]
 (
     closure color in_color = 0

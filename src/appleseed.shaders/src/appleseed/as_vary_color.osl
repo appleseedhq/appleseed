@@ -38,7 +38,8 @@ shader as_vary_color
     string icon = "asVaryColor.png",
     int as_maya_type_id = 0x001279d3,
     string as_max_class_id = "1398541016 1578641387",
-    string as_max_plugin_type = "texture"
+    string as_max_plugin_type = "texture",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_vary_color.html#label-as-vary-color"
 ]]
 (
     color in_color = color(0)

@@ -38,7 +38,8 @@ shader as_texture3d
     string icon = "asTexture3D.png",
     int as_maya_type_id = 0x001279ff,
     string as_max_class_id = "2105412220 306260647",
-    string as_max_plugin_type = "texture"
+    string as_max_plugin_type = "texture",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_texture.html#label-as-texture3d"
 ]]
 (
 
@@ -147,6 +148,10 @@ shader as_texture3d
         string as_maya_attribute_short_name = "sbl",
         float min = 0.0,
         float max = 1.0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
         string label = "Blur Width",
         string page = "3D Texture.Blur",
         string help = "Blur along the s direction, or width."
@@ -157,6 +162,10 @@ shader as_texture3d
         string as_maya_attribute_short_name = "tbl",
         float min = 0.0,
         float max = 1.0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
         string label = "Blur Height",
         string page = "3D Texture.Blur",
         string help = "Blur along the t direction, or height."
@@ -167,6 +176,10 @@ shader as_texture3d
         string as_maya_attribute_short_name = "rbl",
         float min = 0.0,
         float max = 1.0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
         string label = "Blur Depth",
         string page = "3D Texture.Blur",
         string help = "Blur along the r direction, or depth.",
@@ -248,12 +261,6 @@ shader as_texture3d
     [[
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
-        string widget = "null"
-    ]],
-    output float out_channel = 1.0
-    [[
-        string as_maya_attribute_name = "outChannel",
-        string as_maya_attribute_short_name = "och",
         string widget = "null"
     ]]
 )

@@ -37,7 +37,8 @@ shader as_standard_surface
     string icon = "asStandardSurface",
     int as_maya_type_id = 0x001279d4,
     string as_max_class_id = "651059681 943276521",
-    string as_max_plugin_type = "material"
+    string as_max_plugin_type = "material",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_standard_surface.html#label-as-standard-surface"
 ]]
 (
     float in_diffuse_weight = 1.0

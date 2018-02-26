@@ -38,7 +38,8 @@ shader as_voronoi2d
     string icon = "asVoronoi2D.png",
     int as_maya_type_id = 0x001279c7,
     string as_max_class_id = "636365878 67180647",
-    string as_max_plugin_type = "texture"
+    string as_max_plugin_type = "texture",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_voronoi2d.html#label-as-voronoi2d"
 ]]
 (
     color in_color1 = color(1, 0.3, 0.05)
