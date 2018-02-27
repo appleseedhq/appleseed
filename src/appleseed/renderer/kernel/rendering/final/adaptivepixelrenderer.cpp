@@ -193,13 +193,6 @@ namespace
                 if (remaining_samples == 0)
                     break;
 
-                // Stop if the variation criterion is met.
-                if (trackers[0].get_size() > 0 &&
-                    trackers[0].get_variation() <= m_params.m_max_variation &&
-                    trackers[1].get_variation() <= m_params.m_max_variation &&
-                    trackers[2].get_variation() <= m_params.m_max_variation)
-                    break;
-
                 trackers[0].reset_variation();
                 trackers[1].reset_variation();
                 trackers[2].reset_variation();
@@ -248,6 +241,12 @@ namespace
                     trackers[1].insert(shading_result.m_main[1]);
                     trackers[2].insert(shading_result.m_main[2]);
                 }
+                
+                // Stop if the variation criterion is met.
+                if (trackers[0].get_variation() <= m_params.m_max_variation &&
+                    trackers[1].get_variation() <= m_params.m_max_variation &&
+                    trackers[2].get_variation() <= m_params.m_max_variation)
+                    break;
             }
 
             // Merge the scratch framebuffer into the output framebuffer.
