@@ -91,8 +91,8 @@ namespace
         {
             if (m_params.m_diagnostics)
             {
-                m_variation_aov_index = frame.create_extra_aov_image("variation");
-                m_samples_aov_index = frame.create_extra_aov_image("samples");
+                m_variation_aov_index = frame.create_extra_aov_image("variation", PixelFormatHalf);
+                m_samples_aov_index = frame.create_extra_aov_image("samples", PixelFormatHalf);
 
                 if ((thread_index == 0) && (m_variation_aov_index == size_t(~0) || m_samples_aov_index == size_t(~0)))
                 {

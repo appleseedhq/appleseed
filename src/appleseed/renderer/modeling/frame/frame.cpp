@@ -278,11 +278,13 @@ const AOVContainer& Frame::internal_aovs() const
     return impl->m_internal_aovs;
 }
 
-size_t Frame::create_extra_aov_image(const char* name) const
+size_t Frame::create_extra_aov_image(
+    const char* name,
+    const PixelFormat pixel_format) const
 {
     const size_t index = aov_images().get_index(name);
     if (index == size_t(~0) && aov_images().size() < MaxAOVCount)
-        return aov_images().append(name, 4, PixelFormatFloat);
+        return aov_images().append(name, 4, pixel_format);
 
     return index;
 }
@@ -646,6 +648,16 @@ namespace
             }
             else if (extension == ".png")
             {
+                // Test if the image contains appropriate data
+                if (image.properties().m_pixel_format != PixelFormatHalf &&
+                    image.properties().m_channel_count != 4)
+                {
+                    RENDERER_LOG_ERROR(
+                        "failed to write image file %s: data images can only be saved as exr.",
+                        file_path);
+                    return false;
+                }
+
                 write_png_image(
                     bf_file_path,
                     image,
@@ -720,7 +732,7 @@ bool Frame::write_aov_images(const char* file_path) const
 
     bool success = true;
 
-    if (!aovs().empty())
+    if (!aovs().empty() || !aov_images().empty())
     {
         const bf::path boost_file_path(file_path);
         const bf::path directory = boost_file_path.parent_path();
@@ -739,6 +751,22 @@ bool Frame::write_aov_images(const char* file_path) const
 
             // Write AOV image.
             if (!write_image(aov_file_path.c_str(), aov->get_image(), aov))
+                success = false;
+        }
+
+        // Extra AOVs
+        for (size_t i = 0, e = aov_images().size(); i < e; ++i)
+        {
+            const Image & image = aov_images().get_image(i);
+
+            // Compute AOV image file path.
+            const string aov_name = aov_images().get_name(i);
+            const string safe_aov_name = make_safe_filename(aov_name);
+            const string aov_file_name = base_file_name + "." + safe_aov_name + extension;
+            const string aov_file_path = (directory / aov_file_name).string();
+
+            // Write AOV image.
+            if (!write_image(aov_file_path.c_str(), image))
                 success = false;
         }
     }
@@ -772,6 +800,30 @@ bool Frame::write_main_and_aov_images() const
         if (!filepath.empty())
         {
             if (!write_image(filepath.c_str(), aov->get_image(), aov))
+                success = false;
+        }
+    }
+
+    if (!aov_images().empty())
+    {
+        const bf::path boost_file_path(filepath);
+        const bf::path directory = boost_file_path.parent_path();
+        const string base_file_name = boost_file_path.stem().string();
+        const string extension = boost_file_path.extension().string();
+
+        // Extra AOVs
+        for (size_t i = 0, e = aov_images().size(); i < e; ++i)
+        {
+            const Image & image = aov_images().get_image(i);
+
+            // Compute AOV image file path.
+            const string aov_name = aov_images().get_name(i);
+            const string safe_aov_name = make_safe_filename(aov_name);
+            const string aov_file_name = base_file_name + "." + safe_aov_name + extension;
+            const string aov_file_path = (directory / aov_file_name).string();
+
+            // Write AOV image.
+            if (!write_image(aov_file_path.c_str(), image))
                 success = false;
         }
     }

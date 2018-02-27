@@ -38,6 +38,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/colorspace.h"
+#include "foundation/image/pixel.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/filter.h"
 #include "foundation/math/vector.h"
@@ -101,7 +102,9 @@ class APPLESEED_DLLSYMBOL Frame
     const AOVContainer& aovs() const;
 
     // Create an extra AOV image if it does not exist.
-    size_t create_extra_aov_image(const char* name) const;
+    size_t create_extra_aov_image(
+        const char* name,
+        const foundation::PixelFormat pixel_format = foundation::PixelFormatFloat) const;
 
     // Return the reconstruction filter used by the main image and the AOV images.
     const foundation::Filter2f& get_filter() const;
