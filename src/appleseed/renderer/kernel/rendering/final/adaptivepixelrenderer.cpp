@@ -203,15 +203,15 @@ namespace
 
             while (true)
             {
-                trackers[0].reset_variation();
-                trackers[1].reset_variation();
-                trackers[2].reset_variation();
-
                 // Don't exceed 'max' samples in total.
                 assert(trackers[0].get_size() <= m_params.m_max_samples);
                 const size_t remaining_samples = m_params.m_max_samples - trackers[0].get_size();
                 if (remaining_samples == 0)
                     break;
+
+                trackers[0].reset_variation();
+                trackers[1].reset_variation();
+                trackers[2].reset_variation();
 
                 // Each batch contains 'min' samples.
                 const size_t batch_size = min(m_params.m_min_samples, remaining_samples);
