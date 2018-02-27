@@ -38,7 +38,8 @@ shader as_create_mask
     string icon = "asCreateMask",
     int as_maya_type_id = 0x001279e1,
     string as_max_class_id = "1539538401 1875248143",
-    string as_max_plugin_type = "texture"
+    string as_max_plugin_type = "texture",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_create_mask.html#label-as-create-mask"
 ]]
 (
     color in_color = color(1)

@@ -38,7 +38,8 @@ shader as_luminance
     string icon = "asLuminance.png",
     int as_maya_type_id = 0x001279cd,
     string as_max_class_id = "1648771987 792674094",
-    string as_max_plugin_type = "texture"
+    string as_max_plugin_type = "texture",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_luminance.html#label-as-luminance"
 ]]
 (
     color in_color = color(0.5)

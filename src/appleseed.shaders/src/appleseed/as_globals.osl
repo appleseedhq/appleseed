@@ -34,7 +34,8 @@ shader as_globals
     string icon = "asGlobals.png",
     int as_maya_type_id = 0x001279ef,
     string as_max_class_id = "2058487770 898187197",
-    string as_max_plugin_type = "texture"
+    string as_max_plugin_type = "texture",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_globals.html#label-as-globals"
 ]]
 (
     output point out_world_P = P

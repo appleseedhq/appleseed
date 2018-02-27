@@ -38,7 +38,8 @@ shader as_texture
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/2d:swatch/AppleseedRenderSwatch:texture",
     string help = "Texture lookup node",
     string icon = "asTexture.png",
-    int as_maya_type_id = 0x001279fa
+    int as_maya_type_id = 0x001279fa,
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_texture.html#label-as-texture"
 ]]
 (
     string in_filename = ""
