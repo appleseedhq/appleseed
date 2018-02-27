@@ -241,7 +241,7 @@ namespace
                     trackers[1].insert(shading_result.m_main[1]);
                     trackers[2].insert(shading_result.m_main[2]);
                 }
-                
+
                 // Stop if the variation criterion is met.
                 if (trackers[0].get_variation() <= m_params.m_max_variation &&
                     trackers[1].get_variation() <= m_params.m_max_variation &&
