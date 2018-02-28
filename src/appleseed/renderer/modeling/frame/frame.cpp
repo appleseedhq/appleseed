@@ -278,13 +278,11 @@ const AOVContainer& Frame::internal_aovs() const
     return impl->m_internal_aovs;
 }
 
-size_t Frame::create_extra_aov_image(
-    const char* name,
-    const PixelFormat pixel_format) const
+size_t Frame::create_extra_aov_image(const char* name) const
 {
     const size_t index = aov_images().get_index(name);
     if (index == size_t(~0) && aov_images().size() < MaxAOVCount)
-        return aov_images().append(name, 4, pixel_format);
+        return aov_images().append(name, 4, PixelFormatFloat);
 
     return index;
 }
