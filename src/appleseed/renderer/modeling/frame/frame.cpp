@@ -114,6 +114,7 @@ struct Frame::Impl
     bool                    m_render_stamp_enabled;
     string                  m_render_stamp_format;
     DenoisingMode           m_denoising_mode;
+    bool                    m_save_extra_aovs;
 
     // Images.
     unique_ptr<Image>       m_image;
@@ -222,7 +223,8 @@ void Frame::print_settings()
         "  filter size                   %f\n"
         "  crop window                   (%s, %s)-(%s, %s)\n"
         "  denoising mode                %s\n"
-        "  render stamp                  %s",
+        "  render stamp                  %s\n"
+        "  save extra aovs               %s",
         camera_name ? camera_name : "none",
         pretty_uint(impl->m_frame_width).c_str(),
         pretty_uint(impl->m_frame_height).c_str(),
@@ -236,7 +238,8 @@ void Frame::print_settings()
         pretty_uint(impl->m_crop_window.max[1]).c_str(),
         impl->m_denoising_mode == DenoisingMode::Off ? "off" :
         impl->m_denoising_mode == DenoisingMode::WriteOutputs ? "write outputs" : "denoise",
-        impl->m_render_stamp_enabled ? "enabled" : "disabled");
+        impl->m_render_stamp_enabled ? "enabled" : "disabled",
+        impl->m_save_extra_aovs ? "enabled" : "disabled");
 }
 
 const char* Frame::get_active_camera_name() const
@@ -1037,6 +1040,9 @@ void Frame::extract_parameters()
             impl->m_denoising_mode = DenoisingMode::Off;
         }
     }
+
+    // Retrieve save extra AOVs parameter
+    impl->m_save_extra_aovs = m_params.get_optional<bool>("save_extra_aovs", false);
 }
 
 
@@ -1224,6 +1230,14 @@ DictionaryArray FrameFactory::get_input_metadata()
             .insert("visible_if",
                 Dictionary()
                     .insert("enable_render_stamp", "true")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "save_extra_aovs")
+            .insert("label", "save extra aovs")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "false"));
 
     return metadata;
 }
