@@ -787,20 +787,9 @@ bool Frame::write_aov_images(const char* file_path) const
                 success = false;
         }
 
-        // Extra AOVs
-        for (size_t i = 0, e = aov_images().size(); i < e; ++i)
+        if (impl->m_save_extra_aovs && !aov_images().empty())
         {
-            const Image & image = aov_images().get_image(i);
-
-            // Compute AOV image file path.
-            const string aov_name = aov_images().get_name(i);
-            const string safe_aov_name = make_safe_filename(aov_name);
-            const string aov_file_name = base_file_name + "." + safe_aov_name + extension;
-            const string aov_file_path = (directory / aov_file_name).string();
-
-            // Write AOV image.
-            if (!write_image(aov_file_path.c_str(), image))
-                success = false;
+            success = success && write_extra_aovs(aov_images(), directory, base_file_name, extension);
         }
     }
 
@@ -837,28 +826,14 @@ bool Frame::write_main_and_aov_images() const
         }
     }
 
-    if (!aov_images().empty())
+    if (impl->m_save_extra_aovs && !aov_images().empty())
     {
         const bf::path boost_file_path(filepath);
         const bf::path directory = boost_file_path.parent_path();
         const string base_file_name = boost_file_path.stem().string();
         const string extension = boost_file_path.extension().string();
 
-        // Extra AOVs
-        for (size_t i = 0, e = aov_images().size(); i < e; ++i)
-        {
-            const Image & image = aov_images().get_image(i);
-
-            // Compute AOV image file path.
-            const string aov_name = aov_images().get_name(i);
-            const string safe_aov_name = make_safe_filename(aov_name);
-            const string aov_file_name = base_file_name + "." + safe_aov_name + extension;
-            const string aov_file_path = (directory / aov_file_name).string();
-
-            // Write AOV image.
-            if (!write_image(aov_file_path.c_str(), image))
-                success = false;
-        }
+        success = success && write_extra_aovs(aov_images(), directory, base_file_name, extension);
     }
 
     return success;
@@ -880,12 +855,13 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
 
     writer.begin_multipart_exr();
 
+    static const char* ChannelNames[] = { "R", "G", "B", "A" };
+
     // Always save the main image as half floats.
     {
         const Image& image = *impl->m_image;
         const CanvasProperties& props = image.properties();
         images.emplace_back(image, props.m_tile_width, props.m_tile_height, PixelFormatHalf);
-        static const char* ChannelNames[] = { "R", "G", "B", "A" };
         writer.append_part("beauty", images.back(), image_attributes, 4, ChannelNames);
     }
 
@@ -904,6 +880,18 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
         }
         else
             writer.append_part(aov_name.c_str(), image, image_attributes, aov->get_channel_count(), aov->get_channel_names());
+    }
+
+    if (impl->m_save_extra_aovs)
+    {
+        for (size_t i = 0, e = aov_images().size(); i < e; ++i)
+        {
+            const Image & image = aov_images().get_image(i);
+            const CanvasProperties& props = image.properties();
+            const string aov_name = aov_images().get_name(i);
+            assert(props.m_channel_count == 4);
+            writer.append_part(aov_name.c_str(), image, image_attributes, props.m_channel_count, ChannelNames);
+        }
     }
 
     create_parent_directories(file_path);
