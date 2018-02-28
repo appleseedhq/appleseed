@@ -26,6 +26,7 @@
 // THE SOFTWARE.
 //
 
+
 //
 // Reference:
 //
@@ -70,6 +71,7 @@ float fBm(
     }
     return sum;
 }
+
 
 //
 // Reference:
@@ -410,6 +412,7 @@ void voronoi_3D(
     }
 }
 
+
 // 
 // Reference:
 //
@@ -481,6 +484,7 @@ float voronoise3d(point Pp, float jittering, float smoothness)
     return (normalization > 0.0) ? distance_avg / normalization : 0.0;
 }
 
+
 //
 // Reference:
 //
@@ -508,6 +512,7 @@ float value_noise2d(float x, float y)
 
     return mix(a, b, uu[1]);
 }
+
 
 //
 // Reference:
