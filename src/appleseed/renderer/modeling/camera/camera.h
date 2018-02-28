@@ -204,6 +204,9 @@ class APPLESEED_DLLSYMBOL Camera
     double get_greater_than_zero(
         const char*                     name,
         const double                    default_value) const;
+
+    // Checks shutter times and emits warnings if needed
+    void check_shutter_times_for_consistency() const;
 };
 
 //
