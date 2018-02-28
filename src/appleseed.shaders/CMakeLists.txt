@@ -451,6 +451,7 @@ set (src_appleseed_sources
      src/appleseed/as_texture.osl
      src/appleseed/as_texture3d.osl
      src/appleseed/as_texture_info.osl
+     src/appleseed/as_triplanar.osl
      src/appleseed/as_vary_color.osl
      src/appleseed/as_voronoi2d.osl
      src/appleseed/as_voronoi3d.osl

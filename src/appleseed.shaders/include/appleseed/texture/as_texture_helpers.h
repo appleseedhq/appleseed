@@ -28,7 +28,7 @@
 #ifndef AS_TEXTURE_HELPERS_H
 #define AS_TEXTURE_HELPERS_H
 
-#include "appleseed/math/as_math_helpers.h"
+#include "appleseed/transform/as_transform_helpers.h"
 
 string get_wrap_mode(int wrap_mode)
 {   
@@ -109,6 +109,48 @@ string get_interpolation_method(int method)
     {
         return "closest";
     }
+}
+
+color get_projection_color(
+    string filename,
+    float s_coord,
+    float t_coord,
+    float width,
+    float height,
+    float x_offset,
+    float y_offset,
+    float angle,
+    string swrap,
+    string twrap,
+    int sflip,
+    int tflip,
+    output float alpha)
+{
+    float st[2] = {s_coord, t_coord};
+
+    if (angle != 0.0)
+    {
+        rotate2d(st[0], st[1], angle, st[0], st[1]);
+    }
+
+    st[0] = sflip ? 1.0 - mod(st[0], UVWRAP) : mod(st[0], UVWRAP);
+    st[1] = tflip ? 1.0 - mod(st[1], UVWRAP) : mod(st[1], UVWRAP);
+
+    st[0] *= width;
+    st[1] *= height;
+    
+    st[0] += x_offset;
+    st[1] += y_offset;
+
+    return (color) texture(
+        filename,
+        st[0],
+        st[1],
+        "swrap", swrap,
+        "twrap", twrap,
+        "missingcolor", color(0),
+        "missingalpha", 0.0,
+        "alpha", alpha);
 }
 
 #endif // !AS_TEXTURE_HELPERS_H
