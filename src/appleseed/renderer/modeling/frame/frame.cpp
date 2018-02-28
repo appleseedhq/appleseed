@@ -697,6 +697,38 @@ namespace
 
         return true;
     }
+
+    bool write_extra_aovs(
+        const ImageStack & images,
+        const bf::path & directory,
+        const string & base_file_name,
+        const string & extension)
+    {
+        bool success = true;
+
+        if (extension != ".exr")
+        {
+            RENDERER_LOG_ERROR("extra AOVs can only be saved as exr.");
+            return false;
+        }
+
+        for (size_t i = 0, e = images.size(); i < e; ++i)
+        {
+            const Image & image = images.get_image(i);
+
+            // Compute AOV image file path.
+            const string aov_name = images.get_name(i);
+            const string safe_aov_name = make_safe_filename(aov_name);
+            const string aov_file_name = base_file_name + "." + safe_aov_name + extension;
+            const string aov_file_path = (directory / aov_file_name).string();
+
+            // Write AOV image.
+            if (!write_image(aov_file_path.c_str(), image))
+                success = false;
+        }
+
+        return success;
+    }
 }
 
 bool Frame::write_main_image(const char* file_path) const
