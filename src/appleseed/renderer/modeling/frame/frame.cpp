@@ -692,10 +692,10 @@ namespace
     }
 
     bool write_extra_aovs(
-        const ImageStack & images,
-        const bf::path & directory,
-        const string & base_file_name,
-        const string & extension)
+        const ImageStack&       images,
+        const bf::path&         directory,
+        const string&           base_file_name,
+        const string&           extension)
     {
         bool success = true;
 
