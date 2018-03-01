@@ -649,16 +649,6 @@ namespace
             }
             else if (extension == ".png")
             {
-                // Test if the image contains appropriate data
-                if (image.properties().m_pixel_format != PixelFormatHalf &&
-                    image.properties().m_channel_count != 4)
-                {
-                    RENDERER_LOG_ERROR(
-                        "failed to write image file %s: data images can only be saved as exr.",
-                        file_path);
-                    return false;
-                }
-
                 write_png_image(
                     bf_file_path,
                     image,
