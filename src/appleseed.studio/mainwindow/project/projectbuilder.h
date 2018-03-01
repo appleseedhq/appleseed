@@ -38,6 +38,7 @@
 #include "renderer/api/color.h"
 #include "renderer/api/entity.h"
 #include "renderer/api/environment.h"
+#include "renderer/api/environmentedf.h"
 #include "renderer/api/light.h"
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
@@ -158,6 +159,33 @@ Entity* ProjectBuilder::edit_entity(
 
     renderer::EntityTraits<Entity>::remove_entity(old_entity, parent);
     renderer::EntityTraits<Entity>::insert_entity(new_entity, parent);
+
+    notify_project_modification();
+
+    return new_entity_ptr;
+}
+
+template <>
+inline renderer::EnvironmentEDF* ProjectBuilder::edit_entity(
+    renderer::EnvironmentEDF*           old_entity,
+    renderer::Scene&                    parent,
+    const foundation::Dictionary&       values) const
+{
+    foundation::auto_release_ptr<renderer::EnvironmentEDF> new_entity(create_entity<renderer::EnvironmentEDF>(values));
+    renderer::EnvironmentEDF* new_entity_ptr = new_entity.get(); 
+
+    new_entity->transform_sequence().clear();
+
+    for (size_t i = 0, e = old_entity->transform_sequence().size(); i < e; ++i)
+    {
+        float time;
+        foundation::Transformd transform;
+        old_entity->transform_sequence().get_transform(i, time, transform);
+        new_entity->transform_sequence().set_transform(time, transform);
+    }
+
+    renderer::EntityTraits<renderer::EnvironmentEDF>::remove_entity(old_entity, parent);
+    renderer::EntityTraits<renderer::EnvironmentEDF>::insert_entity(new_entity, parent);
 
     notify_project_modification();
 
