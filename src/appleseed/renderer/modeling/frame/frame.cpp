@@ -889,11 +889,14 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
 
     if (impl->m_save_extra_aovs)
     {
-        for (size_t i = 0, e = aov_images().size(); i < e; ++i)
+        for (size_t i = 0, e = impl->m_extra_aovs.size(); i < e; ++i)
         {
-            const Image & image = aov_images().get_image(i);
+            const size_t image_index = impl->m_extra_aovs[i];
+            assert(image_index < aov_images().size());
+
+            const Image & image = aov_images().get_image(image_index);
             const CanvasProperties& props = image.properties();
-            const string aov_name = aov_images().get_name(i);
+            const string aov_name = aov_images().get_name(image_index);
             assert(props.m_channel_count == 4);
             writer.append_part(aov_name.c_str(), image, image_attributes, props.m_channel_count, ChannelNames);
         }
