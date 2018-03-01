@@ -755,7 +755,7 @@ bool Frame::write_aov_images(const char* file_path) const
 
     bool success = true;
 
-    if (!aovs().empty() || !aov_images().empty())
+    if (!aovs().empty())
     {
         const bf::path boost_file_path(file_path);
         const bf::path directory = boost_file_path.parent_path();
@@ -816,7 +816,7 @@ bool Frame::write_main_and_aov_images() const
         }
     }
 
-    if (impl->m_save_extra_aovs && !aov_images().empty())
+    if (impl->m_save_extra_aovs)
     {
         const bf::path boost_file_path(filepath);
         const bf::path directory = boost_file_path.parent_path();
