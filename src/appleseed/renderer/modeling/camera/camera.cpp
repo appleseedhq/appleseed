@@ -80,9 +80,9 @@ bool Camera::on_render_begin(
     IAbortSwitch*           abort_switch)
 {
     m_shutter_open_time = m_params.get_optional<float>("shutter_open_time", 0.0f);
-    m_shutter_open_end_time = m_params.get_optional<float>("shutter_open_end_time", 0.0f);
-    m_shutter_close_start_time = m_params.get_optional<float>("shutter_close_start_time", 1.0f);
+    m_shutter_open_end_time = m_params.get_optional<float>("shutter_open_end_time", m_shutter_open_time);
     m_shutter_close_time = m_params.get_optional<float>("shutter_close_time", 1.0f);
+    m_shutter_close_start_time = m_params.get_optional<float>("shutter_close_start_time", m_shutter_close_time);
 
     check_shutter_times_for_consistency();
 
