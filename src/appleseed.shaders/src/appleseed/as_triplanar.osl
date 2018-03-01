@@ -37,9 +37,24 @@ shader as_triplanar
     string help = "Tri-planar projection node.",
     string icon = "asTriPlanar.png",
     int as_maya_type_id = 0x001279e5,
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_triplanar.html#label-as-triplanar"      
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_triplanar.html#label-as-triplanar"
 ]]
 (
+    string in_blend_mode = "Color"
+    [[
+        string as_maya_attribute_name = "blendMode",
+        string as_maya_attribute_short_name = "blm",
+        string widget = "popup",
+        string options = "Color|Tangent Normal",
+        string label = "Blend Mode",
+        string page = "Projection",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Blend colors, or tangent space normal maps using reoriented normal mapping.",
+        int divider = 1
+    ]],
     float in_blend_softness = 0.1
     [[
         string as_maya_attribute_name = "blendSoftness",
@@ -664,9 +679,23 @@ shader as_triplanar
         string as_maya_attribute_short_name = "oa",
         string label = "Output Alpha",
         string widget = "null"
+    ]],
+    output normal out_normal = normal(0)
+    [[
+        string as_maya_attribute_name = "outNormal",
+        string as_maya_attribute_short_name = "on",
+        string label = "Output Normal",
+        string widget = "null"
     ]]
 )
 {
+    normal rnm_blend(normal A, normal B)
+    {
+        normal a = A + normal(0.0, 0.0, 1.0);
+        normal b = B * normal(-1.0, -1.0, 1.0);
+        return a * dot(a, b) / a[2] - b;
+    }
+    
     normal Nn = normalize(in_normal);
     point Pp = in_surface_point;
 
@@ -728,8 +757,11 @@ shader as_triplanar
         Nn = rotate(Nn, angle[2], O, Z);
         Nn = normalize(Nn);
     }
-    
-    vector blending = pow(abs(Nn), (1.0 - in_blend_softness) * 16);
+
+    normal normal_sign = sign(Nn);
+    normal abs_normal = abs(Nn);
+
+    vector blending = pow(abs_normal, (1.0 - in_blend_softness) * 16);
     blending = blending / (blending[0] + blending[1] + blending[2]);
     
     float x_alpha, y_alpha, z_alpha;
@@ -760,18 +792,30 @@ shader as_triplanar
                 in_x_axis_tflip,
                 x_alpha);
 
-            if (in_enable_cms && max(in_x_axis_color) > 0.0 &&
-                max(x_axis) > 0.0)
+            if (in_blend_mode == "Tangent Normal")
             {
-                x_axis = apply_color_management(
-                    x_axis,
-                    in_x_tex_eotf,
-                    in_x_tex_rgb_primaries,
-                    in_workingspace_rgb_primaries);  
-            }
+                normal X = rnm_blend(
+                    normal(Nn[2], Nn[1], abs_normal[0]),
+                    normal(x_axis) * 2.0 - 1.0);
 
-            out_color += blending[0] * in_x_axis_color * x_axis;
-            out_alpha += blending[0] * x_alpha;
+                X[2] *= normal_sign[0];
+                
+                out_normal += blending[0] * X;
+            }
+            else
+            {
+                if (in_enable_cms && max(in_x_axis_color) > 0.0 &&
+                        max(x_axis) > 0.0)
+                {
+                    x_axis = apply_color_management(
+                        x_axis,
+                        in_x_tex_eotf,
+                        in_x_tex_rgb_primaries,
+                        in_workingspace_rgb_primaries);  
+                }
+                out_color += blending[0] * in_x_axis_color * x_axis;
+                out_alpha += blending[0] * x_alpha;
+            }
         }
     }
     else
@@ -805,19 +849,31 @@ shader as_triplanar
                 in_y_axis_sflip,
                 in_y_axis_tflip,
                 y_alpha);
-            
-            if (in_enable_cms && max(in_y_axis_color) > 0.0 &&
-                max(y_axis) > 0.0)
+
+            if (in_blend_mode == "Tangent Normal")
             {
-                y_axis = apply_color_management(
-                    y_axis,
-                    in_y_tex_eotf,
-                    in_y_tex_rgb_primaries,
-                    in_workingspace_rgb_primaries); 
+                normal Y = rnm_blend(
+                    normal(Nn[0], Nn[2], abs_normal[1]),
+                    normal(y_axis) * 2.0 - 1.0);
+
+                Y[2] *= normal_sign[1];
+
+                out_normal += blending[1] * Y;
             }
-            
-            out_color += blending[1] * in_y_axis_color * y_axis;
-            out_alpha += blending[1] * y_alpha;
+            else
+            {            
+                if (in_enable_cms && max(in_y_axis_color) > 0.0 &&
+                    max(y_axis) > 0.0)
+                {
+                    y_axis = apply_color_management(
+                        y_axis,
+                        in_y_tex_eotf,
+                        in_y_tex_rgb_primaries,
+                        in_workingspace_rgb_primaries); 
+                }                
+                out_color += blending[1] * in_y_axis_color * y_axis;
+                out_alpha += blending[1] * y_alpha;
+            }
         }
     }
     else
@@ -852,18 +908,30 @@ shader as_triplanar
                 in_z_axis_tflip,
                 z_alpha);
 
-            if (in_enable_cms && max(in_z_axis_color) > 0.0 &&
-                max(z_axis) > 0.0)
+            if (in_blend_mode == "Tangent Normal")
             {
-                z_axis = apply_color_management(
-                    z_axis,
-                    in_z_tex_eotf,
-                    in_z_tex_rgb_primaries,
-                    in_workingspace_rgb_primaries);
+                normal Z = rnm_blend(
+                    normal(Nn[0], Nn[1], abs_normal[2]),
+                    normal(z_axis) * 2.0 - 1.0);
+
+                Z[2] *= normal_sign[2];
+                
+                out_normal += blending[2] * Z;
             }
-            
-            out_color += blending[2] * in_z_axis_color * z_axis;
-            out_alpha += blending[2] * z_alpha;
+            else
+            {
+                if (in_enable_cms && max(in_z_axis_color) > 0.0 &&
+                    max(z_axis) > 0.0)
+                {
+                    z_axis = apply_color_management(
+                        z_axis,
+                        in_z_tex_eotf,
+                        in_z_tex_rgb_primaries,
+                        in_workingspace_rgb_primaries);
+                }                
+                out_color += blending[2] * in_z_axis_color * z_axis;
+                out_alpha += blending[2] * z_alpha;
+            }
         }
     }
     else
@@ -871,4 +939,5 @@ shader as_triplanar
         out_color += blending[2] * in_z_axis_color;
         out_alpha += blending[2];
     }
+    out_normal = normalize(out_normal + Nn);
 }
