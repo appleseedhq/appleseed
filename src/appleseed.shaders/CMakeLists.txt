@@ -154,6 +154,17 @@ source_group ("include\\appleseed\\transform" FILES
 # Source files.
 #--------------------------------------------------------------------------------------------------
 
+set (src_blenderseed_sources
+     src/blenderseed/as_closure2surface.osl
+)
+
+list (APPEND osl_sources
+    ${src_blenderseed_sources}
+)
+source_group ("src\\blenderseed" FILES
+    ${src_blenderseed_sources}
+)
+
 set (src_gaffer_color_sources
      src/gaffer/color/as_blackbody.osl
      src/gaffer/color/as_color_add.osl
