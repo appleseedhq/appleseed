@@ -1227,7 +1227,7 @@ DictionaryArray FrameFactory::get_input_metadata()
     metadata.push_back(
         Dictionary()
             .insert("name", "save_extra_aovs")
-            .insert("label", "save extra aovs")
+            .insert("label", "Save Extra AOVs")
             .insert("type", "boolean")
             .insert("use", "optional")
             .insert("default", "false"));
