@@ -122,6 +122,7 @@ struct Frame::Impl
     AOVContainer            m_aovs;
     AOVContainer            m_internal_aovs;
     DenoiserAOV*            m_denoiser_aov;
+	vector<size_t>          m_extra_aovs;
 };
 
 Frame::Frame(
@@ -283,9 +284,12 @@ const AOVContainer& Frame::internal_aovs() const
 
 size_t Frame::create_extra_aov_image(const char* name) const
 {
-    const size_t index = aov_images().get_index(name);
+    size_t index = aov_images().get_index(name);
     if (index == size_t(~0) && aov_images().size() < MaxAOVCount)
-        return aov_images().append(name, 4, PixelFormatFloat);
+    {
+        index = aov_images().append(name, 4, PixelFormatFloat);
+        impl->m_extra_aovs.push_back(index);
+    }
 
     return index;
 }
@@ -693,6 +697,7 @@ namespace
 
     bool write_extra_aovs(
         const ImageStack&       images,
+            const vector<size_t>&   aov_indices,
         const bf::path&         directory,
         const string&           base_file_name,
         const string&           extension)
@@ -705,12 +710,15 @@ namespace
             return false;
         }
 
-        for (size_t i = 0, e = images.size(); i < e; ++i)
+        for (size_t i = 0, e = aov_indices.size(); i < e; ++i)
         {
-            const Image & image = images.get_image(i);
+            size_t image_index = aov_indices[i];
+            assert(image_index < images.size());
 
-            // Compute AOV image file path.
-            const string aov_name = images.get_name(i);
+            const Image & image = images.get_image(image_index);
+
+            // Compute image file path.
+            const string aov_name = images.get_name(image_index);
             const string safe_aov_name = make_safe_filename(aov_name);
             const string aov_file_name = base_file_name + "." + safe_aov_name + extension;
             const string aov_file_path = (directory / aov_file_name).string();
@@ -755,32 +763,34 @@ bool Frame::write_aov_images(const char* file_path) const
 
     bool success = true;
 
-    if (!aovs().empty())
+    const bf::path boost_file_path(file_path);
+    const bf::path directory = boost_file_path.parent_path();
+    const string base_file_name = boost_file_path.stem().string();
+    const string extension = boost_file_path.extension().string();
+
+    for (size_t i = 0, e = aovs().size(); i < e; ++i)
     {
-        const bf::path boost_file_path(file_path);
-        const bf::path directory = boost_file_path.parent_path();
-        const string base_file_name = boost_file_path.stem().string();
-        const string extension = boost_file_path.extension().string();
+        const AOV* aov = aovs().get_by_index(i);
 
-        for (size_t i = 0, e = aovs().size(); i < e; ++i)
-        {
-            const AOV* aov = aovs().get_by_index(i);
+        // Compute AOV image file path.
+        const string aov_name = aov->get_name();
+        const string safe_aov_name = make_safe_filename(aov_name);
+        const string aov_file_name = base_file_name + "." + safe_aov_name + extension;
+        const string aov_file_path = (directory / aov_file_name).string();
 
-            // Compute AOV image file path.
-            const string aov_name = aov->get_name();
-            const string safe_aov_name = make_safe_filename(aov_name);
-            const string aov_file_name = base_file_name + "." + safe_aov_name + extension;
-            const string aov_file_path = (directory / aov_file_name).string();
+        // Write AOV image.
+        if (!write_image(aov_file_path.c_str(), aov->get_image(), aov))
+            success = false;
+    }
 
-            // Write AOV image.
-            if (!write_image(aov_file_path.c_str(), aov->get_image(), aov))
-                success = false;
-        }
-
-        if (impl->m_save_extra_aovs && !aov_images().empty())
-        {
-            success = success && write_extra_aovs(aov_images(), directory, base_file_name, extension);
-        }
+    if (impl->m_save_extra_aovs && !aov_images().empty())
+    {
+        success = success && write_extra_aovs(
+            aov_images(),
+            impl->m_extra_aovs,
+            directory,
+            base_file_name,
+            extension);
     }
 
     return success;
@@ -823,7 +833,12 @@ bool Frame::write_main_and_aov_images() const
         const string base_file_name = boost_file_path.stem().string();
         const string extension = boost_file_path.extension().string();
 
-        success = success && write_extra_aovs(aov_images(), directory, base_file_name, extension);
+        success = success && write_extra_aovs(
+            aov_images(),
+            impl->m_extra_aovs,
+            directory,
+            base_file_name,
+            extension);
     }
 
     return success;
