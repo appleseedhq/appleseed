@@ -165,15 +165,11 @@ Entity* ProjectBuilder::edit_entity(
     return new_entity_ptr;
 }
 
-template <>
-inline renderer::EnvironmentEDF* ProjectBuilder::edit_entity(
-    renderer::EnvironmentEDF*           old_entity,
-    renderer::Scene&                    parent,
-    const foundation::Dictionary&       values) const
+template <typename OldEntity, typename NewEntity>
+inline void copy_transform_sequence(
+    const OldEntity&                   old_entity,
+    const NewEntity&                   new_entity)
 {
-    foundation::auto_release_ptr<renderer::EnvironmentEDF> new_entity(create_entity<renderer::EnvironmentEDF>(values));
-    renderer::EnvironmentEDF* new_entity_ptr = new_entity.get(); 
-
     new_entity->transform_sequence().clear();
 
     for (size_t i = 0, e = old_entity->transform_sequence().size(); i < e; ++i)
@@ -183,6 +179,18 @@ inline renderer::EnvironmentEDF* ProjectBuilder::edit_entity(
         old_entity->transform_sequence().get_transform(i, time, transform);
         new_entity->transform_sequence().set_transform(time, transform);
     }
+}
+
+template <>
+inline renderer::EnvironmentEDF* ProjectBuilder::edit_entity(
+    renderer::EnvironmentEDF*           old_entity,
+    renderer::Scene&                    parent,
+    const foundation::Dictionary&       values) const
+{
+    foundation::auto_release_ptr<renderer::EnvironmentEDF> new_entity(create_entity<renderer::EnvironmentEDF>(values));
+    renderer::EnvironmentEDF* new_entity_ptr = new_entity.get(); 
+
+    copy_transform_sequence(old_entity, new_entity);
 
     renderer::EntityTraits<renderer::EnvironmentEDF>::remove_entity(old_entity, parent);
     renderer::EntityTraits<renderer::EnvironmentEDF>::insert_entity(new_entity, parent);
@@ -201,15 +209,7 @@ inline renderer::Camera* ProjectBuilder::edit_entity(
     foundation::auto_release_ptr<renderer::Camera> new_entity(create_entity<renderer::Camera>(values));
     renderer::Camera* new_entity_ptr = new_entity.get();
 
-    new_entity->transform_sequence().clear();
-
-    for (size_t i = 0, e = old_entity->transform_sequence().size(); i < e; ++i)
-    {
-        float time;
-        foundation::Transformd transform;
-        old_entity->transform_sequence().get_transform(i, time, transform);
-        new_entity->transform_sequence().set_transform(time, transform);
-    }
+    copy_transform_sequence(old_entity, new_entity);
 
     renderer::EntityTraits<renderer::Camera>::remove_entity(old_entity, parent);
     renderer::EntityTraits<renderer::Camera>::insert_entity(new_entity, parent);
