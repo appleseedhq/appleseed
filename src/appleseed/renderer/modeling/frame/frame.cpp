@@ -122,7 +122,7 @@ struct Frame::Impl
     AOVContainer            m_aovs;
     AOVContainer            m_internal_aovs;
     DenoiserAOV*            m_denoiser_aov;
-	vector<size_t>          m_extra_aovs;
+    vector<size_t>          m_extra_aovs;
 };
 
 Frame::Frame(
@@ -284,11 +284,12 @@ const AOVContainer& Frame::internal_aovs() const
 
 size_t Frame::create_extra_aov_image(const char* name) const
 {
-    size_t index = aov_images().get_index(name);
+    const size_t index = aov_images().get_index(name);
     if (index == size_t(~0) && aov_images().size() < MaxAOVCount)
     {
-        index = aov_images().append(name, 4, PixelFormatFloat);
-        impl->m_extra_aovs.push_back(index);
+        const size_t add_index = aov_images().append(name, 4, PixelFormatFloat);
+        impl->m_extra_aovs.push_back(add_index);
+        return add_index;
     }
 
     return index;
@@ -697,7 +698,7 @@ namespace
 
     bool write_extra_aovs(
         const ImageStack&       images,
-            const vector<size_t>&   aov_indices,
+        const vector<size_t>&   aov_indices,
         const bf::path&         directory,
         const string&           base_file_name,
         const string&           extension)
@@ -712,7 +713,7 @@ namespace
 
         for (size_t i = 0, e = aov_indices.size(); i < e; ++i)
         {
-            size_t image_index = aov_indices[i];
+            const size_t image_index = aov_indices[i];
             assert(image_index < images.size());
 
             const Image & image = images.get_image(image_index);
