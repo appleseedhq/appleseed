@@ -36,7 +36,8 @@ shader as_disney_material
     string icon = "asDisneyMaterial.png",
     int as_maya_type_id = 0x001279c3,
     string as_max_class_id = "151203281 494163155",
-    string as_max_plugin_type = "material"
+    string as_max_plugin_type = "material",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_disney_material.html#label-as-disney-material"
 ]]
 (
     color in_color = color(0.5)

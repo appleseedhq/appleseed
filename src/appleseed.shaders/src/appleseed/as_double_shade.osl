@@ -34,7 +34,8 @@ shader as_double_shade
     string icon = "asDoubleShade.png",
     int as_maya_type_id = 0x001279db,
     string as_max_class_id = "2002473132 6900182",
-    string as_max_plugin_type = "texture"
+    string as_max_plugin_type = "texture",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_double_shade.html#label-as-double-shade"
 ]]
 (
     color in_color = color(1)

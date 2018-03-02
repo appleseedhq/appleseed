@@ -55,6 +55,7 @@ float ior_from_normal_reflectance(float f0)
     return (sqrt_f0 + 1) / (1 - sqrt_f0);
 }
 
+
 //
 // Reference:
 //
@@ -90,6 +91,7 @@ color get_kappa(color f0, color eta)
                  get_kappa(f0[1], eta[1]),
                  get_kappa(f0[2], eta[2]));
 }
+
 
 //
 //  Reference:

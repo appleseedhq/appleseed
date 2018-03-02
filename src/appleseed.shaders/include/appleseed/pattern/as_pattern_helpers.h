@@ -43,6 +43,7 @@
 
 #include "appleseed/math/as_math_helpers.h"
 
+
 //
 // Reference:
 //
@@ -158,6 +159,7 @@ float filtered_pulsetrain(
         return (x0 - floor(x0) < nedge) ? 0 : 1;
     }
 }
+
 
 //
 // Reference:

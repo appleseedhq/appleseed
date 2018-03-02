@@ -37,7 +37,8 @@ shader as_blackbody
     string icon = "asBlackbody",
     int as_maya_type_id = 0x001279d0,
     string as_max_class_id = "1182349026 1064055537",
-    string as_max_plugin_type = "texture"
+    string as_max_plugin_type = "texture",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_blackbody.html#label-as-blackbody"
 ]]
 (
     int in_incandescence_type = 0

@@ -36,7 +36,8 @@ shader as_composite_color
     string icon = "asCompositeColor.png",
     int as_maya_type_id = 0x001279fd,
     string as_max_class_id = "1878686041 1992629660",
-    string as_max_plugin_type = "texture"
+    string as_max_plugin_type = "texture",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_composite_color.html#label-as-composite-color"
 ]]
 (
     color in_color = color(0)

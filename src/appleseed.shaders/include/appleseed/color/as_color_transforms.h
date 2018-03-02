@@ -135,6 +135,7 @@ vector get_illuminant_CIExyz(string illuminant, float white_CIExy[2])
         : transform_CIExy_to_CIExyz(white_CIExy);
 }
 
+
 //
 // Reference:
 //
@@ -169,6 +170,7 @@ vector transform_CIEXYZ_to_CIExyY(color XYZ, string illuminant)
     return transform_CIEXYZ_to_CIExyY(XYZ, white_CIExy);
 }
 
+
 //
 // Reference:
 //
@@ -196,13 +198,12 @@ color get_illuminant_CIEXYZ(string illuminant)
     return transform_CIExyY_to_CIEXYZ(get_illuminant_CIExyY(illuminant));
 }
 
-//
-// Pre-computed RGB->XYZ matrices, chromatically adapted where appropriate
-// with the Bradford CAT.
-//
+
 //  Reference:
 //
 //      http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
+//
+//      Precomputed RGB<>CIEXYZ matrices data created with Colour,
 //      http://colour-science.org/
 //
 
@@ -267,13 +268,13 @@ void get_RGB_to_XYZ_matrix(
     }
 }    
 
-//
-// Pre-computed XYZ->RGB matrices, chromatically adapted where appropriate
-// with the Bradford CAT.
+
 //
 //  Reference:
 //
 //      http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
+//
+//      Precomputed RGB<>CIEXYZ matrices data created with Colour,
 //      http://colour-science.org/
 //
 
@@ -338,6 +339,7 @@ void get_XYZ_to_RGB_matrix(
     }
 }
 
+
 //
 // Reference:
 //
@@ -390,11 +392,6 @@ color transform_linear_RGB_to_CIEXYZ(
     return max(0.0, CIEXYZ);
 }
 
-//
-// Precomputed RGB to XYZ matrix, chromatically adapt with default "Bradford"
-// chromatic adaptation transform.
-//
-
 color transform_linear_RGB_to_CIEXYZ(
     color linear_RGB_color,
     string color_space,
@@ -407,10 +404,11 @@ color transform_linear_RGB_to_CIEXYZ(
         "Bradford");
 }
 
+
 //
 // Reference:
 //
-//      XYZ to RGB conversion, and chromatic adaptation
+//      XYZ to RGB conversion, with choice of chromatic adaptation transform.
 //
 //      http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_RGB.html
 //      http://www.brucelindbloom.com/Eqn_ChromAdapt.html
@@ -462,11 +460,6 @@ color transform_CIEXYZ_to_linear_RGB(
     return max(0.0, linear_RGB);
 }
 
-//
-// Precomputed XYZ to RGB matrix, chromatically adapt with default "Bradford"
-// chromatic adaptation transform.
-//
-
 color transform_CIEXYZ_to_linear_RGB(
     color linear_XYZ_color,
     string color_space,
@@ -478,6 +471,7 @@ color transform_CIEXYZ_to_linear_RGB(
         target_illuminant,
         "Bradford");
 }
+
 
 //
 // Overloaded RGB<>XYZ transformations, assuming identical white points.
@@ -522,6 +516,7 @@ color transform_CIEXYZ_to_linear_RGB(
 
     return max(0.0, linear_RGB);
 }
+
 
 //
 // Create a RGB->XYZ transformation matrix, given the set of RGB primaries
@@ -583,6 +578,7 @@ matrix create_RGB_to_XYZ_matrix(
     return CAT_matrix * M;
 }    
 
+
 //
 // Reference:
 //
@@ -642,6 +638,7 @@ void get_CIExy_from_CCT_Kang(int CCT, output float CIExy[2])
     CIExy[1] = y;
 }
 
+
 //
 // Reference:
 //
@@ -693,6 +690,7 @@ color transform_CIEXYZ_to_CIELAB(
         linear_XYZ_color,
         get_illuminant_CIExyY(illuminant));
 }
+
 
 //
 // Reference:
@@ -812,6 +810,8 @@ color transform_CIEXYZ_to_CIELUV(
         linear_XYZ_color,
         get_illuminant_CIExyY(illuminant));
 }
+
+
 //
 // Reference:
 //
@@ -871,6 +871,7 @@ color transform_CIELUV_to_CIEXYZ(
         CIELUV,
         get_illuminant_CIExyY(illuminant));
 }
+
 
 //
 // Reference:
@@ -958,6 +959,7 @@ color transform_CIELCh_ab_to_linear_RGB(
         target_illuminant);
 }
 
+
 //
 // Reference:
 //
@@ -1044,6 +1046,7 @@ color transform_CIELCh_uv_to_linear_RGB(
         target_illuminant);
 }
 
+
 //
 // CIELAB, CIELUV, have values in range L [0,100], a,b [-128,128]
 // and u,v ([-134,220],[-140,122])
@@ -1085,6 +1088,7 @@ color inverse_remap_CIELUV(color CIELUV)
     return color(L, u, v);
 }
 
+
 //
 // LCh (ab, uv), has values L in [0,100] range, chroma in [0,100] range
 // and hue in [0,360] degrees range.
@@ -1118,7 +1122,6 @@ color inverse_remap_CIELCh(color CIELCh)
 //
 // Note: hue values are in [0,1], instead of [0,360] degrees
 //
-
 
 float get_hue_angle(color C, float value, float rgbmin, float chroma)
 {
@@ -1299,6 +1302,7 @@ color transform_HSL_to_RGB(color HSL)
     return color(r, g, b);
 }
 
+
 //
 // Reference:
 //
@@ -1439,6 +1443,7 @@ float deltaE_CIEDE2000(
 
     return deltaE_00;
 }
+
 
 //
 // Overloaded deltaE CIEDE2000, taking as reference and samples,

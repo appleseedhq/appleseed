@@ -29,6 +29,7 @@
 #ifndef AS_COLORIMETRY_H
 #define AS_COLORIMETRY_H
 
+
 //
 // Reference:
 //
@@ -39,6 +40,7 @@
 
 #define CIE_E   (216.0 / 24389.0)
 #define CIE_K   (24389.0 / 27.0)
+
 
 //
 // Reference:
@@ -69,6 +71,7 @@
 #define ILLUMINANT_E_WHITEPOINT_xy          0.33333, 0.33333
 #define ILLUMINANT_E_WHITEPOINT_xyz         0.33333, 0.33333, 0.33333
 
+
 //
 // Reference:
 //
@@ -82,6 +85,7 @@
 #define REC601_CHROMATICITIES_Gxyz          0.290, 0.600, 0.110
 #define REC601_CHROMATICITIES_Bxyz          0.150, 0.060, 0.790
 #define REC601_CHROMATICITIES_Wxyz          D65_WHITEPOINT_CIE1931_2DEG_xyz
+
 
 //
 // Reference:
@@ -97,6 +101,7 @@
 #define REC709_CHROMATICITIES_Bxyz          0.150, 0.060, 0.790
 #define REC709_CHROMATICITIES_Wxyz          D65_WHITEPOINT_CIE1931_2DEG_xyz
 
+
 //
 // Reference:
 //
@@ -109,6 +114,7 @@
 #define ADOBERGB98_CHROMATICITIES_Gxyz      0.210, 0.710, 0.080
 #define ADOBERGB98_CHROMATICITIES_Bxyz      0.150, 0.060, 0.790
 #define ADOBERGB98_CHROMATICITIES_Wxyz      D65_WHITEPOINT_CIE1931_2DEG_xyz
+
 
 //
 // Reference:
@@ -124,6 +130,7 @@
 #define REC2020_CHROMATICITIES_Bxyz         0.131, 0.046, 0.823
 #define REC2020_CHROMATICITIES_Wxyz         D65_WHITEPOINT_CIE1931_2DEG_xyz
 
+
 //
 // Reference:
 //
@@ -138,6 +145,7 @@
 #define ACES_AP0_CHROMATICITIES_Bxyz        0.0001, -0.077, 1.0769
 #define ACES_AP0_CHROMATICITIES_Wxyz        D60_WHITEPOINT_CIE1931_2DEG_xyz
 
+
 //
 // Reference:
 //
@@ -150,6 +158,7 @@
 #define ACESCG_AP1_CHROMATICITIES_Gxyz      0.1650, 0.8300, 0.0050
 #define ACESCG_AP1_CHROMATICITIES_Bxyz      0.1280, 0.0440, 0.8280
 #define ACESCG_AP1_CHROMATICITIES_Wxyz      D60_WHITEPOINT_CIE1931_2DEG_xyz
+
 
 //
 // Reference:
@@ -164,10 +173,17 @@
 #define DCIP3_CHROMATICITIES_Bxyz           0.1500, 0.0600, 0.7900
 #define DCIP3_CHROMATICITIES_Wxyz           DCIP3_WHITEPOINT_CIE1931_2DEG_xyz
 
+
 //
-// Precomputed RGB<>XYZ matrices, chromatically adapted using the Bradford
-// chromatic adaptation transform, and respective relative luminance
-// coefficients.
+// Precomputed RGB<>CIEXYZ matrices
+//
+//      Created with Colour, http://colour-science.org/
+//      with special thanks to Thomas Mansecal and the Colour developers.
+//
+//      Matrices chromatically adapted using the Bradford CAT where appropriate.
+//
+
+
 //
 // Rec.601: D65, D65 to D60, D65 to DCI, and system default
 //
@@ -211,6 +227,7 @@
 #define XYZ_TO_RGB_REC601_R2            XYZ_TO_RGB_REC601_D65_R2
 
 #define REC601_LUMINANCE_COEFFS         RGB_TO_XYZ_REC601_R1
+
 
 //
 // Rec.709: D65, D65 to D60, D65 to DCI, and system default
@@ -256,6 +273,7 @@
 
 #define REC709_LUMINANCE_COEFFS         RGB_TO_XYZ_REC709_R1
 
+
 //
 // Adobe RGB (1998): D65, D65 to D60, D65 to DCI, and system default
 //
@@ -300,6 +318,7 @@
 
 #define ADOBERGB_LUMINANCE_COEFFS       RGB_TO_XYZ_ADOBERGB_R1
 
+
 //
 // Rec.2020: D65, D65 to D60, D65 to DCI, and system default
 //
@@ -343,6 +362,8 @@
 #define XYZ_TO_RGB_REC2020_R2           XYZ_TO_RGB_REC2020_D65_R2
 
 #define REC2020_LUMINANCE_COEFFS        RGB_TO_XYZ_REC2020_R1
+
+
 //
 // ACES 2065-1 AP0: D60 to D65, D60, D60 to DCI, and system default
 //
@@ -386,6 +407,7 @@
 #define XYZ_TO_RGB_ACES_R2              XYZ_TO_RGB_ACES_D60_R2
 
 #define ACES_LUMINANCE_COEFFS           RGB_TO_XYZ_ACES_R1
+
 
 //
 // ACEScg AP1: D60 to D65, D60, D60 to DCI, and system default
@@ -431,6 +453,7 @@
 
 #define ACESCG_LUMINANCE_COEFFS         RGB_TO_XYZ_ACESCG_R1
 
+
 //
 // DCI-P3: DCI to D65, DCI to D60, DCI, and system default
 //
@@ -475,10 +498,17 @@
 
 #define DCIP3_LUMINANCE_COEFFS          RGB_TO_XYZ_DCIP3_R1
 
+
 //
-// Precomputed RGB<>RGB matrices, chromatically adapted using the Bradford
-// chromatic adaptation transform, and respective relative luminance
-// coefficients.
+// Precomputed RGB<>RGB matrices
+//
+//      Created with Colour, http://colour-science.org/
+//      with special thanks to Thomas Mansecal and the Colour developers.
+//
+//      Matrices chromatically adapted using the Bradford CAT where appropriate.
+//  
+
+
 //
 // Source:  ACES 2065-1 AP0 D60
 // Target:  ACEScg AP1 D60
@@ -502,6 +532,7 @@
 #define ACES_TO_REC709_X        2.52168619, -1.13413099,  -0.387555200
 #define ACES_TO_REC709_Y       -0.27647991,  1.37271909,  -0.096239170
 #define ACES_TO_REC709_Z       -0.01537806, -0.15297534,   1.168353400
+
 
 //
 // Source:  ACEScg AP1 D60
@@ -527,6 +558,7 @@
 #define ACESCG_TO_REC709_Y     -0.13025642,  1.14080474, -0.010548320
 #define ACESCG_TO_REC709_Z     -0.02400336, -0.12896898,  1.152972330
 
+
 //
 // Source:  DCI-P3 DCI
 // Target:  ACES 2065-1 AP0 D60
@@ -534,7 +566,7 @@
 //          Rec.2020 D65
 //          Rec.709 D60
 //
-//
+
 #define DCIP3_TO_ACES_X         0.48978665,  0.31837604,  0.191837310
 #define DCIP3_TO_ACES_Y         0.06841295,  0.82898907,  0.102597970
 #define DCIP3_TO_ACES_Z        -0.00004500,  0.04547649,  0.954568500
@@ -550,6 +582,7 @@
 #define DCIP3_TO_REC709_X       1.15751641, -0.15496238, -0.002554030
 #define DCIP3_TO_REC709_Y      -0.04150007,  1.04556792, -0.004067850
 #define DCIP3_TO_REC709_Z      -0.01805004, -0.07857827,  1.096628310
+
 
 //
 // Source:  Rec.2020 D65
@@ -575,6 +608,7 @@
 #define REC2020_TO_REC709_Y    -0.12455047,  1.13289990, -0.008349420
 #define REC2020_TO_REC709_Z    -0.01815076, -0.10057809,  1.118729660
 
+
 //
 // Source:  Rec.709 D65
 // Target:  ACES 2065-1 AP0 D60
@@ -598,6 +632,7 @@
 #define REC709_TO_REC2020_X     0.62740390,  0.32928304,  0.043313070
 #define REC709_TO_REC2020_Y     0.06909729,  0.91954040,  0.011362320
 #define REC709_TO_REC2020_Z     0.01639144,  0.08801331,  0.895595250
+
 
 //
 // Source:  AdobeRGB D65

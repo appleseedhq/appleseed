@@ -36,7 +36,8 @@ shader as_switch_texture
     string icon = "asSwitchTexture.png",
     int as_maya_type_id = 0x001279da,
     string as_max_class_id = "2082364340 1882157436",
-    string as_max_plugin_type = "texture"
+    string as_max_plugin_type = "texture",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_switch_texture.html#label-as-switch-texture"
 ]]
 (
     color in_color = color(0.9, 0.2, 0.1)
