@@ -36,7 +36,8 @@ shader as_metal
     string icon = "asMetal.png",
     int as_maya_type_id = 0x001279f9,
     string as_max_class_id = "121203873 1478432054",
-    string as_max_plugin_type = "material"
+    string as_max_plugin_type = "material",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_metal.html#label-as-metal"
 ]]
 (
     color in_face_reflectance = color(0.96, 0.8, 0.05)
@@ -238,7 +239,7 @@ shader as_metal
         string as_maya_attribute_name = "maximumRayDepth",
         string as_maya_attribute_short_name = "mrd",
         int min = 0,
-        int max = 32,
+        int max = 100,
         int softmax = 8,
         string label = "Ray Depth",
         string page = "Advanced",

@@ -154,6 +154,17 @@ source_group ("include\\appleseed\\transform" FILES
 # Source files.
 #--------------------------------------------------------------------------------------------------
 
+set (src_blenderseed_sources
+     src/blenderseed/as_closure2surface.osl
+)
+
+list (APPEND osl_sources
+    ${src_blenderseed_sources}
+)
+source_group ("src\\blenderseed" FILES
+    ${src_blenderseed_sources}
+)
+
 set (src_gaffer_color_sources
      src/gaffer/color/as_blackbody.osl
      src/gaffer/color/as_color_add.osl
@@ -451,6 +462,7 @@ set (src_appleseed_sources
      src/appleseed/as_texture.osl
      src/appleseed/as_texture3d.osl
      src/appleseed/as_texture_info.osl
+     src/appleseed/as_triplanar.osl
      src/appleseed/as_vary_color.osl
      src/appleseed/as_voronoi2d.osl
      src/appleseed/as_voronoi3d.osl

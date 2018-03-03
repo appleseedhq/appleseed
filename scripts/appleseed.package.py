@@ -48,7 +48,7 @@ import zipfile
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.4.10"
+VERSION = "2.4.11"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 
 
@@ -354,9 +354,9 @@ class PackageBuilder:
 
     def add_scripts_to_stage(self):
         progress("Adding scripts to staging directory")
+        shutil.copy("cleanmany.py", "appleseed/bin/")
         shutil.copy("convertmany.py", "appleseed/bin/")
         shutil.copy("rendermany.py", "appleseed/bin/")
-        shutil.copy("updatemany.py", "appleseed/bin/")
         shutil.copy("rendernode.py", "appleseed/bin/")
         shutil.copy("rendermanager.py", "appleseed/bin/")
 

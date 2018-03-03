@@ -147,6 +147,22 @@ namespace
             delete this;
         }
 
+        void print_settings() const override
+        {
+            RENDERER_LOG_INFO(
+                "generic renderer settings:\n"
+                "  spectrum mode                 %s\n"
+                "  thread count                  " FMT_SIZE_T "\n"
+                "  tile ordering                 %s\n"
+                "  passes                        " FMT_SIZE_T,
+                m_params.m_spectrum_mode == Spectrum::Mode::RGB ? "rgb" : "spectral",
+                m_params.m_thread_count,
+                m_params.m_tile_ordering == TileJobFactory::TileOrdering::LinearOrdering ? "linear" :
+                m_params.m_tile_ordering == TileJobFactory::TileOrdering::SpiralOrdering ? "spiral" :
+                m_params.m_tile_ordering == TileJobFactory::TileOrdering::HilbertOrdering ? "hilbert" : "random",
+                m_params.m_pass_count);
+        }
+
         void render() override
         {
             start_rendering();

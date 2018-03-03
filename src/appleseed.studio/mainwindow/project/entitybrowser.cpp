@@ -40,6 +40,7 @@
 #include "renderer/api/environmentshader.h"
 #include "renderer/api/material.h"
 #include "renderer/api/scene.h"
+#include "renderer/api/shadergroup.h"
 #include "renderer/api/surfaceshader.h"
 #include "renderer/api/volume.h"
 
@@ -162,6 +163,7 @@ StringDictionary EntityBrowser<Assembly>::get_entities(const string& type) const
         type == "environment_edf" ? build_entity_dictionary(get_parent_scene(&m_assembly)->environment_edfs()) :
         type == "environment_shader" ? build_entity_dictionary(get_parent_scene(&m_assembly)->environment_shaders()) :
         type == "volume" ? build_entity_dictionary(m_assembly.volumes()) :
+        type == "shader_group" ? build_entity_dictionary(m_assembly.shader_groups()) :
         EntityBrowser<BaseGroup>::get_entities(type);
 
     const Assembly* parent_assembly = dynamic_cast<const Assembly*>(m_assembly.get_parent());

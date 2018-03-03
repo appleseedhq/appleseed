@@ -1011,7 +1011,7 @@ bool ProjectFileWriter::write_packed_project_file(
             RENDERER_LOG_INFO("packed project to %s.", filepath);
         }
     }
-    catch (const std::exception&)
+    catch (const std::exception&)   // namespace qualification required
     {
         RENDERER_LOG_ERROR("failed to write project file %s.", filepath);
         success = false;

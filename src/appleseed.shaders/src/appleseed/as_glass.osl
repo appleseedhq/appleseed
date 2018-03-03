@@ -34,7 +34,8 @@ shader as_glass
     string icon = "asGlass",
     int as_maya_type_id = 0x001279c4,
     string as_max_class_id = "1785798004 1778718452",
-    string as_max_plugin_type = "material"
+    string as_max_plugin_type = "material",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_glass.html#label-as-glass"
 ]]
 (
     color in_surface_transmittance = color(1.0)
@@ -220,12 +221,12 @@ shader as_glass
         string page = "Matte Opacity",
         int gafferNoduleLayoutVisible = 0
     ]],
-    int in_maximum_ray_depth= 4
+    int in_maximum_ray_depth = 4
     [[
         string as_maya_attribute_name = "maximumRayDepth",
         string as_maya_attribute_short_name = "mr",
         int min = 0,
-        int max = 32,
+        int max = 100,
         int softmax = 8,
         string label = "Ray Depth",
         string page = "Advanced",

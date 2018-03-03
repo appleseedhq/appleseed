@@ -86,7 +86,7 @@ MainWindow* PythonInterpreter::get_main_window() const
 
 namespace
 {
-    string compute_python_modules_path()
+    string compute_appleseed_python_module_path()
     {
         // Start with the absolute path to appleseed.studio's executable.
         bf::path base_path(get_executable_path());
@@ -110,6 +110,27 @@ namespace
         lib_path = base_path / lib_path / "python2.7";
 
         return canonical(lib_path).make_preferred().string();
+    }
+
+    string compute_site_packages_path()
+    {
+        // Start with the absolute path to appleseed.studio's executable.
+        bf::path base_path(get_executable_path());
+
+        // Strip appleseed.studio's executable filename from the path.
+        base_path = base_path.parent_path();
+
+        // Go up in the hierarchy until bin/ is found.
+        while (base_path.filename() != "bin")
+            base_path = base_path.parent_path();
+
+        // One more step up to reach the parent of bin/.
+        base_path = base_path.parent_path();
+
+        // Compute full path.
+        const bf::path site_pkg_path = base_path / "lib" / "python2.7" / "site-packages";
+
+        return canonical(site_pkg_path).make_preferred().string();
     }
 
     string compute_bundled_plugins_path()
@@ -158,18 +179,18 @@ void PythonInterpreter::initialize(OutputRedirector redirector)
     PyImport_AppendInittab("_appleseedpythonbuiltin", init_appleseedpythonbuiltin);
     PyImport_AppendInittab("_appleseedstudio", init_appleseedstudio);
     Py_Initialize();
-    m_is_initialized = true;
 
     bpy::object main_module = bpy::import("__main__");
     m_main_namespace = main_module.attr("__dict__");
 
-    // Add path to appleseed module to sys.path so that Python can find it.
-    bpy::import("sys").attr("path").attr("append")(compute_python_modules_path());
+    // Add paths to appleseed module and other dependencies to sys.path.
+    bpy::import("sys").attr("path").attr("append")(compute_site_packages_path());
+    bpy::import("sys").attr("path").attr("append")(compute_appleseed_python_module_path());
 
+    // Redirect stdout and stderr to the output panel.
     bpy::class_<OutputRedirector>("OutputRedirector", bpy::no_init)
         .def("write", &OutputRedirector::write);
 
-    // Redirect stdout and stderr to the output panel.
     bpy::object sys_module = bpy::import("sys");
     sys_module.attr("stdout") = redirector;
     sys_module.attr("stderr") = redirector;
@@ -193,11 +214,8 @@ void PythonInterpreter::load_plugins()
             compute_bundled_plugins_path()));
 }
 
-bpy::object PythonInterpreter::execute(const string& command)
+bpy::object PythonInterpreter::execute(const string& command, const bool notify)
 {
-    if (!m_is_initialized)
-        throw Exception("Attempt to execute Python command while interpreter is not initialized");
-
     bpy::object result;
 
     try
@@ -211,7 +229,7 @@ bpy::object PythonInterpreter::execute(const string& command)
         return bpy::object();
     }
 
-    if (m_main_window != nullptr)
+    if (notify && m_main_window != nullptr)
         m_main_window->on_project_change();
 
     return result;
@@ -219,7 +237,6 @@ bpy::object PythonInterpreter::execute(const string& command)
 
 PythonInterpreter::PythonInterpreter()
   : m_main_window(nullptr)
-  , m_is_initialized(false)
 {
 }
 

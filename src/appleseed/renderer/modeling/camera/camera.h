@@ -225,6 +225,7 @@ class APPLESEED_DLLSYMBOL Camera
     void check_shutter_times_for_consistency() const;
 };
 
+
 //
 // An incomplete factory class whose main purpose is to factorize the code
 // common to all camera models.

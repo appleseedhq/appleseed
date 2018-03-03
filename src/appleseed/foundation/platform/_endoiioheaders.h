@@ -26,6 +26,8 @@
 // THE SOFTWARE.
 //
 
+#include "foundation/platform/_endexrheaders.h"
+
 #if defined _MSC_VER
 
     #pragma warning (pop)
@@ -33,3 +35,4 @@
     #undef copysign
 
 #endif
+

@@ -156,6 +156,16 @@ namespace
                 dest.strings().insert(dest_key, src.strings().get(src_key));
         }
 
+        // Copy a key from one dictionary to same dictionary.
+        static void copy_if_exist_no_overwrite(
+            Dictionary&         dict, 
+            const char*         dest_key, 
+            const char*         src_key)
+        {
+            if (!dict.strings().exist(dest_key))
+                copy_if_exist(dict, dest_key, dict, src_key);            
+        }
+
         // Move a key from one dictionary to another at a given path.
         static void move_if_exist(
             ParamArray&         dest,
@@ -1585,6 +1595,41 @@ namespace
             }
         }
     };
+
+    //
+    // Update from revision 21 to revision 22.
+    //
+    
+    class UpdateFromRevision_21
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_21(Project& project)
+          : Updater(project, 21)
+        {
+        }
+
+        void update() override
+        {
+            if (Scene* scene = m_project.get_scene())
+            {
+                for (each<CameraContainer> i = scene->cameras(); i; ++i)
+                {
+                    Dictionary& camera_params = i->get_parameters();
+
+                    copy_if_exist_no_overwrite(
+                        camera_params,
+                        "shutter_open_end_time",
+                        "shutter_open_time");
+
+                    copy_if_exist_no_overwrite(
+                        camera_params,
+                        "shutter_close_start_time",
+                        "shutter_close_time");
+                }
+            }
+        }  
+    };
 }
 
 bool ProjectFileUpdater::update(
@@ -1638,6 +1683,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(18);
       CASE_UPDATE_FROM_REVISION(19);
       CASE_UPDATE_FROM_REVISION(20);
+      CASE_UPDATE_FROM_REVISION(21);
 
       case ProjectFormatRevision:
         // Project is up-to-date.

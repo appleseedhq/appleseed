@@ -92,7 +92,7 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
 
             bf::remove_all(bf::path(UnpackDirectory));
         }
-        catch (const std::exception& e)
+        catch (const std::exception& e)     // namespace qualification required
         {
             bf::remove_all(bf::path(UnpackDirectory));
             throw e;
@@ -119,7 +119,7 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
 
             bf::remove_all(bf::path(UnpackDirectory));
         }
-        catch (const std::exception& e)
+        catch (const std::exception& e)     // namespace qualification required
         {
             bf::remove_all(bf::path(UnpackDirectory));
             throw e;

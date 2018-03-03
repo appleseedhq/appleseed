@@ -377,6 +377,18 @@ source_group ("python" FILES
     ${python_sources}
 )
 
+set (studio_py_sources
+    python/studio/__init__.py
+    python/studio/plugins.py
+    python/studio/ui.py
+)
+list (APPEND appleseed.studio_sources
+    ${studio_py_sources}
+)
+source_group ("python\\studio" FILES
+    ${studio_py_sources}
+)
+
 set (utility_sources
     utility/chartwidget.cpp
     utility/chartwidget.h
@@ -626,6 +638,13 @@ endif ()
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
 
+add_custom_target (appleseed.studio.python.copy_py_files ALL)
+
+add_copy_target_to_sandbox_py_module_command (appleseed.studio appleseed)
+add_copy_studio_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.studio/python/studio/__init__.py appleseed.studio)
+add_copy_studio_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.studio/python/studio/ui.py appleseed.studio)
+add_copy_studio_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.studio/python/studio/plugins.py appleseed.studio)
+
 add_copy_target_exe_to_sandbox_command (appleseed.studio)
 
 
@@ -656,3 +675,6 @@ install (DIRECTORY ../../sandbox/seexpr
 install (DIRECTORY ../../sandbox/studio
     DESTINATION .
 )
+
+install (DIRECTORY ../../sandbox/lib/python2.7/site-packages DESTINATION "lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}")
+install (DIRECTORY python/studio DESTINATION "lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/appleseed")

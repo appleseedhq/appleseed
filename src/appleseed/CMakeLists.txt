@@ -1848,6 +1848,7 @@ set (renderer_modeling_shadergroup
     renderer/modeling/shadergroup/shaderconnection.h
     renderer/modeling/shadergroup/shadergroup.cpp
     renderer/modeling/shadergroup/shadergroup.h
+    renderer/modeling/shadergroup/shadergrouptraits.h
     renderer/modeling/shadergroup/shaderparam.cpp
     renderer/modeling/shadergroup/shaderparam.h
     renderer/modeling/shadergroup/shaderquery.cpp
