@@ -154,6 +154,17 @@ source_group ("include\\appleseed\\transform" FILES
 # Source files.
 #--------------------------------------------------------------------------------------------------
 
+set (src_blenderseed_sources
+     src/blenderseed/as_closure2surface.osl
+)
+
+list (APPEND osl_sources
+    ${src_blenderseed_sources}
+)
+source_group ("src\\blenderseed" FILES
+    ${src_blenderseed_sources}
+)
+
 set (src_gaffer_color_sources
      src/gaffer/color/as_blackbody.osl
      src/gaffer/color/as_color_add.osl
@@ -314,6 +325,7 @@ source_group ("src\\gaffer\\vector" FILES
 set (src_max_sources
      src/max/as_max_blend_material.osl
      src/max/as_max_bump_map.osl
+     src/max/as_max_closure2surface.osl
      src/max/as_max_color_texture.osl
      src/max/as_max_disney_material.osl
      src/max/as_max_float_texture.osl
@@ -324,7 +336,6 @@ set (src_max_sources
      src/max/as_max_plastic_material.osl
      src/max/as_max_srgb_to_linear_rgb.osl
      src/max/as_max_sss_material.osl
-     src/max/as_max_standard_material.osl
      src/max/as_max_uv_transform.osl
 )
 list (APPEND osl_sources
@@ -451,6 +462,7 @@ set (src_appleseed_sources
      src/appleseed/as_texture.osl
      src/appleseed/as_texture3d.osl
      src/appleseed/as_texture_info.osl
+     src/appleseed/as_triplanar.osl
      src/appleseed/as_vary_color.osl
      src/appleseed/as_voronoi2d.osl
      src/appleseed/as_voronoi3d.osl

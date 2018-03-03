@@ -28,13 +28,16 @@
 
 #include "appleseed/transform/as_transform_helpers.h"
 
-shader asSwitchSurface
+shader as_switch_surface
 [[
     string as_maya_node_name = "asSwitchSurface",
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
     string help = "Material variation utility shader",
     string icon = "asSwitchSurface.png",
-    int as_maya_type_id = 0x001279fe
+    int as_maya_type_id = 0x001279fe,
+    string as_max_class_id = "133437029 1618300620",
+    string as_max_plugin_type = "material",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_switch_surface.html#label-as-switch-surface"
 ]]
 (
     closure color in_color = 0

@@ -87,5 +87,4 @@ shader as_max_plastic_material
         DiffuseColor,
         DiffuseWeight,
         Scattering);
-    Ci = ClosureOut;
 }

@@ -110,4 +110,18 @@ void compute_id_manifold(
     color_id = (color) cellnoise(hash_id);
 }
 
+void rotate2d(
+    float x,
+    float y,
+    float angle_in_degrees,
+    output float rx,
+    output float ry)
+{
+    float angle_rad = radians(angle_in_degrees);
+    float c, s;        
+    sincos(angle_rad, s, c);
+    rx = x * c - s * y;
+    ry = x * s + c * y;
+}
+
 #endif // !AS_TRANSFORM_HELPERS_H

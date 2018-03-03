@@ -105,6 +105,20 @@ namespace
             }
         }
 
+        void print_settings() const override
+        {
+            RENDERER_LOG_INFO(
+                "uniform pixel renderer settings:\n"
+                "  sampling mode                 %s\n"
+                "  samples                       " FMT_SIZE_T "\n"
+                "  force antialiasing            %s\n"
+                "  decorrelate pixels            %s",
+                m_params.m_sampling_mode == SamplingContext::Mode::QMCMode ? "qmc" : "rng",
+                m_params.m_samples,
+                m_params.m_force_aa ? "on" : "off",
+                m_params.m_decorrelate ? "on" : "off");
+        }
+
         void release() override
         {
             delete this;

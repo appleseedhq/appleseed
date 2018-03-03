@@ -41,6 +41,4 @@ shader as_max_light_material
     }
     else
         ClosureOut = BSDF;
-
-    Ci = ClosureOut;
 }

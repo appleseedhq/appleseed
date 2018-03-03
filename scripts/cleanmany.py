@@ -57,28 +57,28 @@ def walk(directory, recursive):
 
 
 #--------------------------------------------------------------------------------------------------
-# Update a given project file.
+# Clean a given project file.
 #--------------------------------------------------------------------------------------------------
 
-def update_project_file(filepath, tool_path):
-    print("updating {0}...".format(filepath))
-    subprocess.call([tool_path, "update", filepath])
+def clean_project_file(filepath, tool_path):
+    print("cleaning {0}...".format(filepath))
+    subprocess.call([tool_path, "clean", filepath])
 
 
 #--------------------------------------------------------------------------------------------------
-# Update all project files in a given directory (possibly recursively).
-# Returns the number of updated project files.
+# Clean all project files in a given directory (possibly recursively).
+# Returns the number of cleaned project files.
 #--------------------------------------------------------------------------------------------------
 
-def update_project_files(tool_path, directory, recursive):
-    updated_file_count = 0
+def clean_project_files(tool_path, directory, recursive):
+    cleaned_file_count = 0
 
     for filepath in walk(directory, recursive):
         if os.path.splitext(filepath)[1] == ".appleseed":
-            update_project_file(filepath, tool_path)
-            updated_file_count += 1
+            clean_project_file(filepath, tool_path)
+            cleaned_file_count += 1
 
-    return updated_file_count
+    return cleaned_file_count
 
 
 #--------------------------------------------------------------------------------------------------
@@ -86,8 +86,8 @@ def update_project_files(tool_path, directory, recursive):
 #--------------------------------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="normalize multiple project files and update "
-                                     "them to the latest format revision if necessary.")
+    parser = argparse.ArgumentParser(description="update multiple project files to the latest "
+                                     "format revision and remove unused entities.")
     parser.add_argument("-t", "--tool-path", metavar="tool-path",
                         help="set the path to the projecttool binary")
     parser.add_argument("-r", "--recursive", action='store_true', dest="recursive",
@@ -102,10 +102,10 @@ def main():
         print("setting tool path to {0}.".format(args.tool_path))
 
     start_time = datetime.datetime.now()
-    updated_file_count = update_project_files(args.tool_path, args.directory, args.recursive)
+    cleaned_file_count = clean_project_files(args.tool_path, args.directory, args.recursive)
     end_time = datetime.datetime.now()
 
-    print("updated {0} project file(s) in {1}.".format(updated_file_count, end_time - start_time))
+    print("cleaned {0} project file(s) in {1}.".format(cleaned_file_count, end_time - start_time))
 
 if __name__ == '__main__':
     main()

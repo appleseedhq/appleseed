@@ -34,7 +34,10 @@ shader as_id_manifold
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string help = "ID manifold utility shader",
     string icon = "asIdManifold",
-    int as_maya_type_id = 0x001279d9
+    int as_maya_type_id = 0x001279d9,
+    string as_max_class_id = "1097742994 1256943621",
+    string as_max_plugin_type = "texture",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_id_manifold.html#label-as-id-manifold"
 ]]
 (
     int in_manifold_type = 0

@@ -35,6 +35,7 @@
 #include "appleseed/color/as_color_transforms.h"
 #include "appleseed/math/as_math_helpers.h"
 
+
 //
 // References:
 //
@@ -213,6 +214,7 @@ color blendmode_linear_light(color A, color B)
     }
     return rgb;
 }
+
 
 //
 // Note:
@@ -447,6 +449,7 @@ color blend_color(string mode, color A, color B)
     }
     return rgb;
 }
+
 
 //
 // References:

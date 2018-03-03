@@ -39,6 +39,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/api/apistring.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/uid.h"
@@ -444,12 +445,25 @@ void ShaderGroup::set_surface_area(
 
 const char* ShaderGroupFactory::get_model()
 {
-    return "shadergroup";
+    return "shader_group";
+}
+
+DictionaryArray ShaderGroupFactory::get_input_metadata()
+{
+    DictionaryArray metadata;
+    return metadata;
 }
 
 auto_release_ptr<ShaderGroup> ShaderGroupFactory::create(const char* name)
 {
     return auto_release_ptr<ShaderGroup>(new ShaderGroup(name));
+}
+
+auto_release_ptr<ShaderGroup> ShaderGroupFactory::create(
+    const char*         name,
+    const ParamArray&   params)
+{
+    return create(name);
 }
 
 }   // namespace renderer

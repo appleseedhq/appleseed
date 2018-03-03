@@ -634,11 +634,11 @@ endif ()
 
 install (
     FILES
+        scripts/cleanmany.py
         scripts/convertmany.py
         scripts/rendermanager.py
         scripts/rendermany.py
         scripts/rendernode.py
-        scripts/updatemany.py
     DESTINATION bin
 )
 

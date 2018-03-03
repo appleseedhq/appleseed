@@ -48,6 +48,7 @@ namespace renderer  { class Assembly; }
 namespace renderer  { class AssemblyInstance; }
 namespace renderer  { class BaseGroup; }
 namespace renderer  { class ColorEntity; }
+namespace renderer  { class ShaderGroup; }
 namespace renderer  { class Texture; }
 namespace renderer  { class TextureInstance; }
 class QMenu;
@@ -76,16 +77,19 @@ class BaseGroupItem
     ItemBase* add_item(renderer::TextureInstance* texture_instance);
     ItemBase* add_item(renderer::Assembly* assembly);
     ItemBase* add_item(renderer::AssemblyInstance* assembly_instance);
+    ItemBase* add_item(renderer::ShaderGroup* shader_group);
 
     typedef SingleModelCollectionItem<renderer::ColorEntity, renderer::BaseGroup, BaseGroupItem> ColorCollectionItem;
     typedef InstanceCollectionItem<renderer::AssemblyInstance, AssemblyInstanceItem, renderer::BaseGroup> AssemblyInstanceCollectionItem;
     typedef InstanceCollectionItem<renderer::TextureInstance, TextureInstanceItem, renderer::BaseGroup> TextureInstanceCollectionItem;
+    typedef SingleModelCollectionItem<renderer::ShaderGroup, renderer::BaseGroup, BaseGroupItem> ShaderGroupCollectionItem;
 
     ColorCollectionItem& get_color_collection_item() const;
     TextureCollectionItem& get_texture_collection_item() const;
     TextureInstanceCollectionItem& get_texture_instance_collection_item() const;
     AssemblyCollectionItem& get_assembly_collection_item() const;
     AssemblyInstanceCollectionItem& get_assembly_instance_collection_item() const;
+    ShaderGroupCollectionItem& get_shader_group_collection_item() const;
 
   private:
     ColorCollectionItem*                m_color_collection_item;
@@ -93,6 +97,7 @@ class BaseGroupItem
     TextureInstanceCollectionItem*      m_texture_instance_collection_item;
     AssemblyCollectionItem*             m_assembly_collection_item;
     AssemblyInstanceCollectionItem*     m_assembly_instance_collection_item;
+    ShaderGroupCollectionItem*          m_shader_group_collection_item;
 
     void add_items(renderer::BaseGroup& base_group);
 };

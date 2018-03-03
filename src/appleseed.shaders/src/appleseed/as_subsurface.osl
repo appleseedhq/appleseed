@@ -34,7 +34,10 @@ shader as_subsurface
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
     string help = "SubSurface Scattering material",
     string icon = "asSubsurface.png",
-    int as_maya_type_id = 0x001279e4
+    int as_maya_type_id = 0x001279e4,
+    string as_max_class_id = "492524175 1093340697",
+    string as_max_plugin_type = "material",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_subsurface.html#label-as-subsurface"
 ]]
 (
     int in_sss_profile = 0
@@ -83,16 +86,6 @@ shader as_subsurface
         float softmax = 1.0,
         string label = "MFP Scale",
         string page = "Subsurface"
-    ]],
-    float in_zero_scattering_weight = 0.5
-    [[
-        string as_maya_attribute_name = "zeroScatteringWeight",
-        string as_maya_attribute_short_name = "zsw",
-        float min = 0.0,
-        float max = 1.0,
-        string label = "Zero Scattering Weight",
-        string page = "Subsurface",
-        string help = "Weight of contribution when the ray has no scattering events."
     ]],
     int in_sss_maximum_ray_depth = 2
     [[
@@ -321,8 +314,7 @@ shader as_subsurface
                 albedo,
                 in_sss_mfp_scale * in_sss_mfp,
                 in_ior,
-                "fresnel_weight", in_fresnel_weight,
-                "zero_scattering_weight", in_zero_scattering_weight);
+                "fresnel_weight", in_fresnel_weight);
         }
         else
         {

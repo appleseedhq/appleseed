@@ -52,6 +52,8 @@ class ITileRenderer
   : public foundation::IUnknown
 {
   public:
+    virtual void print_settings() const = 0;
+
     // Render a tile.
     virtual void render_tile(
         const Frame&                frame,

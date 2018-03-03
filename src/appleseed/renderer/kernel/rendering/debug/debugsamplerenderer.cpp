@@ -31,6 +31,7 @@
 #include "debugsamplerenderer.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingresult.h"
 
@@ -61,6 +62,10 @@ namespace
       : public ISampleRenderer
     {
       public:
+        void print_settings() const override
+        {
+        }
+
         void release() override
         {
             delete this;

@@ -32,10 +32,13 @@
 #include "appleseed/color/as_chromatic_adaptation.h"
 #include "appleseed/color/as_colorimetry.h"
 #include "appleseed/color/as_color_transforms.h"
+#include "appleseed/color/as_transfer_functions.h"
+#include "appleseed/maya/as_maya_cms_syncolor_idt.h"
 
 #ifndef NCOMPS
 #define NCOMPS  3
 #endif
+
 
 //
 //  The luminance coefficients Y are provided by the RGB<>XYZ matrices, which
@@ -312,6 +315,73 @@ void initialize_RGB_primaries(
     {
         RGB_CIExyz[0] = RGB_CIExyz[1] = RGB_CIExyz[2] = 0.0;
     }
+}
+
+color apply_color_management(
+    color input,
+    string eotf,
+    string rgb_primaries,
+    string workingspace_rgb_primaries)
+{
+    color scene_linear_cms;
+
+    if (eotf == "Raw")
+    {
+        scene_linear_cms = input;
+    }
+    else if (eotf == "sRGB")
+    {
+        scene_linear_cms = sRGB_EOTF(input);
+    }
+    else if (eotf == "Rec.709")
+    {
+        scene_linear_cms = Rec709_EOTF(input);
+    }
+    else if (eotf == "Gamma 2.2")
+    {
+        scene_linear_cms = gamma_CCTF(input, 2.2);
+    }
+    else if (eotf == "Gamma 2.4")
+    {
+        scene_linear_cms = gamma_CCTF(input, 2.4);
+    }
+    else if (eotf == "Gamma 2.6 (DCI)")
+    {
+        scene_linear_cms = gamma_CCTF(input, DCIP3_GAMMA);
+    }
+    else if (eotf == "Rec.1886")
+    {
+        scene_linear_cms = Rec1886_EOTF(input);
+    }
+    else if (eotf == "Rec.2020")
+    {
+        scene_linear_cms = Rec2020_EOTF(input);
+    }
+    else
+    {
+#ifdef DEBUG
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+        warning("[WARNING]: Unknown OETF mode %s, in %s, %s:%d\n",
+                eotf, shadername, __FILE__, __LINE__);
+#endif
+        return color(0);
+    }
+        
+    // We're assuming the ingested material is in [0,1] range, if not,
+    // we need to check the extension (*.hdr, *.exr), and bitdepth, and
+    // transform to a log representation, before applying a xform, then
+    // expanding it back.
+
+    if (rgb_primaries != "Raw" &&
+        rgb_primaries != workingspace_rgb_primaries)
+    {
+        scene_linear_cms = transform_colorspace_to_workingspace(
+            scene_linear_cms,
+            rgb_primaries,
+            workingspace_rgb_primaries);
+    }
+    return scene_linear_cms;
 }
 
 #endif // !AS_COLOR_HELPERS_H

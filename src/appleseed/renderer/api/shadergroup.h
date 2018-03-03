@@ -33,6 +33,7 @@
 #include "renderer/modeling/shadergroup/shader.h"
 #include "renderer/modeling/shadergroup/shaderconnection.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
+#include "renderer/modeling/shadergroup/shadergrouptraits.h"
 #include "renderer/modeling/shadergroup/shaderquery.h"
 
 #endif  // !APPLESEED_RENDERER_API_SHADERGROUP_H

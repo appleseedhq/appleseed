@@ -34,7 +34,10 @@ shader as_blend_color
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string help = "Color blend utility node.",
     string icon = "asBlendColor.png",
-    int as_maya_type_id = 0x001279d1
+    int as_maya_type_id = 0x001279d1,
+    string as_max_class_id = "1219385486 1257456227",
+    string as_max_plugin_type = "texture",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_blend_color.html#label-as-blend-color"
 ]]
 (
     color in_color = color(0)

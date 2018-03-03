@@ -38,7 +38,10 @@ shader as_noise2d
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/2d:swatch/AppleseedRenderSwatch:texture",
     int as_maya_type_id = 0x001279cb,
     string icon = "asNoise2D.png",
-    string URL = "http://appleseedhq.net/"
+    string URL = "http://appleseedhq.net/",
+    string as_max_class_id = "981826223 274675317",
+    string as_max_plugin_type = "texture",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_noise2d.html#label-as-noise2d"
 ]]
 (
     color in_color1 = color(0)

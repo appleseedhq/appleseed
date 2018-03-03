@@ -36,7 +36,10 @@ shader as_voronoi3d
     string as_maya_node_name = "asVoronoi3D",
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/texture/3d:swatch/AppleseedRenderSwatch:texture",
     string icon = "asVoronoi3D.png",
-    int as_maya_type_id = 0x001279c6
+    int as_maya_type_id = 0x001279c6,
+    string as_max_class_id = "332490071 1665409453",
+    string as_max_plugin_type = "texture",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_voronoi3d.html#label-as-voronoi3d"
 ]]
 (
     color in_color1 = color(1, 0.3, 0.05)

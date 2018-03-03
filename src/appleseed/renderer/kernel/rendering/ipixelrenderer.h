@@ -57,6 +57,8 @@ class IPixelRenderer
   : public foundation::IUnknown
 {
   public:
+    virtual void print_settings() const = 0;
+
     // This method is called before a tile gets rendered.
     virtual void on_tile_begin(
         const Frame&                frame,

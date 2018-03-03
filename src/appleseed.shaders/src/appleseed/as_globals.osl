@@ -32,14 +32,34 @@ shader as_globals
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string help = "OSL global variables.",
     string icon = "asGlobals.png",
-    int as_maya_type_id = 0x001279ef
+    int as_maya_type_id = 0x001279ef,
+    string as_max_class_id = "2058487770 898187197",
+    string as_max_plugin_type = "texture",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_globals.html#label-as-globals"
 ]]
 (
+    point Pref = P
+    [[
+        int lockgeom = 0,
+        string widget = "null"
+    ]],
+    normal Nref = N
+    [[
+        int lockgeom = 0,
+        string widget = "null"
+    ]],
     output point out_world_P = P
     [[
         string as_maya_attribute_name = "worldP",
         string as_maya_attribute_short_name = "wp",
         string label = "Surface Position"
+    ]],
+    output point out_world_Pref = Pref
+    [[
+        string as_maya_attribute_name = "worldPref",
+        string as_maya_attribute_short_name = "wpr",
+        string label = "Referecence Point",
+        string help = "World space reference point Pref"
     ]],
     output point out_world_Ps = Ps
     [[
@@ -53,6 +73,13 @@ shader as_globals
         string as_maya_attribute_name = "worldN",
         string as_maya_attribute_short_name = "n",
         string label = "Shading Normal"
+    ]],
+    output normal out_world_Nref = Nref
+    [[
+        string as_maya_attribute_name = "worldNref",
+        string as_maya_attribute_short_name = "nre",
+        string label = "Reference Normal",
+        string help = "World space reference normal Nref"
     ]],
     output normal out_world_Ng = Ng
     [[

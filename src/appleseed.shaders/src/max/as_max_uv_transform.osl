@@ -56,6 +56,9 @@ shader as_max_uv_transform
 
     output float out_U = 0.0,
     output float out_V = 0.0,
+
+    output float out_outUV[2] = {0.0, 0.0},
+    output float out_outUvFilterSize[2] = {-1, -1},
 )
 {
     float out_u = in_coordU;
@@ -66,7 +69,14 @@ shader as_max_uv_transform
     // Apply rotation before tiling/offset which is different from 3ds Max native bitmap transforms.
     if (in_rotateW != 0.0)
     {
-        rotate2d(out_u, out_v, in_rotateW, out_u, out_v);
+        point rot = rotate(
+            point(out_u, out_v, 0.0),
+            radians(in_rotateW),
+            point(0.5, 0.5, 0.0),
+            point(0.5, 0.5, 1.0));
+
+        out_u = rot[0];
+        out_v = rot[1];
     }
 
     // Don't center transforms when mirrored (3ds Max behaviour).
@@ -121,6 +131,12 @@ shader as_max_uv_transform
         out_v = out_v + (1 - in_cropH); // Looks like V=0 is bottom left corner, so had to move it to the top to match 3ds max coords
     }
     
+    out_outUvFilterSize[0] = filterwidth(out_u);
+    out_outUvFilterSize[1] = filterwidth(out_v);
+    
+    out_outUV[0] = out_u;
+    out_outUV[1] = out_v;
+
     out_U = out_u;
     out_V = out_v;
 }

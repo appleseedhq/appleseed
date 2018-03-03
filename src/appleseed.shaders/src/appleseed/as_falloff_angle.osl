@@ -34,7 +34,10 @@ shader as_falloff_angle
     string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility",
     string help = "Double shading node.",
     string icon = "asFalloffAngle",
-    int as_maya_type_id = 0x001279f7
+    int as_maya_type_id = 0x001279f7,
+    string as_max_class_id = "2015842098 354230760",
+    string as_max_plugin_type = "texture",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_falloff_angle.html#label-as-falloff-angle"
 ]]
 (
     vector in_vector_1 = vector(0,1,0)

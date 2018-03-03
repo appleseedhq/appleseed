@@ -34,7 +34,10 @@ shader as_disney_material
     string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch",
     string help = "Disney material",
     string icon = "asDisneyMaterial.png",
-    int as_maya_type_id = 0x001279c3
+    int as_maya_type_id = 0x001279c3,
+    string as_max_class_id = "151203281 494163155",
+    string as_max_plugin_type = "material",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_disney_material.html#label-as-disney-material"
 ]]
 (
     color in_color = color(0.5)
@@ -198,7 +201,7 @@ shader as_disney_material
         string as_maya_attribute_name = "maximumRayDepth",
         string as_maya_attribute_short_name = "rd",
         int min = 0,
-        int max = 32,
+        int max = 100,
         int softmax = 8,
         string label = "Ray Depth",
         string page = "Advanced",

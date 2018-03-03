@@ -67,6 +67,10 @@ namespace
             delete this;
         }
 
+        void print_settings() const override
+        {
+        }
+
         void render_tile(
             const Frame&    frame,
             const size_t    tile_x,

@@ -85,6 +85,4 @@ surface as_max_blend_material
         ClosureOut = mix(ClosureOut, LayerMtl_8, (MixAmount_8 * MaskColor_8));
     if (LayerMtl_9)
         ClosureOut = mix(ClosureOut, LayerMtl_9, (MixAmount_9 * MaskColor_9));
-
-    Ci = ClosureOut;
 }
