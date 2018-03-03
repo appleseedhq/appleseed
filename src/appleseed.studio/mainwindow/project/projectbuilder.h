@@ -172,12 +172,12 @@ inline void copy_transform_sequence(
 {
     new_entity->transform_sequence().clear();
 
-    for (size_t i = 0, e = old_entity->transform_sequence().size(); i < e; ++i)
+    for (size_t i = 0, e = src_entity->transform_sequence().size(); i < e; ++i)
     {
         float time;
         foundation::Transformd transform;
-        old_entity->transform_sequence().get_transform(i, time, transform);
-        new_entity->transform_sequence().set_transform(time, transform);
+        src_entity->transform_sequence().get_transform(i, time, transform);
+        dst_entity->transform_sequence().set_transform(time, transform);
     }
 }
 
