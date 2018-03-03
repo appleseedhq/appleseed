@@ -170,7 +170,7 @@ inline void copy_transform_sequence(
     const Entity&                       src_entity,
     const Entity&                       dst_entity)
 {
-    new_entity->transform_sequence().clear();
+    dst_entity->transform_sequence().clear();
 
     for (size_t i = 0, e = src_entity->transform_sequence().size(); i < e; ++i)
     {
