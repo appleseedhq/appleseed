@@ -165,10 +165,10 @@ Entity* ProjectBuilder::edit_entity(
     return new_entity_ptr;
 }
 
-template <typename OldEntity, typename NewEntity>
+template <typename Entity>
 inline void copy_transform_sequence(
-    const OldEntity&                   old_entity,
-    const NewEntity&                   new_entity)
+    const Entity&                       src_entity,
+    const Entity&                       dst_entity)
 {
     new_entity->transform_sequence().clear();
 
@@ -190,7 +190,7 @@ inline renderer::EnvironmentEDF* ProjectBuilder::edit_entity(
     foundation::auto_release_ptr<renderer::EnvironmentEDF> new_entity(create_entity<renderer::EnvironmentEDF>(values));
     renderer::EnvironmentEDF* new_entity_ptr = new_entity.get(); 
 
-    copy_transform_sequence(old_entity, new_entity);
+    copy_transform_sequence(old_entity, new_entity_ptr);
 
     renderer::EntityTraits<renderer::EnvironmentEDF>::remove_entity(old_entity, parent);
     renderer::EntityTraits<renderer::EnvironmentEDF>::insert_entity(new_entity, parent);
@@ -209,7 +209,7 @@ inline renderer::Camera* ProjectBuilder::edit_entity(
     foundation::auto_release_ptr<renderer::Camera> new_entity(create_entity<renderer::Camera>(values));
     renderer::Camera* new_entity_ptr = new_entity.get();
 
-    copy_transform_sequence(old_entity, new_entity);
+    copy_transform_sequence(old_entity, new_entity_ptr);
 
     renderer::EntityTraits<renderer::Camera>::remove_entity(old_entity, parent);
     renderer::EntityTraits<renderer::Camera>::insert_entity(new_entity, parent);
