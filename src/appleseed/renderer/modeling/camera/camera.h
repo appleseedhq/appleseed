@@ -157,11 +157,15 @@ class APPLESEED_DLLSYMBOL Camera
 
   protected:
     TransformSequence   m_transform_sequence;
+
+    // Shutter related parameters
     float               m_shutter_open_time;
     float               m_shutter_open_end_time;
     float               m_shutter_close_start_time;
     float               m_shutter_close_time;
     float               m_shutter_open_time_interval;
+
+    // Linear shutter related parameters
     float               m_normalized_open_end_time;
     float               m_normalized_open_end_time_half;
     float               m_normalized_close_start_time;
@@ -170,6 +174,18 @@ class APPLESEED_DLLSYMBOL Camera
     float               m_shutter_pdf_max_height;
     float               m_inverse_cdf_open_point; 
     float               m_inverse_cdf_close_point;
+
+    // Shutter curve related parameters
+
+    // Array of control knobs
+    typedef foundation::Vector<foundation::Vector2f, 4> ShutterCurvePointsVector;
+
+    bool                        m_use_shutter_curve;
+    ShutterCurvePointsVector    m_shutter_curve_control_points;
+
+    // Utility function to retrieve the shutter curve control knobs from the camera parameters.
+    // Note: caller should guarantee that "shutter_curve_control_points" parameter exist.
+    ShutterCurvePointsVector extract_shutter_curve_control_points() const;
 
     // Utility function to retrieve the film dimensions (in meters) from the camera parameters.
     foundation::Vector2d extract_film_dimensions() const;
