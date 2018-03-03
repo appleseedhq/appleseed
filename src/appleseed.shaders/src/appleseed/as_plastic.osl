@@ -168,7 +168,7 @@ shader as_plastic
         string page = "Matte Opacity",
         int gafferNoduleLayoutVisible = 0
     ]],
-    int in_maximum_ray_depth= 4
+    int in_maximum_ray_depth = 4
     [[
         string as_maya_attribute_name = "maximumRayDepth",
         string as_maya_attribute_short_name = "mr",

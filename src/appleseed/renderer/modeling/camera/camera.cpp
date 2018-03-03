@@ -430,8 +430,8 @@ void Camera::check_shutter_times_for_consistency() const
 
     if (m_shutter_close_time < m_shutter_close_start_time)
         RENDERER_LOG_WARNING("shutter close start time of camera \"%s\" is greater than shutter close time", get_path().c_str());
-
 }
+
 
 //
 // CameraFactory class implementation.
