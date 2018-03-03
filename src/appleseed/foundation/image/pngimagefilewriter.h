@@ -47,9 +47,6 @@ class APPLESEED_DLLSYMBOL PNGImageFileWriter
     : public IImageFileWriter
 {
   public:
-    
-    // Memory allocation error.
-    struct ExceptionMemoryError : public Exception {};
 
     // Write a whatever image file.
     void write(
