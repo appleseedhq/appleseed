@@ -545,7 +545,7 @@ shader as_maya_mandelbrot
             }
             else
             {
-                warning("[WARNING]:Unsupported Fractal Mode\n");
+                warning("[WARNING]: Unsupported Fractal Mode\n");
                 return;
             }
 
