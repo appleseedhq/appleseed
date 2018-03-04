@@ -207,6 +207,20 @@ namespace
     }
 }
 
+float get_average_albedo(
+    const foundation::GGXMDF&       mdf,
+    const float                     roughness)
+{
+    return g_dir_albedo_tables.m_ggx.get_average_albedo(roughness);
+}
+
+float get_average_albedo(
+    const foundation::BeckmannMDF&  mdf,
+    const float                     roughness)
+{
+    return g_dir_albedo_tables.m_beckmann.get_average_albedo(roughness);
+}
+
 void microfacet_energy_compensation_term(
     const GGXMDF&       mdf,
     const float         roughness,
