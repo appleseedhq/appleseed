@@ -706,7 +706,7 @@ namespace
     {
         bool success = true;
 
-        if (extension != ".exr" && extension != ".EXR")
+        if (lower_case(extension) != ".exr")
         {
             RENDERER_LOG_ERROR("extra AOVs can only be saved as exr.");
             return false;
@@ -750,7 +750,7 @@ bool Frame::write_main_image(const char* file_path) const
     // Write BCD histograms and covariances if enabled.
     if (impl->m_denoising_mode == DenoisingMode::WriteOutputs)
     {
-        if (ends_with(file_path, ".exr"))
+        if (ends_with(lower_case(file_path), ".exr"))
             impl->m_denoiser_aov->write_images(file_path);
         else
             RENDERER_LOG_ERROR("denoiser outputs can only be saved to exr images.");
