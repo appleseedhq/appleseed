@@ -747,8 +747,7 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
             .insert("name", "autofocus_target")
             .insert("label", "Autofocus Target")
             .insert("type", "text")
-            .insert("use", "optional")
-            .insert("default", "0.5 0.5"));
+            .insert("use", "optional"));
 
     metadata.push_back(
         Dictionary()
