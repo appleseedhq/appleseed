@@ -277,6 +277,14 @@ class MicrofacetBRDFHelper
     }
 };
 
+float get_average_albedo(
+    const foundation::GGXMDF&       mdf,
+    const float                     roughness);
+
+float get_average_albedo(
+    const foundation::BeckmannMDF&  mdf,
+    const float                     roughness);
+
 void microfacet_energy_compensation_term(
     const foundation::GGXMDF&       mdf,
     const float                     roughness,
