@@ -37,6 +37,8 @@ shader as_triplanar
     string help = "Tri-planar projection node.",
     string icon = "asTriPlanar.png",
     int as_maya_type_id = 0x001279e5,
+    string as_max_class_id = "925310807 310517888",
+    string as_max_plugin_type = "texture",
     string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_triplanar.html#label-as-triplanar"
 ]]
 (
