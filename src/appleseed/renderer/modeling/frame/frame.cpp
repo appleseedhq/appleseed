@@ -706,7 +706,7 @@ namespace
     {
         bool success = true;
 
-        if (extension != ".exr")
+        if (extension != ".exr" && extension != ".EXR")
         {
             RENDERER_LOG_ERROR("extra AOVs can only be saved as exr.");
             return false;
@@ -717,7 +717,7 @@ namespace
             const size_t image_index = aov_indices[i];
             assert(image_index < images.size());
 
-            const Image & image = images.get_image(image_index);
+            const Image& image = images.get_image(image_index);
 
             // Compute image file path.
             const string aov_name = images.get_name(image_index);
@@ -785,7 +785,7 @@ bool Frame::write_aov_images(const char* file_path) const
             success = false;
     }
 
-    if (impl->m_save_extra_aovs && !aov_images().empty())
+    if (impl->m_save_extra_aovs)
     {
         success = success && write_extra_aovs(
             aov_images(),
@@ -896,7 +896,7 @@ void Frame::write_main_and_aov_images_to_multipart_exr(const char* file_path) co
             const size_t image_index = impl->m_extra_aovs[i];
             assert(image_index < aov_images().size());
 
-            const Image & image = aov_images().get_image(image_index);
+            const Image& image = aov_images().get_image(image_index);
             const CanvasProperties& props = image.properties();
             const string aov_name = aov_images().get_name(image_index);
             assert(props.m_channel_count == 4);
