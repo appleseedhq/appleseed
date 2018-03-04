@@ -71,6 +71,7 @@ Camera::Camera(
     const char*             name,
     const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
+  , m_use_shutter_curve(false)
 {
     set_name(name);
 }
@@ -83,19 +84,32 @@ bool Camera::on_render_begin(
     m_shutter_open_end_time = m_params.get_optional<float>("shutter_open_end_time", m_shutter_open_time);
     m_shutter_close_time = m_params.get_optional<float>("shutter_close_time", 1.0f);
     m_shutter_close_start_time = m_params.get_optional<float>("shutter_close_start_time", m_shutter_close_time);
+    
+    if (has_param("shutter_curve_control_points"))
+    {
+        m_shutter_curve_control_points = extract_shutter_curve_control_points();
+        m_use_shutter_curve = true;
+    }
 
     check_shutter_times_for_consistency();
 
-    m_shutter_open_time_interval = m_shutter_close_time - m_shutter_open_time;
-    m_normalized_open_end_time = inverse_lerp(m_shutter_open_time, m_shutter_close_time, m_shutter_open_end_time);
-    m_normalized_open_end_time_half = m_normalized_open_end_time / 2;
-    m_normalized_close_start_time = inverse_lerp(m_shutter_open_time, m_shutter_close_time, m_shutter_close_start_time);
-    m_shutter_pdf_max_height = 2 / (1 + m_normalized_close_start_time - m_normalized_open_end_time);
-    m_open_linear_curve_slope = m_shutter_pdf_max_height / m_normalized_open_end_time;
-    m_close_linear_curve_slope = -m_shutter_pdf_max_height / (1 - m_normalized_close_start_time);
-    m_inverse_cdf_open_point = m_shutter_pdf_max_height * m_normalized_open_end_time_half;
-    m_inverse_cdf_close_point = m_shutter_pdf_max_height * (m_normalized_close_start_time - m_normalized_open_end_time_half);
+    if (m_use_shutter_curve)
+    {
 
+    }
+    // Use linear shutter
+    else
+    {
+        m_shutter_open_time_interval = m_shutter_close_time - m_shutter_open_time;
+        m_normalized_open_end_time = inverse_lerp(m_shutter_open_time, m_shutter_close_time, m_shutter_open_end_time);
+        m_normalized_open_end_time_half = m_normalized_open_end_time / 2;
+        m_normalized_close_start_time = inverse_lerp(m_shutter_open_time, m_shutter_close_time, m_shutter_close_start_time);
+        m_shutter_pdf_max_height = 2 / (1 + m_normalized_close_start_time - m_normalized_open_end_time);
+        m_open_linear_curve_slope = m_shutter_pdf_max_height / m_normalized_open_end_time;
+        m_close_linear_curve_slope = -m_shutter_pdf_max_height / (1 - m_normalized_close_start_time);
+        m_inverse_cdf_open_point = m_shutter_pdf_max_height * m_normalized_open_end_time_half;
+        m_inverse_cdf_close_point = m_shutter_pdf_max_height * (m_normalized_close_start_time - m_normalized_open_end_time_half);
+    }
     return true;
 }
 
@@ -432,6 +446,27 @@ void Camera::check_shutter_times_for_consistency() const
         RENDERER_LOG_WARNING("shutter close start time of camera \"%s\" is greater than shutter close time", get_path().c_str());
 }
 
+Camera::ShutterCurvePointsVector Camera::extract_shutter_curve_control_points() const
+{
+    ShutterCurvePointsVector value;
+    ShutterCurvePointsVector default_value;
+    // TODO: make default value construction utility function
+
+    // Caller should check if parameter exist, so use get_required here.
+    auto input_array = m_params.get_required<foundation::Vector<float, 8>>(
+        "shutter_curve_control_points", 
+        default_value);
+    
+    // Map the array of floats [x0, y0, x1, y1, x2, y2, x3, y3] to the array 
+    // of vector2d points [p1, p2, p3, p4]
+    for (int i = 0; i < ShutterCurvePointsVector::Dimension; ++i)
+    {
+        value[i].x = input_array[i*2];
+        value[i].y = input_array[i*2+1];
+    }
+
+    return value;
+}
 
 //
 // CameraFactory class implementation.
@@ -504,6 +539,13 @@ DictionaryArray CameraFactory::get_input_metadata()
                     .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "1.0"));
+
+    metadata.push_back(
+    Dictionary()
+        .insert("name", "shutter_curve_control_points")
+        .insert("label", "Shutter Curve Control Points")
+        .insert("type", "text")
+        .insert("use", "optional"));
 
     return metadata;
 }
