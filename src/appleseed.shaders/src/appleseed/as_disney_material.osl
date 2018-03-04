@@ -53,7 +53,7 @@ shader as_disney_material
         string as_maya_attribute_short_name = "ss",
         float min = 0.0,
         float max = 1.0,
-        string label = "Subsurface",
+        string label = "Subsurface Amount",
         string page = "Common"
     ]],
     float in_specular_amount = 0.5
