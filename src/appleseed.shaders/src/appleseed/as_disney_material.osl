@@ -53,7 +53,7 @@ shader as_disney_material
         string as_maya_attribute_short_name = "ss",
         float min = 0.0,
         float max = 1.0,
-        string label = "Subsurface",
+        string label = "Subsurface Amount",
         string page = "Common"
     ]],
     float in_specular_amount = 0.5
@@ -201,7 +201,7 @@ shader as_disney_material
         string as_maya_attribute_name = "maximumRayDepth",
         string as_maya_attribute_short_name = "rd",
         int min = 0,
-        int max = 32,
+        int max = 100,
         int softmax = 8,
         string label = "Ray Depth",
         string page = "Advanced",

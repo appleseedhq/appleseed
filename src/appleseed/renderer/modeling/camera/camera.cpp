@@ -80,9 +80,12 @@ bool Camera::on_render_begin(
     IAbortSwitch*           abort_switch)
 {
     m_shutter_open_time = m_params.get_optional<float>("shutter_open_time", 0.0f);
-    m_shutter_open_end_time = m_params.get_optional<float>("shutter_open_end_time", 0.0f);
-    m_shutter_close_start_time = m_params.get_optional<float>("shutter_close_start_time", 1.0f);
+    m_shutter_open_end_time = m_params.get_optional<float>("shutter_open_end_time", m_shutter_open_time);
     m_shutter_close_time = m_params.get_optional<float>("shutter_close_time", 1.0f);
+    m_shutter_close_start_time = m_params.get_optional<float>("shutter_close_start_time", m_shutter_close_time);
+
+    check_shutter_times_for_consistency();
+
     m_shutter_open_time_interval = m_shutter_close_time - m_shutter_open_time;
     m_normalized_open_end_time = inverse_lerp(m_shutter_open_time, m_shutter_close_time, m_shutter_open_end_time);
     m_normalized_open_end_time_half = m_normalized_open_end_time / 2;
@@ -406,6 +409,27 @@ double Camera::get_greater_than_zero(
     }
 
     return value;
+}
+
+void Camera::check_shutter_times_for_consistency() const
+{
+    if (m_shutter_open_end_time < m_shutter_open_time)
+        RENDERER_LOG_WARNING("shutter open time of camera \"%s\" is greater than shutter open end time", get_path().c_str());
+
+    if (m_shutter_close_start_time < m_shutter_open_end_time)
+        RENDERER_LOG_WARNING("shutter open end time of camera \"%s\" is greater than shutter close start time", get_path().c_str());
+
+    if (m_shutter_close_start_time < m_shutter_open_time)
+        RENDERER_LOG_WARNING("shutter open time of camera \"%s\" is greater than shutter close start time", get_path().c_str());
+
+    if (m_shutter_close_time < m_shutter_open_time)
+        RENDERER_LOG_WARNING("shutter open time of camera \"%s\" is greater than shutter close time", get_path().c_str());
+
+    if (m_shutter_close_time < m_shutter_open_end_time)
+        RENDERER_LOG_WARNING("shutter open end time of camera \"%s\" is greater than shutter close time", get_path().c_str());
+
+    if (m_shutter_close_time < m_shutter_close_start_time)
+        RENDERER_LOG_WARNING("shutter close start time of camera \"%s\" is greater than shutter close time", get_path().c_str());
 }
 
 
