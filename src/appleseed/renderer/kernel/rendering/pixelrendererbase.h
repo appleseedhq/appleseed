@@ -32,15 +32,19 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/ipixelrenderer.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cstddef>
+#include <memory>
 
 // Forward declarations.
+namespace foundation    { class Dictionary; }
 namespace foundation    { class Tile; }
 namespace renderer      { class AOVAccumulatorContainer; }
 namespace renderer      { class Frame; }
@@ -58,7 +62,12 @@ class PixelRendererBase
 {
   public:
     // Constructor.
-    PixelRendererBase();
+    PixelRendererBase(
+        const Frame&        frame,
+        const size_t        thread_index,
+        const ParamArray&   params);
+
+    bool are_diagnostics_enabled() const;
 
     // This method is called before a tile gets rendered.
     void on_tile_begin(
@@ -74,18 +83,47 @@ class PixelRendererBase
 
   protected:
     void on_pixel_begin(
-        const foundation::Vector2i& pi,
-        AOVAccumulatorContainer&    aov_accumulators);
+        const foundation::Vector2i&         pi,
+        const foundation::Vector2i&         pt,
+        const foundation::AABB2i&           tile_bbox,
+        AOVAccumulatorContainer&            aov_accumulators);
 
     void on_pixel_end(
-        const foundation::Vector2i& pi,
-        AOVAccumulatorContainer&    aov_accumulators);
+        const foundation::Vector2i&         pi,
+        const foundation::Vector2i&         pt,
+        const foundation::AABB2i&           tile_bbox,
+        AOVAccumulatorContainer&            aov_accumulators);
 
     void signal_invalid_sample();
 
   private:
-    size_t                          m_invalid_sample_count;
-    size_t                          m_invalid_pixel_count;
+    struct Parameters
+    {
+        const bool m_diagnostics;
+
+        explicit Parameters(const ParamArray& params)
+            : m_diagnostics(params.get_optional<bool>("enable_diagnostics", false))
+        {
+        }
+    };
+
+    size_t                                  m_invalid_sample_count;
+    size_t                                  m_invalid_pixel_count;
+    size_t                                  m_invalid_sample_aov_index;
+    std::unique_ptr<foundation::Tile>       m_invalid_sample_diagnostic;
+    const Parameters                        m_params;
+};
+
+
+//
+// Pixel renderer base factory.
+//
+
+class PixelRendererBaseFactory
+  : public IPixelRendererFactory
+{
+  public:
+    static foundation::Dictionary get_params_metadata();
 };
 
 }       // namespace renderer
