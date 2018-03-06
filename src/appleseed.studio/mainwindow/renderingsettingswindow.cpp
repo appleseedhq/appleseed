@@ -790,13 +790,19 @@ namespace
             const bool              allow_unlimited = true)
         {
             const int DefaultMaxBounces = 8;
+            const int DefaultMaxDiffuseBounces = 3;
 
             const int max_bounces =
                 get_config<int>(config, construct_bounce_param_path(bounce_type), -1);
 
+            const string widget_max_bounce_key = widget_key_prefix + ".bounces.max_" + bounce_type + "_bounces";
+
             if (allow_unlimited)
                 set_widget(widget_key_prefix + ".bounces.unlimited_" + bounce_type + "_bounces", max_bounces == -1);
-            set_widget(widget_key_prefix + ".bounces.max_" + bounce_type + "_bounces", max_bounces == -1 ? DefaultMaxBounces : max_bounces);
+            if (bounce_type == "diffuse") 
+                set_widget(widget_max_bounce_key, max_bounces == -1 ? DefaultMaxDiffuseBounces : max_bounces);
+            else
+                set_widget(widget_max_bounce_key, max_bounces == -1 ? DefaultMaxBounces : max_bounces);
         }
 
         void save_separate_bounce_settings(
