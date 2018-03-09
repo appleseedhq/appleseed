@@ -757,7 +757,7 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "extract_focal_distance")
+            .insert("name", "autofocus_target")
             .insert("label", "Autofocus Target")
             .insert("type", "text")
             .insert("use", "optional")

@@ -182,7 +182,7 @@ class APPLESEED_DLLSYMBOL Camera
 
     // Utility function to retrieve the focal distance (in meters) from the camera parameters.
     void extract_focal_distance(
-        const bool&                     autofocus_enabled,
+        const bool                      autofocus_enabled,
         foundation::Vector2d&           autofocus_target,
         double&                         focal_distance) const;
 
