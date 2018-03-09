@@ -251,7 +251,6 @@ void Camera::extract_focal_distance(
     {
         if (has_param("autofocus_target"))
             autofocus_target = m_params.get_required<Vector2d>("autofocus_target", DefaultAFTarget);
-        
         else
         {
             RENDERER_LOG_ERROR(
@@ -269,7 +268,6 @@ void Camera::extract_focal_distance(
     {
         if (has_param("focal_distance"))
             focal_distance = m_params.get_required<double>("focal_distance", DefaultFocalDistance);
-
         else
         {
             RENDERER_LOG_ERROR(
