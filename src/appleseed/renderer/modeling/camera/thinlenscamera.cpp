@@ -201,6 +201,8 @@ namespace
             if (!Camera::on_render_begin(project, abort_switch))
                 return false;
 
+            m_autofocus_enabled = m_params.get_optional<bool>("autofocus_enabled", true);
+
             // Extract the film dimensions from the camera parameters.
             m_film_dimensions = extract_film_dimensions();
 
@@ -737,18 +739,32 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "focal_distance")
-            .insert("label", "Focal Distance")
-            .insert("type", "text")
-            .insert("use", "optional"));
+            .insert("name", "autofocus_enabled")
+            .insert("label", "Enable autofocus")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "true"));
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "autofocus_target")
+            .insert("name", "focal_distance")
+            .insert("label", "Focal Distance")
+            .insert("type", "text")
+            .insert("use", "optional")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("autofocus_enabled", "false")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "extract_focal_distance")
             .insert("label", "Autofocus Target")
             .insert("type", "text")
             .insert("use", "optional")
-            .insert("default", "0.5 0.5"));
+            .insert("default", "0.5 0.5")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("autofocus_enabled", "true")));
 
     metadata.push_back(
         Dictionary()
