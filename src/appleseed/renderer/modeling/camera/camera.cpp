@@ -240,50 +240,45 @@ double Camera::extract_f_stop() const
 }
 
 void Camera::extract_focal_distance(
-    bool&                   autofocus_enabled,
+    const bool              autofocus_enabled,
     Vector2d&               autofocus_target,
     double&                 focal_distance) const
 {
     const Vector2d DefaultAFTarget(0.5);        // in NDC
     const double DefaultFocalDistance = 1.0;    // in meters
 
-    if (has_param("focal_distance"))
+    if (autofocus_enabled)
     {
         if (has_param("autofocus_target"))
-        {
-            RENDERER_LOG_WARNING(
-                "while defining camera \"%s\": autofocus is enabled; \"focal_distance\" parameter "
-                "will be ignored.",
-                get_path().c_str());
-
-            autofocus_enabled = true;
             autofocus_target = m_params.get_required<Vector2d>("autofocus_target", DefaultAFTarget);
-            focal_distance = 0.0;
-        }
         else
         {
-            autofocus_enabled = false;
+            RENDERER_LOG_ERROR(
+                "while defining camera \"%s\": no \"autofocus_target\" parameter found; "
+                "using default value \"%f, %f\".",
+                get_path().c_str(),
+                DefaultAFTarget[0],
+                DefaultAFTarget[1]);
             autofocus_target = DefaultAFTarget;
-            focal_distance = m_params.get_required<double>("focal_distance", DefaultFocalDistance);
         }
-    }
-    else if (has_param("autofocus_target"))
-    {
-        autofocus_enabled = true;
-        autofocus_target = m_params.get_required<Vector2d>("autofocus_target", DefaultAFTarget);
-        focal_distance = 0.0;
+
+        focal_distance = DefaultFocalDistance;
     }
     else
     {
-        RENDERER_LOG_ERROR(
-            "while defining camera \"%s\": no \"focal_distance\" or \"autofocus_target\" parameter found; "
-            "using default focal distance value \"%f\".",
-            get_path().c_str(),
-            DefaultFocalDistance);
+        if (has_param("focal_distance"))
+            focal_distance = m_params.get_required<double>("focal_distance", DefaultFocalDistance);
+        else
+        {
+            RENDERER_LOG_ERROR(
+                "while defining camera \"%s\": no \"focal_distance\" parameter found; "
+                "using default value \"%f\".",
+                get_path().c_str(),
+                DefaultFocalDistance);
+            focal_distance = DefaultFocalDistance;
+        }
 
-        autofocus_enabled = false;
         autofocus_target = DefaultAFTarget;
-        focal_distance = DefaultFocalDistance;
     }
 }
 
