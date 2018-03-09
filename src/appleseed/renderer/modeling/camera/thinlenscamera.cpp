@@ -750,7 +750,8 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
             .insert("name", "focal_distance")
             .insert("label", "Focal Distance")
             .insert("type", "text")
-            .insert("use", "optional"));
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()
