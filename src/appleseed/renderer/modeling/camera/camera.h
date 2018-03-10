@@ -168,8 +168,9 @@ class APPLESEED_DLLSYMBOL Camera
     float               m_open_linear_curve_slope;
     float               m_close_linear_curve_slope;
     float               m_shutter_pdf_max_height;
-    float               m_inverse_cdf_open_point; 
+    float               m_inverse_cdf_open_point;
     float               m_inverse_cdf_close_point;
+    bool                m_motion_blur_enabled;
 
     // Utility function to retrieve the film dimensions (in meters) from the camera parameters.
     foundation::Vector2d extract_film_dimensions() const;
