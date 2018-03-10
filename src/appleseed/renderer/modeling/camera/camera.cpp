@@ -87,14 +87,20 @@ bool Camera::on_render_begin(
     check_shutter_times_for_consistency();
 
     m_shutter_open_time_interval = m_shutter_close_time - m_shutter_open_time;
-    m_normalized_open_end_time = inverse_lerp(m_shutter_open_time, m_shutter_close_time, m_shutter_open_end_time);
-    m_normalized_open_end_time_half = m_normalized_open_end_time / 2;
-    m_normalized_close_start_time = inverse_lerp(m_shutter_open_time, m_shutter_close_time, m_shutter_close_start_time);
-    m_shutter_pdf_max_height = 2 / (1 + m_normalized_close_start_time - m_normalized_open_end_time);
-    m_open_linear_curve_slope = m_shutter_pdf_max_height / m_normalized_open_end_time;
-    m_close_linear_curve_slope = -m_shutter_pdf_max_height / (1 - m_normalized_close_start_time);
-    m_inverse_cdf_open_point = m_shutter_pdf_max_height * m_normalized_open_end_time_half;
-    m_inverse_cdf_close_point = m_shutter_pdf_max_height * (m_normalized_close_start_time - m_normalized_open_end_time_half);
+
+    m_motion_blur_enabled = m_shutter_open_time_interval > 0.0f;
+
+    if (m_motion_blur_enabled)
+    {
+        m_normalized_open_end_time = inverse_lerp(m_shutter_open_time, m_shutter_close_time, m_shutter_open_end_time);
+        m_normalized_open_end_time_half = m_normalized_open_end_time / 2.0f;
+        m_normalized_close_start_time = inverse_lerp(m_shutter_open_time, m_shutter_close_time, m_shutter_close_start_time);
+        m_shutter_pdf_max_height = 2.0f / (1.0f + m_normalized_close_start_time - m_normalized_open_end_time);
+        m_open_linear_curve_slope = m_shutter_pdf_max_height / m_normalized_open_end_time;
+        m_close_linear_curve_slope = -m_shutter_pdf_max_height / (1.0f - m_normalized_close_start_time);
+        m_inverse_cdf_open_point = m_shutter_pdf_max_height * m_normalized_open_end_time_half;
+        m_inverse_cdf_close_point = m_shutter_pdf_max_height * (m_normalized_close_start_time - m_normalized_open_end_time_half);
+    }
 
     return true;
 }
@@ -304,7 +310,7 @@ double Camera::extract_near_z() const
 }
 
 namespace
-{   
+{
     //
     // Shutter curves. Used in Camera::map_to_shutter_curve().
     //
@@ -355,23 +361,19 @@ void Camera::initialize_ray(
     ray.m_flags = VisibilityFlags::CameraRay;
     ray.m_depth = 0;
 
-    if (m_shutter_open_time == m_shutter_close_time)
-    {
-        ray.m_time =
-            ShadingRay::Time::create_with_normalized_time(
-                0.0f,
-                m_shutter_open_time,
-                m_shutter_close_time);
-    }
-    else
+    float sample_time = 0.0f;
+
+    if (m_motion_blur_enabled)
     {
         sampling_context.split_in_place(1, 1);
-        ray.m_time =
-            ShadingRay::Time::create_with_normalized_time(
-                map_to_shutter_curve(sampling_context.next2<float>()),
-                m_shutter_open_time,
-                m_shutter_close_time);
+        sample_time = map_to_shutter_curve(sampling_context.next2<float>());
     }
+
+    ray.m_time =
+        ShadingRay::Time::create_with_normalized_time(
+            sample_time,
+            m_shutter_open_time,
+            m_shutter_close_time);
 }
 
 bool Camera::has_param(const char* name) const
