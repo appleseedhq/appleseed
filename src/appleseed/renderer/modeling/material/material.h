@@ -77,12 +77,6 @@ class APPLESEED_DLLSYMBOL Material
     // Return a string identifying the model of this material.
     virtual const char* get_model() const = 0;
 
-    // Return true if this material has an alpha map.
-    bool has_alpha_map() const;
-
-    // Return true if this material has an uniform alpha value equals to 1.0f.
-    bool has_uniform_alpha_map_value_of_one() const;
-
     // Return the name the surface shader bound to this material, or nullptr if the material doesn't have one.
     const char* get_surface_shader_name() const;
 
@@ -101,10 +95,10 @@ class APPLESEED_DLLSYMBOL Material
     // Return the surface shader of the material, or nullptr if the material doesn't have one.
     const SurfaceShader* get_uncached_surface_shader() const;
 
-    // Return the BSDF of the material, or nullptr0 if the material doesn't have one.
+    // Return the BSDF of the material, or nullptr if the material doesn't have one.
     const BSDF* get_uncached_bsdf() const;
 
-    // Return the BSSRDF of the material, or nullptr0 if the material doesn't have one.
+    // Return the BSSRDF of the material, or nullptr if the material doesn't have one.
     const BSSRDF* get_uncached_bssrdf() const;
 
     // Return the EDF of the material, or nullptr if the material doesn't have one.
@@ -118,6 +112,12 @@ class APPLESEED_DLLSYMBOL Material
 
     // Return the OSL surface shader of the material, or nullptr if the material doesn't have one.
     virtual const ShaderGroup* get_uncached_osl_surface() const;
+
+    // Return true if this material has an alpha map.
+    bool has_alpha_map() const;
+
+    // Return true if this material has an uniform alpha value equals to 1.0f.
+    bool has_opaque_uniform_alpha_map() const;
 
     // Return true if the material emits light.
     virtual bool has_emission() const;

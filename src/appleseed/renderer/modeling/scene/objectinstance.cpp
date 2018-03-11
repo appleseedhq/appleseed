@@ -76,6 +76,11 @@ bool has_emitting_materials(const MaterialArray& materials)
     return false;
 }
 
+bool uses_alpha_mapping(const Object& object)
+{
+    return object.has_alpha_map() && !object.has_opaque_uniform_alpha_map();
+}
+
 bool uses_alpha_mapping(const MaterialArray& materials)
 {
     for (size_t i = 0, e = materials.size(); i < e; ++i)
@@ -88,7 +93,7 @@ bool uses_alpha_mapping(const MaterialArray& materials)
                     return true;
             }
 
-            if (materials[i]->has_alpha_map() && !materials[i]->has_uniform_alpha_map_value_of_one())
+            if (materials[i]->has_alpha_map() && !materials[i]->has_opaque_uniform_alpha_map())
                 return true;
         }
     }
@@ -461,7 +466,7 @@ bool ObjectInstance::has_participating_media() const
 
 bool ObjectInstance::uses_alpha_mapping() const
 {
-    if (get_object().has_alpha_map())
+    if (renderer::uses_alpha_mapping(get_object()))
         return true;
 
     return
